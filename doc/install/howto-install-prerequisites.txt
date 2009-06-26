@@ -43,6 +43,7 @@ export PATH=${PREFIX}/bin:${PATH}
 ./install-starlab.sh
 ./install-hdf.sh
 ./install-h5py.sh
+./install-nose.sh
 
 4) Update your PATH variable in your start script. Make sure the ${prefix}/bin directory is the first entry in the PATH!
 
