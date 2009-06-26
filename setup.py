@@ -1,6 +1,6 @@
 from distutils.core import setup
 from distutils.command.build import build
-from dist.build_latex import build_latex
+from support.build_latex import build_latex
 
 build.sub_commands.append(('build_latex',None))
 
