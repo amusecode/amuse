@@ -47,12 +47,19 @@ rm -Rf ${APP_DIR}
 mkdir ${APP_DIR}
 cd ${APP_DIR}
 
-#--with-pydebug
-#--with-dyld \
-#--enable-framework=${PREFIX}/Framework \
-../../${SOURCE_DIR}/${APP_DIR}/configure \
-	--prefix=${PREFIX} \
-	--program-suffix=.exe 
+UNAME=`uname`
+if [ $UNAME == 'Darwin' ] ; then
+	../../${SOURCE_DIR}/${APP_DIR}/configure \
+		--with-dyld \
+		--enable-framework=${PREFIX}/Framework \
+		--prefix=${PREFIX} \
+		--program-suffix=.exe ;
+else
+	../../${SOURCE_DIR}/${APP_DIR}/configure \
+		--prefix=${PREFIX} \
+		--program-suffix=.exe ;
+fi
+
 make 
 make install
 echo "..Done"

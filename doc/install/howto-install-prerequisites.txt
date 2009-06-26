@@ -48,7 +48,12 @@ export PATH=${PREFIX}/bin:${PATH}
 
 You should now be able to build most MUSE modules.
 
+Installation on OS X
+~~~~~~~~~~~~~~~~~~~~~
 
+When installing the code on OS.X all steps are the same.The only difference is in setting the PATH variable. The PATH must be extended like this:
+
+export PATH=$PREFIX/Framework/Python.framework/Versions/2.5/bin:$PREFIX/bin:$PATH
 
 
 
