@@ -1,6 +1,6 @@
 import numpy
 cimport numpy
-
+cimport cython
 
 cdef extern from "BHTC/nbody_particle.h":
     ctypedef struct c_vec "vec":
@@ -52,6 +52,8 @@ cdef class NBodySystem:
         cdef c_nbody_particle *particles=self.thisptr.get_particle_pointer()
         del_nbody_particle(particles)
         del_nbody_system(self.thisptr)
+    
+    @cython.boundscheck(False)
     def set_state(self, numpy.ndarray[DTYPE_t, ndim=2] position, numpy.ndarray[DTYPE_t, ndim=2] velocity, numpy.ndarray[DTYPE_t, ndim=2] mass):
         assert position.dtype == DTYPE and velocity.dtype == DTYPE and mass.dtype == DTYPE
 
