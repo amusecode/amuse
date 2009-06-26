@@ -6,15 +6,15 @@
 # date  : 2009 - 05 -18
 #
 
-set APPVER=2.5.4
+APPVER=2.5.4
 #APPVER=2.6.2
-set APPFILE=Python-${APPAPPVER}.tar.bz2
-set APP_DIR=Python-${APPVER}
-set URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
+APPFILE=Python-${APPVER}.tar.bz2
+APP_DIR=Python-${APPVER}
+URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
-set DOWNLOAD_DIR=_downloaded
-set BUILD_DIR=_build
-set SOURCE_DIR=_source
+DOWNLOAD_DIR=_downloaded
+BUILD_DIR=_build
+SOURCE_DIR=_source
 
 mkdir ${DOWNLOAD_DIR}
 mkdir ${SOURCE_DIR}
