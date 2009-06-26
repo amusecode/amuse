@@ -1,0 +1,40 @@
+import Cython.Compiler.Main as cython
+from distutils import sysconfig
+from numpy.distutils.misc_util import get_numpy_include_dirs
+
+def build_function(target, source, env):
+    for target_file, source_file in map(None, target,source):
+        options = cython.default_options.copy()
+        options['output_file'] = str(target_file)
+        cython.compile(str(source_file), options)
+    return None
+    
+def build_function_cplusplus(target, source, env):
+    for target_file, source_file in map(None, target,source):
+        options = cython.default_options.copy()
+        options['output_file'] = str(target_file)
+        options['cplus'] = 1
+        cython.compile(str(source_file), options)
+    return None
+
+builder = Builder(action = build_function, suffix = '.c', src_suffix = '.pyx')
+builder_cplusplus = Builder(action = build_function_cplusplus, suffix = '.cpp', src_suffix = '.pyx')
+include_dirs = []
+include_dirs.extend(get_numpy_include_dirs())
+include_dirs.append(sysconfig.get_python_inc())
+
+env = Environment()
+env.Append(BUILDERS = {'Cython' : builder})
+env.Append(BUILDERS = {'CythonCpp' : builder_cplusplus})
+env.AppendUnique(CPPPATH=include_dirs)
+env.AppendUnique(SHLIBPREFIX="")
+ld_shared = sysconfig.get_config_vars('LDSHARED')[0]
+
+names = ['plummer_helper']
+for x in names:
+	source_files = env.Cython(x)
+	env.SharedLibrary(x, source_files, LIBPREFIX="", SHLINK=ld_shared, SHLINKFLAGS=[])
+
+source_files = env.CythonCpp('bhtc_interface')
+source_files.extend(['BHTC/nbody.C', 'BHTC/BHtree.C', 'BHTC/gravity.C', 'BHTC/second.c', 'BHTC/pgetopt.C'])
+env.SharedLibrary('bhtc_interface', source_files, LIBPREFIX="")
