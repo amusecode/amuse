@@ -17,11 +17,12 @@ def build_function_cplusplus(target, source, env):
         cython.compile(str(source_file), options)
     return None
 
-builder = Builder(action = build_function, suffix = '.c', src_suffix = '.pyx')
-builder_cplusplus = Builder(action = build_function_cplusplus, suffix = '.cpp', src_suffix = '.pyx')
+builder = Builder(action = build_function, prefix='.build/', suffix = '.c', src_suffix = '.pyx')
+builder_cplusplus = Builder(action = build_function_cplusplus, prefix='.build/', suffix = '.cpp', src_suffix = '.pyx')
 include_dirs = []
 include_dirs.extend(get_numpy_include_dirs())
 include_dirs.append(sysconfig.get_python_inc())
+include_dirs.append(".")
 
 env = Environment()
 env.Append(BUILDERS = {'Cython' : builder})

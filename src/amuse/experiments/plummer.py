@@ -12,6 +12,7 @@ class MakePlummerModel(object):
         self.number_of_particles = number_of_particles
         self.mass_cutoff = min(mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff))
         self.random_state = random_state
+        
     def calculate_mass_cuttof_from_radius_cutoff(self, radius_cutoff):
         if radius_cutoff > 99999:
             return 0.999
@@ -20,12 +21,14 @@ class MakePlummerModel(object):
         denominator = pow(1.0 + rfrac ** 2, 1.5)
         numerator = rfrac ** 3
         return numerator/denominator
+        
     def calculate_radius(self, index):
         mass_min = (index * self.mass_cutoff) / self.number_of_particles
         mass_max = ((index+1) * self.mass_cutoff) / self.number_of_particles
         random_mass_fraction = self.random.uniform(mass_min, mass_max)
         radius = 1.0 / sqrt( pow (random_mass_fraction, -2.0/3.0) - 1.0)
         return radius
+        
     def calculate_radius_uniform_distribution(self):
         return 1.0 /  numpy.sqrt( numpy.power(numpy.random.uniform(0,self.mass_cutoff,(self.number_of_particles,1)), -2.0/3.0) - 1.0)
     
@@ -36,6 +39,7 @@ class MakePlummerModel(object):
         theta = numpy.arccos(numpy.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
         phi = numpy.random.uniform(-1.0,pi2, (self.number_of_particles,1))
         return (radius,theta,phi)
+        
     def new_velocities_spherical_coordinates(self, radius):
         pi2 = pi * 2
         x,y = self.new_xy_for_velocity()
@@ -43,11 +47,13 @@ class MakePlummerModel(object):
         theta = numpy.arccos(numpy.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
         phi = numpy.random.uniform(-1.0,pi2, (self.number_of_particles,1))
         return (velocity,theta,phi)
+        
     def coordinates_from_spherical(self, radius, theta, phi):
         x = radius * numpy.sin( theta ) * numpy.cos( phi )
         y = radius * numpy.sin( theta ) * numpy.sin( phi )
         z = radius * numpy.cos( theta )
         return (x,y,z)
+        
     def new_xy_for_velocity(self):
         number_of_selected_items = 0
         selected_values_for_x = numpy.zeros(0)
@@ -55,13 +61,13 @@ class MakePlummerModel(object):
         while (number_of_selected_items < self.number_of_particles):
             x = numpy.random.uniform(0,1.0, (self.number_of_particles-number_of_selected_items))
             y = numpy.random.uniform(0,0.1, (self.number_of_particles-number_of_selected_items))
-            g = (x**2) *numpy.power(1.0 - x**2, 3.5)
+            g = (x**2) * numpy.power(1.0 - x**2, 3.5)
             compare = y <= g
             selected_values_for_x = numpy.concatenate((selected_values_for_x, x.compress(compare)))
             selected_values_for_y= numpy.concatenate((selected_values_for_x, y.compress(compare)))
             number_of_selected_items = len(selected_values_for_x)
-            print number_of_selected_items
         return numpy.atleast_2d(selected_values_for_x).transpose(), numpy.atleast_2d(selected_values_for_y).transpose()
+        
     def new_model(self):
         if not self.random_state is None:
             numpy.random.set_state(self.random_state)
