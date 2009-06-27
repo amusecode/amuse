@@ -6,3 +6,6 @@ all:
 
 tests:
 	$(PYTHON) setup.py tests
+
+doc:
+	$(PYTHON) setup.py build_latex
