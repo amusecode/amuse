@@ -1,5 +1,3 @@
-__revision__ = "$Id:$"
-
 import sys, os, re, subprocess
 
 from distutils.core import Command
@@ -25,8 +23,8 @@ class run_tests(Command):
         self.test_dir = None
 
     def finalize_options (self):
-    	if not self.test_dir:
-		self.test_dir = 'test'
+        if not self.test_dir:
+            self.test_dir = 'test'
 
     def run (self):
         TestProgram(argv=[self.test_dir], exit=False) 
