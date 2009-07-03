@@ -23,6 +23,7 @@ class run_tests(Command):
         self.test_dir = None
 
     def finalize_options (self):
+        print  "test directory: ", self.test_dir
         if not self.test_dir:
             self.test_dir = 'test'
 
