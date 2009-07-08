@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+
+
 import sys
 import os.path
 import os
@@ -5,9 +9,7 @@ import urllib
 import subprocess
 import shutil
 
-temp_dir = os.path.join(os.environ['HOME'],'_temp')
 #temp_dir = os.path.join('_downloaded','_temp')
-print "files are downloaded to: " , temp_dir
 def get_prefix():
     path = os.path.split(sys.executable)[0]
     if 'Framework' in path:
@@ -19,10 +21,12 @@ def get_prefix():
 
 prefix = get_prefix()
 print "prefix: <", prefix,">"
+temp_dir = os.path.join(prefix,'install','_temp')
+print "files are downloaded to: " , temp_dir
 
 def setup_temp_dir():
     if not os.path.exists(temp_dir):
-        os.mkdir(temp_dir)
+        os.makedirs(temp_dir)
 
 def run_application(args, cwd):
     print "starting " , ' '.join(args)
@@ -65,11 +69,32 @@ def mpich2_build(path):
     for x in commands:
         run_application(x, path)
 
+def openssl_build(path):
+    commands = []
+    commands.append([
+      './config','--prefix='+prefix,
+      ' --openssldir='+prefix+'/openssl',
+      '--shared'
+    ])
+    commands.append(['make'])
+    commands.append(['make', 'install'])
+    for x in commands:
+        run_application(x, path)
+
+
+
+
+
+
+
 apps = [
+  ('openssl' , [], '0.9.8k' , 'openssl-', '.tar.gz', 'http://www.openssl.org/source/', openssl_build),
+  ('numpy' , [], '1.3.0' , 'numpy-', '.tar.gz', 'http://superb-east.dl.sourceforge.net/sourceforge/numpy/', python_build),
+  ('nose', [], '0.11.1', 'nose-' , '.tar.gz', 'http://somethingaboutorange.com/mrl/projects/nose/', python_build),
   ('hdf' , [],  '1.8.3' , 'hdf5-' , '.tar.gz' , 'http://www.hdfgroup.org/ftp/HDF5/current/src/', hdf5_build) ,
   ('h5py', ['hdf'], '1.1.0', 'h5py-' , '.tar.gz', 'http://h5py.googlecode.com/files/', h5py_build) ,
   ('mpich2', [], '1.1', 'mpich2-', '.tar.gz', 'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', mpich2_build) ,
-  ('mpi4py', [], '1.0.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', python_build) ,
+  ('mpi4py', ['mpich2'], '1.0.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', python_build) ,
 ]
 
 def download_apps(apps, names):

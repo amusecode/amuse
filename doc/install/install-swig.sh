@@ -12,13 +12,13 @@ APPFILE=swig-${APPVER}.tar.gz
 APP_DIR=swig-${APPVER}
 URL=http://kent.dl.sourceforge.net/sourceforge/swig/${APPFILE}
 
+INSTALL_DIR=$PREFIX/install
+cd $INSTALL_DIR
+
 DOWNLOAD_DIR=_downloaded
 BUILD_DIR=_build
 SOURCE_DIR=_source
 
-#rm -Rf ${DOWNLOAD_DIR}
-#rm -Rf ${SOURCE_DIR}
-#rm -Rf ${BUILD_DIR}
 mkdir ${DOWNLOAD_DIR}
 mkdir ${SOURCE_DIR}
 mkdir ${BUILD_DIR}

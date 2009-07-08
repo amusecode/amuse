@@ -6,11 +6,17 @@
 # date  : 2009 - 05 -18
 #
 
-APPVER=2.5.4
-#APPVER=2.6.2
+#APPVER=2.5.4
+APPVER=2.6.2
 APPFILE=Python-${APPVER}.tar.bz2
 APP_DIR=Python-${APPVER}
 URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
+
+INSTALL_DIR=$PREFIX/install
+mkdir $INSTALL_DIR
+
+cd $INSTALL_DIR
+
 
 DOWNLOAD_DIR=_downloaded
 BUILD_DIR=_build
