@@ -1,0 +1,39 @@
+=================================
+Design - MPI interface to modules
+=================================
+
+The interface between the AMUSE python core and the legacy-codes will be based on the MPI framework. Choosing MPI and not SWIG or another direct coupling methodhas several advantages:
+
+* MPI is a well-known framework in the astrophysics community. 
+  Other coupling methods are less known (like SWIG)
+* Legacy code does not run in the python space (memory usage, names)
+* Multiple instances of the same legacy code can easily be supported (not so
+  in SWIG / f2py couplings)
+* Multi-process support taken into account at the start of 
+  the project.
+
+There may also be some disadvantages:
+
+* Need to define a protocol over MPI
+* More "hand-work" needed to couple code (SWIG/f2py generate an interface)
+
+These disadvantages can be mitigated by creating a library that handles most of the coupling details. This library will have a Python, C and Fortran version. It will contain implementations of the protocol and hooks to connect with the legacy codes.
+
+
+Message control
+---------------
+
+send -> recieve
+recieve <- send <---- callback possible
+
+Header message
+--------------
+Fixed size
+
+Content message
+---------------
+Size from header message
+
+An implementer will need to define a set of callback functions to provide the real functionality. (See detailed design later)
+
+
