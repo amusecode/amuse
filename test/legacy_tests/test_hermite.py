@@ -18,6 +18,14 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(new_state.mass,  retrieved_state.mass)
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
+    def test2(self):
+        hermite = mpi_interface.Hermite()
+        hermite.eps2 = 0.101
+        self.assertEquals(0.101, hermite.eps2)
+    def test3(self):
+        hermite = mpi_interface.Hermite()
+        hermite.flag_collision = 1
+        self.assertEquals(1, hermite.flag_collision )
 
 class TestSwigInterface(unittest.TestCase):
     def test1(self):
@@ -31,3 +39,11 @@ class TestSwigInterface(unittest.TestCase):
         self.assertEquals(new_state.mass,  retrieved_state.mass)
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
+    def test2(self):
+        hermite = mpi_interface.Hermite()
+        hermite.eps2 = 0.101
+        self.assertEquals(0.101, hermite.eps2)
+    def test3(self):
+        hermite = mpi_interface.Hermite()
+        hermite.flag_collision = 1
+        self.assertEquals(1, hermite.flag_collision )

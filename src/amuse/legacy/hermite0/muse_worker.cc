@@ -2,6 +2,7 @@
 #include <cstdlib>
 
 #include "muse_dynamics.h"
+#include "parameters.h"
 #include "local.h"
 
 #include <mpi.h>
@@ -113,6 +114,48 @@ void run_loop() {
 				doubles_out[6] = state.vy;
 				doubles_out[7] = state.vz;
 				break;
+            case 20:
+                if(request_header.number_of_doubles==1) {
+                    t = doubles_in[0];
+                } else {
+                    reply_header.number_of_doubles = 1;
+                    doubles_out[0]  = t;
+                }
+                break;
+            case 21:
+                if(request_header.number_of_doubles==1) {
+                    dt_param = doubles_in[0];
+                } else {
+                    reply_header.number_of_doubles = 1;
+                    doubles_out[0]  = dt_param;
+                }
+                break;
+            case 22:
+                if(request_header.number_of_doubles==1) {
+                    dt_dia = doubles_in[0];
+                } else {
+                    reply_header.number_of_doubles = 1;
+                    doubles_out[0]  = dt_dia;
+                }
+                break;
+            case 23:
+                if(request_header.number_of_doubles==1) {
+                    eps2 = doubles_in[0];
+                } else {
+                    reply_header.number_of_doubles = 1;
+                    doubles_out[0]  = eps2;
+                }
+                break;
+            case 24:
+                if(request_header.arg_2 == 1) {
+                    flag_collision = request_header.arg_1;
+                } else {
+                    reply_header.arg_1 = flag_collision;
+                }
+                break;
+            default:
+                reply_header.tag = -1;
+                
 		}
 
 		
