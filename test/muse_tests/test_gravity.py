@@ -27,6 +27,7 @@ class TestHermite(TestGravity):
         eps = 0.1
         gravity = Hermite(dt_dia=1.e9, eps2 = eps**2, flag_collision=0)
         gravity.setup_module()
+        self.assertEquals(gravity.get_number(),0)
         self.setupTwoParticles(gravity)
         gravity.initialize_particles(0)
     
