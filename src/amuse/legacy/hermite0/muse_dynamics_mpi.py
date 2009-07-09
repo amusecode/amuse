@@ -28,11 +28,10 @@ class Hermite(object):
         self.do_call(0)
 
     def do_call(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[]):
-        header = numpy.array([tag, id, int_arg1, int_arg2, len(doubles_arg)], dtype='i')
-        self.intercomm.Send([header, MPI.INT], dest=0, tag=0)
-        if doubles_arg:
-            doubles = numpy.array(doubles_arg, dtype='d')
-            self.intercomm.Send([doubles, MPI.DOUBLE], dest=0, tag=0)
+        self.send_request(tag,id, int_arg1, int_arg2, doubles_arg)
+        return self.recieve_result()
+    def recieve_result(self):
+        header = numpy.empty(5,  dtype='i')
         self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
         id = header[1]
         int_result = header[2]
@@ -43,6 +42,14 @@ class Hermite(object):
         else:
             doubles_result = []
         return (id, int_result, doubles_result)
+    def send_request(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[]):
+        header = numpy.array([tag, id, int_arg1, int_arg2, len(doubles_arg)], dtype='i')
+        self.intercomm.Send([header, MPI.INT], dest=0, tag=0)
+        if doubles_arg:
+            doubles = numpy.array(doubles_arg, dtype='d')
+            self.intercomm.Send([doubles, MPI.DOUBLE], dest=0, tag=0)
+    
+       
     def setup_module(self):
         id, int_result, double_result = self.do_call(1)
         return int_result
@@ -64,6 +71,9 @@ class Hermite(object):
     def get_state(self,id):
         id_result, int_result, double_result = self.do_call(8, id=id)
         return self.dynamics_state(id_result, double_result)
+    def get_number(self):
+        id_result, int_result, double_result = self.do_call(7)
+        return int_result
         
     
   

@@ -98,7 +98,7 @@ void run_loop() {
 				reply_header.arg_1 = evolve(doubles_in[0], request_header.arg_1);
 				break;
 			case 7:
-				//int_result = evolve(doubles_in[0], arg_1);
+				reply_header.arg_1 = get_number();
 				break;
 			case 8:
 				state = get_state(request_header.id);
