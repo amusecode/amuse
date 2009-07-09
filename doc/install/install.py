@@ -41,7 +41,7 @@ class InstallPrerequisites(object):
           ('numpy' , [], '1.3.0' , 'numpy-', '.tar.gz', 'http://superb-east.dl.sourceforge.net/sourceforge/numpy/', self.python_build),
           ('nose', [], '0.11.1', 'nose-' , '.tar.gz', 'http://somethingaboutorange.com/mrl/projects/nose/', self.python_build),
           ('hdf' , [],  '1.8.3' , 'hdf5-' , '.tar.gz' , 'http://www.hdfgroup.org/ftp/HDF5/current/src/', self.hdf5_build) ,
-          ('h5py', ['hdf'], '1.1.0', 'h5py-' , '.tar.gz', 'http://h5py.googlecode.com/files/', self.h5py_build) ,
+          ('h5py', ['hdf'], '1.2.0', 'h5py-' , '.tar.gz', 'http://h5py.googlecode.com/files/', self.h5py_build) ,
           ('mpich2', [], '1.1', 'mpich2-', '.tar.gz', 'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', self.mpich2_build) ,
           ('mpi4py', ['mpich2'], '1.0.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
         ]
