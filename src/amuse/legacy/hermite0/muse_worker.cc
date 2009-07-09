@@ -52,6 +52,7 @@ void run_loop() {
 	std::cout<<"starting the loop!"<<std::endl;
         bool must_run_loop = true;
 	while(must_run_loop) { 
+		dynamics_state state;
 		double doubles_in[10];
 		double doubles_out[10];
 

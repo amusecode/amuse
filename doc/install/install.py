@@ -57,7 +57,7 @@ class InstallPrerequisites(object):
         print "finished " , ' '.join(args)
     def h5py_build(self, path):
         self.run_application(['python','setup.py','configure', '--hdf5='+self.prefix, '--api=18'], cwd=path)
-        python_build(path)
+        self.python_build(path)
     def hdf5_build(path):
         commands = []
         commands.append([
@@ -157,8 +157,6 @@ else:
            
 def download(names):
     INSTALL.download_apps(names)
-    INSTALL.unpack_apps(names)
-    INSTALL.build_apps(names)
 
 def install(names):
     INSTALL.download_apps(names)
