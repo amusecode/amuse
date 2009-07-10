@@ -2,6 +2,8 @@
 experiment with HDF data format
 """
 import h5py
+from amuse.support.data import core
+from amuse.support.units import nbody
 
 from math import *
 import numpy, numpy.random
@@ -79,6 +81,18 @@ class MakePlummerModel(object):
         position = position / 1.695
         velocity = velocity / sqrt(1 / 1.695)
         return (m, position, velocity)
+    @property
+    def result(self):
+        masses, positions, velocities = self.new_model()
+        result = []
+        for i in range(len(masses)):
+            star = core.Star(i)
+            star.mass = nbody.mass(masses[i][0])
+            star.position = nbody.length(positions[i])
+            star.velocity = nbody.speed(positions[i])
+            result.append(star)
+        return result
+        
         
         
     
