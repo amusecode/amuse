@@ -18,6 +18,7 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(new_state.mass,  retrieved_state.mass)
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
+        del hermite
     def test2(self):
         hermite = mpi_interface.Hermite()
         hermite.eps2 = 0.101

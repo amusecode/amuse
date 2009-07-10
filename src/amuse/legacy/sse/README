@@ -1,0 +1,13 @@
+
+To update/replace the current version of SSE, just unpack a new
+tarball in the sse directory.  The MUSE module uses the SSE
+distribution unchanged, and relies only on the calling sequences to
+zcnsts(), evolv1(), star(), and deltat().
+
+Scientific papers written using this module should reference the paper
+
+"Comprehensive analytic formulae for stellar evolution as a function 
+ of mass and metallicity" 
+ Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543 
+
+(See sse/README_SSE for more details.)
