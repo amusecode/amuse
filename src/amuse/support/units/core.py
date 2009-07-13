@@ -54,7 +54,7 @@ class unit(object):
     
     def conversion_factor_from(self, x):
         if x.base == self.base :
-            this_factor = self.factor
+            this_factor = self.factor * 1.0
             other_factor = x.factor
             return this_factor / other_factor
         else:

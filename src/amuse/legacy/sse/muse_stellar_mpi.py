@@ -87,7 +87,7 @@ class SSE(object):
         ints = [kw]
         id, int_result, double_result, ints_result = self.do_call(3, doubles_arg=doubles, ints_arg=ints)
         result = [ints_result[0]]
-        reuslt.extend(double_result)
+        result.extend(double_result)
         return result
     
     def evolve2(self):

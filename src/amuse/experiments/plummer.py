@@ -89,7 +89,7 @@ class MakePlummerModel(object):
             star = core.Star(i)
             star.mass = nbody.mass(masses[i][0])
             star.position = nbody.length(positions[i])
-            star.velocity = nbody.speed(positions[i])
+            star.velocity = nbody.speed(velocities[i])
             result.append(star)
         return result
         

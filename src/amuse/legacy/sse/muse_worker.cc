@@ -168,7 +168,7 @@ void run_loop() {
 			parent.Send(doubles_out, reply_header.number_of_doubles, MPI_DOUBLE, 0, 999);
 		}
 		if( reply_header.number_of_ints > 0) {
-			parent.Send(ints_out, reply_header.number_of_ints, MPI_DOUBLE, 0, 999);
+			parent.Send(ints_out, reply_header.number_of_ints, MPI_INT, 0, 999);
 		}
 	}
    

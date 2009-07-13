@@ -175,7 +175,7 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEqual(status,0)
         del sse
     def test2(self):
-        sse = f2py_interface
+        sse = mpi_interface.SSE()
         
         metallicity = 0.02
         

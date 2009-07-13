@@ -28,7 +28,12 @@ class Star(object):
         output += '>'
         for x in self.attributes:
             output += x
-            output += ': '
+            output += ': {'
             output += str(getattr(self,x))
-            output += ', '
+            output += '}, '
         return output
+    
+    def to_si(self, convert_nbody):
+        for x in self.attributes:
+            value = getattr(self,x)
+            setattr(self, x, convert_nbody.to_si(value))
