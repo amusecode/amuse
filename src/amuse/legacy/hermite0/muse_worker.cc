@@ -50,7 +50,6 @@ void run_loop() {
 
 	MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();
 	
-	std::cout<<"starting the loop!"<<std::endl;
         bool must_run_loop = true;
 	while(must_run_loop) { 
 		dynamics_state state;
@@ -165,7 +164,6 @@ void run_loop() {
 		}
 	}
    
-	std::cout<<"loop ended!"<<std::endl;
 
 }
  

@@ -52,10 +52,8 @@ class Hermite(object):
     def __init__(self):
         directory_of_this_module = os.path.dirname(__file__);
         full_name_of_the_worker = os.path.join(directory_of_this_module , 'muse_worker')
-        print "name:", full_name_of_the_worker
         self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, 1)
     def __del__(self):
-        print "deleting!"
         self.do_call(0)
 
     def do_call(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[]):

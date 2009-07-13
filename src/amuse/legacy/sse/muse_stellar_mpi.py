@@ -32,10 +32,8 @@ class SSE(object):
     def __init__(self):
         directory_of_this_module = os.path.dirname(__file__);
         full_name_of_the_worker = os.path.join(directory_of_this_module , 'muse_worker')
-        print "name:", full_name_of_the_worker
         self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, 1)
     def __del__(self):
-        print "deleting!"
         self.do_call(0)
 
     def do_call(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[], ints_arg=[]):
@@ -90,16 +88,34 @@ class SSE(object):
         result.extend(double_result)
         return result
     
+    
     def evolve2(self):
-        "@native_call"
-        function = RemoteFunction()
-        function.language(RemoteFunction.FORTRAN)
+        function = RemoteFunction()      
+        function.name = "evolve"
         function.addParameter('kw', dtype='d')
         function.addParameter('mt', dtype='d')
         function.addParameter('r', dtype='d')
         function.addParameter('lum', dtype='d')
         function.addParameter('mc', dtype='d')
-        function.name = "evolve"
+        function.addParameter('rc,', dtype='d')
+        function.addParameter('menv', dtype='d')
+        function.addParameter('renv', dtype='d')
+        function.addParameter('ospin', dtype='d')
+        function.addParameter('epoch', dtype='d')
+        function.addParameter('tm', dtype='d')
+        function.addParameter('tphys', dtype='d')
+        function.addParameter('tphysf', dtype='d')
+        return function
+    
+    def get_time_step2(self):
+        function = RemoteFunction()      
+        function.name = "get_time_step"
+        function.addParameter('kw', dtype='i', direction=function.IN)
+        function.addParameter('mass', dtype='d', direction=function.IN)
+        function.addParameter('age', dtype='d', direction=function.IN)
+        function.addParameter('mt', dtype='d', direction=function.IN)
+        function.addParameter('tm', dtype='d', direction=function.IN)
+        function.addParameter('epoch', dtype='d', direction=function.OUT)
         return function
     def get_time_step(self, kw, mass, age, mt, tm, epoch):
         	     

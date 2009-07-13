@@ -68,7 +68,6 @@ void run_loop() {
 
 	MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();
 	
-	std::cout<<"SSE starting the loop!"<<std::endl;
         bool must_run_loop = true;
 	while(must_run_loop) { 
 		double doubles_in[20];
@@ -94,7 +93,6 @@ void run_loop() {
 				must_run_loop = false;
 				break;
 			case 1:
-				std::cout<<"n i:"<<request_header.number_of_ints<<std::endl;
 				initialize_(
 					&doubles_in[0],
 					&doubles_in[1],
@@ -172,7 +170,6 @@ void run_loop() {
 		}
 	}
    
-	std::cout<<"SSE loop ended!"<<std::endl;
 
 }
  

@@ -49,7 +49,6 @@ class TestF2PYInterface(unittest.TestCase):
             neta, bwind, hewind, sigma,
             ifflag, wdflag, bhflag, nsflag, mxns,
             pts1, pts2, pts3)
-        print "status:", status
         self.assertEqual(status,0)
         
     def test2(self):
@@ -77,7 +76,6 @@ class TestF2PYInterface(unittest.TestCase):
             neta, bwind, hewind, sigma,
             ifflag, wdflag, bhflag, nsflag, mxns,
             pts1, pts2, pts3)
-        print "status:", status
         self.assertEqual(status,0)
         new_state = self.state()
         new_state.mass = 1.0
@@ -100,26 +98,26 @@ class TestF2PYInterface(unittest.TestCase):
         attributes = ('type', 'zams_mass', 'mass', 'radius', 'luminosity', 'core_mass', 'core_radius',
                 'envelope_mass', 'envelope_radius', 'spin', 'epoch', 't_ms', 'sse_age', 'age')
         expected = {
-            'type': 1 ,
-            'zams_mass': 1.0 ,
-            'mass': 1.0 ,
-            'radius': 0.888249450314 ,
-            'luminosity': 0.69771656918 ,
-            'core_mass': 0.0 ,
-            'core_radius': 0.0 ,
-            'envelope_mass': 0.0328902024824 ,
-            'envelope_radius': 0.232008718758 ,
-            'spin': 1053.0192273 ,
-            'epoch': 0.0 ,
-            't_ms': 11003.1302458 ,
-            'sse_age': 1e-06 ,
-            'age': 1e-06 ,
+            'zams_mass': '0x1.0000000000000p+0' ,
+            'mass': '0x1.0000000000000p+0' ,
+            'radius': '0x1.c6c8a1c793bcep-1' ,
+            'luminosity': '0x1.653b1b2d0333bp-1' ,
+            'core_mass': '0x0.0p+0' ,
+            'core_radius': '0x0.0p+0' ,
+            'envelope_mass': '0x1.0d6fc100ab510p-5' ,
+            'envelope_radius': '0x1.db27631ba0e5ap-3' ,
+            'spin': '0x1.07413b0522d63p+10' ,
+            'epoch': '0x0.0p+0' ,
+            't_ms': '0x1.57d90abe54643p+13' ,
+            'sse_age': '0x1.0c6f7a0b5ed8dp-20' ,
+            'age': '0x1.0c6f7a0b5ed8dp-20' ,
         };    
-        for x in attributes:
-            self.assertAlmostEqual(expected[x],getattr(updated_state, x), 6)        
+        for x in expected:
+            self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))        
         for x in attributes:
             value = getattr(updated_state, x)
-            print "'"+x+"':", value,","
+            #if isinstance(value, float):
+            #    print "'"+x+"':", value.hex() ,","
         self.assertEquals(updated_state.age, 1e-06)
         dt = sse.get_time_step(updated_state.type,
             updated_state.zams_mass, 
@@ -171,7 +169,6 @@ class TestMPIInterface(unittest.TestCase):
             neta, bwind, hewind, sigma,
             ifflag, wdflag, bhflag, nsflag, mxns,
             pts1, pts2, pts3)
-        print "status:", status
         self.assertEqual(status,0)
         del sse
     def test2(self):
@@ -199,7 +196,6 @@ class TestMPIInterface(unittest.TestCase):
             neta, bwind, hewind, sigma,
             ifflag, wdflag, bhflag, nsflag, mxns,
             pts1, pts2, pts3)
-        print "status:", status
         self.assertEqual(status,0)
         new_state = self.state()
         new_state.mass = 1.0
@@ -220,28 +216,26 @@ class TestMPIInterface(unittest.TestCase):
             updated_state.epoch, updated_state.t_ms, updated_state.sse_age, updated_state.age) = result
         attributes = ('type', 'zams_mass', 'mass', 'radius', 'luminosity', 'core_mass', 'core_radius',
             'envelope_mass', 'envelope_radius', 'spin', 'epoch', 't_ms', 'sse_age', 'age')
-        for x in attributes:
-            value = getattr(updated_state, x)
-            print "'"+x+"':", value,","
+        
          
         expected = {
-            'type': 1 ,
-            'zams_mass': 1.0 ,
-            'mass': 1.0 ,
-            'radius': 0.888249450314 ,
-            'luminosity': 0.69771656918 ,
-            'core_mass': 0.0 ,
-            'core_radius': 0.0 ,
-            'envelope_mass': 0.0328902024824 ,
-            'envelope_radius': 0.232008718758 ,
-            'spin': 1053.0192273 ,
-            'epoch': 0.0 ,
-            't_ms': 11003.1302458 ,
-            'sse_age': 1e-06 ,
-            'age': 1e-06 ,
+            'zams_mass': '0x1.0000000000000p+0' ,
+            'mass': '0x1.0000000000000p+0' ,
+            'radius': '0x1.c6c8a1c793bcep-1' ,
+            'luminosity': '0x1.653b1b2d0333bp-1' ,
+            'core_mass': '0x0.0p+0' ,
+            'core_radius': '0x0.0p+0' ,
+            'envelope_mass': '0x1.0d6fc100ab510p-5' ,
+            'envelope_radius': '0x1.db27631ba0e5ap-3' ,
+            'spin': '0x1.07413b0522d63p+10' ,
+            'epoch': '0x0.0p+0' ,
+            't_ms': '0x1.57d90abe54643p+13' ,
+            'sse_age': '0x1.0c6f7a0b5ed8dp-20' ,
+            'age': '0x1.0c6f7a0b5ed8dp-20' ,
         };    
-        for x in attributes:
-            self.assertAlmostEqual(expected[x],getattr(updated_state, x), 6)
+        for x in expected:
+            #print x, getattr(updated_state, x).hex()
+            self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
         print  updated_state.envelope_mass
         self.assertEquals(updated_state.age, 1e-06)
