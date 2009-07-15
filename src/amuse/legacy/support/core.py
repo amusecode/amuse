@@ -5,7 +5,7 @@ from amuse.support.core import print_out
 
 from zlib import crc32
 
-class legacy_call(object):
+class LegacyCall(object):
     """A legacy_call implements the runtime call to the remote process.
     """
     def __init__(self, interface, owner, specification):
@@ -42,7 +42,7 @@ class legacy_function(object):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return self.new_legacy_call(instance, owner, self.specification)
+        return self.new_legacy_call(instance, owner)
         
     def __set__(self, instance, value):
         return
@@ -51,7 +51,7 @@ class legacy_function(object):
         return None
         
     def new_legacy_call(self, instance, owner):
-        return legacy_call(instance)
+        return LegacyCall(instance, owner, self.specification)
     
     def to_c_string(self):
         uc = MakeACStringOfALegacyFunctionSpecification()

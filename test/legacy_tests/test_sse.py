@@ -94,7 +94,6 @@ class TestF2PYInterface(unittest.TestCase):
             updated_state.luminosity, updated_state.core_mass, updated_state.core_radius,
             updated_state.envelope_mass, updated_state.envelope_radius, updated_state.spin,
             updated_state.epoch, updated_state.t_ms, updated_state.sse_age, updated_state.age) = result
-        print  updated_state.envelope_mass
         attributes = ('type', 'zams_mass', 'mass', 'radius', 'luminosity', 'core_mass', 'core_radius',
                 'envelope_mass', 'envelope_radius', 'spin', 'epoch', 't_ms', 'sse_age', 'age')
         expected = {
@@ -237,7 +236,6 @@ class TestMPIInterface(unittest.TestCase):
             #print x, getattr(updated_state, x).hex()
             self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
-        print  updated_state.envelope_mass
         self.assertEquals(updated_state.age, 1e-06)
         dt = sse.get_time_step(updated_state.type,
             updated_state.zams_mass, 

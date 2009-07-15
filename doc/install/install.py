@@ -58,7 +58,7 @@ class InstallPrerequisites(object):
     def h5py_build(self, path):
         self.run_application(['python','setup.py','configure', '--hdf5='+self.prefix, '--api=18'], cwd=path)
         self.python_build(path)
-    def hdf5_build(path):
+    def hdf5_build(self, path):
         commands = []
         commands.append([
           './configure','--prefix='+self.prefix,

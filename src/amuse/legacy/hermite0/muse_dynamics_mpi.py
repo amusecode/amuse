@@ -7,7 +7,6 @@ class Hermite(object):
         _attributes = ['mass','radius','x','y','z','vx','vy','vz']
         def __init__(self, id = 0, doubles = [0.0 for x in range(8)]):
             self.id = id
-            print doubles
             for i, name in enumerate(self._attributes):
                 setattr(self, name, doubles[i])
                 

@@ -5,7 +5,14 @@ LDFLAGS = -lm $(MUSE_LD_FLAGS)
 
 PYTHONINC := $(shell python -c 'import distutils.sysconfig; \
                                 print distutils.sysconfig.get_python_inc()')
-SHAREDFLAGS = -shared
+
+UNAME = $(shell uname)
+
+ifeq ($(UNAME),Darwin)
+	SHAREDFLAGS = -bundle -undefined suppress -flat_namespace
+else
+	SHAREDFLAGS = -shared
+endif
 
 CXXFLAGS += -fPIC
 

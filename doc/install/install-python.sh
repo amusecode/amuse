@@ -58,6 +58,7 @@ if [ $UNAME == 'Darwin' ] ; then
 	../../${SOURCE_DIR}/${APP_DIR}/configure \
 		--with-dyld \
 		--enable-framework=${PREFIX}/Framework \
+		--enable-universal-sdk \
 		--prefix=${PREFIX} \
 		--program-suffix=.exe ;
 else

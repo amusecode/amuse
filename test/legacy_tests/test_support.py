@@ -15,7 +15,7 @@ class TestLegacyFunction(unittest.TestCase):
         return function
         
     def test1(self):
-        self.assertTrue(isinstance(self.get_time_step, legacy_call))
+        self.assertTrue(isinstance(self.get_time_step, LegacyCall))
         self.assertTrue(isinstance(type(self).get_time_step, legacy_function))
         
     def test2(self):
