@@ -63,6 +63,7 @@ if [ $UNAME == 'Darwin' ] ; then
 else
 	../../${SOURCE_DIR}/${APP_DIR}/configure \
 		--prefix=${PREFIX} \
+		--enable-shared \
 		--program-suffix=.exe ;
 fi
 

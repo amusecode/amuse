@@ -7,8 +7,7 @@ from amuse.legacy.support.core import *
 class TestLegacyFunction(unittest.TestCase):
     @legacy_function
     def get_time_step():
-        function = RemoteFunction()      
-        function.name = "test_one"     
+        function = RemoteFunction()  
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
         function.addParameter('parameter2', dtype='d', direction=function.IN)
@@ -23,7 +22,7 @@ class TestLegacyFunction(unittest.TestCase):
         f = type(self).get_time_step
         string = f.to_c_string()
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
-        self.assertEquals(string_no_spaces, 'case1:test_one(ints_in[0],doubles_in[0],doubles_in[1]);break;')
+        self.assertEquals(string_no_spaces, 'case1:get_time_step(ints_in[0],doubles_in[0],doubles_in[1]);break;')
         
 class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeACStringOfALegacyFunctionSpecification
@@ -78,6 +77,19 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         string = x.result
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
         self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_out[0],&doubles_out[1]);reply.number_of_ints=1;reply.number_of_doubles=2;break;')
+    def test6(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.INOUT)
+        function.addParameter('doublep', dtype='d', direction=function.INOUT)
+        function.result_type = 'd'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_in[1],&doubles_in[0]);ints_out[0]=ints_in[1];doubles_out[1]=doubles_in[0];reply.number_of_ints=1;reply.number_of_doubles=2;break;')
     def test5(self):
         function = RemoteFunction()      
         function.name = "test_one"   

@@ -3,14 +3,35 @@
 from amuse.support.core import late
 from amuse.support.core import print_out
 
+from zlib import crc32
+
 class legacy_call(object):
     """A legacy_call implements the runtime call to the remote process.
     """
-    def __init__(self, interface):
+    def __init__(self, interface, owner, specification):
         self.interface = interface
+        self.owner = owner
+        self.specification = specification
     
     def __call__(self, *arguments_list, **keyword_arguments):
-        pass
+        dtype_to_values_and_keyword = {
+            'd' : ([],'doubles_in'),
+            'i' : ([],'ints_in')
+        }
+        names_in_argument_list = set([])
+        for index, argument in argument_list:
+            name, dtype, direction = self.specification.parameters[index]
+            names_in_argument_list.add(name)
+            values = dtype_to_values_and_keyword[dtype]
+            values.append(argument)
+            
+            
+        call_keyword_arguments = {}
+        for values, keyword in dtype_to_values_and_keyword.values():
+            call_keyword_arguments[keyword] = values
+            
+        (ints_out, doubles_out) = self.do_call(self.specification.id, **call_keyword_arguments)
+        return (ints_out, doubles_out)
 
 class legacy_function(object):
     """The meta information for a function call to a code
@@ -21,7 +42,7 @@ class legacy_function(object):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return self.new_legacy_call(instance, owner)
+        return self.new_legacy_call(instance, owner, self.specification)
         
     def __set__(self, instance, value):
         return
@@ -39,7 +60,12 @@ class legacy_function(object):
         
     @late
     def specification(self):
-        return self.specification_function()
+        result = self.specification_function()
+        if result.name is None:
+            result.name = self.specification_function.__name__
+        if result.id is None:
+            result.id = crc32(result.name)
+        return result
         
 class RemoteFunction(object):
     IN = object()
@@ -48,7 +74,8 @@ class RemoteFunction(object):
     
     def __init__(self):
         self.parameters = []
-        self.name = "<noname>"
+        self.name = None
+        self.id = None
         self.result_type = None
         
     def addParameter(self, name, dtype = 'i', direction = IN):
@@ -89,6 +116,7 @@ class MakeACStringOfALegacyFunctionSpecification(object):
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
+        self.output_lines_with_inout_variables()
         self.output_lines_with_number_of_outputs()
         self.output_casestmt_end()
         self.out.dedent()
@@ -110,16 +138,33 @@ class MakeACStringOfALegacyFunctionSpecification(object):
             if direction == RemoteFunction.IN:
                 self.out.n() + spec.c_input_var_name + '[' + spec.number_of_inputs + ']'
                 spec.number_of_inputs += 1
+            if direction == RemoteFunction.INOUT:
+                self.out.n() + '&' + spec.c_input_var_name + '[' + spec.number_of_inputs + ']'
+                spec.number_of_inputs += 1
             elif direction == RemoteFunction.OUT:
                 self.out.n() + '&' + spec.c_output_var_name + '[' + spec.number_of_outputs + ']'
                 spec.number_of_outputs += 1
     
         self.out.dedent()
+    def output_lines_with_inout_variables(self):
+        dtype_to_incount = {}
+        
+        for name, dtype, direction in self.specification.parameters:
+            spec = self.dtype_to_spec[dtype]
+            count = dtype_to_incount.get(dtype, 0)
+        
+            if direction == RemoteFunction.IN:
+                dtype_to_incount[dtype] = count + 1
+            if direction == RemoteFunction.INOUT:
+                self.out.n() + spec.c_output_var_name + '[' + spec.number_of_outputs + ']' + ' = ' + spec.c_input_var_name + '[' + count + ']'+';'
+                spec.number_of_outputs += 1
+                dtype_to_incount[dtype] = count + 1
+    
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
         
         for name, dtype, direction in self.specification.parameters:
-            if direction == RemoteFunction.OUT:
+            if direction == RemoteFunction.OUT or direction == RemoteFunction.INOUT:
                 count = dtype_to_count.get(dtype, 0)
                 dtype_to_count[dtype] = count + 1
                 
