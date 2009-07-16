@@ -4,7 +4,7 @@ import numpy
 
 from amuse.legacy.support import core
 
-from amuse.legacy.support.core import RemoteFunction
+from amuse.legacy.support.core import RemoteFunction, legacy_global
 
 class Hermite(object):
     class dynamics_state(object):
@@ -26,37 +26,13 @@ class Hermite(object):
                 result[name] = getattr(self, name)
             return result
     
-    class double_property(object):
-        def __init__(self, tag):
-            self.tag = tag
-        def __get__(self, instance, owner):
-            if instance is None:
-                return self
-            id, int_result, double_result = instance.do_call(self.tag)
-            return double_result[0]
-        def __set__(self, instance, value):
-            if instance is None:
-                return self
-            instance.do_call(self.tag, doubles_arg=[value])
         
-    class int_property(object):
-        def __init__(self, tag):
-            self.tag = tag
-        def __get__(self, instance, owner):
-            if instance is None:
-                return self
-            id, int_result, double_result = instance.do_call(self.tag, int_arg2 = 0)
-            return int_result
-        def __set__(self, instance, value):
-            if instance is None:
-                return self
-            instance.do_call(self.tag, int_arg1 = value, int_arg2 = 1)
-        
-    t = double_property(20)
-    dt_param = double_property(21)
-    dt_dia = double_property(22)
-    eps2 = double_property(23)
-    flag_collision = int_property(24)
+    
+    t = legacy_global(name='t',id=20,dtype='d')
+    dt_param = legacy_global(name='dt_param',id=21,dtype='d')
+    dt_dia = legacy_global(name='dt_dia',id=22,dtype='d')
+    eps2 = legacy_global(name='eps2',id=23,dtype='d')
+    flag_collision = legacy_global(name='t',id=24,dtype='i')
             
     def __init__(self):
         directory_of_this_module = os.path.dirname(__file__);

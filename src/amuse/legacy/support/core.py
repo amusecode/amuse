@@ -62,11 +62,13 @@ class LegacyCall(object):
                 values = dtype_to_values_and_keyword[dtype]
                 values[0].append(None)
                 number_of_outputs += 1
-        print ints
+       
         
         if number_of_outputs == 0:
             if self.specification.result_type == 'i':
                 return ints[0]       
+            if self.specification.result_type == 'd':
+                return doubles[0]       
         
         return (doubles, ints)
        
@@ -80,16 +82,12 @@ class legacy_function(object):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return self.new_legacy_call(instance, owner)
+        return LegacyCall(instance, owner, self.specification)
         
     def __set__(self, instance, value):
         return
         
-    def legacy_call(self, instance, owner):
-        return None
         
-    def new_legacy_call(self, instance, owner):
-        return LegacyCall(instance, owner, self.specification)
     
     def to_c_string(self):
         uc = MakeACStringOfALegacyFunctionSpecification()
@@ -103,6 +101,46 @@ class legacy_function(object):
             result.name = self.specification_function.__name__
         if result.id is None:
             result.id = crc32(result.name)
+        return result
+class legacy_global(object):
+    """The meta information for globals of the code
+    """
+    def __init__(self, name , id = None, dtype = 'i'):
+        self.name = name
+        self.id = id
+        self.dtype = dtype
+        
+        if self.id is None:
+            self.id = crc32(self.name)
+        
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        return LegacyCall(instance, owner, self.get_specification)()
+        
+    def __set__(self, instance, value):
+        return LegacyCall(instance, None, self.set_specification)(value)
+        
+        
+    
+    def to_c_string(self):
+        uc = MakeACStringOfALegacyGlobalSpecification()
+        uc.specification = self
+        return uc.result 
+        
+    @late
+    def set_specification(self):
+        result = RemoteFunction()
+        result.id = self.id
+        result.name = self.name
+        result.addParameter('value', dtype=self.dtype, direction=RemoteFunction.IN)
+        return result
+    @late
+    def get_specification(self):
+        result = RemoteFunction()
+        result.id = self.id
+        result.name = self.name
+        result.result_type = self.dtype
         return result
         
 class RemoteFunction(object):

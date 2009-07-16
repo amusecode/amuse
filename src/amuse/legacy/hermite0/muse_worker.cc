@@ -66,14 +66,12 @@ void run_loop() {
 		message_header reply_header;
 
 		request_header.recv(parent,rank);
-		std::cout<<"aaa"<<std::endl;
 		if(request_header.number_of_doubles > 0) {
 			parent.Recv(doubles_in, request_header.number_of_doubles, MPI_DOUBLE, 0, rank);
 		}
 		if(request_header.number_of_ints > 0) {
 			parent.Recv(ints_in, request_header.number_of_ints, MPI_INT, 0, rank);
 		}
-		std::cout<<"bbb"<<std::endl;
 
 		reply_header.tag = request_header.tag;
 
@@ -169,7 +167,7 @@ void run_loop() {
 				    flag_collision = ints_in[0];
 				} else {
 				    reply_header.number_of_ints = 1;
-				    ints_out[0] =flag_collision;
+				    ints_out[0] = flag_collision;
 				}
 				break;
 			default:
