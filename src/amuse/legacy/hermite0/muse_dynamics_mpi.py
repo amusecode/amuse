@@ -2,6 +2,10 @@ import os.path
 from mpi4py import MPI
 import numpy
 
+from amuse.legacy.support import core
+
+from amuse.legacy.support.core import RemoteFunction
+
 class Hermite(object):
     class dynamics_state(object):
         _attributes = ['mass','radius','x','y','z','vx','vy','vz']
@@ -14,6 +18,12 @@ class Hermite(object):
             result = [0.0 for x in range(8)]
             for i, name in enumerate(self._attributes):
                 result[i] = getattr(self, name)
+            return result
+            
+        def to_keyword_args(self):
+            result = {}
+            for i, name in enumerate(self._attributes):
+                result[name] = getattr(self, name)
             return result
     
     class double_property(object):
@@ -47,63 +57,96 @@ class Hermite(object):
     dt_dia = double_property(22)
     eps2 = double_property(23)
     flag_collision = int_property(24)
-             
+            
     def __init__(self):
         directory_of_this_module = os.path.dirname(__file__);
         full_name_of_the_worker = os.path.join(directory_of_this_module , 'muse_worker')
         self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, 1)
+        self.channel = core.MpiChannel(self.intercomm)
+        
     def __del__(self):
-        self.do_call(0)
+        self.stop_worker()
+        
+    @core.legacy_function
+    def stop_worker():
+        function = RemoteFunction()  
+        function.id = 0
+        return function;
+        
+    def __del__(self):
+        self.stop_worker()
 
-    def do_call(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[]):
-        self.send_request(tag,id, int_arg1, int_arg2, doubles_arg)
-        return self.recieve_result()
-    def recieve_result(self):
-        header = numpy.empty(5,  dtype='i')
-        self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
-        id = header[1]
-        int_result = header[2]
-        n_doubles = header[4]
-        if n_doubles > 0:
-            doubles_result = numpy.empty(n_doubles,  dtype='d')
-            self.intercomm.Recv([doubles_result, MPI.DOUBLE], source=0, tag=999)
-        else:
-            doubles_result = []
-        if header[0] < 0:
-            raise Exception("Not a valid message!")
-        return (id, int_result, doubles_result)
-    def send_request(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[]):
-        header = numpy.array([tag, id, int_arg1, int_arg2, len(doubles_arg)], dtype='i')
-        self.intercomm.Send([header, MPI.INT], dest=0, tag=0)
-        if doubles_arg:
-            doubles = numpy.array(doubles_arg, dtype='d')
-            self.intercomm.Send([doubles, MPI.DOUBLE], dest=0, tag=0)
+         
+        
+    def do_call(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[], ints_arg=[]):
+        #self.send_request(tag,id, int_arg1, int_arg2, doubles_arg, ints_arg)
+        #return self.recieve_result()
+        return (0,[],[])
+   
+    @core.legacy_function   
+    def setup_module():
+        function = RemoteFunction()  
+        function.id = 1
+        function.result_type = 'i'
+        return function;
     
-       
-    def setup_module(self):
-        id, int_result, double_result = self.do_call(1)
-        return int_result
-    def cleanup_module(self):
-        id, int_result, double_result = self.do_call(2)
-        return int_result
-    def initialize_particles(self, time = 0.0):
-        id, int_result, double_result = self.do_call(3, doubles_arg=[time])
-        return int_result
-    def evolve(self, time_end = 0.0, synchronize = 0):
-        id, int_result, double_result = self.do_call(3, int_arg1 = synchronize, doubles_arg=[time_end])
-        return int_result
+    
+    @core.legacy_function      
+    def cleanup_module():
+        function = RemoteFunction()  
+        function.id = 2
+        function.result_type = 'i'
+        return function;
+    
+    @core.legacy_function    
+    def initialize_particles():
+        function = RemoteFunction()  
+        function.id = 3
+        function.addParameter('time', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @core.legacy_function    
+    def _add_particle():
+        function = RemoteFunction()  
+        function.id = 5
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function;
+    @core.legacy_function    
+    def _get_state():
+        function = RemoteFunction()  
+        function.id = 8
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('id_out', dtype='i', direction=function.OUT)
+        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+        
+    @core.legacy_function    
+    def evolve():
+        function = RemoteFunction()  
+        function.id = 3
+        function.addParameter('time-end', dtype='d', direction=function.IN)
+        function.addParameter('synchronize', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function;
     def reinitialize_particles(self):
         id, int_result, double_result = self.do_call(4, doubles_arg=[time])
         return int_result
     def add_particle(self, state):
-        id, int_result, double_result = self.do_call(5, id=state.id, doubles_arg=state.to_doubles())
-        return int_result
+        return self._add_particle(state.id, **state.to_keyword_args())
     def get_state(self,id):
-        id_result, int_result, double_result = self.do_call(8, id=id)
-        return self.dynamics_state(id_result, double_result)
-    def get_number(self):
-        id_result, int_result, double_result = self.do_call(7)
-        return int_result
+        (doubles,ints) = self._get_state(id)
+        return self.dynamics_state(ints[0], doubles)
+    @core.legacy_function   
+    def get_number():
+        function = RemoteFunction()  
+        function.id = 7
+        function.result_type = 'i'
+        return function;
         
     
   

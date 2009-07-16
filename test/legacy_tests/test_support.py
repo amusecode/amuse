@@ -13,6 +13,17 @@ class TestLegacyFunction(unittest.TestCase):
         function.addParameter('parameter2', dtype='d', direction=function.IN)
         function.addParameter('name', dtype='d', direction=function.IN)
         return function
+    @legacy_function
+    def interleave_ints_and_doubles():
+        function = RemoteFunction()  
+        function.id = 2
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='d', direction=function.IN)
+        function.addParameter('parameter3', dtype='i', direction=function.INOUT)
+        function.addParameter('parameter4', dtype='d', direction=function.INOUT)
+        function.addParameter('parameter5', dtype='i', direction=function.IN)
+        function.addParameter('parameter6', dtype='d', direction=function.IN)
+        return function
         
     def test1(self):
         self.assertTrue(isinstance(self.get_time_step, LegacyCall))
@@ -23,6 +34,65 @@ class TestLegacyFunction(unittest.TestCase):
         string = f.to_c_string()
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
         self.assertEquals(string_no_spaces, 'case1:get_time_step(ints_in[0],doubles_in[0],doubles_in[1]);break;')
+    def test3(self):
+        class TestChannel(object):
+            def send_message(self, id, doubles_in = [], ints_in = []):
+                self.in_doubles = doubles_in
+                self.in_ints = ints_in
+            
+            def recv_message(self, id):
+                return ([1,2],[3.0,4.0])
+                
+        self.channel = TestChannel()
+        result = self.get_time_step(1, 2.0, 3.0)
+        self.assertFalse(self.channel.in_ints is None)
+        self.assertFalse(self.channel.in_doubles is None)
+        self.assertEqual(self.channel.in_ints[0] , 1)
+        self.assertEqual(self.channel.in_doubles[0] , 2.0)
+        self.assertEqual(self.channel.in_doubles[1] , 3.0)
+    def test4(self):
+        class TestChannel(object):
+            def send_message(self, id, doubles_in = [], ints_in = []):
+                self.in_doubles = doubles_in
+                self.in_ints = ints_in
+            
+            def recv_message(self, id):
+                return ([1,2],[3.0,4.0])
+                
+        self.channel = TestChannel()
+        result = self.interleave_ints_and_doubles(1, 2.1, 3, 4.2, 5, 6.3)
+        self.assertFalse(self.channel.in_ints is None)
+        self.assertFalse(self.channel.in_doubles is None)
+        self.assertEqual(self.channel.in_ints[0] , 1)
+        self.assertEqual(self.channel.in_ints[1] , 3)
+        self.assertEqual(self.channel.in_ints[2] , 5)
+        self.assertEqual(self.channel.in_doubles[0] , 2.1)
+        self.assertEqual(self.channel.in_doubles[1] , 4.2)
+        self.assertEqual(self.channel.in_doubles[2] , 6.3)
+    def test5(self):
+        class TestChannel(object):
+            def send_message(self, id, doubles_in = [], ints_in = []):
+                self.in_doubles = doubles_in
+                self.in_ints = ints_in
+            
+            def recv_message(self, id):
+                return ([1,2],[3.0,4.0])
+                
+        self.channel = TestChannel()
+        result = self.interleave_ints_and_doubles(parameter2 = 2.1, parameter6 = 6.3, parameter1 = 1, parameter4 = 4.2, parameter3 = 3, parameter5 = 5)
+        
+        self.assertFalse(self.channel.in_ints is None)
+        self.assertFalse(self.channel.in_doubles is None)
+        
+        self.assertEqual(self.channel.in_ints[0] , 1)
+        self.assertEqual(self.channel.in_ints[1] , 3)
+        self.assertEqual(self.channel.in_ints[2] , 5)
+        
+        self.assertEqual(self.channel.in_doubles[0] , 2.1)
+        self.assertEqual(self.channel.in_doubles[1] , 4.2)
+        self.assertEqual(self.channel.in_doubles[2] , 6.3)
+        
+        
         
 class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeACStringOfALegacyFunctionSpecification

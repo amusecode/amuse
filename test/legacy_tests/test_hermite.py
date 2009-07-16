@@ -41,10 +41,10 @@ class TestSwigInterface(unittest.TestCase):
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
     def test2(self):
-        hermite = mpi_interface.Hermite()
+        hermite = swig_interface
         hermite.eps2 = 0.101
         self.assertEquals(0.101, hermite.eps2)
     def test3(self):
-        hermite = mpi_interface.Hermite()
+        hermite = swig_interface
         hermite.flag_collision = 1
         self.assertEquals(1, hermite.flag_collision )
