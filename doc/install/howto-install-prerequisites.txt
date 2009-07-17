@@ -1,62 +1,126 @@
 Installation of the prerequisite software
 =========================================
 
-In this document we will describe the installation procedure for AMUSE prerequisites. 
+Before installing AMUSE several software packages must be installed.
 
--author: Arjen van Elteren (vanelteren@strw.leidenuniv.nl)
--date: 2009/05/21
+Requirements
+~~~~~~~~~~~~
 
-Using the installation scripts
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Python (version >= 2.6)
+* Numpy (version >= 1.3.0)
+* HDF (version >= 1.8.3)
+* h5py (version >= 1.1.0)
+* MPI (OpenMPI or MPICH2)
+* mpi4py (version >= 1.2)
 
-We have created a number of scripts to automate the installation of all pre-requisite packages on a LINUX system. These scripts will download, build and install the packages. After running the scripts you should be able to build almost every MUSE module.
+Python
+-------
+Python is probably already installed on your system. To check the version of python do:
 
-There are installation scripts for the following packages:
+.. code-block:: shell
 
-* Python (version 2.5.4)
-* Swig (version 1.3.39)
-* Numpy (version 1.3.0)
-* HDF (version 1.8.3)
-* h5py (version 1.1.0)
-* starlab (version 4.4.4)
+	> python --version
+	Python 2.6.2
 
-The scripts will install all pre-requisite packages in the same directory. This must be a user directory.
+You can download python from `http://www.python.org`. 
 
-The installation scripts have been tested with a bash shell only!
+Numpy
+-------
+To check if numpy is installed on your system do:
+
+.. code-block:: shell
+
+	> python -c 'import numpy; print numpy.version.version'
+	1.3.0
+
+If this fails with an error or a version before 1.3 you need to install numpy.
+You can download numpy from `http://www.scipy.org/NumPy`. 
+
+HDF5 library
+------------
+HDF5 is a data format specification. The HDF group provides a C library to write and access HDF files.
+
+To check if the HDF library is installed on your system do:
+
+.. code-block:: shell
+
+	> h5ls -V
+	h5ls: Version 1.8.3
+
+If this fails with an error or a version before 1.8.3 you need to install the HDF library.
+You can download HDF from `http://www.hdfgroup.org/`. 
+
+h5py
+----
+To access HDF5 files from python we use the ``h5py`` library.
+
+To check if the h5py library is installed on your system do:
+
+.. code-block:: shell
+
+	> python -c 'import h5py; print h5py.version.version'
+	1.2.0
+
+If this fails with an error or a version before 1.2.0 you need to install h5py.
+You can download h5py from `http://code.google.com/p/h5py/`. 
+
+
+
+Installation scripts
+~~~~~~~~~~~~~~~~~~~~
+
+We have created a two installation scripts to automate the installation of all requirement packages on a LINUX system.
+These scripts will install all packages in a user directory. These scripts install all requirements. As everything is installed in a user directory they can run even if a version of the software is already installed on your system. AMUSE will use the requirements software as installed by these scripts.
+
+
+Before running the scripts you must set the ``PREFIX`` environment variable and change the path
+
+.. code-block:: shell
+
+	export PREFIX=~/amuse/prerequisites
+	export PATH=${PREFIX}/bin:${PATH}
+
+
+One script will download, build and install python on your system. The other script is written in Python and will download and install the other packages. 
 
 To start the installation do:
 
-1) Open a bash shell
+.. code-block:: shell
 
-2) Set two environment variables:
+	# 1. Open a shell
 
-# you can choose any prefix directory
-export PREFIX=~/amuse/prerequisites
+	>
 
-export PATH=${PREFIX}/bin:${PATH}
+	# 2. Set the PREFIX and PATH environment variables:
 
-3) Start the installation scripts (in the given sequence):
+  	> export PREFIX=~/amuse/prerequisites
+  	> export PATH=${PREFIX}/bin:${PATH}
 
-./install-python.sh
-./install-swig.sh
-./install-numpy.sh
-./install-starlab.sh
-./install-hdf.sh
-./install-h5py.sh
-./install-nose.sh
+	# 3. Start the installation script for python
 
-4) Update your PATH variable in your start script. Make sure the ${prefix}/bin directory is the first entry in the PATH!
+	> ./install-python.sh
 
-You should now be able to build most MUSE modules.
+	# 4. Start the installation script for python
+
+	> ./install.py download
+  	> ./install.py install
+
+	# 5. Update your PATH variable in your profile. 
+	# Make sure the ``${prefix}/bin`` directory is the first entry in the PATH!
+
+You should now be able to install AMUSE.
 
 Installation on OS X
 ~~~~~~~~~~~~~~~~~~~~~
 
 When installing the code on OS.X all steps are the same.The only difference is in setting the PATH variable. The PATH must be extended like this:
 
-export PATH=$PREFIX/Framework/Python.framework/Versions/2.5/bin:$PREFIX/bin:$PATH
+.. code-block:: shell
+	export PATH=$PREFIX/Framework/Python.framework/Versions/2.5/bin:$PREFIX/bin:$PATH
 
 
+author: Arjen van Elteren (vanelteren@strw.leidenuniv.nl)
+date: 2009/07/17
 
 
 
