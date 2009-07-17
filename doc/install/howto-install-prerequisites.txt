@@ -85,7 +85,7 @@ One script will download, build and install python on your system. The other scr
 
 To start the installation do:
 
-.. code-block:: Shell
+.. code-block:: sh
 
 	# 1. Open a shell
 
@@ -116,6 +116,7 @@ Installation on OS X
 When installing the code on OS.X all steps are the same.The only difference is in setting the PATH variable. The PATH must be extended like this:
 
 .. code-block:: shell
+
 	export PATH=$PREFIX/Framework/Python.framework/Versions/2.5/bin:$PREFIX/bin:$PATH
 
 
