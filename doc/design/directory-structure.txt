@@ -39,7 +39,7 @@ Interface and legacy code uses the support code. The legacy code implements the 
 
 
 The ``test`` directories
-~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The directories under the ``test`` directory are further split into:
 
