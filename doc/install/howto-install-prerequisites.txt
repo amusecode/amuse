@@ -85,7 +85,7 @@ One script will download, build and install python on your system. The other scr
 
 To start the installation do:
 
-.. code-block:: shell
+.. code-block:: Shell
 
 	# 1. Open a shell
 
