@@ -104,7 +104,9 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         function.addParameter('parameter1', dtype='i', direction=function.IN)
         function.addParameter('parameter2', dtype='d', direction=function.IN)
         function.addParameter('name', dtype='d', direction=function.IN)
+        
         x = self._class_to_test()
+        
         x.specification = function
         string = x.result
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
@@ -172,6 +174,24 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         x.specification = function
         string = x.result
         self.assertEquals(string,  'case 1:\n  doubles_out[0] = test_one(\n    ints_in[0] ,\n    &ints_out[0] ,\n    &doubles_out[1]\n  );\n  reply.number_of_ints = 1;\n  reply.number_of_doubles = 2;\n  break;')
+class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
+    _class_to_test = MakeACStringOfAClassWithLegacyFunctions
+    
+    @legacy_function
+    def get_time_step():
+        function = RemoteFunction()  
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='d', direction=function.IN)
+        function.addParameter('name', dtype='d', direction=function.IN)
+        return function
+        
+    def test1(self):
+        x = self._class_to_test()
+        x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
+        string = x.result
+        print string
+        self.assertTrue('#include <mpi.h' in string)
         
         
         

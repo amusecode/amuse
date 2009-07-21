@@ -1,49 +1,31 @@
-#include <iostream>
-#include <cstdlib>
-
+#include <mpi.h>
 #include "muse_dynamics.h"
 #include "parameters.h"
 #include "local.h"
-
-
-#include <mpi.h>
-
-using namespace std;
-
-double E0 = 0;
 
 class message_header {
 
 public:
 	int tag;
-	int id;
-	int arg_1;
-	int arg_2;
 	int number_of_doubles;
 	int number_of_ints;
-	message_header(): tag(0), id(0), arg_1(0), arg_2(0), number_of_doubles(0), number_of_ints(0) {}
+	message_header(): tag(0), number_of_doubles(0), number_of_ints(0) {}
 
 	void send(MPI::Intercomm & intercomm, int rank){
-		int header[6];
+		int header[3];
 		header[0] = tag;
-		header[1] = id;
-		header[2] = arg_1;
-		header[3] = arg_2;
-		header[4] = number_of_doubles;
-		header[5] = number_of_ints;		
-		intercomm.Send(header, 6, MPI_INT, 0, 999);
+		header[1] = number_of_doubles;
+		header[2] = number_of_ints;		
+		intercomm.Send(header, 3, MPI_INT, 0, 999);
 	}
 
 	void recv(MPI::Intercomm & intercom, int rank) {
 		int header[6];
 
-		intercom.Recv(header, 6, MPI_INT, 0, rank);
+		intercom.Recv(header, 3, MPI_INT, 0, rank);
 		tag = header[0];
-		id  = header[1];
-		arg_1 = header[2];
-		arg_2 = header[3];
-		number_of_doubles = header[4];
-		number_of_ints = header[5];
+		number_of_doubles = header[1];
+		number_of_ints = header[2];
 	}
 };
 

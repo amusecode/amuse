@@ -1,6 +1,6 @@
 import unittest
 
-from amuse.support.units.nbody import *
+from amuse.support.units.nbody_system import *
 
 class TestNbodyUnits(unittest.TestCase):
    def test1(self):
