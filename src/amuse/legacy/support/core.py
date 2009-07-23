@@ -368,6 +368,7 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
                  
         self.output_switch_end()
         self.output_runloop_function_def_end()
+        self.output_main()
         self._result = self.out.string
         
     def output_mpi_include(self):
@@ -431,6 +432,14 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
         self.out.lf() + '}'
         self.out.dedent()
         self.out.lf() + '}'
+    def output_main(self):
+        self.out.lf().lf() + 'int main(int argc, char *argv[])'
+        self.out.lf() + '{'
+        self.out.indent().lf() + 'MPI::Init(argc, argv);'
+        self.out.lf().lf() + 'run_loop();'
+        self.out.lf().lf() + 'MPI_Finalize();'
+        self.out.lf() + 'return 0;'
+        self.out.dedent().lf()+'}'
     
         
         

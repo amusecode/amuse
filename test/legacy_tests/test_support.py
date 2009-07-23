@@ -191,7 +191,15 @@ class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
         x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
         string = x.result
         print string
-        self.assertTrue('#include <mpi.h' in string)
+        self.assertTrue('#include <mpi.h>' in string)
+        self.assertTrue('#include "parameters.h"' in string)
+        self.assertTrue('run_loop' in string)
+    def test2(self):
+        x = self._class_to_test()
+        x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
+        string = x.result
+        self.assertTrue('main' in string)
+        
         
         
         
