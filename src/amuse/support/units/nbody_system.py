@@ -79,16 +79,18 @@ class nbody_to_si(object):
         new_unit = 1
         for n, unit in base:
             found = False
-            for unit_nbody, unit_in_si in nbody_units_in_si:
-                if unit_nbody == unit:
-                    factor = factor * unit_in_si.factor
+            for unit_nbody,unit_in_si in nbody_units_in_si:
+                if unit_nbody==unit:
+                    factor = factor * (unit_in_si.factor ** n)
                     new_unit = new_unit * (unit_in_si.base[0][1] ** n)
                     found = True
-                    break;
+                    break
             if not found:
-                print "XXX"
                 new_unit = new_unit * (unit ** n)
         return new_unit(number * factor)
+        
+        
+        
     def to_nbody(self, value):
         nbody_units_in_si = self.units
         base = value.unit.base
@@ -100,7 +102,7 @@ class nbody_to_si(object):
             for unit_in_nbody, unit_in_si in nbody_units_in_si:
                 base_in_si = unit_in_si.base[0][1]
                 if base_in_si == unit:
-                    factor = factor / unit_in_si.factor
+                    factor = factor / (unit_in_si.factor ** n)
                     new_unit = new_unit * (unit_in_nbody.base[0][1] ** n)
                     found = True
                     break;

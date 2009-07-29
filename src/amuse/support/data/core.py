@@ -26,11 +26,13 @@ class Star(object):
         output = 'star<'
         output += str(self.id)
         output += '>'
+        output += '\n'
         for x in self.attributes:
             output += x
             output += ': {'
             output += str(getattr(self,x))
             output += '}, '
+            output += '\n'
         return output
     
     def to_si(self, convert_nbody):
