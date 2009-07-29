@@ -72,25 +72,33 @@ class nbody_to_si(object):
                     result.append((nbody_unit, conversion_factor_for_this_base_unit * unit))
         return result
     def to_si(self, value):
-        nbody_units_in_si = self.units
         base = value.unit.base
         factor = value.unit.factor
         number = value.number
         new_unit = 1
         for n, unit in base:
-            found = False
-            for unit_nbody,unit_in_si in nbody_units_in_si:
-                if unit_nbody==unit:
-                    factor = factor * (unit_in_si.factor ** n)
-                    new_unit = new_unit * (unit_in_si.base[0][1] ** n)
-                    found = True
-                    break
-            if not found:
+            unit_in_si = self.find_si_unit_for(unit)
+            if not unit_in_si is None:
+                factor = factor * (unit_in_si.factor ** n)
+                new_unit = new_unit * (unit_in_si.base[0][1] ** n)
+            else:
                 new_unit = new_unit * (unit ** n)
         return new_unit(number * factor)
         
         
+    def find_si_unit_for(self, unit):
+        for unit_nbody,unit_in_si in self.units:
+            if unit_nbody==unit:
+                return unit_in_si
+        return None
         
+    def find_nbody_unit_for(self, unit):
+        for unit_nbody,unit_in_si in self.units:
+            base_in_si = unit_in_si.base[0][1]
+            if base_in_si == unit:
+                return unit_nbody, unit_in_si
+        return None, None
+                
     def to_nbody(self, value):
         nbody_units_in_si = self.units
         base = value.unit.base
@@ -98,15 +106,11 @@ class nbody_to_si(object):
         number = value.number
         new_unit = 1
         for n, unit in base:
-            found = False
-            for unit_in_nbody, unit_in_si in nbody_units_in_si:
-                base_in_si = unit_in_si.base[0][1]
-                if base_in_si == unit:
-                    factor = factor / (unit_in_si.factor ** n)
-                    new_unit = new_unit * (unit_in_nbody.base[0][1] ** n)
-                    found = True
-                    break;
-            if not found:
+            unit_in_nbody, unit_in_si = self.find_nbody_unit_for(unit)
+            if not unit_in_si is None:
+                factor = factor / (unit_in_si.factor ** n)
+                new_unit = new_unit * (unit_in_nbody.base[0][1] ** n)
+            else:
                 new_unit = new_unit * (unit ** n)
         return new_unit(number * factor)
         
