@@ -36,6 +36,9 @@ class unit(object):
             return self
         else:
             return factor_unit(other, self)
+    
+    def __ror__(self, x):
+        return values.value(x, self)
         
     def __rdiv__(self, other):
         return factor_unit(other, pow_unit(-1,self))
