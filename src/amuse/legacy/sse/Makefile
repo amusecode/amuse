@@ -35,6 +35,9 @@ SSE_muse_interface.so:	SSE_muse_interface.f
 	f2py --quiet --fcompiler=$(FORT) -c SSE_muse_interface.f \
 		-m SSE_muse_interface $(OBJ) > f2py.log
 
+muse_worker1:	muse_worker.f90  SSE_muse_interface.o  $(OBJ)
+	mpif90 $^ -o $@ 
+
 muse_worker:	muse_worker.cc  SSE_muse_interface.o  $(OBJ)
 	mpicxx $@.cc  SSE_muse_interface.o $(OBJ) -o $@ -lgfortran
 	

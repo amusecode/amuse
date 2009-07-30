@@ -6,10 +6,10 @@ from amuse.support.units import core
 import numpy
 
 class nbody_unit(core.unit):
-    def __init__(self, unit):
-        self.unit = unit
+    def __init__(self, unit_in_si):
+        self.unit_in_si = unit_in_si
     def __str__(self):
-        return 'nbody '+self.unit.quantity
+        return 'nbody '+self.unit_in_si.quantity
     @property
     def base(self):
         return ((1,self),)
@@ -46,7 +46,6 @@ class nbody_to_si(object):
     
     @property    
     def units(self):
-        vector = [0.0,0.0,0.0]
         unit_to_index = {}
         for i, x in enumerate(self.Gis1.unit.base):
             n , unit = x
@@ -58,42 +57,43 @@ class nbody_to_si(object):
             for n, unit in value.unit.base:
                 exponents_of_the_bases[row, unit_to_index[unit]] = n
             factors_of_the_bases[row] = value.number * value.unit.factor  
+            
         log_factors_of_the_bases = numpy.log(factors_of_the_bases)
         conversion_factors = numpy.exp(numpy.linalg.solve(exponents_of_the_bases, log_factors_of_the_bases))
         
         result = []
         nbody_units = mass, length, time
-        
         for n , unit  in self.Gis1.unit.base:
             index = unit_to_index[unit]
             conversion_factor_for_this_base_unit = conversion_factors[index]
             for nbody_unit in nbody_units:
-                if nbody_unit.unit == unit:
+                if nbody_unit.unit_in_si == unit:
                     result.append((nbody_unit, conversion_factor_for_this_base_unit * unit))
+                    
         return result
+        
     def to_si(self, value):
-        base = value.unit.base
         factor = value.unit.factor
         number = value.number
         new_unit = 1
-        for n, unit in base:
-            unit_in_si = self.find_si_unit_for(unit)
+        for n, unit in value.unit.base:
+            unit_in_nbody, unit_in_si = self.find_si_unit_for(unit)
             if not unit_in_si is None:
                 factor = factor * (unit_in_si.factor ** n)
-                new_unit = new_unit * (unit_in_si.base[0][1] ** n)
+                new_unit *= (unit_in_si.base[0][1] ** n)
             else:
-                new_unit = new_unit * (unit ** n)
+                new_unit *= (unit ** n)
         return new_unit(number * factor)
         
         
     def find_si_unit_for(self, unit):
-        for unit_nbody,unit_in_si in self.units:
-            if unit_nbody==unit:
-                return unit_in_si
-        return None
+        for unit_nbody, unit_in_si in self.units:
+            if unit_nbody == unit:
+                return unit_nbody, unit_in_si
+        return None, None
         
     def find_nbody_unit_for(self, unit):
-        for unit_nbody,unit_in_si in self.units:
+        for unit_nbody, unit_in_si in self.units:
             base_in_si = unit_in_si.base[0][1]
             if base_in_si == unit:
                 return unit_nbody, unit_in_si
@@ -109,9 +109,9 @@ class nbody_to_si(object):
             unit_in_nbody, unit_in_si = self.find_nbody_unit_for(unit)
             if not unit_in_si is None:
                 factor = factor / (unit_in_si.factor ** n)
-                new_unit = new_unit * (unit_in_nbody.base[0][1] ** n)
+                new_unit *= (unit_in_nbody.base[0][1] ** n)
             else:
-                new_unit = new_unit * (unit ** n)
+                new_unit *= (unit ** n)
         return new_unit(number * factor)
         
                 

@@ -30,22 +30,26 @@ class TestMPIInterface(unittest.TestCase):
         hermite = mpi_interface.Hermite()
         hermite.flag_collision = 1
         self.assertEquals(1, hermite.flag_collision )
+        
 class TestAmuseInterface(unittest.TestCase):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
         
         hermite = mpi_interface.Hermite(convert_nbody)
         hermite.setup_module()
+        
         sun = core.Star(0)
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
+        
         earth = core.Star(1)
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
+        
         hermite.add_star(sun)
         hermite.add_star(earth)
         
