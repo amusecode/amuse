@@ -279,5 +279,30 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         self.assertEquals(string_no_spaces, 'CASE(1)\nCALLtest_one(&\nintegers_in(0),&\nintegers_in(1),&\ndoubles_in(0)&\n)\nintegers_out(0)=integers_in(1)\ndoubles_out(0)=doubles_in(0)\nnumber_of_integers_out=1\nnumber_of_doubles_out=1\n')
     
         
+      
+class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
+    _class_to_test = MakeAFortranStringOfAClassWithLegacyFunctions
+    
+    @legacy_function
+    def get_time_step():
+        function = RemoteFunction()  
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='d', direction=function.IN)
+        function.addParameter('name', dtype='d', direction=function.IN)
+        return function
         
+    def test1(self):
+        x = self._class_to_test()
+        x.class_with_legacy_functions = TestMakeAFortranStringOfAClassWithLegacyFunctions
+        string = x.result
+        print string
+        self.assertTrue('run_loop' in string)
+        
+    def test2(self):
+        x = self._class_to_test()
+        x.class_with_legacy_functions = TestMakeAFortranStringOfAClassWithLegacyFunctions
+        string = x.result
+        self.assertTrue('program' in string)
+          
         

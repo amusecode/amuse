@@ -122,32 +122,6 @@ class MakeAFortranStringOfALegacyFunctionSpecification(object):
         
         
         
-HEADER_CLASS_STRING = """class message_header {
-
-public:
-	int tag;
-	int number_of_doubles;
-	int number_of_ints;
-	message_header(): tag(0), number_of_doubles(0), number_of_ints(0) {}
-
-	void send(MPI::Intercomm & intercomm, int rank){
-		int header[3];
-		header[0] = tag;
-		header[1] = number_of_doubles;
-		header[2] = number_of_ints;		
-		intercomm.Send(header, 3, MPI_INT, 0, 999);
-	}
-
-	void recv(MPI::Intercomm & intercom, int rank) {
-		int header[6];
-
-		intercom.Recv(header, 3, MPI_INT, 0, rank);
-		tag = header[0];
-		number_of_doubles = header[1];
-		number_of_ints = header[2];
-	}
-};"""
-        
 
 class MakeAFortranStringOfAClassWithLegacyFunctions(object):
     def __init__(self):
@@ -170,17 +144,13 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(object):
                 self.c_type = c_type
              
         return {
-            'i' : DTypeSpec('ints_in','ints_out', 'number_of_ints', 'int'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles', 'double')}
+            'i' : DTypeSpec('integers_in','integers_out', 'number_of_integers', 'integer'),
+            'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles', 'real*8')}
     @late
     def out(self):
         return print_out()
         
     def start(self):
-        self.output_mpi_include()
-        self.output_local_includes()
-        self.out.lf().lf()
-        self.output_header_class_definition()
         self.output_runloop_function_def_start()
         self.output_switch_start()
         
@@ -197,7 +167,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(object):
             if x.specification.id == 0:
                 continue
             self.out.lf()
-            uc = MakeACStringOfALegacyFunctionSpecification()
+            uc = MakeAFortranStringOfALegacyFunctionSpecification()
             uc.specification = x.specification
             uc.out = self.out
             uc.start()
@@ -208,74 +178,107 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(object):
         self._result = self.out.string
         
     def output_mpi_include(self):
-        self.out.n() + '#include <mpi.h>'
+        self.out.n() + "INCLUDE 'mpif.h'"
+        
     def output_local_includes(self):
         self.out.n()
         for x in ['muse_dynamics.h', 'parameters.h', 'local.h']:
             self.out.n() + '#include "' + x + '"'
+            
     def output_header_class_definition(self):
         self.out + HEADER_CLASS_STRING
+        
     def output_runloop_function_def_start(self):
-        self.out.lf().lf() + 'void run_loop() {'
+        self.out.lf().lf() + 'SUBROUTINE run_loop'
         self.out.indent()
-        self.out.n() + 'int rank = MPI::COMM_WORLD.Get_rank();'
-        self.out.lf().lf() + 'MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();'
-        self.out.lf().lf() + 'bool must_run_loop = true;'
-        self.out.lf().lf() + 'while(must_run_loop) {'
-        self.out.indent()
+        self.output_mpi_include()
+        self.out.n() + 'integer :: rank, parent, ioerror'
+        self.out.n() + 'integer :: must_run_loop'
+        self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
+        self.out.lf().lf() + 'integer header(3)'
+        self.out.lf().lf() + 'integer :: tag_in, tag_out'
+        
         maximum_number_of_inputvariables_of_a_type = 255
         for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + dtype_spec.c_type + ' ' + dtype_spec.c_input_var_name + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
-            self.out.lf() + dtype_spec.c_type + ' ' + dtype_spec.c_output_var_name + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
-        self.out.lf()
-        self.out.lf() + 'message_header request_header;'
-        self.out.lf() + 'message_header reply_header;'
-        self.out.lf()
-        self.out.lf() + 'request_header.recv(parent,rank);'
-        spec = [('number_of_doubles', 'doubles_in', 'MPI_DOUBLE'),('number_of_ints', 'ints_in', 'MPI_INT')]
-        for number_parameter, input_parameter_name, mpi_type in spec:
-               self.out.lf() + 'if(request_header.' + number_parameter + ' > 0) {'
-               self.out.indent().lf() + 'parent.Recv(' + input_parameter_name + ', ' + 'request_header.' + number_parameter + ', ' + mpi_type+ ', 0, rank);'
-               self.out.dedent().lf() +'}'
-        self.out.lf().lf() + 'reply_header.tag = request_header.tag;'
-    def output_switch_start(self):
-        self.out.lf().lf() + 'switch(request_header.tag) {'
+            self.out.lf() + dtype_spec.c_type + ' ' + dtype_spec.c_input_var_name + '(' + maximum_number_of_inputvariables_of_a_type + ')'
+            self.out.lf() + dtype_spec.c_type + ' ' + dtype_spec.c_output_var_name + '(' + maximum_number_of_inputvariables_of_a_type + ')'
+            self.out.lf() + 'integer ::' + ' ' + dtype_spec.c_output_counter_name + '_out' + ', ' + dtype_spec.c_output_counter_name + '_in'
+            
+        self.out.lf().lf() + 'call MPI_COMM_GET_PARENT(parent, ioerror)'
+        self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, mpierror)'
+        self.out.lf().lf() + 'must_run_loop = 1'
+        self.out.lf().lf() + 'do while (must_run_loop .eq. 1)'
         self.out.indent()
-        self.out.lf() + 'case 0:'
-        self.out.indent().lf()+'must_run_loop = false;'
-        self.out.lf()+'break;'
+       
+       
+        self.out.lf() + 'call MPI_RECV(header, 3, MPI_INTEGER, 0, rank, parent,&'
+        self.out.indent().lf() + 'mpiStatus, ioerror)'
         self.out.dedent()
+        self.out.lf().lf() + 'tag_in = header(1)'
+        self.out.lf()      + 'number_of_doubles_in = header(2)'
+        self.out.lf()      + 'number_of_integers_in = header(3))'
+        self.out.lf().lf() + 'tag_out = tag_in'
+        self.out.lf()      + 'number_of_doubles_out = 0'
+        self.out.lf()      + 'number_of_integers_out = 0'
+        self.out.lf()
+        
+        spec = [('number_of_doubles_in', 'doubles_in', 'MPI_DOUBLE_PRECISION'),('number_of_integers_in', 'integers_in', 'MPI_INTEGER')]
+        for number_parameter, input_parameter_name, mpi_type in spec:
+               self.out.lf() + 'if (' + number_parameter + ' .gt. 0) then'
+               
+               
+               self.out.indent().lf() + 'call MPI_RECV(' + input_parameter_name + ', ' + number_parameter + ', &'
+               self.out.indent().n() + mpi_type+ ', 0, rank, parent,&'
+               self.out.n() + 'mpiStatus, ioError);'
+               self.out.dedent().dedent().lf()
+               self.out + 'end if'
+        
+        
+    def output_switch_start(self):
+        self.out.lf().lf() + 'SELECT CASE (tag_in)'
+        self.out.indent()
+        self.out.lf() + 'CASE(0)'
+        self.out.indent().lf()+'must_run_loop = 0'
+        self.out.dedent()
+        
     def output_switch_end(self):
-        self.out.lf() + 'default:'
-        self.out.indent().lf() + 'reply_header.tag = -1;'
+        self.out.lf() + 'CASE DEFAULT'
+        self.out.indent().lf() + 'tag_out = -1'
         self.out.dedent()
-        self.out.dedent().lf() + '}'
-        
-        
-    
-            
-            
-        
+        self.out.dedent().lf() + 'END SELECT'
         
     def output_runloop_function_def_end(self):
-        self.out.lf().lf() + 'reply_header.send(parent, rank);'
-        spec = [('number_of_doubles', 'doubles_out', 'MPI_DOUBLE'),('number_of_ints', 'ints_out', 'MPI_INT')]
+        self.out.lf().lf() + 'header(1) = tag_out'
+        self.out.lf()      + 'header(2) = number_of_doubles_out'
+        self.out.lf()      + 'header(3) = number_of_integers_out'
+        
+        self.out.lf().lf() + 'MPI_SEND(header, 3, MPI_INTEGER, 0, 999, &'
+        self.out.indent().lf() + 'parent, mpierror);'
+        self.out.dedent().lf()
+        
+        spec = [('number_of_doubles_out', 'doubles_out', 'MPI_DOUBLE_PRECISION'),('number_of_integers_out', 'integers_out', 'MPI_INTEGER')]
         for number_parameter, parameter_name, mpi_type in spec:
-               self.out.lf() + 'if(reply_header.' + number_parameter + ' > 0) {'
-               self.out.indent().lf() + 'parent.Send(' + parameter_name + ', ' + 'reply_header.' + number_parameter + ', ' + mpi_type+ ', 0, 999);'
-               self.out.dedent().lf() +'}'
+               self.out.lf() + 'if (' + number_parameter + ' .gt. 0) then'
+               self.out.indent().lf() + 'call MPI_SEND(' + parameter_name + ', ' + number_parameter + ', &'
+               self.out.indent().lf() + mpi_type + ', 0, 999, &'
+               self.out.lf() + 'parent, mpierror);'
+               self.out.dedent().dedent().lf() +'end if'
         self.out.dedent()
-        self.out.lf() + '}'
-        self.out.dedent()
-        self.out.lf() + '}'
+        self.out.lf() + 'end do'
+        self.out.lf() + 'return'
+        
+        self.out.dedent().lf() + 'end subroutine'
+        
     def output_main(self):
-        self.out.lf().lf() + 'int main(int argc, char *argv[])'
-        self.out.lf() + '{'
-        self.out.indent().lf() + 'MPI::Init(argc, argv);'
-        self.out.lf().lf() + 'run_loop();'
-        self.out.lf().lf() + 'MPI_Finalize();'
-        self.out.lf() + 'return 0;'
-        self.out.dedent().lf()+'}'
+        self.out.lf().lf() + 'program muse_worker'
+        self.out.indent()
+        self.output_mpi_include()
+        self.out.lf() + 'call MPI_INIT(mpierror)'
+        self.out.lf().lf() + 'call run_loop()'
+        self.out.lf().lf() + 'call MPI_FINALIZE(mpierror)'
+        self.out.dedent().lf()+'end program muse_worker'
+        
+       
     
         
         

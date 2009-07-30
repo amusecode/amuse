@@ -7,6 +7,7 @@ SUBROUTINE run_loop()
     integer mpiStatus(MPI_STATUS_SIZE,4)
 
     integer header(3)
+    
     real*8 doubles_in(20)
     real*8 doubles_out(20)
     integer integers_in(20)
@@ -140,6 +141,9 @@ SUBROUTINE run_loop()
 END
 
 program muse_worker
+
+    INCLUDE 'mpif.h'
+    
     write (*,*) 'starting'
     call MPI_INIT(mpierror)
     call run_loop()
