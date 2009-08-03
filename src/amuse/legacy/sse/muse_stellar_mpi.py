@@ -6,6 +6,7 @@ from amuse.legacy.support import core
 
 from amuse.legacy.support.core import RemoteFunction, legacy_global
 from amuse.support.units import nbody_system
+from amuse.support.units import units
 
 class SSE(object): 
     def __init__(self):
@@ -63,8 +64,8 @@ class SSE(object):
         function.addParameter('tphys', dtype='d', direction=function.INOUT)
         function.addParameter('tphysf', dtype='d', direction=function.INOUT)
         return function
-        
     @core.legacy_function      
+        
     def get_time_step():
         function = RemoteFunction()      
         function.id = 3
@@ -78,5 +79,20 @@ class SSE(object):
         return function
         
     def initialize_star(self, star):
-        pass
+        star.age = 0.0 | units.s
+        star.initial_mass = 0.0 | units.MSun
+        star.mass = star.initial_mas
+        star.type = 1 | units.nounit
+        star.luminocity = 0.0 | units.LSun
+        star.radius = 0.0 | units.RSun
+        star.core_mass = 0.0 | units.MSun
+        star.core_radius = 0.0 | units.RSun
+        star.envelope_mass = 0.0 | units.MSun
+        star.envelope_radius = 0.0 | units.RSun
+        star.spin = 0.0 | units.RSun
+        star.epoch = 0.0 | units.Myr
+        star.t_ms = 0.0 | units.Myr
+        star.sse_age = 0.0 | units.Myr
+        star.main_sequence_lifetime = 0.0 | units.Myr
+        star.nuclear_burning_lifetime = 0.0 | units.Myr
         

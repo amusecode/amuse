@@ -18,4 +18,8 @@ one = no_unit(1)
 
 N = m**3/(kg * (s**2))
 G = N(6.673e-11)
+J = named('joule','J', kg * m **2  * s ** -2)
+erg = named('energy','erg', 1e-7 * J)
+W = named('watt', 'W', J / s)
 
+LSun = named('solar luminotisity', 'LSun', 3.839e26 * W) 
