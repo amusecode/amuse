@@ -46,7 +46,8 @@ SUBROUTINE run_loop()
                 mpiStatus, ioerror)
         end if
       
-        write (*,*) 'number_of_doubles_in=',number_of_doubles_in
+        
+        !write (*,*) 'number_of_doubles_in=',number_of_doubles_in
       
         SELECT CASE (tag_in)
          CASE(0)
@@ -71,6 +72,7 @@ SUBROUTINE run_loop()
             number_of_integers_out = 1
         CASE(2)
               CALL evolve0( &
+                integers_in(1) ,&
                 doubles_in(1) ,&
                 doubles_in(2) ,&
                 doubles_in(3) ,&
@@ -83,9 +85,9 @@ SUBROUTINE run_loop()
                 doubles_in(10) ,&
                 doubles_in(11) ,&
                 doubles_in(12) ,&
-                doubles_in(13) ,&
-                doubles_in(14) &
+                doubles_in(13) &
               )
+              integers_out(1) = integers_in(1)
               doubles_out(1) = doubles_in(1)
               doubles_out(2) = doubles_in(2)
               doubles_out(3) = doubles_in(3)
@@ -99,8 +101,9 @@ SUBROUTINE run_loop()
               doubles_out(11) = doubles_in(11)
               doubles_out(12) = doubles_in(12)
               doubles_out(13) = doubles_in(13)
-              doubles_out(14) = doubles_in(14)
-              number_of_doubles_out = 14
+              number_of_integers_out = 1
+              number_of_doubles_out = 13
+
           CASE(3)
               CALL get_time_step( &
                 integers_in(1) ,&

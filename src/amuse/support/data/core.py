@@ -22,6 +22,12 @@ class Star(object):
             object.__setattr__(self, name_of_the_attribute, new_value_for_the_attribute)
         else:
             raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")
+            
+    def ensure_attributes_like(self, prototype_star):
+        for x in prototype_star.attributes:
+            if not x in self.attributes:
+                setattr(self, x, getattr(prototype_star, x))
+                
     def __str__(self):
         output = 'star<'
         output += str(self.id)

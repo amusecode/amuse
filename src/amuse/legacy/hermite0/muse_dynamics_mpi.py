@@ -83,6 +83,7 @@ class Hermite(object):
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
+        
     @core.legacy_function    
     def _add_particle():
         function = RemoteFunction()  
@@ -92,6 +93,7 @@ class Hermite(object):
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
+        
     @core.legacy_function    
     def _get_state():
         function = RemoteFunction()  
@@ -111,6 +113,7 @@ class Hermite(object):
         function.addParameter('synchronize', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
+        
     @core.legacy_function  
     def reinitialize_particles():
         function = RemoteFunction()  
@@ -118,11 +121,17 @@ class Hermite(object):
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
+        
     def add_particle(self, state):
         return self._add_particle(state.id, **state.to_keyword_args())
+        
     def get_state(self,id):
-        (doubles,ints) = self._get_state(id)
-        return self.dynamics_state(ints[0], doubles)
+        name_to_value = self._get_state(id)
+        result = self.dynamics_state(name_to_value['id_out'])
+        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+            setattr(result, x, name_to_value[x])  
+        return result
+        
     @core.legacy_function   
     def get_number():
         function = RemoteFunction()  

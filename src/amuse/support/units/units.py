@@ -12,6 +12,7 @@ hour = 60 * minute
 day = 24 * hour
 yr =   named('year', 'yr', 365.2422 * day)
 myr = named('million year', 'Myr', 1000000 * yr)
+Myr = myr
 ms = named('meter per seconds', 'ms', m / s)
 g = named('gram','g', 1e-3 * kg)
 one = no_unit(1)

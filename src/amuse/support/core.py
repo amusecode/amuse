@@ -81,3 +81,34 @@ class print_out(object):
         
     def isnumber(self, x):
         return isinstance(x,types.IntType) or isinstance(x,types.FloatType) 
+        
+        
+class OrderedDictionary(object):
+    def __init__(self):
+        self.mapping = {}
+        self.orderedKeys = []
+        
+    def __setitem__(self, key, value):
+        if key in self.mapping:
+            raise Exception("key " + key + " already in the dictionary")
+        self.orderedKeys.append(key)
+        self.mapping[key] = value
+        
+    def __getitem__(self, key):
+        return self.mapping[key]
+        
+    def  __contains__(self, key):
+        return key in self.mapping
+        
+    def  __iter__(self):
+        return self.values()
+        
+    def  __len__(self):
+        return len(self.orderedKeys)
+        
+    def keys(self):
+        return iter(self.orderedKeys)
+        
+    def values(self):
+        for x in self.orderedKeys:
+            yield self.mapping[x]

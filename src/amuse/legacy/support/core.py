@@ -2,6 +2,7 @@
 """
 from amuse.support.core import late
 from amuse.support.core import print_out
+from amuse.support.core import OrderedDictionary
 
 from zlib import crc32
 
@@ -51,16 +52,11 @@ class LegacyCall(object):
         self.interface.channel.send_message(id , **keyword_arguments)
         (doubles, ints) = self.interface.channel.recv_message(id)
         
-        dtype_to_values_and_keyword = {
-            'd' : [[],'doubles_in',0],
-            'i' : [[],'ints_in',0]
-        }
+        
         
         number_of_outputs = 0
         for name, dtype, direction in self.specification.parameters:
             if direction == RemoteFunction.OUT or direction == RemoteFunction.INOUT:
-                values = dtype_to_values_and_keyword[dtype]
-                values[0].append(None)
                 number_of_outputs += 1
        
         
@@ -76,7 +72,16 @@ class LegacyCall(object):
             if len(doubles) == 1:
                 return doubles[0]
         
-        return (doubles, ints)
+        result = OrderedDictionary()
+        dtype_to_array = {
+            'd' : list(reversed(doubles)),
+            'i' : list(reversed(ints))
+        }
+        for name, dtype, direction in self.specification.parameters:
+            if direction == RemoteFunction.OUT or direction == RemoteFunction.INOUT:
+                result[name] = dtype_to_array[dtype].pop()
+                
+        return result
        
 
 class legacy_function(object):
@@ -188,7 +193,6 @@ class MpiChannel(object):
     def recv_message(self, tag):
         header = numpy.empty(3,  dtype='i')
         self.intercomm.Recv([header, self.MPI.INT], source=0, tag=999)
-        print header
         n_doubles = header[1]
         n_ints = header[2]
         if n_doubles > 0:

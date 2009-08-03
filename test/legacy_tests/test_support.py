@@ -268,8 +268,8 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         self.assertEquals(string_no_spaces, 'CASE(1)\nCALLtest_one(&\nintegers_in(1),&\nintegers_in(2),&\ndoubles_in(1)&\n)\nintegers_out(1)=integers_in(2)\ndoubles_out(1)=doubles_in(1)\nnumber_of_integers_out=1\nnumber_of_doubles_out=1\n')
     
     def xtest5(self):
-        from amuse.legacy.sse.muse_stellar_mpi import SSE_new
-        function = SSE_new.get_time_step.specification
+        from amuse.legacy.sse.muse_stellar_mpi import SSE
+        function = SSE.evolve.specification
         
         x = self._class_to_test()
         x.specification = function
