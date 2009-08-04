@@ -5,7 +5,9 @@ import sys
 from amuse.legacy.sse import SSE_muse_interface as f2py_interface
 from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
 
-        
+from amuse.support.data.core import Star
+from amuse.support.units import units
+
 
 class TestF2PYInterface(unittest.TestCase):
     class state(object):
@@ -247,5 +249,51 @@ class TestMPIInterface(unittest.TestCase):
         del sse
         
         
+class TestSSE(unittest.TestCase):
+    
+    def test1(self):
+        sse = mpi_interface.SSE()
+        sse.initialize_module_with_default_parameters() 
+        star = Star(0)
+        star.initial_mass = 5 | units.MSun
+        star.mass = star.initial_mass
+        star.radius = 0.0 | units.RSun
+        sse.initialize_star(star)
+        previous_type = star.type
+        results = []
+        t0 = 0 | units.Myr
+        while t0 < (125 | units.Myr):
+            t0 += sse.get_time_step_for_star(star)
+            sse.evolve_star(star, t0)
+            if star.type.number != previous_type.number:
+                results.append((star.current_time, star.mass, star.type))
+                previous_type = star.type
+                
+        self.assertEqual(len(results), 6)
         
+        times = ( 
+            104.0 | units.Myr, 
+            104.4 | units.Myr, 
+            104.7 | units.Myr, 
+            120.1 | units.Myr,
+            120.9 | units.Myr,
+            121.5 | units.Myr
+        )
+        for result, expected in map(None, results, times):
+            self.assertAlmostEqual(result[0].number, expected.number, 1)
+            
+        masses = ( 
+            5.000 | units.MSun, 
+            5.000 | units.MSun, 
+            4.998 | units.MSun, 
+            4.932 | units.MSun,
+            4.895 | units.MSun,
+            0.997 | units.MSun
+        )
+        for result, expected in map(None, results, masses):
+            self.assertAlmostEqual(result[1].number, expected.number, 3)
+            
+        del sse
+            
+
        
