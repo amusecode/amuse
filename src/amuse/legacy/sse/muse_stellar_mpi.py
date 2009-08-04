@@ -97,7 +97,7 @@ class SSE(object):
         star.epoch = 0.0 | units.Myr
         star.current_time = 0.0 | units.Myr
         star.main_sequence_lifetime = 0.0 | units.Myr
-        star.nuclear_burning_lifetime = 0.0 | units.Myr
+        #star.nuclear_burning_lifetime = 0.0 | units.Myr
         
         return star
     
@@ -185,6 +185,7 @@ class SSE(object):
         star.current_time = new_values['tphys']| units.Myr
         star.main_sequence_lifetime = new_values['tm'] | units.Myr
         star.new_time = new_values['tphysf']| units.Myr
+        
     def get_time_step_for_star(self, star):
         
         current_values = {}

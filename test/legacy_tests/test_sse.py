@@ -292,8 +292,24 @@ class TestSSE(unittest.TestCase):
         )
         for result, expected in map(None, results, masses):
             self.assertAlmostEqual(result[1].number, expected.number, 3)
-            
+         
         del sse
             
-
-       
+    def xtest2(self):
+        sse = mpi_interface.SSE()
+        sse.initialize_module_with_default_parameters() 
+        star = Star(0)
+        star.initial_mass = 5 | units.MSun
+        star.mass = star.initial_mass
+        star.radius = 0.0 | units.RSun
+        sse.initialize_star(star)
+        previous_type = star.type
+        results = []
+        t0 = 0 | units.Myr
+        while t0 < (100 | units.Myr):
+            t0 += sse.get_time_step_for_star(star)
+            sse.evolve_star(star, t0)
+        
+        total_radius = star.core_radius + star.envelope_radius
+        print star
+        self.assertEqual(total_radius, star.radius)

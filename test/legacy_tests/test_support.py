@@ -121,7 +121,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         x.specification = function
         string = x.result
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
-        self.assertEquals(string_no_spaces, 'case1:ints_out[0]=test_one(ints_in[0]);reply.number_of_ints=1;break;')
+        self.assertEquals(string_no_spaces, 'case1:ints_out[0]=test_one(ints_in[0]);reply_header.number_of_ints=1;break;')
     
     def test3(self):
         function = RemoteFunction()      
@@ -134,7 +134,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         x.specification = function
         string = x.result
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
-        self.assertEquals(string_no_spaces, 'case1:ints_out[0]=test_one(ints_in[0],&ints_out[1]);reply.number_of_ints=2;break;')
+        self.assertEquals(string_no_spaces, 'case1:ints_out[0]=test_one(ints_in[0],&ints_out[1]);reply_header.number_of_ints=2;break;')
         
     def test4(self):
         function = RemoteFunction()      
@@ -148,7 +148,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         x.specification = function
         string = x.result
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
-        self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_out[0],&doubles_out[1]);reply.number_of_ints=1;reply.number_of_doubles=2;break;')
+        self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_out[0],&doubles_out[1]);reply_header.number_of_ints=1;reply_header.number_of_doubles=2;break;')
         
     def test6(self):
         function = RemoteFunction()      
@@ -162,7 +162,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         x.specification = function
         string = x.result
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
-        self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_in[1],&doubles_in[0]);ints_out[0]=ints_in[1];doubles_out[1]=doubles_in[0];reply.number_of_ints=1;reply.number_of_doubles=2;break;')
+        self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_in[1],&doubles_in[0]);ints_out[0]=ints_in[1];doubles_out[1]=doubles_in[0];reply_header.number_of_ints=1;reply_header.number_of_doubles=2;break;')
         
     def test5(self):
         function = RemoteFunction()      
@@ -175,10 +175,57 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         x = self._class_to_test()
         x.specification = function
         string = x.result
-        self.assertEquals(string,  'case 1:\n  doubles_out[0] = test_one(\n    ints_in[0] ,\n    &ints_out[0] ,\n    &doubles_out[1]\n  );\n  reply.number_of_ints = 1;\n  reply.number_of_doubles = 2;\n  break;')
+        self.assertEquals(string,  'case 1:\n  doubles_out[0] = test_one(\n    ints_in[0] ,\n    &ints_out[0] ,\n    &doubles_out[1]\n  );\n  reply_header.number_of_ints = 1;\n  reply_header.number_of_doubles = 2;\n  break;')
+
+
+
         
+class TestMakeACStringOfALegacyGlobalSpecification(unittest.TestCase):
+    _class_to_test = MakeACStringOfALegacyGlobalSpecification
+    
+    def test1(self):
+        x = self._class_to_test()
+        x.legacy_global = legacy_global('test',id=10,dtype='d')
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case10:if(request_header.number_of_doubles==1){test=doubles_in[0];}else{reply_header.number_of_doubles=1;doubles_out[0]=test;}break;')
+        
+
+
 class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
     _class_to_test = MakeACStringOfAClassWithLegacyFunctions
+    
+    include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h']
+    
+    extra_content = """
+    int _add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)) {
+        dynamics_state state;
+        state.id = id;
+        state.mass = mass;
+        state.radius = radius;
+        state.x = x;
+        state.y = y
+        state.z = z;
+        state.vx = vx;
+        state.vy = vy;
+        state.vz = vz;
+        return add_particle(state);
+    }
+    
+    void _get_state(int id, int * id_out,  double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz) {
+        dynamics_state state = get_state(id)
+        *id_out = state.id
+        *mass = state.mass;
+        *radius = state.radius;
+        *x = state.x;
+        *y = state.y;
+        *z = state.z;
+        *vx = state.vx;
+        *vy = state.vy;
+        *vz = state.vz;
+    }
+    """
+    
     
     @legacy_function
     def get_time_step():
@@ -193,7 +240,6 @@ class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
         x = self._class_to_test()
         x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
         string = x.result
-        print string
         self.assertTrue('#include <mpi.h>' in string)
         self.assertTrue('#include "parameters.h"' in string)
         self.assertTrue('run_loop' in string)
@@ -203,7 +249,12 @@ class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
         x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
         string = x.result
         self.assertTrue('main' in string)
-        
+    
+    def test3(self):
+        x = self._class_to_test()
+        x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
+        string = x.result
+        self.assertTrue('_get_state(' in string)
 
 class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeAFortranStringOfALegacyFunctionSpecification

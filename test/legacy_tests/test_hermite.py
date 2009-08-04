@@ -22,14 +22,22 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
         del hermite
+        
     def test2(self):
         hermite = mpi_interface.Hermite()
         hermite.eps2 = 0.101
         self.assertEquals(0.101, hermite.eps2)
+        hermite.eps2 = 0.110
+        self.assertEquals(0.110, hermite.eps2)
+        del hermite
+        
     def test3(self):
         hermite = mpi_interface.Hermite()
         hermite.flag_collision = 1
-        self.assertEquals(1, hermite.flag_collision )
+        self.assertEquals(1, hermite.flag_collision)
+        hermite.flag_collision = 0
+        self.assertEquals(0, hermite.flag_collision)
+        del hermite
         
 class TestAmuseInterface(unittest.TestCase):
     def test1(self):
@@ -54,11 +62,8 @@ class TestAmuseInterface(unittest.TestCase):
         hermite.add_star(earth)
         
         hermite.evolve(1.0, 0.0)
-        print hermite.get_state(0).to_doubles()
         hermite.update_star(sun)
-        print sun
         hermite.update_star(earth)
-        print earth
         hermite.cleanup_module()
         
 

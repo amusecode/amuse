@@ -3,6 +3,34 @@
 #include "parameters.h"
 #include "local.h"
 
+    int _add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz) {
+        dynamics_state state;
+        state.id = id;
+        state.mass = mass;
+        state.radius = radius;
+        state.x = x;
+        state.y = y;
+        state.z = z;
+        state.vx = vx;
+        state.vy = vy;
+        state.vz = vz;
+        return add_particle(state);
+    }
+    
+    void _get_state(int id, int * id_out,  double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz) {
+        dynamics_state state = get_state(id);
+        *id_out = state.id;
+        *mass = state.mass;
+        *radius = state.radius;
+        *x = state.x;
+        *y = state.y;
+        *z = state.z;
+        *vx = state.vx;
+        *vy = state.vy;
+        *vz = state.vz;
+    }
+    
+
 class message_header {
 
 public:
@@ -29,153 +57,155 @@ public:
 	}
 };
 
-
-
 void run_loop() {
-	int rank = MPI::COMM_WORLD.Get_rank();
-
-	MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();
-	
-        bool must_run_loop = true;
-	while(must_run_loop) { 
-		dynamics_state state;
-		double doubles_in[20];
-		double doubles_out[20];
-		int ints_in[20];
-		int ints_out[20];
-
-		message_header request_header;
-		message_header reply_header;
-
-		request_header.recv(parent,rank);
-		if(request_header.number_of_doubles > 0) {
-			parent.Recv(doubles_in, request_header.number_of_doubles, MPI_DOUBLE, 0, rank);
-		}
-		if(request_header.number_of_ints > 0) {
-			parent.Recv(ints_in, request_header.number_of_ints, MPI_INT, 0, rank);
-		}
-
-		reply_header.tag = request_header.tag;
-
-		switch(request_header.tag) {
-			case 0:
-				must_run_loop = false;
-				break;
-			case 1:
-				reply_header.number_of_ints = 1;
-				ints_out[0] = setup_module(0,0);
-				break;
-			case 2:
-				reply_header.number_of_ints = 1;
-				ints_out[0] = cleanup_module();
-				break;
-			case 3:
-				reply_header.number_of_ints = 1;
-				ints_out[0] = initialize_particles(doubles_in[0]);
-				break;
-			case 4:
-				reply_header.number_of_ints = 1;
-				ints_out[0] = reinitialize_particles();
-				break;
-			case 5:
-				reply_header.number_of_ints = 1;
-				state.id = ints_in[0];
-				state.mass = doubles_in[0];
-				state.radius = doubles_in[1];
-				state.x = doubles_in[2];
-				state.y = doubles_in[3];
-				state.z = doubles_in[4];
-				state.vx = doubles_in[5];
-				state.vy = doubles_in[6];
-				state.vz = doubles_in[7];
-				ints_out[0] =add_particle(state);
-				break;
-			case 6:
-				reply_header.number_of_ints = 1;
-				ints_out[0] =evolve(doubles_in[0], ints_in[0]);
-				break;
-			case 7:
-				reply_header.number_of_ints = 1;
-				ints_out[0] =get_number();
-				break;
-			case 8:
-				state = get_state(ints_in[0]);
-				reply_header.number_of_doubles = 8;
-				ints_out[0] = state.id;
-				reply_header.number_of_ints = 1;
-				doubles_out[0] = state.mass;
-				doubles_out[1] = state.radius;
-				doubles_out[2] = state.x;
-				doubles_out[3] = state.y;
-				doubles_out[4] = state.z;
-				doubles_out[5] = state.vx;
-				doubles_out[6] = state.vy;
-				doubles_out[7] = state.vz;
-				break;
-			case 20:
-				if(request_header.number_of_doubles == 1) {
-				    t = doubles_in[0];
-				} else {
-				    reply_header.number_of_doubles = 1;
-				    doubles_out[0]  = t;
-				}
-				break;
-			case 21:
-				if(request_header.number_of_doubles == 1) {
-				    dt_param = doubles_in[0];
-				} else {
-				    reply_header.number_of_doubles = 1;
-				    doubles_out[0]  = dt_param;
-				}
-				break;
-			case 22:
-				if(request_header.number_of_doubles == 1) {
-				    dt_dia = doubles_in[0];
-				} else {
-				    reply_header.number_of_doubles = 1;
-				    doubles_out[0]  = dt_dia;
-				}
-				break;
-			case 23:
-				if(request_header.number_of_doubles == 1) {
-				    eps2 = doubles_in[0];
-				} else {
-				    reply_header.number_of_doubles = 1;
-				    doubles_out[0]  = eps2;
-				}
-				break;
-			case 24:
-				if(request_header.number_of_ints == 1) {
-				    flag_collision = ints_in[0];
-				} else {
-				    reply_header.number_of_ints = 1;
-				    ints_out[0] = flag_collision;
-				}
-				break;
-			default:
-               			reply_header.tag = -1;
-                
-		}
-
-		
-		reply_header.send(parent, rank);
-		if( reply_header.number_of_doubles > 0) {
-			parent.Send(doubles_out, reply_header.number_of_doubles, MPI_DOUBLE, 0, 999);
-		}
-		if( reply_header.number_of_ints > 0) {
-			parent.Send(ints_out, reply_header.number_of_ints, MPI_INT, 0, 999);
-		}
-	}
-   
-
+  int rank = MPI::COMM_WORLD.Get_rank();
+  
+  MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();
+  
+  bool must_run_loop = true;
+  
+  while(must_run_loop) {
+    int ints_in[255];
+    int ints_out[255];
+    double doubles_in[255];
+    double doubles_out[255];
+    
+    message_header request_header;
+    message_header reply_header;
+    
+    request_header.recv(parent,rank);
+    if(request_header.number_of_doubles > 0) {
+      parent.Recv(doubles_in, request_header.number_of_doubles, MPI_DOUBLE, 0, rank);
+    }
+    if(request_header.number_of_ints > 0) {
+      parent.Recv(ints_in, request_header.number_of_ints, MPI_INT, 0, rank);
+    }
+    
+    reply_header.tag = request_header.tag;
+    
+    switch(request_header.tag) {
+      case 0:
+        must_run_loop = false;
+        break;
+      case 1:
+        ints_out[0] = setup_module();
+        reply_header.number_of_ints = 1;
+        break;
+      case 2:
+        ints_out[0] = cleanup_module();
+        reply_header.number_of_ints = 1;
+        break;
+      case 3:
+        ints_out[0] = initialize_particles(
+          doubles_in[0]
+        );
+        reply_header.number_of_ints = 1;
+        break;
+      case 4:
+        ints_out[0] = reinitialize_particles();
+        reply_header.number_of_ints = 1;
+        break;
+      case 5:
+        ints_out[0] = _add_particle(
+          ints_in[0] ,
+          doubles_in[0] ,
+          doubles_in[1] ,
+          doubles_in[2] ,
+          doubles_in[3] ,
+          doubles_in[4] ,
+          doubles_in[5] ,
+          doubles_in[6] ,
+          doubles_in[7]
+        );
+        reply_header.number_of_ints = 1;
+        break;
+      case 6:
+        ints_out[0] = evolve(
+          doubles_in[0] ,
+          ints_in[0]
+        );
+        reply_header.number_of_ints = 1;
+        break;
+      case 7:
+        ints_out[0] = get_number();
+        reply_header.number_of_ints = 1;
+        break;
+      case 8:
+        _get_state(
+          ints_in[0] ,
+          &ints_out[0] ,
+          &doubles_out[0] ,
+          &doubles_out[1] ,
+          &doubles_out[2] ,
+          &doubles_out[3] ,
+          &doubles_out[4] ,
+          &doubles_out[5] ,
+          &doubles_out[6] ,
+          &doubles_out[7]
+        );
+        reply_header.number_of_ints = 1;
+        reply_header.number_of_doubles = 8;
+        break;
+      case 20:
+        if(request_header.number_of_doubles == 1){
+          t = doubles_in[0];
+        } else {
+          reply_header.number_of_doubles = 1;
+          doubles_out[0] = t;
+        }
+        break;
+      case 21:
+        if(request_header.number_of_doubles == 1){
+          dt_param = doubles_in[0];
+        } else {
+          reply_header.number_of_doubles = 1;
+          doubles_out[0] = dt_param;
+        }
+        break;
+      case 22:
+        if(request_header.number_of_doubles == 1){
+          dt_dia = doubles_in[0];
+        } else {
+          reply_header.number_of_doubles = 1;
+          doubles_out[0] = dt_dia;
+        }
+        break;
+      case 23:
+        if(request_header.number_of_doubles == 1){
+          eps2 = doubles_in[0];
+        } else {
+          reply_header.number_of_doubles = 1;
+          doubles_out[0] = eps2;
+        }
+        break;
+      case 24:
+        if(request_header.number_of_ints == 1){
+          flag_collision = ints_in[0];
+        } else {
+          reply_header.number_of_ints = 1;
+          ints_out[0] = flag_collision;
+        }
+        break;
+      default:
+        reply_header.tag = -1;
+    }
+    
+    reply_header.send(parent, rank);
+    if(reply_header.number_of_doubles > 0) {
+      parent.Send(doubles_out, reply_header.number_of_doubles, MPI_DOUBLE, 0, 999);
+    }
+    if(reply_header.number_of_ints > 0) {
+      parent.Send(ints_out, reply_header.number_of_ints, MPI_INT, 0, 999);
+    }
+  }
 }
- 
+
 int main(int argc, char *argv[])
 {
-	MPI::Init(argc, argv);
-
-	run_loop();    
-
-	MPI_Finalize();
-	return 0;
+  MPI::Init(argc, argv);
+  
+  run_loop();
+  
+  MPI_Finalize();
+  return 0;
 }

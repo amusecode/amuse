@@ -8,6 +8,37 @@ from amuse.legacy.support.core import RemoteFunction, legacy_global
 from amuse.support.units import nbody_system
 
 class Hermite(object):
+    include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h'];
+    
+    extra_content = """
+    int _add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz) {
+        dynamics_state state;
+        state.id = id;
+        state.mass = mass;
+        state.radius = radius;
+        state.x = x;
+        state.y = y;
+        state.z = z;
+        state.vx = vx;
+        state.vy = vy;
+        state.vz = vz;
+        return add_particle(state);
+    }
+    
+    void _get_state(int id, int * id_out,  double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz) {
+        dynamics_state state = get_state(id);
+        *id_out = state.id;
+        *mass = state.mass;
+        *radius = state.radius;
+        *x = state.x;
+        *y = state.y;
+        *z = state.z;
+        *vx = state.vx;
+        *vy = state.vy;
+        *vz = state.vz;
+    }
+    """
+    
     class dynamics_state(object):
         _attributes = ['mass','radius','x','y','z','vx','vy','vz']
         def __init__(self, id = 0, doubles = [0.0 for x in range(8)]):
@@ -33,7 +64,7 @@ class Hermite(object):
     dt_param = legacy_global(name='dt_param',id=21,dtype='d')
     dt_dia = legacy_global(name='dt_dia',id=22,dtype='d')
     eps2 = legacy_global(name='eps2',id=23,dtype='d')
-    flag_collision = legacy_global(name='t',id=24,dtype='i')
+    flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
             
     def __init__(self, convert_nbody = None):
         directory_of_this_module = os.path.dirname(__file__);
@@ -102,7 +133,7 @@ class Hermite(object):
         function.addParameter('id_out', dtype='i', direction=function.OUT)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
-        function.result_type = 'i'
+        function.result_type = None
         return function;
         
     @core.legacy_function    
@@ -118,7 +149,6 @@ class Hermite(object):
     def reinitialize_particles():
         function = RemoteFunction()  
         function.id = 4
-        function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
         

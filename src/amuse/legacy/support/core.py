@@ -141,6 +141,7 @@ class legacy_global(object):
         result.name = self.name
         result.addParameter('value', dtype=self.dtype, direction=RemoteFunction.IN)
         return result
+        
     @late
     def get_specification(self):
         result = RemoteFunction()

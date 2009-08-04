@@ -23,6 +23,7 @@ class MakeACStringOfALegacyFunctionSpecification(object):
         return {
             'i' : DTypeSpec('ints_in','ints_out', 'number_of_ints'),
             'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles')}
+            
     @late
     def out(self):
         return print_out()
@@ -64,6 +65,7 @@ class MakeACStringOfALegacyFunctionSpecification(object):
                 spec.number_of_outputs += 1
     
         self.out.dedent()
+        
     def output_lines_with_inout_variables(self):
         dtype_to_incount = {}
         
@@ -94,10 +96,14 @@ class MakeACStringOfALegacyFunctionSpecification(object):
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
             self.out.n() 
-            self.out + 'reply.' + spec.c_output_counter_name + ' = ' + count + ';'
+            self.out + 'reply_header.' + spec.c_output_counter_name + ' = ' + count + ';'
             pass
+            
     def output_function_end(self):
-        self.out.n() + ')' + ';'
+        if len(self.specification.parameters) > 0:
+            self.out.n()
+            
+        self.out + ')' + ';'
         
     def output_function_start(self):
         self.out.n() 
@@ -106,13 +112,72 @@ class MakeACStringOfALegacyFunctionSpecification(object):
             self.out + spec.c_output_var_name+ '[' + spec.number_of_outputs + ']' + ' = '
             spec.number_of_outputs += 1
         self.out + self.specification.name + '('
+        
     def output_casestmt_start(self):
         self.out + 'case ' + self.specification.id + ':'
+        
     def output_casestmt_end(self):
         self.out.n() + 'break;'
         
         
+ 
+class MakeACStringOfALegacyGlobalSpecification(object):
+    def __init__(self):
+        pass
+    
+    @late  
+    def result(self):
+        self.start()
+        return self._result
+    
+    @late
+    def dtype_to_spec(self):
+        class DTypeSpec(object):
+            def __init__(self, c_input_var_name, c_output_var_name, c_output_counter_name):
+                self.number_of_inputs = 0
+                self.number_of_outputs = 0
+                self.c_input_var_name = c_input_var_name
+                self.c_output_var_name = c_output_var_name
+                self.c_output_counter_name = c_output_counter_name
+             
+        return {
+            'i' : DTypeSpec('ints_in','ints_out', 'number_of_ints'),
+            'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles')}
+            
+    @late
+    def out(self):
+        return print_out()
         
+        
+    def start(self):
+        self.output_casestmt_start()
+        self.out.indent()
+        spec = self.dtype_to_spec[self.legacy_global.dtype]
+        self.out.n() + 'if(request_header.' + spec.c_output_counter_name
+        self.out + ' == ' + 1 + '){'
+        self.out.indent()
+        self.out.n() + self.legacy_global.name + ' = ' 
+        self.out + spec.c_input_var_name  + '[0]' + ';'
+        self.out.dedent()
+        self.out.n() + '} else {'
+        self.out.indent()
+        self.out.n() + 'reply_header.' + spec.c_output_counter_name
+        self.out + ' = ' + 1 + ';'
+        self.out.n() + spec.c_output_var_name + '[0]' 
+        self.out + ' = ' + self.legacy_global.name + ';'
+        self.out.dedent()
+        self.out.n() + '}'
+        self.output_casestmt_end()
+        self.out.dedent()
+        self._result = self.out.string
+        
+        
+    def output_casestmt_start(self):
+        self.out + 'case ' + self.legacy_global.id + ':'
+        
+    def output_casestmt_end(self):
+        self.out.n() + 'break;'
+               
 HEADER_CLASS_STRING = """class message_header {
 
 public:
@@ -163,18 +228,13 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
         return {
             'i' : DTypeSpec('ints_in','ints_out', 'number_of_ints', 'int'),
             'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles', 'double')}
+            
     @late
     def out(self):
         return print_out()
-        
-    def start(self):
-        self.output_mpi_include()
-        self.output_local_includes()
-        self.out.lf().lf()
-        self.output_header_class_definition()
-        self.output_runloop_function_def_start()
-        self.output_switch_start()
-        
+    
+    @late
+    def legacy_functions(self):
         attribute_names = dir(self.class_with_legacy_functions)
         legacy_functions = []
         for x in attribute_names:
@@ -183,8 +243,35 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
             value = getattr(self.class_with_legacy_functions, x)
             if isinstance(value, legacy_function):
                 legacy_functions.append(value)
+        
+        legacy_functions.sort(key= lambda x: x.specification.id)
+        return legacy_functions
+        
+    @late
+    def legacy_globals(self):
+        attribute_names = dir(self.class_with_legacy_functions)
+        result = []
+        for x in attribute_names:
+            if x.startswith('__'):
+                continue
+            value = getattr(self.class_with_legacy_functions, x)
+            if isinstance(value, legacy_global):
+                result.append(value)
+        
+        result.sort(key= lambda x: x.id)
+        return result
+           
+    def start(self):
+        self.output_mpi_include()
+        self.output_local_includes()
+        self.output_extra_content()
+        
+        self.out.lf().lf()
+        self.output_header_class_definition()
+        self.output_runloop_function_def_start()
+        self.output_switch_start()
                 
-        for x in legacy_functions:
+        for x in self.legacy_functions:
             if x.specification.id == 0:
                 continue
             self.out.lf()
@@ -192,7 +279,14 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
             uc.specification = x.specification
             uc.out = self.out
             uc.start()
-                 
+         
+        for x in self.legacy_globals:
+            self.out.lf()
+            uc = MakeACStringOfALegacyGlobalSpecification()
+            uc.legacy_global = x
+            uc.out = self.out
+            uc.start()
+            
         self.output_switch_end()
         self.output_runloop_function_def_end()
         self.output_main()
@@ -200,12 +294,22 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
         
     def output_mpi_include(self):
         self.out.n() + '#include <mpi.h>'
+        
     def output_local_includes(self):
         self.out.n()
-        for x in ['muse_dynamics.h', 'parameters.h', 'local.h']:
-            self.out.n() + '#include "' + x + '"'
+        if hasattr(self.class_with_legacy_functions, 'include_headers'):
+            for x in self.class_with_legacy_functions.include_headers:
+                self.out.n() + '#include "' + x + '"'
+    
+    def output_extra_content(self):
+        self.out.lf()
+        if hasattr(self.class_with_legacy_functions, 'extra_content'):
+            self.out.n() + self.class_with_legacy_functions.extra_content
+    
+            
     def output_header_class_definition(self):
         self.out + HEADER_CLASS_STRING
+        
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'void run_loop() {'
         self.out.indent()
@@ -229,6 +333,7 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
                self.out.indent().lf() + 'parent.Recv(' + input_parameter_name + ', ' + 'request_header.' + number_parameter + ', ' + mpi_type+ ', 0, rank);'
                self.out.dedent().lf() +'}'
         self.out.lf().lf() + 'reply_header.tag = request_header.tag;'
+        
     def output_switch_start(self):
         self.out.lf().lf() + 'switch(request_header.tag) {'
         self.out.indent()
@@ -236,29 +341,28 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
         self.out.indent().lf()+'must_run_loop = false;'
         self.out.lf()+'break;'
         self.out.dedent()
+        
     def output_switch_end(self):
         self.out.lf() + 'default:'
         self.out.indent().lf() + 'reply_header.tag = -1;'
         self.out.dedent()
         self.out.dedent().lf() + '}'
         
-        
-    
-            
-            
-        
-        
     def output_runloop_function_def_end(self):
+        
         self.out.lf().lf() + 'reply_header.send(parent, rank);'
+        
         spec = [('number_of_doubles', 'doubles_out', 'MPI_DOUBLE'),('number_of_ints', 'ints_out', 'MPI_INT')]
         for number_parameter, parameter_name, mpi_type in spec:
                self.out.lf() + 'if(reply_header.' + number_parameter + ' > 0) {'
                self.out.indent().lf() + 'parent.Send(' + parameter_name + ', ' + 'reply_header.' + number_parameter + ', ' + mpi_type+ ', 0, 999);'
                self.out.dedent().lf() +'}'
+        
         self.out.dedent()
         self.out.lf() + '}'
         self.out.dedent()
         self.out.lf() + '}'
+        
     def output_main(self):
         self.out.lf().lf() + 'int main(int argc, char *argv[])'
         self.out.lf() + '{'
