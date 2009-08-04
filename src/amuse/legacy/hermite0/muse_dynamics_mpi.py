@@ -8,7 +8,7 @@ from amuse.legacy.support.core import RemoteFunction, legacy_global
 from amuse.support.units import nbody_system
 
 class Hermite(object):
-    include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h'];
+    include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h']
     
     extra_content = """
     int _add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz) {
@@ -61,9 +61,13 @@ class Hermite(object):
         
     
     t = legacy_global(name='t',id=20,dtype='d')
+    
     dt_param = legacy_global(name='dt_param',id=21,dtype='d')
+    
     dt_dia = legacy_global(name='dt_dia',id=22,dtype='d')
+    
     eps2 = legacy_global(name='eps2',id=23,dtype='d')
+    
     flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
             
     def __init__(self, convert_nbody = None):
@@ -80,24 +84,14 @@ class Hermite(object):
     def stop_worker():
         function = RemoteFunction()  
         function.id = 0
-        return function;
-        
-    def __del__(self):
-        self.stop_worker()
+        return function
 
-         
-        
-    def do_call(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_arg=[], ints_arg=[]):
-        #self.send_request(tag,id, int_arg1, int_arg2, doubles_arg, ints_arg)
-        #return self.recieve_result()
-        return (0,[],[])
-   
     @core.legacy_function   
     def setup_module():
         function = RemoteFunction()  
         function.id = 1
         function.result_type = 'i'
-        return function;
+        return function
     
     
     @core.legacy_function      
@@ -105,7 +99,7 @@ class Hermite(object):
         function = RemoteFunction()  
         function.id = 2
         function.result_type = 'i'
-        return function;
+        return function
     
     @core.legacy_function    
     def initialize_particles():
@@ -123,7 +117,7 @@ class Hermite(object):
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
         
     @core.legacy_function    
     def _get_state():
@@ -134,7 +128,7 @@ class Hermite(object):
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = None
-        return function;
+        return function
         
     @core.legacy_function    
     def evolve():
@@ -143,15 +137,22 @@ class Hermite(object):
         function.addParameter('time-end', dtype='d', direction=function.IN)
         function.addParameter('synchronize', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
         
     @core.legacy_function  
     def reinitialize_particles():
         function = RemoteFunction()  
         function.id = 4
         function.result_type = 'i'
-        return function;
+        return function
         
+    @core.legacy_function   
+    def get_number():
+        function = RemoteFunction()  
+        function.id = 7
+        function.result_type = 'i'
+        return function;
+     
     def add_particle(self, state):
         return self._add_particle(state.id, **state.to_keyword_args())
         
@@ -161,14 +162,7 @@ class Hermite(object):
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             setattr(result, x, name_to_value[x])  
         return result
-        
-    @core.legacy_function   
-    def get_number():
-        function = RemoteFunction()  
-        function.id = 7
-        function.result_type = 'i'
-        return function;
-        
+           
     def add_star(self, star):
         state = self.dynamics_state()
         state.id = star.id
@@ -188,7 +182,6 @@ class Hermite(object):
         
     def update_star(self, star):
         state = self.get_state(star.id)
-        
         star.mass = self.convert_nbody.to_si(nbody_system.mass(state.mass))
         star.position = self.convert_nbody.to_si(nbody_system.length(numpy.array((state.x, state.y, state.z))))
         star.velocity = self.convert_nbody.to_si(nbody_system.speed(numpy.array((state.vx, state.vy, state.vz))))

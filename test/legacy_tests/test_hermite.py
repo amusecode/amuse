@@ -10,6 +10,7 @@ from amuse.support.units import units
 import numpy
 
 class TestMPIInterface(unittest.TestCase):
+    
     def test1(self):
         hermite = mpi_interface.Hermite()
         hermite.setup_module()
@@ -68,6 +69,7 @@ class TestAmuseInterface(unittest.TestCase):
         
 
 class TestSwigInterface(unittest.TestCase):
+    
     def test1(self):
         hermite = swig_interface
         hermite.setup_module()
@@ -79,10 +81,12 @@ class TestSwigInterface(unittest.TestCase):
         self.assertEquals(new_state.mass,  retrieved_state.mass)
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
+        
     def test2(self):
         hermite = swig_interface
         hermite.eps2 = 0.101
         self.assertEquals(0.101, hermite.eps2)
+        
     def test3(self):
         hermite = swig_interface
         hermite.flag_collision = 1
