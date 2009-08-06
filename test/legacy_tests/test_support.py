@@ -189,6 +189,13 @@ class TestMakeACStringOfALegacyGlobalSpecification(unittest.TestCase):
         string = x.result
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
         self.assertEquals(string_no_spaces, 'case10:if(request_header.number_of_doubles==1){test=doubles_in[0];}else{reply_header.number_of_doubles=1;doubles_out[0]=test;}break;')
+    
+    def test2(self):
+        x = self._class_to_test()
+        x.legacy_global = legacy_global('test',id=10,dtype='i')
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case10:if(request_header.number_of_ints==1){test=ints_in[0];}else{reply_header.number_of_ints=1;ints_out[0]=test;}break;')
         
 
 

@@ -149,11 +149,9 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(object):
     @late
     def out(self):
         return print_out()
-        
-    def start(self):
-        self.output_runloop_function_def_start()
-        self.output_switch_start()
-        
+
+    @late
+    def legacy_functions(self):
         attribute_names = dir(self.class_with_legacy_functions)
         legacy_functions = []
         for x in attribute_names:
@@ -162,8 +160,15 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(object):
             value = getattr(self.class_with_legacy_functions, x)
             if isinstance(value, legacy_function):
                 legacy_functions.append(value)
-                
-        for x in legacy_functions:
+        
+        legacy_functions.sort(key= lambda x: x.specification.id)
+        return legacy_functions
+        
+    def start(self):
+        self.output_runloop_function_def_start()
+        self.output_switch_start()
+    
+        for x in self.legacy_functions:
             if x.specification.id == 0:
                 continue
             self.out.lf()
@@ -216,7 +221,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(object):
         self.out.dedent()
         self.out.lf().lf() + 'tag_in = header(1)'
         self.out.lf()      + 'number_of_doubles_in = header(2)'
-        self.out.lf()      + 'number_of_integers_in = header(3))'
+        self.out.lf()      + 'number_of_integers_in = header(3)'
         self.out.lf().lf() + 'tag_out = tag_in'
         self.out.lf()      + 'number_of_doubles_out = 0'
         self.out.lf()      + 'number_of_integers_out = 0'
@@ -252,7 +257,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(object):
         self.out.lf()      + 'header(2) = number_of_doubles_out'
         self.out.lf()      + 'header(3) = number_of_integers_out'
         
-        self.out.lf().lf() + 'MPI_SEND(header, 3, MPI_INTEGER, 0, 999, &'
+        self.out.lf().lf() + 'call MPI_SEND(header, 3, MPI_INTEGER, 0, 999, &'
         self.out.indent().lf() + 'parent, mpierror);'
         self.out.dedent().lf()
         
