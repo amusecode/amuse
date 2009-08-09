@@ -2,7 +2,9 @@
 Design - MPI interface to modules
 =================================
 
-The interface between the AMUSE python core and the legacy-codes will be based on the MPI framework. Choosing MPI and not SWIG or another direct coupling methodhas several advantages:
+The interface between the AMUSE python core and the legacy-codes will be
+based on the MPI framework. Choosing MPI and not SWIG or another direct
+coupling method has several advantages:
 
 * MPI is a well-known framework in the astrophysics community. 
   Other coupling methods are less known (like SWIG)
@@ -11,29 +13,56 @@ The interface between the AMUSE python core and the legacy-codes will be based o
   in SWIG / f2py couplings)
 * Multi-process support taken into account at the start of 
   the project.
+* Coupling is much looser.
 
 There may also be some disadvantages:
 
 * Need to define a protocol over MPI
 * More "hand-work" needed to couple code (SWIG/f2py generate an interface)
+* More overhead for every call, slower calls
 
-These disadvantages can be mitigated by creating a library that handles most of the coupling details. This library will have a Python, C and Fortran version. It will contain implementations of the protocol and hooks to connect with the legacy codes.
+These disadvantages can be mitigated by creating a library that handles
+most of the coupling details. This library will have a Python, C and
+Fortran version. It will contain implementations of the protocol and
+hooks to connect with the legacy codes.
+
+The overhead per call may be an important factor in the speed of the
+framework. We will investigate this with a number of tests. It may be
+possible to limit the overhead by sending a lot of data per call, for
+example setting the properties of a lot of stars in one call. We will
+compare sending a lot of methods with limited data to sending one method
+with a lot of data.
+
+Overall Operation
+-----------------
+
+The method call interface is a request/response protocol. The python script sends a
+request to the legacy code in the form of an MPI message containg the method id, and the number of parameters per 
+per type followed by an MPI message per parameter type (integer or double). The legacy responds with an MPI message 
+contiaining the number of results per type and an MPI message per result type.
+
+=========================== === =============
+Python script               ..  Legacy Code
+Client                      ..  Server
+=========================== === =============
+call function
+encode arguments to message
+send MPI message            --> ..
+..                              recieve MPI message
+..                              decode message
+..                              handle message, setting data, evolving the solution
+..                              encode message
+..                          <-- send message
+recieve MPI message 
+decode message
+returning result to script
+=========================== === =============
 
 
-Message control
----------------
+Extensions
+----------
 
-send -> recieve
-recieve <- send <---- callback possible
+Currently this design 
 
-Header message
---------------
-Fixed size
-
-Content message
----------------
-Size from header message
-
-An implementer will need to define a set of callback functions to provide the real functionality. (See detailed design later)
 
 
