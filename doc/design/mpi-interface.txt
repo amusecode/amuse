@@ -1,6 +1,11 @@
-=================================
-Design - MPI interface to modules
-=================================
+======================================
+Design - MPI interface to legacy codes
+======================================
+
+.. contents::
+
+Introduction
+------------
 
 The interface between the AMUSE python core and the legacy-codes will be
 based on the MPI framework. Choosing MPI and not SWIG or another direct
@@ -15,7 +20,7 @@ coupling method has several advantages:
   the project.
 * Coupling is much looser.
 
-There may also be some disadvantages:
+There are also be some disadvantages:
 
 * Need to define a protocol over MPI
 * More "hand-work" needed to couple code (SWIG/f2py generate an interface)
@@ -36,28 +41,100 @@ with a lot of data.
 Overall Operation
 -----------------
 
-The method call interface is a request/response protocol. The python script sends a
-request to the legacy code in the form of an MPI message containg the method id, and the number of parameters per 
-per type followed by an MPI message per parameter type (integer or double). The legacy responds with an MPI message 
-contiaining the number of results per type and an MPI message per result type.
+The method call interface is a request/response protocol. The python 
+script sends a request to the legacy code in the form of MPI 
+messages. The legacy code recieves these messages, decodes the 
+information and performs any necessary handling (for example calling a 
+subroutine to evolve the solution). After all handling is done the 
+legacy code responds with MPI messages. 
 
-=========================== === =============
-Python script               ..  Legacy Code
-Client                      ..  Server
-=========================== === =============
-call function
-encode arguments to message
-send MPI message            --> ..
-..                              recieve MPI message
-..                              decode message
-..                              handle message, setting data, evolving the solution
-..                              encode message
-..                          <-- send message
-recieve MPI message 
-decode message
-returning result to script
-=========================== === =============
+============================= === =============
+Python script                 ..  Legacy Code
+Client                        ..  Server
+============================= === =============
+start of function call
+encode arguments
+send MPI messages              >  
+..                                recieve MPI messages
+..                                decode messages
+..                                handle (setting data, evolving the solution)
+..                                encode response messages
+..                             <  send response messages
+recieve MPI response messages 
+decode response message
+return result to script
+end of function call
+============================= === =============
 
+Message format
+--------------
+Every request and response is made up of a number of MPI messages. The 
+request and response message have the same format. First, a header 
+message is sent. Second, optionally, several messages encoding data 
+(arguments or result values) of each type (integer, double, etc.) are 
+sent. In MPI every message can be seen to transport an array of a 
+datatype from one site (the python script) to another (the legacy 
+code). In the following we use this notation:
+
+::
+    NAME OF THE MESSAGE == datatype[content at position 0, 1, ...n]
+    
+
+The request headers consists of n+1 integers, 1 integer to specify the 
+method and n integers to specify the number of arguments of each type.
+
+::
+
+    REQUEST HEADER == int[tag, number of integers, number of doubles]
+    
+After the request header, the argument messages are sent. An argument 
+message is sent for every data type (such as integer or double). This 
+message contains all arguments of that type. The message handling layer 
+is responsible for putting the arguments in the correct order. 
+
+
+::
+    ARGUMENT MESSAGE = datatype[0 , ... number of datatype]
+
+For example
+
+::
+
+  int add_start(int id, double x, double y, double z, int type)
+  
+  is encoded as one request header and two argument headers
+  
+  REQUEST HEADER ==  int[1, 2, 3] 
+          (method tag = 1, number of integers = 2,  
+           number of doubles = 3)
+  
+  ARGUMENT MESSAGE == int[id, type] 
+         (the first argument and the last argument 
+          to the method are integers)
+          
+  ARGUMENT MESSAGE == double[x,y,z] 
+         (the second, third and fourth argument to 
+          the method are doubles)
+  
+
+
+
+Rationale
+~~~~~~~~~
+This format was choosen as every method call may contain parameters of 
+different types and MPI has a different message for each type. So this 
+format maps closely to MPI and we can leverage a lot of the MPI 
+protocol. We could also choose to put the entire message in one MPI 
+message and encode the message before sending and decode after 
+recieving. We have not done this as it would result in extra
+encoding/decoding complexity. Especially on the side of the legacy 
+codes, we want the code on the legacy side to be as small and simple 
+as possible. 
+
+MPI is capable of sending arrays of derived types (structures in C).
+To support this, more calls to the MPI interface are needed. Although 
+this may lead to less message send it also results in a more complex
+solution.
 
 Extensions
 ----------
