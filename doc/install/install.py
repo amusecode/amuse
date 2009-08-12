@@ -78,7 +78,7 @@ class InstallPrerequisites(object):
         commands = []
         commands.append([
           './configure','--prefix='+self.prefix,
-          '--enable-sharedlibs=gcc',
+          '--enable-sharedlibs=gcc','--enable-f90'
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
