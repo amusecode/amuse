@@ -52,7 +52,7 @@ class TestData(unittest.TestCase):
 class TestPlummer(TestData):
     def test1(self):
         state = pickle.loads(random_state)
-        m =  MakePlummerModel(2, random_state = state)
+        m =  MakePlummerModel(2, None, random_state = state)
         m1, p, v = m.new_model()
         self.assertEquals(m1[0,0], 0.5)
         self.assertEquals(m1[1,0], 0.5)

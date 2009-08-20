@@ -24,3 +24,7 @@ erg = named('energy','erg', 1e-7 * J)
 W = named('watt', 'W', J / s)
 
 LSun = named('solar luminotisity', 'LSun', 3.839e26 * W) 
+
+Pa = named('Pascal', 'Pa', N / (m ** 2))
+weber = named('weber', 'Wb', kg * m ** 2 * s ** -2 * A ** -1) 
+tesla = named('tesla', 'T', weber / (m ** 2))

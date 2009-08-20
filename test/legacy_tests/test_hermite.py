@@ -43,28 +43,46 @@ class TestMPIInterface(unittest.TestCase):
 class TestAmuseInterface(unittest.TestCase):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
-        
+
         hermite = mpi_interface.Hermite(convert_nbody)
         hermite.setup_module()
+        hermite.dt_dia = 5000
         
-        sun = core.Star(0)
+        sun = core.Particle(0)
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
-        
-        earth = core.Star(1)
+
+        earth = core.Particle(1)
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
-        
+
         hermite.add_star(sun)
         hermite.add_star(earth)
-        
-        hermite.evolve(1.0, 0.0)
-        hermite.update_star(sun)
+
+        hermite.evolve_model(365.0 | units.day)
         hermite.update_star(earth)
+        
+        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].in_(units.AU).number[0]
+        postion_after_full_rotation = earth.position.value().in_(units.AU) .number[0]
+        
+        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 6)
+        
+        hermite.evolve_model(365.0 + (365.0 / 2) | units.day)
+        
+        hermite.update_star(earth)
+        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[0]
+        self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
+        
+        
+        hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
+        
+        hermite.update_star(earth)
+        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
+        self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         hermite.cleanup_module()
         
 

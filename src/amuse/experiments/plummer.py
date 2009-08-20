@@ -3,15 +3,16 @@ experiment with HDF data format
 """
 import h5py
 from amuse.support.data import core
-from amuse.support.units import nbody
+from amuse.support.units import nbody_system
 
 from math import *
 import numpy, numpy.random
 import random
 
 class MakePlummerModel(object):
-    def __init__(self, number_of_particles, radius_cutoff = 22.8042468, mass_cutoff = 0.999, random_state = None):
+    def __init__(self, number_of_particles, convert_nbody, radius_cutoff = 22.8042468, mass_cutoff = 0.999, random_state = None):
         self.number_of_particles = number_of_particles
+        self.convert_nbody = convert_nbody
         self.mass_cutoff = min(mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff))
         self.random_state = random_state
         
@@ -81,15 +82,16 @@ class MakePlummerModel(object):
         position = position / 1.695
         velocity = velocity / sqrt(1 / 1.695)
         return (m, position, velocity)
+        
     @property
     def result(self):
         masses, positions, velocities = self.new_model()
         result = []
         for i in range(len(masses)):
-            star = core.Star(i)
-            star.mass = nbody.mass(masses[i][0])
-            star.position = nbody.length(positions[i])
-            star.velocity = nbody.speed(velocities[i])
+            star = core.Particle(i)
+            star.mass = self.convert_nbody.to_si(masses[i][0] | nbody_system.mass)
+            star.position = self.convert_nbody.to_si(nbody_system.length(positions[i]))
+            star.velocity = self.convert_nbody.to_si(nbody_system.speed(velocities[i]))
             result.append(star)
         return result
         

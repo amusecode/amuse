@@ -23,9 +23,25 @@ class value(object):
         other_in_my_units = other.in_(self.unit)
         return self.number + other_in_my_units.number | self.unit
         
-    def __lt__ (self, other):
+    def __sub__(self, other):
+        other_in_my_units = other.in_(self.unit)
+        return self.number - other_in_my_units.number | self.unit
+        
+    def __lt__(self, other):
         other_in_my_units = other.in_(self.unit)
         return self.number < other_in_my_units.number
+        
+    def __gt__(self, other):
+        other_in_my_units = other.in_(self.unit)
+        return self.number > other_in_my_units.number
+        
+    def __eq__(self, other):
+        other_in_my_units = other.in_(self.unit)
+        return self.number == other_in_my_units.number
+        
+    def __neq__(self, other):
+        other_in_my_units = other.in_(self.unit)
+        return self.number != other_in_my_units.number
             
     def in_(self, another_unit):
         value_of_unit_in_another_unit = self.unit.in_(another_unit)

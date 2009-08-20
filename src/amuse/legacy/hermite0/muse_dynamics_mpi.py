@@ -134,7 +134,7 @@ class Hermite(object):
     def evolve():
         function = RemoteFunction()  
         function.id = 6
-        function.addParameter('time-end', dtype='d', direction=function.IN)
+        function.addParameter('time_end', dtype='d', direction=function.IN)
         function.addParameter('synchronize', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -166,9 +166,9 @@ class Hermite(object):
     def add_star(self, star):
         state = self.dynamics_state()
         state.id = star.id
-        mass = self.convert_nbody.to_nbody(star.mass)
-        position = self.convert_nbody.to_nbody(star.position)
-        velocity = self.convert_nbody.to_nbody(star.velocity)
+        mass = self.convert_nbody.to_nbody(star.mass.value())
+        position = self.convert_nbody.to_nbody(star.position.value())
+        velocity = self.convert_nbody.to_nbody(star.velocity.value())
         
         state.mass = mass.number
         state.x = position.number[0]
@@ -177,15 +177,23 @@ class Hermite(object):
         state.vx = velocity.number[0]
         state.vy = velocity.number[1]
         state.vz = velocity.number[2]
-        state.radius = self.convert_nbody.to_nbody(star.radius).number
+        state.radius = self.convert_nbody.to_nbody(star.radius.value()).number
         self.add_particle(state)
         
     def update_star(self, star):
         state = self.get_state(star.id)
-        star.mass = self.convert_nbody.to_si(nbody_system.mass(state.mass))
-        star.position = self.convert_nbody.to_si(nbody_system.length(numpy.array((state.x, state.y, state.z))))
-        star.velocity = self.convert_nbody.to_si(nbody_system.speed(numpy.array((state.vx, state.vy, state.vz))))
+        time = self.convert_nbody.to_si( self.t | nbody_system.time)
+        #star.mass.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.mass(state.mass)))
+        star.position.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.length(numpy.array((state.x, state.y, state.z)))))
+        star.velocity.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.speed(numpy.array((state.vx, state.vy, state.vz)))))
         return star
+         
+    def evolve_model(self, time_end):
+        result = self.evolve(self.convert_nbody.to_nbody(time_end).number, 0.0)
+        return result
+        
+    def set_eps2(self, eps2):
+        self.eps2 = self.convert_nbody.to_nbody(eps2).number
         
     
   

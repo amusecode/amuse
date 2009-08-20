@@ -1,6 +1,9 @@
 from amuse.support.units import si
 
+from amuse.support.units import units
+
 class Domain(object):
+    time = 0.0 | si.s , "model time"
     pass
     
 class Gravity(Domain):
@@ -9,6 +12,25 @@ class Gravity(Domain):
     velocity = [0.0, 0.0, 0.0] | si.m / si.s , "the velocity vector of a star"
     radius = 0.0 | si.m , "the radius of a star"
     acceleration = [0.0, 0.0, 0.0] | si.m / (si.s ** 2), "the acceleraration vector of a star"
+
+class Hydrodynamics(Domain):
+    pressure = 0.0 | units.Pa , "the pressure in a region of space"
+    density = 0.0 | si.kg / (si.m ** 3), "the density of molecules or solid matter"
+    temperature = 0.0 | si.K , "the temperature of the gas"
+    magnetic_field = 0.0 | tesla, "magnetic field created by gas and stars"
+    velovity_field = 0.0 | si.m / si.s  , "velocity of the gas"
+    gravity_potential = 0.0 | si.no_unit  , "gravity forces from stars and gas"
+    viscosity = 0.0 | si.no_unit, "viscosity of the gas cloud"
+    
+class RadiativeTransfer(Domian):
+    temperature_gas = 0.0 | si.K , "the temperature of the gas"
+    temperature_dust = 0.0 | si.K , "the temperature of the dust"
+    temperature_background = 0.0 | si.K , "the temperature of the background"
+    density = 0.0 | si.mol / (si.m**3), "modulecular density"
+    magnetic_field = 0.0 | tesla, "magnetic field created by gas and stars"
+    velovity_field = 0.0 | si.m / si.s  , "velocity of the gas"
+    
+    
     
 class StellarEvolution(Domain):
     mass = 0.0 | si.g , "the mass of a star"
