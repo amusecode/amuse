@@ -15,7 +15,7 @@ from matplotlib import pyplot
 import numpy 
 
 class TestAmuseInterface(unittest.TestCase):
-    def test1(self):
+    def xtest1(self):
         random.seed()
         
         number_of_stars = 10

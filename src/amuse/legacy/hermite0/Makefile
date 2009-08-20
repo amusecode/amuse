@@ -1,6 +1,7 @@
 
-CFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR) -fPIC
+CFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 CXXFLAGS = $(CFLAGS) 
+
 LDFLAGS = -lm $(MUSE_LD_FLAGS)
 
 OBJS = muse_dynamics.o

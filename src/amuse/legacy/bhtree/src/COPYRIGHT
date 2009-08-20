@@ -1,0 +1,30 @@
+Ownership and Authorship
+
+The primary author of this nbody tree code (version 1.1) is Jun
+Makino.  Some of the basic code are recycled from STARLAB (as noted in
+the header of respective files). I encourage users of nbody to
+modify/improve it.  They can send their code to Jun Makino, after they
+have carefully checked that it is working. I will then try to see if
+the new code can be integrated to the old version, or can live as
+separate piece of program, and if either is possible, integrate it to
+the next distribution package.
+
+The prospect of having several people share (and possibly augment) a
+software package leads to the thorny question of ownership of
+software, and, more concretely, authorship of papers written using
+that software.  I want the distribution to be as free as possible, but
+nbody represents a substantial investment of programming time and
+effort on the part of the contributors.  For that reason, while I do
+not wish to establish hard-and-fast rules, I feel that some guidelines
+for the use of the package may be helpful.
+
+If nbody is used in a project and is found useful, then both the
+package and the authors of the programs used should simply be
+acknowledged at the end of any resultant papers.  A similar
+acknowledgment in the later papers of a long series would also be
+appropriate. In addition, the authors should be informed of the
+resultant papers.
+
+I decided not to ask for the coauthorship, since, practically
+speaking, to be one of the authors of a paper of which content I'm not 
+familiar with is impractical and painful.

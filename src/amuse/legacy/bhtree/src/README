@@ -1,0 +1,13 @@
+The README file for nbody version 1.1
+
+Copyright 1998, 1999 Jun Makino
+
+-- Copyright of the code: See COPYRIGHT file
+-- Installation and using: See nbody_guide.tex ( or .ps or .html, if provided)
+
+This code was adapted by Simon Portegies Zwart and Steve McMillan to
+the MUSE environment.
+
+*** NOTE that the standalone executable in this version is called
+*** BHTC, while in the original release (and in the GPU version) it is
+*** called nbody.
