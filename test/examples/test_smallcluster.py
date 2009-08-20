@@ -18,7 +18,7 @@ class TestAmuseInterface(unittest.TestCase):
     def test1(self):
         random.seed()
         
-        number_of_stars = 40
+        number_of_stars = 10
         initial_mass = 5
         
         convert_nbody = nbody_system.nbody_to_si(number_of_stars * initial_mass | units.MSun, 1 | units.lightyear)
