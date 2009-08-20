@@ -146,6 +146,13 @@ void run_loop() {
         reply_header.number_of_ints = 1;
         reply_header.number_of_doubles = 8;
         break;
+      case 9:
+        ints_out[0] = set_mass(
+          ints_in[0] ,
+          doubles_in[0]
+        );
+        reply_header.number_of_ints = 1;
+        break;
       case 20:
         if(request_header.number_of_doubles == 1){
           t = doubles_in[0];

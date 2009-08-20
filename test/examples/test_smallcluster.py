@@ -18,7 +18,7 @@ class TestAmuseInterface(unittest.TestCase):
     def test1(self):
         random.seed()
         
-        number_of_stars = 300
+        number_of_stars = 40
         initial_mass = 5
         
         convert_nbody = nbody_system.nbody_to_si(number_of_stars * initial_mass | units.MSun, 1 | units.lightyear)
@@ -56,7 +56,9 @@ class TestAmuseInterface(unittest.TestCase):
             for x in particles:
                 sse.evolve_particle(x, x.start_time.value() + time)
             
-            print "evolved model to t = " + str(time)        
+            print "evolved model to t = " + str(time)
+            
+            hermite.update_attributes(particles.mass)
             time += 2 |units.Myr
         
        

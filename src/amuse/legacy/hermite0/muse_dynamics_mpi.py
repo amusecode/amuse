@@ -153,6 +153,16 @@ class Hermite(object):
         function.result_type = 'i'
         return function;
      
+    @core.legacy_function
+    def set_mass():
+        function = RemoteFunction()  
+        function.id = 9
+        function.result_type = 'i'
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('mass', dtype='d', direction=function.IN)
+        return function;
+        
+     
     def add_particle(self, state):
         return self._add_particle(state.id, **state.to_keyword_args())
         
@@ -203,6 +213,11 @@ class Hermite(object):
     def update_particles(self, particles):
         for x in particles:
             self.update_star(x)
+            
+    def update_attributes(self, attributes):
+        for id, x in attributes:
+            if x.name == 'mass':
+                self.set_mass(id, self.convert_nbody.to_nbody(x.value()).number)
         
     
   

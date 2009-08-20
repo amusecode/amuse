@@ -49,7 +49,18 @@ class TemporalAttribute(object):
     
 class Particles(object):
     """A set of particle objects"""
-    pass
+    def __init__(self, particles):
+        self.particles = particles
+        
+    def __iter__(self):
+        return iter(self.particles)
+
+    @property
+    def mass(self):
+        result = []
+        for x in self:
+            result.append((x.id, x.mass))
+        return result
    
 class Particle(object):
     """A physical object or a physical region simulated as a 

@@ -30,6 +30,9 @@ cleanall:	clean
 muse_driver:	muse_driver.cc $(OBJS)
 	g++ $@.cc $(OBJS) -o $@
 
+muse_worker.cc: muse_dynamics_mpi.py
+	../../../../bin/create_c_worker.py muse_dynamics_mpi.py Hermite > $@
+
 muse_worker:	muse_worker.cc $(OBJS)
 	mpicxx $@.cc $(OBJS) -o $@
 

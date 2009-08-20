@@ -93,7 +93,7 @@ class MakePlummerModel(object):
             star.position = self.convert_nbody.to_si(nbody_system.length(positions[i]))
             star.velocity = self.convert_nbody.to_si(nbody_system.speed(velocities[i]))
             result.append(star)
-        return result
+        return core.Particles(result)
         
         
         
