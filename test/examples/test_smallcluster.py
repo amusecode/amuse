@@ -47,6 +47,7 @@ class TestAmuseInterface(unittest.TestCase):
         time = 1 | units.Myr
         end_time = 40 | units.Myr
         
+        print "evolving the model until t = " + str(end_time)
         while time < end_time:
             hermite.evolve_model(time)
             
@@ -54,9 +55,9 @@ class TestAmuseInterface(unittest.TestCase):
             
             for x in particles:
                 sse.evolve_particle(x, x.start_time.value() + time)
-                    
+            
+            print "evolved model to t = " + str(time)        
             time += 2 |units.Myr
-            print "evolved model to " + str(time)
         
        
         print "plotting the data"
