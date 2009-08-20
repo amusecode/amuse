@@ -194,6 +194,15 @@ class Hermite(object):
         
     def set_eps2(self, eps2):
         self.eps2 = self.convert_nbody.to_nbody(eps2).number
+    
+    
+    def add_particles(self, particles):
+        for x in particles:
+            self.add_star(x)
+            
+    def update_particles(self, particles):
+        for x in particles:
+            self.update_star(x)
         
     
   

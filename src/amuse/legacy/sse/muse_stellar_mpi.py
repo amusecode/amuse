@@ -215,10 +215,14 @@ class SSE(object):
             t1 = particle.current_time.value()
             dt = t1 - t0
             t0 = t1
-            #if dt.in_(units.Myr).number < 1e-20:
-            #    print t, t0, t1, dt, "BREAK BREAK BREAK!"
-            #    return
+            if dt.in_(units.Myr).number == 0.0:
+                print t, t0, t1, dt, "BREAK BREAK BREAK!"
+                return
             if particle.type.value().number == 15:
                 return
+                
+    def initialize_particles(self, particles):
+        for x in particles:
+            self.initialize_star(x)
         
         
