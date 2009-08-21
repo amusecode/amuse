@@ -9,8 +9,6 @@ from amuse.support.units import units
 
 import numpy
 
-import matplotlib
-matplotlib.use('svg')
 from matplotlib import pyplot
 
 
