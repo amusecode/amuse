@@ -15,7 +15,10 @@
    inkscape:version="0.46"
    sodipodi:docname="packages.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
-   version="1.0">
+   version="1.0"
+   inkscape:export-filename="/home/vanelteren/develop/amuse/amuse-svn/doc/design/packages.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs4">
     <marker
@@ -51,14 +54,14 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.82101012"
      inkscape:cx="372.04724"
-     inkscape:cy="564.15883"
+     inkscape:cy="208.92919"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g3193"
      showgrid="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1085"
-     inkscape:window-x="0"
-     inkscape:window-y="25" />
+     inkscape:window-width="1103"
+     inkscape:window-height="803"
+     inkscape:window-x="371"
+     inkscape:window-y="169" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -101,7 +104,7 @@
                y="71.902748"
                x="121.035"
                id="tspan3181"
-               sodipodi:role="line">API</tspan></text>
+               sodipodi:role="line">Physics</tspan></text>
           <text
              sodipodi:linespacing="125%"
              id="text3183"
