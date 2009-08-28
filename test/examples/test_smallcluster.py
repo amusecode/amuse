@@ -15,7 +15,6 @@ from amuse.experiments.plummer import MakePlummerModel
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
     random.seed()
     
-    number_of_stars = 10
     initial_mass = 5
     
     convert_nbody = nbody_system.nbody_to_si(number_of_stars * initial_mass | units.MSun, 1 | units.lightyear)
@@ -94,7 +93,7 @@ def test_simulate_small_cluster():
     run with all other tests. This method simulates
     a too small cluster, this is done to limit the testing time.
     """
-    simulate_small_cluster(5, 5 | units.Myr)
+    simulate_small_cluster(30, 40 | units.Myr)
     
 if __name__ == '__main__':
     simulate_small_cluster(int(argv[1]), int(argv[2]) | units.Myr, argv[3])

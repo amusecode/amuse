@@ -24,12 +24,12 @@ class TestUnitConversions(unittest.TestCase):
         h = named('hour','h',60 * 60 * s)
         kmh = km/h
         ms = m/s
-        val = ms(10)
+        val = 10 | m/s
         self.assertEqual(36,val.in_(kmh).number)
     def test5(self):
         km = named('kilometer','km',1000 * m)
         h = named('hour','h',60 * 60 * s)
         kmh = km/h
         ms = m/s
-        val = ms(10)
+        val = 10 | ms
         self.assertEqual(36,val.in_(kmh).number)
