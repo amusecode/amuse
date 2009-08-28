@@ -87,8 +87,10 @@ class TestAmuseInterface(unittest.TestCase):
         instance.update_star(earth)
         
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
+        
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 1)
         instance.cleanup_module()
+        del instance
         
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))

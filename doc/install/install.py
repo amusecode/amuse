@@ -43,21 +43,26 @@ class InstallPrerequisites(object):
           ('hdf' , [],  '1.8.3' , 'hdf5-' , '.tar.gz' , 'http://www.hdfgroup.org/ftp/HDF5/current/src/', self.hdf5_build) ,
           ('h5py', ['hdf'], '1.2.0', 'h5py-' , '.tar.gz', 'http://h5py.googlecode.com/files/', self.h5py_build) ,
           ('mpich2', [], '1.1', 'mpich2-', '.tar.gz', 'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', self.mpich2_build) ,
+          #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           ('mpi4py', ['mpich2'], '1.0.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
         ]
     @late
     def temp_dir(self):
         return os.path.join(self.prefix,'install','_temp')
+    
     def setup_temp_dir(self):
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
+    
     def run_application(self, args, cwd):
         print "starting " , ' '.join(args)
         subprocess.Popen(args, cwd=cwd).wait()
         print "finished " , ' '.join(args)
+    
     def h5py_build(self, path):
         self.run_application(['python','setup.py','configure', '--hdf5='+self.prefix, '--api=18'], cwd=path)
         self.python_build(path)
+        
     def hdf5_build(self, path):
         commands = []
         commands.append([
@@ -69,11 +74,25 @@ class InstallPrerequisites(object):
         commands.append(['make', 'install'])
         for x in commands:
             self.run_application(x, path)
+    
     def python_build(self, path):
         self.run_application(['python','setup.py','build'], cwd=path)
         self.run_application(['python','setup.py','install'], cwd=path)
+    
     def mercurial_build(self, path):
         self.run_application(['make','install','PREFIX='+self.prefix], cwd=path)
+    
+    def openmpi_build(self, path):
+        commands = []
+        commands.append([
+          './configure','--prefix='+self.prefix,
+          '--enable-sharedlibs=gcc','--enable-f90'
+        ])
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        for x in commands:
+            self.run_application(x, path)
+            
     def mpich2_build(self, path):
         commands = []
         commands.append([
@@ -84,6 +103,7 @@ class InstallPrerequisites(object):
         commands.append(['make', 'install'])
         for x in commands:
             self.run_application(x, path)
+            
     def openssl_build(self, path):
         commands = []
         commands.append([
@@ -95,6 +115,7 @@ class InstallPrerequisites(object):
         commands.append(['make', 'install'])
         for x in commands:
             self.run_application(x, path)
+
     def download_apps(self, names):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
