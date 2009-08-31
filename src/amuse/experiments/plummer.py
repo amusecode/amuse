@@ -46,7 +46,7 @@ class MakePlummerModel(object):
     def new_velocities_spherical_coordinates(self, radius):
         pi2 = pi * 2
         x,y = self.new_xy_for_velocity()
-        velocity = x * sqrt(2.0) * numpy.power( 1.0 + radius*radius, -0.25);
+        velocity = x * sqrt(2.0) * numpy.power( 1.0 + radius*radius, -0.25)
         theta = numpy.arccos(numpy.random.uniform(-1.0,1.0, (self.number_of_particles,1)))
         phi = numpy.random.uniform(-1.0,pi2, (self.number_of_particles,1))
         return (velocity,theta,phi)
