@@ -19,6 +19,7 @@ import threading
 from multiprocessing import Process, Queue
 import Queue as queue
 from optparse import OptionParser
+from subprocess import Popen
 
 def number_str(number, singular, plural = None):
         if plural == None:
@@ -230,9 +231,9 @@ class TimeATest(object):
 
 
 def _run_the_tests(directory, results_queue, id_to_timings):
-    #from subprocess import Popen
-    
-    #self.Popen(["svn", "update"])
+    Popen(["svn", "update"])
+    Popen(["make", "clean"])
+    Popen(["make", "all"])
     try:
         print "start test run"
         null_device = open('/dev/null')
@@ -277,7 +278,6 @@ class RunAllTestsOnInterval(object):
             time.sleep(self.interval_in_seconds)
 
 class WriteTestReportOnTestingBlog(object):
-    from subprocess import Popen
     
     def __init__(self, report, timings):
         self.report = report
@@ -358,7 +358,7 @@ class WriteTestReportOnTestingBlog(object):
                 file.write('\n')
                 file.write('</li>')
             file.write('</ul>')
-        self.Popen(["scp", path, "doctor:"+self.remote_directory])
+        Popen(["scp", path, "doctor:"+self.remote_directory])
         
     
         
