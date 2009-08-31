@@ -18,6 +18,8 @@ OBJ	= src/deltat.o src/evolv1.o src/hrdiag.o src/kick.o \
 	  src/mlwind.o src/mrenv.o src/ran3.o src/star.o \
 	  src/zcnsts.o src/zfuncs.o
 
+all:    muse_worker1
+
 compile:	$(TARGET)
 
 configure:
@@ -40,6 +42,6 @@ muse_worker1:	muse_worker.f90  SSE_muse_interface.o  $(OBJ)
 
 muse_worker:	muse_worker.cc  SSE_muse_interface.o  $(OBJ)
 	mpicxx $@.cc  SSE_muse_interface.o $(OBJ) -o $@ -lgfortran
-	
+
 .f.o: $<
 	$(FORT) -c -o $@ $< 
