@@ -235,7 +235,6 @@ def _run_the_tests(directory, results_queue, id_to_timings):
     Popen(["svn", "update"])
     Popen(["make", "clean"])
     Popen(["make", "all"])
-    print "XXX"
     
     try:
         print "start test run"
