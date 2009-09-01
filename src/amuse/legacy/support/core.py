@@ -231,12 +231,13 @@ class RemoteFunction(object):
     
     def prepare_output_parameters(self):
         for dtype, parameters in self.dtype_to_output_parameters.iteritems():
+            print dtype, self.result_type
             if dtype == self.result_type:
                 offset = 1
             else:
                 offset = 0
             for index, parameter in enumerate(parameters):
-                parameter = offset + indexs
+                parameter.output_index = offset + index
     
 class MpiChannel(object):
     
