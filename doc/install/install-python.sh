@@ -70,4 +70,6 @@ fi
 
 make 
 make install
+make 
+make install
 echo "..Done"

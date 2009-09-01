@@ -19,6 +19,8 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
             
         
     def start(self):
+        
+        self.specification.prepare_output_parameters()
         self.output_casestmt_start()
         self.out.indent()
         self.output_function_start()
@@ -35,54 +37,42 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
         
         first = True
         
-        for name, dtype, direction in self.specification.parameters:
-            spec = self.dtype_to_spec[dtype]
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.dtype]
             
             if first:
                 first = False
             else:
                 self.out + ' ,'
                 
-            if direction == RemoteFunction.IN:
+            if parameter.direction == RemoteFunction.IN:
                 self.out.n() + spec.input_var_name 
-                self.out + '[' + spec.number_of_inputs + ']'
-                spec.number_of_inputs += 1
-            if direction == RemoteFunction.INOUT:
+                self.out + '[' + parameter.input_index + ']'
+            if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + '&' + spec.input_var_name 
-                self.out + '[' + spec.number_of_inputs + ']'
-                spec.number_of_inputs += 1
-            elif direction == RemoteFunction.OUT:
+                self.out + '[' + parameter.input_index + ']'
+            elif parameter.direction == RemoteFunction.OUT:
                 self.out.n() + '&' + spec.output_var_name
-                self.out + '[' + spec.number_of_outputs + ']'
-                spec.number_of_outputs += 1
+                self.out + '[' + parameter.output_index + ']'
     
         self.out.dedent()
         
     def output_lines_with_inout_variables(self):
-        dtype_to_incount = {}
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.dtype]
         
-        for name, dtype, direction in self.specification.parameters:
-            spec = self.dtype_to_spec[dtype]
-            count = dtype_to_incount.get(dtype, 0)
-        
-            if direction == RemoteFunction.IN:
-                dtype_to_incount[dtype] = count + 1
-            if direction == RemoteFunction.INOUT:
+            if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + spec.output_var_name
-                self.out + '[' + spec.number_of_outputs + ']'
+                self.out + '[' + parameter.output_index + ']'
                 self.out + ' = '
-                self.out + spec.input_var_name + '[' + count + ']'+';'
-                spec.number_of_outputs += 1
-                dtype_to_incount[dtype] = count + 1
-    
+                self.out + spec.input_var_name + '[' + parameter.input_index + ']'+';'
+                
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
         
-        for name, dtype, direction in self.specification.parameters:
-            if direction == RemoteFunction.OUT \
-                or direction == RemoteFunction.INOUT:
-                count = dtype_to_count.get(dtype, 0)
-                dtype_to_count[dtype] = count + 1
+        for parameter in self.specification.output_parameters:
+            count = dtype_to_count.get(parameter.dtype, 0)
+            dtype_to_count[parameter.dtype] = count + 1
                 
         if not self.specification.result_type is None:
             count = dtype_to_count.get(self.specification.result_type, 0)

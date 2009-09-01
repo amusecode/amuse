@@ -5,9 +5,29 @@ from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
 
 from zlib import crc32
+from mpi4py import MPI
 
 import numpy
 
+class DataType(object):
+    pass
+    
+class IntDataType(DataType):
+    short_key = 'i'
+    mpi_type = MPI.INT
+    pass
+    
+class DoubleDataType(DataType):
+    short_key = 'd'
+    mpi_type = MPI.DOUBLE
+    pass
+    
+class FloatDataType(DataType):
+    short_key = 'f'
+    mpi_type = MPI.FLOAT
+    pass
+
+    
 class LegacyCall(object):
     """A legacy_call implements the runtime call to the remote process.
     """
@@ -17,33 +37,30 @@ class LegacyCall(object):
         self.specification = specification
     
     def __call__(self, *arguments_list, **keyword_arguments):
-        dtype_to_values_and_keyword = {
-            'd' : [[],'doubles_in',0],
-            'i' : [[],'ints_in',0]
-        }
         
-        for name, dtype, direction in self.specification.parameters:
-            if direction == RemoteFunction.IN or direction == RemoteFunction.INOUT:
-                values = dtype_to_values_and_keyword[dtype]
-                values[0].append(None)
-            
+        
+        dtype_to_values = self.specification.new_dtype_to_values()
+        
         names_in_argument_list = set([])
         for index, argument in enumerate(arguments_list):
-            name, dtype, direction = self.specification.parameters[index]
-            names_in_argument_list.add(name)
-            values = dtype_to_values_and_keyword[dtype]
-            values[0][values[2]] = argument
-            values[2] += 1
+            parameter = self.specification.input_parameters[index]
+            names_in_argument_list.add(parameter.name)
+            
+            values = dtype_to_values[parameter.dtype]
+            values[parameter.input_index] = argument
         
-        for parameters in self.specification.dtype_to_input_parameters.values():
-            for index, parameter in enumerate(parameters):
-                name, dtype, direction = parameter
-                if name in keyword_arguments:
-                    values = dtype_to_values_and_keyword[dtype]
-                    values[0][index] = keyword_arguments[name]
-               
+        for index, parameter in enumerate(self.specification.input_parameters):
+                if parameter.name in keyword_arguments:
+                    values = dtype_to_values[parameter.dtype]
+                    values[parameter.input_index] = keyword_arguments[parameter.name]
+        
+        dtype_to_keyword = {
+            'd' : 'doubles_in',
+            'i' : 'ints_in'
+        }       
         call_keyword_arguments = {}
-        for values, keyword, count in dtype_to_values_and_keyword.values():
+        for dtype, values in dtype_to_values.iteritems():
+            keyword = dtype_to_keyword[dtype]
             call_keyword_arguments[keyword] = values
             
         return self.do_call(self.specification.id, **call_keyword_arguments)
@@ -51,35 +68,34 @@ class LegacyCall(object):
     def do_call(self, id, **keyword_arguments):
         self.interface.channel.send_message(id , **keyword_arguments)
         (doubles, ints) = self.interface.channel.recv_message(id)
+        floats = []
         
         
-        
-        number_of_outputs = 0
-        for name, dtype, direction in self.specification.parameters:
-            if direction == RemoteFunction.OUT or direction == RemoteFunction.INOUT:
-                number_of_outputs += 1
-       
+        number_of_outputs = len(self.specification.output_parameters)
         
         if number_of_outputs == 0:
             if self.specification.result_type == 'i':
                 return ints[0]       
             if self.specification.result_type == 'd':
                 return doubles[0] 
+            if self.specification.result_type == 'f':
+                return floats[0] 
         
         if number_of_outputs == 1:
             if len(ints) == 1:
                 return ints[0]
             if len(doubles) == 1:
                 return doubles[0]
+            if len(floats) == 1:
+                return floats[0]
         
         result = OrderedDictionary()
         dtype_to_array = {
             'd' : list(reversed(doubles)),
             'i' : list(reversed(ints))
         }
-        for name, dtype, direction in self.specification.parameters:
-            if direction == RemoteFunction.OUT or direction == RemoteFunction.INOUT:
-                result[name] = dtype_to_array[dtype].pop()
+        for parameter in self.specification.output_parameters:
+            result[parameter.name] = dtype_to_array[parameter.dtype].pop()
                 
         return result
        
@@ -149,7 +165,24 @@ class legacy_global(object):
         result.name = self.name
         result.result_type = self.dtype
         return result
+     
+class Parameter(object):
+    def __init__(self, name, dtype, direction):
+        self.name = name
+        self.dtype = dtype
+        self.direction = direction
+        self.input_index = -1
+        self.output_index = -1
         
+    def is_input(self):
+        return ( self.direction == RemoteFunction.IN 
+            or self.direction == RemoteFunction.INOUT)
+            
+    
+    def is_output(self):
+        return ( self.direction == RemoteFunction.OUT 
+            or self.direction == RemoteFunction.INOUT)
+                    
 class RemoteFunction(object):
     IN = object()
     OUT = object()
@@ -160,59 +193,88 @@ class RemoteFunction(object):
         self.name = None
         self.id = None
         self.result_type = None
+        self.input_parameters = []
+        self.output_parameters = []
+        self.dtype_to_input_parameters = {}
+        self.dtype_to_output_parameters = {}
         
     def addParameter(self, name, dtype = 'i', direction = IN):
-        self.parameters.append((name, dtype, direction))
-    
-    @property
-    def dtype_to_input_parameters(self):
+        parameter = Parameter(name, dtype, direction)
+        self.parameters.append(parameter)
+        
+        if parameter.is_input():
+            self.add_input_parameter(parameter)
+        if parameter.is_output():
+            self.add_output_parameter(parameter)
+            
+    def add_input_parameter(self, parameter):
+        self.input_parameters.append(parameter)
+        
+        parameters = self.dtype_to_input_parameters.get(parameter.dtype, [])
+        parameters.append(parameter)
+        parameter.input_index = len(parameters) - 1
+        self.dtype_to_input_parameters[parameter.dtype] = parameters
+   
+    def add_output_parameter(self, parameter):
+        self.output_parameters.append(parameter)
+        
+        parameters = self.dtype_to_output_parameters.get(parameter.dtype, [])
+        parameters.append(parameter)
+        parameter.output_index = len(parameters) - 1
+        self.dtype_to_output_parameters[parameter.dtype] = parameters
+   
+    def new_dtype_to_values(self):
         result = {}
-        for name, dtype, direction in self.parameters:
-            parameters = result.get(dtype, [])
-            parameters.append((name, dtype, direction))
-            result[dtype] = parameters
+        for dtype, parameters in self.dtype_to_input_parameters.iteritems():
+            result[dtype] =  [None] * len(parameters)   
         return result
-                
     
+    def prepare_output_parameters(self):
+        for dtype, parameters in self.dtype_to_output_parameters.iteritems():
+            if dtype == self.result_type:
+                offset = 1
+            else:
+                offset = 0
+            for index, parameter in enumerate(parameters):
+                parameter = offset + indexs
     
 class MpiChannel(object):
-    from mpi4py import MPI
     
     def __init__(self, intercomm):
         self.intercomm = intercomm
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[]):
         header = numpy.array([tag, len(doubles_in), len(ints_in), len(floats_in)], dtype='i')
-        self.intercomm.Send([header, self.MPI.INT], dest=0, tag=0)
+        self.intercomm.Send([header, MPI.INT], dest=0, tag=0)
         if doubles_in:
             doubles = numpy.array(doubles_in, dtype='d')
-            self.intercomm.Send([doubles, self.MPI.DOUBLE], dest=0, tag=0)
+            self.intercomm.Send([doubles, MPI.DOUBLE], dest=0, tag=0)
         if ints_in:
             ints = numpy.array(ints_in, dtype='i')
-            self.intercomm.Send([ints, self.MPI.INT], dest=0, tag=0)
+            self.intercomm.Send([ints, MPI.INT], dest=0, tag=0)
         if floats_in:
-            floats = numpy.array(floats_in, dtype='i')
-            self.intercomm.Send([floats, self.MPI.FLOAT], dest=0, tag=0)
+            floats = numpy.array(floats_in, dtype='f')
+            self.intercomm.Send([floats, MPI.FLOAT], dest=0, tag=0)
             
     def recv_message(self, tag):
         header = numpy.empty(4,  dtype='i')
-        self.intercomm.Recv([header, self.MPI.INT], source=0, tag=999)
+        self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
         n_doubles = header[1]
         n_ints = header[2]
         n_floats = header[3]
         if n_doubles > 0:
             doubles_result = numpy.empty(n_doubles,  dtype='d')
-            self.intercomm.Recv([doubles_result, self.MPI.DOUBLE], source=0, tag=999)
+            self.intercomm.Recv([doubles_result, MPI.DOUBLE], source=0, tag=999)
         else:
             doubles_result = []
         if n_ints > 0:
             ints_result = numpy.empty(n_ints,  dtype='i')
-            self.intercomm.Recv([ints_result, self.MPI.INT], source=0, tag=999)
+            self.intercomm.Recv([ints_result, MPI.INT], source=0, tag=999)
         else:
             ints_result = []
         if n_floats > 0:
-            floats_result = numpy.empty(n_floats,  dtype='i')
-            self.intercomm.Recv([floats_result, self.MPI.FLOAT], source=0, tag=999)
+            floats_result = numpy.empty(n_floats,  dtype='f')
+            self.intercomm.Recv([floats_result, MPI.FLOAT], source=0, tag=999)
         else:
             floats_result = []
         if header[0] < 0:
