@@ -6,7 +6,7 @@ SUBROUTINE run_loop
   integer :: must_run_loop
   integer mpiStatus(MPI_STATUS_SIZE,4)
   
-  integer header(3)
+  integer header(4)
   
   integer :: tag_in, tag_out
   integer integers_in(255)
@@ -15,6 +15,9 @@ SUBROUTINE run_loop
   real*8 doubles_in(255)
   real*8 doubles_out(255)
   integer :: number_of_doubles_out, number_of_doubles_in
+  real*4 floats_in(255)
+  real*4 floats_out(255)
+  integer :: number_of_floats_out_out, number_of_floats_out_in
   
   call MPI_COMM_GET_PARENT(parent, ioerror)
   call MPI_COMM_RANK(parent, rank, mpierror)
@@ -22,16 +25,18 @@ SUBROUTINE run_loop
   must_run_loop = 1
   
   do while (must_run_loop .eq. 1)
-    call MPI_RECV(header, 3, MPI_INTEGER, 0, rank, parent,&
+    call MPI_RECV(header, 4, MPI_INTEGER, 0, rank, parent,&
       mpiStatus, ioerror)
     
     tag_in = header(1)
-    number_of_doubles_in = header(2)
-    number_of_integers_in = header(3)
+    number_of_doubles_in =  header(2)
+    number_of_integers_in =  header(3)
+    number_of_floats_in =  header(4)
     
     tag_out = tag_in
     number_of_doubles_out = 0
     number_of_integers_out = 0
+    number_of_floats_out = 0
     
     if (number_of_doubles_in .gt. 0) then
       call MPI_RECV(doubles_in, number_of_doubles_in, &
@@ -41,6 +46,11 @@ SUBROUTINE run_loop
     if (number_of_integers_in .gt. 0) then
       call MPI_RECV(integers_in, number_of_integers_in, &
         MPI_INTEGER, 0, rank, parent,&
+        mpiStatus, ioError);
+    end if
+    if (number_of_floats_in .gt. 0) then
+      call MPI_RECV(floats_in, number_of_floats_in, &
+        MPI_SINGLE_PRECISION, 0, rank, parent,&
         mpiStatus, ioError);
     end if
     
@@ -120,7 +130,7 @@ SUBROUTINE run_loop
     header(2) = number_of_doubles_out
     header(3) = number_of_integers_out
     
-    call MPI_SEND(header, 3, MPI_INTEGER, 0, 999, &
+    call MPI_SEND(header, 4, MPI_INTEGER, 0, 999, &
       parent, mpierror);
     
     if (number_of_doubles_out .gt. 0) then
@@ -131,6 +141,11 @@ SUBROUTINE run_loop
     if (number_of_integers_out .gt. 0) then
       call MPI_SEND(integers_out, number_of_integers_out, &
         MPI_INTEGER, 0, 999, &
+        parent, mpierror);
+    end if
+    if (number_of_floats_out .gt. 0) then
+      call MPI_SEND(floats_out, number_of_floats_out, &
+        MPI_SINGLE_PRECISION, 0, 999, &
         parent, mpierror);
     end if
   end do

@@ -13,7 +13,9 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
             'i' : DTypeSpec('integers_in','integers_out', 
                             'number_of_integers_out', 'integer'),
             'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles_out', 'real*8')}
+                            'number_of_doubles_out', 'real*8'),
+            'f' : DTypeSpec('floats_in', 'floats_out',
+                            'number_of_floats_out', 'real*4')}
    
     def start(self):
         
@@ -132,7 +134,9 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
             'i' : DTypeSpec('integers_in','integers_out',
                             'number_of_integers', 'integer'),
             'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'real*8')}
+                            'number_of_doubles', 'real*8'),
+            'f' : DTypeSpec('floats_in', 'floats_out',
+                            'number_of_floats_out', 'real*4')}
    
     def make_legacy_function(self):
         return MakeAFortranStringOfALegacyFunctionSpecification()
@@ -161,7 +165,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.n() + 'integer :: rank, parent, ioerror'
         self.out.n() + 'integer :: must_run_loop'
         self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
-        self.out.lf().lf() + 'integer header(3)'
+        self.out.lf().lf() + 'integer header(4)'
         self.out.lf().lf() + 'integer :: tag_in, tag_out'
         
         maximum_number_of_inputvariables_of_a_type = 255
@@ -186,21 +190,31 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.indent()
        
        
-        self.out.lf() + 'call MPI_RECV(header, 3, MPI_INTEGER, 0,'
+        self.out.lf() + 'call MPI_RECV(header, 4, MPI_INTEGER, 0,'
         self.out + ' rank, parent,&'
         self.out.indent().lf() + 'mpiStatus, ioerror)'
         self.out.dedent()
         self.out.lf().lf() + 'tag_in = header(1)'
-        self.out.lf()      + 'number_of_doubles_in = header(2)'
-        self.out.lf()      + 'number_of_integers_in = header(3)'
-        self.out.lf().lf() + 'tag_out = tag_in'
-        self.out.lf()      + 'number_of_doubles_out = 0'
-        self.out.lf()      + 'number_of_integers_out = 0'
-        self.out.lf()
         
         spec = [
           ('number_of_doubles_in', 'doubles_in', 'MPI_DOUBLE_PRECISION')
-          ,('number_of_integers_in', 'integers_in', 'MPI_INTEGER')]
+          ,('number_of_integers_in', 'integers_in', 'MPI_INTEGER')
+          ,('number_of_floats_in', 'floats_in', 'MPI_SINGLE_PRECISION')]
+        
+        for i, (number_parameter, input_parameter_name, mpi_type)\
+            in enumerate(spec):
+            self.out.lf() + number_parameter + ' =  ' 
+            self.out + 'header(' + (i+2) + ')'
+        
+        self.out.lf().lf() + 'tag_out = tag_in'
+        
+        
+        self.out.lf()      + 'number_of_doubles_out = 0'
+        self.out.lf()      + 'number_of_integers_out = 0'
+        self.out.lf()      + 'number_of_floats_out = 0'
+        self.out.lf()
+        
+       
         for number_parameter, input_parameter_name, mpi_type in spec:
                self.out.lf() + 'if (' + number_parameter + ' .gt. 0) then'
                
@@ -232,14 +246,15 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.lf()      + 'header(2) = number_of_doubles_out'
         self.out.lf()      + 'header(3) = number_of_integers_out'
         
-        self.out.lf().lf() + 'call MPI_SEND(header, 3, MPI_INTEGER,'
+        self.out.lf().lf() + 'call MPI_SEND(header, 4, MPI_INTEGER,'
         self.out + ' 0, 999, &'
         self.out.indent().lf() + 'parent, mpierror);'
         self.out.dedent().lf()
         
         spec = [
           ('number_of_doubles_out', 'doubles_out', 'MPI_DOUBLE_PRECISION')
-          ,('number_of_integers_out', 'integers_out', 'MPI_INTEGER')]
+          ,('number_of_integers_out', 'integers_out', 'MPI_INTEGER')
+          ,('number_of_floats_out', 'floats_out', 'MPI_SINGLE_PRECISION')]
         for number_parameter, parameter_name, mpi_type in spec:
                self.out.lf() + 'if (' + number_parameter + ' .gt. 0) then'
                self.out.indent().lf() 

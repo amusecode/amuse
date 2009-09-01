@@ -12,7 +12,9 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
             'i' : DTypeSpec('ints_in','ints_out',
                             'number_of_ints', 'int'),
             'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'double')
+                            'number_of_doubles', 'double'),
+            'f' : DTypeSpec('floats_in', 'floats_out',
+                            'number_of_floats', 'float')
         }
             
         
@@ -125,9 +127,11 @@ class MakeACStringOfALegacyGlobalSpecification(MakeCodeString):
             'i' : DTypeSpec('ints_in','ints_out',
                             'number_of_ints', 'int'),
             'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'double')}
-        
-        
+                            'number_of_doubles', 'double'),
+            'f' : DTypeSpec('floats_in', 'floats_out',
+                            'number_of_floats', 'float')
+        }
+            
     def start(self):
         self.output_casestmt_start()
         self.out.indent()
@@ -165,23 +169,27 @@ public:
 	int tag;
 	int number_of_doubles;
 	int number_of_ints;
-	message_header(): tag(0), number_of_doubles(0), number_of_ints(0) {}
+	int number_of_floats;
+	message_header(): tag(0), number_of_doubles(0)
+        , number_of_ints(0) , number_of_floats(0){}
 
 	void send(MPI::Intercomm & intercomm, int rank){
 		int header[3];
 		header[0] = tag;
 		header[1] = number_of_doubles;
 		header[2] = number_of_ints;		
-		intercomm.Send(header, 3, MPI_INT, 0, 999);
+		header[3] = number_of_floats;		
+		intercomm.Send(header, 4, MPI_INT, 0, 999);
 	}
 
 	void recv(MPI::Intercomm & intercom, int rank) {
 		int header[6];
 
-		intercom.Recv(header, 3, MPI_INT, 0, rank);
+		intercom.Recv(header, 4, MPI_INT, 0, rank);
 		tag = header[0];
 		number_of_doubles = header[1];
 		number_of_ints = header[2];
+		number_of_floats = header[3];
 	}
 };"""
         
@@ -195,7 +203,9 @@ class MakeACStringOfAClassWithLegacyFunctions\
             'i' : DTypeSpec('ints_in','ints_out',
                             'number_of_ints', 'int'),
             'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'double')
+                            'number_of_doubles', 'double'),
+            'f' : DTypeSpec('floats_in', 'floats_out',
+                            'number_of_floats', 'float')
         }
 
     def make_legacy_function(self):
@@ -244,7 +254,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf().lf() + 'void run_loop() {'
         self.out.indent()
         self.out.n() + 'int rank = MPI::COMM_WORLD.Get_rank();'
-        self.out.lf().lf() + 'MPI::Intercomm parent = "
+        self.out.lf().lf() + 'MPI::Intercomm parent = '
         self.out + 'MPI::COMM_WORLD.Get_parent();'
         self.out.lf().lf() + 'bool must_run_loop = true;'
         self.out.lf().lf() + 'while(must_run_loop) {'
@@ -264,7 +274,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf() + 'request_header.recv(parent,rank);'
         spec = [
              ('number_of_doubles', 'doubles_in', 'MPI_DOUBLE')
-            ,('number_of_ints', 'ints_in', 'MPI_INT')]
+            ,('number_of_ints', 'ints_in', 'MPI_INT')
+            ,('number_of_floats', 'floats_out', 'MPI_FLOAT')]
         for number_parameter, input_parameter_name, mpi_type in spec:
                self.out.lf() 
                self.out + 'if(request_header.' + number_parameter + ' > 0) {'
@@ -295,7 +306,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
         spec = [
              ('number_of_doubles', 'doubles_out', 'MPI_DOUBLE')
-            ,('number_of_ints', 'ints_out', 'MPI_INT')]
+            ,('number_of_ints', 'ints_out', 'MPI_INT')
+            ,('number_of_floats', 'floats_out', 'MPI_FLOAT')]
         for number_parameter, parameter_name, mpi_type in spec:
                self.out.lf() + 'if(reply_header.' 
                self.out + number_parameter + ' > 0) {'
