@@ -1,33 +1,20 @@
-from amuse.legacy.support.core import *
+from amuse.support.core import late
+from amuse.legacy.support.core import RemoteFunction
+from amuse.legacy.support.create_code import MakeCodeString
+from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
+from amuse.legacy.support.create_code import DTypeSpec
         
-        
-class MakeACStringOfALegacyFunctionSpecification(object):
-    def __init__(self):
-        pass
-    
-    @late  
-    def result(self):
-        self.start()
-        return self._result
-    
+class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
+
     @late
     def dtype_to_spec(self):
-        class DTypeSpec(object):
-            def __init__(self, c_input_var_name, c_output_var_name, c_output_counter_name):
-                self.number_of_inputs = 0
-                self.number_of_outputs = 0
-                self.c_input_var_name = c_input_var_name
-                self.c_output_var_name = c_output_var_name
-                self.c_output_counter_name = c_output_counter_name
-             
         return {
-            'i' : DTypeSpec('ints_in','ints_out', 'number_of_ints'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles')}
+            'i' : DTypeSpec('ints_in','ints_out',
+                            'number_of_ints', 'int'),
+            'd' : DTypeSpec('doubles_in', 'doubles_out',
+                            'number_of_doubles', 'double')
+        }
             
-    @late
-    def out(self):
-        return print_out()
-        
         
     def start(self):
         self.output_casestmt_start()
@@ -55,13 +42,16 @@ class MakeACStringOfALegacyFunctionSpecification(object):
                 self.out + ' ,'
                 
             if direction == RemoteFunction.IN:
-                self.out.n() + spec.c_input_var_name + '[' + spec.number_of_inputs + ']'
+                self.out.n() + spec.input_var_name 
+                self.out + '[' + spec.number_of_inputs + ']'
                 spec.number_of_inputs += 1
             if direction == RemoteFunction.INOUT:
-                self.out.n() + '&' + spec.c_input_var_name + '[' + spec.number_of_inputs + ']'
+                self.out.n() + '&' + spec.input_var_name 
+                self.out + '[' + spec.number_of_inputs + ']'
                 spec.number_of_inputs += 1
             elif direction == RemoteFunction.OUT:
-                self.out.n() + '&' + spec.c_output_var_name + '[' + spec.number_of_outputs + ']'
+                self.out.n() + '&' + spec.output_var_name
+                self.out + '[' + spec.number_of_outputs + ']'
                 spec.number_of_outputs += 1
     
         self.out.dedent()
@@ -76,7 +66,10 @@ class MakeACStringOfALegacyFunctionSpecification(object):
             if direction == RemoteFunction.IN:
                 dtype_to_incount[dtype] = count + 1
             if direction == RemoteFunction.INOUT:
-                self.out.n() + spec.c_output_var_name + '[' + spec.number_of_outputs + ']' + ' = ' + spec.c_input_var_name + '[' + count + ']'+';'
+                self.out.n() + spec.output_var_name
+                self.out + '[' + spec.number_of_outputs + ']'
+                self.out + ' = '
+                self.out + spec.input_var_name + '[' + count + ']'+';'
                 spec.number_of_outputs += 1
                 dtype_to_incount[dtype] = count + 1
     
@@ -84,7 +77,8 @@ class MakeACStringOfALegacyFunctionSpecification(object):
         dtype_to_count = {}
         
         for name, dtype, direction in self.specification.parameters:
-            if direction == RemoteFunction.OUT or direction == RemoteFunction.INOUT:
+            if direction == RemoteFunction.OUT \
+                or direction == RemoteFunction.INOUT:
                 count = dtype_to_count.get(dtype, 0)
                 dtype_to_count[dtype] = count + 1
                 
@@ -96,7 +90,8 @@ class MakeACStringOfALegacyFunctionSpecification(object):
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
             self.out.n() 
-            self.out + 'reply_header.' + spec.c_output_counter_name + ' = ' + count + ';'
+            self.out + 'reply_header.' + spec.output_counter_name 
+            self.out + ' = ' + count + ';'
             pass
             
     def output_function_end(self):
@@ -109,7 +104,8 @@ class MakeACStringOfALegacyFunctionSpecification(object):
         self.out.n() 
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
-            self.out + spec.c_output_var_name+ '[' + spec.number_of_outputs + ']' + ' = '
+            self.out + spec.output_var_name
+            self.out + '[' + spec.number_of_outputs + ']' + ' = '
             spec.number_of_outputs += 1
         self.out + self.specification.name + '('
         
@@ -121,52 +117,37 @@ class MakeACStringOfALegacyFunctionSpecification(object):
         
         
  
-class MakeACStringOfALegacyGlobalSpecification(object):
-    def __init__(self):
-        pass
-    
-    @late  
-    def result(self):
-        self.start()
-        return self._result
+class MakeACStringOfALegacyGlobalSpecification(MakeCodeString):
     
     @late
     def dtype_to_spec(self):
-        class DTypeSpec(object):
-            def __init__(self, c_input_var_name, c_output_var_name, c_output_counter_name):
-                self.number_of_inputs = 0
-                self.number_of_outputs = 0
-                self.c_input_var_name = c_input_var_name
-                self.c_output_var_name = c_output_var_name
-                self.c_output_counter_name = c_output_counter_name
-             
         return {
-            'i' : DTypeSpec('ints_in','ints_out', 'number_of_ints'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles')}
-            
-    @late
-    def out(self):
-        return print_out()
+            'i' : DTypeSpec('ints_in','ints_out',
+                            'number_of_ints', 'int'),
+            'd' : DTypeSpec('doubles_in', 'doubles_out',
+                            'number_of_doubles', 'double')}
         
         
     def start(self):
         self.output_casestmt_start()
         self.out.indent()
+        
         spec = self.dtype_to_spec[self.legacy_global.dtype]
-        self.out.n() + 'if(request_header.' + spec.c_output_counter_name
+        self.out.n() + 'if(request_header.' + spec.output_counter_name
         self.out + ' == ' + 1 + '){'
         self.out.indent()
         self.out.n() + self.legacy_global.name + ' = ' 
-        self.out + spec.c_input_var_name  + '[0]' + ';'
+        self.out + spec.input_var_name  + '[0]' + ';'
         self.out.dedent()
         self.out.n() + '} else {'
         self.out.indent()
-        self.out.n() + 'reply_header.' + spec.c_output_counter_name
+        self.out.n() + 'reply_header.' + spec.output_counter_name
         self.out + ' = ' + 1 + ';'
-        self.out.n() + spec.c_output_var_name + '[0]' 
+        self.out.n() + spec.output_var_name + '[0]' 
         self.out + ' = ' + self.legacy_global.name + ';'
         self.out.dedent()
         self.out.n() + '}'
+        
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
@@ -205,62 +186,24 @@ public:
 };"""
         
 
-class MakeACStringOfAClassWithLegacyFunctions(object):
-    def __init__(self):
-        pass
-    
-    @late  
-    def result(self):
-        self.start()
-        return self._result
-    
+class MakeACStringOfAClassWithLegacyFunctions\
+    (MakeCodeStringOfAClassWithLegacyFunctions):
+
     @late
     def dtype_to_spec(self):
-        class DTypeSpec(object):
-            def __init__(self, c_input_var_name, c_output_var_name, c_output_counter_name, c_type):
-                self.number_of_inputs = 0
-                self.number_of_outputs = 0
-                self.c_input_var_name = c_input_var_name
-                self.c_output_var_name = c_output_var_name
-                self.c_output_counter_name = c_output_counter_name
-                self.c_type = c_type
-             
         return {
-            'i' : DTypeSpec('ints_in','ints_out', 'number_of_ints', 'int'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out','number_of_doubles', 'double')}
-            
-    @late
-    def out(self):
-        return print_out()
+            'i' : DTypeSpec('ints_in','ints_out',
+                            'number_of_ints', 'int'),
+            'd' : DTypeSpec('doubles_in', 'doubles_out',
+                            'number_of_doubles', 'double')
+        }
+
+    def make_legacy_function(self):
+        return MakeACStringOfALegacyFunctionSpecification()
     
-    @late
-    def legacy_functions(self):
-        attribute_names = dir(self.class_with_legacy_functions)
-        legacy_functions = []
-        for x in attribute_names:
-            if x.startswith('__'):
-                continue
-            value = getattr(self.class_with_legacy_functions, x)
-            if isinstance(value, legacy_function):
-                legacy_functions.append(value)
+    def make_legacy_global(self):
+        return MakeACStringOfALegacyGlobalSpecification()
         
-        legacy_functions.sort(key= lambda x: x.specification.id)
-        return legacy_functions
-        
-    @late
-    def legacy_globals(self):
-        attribute_names = dir(self.class_with_legacy_functions)
-        result = []
-        for x in attribute_names:
-            if x.startswith('__'):
-                continue
-            value = getattr(self.class_with_legacy_functions, x)
-            if isinstance(value, legacy_global):
-                result.append(value)
-        
-        result.sort(key= lambda x: x.id)
-        return result
-           
     def start(self):
         self.output_mpi_include()
         self.output_local_includes()
@@ -271,21 +214,8 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
         self.output_runloop_function_def_start()
         self.output_switch_start()
                 
-        for x in self.legacy_functions:
-            if x.specification.id == 0:
-                continue
-            self.out.lf()
-            uc = MakeACStringOfALegacyFunctionSpecification()
-            uc.specification = x.specification
-            uc.out = self.out
-            uc.start()
-         
-        for x in self.legacy_globals:
-            self.out.lf()
-            uc = MakeACStringOfALegacyGlobalSpecification()
-            uc.legacy_global = x
-            uc.out = self.out
-            uc.start()
+        self.output_legacy_functions()
+        self.output_legacy_globals()
             
         self.output_switch_end()
         self.output_runloop_function_def_end()
@@ -314,23 +244,34 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
         self.out.lf().lf() + 'void run_loop() {'
         self.out.indent()
         self.out.n() + 'int rank = MPI::COMM_WORLD.Get_rank();'
-        self.out.lf().lf() + 'MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();'
+        self.out.lf().lf() + 'MPI::Intercomm parent = "
+        self.out + 'MPI::COMM_WORLD.Get_parent();'
         self.out.lf().lf() + 'bool must_run_loop = true;'
         self.out.lf().lf() + 'while(must_run_loop) {'
         self.out.indent()
         maximum_number_of_inputvariables_of_a_type = 255
         for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + dtype_spec.c_type + ' ' + dtype_spec.c_input_var_name + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
-            self.out.lf() + dtype_spec.c_type + ' ' + dtype_spec.c_output_var_name + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+            self.out.lf() + dtype_spec.type + ' ' 
+            self.out + dtype_spec.input_var_name 
+            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+            self.out.lf() + dtype_spec.type + ' ' 
+            self.out + dtype_spec.output_var_name 
+            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
         self.out.lf()
         self.out.lf() + 'message_header request_header;'
         self.out.lf() + 'message_header reply_header;'
         self.out.lf()
         self.out.lf() + 'request_header.recv(parent,rank);'
-        spec = [('number_of_doubles', 'doubles_in', 'MPI_DOUBLE'),('number_of_ints', 'ints_in', 'MPI_INT')]
+        spec = [
+             ('number_of_doubles', 'doubles_in', 'MPI_DOUBLE')
+            ,('number_of_ints', 'ints_in', 'MPI_INT')]
         for number_parameter, input_parameter_name, mpi_type in spec:
-               self.out.lf() + 'if(request_header.' + number_parameter + ' > 0) {'
-               self.out.indent().lf() + 'parent.Recv(' + input_parameter_name + ', ' + 'request_header.' + number_parameter + ', ' + mpi_type+ ', 0, rank);'
+               self.out.lf() 
+               self.out + 'if(request_header.' + number_parameter + ' > 0) {'
+               self.out.indent().lf() + 'parent.Recv(' 
+               self.out + input_parameter_name 
+               self.out + ', ' + 'request_header.' + number_parameter 
+               self.out + ', ' + mpi_type+ ', 0, rank);'
                self.out.dedent().lf() +'}'
         self.out.lf().lf() + 'reply_header.tag = request_header.tag;'
         
@@ -352,10 +293,15 @@ class MakeACStringOfAClassWithLegacyFunctions(object):
         
         self.out.lf().lf() + 'reply_header.send(parent, rank);'
         
-        spec = [('number_of_doubles', 'doubles_out', 'MPI_DOUBLE'),('number_of_ints', 'ints_out', 'MPI_INT')]
+        spec = [
+             ('number_of_doubles', 'doubles_out', 'MPI_DOUBLE')
+            ,('number_of_ints', 'ints_out', 'MPI_INT')]
         for number_parameter, parameter_name, mpi_type in spec:
-               self.out.lf() + 'if(reply_header.' + number_parameter + ' > 0) {'
-               self.out.indent().lf() + 'parent.Send(' + parameter_name + ', ' + 'reply_header.' + number_parameter + ', ' + mpi_type+ ', 0, 999);'
+               self.out.lf() + 'if(reply_header.' 
+               self.out + number_parameter + ' > 0) {'
+               self.out.indent().lf() + 'parent.Send(' + parameter_name 
+               self.out + ', ' + 'reply_header.' + number_parameter 
+               self.out + ', ' + mpi_type+ ', 0, 999);'
                self.out.dedent().lf() +'}'
         
         self.out.dedent()
