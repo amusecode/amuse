@@ -1,15 +1,25 @@
 import sys
-import os
+import sqlite3
+import urlparse
+import urllib
+import cgi
+import os.path
+import BaseHTTPServer, SocketServer
 
+from mpi4py import MPI
+import json
 import nose
 import nose.plugins
 from nose.plugins.capture import Capture
 import time
 from nose.core import TestProgram
 from nose.plugins.skip import Skip, SkipTest
+import threading
 
+from multiprocessing import Process, Queue
+import Queue as queue
 from optparse import OptionParser
-from subprocess import call
+from subprocess import Popen
 
 def number_str(number, singular, plural = None):
         if plural == None:
@@ -220,23 +230,55 @@ class TimeATest(object):
 
 
 
-def _run_the_tests(directory):
+def _run_the_tests(directory, results_queue, id_to_timings):
     
-    print "updating the code"
-    call(["svn", "update"])
-    call(["make", "clean"])
-    print "aaa"
-    call(["make", "all"])
+    Popen(["svn", "update"])
+    Popen(["make", "clean"])
+    Popen(["make", "all"])
     
-    print "start test run"
-    null_device = open('/dev/null')
-    os.stdin = null_device
-    report = ReportOnATestRun()
-    time = TimeATest()
-    plugins = [report , Skip() ,Capture() , time] 
-    result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
-    return (report, time.id_to_timings)
+    try:
+        print "start test run"
+        null_device = open('/dev/null')
+        os.stdin = null_device
+        report = ReportOnATestRun()
+        time = TimeATest(id_to_timings)
+        plugins = [report , Skip() , time] #Capture() , 
+        result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
+        results_queue.put((report, time.id_to_timings))
+    finally:
+        MPI.Finalize()
+
+class RunAllTestsOnInterval(object):
     
+    def __init__(self, server):
+        self.interval_in_seconds = 90 * 60;
+        self.must_run = False;
+        self.queue = Queue()
+        self.server = server
+        self.id_to_timings = {}
+        
+    def start(self):
+        self.must_run = True;
+        self.thread = threading.Thread(target=self.run)
+        self.thread.daemon = True;
+        self.thread.start()
+    
+    def stop(self):
+        self.must_run = False;
+        
+    def run(self):
+        while self.must_run:
+            p = Process(target=_run_the_tests, args=(os.getcwd(),self.queue,  self.id_to_timings))
+            p.start()
+            p.join()
+            report, self.id_to_timings = self.queue.get() 
+            self.server.last_report = report
+            self.server.last_timings =  self.id_to_timings
+            
+            WriteTestReportOnTestingBlog(report, self.id_to_timings).start()
+            
+            time.sleep(self.interval_in_seconds)
+
 class WriteTestReportOnTestingBlog(object):
     
     def __init__(self, report, timings):
@@ -249,6 +291,11 @@ class WriteTestReportOnTestingBlog(object):
             os.makedirs(self.local_directory)
         
     def start(self):
+        thread = threading.Thread(target=self.run)
+        thread.daemon = True;
+        thread.start()
+        
+    def run(self):
         time_struct = time.gmtime(self.report.start_time)
         filename = time.strftime("%Y%m%d_%H_%M.txt", time_struct)
         path = os.path.join(self.local_directory, filename)
@@ -313,21 +360,88 @@ class WriteTestReportOnTestingBlog(object):
                 file.write('\n')
                 file.write('</li>')
             file.write('</ul>')
-        call(["scp", path, "doctor:"+self.remote_directory])
+        Popen(["scp", path, "doctor:"+self.remote_directory])
+        
+    
+        
+class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
+    def do_GET(self):
+        parsed_path = urlparse.urlparse(self.path)
+        
+        if parsed_path.path == '/start':
+            self.start_run_tests()
+            string = 'null'
+            content_type = 'text/javascript'
+        elif parsed_path.path == '/stop':
+            self.stop_server()
+            string = 'null'
+            content_type = 'text/javascript'
+        elif parsed_path.path == '/get_last_report':
+            if self.server.last_report is None:
+                string = "null"
+            else:
+                string = json.dumps(self.server.last_report.to_dict())
+            content_type = 'text/javascript'
+        else:
+            string, content_type = self.index_file()
+        
+        self.send_response(200)
+        self.send_header("Content-type", content_type)
+        self.send_header("Content-Length", str(len(string)))
+        #self.send_header("Connection", "keep-alive")
+        
+        self.end_headers()
+        self.wfile.write(string)
+        
+       
+    def stop_server(self):
+        thread = threading.Thread(target=self.server.stop)
+        thread.daemon = True;
+        thread.start()
+        
+    def index_file(self):
+        base = os.path.split(__file__)[0]
+        filename = os.path.join(base, "continuous_test.html")
+        with open(filename, "r") as file:
+            contents = file.read()
+            return contents, 'text/html'
+        
+
+class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+    
+    def __init__(self, port):
+        BaseHTTPServer.HTTPServer.__init__(self, ('',port), HandleRequest)
+        self.last_report = None
+        self.last_timings = None
+        self.run_all_tests = RunAllTestsOnInterval(self)
+        self.run_all_tests.start()
+        self.daemon_threads = True
+        
+    def start(self):
+        self.serve_forever()
+        
+    def start_run_tests(self):
+        p = Process(target=_run_the_tests, args=(os.getcwd(),self.queue))
+        p.start()
+    
+    def stop(self):
+        self.run_all_tests.stop()
+        self.shutdown()
         
 if __name__ == '__main__':
     parser = OptionParser()
     
-    parser.add_option("-d", "--dir", 
-      dest="directory",
-      help="run tests in DIRECTORY", 
-      metavar="DIRECTORY", 
-      default=os.getcwd(),
-      type="string")
+    parser.add_option("-p", "--port", 
+      dest="serverport",
+      help="start serving on PORT", 
+      metavar="PORT", 
+      default=9070,
+      type="int")
       
     (options, args) = parser.parse_args()
     
-    report, id_to_timings = _run_the_tests(options.directory) 
-    WriteTestReportOnTestingBlog(report, id_to_timings).start()
+    print "starting server on port: ", options.serverport
     
+    server = ContinuosTestWebServer(options.serverport)
+    server.start()
     

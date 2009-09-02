@@ -231,7 +231,6 @@ class RemoteFunction(object):
     
     def prepare_output_parameters(self):
         for dtype, parameters in self.dtype_to_output_parameters.iteritems():
-            print dtype, self.result_type
             if dtype == self.result_type:
                 offset = 1
             else:
