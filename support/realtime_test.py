@@ -18,13 +18,116 @@ import threading
 
 from multiprocessing import Process, Queue
 import Queue as queue
+
 from optparse import OptionParser
-from subprocess import Popen
+from subprocess import call
+
 
 def number_str(number, singular, plural = None):
         if plural == None:
             plural = singular + 's'
         return str(number) + ' ' + (singular if number == 1 else plural)
+
+
+class MonitoredFile(object):
+    def __init__(self, path, container):
+        self.path = path
+        self.container = container
+        self.timestamp = self.get_last_modification_time()
+      
+    def is_file(self):
+        return True
+  
+    def check(self, monitor):
+        if not os.path.exists(self.path):
+            self.container.remove(self)
+            monitor.deleted(self)
+            return
+        
+        measured_timestamp = self.get_last_modification_time()
+        if self.timestamp < measured_timestamp:
+            self.timestamp = measured_timestamp
+            monitor.updated(self)
+            return
+        
+        monitor.unchanged(self)
+    
+    def get_last_modification_time(self):
+        statinfo = os.stat(self.path)
+        return statinfo.st_mtime
+
+    
+        
+class MonitoredDirectory(object):
+    def __init__(self, path, container = None):
+        self.path = path
+        self.elements = []
+        self.container = container
+        self.path_to_element = {}
+        self.setup_from_filesystem()
+         
+    def is_file(self):
+        return False
+        
+    def setup_from_filesystem(self):
+        names = os.listdir(self.path)
+        for name in names:
+            path = os.path.join(self.path, name)
+            element = self.new_element(path)
+            self.elements.append(element)
+            self.path_to_element[path] = element
+    
+    def new_element(self, path):
+        if os.path.isdir(path):
+            return MonitoredDirectory(path, self)
+        else:
+            return MonitoredFile(path, self)
+                
+    def remove(self, element):
+        self.elements.remove(element)
+        del self.path_to_element[element.path]
+        
+    def check(self, monitor):
+        if not os.path.exists(self.path):
+            if not self.container is None:
+                self.container.remove(self)
+            monitor.deleted(self)
+            return
+            
+        for x in self.elements:
+            x.check(monitor)
+            
+        names = os.listdir(self.path)
+        for name in names:
+            path = os.path.join(self.path, name)
+            if not path in self.path_to_element:
+                element = self.new_element(path)
+                monitor.created(element)
+                self.elements.append(element)
+                self.path_to_element[path] = element
+            
+class MonitorDirectories(object):
+    def __init__(self, paths):
+        self.elements = map(lambda x : MonitoredDirectory(x), paths)
+        self.changed = False
+        
+    def check(self):
+        self.changed = False
+        for x in self.elements:
+            x.check(self)
+    
+    def deleted(self, monitored_element):
+        self.changed = True
+        
+    def created(self, monitored_element):
+        self.changed = True
+        
+    def unchanged(self, monitored_element):
+        pass
+    
+    def updated(self, monitored_element):
+        self.changed = True
+
 
 class ReportOnATestRun(object):
     score = 2000
@@ -230,30 +333,23 @@ class TimeATest(object):
 
 
 
-def _run_the_tests(directory, results_queue, id_to_timings):
-    
-    Popen(["svn", "update"])
-    Popen(["make", "clean"])
-    Popen(["make", "all"])
-    
+def perform_the_testrun(directory, results_queue, id_to_timings):
     try:
         print "start test run"
         null_device = open('/dev/null')
         os.stdin = null_device
         report = ReportOnATestRun()
         time = TimeATest(id_to_timings)
-        plugins = [report , Skip() , time] #Capture() , 
+        plugins = [report , Skip(), Capture() , time]  
         result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
         results_queue.put((report, time.id_to_timings))
     finally:
         MPI.Finalize()
 
-class RunAllTestsOnInterval(object):
+class RunAllTestsWhenAChangeHappens(object):
     
     def __init__(self, server):
-        self.interval_in_seconds = 90 * 60;
-        self.must_run = False;
-        self.queue = Queue()
+        self.must_run = False
         self.server = server
         self.id_to_timings = {}
         
@@ -267,102 +363,23 @@ class RunAllTestsOnInterval(object):
         self.must_run = False;
         
     def run(self):
+        paths = [os.path.join(os.getcwd(), 'src'), os.path.join(os.getcwd(), 'test')]
+        monitor = MonitorDirectories(paths)
+        monitor.check()
         while self.must_run:
-            p = Process(target=_run_the_tests, args=(os.getcwd(),self.queue,  self.id_to_timings))
-            p.start()
-            p.join()
-            report, self.id_to_timings = self.queue.get() 
-            self.server.last_report = report
-            self.server.last_timings =  self.id_to_timings
-            
-            WriteTestReportOnTestingBlog(report, self.id_to_timings).start()
-            
-            time.sleep(self.interval_in_seconds)
-
-class WriteTestReportOnTestingBlog(object):
-    
-    def __init__(self, report, timings):
-        self.report = report
-        self.timings = timings
-        self.base_directory = os.path.split(__file__)[0]
-        self.remote_directory = 'blogs/testing/entries'
-        self.local_directory = os.path.join(self.base_directory, "entries")
-        if not os.path.exists(self.local_directory):
-            os.makedirs(self.local_directory)
-        
-    def start(self):
-        thread = threading.Thread(target=self.run)
-        thread.daemon = True;
-        thread.start()
-        
-    def run(self):
-        time_struct = time.gmtime(self.report.start_time)
-        filename = time.strftime("%Y%m%d_%H_%M.txt", time_struct)
-        path = os.path.join(self.local_directory, filename)
-        with open(path,"w") as file:
-            
-            file.write(self.report.title())
-            file.write('\n\n')
-            
-            if self.report.failures > 0:
-                file.write('<p>Failed tests:</p>')
-                file.write('<ul>')
-                for x in self.timings.values():
-                    if x.failed:
-                        print x
-                        filename = x.address[0][len(os.getcwd()):]
-                        file.write('<li>')
-                        file.write('<a href="/trac/amuse/browser/trunk/'+filename+'#L'+str(x.lineno)+'">')
-                        file.write(str(x.id))
-                        file.write('</a>')
-                        file.write(' - ')
-                        delta_t = x.end_time - x.start_time
-                        delta_t = round(delta_t, 3)
-                        file.write(str(delta_t))
-                        file.write(' seconds')
-                        file.write('\n')
-                        file.write('</li>')
-                file.write('</ul>')
+            monitor.check()
+            if monitor.changed:
+                result_queue = Queue()
+                p = Process(target=perform_the_testrun, args=(os.getcwd(), result_queue, self.id_to_timings))
+                p.start()
+                p.join()
+                report, self.id_to_timings = result_queue.get() 
+                self.server.last_report = report
+                self.server.last_timings =  self.id_to_timings
+                del result_queue
+            else:
+                time.sleep(0.5)
                 
-            if self.report.errors > 0:
-                file.write('<p>Errored tests:</p>')
-                file.write('<ul>')
-                for x in self.timings.values():
-                    if x.errored:
-                        print x
-                        filename = x.address[0][len(os.getcwd()):]
-                        file.write('<li>')
-                        file.write('<a href="/trac/amuse/browser/trunk/'+filename+'#L'+str(x.lineno)+'">')
-                        file.write(str(x.id))
-                        file.write('</a>')
-                        file.write(' - ')
-                        delta_t = x.end_time - x.start_time
-                        delta_t = round(delta_t, 3)
-                        file.write(str(delta_t))
-                        file.write(' seconds')
-                        file.write('\n')
-                        file.write('</li>')
-                file.write('</ul>')
-            
-            file.write('<p>Tests run:</p>')
-            file.write('<ul>')
-            for x in self.timings.values():
-                filename = x.address[0][len(os.getcwd()):]
-                file.write('<li>')
-                file.write('<a href="/trac/amuse/browser/trunk/'+filename+'#L'+str(x.lineno)+'">')
-                file.write(str(x.id))
-                file.write('</a>')
-                file.write(' - ')
-                delta_t = x.end_time - x.start_time
-                delta_t = round(delta_t, 3)
-                file.write(str(delta_t))
-                file.write(' seconds')
-                file.write('\n')
-                file.write('</li>')
-            file.write('</ul>')
-        Popen(["scp", path, "doctor:"+self.remote_directory])
-        
-    
         
 class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
@@ -413,7 +430,7 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         BaseHTTPServer.HTTPServer.__init__(self, ('',port), HandleRequest)
         self.last_report = None
         self.last_timings = None
-        self.run_all_tests = RunAllTestsOnInterval(self)
+        self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
         self.run_all_tests.start()
         self.daemon_threads = True
         
@@ -421,7 +438,7 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.serve_forever()
         
     def start_run_tests(self):
-        p = Process(target=_run_the_tests, args=(os.getcwd(),self.queue))
+        p = Process(target=perform_the_testrun, args=(os.getcwd(),self.queue))
         p.start()
     
     def stop(self):
