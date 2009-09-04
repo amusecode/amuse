@@ -18,7 +18,8 @@ compile: $(BHTC)
 $(BHTC):
 	cd $(BHTCDIR) && $(MAKE)
 	
-cleanall: clean
+clean:
+	rm -f *.so *.o *.pyc muse_worker.cc
 	$(RM) muse_worker *~
 	cd $(BHTCDIR) && $(MAKE) clean
 
@@ -32,6 +33,3 @@ muse_worker:	muse_worker.cc $(OBJS)
 	g++ $(CXXFLAGS) -c -o $@ $< 
 .C.o: $<
 	g++ $(CXXFLAGS) -c -o $@ $<
-	
-clean:
-	rm -f *.so *.o *.pyc muse_worker.cc

@@ -243,9 +243,9 @@ class MakeACStringOfAClassWithLegacyFunctions\
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'void run_loop() {'
         self.out.indent()
-        self.out.n() + 'int rank = MPI::COMM_WORLD.Get_rank();'
         self.out.lf().lf() + 'MPI::Intercomm parent = '
         self.out + 'MPI::COMM_WORLD.Get_parent();'
+        self.out.n() + 'int rank = parent.Get_rank();'
         self.out.lf().lf() + 'bool must_run_loop = true;'
         self.out.lf().lf() + 'while(must_run_loop) {'
         self.out.indent()
