@@ -217,6 +217,9 @@ class TestCaseReport(object):
         self.end_time = time.time()
         self.number_of_runs += 1.0
         self.total_time += (self.end_time - self.start_time)
+        self.failed = False
+        self.errored = False
+        self.skipped = False
         
     def mean_time(self):
         if self.number_of_runs == 0:
@@ -233,6 +236,7 @@ class TestCaseReport(object):
         self.total_time = 0.0
         self.failed = False
         self.errored = True
+        self.skipped = False
         
     def end_with_failure(self, error_tuple):
         self.end_time = time.time()
@@ -243,6 +247,7 @@ class TestCaseReport(object):
         self.total_time = 0.0
         self.failed = True
         self.errored = False
+        self.skipped = False
         
     def end_with_skip(self):
         self.end_time = time.time()

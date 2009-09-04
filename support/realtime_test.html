@@ -37,6 +37,7 @@ function handle_last_report(report) {
     $('#tests-errored').children().remove()
     $('#tests-run').children().remove()
     $('#tests-failed').children().remove()
+    $('#tests-skipped').children().remove()
     
     if(report.errors > 0 || report.failures > 0) {
         $('#report-title').removeClass('no-errors');
