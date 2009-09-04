@@ -81,7 +81,7 @@ function handle_last_report(report) {
             item.appendTo($('#tests-run'));
         }
         if(testcase.errored || testcase.failed) {
-            root = item.clone()
+            root = item.clone(true)
             if(testcase.errored ) {
                 root.appendTo($('#tests-errored'));
             } else {
@@ -189,6 +189,12 @@ li{
     background-color: #CD5C5C 
 }
 
+a:visited, a {
+    color: black;
+}
+a:hover {
+    color: #CD5C5C;
+}
 </style>
 </head>
 <body>

@@ -40,3 +40,20 @@ class TestNbodyUnits(unittest.TestCase):
        y_in_nbody = convert_nbody.to_nbody(y) 
        self.assertEqual(str(y_in_nbody.unit), 'nbody length * nbody time**-1')
        self.assertAlmostEqual(y_in_nbody.number, 1.0, 3)
+       
+
+    def test6(self):
+       convert_nbody = nbody_to_si(10 | units.kg , 5 | units.m / units. s )
+       y = 5 | units.m / units.s
+       y_in_nbody = convert_nbody.to_nbody(y) 
+       self.assertEqual(str(y_in_nbody.unit), 'nbody length * nbody time**-1')
+       self.assertAlmostEqual(y_in_nbody.number, 1.0, 3)
+       y_in_si = convert_nbody.to_si(y_in_nbody) 
+       self.assertAlmostEqual(y_in_si.number, 5.0, 3)
+       
+    def test7(self):
+       convert_nbody = nbody_to_si(1 | units.kg , 1 | units.m / units. s )
+       y = 1 | time
+       y_in_si = convert_nbody.to_si(y) 
+       self.assertEqual(str(y_in_si.unit), 's')
+       self.assertAlmostEqual(y_in_si.number, 6.6730000000000296e-11, 3)

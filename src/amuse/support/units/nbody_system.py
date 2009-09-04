@@ -30,11 +30,25 @@ class nbody_to_si(object):
         self.value2 = value2
         if self.unit1.base == self.unit2.base:
             raise Exception("Must provide two orthogonal units for example mass and length or time and length")
-        if len(self.unit1.base) > 1:
-            raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
-        if len(self.unit2.base) > 1:
-            raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
+        unit_was_found = [False, False, False]
+        
+        #if len(self.unit1.base) > 1:
+        #    raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
+        #if len(self.unit2.base) > 1:
+        #    raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
         self.Gis1 = units.one / units.G
+        
+        base = self.Gis1.unit.base
+        for i, x in enumerate(base):
+            for y in self.unit1.base:
+                if y[1] == x[1]:
+                    unit_was_found[i] = True
+            for y in self.unit2.base:
+                if y[1] == x[1]:
+                    unit_was_found[i] = True
+        if len(filter(None, unit_was_found)) < 2:
+            raise Exception("Must provide more units")
+            
         
     @property
     def unit1(self):
@@ -44,13 +58,7 @@ class nbody_to_si(object):
     def unit2(self):
         return self.value2.unit 
     
-    @property    
-    def units(self):
-        unit_to_index = {}
-        for i, x in enumerate(self.Gis1.unit.base):
-            n , unit = x
-            unit_to_index[unit] = i
-    
+    def conversion_factors(self, unit_to_index):
         exponents_of_the_bases =  numpy.zeros((3,3))
         factors_of_the_bases =  numpy.zeros(3)
         for row, value in enumerate((self.Gis1, self.value1, self.value2)):
@@ -59,7 +67,16 @@ class nbody_to_si(object):
             factors_of_the_bases[row] = value.number * value.unit.factor  
             
         log_factors_of_the_bases = numpy.log(factors_of_the_bases)
-        conversion_factors = numpy.exp(numpy.linalg.solve(exponents_of_the_bases, log_factors_of_the_bases))
+        return numpy.exp(numpy.linalg.solve(exponents_of_the_bases, log_factors_of_the_bases))
+        
+    @property    
+    def units(self):
+        unit_to_index = {}
+        for i, x in enumerate(self.Gis1.unit.base):
+            n , unit = x
+            unit_to_index[unit] = i
+            
+        conversion_factors = self.conversion_factors(unit_to_index)
         
         result = []
         nbody_units = mass, length, time

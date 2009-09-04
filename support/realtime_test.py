@@ -364,7 +364,7 @@ def _perform_the_testrun(directory, results_queue, previous_report = None):
         null_device = open('/dev/null')
         os.stdin = null_device
         report = MakeAReportOfATestRun(previous_report)
-        plugins = [report , Skip()]#, Capture()]  
+        plugins = [report , Skip(), Capture()]  
         result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
         results_queue.put(report)
     finally:
