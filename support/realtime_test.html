@@ -74,8 +74,11 @@ function handle_last_report(report) {
         address.addClass('test-address');
         address.append(testcase.address[2]) ;
         address.appendTo(item);
-        item.appendTo($('#tests-run'));
-        
+        if(testcase.skipped ) {
+            item.appendTo($('#tests-skipped'));
+        } else {
+            item.appendTo($('#tests-run'));
+        }
         if(testcase.errored || testcase.failed) {
             root = item.clone()
             if(testcase.errored ) {
@@ -116,6 +119,8 @@ function handle_last_report(report) {
         
         $('#tests-run').children(':even').addClass('even');
         $('#tests-run').children(':odd').addClass('odd');
+        $('#tests-skipped').children(':even').addClass('even');
+        $('#tests-skipped').children(':odd').addClass('odd');
     }
 }
 
@@ -173,12 +178,16 @@ li{
     background-color: #ddd
 }
 
+#skip-box {
+    background-color: #E0FFFF
+}
 .no-errors {
     background-color: #90EE90 
 }
 .errors {
     background-color: #CD5C5C 
 }
+
 </style>
 </head>
 <body>
@@ -208,5 +217,10 @@ li{
     <h3>Tests run</h3>
     <ol id = "tests-run"></ol>
 </div>
+<div id = "skip-box">
+    <a name="skipped"><h3>Tests skipped</h3></a>
+    <ol id = "tests-skipped"></ol>
+</div>
+<a href="/stop">stop</a>
 </body>
 </html>

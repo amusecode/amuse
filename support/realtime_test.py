@@ -286,6 +286,7 @@ class MakeAReportOfATestRun(object):
         if issubclass(error_class, SkipTest):
             self.skipped += 1
             self.tests -= 1
+            report.end_with_skip()
         else: 
             report.end_with_error(error_tuple)
             self.errors += 1
@@ -483,7 +484,7 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.shutdown()
         
 if __name__ == '__main__':
-    parser = OptionParser()
+    parser = OptionParser() 
     
     parser.add_option("-p", "--port", 
       dest="serverport",

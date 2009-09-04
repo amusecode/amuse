@@ -17,7 +17,7 @@ from amuse.experiments.plummer import MakePlummerModel
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
     random.seed()
     
-    initial_mass = 5
+    initial_mass = 6
     convert_nbody = nbody_system.nbody_to_si(number_of_stars * initial_mass | units.MSun, 1 | units.lightyear)
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
