@@ -182,7 +182,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
        
        
         self.out.lf() + 'call MPI_RECV(header, 4, MPI_INTEGER, 0,'
-        self.out + ' rank, parent,&'
+        self.out + ' 0, parent,&'
         self.out.indent().lf() + 'mpiStatus, ioerror)'
         self.out.dedent()
         self.out.lf().lf() + 'tag_in = header(1)'
@@ -213,7 +213,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
                self.out + input_parameter_name + ', ' 
                self.out + number_parameter + ', &'
                
-               self.out.indent().n() + mpi_type+ ', 0, rank, parent,&'
+               self.out.indent().n() + mpi_type+ ', 0, 0, parent,&'
                self.out.n() + 'mpiStatus, ioError);'
                
                self.out.dedent().dedent().lf()
