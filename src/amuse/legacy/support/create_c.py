@@ -175,7 +175,7 @@ public:
 	void recv(MPI::Intercomm & intercom, int rank) {
 		int header[6];
 
-		intercom.Recv(header, 4, MPI_INT, 0, rank);
+		intercom.Recv(header, 4, MPI_INT, 0, 0);
 		tag = header[0];
 		number_of_doubles = header[1];
 		number_of_ints = header[2];
@@ -272,7 +272,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
                self.out.indent().lf() + 'parent.Recv(' 
                self.out + input_parameter_name 
                self.out + ', ' + 'request_header.' + number_parameter 
-               self.out + ', ' + mpi_type+ ', 0, rank);'
+               self.out + ', ' + mpi_type+ ', 0, 0);'
                self.out.dedent().lf() +'}'
         self.out.lf().lf() + 'reply_header.tag = request_header.tag;'
         
