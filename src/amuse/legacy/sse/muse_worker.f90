@@ -25,7 +25,7 @@ SUBROUTINE run_loop
   must_run_loop = 1
   
   do while (must_run_loop .eq. 1)
-    call MPI_RECV(header, 4, MPI_INTEGER, 0, rank, parent,&
+    call MPI_RECV(header, 4, MPI_INTEGER, 0, 0, parent,&
       mpiStatus, ioerror)
     
     tag_in = header(1)
@@ -40,17 +40,17 @@ SUBROUTINE run_loop
     
     if (number_of_doubles_in .gt. 0) then
       call MPI_RECV(doubles_in, number_of_doubles_in, &
-        MPI_DOUBLE_PRECISION, 0, rank, parent,&
+        MPI_DOUBLE_PRECISION, 0, 0, parent,&
         mpiStatus, ioError);
     end if
     if (number_of_integers_in .gt. 0) then
       call MPI_RECV(integers_in, number_of_integers_in, &
-        MPI_INTEGER, 0, rank, parent,&
+        MPI_INTEGER, 0, 0, parent,&
         mpiStatus, ioError);
     end if
     if (number_of_floats_in .gt. 0) then
       call MPI_RECV(floats_in, number_of_floats_in, &
-        MPI_SINGLE_PRECISION, 0, rank, parent,&
+        MPI_SINGLE_PRECISION, 0, 0, parent,&
         mpiStatus, ioError);
     end if
     

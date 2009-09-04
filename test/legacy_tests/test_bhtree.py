@@ -83,7 +83,7 @@ class TestAmuseInterface(unittest.TestCase):
         
         
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
-        
+         
         instance.update_star(earth)
         
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]

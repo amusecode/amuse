@@ -1,20 +1,21 @@
-import sys
-import sqlite3
+
+import time
 import urlparse
-import urllib
-import cgi
+import threading
+import traceback
+import json
+
 import os.path
-import BaseHTTPServer, SocketServer
+import BaseHTTPServer
+import SocketServer
 
 from mpi4py import MPI
-import json
+
 import nose
-import nose.plugins
+
 from nose.plugins.capture import Capture
-import time
-from nose.core import TestProgram
 from nose.plugins.skip import Skip, SkipTest
-import threading
+from nose.core import TestProgram
 
 from multiprocessing import Process, Queue
 import Queue as queue
@@ -28,6 +29,55 @@ def number_str(number, singular, plural = None):
             plural = singular + 's'
         return str(number) + ' ' + (singular if number == 1 else plural)
 
+import linecache
+import inspect
+
+def find_method_in_class(name_of_the_method, code, class_to_search):
+    if name_of_the_method in class_to_search.__dict__:
+        member =  class_to_search.__dict__[name_of_the_method]
+        if inspect.isfunction(member):
+            if member.func_code == code:
+                return member
+        if inspect.ismethoddescriptor(member):
+            pass
+    return None
+
+def extract_tb(tb, limit = None):
+    list = []
+    n = 0
+    while tb is not None and (limit is None or n < limit):
+        f = tb.tb_frame
+        lineno = tb.tb_lineno
+        co = f.f_code
+        filename = co.co_filename
+        name = co.co_name
+        linecache.checkcache(filename)
+        #line = linecache.getline(filename, lineno, f.f_globals)
+        line = ""
+        if '__file__' in f.f_globals:
+            for global_name, x in f.f_globals.iteritems():
+                if global_name.startswith('_'):
+                   continue
+                   
+                if inspect.isfunction(x):
+                    if global_name == name and x.func_code == co:
+                        args, varargs, varkw, defaults = inspect.getargspec(x)
+                        name += inspect.formatargspec(args, varargs, varkw, defaults)
+                elif inspect.isclass(x):
+                        method = find_method_in_class(name,co,x)
+                        if not method is None:
+                            args, varargs, varkw, defaults = inspect.getargspec(method)
+                            name += inspect.formatargspec(args, varargs, varkw, defaults)
+                            name = x.__name__ + '.' + name
+                            
+        if line:
+            line = line.strip()
+        else: 
+            line = None
+        list.append((filename, lineno, name, line))
+        tb = tb.tb_next
+        n = n+1
+    return list
 
 class MonitoredFile(object):
     def __init__(self, path, container):
@@ -117,143 +167,39 @@ class MonitorDirectories(object):
             x.check(self)
     
     def deleted(self, monitored_element):
+        if monitored_element.path.endswith('.pyc'):
+            return
         self.changed = True
         
     def created(self, monitored_element):
+        if monitored_element.path.endswith('.pyc'):
+            return
+            
         self.changed = True
         
     def unchanged(self, monitored_element):
         pass
     
     def updated(self, monitored_element):
+        if monitored_element.path.endswith('.pyc'):
+            return
+        print monitored_element.path
         self.changed = True
 
 
-class ReportOnATestRun(object):
-    score = 2000
-    
-    def __init__(self, original = None):
-        if original is None:
-            self.errors = 0
-            self.failures = 0
-            self.tests = 0
-            self.start_time = 0
-            self.end_time = 0
-            self.skipped = 0
-            self.problem_text = ""
-        else:
-            self.errors = original.errors
-            self.failures = original.failures
-            self.tests = original.tests
-            self.start_time = original.start_time
-            self.end_time = original.end_time
-            self.skipped = original.skipped
-            self.problem_text = original.problem_text
-            
-        self.name = 'report on a test'
-        self.enabled = True
 
-    def addError(self,test,err):
-        error_class, u1, u2 = err
-        if issubclass(error_class, SkipTest):
-            self.skipped += 1
-            self.tests -= 1
-        else: 
-            self.errors += 1
-            self.problem_text += '\nerror:'
-            #self.problem_text += str(error_class)
-            self.problem_text += str(u1)
-            self.problem_text += '\n   '
-            self.problem_text += str(test)
-            #self.problem_text += test.shortDescription()
-            pass
-            
-    def to_dict(self):
-        result = {}
-        for x in ['errors', 'failures', 'tests' , 'start_time', 'end_time', 'skipped', 'problem_text']:
-            result[x] = getattr(self, x)
-        return result
-        
-    def options(self, parser, env):
-        pass
-        
-    def configure(self, parser, env):
-        pass
-        
-    def addFailure(self, test, err):
-        error_class, u1, u2 = err
-        self.failures += 1
-        self.problem_text += '\nassertion failed:'
-        self.problem_text +=  str(u1)
-        self.problem_text += '\n   '
-        self.problem_text += str(test)
-        
-    def beforeTest(self,test):
-        self.tests += 1
-        
-    def begin(self):
-        self.start_time = time.time()
-
-        
-    def finalize(self, x):    
-        self.end_time = time.time()
-        pass
-        
-    def __str__(self):
-        w = []
-        if self.failures > 0:
-            w.append(number_str(self.failures,'failure'))
-            w.append(' ')
-        if self.errors > 0:
-            w.append(number_str(self.errors,'error'))
-            w.append(' ')
-        if self.errors == 0 and self.failures == 0:
-            w.append('all test passed')
-        w.append(' ')
-        w.append('- ')
-        delta_t = self.end_time - self.start_time
-        delta_t = round(delta_t, 3)
-        w.append(str(delta_t))
-        w.append(' s')
-        w.append('\n')
-        w.append(number_str(self.tests,'test'))
-        if self.skipped > 0:
-            w.append(', ')
-            w.append(number_str(self.skipped,'test'))
-            w.append(' skipped')
-        if self.problem_text:
-            w.append('\n\n')
-            w.append(problem_text)
-        return ''.join(w)
-        
-    def title(self):
-        w = []
-        w.append(number_str(self.tests,'test'))
-        w.append(' run, ')
-        if self.failures > 0:
-            w.append(number_str(self.failures,'failure')) 
-            w.append(' ')
-        if self.errors > 0:
-            w.append(number_str(self.errors,'error'))
-            w.append(' ')
-        if self.errors == 0 and self.failures == 0:
-            w.append('all tests passed')
-        w.append(' - ')
-        delta_t = self.end_time - self.start_time
-        delta_t = round(delta_t, 3)
-        w.append(str(delta_t))
-        w.append(' seconds')
-        return ''.join(w)
-
-class TimingsOfOneTest(object):
+class TestCaseReport(object):
     def __init__(self, test):
         self.id = test.id()
         self.address = test.address()
+        
         self.start_time = 0.0
         self.end_time = 0.0
         self.total_time = 0.0
         self.number_of_runs = 0.0
+        
         self.number_of_suite_runs = 0.0
+        
         if hasattr(test.test, "_testMethodName"):
             method = getattr(test.test, getattr(test.test, "_testMethodName"))
             self.lineno = method.func_code.co_firstlineno
@@ -262,6 +208,7 @@ class TimingsOfOneTest(object):
             
         self.failed = False
         self.errored = False
+        self.skipped = False
         
     def start(self):
         self.start_time = time.time()
@@ -276,73 +223,144 @@ class TimingsOfOneTest(object):
             return 0.0
         return self.total_time / self.number_of_runs
 
-class TimeATest(object):
+    def end_with_error(self, error_tuple):
+        self.end_time = time.time()
+        error_type, error_value, error_traceback = error_tuple        
+        self.error_string = traceback.format_exception_only(error_type, error_value)
+        self.traceback = list(reversed(extract_tb(error_traceback)))
+        
+        self.number_of_runs = 0
+        self.total_time = 0.0
+        self.failed = False
+        self.errored = True
+        
+    def end_with_failure(self, error_tuple):
+        self.end_time = time.time()
+        error_type, error_value, error_traceback = error_tuple        
+        self.error_string = traceback.format_exception_only(error_type, error_value)
+        self.traceback = list(reversed(traceback.extract_tb(error_traceback)))
+        self.number_of_runs = 0
+        self.total_time = 0.0
+        self.failed = True
+        self.errored = False
+        
+    def end_with_skip(self):
+        self.end_time = time.time()
+        self.skipped = True
+        self.failed = False
+        self.errored = False
+        
+    def to_dict(self):
+        return self.__dict__.copy()
+        
+        
+class MakeAReportOfATestRun(object):
+    score = 2000
     
+    def __init__(self, previous_report = None):
+        self.errors = 0
+        self.failures = 0
+        self.tests = 0
+        self.start_time = 0
+        self.end_time = 0
+        self.skipped = 0
+        self.problem_text = ""
+        
+        if previous_report is None:
+            self.address_to_report = {}
+        else:
+            self.address_to_report = previous_report.address_to_report
             
-    def __init__(self, id_to_timings =  {}):
-        self.id_to_timings =  id_to_timings
+        self.name = 'report on a test'
         self.enabled = True
-        
-    def beforeTest(self, test):
-        timings = self.get_timings(test)
-        timings.start()
-        timings.number_of_suite_runs += 1
-    
-    def is_test_able_to_run(self, test):
-        timings = self.get_timings(test)
-        time_taken = timings.mean_time() 
-        if time_taken < 0.1:
-            return True
-        if time_taken < 1.0:
-            return (timings.number_of_suite_runs % 5) == 0
-        return (timings.number_of_suite_runs % 10) == 0
-    
+
     def addSuccess(self,test):
-        timings = self.get_timings(test)
-        timings.end()
-        timings.failed = False
-        timings.errored = False
+        report = self.get_report(test)
+        report.end()
+        report.failed = False
+        report.errored = False
         
-    def addFailure(self, test, err):
-        timings = self.get_timings(test)
-        timings.end_time = time.time()
-        timings.number_of_runs = 0
-        timings.total_time = 0.0
-        timings.errored = False
-        timings.failed = True
+    def addError(self,test,error_tuple):
+        report = self.get_report(test)
+        error_class, ignore_1, ignore_2 = error_tuple
+        if issubclass(error_class, SkipTest):
+            self.skipped += 1
+            self.tests -= 1
+        else: 
+            report.end_with_error(error_tuple)
+            self.errors += 1
+    
+    def addFailure(self, test, error_tuple):
+        self.failures += 1
+        report = self.get_report(test)
+        report.end_with_failure(error_tuple)
+           
+    def get_report(self, test):
+        address = test.address()
+        if not address in self.address_to_report:
+            self.address_to_report[address] = TestCaseReport(test)
+        return self.address_to_report[address] 
         
-    def addError(self, test, err):
-        timings = self.get_timings(test)
-        timings.end_time = time.time()
-        timings.number_of_runs = 0
-        timings.total_time = 0.0
-        timings.failed = False
-        timings.errored = True
+    def options(self, parser, env):
+        pass
         
+    def configure(self, parser, env):
+        pass
+        
+        
+    def beforeTest(self,test):
+        self.tests += 1
+        x = self.get_report(test)
+        x.start()
+        x.number_of_suite_runs += 1
+    
+    def begin(self):
+        self.start_time = time.time()
+        
+    def finalize(self, x):    
+        self.end_time = time.time()
+        pass
+        
+
     def startTest(self, test):
-        if True or self.is_test_able_to_run(test):
+        if self.is_test_able_to_run(test):
            return
         else:
            raise SkipTest
-           
-    def get_timings(self, test):
-            id = test.address()
-            if not id in self.id_to_timings:
-                self.id_to_timings[id] = TimingsOfOneTest(test)
-            return self.id_to_timings[id] 
+
+    def is_test_able_to_run(self, test):
+        report = self.get_report(test)
+        time_taken = report.mean_time() 
+        if time_taken < 0.1:
+            return True
+        if time_taken < 1.0:
+            return (report.number_of_suite_runs % 5) == 0
+        return (report.number_of_suite_runs % 10) == 0
+    
+    def to_dict(self):
+        result = {}
+        for x in [ 'errors', 'failures', 'tests' , 'start_time', 'end_time', 'skipped', 'problem_text']:
+            result[x] = getattr(self, x)
+        
+        testcases = list(self.address_to_report.values())
+        testcases.sort(key=lambda x: os.path.basename(x.address[0]))
+        result['testcases'] = map(lambda x: x.to_dict(),testcases )
+        
+        return result  
 
 
 
-def _perform_the_testrun(directory, results_queue, id_to_timings):
+
+
+def _perform_the_testrun(directory, results_queue, previous_report = None):
     try:
         print "start test run"
         null_device = open('/dev/null')
         os.stdin = null_device
-        report = ReportOnATestRun()
-        time = TimeATest(id_to_timings)
-        plugins = [report , Skip(), Capture() , time]  
+        report = MakeAReportOfATestRun(previous_report)
+        plugins = [report , Skip()]#, Capture()]  
         result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
-        results_queue.put((report, time.id_to_timings))
+        results_queue.put(report)
     finally:
         MPI.Finalize()
 
@@ -351,7 +369,6 @@ class RunAllTestsWhenAChangeHappens(object):
     def __init__(self, server):
         self.must_run = False
         self.server = server
-        self.id_to_timings = {}
         
     def start(self):
         self.must_run = True;
@@ -366,21 +383,33 @@ class RunAllTestsWhenAChangeHappens(object):
         paths = [os.path.join(os.getcwd(), 'src'), os.path.join(os.getcwd(), 'test')]
         monitor = MonitorDirectories(paths)
         monitor.check()
+        monitor.changed = True
         while self.must_run:
-            monitor.check()
             if monitor.changed:
                 result_queue = Queue()
-                p = Process(target=_perform_the_testrun, args=(os.getcwd(), result_queue, self.id_to_timings))
+                p = Process(
+                    target=_perform_the_testrun, 
+                    args=(
+                        os.getcwd(), 
+                        result_queue, 
+                        self.server.last_report
+                    ))
                 p.start()
                 p.join()
-                report, self.id_to_timings = result_queue.get() 
+                report = result_queue.get() 
                 self.server.last_report = report
-                self.server.last_timings =  self.id_to_timings
                 del result_queue
+                
+                print "end test run"
+                monitor.check()
             else:
                 time.sleep(0.5)
+                monitor.check()
                 
-        
+def open_file(path, lineno = 1):
+    call(['geany', path, '+'+str(lineno)])
+    
+    
 class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urlparse.urlparse(self.path)
@@ -398,6 +427,13 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
                 string = "null"
             else:
                 string = json.dumps(self.server.last_report.to_dict())
+            content_type = 'text/javascript'
+        elif parsed_path.path == '/open_file':
+            parameters = urlparse.parse_qs(parsed_path.query)
+            path = parameters['path'][0]
+            lineno = int(parameters['lineno'][0])
+            open_file(path, lineno)
+            string = 'null'
             content_type = 'text/javascript'
         else:
             string, content_type = self.index_file()
@@ -418,7 +454,7 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         
     def index_file(self):
         base = os.path.split(__file__)[0]
-        filename = os.path.join(base, "continuous_test.html")
+        filename = os.path.join(base, "realtime_test.html")
         with open(filename, "r") as file:
             contents = file.read()
             return contents, 'text/html'
@@ -429,7 +465,6 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
     def __init__(self, port):
         BaseHTTPServer.HTTPServer.__init__(self, ('',port), HandleRequest)
         self.last_report = None
-        self.last_timings = None
         self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
         self.run_all_tests.start()
         self.daemon_threads = True
@@ -438,7 +473,9 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.serve_forever()
         
     def start_run_tests(self):
-        p = Process(target=_perform_the_testrun, args=(os.getcwd(),self.queue))
+        p = Process(
+            target=_perform_the_testrun, 
+            args=(os.getcwd(),self.queue))
         p.start()
     
     def stop(self):

@@ -18,7 +18,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     random.seed()
     
     initial_mass = 5
-    
     convert_nbody = nbody_system.nbody_to_si(number_of_stars * initial_mass | units.MSun, 1 | units.lightyear)
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;

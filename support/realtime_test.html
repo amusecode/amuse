@@ -8,6 +8,12 @@
   
 <script type="text/javascript">
 
+function on_line_click(event) {
+    path = $(this).attr('path');
+    lineno = $(this).attr('lineno');
+     $.getJSON("/open_file", {'path':path, 'lineno':lineno}, function handle_result(data){});
+}
+
 function handle_last_report(report) {
     if(!report) {
         return;
@@ -25,6 +31,92 @@ function handle_last_report(report) {
     
     $('#delta-time').text(delta_time.toFixed(3));
     $('#number-of-tests').text(report.tests);
+    
+    testcases = report.testcases
+    
+    $('#tests-errored').children().remove()
+    $('#tests-run').children().remove()
+    $('#tests-failed').children().remove()
+    
+    if(report.errors > 0 || report.failures > 0) {
+        $('#report-title').removeClass('no-errors');
+        $('#report-title').addClass('errors');
+    } else {
+        $('#report-title').removeClass('errors ');
+        $('#report-title').addClass('no-errors');
+            
+    }
+    if(report.errors > 0) {
+        $('#error-box').removeClass('hidden')
+    } else {
+        $('#error-box').addClass('hidden')
+    }
+    if(report.failures > 0) {
+        $('#fail-box').removeClass('hidden')
+    } else {
+        $('#fail-box').addClass('hidden')
+    }
+    for (var i = 0; i < testcases.length; i++) {
+        var testcase = testcases[i];
+        var item = $('<li></li>');
+        var file_and_line = $('<a></a>');
+        file_and_line.attr('href','#');
+        file_and_line.addClass('file-lineno');
+        var filename = testcase.address[0].split('/').pop();
+        file_and_line.append(filename + ' : ' + testcase.lineno);
+        file_and_line.appendTo(item);
+        file_and_line.attr('path',testcase.address[0]);
+        file_and_line.attr('lineno', testcase.lineno);
+        file_and_line.click(on_line_click);
+        item.append(' ');
+        
+        var address = $('<span></span>');
+        address.addClass('test-address');
+        address.append(testcase.address[2]) ;
+        address.appendTo(item);
+        item.appendTo($('#tests-run'));
+        
+        if(testcase.errored || testcase.failed) {
+            root = item.clone()
+            if(testcase.errored ) {
+                root.appendTo($('#tests-errored'));
+            } else {
+                root.appendTo($('#tests-failed'));
+            }
+            item = $('<li></li>').appendTo($('<ul></ul>').appendTo(root));
+            
+            $(testcase.error_string).appendTo(item);
+            traceback = $('<ul></ul>');
+            traceback.addClass('traceback-list');
+            tb = testcase.traceback;
+            for(var j = 0 ; j < tb.length; j++) {
+                frame = tb[j];
+                
+                filename = frame[0].split('/').pop();
+                tb_item = $('<li></li>');
+                file_and_line = $('<a></a>');
+                file_and_line.attr('href','#');
+                file_and_line.addClass('file-lineno');
+                file_and_line.append(filename + ' : ' + frame[1]);
+                file_and_line.appendTo(tb_item);
+                tb_item.append(' ');
+                call = $('<span></span>');
+                call.addClass('function-call');
+                call.append(frame[2]);
+                call.appendTo(tb_item);
+                file_and_line.attr('path',frame[0]);
+                file_and_line.attr('lineno',frame[1]);
+                file_and_line.click(on_line_click);
+                tb_item.appendTo(traceback);
+            }
+            traceback.children(':even').addClass('even');
+            traceback.children(':odd').addClass('odd');
+            traceback.appendTo(item);
+        }
+        
+        $('#tests-run').children(':even').addClass('even');
+        $('#tests-run').children(':odd').addClass('odd');
+    }
 }
 
 function startPage() {
@@ -35,12 +127,65 @@ $(document).ready(startPage);
   
 </script>
 <style  type="text/css"> 
- 
+
+body {
+    font-family: 'Georgia', 'Palatino'
+}
+li{
+    margin-left: 1em; 
+}
+.traceback-list li {
+    list-style-type:none;
+    padding-left: 1em;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+}
+.even {
+    background-color: rgba(255,255,255,0.5);
+
+}
+
+.odd {
+    background-color: rgba(255,255,255,0.3);
+}
+
+#tests-run li {
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+}
+
+#summary li {
+    list-style-type:none;
+}
+
+.hidden {
+    display: none;
+}
+
+#error-box {
+    background-color: #CD5C5C 
+}
+#fail-box {
+    background-color: #FF7F50
+}
+
+#run-box {
+    background-color: #ddd
+}
+
+.no-errors {
+    background-color: #90EE90 
+}
+.errors {
+    background-color: #CD5C5C 
+}
 </style>
 </head>
 <body>
-<h1>Last test report</h1>
-<ul>
+<h1 id="report-title">Last test report</h1>
+
+<div id = "summary-box">
+<ul id="summary">
  <li>started on: <span id="start-date"></span></li>
  <li>finished on: <span id="end-date"></span></li>
  <li>total time: <span id="delta-time">0.0</span> seconds</li>
@@ -49,5 +194,19 @@ $(document).ready(startPage);
  <li>number of tests failed: <span id="number-of-failures"></span></li>
  <li>number of tests skipped: <span id="number-of-skips"></span></li>
 </ul>
+</div>
+
+<div id = "error-box">
+ <h3>Tests errored</h3>
+ <ol id = "tests-errored"></ol>
+</div>
+<div id = "fail-box">
+ <h3>Tests failed</h3>
+ <ol id = "tests-failed"></ol>
+</div>
+<div id = "run-box">
+    <h3>Tests run</h3>
+    <ol id = "tests-run"></ol>
+</div>
 </body>
 </html>
