@@ -164,7 +164,7 @@ public:
         , number_of_ints(0) , number_of_floats(0){}
 
 	void send(MPI::Intercomm & intercomm, int rank){
-		int header[3];
+		int header[4];
 		header[0] = tag;
 		header[1] = number_of_doubles;
 		header[2] = number_of_ints;		
@@ -173,7 +173,7 @@ public:
 	}
 
 	void recv(MPI::Intercomm & intercom, int rank) {
-		int header[6];
+		int header[4];
 
 		intercom.Recv(header, 4, MPI_INT, 0, 0);
 		tag = header[0];
@@ -265,7 +265,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         spec = [
              ('number_of_doubles', 'doubles_in', 'MPI_DOUBLE')
             ,('number_of_ints', 'ints_in', 'MPI_INT')
-            ,('number_of_floats', 'floats_out', 'MPI_FLOAT')]
+            ,('number_of_floats', 'floats_in', 'MPI_FLOAT')]
         for number_parameter, input_parameter_name, mpi_type in spec:
                self.out.lf() 
                self.out + 'if(request_header.' + number_parameter + ' > 0) {'
