@@ -333,7 +333,7 @@ class TimeATest(object):
 
 
 
-def perform_the_testrun(directory, results_queue, id_to_timings):
+def _perform_the_testrun(directory, results_queue, id_to_timings):
     try:
         print "start test run"
         null_device = open('/dev/null')
@@ -370,7 +370,7 @@ class RunAllTestsWhenAChangeHappens(object):
             monitor.check()
             if monitor.changed:
                 result_queue = Queue()
-                p = Process(target=perform_the_testrun, args=(os.getcwd(), result_queue, self.id_to_timings))
+                p = Process(target=_perform_the_testrun, args=(os.getcwd(), result_queue, self.id_to_timings))
                 p.start()
                 p.join()
                 report, self.id_to_timings = result_queue.get() 
@@ -438,7 +438,7 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.serve_forever()
         
     def start_run_tests(self):
-        p = Process(target=perform_the_testrun, args=(os.getcwd(),self.queue))
+        p = Process(target=_perform_the_testrun, args=(os.getcwd(),self.queue))
         p.start()
     
     def stop(self):
