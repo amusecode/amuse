@@ -2,13 +2,15 @@ from amuse.support.core import late, print_out
 from amuse.legacy.support.core import legacy_function, legacy_global
 
 class DTypeSpec(object):
-    def __init__(self, input_var_name, output_var_name, output_counter_name, type):
-        self.number_of_inputs = 0
-        self.number_of_outputs = 0
+    def __init__(self, input_var_name, output_var_name, counter_name, 
+        type, mpi_type = 'UNKNOWN'):
         self.input_var_name = input_var_name
         self.output_var_name = output_var_name
-        self.output_counter_name = output_counter_name
+        self.counter_name = counter_name
         self.type = type
+        self.mpi_type = mpi_type
+
+dtypes = ['d','i','f']
 
 class MakeCodeString(object):
     def __init__(self):

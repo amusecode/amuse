@@ -17,7 +17,7 @@ SUBROUTINE run_loop
   integer :: number_of_doubles_out, number_of_doubles_in
   real*4 floats_in(255)
   real*4 floats_out(255)
-  integer :: number_of_floats_out_out, number_of_floats_out_in
+  integer :: number_of_floats_out, number_of_floats_in
   
   call MPI_COMM_GET_PARENT(parent, ioerror)
   call MPI_COMM_RANK(parent, rank, mpierror)
@@ -129,6 +129,7 @@ SUBROUTINE run_loop
     header(1) = tag_out
     header(2) = number_of_doubles_out
     header(3) = number_of_integers_out
+    header(4) = number_of_floats_out
     
     call MPI_SEND(header, 4, MPI_INTEGER, 0, 999, &
       parent, mpierror);

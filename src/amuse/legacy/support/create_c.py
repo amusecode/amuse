@@ -2,21 +2,25 @@ from amuse.support.core import late
 from amuse.legacy.support.core import RemoteFunction
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
-from amuse.legacy.support.create_code import DTypeSpec
-        
-class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
+from amuse.legacy.support.create_code import DTypeSpec, dtypes
+      
+       
+dtype_to_spec = {
+    'i' : DTypeSpec('ints_in','ints_out',
+                    'number_of_ints', 'int', 'MPI_INT'),
+    'd' : DTypeSpec('doubles_in', 'doubles_out',
+                    'number_of_doubles', 'double', 'MPI_DOUBLE'),
+    'f' : DTypeSpec('floats_in', 'floats_out',
+                    'number_of_floats', 'float', 'MPI_FLOAT')
+}
 
+class MakeCCodeString(MakeCodeString):
     @late
     def dtype_to_spec(self):
-        return {
-            'i' : DTypeSpec('ints_in','ints_out',
-                            'number_of_ints', 'int'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'double'),
-            'f' : DTypeSpec('floats_in', 'floats_out',
-                            'number_of_floats', 'float')
-        }
-            
+        return dtype_to_spec
+       
+         
+class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         
     def start(self):
         
@@ -82,7 +86,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
             self.out.n() 
-            self.out + 'reply_header.' + spec.output_counter_name 
+            self.out + 'reply_header.' + spec.counter_name 
             self.out + ' = ' + count + ';'
             pass
             
@@ -97,8 +101,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.output_var_name
-            self.out + '[' + spec.number_of_outputs + ']' + ' = '
-            spec.number_of_outputs += 1
+            self.out + '[' + 0 + ']' + ' = '
         self.out + self.specification.name + '('
         
     def output_casestmt_start(self):
@@ -109,25 +112,16 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCodeString):
         
         
  
-class MakeACStringOfALegacyGlobalSpecification(MakeCodeString):
+class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
     
-    @late
-    def dtype_to_spec(self):
-        return {
-            'i' : DTypeSpec('ints_in','ints_out',
-                            'number_of_ints', 'int'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'double'),
-            'f' : DTypeSpec('floats_in', 'floats_out',
-                            'number_of_floats', 'float')
-        }
+    
             
     def start(self):
         self.output_casestmt_start()
         self.out.indent()
         
         spec = self.dtype_to_spec[self.legacy_global.dtype]
-        self.out.n() + 'if(request_header.' + spec.output_counter_name
+        self.out.n() + 'if(request_header.' + spec.counter_name
         self.out + ' == ' + 1 + '){'
         self.out.indent()
         self.out.n() + self.legacy_global.name + ' = ' 
@@ -135,7 +129,7 @@ class MakeACStringOfALegacyGlobalSpecification(MakeCodeString):
         self.out.dedent()
         self.out.n() + '} else {'
         self.out.indent()
-        self.out.n() + 'reply_header.' + spec.output_counter_name
+        self.out.n() + 'reply_header.' + spec.counter_name
         self.out + ' = ' + 1 + ';'
         self.out.n() + spec.output_var_name + '[0]' 
         self.out + ' = ' + self.legacy_global.name + ';'
@@ -152,51 +146,80 @@ class MakeACStringOfALegacyGlobalSpecification(MakeCodeString):
         
     def output_casestmt_end(self):
         self.out.n() + 'break;'
-               
-HEADER_CLASS_STRING = """class message_header {
-
-public:
-	int tag;
-	int number_of_doubles;
-	int number_of_ints;
-	int number_of_floats;
-	message_header(): tag(0), number_of_doubles(0)
-        , number_of_ints(0) , number_of_floats(0){}
-
-	void send(MPI::Intercomm & intercomm, int rank){
-		int header[4];
-		header[0] = tag;
-		header[1] = number_of_doubles;
-		header[2] = number_of_ints;		
-		header[3] = number_of_floats;		
-		intercomm.Send(header, 4, MPI_INT, 0, 999);
-	}
-
-	void recv(MPI::Intercomm & intercom, int rank) {
-		int header[4];
-
-		intercom.Recv(header, 4, MPI_INT, 0, 0);
-		tag = header[0];
-		number_of_doubles = header[1];
-		number_of_ints = header[2];
-		number_of_floats = header[3];
-	}
-};"""
         
+        
+        
+class MakeCMessageHeaderClassDefinition(MakeCCodeString):
+    @late
+    def number_of_types(self):
+        return len(self.dtype_to_spec)
+        
+    @late
+    def length_of_the_header(self):
+        return 1 + self.number_of_types
+        
+    def start(self):
+        self.out + "class message_header {"
+        self.out.lf() + "public:"
+        self.out.indent()
+        self.out.lf() + 'int tag;'
+        
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]
+            self.out.lf() + 'int ' + spec.counter_name;
+            self.out + ';'
+        
+        self.make_constructor()
+        self.make_send_function()
+        self.make_recv_function()
+
+        self.out.dedent()
+        self.out.lf() + '}' + ';'
+        
+    def make_constructor(self):
+        self.out.lf() + 'message_header(): tag(0)'
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]
+            self.out + ', ' + spec.counter_name;
+            self.out + '(0)'
+        self.out + '{}'
+        
+    def make_send_function(self):
+        self.out.lf() + 'void send(MPI::Intercomm & intercomm, int rank){'
+        self.out.indent()
+        self.out.lf() + 'int header[' + self.length_of_the_header + '];'
+        self.out.lf() + 'header[0] = tag;'
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype] 
+            self.out.lf() + 'header[' + (i+1) + '] ='
+            self.out + spec.counter_name + ';'
+        self.out.lf() + 'intercomm.Send(header, '+ self.length_of_the_header 
+        self.out +', MPI_INT, 0, 999);'
+        self.out.dedent()
+        self.out.lf() + '}'
+        
+    def make_recv_function(self):
+        self.out.lf() + 'void recv(MPI::Intercomm & intercomm, int rank) {'
+        self.out.indent()
+        self.out.lf() + 'int header[' + self.length_of_the_header + '];'
+        self.out.lf() + 'intercomm.Recv(header, '+ self.length_of_the_header 
+        self.out +', MPI_INT, 0, 0);'
+        self.out.lf() + 'tag = header[0];'
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype] 
+            self.out + spec.counter_name + '='
+            self.out.lf() + 'header[' + (i+1) + '];'
+        self.out.dedent()
+        self.out.lf() + '}'
+        
+
 
 class MakeACStringOfAClassWithLegacyFunctions\
     (MakeCodeStringOfAClassWithLegacyFunctions):
 
     @late
     def dtype_to_spec(self):
-        return {
-            'i' : DTypeSpec('ints_in','ints_out',
-                            'number_of_ints', 'int'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'double'),
-            'f' : DTypeSpec('floats_in', 'floats_out',
-                            'number_of_floats', 'float')
-        }
+        return dtype_to_spec
 
     def make_legacy_function(self):
         return MakeACStringOfALegacyFunctionSpecification()
@@ -238,7 +261,10 @@ class MakeACStringOfAClassWithLegacyFunctions\
     
             
     def output_header_class_definition(self):
-        self.out + HEADER_CLASS_STRING
+        uc = MakeCMessageHeaderClassDefinition()
+        uc.out = self.out
+        uc.start()
+        #self.out + HEADER_CLASS_STRING
         
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'void run_loop() {'
@@ -262,18 +288,18 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf() + 'message_header reply_header;'
         self.out.lf()
         self.out.lf() + 'request_header.recv(parent,rank);'
-        spec = [
-             ('number_of_doubles', 'doubles_in', 'MPI_DOUBLE')
-            ,('number_of_ints', 'ints_in', 'MPI_INT')
-            ,('number_of_floats', 'floats_in', 'MPI_FLOAT')]
-        for number_parameter, input_parameter_name, mpi_type in spec:
-               self.out.lf() 
-               self.out + 'if(request_header.' + number_parameter + ' > 0) {'
-               self.out.indent().lf() + 'parent.Recv(' 
-               self.out + input_parameter_name 
-               self.out + ', ' + 'request_header.' + number_parameter 
-               self.out + ', ' + mpi_type+ ', 0, 0);'
-               self.out.dedent().lf() +'}'
+            
+        
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]    
+            self.out.lf() 
+            self.out + 'if(request_header.' + spec.counter_name + ' > 0) {'
+            self.out.indent().lf() + 'parent.Recv(' 
+            self.out + spec.input_var_name 
+            self.out + ', ' + 'request_header.' + spec.counter_name 
+            self.out + ', ' + spec.mpi_type+ ', 0, 0);'
+            self.out.dedent().lf() +'}'
+            
         self.out.lf().lf() + 'reply_header.tag = request_header.tag;'
         
     def output_switch_start(self):
@@ -291,20 +317,16 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.dedent().lf() + '}'
         
     def output_runloop_function_def_end(self):
-        
         self.out.lf().lf() + 'reply_header.send(parent, rank);'
         
-        spec = [
-             ('number_of_doubles', 'doubles_out', 'MPI_DOUBLE')
-            ,('number_of_ints', 'ints_out', 'MPI_INT')
-            ,('number_of_floats', 'floats_out', 'MPI_FLOAT')]
-        for number_parameter, parameter_name, mpi_type in spec:
-               self.out.lf() + 'if(reply_header.' 
-               self.out + number_parameter + ' > 0) {'
-               self.out.indent().lf() + 'parent.Send(' + parameter_name 
-               self.out + ', ' + 'reply_header.' + number_parameter 
-               self.out + ', ' + mpi_type+ ', 0, 999);'
-               self.out.dedent().lf() +'}'
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]    
+            self.out.lf() + 'if(reply_header.' 
+            self.out + spec.counter_name + ' > 0) {'
+            self.out.indent().lf() + 'parent.Send(' + spec.output_var_name 
+            self.out + ', ' + 'reply_header.' + spec.counter_name 
+            self.out + ', ' + spec.mpi_type+ ', 0, 999);'
+            self.out.dedent().lf() +'}'
         
         self.out.dedent()
         self.out.lf() + '}'

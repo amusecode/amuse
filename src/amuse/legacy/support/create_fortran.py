@@ -2,20 +2,21 @@ from amuse.support.core import late
 from amuse.legacy.support.core import RemoteFunction
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
-from amuse.legacy.support.create_code import DTypeSpec
-        
+from amuse.legacy.support.create_code import DTypeSpec, dtypes
+ 
+dtype_to_spec = {
+    'i' : DTypeSpec('integers_in','integers_out', 
+                    'number_of_integers', 'integer', 'MPI_INTEGER'),
+    'd' : DTypeSpec('doubles_in', 'doubles_out',
+                    'number_of_doubles', 'real*8', 'MPI_DOUBLE_PRECISION'),
+    'f' : DTypeSpec('floats_in', 'floats_out',
+                    'number_of_floats', 'real*4', 'MPI_SINGLE_PRECISION')} 
         
 class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
     
     @late
     def dtype_to_spec(self):
-        return {
-            'i' : DTypeSpec('integers_in','integers_out', 
-                            'number_of_integers_out', 'integer'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles_out', 'real*8'),
-            'f' : DTypeSpec('floats_in', 'floats_out',
-                            'number_of_floats_out', 'real*4')}
+        return dtype_to_spec
    
     def start(self):
         
@@ -91,7 +92,8 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
             spec = self.dtype_to_spec[dtype]
             count = dtype_to_count[dtype]
             self.out.n() 
-            self.out + spec.output_counter_name + ' = ' + count 
+            self.out + spec.counter_name + '_out'
+            self.out + ' = ' + count 
             pass
             
     def output_function_end(self):
@@ -114,21 +116,59 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         self.out.n() 
         
         
+class MakeAFortranStringOfALegacyGlobalSpecification(MakeCodeString):
+    
+    @late
+    def dtype_to_spec(self):
+        return dtype_to_spec
+            
+    def start(self):
+        self.output_casestmt_start()
+        self.out.indent()
         
+        spec = self.dtype_to_spec[self.legacy_global.dtype]
+        self.out.n() + 'if (' +spec.counter_name +'_in'
+        self.out + ' == 1 ) then'
+        self.out.indent()
+        self.out.n() + self.legacy_global.name + ' = ' 
+        self.out + spec.input_var_name  + '[1]'
+        self.out.dedent()
+        self.out.n() + 'else'
+        self.out.indent()
+        self.out.n() + spec.counter_name + '_out'
+        self.out + ' = ' + 1 
+        self.out.n() + spec.output_var_name + '[1]' 
+        self.out + ' = ' + self.legacy_global.name
+        self.out.dedent()
+        self.out.n()
+        
+        self.output_casestmt_end()
+        self.out.dedent()
+        self._result = self.out.string
+        
+        
+    def output_casestmt_start(self):
+        self.out + 'CASE(' + self.legacy_global.id  + ')'
+        
+    def output_casestmt_end(self):
+        self.out.n() 
 
 class MakeAFortranStringOfAClassWithLegacyFunctions \
     (MakeCodeStringOfAClassWithLegacyFunctions):
 
     @late
     def dtype_to_spec(self):
-        return {
-            'i' : DTypeSpec('integers_in','integers_out',
-                            'number_of_integers', 'integer'),
-            'd' : DTypeSpec('doubles_in', 'doubles_out',
-                            'number_of_doubles', 'real*8'),
-            'f' : DTypeSpec('floats_in', 'floats_out',
-                            'number_of_floats_out', 'real*4')}
+        return dtype_to_spec 
    
+    @late
+    def number_of_types(self):
+        return len(self.dtype_to_spec)
+        
+    @late
+    def length_of_the_header(self):
+        return 1 + self.number_of_types
+        
+        
     def make_legacy_function(self):
         return MakeAFortranStringOfALegacyFunctionSpecification()
    
@@ -156,7 +196,8 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.n() + 'integer :: rank, parent, ioerror'
         self.out.n() + 'integer :: must_run_loop'
         self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
-        self.out.lf().lf() + 'integer header(4)'
+        self.out.lf().lf() + 'integer header(' 
+        self.out + self.length_of_the_header + ')'
         self.out.lf().lf() + 'integer :: tag_in, tag_out'
         
         maximum_number_of_inputvariables_of_a_type = 255
@@ -171,8 +212,8 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
             self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
             
             self.out.lf() + 'integer ::' + ' ' 
-            self.out + dtype_spec.output_counter_name + '_out' 
-            self.out + ', ' + dtype_spec.output_counter_name + '_in'
+            self.out + dtype_spec.counter_name + '_out' 
+            self.out + ', ' + dtype_spec.counter_name + '_in'
             
         self.out.lf().lf() + 'call MPI_COMM_GET_PARENT(parent, ioerror)'
         self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, mpierror)'
@@ -181,20 +222,20 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.indent()
        
        
-        self.out.lf() + 'call MPI_RECV(header, 4, MPI_INTEGER, 0,'
+        self.out.lf() + 'call MPI_RECV(header, '
+        self.out + self.length_of_the_header
+        self.out + ', MPI_INTEGER, 0,'
         self.out + ' 0, parent,&'
         self.out.indent().lf() + 'mpiStatus, ioerror)'
         self.out.dedent()
         self.out.lf().lf() + 'tag_in = header(1)'
         
-        spec = [
-          ('number_of_doubles_in', 'doubles_in', 'MPI_DOUBLE_PRECISION')
-          ,('number_of_integers_in', 'integers_in', 'MPI_INTEGER')
-          ,('number_of_floats_in', 'floats_in', 'MPI_SINGLE_PRECISION')]
         
-        for i, (number_parameter, input_parameter_name, mpi_type)\
-            in enumerate(spec):
-            self.out.lf() + number_parameter + ' =  ' 
+               
+               
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]
+            self.out.lf() + spec.counter_name + '_in' + ' =  ' 
             self.out + 'header(' + (i+2) + ')'
         
         self.out.lf().lf() + 'tag_out = tag_in'
@@ -205,19 +246,21 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.lf()      + 'number_of_floats_out = 0'
         self.out.lf()
         
-       
-        for number_parameter, input_parameter_name, mpi_type in spec:
-               self.out.lf() + 'if (' + number_parameter + ' .gt. 0) then'
-               
-               self.out.indent().lf() + 'call MPI_RECV('
-               self.out + input_parameter_name + ', ' 
-               self.out + number_parameter + ', &'
-               
-               self.out.indent().n() + mpi_type+ ', 0, 0, parent,&'
-               self.out.n() + 'mpiStatus, ioError);'
-               
-               self.out.dedent().dedent().lf()
-               self.out + 'end if'
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]
+            self.out.lf() + 'if (' + spec.counter_name + '_in' 
+            self.out + ' .gt. 0) then'
+
+            self.out.indent().lf() + 'call MPI_RECV('
+            self.out + spec.input_var_name + ', ' 
+            self.out + spec.counter_name + '_in' + ', &'
+
+            self.out.indent().n() + spec.mpi_type
+            self.out + ', 0, 0, parent,&'
+            self.out.n() + 'mpiStatus, ioError);'
+
+            self.out.dedent().dedent().lf()
+            self.out + 'end if'
          
     def output_switch_start(self):
         self.out.lf().lf() + 'SELECT CASE (tag_in)'
@@ -233,27 +276,31 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.dedent().lf() + 'END SELECT'
         
     def output_runloop_function_def_end(self):
-        self.out.lf().lf() + 'header(1) = tag_out'
-        self.out.lf()      + 'header(2) = number_of_doubles_out'
-        self.out.lf()      + 'header(3) = number_of_integers_out'
         
-        self.out.lf().lf() + 'call MPI_SEND(header, 4, MPI_INTEGER,'
+        self.out.lf().lf() + 'header(1) = tag_out'
+        for i, dtype in enumerate(['d','i','f']):
+            spec = self.dtype_to_spec[dtype]
+            self.out.lf()  + 'header(' + (i+2) + ')'
+            self.out + ' = ' + spec.counter_name + '_out'
+        
+        self.out.lf().lf() + 'call MPI_SEND(header, '
+        self.out + self.length_of_the_header 
+        self.out + ', MPI_INTEGER,'
         self.out + ' 0, 999, &'
         self.out.indent().lf() + 'parent, mpierror);'
         self.out.dedent().lf()
         
-        spec = [
-          ('number_of_doubles_out', 'doubles_out', 'MPI_DOUBLE_PRECISION')
-          ,('number_of_integers_out', 'integers_out', 'MPI_INTEGER')
-          ,('number_of_floats_out', 'floats_out', 'MPI_SINGLE_PRECISION')]
-        for number_parameter, parameter_name, mpi_type in spec:
-               self.out.lf() + 'if (' + number_parameter + ' .gt. 0) then'
-               self.out.indent().lf() 
-               self.out + 'call MPI_SEND(' 
-               self.out + parameter_name + ', ' + number_parameter + ', &'
-               self.out.indent().lf() + mpi_type + ', 0, 999, &'
-               self.out.lf() + 'parent, mpierror);'
-               self.out.dedent().dedent().lf() +'end if'
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]
+            self.out.lf() + 'if (' + spec.counter_name + '_out'
+            self.out + ' .gt. 0) then'
+            self.out.indent().lf() 
+            self.out + 'call MPI_SEND(' 
+            self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
+            self.out + ', &'
+            self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
+            self.out.lf() + 'parent, mpierror);'
+            self.out.dedent().dedent().lf() +'end if'
         self.out.dedent()
         self.out.lf() + 'end do'
         self.out.lf() + 'return'

@@ -61,7 +61,11 @@ class Particles(object):
         for x in self:
             result.append((x.id, x.mass))
         return result
-   
+
+
+class Stars(Particles):
+    pass
+
 class Particle(object):
     """A physical object or a physical region simulated as a 
     physical object (cload particle).
@@ -113,3 +117,6 @@ class Particle(object):
         for x in self.attributes:
             value = getattr(self,x)
             setattr(self, x, convert_nbody.to_si(value))
+            
+class Star(Particle):
+    pass

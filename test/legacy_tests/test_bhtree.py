@@ -50,20 +50,20 @@ class TestAmuseInterface(unittest.TestCase):
         instance.eps2_for_gravity = 0.001
         instance.setup_module()
         
-        sun = core.Particle(0)
+        sun = core.Star(0)
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Particle(1)
+        earth = core.Star(1)
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        instance.add_star(sun)
-        instance.add_star(earth)
+        stars = core.Stars([sun, earth])
+        instance.add_particles(stars)
 
         instance.evolve_model(365.0 | units.day)
         instance.update_star(earth)
@@ -102,20 +102,20 @@ class TestAmuseInterface(unittest.TestCase):
         #instance.use_self_gravity = 0
         instance.setup_module()
         
-        sun = core.Particle(0)
+        sun = core.Star(0)
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Particle(1)
+        earth = core.Star(1)
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        instance.add_star(sun)
-        instance.add_star(earth)
+        stars = core.Stars([sun, earth])
+        instance.add_particles(stars)
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
@@ -123,7 +123,6 @@ class TestAmuseInterface(unittest.TestCase):
         
         figure = pyplot.figure(figsize = (40,40))
         plot = figure.add_subplot(1,1,1)
-        
         
         for index, (time,position) in enumerate(earth.position.values):
             x_point = position.in_(units.AU).number[0]

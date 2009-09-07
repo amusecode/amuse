@@ -262,6 +262,14 @@ class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
         x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
         string = x.result
         self.assertTrue('_get_state(' in string)
+        
+    def test4(self):
+        x = self._class_to_test()
+        x.class_with_legacy_functions = TestMakeACStringOfAClassWithLegacyFunctions
+        string = x.result
+        self.assertTrue('int number_of_ints;' in string)
+        self.assertTrue('number_of_ints(0)' in string)
+        self.assertTrue('int header[4];' in string)
 
 class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeAFortranStringOfALegacyFunctionSpecification
@@ -362,5 +370,112 @@ class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
         x.class_with_legacy_functions = TestMakeAFortranStringOfAClassWithLegacyFunctions
         string = x.result
         self.assertTrue('program' in string)
+        
+class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
+    _class_to_test = MakeACStringOfALegacyFunctionSpecification
+    
+    def test1(self):
+        function = RemoteFunction()      
+        function.name = "test_one"     
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='d', direction=function.IN)
+        function.addParameter('name', dtype='d', direction=function.IN)
+        
+        x = self._class_to_test()
+        
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case1:test_one(ints_in[0],doubles_in[0],doubles_in[1]);break;')
+        
+    def test2(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case1:ints_out[0]=test_one(ints_in[0]);reply_header.number_of_ints=1;break;')
+    
+    def test3(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case1:ints_out[0]=test_one(ints_in[0],&ints_out[1]);reply_header.number_of_ints=2;break;')
+        
+    def test4(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.OUT)
+        function.addParameter('doublep', dtype='d', direction=function.OUT)
+        function.result_type = 'd'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_out[0],&doubles_out[1]);reply_header.number_of_ints=1;reply_header.number_of_doubles=2;break;')
+        
+    def test6(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.INOUT)
+        function.addParameter('doublep', dtype='d', direction=function.INOUT)
+        function.result_type = 'd'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_in[1],&doubles_in[0]);ints_out[0]=ints_in[1];doubles_out[1]=doubles_in[0];reply_header.number_of_ints=1;reply_header.number_of_doubles=2;break;')
+        
+    def test5(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.OUT)
+        function.addParameter('doublep', dtype='d', direction=function.OUT)
+        function.result_type = 'd'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        self.assertEquals(string,  'case 1:\n  doubles_out[0] = test_one(\n    ints_in[0] ,\n    &ints_out[0] ,\n    &doubles_out[1]\n  );\n  reply_header.number_of_ints = 1;\n  reply_header.number_of_doubles = 2;\n  break;')
+
+
+
+        
+class TestMakeAFortranStringOfALegacyGlobalSpecification(unittest.TestCase):
+    _class_to_test = MakeAFortranStringOfALegacyGlobalSpecification
+    
+    def test1(self):
+        x = self._class_to_test()
+        x.legacy_global = legacy_global('test',id=10,dtype='d')
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\r' , string))
+        self.assertEquals(string_no_spaces, 'CASE(10)\nif(number_of_doubles_in==1)then\ntest=doubles_in[1]\nelse\nnumber_of_doubles_out=1\ndoubles_out[1]=test\n\n')
+    
+    def test2(self):
+        x = self._class_to_test()
+        x.legacy_global = legacy_global('test',id=10,dtype='i')
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\r' , string))
+        self.assertEquals(string_no_spaces, 'CASE(10)\nif(number_of_integers_in==1)then\ntest=integers_in[1]\nelse\nnumber_of_integers_out=1\nintegers_out[1]=test\n\n')
+        
+
+
           
         
