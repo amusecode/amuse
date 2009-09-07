@@ -209,9 +209,11 @@ class TestCaseReport(object):
         self.failed = False
         self.errored = False
         self.skipped = False
+        self.found = False
         
     def start(self):
         self.start_time = time.time()
+        self.found = True
     
     def end(self):
         self.end_time = time.time()
@@ -234,6 +236,7 @@ class TestCaseReport(object):
         
         self.number_of_runs = 0
         self.total_time = 0.0
+        
         self.failed = False
         self.errored = True
         self.skipped = False
@@ -243,14 +246,17 @@ class TestCaseReport(object):
         error_type, error_value, error_traceback = error_tuple        
         self.error_string = traceback.format_exception_only(error_type, error_value)
         self.traceback = list(reversed(traceback.extract_tb(error_traceback)))
+        
         self.number_of_runs = 0
         self.total_time = 0.0
+        
         self.failed = True
         self.errored = False
         self.skipped = False
         
     def end_with_skip(self):
         self.end_time = time.time()
+        
         self.skipped = True
         self.failed = False
         self.errored = False
@@ -275,6 +281,7 @@ class MakeAReportOfATestRun(object):
             self.address_to_report = {}
         else:
             self.address_to_report = previous_report.address_to_report
+           
             
         self.name = 'report on a test'
         self.enabled = True
@@ -282,8 +289,6 @@ class MakeAReportOfATestRun(object):
     def addSuccess(self,test):
         report = self.get_report(test)
         report.end()
-        report.failed = False
-        report.errored = False
         
     def addError(self,test,error_tuple):
         report = self.get_report(test)
@@ -322,9 +327,17 @@ class MakeAReportOfATestRun(object):
     
     def begin(self):
         self.start_time = time.time()
+        for x in self.address_to_report.values():
+            x.errored = False
+            x.failed = False
+            x.skipped = False
+            x.found = False
         
     def finalize(self, x):    
         self.end_time = time.time()
+        for key, report in list(self.address_to_report.iteritems()):
+            if not report.found:
+                del self.address_to_report[key]
         pass
         
 

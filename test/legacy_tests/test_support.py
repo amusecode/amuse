@@ -269,7 +269,7 @@ class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
         string = x.result
         self.assertTrue('int number_of_ints;' in string)
         self.assertTrue('number_of_ints(0)' in string)
-        self.assertTrue('int header[4];' in string)
+        self.assertTrue('int header[5];' in string)
 
 class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeAFortranStringOfALegacyFunctionSpecification

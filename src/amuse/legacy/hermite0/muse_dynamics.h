@@ -40,24 +40,6 @@ int initialize_particles(double time = 0);
 
 int reinitialize_particles();
 
-//-------------------------------------------------------------------------
-
-/// Structure defining particle dynamics data.
-
-/** Use components to avoid possible SWIG problems with vectors. */
-
-typedef struct {
-/// particle identifier
-    int id;
-/// particle mass
-    double mass;
-/// particle effective radius
-    double radius;
-/// particle position
-    double x, y, z;
-/// particle velocity
-    double vx, vy, vz;
-} dynamics_state;
 
 //-------------------------------------------------------------------------
 //
@@ -68,7 +50,8 @@ typedef struct {
 /// Return the number of particles in the system after the particle
 /// has been added.
 
-int add_particle(dynamics_state d);
+int add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz);
+    
 
 //-------------------------------------------------------------------------
 //
@@ -76,7 +59,8 @@ int add_particle(dynamics_state d);
 /// system.  Return an error message and do nothing if the particle
 /// does not exist.
 
-int set_particle(int id, dynamics_state d);
+int set_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz);
+    
 
 //-------------------------------------------------------------------------
 
@@ -200,7 +184,8 @@ int get_colliding_secondary(int id);
 
 /// Return the current dynamical state of particle id.
 
-dynamics_state get_state(int id);
+void get_state(int id, int * id_out,  double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz) ;
+    
 
 //-------------------------------------------------------------------------
 

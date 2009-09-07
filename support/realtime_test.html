@@ -43,15 +43,33 @@ function handle_last_report(report) {
         return;
     }
     //'errors', 'failures', 'tests' , 'start_time', 'end_time', 'skipped', 'problem_text']:
+    
+    startDate = new Date(report.start_time * 1000);
+    endDate = new Date(report.end_time * 1000);
+    
+    delta_time = report.end_time - report.start_time;
+    var title = '';
+    title += startDate.toLocaleTimeString();
+    title += ' ';
+    if(report.errors > 0) {
+        title += 'E' + report.errors + ' ';
+    }
+    if(report.failures > 0) {
+        title += 'F' + report.failures + ' ';
+    }
+    title += '+' + report.tests + ' ';
+    if(report.skipped > 0) {
+        title += 'S' + report.skipped + ' ';
+    }
+    title += delta_time.toFixed(2) + 's';
+    $('#report-title').html(title);
+    
     $('#number-of-errors').text(report.errors);
     $('#number-of-failures').text(report.failures);
     $('#number-of-skips').text(report.skipped);
-    startDate = new Date(report.start_time * 1000);
-    endDate = new Date(report.end_time * 1000);
     $('#start-date').text(startDate.toLocaleString());
     $('#end-date').text(endDate.toLocaleString());
     
-    delta_time = report.end_time - report.start_time;
     
     $('#delta-time').text(delta_time.toFixed(3));
     $('#number-of-tests').text(report.tests);
@@ -223,7 +241,7 @@ a:hover {
 </style>
 </head>
 <body>
-<h1 id="report-title">Last test report</h1>
+<h2 id="report-title"></h2>
 
 <div id = "summary-box">
 <ul id="summary">

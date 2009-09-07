@@ -17,12 +17,9 @@ class TestMPIInterface(unittest.TestCase):
     def test1(self):
         hermite = mpi_interface.Hermite()
         hermite.setup_module()
-        new_state = hermite.dynamics_state()
-        new_state.id = 1
-        new_state.mass = 11.0
-        hermite.add_particle(new_state)
+        hermite.add_particle(1, 11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = hermite.get_state(1)
-        self.assertEquals(new_state.mass,  retrieved_state.mass)
+        self.assertEquals(11.0,  retrieved_state.mass)
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
         del hermite

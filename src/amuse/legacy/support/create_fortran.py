@@ -166,7 +166,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         
     @late
     def length_of_the_header(self):
-        return 1 + self.number_of_types
+        return 2 + self.number_of_types
         
         
     def make_legacy_function(self):
@@ -236,7 +236,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
             self.out.lf() + spec.counter_name + '_in' + ' =  ' 
-            self.out + 'header(' + (i+2) + ')'
+            self.out + 'header(' + (i+3) + ')'
         
         self.out.lf().lf() + 'tag_out = tag_in'
         
@@ -280,7 +280,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.lf().lf() + 'header(1) = tag_out'
         for i, dtype in enumerate(['d','i','f']):
             spec = self.dtype_to_spec[dtype]
-            self.out.lf()  + 'header(' + (i+2) + ')'
+            self.out.lf()  + 'header(' + (i+3) + ')'
             self.out + ' = ' + spec.counter_name + '_out'
         
         self.out.lf().lf() + 'call MPI_SEND(header, '

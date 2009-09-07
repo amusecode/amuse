@@ -27,6 +27,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         self.specification.prepare_output_parameters()
         self.output_casestmt_start()
         self.out.indent()
+        #self.out.lf() + 'for (int i = 0 ; i < request_header.len; i++){
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
@@ -156,13 +157,14 @@ class MakeCMessageHeaderClassDefinition(MakeCCodeString):
         
     @late
     def length_of_the_header(self):
-        return 1 + self.number_of_types
+        return 2 + self.number_of_types
         
     def start(self):
         self.out + "class message_header {"
         self.out.lf() + "public:"
         self.out.indent()
         self.out.lf() + 'int tag;'
+        self.out.lf() + 'int len;'
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
@@ -177,11 +179,19 @@ class MakeCMessageHeaderClassDefinition(MakeCCodeString):
         self.out.lf() + '}' + ';'
         
     def make_constructor(self):
-        self.out.lf() + 'message_header(): tag(0)'
+        self.out.lf() + 'message_header(): tag(0), len(1)'
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
             self.out + ', ' + spec.counter_name;
             self.out + '(0)'
+        self.out + '{}'
+        
+    def make_destructor(self):
+        self.out.lf() + '~message_header()'
+        #for i, dtype in enumerate(dtypes):
+        #    spec = self.dtype_to_spec[dtype]
+        #    self.out + ', ' + spec.counter_name;
+        #    self.out + '(0)'
         self.out + '{}'
         
     def make_send_function(self):
@@ -189,9 +199,10 @@ class MakeCMessageHeaderClassDefinition(MakeCCodeString):
         self.out.indent()
         self.out.lf() + 'int header[' + self.length_of_the_header + '];'
         self.out.lf() + 'header[0] = tag;'
+        self.out.lf() + 'header[1] = len;'
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype] 
-            self.out.lf() + 'header[' + (i+1) + '] ='
+            self.out.lf() + 'header[' + (i+2) + '] ='
             self.out + spec.counter_name + ';'
         self.out.lf() + 'intercomm.Send(header, '+ self.length_of_the_header 
         self.out +', MPI_INT, 0, 999);'
@@ -205,10 +216,11 @@ class MakeCMessageHeaderClassDefinition(MakeCCodeString):
         self.out.lf() + 'intercomm.Recv(header, '+ self.length_of_the_header 
         self.out +', MPI_INT, 0, 0);'
         self.out.lf() + 'tag = header[0];'
+        self.out.lf() + 'len = header[1];'
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype] 
-            self.out + spec.counter_name + '='
-            self.out.lf() + 'header[' + (i+1) + '];'
+            self.out.lf() + spec.counter_name + '='
+            self.out + 'header[' + (i+2) + '];'
         self.out.dedent()
         self.out.lf() + '}'
         

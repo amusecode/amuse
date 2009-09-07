@@ -66,6 +66,59 @@ class Particles(object):
 class Stars(Particles):
     pass
 
+
+class Measurement(object):
+    def __init__(self, timestamp,  attributes, units,  ids, values=None):
+        self.timestamp = timestamp
+        self.ids = ids
+        self.attributes = attributes
+        if values == None:
+            self.values = zeros((len(attributes), len(ids)))
+        else:
+            self.values = values
+        self.units = units
+        
+        if self.values.ndim != 2:
+            raise Exception("values must be a 2 dimensional array")
+        if self.values.shape[0] != len(self.attributes):
+            raise Exception("there must be the same number of columns in the values array as there are attributes")
+        if len(self.attributes) != len(self.units):
+            raise Exception("there must be the same number of attributes as units")
+        if self.values.shape[1] != len(ids):
+            raise Exception("there must be the same number of rows in the values array as there are ids")
+            
+        self.ids_to_rownumber = {}
+        for rownumber, id in enumerate(self.ids):
+            self.ids_to_rownumber[id] = rownumber
+            
+        self.attribute_to_colnumber = {}
+        for colnumber, attribute in enumerate(self.attributes):
+            self.attribute_to_colnumber[attribute] = colnumber
+            
+    def __str__(self):
+        rows = []
+        columns = map(lambda x : str(x), self.attributes)
+        columns.insert(0,'-')
+        rows.append(columns)
+        
+        columns = map(lambda x : str(x), self.units)
+        columns.insert(0,'-')
+        rows.append(columns)
+        rows.append(map(lambda x : '========', range(len(self.units)+1)))
+        for i in range(self.values.shape[1]):
+            row = [str(self.ids[i])]
+            for j in range(self.values.shape[0]):
+                row.append(str(self.values[j,i]))
+            rows.append(row)
+        lines = map(lambda  x : '\t'.join(x), rows)
+        return '\n'.join(lines)
+        
+    def get_value(self, attribute, id):
+        rownumber = self.ids_to_rownumber[id]
+        colnumber = self.attribute_to_colnumber[attribute]
+        return self.values[colnumber, rownumber] | self.units[colnumber]
+            
+            
 class Particle(object):
     """A physical object or a physical region simulated as a 
     physical object (cload particle).

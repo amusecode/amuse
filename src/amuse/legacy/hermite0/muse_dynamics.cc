@@ -23,7 +23,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "muse_dynamics.h"	// defines dynamics_state
+#include "muse_dynamics.h"
 
 #include <vector>
 #include <algorithm>
@@ -566,56 +566,56 @@ int reinitialize_particles()
     return 0;
 }
 
-int add_particle(dynamics_state d)	// add d to the dynamical system
+
+int add_particle(int id, double _mass, double _radius, double x, double y, double z, double vx, double vy, double vz)
+    // add d to the dynamical system
 {
-    unsigned int i = find(ident.begin(), ident.end(), d.id) - ident.begin();
+    unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
     if (i < ident.size()) {
 
-	// Particle already exists.  Do nothing.
+        // Particle already exists.  Do nothing.
 
-	*sout << "add_particle: " << d.id
-	      << " already exists.  Use set_particle." << endl << flush;
+        *sout << "add_particle: " << id
+              << " already exists.  Use set_particle." << endl << flush;
     } else {
 
-	// Always add to the end of the list.
+	    // Always add to the end of the list.
 
-	ident.push_back(d.id);		// generally want to specify id
-	mass.push_back(d.mass);
-	radius.push_back(d.radius);
-	pos.push_back(vec(d.x, d.y, d.z));
-	vel.push_back(vec(d.vx, d.vy, d.vz));
-	acc.push_back(vec(0,0,0));
-	jerk.push_back(vec(0,0,0));
+        ident.push_back(id);		// generally want to specify id
+        mass.push_back(_mass);
+        radius.push_back(_radius);
+        pos.push_back(vec(x, y, z));
+        vel.push_back(vec(vx, vy, vz));
+        acc.push_back(vec(0,0,0));
+        jerk.push_back(vec(0,0,0));
     }
 
     return ident.size();
 }
 
-int set_particle(int id, dynamics_state d)
+int set_particle(int id, double _mass, double _radius, double x, double y, double z, double vx, double vy, double vz)
 {
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
 
     if (i < ident.size()) {
 
-	// Particle already exists.  Change it.
+        // Particle already exists.  Change it.
 
-	mass[i] = d.mass;
-	radius[i] = d.radius;
-	pos[i] = vec(d.x, d.y, d.z);
-	vel[i] = vec(d.vx, d.vy, d.vz);
-	acc[i] = vec(0.0);
-	jerk[i] = vec(0.9);
+        mass[i] = _mass;
+        radius[i] = _radius;
+        pos[i] = vec(x, y, z);
+        vel[i] = vec(vx, vy, vz);
+        acc[i] = vec(0.0);
+        jerk[i] = vec(0.9);
 
-	return 0;
+        return 0;
 
     } else {
 
-	*sout << "set_particle: " << id
-	      << " doesn't exist.  Use add_particle." << endl << flush;
-	return -1;
+        *sout << "set_particle: " << id
+              << " doesn't exist.  Use add_particle." << endl << flush;
+        return -1;
     }
-
-    return ident.size();
 }
 
 int set_mass(int id, double m)
@@ -750,31 +750,29 @@ int get_colliding_secondary(int id1)
 	return -1;
 }
 
-dynamics_state get_state(int id)
+void get_state(int id, int * id_out,  double * _mass, double * _radius, double * x, double * y, double * z, double * vx, double * vy, double * vz) 
 {
-    dynamics_state d;
-    d.id = -1;
+    *id_out = -1;
 
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
     if (i < ident.size()) {
 
-	real del = t_evolve - t;
+        real del = t_evolve - t;
 
-	vec x = pos[i] + vel[i]*del + acc[i]*del*del/2
-                                    + jerk[i]*del*del*del/6;
-	vec v = vel[i] + acc[i]*del + jerk[i]*del*del/2;
+        vec position = pos[i] + vel[i]*del + acc[i]*del*del/2
+                                        + jerk[i]*del*del*del/6;
+        vec velocity = vel[i] + acc[i]*del + jerk[i]*del*del/2;
 
-	d.id = id;
-	d.mass = mass[i];
-	d.radius = radius[i];
-	d.x = x[0];
-	d.y = x[1];
-	d.z = x[2];
-	d.vx = v[0];
-	d.vy = v[1];
-	d.vz = v[2];
+        *id_out = id;
+        *_mass = mass[i];
+        *_radius = radius[i];
+        *x = position[0];
+        *y = position[1];
+        *z = position[2];
+        *vx = velocity[0];
+        *vy = velocity[1];
+        *vz = velocity[2];
     }
-    return d;
 }
 
 double get_mass(int id)

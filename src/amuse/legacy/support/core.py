@@ -243,25 +243,44 @@ class MpiChannel(object):
     def __init__(self, intercomm):
         self.intercomm = intercomm
         
-    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[]):
-        header = numpy.array([tag, len(doubles_in), len(ints_in), len(floats_in)], dtype='i')
+    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], length = 1):
+        if doubles_in:
+            try:
+                length = len(doubles_in[0])
+                print tag, length
+            except:
+                pass
+        header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in)], dtype='i')
+        
         self.intercomm.Send([header, MPI.INT], dest=0, tag=0)
         if doubles_in:
-            doubles = numpy.array(doubles_in, dtype='d')
+            doubles = numpy.zeros(length * len(doubles_in), dtype='d')
+            for i in range(len(doubles_in)):
+                offset = i * length
+                if length > 1:
+                    print "doubles:", doubles_in[i]
+                doubles[offset:offset+length] = doubles_in[i]
+            
             self.intercomm.Send([doubles, MPI.DOUBLE], dest=0, tag=0)
         if ints_in:
-            ints = numpy.array(ints_in, dtype='i')
+            ints = numpy.zeros(length * len(ints_in), dtype='i')
+            for i in range(len(ints_in)):
+                offset = i * length
+                ints[offset:offset+length] = ints_in[i]
+            if length > 1:
+                print ints
             self.intercomm.Send([ints, MPI.INT], dest=0, tag=0)
         if floats_in:
             floats = numpy.array(floats_in, dtype='f')
             self.intercomm.Send([floats, MPI.FLOAT], dest=0, tag=0)
             
     def recv_message(self, tag):
-        header = numpy.empty(4,  dtype='i')
+        header = numpy.empty(5,  dtype='i')
         self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
-        n_doubles = header[1]
-        n_ints = header[2]
-        n_floats = header[3]
+        length = header[1]
+        n_doubles = header[2]
+        n_ints = header[3]
+        n_floats = header[4]
         if n_doubles > 0:
             doubles_result = numpy.empty(n_doubles,  dtype='d')
             self.intercomm.Recv([doubles_result, MPI.DOUBLE], source=0, tag=999)

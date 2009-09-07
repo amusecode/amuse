@@ -6,7 +6,7 @@ SUBROUTINE run_loop
   integer :: must_run_loop
   integer mpiStatus(MPI_STATUS_SIZE,4)
   
-  integer header(4)
+  integer header(5)
   
   integer :: tag_in, tag_out
   integer integers_in(255)
@@ -25,13 +25,13 @@ SUBROUTINE run_loop
   must_run_loop = 1
   
   do while (must_run_loop .eq. 1)
-    call MPI_RECV(header, 4, MPI_INTEGER, 0, 0, parent,&
+    call MPI_RECV(header, 5, MPI_INTEGER, 0, 0, parent,&
       mpiStatus, ioerror)
     
     tag_in = header(1)
-    number_of_doubles_in =  header(2)
-    number_of_integers_in =  header(3)
-    number_of_floats_in =  header(4)
+    number_of_doubles_in =  header(3)
+    number_of_integers_in =  header(4)
+    number_of_floats_in =  header(5)
     
     tag_out = tag_in
     number_of_doubles_out = 0
@@ -127,11 +127,11 @@ SUBROUTINE run_loop
     END SELECT
     
     header(1) = tag_out
-    header(2) = number_of_doubles_out
-    header(3) = number_of_integers_out
-    header(4) = number_of_floats_out
+    header(3) = number_of_doubles_out
+    header(4) = number_of_integers_out
+    header(5) = number_of_floats_out
     
-    call MPI_SEND(header, 4, MPI_INTEGER, 0, 999, &
+    call MPI_SEND(header, 5, MPI_INTEGER, 0, 999, &
       parent, mpierror);
     
     if (number_of_doubles_out .gt. 0) then
