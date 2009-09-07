@@ -14,6 +14,31 @@ function on_line_click(event) {
      $.getJSON("/open_file", {'path':path, 'lineno':lineno}, function handle_result(data){});
 }
 
+var request = new XMLHttpRequest();
+
+function poll_for_events() {
+    request.open('GET', '/events', true); 
+    request.onreadystatechange = function (event) {  
+      if (request.readyState == 3) {  
+         if(request.status == 200)  {
+          alert(request.responseText);  
+         } else  {
+          alert("Error loading page\n");  
+        }
+      } 
+    if (request.readyState == 4) {  
+         if(request.status == 200)  {
+          alert(request.responseText);  
+         } else  {
+          alert("Error loading page\n");  
+        }
+      }  
+    };   
+    request.send(null); 
+}
+
+
+
 function handle_last_report(report) {
     if(!report) {
         return;
@@ -127,6 +152,7 @@ function handle_last_report(report) {
 
 function startPage() {
      $.getJSON("/get_last_report", handle_last_report);
+     poll_for_events();
 }
 
 $(document).ready(startPage);

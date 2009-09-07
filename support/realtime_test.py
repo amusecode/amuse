@@ -400,10 +400,10 @@ class RunAllTestsWhenAChangeHappens(object):
                         result_queue, 
                         self.server.last_report
                     ))
-                p.start()
-                p.join()
-                report = result_queue.get() 
-                self.server.last_report = report
+                #p.start()
+                #p.join()
+                #report = result_queue.get() 
+                #self.server.last_report = report
                 del result_queue
                 
                 print "end test run"
@@ -417,6 +417,7 @@ def open_file(path, lineno = 1):
     
     
 class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
     def do_GET(self):
         parsed_path = urlparse.urlparse(self.path)
         
@@ -441,6 +442,9 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
             open_file(path, lineno)
             string = 'null'
             content_type = 'text/javascript'
+        elif parsed_path.path == '/events':
+            self.do_long_poll()
+            return
         else:
             string, content_type = self.index_file()
         
@@ -451,7 +455,31 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         
         self.end_headers()
         self.wfile.write(string)
-        
+    
+    def do_long_poll(self):
+        print self.request_version
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html")   
+        #self.send_header("connection", "keep-alive")
+        self.send_header("Transfer-Encoding", "chunked")
+        self.send_header("Cache-Control", "no-cache, no-store")
+        self.send_header("Pragma", "no-cache")
+        self.end_headers()
+        for x in range(2):
+            self.send_chunk('chunk number ' + str(x) + '.<br />')
+            time.sleep(2)
+        self.wfile.write('0\r\n\r\n')
+        self.wfile.flush()
+                    
+    def send_chunk(self, string):
+        hex_length = hex(len(string))[2:]
+        #print hex(len(string)), hex_length
+        self.wfile.write('%s \r\n' % hex_length)
+        self.wfile.flush()
+
+        self.wfile.write(string)
+        self.wfile.write('\r\n')
+        self.wfile.flush()
        
     def stop_server(self):
         thread = threading.Thread(target=self.server.stop)
