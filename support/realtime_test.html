@@ -15,24 +15,23 @@ function on_line_click(event) {
 }
 
 var request = new XMLHttpRequest();
+var previousLength = 0;
 
 function poll_for_events() {
     request.open('GET', '/events', true); 
     request.onreadystatechange = function (event) {  
       if (request.readyState == 3) {  
          if(request.status == 200)  {
-          alert(request.responseText);  
+          var message = request.responseText.slice(previousLength);
+          var value = eval(message);
+          if(value) {
+             $.getJSON("/get_last_report", handle_last_report);
+          }
+          previousLength = request.responseText.length;
          } else  {
           alert("Error loading page\n");  
         }
       } 
-    if (request.readyState == 4) {  
-         if(request.status == 200)  {
-          alert(request.responseText);  
-         } else  {
-          alert("Error loading page\n");  
-        }
-      }  
     };   
     request.send(null); 
 }

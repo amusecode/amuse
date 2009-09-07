@@ -80,7 +80,7 @@ class nbody_to_si(object):
         
         result = []
         nbody_units = mass, length, time
-        for n , unit  in self.Gis1.unit.base:
+        for n, unit  in self.Gis1.unit.base:
             index = unit_to_index[unit]
             conversion_factor_for_this_base_unit = conversion_factors[index]
             for nbody_unit in nbody_units:

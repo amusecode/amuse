@@ -400,11 +400,12 @@ class RunAllTestsWhenAChangeHappens(object):
                         result_queue, 
                         self.server.last_report
                     ))
-                #p.start()
-                #p.join()
-                #report = result_queue.get() 
-                #self.server.last_report = report
+                p.start()
+                p.join()
+                report = result_queue.get() 
+                self.server.last_report = report
                 del result_queue
+                self.server.tests_finished.set()
                 
                 print "end test run"
                 monitor.check()
@@ -459,15 +460,19 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
     def do_long_poll(self):
         print self.request_version
         self.send_response(200)
-        self.send_header("Content-Type", "text/html")   
+        self.send_header("Content-Type", "text/javascript")   
         #self.send_header("connection", "keep-alive")
         self.send_header("Transfer-Encoding", "chunked")
         self.send_header("Cache-Control", "no-cache, no-store")
         self.send_header("Pragma", "no-cache")
         self.end_headers()
-        for x in range(2):
-            self.send_chunk('chunk number ' + str(x) + '.<br />')
-            time.sleep(2)
+        while True:
+            self.server.tests_finished.wait(10.0)
+            if self.server.tests_finished.is_set():
+                self.send_chunk('true')
+                self.server.tests_finished.clear()
+            else:
+                self.send_chunk('false')
         self.wfile.write('0\r\n\r\n')
         self.wfile.flush()
                     
@@ -502,6 +507,7 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
         self.run_all_tests.start()
         self.daemon_threads = True
+        self.tests_finished = threading.Event()
         
     def start(self):
         self.serve_forever()
