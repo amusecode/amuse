@@ -1,0 +1,53 @@
+      SUBROUTINE selectsync(tnow)
+C=========================================================================
+C===
+C===  task:   select particles that need to be sync'd from a list of 
+C===  -----   indices
+C===
+C=========================================================================
+C===                                                   09/01/2007 by SH 
+C=========================================================================
+      IMPLICIT NONE
+#include "general.inc"
+
+C---  input parameters
+      DOUBLE PRECISION tnow
+
+C---  local vars
+      INTEGER i,k
+
+C---  loop over local particles, select and count active particles
+      n_act_loc=0 
+      DO i=1,n_loc
+
+
+         IF (t_loc(i).LT.tnow) THEN ! particle needs to be sync'd
+
+
+            n_act_loc                = n_act_loc + 1
+            ind_act_loc(n_act_loc)   = i              ! remember local index
+            
+            ind_act(n_act_loc)       = ind_loc(i)     ! and global index
+            m_act(n_act_loc)         = m_loc(i)
+
+            DO k=1,NDIM
+               x_act(k,n_act_loc)    = x_loc(k,i)
+               v_act(k,n_act_loc)    = v_loc(k,i)
+               a_act(k,n_act_loc)    = a_loc(k,i)    
+               adot_act(k,n_act_loc) = adot_loc(k,i)    
+            ENDDO
+            pot_act(n_act_loc)       = pot_loc(i)
+            t_act(n_act_loc)         = t_loc(i)
+            dt_act(n_act_loc)        = tnow - t_loc(i) ! set time step to reach tnow
+           
+         ENDIF
+      ENDDO
+
+#ifdef DEBUG
+      
+      WRITE(STDERR,500) myRank,n_act_loc
+ 500  FORMAT('PE',I2.2,': selected ',I8,' particles to sync')
+#endif
+
+      RETURN
+      END

@@ -19,12 +19,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         return dtype_to_spec
    
     def start(self):
-        
-        if not self.specification.result_type is None:
-            raise Exception("cannot handle result type for "\
-            "fortran subroutines! (no support for fortran "\
-            "functions yet)")
-           
+                   
         self.specification.prepare_output_parameters()
          
         self.output_casestmt_start()
@@ -105,9 +100,10 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.output_var_name
-            self.out + '(' + (spec.number_of_outputs + 1) + ')' + ' = '
-            spec.number_of_outputs += 1
-        self.out + 'CALL ' +  self.specification.name + '('
+            self.out + '(' + 1 + ')' + ' = '
+        else:    
+            self.out + 'CALL ' 
+        self.out +  self.specification.name + '('
         
     def output_casestmt_start(self):
         self.out + 'CASE(' + self.specification.id + ')'

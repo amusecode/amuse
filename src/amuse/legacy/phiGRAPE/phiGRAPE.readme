@@ -1,0 +1,302 @@
+A short USERGUIDE for phiGRAPE
+==============================
+
+Content:	0) Introduction
+--------	1) Getting the Code
+		2) Installing & Compiling
+		3) Parameter file
+		4) Input Data
+		5) Running
+		6) Output
+		7) Things to remember
+
+0) Introduction:
+----------------
+
+phiGRAPE is a direct N-body code optimized for running on a
+parallel GRAPE cluster. It uses MPI for parallelization. It can
+also be used in serial mode without MPI.
+See Harfst et al. (2006) for more details.
+
+
+1) Getting the Code
+-------------------
+
+The code is publicly available at 
+http://wiki.cs.rit.edu/bin/view/GRAPEcluster/phiGRAPE 
+(of course, since you are reading this file you already know that :-)). Just 
+download the file 'phiGRAPE.tgz' to get started.
+
+
+2) Installing and Compiling
+---------------------------
+
+To install the code just untar 'phiGRAPE.tgz' by typing
+
+> tar -zxvf phiGRAPE.tgz
+
+This will produce the directory 'phiGRAPE' which contains the
+source and all other Files. The content of 'phiGRAPE' should look like
+
+phiGRAPE.inp
+phiGRAPE.readme
+QUICKSTART.readme
+src/
+start.bat
+testdat/
+
+In order to compile the code located in the 'src'-directory you will
+need to make some changes to the 'Makefile'. In most cases it should be
+sufficient to change the line telling make where to find the GRAPE libs,
+ie. change the '/opt/g6a/lib/'.
+
+LLIBSDIR = -L/opt/g6a/lib/
+LIBS     = -lg6a -lm
+
+There are also two compiler switches you may want to use. By adding
+a -DSILENT or a -DDEBUG to the FLAG-definitions the code will either
+create less or more output, respectively.
+
+Finally, if you choose to run phiGRAPE only in serial mode you can 
+add the flag -DNOMPI. This will remove all calls to MPI-functions
+so you don't need to have MPI installed. You will also need to change
+the definitions for the compilers to use from mpif77/mpicc to g77/gcc.
+
+Once you have setup the Makefile to your and your system's liking you can 
+proceed by just typing
+
+> make clean       # just to be sure
+> make
+
+That should create a file 'phiGRAPE.exe'. If not check the error message
+and try correcting the Makefile accordingly. In some case (depending on your 
+MPI-installation, I guess) you may encounter errors claiming missing functions.
+This might be the result of too many or too few underscores. Adding a 
+-fno-second-underscore may help.
+
+In addition to the Makefile you may also want to edit the file 'paras.inc' in 
+the src-directory. There you can set limits for the maximum particle number (NMAX),
+maximum local particles (ie. size of GRAPE memory, NMAX_LOC), maximum number of BHs,
+maximum number of processors (NPEMAX), and some other parameters. Note that the first
+two numbers can have a major impact on the total memory needed on the host. A lower 
+limit of needed memory can be estimated from the following simple formular:
+
+Memory = 44*(NMAX/2^17) MBytes + 33*(NMAX_LOC/2^17) MBytes
+
+The default is NMAX=2^20 (1M particles) and NMAX_LOC=2^17 (128k particles) gives
+385 Mbytes of memory needed, increasing NMAX to 2^22 (4M particles, the maximum 
+on a 32 node cluster) gives 1441 MBytes memory. Remember that this is only the lower 
+limit.
+
+
+3) Parameter file
+-----------------
+
+The parameter file is called 'phiGRAPE.inp' and it looks like this
+
+0.				# eps
+1.				# t_end
+.125				# dt_disk
+.125				# dt_contr
+10000.0				# dt_bh
+.125				# dt_timing
+1.				# dt_restart
+.125				# dt_max
+0.01				# eta_s
+0.02				# eta
+0	0			# irestart,icmcorr
+0				# nbh
+data.inp
+# body data file
+
+/*********************************************************/
+eps	  : Plummer softening parameter (can be even 0)
+
+t_end	  : end time of calculation
+
+dt_disk	  : interval of snapshot files output (0xxxx.dat)
+dt_contr  : interval for the energy control output (energy.dat)
+dt_bh	  : interval for the BH snapshot file (bh.dat)
+dt_timing : interval for timing output (timing.dat)
+dt_restart: interval for output of restart file (phiGRAPE.boa)
+
+dt_max	  : maximum time step
+            dt_max = min(dt_max, dt_disk, dt_contr)
+
+eta_s	  : parameter for initial timestep determination
+eta	  : parameter for timestep determination
+
+irestart  : input file below is restart file
+icmcorr   : correct for CofM if first snapshot (diskstep=0)
+
+nbh	  : number of black hole particles
+
+inp_data  : name of the input file (data.inp)
+/*********************************************************/
+
+As you can see all the parameters are explained there.
+
+
+4) Input data
+-------------
+
+The input data file with the name <inp_data> given in the parameter file
+contains the N-body data for the run, ie. particle masses, positions and 
+velocities. 
+The input data file is an ASCII-file in the following format: a three-line 
+header is followed by N data lines, one for each particle (ie. N is the total 
+particle number). 
+
+diskstep		# diskstep is used to number out, should be 0 for input dat
+N			# number of particles
+time			# current time, usually starts with 0.0  
+index	mass	x y z	vx vy vz    	# N data lines where
+					# index is a running particle index starting at 0!
+					# mass is the mass of a particle
+					# x y z are the x-, y-, and z- positions
+					# vx vy vz are velocities components
+
+An example imput data file can be found in the 'testdata'-directory.
+The format of the output files is identical, so they can be used to start a new
+run (ie. restarting a run from an out file is possible but there's a more
+exact way for stopping and restarting a run, see 5).
+
+Alternatively, this can also be a so-called restart-file
+as written by the code (again see 5).
+
+
+5) Running
+----------
+
+Once the code has been compiled, the input parameters are set and the input data
+is in place you are ready to tun the code. 
+
+a) with MPI
+To run using MPI on NP nodes type something like (may differ depending on your 
+                                                  MPI-installation)
+
+> mpirun -machinefile machines.list -np NP ./phiGRAPE.exe
+
+where machines.list contains a list of node-names to use. If you want to run the 
+job in the background you could use something like
+
+> nohup mpirun -machinefile machines.list -np NP ./phiGRAPE.exe < /dev/null 2> err.log 1> out.log &
+
+to redirect in/output. The above command is also executed via a small shell-sript called
+'start.bat'. Here's an example how to use it
+
+> ./start.bat <somebodydatafile> NP machines.list
+
+The script links <somebodydatafile> to 'data.inp', ie. you have to put 'data.inp' for 
+<data_inp> >in the parameter file 'phiGRAPE.inp'.
+
+
+b) without MPI
+The code can also be compiled and run in serial mode without MPI (as opposed to with
+MPI and NP=1, the difference being that you don't need to install MPI for serial runs).
+If compiled for serial runs setting the flag -DNOMPI in the Makefile run the code by 
+simply typing
+
+> ./phiGRAPE.exe
+
+
+c) stopping/restarting
+
+In either case you can stop and restart a run easily. To stop, open the file '.stop' 
+which will contain a zero. Change that zero to one (the digit 1 that is) and wait.
+The run will stop at the next energy or body data output and a restart-file called
+'phiGRAPE.boa' will be written.
+
+You can also set dt_restart for writing restart-file periodically without stopping 
+the run. Everytime the previous restart-file is over-written.
+
+To restart a run from a restart-file change the switch irestart in the parameter file
+and use one of the above commands the restart the run. The code will automatically 
+read the restart-file and continue as if the run has not been stopped (Note: that
+a parallel run (NP>1) may not produce the same results always). The code will also 
+append any output (energy, BH data and timing) to existing files (or create new ones)
+so in case there has been output to these after the restart-file has been written 
+you may want to delete these lines first to avoid duplicate data in the lines 
+(snapshots will just be over-written so you can ignore those).
+
+
+
+6) Output
+---------
+
+As you can see from the parameter file there are several output files:
+
+a) snapshots
+are written at the beginning (ie. identical to the inital body data except 
+for formatting maybe) and every dt_disk. The format is the one described above
+for the input body data files. Note that the files become rather large with N 
+(more than 100Mb per 1M particles), ie. choose dt_disk wisely.
+
+b) energy
+The file 'energy.dat' contains some useful number for runtime control. There is 
+one line at every dt_contr time steps (and one at the beginning) in the following format
+
+time  Timesteps  E_tot  E_pot  E_kin   xcm(3)   vcm(3)   mom(3)
+
+where
+
+time:         	current time
+Timesteps:    	number of time steps integrated
+E_tot:        	total energy (E_kin + E_pot)
+E_pot: 		potential energy
+E_kin:		kinetic energy
+xcm(3): 	x,y,z coordinates of the Center of Mass
+vcm(3):		vx,vy,vz velocities of CofM
+mom(3):		angular momentum with respect to origin (not CofM)
+
+c) BH data
+The file 'bh.dat' is used to more frequently store BH data. The format is
+
+index	time	mass	x y z	vx vy vz
+
+where
+
+index:		index of the BH particle (NOTE that the BH particles have to 
+					  be the first particles in the 
+					  body data file ie index si always
+					  between 0 and nbh-1)
+time:		current output time; if you have more than one BH there are always
+                                     nbh lines with the same time. If a BH has not
+                                     been integrated to that time (because it has 
+                                     a larger time step then the BH data is 
+                                     predicted for that time
+mass:		mass of the BH
+x y z:		position
+vx vy vz:	velocity
+
+
+d) timing
+The file 'timing.dat' is used to monitor the wallclock time of a run. Each
+output line has the following entries.
+
+Timesteps	Time	Wallclock/step	total wallclock		n_act_sum	n_act_sum2 	gflops_total	gflops_step
+
+where
+
+Timesteps:	number of time steps integrated
+Time:		current time
+Wallclock/step:	Wallclock time since last output
+total wallclock:the total wallclock time so far
+n_act_sum:      total number of active particle ie the number force calculation done
+		needed to compute Flops
+n_act_sum2:	number of GRAPE calls times 48, ie. the same as above but assuming
+                a full pip-line always
+
+
+7) Things to remember
+---------------------
+
+There is no checking of parameters provided by the user, ie. a smart user is required. :-)
+Here's a few things to take into account when setting up your run:
+
+a) make sure the arrays are large enough for the given N (--> paras.inc)
+b) make sure that N/NP is an integer, otherwise particles may get lost.
+c) the code assumes that black hole particles are the first particles in a snapshot
+d) it is recommended to use output timesteps that are powers of 2, eg. 0.125 or 2.0.
+
+   

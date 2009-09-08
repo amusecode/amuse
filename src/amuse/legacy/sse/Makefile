@@ -1,5 +1,5 @@
 ifndef FORT
-    FORT = gfortran
+    FORT = ifort
 endif
 
 
@@ -23,4 +23,4 @@ muse_worker.f90: muse_stellar_mpi.py
 	../../../../bin/create_f90_worker.py muse_stellar_mpi.py SSE > $@
 
 .f.o: $<
-	$(FORT) -c -o $@ $< 
+	$(FORT) -c -fPIC -o $@ $< 

@@ -1,0 +1,938 @@
+      FUNCTION add_particle(id,mm,rad,xx,yy,zz,vx,vy,vz)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          add_particle,id
+      DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
+
+      IF (id.GT.NMAX) THEN
+         PRINT*, 'id is larger than NMAX which is not allowd!'
+         add_particle = -1
+         RETURN 
+      ENDIF
+      IF (myind(id).GE.0) THEN
+         PRINT*, 'a particle with this id exists already!'
+         add_particle = -1
+         RETURN 
+      ENDIF
+
+C---  add a particle
+      N = N + 1
+
+      ind(N)   = N
+      myid(N)  = id
+      myind(id)= N
+      m(N)     = mm
+      x(1,N)   = xx
+      x(2,N)   = yy
+      x(3,N)   = zz
+      v(1,N)   = vx
+      v(2,N)   = vy
+      v(3,N)   = vz
+      h(N)     = rad
+
+      t(N)     = -1.d0
+      dt(N)    = -1.d0
+
+c      PRINT*, 'adding particle',m(N),h(N)
+c      PRINT*, 'xyz  =',xx,yy,zz
+c      PRINT*, 'vxyz =',vx,vy,vz
+
+C---  done
+      add_particle = N
+
+      RETURN
+      END
+
+
+      FUNCTION get_number()
+      IMPLICIT NONE
+#include "general.inc"
+
+      INTEGER get_number
+
+      print*,'hellow',N
+      get_number = N
+
+
+      RETURN
+      END
+
+      FUNCTION get_dynamical_time_scale()
+      IMPLICIT NONE
+#include "general.inc"
+
+      DOUBLE PRECISION get_dynamical_time_scale
+
+      IF (inrg.EQ.1) THEN
+         get_dynamical_time_scale =  (-0.5d0*MASS*MASS/E_pot)
+     $                              / sqrt(2.d0*E_kin/MASS)
+           
+      ELSE
+c         PRINT*, 'Warning: system not initialised yet'
+         get_dynamical_time_scale = -1
+      ENDIF
+
+      RETURN
+      END
+
+      FUNCTION set_eps(e2)
+      IMPLICIT NONE
+#include "general.inc"
+
+      INTEGER set_eps
+      DOUBLE PRECISION e2
+
+      eps     = SQRT(e2)
+
+      set_eps = 0
+      RETURN
+      END
+
+      FUNCTION set_bh_eps(e2)
+      IMPLICIT NONE
+#include "general.inc"
+
+      INTEGER set_bh_eps
+      DOUBLE PRECISION e2
+
+      bh_eps     = SQRT(e2)
+
+      set_bh_eps = 0
+      RETURN
+      END
+
+
+      FUNCTION set_nbh(nbbh)
+      IMPLICIT NONE
+#include "general.inc"
+
+      INTEGER nbbh, set_nbh
+
+      nbh     = nbbh
+
+      set_nbh = 0
+      RETURN
+      END
+
+      FUNCTION set_eta(es,e)
+      IMPLICIT NONE
+#include "general.inc"
+
+      INTEGER set_eta
+      DOUBLE PRECISION es,e
+
+      eta_s   = es
+      eta     = e
+
+      set_eta = 0
+      RETURN
+      END
+
+C====================================================================
+C===
+C===  setup_module: function to setup the neccessary things for 
+C===                running the module, here
+C===
+C===                * initialize MPI
+C===                * initialize GRAPE
+C===                * initialize myid array
+C====================================================================
+      FUNCTION setup_module()
+      IMPLICIT NONE
+#include "general.inc"
+      INTEGER i,setup_module
+
+C--------------------------------------------------------------------
+C---  initialise MPI 
+C--------------------------------------------------------------------
+      CALL initmpi
+C          -------
+
+C--------------------------------------------------------------------
+C---  initialise the GRAPE
+C--------------------------------------------------------------------
+C      CALL initgrape
+C          ---------
+
+C--------------------------------------------------------------------
+C---  set array to find particles by id to -1
+C--------------------------------------------------------------------
+      DO i=1,NMAX
+         myind(i) = -1
+      ENDDO
+
+      setup_module=0
+      RETURN
+      END
+
+      FUNCTION initialize_particles(time)
+      IMPLICIT NONE
+#include "general.inc"
+      
+      INTEGER initialize_particles
+      DOUBLE PRECISION time
+      INTEGER i
+
+C (re)start grape (fip)
+C  update local particles on grape
+      CALL initgrape
+      CALL update_grape(1) 
+
+
+C---  set some vars
+      inrg       = 0
+
+C---  more vars to be set at creating the object
+      dt_max     = 1.d0
+
+
+C---  more parameters to set
+      eps2   = eps*eps
+      dt_min = 2.d0**ndtmin   ! set ndtmin in paras.inc
+
+
+C---  set individual particle times and time steps
+      time_cur = time
+      DO i=1,N
+         t(i)   = time_cur
+         dt(i)  = dt_min
+      ENDDO
+
+      n_loc  = N/n_proc         ! set the local number of particles
+      
+C--------------------------------------------------------------------
+C---  send all particles to GRAPE
+C--------------------------------------------------------------------
+      CALL sendbodies2grape
+C          ----------------
+
+C--------------------------------------------------------------------
+C---  select active particles from local particles
+C--------------------------------------------------------------------
+      min_t = time_cur + dt_min    ! initially all particles have 
+      CALL selectactive            ! same time step dt_min
+C          ------------
+
+C--------------------------------------------------------------------
+C---  predictor (for local active particles)
+C--------------------------------------------------------------------
+      CALL predictor(1)
+C          ---------         
+
+C--------------------------------------------------------------------
+C---  gather active particles on all PE's
+C--------------------------------------------------------------------
+      CALL allgather_ap
+C          ------------
+
+C--------------------------------------------------------------------
+C---  get local forces on all PE's
+C---  (as this is the first call set ifirst to 1 in this call)
+C--------------------------------------------------------------------
+      CALL gravity(time_cur,1)
+C          -------
+
+C--------------------------------------------------------------------
+C---  sum up the partial forces
+C--------------------------------------------------------------------
+      CALL sumforces(1)    ! call with 1 bc all forces etc.  need initialisation
+C          ---------
+
+C--------------------------------------------------------------------
+C---  get individual time steps
+C--------------------------------------------------------------------
+      CALL timestep(0)
+C          --------
+
+C--------------------------------------------------------------------
+C---  update GRAPE
+C--------------------------------------------------------------------
+      CALL update_grape(1)
+C          ------------
+
+C--------------------------------------------------------------------
+C---  get energy, center of mass and momentum
+C--------------------------------------------------------------------
+      CALL energy
+C          ------
+      E_totini = E_tot          ! set initial value for total energy
+
+      initialize_particles = 0
+
+C     close grape before exiting (fip)
+      CALL g6_close(clusterid)
+
+      RETURN
+      END
+
+C====================================================================
+C===  
+C===  reinitialize_particles
+C===  
+C===  assumes all particles are at the same time time_cur
+C====================================================================
+      FUNCTION reinitialize_particles()
+      IMPLICIT NONE
+#include "general.inc"
+      
+      INTEGER reinitialize_particles
+      INTEGER i,k
+
+C (re)start grape (fip)
+C  update local particles on grape
+      CALL initgrape
+      CALL update_grape(1) 
+
+C---  set individual particle times and time steps
+      DO i=1,N
+         t(i)  = time_cur      ! new particles are added at current time
+         dt(i) = dt_min        ! with minimum timestep (will change)
+         DO k=1,3               ! set acc and jerk to zero
+            a(k,i)    = 0.d0
+            adot(k,i) = 0.d0
+         ENDDO
+      ENDDO
+
+      n_loc  = N/n_proc         ! set the local number of particles
+  
+C--------------------------------------------------------------------
+C---  select new particles as active particles
+C--------------------------------------------------------------------
+      min_t = time_cur + dt_min    ! initially all particles have 
+      CALL selectactive            ! same time step dt_min
+C          ------------
+
+C--------------------------------------------------------------------
+C---  send new particle (marked as active) to  GRAPE
+C--------------------------------------------------------------------
+      CALL update_grape(0)
+C          ------------
+
+C--------------------------------------------------------------------
+C---  predictor (for local active particles)
+C--------------------------------------------------------------------
+      CALL predictor(1)
+C          ---------         
+
+C--------------------------------------------------------------------
+C---  gather active particles on all PE's
+C--------------------------------------------------------------------
+      CALL allgather_ap
+C          ------------
+
+C--------------------------------------------------------------------
+C---  get local forces on all PE's
+C---  (as this is the first call set ifirst to 1 in this call)
+C--------------------------------------------------------------------
+      CALL gravity(time_cur,1)
+C          -------
+
+C--------------------------------------------------------------------
+C---  sum up the partial forces
+C--------------------------------------------------------------------
+      CALL sumforces(1)    ! call with 1 bc all forces etc.  need initialisation
+C          ---------
+
+C--------------------------------------------------------------------
+C---  get individual time steps
+C--------------------------------------------------------------------
+      CALL timestep(1)
+C          --------
+
+C--------------------------------------------------------------------
+C---  update GRAPE
+C--------------------------------------------------------------------
+      CALL update_grape(0)
+C          ------------
+
+C--------------------------------------------------------------------
+C---  get energy, center of mass and momentum
+C--------------------------------------------------------------------
+      CALL energy
+C          ------
+
+      reinitialize_particles = 0
+
+C     close grape before exiting (fip)
+      CALL g6_close(clusterid)
+
+      RETURN
+      END
+
+
+      FUNCTION cleanup_module()      
+      IMPLICIT NONE
+#include "general.inc"
+
+      INTEGER cleanup_module
+#ifndef NOMPI
+      INTEGER ierr
+#endif
+
+      N=0
+
+C---  just release GRAPE
+Cfip      CALL g6_close(clusterid)
+C          --------
+
+C--------------------------------------------------------------------
+C---  stop MPI and end program
+C--------------------------------------------------------------------
+#ifndef NOMPI
+      CALL mpi_finalize(ierr)
+C          ------------
+#endif
+
+      cleanup_module = 0
+      RETURN
+      END
+
+
+      FUNCTION set_particle(id,mm,xx,yy,zz,vx,vy,vz,rad)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          set_particle,id,ip
+      DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_particle: No such particle exists',
+     $           ' use add_particle'
+         set_particle = -1
+         GOTO 999
+      ENDIF
+
+C---  setting particle
+      m(ip)   = mm
+      x(1,ip) = xx
+      x(2,ip) = yy
+      x(3,ip) = zz
+      v(1,ip) = vx
+      v(2,ip) = vy
+      v(3,ip) = vz
+      h(ip)   = rad
+
+      set_particle = 0
+ 999  CONTINUE
+      RETURN
+      END
+
+
+      FUNCTION set_mass(id,mm)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          set_mass,id,ip
+      DOUBLE PRECISION mm
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_mass: No such particle exists!'
+         set_mass = -1
+         GOTO 999
+      ENDIF
+
+C---  setting particle
+      m(ip)   = mm
+
+      set_mass = 0
+ 999  CONTINUE
+      RETURN
+      END
+
+      FUNCTION get_mass(id)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          id,ip
+      DOUBLE PRECISION get_mass
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'get_mass: No such particle exists!'
+         get_mass = -1.d0
+         GOTO 999
+      ENDIF
+
+      get_mass = m(ip)
+ 999  CONTINUE
+      RETURN
+      END
+
+      FUNCTION get_potential(id)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          id,ip
+      DOUBLE PRECISION get_potential
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'get_mass: No such particle exists!'
+         get_potential = -1.d0
+         GOTO 999
+      ENDIF
+
+      get_potential = pot(ip)
+ 999  CONTINUE
+      RETURN
+      END
+
+      FUNCTION set_radius(id,rad)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          set_radius,id,ip
+      DOUBLE PRECISION rad
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_mass: No such particle exists!'
+         set_radius = -1
+         GOTO 999
+      ENDIF
+
+C---  setting particle
+      h(ip) = rad
+
+      set_radius = 0
+ 999  CONTINUE
+      RETURN
+      END
+
+      FUNCTION get_radius(id)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          id,ip
+      DOUBLE PRECISION get_radius
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_mass: No such particle exists!'
+         get_radius = -1.d0
+         GOTO 999
+      ENDIF
+
+      get_radius = h(ip)
+ 999  CONTINUE
+      RETURN
+      END
+
+
+      FUNCTION set_pos(id,xx,yy,zz)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          set_pos,id,ip
+      DOUBLE PRECISION xx,yy,zz
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_pos: No such particle exists!'
+         set_pos = -1
+         GOTO 999
+      ENDIF
+
+C---  setting particle
+      x(1,ip) = xx
+      x(2,ip) = yy
+      x(3,ip) = zz
+
+      set_pos = 0
+ 999  CONTINUE
+      RETURN
+      END
+
+
+      FUNCTION set_vel(id,vx,vy,vz)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          set_vel,id,ip
+      DOUBLE PRECISION vx,vy,vz
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_vel: No such particle exists!'
+         set_vel = -1
+         GOTO 999
+      ENDIF
+
+C---  setting particle
+      v(1,ip) = vx
+      v(2,ip) = vy
+      v(3,ip) = vz
+
+      set_vel = 0
+ 999  CONTINUE
+      RETURN
+      END
+
+
+      FUNCTION get_time()
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      DOUBLE PRECISION get_time
+
+      get_time = time_cur
+
+      RETURN
+      END
+
+      FUNCTION get_time_step()
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      DOUBLE PRECISION get_time_step
+
+C---  get minimum time step from particles
+      CALL get_min_t
+C          ---------
+      get_time_step = min_t - time_cur
+
+      RETURN
+      END
+
+      FUNCTION get_kinetic_energy()
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      DOUBLE PRECISION get_kinetic_energy
+
+      IF (inrg.EQ.1) THEN
+         get_kinetic_energy = E_kin
+      ELSE
+         get_kinetic_energy = 0.d0
+      ENDIF
+         
+      RETURN
+      END
+
+      FUNCTION get_potential_energy()
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      DOUBLE PRECISION get_potential_energy
+
+      IF (inrg.EQ.1) THEN
+         get_potential_energy = E_pot
+      ELSE
+         get_potential_energy = 0.d0
+      ENDIF
+
+      RETURN
+      END
+
+      FUNCTION get_energy_error()
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      DOUBLE PRECISION get_energy_error
+
+      IF (inrg.EQ.1) THEN
+         get_energy_error = (E_tot-E_totini)
+      ELSE
+         get_energy_error = 0.d0
+      ENDIF
+
+      RETURN
+      END
+
+      SUBROUTINE get_state(id,mm,rad,xx,yy,zz,vx,vy,vz)
+cf2py intent(in)  id
+cf2py intent(out) mm,xx,yy,zz,vx,vy,vz,rad
+      IMPLICIT NONE 
+#include "general.inc"
+      
+      INTEGER          id,ip
+      DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'get_state: No such particle exists!'
+         GOTO 999
+      ENDIF
+
+      mm = m(ip)
+      xx = x(1,ip)
+      yy = x(2,ip)
+      zz = x(3,ip)
+      vx = v(1,ip)
+      vy = v(2,ip)
+      vz = v(3,ip)
+      rad= h(ip)
+
+ 999  CONTINUE
+      RETURN
+      END
+
+      FUNCTION remove_particle(id)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER remove_particle,id,ip,i,k,init
+      DOUBLE PRECISION a2by18(NDIM),a1by6(NDIM),aby2(NDIM)
+
+C---  functions
+      INTEGER reinitialize_particles
+
+      remove_particle = -1
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'remove_particle: No such particle exists!'
+         remove_particle = -1
+         GOTO 999
+      ENDIF
+
+
+C---  synchronize system
+      CALL selectsync(time_cur)
+C          ----------
+      CALL sync
+C          ----
+
+
+C---  shift particles after ip to free spot
+      DO i=ip,N-1
+         m(i) = m(i+1)
+         DO k=1,3
+            x(k,i)    = x(k,i+1)
+            v(k,i)    = v(k,i+1)
+            a(k,i)    = a(k,i+1)
+            adot(k,i) = adot(k,i+1)
+
+C---  for shifting particles on GRAPE
+c            a2by18(k) = 0.d0 
+c            a1by6(k)  = adot(k,i) * over6 
+c            aby2(k)   = a(k,i)    * over2
+
+         ENDDO
+         pot(i)       = pot(i+1)
+         t(i)         = t(i+1)
+         dt(i)        = dt(i+1)
+         ind(i)       = i
+         myid(i)      = myid(i+1)
+         myind(myid(i))= i
+
+
+      ENDDO
+      N        = N - 1
+      n_loc    = N/n_proc
+      IF (ip.LE.nbh) nbh = nbh - 1   ! removed particle was BH
+      myind(id) = -1
+
+
+C---  also delete last particle information on GRAPE which
+C---  may interfere with force calculation
+      i    = N+1
+      m(i) = 0.d0
+      DO k=1,3
+         x(k,i)    = 0.d0
+         v(k,i)    = 0.d0
+         a(k,i)    = 0.d0
+         adot(k,i) = 0.d0
+
+C---  for shifting particles on GRAPE
+         a2by18(k) = 0.d0 
+         a1by6(k)  = 0.d0
+         aby2(k)   = 0.d0
+
+      ENDDO
+      pot(i)       = 0.d0
+      t(i)         = 0.d0
+      dt(i)        = dt_min
+      ind(i)       = 0
+      myid(i)      = 0
+
+C      CALL g6_set_j_particle(clusterid, i-1, ind(i),t(i),
+C     $                       dt(i),m(i),a2by18,a1by6,aby2,
+C     $                       v(1,i), x(1,i))
+
+
+C skip at the moment: should it be called afterwards? (fip)
+C---  recompute forces and time steps for all particles
+C      init = reinitialize_particles() 
+C            ----------------------
+
+      remove_particle = N
+
+ 999  CONTINUE
+      RETURN
+      END
+
+ 
+      FUNCTION evolve(tend,isync)
+      IMPLICIT NONE 
+#include "general.inc"
+
+C---  local vars
+      INTEGER          evolve,isync
+      DOUBLE PRECISION tend
+
+C (re)start grape (fip)
+C  update local particles on grape
+      CALL initgrape
+      CALL update_grape(1) 
+
+      t_end      = tend
+
+C--------------------------------------------------------------------
+C---  main loop begins here
+C--------------------------------------------------------------------
+ 100  IF (time_cur.GE.t_end) GOTO 900
+
+         icollision  = -1       ! no collision yet
+         idprimary   = -1       ! hence no ids for
+         idsecondary = -1       ! collided particles
+
+
+C---------------------------------------------------------------
+C---  get the global minimum timestep 
+C---------------------------------------------------------------
+         CALL get_min_t
+C             ---------
+
+C--------------------------------------------------------------------
+C---  select active particles from local particles
+C--------------------------------------------------------------------
+         CALL selectactive
+C             ------------
+
+C--------------------------------------------------------------------
+C---  predictor (for local active particles)
+C--------------------------------------------------------------------
+         CALL predictor(0)
+C             ---------         
+
+C--------------------------------------------------------------------
+C---  gather active particles on all PE's
+C--------------------------------------------------------------------
+         CALL allgather_ap
+C             ------------
+
+C--------------------------------------------------------------------
+C---  get local forces on all PE's
+C---  (as this is not the first call set ifirst to 0 in this call)
+C--------------------------------------------------------------------
+         CALL gravity(min_t,0)
+C             -------
+
+C--------------------------------------------------------------------
+C---  sum up the partial forces
+C--------------------------------------------------------------------
+         CALL sumforces(0)      ! call with 0; just sum forces
+C             ---------
+
+C--------------------------------------------------------------------
+C---  make the corrector step
+C---  this also updates the time steps of active particles
+C--------------------------------------------------------------------
+         CALL corrector
+C             ---------
+
+C--------------------------------------------------------------------
+C---  update local particles from local active particles
+C--------------------------------------------------------------------
+         CALL update_loc_p
+C             ------------
+
+C--------------------------------------------------------------------
+C---  also update local particles on GRAPE from local active particles
+C--------------------------------------------------------------------
+         CALL update_grape(0)
+C             ------------
+      
+         time_cur   = min_t
+
+C---  break if collision occured
+         IF (icollision.EQ.1) GOTO 900
+
+         GOTO 100   
+ 900  CONTINUE                  ! end of main loop
+      
+
+C--------------------------------------------------------------------
+C---  synchronize system if flag is set
+C--------------------------------------------------------------------
+      IF (isync.EQ.1) THEN
+
+         CALL selectsync(time_cur)
+C             ----------
+         CALL sync
+C             ----
+      ENDIF
+
+C--------------------------------------------------------------------
+C---  get energy, center of mass and momentum
+C--------------------------------------------------------------------
+      CALL energy
+C          ------
+
+      evolve = idprimary        ! return primary collision member or -1
+
+C     close grape before exiting (fip)
+      CALL g6_close(clusterid)
+
+      RETURN
+      END
+
+
+      FUNCTION find_colliding_primary()
+      IMPLICIT NONE
+#include "general.inc"
+      INTEGER  find_colliding_primary
+
+      find_colliding_primary = idprimary
+
+      RETURN
+      END
+
+      FUNCTION find_colliding_secondary(id1)
+      IMPLICIT NONE
+#include "general.inc"
+      INTEGER  find_colliding_secondary,id1,idummy
+      
+      idummy = id1
+
+      find_colliding_secondary = idsecondary
+
+      RETURN
+      END

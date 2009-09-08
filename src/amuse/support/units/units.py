@@ -17,8 +17,9 @@ ms = named('meter per seconds', 'ms', m / s)
 g = named('gram','g', 1e-3 * kg)
 one = no_unit(1)
 
-N = m**3/(kg * (s**2))
-G = N(6.673e-11)
+
+G = 6.673e-11 | m**3/kg/s**2
+N = named('Newton', 'N', kg / m /s**2)
 J = named('joule','J', kg * m **2  * s ** -2)
 erg = named('energy','erg', 1e-7 * J)
 W = named('watt', 'W', J / s)
