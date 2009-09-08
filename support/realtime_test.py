@@ -1,38 +1,32 @@
-
 import time
 import urlparse
 import threading
 import traceback
 import json
-
+import nose
+import sys
+import linecache
+import inspect
 import os.path
 import BaseHTTPServer
 import SocketServer
+import Queue as queue
 
 from mpi4py import MPI
-
-import nose
-
 from nose.plugins.capture import Capture
 from nose.plugins.skip import Skip, SkipTest
 from nose.core import TestProgram
-
 from multiprocessing import Process, Queue
-import Queue as queue
-
 from optparse import OptionParser
 from subprocess import call
-
 from StringIO import StringIO
-import sys
+
+test_is_running = False
 
 def number_str(number, singular, plural = None):
         if plural == None:
             plural = singular + 's'
         return str(number) + ' ' + (singular if number == 1 else plural)
-
-import linecache
-import inspect
 
 def find_method_in_class(name_of_the_method, code, class_to_search):
     if name_of_the_method in class_to_search.__dict__:
@@ -434,17 +428,24 @@ def _perform_one_test(directory, results_queue, address):
         MPI.Finalize()
 
 def _run_test_with_address(address):
-    result_queue = Queue()
-    p = Process(
-        target=_perform_one_test, 
-        args=(
-            os.getcwd(), 
-            result_queue,
-            address
-        ))
-    p.start()
-    p.join()
-    result = result_queue.get() 
+    global test_is_running
+    if test_is_running:
+        return 'test is already running'
+    test_is_running = True
+    try:
+        result_queue = Queue()
+        p = Process(
+            target=_perform_one_test, 
+            args=(
+                os.getcwd(), 
+                result_queue,
+                address
+            ))
+        p.start()
+        p.join()
+        result = result_queue.get() 
+    finally:
+        test_is_running = False
     return result
     
 
@@ -464,28 +465,38 @@ class RunAllTestsWhenAChangeHappens(object):
         self.must_run = False;
         
     def run(self):
+        global test_is_running
         paths = [os.path.join(os.getcwd(), 'src'), os.path.join(os.getcwd(), 'test')]
         monitor = MonitorDirectories(paths)
         monitor.check()
         monitor.changed = True
         while self.must_run:
             if monitor.changed:
-                result_queue = Queue()
-                p = Process(
-                    target=_perform_the_testrun, 
-                    args=(
-                        os.getcwd(), 
-                        result_queue, 
-                        self.server.last_report
-                    ))
-                p.start()
-                p.join()
-                report = result_queue.get() 
-                self.server.last_report = report
-                del result_queue
-                self.server.tests_finished.set()
-                
-                print "end test run"
+                if test_is_running:
+                    monitor.check()
+                    continue
+                    
+                test_is_running = True
+                try:
+                    result_queue = Queue()
+                    p = Process(
+                        target=_perform_the_testrun, 
+                        args=(
+                            os.getcwd(), 
+                            result_queue, 
+                            self.server.last_report
+                        ))
+                    p.start()
+                    p.join()
+                    report = result_queue.get() 
+                    self.server.last_report = report
+                    del result_queue
+                    self.server.tests_finished.set()
+                    
+                    print "end test run"
+                finally:
+                    test_is_running = False
+                    
                 monitor.check()
             else:
                 time.sleep(0.5)
@@ -602,16 +613,24 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.serve_forever()
         
     def start_run_tests(self):
-        result_queue = Queue()
-        p = Process(
-            target=_perform_the_testrun, 
-            args=(os.getcwd(), result_queue))
-        p.start()
-        p.join()
-        report = result_queue.get() 
-        self.last_report = report
-        del result_queue
-        self.tests_finished.set()
+        global test_is_running
+        if test_is_running:
+            return
+        
+        test_is_running = True
+        try:
+            result_queue = Queue()
+            p = Process(
+                target=_perform_the_testrun, 
+                args=(os.getcwd(), result_queue))
+            p.start()
+            p.join()
+            report = result_queue.get() 
+            self.last_report = report
+            del result_queue
+            self.tests_finished.set()
+        finally:
+            test_is_running = False
     def stop(self):
         self.run_all_tests.stop()
         self.shutdown()

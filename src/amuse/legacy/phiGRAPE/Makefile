@@ -1,3 +1,8 @@
+
+ifndef FORTRAN
+	FORTRAN = gfortran
+endif
+
 SRCDIR = src
 
 OBJECTS = \
@@ -34,7 +39,8 @@ PIC= -fPIC
 # MPI
 #FORTRAN = mpif77
 #FFLAGS  = -O2 -Wno-globals
-FORTRAN = ifort
+
+
 FC = ifort
 FFLAGS  = -O2 -DNOMPI -fPIC
 # gfortran -fno-second-underscore -fPIC -Wall

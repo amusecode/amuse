@@ -27,9 +27,22 @@ wtimef.c
 
 SAF = main.F
 
-LLIBSDIR = -L/data1/pelupes/libraries/sapporo_v1.5 \
--L/data1/pelupes/programs/cuda/lib 
-LIBS     = -lguide -lsapporo -lm -lcudart -lboost_thread-mt -lpthread
+ifndef CUDA_LIBDIRS
+	CUDA_LIBDIRS = -L/data1/pelupes/programs/cuda/lib 
+endif
+
+ifndef CUDA_LIBS
+	CUDA_LIBS = -lcudart
+endif
+
+
+ifndef SAPPORO_LIBDIRS
+	SAPPORO_LIBDIRS = -L/data1/pelupes/libraries/sapporo_v1.5
+endif
+
+
+LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
+LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
@@ -64,7 +77,11 @@ PIC= -fPIC
 #FFLAGS  = -O2 -Wno-globals
 
 # no MPI
-FORTRAN = ifort
+
+ifndef FORTRAN
+	FORTRAN = gfortran
+endif
+
 FC = ifort
 FFLAGS  = -O2 -DNOMPI -fPIC
 #gfortran

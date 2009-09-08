@@ -7,7 +7,9 @@ from distutils.core import Command
 from distutils.dep_util import newer
 from distutils.util import convert_path
 from distutils import log
-
+from distutils import spawn
+from subprocess import call
+from numpy.distutils import fcompiler
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
@@ -18,15 +20,40 @@ class LegacyCommand(Command):
 
     boolean_options = ['force']
 
-
     def initialize_options (self):
         self.legacy_dir = None
         self.amuse_src_dir =  os.path.join('src','amuse')
-
+        self.environment = {}
+        self.found_cuda = False
+        self.found_sapporo = False
+        
     def finalize_options (self):
         if self.legacy_dir is None:
             self.legacy_dir = os.path.join(self.amuse_src_dir,'legacy')
+        
+        self.set_fortran_variables()
+        self.set_cuda_variables()
+        self.set_sapporo_variables()
+        
+    def set_fortran_variables(self):
+        compiler = fcompiler.new_fcompiler(requiref90=True)
+        fortran_executable = compiler.executables['compiler_f90'][0]
+        self.environment['FORTRAN'] = fortran_executable
+    
+    def set_cuda_variables(self):
+        dir = spawn.find_executable('nvcc')
+        if dir is None:
+            self.found_cuda = False
+            return
+        cuda_dir = os.path.dirname(os.path.dirname(dir))
+        self.environment['CUDA_LIBDIRS'] = '-L'+cuda_dir+'/lib'
+        self.environment['CUDA_LIBS'] = '-lcudart'
+        self.found_cuda = True
 
+    
+    def set_sapporo_variables(self):
+        self.found_sapporo = False
+        
     def subdirs_in_legacy_dir(self):
         names = os.listdir(self.legacy_dir)
         for name in names:
@@ -47,9 +74,14 @@ class BuildLegacy(LegacyCommand):
     description = "build interfaces to legacy codes"
     
     def run (self):
+        environment = os.environ.copy()
+        environment.update(self.environment)
         for x in self.makefile_paths():
+            if x.endswith('phiGRAPE'):
+                if not self.found_sapporo:
+                    continue
             self.announce("building " + x)
-            self.spawn(['make','-C', x, 'all'])
+            call(['make','-C', x, 'all'], env = environment)
  
  
 class CleanLegacy(LegacyCommand):
@@ -59,7 +91,7 @@ class CleanLegacy(LegacyCommand):
     def run (self):
         for x in self.makefile_paths():
             self.announce("cleaning " + x)
-            self.spawn(['make','-C', x, 'clean'])
+            call(['make','-C', x, 'clean'])
             
             
             

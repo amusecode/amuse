@@ -197,6 +197,7 @@ function handle_last_report(report) {
 
 function startPage() {
      $('#start-button').click(function() {$.getJSON("/start", function(data){});});
+     $('#stop-button').click(function() {$.getJSON("/stop", function(data){});});
      $.getJSON("/get_last_report", handle_last_report);
      poll_for_events();
 }
@@ -300,6 +301,6 @@ a:hover {
     <a name="skipped"><h3>Tests skipped</h3></a>
     <ol id = "tests-skipped"></ol>
 </div>
-<a href="/stop">stop</a>
+<a id="stop-button" href="#">stop</a>
 </body>
 </html>
