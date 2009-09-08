@@ -196,6 +196,7 @@ function handle_last_report(report) {
 }
 
 function startPage() {
+     $('#start-button').click(function() {$.getJSON("/start", function(data){});});
      $.getJSON("/get_last_report", handle_last_report);
      poll_for_events();
 }
@@ -270,7 +271,7 @@ a:hover {
 </head>
 <body>
 <h2 id="report-title"></h2>
-
+<a id="start-button" href="#">start test</a>
 <div id = "summary-box">
 <ul id="summary">
  <li>started on: <span id="start-date"></span></li>

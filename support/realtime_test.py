@@ -501,7 +501,10 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         parsed_path = urlparse.urlparse(self.path)
         
         if parsed_path.path == '/start':
-            self.start_run_tests()
+
+            thread = threading.Thread(target=self.server.start_run_tests)
+            thread.daemon = True;
+            thread.start()
             string = 'null'
             content_type = 'text/javascript'
         elif parsed_path.path == '/stop':
@@ -599,11 +602,16 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.serve_forever()
         
     def start_run_tests(self):
+        result_queue = Queue()
         p = Process(
             target=_perform_the_testrun, 
-            args=(os.getcwd(),self.queue))
+            args=(os.getcwd(), result_queue))
         p.start()
-    
+        p.join()
+        report = result_queue.get() 
+        self.last_report = report
+        del result_queue
+        self.tests_finished.set()
     def stop(self):
         self.run_all_tests.stop()
         self.shutdown()

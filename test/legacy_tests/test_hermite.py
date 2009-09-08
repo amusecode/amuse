@@ -19,7 +19,7 @@ class TestMPIInterface(unittest.TestCase):
         hermite.setup_module()
         hermite.add_particle(1, 11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = hermite.get_state(1)
-        self.assertEquals(11.0,  retrieved_state.mass)
+        self.assertEquals(11.0,  retrieved_state['mass'])
         self.assertEquals(hermite.get_number(), 1)
         hermite.cleanup_module()
         del hermite
@@ -53,11 +53,11 @@ class TestMPIInterface(unittest.TestCase):
             , [2.4,3.4,4.4,5.4]
             , [2.5,3.5,4.5,5.5]
             , [2.6,3.6,4.6,5.6])
-        retrieved_state = hermite._get_state(1)
+        retrieved_state = hermite.get_state(1)
         print "result:", retrieved_state
         self.assertEquals(11.0,  retrieved_state['mass'])
         
-        retrieved_state = hermite._get_state([2,3,4])
+        retrieved_state = hermite.get_state([2,3,4])
         self.assertEquals(12.0,  retrieved_state['mass'][0])
         self.assertEquals(hermite.get_number(), 4)
         hermite.cleanup_module()
@@ -78,7 +78,7 @@ class TestMPIInterface(unittest.TestCase):
             , values
             , values
             , values)
-        retrieved_state = hermite._get_state(1)
+        retrieved_state = hermite.get_state(1)
         print "result:", retrieved_state
         self.assertEquals(1.0,  retrieved_state['mass'])
         hermite.cleanup_module()
@@ -100,7 +100,7 @@ class TestMPIInterface(unittest.TestCase):
                 , values[i]
                 , values[i])
                 
-        retrieved_state = hermite._get_state(1)
+        retrieved_state = hermite.get_state(1)
         print "result:", retrieved_state
         self.assertEquals(1.0,  retrieved_state['mass'])
         hermite.cleanup_module()

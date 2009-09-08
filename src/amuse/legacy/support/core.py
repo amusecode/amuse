@@ -6,7 +6,9 @@ from amuse.support.core import OrderedDictionary
 
 from zlib import crc32
 from mpi4py import MPI
+import os.path
 
+import inspect
 import numpy
 
 class DataType(object):
@@ -317,7 +319,28 @@ class MpiChannel(object):
         if header[0] < 0:
             raise Exception("Not a valid message!")
         return (doubles_result, ints_result)
+        
+
+class LegacyInterface(object):
     
+    def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1):
+        self._start_worker(name_of_the_worker, number_of_workers)
+        
+    def _start_worker(self,  name_of_the_worker, number_of_workers):
+        directory_of_this_module = os.path.dirname(inspect.getfile(type(self)))
+        full_name_of_the_worker = os.path.join(directory_of_this_module , name_of_the_worker)
+        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, number_of_workers)
+        self.channel = MpiChannel(self.intercomm)
+    
+    def __del__(self):
+        self._stop_worker()
+        
+    @legacy_function
+    def _stop_worker():
+        function = RemoteFunction()  
+        function.id = 0
+        return function   
+
 
 
         
