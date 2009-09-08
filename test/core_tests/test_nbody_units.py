@@ -29,9 +29,8 @@ class TestNbodyUnits(unittest.TestCase):
        
     def test4(self):
        convert_nbody = nbody_to_si(units.MSun(1.0), units.km(149.5e6))
-       G = 6.673e-11 | units.N
-       y_in_nbody = convert_nbody.to_nbody(G) 
-       self.assertEqual(str(y_in_nbody.unit), 'nbody length**3 * nbody mass**-1 * nbody time**-2')
+       y_in_nbody = convert_nbody.to_nbody(units.G) 
+       self.assertEqual(str(y_in_nbody.unit), 'nbody length**3 * nbody mass**-1 * nbody time**-2' )
        self.assertAlmostEqual(y_in_nbody.number, 1.0, 9)
        
     def test5(self):

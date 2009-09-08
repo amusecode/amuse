@@ -27,8 +27,8 @@ SUBROUTINE run_loop
   must_run_loop = 1
   
   do while (must_run_loop .eq. 1)
-    call MPI_RECV(header, 5, MPI_INTEGER, 0, 0, parent,&
-      mpiStatus, ioerror)
+    call MPI_BCast(header, 5, MPI_INTEGER, 0, parent,&
+      ioerror)
     
     tag_in = header(1)
     
@@ -38,26 +38,25 @@ SUBROUTINE run_loop
     number_of_floats_in =  header(5)
     
     tag_out = tag_in
-    
     len_out = len_in
     number_of_doubles_out = 0
     number_of_integers_out = 0
     number_of_floats_out = 0
     
     if (number_of_doubles_in .gt. 0) then
-      call MPI_RECV(doubles_in, number_of_doubles_in, &
-        MPI_DOUBLE_PRECISION, 0, 0, parent,&
-        mpiStatus, ioError);
+      call MPI_BCast(doubles_in, number_of_doubles_in, &
+        MPI_DOUBLE_PRECISION, 0, parent,&
+        ioError);
     end if
     if (number_of_integers_in .gt. 0) then
-      call MPI_RECV(integers_in, number_of_integers_in, &
-        MPI_INTEGER, 0, 0, parent,&
-        mpiStatus, ioError);
+      call MPI_BCast(integers_in, number_of_integers_in, &
+        MPI_INTEGER, 0, parent,&
+        ioError);
     end if
     if (number_of_floats_in .gt. 0) then
-      call MPI_RECV(floats_in, number_of_floats_in, &
-        MPI_SINGLE_PRECISION, 0, 0, parent,&
-        mpiStatus, ioError);
+      call MPI_BCast(floats_in, number_of_floats_in, &
+        MPI_SINGLE_PRECISION, 0, parent,&
+        ioError);
     end if
     
     SELECT CASE (tag_in)
@@ -133,7 +132,6 @@ SUBROUTINE run_loop
     END SELECT
     
     header(1) = tag_out
-    
     header(2) = len_out
     header(3) = number_of_doubles_out
     header(4) = number_of_integers_out

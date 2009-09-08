@@ -232,8 +232,8 @@ class MakeCMessageHeaderClassDefinition(MakeCCodeString):
         self.out.lf() + 'void recv(MPI::Intercomm & intercomm, int rank) {'
         self.out.indent()
         self.out.lf() + 'int header[' + self.length_of_the_header + '];'
-        self.out.lf() + 'intercomm.Recv(header, '+ self.length_of_the_header 
-        self.out +', MPI_INT, 0, 0);'
+        self.out.lf() + 'intercomm.Bcast(header, '+ self.length_of_the_header 
+        self.out +', MPI_INT, 0);'
         self.out.lf() + 'tag = header[0];'
         self.out.lf() + 'len = header[1];'
         for i, dtype in enumerate(dtypes):
@@ -325,11 +325,11 @@ class MakeACStringOfAClassWithLegacyFunctions\
             spec = self.dtype_to_spec[dtype]    
             self.out.lf() 
             self.out + 'if(request_header.' + spec.counter_name + ' > 0) {'
-            self.out.indent().lf() + 'parent.Recv(' 
+            self.out.indent().lf() + 'parent.Bcast(' 
             self.out + spec.input_var_name 
             self.out + ', ' + 'request_header.' + spec.counter_name 
             self.out + ' * ' + 'request_header.len'
-            self.out + ', ' + spec.mpi_type+ ', 0, 0);'
+            self.out + ', ' + spec.mpi_type+ ', 0);'
             self.out.dedent().lf() +'}'
             
         self.out.lf().lf() + 'reply_header.tag = request_header.tag;'

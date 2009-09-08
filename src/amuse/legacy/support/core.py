@@ -257,23 +257,23 @@ class MpiChannel(object):
                 pass
         header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in)], dtype='i')
         
-        self.intercomm.Send([header, MPI.INT], dest=0, tag=0)
+        self.intercomm.Bcast([header, MPI.INT], root=MPI.ROOT)
         if doubles_in:
             doubles = numpy.zeros(length * len(doubles_in), dtype='d')
             for i in range(len(doubles_in)):
                 offset = i * length
                 doubles[offset:offset+length] = doubles_in[i]
             
-            self.intercomm.Send([doubles, MPI.DOUBLE], dest=0, tag=0)
+            self.intercomm.Bcast([doubles, MPI.DOUBLE], root=MPI.ROOT)
         if ints_in:
             ints = numpy.zeros(length * len(ints_in), dtype='i')
             for i in range(len(ints_in)):
                 offset = i * length
                 ints[offset:offset+length] = ints_in[i]
-            self.intercomm.Send([ints, MPI.INT], dest=0, tag=0)
+            self.intercomm.Bcast([ints, MPI.INT], root=MPI.ROOT)
         if floats_in:
             floats = numpy.array(floats_in, dtype='f')
-            self.intercomm.Send([floats, MPI.FLOAT], dest=0, tag=0)
+            self.intercomm.Bcast([floats, MPI.FLOAT], root=MPI.ROOT)
             
     def recv_message(self, tag):
         header = numpy.empty(5,  dtype='i')

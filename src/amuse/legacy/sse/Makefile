@@ -1,5 +1,5 @@
 ifndef FORT
-    FORT = ifort
+    FORT = gfortran
 endif
 
 

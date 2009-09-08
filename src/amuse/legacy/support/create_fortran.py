@@ -219,11 +219,11 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.indent()
        
        
-        self.out.lf() + 'call MPI_RECV(header, '
+        self.out.lf() + 'call MPI_BCast(header, '
         self.out + self.length_of_the_header
         self.out + ', MPI_INTEGER, 0,'
-        self.out + ' 0, parent,&'
-        self.out.indent().lf() + 'mpiStatus, ioerror)'
+        self.out + ' parent,&'
+        self.out.indent().lf() + 'ioerror)'
         self.out.dedent()
         self.out.lf().lf() + 'tag_in = header(1)'
         self.out.lf().lf() + 'len_in = header(2)'
@@ -250,13 +250,13 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
             self.out.lf() + 'if (' + spec.counter_name + '_in' 
             self.out + ' .gt. 0) then'
 
-            self.out.indent().lf() + 'call MPI_RECV('
+            self.out.indent().lf() + 'call MPI_BCast('
             self.out + spec.input_var_name + ', ' 
             self.out + spec.counter_name + '_in' + ', &'
 
             self.out.indent().n() + spec.mpi_type
-            self.out + ', 0, 0, parent,&'
-            self.out.n() + 'mpiStatus, ioError);'
+            self.out + ', 0, parent,&'
+            self.out.n() + 'ioError);'
 
             self.out.dedent().dedent().lf()
             self.out + 'end if'
