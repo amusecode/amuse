@@ -304,16 +304,22 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out + 'MPI::COMM_WORLD.Get_parent();'
         self.out.n() + 'int rank = parent.Get_rank();'
         self.out.lf().lf() + 'bool must_run_loop = true;'
+        
+        maximum_number_of_inputvariables_of_a_type = 255 * 5000
+        for dtype_spec in self.dtype_to_spec.values():
+            self.out.lf() + dtype_spec.type + ' * ' 
+            self.out + dtype_spec.input_var_name 
+            self.out + ' = new ' + dtype_spec.type 
+            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+            self.out.lf() + dtype_spec.type + ' * ' 
+            self.out + dtype_spec.output_var_name 
+            self.out + ' = new ' + dtype_spec.type 
+            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+        
         self.out.lf().lf() + 'while(must_run_loop) {'
         self.out.indent()
-        maximum_number_of_inputvariables_of_a_type = 255 * 1000
-        for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + dtype_spec.type + ' ' 
-            self.out + dtype_spec.input_var_name 
-            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
-            self.out.lf() + dtype_spec.type + ' ' 
-            self.out + dtype_spec.output_var_name 
-            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+        
+        
         self.out.lf()
         self.out.lf() + 'message_header request_header;'
         self.out.lf() + 'message_header reply_header;'
@@ -364,6 +370,14 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
         self.out.dedent()
         self.out.lf() + '}'
+        
+        
+        for dtype_spec in self.dtype_to_spec.values():
+            self.out.lf() + 'delete ' 
+            self.out + dtype_spec.input_var_name  + ';'
+            self.out.lf() + 'delete '
+            self.out + dtype_spec.output_var_name  + ';'
+            
         self.out.dedent()
         self.out.lf() + '}'
         

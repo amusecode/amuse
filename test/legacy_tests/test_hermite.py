@@ -66,7 +66,7 @@ class TestMPIInterface(unittest.TestCase):
     def test5(self):
         hermite = mpi_interface.Hermite()
         hermite.setup_module()
-        n = 900
+        n = 4000
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
         hermite.add_particle(ids
@@ -78,15 +78,15 @@ class TestMPIInterface(unittest.TestCase):
             , values
             , values
             , values)
-        retrieved_state = hermite.get_state(1)
+        retrieved_state = hermite.get_state(3999)
         print "result:", retrieved_state
-        self.assertEquals(1.0,  retrieved_state['mass'])
+        self.assertEquals(3999.0,  retrieved_state['mass'])
         hermite.cleanup_module()
         
     def test6(self):
         hermite = mpi_interface.Hermite()
         hermite.setup_module()
-        n = 900
+        n = 4000
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
         for i in range(n-1):
