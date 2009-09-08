@@ -141,6 +141,11 @@ function handle_last_report(report) {
         address.addClass('test-address');
         address.append(testcase.address[2]) ;
         address.appendTo(item);
+        var delta_time = $('<span></span>');
+        delta_time.text('(' + (testcase.end_time - testcase.start_time).toFixed(3) + ')')
+        item.append(' ');
+        delta_time.appendTo(item);
+        
         if(testcase.skipped ) {
             item.appendTo($('#tests-skipped'));
         } else {
@@ -154,8 +159,7 @@ function handle_last_report(report) {
                 root.appendTo($('#tests-failed'));
             }
             item = $('<li></li>').appendTo($('<ul></ul>').appendTo(root));
-            
-            $(testcase.error_string).appendTo(item);
+            item.text(testcase.error_string[0]);
             traceback = $('<ul></ul>');
             traceback.addClass('traceback-list');
             tb = testcase.traceback;

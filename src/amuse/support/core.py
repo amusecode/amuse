@@ -106,6 +106,15 @@ class OrderedDictionary(object):
     def  __len__(self):
         return len(self.orderedKeys)
         
+    def __str__(self):
+        result = 'OrderedDictionary({'
+        elements = []
+        for x in self.keys():
+            elements.append(str(x) + ':' + str(self[x]))
+        result += ','.join(elements)
+        result += '})'
+        return result
+        
     def keys(self):
         return iter(self.orderedKeys)
         

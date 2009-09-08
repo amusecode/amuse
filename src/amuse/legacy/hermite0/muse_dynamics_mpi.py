@@ -87,6 +87,7 @@ class Hermite(object):
     def add_particle():
         function = RemoteFunction()  
         function.id = 5
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -97,6 +98,7 @@ class Hermite(object):
     def _get_state():
         function = RemoteFunction()  
         function.id = 8
+        function.can_handle_array = True
         function.name = "get_state"
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('id_out', dtype='i', direction=function.OUT)

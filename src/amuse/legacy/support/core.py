@@ -197,6 +197,7 @@ class RemoteFunction(object):
         self.output_parameters = []
         self.dtype_to_input_parameters = {}
         self.dtype_to_output_parameters = {}
+        self.can_handle_array = False
         
     def addParameter(self, name, dtype = 'i', direction = IN):
         parameter = Parameter(name, dtype, direction)
@@ -247,7 +248,11 @@ class MpiChannel(object):
         if doubles_in:
             try:
                 length = len(doubles_in[0])
-                print tag, length
+            except:
+                pass
+        if ints_in:
+            try:
+                length = len(ints_in[0])
             except:
                 pass
         header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in)], dtype='i')
@@ -257,8 +262,6 @@ class MpiChannel(object):
             doubles = numpy.zeros(length * len(doubles_in), dtype='d')
             for i in range(len(doubles_in)):
                 offset = i * length
-                if length > 1:
-                    print "doubles:", doubles_in[i]
                 doubles[offset:offset+length] = doubles_in[i]
             
             self.intercomm.Send([doubles, MPI.DOUBLE], dest=0, tag=0)
@@ -267,8 +270,6 @@ class MpiChannel(object):
             for i in range(len(ints_in)):
                 offset = i * length
                 ints[offset:offset+length] = ints_in[i]
-            if length > 1:
-                print ints
             self.intercomm.Send([ints, MPI.INT], dest=0, tag=0)
         if floats_in:
             floats = numpy.array(floats_in, dtype='f')
@@ -281,18 +282,35 @@ class MpiChannel(object):
         n_doubles = header[2]
         n_ints = header[3]
         n_floats = header[4]
+        if length > 1:
+            print "l:", length
         if n_doubles > 0:
-            doubles_result = numpy.empty(n_doubles,  dtype='d')
-            self.intercomm.Recv([doubles_result, MPI.DOUBLE], source=0, tag=999)
+            doubles_mpi = numpy.empty(n_doubles * length,  dtype='d')
+            self.intercomm.Recv([doubles_mpi, MPI.DOUBLE], source=0, tag=999)
+            doubles_result = []
+            if length > 1:
+                for i in range(n_doubles):
+                    offset = i * length
+                    doubles_result.append(doubles_mpi[offset:offset+length])
+            else:
+                doubles_result = doubles_mpi
         else:
             doubles_result = []
         if n_ints > 0:
-            ints_result = numpy.empty(n_ints,  dtype='i')
-            self.intercomm.Recv([ints_result, MPI.INT], source=0, tag=999)
+            ints_mpi = numpy.empty(n_ints * length,  dtype='i')
+            self.intercomm.Recv([ints_mpi, MPI.INT], source=0, tag=999)
+            ints_result = []
+            if length > 1:
+                for i in range(n_ints):
+                    offset = i * length
+                    ints_result.append(ints_mpi[offset:offset+length])
+            else:
+                ints_result = ints_mpi
+                
         else:
             ints_result = []
         if n_floats > 0:
-            floats_result = numpy.empty(n_floats,  dtype='f')
+            floats_result = numpy.empty(n_floats * length,  dtype='f')
             self.intercomm.Recv([floats_result, MPI.FLOAT], source=0, tag=999)
         else:
             floats_result = []

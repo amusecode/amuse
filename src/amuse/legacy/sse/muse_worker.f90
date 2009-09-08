@@ -9,6 +9,8 @@ SUBROUTINE run_loop
   integer header(5)
   
   integer :: tag_in, tag_out
+  
+  integer :: len_in, len_out
   integer integers_in(255)
   integer integers_out(255)
   integer :: number_of_integers_out, number_of_integers_in
@@ -29,11 +31,15 @@ SUBROUTINE run_loop
       mpiStatus, ioerror)
     
     tag_in = header(1)
+    
+    len_in = header(2)
     number_of_doubles_in =  header(3)
     number_of_integers_in =  header(4)
     number_of_floats_in =  header(5)
     
     tag_out = tag_in
+    
+    len_out = len_in
     number_of_doubles_out = 0
     number_of_integers_out = 0
     number_of_floats_out = 0
@@ -127,6 +133,8 @@ SUBROUTINE run_loop
     END SELECT
     
     header(1) = tag_out
+    
+    header(2) = len_out
     header(3) = number_of_doubles_out
     header(4) = number_of_integers_out
     header(5) = number_of_floats_out

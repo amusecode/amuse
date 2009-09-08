@@ -199,6 +199,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.lf().lf() + 'integer header(' 
         self.out + self.length_of_the_header + ')'
         self.out.lf().lf() + 'integer :: tag_in, tag_out'
+        self.out.lf().lf() + 'integer :: len_in, len_out'
         
         maximum_number_of_inputvariables_of_a_type = 255
         for dtype_spec in self.dtype_to_spec.values():
@@ -229,6 +230,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.indent().lf() + 'mpiStatus, ioerror)'
         self.out.dedent()
         self.out.lf().lf() + 'tag_in = header(1)'
+        self.out.lf().lf() + 'len_in = header(2)'
         
         
                
@@ -239,6 +241,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
             self.out + 'header(' + (i+3) + ')'
         
         self.out.lf().lf() + 'tag_out = tag_in'
+        self.out.lf() + 'len_out = len_in'
         
         
         self.out.lf()      + 'number_of_doubles_out = 0'
@@ -278,6 +281,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
     def output_runloop_function_def_end(self):
         
         self.out.lf().lf() + 'header(1) = tag_out'
+        self.out.lf() + 'header(2) = len_out'
         for i, dtype in enumerate(['d','i','f']):
             spec = self.dtype_to_spec[dtype]
             self.out.lf()  + 'header(' + (i+3) + ')'

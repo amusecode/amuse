@@ -21,22 +21,41 @@ class MakeCCodeString(MakeCodeString):
        
          
 class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
+
         
     def start(self):
         
         self.specification.prepare_output_parameters()
         self.output_casestmt_start()
         self.out.indent()
-        #self.out.lf() + 'for (int i = 0 ; i < request_header.len; i++){
+        
+        if self.specification.can_handle_array:
+            self.out.lf() + 'for (int i = 0 ; i < request_header.len; i++){'
+            self.out.indent()
+        
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
         self.output_lines_with_inout_variables()
+        
+        if self.specification.can_handle_array:
+            self.out.dedent()
+            self.out.lf() + '}'
+        
         self.output_lines_with_number_of_outputs()
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
-        
+    
+    def index_string(self, index):
+        if self.specification.can_handle_array:
+            if index == 0:
+                return 'i'
+            else:
+                return '( %d * request_header.len) + i' % index
+        else:
+            return index
+            
     def output_function_parameters(self):
         self.out.indent()
         
@@ -52,13 +71,13 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
                 
             if parameter.direction == RemoteFunction.IN:
                 self.out.n() + spec.input_var_name 
-                self.out + '[' + parameter.input_index + ']'
+                self.out + '[' + self.index_string(parameter.input_index) + ']'
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + '&' + spec.input_var_name 
-                self.out + '[' + parameter.input_index + ']'
+                self.out + '[' + self.index_string(parameter.input_index) + ']'
             elif parameter.direction == RemoteFunction.OUT:
                 self.out.n() + '&' + spec.output_var_name
-                self.out + '[' + parameter.output_index + ']'
+                self.out + '[' + self.index_string(parameter.output_index) + ']'
     
         self.out.dedent()
         
@@ -68,9 +87,9 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + spec.output_var_name
-                self.out + '[' + parameter.output_index + ']'
+                self.out + '[' + self.index_string(parameter.output_index) + ']'
                 self.out + ' = '
-                self.out + spec.input_var_name + '[' + parameter.input_index + ']'+';'
+                self.out + spec.input_var_name + '[' + self.index_string(parameter.input_index) + ']'+';'
                 
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
@@ -102,7 +121,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.output_var_name
-            self.out + '[' + 0 + ']' + ' = '
+            self.out + '[' +  self.index_string(0) + ']' + ' = '
         self.out + self.specification.name + '('
         
     def output_casestmt_start(self):
@@ -287,7 +306,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf().lf() + 'bool must_run_loop = true;'
         self.out.lf().lf() + 'while(must_run_loop) {'
         self.out.indent()
-        maximum_number_of_inputvariables_of_a_type = 255
+        maximum_number_of_inputvariables_of_a_type = 255 * 1000
         for dtype_spec in self.dtype_to_spec.values():
             self.out.lf() + dtype_spec.type + ' ' 
             self.out + dtype_spec.input_var_name 
@@ -309,10 +328,12 @@ class MakeACStringOfAClassWithLegacyFunctions\
             self.out.indent().lf() + 'parent.Recv(' 
             self.out + spec.input_var_name 
             self.out + ', ' + 'request_header.' + spec.counter_name 
+            self.out + ' * ' + 'request_header.len'
             self.out + ', ' + spec.mpi_type+ ', 0, 0);'
             self.out.dedent().lf() +'}'
             
         self.out.lf().lf() + 'reply_header.tag = request_header.tag;'
+        self.out.lf().lf() + 'reply_header.len = request_header.len;'
         
     def output_switch_start(self):
         self.out.lf().lf() + 'switch(request_header.tag) {'
@@ -337,6 +358,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
             self.out + spec.counter_name + ' > 0) {'
             self.out.indent().lf() + 'parent.Send(' + spec.output_var_name 
             self.out + ', ' + 'reply_header.' + spec.counter_name 
+            self.out + ' * ' + 'request_header.len'
             self.out + ', ' + spec.mpi_type+ ', 0, 999);'
             self.out.dedent().lf() +'}'
         

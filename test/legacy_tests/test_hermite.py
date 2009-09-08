@@ -40,6 +40,71 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(0, hermite.flag_collision)
         del hermite
         
+    def test4(self):
+        hermite = mpi_interface.Hermite()
+        hermite.setup_module()
+        
+        hermite.add_particle( [1,2,3,4]
+            , [11.0,12.0,13.0,14.0]
+            , [2.0,3.0,4.0,5.0]
+            , [2.1,3.1,4.1,5.1]
+            , [2.2,3.2,4.2,5.2]
+            , [2.3,3.3,4.3,5.3]
+            , [2.4,3.4,4.4,5.4]
+            , [2.5,3.5,4.5,5.5]
+            , [2.6,3.6,4.6,5.6])
+        retrieved_state = hermite._get_state(1)
+        print "result:", retrieved_state
+        self.assertEquals(11.0,  retrieved_state['mass'])
+        
+        retrieved_state = hermite._get_state([2,3,4])
+        self.assertEquals(12.0,  retrieved_state['mass'][0])
+        self.assertEquals(hermite.get_number(), 4)
+        hermite.cleanup_module()
+        
+    
+    def test5(self):
+        hermite = mpi_interface.Hermite()
+        hermite.setup_module()
+        n = 900
+        ids = [i for i in range(1,n)]
+        values = [1.0 * i for i in range(1,n)]
+        hermite.add_particle(ids
+            , values
+            , values
+            , values
+            , values
+            , values
+            , values
+            , values
+            , values)
+        retrieved_state = hermite._get_state(1)
+        print "result:", retrieved_state
+        self.assertEquals(1.0,  retrieved_state['mass'])
+        hermite.cleanup_module()
+        
+    def test6(self):
+        hermite = mpi_interface.Hermite()
+        hermite.setup_module()
+        n = 900
+        ids = [i for i in range(1,n)]
+        values = [1.0 * i for i in range(1,n)]
+        for i in range(n-1):
+            hermite.add_particle(ids[i]
+                , values[i]
+                , values[i]
+                , values[i]
+                , values[i]
+                , values[i]
+                , values[i]
+                , values[i]
+                , values[i])
+                
+        retrieved_state = hermite._get_state(1)
+        print "result:", retrieved_state
+        self.assertEquals(1.0,  retrieved_state['mass'])
+        hermite.cleanup_module()
+        
 class TestAmuseInterface(unittest.TestCase):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))

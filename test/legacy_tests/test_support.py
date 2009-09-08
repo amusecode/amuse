@@ -455,8 +455,38 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         string = x.result
         self.assertEquals(string,  'case 1:\n  doubles_out[0] = test_one(\n    ints_in[0] ,\n    &ints_out[0] ,\n    &doubles_out[1]\n  );\n  reply_header.number_of_ints = 1;\n  reply_header.number_of_doubles = 2;\n  break;')
 
-
-
+    def test7(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.INOUT)
+        function.addParameter('doublep', dtype='d', direction=function.INOUT)
+        function.result_type = 'd'
+        function.can_handle_array = True
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        expected = """
+        case 1:
+          for (int i = 0 ; i < request_header.len; i++){
+            doubles_out[i] = test_one(
+              ints_in[i] ,
+              &ints_in[( 1 * request_header.len) + i] ,
+              &doubles_in[i]
+            );
+            ints_out[i] = ints_in[( 1 * request_header.len) + i];
+            doubles_out[( 1 * request_header.len) + i] = doubles_in[i];
+          }
+          reply_header.number_of_ints = 1;
+          reply_header.number_of_doubles = 2;
+          break;
+        """
+        print string
+        expected_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , expected))
+        self.assertEquals(string_no_spaces, expected_no_spaces);
+        
         
 class TestMakeAFortranStringOfALegacyGlobalSpecification(unittest.TestCase):
     _class_to_test = MakeAFortranStringOfALegacyGlobalSpecification
