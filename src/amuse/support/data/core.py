@@ -98,7 +98,7 @@ class Measurement(object):
     def __str__(self):
         rows = []
         columns = map(lambda x : str(x), self.attributes)
-        columns.insert(0,'-')
+        columns.insert(0,'id')
         rows.append(columns)
         
         columns = map(lambda x : str(x), self.units)

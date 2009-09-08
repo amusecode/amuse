@@ -14,6 +14,18 @@ function on_line_click(event) {
      $.getJSON("/open_file", {'path':path, 'lineno':lineno}, function handle_result(data){});
 }
 
+function handle_run_test_result(data) {
+    alert(data);
+}
+
+function on_run_button_click(event) {
+    var a0 = $(this).attr('a0');
+    var a1 = $(this).attr('a1');
+    var a2 = $(this).attr('a2');
+     $.getJSON("/run_test", {'a0':a0, 'a1': a1, 'a2': a2}, handle_run_test_result);
+}
+
+
 var request = new XMLHttpRequest();
 var previousLength = 0;
 
@@ -109,8 +121,20 @@ function handle_last_report(report) {
         file_and_line.append(filename + ' : ' + testcase.lineno);
         file_and_line.appendTo(item);
         file_and_line.attr('path',testcase.address[0]);
+        file_and_line.attr('module',testcase.address[1]);
+        file_and_line.attr('testcase',testcase.address[2]);
         file_and_line.attr('lineno', testcase.lineno);
         file_and_line.click(on_line_click);
+        item.append(' ');
+        
+        var run_button = $('<a>run</a>');
+        run_button.attr('href','#');
+        run_button.addClass('run-button');
+        run_button.appendTo(item);
+        run_button.attr('a0',testcase.address[0]);
+        run_button.attr('a1',testcase.address[1]);
+        run_button.attr('a2',testcase.address[2]);
+        run_button.click(on_run_button_click);
         item.append(' ');
         
         var address = $('<span></span>');

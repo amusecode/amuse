@@ -23,6 +23,8 @@ import Queue as queue
 from optparse import OptionParser
 from subprocess import call
 
+from StringIO import StringIO
+import sys
 
 def number_str(number, singular, plural = None):
         if plural == None:
@@ -369,7 +371,42 @@ class MakeAReportOfATestRun(object):
 
 
 
-
+class Select(object):
+    name = 'select one test'
+    enabled = True
+    score = 10
+    
+    def __init__(self, address):
+        self.address = address
+        self.capture_stdout = None
+        self.stdout = None
+        
+    def options(self, parser, env):
+        pass
+        
+    def configure(self, parser, env):
+        pass
+    
+    def afterTest(self, test):
+        if not self.stdout is None:
+            sys.stdout = self.stdout
+            self.stdout = None
+            
+    def startTest(self, test):
+        if test.address() == self.address:
+           self.stdout = sys.stdout
+           self.capture_stdout = StringIO()
+           sys.stdout = self.capture_stdout 
+           return
+        else:
+           raise SkipTest
+        
+    @property
+    def buffer(self):
+        if self.capture_stdout:
+            return self.capture_stdout.getvalue()
+        else:
+            return "none"
 
 def _perform_the_testrun(directory, results_queue, previous_report = None):
     try:
@@ -382,6 +419,34 @@ def _perform_the_testrun(directory, results_queue, previous_report = None):
         results_queue.put(report)
     finally:
         MPI.Finalize()
+
+
+def _perform_one_test(directory, results_queue, address):
+    try:
+        print "start test run"
+        null_device = open('/dev/null')
+        os.stdin = null_device
+        select = Select(address)
+        plugins = [select, Skip()]  
+        result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
+        results_queue.put(select.buffer)
+    finally:
+        MPI.Finalize()
+
+def _run_test_with_address(address):
+    result_queue = Queue()
+    p = Process(
+        target=_perform_one_test, 
+        args=(
+            os.getcwd(), 
+            result_queue,
+            address
+        ))
+    p.start()
+    p.join()
+    result = result_queue.get() 
+    return result
+    
 
 class RunAllTestsWhenAChangeHappens(object):
     
@@ -455,6 +520,14 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
             lineno = int(parameters['lineno'][0])
             open_file(path, lineno)
             string = 'null'
+            content_type = 'text/javascript'
+        elif parsed_path.path == '/run_test':
+            parameters = urlparse.parse_qs(parsed_path.query)
+            a0 = parameters['a0'][0]
+            a1 = parameters['a1'][0]
+            a2 = parameters['a2'][0]
+            address = (a0, a1, a2)
+            string = json.dumps(_run_test_with_address(address))
             content_type = 'text/javascript'
         elif parsed_path.path == '/events':
             self.do_long_poll()
