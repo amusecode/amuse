@@ -16,9 +16,24 @@ OBJECTS = \
  src/timestep.o src/update_grape.o src/update_loc_p.o src/writebh.o \
  src/writerestartfile.o src/wtimef.o
 
-LLIBSDIR = -L/data1/pelupes/libraries/sapporo_v1.5 \
--L/data1/pelupes/programs/cuda/lib 
-LIBS     = -lguide -lsapporo -lm -lcudart -lboost_thread-mt
+
+ifndef CUDA_LIBDIRS
+	CUDA_LIBDIRS = -L/data1/pelupes/programs/cuda/lib 
+endif
+
+ifndef CUDA_LIBS
+	CUDA_LIBS = -lcudart
+endif
+
+
+ifndef SAPPORO_LIBDIRS
+	SAPPORO_LIBDIRS = -L/data1/pelupes/libraries/sapporo_v1.5
+endif
+
+
+LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
+LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
+
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
@@ -26,7 +41,8 @@ GLINCLUDE = -I/usr/include/GL \
 -I/data1/pelupes/libraries/f90gl-1.2.11/include/GL/
 
 GLLIB = -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
--lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
+-lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
+GLLIB = 
 
 X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
@@ -65,6 +81,7 @@ interface_gl:	$(OBJECTS) $(MUSE_IF) muse_interface_gl.F fthread.o stars3d.o libp
 clean:
 	make -C src clean
 	rm -f *.o .m* .n* *.lst *.L *~
+	rm muse_worker muse_worker.f90
 
 .f.o:
 	$(FORTRAN) $(FFLAGS) -c $<

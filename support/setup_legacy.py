@@ -74,14 +74,29 @@ class BuildLegacy(LegacyCommand):
     description = "build interfaces to legacy codes"
     
     def run (self):
+        not_build = []
         environment = os.environ.copy()
         environment.update(self.environment)
-        for x in self.makefile_paths():
-            if x.endswith('phiGRAPE'):
-                if not self.found_sapporo:
-                    continue
+        for x in list(self.makefile_paths()):
             self.announce("building " + x)
-            call(['make','-C', x, 'all'], env = environment)
+            returncode = call(['make','-C', x, 'all'], env = environment)
+            if returncode == 2:
+                not_build.append(x[len(self.legacy_dir) + 1:])
+        sorted_keys = sorted(self.environment.keys())
+        print
+        print "Environment variables"
+        print "====================="
+        for x in sorted_keys:
+            print "%s\t%s" % (x , self.environment[x] )
+        print
+        if not_build:
+            print
+            print
+            print "legacy codes not build (because of errors):"
+            print "==========================================="
+            for x in not_build:
+                print '*' , x
+        
  
  
 class CleanLegacy(LegacyCommand):

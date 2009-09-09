@@ -44,6 +44,7 @@ endif
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
 LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
 
+
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
 GLINCLUDE = -I/usr/include/GL \
@@ -51,6 +52,7 @@ GLINCLUDE = -I/usr/include/GL \
 
 GLLIB = -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
+GLLIB = 
 
 X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
