@@ -52,9 +52,7 @@ C---  done
 
       INTEGER get_number
 
-      print*,'hellow',N
       get_number = N
-
 
       RETURN
       END
