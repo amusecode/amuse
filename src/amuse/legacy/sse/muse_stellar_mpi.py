@@ -1,31 +1,13 @@
-import os.path
-from mpi4py import MPI
-import numpy
-
-from amuse.legacy.support import core
-
-from amuse.legacy.support.core import RemoteFunction, legacy_global
-from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data.core import Particle
 
-class SSE(object): 
+from amuse.legacy import *
+
+class SSE(LegacyInterface): 
     def __init__(self):
-        directory_of_this_module = os.path.dirname(__file__);
-        full_name_of_the_worker = os.path.join(directory_of_this_module , 'muse_worker1')
-        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, 1)
-        self.channel = core.MpiChannel(self.intercomm)
-    
-    def __del__(self):
-        self.stop_worker()
+        LegacyInterface.__init__(self)
         
-    @core.legacy_function
-    def stop_worker():
-        function = RemoteFunction()  
-        function.id = 0
-        return function;
-        
-    @core.legacy_function   
+    @legacy_function   
     def initialize():
         function = RemoteFunction()  
         function.id = 1
@@ -45,7 +27,7 @@ class SSE(object):
         function.addParameter('status', dtype='i', direction=function.OUT)
         return function
         
-    @core.legacy_function     
+    @legacy_function     
     def evolve():
         function = RemoteFunction()  
         function.id = 2
@@ -66,7 +48,7 @@ class SSE(object):
         function.addParameter('tphysf', dtype='d', direction=function.INOUT)
         return function
         
-    @core.legacy_function      
+    @legacy_function      
     def get_time_step():
         function = RemoteFunction()      
         function.id = 3

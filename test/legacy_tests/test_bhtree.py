@@ -16,12 +16,9 @@ class TestMPIInterface(unittest.TestCase):
     def test1(self):
         instance = mpi_interface.BHTree()
         instance.setup_module()
-        new_state = instance.dynamics_state()
-        new_state.id = 1
-        new_state.mass = 11.0
-        instance.add_particle(new_state)
+        instance.add_particle(1, 11.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
-        self.assertEquals(new_state.mass,  retrieved_state.mass)
+        self.assertEquals(11.0,  retrieved_state['mass'])
         self.assertEquals(instance.get_number(), 1)
         instance.cleanup_module()
         del instance

@@ -122,7 +122,7 @@ class legacy_function(object):
         if result.name is None:
             result.name = self.specification_function.__name__
         if result.id is None:
-            result.id = crc32(result.name)
+            result.id = abs(crc32(result.name))
         return result
         
         
@@ -329,9 +329,11 @@ class LegacyInterface(object):
     def _start_worker(self,  name_of_the_worker, number_of_workers):
         directory_of_this_module = os.path.dirname(inspect.getfile(type(self)))
         full_name_of_the_worker = os.path.join(directory_of_this_module , name_of_the_worker)
+        if not os.path.exists(full_name_of_the_worker):
+            raise Exception("The worker application does not exists, it should be at: %s".format(full_name_of_the_worker))
         self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, number_of_workers)
         self.channel = MpiChannel(self.intercomm)
-    
+
     def __del__(self):
         self._stop_worker()
         

@@ -1,13 +1,11 @@
-import os.path
-from mpi4py import MPI
+
 import numpy
 
-from amuse.legacy.support import core
 
-from amuse.legacy.support.core import RemoteFunction, legacy_global
 from amuse.support.units import nbody_system
+from amuse.legacy import *
 
-class BHTree(object):
+class BHTree(LegacyInterface):
     include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h']
     
     extra_content = """
@@ -39,26 +37,6 @@ class BHTree(object):
     }
     """
     
-    class dynamics_state(object):
-        _attributes = ['mass','radius','x','y','z','vx','vy','vz']
-        def __init__(self, id = 0, doubles = [0.0 for x in range(8)]):
-            self.id = id
-            for i, name in enumerate(self._attributes):
-                setattr(self, name, doubles[i])
-                
-        def to_doubles(self):
-            result = [0.0 for x in range(8)]
-            for i, name in enumerate(self._attributes):
-                result[i] = getattr(self, name)
-            return result
-            
-        def to_keyword_args(self):
-            result = {}
-            for i, name in enumerate(self._attributes):
-                result[name] = getattr(self, name)
-            return result
-    
-        
     
     timestep = legacy_global(name='timestep',id=21,dtype='d')
     eps2_for_gravity = legacy_global(name='eps2_for_gravity',id=22,dtype='d')
@@ -72,23 +50,19 @@ class BHTree(object):
     
             
     def __init__(self, convert_nbody = None):
-        directory_of_this_module = os.path.dirname(__file__);
-        full_name_of_the_worker = os.path.join(directory_of_this_module , 'muse_worker')
-        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, 1)
-        print "rank_parent",self.intercomm.rank
-        self.channel = core.MpiChannel(self.intercomm)
+        LegacyInterface.__init__(self)
         self.convert_nbody = convert_nbody
         
     def __del__(self):
         self.stop_worker()
         
-    @core.legacy_function
+    @legacy_function
     def stop_worker():
         function = RemoteFunction()  
         function.id = 0
         return function
 
-    @core.legacy_function   
+    @legacy_function   
     def setup_module():
         function = RemoteFunction()  
         function.id = 1
@@ -96,14 +70,14 @@ class BHTree(object):
         return function
     
     
-    @core.legacy_function      
+    @legacy_function      
     def cleanup_module():
         function = RemoteFunction()  
         function.id = 2
         function.result_type = 'i'
         return function
     
-    @core.legacy_function    
+    @legacy_function    
     def initialize_particles():
         function = RemoteFunction()  
         function.id = 3
@@ -111,20 +85,22 @@ class BHTree(object):
         function.result_type = 'i'
         return function;
         
-    @core.legacy_function    
-    def _add_particle():
+    @legacy_function    
+    def add_particle():
         function = RemoteFunction()  
         function.id = 5
+        function.name = '_add_particle'
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
         
-    @core.legacy_function    
-    def _get_state():
+    @legacy_function    
+    def get_state():
         function = RemoteFunction()  
         function.id = 8
+        function.name = '_get_state'
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('id_out', dtype='i', direction=function.OUT)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
@@ -132,7 +108,7 @@ class BHTree(object):
         function.result_type = None
         return function
         
-    @core.legacy_function    
+    @legacy_function    
     def evolve():
         function = RemoteFunction()  
         function.id = 6
@@ -141,21 +117,21 @@ class BHTree(object):
         function.result_type = 'i'
         return function
         
-    @core.legacy_function  
+    @legacy_function  
     def reinitialize_particles():
         function = RemoteFunction()  
         function.id = 4
         function.result_type = 'i'
         return function
         
-    @core.legacy_function   
+    @legacy_function   
     def get_number():
         function = RemoteFunction()  
         function.id = 7
         function.result_type = 'i'
         return function;
      
-    @core.legacy_function
+    @legacy_function
     def set_mass():
         function = RemoteFunction()  
         function.id = 9
@@ -164,46 +140,34 @@ class BHTree(object):
         function.addParameter('mass', dtype='d', direction=function.IN)
         return function;
     
-    @core.legacy_function
+    @legacy_function
     def get_time():
         function = RemoteFunction()  
         function.id = 10
         function.result_type = 'd'
         return function;
-     
-    def add_particle(self, state):
-        return self._add_particle(state.id, **state.to_keyword_args())
-        
-    def get_state(self,id):
-        name_to_value = self._get_state(id)
-        result = self.dynamics_state(name_to_value['id_out'])
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
-            setattr(result, x, name_to_value[x])  
-        return result
            
     def add_star(self, star):
-        state = self.dynamics_state()
-        state.id = star.id
+        id = star.id
         mass = self.convert_nbody.to_nbody(star.mass.value())
         position = self.convert_nbody.to_nbody(star.position.value())
         velocity = self.convert_nbody.to_nbody(star.velocity.value())
         
-        state.mass = mass.number
-        state.x = position.number[0]
-        state.y = position.number[1]
-        state.z = position.number[2]
-        state.vx = velocity.number[0]
-        state.vy = velocity.number[1]
-        state.vz = velocity.number[2]
-        state.radius = self.convert_nbody.to_nbody(star.radius.value()).number
-        self.add_particle(state)
+        x = position.number[0]
+        y = position.number[1]
+        z = position.number[2]
+        vx = velocity.number[0]
+        vy = velocity.number[1]
+        vz = velocity.number[2]
+        radius = self.convert_nbody.to_nbody(star.radius.value()).number
+        self.add_particle(id, mass.number, radius, x, y, z, vx, vy, vz)
         
     def update_star(self, star):
         state = self.get_state(star.id)
         time = self.convert_nbody.to_si( self.get_time() | nbody_system.time)
         #star.mass.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.mass(state.mass)))
-        star.position.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.length(numpy.array((state.x, state.y, state.z)))))
-        star.velocity.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.speed(numpy.array((state.vx, state.vy, state.vz)))))
+        star.position.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.length(numpy.array((state['x'], state['y'], state['z'])))))
+        star.velocity.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.speed(numpy.array((state['vx'], state['vy'], state['vz'])))))
         return star
          
     def evolve_model(self, time_end):
