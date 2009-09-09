@@ -184,6 +184,17 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.n()
         for x in ['muse_dynamics.h', 'parameters.h', 'local.h']:
             self.out.n() + '#include "' + x + '"'
+            
+    def output_legacy_functions_declarations(self):
+        for x in self.legacy_functions:
+            specification = x.specification
+            if specification.id == 0:
+                continue
+            if specification.result_type is None:
+                continue
+            spec = self.dtype_to_spec[specification.result_type]
+            self.out.lf() +  spec.type + ' :: ' + specification.name
+        
         
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'SUBROUTINE run_loop'
@@ -196,6 +207,8 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out + self.length_of_the_header + ')'
         self.out.lf().lf() + 'integer :: tag_in, tag_out'
         self.out.lf().lf() + 'integer :: len_in, len_out'
+        self.out.lf()
+        self.output_legacy_functions_declarations()
         
         maximum_number_of_inputvariables_of_a_type = 255
         for dtype_spec in self.dtype_to_spec.values():

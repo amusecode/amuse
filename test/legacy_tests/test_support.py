@@ -358,6 +358,14 @@ class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
         function.addParameter('name', dtype='d', direction=function.IN)
         return function
         
+    
+    @legacy_function
+    def get_number():
+        function = RemoteFunction()  
+        function.id = 2
+        function.result_type = 'i'
+        return function
+        
     def test1(self):
         x = self._class_to_test()
         x.class_with_legacy_functions = TestMakeAFortranStringOfAClassWithLegacyFunctions
@@ -370,6 +378,12 @@ class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
         x.class_with_legacy_functions = TestMakeAFortranStringOfAClassWithLegacyFunctions
         string = x.result
         self.assertTrue('program' in string)
+        
+    def test3(self):
+        x = self._class_to_test()
+        x.class_with_legacy_functions = TestMakeAFortranStringOfAClassWithLegacyFunctions
+        string = x.result
+        self.assertTrue('integer :: get_number' in string)
         
 class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeACStringOfALegacyFunctionSpecification
