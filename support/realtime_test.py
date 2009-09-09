@@ -411,6 +411,8 @@ def _perform_the_testrun(directory, results_queue, previous_report = None):
         plugins = [report , Skip(), Capture()]  
         result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
         results_queue.put(report)
+    except:
+        results_queue.put('exception happened')
     finally:
         MPI.Finalize()
 
@@ -423,30 +425,41 @@ def _perform_one_test(directory, results_queue, address):
         select = Select(address)
         plugins = [select, Skip()]  
         result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
-        results_queue.put(select.buffer)
+        print "end test run"
+        result = select.buffer
+        result = result[:min(1000, len(result) - 1)]
+        results_queue.put(result)
+    except:
+        results_queue.put('exception happened')
     finally:
         MPI.Finalize()
 
 def _run_test_with_address(address):
+    server.run_all_tests.paused = False
     global test_is_running
     if test_is_running:
         return 'test is already running'
     test_is_running = True
     try:
         result_queue = Queue()
-        p = Process(
+        process = Process(
             target=_perform_one_test, 
             args=(
                 os.getcwd(), 
                 result_queue,
                 address
             ))
-        p.start()
-        p.join()
-        result = result_queue.get() 
+        process.start()
+        
+        print "star joined"
+        process.join()
+        print "process joined"
+        result = result_queue.get()
+        
+        print "test finished:", result
+        return result 
     finally:
         test_is_running = False
-    return result
     
 
 class RunAllTestsWhenAChangeHappens(object):
@@ -454,6 +467,7 @@ class RunAllTestsWhenAChangeHappens(object):
     def __init__(self, server):
         self.must_run = False
         self.server = server
+        self.paused = False
         
     def start(self):
         self.must_run = True;
@@ -472,22 +486,23 @@ class RunAllTestsWhenAChangeHappens(object):
         monitor.changed = True
         while self.must_run:
             if monitor.changed:
-                if test_is_running:
+                if test_is_running or self.paused:
                     monitor.check()
+                    time.sleep(0.5)
                     continue
                     
                 test_is_running = True
                 try:
                     result_queue = Queue()
-                    p = Process(
+                    process = Process(
                         target=_perform_the_testrun, 
                         args=(
                             os.getcwd(), 
                             result_queue, 
                             self.server.last_report
                         ))
-                    p.start()
-                    p.join()
+                    process.start()
+                    process.join()
                     report = result_queue.get() 
                     self.server.last_report = report
                     del result_queue
@@ -520,6 +535,10 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
             content_type = 'text/javascript'
         elif parsed_path.path == '/stop':
             self.stop_server()
+            string = 'null'
+            content_type = 'text/javascript'
+        elif parsed_path.path == '/pause':
+            self.pause()
             string = 'null'
             content_type = 'text/javascript'
         elif parsed_path.path == '/get_last_report':
@@ -591,6 +610,9 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         thread.daemon = True;
         thread.start()
         
+    def pause(self):
+        server.run_all_tests.paused = True
+        
     def index_file(self):
         base = os.path.split(__file__)[0]
         filename = os.path.join(base, "realtime_test.html")
@@ -613,6 +635,7 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.serve_forever()
         
     def start_run_tests(self):
+        server.run_all_tests.paused = False
         global test_is_running
         if test_is_running:
             return
@@ -620,11 +643,11 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         test_is_running = True
         try:
             result_queue = Queue()
-            p = Process(
+            process = Process(
                 target=_perform_the_testrun, 
                 args=(os.getcwd(), result_queue))
-            p.start()
-            p.join()
+            process.start()
+            process.join()
             report = result_queue.get() 
             self.last_report = report
             del result_queue

@@ -4,6 +4,7 @@ SUBROUTINE run_loop
   INCLUDE 'mpif.h'
   integer :: rank, parent, ioerror
   integer :: must_run_loop
+  integer i
   integer mpiStatus(MPI_STATUS_SIZE,4)
   
   integer header(5)
@@ -12,15 +13,22 @@ SUBROUTINE run_loop
   
   integer :: len_in, len_out
   
-  integer integers_in(255)
-  integer integers_out(255)
+  integer, DIMENSION(:), ALLOCATABLE ::integers_in
+  integer, DIMENSION(:), ALLOCATABLE :: integers_out
   integer :: number_of_integers_out, number_of_integers_in
-  real*8 doubles_in(255)
-  real*8 doubles_out(255)
+  real*8, DIMENSION(:), ALLOCATABLE ::doubles_in
+  real*8, DIMENSION(:), ALLOCATABLE :: doubles_out
   integer :: number_of_doubles_out, number_of_doubles_in
-  real*4 floats_in(255)
-  real*4 floats_out(255)
+  real*4, DIMENSION(:), ALLOCATABLE ::floats_in
+  real*4, DIMENSION(:), ALLOCATABLE :: floats_out
   integer :: number_of_floats_out, number_of_floats_in
+  
+  ALLOCATE(integers_in(1275000))
+  ALLOCATE( integers_out(1275000))
+  ALLOCATE(doubles_in(1275000))
+  ALLOCATE( doubles_out(1275000))
+  ALLOCATE(floats_in(1275000))
+  ALLOCATE( floats_out(1275000))
   
   call MPI_COMM_GET_PARENT(parent, ioerror)
   call MPI_COMM_RANK(parent, rank, mpierror)
@@ -45,17 +53,17 @@ SUBROUTINE run_loop
     number_of_floats_out = 0
     
     if (number_of_doubles_in .gt. 0) then
-      call MPI_BCast(doubles_in, number_of_doubles_in, &
+      call MPI_BCast(doubles_in, number_of_doubles_in * len_in, &
         MPI_DOUBLE_PRECISION, 0, parent,&
         ioError);
     end if
     if (number_of_integers_in .gt. 0) then
-      call MPI_BCast(integers_in, number_of_integers_in, &
+      call MPI_BCast(integers_in, number_of_integers_in * len_in, &
         MPI_INTEGER, 0, parent,&
         ioError);
     end if
     if (number_of_floats_in .gt. 0) then
-      call MPI_BCast(floats_in, number_of_floats_in, &
+      call MPI_BCast(floats_in, number_of_floats_in * len_in, &
         MPI_SINGLE_PRECISION, 0, parent,&
         ioError);
     end if
@@ -63,7 +71,7 @@ SUBROUTINE run_loop
     SELECT CASE (tag_in)
       CASE(0)
         must_run_loop = 0
-      CASE(1)
+      CASE(670175614)
         CALL initialize( &
           doubles_in(1) ,&
           doubles_in(2) ,&
@@ -82,7 +90,19 @@ SUBROUTINE run_loop
         )
         number_of_integers_out = 1
         
-      CASE(2)
+      CASE(1024680297)
+        CALL get_time_step( &
+          integers_in(1) ,&
+          doubles_in(1) ,&
+          doubles_in(2) ,&
+          doubles_in(3) ,&
+          doubles_in(4) ,&
+          doubles_in(5) ,&
+          doubles_out(1) &
+        )
+        number_of_doubles_out = 1
+        
+      CASE(1658568341)
         CALL evolve0( &
           integers_in(1) ,&
           doubles_in(1) ,&
@@ -116,18 +136,6 @@ SUBROUTINE run_loop
         number_of_integers_out = 1
         number_of_doubles_out = 13
         
-      CASE(3)
-        CALL get_time_step( &
-          integers_in(1) ,&
-          doubles_in(1) ,&
-          doubles_in(2) ,&
-          doubles_in(3) ,&
-          doubles_in(4) ,&
-          doubles_in(5) ,&
-          doubles_out(1) &
-        )
-        number_of_doubles_out = 1
-        
       CASE DEFAULT
         tag_out = -1
     END SELECT
@@ -142,21 +150,28 @@ SUBROUTINE run_loop
       parent, mpierror);
     
     if (number_of_doubles_out .gt. 0) then
-      call MPI_SEND(doubles_out, number_of_doubles_out, &
+      call MPI_SEND(doubles_out, number_of_doubles_out * len_out, &
         MPI_DOUBLE_PRECISION, 0, 999, &
         parent, mpierror);
     end if
     if (number_of_integers_out .gt. 0) then
-      call MPI_SEND(integers_out, number_of_integers_out, &
+      call MPI_SEND(integers_out, number_of_integers_out * len_out, &
         MPI_INTEGER, 0, 999, &
         parent, mpierror);
     end if
     if (number_of_floats_out .gt. 0) then
-      call MPI_SEND(floats_out, number_of_floats_out, &
+      call MPI_SEND(floats_out, number_of_floats_out * len_out, &
         MPI_SINGLE_PRECISION, 0, 999, &
         parent, mpierror);
     end if
   end do
+  
+  DEALLOCATE(integers_in)
+  DEALLOCATE(integers_out)
+  DEALLOCATE(doubles_in)
+  DEALLOCATE(doubles_out)
+  DEALLOCATE(floats_in)
+  DEALLOCATE(floats_out)
   return
 end subroutine
 

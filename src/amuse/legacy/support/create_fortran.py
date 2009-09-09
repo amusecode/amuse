@@ -17,7 +17,16 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
-   
+        
+    def index_string(self, index):
+        if self.specification.can_handle_array:
+            if index == 0:
+                return 'i'
+            else:
+                return '( %d * request_header.len) + i' % index
+        else:
+            return index + 1
+            
     def start(self):
                    
         self.specification.prepare_output_parameters()
@@ -25,12 +34,21 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         self.output_casestmt_start()
         self.out.indent()
         
+        if self.specification.can_handle_array:
+            self.out.lf() + 'do i = 1, request_header.len, 1'
+            self.out.indent()
+        
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
         self.output_lines_with_inout_variables()
-        self.output_lines_with_number_of_outputs()
         
+        
+        if self.specification.can_handle_array:
+            self.out.dedent()
+            self.out.lf() + 'end do'
+            
+        self.output_lines_with_number_of_outputs()
         self.output_casestmt_end()
         self.out.dedent()
         self._result = self.out.string
@@ -51,13 +69,13 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
                 
             if parameter.direction == RemoteFunction.IN:
                 self.out.n() + spec.input_var_name 
-                self.out + '(' + (parameter.input_index + 1) + ')'
+                self.out + '(' + self.index_string(parameter.input_index) + ')'
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + spec.input_var_name 
-                self.out + '(' + (parameter.input_index + 1) + ')'
+                self.out + '(' + self.index_string(parameter.input_index) + ')'
             elif parameter.direction == RemoteFunction.OUT:
                 self.out.n() + spec.output_var_name
-                self.out + '(' + (parameter.output_index + 1) + ')'
+                self.out + '(' + self.index_string(parameter.output_index) + ')'
                 
         self.out.dedent()
         
@@ -68,9 +86,9 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
             
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + spec.output_var_name 
-                self.out + '(' + (parameter.output_index + 1)  + ')' 
+                self.out + '(' + self.index_string(parameter.output_index)  + ')' 
                 self.out + ' = ' 
-                self.out + spec.input_var_name + '(' + (parameter.input_index  + 1) + ')'
+                self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
     
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
@@ -100,7 +118,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         if not self.specification.result_type is None:
             spec = self.dtype_to_spec[self.specification.result_type]
             self.out + spec.output_var_name
-            self.out + '(' + 1 + ')' + ' = '
+            self.out + '(' + self.index_string(0) + ')' + ' = '
         else:    
             self.out + 'CALL ' 
         self.out +  self.specification.name + '('
@@ -202,6 +220,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.output_mpi_include()
         self.out.n() + 'integer :: rank, parent, ioerror'
         self.out.n() + 'integer :: must_run_loop'
+        self.out.n() + 'integer i'
         self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
         self.out.lf().lf() + 'integer header(' 
         self.out + self.length_of_the_header + ')'
@@ -210,20 +229,35 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.lf()
         self.output_legacy_functions_declarations()
         
-        maximum_number_of_inputvariables_of_a_type = 255
+        maximum_number_of_inputvariables_of_a_type = 255 * 5000
         for dtype_spec in self.dtype_to_spec.values():
             
-            self.out.lf() + dtype_spec.type + ' ' 
+            self.out.lf() + dtype_spec.type 
+            self.out + ', DIMENSION(:), ALLOCATABLE ::' 
             self.out + dtype_spec.input_var_name 
-            self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
+            #self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
             
             self.out.lf() + dtype_spec.type 
-            self.out + ' ' + dtype_spec.output_var_name 
-            self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
+            self.out + ', DIMENSION(:), ALLOCATABLE ::' 
+            self.out + dtype_spec.output_var_name 
+            #self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
             
             self.out.lf() + 'integer ::' + ' ' 
             self.out + dtype_spec.counter_name + '_out' 
             self.out + ', ' + dtype_spec.counter_name + '_in'
+            
+        self.out.lf()
+        for dtype_spec in self.dtype_to_spec.values():
+            
+            self.out.lf() + 'ALLOCATE('
+            self.out + dtype_spec.input_var_name 
+            self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
+            self.out + ')'
+            
+            self.out.lf() + 'ALLOCATE(' 
+            self.out + dtype_spec.output_var_name 
+            self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
+            self.out + ')'
             
         self.out.lf().lf() + 'call MPI_COMM_GET_PARENT(parent, ioerror)'
         self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, mpierror)'
@@ -265,7 +299,9 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
 
             self.out.indent().lf() + 'call MPI_BCast('
             self.out + spec.input_var_name + ', ' 
-            self.out + spec.counter_name + '_in' + ', &'
+            self.out + spec.counter_name + '_in' 
+            self.out + ' * ' + 'len_in'
+            self.out + ', &'
 
             self.out.indent().n() + spec.mpi_type
             self.out + ', 0, parent,&'
@@ -310,12 +346,21 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
             self.out.indent().lf() 
             self.out + 'call MPI_SEND(' 
             self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
+            self.out + ' * len_out'
             self.out + ', &'
             self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
             self.out.lf() + 'parent, mpierror);'
             self.out.dedent().dedent().lf() +'end if'
         self.out.dedent()
         self.out.lf() + 'end do'
+        
+        
+        self.out.lf()
+        for dtype_spec in self.dtype_to_spec.values():
+            self.out.lf() + 'DEALLOCATE(' + dtype_spec.input_var_name  + ')'
+            self.out.lf() + 'DEALLOCATE(' + dtype_spec.output_var_name  + ')'
+            
+        
         self.out.lf() + 'return'
         
         self.out.dedent().lf() + 'end subroutine'

@@ -126,7 +126,69 @@ class TestMPIInterface(unittest.TestCase):
             updated_state.epoch)
         self.assertAlmostEqual(dt, 550.1565, 2)
         del sse
+     
+    def test3(self):
+        sse = mpi_interface.SSE()
+        sse.initialize_module_with_default_parameters()  
+        types = [1,1,1]
+        masses = [10,5,4]
+        radii = [5.0, 2.0, 1.0]
+        luminosity = core_mass = core_radius =  envelope_mass =\
+        envelope_radius =  spin = epoch = t_ms = [0.0,0.0,0.0]
+        sse_age = age = [1e-6, 1e-06, 1e-6]
+        result = sse.evolve(
+            types, 
+            masses, 
+            masses, 
+            radii, 
+            luminosity, 
+            core_mass, 
+            core_radius,
+            envelope_mass,
+            envelope_radius, 
+            spin,
+            epoch, 
+            t_ms, 
+            sse_age, 
+            age
+        )
+        print list(result.keys()), result['mass']
+        self.assertEquals(result['mass'][0], 10)
+        self.assertEquals(result['mass'][1], 5)
+        self.assertAlmostEqual(result['mass'][2], 3.941, 2)
+        del sse
         
+    def test4(self):
+        sse = mpi_interface.SSE()
+        sse.initialize_module_with_default_parameters()  
+        types = [1 for x in range(1,4000)]
+        masses = [1.0 + ((x / 4000.0) * 10.0) for x in range(1,4000)]
+        radii = [1.0 for x in range(1,4000)]
+        luminosity = core_mass = core_radius =  envelope_mass =\
+        envelope_radius =  spin = epoch =\
+        t_ms = [0.0 for x in range(1,4000)]
+        
+        print masses
+        sse_age = age = [1e-06 for x in range(1,4000)]
+        result = sse.evolve(
+            types, 
+            masses, 
+            masses, 
+            radii, 
+            luminosity, 
+            core_mass, 
+            core_radius,
+            envelope_mass,
+            envelope_radius, 
+            spin,
+            epoch, 
+            t_ms, 
+            sse_age, 
+            age
+        )
+        print result['mass']
+        self.assertEquals(len(result['mass']), 3999)
+        del sse
         
 class TestSSE(unittest.TestCase):
     

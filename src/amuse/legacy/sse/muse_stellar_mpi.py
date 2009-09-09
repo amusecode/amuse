@@ -10,7 +10,6 @@ class SSE(LegacyInterface):
     @legacy_function   
     def initialize():
         function = RemoteFunction()  
-        function.id = 1
         function.addParameter('z_in', dtype='d', direction=function.IN)
         function.addParameter('neta_in', dtype='d', direction=function.IN)
         function.addParameter('bwind_in', dtype='d', direction=function.IN)
@@ -30,8 +29,8 @@ class SSE(LegacyInterface):
     @legacy_function     
     def evolve():
         function = RemoteFunction()  
-        function.id = 2
         function.name = 'evolve0'
+        #function.can_handle_array = True 
         function.addParameter('kw', dtype='i', direction=function.INOUT)
         function.addParameter('mass', dtype='d', direction=function.INOUT)
         function.addParameter('mt', dtype='d', direction=function.INOUT)
@@ -50,8 +49,7 @@ class SSE(LegacyInterface):
         
     @legacy_function      
     def get_time_step():
-        function = RemoteFunction()      
-        function.id = 3
+        function = RemoteFunction()  
         function.addParameter('kw', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
         function.addParameter('age', dtype='d', direction=function.IN)

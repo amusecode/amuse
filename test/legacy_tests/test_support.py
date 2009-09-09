@@ -344,7 +344,36 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\r' , string))
         self.assertEquals(string_no_spaces, 'CASE(1)\nCALLtest_one(&\nintegers_in(0),&\nintegers_in(1),&\ndoubles_in(0)&\n)\nintegers_out(0)=integers_in(1)\ndoubles_out(0)=doubles_in(0)\nnumber_of_integers_out=1\nnumber_of_doubles_out=1\n')
     
-        
+    def test6(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.INOUT)
+        function.addParameter('doublep', dtype='d', direction=function.INOUT)
+        function.result_type = 'd'
+        function.can_handle_array = True
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        expected = """
+        CASE(1)
+          do i = 1, request_header.len, 1
+            doubles_out(i) = test_one( &
+              integers_in(i) ,&
+              integers_in(( 1 * request_header.len) + i) ,&
+              doubles_in(i) &
+            )
+            integers_out(i) = integers_in(( 1 * request_header.len) + i)
+            doubles_out(( 1 * request_header.len) + i) = doubles_in(i)
+          end do
+          number_of_integers_out = 1
+          number_of_doubles_out = 2
+        """
+        print string
+        expected_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , expected))
+        self.assertEquals(string_no_spaces, expected_no_spaces);
       
 class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
     _class_to_test = MakeAFortranStringOfAClassWithLegacyFunctions
