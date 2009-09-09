@@ -81,7 +81,7 @@ PIC= -fPIC
 # no MPI
 
 ifndef FORTRAN
-	FORTRAN = gfortran
+	FORTRAN = ifort
 endif
 
 FC = ifort
@@ -108,7 +108,7 @@ phiGRAPE: $(OBJECTS) $(SAO)
 
 
 clean:
-	rm -f *.o .m* .n* *.lst *.L *~
+	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE
 
 .f.o:
 	$(FORTRAN) $(FFLAGS) -c $<

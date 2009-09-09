@@ -1,6 +1,6 @@
 
 ifndef FORTRAN
-	FORTRAN = gfortran
+	FORTRAN = ifort
 endif
 
 SRCDIR = src
@@ -80,7 +80,7 @@ interface_gl:	$(OBJECTS) $(MUSE_IF) muse_interface_gl.F fthread.o stars3d.o libp
 
 clean:
 	make -C src clean
-	rm -f *.o .m* .n* *.lst *.L *~
+	rm -f *.o .m* .n* *.lst *.L *~ muse_worker
 	rm muse_worker muse_worker.f90
 
 .f.o:
