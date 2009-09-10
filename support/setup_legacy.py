@@ -24,6 +24,7 @@ class LegacyCommand(Command):
         self.legacy_dir = None
         self.amuse_src_dir =  os.path.join('src','amuse')
         self.environment = {}
+        self.environment_notset = {}
         self.found_cuda = False
         self.found_sapporo = False
         
@@ -53,7 +54,11 @@ class LegacyCommand(Command):
     
     def set_sapporo_variables(self):
         self.found_sapporo = False
-        
+        sapporo_libdirs = 'SAPPORO_LIBDIRS'
+        if sapporo_libdirs in os.environ:
+            self.environment[sapporo_libdirs] = os.environ[sapporo_libdirs]
+        else:
+            self.environment_notset['SAPPORO_LIBDIRS'] ='-L<directory>'
     def subdirs_in_legacy_dir(self):
         names = os.listdir(self.legacy_dir)
         for name in names:
@@ -75,6 +80,7 @@ class BuildLegacy(LegacyCommand):
     
     def run (self):
         not_build = []
+        build = []
         environment = os.environ.copy()
         environment.update(self.environment)
         for x in list(self.makefile_paths()):
@@ -82,6 +88,15 @@ class BuildLegacy(LegacyCommand):
             returncode = call(['make','-C', x, 'all'], env = environment)
             if returncode == 2:
                 not_build.append(x[len(self.legacy_dir) + 1:])
+            else:
+                build.append(x[len(self.legacy_dir) + 1:])
+        sorted_keys = sorted(self.environment_notset.keys())
+        print
+        print "Environment variables not set"
+        print "============================="
+        for x in sorted_keys:
+            print "%s\t%s" % (x , self.environment_notset[x] )
+        print
         sorted_keys = sorted(self.environment.keys())
         print
         print "Environment variables"
@@ -95,6 +110,13 @@ class BuildLegacy(LegacyCommand):
             print "legacy codes not build (because of errors):"
             print "==========================================="
             for x in not_build:
+                print '*' , x
+        if build:
+            print
+            print
+            print "legacy codes build"
+            print "=================="
+            for x in build:
                 print '*' , x
         
  
