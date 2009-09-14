@@ -1,3 +1,14 @@
+      SUBROUTINE startmpi
+#ifndef NOMPI
+#include <mpif.h>
+      INCLUDE 'mpi.inc'
+      INTEGER ierr
+
+        CALL mpi_init(ierr)
+#endif
+      
+      END 
+
       SUBROUTINE initmpi
 C=========================================================================
 C===
@@ -21,11 +32,11 @@ C---  local vars
 
 #ifndef NOMPI
 C---  start MPI
-      CALL mpi_init(ierr)
 C          --------
 
 C---  get infos on this run
       CALL MPI_Comm_Rank(MPI_COMM_WORLD,myRank, ierr)
+      print*,myRank
 C          -------------
       CALL MPI_Comm_Size(MPI_COMM_WORLD,n_proc, ierr)
 C          -------------

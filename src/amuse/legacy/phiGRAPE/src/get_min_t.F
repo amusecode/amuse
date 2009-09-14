@@ -8,8 +8,8 @@
 #include <mpif.h>
 C---  some short cuts
       INTEGER   ierr
-      INTEGER   MPI_INT,MPI_DOUBLE
-      PARAMETER(MPI_INT=MPI_INTEGER,MPI_DOUBLE=MPI_DOUBLE_PRECISION)
+C      INTEGER   MPI_INT,MPI_DOUBLE
+C      PARAMETER(MPI_INT=MPI_INTEGER,MPI_DOUBLE=MPI_DOUBLE_PRECISION)
 #endif
 
 C---  check for active particles

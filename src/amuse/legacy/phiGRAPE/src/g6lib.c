@@ -5,7 +5,7 @@
 #include <string.h>
 #include <math.h>
 
-#define MAX_NUMBER_OF_PARTICLES 10000
+#define MAX_NUMBER_OF_PARTICLES 100000
 
 struct g6_j_particle_tag {
     int    id;
@@ -169,7 +169,7 @@ void calculate_acceleration_jerk_and_potential_for_i_particles() {
                 current_i->acc[k] += acceleration;
                 current_i->jerk[k] += jerk;
             }
-            current_i->pot += gmj / r_squared_smooth_raised_12;
+            current_i->pot += - gmj / r_squared_smooth_raised_12;
         }
     }
 }

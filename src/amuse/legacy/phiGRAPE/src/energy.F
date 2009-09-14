@@ -9,7 +9,6 @@ C===                                                   17/08/2006 by SH
 C=========================================================================
       IMPLICIT NONE
 #include "general.inc"
-
 C---  local vars
       INTEGER          i,k,k3
       DOUBLE PRECISION mcm,dttmp,dt2half,dt3over6,
@@ -17,13 +16,13 @@ C---  local vars
       LOGICAL          ltest
 
       ltest = .FALSE.
-
+      dttmp = 0.
 C---  predict to current time
 C---  (for all particles, dt may be zero in which case current pos
 C---  and velocities are just copied)
       DO i=1,N
          
-         dttmp    = time_cur - t_loc(i)
+         dttmp    = MAX(ABS(time_cur - t(i)),dttmp)
          dt2half  = 0.5d0 * dttmp * dttmp
          dt3over6 = dttmp * dt2half / 3.d0
 
@@ -37,16 +36,17 @@ C---  and velocities are just copied)
 
          ENDDO
 
-         ltest      = ((dttmp .NE. 0.d0) .OR. ltest)
 
 C---  in case we need to update potential ind_act is needed
          ind_act(i) = ind_loc(i)
 
       ENDDO
 
+      ltest      = ((dttmp .NE. 0.d0) .OR. ltest)
+
 C---  an extra force calculation to get the predicted potential
       IF (ltest) THEN
-
+         print*,'hellow1',dttmp
          n_act = N
 
          CALL gravity(time_cur,0)

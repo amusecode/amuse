@@ -1,6 +1,6 @@
 
 ifndef FORTRAN
-	FORTRAN = ifort
+	FORTRAN = mpif90
 endif
 
 SRCDIR = src
@@ -14,8 +14,9 @@ OBJECTS = \
  src/sendbodydata.o \
  src/sendinpdata.o src/sumforces.o src/sync.o \
  src/timestep.o src/update_grape.o src/update_loc_p.o src/writebh.o \
- src/writerestartfile.o src/wtimef.o
+ src/writerestartfile.o src/wtimef.o src/g6lib.o
 
+GLOBJECTS=src/fthread.o src/stars3d.o src/libpt.a
 
 ifndef CUDA_LIBDIRS
 	CUDA_LIBDIRS = -L/data1/pelupes/programs/cuda/lib 
@@ -33,7 +34,7 @@ endif
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
 LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
-
+LIBS     =  -lm -lpthread
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
@@ -42,23 +43,21 @@ GLINCLUDE = -I/usr/include/GL \
 
 GLLIB = -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
-GLLIB = 
 
 X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
-THREAD_OPTIONS = -L. -lpthread -lpt
+THREADLIB = -L. -lpthread src/libpt.a
 
-CC	= gcc
-CFLAGS  = -O2 -DNOMPI -fPIC
+
+CC	= mpicc
+#CFLAGS  = -O2 -DNOMPI -fPIC
 PIC= -fPIC
 
 # MPI
-#FORTRAN = mpif77
-#FFLAGS  = -O2 -Wno-globals
+FORTRAN = mpif90
+FFLAGS  = -O2
 
-
-FC = ifort
-FFLAGS  = -O2 -DNOMPI -fPIC
+#FFLAGS  = -O2 -DNOMPI -fPIC
 # gfortran -fno-second-underscore -fPIC -Wall
 
 FFLAGS+= -I./src/
@@ -70,18 +69,25 @@ all: muse_worker
 muse_worker: muse_worker.f90 muse_interface.o 
 	make -C src all
 	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES)
+
+muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o 
+	make -C src all
+	mpif90 $^ -o $@ $(OBJECTS) $(GLOBJECTS) $(LIBRARIES) $(GLLIB) $(X11LIB) $(THREADLIB)
         
 muse_worker.f90: muse_dynamics_mpi.py
 	../../../../bin/create_f90_worker.py muse_dynamics_mpi.py PhiGRAPE > $@
 
+muse_worker_gl.f90: muse_dynamics_gl.py
+	../../../../bin/create_f90_worker.py muse_dynamics_gl.py PhiGRAPE > $@
 
-interface_gl:	$(OBJECTS) $(MUSE_IF) muse_interface_gl.F fthread.o stars3d.o libpt.a
+
+interface_gl:	$(OBJECTS) $(MUSE_IF) muse_interface_gl.F 
 
 
 clean:
 	make -C src clean
 	rm -f *.o .m* .n* *.lst *.L *~ muse_worker
-	rm muse_worker muse_worker.f90
+	rm muse_worker muse_worker.f90 muse_worker_gl.f90
 
 .f.o:
 	$(FORTRAN) $(FFLAGS) -c $<

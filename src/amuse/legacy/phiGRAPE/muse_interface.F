@@ -183,7 +183,7 @@ C---  set some vars
       inrg       = 0
 
 C---  more vars to be set at creating the object
-      dt_max     = 1.d0
+      dt_max     = .03125d0
 
 
 C---  more parameters to set
@@ -199,6 +199,12 @@ C---  set individual particle times and time steps
       ENDDO
 
       n_loc  = N/n_proc         ! set the local number of particles
+
+C---------------------------------------------------------------
+C---  distribute body data
+C---------------------------------------------------------------
+      CALL sendbodydata
+C          ------------
       
 C--------------------------------------------------------------------
 C---  send all particles to GRAPE
@@ -253,6 +259,7 @@ C          ------------
 C--------------------------------------------------------------------
 C---  get energy, center of mass and momentum
 C--------------------------------------------------------------------
+      CALL gatherParts
       CALL energy
 C          ------
       E_totini = E_tot          ! set initial value for total energy
@@ -348,6 +355,7 @@ C          ------------
 C--------------------------------------------------------------------
 C---  get energy, center of mass and momentum
 C--------------------------------------------------------------------
+      CALL gatherParts
       CALL energy
 C          ------
 
@@ -880,6 +888,8 @@ C             ------------
       
          time_cur   = min_t
 
+         CALL gather_collisions
+
 C---  break if collision occured
          IF (icollision.EQ.1) GOTO 900
 
@@ -898,10 +908,12 @@ C             ----------
 C             ----
       ENDIF
 
+
+      CALL gatherParts
 C--------------------------------------------------------------------
 C---  get energy, center of mass and momentum
 C--------------------------------------------------------------------
-      CALL energy
+      IF (myRank.EQ.rootRank) CALL energy
 C          ------
 
       evolve = idprimary        ! return primary collision member or -1
@@ -934,3 +946,33 @@ C     close grape before exiting (fip)
 
       RETURN
       END
+
+
+       SUBROUTINE gather_collisions
+#include "general.inc"
+#ifndef NOMPI
+#include <mpif.h>
+       INCLUDE "mpi.inc"       
+       
+       integer cflag(NPEMAX),id1(NPEMAX),id2(NPEMAX),ierr
+              
+       CALL MPI_AllGather(icollision,1,MPI_INT, cflag, 1, 
+     &       MPI_INT,MPI_COMM_WORLD,ierr)
+       CALL MPI_AllGather(idprimary,1,MPI_INT, id1, 1, 
+     &       MPI_INT,MPI_COMM_WORLD,ierr)
+       CALL MPI_AllGather(idsecondary,1,MPI_INT, id2, 1, 
+     &       MPI_INT,MPI_COMM_WORLD,ierr)
+       
+       icollision=-1
+         DO i=1,n_proc
+           IF(cflag(i).EQ.1) THEN
+             icollision=cflag(i)
+             idprimary=id1(i)
+             idsecondary=id2(i)
+             exit             
+           ENDIF        
+         ENDDO
+         
+#endif              
+       END
+       

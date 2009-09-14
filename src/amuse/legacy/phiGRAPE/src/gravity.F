@@ -107,21 +107,23 @@ C---  now get forces based on a (hopefully) good guess from a previous force cal
 
            DO ii=1,nn
 
+              iii   = ii+i
               ip1   = index_i(ii)
               ip2   = nn_i(ii)
               id1   = myid(ip1)
               id2   = myid(ip2)
-              hsum2 = (h(ip1)+h(ip2))**2
+              ip2   = ip2 - ind_loc(1) + 1
+              hsum2 = (h_act(iii)+h_loc(ip2))**2
 
 C---  get the predicted position of secondary particle which may
 C---  or may not be an active particle
-              dttmp    = tnow - t(ip2)
+              dttmp    = tnow - t_loc(ip2)
               dt2half  = 0.5d0 * dttmp * dttmp
               dt3over6 = dttmp * dt2half / 3.d0
               DO k=1,NDIM
-                 r(k) = x(k,ip2) + v(k,ip2)*dttmp  
-     $                           + a(k,ip2)*dt2half
-     $                           + adot(k,ip2)*dt3over6
+                 r(k) = x_loc(k,ip2) + v_loc(k,ip2)*dttmp  
+     $                           + a_loc(k,ip2)*dt2half
+     $                           + adot_loc(k,ip2)*dt3over6
      $                           - x_i(k,ii)
               ENDDO
 
@@ -132,11 +134,14 @@ C---  test for collision + bound? (fip)
               IF (hsum2.GE.r2) THEN
                  dv2=0
                  DO k=1,NDIM
-                  dv2=dv2+(v(k,ip2)+a(k,ip2)*dttmp-v_i(k,ii))**2
+                  dv2=dv2+(v_loc(k,ip2)+a_loc(k,ip2)*dttmp-v_i(k,ii))**2
                  ENDDO
-                 IF((m(ip1)+m(ip2))/sqrt(r2+eps2).GT.0.5*dv2) THEN
+!                 print*,(m_act(iii)+m_loc(ip2))/sqrt(r2+eps2),0.5*dv2
+                 IF((m_act(iii)+m_loc(ip2))/sqrt(r2+eps2) 
+     &                                    .GT.0.5*dv2) THEN                   
+                   print*,'c',myRank,id1,id2
                    icollision  = 1 ! collision detected
-                   IF (m(ip1).GE.m(ip2)) THEN
+                   IF (m_act(iii).GE.m_loc(ip2)) THEN
                     idprimary   = id1
                     idsecondary = id2
                    ELSE

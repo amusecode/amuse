@@ -21,6 +21,8 @@ C---  Scatter the "local" vectors from "global"
      $                      MPI_INT,    rootRank, MPI_COMM_WORLD,ierr)
       CALL MPI_Scatter(m,   n_loc, MPI_DOUBLE, m_loc,   n_loc,
      $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+      CALL MPI_Scatter(h,   n_loc, MPI_DOUBLE, h_loc,   n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
       CALL MPI_Scatter(t,   n_loc, MPI_DOUBLE, t_loc,   n_loc,
      $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
       CALL MPI_Scatter(dt,  n_loc, MPI_DOUBLE, dt_loc,  n_loc,

@@ -1,16 +1,3 @@
-#======================================================================
-#===                                                                ===
-#===	Makefile to use with parallel GRAPE6Af-cluster code         ===
-#===                                                                ===
-#======================================================================
-
-
-##************************************************************##
-##                                                            ##
-##			    SETUP			      ##
-##                          =====                             ##
-##************************************************************##
-
 SOURCEF = \
 allgather_ap.F      cmcorr.F        corrector.F     cputime.F		\
 energy.F       	    get_min_t.F     gravity.F       initgrape.F		\
@@ -22,8 +9,7 @@ sendinpdata.F       sumforces.F	    sync.F				\
 timestep.F          update_grape.F  update_loc_p.F  writebh.F		\
 writerestartfile.F
 
-SOURCEC = \
-wtimef.c
+SOURCEC = wtimef.c g6lib.c 
 
 SAF = main.F
 
@@ -43,7 +29,7 @@ endif
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
 LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
-
+LIBS     = -lm
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
@@ -63,39 +49,35 @@ THREAD_OPTIONS = -L. -lpthread -lpt
 #------------------------------------------------------------
 
 # MPI
-#CC      = mpicc
-#CFLAGS  = -O2
+CC      = mpicc
+CFLAGS  = -O2
 # no MPI
-CC	= gcc
-CFLAGS  = -O2 -DNOMPI -fPIC
-PIC= -fPIC
+#CC	= gcc
+#CFLAGS  = -O2 -DNOMPI -fPIC
+#PIC= -fPIC
 
 #------------------------------------------------------------
 #---   FORTRAN-definitions
 #------------------------------------------------------------
 
 # MPI
-#FORTRAN = mpif77
-#FFLAGS  = -O2 -Wno-globals
+FORTRAN = mpif90
+FFLAGS  = -O2 
 
 # no MPI
 
-ifndef FORTRAN
-	FORTRAN = ifort
-endif
-
-FC = ifort
-FFLAGS  = -O2 -DNOMPI -fPIC
+#FC = ifort
+#FFLAGS  = -O2 -DNOMPI -fPIC
 #gfortran
 #-fno-second-underscore -fPIC -Wall
 
 OBJECTS = $(SOURCEF:.F=.o) $(SOURCE:.f=.o) $(SOURCEC:.c=.o)
 SAO     = $(SAF:.F=.o)
 
-all: phiGRAPE
+all: phiGRAPE stars3d.o libpt.a fthread.o
 
 stars3d.o: stars3d.f90
-	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
+	$(FORTRAN) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 libpt.a: pt.c ptf77.c pt.h
 	cc -c $(PIC) pt.c

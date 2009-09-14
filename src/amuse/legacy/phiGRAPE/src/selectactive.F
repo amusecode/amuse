@@ -25,6 +25,7 @@ C---  loop over local particles, select and count active particles
             
             ind_act(n_act_loc)       = ind_loc(i)     ! and global index
             m_act(n_act_loc)         = m_loc(i)
+            h_act(n_act_loc)         = h_loc(i)
             DO k=1,NDIM
                x_act(k,n_act_loc)    = x_loc(k,i)
                v_act(k,n_act_loc)    = v_loc(k,i)

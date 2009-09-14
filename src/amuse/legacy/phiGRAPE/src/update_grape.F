@@ -31,7 +31,7 @@ C---  get first index of local active particle
 
             if (i .gt. nbh) then 
 
-               CALL g6_set_j_particle(clusterid, i-1-nbh, ind_act(j),
+               CALL g6_set_j_particle(clusterid, i-1-nbh, ind_act(jj),
      $              t_act(j),
      $              dt_act(j),m_act(j),a2by18,a1by6,aby2,
      $              v_act(1,j), x_act(1,j))

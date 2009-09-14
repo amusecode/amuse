@@ -77,3 +77,29 @@ C             ------------
 
       RETURN
       END
+
+      subroutine gatherParts
+#include "general.inc"      
+#ifndef NOMPI
+#include <mpif.h>
+      INCLUDE 'mpi.inc'
+
+            CALL MPI_Gather(m_loc,   n_loc, MPI_DOUBLE, m,   n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(t_loc,   n_loc, MPI_DOUBLE, t,   n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(dt_loc,  n_loc, MPI_DOUBLE, dt,  n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(x_loc, 3*n_loc, MPI_DOUBLE, x, 3*n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(v_loc, 3*n_loc, MPI_DOUBLE, v, 3*n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(pot_loc, n_loc, MPI_DOUBLE, pot, n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(a_loc, 3*n_loc, MPI_DOUBLE, a, 3*n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+            CALL MPI_Gather(adot_loc, 3*n_loc, MPI_DOUBLE,adot, 3*n_loc,
+     $                      MPI_DOUBLE, rootRank, MPI_COMM_WORLD,ierr)
+#endif
+
+      end subroutine

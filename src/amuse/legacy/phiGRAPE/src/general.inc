@@ -55,13 +55,13 @@
      &                 adot_loc(NDIM,NMAX_LOC),t_loc(NMAX_LOC),          &
      &                 dt_loc(NMAX_LOC),pot_loc(NMAX_LOC),               &
      &                 h_loc(NMAX_LOC)
-      DOUBLE PRECISION m_act(NMAX_LOC),x_act(NDIM,NMAX_LOC),             &
+      DOUBLE PRECISION m_act(NMAX),x_act(NDIM,NMAX_LOC),                 &
      &                 v_act(NDIM,NMAX_LOC),t_act(NMAX_LOC),             &
      &                 dt_act(NMAX_LOC),pot_act(NMAX_LOC),               &
      &                 a_act(NDIM,NMAX_LOC),adot_act(NDIM,NMAX_LOC),     &
      &                 x_act_new(NDIM,NMAX),v_act_new(NDIM,NMAX),        &
      &                 body_pred_loc(2*NDIM,NMAX_LOC),                   &
-     &                 body_pred(2*NDIM,NMAX),                           &
+     &                 body_pred(2*NDIM,NMAX),h_act(NMAX),               &
      &                 body_act_tmp(7,NMAX),body_act_new(7,NMAX)
       DOUBLE PRECISION pot_act_tmp_loc(NMAX),a_act_tmp_loc(NDIM,NMAX),   &
      &                 adot_act_tmp_loc(NDIM,NMAX)
@@ -101,7 +101,7 @@
      &                 disp3_act_v,myid,myind,inrg       
       COMMON /bodat2/  m_act,x_act,v_act,                                &
      &                 t_act,dt_act,pot_act,a_act,adot_act,              &
-     &                 x_act_new,v_act_new,                              &
+     &                 x_act_new,v_act_new,h_act,                        &
      &                 a_act_tmp_loc,adot_act_tmp_loc,pot_act_tmp_loc
       COMMON /energies/ E_tot,E_pot,E_kin,xcm,vcm,mom,MASS,E_totini
 
