@@ -32,14 +32,7 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(0.110, instance.eps2)
         del instance
         
-    def xtest3(self):
-        instance = mpi_interface.PhiGRAPE()
-        instance.flag_collision = 1
-        self.assertEquals(1, instance.flag_collision)
-        instance.flag_collision = 0
-        self.assertEquals(0, instance.flag_collision)
-        del instance
-        
+    
     def xtest4(self):
         instance = mpi_interface.PhiGRAPE()
         instance.setup_module()
@@ -105,21 +98,22 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(1.0,  retrieved_state['mass'])
         instance.cleanup_module()
         
-class TestAmuseInterface(unittest.TestCase):
-    def xtest1(self):
+        
+
+class TestSunAndEarthSystem(unittest.TestCase):
+    def test1(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
         instance = mpi_interface.PhiGRAPE(convert_nbody)
         instance.setup_module()
-        instance.dt_dia = 5000
         
-        sun = core.Particle(0)
+        sun = core.Particle(1)
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Particle(1)
+        earth = core.Particle(2)
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
@@ -127,14 +121,16 @@ class TestAmuseInterface(unittest.TestCase):
 
         instance.add_star(sun)
         instance.add_star(earth)
-
+        instance.initialize_particles(0.0)
+        
+        postion_at_start = earth.position.value().in_(units.AU).number[0]
+        
         instance.evolve_model(365.0 | units.day)
         instance.update_star(earth)
         
-        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].in_(units.AU).number[0]
         postion_after_full_rotation = earth.position.value().in_(units.AU) .number[0]
         
-        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 6)
+        self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 2)
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
@@ -149,8 +145,10 @@ class TestAmuseInterface(unittest.TestCase):
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         instance.cleanup_module()
-    
-    def xtest2(self):
+        del instance
+        
+        
+    def test2(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
         instance = mpi_interface.PhiGRAPE(convert_nbody)
@@ -158,13 +156,13 @@ class TestAmuseInterface(unittest.TestCase):
         instance.dt_dia = 5000
         
         
-        sun = core.Particle(0)
+        sun = core.Particle(1)
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Particle(1)
+        earth = core.Particle(2)
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
@@ -172,9 +170,10 @@ class TestAmuseInterface(unittest.TestCase):
 
         instance.add_star(sun)
         instance.add_star(earth)
+        instance.initialize_particles(0.0)
     
         for x in range(1,2000,10):
-            instance.evolve_model(x | units.day)
+            instance.evolve_model(x  | units.day)
             instance.update_star(earth)
         
         figure = pyplot.figure(figsize = (40,40))
@@ -192,3 +191,5 @@ class TestAmuseInterface(unittest.TestCase):
         instance.cleanup_module()
         del instance
 
+
+    
