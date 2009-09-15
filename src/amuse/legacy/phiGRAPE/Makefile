@@ -2,7 +2,7 @@
 FC = mpif90
 CC = mpicc
 
-#OPTS+=-DNOMPI
+OPTS+=-DNOMPI
 
 SRCDIR = src
 
