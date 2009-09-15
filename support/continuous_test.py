@@ -1,15 +1,16 @@
 import sys
 import os
-
+import signal
+import time
 import nose
 import nose.plugins
+
 from nose.plugins.capture import Capture
-import time
 from nose.core import TestProgram
 from nose.plugins.skip import Skip, SkipTest
-
 from optparse import OptionParser
 from subprocess import call
+
 
 def number_str(number, singular, plural = None):
         if plural == None:
@@ -315,6 +316,12 @@ class WriteTestReportOnTestingBlog(object):
             file.write('</ul>')
         call(["scp", path, "doctor:"+self.remote_directory])
         
+        
+
+def handler(signum, frame):
+    if signum == signal.SIGALRM:
+        sys.exit("tests took too much time")
+    
 if __name__ == '__main__':
     parser = OptionParser()
     
@@ -327,6 +334,9 @@ if __name__ == '__main__':
       
     (options, args) = parser.parse_args()
     
+    signal.signal(signal.SIGALRM, handler)
+    signal.alarm(400)
+
     report, id_to_timings = _run_the_tests(options.directory) 
     WriteTestReportOnTestingBlog(report, id_to_timings).start()
     
