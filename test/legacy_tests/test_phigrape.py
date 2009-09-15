@@ -105,6 +105,7 @@ class TestSunAndEarthSystem(unittest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
         instance = mpi_interface.PhiGRAPE(convert_nbody)
+        instance.set_eta(0.01, 0.02)
         instance.setup_module()
         
         sun = core.Particle(1)
@@ -152,6 +153,7 @@ class TestSunAndEarthSystem(unittest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
         instance = mpi_interface.PhiGRAPE(convert_nbody)
+        instance.set_eta(0.01, 0.02)
         instance.setup_module()
         instance.dt_dia = 5000
         

@@ -33,7 +33,8 @@ endif
 
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
-LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
+LIBS     = $(CUDA_LIBS) -lsapporo -lboost_thread-mt -lpthread 
+LIBS     = -lm  
 LIBS     =  -lm -lpthread
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
@@ -51,13 +52,13 @@ THREADLIB = -L. -lpthread src/libpt.a
 
 CC	= mpicc
 #CFLAGS  = -O2 -DNOMPI -fPIC
-PIC= -fPIC
+#PIC= -fPIC
 
 # MPI
-FORTRAN = mpif90
-FFLAGS  = -O2
+#FORTRAN = mpif90
+#FFLAGS  = -O2
 
-#FFLAGS  = -O2 -DNOMPI -fPIC
+FFLAGS  = -O2 -DNOMPI -fPIC
 # gfortran -fno-second-underscore -fPIC -Wall
 
 FFLAGS+= -I./src/
@@ -72,6 +73,7 @@ muse_worker: muse_worker.f90 muse_interface.o
 
 muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o 
 	make -C src all
+	make -C src gl
 	mpif90 $^ -o $@ $(OBJECTS) $(GLOBJECTS) $(LIBRARIES) $(GLLIB) $(X11LIB) $(THREADLIB)
         
 muse_worker.f90: muse_dynamics_mpi.py

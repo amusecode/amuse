@@ -89,6 +89,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
 
     figure.savefig(name_of_the_figure)
     
+    del gravity
+    del sse
+    
 def test_simulate_small_cluster():
     """test_simulate_small_cluster
     This method is found by the testing framework and automatically

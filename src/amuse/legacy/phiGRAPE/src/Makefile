@@ -49,11 +49,11 @@ THREAD_OPTIONS = -L. -lpthread -lpt
 #------------------------------------------------------------
 
 # MPI
-CC      = mpicc
-CFLAGS  = -O2
+#CC      = mpicc
+#CFLAGS  = -O2
 # no MPI
-#CC	= gcc
-#CFLAGS  = -O2 -DNOMPI -fPIC
+CC	= gcc
+CFLAGS  = -O2 -DNOMPI -fPIC
 #PIC= -fPIC
 
 #------------------------------------------------------------
@@ -61,20 +61,22 @@ CFLAGS  = -O2
 #------------------------------------------------------------
 
 # MPI
-FORTRAN = mpif90
-FFLAGS  = -O2 
+#FORTRAN = mpif90
+#FFLAGS  = -O2 
 
 # no MPI
 
 #FC = ifort
-#FFLAGS  = -O2 -DNOMPI -fPIC
+FFLAGS  = -O2 -DNOMPI -fPIC
 #gfortran
 #-fno-second-underscore -fPIC -Wall
 
 OBJECTS = $(SOURCEF:.F=.o) $(SOURCE:.f=.o) $(SOURCEC:.c=.o)
 SAO     = $(SAF:.F=.o)
 
-all: phiGRAPE stars3d.o libpt.a fthread.o
+all: phiGRAPE
+
+gl: stars3d.o libpt.a fthread.o
 
 stars3d.o: stars3d.f90
 	$(FORTRAN) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<

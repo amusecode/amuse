@@ -104,6 +104,7 @@ class TestMPIInterface(unittest.TestCase):
         print "result:", retrieved_state
         self.assertEquals(1.0,  retrieved_state['mass'])
         hermite.cleanup_module()
+        del hermite
         
 class TestAmuseInterface(unittest.TestCase):
     def test1(self):
@@ -149,6 +150,8 @@ class TestAmuseInterface(unittest.TestCase):
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         hermite.cleanup_module()
+        del hermite
+
     
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))

@@ -336,6 +336,7 @@ class LegacyInterface(object):
 
     def __del__(self):
         self._stop_worker()
+        self.intercomm.Free()
         
     @legacy_function
     def _stop_worker():

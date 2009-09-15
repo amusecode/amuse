@@ -372,12 +372,14 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf() + '}'
         
         
+        
         for dtype_spec in self.dtype_to_spec.values():
             self.out.lf() + 'delete ' 
             self.out + dtype_spec.input_var_name  + ';'
             self.out.lf() + 'delete '
             self.out + dtype_spec.output_var_name  + ';'
             
+        self.out.lf().lf() + 'parent.Free();'
         self.out.dedent()
         self.out.lf() + '}'
         

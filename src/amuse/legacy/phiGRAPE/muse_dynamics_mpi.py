@@ -98,7 +98,18 @@ class PhiGRAPE(object):
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
         return function;
-                   
+                
+                
+    
+    @core.legacy_function
+    def set_eta():
+        function = RemoteFunction()  
+        function.id = 10
+        function.result_type = 'i'
+        function.addParameter('es', dtype='d', direction=function.IN)
+        function.addParameter('e', dtype='d', direction=function.IN)
+        return function;
+        
     def add_star(self, star):
         id = star.id
         mass = self.convert_nbody.to_nbody(star.mass.value())
@@ -117,10 +128,10 @@ class PhiGRAPE(object):
         
     def update_star(self, star):
         state = self.get_state(star.id)
-        time = self.convert_nbody.to_si( self.t | nbody_system.time)
+        time = self.convert_nbody.to_si( 0.0 | nbody_system.time)
         #star.mass.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.mass(state.mass)))
-        star.position.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.length(numpy.array((state.x, state.y, state.z)))))
-        star.velocity.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.speed(numpy.array((state.vx, state.vy, state.vz)))))
+        star.position.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.length(numpy.array((state['x'], state['y'], state['z'])))))
+        star.velocity.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.speed(numpy.array((state['vx'], state['vy'], state['vz'])))))
         return star
          
     def evolve_model(self, time_end):
