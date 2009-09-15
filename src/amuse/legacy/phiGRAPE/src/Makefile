@@ -1,3 +1,8 @@
+
+ifndef OPTS
+OPTS=-DNOMPI
+endif
+
 SOURCEF = \
 allgather_ap.F      cmcorr.F        corrector.F     cputime.F		\
 energy.F       	    get_min_t.F     gravity.F       initgrape.F		\
@@ -48,28 +53,14 @@ THREAD_OPTIONS = -L. -lpthread -lpt
 #---   C-definitions
 #------------------------------------------------------------
 
-# MPI
-#CC      = mpicc
-#CFLAGS  = -O2
-# no MPI
-CC	= gcc
-CFLAGS  = -O2 -DNOMPI -fPIC
-#PIC= -fPIC
+CFLAGS  = -O2 $(OPTS) -fPIC
 
 #------------------------------------------------------------
 #---   FORTRAN-definitions
 #------------------------------------------------------------
 
-# MPI
-#FORTRAN = mpif90
-#FFLAGS  = -O2 
-
-# no MPI
-
-#FC = ifort
-FFLAGS  = -O2 -DNOMPI -fPIC
-#gfortran
-#-fno-second-underscore -fPIC -Wall
+FFLAGS  = -O2 $(OPTS) -fPIC
+#gfortran :-fno-second-underscore -fPIC -Wall
 
 OBJECTS = $(SOURCEF:.F=.o) $(SOURCE:.f=.o) $(SOURCEC:.c=.o)
 SAO     = $(SAF:.F=.o)
@@ -79,7 +70,7 @@ all: phiGRAPE
 gl: stars3d.o libpt.a fthread.o
 
 stars3d.o: stars3d.f90
-	$(FORTRAN) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
+	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 libpt.a: pt.c ptf77.c pt.h
 	cc -c $(PIC) pt.c
@@ -88,17 +79,17 @@ libpt.a: pt.c ptf77.c pt.h
 	ranlib libpt.a
 
 phiGRAPE: $(OBJECTS) $(SAO) 
-	$(FORTRAN) $(FFLAGS) -o phiGRAPE $^ $(LIBRARIES) 
+	$(FC) $(FFLAGS) -o phiGRAPE $^ $(LIBRARIES) 
 
 
 clean:
 	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE
 
 .f.o:
-	$(FORTRAN) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) -c $<
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
 .F.o:
-	$(FORTRAN) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) -c $<

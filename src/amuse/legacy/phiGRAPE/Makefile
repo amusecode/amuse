@@ -1,7 +1,8 @@
 
-ifndef FORTRAN
-	FORTRAN = mpif90
-endif
+FC = mpif90
+CC = mpicc
+
+#OPTS+=-DNOMPI
 
 SRCDIR = src
 
@@ -50,16 +51,10 @@ X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 THREADLIB = -L. -lpthread src/libpt.a
 
 
-CC	= mpicc
-#CFLAGS  = -O2 -DNOMPI -fPIC
-#PIC= -fPIC
+CFLAGS  = -O2 $(OPTS) -fPIC
 
-# MPI
-#FORTRAN = mpif90
-#FFLAGS  = -O2
-
-FFLAGS  = -O2 -DNOMPI -fPIC
-# gfortran -fno-second-underscore -fPIC -Wall
+FFLAGS  = -O2 $(OPTS) -fPIC
+# gfortran: -fno-second-underscore -fPIC -Wall
 
 FFLAGS+= -I./src/
 
@@ -68,12 +63,12 @@ all: muse_worker
 
 
 muse_worker: muse_worker.f90 muse_interface.o 
-	make -C src all
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES)
 
 muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o 
-	make -C src all
-	make -C src gl
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $^ -o $@ $(OBJECTS) $(GLOBJECTS) $(LIBRARIES) $(GLLIB) $(X11LIB) $(THREADLIB)
         
 muse_worker.f90: muse_dynamics_mpi.py
@@ -92,10 +87,10 @@ clean:
 	rm muse_worker muse_worker.f90 muse_worker_gl.f90
 
 .f.o:
-	$(FORTRAN) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) -c $<
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
 .F.o:
-	$(FORTRAN) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) -c $<
