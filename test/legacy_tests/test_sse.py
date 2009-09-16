@@ -3,7 +3,7 @@ import sys
 
 from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
 
-from amuse.support.data.core import Particles
+from amuse.support.data.core import Stars
 from amuse.support.units import units
 
 class TestMPIInterface(unittest.TestCase):
@@ -195,7 +195,7 @@ class TestSSE(unittest.TestCase):
     def test1(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        star = Particles(1)[0]
+        star = Stars(1)[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         sse.initialize_star(star)
@@ -236,21 +236,38 @@ class TestSSE(unittest.TestCase):
          
         del sse
             
-    def xtest2(self):
+    def test2(self):
         sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters() 
-        star = Particles(1)[0]
-        star.initial_mass = 5 | units.MSun
-        star.mass = star.initial_mass
+        sse.initialize_module_with_default_parameters()
+        stars = Stars(2)
+        
+        star = stars[0]
+        star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
-        sse.initialize_star(star)
+        
+        star = stars[1]
+        star.mass = 10 | units.MSun
+        star.radius = 0.0 | units.RSun
+        
+        
+        sse. initialize_particles(stars)
         previous_type = star.type
         results = []
         t0 = 0 | units.Myr
         while t0 < (100 | units.Myr):
             t0 += sse.get_time_step_for_star(star)
             sse.evolve_star(star, t0)
+            
+    
+    def test3(self):
+        sse = mpi_interface.SSE()
+        sse.initialize_module_with_default_parameters()
+        stars = Stars(1)
         
-        total_radius = star.core_radius + star.envelope_radius
-        print star
-        self.assertEqual(total_radius, star.radius)
+        star = stars[0]
+        star.mass = 0.11 | units.MSun
+        star.radius = 0.0 | units.RSun
+        sse.initialize_particles(stars)
+        t0 = 2 | units.Myr
+        sse.evolve_particles(stars, t0)
+

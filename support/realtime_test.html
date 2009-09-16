@@ -159,6 +159,7 @@ function handle_last_report(report) {
                 root.appendTo($('#tests-failed'));
             }
             item = $('<li></li>').appendTo($('<ul></ul>').appendTo(root));
+            item = $('<pre></pre>').appendTo(item);
             item.text(testcase.error_string[0]);
             traceback = $('<ul></ul>');
             traceback.addClass('traceback-list');

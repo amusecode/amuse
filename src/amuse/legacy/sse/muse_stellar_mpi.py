@@ -50,7 +50,7 @@ class SSE(LegacyInterface):
     @legacy_function      
     def get_time_step():
         function = RemoteFunction() 
-        function.can_handle_array = True  
+        #function.can_handle_array = True  
         function.addParameter('kw', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
         function.addParameter('age', dtype='d', direction=function.IN)
@@ -192,6 +192,8 @@ class SSE(LegacyInterface):
         while t < time_end:
             t0 = t
             t  = t0 + self.get_time_step_for_star(particle)
+            if t > time_end:
+                t = time_end
             self.evolve_star(particle, t)
             t1 = particle.current_time.value()
             dt = t1 - t0
@@ -201,7 +203,11 @@ class SSE(LegacyInterface):
                 return
             if particle.type.value().number == 15:
                 return
-                
+    
+    def evolve_particles(self, particles, time_end):
+        for x in particles:
+            self.evolve_particle(x, time_end)
+    
     def initialize_particles(self, particles):
         for x in particles:
             self.initialize_star(x)

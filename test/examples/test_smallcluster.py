@@ -1,7 +1,8 @@
-import random
 import sys
-
+import unittest
 import numpy 
+import random
+
 from matplotlib import pyplot
 
 from amuse.support.units import nbody_system
@@ -13,12 +14,74 @@ from amuse.legacy.sse.muse_stellar_mpi import SSE
 
 from amuse.experiments.plummer import MakePlummerModel
 
+class SalpeterIMF(object):
+    def __init__(self, mass_min = 0.1 | units.MSun, mass_max = 125 | units.MSun, alpha = -2.35):
+        self.mass_min = mass_min.in_(units.MSun)
+        self.mass_max = mass_max.in_(units.MSun)
+        self.alpha = alpha
+        self.random = random.Random()
+        self.random.seed()
+    
+    def mass_mean(self):
+        alpha1 = self.alpha + 1
+        alpha2 = self.alpha + 2
+        l1 = pow(self.mass_min.number, alpha1)
+        l2 = pow(self.mass_min.number, alpha2)
+        u1 = pow(self.mass_max.number, alpha1)
+        u2 = pow(self.mass_max.number, alpha2)
+        return ((u2 - l2) * alpha1) / ((u1 - l1) * alpha2) | units.MSun
+        
+    def mass(self, random_number):
+        alpha1 = self.alpha + 1
+        factor = (pow(self.mass_max.number / self.mass_min.number,alpha1) - 1.0)
+        return self.mass_min.number * (pow(1 + (factor * random_number), 1.0 / alpha1)) | units.MSun
+        
+    def next_mass(self):
+        return self.mass(self.random.random())
+        
+    def next_set(self, number_of_stars):
+        set_of_masses = []
+        total_mass = 0.0 | units.MSun
+        for x in range(number_of_stars):
+           mass = self.next_mass()
+           set_of_masses.append(mass)
+           total_mass += mass
+        return (total_mass, set_of_masses)
+        
+class SalpeterIMFTests(unittest.TestCase):
+    def test1(self):
+        instance = SalpeterIMF(0.1 | units.MSun, 100 | units.MSun, alpha = -2.35)
+        self.assertAlmostEqual(instance.mass_mean().number, 0.351, 3)
+
+    def test2(self):
+        instance = SalpeterIMF(0.1 | units.MSun, 100 | units.MSun, alpha = -2.35)
+        self.assertAlmostEqual(instance.mass(1.0).number, 100, 3)
+        self.assertAlmostEqual(instance.mass(0).number, 0.1, 3)
+       
+    def test3(self):
+        instance = SalpeterIMF(0.1 | units.MSun, 100 | units.MSun, alpha = -2.35)
+        n = 10000
+        total_mass, set_of_masses = instance.next_set(10000)
+        mean = total_mass.number / float(n)
+        exact_mean = instance.mass_mean().number
+        print mean
+        print abs(mean - exact_mean) 
+        self.assertTrue(abs(mean - exact_mean) < 0.1)
+        
+    def test4(self):
+        instance = SalpeterIMF(0.1 | units.MSun, 125 | units.MSun, alpha = -2.35)
+        self.assertAlmostEqual( 1.0 / instance.mass_mean().number, 2.8253, 4)
+       
+   
+        
 
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
     random.seed()
     
-    initial_mass = 5
-    convert_nbody = nbody_system.nbody_to_si(number_of_stars * initial_mass | units.MSun, 1 | units.lightyear)
+    initial_mass_function = SalpeterIMF()
+    total_mass, masses = initial_mass_function.next_set(number_of_stars)
+    
+    convert_nbody = nbody_system.nbody_to_si(total_mass, 1 | units.parsec)
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
             
@@ -26,20 +89,19 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     gravity.setup_module()
     gravity.dt_dia = 10000
     
-    sse = SSE()
-    sse.initialize_module_with_default_parameters() 
+    stellar_evolution = SSE()
+    stellar_evolution.initialize_module_with_default_parameters() 
     
     gravity.set_eps2(0.3 | units.lightyear ** 2)
     
+    print "setting masses of the stars"
+    for i, x in enumerate(particles):
+        x.mass = masses[i]
+    
     print "initializing the particles"
-    sse.initialize_particles(particles)
+    stellar_evolution.initialize_particles(particles)
     gravity.add_particles(particles)
     
-    print "setting age of stars"
-    for x in particles:
-        start_time = random.randint(40, 115) | units.Myr
-        sse.evolve_particle(x, start_time )
-        x.start_time = x.current_time.value()
         
     time = 1 | units.Myr
     
@@ -49,9 +111,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         gravity.evolve_model(time)
         
         gravity.update_particles(particles)
-        
-        for x in particles:
-            sse.evolve_particle(x, x.start_time.value() + time)
+        stellar_evolution.evolve_particles(particles,time)
         
         print "evolved model to t = " + str(time)
         
@@ -59,6 +119,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         time += 2 |units.Myr
     
    
+    del gravity
+    del stellar_evolution
+    
     print "plotting the data"
     figure = pyplot.figure(figsize = (40,40))
     plots = map(lambda x : figure.add_subplot(5,5,x), range(1,int(int(end_time.number) / 2 + 2)))
@@ -67,7 +130,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         for index, (time,position) in enumerate(x.position.values):
             x_point = position.in_(units.lightyear).number[0]
             y_point = position.in_(units.lightyear).number[1]
-            t, mass = x.mass.get_value_at_time(x.start_time.value() + time)
+            t, mass = x.mass.get_value_at_time(time)
             
             color = 'b'
             if mass > 4.999 | units.MSun:
@@ -80,8 +143,11 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
                 color = 'r'
             else:
                 color = 'c'
-                
-            plots[index].plot([x_point],[y_point], color + 'o')
+            
+            color = mass.in_(units.MSun).number / 0.4
+            if color > 0.98:
+                color = 0.98
+            plots[index].plot([x_point],[y_point], color =  str(color), marker='o')
         
     for plot in plots:
         plot.set_xlim(-10.0,10.0)
@@ -89,8 +155,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
 
     figure.savefig(name_of_the_figure)
     
-    del gravity
-    del sse
     
 def test_simulate_small_cluster():
     """test_simulate_small_cluster
