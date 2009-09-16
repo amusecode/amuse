@@ -46,7 +46,7 @@ C---  set actual time on GRAPE
 
 C---  n_act is all active particles and on all nodes the same 
       ni = n_act
-
+      
 C---  define the local phi, a, adot for these active particles 
       DO i=0,ni-1,npipe
 

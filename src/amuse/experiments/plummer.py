@@ -86,14 +86,13 @@ class MakePlummerModel(object):
     @property
     def result(self):
         masses, positions, velocities = self.new_model()
-        result = []
-        for i in range(len(masses)):
-            star = core.Particle(i)
+        result = core.Particles(self.number_of_particles)
+        for i in range(self.number_of_particles):
+            star = result[i]
             star.mass = self.convert_nbody.to_si(masses[i][0] | nbody_system.mass)
             star.position = self.convert_nbody.to_si(nbody_system.length(positions[i]))
             star.velocity = self.convert_nbody.to_si(nbody_system.speed(velocities[i]))
-            result.append(star)
-        return core.Particles(result)
+        return result
         
         
         

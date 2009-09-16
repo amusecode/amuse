@@ -5,7 +5,7 @@
 C---  local vars
       INTEGER          add_particle,id
       DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
-
+      
       IF (id.GT.NMAX) THEN
          PRINT*, 'id is larger than NMAX which is not allowd!'
          add_particle = -1
@@ -141,7 +141,10 @@ C====================================================================
       IMPLICIT NONE
 #include "general.inc"
       INTEGER i,setup_module
-
+      
+      
+      eta_s   = 0.01
+      eta     = 0.02
 C--------------------------------------------------------------------
 C---  initialise MPI 
 C--------------------------------------------------------------------
@@ -176,9 +179,8 @@ C--------------------------------------------------------------------
 C (re)start grape (fip)
 C  update local particles on grape
       CALL initgrape
+
       CALL update_grape(1) 
-
-
 C---  set some vars
       inrg       = 0
 

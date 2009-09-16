@@ -12,7 +12,7 @@ class PhiGRAPE(object):
         directory_of_this_module = os.path.dirname(__file__);
         full_name_of_the_worker = os.path.join(directory_of_this_module , 'muse_worker')
         
-        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, 1)
+        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None,  1)
         self.channel = core.MpiChannel(self.intercomm)
         self.convert_nbody = convert_nbody
         

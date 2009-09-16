@@ -14,6 +14,7 @@ C---  initial load the particles to the local GRAPE's
          aby2(k)   = 0.d0
       ENDDO
 
+      
       DO j=nbh+1,n_loc         
 
 C---  in case of a restart acceleration and jerk are known

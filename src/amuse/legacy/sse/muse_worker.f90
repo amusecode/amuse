@@ -91,15 +91,17 @@ SUBROUTINE run_loop
         number_of_integers_out = 1
         
       CASE(1024680297)
-        CALL get_time_step( &
-          integers_in(1) ,&
-          doubles_in(1) ,&
-          doubles_in(2) ,&
-          doubles_in(3) ,&
-          doubles_in(4) ,&
-          doubles_in(5) ,&
-          doubles_out(1) &
-        )
+        do i = 1, len_in, 1
+          CALL get_time_step( &
+            integers_in(i) ,&
+            doubles_in(i) ,&
+            doubles_in(( 1 * len_in) + i) ,&
+            doubles_in(( 2 * len_in) + i) ,&
+            doubles_in(( 3 * len_in) + i) ,&
+            doubles_in(( 4 * len_in) + i) ,&
+            doubles_out(i) &
+          )
+        end do
         number_of_doubles_out = 1
         
       CASE(1658568341)

@@ -47,24 +47,24 @@ class TestAmuseInterface(unittest.TestCase):
         instance.eps2_for_gravity = 0.001
         instance.setup_module()
         
-        sun = core.Star(0)
+        stars = core.Stars(2)
+        
+        sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Star(1)
+        earth = stars[1]
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        stars = core.Stars([sun, earth])
         instance.add_particles(stars)
 
         instance.evolve_model(365.0 | units.day)
-        instance.update_star(earth)
-        instance.update_star(sun)
+        instance.update_particles(stars)
         
         postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].in_(units.AU).number[0]
         postion_after_full_rotation = earth.position.value().in_(units.AU) .number[0]
@@ -73,7 +73,7 @@ class TestAmuseInterface(unittest.TestCase):
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        instance.update_star(earth)
+        instance.update_particles(stars)
         
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
@@ -81,7 +81,7 @@ class TestAmuseInterface(unittest.TestCase):
         
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
          
-        instance.update_star(earth)
+        instance.update_particles(stars)
         
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
         
@@ -99,24 +99,24 @@ class TestAmuseInterface(unittest.TestCase):
         #instance.use_self_gravity = 0
         instance.setup_module()
         
-        sun = core.Star(0)
+        stars = core.Stars(2)
+        sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Star(1)
+        earth = stars[1]
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        stars = core.Stars([sun, earth])
         instance.add_particles(stars)
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
-            instance.update_star(earth)
+            instance.update_particles(stars)
         
         figure = pyplot.figure(figsize = (40,40))
         plot = figure.add_subplot(1,1,1)

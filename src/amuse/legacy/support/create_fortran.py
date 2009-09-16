@@ -23,7 +23,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
             if index == 0:
                 return 'i'
             else:
-                return '( %d * request_header.len) + i' % index
+                return '( %d * len_in) + i' % index
         else:
             return index + 1
             
@@ -35,7 +35,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         self.out.indent()
         
         if self.specification.can_handle_array:
-            self.out.lf() + 'do i = 1, request_header.len, 1'
+            self.out.lf() + 'do i = 1, len_in, 1'
             self.out.indent()
         
         self.output_function_start()

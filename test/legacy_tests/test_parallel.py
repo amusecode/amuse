@@ -4,7 +4,7 @@ import sys
 from amuse.legacy.hermite0.muse_dynamics_mpi import Hermite
 from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
 
-from amuse.support.data.core import Particles, Particle
+from amuse.support.data.core import Particles
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 
@@ -15,18 +15,19 @@ from matplotlib import pyplot
 
 class TestAmuseInterface(unittest.TestCase):
     def new_system_sun_and_earth(self):
-        sun = Particle(0)
+        result = Particles(2)
+        sun = result[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = Particle(1)
+        earth = result[1]
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
-        return Particles([sun, earth])
+        return result
         
     def evolve_model_unit_day(self, instance, particles, day):
         delta_days = 5

@@ -49,19 +49,26 @@ class TemporalAttribute(object):
     
 class Particles(object):
     """A set of particle objects"""
-    def __init__(self, particles):
-        self.particles = particles
+    def __init__(self, size = 0):
+        self.particles = [Particle(i+1, self) for i in range(size)]
         
     def __iter__(self):
         return iter(self.particles)
 
+    def __getitem__(self, index):
+        return self.particles[index]
+        
     @property
     def mass(self):
         result = []
         for x in self:
             result.append((x.id, x.mass))
         return result
-
+    
+    @property
+    def ids(self):
+        for x in self.particles:
+            yield x.id
 
 class Stars(Particles):
     pass
@@ -116,7 +123,7 @@ class Measurement(object):
     def get_value(self, attribute, id):
         rownumber = self.ids_to_rownumber[id]
         colnumber = self.attribute_to_colnumber[attribute]
-        return self.values[colnumber, rownumber] | self.units[colnumber]
+        return self.values[colnumber][rownumber] | self.units[colnumber]
             
             
 class Particle(object):
@@ -130,9 +137,12 @@ class Particle(object):
     only applicable for a single module.
     """
     
-    def __init__(self, id = -1, **keyword_arguments):
+    def __init__(self, id = -1, set = None, **keyword_arguments):
         object.__setattr__(self, "id", id)
         object.__setattr__(self, "attributes", {})
+        if not set is None:
+            object.__setattr__(self, "set", set)
+            
         for attribute_name in keyword_arguments:
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)

@@ -3,7 +3,7 @@ import sys
 
 from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
 
-from amuse.support.data.core import Particle
+from amuse.support.data.core import Particles
 from amuse.support.units import units
 
 class TestMPIInterface(unittest.TestCase):
@@ -195,7 +195,7 @@ class TestSSE(unittest.TestCase):
     def test1(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        star = Particle(0)
+        star = Particles(1)[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         sse.initialize_star(star)
@@ -239,7 +239,7 @@ class TestSSE(unittest.TestCase):
     def xtest2(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        star = Particle(0)
+        star = Particles(1)[0]
         star.initial_mass = 5 | units.MSun
         star.mass = star.initial_mass
         star.radius = 0.0 | units.RSun

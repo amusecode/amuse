@@ -17,30 +17,26 @@ class Hermite(LegacyInterface):
 
     @legacy_function   
     def setup_module():
-        function = RemoteFunction()  
-        function.id = 1
+        function = RemoteFunction() 
         function.result_type = 'i'
         return function
         
     @legacy_function      
     def cleanup_module():
-        function = RemoteFunction()  
-        function.id = 2
+        function = RemoteFunction() 
         function.result_type = 'i'
         return function
     
     @legacy_function    
     def initialize_particles():
-        function = RemoteFunction()  
-        function.id = 3
+        function = RemoteFunction() 
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
         
     @legacy_function    
     def add_particle():
-        function = RemoteFunction()  
-        function.id = 5
+        function = RemoteFunction() 
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
@@ -51,7 +47,6 @@ class Hermite(LegacyInterface):
     @legacy_function    
     def get_state():
         function = RemoteFunction()  
-        function.id = 8
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('id_out', dtype='i', direction=function.OUT)
@@ -63,7 +58,6 @@ class Hermite(LegacyInterface):
     @legacy_function    
     def evolve():
         function = RemoteFunction()  
-        function.id = 6
         function.addParameter('time_end', dtype='d', direction=function.IN)
         function.addParameter('synchronize', dtype='i', direction=function.IN)
         function.result_type = 'i'
@@ -71,28 +65,38 @@ class Hermite(LegacyInterface):
         
     @legacy_function  
     def reinitialize_particles():
-        function = RemoteFunction()  
-        function.id = 4
+        function = RemoteFunction() 
         function.result_type = 'i'
         return function
         
     @legacy_function   
     def get_number():
         function = RemoteFunction()  
-        function.id = 7
         function.result_type = 'i'
         return function;
      
     @legacy_function
     def set_mass():
-        function = RemoteFunction()  
-        function.id = 9
+        function = RemoteFunction() 
         function.result_type = 'i'
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
         return function;
         
-           
+    @legacy_function      
+    def get_kinetic_energy():
+        function = RemoteFunction() 
+        function.result_type = 'd'
+        return function
+
+    @legacy_function      
+    def get_potential_energy():
+        function = RemoteFunction()  
+        function.result_type = 'd'
+        return function
+
+        
+        
     def add_star(self, star):
         id = star.id
         mass = self.convert_nbody.to_nbody(star.mass.value())
@@ -125,7 +129,7 @@ class Hermite(LegacyInterface):
         self.eps2 = self.convert_nbody.to_nbody(eps2).number
     
     
-    def add_particles(self, particles):
+    def _add_particles(self, particles):
         for x in particles:
             self.add_star(x)
             
@@ -133,7 +137,7 @@ class Hermite(LegacyInterface):
         for x in particles:
             self.update_star(x)
             
-    def xadd_particles(self, particles):
+    def add_particles(self, particles):
         mass = []
         x_ = []
         y = []
@@ -158,12 +162,18 @@ class Hermite(LegacyInterface):
             vy.append(velocity.number[1])
             vz.append(velocity.number[2])
             radius.append(self.convert_nbody.to_nbody(x.radius.value()).number)
-        self._add_particle(id, mass, radius, x_, y, z, vx, vy, vz)
+        self.add_particle(id, mass, radius, x_, y, z, vx, vy, vz)
             
     def update_attributes(self, attributes):
+        
+        ids = []
+        mass_of_particles = []
         for id, x in attributes:
             if x.name == 'mass':
-                self.set_mass(id, self.convert_nbody.to_nbody(x.value()).number)
+                id.append(x.id)
+                mass = self.convert_nbody.to_nbody(x.mass.value())
+                mass_of_particles.append(mass.number)
+        self.set_mass(ids, mass_of_particles)
         
     
   

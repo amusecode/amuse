@@ -359,14 +359,14 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
         expected = """
         CASE(1)
-          do i = 1, request_header.len, 1
+          do i = 1, len_in, 1
             doubles_out(i) = test_one( &
               integers_in(i) ,&
-              integers_in(( 1 * request_header.len) + i) ,&
+              integers_in(( 1 * len_in) + i) ,&
               doubles_in(i) &
             )
-            integers_out(i) = integers_in(( 1 * request_header.len) + i)
-            doubles_out(( 1 * request_header.len) + i) = doubles_in(i)
+            integers_out(i) = integers_in(( 1 * len_in) + i)
+            doubles_out(( 1 * len_in) + i) = doubles_in(i)
           end do
           number_of_integers_out = 1
           number_of_doubles_out = 2

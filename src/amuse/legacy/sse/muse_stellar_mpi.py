@@ -1,5 +1,5 @@
 from amuse.support.units import units
-from amuse.support.data.core import Particle
+from amuse.support.data.core import Particles
 
 from amuse.legacy import *
 
@@ -49,7 +49,8 @@ class SSE(LegacyInterface):
         
     @legacy_function      
     def get_time_step():
-        function = RemoteFunction()  
+        function = RemoteFunction() 
+        function.can_handle_array = True  
         function.addParameter('kw', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
         function.addParameter('age', dtype='d', direction=function.IN)
@@ -61,7 +62,7 @@ class SSE(LegacyInterface):
     
     @property
     def prototype_star(self):
-        star = Particle(-1)
+        star = Particles(1)[0]
         
         star.age = 0.0 | units.s
         star.initial_mass = 1.0 | units.MSun

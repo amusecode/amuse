@@ -108,26 +108,27 @@ class TestSunAndEarthSystem(unittest.TestCase):
         instance.set_eta(0.01, 0.02)
         instance.setup_module()
         
-        sun = core.Particle(1)
+        
+        stars = core.Stars(2)
+        sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Particle(2)
+        earth = stars[1]
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        instance.add_star(sun)
-        instance.add_star(earth)
+        instance.add_particles(stars)
         instance.initialize_particles(0.0)
         
         postion_at_start = earth.position.value().in_(units.AU).number[0]
         
         instance.evolve_model(365.0 | units.day)
-        instance.update_star(earth)
+        instance.update_particles(stars)
         
         postion_after_full_rotation = earth.position.value().in_(units.AU) .number[0]
         
@@ -135,14 +136,14 @@ class TestSunAndEarthSystem(unittest.TestCase):
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        instance.update_star(earth)
+        instance.update_particles(stars)
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
         
         
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
-        instance.update_star(earth)
+        instance.update_particles(stars)
         postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         instance.cleanup_module()
@@ -158,25 +159,25 @@ class TestSunAndEarthSystem(unittest.TestCase):
         instance.dt_dia = 5000
         
         
-        sun = core.Particle(1)
+        stars = core.Stars(2)
+        sun = stars[0]
         sun.mass = units.MSun(1.0)
         sun.position = units.m(numpy.array((0.0,0.0,0.0)))
         sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
         sun.radius = units.RSun(1.0)
 
-        earth = core.Particle(2)
+        earth = stars[1]
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        instance.add_star(sun)
-        instance.add_star(earth)
+        instance.add_particles(stars)
         instance.initialize_particles(0.0)
     
         for x in range(1,2000,10):
             instance.evolve_model(x  | units.day)
-            instance.update_star(earth)
+            instance.update_particles(stars)
         
         figure = pyplot.figure(figsize = (40,40))
         plot = figure.add_subplot(1,1,1)

@@ -14,6 +14,7 @@ C---  local vars
       INTEGER i,k
 
 
+
 C---  loop over local particles, select and count active particles
       n_act_loc = 0
       DO i=1,n_loc
