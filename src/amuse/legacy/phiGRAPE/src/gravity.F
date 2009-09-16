@@ -139,7 +139,6 @@ C---  test for collision + bound? (fip)
 !                 print*,(m_act(iii)+m_loc(ip2))/sqrt(r2+eps2),0.5*dv2
                  IF((m_act(iii)+m_loc(ip2))/sqrt(r2+eps2) 
      &                                    .GT.0.5*dv2) THEN                   
-                   print*,'c',myRank,id1,id2
                    icollision  = 1 ! collision detected
                    IF (m_act(iii).GE.m_loc(ip2)) THEN
                     idprimary   = id1

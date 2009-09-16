@@ -12,7 +12,7 @@ selectactive.F      selectsync.F    sendbodies2grape.F		    	\
 sendbodydata.F      							\
 sendinpdata.F       sumforces.F	    sync.F				\
 timestep.F          update_grape.F  update_loc_p.F  writebh.F		\
-writerestartfile.F
+writerestartfile.F predict_potential.F
 
 SOURCEC = wtimef.c g6lib.c 
 

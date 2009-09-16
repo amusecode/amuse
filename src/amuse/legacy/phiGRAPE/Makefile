@@ -2,7 +2,7 @@
 FC = mpif90
 CC = mpicc
 
-OPTS+=-DNOMPI
+#OPTS+=-DNOMPI
 
 SRCDIR = src
 
@@ -15,7 +15,7 @@ OBJECTS = \
  src/sendbodydata.o \
  src/sendinpdata.o src/sumforces.o src/sync.o \
  src/timestep.o src/update_grape.o src/update_loc_p.o src/writebh.o \
- src/writerestartfile.o src/wtimef.o src/g6lib.o
+ src/writerestartfile.o src/predict_potential.o src/wtimef.o src/g6lib.o
 
 GLOBJECTS=src/fthread.o src/stars3d.o src/libpt.a
 

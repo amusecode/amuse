@@ -915,7 +915,7 @@ C             ----
 C--------------------------------------------------------------------
 C---  get energy, center of mass and momentum
 C--------------------------------------------------------------------
-      IF (myRank.EQ.rootRank) CALL energy
+      CALL energy
 C          ------
 
       evolve = idprimary        ! return primary collision member or -1

@@ -6,7 +6,7 @@ C===  particles previouisly selected are sync'd by a full GRAPE integration
       INTEGER          i,power
       DOUBLE PRECISION dtcmax,ttmp
 
-      IF (n_act_loc.LE.0) RETURN ! no sync'ing needed
+!      IF (n_act_loc.LE.0) RETURN ! no sync'ing needed
 
 C--------------------------------------------------------------------
 C---  predictor (for local active particles)

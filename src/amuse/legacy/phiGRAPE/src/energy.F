@@ -10,19 +10,27 @@ C=========================================================================
       IMPLICIT NONE
 #include "general.inc"
 C---  local vars
-      INTEGER          i,k,k3
+      INTEGER          i,k,k3,ip
       DOUBLE PRECISION mcm,dttmp,dt2half,dt3over6,
      $                 xx,xy,xz,vx,vy,vz
-      LOGICAL          ltest
 
-      ltest = .FALSE.
+C---  an extra force calculation to get the predicted potential
+      CALL predict_potential(time_cur)
+C          -----------------
+
+C---  copy potential only 
+      DO i=1,n_act
+          ip      = ind_act(i)
+          pot(ip) = body_act_new(ipnew,i)
+      ENDDO
+
       dttmp = 0.
 C---  predict to current time
 C---  (for all particles, dt may be zero in which case current pos
 C---  and velocities are just copied)
       DO i=1,N
          
-         dttmp    = MAX(ABS(time_cur - t(i)),dttmp)
+         dttmp    = time_cur - t(i)
          dt2half  = 0.5d0 * dttmp * dttmp
          dt3over6 = dttmp * dt2half / 3.d0
 
@@ -37,28 +45,7 @@ C---  and velocities are just copied)
          ENDDO
 
 
-C---  in case we need to update potential ind_act is needed
-         ind_act(i) = ind_loc(i)
-
       ENDDO
-
-      ltest      = ((dttmp .NE. 0.d0) .OR. ltest)
-
-C---  an extra force calculation to get the predicted potential
-      IF (ltest) THEN
-         print*,'hellow1',dttmp
-         n_act = N
-
-         CALL gravity(time_cur,0)
-C             -------
-
-C---  copy potential only 
-         DO i=1,N
-            pot(i) = body_act_new(ipnew,i)
-         ENDDO
-
-      ENDIF
-
 
 C---  get potential and kinetic energy
       E_pot = 0.d0
