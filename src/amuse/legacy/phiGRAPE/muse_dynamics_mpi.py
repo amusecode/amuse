@@ -53,6 +53,7 @@ class PhiGRAPE(object):
     @core.legacy_function    
     def add_particle():
         function = RemoteFunction()  
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -139,6 +140,12 @@ class PhiGRAPE(object):
         function.result_type = 'i'
         return function
 
+    @core.legacy_function          
+    def remove_particle():
+        function = RemoteFunction()  
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function    
         
     def add_star(self, star):
         id = star.id
