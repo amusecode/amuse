@@ -57,6 +57,18 @@ C---  done
       RETURN
       END
 
+      FUNCTION get_eps2()
+      IMPLICIT NONE
+#include "general.inc"
+
+      DOUBLE PRECISION get_eps2
+
+      get_eps2=eps2
+
+      RETURN
+      END
+
+
       FUNCTION get_dynamical_time_scale()
       IMPLICIT NONE
 #include "general.inc"

@@ -1,23 +1,16 @@
-import os.path
-from mpi4py import MPI
 import numpy
 
-from amuse.legacy.support import core
-from amuse.legacy.support.core import RemoteFunction, legacy_global
+from amuse.legacy import *
 from muse_dynamics_mpi import PhiGRAPE as PhiGRAPE_basic
 
 
 class PhiGRAPE(PhiGRAPE_basic):            
-    def __init__(self, convert_nbody = None,nworker = None):
-        if nworker is None: nworker=1
-        directory_of_this_module = os.path.dirname(__file__);
-        full_name_of_the_worker = os.path.join(directory_of_this_module , 'muse_worker_gl')
-        
-        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, nworker)
-        self.channel = core.MpiChannel(self.intercomm)
+    def __init__(self, convert_nbody = None,nworker = 1):
+        LegacyInterface.__init__(self,name_of_the_worker = 'muse_worker_gl', \
+          number_of_workers = nworker)
         self.convert_nbody = convert_nbody
         
-    @core.legacy_function
+    @legacy_function
     def start_viewer():
         function = RemoteFunction()  
         return function

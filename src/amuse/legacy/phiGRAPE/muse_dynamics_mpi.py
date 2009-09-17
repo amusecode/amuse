@@ -57,6 +57,13 @@ class PhiGRAPE(LegacyInterface):
         function = RemoteFunction()  
         function.result_type = 'i'
         return function;
+
+    @legacy_function   
+    def get_eps2():
+        function = RemoteFunction()  
+        function.result_type = 'd'
+        return function;
+
              
     @legacy_function    
     def get_state():
@@ -65,6 +72,14 @@ class PhiGRAPE(LegacyInterface):
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         return function
+
+    @legacy_function      
+    def get_potential():
+        function = RemoteFunction()  
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.result_type = 'd'
+        return function
+
         
     @legacy_function
     def set_mass():
