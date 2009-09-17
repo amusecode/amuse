@@ -133,7 +133,32 @@ class TestMPIInterface(unittest.TestCase):
         instance.cleanup_module()
         del instance
 
-        
+    def test8(self):
+        instance = mpi_interface.PhiGRAPE()
+        instance.setup_module()
+        instance.set_eps(0.0**2)
+        instance.set_eta(0.01,0.02)
+        instance.add_particle( [1,2],
+            [0.01,0.01],
+            [0.1,0.1],
+            [10.,-10.],
+            [0.0,0.0],
+            [0.0,0.0],
+            [-5.0,5.0],
+            [0.0,0.0],
+            [0.0,0.0] )
+        instance.initialize_particles(0.0) 
+        id1=instance.evolve(3.14159,0)  
+        tnow=instance.get_time()
+        self.assertEqual( id1, 1)
+        instance.evolve(instance.get_time(),1)
+        id2=instance.find_colliding_secondary(id1)
+        self.assertEqual( id2, 2)
+        self.assertAlmostEqual( tnow, 2.,2)
+        state1 = instance.get_state(id1)
+        state2 = instance.get_state(id2)
+        self.assertTrue( abs(state1['x'] - state2['x'])<0.2)
+        del instance
         
 
 class TestSunAndEarthSystem(unittest.TestCase):
