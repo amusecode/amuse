@@ -131,6 +131,18 @@ class nbody_to_si(object):
                 new_unit *= (unit ** n)
         return new_unit(number * factor)
         
+        
+
+class noconvert_nbody_to_si(object): 
+    
+    def __init__(self):
+        pass
+        
+    def to_si(self, value):
+        return value
+        
+    def to_nbody(self, value):
+        return value
                 
                     
         

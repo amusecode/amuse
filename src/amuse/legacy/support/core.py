@@ -243,8 +243,20 @@ class RemoteFunction(object):
     
 class MpiChannel(object):
     
-    def __init__(self, intercomm):
-        self.intercomm = intercomm
+    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type):
+        self.name_of_the_worker = name_of_the_worker
+        self.number_of_workers = number_of_workers
+        self.legacy_interface_type = legacy_interface_type
+        
+    def start(self):
+        directory_of_this_module = os.path.dirname(inspect.getfile(self.legacy_interface_type))
+        full_name_of_the_worker = os.path.join(directory_of_this_module , self.name_of_the_worker)
+        if not os.path.exists(full_name_of_the_worker):
+            raise Exception("The worker application does not exists, it should be at: %s".format(full_name_of_the_worker))
+        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, self.number_of_workers)
+
+    def stop(self):
+        self.intercomm.Free()
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], length = 1):
         if doubles_in:
@@ -284,8 +296,6 @@ class MpiChannel(object):
         n_doubles = header[2]
         n_ints = header[3]
         n_floats = header[4]
-        if length > 1:
-            print "l:", length
         if n_doubles > 0:
             doubles_mpi = numpy.empty(n_doubles * length,  dtype='d')
             self.intercomm.Recv([doubles_mpi, MPI.DOUBLE], source=0, tag=999)
@@ -324,19 +334,13 @@ class MpiChannel(object):
 class LegacyInterface(object):
     
     def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1):
-        self._start_worker(name_of_the_worker, number_of_workers)
+        self.channel = MpiChannel(name_of_the_worker, number_of_workers, type(self))
+        self.channel.start()
         
-    def _start_worker(self,  name_of_the_worker, number_of_workers):
-        directory_of_this_module = os.path.dirname(inspect.getfile(type(self)))
-        full_name_of_the_worker = os.path.join(directory_of_this_module , name_of_the_worker)
-        if not os.path.exists(full_name_of_the_worker):
-            raise Exception("The worker application does not exists, it should be at: %s".format(full_name_of_the_worker))
-        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, number_of_workers)
-        self.channel = MpiChannel(self.intercomm)
-
     def __del__(self):
         self._stop_worker()
-        self.intercomm.Free()
+        self.channel.stop()
+        del self.channel
         
     @legacy_function
     def _stop_worker():

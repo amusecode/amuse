@@ -11,7 +11,7 @@ class Hermite(LegacyInterface):
     eps2 = legacy_global(name='eps2',id=23,dtype='d')
     flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
             
-    def __init__(self, convert_nbody = None):
+    def __init__(self, convert_nbody = nbody_system.noconvert_nbody_to_si()):
         LegacyInterface.__init__(self)
         self.convert_nbody = convert_nbody
 

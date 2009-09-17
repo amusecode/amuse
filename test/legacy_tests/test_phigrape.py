@@ -211,7 +211,7 @@ class TestSunAndEarthSystem(unittest.TestCase):
         instance.add_particles(stars)
         instance.initialize_particles(0.0)
     
-        for x in range(1,2000,10):
+        for x in range(1,2000,100):
             instance.evolve_model(x  | units.day)
             instance.update_particles(stars)
         
