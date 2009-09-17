@@ -96,8 +96,12 @@ class InstallPrerequisites(object):
     def mpich2_build(self, path):
         commands = []
         commands.append([
-          './configure','--prefix='+self.prefix,
-          '--enable-sharedlibs=gcc','--enable-f90'
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-sharedlibs=gcc',
+          '--enable-f90', 
+          '--with-device=ch3:sock',
+         #'F90=gfortran',
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
