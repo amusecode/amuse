@@ -33,7 +33,7 @@ class TestMPIInterface(unittest.TestCase):
         del instance
         
     
-    def xtest4(self):
+    def test4(self):
         instance = mpi_interface.PhiGRAPE()
         instance.setup_module()
         
@@ -54,9 +54,10 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(12.0,  retrieved_state['mass'][0])
         self.assertEquals(instance.get_number(), 4)
         instance.cleanup_module()
+        del instance
         
     
-    def xtest5(self):
+    def test5(self):
         instance = mpi_interface.PhiGRAPE()
         instance.setup_module()
         n = 4000
@@ -76,7 +77,7 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(3999.0,  retrieved_state['mass'])
         instance.cleanup_module()
         
-    def xtest6(self):
+    def test6(self):
         instance = mpi_interface.PhiGRAPE()
         instance.setup_module()
         n = 4000
@@ -97,6 +98,41 @@ class TestMPIInterface(unittest.TestCase):
         print "result:", retrieved_state
         self.assertEquals(1.0,  retrieved_state['mass'])
         instance.cleanup_module()
+
+    def test7(self):
+        instance = mpi_interface.PhiGRAPE()
+        instance.setup_module()
+        instance.set_eps(0.0**2)
+        instance.set_eta(0.01,0.02)
+
+        instance.add_particle( [1,2,3],
+            [1.0,1.0,1.0],
+            [0.0,0.0,0.0],
+            [1.0,0.0,-1.0],
+            [0.0,0.0,0.0],
+            [0.0,0.0,0.0],
+            [0.0,1.0,0.0],
+            [0.0,0.0,0.0],
+            [0.0,0.0,0.0] )
+        instance.initialize_particles(0.0) 
+        Ep=instance.get_potential_energy()
+        Ek=instance.get_kinetic_energy()
+        self.assertEqual( Ek, 0.5)
+        self.assertEqual( Ep, -2.5)        
+
+        instance.remove_particle(2)
+        instance.reinitialize_particles() 
+        n=instance.get_number()
+        Ep=instance.get_potential_energy()
+        Ek=instance.get_kinetic_energy()
+
+        self.assertEqual( n, 2)
+        self.assertEqual( Ek, 0.)
+        self.assertEqual( Ep, -0.5)        
+
+        instance.cleanup_module()
+        del instance
+
         
         
 
