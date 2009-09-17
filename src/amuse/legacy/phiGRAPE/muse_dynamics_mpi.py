@@ -21,28 +21,25 @@ class PhiGRAPE(object):
         
     @core.legacy_function
     def stop_worker():
-        function = RemoteFunction()  
+        function = RemoteFunction() 
         function.id = 0
         return function
 
     @core.legacy_function   
     def setup_module():
         function = RemoteFunction()  
-        function.id = 1
         function.result_type = 'i'
         return function
         
     @core.legacy_function      
     def cleanup_module():
         function = RemoteFunction()  
-        function.id = 2
         function.result_type = 'i'
         return function
     
     @core.legacy_function    
     def initialize_particles():
         function = RemoteFunction()  
-        function.id = 3
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
@@ -50,14 +47,12 @@ class PhiGRAPE(object):
     @core.legacy_function  
     def reinitialize_particles():
         function = RemoteFunction()  
-        function.id = 4
         function.result_type = 'i'
         return function
                 
     @core.legacy_function    
     def add_particle():
         function = RemoteFunction()  
-        function.id = 5
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -67,7 +62,6 @@ class PhiGRAPE(object):
     @core.legacy_function    
     def evolve():
         function = RemoteFunction()  
-        function.id = 6
         function.addParameter('time_end', dtype='d', direction=function.IN)
         function.addParameter('synchronize', dtype='i', direction=function.IN)
         function.result_type = 'i'
@@ -76,24 +70,20 @@ class PhiGRAPE(object):
     @core.legacy_function   
     def get_number():
         function = RemoteFunction()  
-        function.id = 7
         function.result_type = 'i'
         return function;
              
     @core.legacy_function    
     def get_state():
         function = RemoteFunction()  
-        function.id = 8
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
-        function.result_type = None
         return function
         
     @core.legacy_function
     def set_mass():
         function = RemoteFunction()  
-        function.id = 9
         function.result_type = 'i'
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
@@ -102,28 +92,24 @@ class PhiGRAPE(object):
     @core.legacy_function      
     def get_time():
         function = RemoteFunction()
-        function.id = 11  
         function.result_type = 'd'
         return function
 
     @core.legacy_function      
     def get_time_step():
         function = RemoteFunction()  
-        function.id = 12
         function.result_type = 'd'
         return function
 
     @core.legacy_function      
     def set_eps():
         function = RemoteFunction()  
-        function.id = 13
         function.addParameter('eps2', dtype='d', direction=function.IN)
         return function
 
     @core.legacy_function      
     def set_eta():
         function = RemoteFunction()  
-        function.id = 14
         function.addParameter('etas', dtype='d', direction=function.IN)
         function.addParameter('eta', dtype='d', direction=function.IN)
         return function
@@ -131,28 +117,24 @@ class PhiGRAPE(object):
     @core.legacy_function      
     def get_kinetic_energy():
         function = RemoteFunction()  
-        function.id = 15
         function.result_type = 'd'
         return function
 
     @core.legacy_function      
     def get_potential_energy():
         function = RemoteFunction()  
-        function.id = 16
         function.result_type = 'd'
         return function
 
     @core.legacy_function      
     def get_energy_error():
         function = RemoteFunction()  
-        function.id = 17
         function.result_type = 'd'
         return function
 
     @core.legacy_function      
     def find_colliding_secondary():
         function = RemoteFunction()  
-        function.id = 18
         function.addParameter('id1', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function

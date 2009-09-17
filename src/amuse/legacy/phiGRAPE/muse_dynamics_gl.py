@@ -20,6 +20,5 @@ class PhiGRAPE(PhiGRAPE_basic):
     @core.legacy_function
     def start_viewer():
         function = RemoteFunction()  
-        function.id = 10
         return function
 
