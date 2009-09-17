@@ -305,16 +305,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.n() + 'int rank = parent.Get_rank();'
         self.out.lf().lf() + 'bool must_run_loop = true;'
         
-        maximum_number_of_inputvariables_of_a_type = 255 * 5000
-        for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + dtype_spec.type + ' * ' 
-            self.out + dtype_spec.input_var_name 
-            self.out + ' = new ' + dtype_spec.type 
-            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
-            self.out.lf() + dtype_spec.type + ' * ' 
-            self.out + dtype_spec.output_var_name 
-            self.out + ' = new ' + dtype_spec.type 
-            self.out + '[' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+        self.out.lf().lf() + 'int max_len = ' + 10 + ';'
+        self.output_new_statements(True)
         
         self.out.lf().lf() + 'while(must_run_loop) {'
         self.out.indent()
@@ -326,7 +318,14 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf()
         self.out.lf() + 'request_header.recv(parent,rank);'
             
+        self.out.lf() + 'if (request_header.len > max_len) {'
+        self.out.indent()
+        self.out.lf() + 'max_len = request_header.len + 255;'
+        self.output_delete_statements()
+        self.output_new_statements(False)
+        self.out.dedent()
         
+        self.out.lf() + '}'
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]    
             self.out.lf() 
@@ -371,18 +370,35 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.dedent()
         self.out.lf() + '}'
         
+        self.output_delete_statements()
         
-        
+        self.out.lf().lf() + 'parent.Free();'
+        self.out.dedent()
+        self.out.lf() + '}'
+    
+    def output_delete_statements(self):
         for dtype_spec in self.dtype_to_spec.values():
             self.out.lf() + 'delete ' 
             self.out + dtype_spec.input_var_name  + ';'
             self.out.lf() + 'delete '
             self.out + dtype_spec.output_var_name  + ';'
             
-        self.out.lf().lf() + 'parent.Free();'
-        self.out.dedent()
-        self.out.lf() + '}'
-        
+    def output_new_statements(self, must_add_type):
+        maximum_number_of_inputvariables_of_a_type = 255
+        for dtype_spec in self.dtype_to_spec.values():
+            self.out.lf() 
+            if must_add_type:
+                self.out + dtype_spec.type + ' * ' 
+            self.out + dtype_spec.input_var_name 
+            self.out + ' = new ' + dtype_spec.type 
+            self.out + '[' + ' max_len * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+            self.out.lf() 
+            if must_add_type:
+                self.out + dtype_spec.type + ' * ' 
+            self.out + dtype_spec.output_var_name 
+            self.out + ' = new ' + dtype_spec.type 
+            self.out + '[' + ' max_len * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+            
     def output_main(self):
         self.out.lf().lf() + 'int main(int argc, char *argv[])'
         self.out.lf() + '{'
