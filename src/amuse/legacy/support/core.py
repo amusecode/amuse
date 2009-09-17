@@ -249,10 +249,19 @@ class MpiChannel(object):
         self.legacy_interface_type = legacy_interface_type
         
     def start(self):
-        directory_of_this_module = os.path.dirname(inspect.getfile(self.legacy_interface_type))
-        full_name_of_the_worker = os.path.join(directory_of_this_module , self.name_of_the_worker)
-        if not os.path.exists(full_name_of_the_worker):
-            raise Exception("The worker application does not exists, it should be at: %s".format(full_name_of_the_worker))
+        tried_workers = []
+        found = False
+        while not found:
+            directory_of_this_module = os.path.dirname(inspect.getfile(self.legacy_interface_type))
+            full_name_of_the_worker = os.path.join(directory_of_this_module , self.name_of_the_worker)
+            found = os.path.exists(full_name_of_the_worker)
+            if not found:
+                tried_workers.append(full_name_of_the_worker)
+                legacy_interface_type = legacy_interface_type.__bases__[0]
+                if legace_interface_type is LegacyInterface:
+                    raise Exception("The worker application does not exists, it should be at: %s".format(tried_workers))
+            else:
+                found = True
         self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, self.number_of_workers)
 
     def stop(self):

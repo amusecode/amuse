@@ -107,13 +107,7 @@ class TestMPIInterface(unittest.TestCase):
         del hermite
         
 class TestAmuseInterface(unittest.TestCase):
-    def test1(self):
-        convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
-
-        hermite = mpi_interface.Hermite(convert_nbody)
-        hermite.setup_module()
-        hermite.dt_dia = 5000
-        
+    def new_system_of_sun_and_earth(self):
         stars = core.Stars(2)
         sun = stars[0]
         sun.mass = units.MSun(1.0)
@@ -126,6 +120,18 @@ class TestAmuseInterface(unittest.TestCase):
         earth.radius = units.km(6371) 
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
+        
+        return stars
+        
+    def test1(self):
+        convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+
+        hermite = mpi_interface.Hermite(convert_nbody)
+        hermite.setup_module()
+        hermite.dt_dia = 5000
+        
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
 
         hermite.add_particles(stars)
 
@@ -160,20 +166,8 @@ class TestAmuseInterface(unittest.TestCase):
         instance.setup_module()
         instance.dt_dia = 5000
         
-        
-        stars = core.Stars(2)
-        sun = stars[0]
-        sun.mass = units.MSun(1.0)
-        sun.position = units.m(numpy.array((0.0,0.0,0.0)))
-        sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
-        sun.radius = units.RSun(1.0)
-
+        stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
-        earth.mass = units.kg(5.9736e24)
-        earth.radius = units.km(6371) 
-        earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
-        earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
-
         instance.add_particles(stars)
     
         for x in range(1,2000,10):
@@ -194,4 +188,18 @@ class TestAmuseInterface(unittest.TestCase):
         
         instance.cleanup_module()
         del instance
+        
+    def test3(self):
+        convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
+        instance = mpi_interface.Hermite(convert_nbody)
+        instance.setup_module()
+        instance.dt_dia = 5000
+        
+        stars = self.new_system_of_sun_and_earth()
+        instance.add_particles(stars)
+        factor = instance.get_energies()[0].number / (-instance.get_energies()[1].number / 2)
+        self.assertAlmostEqual(factor, 1.000, 3)
+        instance.evolve_model(100 | units.day)
+        factor = instance.get_energies()[0].number / (-instance.get_energies()[1].number / 2)
+        self.assertAlmostEqual(factor, 1.000, 4)

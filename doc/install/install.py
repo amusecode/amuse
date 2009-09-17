@@ -167,8 +167,10 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
     def mpich2_build(self, path):
         commands = []
         commands.append([
-          './configure','--prefix='+self.prefix,
+          './configure',
+          '--prefix='+self.prefix,
           '--enable-sharedlibs=osx-gcc',
+          '--with-device=ch3:sock',
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
