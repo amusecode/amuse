@@ -36,7 +36,6 @@ C          --------
 
 C---  get infos on this run
       CALL MPI_Comm_Rank(MPI_COMM_WORLD,myRank, ierr)
-      print*,myRank
 C          -------------
       CALL MPI_Comm_Size(MPI_COMM_WORLD,n_proc, ierr)
 C          -------------
