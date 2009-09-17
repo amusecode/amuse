@@ -251,14 +251,16 @@ class MpiChannel(object):
     def start(self):
         tried_workers = []
         found = False
+        current_type=self.legacy_interface_type
         while not found:
-            directory_of_this_module = os.path.dirname(inspect.getfile(self.legacy_interface_type))
+            directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module , self.name_of_the_worker)
             found = os.path.exists(full_name_of_the_worker)
             if not found:
+            
                 tried_workers.append(full_name_of_the_worker)
-                legacy_interface_type = legacy_interface_type.__bases__[0]
-                if legace_interface_type is LegacyInterface:
+                current_type = current_type.__bases__[0]
+                if current_type is LegacyInterface:
                     raise Exception("The worker application does not exists, it should be at: %s".format(tried_workers))
             else:
                 found = True

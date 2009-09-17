@@ -114,6 +114,9 @@ class OrderedDictionary(object):
         result += ','.join(elements)
         result += '})'
         return result
+
+    def __getattr__(self, key):
+        return self.mapping[key]
         
     def keys(self):
         return iter(self.orderedKeys)
