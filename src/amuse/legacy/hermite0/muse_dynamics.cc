@@ -570,8 +570,8 @@ int reinitialize_particles()
 int add_particle(int id, double _mass, double _radius, double x, double y, double z, double vx, double vy, double vz)
     // add d to the dynamical system
 {
-    unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-    if (i < ident.size()) {
+    unsigned int i = 0; //find(ident.begin(), ident.end(), id) - ident.begin();
+    if (0 && i < ident.size()) {
 
         // Particle already exists.  Do nothing.
 

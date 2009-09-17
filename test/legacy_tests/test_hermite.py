@@ -66,7 +66,7 @@ class TestMPIInterface(unittest.TestCase):
     def test5(self):
         hermite = mpi_interface.Hermite()
         hermite.setup_module()
-        n = 4000
+        n = 10000
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
         hermite.add_particle(ids
@@ -209,3 +209,4 @@ class TestAmuseInterface(unittest.TestCase):
         total_energy2=  sum(instance.get_energies(), 0|units.J)
         self.assertAlmostEqual(total_energy2.number /  total_energy0.number, 1.0, 7)
         self.assertAlmostEqual(total_energy2.number, total_energy1.number, 10)
+        
