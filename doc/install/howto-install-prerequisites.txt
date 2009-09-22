@@ -91,10 +91,11 @@ To start the installation do:
 
 	>
 
-	# 2. Set the PREFIX and PATH environment variables:
+	# 2. Set the PREFIX, PATH and LD_LIBRARY_PATH environment variables:
 
   	> export PREFIX=~/amuse/prerequisites
   	> export PATH=${PREFIX}/bin:${PATH}
+  	> export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
 	# 3. Start the installation script for python
 
