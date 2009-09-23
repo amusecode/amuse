@@ -184,5 +184,10 @@ class BHTree(LegacyInterface):
             if x.name == 'mass':
                 self.set_mass(id, self.convert_nbody.to_nbody(x.value()).number)
         
+    def get_energies(self):
+        energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2
+        kinetic_energy = self.get_kinetic_energy() | energy_unit
+        potential_energy = self.get_potential_energy() | energy_unit
+        return (self.convert_nbody.to_si(kinetic_energy), self.convert_nbody.to_si(potential_energy))
     
   
