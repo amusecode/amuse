@@ -139,7 +139,52 @@ c         PRINT*, 'Warning: system not initialised yet'
       set_eta = 0
       RETURN
       END
+      
+      FUNCTION set_eta_s(value)
+      IMPLICIT NONE
+#include "general.inc"
 
+      INTEGER set_eta_s
+      DOUBLE PRECISION value
+
+      eta_s   = value
+
+      set_eta_s = 0
+      RETURN
+      END
+      
+      FUNCTION set_eta1(value)
+      IMPLICIT NONE
+#include "general.inc"
+
+      INTEGER set_eta1
+      DOUBLE PRECISION value
+
+      eta   = value
+
+      set_eta1 = 0
+      RETURN
+      END
+
+      FUNCTION get_eta_s()
+      IMPLICIT NONE
+#include "general.inc"
+
+      DOUBLE PRECISION get_eta_s
+
+      get_eta_s   = eta_s
+      RETURN
+      END
+      
+      FUNCTION get_eta()
+      IMPLICIT NONE
+#include "general.inc"
+
+      DOUBLE PRECISION get_eta
+
+      get_eta   = eta
+      RETURN
+      END
 C====================================================================
 C===
 C===  setup_module: function to setup the neccessary things for 

@@ -92,7 +92,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     stellar_evolution = SSE()
     stellar_evolution.initialize_module_with_default_parameters() 
     
-    gravity.set_eps2(0.3 | units.parsec ** 2)
+    gravity.parameters.epsilon_squared = 0.3 | units.parsec ** 2
     
     print "setting masses of the stars"
     for i, x in enumerate(particles):

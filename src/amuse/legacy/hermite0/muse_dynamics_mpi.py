@@ -11,9 +11,21 @@ class Hermite(LegacyInterface):
     eps2 = legacy_global(name='eps2',id=23,dtype='d')
     flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
             
+            
+    parameter_definitions = [
+        parameters.ModuleAttributeParameterDefinition(
+            "eps2",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.0 | nbody_system.length * nbody_system.length
+        )
+    ]
+    
     def __init__(self, convert_nbody = nbody_system.noconvert_nbody_to_si()):
         LegacyInterface.__init__(self)
         self.convert_nbody = convert_nbody
+        self.parameters = parameters.Parameters(self.parameter_definitions, self)
 
     @legacy_function   
     def setup_module():

@@ -41,10 +41,10 @@ class TestMPIInterface(unittest.TestCase):
         
 class TestAmuseInterface(unittest.TestCase):
     def test1(self):
-        convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = mpi_interface.BHTree(convert_nbody)
-        instance.eps2_for_gravity = 0.001
+        instance.parameters.epsilon_squared = 0.001 | units.AU**2
         instance.setup_module()
         
         stars = core.Stars(2)
@@ -94,7 +94,7 @@ class TestAmuseInterface(unittest.TestCase):
 
         instance = mpi_interface.BHTree(convert_nbody)
         #instance.dt_dia = 1
-        instance.eps2_for_gravity = 0.001
+        instance.parameters.epsilon_squared = 0.001 | units.AU**2
         #instance.timestep = 0.0001
         #instance.use_self_gravity = 0
         instance.setup_module()

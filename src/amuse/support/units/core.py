@@ -61,15 +61,19 @@ class unit(object):
             other_factor = x.factor
             return this_factor / other_factor
         else:
+            print x.base, self.base
             raise Exception("Cannot expres: " + str(x) + " in " + str(self))
+            
     def in_(self, x):
         if isinstance(x, values.value):
             print "bla"
         else:
             factor = self.conversion_factor_from(x)
             return x(factor)
+            
     def __repr__(self):
         return 'unit<'+str(self)+'>'
+        
     def combine_bases(self, base1, base2):
         result = []
         for n1, unit1 in base1:
@@ -84,7 +88,9 @@ class unit(object):
                 yield n1, 0, unit1
         for n2, unit2 in base2:
                 yield 0, n2, unit2
-        
+                
+    def has_same_base_as(self, other):
+        return other.base == self.base
             
         
 class base_unit(unit):
@@ -156,16 +162,19 @@ class mul_unit(unit):
    
     @property
     def base(self):
-        return map(lambda x: (x[0] + x[1], x[2]),self.combine_bases(self.left_hand.base, self.right_hand.base))
+        return tuple(map(lambda x: (x[0] + x[1], x[2]),self.combine_bases(self.left_hand.base, self.right_hand.base)))
+        
 class pow_unit(unit):
     def __init__(self, power , unit):
         self.power = power
         self.unit = unit
     def __str__(self):
         return str(self.unit) + '**' + str(self.power)
+        
     @property
     def base(self):
         return tuple(map(lambda x : (x[0] * self.power, x[1]), self.unit.base))
+        
     @property
     def factor(self):
         return self.unit.factor ** self.power
@@ -174,14 +183,20 @@ class div_unit(unit):
     def __init__(self, left_hand , right_hand):
         self.left_hand = left_hand
         self.right_hand = right_hand
+        
     def __str__(self):
         return str(self.left_hand) + ' / ' + str(self.right_hand)+''
+        
     @property
     def factor(self):
         return  self.left_hand.factor * 1.0  / self.right_hand.factor
+        
     @property
     def base(self):
-        return map(lambda x: (x[0] - x[1], x[2]),self.combine_bases(self.left_hand.base, self.right_hand.base))
+        return tuple(
+                    filter(lambda x: x[0] != 0,
+                    map(lambda x: (x[0] - x[1], x[2]),
+                        self.combine_bases(self.left_hand.base, self.right_hand.base))))
         
 def k(unit):
     return factor_unit(1000, unit, 'kilo','k')           

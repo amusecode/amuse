@@ -127,6 +127,7 @@ class TestAmuseInterface(unittest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
         hermite = mpi_interface.Hermite(convert_nbody)
+        hermite.parameters.epsilon_squared = 0.0 | units.AU**2
         hermite.setup_module()
         hermite.dt_dia = 5000
         
@@ -163,6 +164,7 @@ class TestAmuseInterface(unittest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
         instance = mpi_interface.Hermite(convert_nbody)
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.setup_module()
         instance.dt_dia = 5000
         

@@ -8,11 +8,14 @@ import numpy
 class nbody_unit(core.unit):
     def __init__(self, unit_in_si):
         self.unit_in_si = unit_in_si
+        
     def __str__(self):
         return 'nbody '+self.unit_in_si.quantity
+        
     @property
     def base(self):
         return ((1,self),)
+        
     @property
     def factor(self):
         return 1.0
@@ -23,6 +26,13 @@ mass = nbody_unit(units.kg)
  
 speed = length / time
 
+def is_nbody_unit(unit):
+    for factor, x in unit.base:
+        if isinstance(x, nbody_unit):
+            return True
+    return False
+    
+    
 class nbody_to_si(object): 
     
     def __init__(self, value1 , value2):

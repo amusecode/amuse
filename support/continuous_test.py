@@ -181,9 +181,13 @@ class TimeATest(object):
         time_taken = timings.mean_time() 
         if time_taken < 0.1:
             return True
-        if time_taken < 1.0:
+        if time_taken < 0.5:
             return (timings.number_of_suite_runs % 5) == 0
-        return (timings.number_of_suite_runs % 10) == 0
+        if time_taken < 1.0:
+            return (timings.number_of_suite_runs % 10) == 0
+        if time_taken < 4.0:
+            return (timings.number_of_suite_runs % 20) == 0
+        return (timings.number_of_suite_runs % 40) == 0
     
     def addSuccess(self,test):
         timings = self.get_timings(test)

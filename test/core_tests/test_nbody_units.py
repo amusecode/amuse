@@ -4,7 +4,7 @@ from amuse.support.units.nbody_system import *
 
 class TestNbodyUnits(unittest.TestCase):
     def test1(self):
-       convert_nbody = nbody_to_si(units.parsec(1),units.MSun(20))
+       convert_nbody = nbody_to_si(1 | units.parsec, 20 |units.MSun)
        y = 1 | mass
        self.assertEqual(str(y), '1 nbody mass')
        y_in_si = convert_nbody.to_si(y)
@@ -14,27 +14,27 @@ class TestNbodyUnits(unittest.TestCase):
        self.assertEqual(str(y_in_nbody), '1.0 nbody mass')
        
     def test2(self):
-       convert_nbody = nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+       convert_nbody = nbody_to_si(1 | units.MSun, 149.5e6 | units.km)
        y = 29800 | units.m / units.s
        y_in_nbody = convert_nbody.to_nbody(y) 
        self.assertEqual(str(y_in_nbody.unit), 'nbody length * nbody time**-1')
        self.assertAlmostEqual(y_in_nbody.number, 1.0, 3)
        
     def test3(self):
-       convert_nbody = nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+       convert_nbody = nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
        y = 1 | length * (time**-1)
        y_in_si = convert_nbody.to_si(y) 
        #self.assertEqual(str(y_in_nbody.unit), 'nbody length * nbody time**-1')
        self.assertAlmostEqual(y_in_si.number, 29795.4, 1)
        
     def test4(self):
-       convert_nbody = nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+       convert_nbody = nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
        y_in_nbody = convert_nbody.to_nbody(units.G) 
        self.assertEqual(str(y_in_nbody.unit), 'nbody length**3 * nbody mass**-1 * nbody time**-2' )
        self.assertAlmostEqual(y_in_nbody.number, 1.0, 9)
        
     def test5(self):
-       convert_nbody = nbody_to_si(units.km(149.5e6), units.MSun(1.0))
+       convert_nbody = nbody_to_si(149.5e6 | units.km, 1 | units.MSun)
        y = 29800 | units.m / units.s
        y_in_nbody = convert_nbody.to_nbody(y) 
        self.assertEqual(str(y_in_nbody.unit), 'nbody length * nbody time**-1')
@@ -56,3 +56,8 @@ class TestNbodyUnits(unittest.TestCase):
        y_in_si = convert_nbody.to_si(y) 
        self.assertEqual(str(y_in_si.unit), 's')
        self.assertAlmostEqual(y_in_si.number, 6.6730000000000296e-11, 3)
+       
+    def test8(self):
+        self.assertTrue(is_nbody_unit(time / length))
+        self.assertFalse(is_nbody_unit(units.s / units.m))
+        

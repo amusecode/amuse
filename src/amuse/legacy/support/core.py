@@ -10,6 +10,8 @@ import os.path
 
 import inspect
 import numpy
+import weakref
+import atexit
 
 class DataType(object):
     pass
@@ -342,16 +344,30 @@ class MpiChannel(object):
         return (doubles_result, ints_result)
         
 
+def stop_interfaces():
+    for reference in LegacyInterface.instances:
+        x = reference()
+        if not x is None:
+            x._stop()
+        
+
 class LegacyInterface(object):
+    instances = []
+    atexit.register(stop_interfaces)
     
     def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1):
         self.channel = MpiChannel(name_of_the_worker, number_of_workers, type(self))
         self.channel.start()
+        self.instances.append(weakref.ref(self))
         
     def __del__(self):
-        self._stop_worker()
-        self.channel.stop()
-        del self.channel
+        self._stop()
+    
+    def _stop(self):
+        if hasattr(self, 'channel'):
+            self._stop_worker()
+            self.channel.stop()
+            del self.channel
         
     @legacy_function
     def _stop_worker():

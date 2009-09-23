@@ -1,13 +1,40 @@
 import numpy
 
 from amuse.support.units import nbody_system
+from amuse.support.units import units
 from amuse.legacy import *
 
 
-class PhiGRAPE(LegacyInterface):            
+class PhiGRAPE(LegacyInterface):   
+    parameter_definitions = [
+        parameters.ModuleMethodParameterDefinition(
+            "get_eps", "set_eps",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.0 | nbody_system.length * nbody_system.length
+        ),
+        parameters.ModuleMethodParameterDefinition(
+            "get_eta", "set_eta1",
+            "eta", 
+            "timestep parameter", 
+            units.none , 
+            0.01 |  units.none
+        ),
+        parameters.ModuleMethodParameterDefinition(
+            "get_eta_s", "set_eta_s",
+            "eta_s", 
+            "parameter to determine the initial timestep", 
+            units.none , 
+            0.002 |  units.none
+        ),
+    ]
+    
+             
     def __init__(self, convert_nbody = None):
         LegacyInterface.__init__(self)
         self.convert_nbody = convert_nbody
+        self.parameters = parameters.Parameters(self.parameter_definitions, self)
 
     @legacy_function   
     def setup_module():
@@ -115,6 +142,32 @@ class PhiGRAPE(LegacyInterface):
         return function
 
     @legacy_function      
+    def set_eta_s():
+        function = RemoteFunction()  
+        function.addParameter('value', dtype='d', direction=function.IN)
+        return function
+
+    @legacy_function      
+    def set_eta1():
+        function = RemoteFunction()  
+        function.addParameter('value', dtype='d', direction=function.IN)
+        return function
+
+
+    @legacy_function      
+    def get_eta():
+        function = RemoteFunction()  
+        function.result_type = 'd'
+        return function
+        
+    @legacy_function      
+    def get_eta_s():
+        function = RemoteFunction()  
+        function.result_type = 'd'
+        return function
+
+
+    @legacy_function      
     def get_kinetic_energy():
         function = RemoteFunction()  
         function.result_type = 'd'
@@ -173,10 +226,6 @@ class PhiGRAPE(LegacyInterface):
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).number, 0.0)
         return result
-        
-    def set_eps2(self, eps2):
-        self.eps2 = self.convert_nbody.to_nbody(eps2).number
-    
     
     def add_particles(self, particles):
         for x in particles:

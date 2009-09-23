@@ -3,6 +3,7 @@ import numpy
 
 
 from amuse.support.units import nbody_system
+from amuse.support.units import units
 from amuse.legacy import *
 
 class BHTree(LegacyInterface):
@@ -47,11 +48,21 @@ class BHTree(LegacyInterface):
     
     dt_dia = legacy_global(name='dt_dia',id=246,dtype='d')
     
-    
+    parameter_definitions = [
+        parameters.ModuleAttributeParameterDefinition(
+            "eps2_for_gravity",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.3 | nbody_system.length * nbody_system.length
+        )
+    ]
             
     def __init__(self, convert_nbody = None):
         LegacyInterface.__init__(self)
+        self.parameters = parameters.Parameters(self.parameter_definitions, self)
         self.convert_nbody = convert_nbody
+        
 
     @legacy_function   
     def setup_module():
