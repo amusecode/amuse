@@ -92,7 +92,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     stellar_evolution = SSE()
     stellar_evolution.initialize_module_with_default_parameters() 
     
-    gravity.set_eps2(0.3 | units.lightyear ** 2)
+    gravity.set_eps2(0.3 | units.parsec ** 2)
     
     print "setting masses of the stars"
     for i, x in enumerate(particles):
@@ -107,9 +107,14 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     
     print "evolving the model until t = " + str(end_time)
+    
+    total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
     while time < end_time:
         gravity.evolve_model(time)
         
+        total_energy_at_this_time = sum(gravity.get_energies(), 0 | units.J)
+        
+        print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
         gravity.update_particles(particles)
         stellar_evolution.evolve_particles(particles,time)
         
