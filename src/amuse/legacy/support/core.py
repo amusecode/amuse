@@ -263,7 +263,7 @@ class MpiChannel(object):
                 tried_workers.append(full_name_of_the_worker)
                 current_type = current_type.__bases__[0]
                 if current_type is LegacyInterface:
-                    raise Exception("The worker application does not exists, it should be at: %s".format(tried_workers))
+                    raise Exception("The worker application does not exists, it should be at: {0}".format(tried_workers))
             else:
                 found = True
         self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, self.number_of_workers)

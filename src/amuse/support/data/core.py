@@ -16,7 +16,10 @@ class TemporalAttribute(object):
     def set_value_at_time(self, time, value):
         self.values.append((time, value))
     
-    def get_value_at_time(self, requested_time):
+    def get_value_at_time(self, requested_time = None):
+        if requested_time is None:
+            return self.value()
+            
         min = 0
         max = len(self.values) - 1
         while True:
@@ -70,6 +73,17 @@ class Particles(object):
         for x in self.particles:
             yield x.id
 
+    def get_values_of_attribute(self, attribute, time = None):
+        result = []
+        for x in self:
+            result.append(getattr(x, attribute).get_value_at_time(time))
+        return result
+        
+    def set_values_of_attribute(self, attribute, time, values):
+        for particle, value in map(None, self, values):
+            getattr(particle, attribute).set_value_at_time(time, value)
+        
+        
 class Stars(Particles):
     pass
 

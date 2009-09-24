@@ -22,6 +22,45 @@ class Hermite(LegacyInterface):
         )
     ]
     
+    attribute_definitions = [
+        attributes.ScalarAttributeDefinition(
+            "set_mass",
+            None,
+            "mass",
+            "mass",
+            "mass of a star",
+             nbody_system.mass,
+             1 | nbody_system.mass
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "radius",
+            "radius",
+            "radius of a star, used for collision detection",
+             nbody_system.length,
+             1 | nbody_system.length
+        ),
+        attributes.VectorAttributeDefinition(
+            None,
+            None,
+            ["x","y","z"],
+            "position",
+            "cartesian coordinates of a star",
+             nbody_system.length,
+             [0.0, 0.0, 0.0] | nbody_system.length
+        ),
+        attributes.VectorAttributeDefinition(
+            None,
+            None,
+            ["vx","vy","vz"],
+            "velocity",
+            "velocity of a star",
+            nbody_system.speed,
+            [0.0, 0.0, 0.0] | nbody_system.speed
+        ),
+    ]
+    
     def __init__(self, convert_nbody = nbody_system.noconvert_nbody_to_si()):
         LegacyInterface.__init__(self)
         self.convert_nbody = convert_nbody
@@ -108,23 +147,6 @@ class Hermite(LegacyInterface):
         return function
 
         
-        
-    def add_star(self, star):
-        id = star.id
-        mass = self.convert_nbody.to_nbody(star.mass.value())
-        position = self.convert_nbody.to_nbody(star.position.value())
-        velocity = self.convert_nbody.to_nbody(star.velocity.value())
-        
-        mass = mass.number
-        x = position.number[0]
-        y = position.number[1]
-        z = position.number[2]
-        vx = velocity.number[0]
-        vy = velocity.number[1]
-        vz = velocity.number[2]
-        radius = self.convert_nbody.to_nbody(star.radius.value()).number
-        self.add_particle(id, mass, radius, x, y, z, vx, vy, vz)
-        
     def update_star(self, star):
         state = self.get_state(star.id)
         time = self.convert_nbody.to_si( self.t | nbody_system.time)
@@ -141,40 +163,20 @@ class Hermite(LegacyInterface):
         self.eps2 = self.convert_nbody.to_nbody(eps2).number
     
     
-    def _add_particles(self, particles):
-        for x in particles:
-            self.add_star(x)
-            
     def update_particles(self, particles):
-        for x in particles:
-            self.update_star(x)
+        state = self.get_state(list(particles.ids))
+        time = self.convert_nbody.to_si( self.t | nbody_system.time)
+        for attribute_definition in self.attribute_definitions:
+            values = attribute_definition.get_keyword_results(self, state)
+            particles.set_values_of_attribute(attribute_definition.name, time, values)
             
     def add_particles(self, particles):
-        mass = []
-        x_ = []
-        y = []
-        z = []
-        vx = []
-        vy = []
-        vz = []
-        radius = []
-        id = []
-        for x in particles:
-            #self.update_star(x)
-            id.append(x.id)
-            mass_ = self.convert_nbody.to_nbody(x.mass.value())
-            position = self.convert_nbody.to_nbody(x.position.value())
-            velocity = self.convert_nbody.to_nbody(x.velocity.value())
-            
-            mass.append(mass_.number)
-            x_.append(position.number[0])
-            y.append(position.number[1])
-            z.append(position.number[2])
-            vx.append(velocity.number[0])
-            vy.append(velocity.number[1])
-            vz.append(velocity.number[2])
-            radius.append(self.convert_nbody.to_nbody(x.radius.value()).number)
-        self.add_particle(id, mass, radius, x_, y, z, vx, vy, vz)
+        keyword_arguments = {}
+        for attribute_definition in self.attribute_definitions:
+            values = particles.get_values_of_attribute(attribute_definition.name)
+            attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
+        keyword_arguments['id'] = list(particles.ids)
+        self.add_particle(**keyword_arguments)
             
     def update_attributes(self, attributes):
         
