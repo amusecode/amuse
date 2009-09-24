@@ -106,7 +106,6 @@ We can now start ```amuse.sh``` and try-out the interface
     >>> instance
     <amuse.legacy.mycode.interface.MyCode object at 0x7f57abfb2550>
     >>> del instance
-    >>>
     
 We have not defined any methods and our interface class is not
 very useful. We can only create an instance. When we create an instance
@@ -154,9 +153,45 @@ We can now start ```amuse.sh``` again and try-out our new interface
     >>> instance.sum(40.5, 10.3)
     50.8
     >>> del instance
-    >>> 
-    
 
+
+.. code-block:: python
+
+    from amuse.legacy import *
+    
+    class MyCode(LegacyInterface):
+        include_headers = ['code.h']
+        
+        def __init__(self):
+             LegacyInterface.__init__(self)
+             
+        @legacy_function
+        def sum():
+            function = RemoteFunction()
+            function.addParameter('x', 'd', function.IN)
+            function.addParameter('y', 'd', function.IN)
+            function.result_type = 'd'
+            return function
+
+        @legacy_function
+        def divide():
+            function = RemoteFunction()
+            function.addParameter('x', 'd', function.IN)
+            function.addParameter('y', 'd', function.IN)
+            function.addParameter('result', 'd', function.OUT)
+            function.result_type = None
+            return function
+            
+.. code-block:: pycon
+
+    >>> from amuse.legacy.mycode import interface
+    >>> instance = interface.MyCode()
+    >>> (result, error) =  instance.divide(10.2, 30.2)
+    >>> result
+    0.33774834437086093
+    >>> error
+    0
+    >>> del instance
 
              
 

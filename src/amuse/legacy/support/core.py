@@ -85,7 +85,8 @@ class LegacyCall(object):
             if self.specification.result_type == 'f':
                 return floats[0] 
         
-        if number_of_outputs == 1:
+        if number_of_outputs == 1 \
+            and self.specification.result_type == None:
             if len(ints) == 1:
                 return ints[0]
             if len(doubles) == 1:
@@ -96,11 +97,15 @@ class LegacyCall(object):
         result = OrderedDictionary()
         dtype_to_array = {
             'd' : list(reversed(doubles)),
-            'i' : list(reversed(ints))
+            'i' : list(reversed(ints)),
+            'f' : list(reversed(floats))
         }
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.dtype].pop()
-                
+        
+        if not self.specification.result_type is None:
+            result["__result"] =  dtype_to_array[self.specification.result_type].pop()
+    
         return result
        
 
