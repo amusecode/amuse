@@ -6,7 +6,96 @@ from amuse.legacy import *
 class SSE(LegacyInterface): 
     def __init__(self):
         LegacyInterface.__init__(self)
-        
+
+    #current_values['ospin'] = star.spin.to_number_in(units.km / units.s)
+    #current_values['epoch'] = star.epoch.to_number_in(units.Myr)
+    #current_values['tm'] = star.main_sequence_lifetime.to_number_in(units.Myr)
+    #current_values['tphys'] = star.current_time.to_number_in(units.Myr)
+    #current_values['tphysf'] = target_time.in_(units.Myr).number
+    attribute_definitions = [
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "kw",
+            "type",
+            "star type",
+             units.none,
+             1 | units.none
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "mass",
+            "initial_mass",
+            "initial ZAMS mass of a star",
+             units.MSun,
+             0.0 | units.MSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "mt",
+            "mass",
+            "current mass of a star",
+             units.MSun,
+             0.0 | units.MSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "r",
+            "radius",
+            "radius of a star",
+             units.RSun,
+             1.0 | units.RSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "lum",
+            "luminocity",
+            "luminocity of a star",
+             units.LSun,
+             1.0 | units.LSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "mc",
+            "core_mass",
+            "mass of the inner core of the star",
+             units.MSun,
+             0.0 | units.MSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "rc",
+            "core_radius",
+            "radiues of the inner core of the star",
+             units.RSun,
+             0.0 | units.RSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "menv",
+            "envelope_mass",
+            "mass of the outer envelope of the star",
+             units.MSun,
+             0.0 | units.MSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "renv",
+            "envelope_radius",
+            "radiues of the outer envelope of the star",
+             units.RSun,
+             0.0 | units.RSun
+        ),
+    ]
+    
     @legacy_function   
     def initialize():
         function = RemoteFunction()  
