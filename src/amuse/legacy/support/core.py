@@ -74,7 +74,6 @@ class LegacyCall(object):
         (doubles, ints) = self.interface.channel.recv_message(id)
         floats = []
         
-        
         number_of_outputs = len(self.specification.output_parameters)
         
         if number_of_outputs == 0:
@@ -105,10 +104,14 @@ class LegacyCall(object):
         
         if not self.specification.result_type is None:
             result["__result"] =  dtype_to_array[self.specification.result_type].pop()
-    
+        
         return result
        
-
+    def __str__(self):
+        return str(self.specification)
+        
+        
+        
 class legacy_function(object):
     """The meta information for a function call to a code
     """
@@ -247,6 +250,47 @@ class RemoteFunction(object):
                 offset = 0
             for index, parameter in enumerate(parameters):
                 parameter.output_index = offset + index
+                
+    
+    def __str__(self):
+        typecode_to_name = {'i':'int', 'd':'double', 'f':'float'}
+        p = print_out()
+        p + 'function: '
+        if self.result_type is None:
+            p + 'void'
+        else:
+            p + typecode_to_name[self.result_type]
+        p + ' '
+        p + self.name
+        p + '('
+        first = True
+        for x in self.input_parameters:
+            if first:
+                first = False
+            else:
+                p + ', '
+            p + typecode_to_name[x.dtype]
+            p + ' '
+            p + x.name
+        p + ')'
+        if self.output_parameters:
+            p + '\n'
+            p + 'output: '
+            first = True
+            for x in self.output_parameters:
+                if first:
+                    first = False
+                else:
+                    p + ', '
+                p + typecode_to_name[x.dtype]
+                p + ' '
+                p + x.name
+            if not self.result_type is None:
+                p + ', '
+                p + typecode_to_name[self.result_type]
+                p + ' '
+                p + '__result'
+        return p.string
     
 class MpiChannel(object):
     
@@ -295,7 +339,6 @@ class MpiChannel(object):
             for i in range(len(doubles_in)):
                 offset = i * length
                 doubles[offset:offset+length] = doubles_in[i]
-            
             self.intercomm.Bcast([doubles, MPI.DOUBLE], root=MPI.ROOT)
         if ints_in:
             ints = numpy.zeros(length * len(ints_in), dtype='i')
