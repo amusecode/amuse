@@ -3,13 +3,15 @@ from amuse.legacy.support.core import RemoteFunction
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
 from amuse.legacy.support.create_code import DTypeSpec, dtypes
- 
+
+import numpy
+
 dtype_to_spec = {
-    'i' : DTypeSpec('integers_in','integers_out', 
+    numpy.int32 : DTypeSpec('integers_in','integers_out', 
                     'number_of_integers', 'integer', 'MPI_INTEGER'),
-    'd' : DTypeSpec('doubles_in', 'doubles_out',
+    numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'real*8', 'MPI_DOUBLE_PRECISION'),
-    'f' : DTypeSpec('floats_in', 'floats_out',
+    numpy.float32 : DTypeSpec('floats_in', 'floats_out',
                     'number_of_floats', 'real*4', 'MPI_SINGLE_PRECISION')} 
         
 class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
@@ -59,7 +61,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         first = True
         
         for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.dtype]
+            spec = self.dtype_to_spec[parameter.datatype]
             
             if first:
                 first = False
@@ -82,7 +84,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
     def output_lines_with_inout_variables(self):
         
         for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.dtype]
+            spec = self.dtype_to_spec[parameter.datatype]
             
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + spec.output_var_name 
@@ -94,8 +96,8 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
         dtype_to_count = {}
         
         for parameter in self.specification.output_parameters:
-            count = dtype_to_count.get(parameter.dtype, 0)
-            dtype_to_count[parameter.dtype] = count + 1
+            count = dtype_to_count.get(parameter.datatype, 0)
+            dtype_to_count[parameter.datatype] = count + 1
                 
         if not self.specification.result_type is None:
             count = dtype_to_count.get(self.specification.result_type, 0)
@@ -140,7 +142,7 @@ class MakeAFortranStringOfALegacyGlobalSpecification(MakeCodeString):
         self.output_casestmt_start()
         self.out.indent()
         
-        spec = self.dtype_to_spec[self.legacy_global.dtype]
+        spec = self.dtype_to_spec[self.legacy_global.datatype]
         self.out.n() + 'if (' +spec.counter_name +'_in'
         self.out + ' == 1 ) then'
         self.out.indent()
@@ -327,7 +329,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         
         self.out.lf().lf() + 'header(1) = tag_out'
         self.out.lf() + 'header(2) = len_out'
-        for i, dtype in enumerate(['d','i','f']):
+        for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
             self.out.lf()  + 'header(' + (i+3) + ')'
             self.out + ' = ' + spec.counter_name + '_out'

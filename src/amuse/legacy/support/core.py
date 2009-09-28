@@ -31,6 +31,10 @@ class FloatDataType(DataType):
     mpi_type = MPI.FLOAT
     pass
 
+
+
+def _typecode_to_datatype(typecode):
+    return None if typecode is None else numpy.obj2sctype(typecode)
     
 class LegacyCall(object):
     """A legacy_call implements the runtime call to the remote process.
@@ -50,17 +54,17 @@ class LegacyCall(object):
             parameter = self.specification.input_parameters[index]
             names_in_argument_list.add(parameter.name)
             
-            values = dtype_to_values[parameter.dtype]
+            values = dtype_to_values[parameter.datatype]
             values[parameter.input_index] = argument
         
         for index, parameter in enumerate(self.specification.input_parameters):
                 if parameter.name in keyword_arguments:
-                    values = dtype_to_values[parameter.dtype]
+                    values = dtype_to_values[parameter.datatype]
                     values[parameter.input_index] = keyword_arguments[parameter.name]
         
         dtype_to_keyword = {
-            'd' : 'doubles_in',
-            'i' : 'ints_in'
+            numpy.float64 : 'doubles_in',
+            numpy.int32  : 'ints_in'
         }       
         call_keyword_arguments = {}
         for dtype, values in dtype_to_values.iteritems():
@@ -77,11 +81,11 @@ class LegacyCall(object):
         number_of_outputs = len(self.specification.output_parameters)
         
         if number_of_outputs == 0:
-            if self.specification.result_type == 'i':
+            if self.specification.result_type == numpy.int32:
                 return ints[0]       
-            if self.specification.result_type == 'd':
+            if self.specification.result_type == numpy.float64:
                 return doubles[0] 
-            if self.specification.result_type == 'f':
+            if self.specification.result_type == numpy.float32:
                 return floats[0] 
         
         if number_of_outputs == 1 \
@@ -95,12 +99,12 @@ class LegacyCall(object):
         
         result = OrderedDictionary()
         dtype_to_array = {
-            'd' : list(reversed(doubles)),
-            'i' : list(reversed(ints)),
-            'f' : list(reversed(floats))
+            numpy.float64 : list(reversed(doubles)),
+            numpy.int32 : list(reversed(ints)),
+            numpy.float32 : list(reversed(floats))
         }
         for parameter in self.specification.output_parameters:
-            result[parameter.name] = dtype_to_array[parameter.dtype].pop()
+            result[parameter.name] = dtype_to_array[parameter.datatype].pop()
         
         if not self.specification.result_type is None:
             result["__result"] =  dtype_to_array[self.specification.result_type].pop()
@@ -134,6 +138,7 @@ class legacy_function(object):
         if result.id is None:
             result.id = abs(crc32(result.name))
         return result
+    
         
         
 class legacy_global(object):
@@ -142,7 +147,7 @@ class legacy_global(object):
     def __init__(self, name , id = None, dtype = 'i'):
         self.name = name
         self.id = id
-        self.dtype = dtype
+        self.datatype = _typecode_to_datatype(dtype)
         
         if self.id is None:
             self.id = crc32(self.name)
@@ -167,7 +172,7 @@ class legacy_global(object):
         result = RemoteFunction()
         result.id = self.id
         result.name = self.name
-        result.addParameter('value', dtype=self.dtype, direction=RemoteFunction.IN)
+        result.addParameter('value', dtype=self.datatype, direction=RemoteFunction.IN)
         return result
         
     @late
@@ -175,16 +180,17 @@ class legacy_global(object):
         result = RemoteFunction()
         result.id = self.id
         result.name = self.name
-        result.result_type = self.dtype
+        result.result_type = self.datatype
         return result
      
 class Parameter(object):
+    
     def __init__(self, name, dtype, direction):
         self.name = name
-        self.dtype = dtype
         self.direction = direction
         self.input_index = -1
         self.output_index = -1
+        self.datatype = _typecode_to_datatype(dtype)
         
     def is_input(self):
         return ( self.direction == RemoteFunction.IN 
@@ -223,18 +229,18 @@ class RemoteFunction(object):
     def add_input_parameter(self, parameter):
         self.input_parameters.append(parameter)
         
-        parameters = self.dtype_to_input_parameters.get(parameter.dtype, [])
+        parameters = self.dtype_to_input_parameters.get(parameter.datatype, [])
         parameters.append(parameter)
         parameter.input_index = len(parameters) - 1
-        self.dtype_to_input_parameters[parameter.dtype] = parameters
+        self.dtype_to_input_parameters[parameter.datatype] = parameters
    
     def add_output_parameter(self, parameter):
         self.output_parameters.append(parameter)
         
-        parameters = self.dtype_to_output_parameters.get(parameter.dtype, [])
+        parameters = self.dtype_to_output_parameters.get(parameter.datatype, [])
         parameters.append(parameter)
         parameter.output_index = len(parameters) - 1
-        self.dtype_to_output_parameters[parameter.dtype] = parameters
+        self.dtype_to_output_parameters[parameter.datatype] = parameters
    
     def new_dtype_to_values(self):
         result = {}
@@ -291,6 +297,15 @@ class RemoteFunction(object):
                 p + ' '
                 p + '__result'
         return p.string
+        
+    
+    def get_result_type(self):
+        return self._result_type
+    
+    def set_result_type(self, value):
+        self._result_type = _typecode_to_datatype(value)
+        
+    result_type = property(get_result_type, set_result_type);
     
 class MpiChannel(object):
     

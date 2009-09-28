@@ -1,5 +1,6 @@
 import unittest
 import sys
+import numpy
 
 from amuse.legacy.support.core import *
 from amuse.legacy.support.create_c import *
@@ -177,6 +178,49 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         string = x.result
         self.assertEquals(string,  'case 1:\n  doubles_out[0] = test_one(\n    ints_in[0] ,\n    &ints_out[0] ,\n    &doubles_out[1]\n  );\n  reply_header.number_of_ints = 1;\n  reply_header.number_of_doubles = 2;\n  break;')
 
+
+
+        
+class TestMakeACHeaderDefinitionStringOfALegacyFunctionSpecification(unittest.TestCase):
+    _class_to_test = MakeACHeaderDefinitionStringOfALegacyFunctionSpecification
+    
+    def test1(self):
+        function = RemoteFunction()      
+        function.name = "test_one"     
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='d', direction=function.IN)
+        function.addParameter('name', dtype='d', direction=function.IN)
+        
+        x = self._class_to_test()
+        
+        x.specification = function
+        string = x.result
+        self.assertEquals(string, 'void test_one(int parameter1, double parameter2, double name);')
+        
+    def test2(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        self.assertEquals(string, 'int test_one(int parameter1);')
+    
+    def test3(self):
+        function = RemoteFunction()      
+        function.name = "test_with_out"   
+        function.id = 1
+        function.addParameter('parameter1', dtype=numpy.int32, direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.OUT)
+        function.addParameter('doublep', dtype=numpy.float64, direction=function.OUT)
+        function.result_type = 'd'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        self.assertEquals(string,  'double test_with_out(int parameter1, int * parameter2, double * doublep);')
 
 
         

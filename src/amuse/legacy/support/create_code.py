@@ -1,6 +1,8 @@
 from amuse.support.core import late, print_out
 from amuse.legacy.support.core import legacy_function, legacy_global
 
+import numpy
+
 class DTypeSpec(object):
     def __init__(self, input_var_name, output_var_name, counter_name, 
         type, mpi_type = 'UNKNOWN'):
@@ -10,7 +12,7 @@ class DTypeSpec(object):
         self.type = type
         self.mpi_type = mpi_type
 
-dtypes = ['d','i','f']
+dtypes = [numpy.float64, numpy.int32, numpy.float32]
 
 class MakeCodeString(object):
     def __init__(self):

@@ -4,13 +4,14 @@ from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
 from amuse.legacy.support.create_code import DTypeSpec, dtypes
       
-       
+import numpy
+
 dtype_to_spec = {
-    'i' : DTypeSpec('ints_in','ints_out',
+    numpy.int32 : DTypeSpec('ints_in','ints_out',
                     'number_of_ints', 'int', 'MPI_INT'),
-    'd' : DTypeSpec('doubles_in', 'doubles_out',
+    numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'double', 'MPI_DOUBLE'),
-    'f' : DTypeSpec('floats_in', 'floats_out',
+    numpy.float32 : DTypeSpec('floats_in', 'floats_out',
                     'number_of_floats', 'float', 'MPI_FLOAT')
 }
 
@@ -62,7 +63,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         first = True
         
         for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.dtype]
+            spec = self.dtype_to_spec[parameter.datatype]
             
             if first:
                 first = False
@@ -83,7 +84,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         
     def output_lines_with_inout_variables(self):
         for parameter in self.specification.parameters:
-            spec = self.dtype_to_spec[parameter.dtype]
+            spec = self.dtype_to_spec[parameter.datatype]
         
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + spec.output_var_name
@@ -95,8 +96,8 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         dtype_to_count = {}
         
         for parameter in self.specification.output_parameters:
-            count = dtype_to_count.get(parameter.dtype, 0)
-            dtype_to_count[parameter.dtype] = count + 1
+            count = dtype_to_count.get(parameter.datatype, 0)
+            dtype_to_count[parameter.datatype] = count + 1
                 
         if not self.specification.result_type is None:
             count = dtype_to_count.get(self.specification.result_type, 0)
@@ -131,7 +132,47 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         self.out.n() + 'break;'
         
         
- 
+
+class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCCodeString):
+
+        
+    def start(self):
+        self.output_function_start()
+        self.output_function_parameters()
+        self.output_function_end()
+        self._result = self.out.string
+            
+    def output_function_parameters(self):        
+        first = True
+        
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if first:
+                first = False
+            else:
+                self.out + ', '
+                
+            self.out + spec.type
+            self.out + ' '
+            if parameter.is_output():
+                self.out + '*' + ' '
+            self.out + parameter.name
+                
+            
+    def output_function_end(self):
+        self.out + ')' + ';'
+        
+    def output_function_start(self):
+        self.out.n()
+        if not self.specification.result_type is None:
+            spec = self.dtype_to_spec[self.specification.result_type]
+            self.out + spec.type
+            self.out + ' '
+        else:
+            self.out + 'void' + ' '
+        self.out + self.specification.name + '('
+        
 class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
     
     
@@ -140,7 +181,7 @@ class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
         self.output_casestmt_start()
         self.out.indent()
         
-        spec = self.dtype_to_spec[self.legacy_global.dtype]
+        spec = self.dtype_to_spec[self.legacy_global.datatype]
         self.out.n() + 'if(request_header.' + spec.counter_name
         self.out + ' == ' + 1 + '){'
         self.out.indent()
