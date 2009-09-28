@@ -9,7 +9,11 @@ from amuse.support.units import units
 
 import numpy
 
-from matplotlib import pyplot
+try:
+    from matplotlib import pyplot
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 
 class TestMPIInterface(unittest.TestCase):
@@ -239,6 +243,7 @@ class TestSunAndEarthSystem(unittest.TestCase):
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
+        
         instance.add_particles(stars)
         instance.initialize_particles(0.0)
     
@@ -246,17 +251,18 @@ class TestSunAndEarthSystem(unittest.TestCase):
             instance.evolve_model(x  | units.day)
             instance.update_particles(stars)
         
-        figure = pyplot.figure(figsize = (40,40))
-        plot = figure.add_subplot(1,1,1)
-        
-        
-        for index, (time,position) in enumerate(earth.position.values):
-            x_point = position.in_(units.AU).number[0]
-            y_point = position.in_(units.AU).number[1]
-            color = 'b'
-            plot.plot([x_point],[y_point], color + 'o')
-        
-        figure.savefig("phigrape-earth-sun.svg")    
+        if HAS_MATPLOTLIB:
+            figure = pyplot.figure(figsize = (40,40))
+            plot = figure.add_subplot(1,1,1)
+            
+            
+            for index, (time,position) in enumerate(earth.position.values):
+                x_point = position.in_(units.AU).number[0]
+                y_point = position.in_(units.AU).number[1]
+                color = 'b'
+                plot.plot([x_point],[y_point], color + 'o')
+            
+            figure.savefig("phigrape-earth-sun.svg")    
         
         instance.cleanup_module()
         del instance
