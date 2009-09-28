@@ -59,7 +59,7 @@ void set_ncrit_for_tree(int ncrit)	{ncrit_for_tree = ncrit;}
 
 // Interface functions:
 
-int add_particle(dynamics_state d)
+int _add_particle(dynamics_state d)
 {
 //    cerr << d.id << " " << d.x << " " << d.y << " " << d.z << " "
 //	 << d.radius << endl;
@@ -127,6 +127,23 @@ int add_particle(dynamics_state d)
 
     return bhtcs.n;
 }
+
+ int add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz) {
+        dynamics_state state;
+        state.id = id;
+        state.mass = mass;
+        state.radius = radius;
+        state.x = x;
+        state.y = y;
+        state.z = z;
+        state.vx = vx;
+        state.vy = vy;
+        state.vz = vz;
+        return _add_particle(state);
+    }
+    
+    
+
 
 static void create_treecode_system()
 {
@@ -328,29 +345,24 @@ double get_time()
     return bhtcs.time;
 }
 
-dynamics_state get_state(int id)
-{
-    dynamics_state d = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-
+void get_state(int id, int * id_out,  double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz) {
     int i = get_index_from_identity(id);
     if (i >= 0 && i < bhtcs.n) {
-
-	nbody_particle *np = bhtcs.get_particle_pointer();
-
-	d.id = np[i].get_index();
-	d.mass = np[i].get_mass();
-	vec v = np[i].get_pos();
-	d.x = v[0];
-	d.y = v[1];
-	d.z = v[2];
-	v = np[i].get_vel();
-	d.vx = v[0];
-	d.vy = v[1];
-	d.vz = v[2];
-	d.radius = np[i].get_radius();
+        nbody_particle *np = bhtcs.get_particle_pointer();
+        *id_out = np[i].get_index();
+        *mass = np[i].get_mass();
+        *radius = np[i].get_radius();
+	    vec v = np[i].get_pos();
+        *x = v[0];
+        *y = v[1];
+        *z = v[2];
+	    v = np[i].get_vel();
+        *vx = v[0];
+        *vy = v[1];
+        *vz = v[2];
+    } else {
+        *id_out = -1;
     }
-
-    return d;
 }
 
 double get_time_step()

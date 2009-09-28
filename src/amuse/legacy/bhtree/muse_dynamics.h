@@ -70,8 +70,10 @@ typedef struct {
 
 /// Return the number of particles in the system after the particle
 /// has been added.
+int add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz);
 
-int add_particle(dynamics_state d);
+    
+    
 
 //-------------------------------------------------------------------------
 //
@@ -192,7 +194,8 @@ int find_colliding_secondary(int id);
 //
 /// Return the current dynamical state of particle id.
 
-dynamics_state get_state(int id);
+
+void get_state(int id, int * id_out,  double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz);
 
 //-------------------------------------------------------------------------
 //

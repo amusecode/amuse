@@ -9,36 +9,6 @@ from amuse.legacy import *
 class BHTree(LegacyInterface):
     include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h']
     
-    extra_content = """
-    int _add_particle(int id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz) {
-        dynamics_state state;
-        state.id = id;
-        state.mass = mass;
-        state.radius = radius;
-        state.x = x;
-        state.y = y;
-        state.z = z;
-        state.vx = vx;
-        state.vy = vy;
-        state.vz = vz;
-        return add_particle(state);
-    }
-    
-    void _get_state(int id, int * id_out,  double * mass, double * radius, double * x, double * y, double * z, double * vx, double * vy, double * vz) {
-        dynamics_state state = get_state(id);
-        *id_out = state.id;
-        *mass = state.mass;
-        *radius = state.radius;
-        *x = state.x;
-        *y = state.y;
-        *z = state.z;
-        *vx = state.vx;
-        *vy = state.vy;
-        *vz = state.vz;
-    }
-    """
-    
-    
     timestep = legacy_global(name='timestep',id=21,dtype='d')
     eps2_for_gravity = legacy_global(name='eps2_for_gravity',id=22,dtype='d')
     theta_for_tree = legacy_global(name='theta_for_tree',id=23,dtype='d')
@@ -87,7 +57,6 @@ class BHTree(LegacyInterface):
     @legacy_function    
     def add_particle():
         function = RemoteFunction()  
-        function.name = '_add_particle'
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -97,7 +66,6 @@ class BHTree(LegacyInterface):
     @legacy_function    
     def get_state():
         function = RemoteFunction()  
-        function.name = '_get_state'
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('id_out', dtype='i', direction=function.OUT)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
