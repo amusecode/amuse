@@ -37,10 +37,10 @@ class generate_main(Command):
         with open('amuse.sh','w') as script_file:
             script_file.write('#!/bin/sh')
             script_file.write('\n\n')
+            script_file.write('export PYTHONPATH=${PYTHONPATH}')
             for x in [test_directory, src_directory]:
-                script_file.write('export PYTHONPATH=')
+                script_file.write(':')
                 script_file.write(x)
-                script_file.write('\n')
             
             script_file.write('\n')
             script_file.write('python $*\n')
