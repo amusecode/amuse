@@ -1,5 +1,6 @@
-Tutorial - Create an Interface to a Legacy Code
-================================================
+=====================================
+Create an Interface to a Legacy Code
+=====================================
 
 In this tutorial we will create an interface to a legacy code. 
 
@@ -125,12 +126,19 @@ Let's start make and build the ``muse_worker`` application
     >> make clean
     >> make
     ...
-    mpicxx muse_worker.cc code.o -o muse_worke
+    mpicxx muse_worker.cc code.o -o muse_worker
     >> ls
     ... muse_worker ...
     
 Running the code
 ~~~~~~~~~~~~~~~~
+Before we run the code we need to start the MPI daemon process ''mpd''. 
+This daemon process manages the start of child processes.
+
+.. code-block:: bash
+    
+    >> nohup mpd >/dev/null &
+
 We can use ``amuse.sh`` and try the interface.
 
 .. code-block:: pycon

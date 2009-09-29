@@ -1,7 +1,10 @@
+.. _prerequisite-label:
+
 Installation of the prerequisite software
 =========================================
 
 Before installing AMUSE several software packages must be installed.
+
 
 Requirements
 ~~~~~~~~~~~~
@@ -9,7 +12,7 @@ Requirements
 * Python (version >= 2.6)
 * Numpy (version >= 1.3.0)
 * HDF (version >= 1.8.3)
-* h5py (version >= 1.1.0)
+* h5py (version >= 1.2.0)
 * MPI (OpenMPI or MPICH2)
 * mpi4py (version >= 1.2)
 
@@ -64,7 +67,28 @@ To check if the h5py library is installed on your system do:
 If this fails with an error or a version before 1.2.0 you need to install h5py.
 You can download h5py from `http://code.google.com/p/h5py/`. 
 
+MPI
+---
+The installed MPI framewor must be MPI 2 compatible. MPICH2 is a portable
+implementation of the MPI 2 standard.
 
+To check if MPICH2 is installed on your system do:
+
+.. code-block:: sh
+    
+    > mpdhelp
+    
+    The following mpd commands are available.  For usage of any specific one,
+    invoke it with the single argument --help .
+
+    mpd           start an mpd daemon
+    mpdtrace      show all mpd's in ring
+    mpdboot       start a ring of daemons all at once
+    mpdringtest   test how long it takes 
+    ...
+    
+If this fails with an error you need to install MPICH2.
+You can download MPICH2 from `http://www.mcs.anl.gov/research/projects/mpich2/`.
 
 Installation scripts
 ~~~~~~~~~~~~~~~~~~~~
@@ -101,13 +125,13 @@ To start the installation do:
 
 	> ./install-python.sh
 
-	# 4. Start the installation script for python
+	# 4. Start the installation script for the prerequisite packages
 
 	> ./install.py download
   	> ./install.py install
 
 	# 5. Update your PATH variable in your profile. 
-	# Make sure the ``${prefix}/bin`` directory is the first entry in the PATH!
+	# Make sure the `${PREFIX}/bin` directory is the first entry in the PATH!
 
 You should now be able to install AMUSE.
 
@@ -122,7 +146,7 @@ When installing the code on OS.X all steps are the same.The only difference is i
 
 
 author: Arjen van Elteren (vanelteren@strw.leidenuniv.nl)
-date: 2009/07/17
+date: 2009/09/29
 
 
 

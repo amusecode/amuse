@@ -1,6 +1,6 @@
-==================================
-DESIGN - AMUSE Directory Structure
-==================================
+====================
+Directory Structure
+====================
 
 The amuse source-code is separated into 3 directories:
 

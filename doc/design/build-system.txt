@@ -1,6 +1,6 @@
-===========================
-Design - AMUSE Build system
-===========================
+============
+Build system
+============
 
 The design of the AMUSE build system is based on the standard Python "distutils" toolset.
 
