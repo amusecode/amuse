@@ -99,15 +99,15 @@ class LegacyCall(object):
         
         result = OrderedDictionary()
         dtype_to_array = {
-            numpy.float64 : list(reversed(doubles)),
-            numpy.int32 : list(reversed(ints)),
-            numpy.float32 : list(reversed(floats))
+            numpy.float64.__name__ : list(reversed(doubles)),
+            numpy.int32.__name__ : list(reversed(ints)),
+            numpy.float32.__name__ : list(reversed(floats))
         }
         for parameter in self.specification.output_parameters:
-            result[parameter.name] = dtype_to_array[parameter.datatype].pop()
+            result[parameter.name] = dtype_to_array[parameter.datatype.__name__].pop()
         
         if not self.specification.result_type is None:
-            result["__result"] =  dtype_to_array[self.specification.result_type].pop()
+            result["__result"] =  dtype_to_array[self.specification.result_type.__name__].pop()
         
         return result
        
