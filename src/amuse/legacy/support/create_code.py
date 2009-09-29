@@ -83,6 +83,20 @@ class MakeCodeStringOfAClassWithLegacyFunctions(MakeCodeString):
             
     
     
+class DTypeToSpecDictionary(object):
+    
+    def __init__(self, dict):
+        self.mapping = {}
+        for datatype, value in dict.iteritems():
+            self.mapping[datatype.__name__] = value
         
+    def __getitem__(self, datatype):
+        return self.mapping[datatype.__name__]
+    
+    def __len__(self):
+        return len(self.mapping)
+        
+    def values(self):
+        return self.mapping.values()
         
         

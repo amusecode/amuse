@@ -54,17 +54,17 @@ class LegacyCall(object):
             parameter = self.specification.input_parameters[index]
             names_in_argument_list.add(parameter.name)
             
-            values = dtype_to_values[parameter.datatype]
+            values = dtype_to_values[parameter.datatype.__name__]
             values[parameter.input_index] = argument
         
         for index, parameter in enumerate(self.specification.input_parameters):
                 if parameter.name in keyword_arguments:
-                    values = dtype_to_values[parameter.datatype]
+                    values = dtype_to_values[parameter.datatype.__name__]
                     values[parameter.input_index] = keyword_arguments[parameter.name]
         
         dtype_to_keyword = {
-            numpy.float64 : 'doubles_in',
-            numpy.int32  : 'ints_in'
+            numpy.float64.__name__ : 'doubles_in',
+            numpy.int32.__name__  : 'ints_in'
         }       
         call_keyword_arguments = {}
         for dtype, values in dtype_to_values.iteritems():
@@ -245,7 +245,7 @@ class RemoteFunction(object):
     def new_dtype_to_values(self):
         result = {}
         for dtype, parameters in self.dtype_to_input_parameters.iteritems():
-            result[dtype] =  [None] * len(parameters)   
+            result[dtype.__name__] =  [None] * len(parameters)   
         return result
     
     def prepare_output_parameters(self):

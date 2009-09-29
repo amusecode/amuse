@@ -2,18 +2,19 @@ from amuse.support.core import late
 from amuse.legacy.support.core import RemoteFunction
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
-from amuse.legacy.support.create_code import DTypeSpec, dtypes
+from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
       
 import numpy
 
-dtype_to_spec = {
+dtype_to_spec = DTypeToSpecDictionary({
     numpy.int32 : DTypeSpec('ints_in','ints_out',
                     'number_of_ints', 'int', 'MPI_INT'),
     numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'double', 'MPI_DOUBLE'),
     numpy.float32 : DTypeSpec('floats_in', 'floats_out',
                     'number_of_floats', 'float', 'MPI_FLOAT')
-}
+})
+
 
 class MakeCCodeString(MakeCodeString):
     @late

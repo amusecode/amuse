@@ -2,17 +2,18 @@ from amuse.support.core import late
 from amuse.legacy.support.core import RemoteFunction
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
-from amuse.legacy.support.create_code import DTypeSpec, dtypes
+from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
 
 import numpy
 
-dtype_to_spec = {
+dtype_to_spec = DTypeToSpecDictionary({
     numpy.int32 : DTypeSpec('integers_in','integers_out', 
                     'number_of_integers', 'integer', 'MPI_INTEGER'),
     numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'real*8', 'MPI_DOUBLE_PRECISION'),
     numpy.float32 : DTypeSpec('floats_in', 'floats_out',
-                    'number_of_floats', 'real*4', 'MPI_SINGLE_PRECISION')} 
+                    'number_of_floats', 'real*4', 'MPI_SINGLE_PRECISION')
+})
         
 class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
     
