@@ -1,5 +1,6 @@
+===================================
 Installation of the AMUSE software
-==================================
+===================================
 
 Before installing AMUSE the prerequisite software must be downloaded and
 installed, see :ref:`prerequisite-label`.
@@ -52,7 +53,7 @@ After starting `mpd` we can start the tests.
     OK
 
 Real-time testing
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 The code includes support for real-time testing. The real-time testing 
 application monitors the files in the source directories ('src' 
 and 'test'). Every time a file is changed it will run most of the tests.
