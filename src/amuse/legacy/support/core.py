@@ -81,15 +81,15 @@ class LegacyCall(object):
         number_of_outputs = len(self.specification.output_parameters)
         
         if number_of_outputs == 0:
-            if self.specification.result_type == numpy.int32:
+            if self.specification.result_type.__name__ == numpy.int32.__name__:
                 return ints[0]       
-            if self.specification.result_type == numpy.float64:
+            if self.specification.result_type.__name__ == numpy.float64.__name__:
                 return doubles[0] 
-            if self.specification.result_type == numpy.float32:
+            if self.specification.result_type.__name__ == numpy.float32.__name__:
                 return floats[0] 
         
         if number_of_outputs == 1 \
-            and self.specification.result_type == None:
+            and self.specification.result_type is None:
             if len(ints) == 1:
                 return ints[0]
             if len(doubles) == 1:
