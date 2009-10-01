@@ -11,7 +11,11 @@ from amuse.support.units import units
 import numpy
 import threading
 
-from matplotlib import pyplot
+try:
+    from matplotlib import pyplot
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 class TestAmuseInterface(unittest.TestCase):
     def new_system_sun_and_earth(self):
@@ -62,29 +66,29 @@ class TestAmuseInterface(unittest.TestCase):
         thread2.join()
         
         
-        
-        figure = pyplot.figure(figsize = (10,10))
-        plot = figure.add_subplot(1,1,1)
-        
-        
-        earth = list(bhtree_particles)[1]
-        for index, (time,position) in enumerate(earth.position.values):
-            x_point = position.in_(units.AU).number[0]
-            y_point = position.in_(units.AU).number[1]
-            color = 'b'
-            plot.plot([x_point],[y_point], color + 'o')
+        if HAS_MATPLOTLIB:
+            figure = pyplot.figure(figsize = (10,10))
+            plot = figure.add_subplot(1,1,1)
             
-        earth = list(hermite_particles)[1]
-        for index, (time,position) in enumerate(earth.position.values):
-            x_point = position.in_(units.AU).number[0]
-            y_point = position.in_(units.AU).number[1]
-            color = 'g'
-            plot.plot([x_point],[y_point], color + 'o')
             
-        plot.set_xlim(-1.1, 1.1)
-        plot.set_ylim(-1.1, 1.1)
-        
-        figure.savefig("earth-sun.svg")    
+            earth = list(bhtree_particles)[1]
+            for index, (time,position) in enumerate(earth.position.values):
+                x_point = position.in_(units.AU).number[0]
+                y_point = position.in_(units.AU).number[1]
+                color = 'b'
+                plot.plot([x_point],[y_point], color + 'o')
+                
+            earth = list(hermite_particles)[1]
+            for index, (time,position) in enumerate(earth.position.values):
+                x_point = position.in_(units.AU).number[0]
+                y_point = position.in_(units.AU).number[1]
+                color = 'g'
+                plot.plot([x_point],[y_point], color + 'o')
+                
+            plot.set_xlim(-1.1, 1.1)
+            plot.set_ylim(-1.1, 1.1)
+            
+            figure.savefig("earth-sun.svg")    
         
         bhtree.cleanup_module()
         hermite.cleanup_module()

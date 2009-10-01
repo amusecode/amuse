@@ -3,7 +3,12 @@ import unittest
 import numpy 
 import random
 
-from matplotlib import pyplot
+try:
+    from matplotlib import pyplot
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+
 
 from amuse.support.units import nbody_system
 from amuse.support.units import units
@@ -127,38 +132,39 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     del gravity
     del stellar_evolution
     
-    print "plotting the data"
-    figure = pyplot.figure(figsize = (40,40))
-    plots = map(lambda x : figure.add_subplot(5,5,x), range(1,int(int(end_time.number) / 2 + 2)))
-    
-    for x in particles:
-        for index, (time,position) in enumerate(x.position.values):
-            x_point = position.in_(units.lightyear).number[0]
-            y_point = position.in_(units.lightyear).number[1]
-            t, mass = x.mass.get_value_at_time(time)
-            
-            color = 'b'
-            if mass > 4.999 | units.MSun:
-                color = 'b'
-            elif mass > 4 | units.MSun:
-                color = 'y'
-            elif mass > 2 | units.MSun:
-                color = 'm'
-            elif mass > 1 | units.MSun:
-                color = 'r'
-            else:
-                color = 'c'
-            
-            color = mass.in_(units.MSun).number / 0.4
-            if color > 0.98:
-                color = 0.98
-            plots[index].plot([x_point],[y_point], color =  str(color), marker='o')
+    if HAS_MATPLOTLIB:
+        print "plotting the data"
+        figure = pyplot.figure(figsize = (40,40))
+        plots = map(lambda x : figure.add_subplot(5,5,x), range(1,int(int(end_time.number) / 2 + 2)))
         
-    for plot in plots:
-        plot.set_xlim(-10.0,10.0)
-        plot.set_ylim(-10.0,10.0)
+        for x in particles:
+            for index, (time,position) in enumerate(x.position.values):
+                x_point = position.in_(units.lightyear).number[0]
+                y_point = position.in_(units.lightyear).number[1]
+                t, mass = x.mass.get_value_at_time(time)
+                
+                color = 'b'
+                if mass > 4.999 | units.MSun:
+                    color = 'b'
+                elif mass > 4 | units.MSun:
+                    color = 'y'
+                elif mass > 2 | units.MSun:
+                    color = 'm'
+                elif mass > 1 | units.MSun:
+                    color = 'r'
+                else:
+                    color = 'c'
+                
+                color = mass.in_(units.MSun).number / 0.4
+                if color > 0.98:
+                    color = 0.98
+                plots[index].plot([x_point],[y_point], color =  str(color), marker='o')
+            
+        for plot in plots:
+            plot.set_xlim(-10.0,10.0)
+            plot.set_ylim(-10.0,10.0)
 
-    figure.savefig(name_of_the_figure)
+        figure.savefig(name_of_the_figure)
     
     
 def test_simulate_small_cluster():
