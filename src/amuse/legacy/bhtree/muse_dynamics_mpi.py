@@ -157,11 +157,7 @@ class BHTree(LegacyInterface):
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time), 1)
         return result
-        
-    def set_eps2(self, eps2):
-        self.eps2_for_gravity = self.convert_nbody.to_nbody(eps2).number
-    
-    
+            
     def add_particles(self, particles):
         keyword_arguments = {}
         for attribute_definition in self.attribute_definitions:
