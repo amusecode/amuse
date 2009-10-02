@@ -145,7 +145,7 @@ class Hermite(LegacyInterface):
         return function
          
     def evolve_model(self, time_end):
-        result = self.evolve(self.convert_nbody.to_nbody(time_end).number, 0.0)
+        result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time), 0.0)
         return result
         
     def set_eps2(self, eps2):

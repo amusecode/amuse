@@ -38,6 +38,9 @@ class Quantity(object):
         value_of_unit_in_another_unit = self.unit.in_(another_unit)
         return new_quantity(self.number * value_of_unit_in_another_unit.number, another_unit)
 
+    def value_in(self, another_unit):
+        value_of_unit_in_another_unit = self.unit.in_(another_unit)
+        return self.number * value_of_unit_in_another_unit.number
 
 class ScalarQuantity(Quantity):
     def __init__(self, number, unit):

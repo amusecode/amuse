@@ -3,6 +3,8 @@ import unittest
 from amuse.support.units import units
 from amuse.support.data import core
 
+import numpy
+
 class TestBase(unittest.TestCase):
     pass
    
@@ -29,3 +31,13 @@ class TestTemporalAttribute(TestBase):
         self.assertEquals(x.get_value_at_time(325 | units.s)[1], 325 | units.m)
         self.assertEquals(x.get_value_at_time(2000 | units.s)[1], 2000 | units.m)
         self.assertEquals(x.get_value_at_time(2010 | units.s)[1], 2000 | units.m)
+        
+class TestStars(TestBase):
+
+    def test1(self):
+        stars = core.Stars(2)
+        stars[0].mass = 10 | units.g
+        stars[0].position = units.m(numpy.array([1.0,2.0,1.0])) 
+        stars[1].mass = 10 | units.g
+        stars[1].position = units.m(numpy.array([0.0,0.0,0.0]))
+        self.assertEquals(0.5, stars.center_of_mass().x)

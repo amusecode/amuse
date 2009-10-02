@@ -4,7 +4,7 @@ import numpy
 import random
 
 try:
-    from matplotlib import pyplot
+    from matplotlib import pyplot, axes3d
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
@@ -89,7 +89,13 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1 | units.parsec)
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
-            
+   
+    print  particles.center_of_mass()
+    center_of_mass = particles.center_of_mass()
+    for x in particles:
+        x.position = x.position.value() - center_of_mass
+    print  particles.center_of_mass()
+                
     gravity = BHTree(convert_nbody)
     gravity.setup_module()
     gravity.dt_dia = 10000
@@ -138,9 +144,13 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         plots = map(lambda x : figure.add_subplot(5,5,x), range(1,int(int(end_time.number) / 2 + 2)))
         
         for x in particles:
-            for index, (time,position) in enumerate(x.position.values):
-                x_point = position.in_(units.lightyear).number[0]
-                y_point = position.in_(units.lightyear).number[1]
+            index = 0
+            for (time,position) in x.position.values:
+                if time < 1.0 | units.Myr: 
+                    continue
+                index += 1
+                x_point = position.in_(units.lightyear).x
+                y_point = position.in_(units.lightyear).y
                 t, mass = x.mass.get_value_at_time(time)
                 
                 color = 'b'
@@ -158,6 +168,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
                 color = mass.in_(units.MSun).number / 0.4
                 if color > 0.98:
                     color = 0.98
+                
                 plots[index].plot([x_point],[y_point], color =  str(color), marker='o')
             
         for plot in plots:
@@ -165,7 +176,22 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             plot.set_ylim(-10.0,10.0)
 
         figure.savefig(name_of_the_figure)
-    
+        
+        figure = pyplot.figure()
+        axes_3d = axes3d.Axes3D(figure)
+        positions = particles.get_values_of_attribute('position')
+        xs = numpy.array([position.in_(units.lightyear).x for position in positions])
+        ys = numpy.array([position.in_(units.lightyear).y for position in positions])
+        zs = numpy.array([position.in_(units.lightyear).z for position in positions])
+        #print xs, yz, zs
+        
+        plot = axes_3d.scatter(xs, ys, zs)
+        axes_3d.set_xlim(-10.0,10.0)
+        axes_3d.set_ylim(-10.0,10.0)  
+        axes_3d.set_zlim(-10.0,10.0)        
+        
+        figure.savefig("3d_"+name_of_the_figure)
+        
     
 def test_simulate_small_cluster():
     """test_simulate_small_cluster

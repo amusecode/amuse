@@ -86,7 +86,7 @@ class Particles(object):
         
 class Stars(Particles):
     
-    def center_of_gravity(self):
+    def center_of_mass(self):
         sum_mass = 0.0 | si.kg
         sum_massposition = [0.0, 0.0, 0.0] | si.kg * si.m
         for star in self:

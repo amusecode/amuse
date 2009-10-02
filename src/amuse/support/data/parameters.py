@@ -37,11 +37,10 @@ class ParameterDefinition(object):
             return object.convert_nbody.to_si(result)
         return result
         
-    def set_value(self, object, value):
+    def set_value(self, object, quantity):
         if nbody_system.is_nbody_unit(self.unit):
-            value = object.convert_nbody.to_nbody(value)
-        value = value.in_(self.unit)
-        self.set_legacy_value(object, value.number)
+            quantity = object.convert_nbody.to_nbody(quantity)
+        self.set_legacy_value(object, quantity.value_in(self.unit))
         
     def set_default_value(self, object):
         if self.default_value:

@@ -225,7 +225,7 @@ class SSE(LegacyInterface):
     def evolve_star(self, star, target_time):
         
         current_values = {}
-        current_values['kw'] = star.type.value().number
+        current_values['kw'] = star.type.to_number_in(units.none)
         current_values['mass'] = star.initial_mass.to_number_in(units.MSun)
         current_values['mt'] = star.mass.to_number_in(units.MSun)
         current_values['r'] = star.radius.to_number_in(units.RSun)
@@ -238,7 +238,7 @@ class SSE(LegacyInterface):
         current_values['epoch'] = star.epoch.to_number_in(units.Myr)
         current_values['tm'] = star.main_sequence_lifetime.to_number_in(units.Myr)
         current_values['tphys'] = star.current_time.to_number_in(units.Myr)
-        current_values['tphysf'] = target_time.in_(units.Myr).number
+        current_values['tphysf'] = target_time.value_in(units.Myr)
         new_values = self.evolve(**current_values)
         
         time = new_values['tphysf']| units.Myr
@@ -262,7 +262,7 @@ class SSE(LegacyInterface):
     def get_time_step_for_star(self, star):
         
         current_values = {}
-        current_values['kw'] = star.type.value().number
+        current_values['kw'] = star.type.to_number_in(units.none)
         current_values['mass'] = star.initial_mass.to_number_in(units.MSun)
         current_values['mt'] = star.mass.to_number_in(units.MSun)
         current_values['tm'] = star.main_sequence_lifetime.to_number_in(units.Myr)
@@ -276,7 +276,7 @@ class SSE(LegacyInterface):
         
     def evolve_particle(self, particle, time_end):
         t = particle.current_time.value()
-        if particle.type.value().number == 15:
+        if particle.type.to_number_in(units.none) == 15:
             return
         while t < time_end:
             t0 = t
@@ -287,10 +287,10 @@ class SSE(LegacyInterface):
             t1 = particle.current_time.value()
             dt = t1 - t0
             t0 = t1
-            if dt.in_(units.Myr).number == 0.0:
+            if dt.value_in(units.Myr) == 0.0:
                 print t, t0, t1, dt, "BREAK BREAK BREAK!"
                 return
-            if particle.type.value().number == 15:
+            if particle.type.to_number_in(units.none) == 15:
                 return
     
     def evolve_particles(self, particles, time_end):
