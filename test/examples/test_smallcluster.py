@@ -4,7 +4,7 @@ import numpy
 import random
 
 try:
-    from matplotlib import pyplot, axes3d
+    from matplotlib import pyplot
     HAS_MATPLOTLIB = True
 except ImportError:
     HAS_MATPLOTLIB = False
@@ -176,21 +176,22 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             plot.set_ylim(-10.0,10.0)
 
         figure.savefig(name_of_the_figure)
-        
-        figure = pyplot.figure()
-        axes_3d = axes3d.Axes3D(figure)
-        positions = particles.get_values_of_attribute('position')
-        xs = numpy.array([position.in_(units.lightyear).x for position in positions])
-        ys = numpy.array([position.in_(units.lightyear).y for position in positions])
-        zs = numpy.array([position.in_(units.lightyear).z for position in positions])
-        #print xs, yz, zs
-        
-        plot = axes_3d.scatter(xs, ys, zs)
-        axes_3d.set_xlim(-10.0,10.0)
-        axes_3d.set_ylim(-10.0,10.0)  
-        axes_3d.set_zlim(-10.0,10.0)        
-        
-        figure.savefig("3d_"+name_of_the_figure)
+        if False:
+            from matplotlib import axes3d
+            figure = pyplot.figure()
+            axes_3d = axes3d.Axes3D(figure)
+            positions = particles.get_values_of_attribute('position')
+            xs = numpy.array([position.in_(units.lightyear).x for position in positions])
+            ys = numpy.array([position.in_(units.lightyear).y for position in positions])
+            zs = numpy.array([position.in_(units.lightyear).z for position in positions])
+            #print xs, yz, zs
+            
+            plot = axes_3d.scatter(xs, ys, zs)
+            axes_3d.set_xlim(-10.0,10.0)
+            axes_3d.set_ylim(-10.0,10.0)  
+            axes_3d.set_zlim(-10.0,10.0)        
+            
+            figure.savefig("3d_"+name_of_the_figure)
         
     
 def test_simulate_small_cluster():
