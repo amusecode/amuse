@@ -15,7 +15,10 @@
    inkscape:version="0.46"
    version="1.0"
    sodipodi:docname="overview.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/Users/arjen/amuse/amuse-svn/doc/design/overview.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs4">
     <inkscape:perspective
