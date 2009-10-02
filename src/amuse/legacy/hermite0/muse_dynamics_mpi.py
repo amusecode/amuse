@@ -1,5 +1,3 @@
-import numpy
-from amuse.support.units import nbody_system
 from amuse.legacy import *
 
 class Hermite(LegacyInterface):
@@ -145,15 +143,6 @@ class Hermite(LegacyInterface):
         function = RemoteFunction()  
         function.result_type = 'd'
         return function
-
-        
-    def update_star(self, star):
-        state = self.get_state(star.id)
-        time = self.convert_nbody.to_si( self.t | nbody_system.time)
-        #star.mass.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.mass(state.mass)))
-        star.position.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.length(numpy.array((state['x'], state['y'], state['z'])))))
-        star.velocity.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.speed(numpy.array((state['vx'], state['vy'], state['vz'])))))
-        return star
          
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).number, 0.0)

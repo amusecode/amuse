@@ -8,3 +8,5 @@ from amuse.legacy.support.core import LegacyInterface, legacy_function, legacy_g
 from amuse.legacy.support.core import RemoteFunction
 from amuse.support.data import parameters
 from amuse.support.data import attributes
+from amuse.support.units import units
+from amuse.support.units import nbody_system
