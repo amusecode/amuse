@@ -7,6 +7,7 @@ Definition of the 7 base units
 
 """
 from amuse.support.data import values
+import numpy
 
 class system(object):
     def __init__(self, name):
@@ -38,7 +39,7 @@ class unit(object):
             return factor_unit(other, self)
     
     def __ror__(self, x):
-        return values.value(x, self)
+        return values.new_quantity(x, self)
         
     def __rdiv__(self, other):
         return factor_unit(other, pow_unit(-1,self))
@@ -50,13 +51,29 @@ class unit(object):
             return pow_unit(other, self)
         
     def __call__(self, x):
-        return values.value(x, self)
+        return values.new_quantity(x, self)
         
-    def to_basic_factor(self):
-        pass
+    def to_simple_form(self):
+        result = self.factor
+        for n, base in self.base:
+            result =  result * (base ** n)
+        return result
     
+    def are_bases_equal(self, other):
+        for n1, unit1 in self.base:
+            found = False
+            for n2, unit2 in other.base:
+                if unit1 == unit2:
+                    if not n2 == n1:
+                        return False
+                    found = True
+                    break;
+            if not found:
+                return False
+        return True
+                        
     def conversion_factor_from(self, x):
-        if x.base == self.base :
+        if self.are_bases_equal(x):
             this_factor = self.factor * 1.0
             other_factor = x.factor
             return this_factor / other_factor
@@ -65,11 +82,11 @@ class unit(object):
             raise Exception("Cannot expres: " + str(x) + " in " + str(self))
             
     def in_(self, x):
-        if isinstance(x, values.value):
+        if isinstance(x, values.Quantity):
             print "bla"
         else:
             factor = self.conversion_factor_from(x)
-            return x(factor)
+            return values.new_quantity(factor, x)
             
     def __repr__(self):
         return 'unit<'+str(self)+'>'

@@ -128,7 +128,7 @@ class TestAmuseInterface(unittest.TestCase):
         return stars
         
     def test1(self):
-        convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         hermite = mpi_interface.Hermite(convert_nbody)
         hermite.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -165,7 +165,7 @@ class TestAmuseInterface(unittest.TestCase):
 
     
     def test2(self):
-        convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = mpi_interface.Hermite(convert_nbody)
         instance.parameters.epsilon_squared = 0.0 | units.AU**2

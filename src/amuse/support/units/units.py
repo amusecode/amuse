@@ -15,7 +15,7 @@ myr = named('million year', 'Myr', 1000000 * yr)
 Myr = myr
 ms = named('meter per seconds', 'ms', m / s)
 g = named('gram','g', 1e-3 * kg)
-one = no_unit(1)
+one = 1 | none
 
 
 G = 6.673e-11 | m**3/kg/s**2

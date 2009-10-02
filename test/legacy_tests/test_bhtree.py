@@ -97,7 +97,7 @@ class TestAmuseInterface(unittest.TestCase):
         del instance
         
     def test2(self):
-        convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = mpi_interface.BHTree(convert_nbody)
         #instance.dt_dia = 1

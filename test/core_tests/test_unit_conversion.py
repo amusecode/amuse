@@ -43,3 +43,17 @@ class TestUnitConversions(unittest.TestCase):
         no2 = no_unit
         self.assertEqual("m / m", str(no1))
         self.assertTrue(no1.has_same_base_as(no2))
+
+        
+    def test7(self):
+        x = (100 * kg ** 2)  / kg 
+        self.assertEqual("100 * kg**2 / kg", str(x))
+        self.assertEqual("100.0 * kg", str(x.to_simple_form()))
+        
+        
+    def test8(self):
+        x = (10 | g) * (2 | m) 
+        self.assertEqual("20 0.001 * kg * m", str(x))
+        self.assertEqual("0.02 kg * m", str(x.in_(kg * m)))
+        x = (10 | kg) * (2000 | g) 
+        self.assertEqual("20000 0.001 * kg**2", str(x))

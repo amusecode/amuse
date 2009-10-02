@@ -47,8 +47,6 @@ class ScalarAttributeDefinition(AttributeDefinition):
         
 class VectorAttributeDefinition(AttributeDefinition):
     def __init__(self, set_method, get_method, parameter_names,  name, description, unit, default_value):
-        if not isinstance(default_value.number, numpy.ndarray):
-            default_value = numpy.array(default_value.number) | default_value.unit
         AttributeDefinition.__init__(self, name, description, unit, default_value)
         self.set_method = set_method
         self.get_method = get_method

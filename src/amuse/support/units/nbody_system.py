@@ -3,6 +3,9 @@
 from amuse.support.units import units
 from amuse.support.units import core
 
+from amuse.support.data.values import new_quantity
+
+
 import numpy
 
 class nbody_unit(core.unit):
@@ -110,7 +113,7 @@ class nbody_to_si(object):
                 new_unit *= (unit_in_si.base[0][1] ** n)
             else:
                 new_unit *= (unit ** n)
-        return new_unit(number * factor)
+        return new_quantity(number * factor, new_unit)
         
         
     def find_si_unit_for(self, unit):
@@ -139,7 +142,7 @@ class nbody_to_si(object):
                 new_unit *= (unit_in_nbody.base[0][1] ** n)
             else:
                 new_unit *= (unit ** n)
-        return new_unit(number * factor)
+        return new_quantity(number * factor, new_unit)
         
         
 

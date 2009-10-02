@@ -85,9 +85,15 @@ class Particles(object):
         
         
 class Stars(Particles):
-    pass
-
-
+    
+    def center_of_gravity(self):
+        sum_mass = 0.0 | si.kg
+        sum_massposition = [0.0, 0.0, 0.0] | si.kg * si.m
+        for star in self:
+            sum_mass += star.mass.value()
+            sum_massposition += star.position.value() * star.mass.value()
+        return sum_massposition / sum_mass
+        
 class Measurement(object):
     def __init__(self, timestamp,  attributes, units,  ids, values=None):
         self.timestamp = timestamp
@@ -164,7 +170,7 @@ class Particle(object):
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
         if not name_of_the_attribute in self.attributes:
             self.attributes[name_of_the_attribute] = TemporalAttribute(name_of_the_attribute)
-        if isinstance(new_value_for_the_attribute, values.value):
+        if isinstance(new_value_for_the_attribute, values.Quantity):
             self.attributes[name_of_the_attribute].set_value_at_time( 0 | si.s ,new_value_for_the_attribute)
         else:
             raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")

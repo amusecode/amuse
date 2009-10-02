@@ -429,10 +429,13 @@ def _perform_one_test(directory, results_queue, address):
         result = select.buffer
         result = result[:min(1000, len(result) - 1)]
         results_queue.put(result)
+        print sys.stderr << "results put in queue"
     except:
         results_queue.put('exception happened')
     finally:
+        print sys.stderr << "calling finalize"
         MPI.Finalize()
+        print "calling finalize done"
 
 def _run_test_with_address(address):
     server.run_all_tests.paused = False
@@ -451,8 +454,8 @@ def _run_test_with_address(address):
             ))
         process.start()
         
-        print "star joined"
-        process.join()
+        print "start to join"
+        process.join(30)
         print "process joined"
         result = result_queue.get()
         
