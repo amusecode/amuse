@@ -8,24 +8,20 @@ from amuse.support.data.values import new_quantity
 
 import numpy
 
-class nbody_unit(core.unit):
-    def __init__(self, unit_in_si):
+class nbody_unit(core.base_unit):
+    def __init__(self, unit_in_si, system):
+        core.base_unit.__init__(self, unit_in_si.quantity, unit_in_si.name, unit_in_si.symbol, system)
         self.unit_in_si = unit_in_si
         
     def __str__(self):
         return 'nbody '+self.unit_in_si.quantity
         
-    @property
-    def base(self):
-        return ((1,self),)
-        
-    @property
-    def factor(self):
-        return 1.0
+  
+nbody_system = core.system('nbody')
 
-length = nbody_unit(units.m)
-time = nbody_unit(units.s)
-mass = nbody_unit(units.kg)
+length = nbody_unit(units.m, nbody_system)
+time = nbody_unit(units.s, nbody_system)
+mass = nbody_unit(units.kg, nbody_system)
  
 speed = length / time
 

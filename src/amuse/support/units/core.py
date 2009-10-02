@@ -60,7 +60,7 @@ class unit(object):
         return result
     
     def are_bases_equal(self, other):
-        for n1, unit1 in self.base:
+        for n1, unit1 in sort(self.base, key=lambda x: x[1].index):
             found = False
             for n2, unit2 in other.base:
                 if unit1 == unit2:
@@ -73,7 +73,7 @@ class unit(object):
         return True
                         
     def conversion_factor_from(self, x):
-        if self.are_bases_equal(x):
+        if self.base == x.base:
             this_factor = self.factor * 1.0
             other_factor = x.factor
             return this_factor / other_factor
@@ -92,19 +92,22 @@ class unit(object):
         return 'unit<'+str(self)+'>'
         
     def combine_bases(self, base1, base2):
-        result = []
+        result = [None] * 7
         for n1, unit1 in base1:
             found = False
             for n2, unit2 in base2:
                 if unit1 == unit2:
                     base2 = filter(lambda x : x[1] != unit1, base2)
                     found = True
-                    yield n1, n2, unit1
+                    result[unit1.index] = (n1, n2, unit1)
                     break
             if not found:
-                yield n1, 0, unit1
+                result[unit1.index] =  n1, 0, unit1
         for n2, unit2 in base2:
-                yield 0, n2, unit2
+                result[unit2.index] = 0, n2, unit2
+        for x in result:
+            if not x is None:
+                yield x
                 
     def has_same_base_as(self, other):
         return other.base == self.base
@@ -118,24 +121,30 @@ class base_unit(unit):
         system.add_base(self)
     def __str__(self):
         return self.symbol
+    
     @property
     def factor(self):
         return 1
+        
     @property
     def base(self):
         return ((1,self),)
+        
 class none_unit(unit):
     def __init__(self, name, symbol):
         self.name = name
         self.symbol = symbol
     def __str__(self):
         return self.symbol
+    
     @property
     def factor(self):
         return 1
+        
     @property
     def base(self):
         return ()
+        
 class named_unit(unit):
     def __init__(self, name, symbol, unit):
         self.name = name
@@ -143,9 +152,11 @@ class named_unit(unit):
         self.unit = unit
     def __str__(self):
         return self.symbol
+    
     @property
     def factor(self):
         return self.unit.factor
+        
     @property
     def base(self):
         return self.unit.base
@@ -160,9 +171,11 @@ class factor_unit(unit):
         if self.symbol is None:
             return str(self.local_factor) + ' * ' + str(self.unit)
         return self.symbol + str(self.unit) 
+    
     @property
     def factor(self):
         return self.local_factor * self.unit.factor
+        
     @property
     def base(self):
         return self.unit.base
@@ -173,6 +186,7 @@ class mul_unit(unit):
         self.right_hand = right_hand
     def __str__(self):
         return str(self.left_hand) + ' * ' + str(self.right_hand) 
+        
     @property
     def factor(self):
         return self.left_hand.factor * self.right_hand.factor
@@ -182,9 +196,11 @@ class mul_unit(unit):
         return tuple(map(lambda x: (x[0] + x[1], x[2]),self.combine_bases(self.left_hand.base, self.right_hand.base)))
         
 class pow_unit(unit):
+    
     def __init__(self, power , unit):
         self.power = power
         self.unit = unit
+        
     def __str__(self):
         return str(self.unit) + '**' + str(self.power)
         
