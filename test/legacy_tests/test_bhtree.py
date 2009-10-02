@@ -73,8 +73,8 @@ class TestAmuseInterface(unittest.TestCase):
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
         
-        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].in_(units.AU).number[0]
-        postion_after_full_rotation = earth.position.value().in_(units.AU) .number[0]
+        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].value_in(units.AU)[0]
+        postion_after_full_rotation = earth.position.value().value_in(units.AU)[0]
        
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 3)
         
@@ -82,7 +82,7 @@ class TestAmuseInterface(unittest.TestCase):
         
         instance.update_particles(stars)
         
-        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[0]
+        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
         
         
@@ -90,7 +90,7 @@ class TestAmuseInterface(unittest.TestCase):
          
         instance.update_particles(stars)
         
-        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
+        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[1]
         
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 1)
         instance.cleanup_module()
@@ -130,8 +130,8 @@ class TestAmuseInterface(unittest.TestCase):
             plot = figure.add_subplot(1,1,1)
             
             for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.in_(units.AU).number[0]
-                y_point = position.in_(units.AU).number[1]
+                x_point = position.value_in(units.AU)[0]
+                y_point = position.value_in(units.AU)[1]
                 color = 'b'
                 plot.plot([x_point],[y_point], color + 'o')
             plot.set_xlim(-1.5, 1.5)

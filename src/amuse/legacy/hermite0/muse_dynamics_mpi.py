@@ -147,10 +147,6 @@ class Hermite(LegacyInterface):
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time), 0.0)
         return result
-        
-    def set_eps2(self, eps2):
-        self.eps2 = self.convert_nbody.to_nbody(eps2).number
-    
     
     def update_particles(self, particles):
         state = self.get_state(list(particles.ids))
@@ -175,7 +171,7 @@ class Hermite(LegacyInterface):
             if x.name == 'mass':
                 id.append(x.id)
                 mass = self.convert_nbody.to_nbody(x.mass.value())
-                mass_of_particles.append(mass.number)
+                mass_of_particles.append(mass.value_in(nbody_system.mass))
         self.set_mass(ids, mass_of_particles)
         
     

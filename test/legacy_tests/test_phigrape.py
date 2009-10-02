@@ -192,26 +192,26 @@ class TestSunAndEarthSystem(unittest.TestCase):
         instance.add_particles(stars)
         instance.initialize_particles(0.0)
         
-        postion_at_start = earth.position.value().in_(units.AU).number[0]
+        postion_at_start = earth.position.value().value_in(units.AU)[0]
         
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
         
-        postion_after_full_rotation = earth.position.value().in_(units.AU) .number[0]
+        postion_after_full_rotation = earth.position.value().value_in(units.AU)[0]
         
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 2)
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
         instance.update_particles(stars)
-        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[0]
+        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
         
         
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
         instance.update_particles(stars)
-        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
+        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[1]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         instance.cleanup_module()
         del instance
@@ -257,8 +257,8 @@ class TestSunAndEarthSystem(unittest.TestCase):
             
             
             for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.in_(units.AU).number[0]
-                y_point = position.in_(units.AU).number[1]
+                x_point = position.value_in(units.AU)[0]
+                y_point = position.value_in(units.AU)[1]
                 color = 'b'
                 plot.plot([x_point],[y_point], color + 'o')
             

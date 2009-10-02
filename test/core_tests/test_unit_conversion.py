@@ -5,13 +5,13 @@ from amuse.support.units.units import *
 class TestUnitConversions(unittest.TestCase):
     def test1(self):
         km = 1000 * m
-        self.assertEqual(1000, km.in_(m).number)
-        self.assertEqual(0.001, m.in_(km).number)
+        self.assertEqual(1000, km.in_(m).value_in(m))
+        self.assertEqual(0.001, m.in_(km).value_in(km))
         
     def test2(self):
         km = 1000 * m
         val = km(10)
-        self.assertEqual(10000, val.in_(m).number)
+        self.assertEqual(10000, val.value_in(m))
         
     def test3(self):
         km = 1000 * m
@@ -28,7 +28,7 @@ class TestUnitConversions(unittest.TestCase):
         kmh = km/h
         ms = m/s
         val = 10 | m/s
-        self.assertEqual(36,val.in_(kmh).number)
+        self.assertEqual(36,val.value_in(kmh))
         
     def test5(self):
         km = named('kilometer','km',1000 * m)
@@ -36,7 +36,7 @@ class TestUnitConversions(unittest.TestCase):
         kmh = km/h
         ms = m/s
         val = 10 | ms
-        self.assertEqual(36,val.in_(kmh).number)
+        self.assertEqual(36,val.value_in(kmh))
         
     def test6(self):
         no1 = m / m

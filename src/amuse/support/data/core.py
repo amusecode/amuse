@@ -45,7 +45,7 @@ class TemporalAttribute(object):
         return self.values[-1][0]
         
     def to_number_in(self, units):
-        return self.value().in_(units).number
+        return self.value().value_in(units)
         
     def __str__(self):
         return str(self.time()) + " - " + str(self.value())

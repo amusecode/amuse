@@ -54,9 +54,13 @@ class unit(object):
         return values.new_quantity(x, self)
         
     def to_simple_form(self):
+        if not self.base:
+            return none_unit('no unit', '')
+            
         result = self.factor
         for n, base in self.base:
             result =  result * (base ** n)
+        
         return result
     
     def are_bases_equal(self, other):
@@ -139,7 +143,7 @@ class none_unit(unit):
     
     @property
     def factor(self):
-        return 1
+        return 1.0
         
     @property
     def base(self):

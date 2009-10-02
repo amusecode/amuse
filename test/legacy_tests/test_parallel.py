@@ -73,15 +73,15 @@ class TestAmuseInterface(unittest.TestCase):
             
             earth = list(bhtree_particles)[1]
             for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.in_(units.AU).number[0]
-                y_point = position.in_(units.AU).number[1]
+                x_point = position.value_in(units.AU)[0]
+                y_point = position.value_in(units.AU)[1]
                 color = 'b'
                 plot.plot([x_point],[y_point], color + 'o')
                 
             earth = list(hermite_particles)[1]
             for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.in_(units.AU).number[0]
-                y_point = position.in_(units.AU).number[1]
+                x_point = position.value_in(units.AU)[0]
+                y_point = position.value_in(units.AU)[1]
                 color = 'g'
                 plot.plot([x_point],[y_point], color + 'o')
                 

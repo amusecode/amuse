@@ -221,7 +221,7 @@ class TestSSE(unittest.TestCase):
             121.5 | units.Myr
         )
         for result, expected in map(None, results, times):
-            self.assertAlmostEqual(result[0].number, expected.number, 1)
+            self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
             
         masses = ( 
             5.000 | units.MSun, 
@@ -232,7 +232,7 @@ class TestSSE(unittest.TestCase):
             0.997 | units.MSun
         )
         for result, expected in map(None, results, masses):
-            self.assertAlmostEqual(result[1].number, expected.number, 3)
+            self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
          
         del sse
             

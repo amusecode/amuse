@@ -177,7 +177,7 @@ class BHTree(LegacyInterface):
     def update_attributes(self, attributes):
         for id, x in attributes:
             if x.name == 'mass':
-                self.set_mass(id, self.convert_nbody.to_nbody(x.value()).number)
+                self.set_mass(id, self.convert_nbody.to_nbody(x.value()).value_in(nbody_system.mass))
         
     def get_energies(self):
         energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2

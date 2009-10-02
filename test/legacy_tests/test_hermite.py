@@ -143,22 +143,22 @@ class TestAmuseInterface(unittest.TestCase):
         hermite.evolve_model(365.0 | units.day)
         hermite.update_particles(stars)
         
-        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].in_(units.AU).number[0]
-        postion_after_full_rotation = earth.position.value().in_(units.AU) .number[0]
+        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].value_in(units.AU)[0]
+        postion_after_full_rotation = earth.position.value().value_in(units.AU)[0]
         
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 6)
         
         hermite.evolve_model(365.0 + (365.0 / 2) | units.day)
         
         hermite.update_particles(stars)
-        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[0]
+        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
         
         
         hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
         hermite.update_particles(stars)
-        postion_after_half_a_rotation = earth.position.value().in_(units.AU) .number[1]
+        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[1]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         hermite.cleanup_module()
         del hermite
@@ -186,8 +186,8 @@ class TestAmuseInterface(unittest.TestCase):
             
             
             for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.in_(units.AU).number[0]
-                y_point = position.in_(units.AU).number[1]
+                x_point = position.value_in(units.AU)[0]
+                y_point = position.value_in(units.AU)[1]
                 color = 'b'
                 plot.plot([x_point],[y_point], color + 'o')
             
@@ -205,15 +205,16 @@ class TestAmuseInterface(unittest.TestCase):
         
         stars = self.new_system_of_sun_and_earth()
         instance.add_particles(stars)
-        factor = instance.get_energies()[0].number / (-instance.get_energies()[1].number / 2)
+        factor = instance.get_energies()[0] / (instance.get_energies()[1] / (-2 | units.none))
+        print factor
         total_energy0 =  sum(instance.get_energies(), 0|units.J)
-        self.assertAlmostEqual(factor, 1.000, 3)
+        self.assertAlmostEqual(factor.value_in(units.none), 1.000, 3)
         instance.evolve_model(100 | units.day)
         total_energy1 =  sum(instance.get_energies(), 0|units.J)
-        factor = instance.get_energies()[0].number / (-instance.get_energies()[1].number / 2)
-        self.assertAlmostEqual(factor, 1.000, 3)
+        factor = instance.get_energies()[0] / (instance.get_energies()[1] / (-2 | units.none))
+        self.assertAlmostEqual(factor.value_in(units.none), 1.000, 3)
         instance.evolve_model(100 | units.day)
         total_energy2=  sum(instance.get_energies(), 0|units.J)
-        self.assertAlmostEqual(total_energy2.number /  total_energy0.number, 1.0, 7)
-        self.assertAlmostEqual(total_energy2.number, total_energy1.number, 10)
+        self.assertAlmostEqual((total_energy2 /  total_energy0).value_in(units.none), 1.0, 7)
+        self.assertAlmostEqual(total_energy2.value_in(units.J), total_energy1.value_in(units.J), 10)
         

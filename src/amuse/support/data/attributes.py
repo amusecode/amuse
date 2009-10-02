@@ -14,7 +14,7 @@ class AttributeDefinition(object):
     def convert_to_numbers_in_legacy_units(self, object, values):
         if nbody_system.is_nbody_unit(self.unit):
             values = [object.convert_nbody.to_nbody(x) for x in values]
-        return [x.in_(self.unit).number for x in values]
+        return [x.value_in(self.unit) for x in values]
     
     def convert_to_values_in_model_units(self, object, numbers):
         values = [self.unit(x) for x in numbers]
