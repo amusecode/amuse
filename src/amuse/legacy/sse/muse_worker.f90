@@ -16,19 +16,19 @@ SUBROUTINE run_loop
   integer, DIMENSION(:), ALLOCATABLE ::integers_in
   integer, DIMENSION(:), ALLOCATABLE ::integers_out
   integer :: number_of_integers_out, number_of_integers_in
-  real*8, DIMENSION(:), ALLOCATABLE ::doubles_in
-  real*8, DIMENSION(:), ALLOCATABLE ::doubles_out
-  integer :: number_of_doubles_out, number_of_doubles_in
   real*4, DIMENSION(:), ALLOCATABLE ::floats_in
   real*4, DIMENSION(:), ALLOCATABLE ::floats_out
   integer :: number_of_floats_out, number_of_floats_in
+  real*8, DIMENSION(:), ALLOCATABLE ::doubles_in
+  real*8, DIMENSION(:), ALLOCATABLE ::doubles_out
+  integer :: number_of_doubles_out, number_of_doubles_in
   
   ALLOCATE(integers_in(1275000))
   ALLOCATE(integers_out(1275000))
-  ALLOCATE(doubles_in(1275000))
-  ALLOCATE(doubles_out(1275000))
   ALLOCATE(floats_in(1275000))
   ALLOCATE(floats_out(1275000))
+  ALLOCATE(doubles_in(1275000))
+  ALLOCATE(doubles_out(1275000))
   
   call MPI_COMM_GET_PARENT(parent, ioerror)
   call MPI_COMM_RANK(parent, rank, mpierror)
@@ -168,10 +168,10 @@ SUBROUTINE run_loop
   
   DEALLOCATE(integers_in)
   DEALLOCATE(integers_out)
-  DEALLOCATE(doubles_in)
-  DEALLOCATE(doubles_out)
   DEALLOCATE(floats_in)
   DEALLOCATE(floats_out)
+  DEALLOCATE(doubles_in)
+  DEALLOCATE(doubles_out)
   return
 end subroutine
 
