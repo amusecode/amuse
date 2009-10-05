@@ -505,8 +505,8 @@ class RunAllTestsWhenAChangeHappens(object):
                             self.server.last_report
                         ))
                     process.start()
-                    process.join()
                     report = result_queue.get() 
+                    process.join(2)
                     print report
                     self.server.last_report = report
                     del result_queue
