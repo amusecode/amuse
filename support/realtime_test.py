@@ -522,7 +522,10 @@ class RunAllTestsWhenAChangeHappens(object):
                 monitor.check()
                 
 def open_file(path, lineno = 1):
-    call(['geany', path, '+'+str(lineno)])
+    if os.uname()[0] == 'Darwin':
+        call(['xed','-l', str(lineno), '"' + path + '"'])
+    else:
+        call(['geany', path, '+'+str(lineno)])
     
     
 class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):

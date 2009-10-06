@@ -27,6 +27,13 @@ class TestLegacyFunction(unittest.TestCase):
         function.addParameter('parameter5', dtype='i', direction=function.IN)
         function.addParameter('parameter6', dtype='d', direction=function.IN)
         return function
+    
+    @legacy_function
+    def send_string():
+        function = RemoteFunction()
+        function.id = 3
+        function.addParameter('parameter1', dtype='uint8', direction=function.IN)
+        return function
         
     def test1(self):
         self.assertTrue(isinstance(self.get_time_step, LegacyCall))
@@ -91,6 +98,23 @@ class TestLegacyFunction(unittest.TestCase):
         self.assertEqual(self.channel.in_doubles[0] , 2.1)
         self.assertEqual(self.channel.in_doubles[1] , 4.2)
         self.assertEqual(self.channel.in_doubles[2] , 6.3)
+        
+    
+    def test6(self):
+        class TestChannel(object):
+            def send_message(self, id, doubles_in = [], ints_in = [], chars_in=[]):
+                self.chars_in = chars_in
+            
+            def recv_message(self, id):
+                return [[], []]
+                
+        self.channel = TestChannel()
+        result = self.send_string('bla')
+        
+        self.assertFalse(self.channel.chars_in is None)
+        self.assertEqual(self.channel.chars_in[0], 'bla')
+        
+        
         
         
         
@@ -178,6 +202,18 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         string = x.result
         self.assertEquals(string,  'case 1:\n  doubles_out[0] = test_one(\n    ints_in[0] ,\n    &ints_out[0] ,\n    &doubles_out[1]\n  );\n  reply_header.number_of_ints = 1;\n  reply_header.number_of_doubles = 2;\n  break;')
 
+
+    def test6(self):
+        function = RemoteFunction()      
+        function.name = "test_one"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='uint8', direction=function.IN)
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
+        self.assertEquals(string_no_spaces, 'case1:test_one(chars_in);break;')
+        
 
 
         
@@ -313,7 +349,7 @@ class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
         string = x.result
         self.assertTrue('int number_of_ints;' in string)
         self.assertTrue('number_of_ints(0)' in string)
-        self.assertTrue('int header[5];' in string)
+        self.assertTrue('int header[6];' in string)
 
 class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeAFortranStringOfALegacyFunctionSpecification

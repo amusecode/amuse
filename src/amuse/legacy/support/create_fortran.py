@@ -10,9 +10,11 @@ dtype_to_spec = DTypeToSpecDictionary({
     numpy.int32 : DTypeSpec('integers_in','integers_out', 
                     'number_of_integers', 'integer', 'MPI_INTEGER'),
     numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
-                    'number_of_doubles', 'real*8', 'MPI_DOUBLE_PRECISION'),
+                    'number_of_doubles', 'double precision', 'MPI_DOUBLE_PRECISION'),
     numpy.float32 : DTypeSpec('floats_in', 'floats_out',
-                    'number_of_floats', 'real*4', 'MPI_SINGLE_PRECISION')
+                    'number_of_floats', 'real', 'MPI_SINGLE_PRECISION'),
+    numpy.uint8 : DTypeSpec('chars_in', 'chars_out',
+                    'number_of_chars', 'character', 'MPI_CHARACTER'),
 })
         
 class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
@@ -170,8 +172,7 @@ class MakeAFortranStringOfALegacyGlobalSpecification(MakeCodeString):
     def output_casestmt_end(self):
         self.out.n() 
 
-class MakeAFortranStringOfAClassWithLegacyFunctions \
-    (MakeCodeStringOfAClassWithLegacyFunctions):
+class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLegacyFunctions):
 
     @late
     def dtype_to_spec(self):
@@ -278,9 +279,6 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.lf().lf() + 'tag_in = header(1)'
         self.out.lf().lf() + 'len_in = header(2)'
         
-        
-               
-               
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
             self.out.lf() + spec.counter_name + '_in' + ' =  ' 
@@ -290,9 +288,10 @@ class MakeAFortranStringOfAClassWithLegacyFunctions \
         self.out.lf() + 'len_out = len_in'
         
         
-        self.out.lf()      + 'number_of_doubles_out = 0'
-        self.out.lf()      + 'number_of_integers_out = 0'
-        self.out.lf()      + 'number_of_floats_out = 0'
+        
+        for i, dtype in enumerate(dtypes):
+            spec = self.dtype_to_spec[dtype]
+            self.out.lf() + spec.counter_name + '_out' + ' =  0' 
         self.out.lf()
         
         for i, dtype in enumerate(dtypes):

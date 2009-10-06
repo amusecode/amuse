@@ -12,7 +12,9 @@ dtype_to_spec = DTypeToSpecDictionary({
     numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'double', 'MPI_DOUBLE'),
     numpy.float32 : DTypeSpec('floats_in', 'floats_out',
-                    'number_of_floats', 'float', 'MPI_FLOAT')
+                    'number_of_floats', 'float', 'MPI_FLOAT'),
+    numpy.uint8 : DTypeSpec('chars_in', 'chars_out',
+                    'number_of_chars', 'char', 'MPI_CHARACTER'),
 })
 
 
@@ -72,8 +74,9 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
                 self.out + ' ,'
                 
             if parameter.direction == RemoteFunction.IN:
-                self.out.n() + spec.input_var_name 
-                self.out + '[' + self.index_string(parameter.input_index) + ']'
+                self.out.n() + spec.input_var_name
+                if not spec.type == 'char':
+                    self.out + '[' + self.index_string(parameter.input_index) + ']'
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + '&' + spec.input_var_name 
                 self.out + '[' + self.index_string(parameter.input_index) + ']'

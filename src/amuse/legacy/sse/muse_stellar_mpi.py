@@ -38,7 +38,7 @@ class SSE(LegacyInterface):
             "mass",
             "current mass of a star",
              units.MSun,
-             0.0 | units.MSun
+             1.0 | units.MSun
         ),
         attributes.ScalarAttributeDefinition(
             None,

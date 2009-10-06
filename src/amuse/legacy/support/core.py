@@ -64,7 +64,8 @@ class LegacyCall(object):
         
         dtype_to_keyword = {
             numpy.float64.__name__ : 'doubles_in',
-            numpy.int32.__name__  : 'ints_in'
+            numpy.int32.__name__  : 'ints_in',
+            numpy.uint8.__name__  : 'chars_in',
         }       
         call_keyword_arguments = {}
         for dtype, values in dtype_to_values.iteritems():
@@ -338,7 +339,7 @@ class MpiChannel(object):
     def stop(self):
         self.intercomm.Free()
         
-    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], length = 1):
+    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         if doubles_in:
             try:
                 length = len(doubles_in[0])
@@ -349,7 +350,12 @@ class MpiChannel(object):
                 length = len(ints_in[0])
             except:
                 pass
-        header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in)], dtype='i')
+        
+        if len(chars_in) == 1:
+            number_of_characters = len(chars_in[0])+1
+        else:
+            number_of_characters = 0
+        header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in), number_of_characters], dtype='i')
         
         self.intercomm.Bcast([header, MPI.INT], root=MPI.ROOT)
         if doubles_in:
@@ -367,9 +373,15 @@ class MpiChannel(object):
         if floats_in:
             floats = numpy.array(floats_in, dtype='f')
             self.intercomm.Bcast([floats, MPI.FLOAT], root=MPI.ROOT)
+
+        if chars_in:
+            as_array_of_bytes = [ord(ch) for ch in chars_in[0]]
+            as_array_of_bytes.append(0)
+            chars = numpy.array(as_array_of_bytes, dtype=numpy.uint8)
+            self.intercomm.Bcast([chars, MPI.CHARACTER], root=MPI.ROOT)
             
     def recv_message(self, tag):
-        header = numpy.empty(5,  dtype='i')
+        header = numpy.empty(6,  dtype='i')
         self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
         length = header[1]
         n_doubles = header[2]

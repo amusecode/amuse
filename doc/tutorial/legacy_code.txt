@@ -153,7 +153,7 @@ We have not defined any methods and our interface class is not
 very useful. We can only create an instance of the code. When we 
 create this instance the "muse_worker" application will start 
 to handle all the function calls. We can see the application 
-running when we do "ps -x | grep muse_worker"
+running when we do "ps x | grep muse_worker"
 
 Implementing a method
 ~~~~~~~~~~~~~~~~~~~~~~
