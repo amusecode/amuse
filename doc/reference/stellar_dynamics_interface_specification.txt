@@ -1,0 +1,367 @@
+=====================================
+Stellar Dynamics Interface Defintion
+=====================================
+
+=========== ============ ========= =========
+Date        Author(s)    Version   State
+=========== ============ ========= =========
+12-10-2009  AvE          1.0       Initial
+=========== ============ ========= =========
+
+Introduction
+~~~~~~~~~~~~
+
+Data Types
+----------
+The exact size (in bytes) and type of the values send between the python layer and the legacy
+codes is very important. In this document we will specify the type of each argument and return 
+value. 
+
+========== ======== ================ ================
+Type name  Size     Fortran          C               
+..         bytes    type             type             
+========== ======== ================ ================ 
+int32      4        integer          long             
+float64    8        double precision double
+float32    4        real             float
+string     n                         char *
+========== ======== ================ ================ 
+
+
+Object Management
+~~~~~~~~~~~~~~~~~
+
+new_particle
+------------
+Define a new particle in the stellar dynamics code. The particle is initialized with the provided
+mass, radius, position and velocity. This function returns an index that can be used to refer
+to this particle.
+
+.. code-block:: c
+
+    int32 new_particle(IN float64 mass, IN float64 radius, 
+        IN float64 x, IN float64 x, IN float64 x,  
+        IN float64 vx, IN float64 vy, IN float64 vz)
+
+*Arguments*
+
+mass
+    The mass of the particle
+radius
+    The radius of the particle, this might be optional for some stellar dynamics codes
+x,y,z
+    The initial position vector of the particle
+vx,vy,vz
+    The initial velocity vector of the particle
+    
+Return value
+    An index assigned to the newly created particle. This index is supposed to be a local
+    index for the code (and not valid in other instances of the code or in other codes)
+
+
+delete_particle
+---------------
+Remove the definition of particle from the code. After calling this function the particle is
+no longer part of the model evolution. It is up to the code if the index will be reused. 
+This function is optional.
+
+.. code-block:: c
+
+    int32 delete_particle(IN int32 index_of_the_particle)
+
+
+*Arguments*
+
+index_of_the_particle
+    Index of the particle to be removed. This index must have been returned by an earlier
+    call to **new_particle**
+    
+Return value
+    0 - OK
+        particle was removed from the model
+    -1 - EROOR
+        particle could not be removed
+     
+Object state
+~~~~~~~~~~~~
+
+get_state
+---------
+Retrieve the current state of a particle. The *minimal* information of a stellar 
+dynamics particle (mass, radius, position and velocity) is returned.
+
+.. code-block:: c
+
+    int32 get_state(IN int32 id, 
+        OUT float64 mass, OUT float64 radius, 
+        OUT float64 x, OUT float64 x, OUT float64 x,  
+        OUT float64 vx, OUT float64 vy, OUT float64 vz)
+
+*Arguments*
+
+index_of_the_particle
+    Index of the particle to get the state from. This index must have been returned by an earlier
+    call to **new_particle**
+
+mass
+    The current mass of the particle
+radius
+    The current radius of the particle, this might be optional for some stellar dynamics codes. In those codes radius will be 0
+x,y,z
+    The current position vector of the particle
+vx,vy,vz
+    The current velocity vector of the particle
+     
+    
+Return value
+    0 - OK
+        particle was found in the model and the information was set
+    -1 - EROOR
+        particle could not be found
+
+set_state
+---------
+Update the current state of a particle. The *minimal* information of a stellar 
+dynamics particle (mass, radius, position and velocity) is updated.
+
+.. code-block:: c
+
+    int32 set_state(IN int32 id, 
+        OUT float64 mass, OUT float64 radius, 
+        OUT float64 x, OUT float64 x, OUT float64 x,  
+        OUT float64 vx, OUT float64 vy, OUT float64 vz)
+
+*Arguments*
+
+index_of_the_particle
+    Index of the particle for which the state is to be updated. This index must have been 
+    returned by an earlier call to **new_particle**
+
+mass
+    The new mass of the particle
+radius
+    The new radius of the particle, this might be optional for some stellar dynamics codes. In those codes radius will be 0
+x,y,z
+    The new position vector of the particle
+vx,vy,vz
+    The new velocity vector of the particle
+     
+    
+Return value
+    0 - OK
+        particle was found in the model and the information was set
+    -1 - EROOR
+        particle could not be found
+    -2 - EROOR
+        code does not support updating of a particle
+
+
+Object State, Extension Mechanism
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Not all information of a particle can be transfered with the get_state and set_state functions. To
+support other properties (like acceleration), the code can define ``get_`` and ``set_`` functions. These
+functions must get or set one scalar property (1 argument) or a vector property (3 arguments)
+
+
+get_mass
+--------
+Retrieve the mass of a particle. Mass is a scalar property of a particle, this function has
+one OUT argument.
+
+.. code-block:: c
+
+    int32 get_mass(IN int32 id, OUT float64 mass)
+
+*Arguments*
+
+index_of_the_particle
+    Index of the particle to get the mass from. This index must have been returned by an earlier
+    call to **new_particle**
+
+mass
+    The current mass of the particle
+     
+Return value
+    0 - OK
+        particle was found in the model and the information was set
+    -1 - EROOR
+        particle could not be found
+
+
+set_mass
+--------
+Update the mass of a particle. Mass is a scalar property of a particle.
+
+.. code-block:: c
+
+    int32 set_mass(IN int32 id, IN float64 mass)
+
+*Arguments*
+
+index_of_the_particle
+    Index of the particle to set the mass for. This index must have been returned by an earlier
+    call to **new_particle**
+
+mass
+    The new mass of the particle
+     
+Return value
+    0 - OK
+        particle was found in the model and the information was set
+    -1 - EROOR
+        particle could not be found
+
+
+get_position
+-------------
+Retrieve the position vector of a particle. Position is a vector property,
+this function has 3 OUT arguments.
+
+.. code-block:: c
+
+    int32 get_position(IN int32 id, 
+        OUT float64 x, OUT float64 y, OUT float64 z)
+
+*Arguments*
+
+index_of_the_particle
+    Index of the particle to get the position from. This index must have been returned by an earlier
+    call to **new_particle**
+
+x,y,z
+    The current position vector of the particle
+     
+Return value
+    0 - OK
+        particle was found in the model and the information was set
+    -1 - EROOR
+        particle could not be found
+
+
+set_position
+-------------
+Update the position of a particle.
+
+.. code-block:: c
+
+    int32 set_position(IN int32 id, 
+        IN float64 x, IN float64 y, IN float64 z)
+
+*Arguments*
+
+index_of_the_particle
+    Index of the particle to set the mass for. This index must have been returned by an earlier
+    call to **new_particle**
+
+x,y,z
+    The new position vector of the particle
+     
+Return value
+    0 - OK
+        particle was found in the model and the information was set
+    -1 - EROOR
+        particle could not be found
+
+
+Model evolution
+~~~~~~~~~~~~~~~
+
+evolve
+------
+Evolve the model until the given time or until a collision happens.
+
+.. code-block:: c
+
+    int32 evolve(IN float64 time, 
+        IN int32 collision_flag)
+
+*Arguments*
+
+time
+   Model time to evolve the code to. The model will be evolved until this time is reached exactly
+   or just before.
+   
+collision_flag
+    1
+        Stop evolving the model when a collision is detected by the code
+    0
+        Continue evolving the code, ignore collisions
+     
+Return value
+    0 - OK
+        Evolved until time, no collision happened
+    1 - COLLISION DETECTED
+        Stopped after a collision
+    -1 - EROOR
+        Model did not converge
+
+
+Diagnostics
+~~~~~~~~~~~
+
+get_kinetic_energy
+------------------
+Retrieve the current kinetic energy of the model
+
+.. code-block:: c
+
+    int32 get_kinetic_energy(OUT float64 kinetic_energy)
+    
+*Arguments*
+
+kinetic_energy
+   The kinetic energy of the model
+     
+Return value
+    0 - OK
+        Current value of the kinetic energy was set
+    -1 - ERROR
+        Kinetic energy could not be provided
+
+get_potential_energy
+--------------------
+Retrieve the current potential energy of the model
+
+.. code-block:: c
+
+    int32 get_potential_energy(OUT float64 potential_energy)
+    
+*Arguments*
+
+potential_energy
+   The potential energy of the model
+     
+Return value
+    0 - OK
+        Current value of the potential energy was set
+    -1 - ERROR
+        Potential energy could not be provided
+
+get_indices_of_colliding_particles
+----------------------------------
+Retrieve the two indices of the colliding particles
+
+.. code-block:: c
+
+    int32 get_indices_of_colliding_particles(OUT int32 particle1, OUT int32 particle2)
+    
+*Arguments*
+
+particle1
+    Index of the first colliding partner
+    
+particle2
+    Index of the second colliding partner
+    
+     
+Return value
+    0 - OK
+        The indices of the collision partners were set
+    -1 - ERROR
+        No collision found
+
+
+
+
+Services
+~~~~~~~~
