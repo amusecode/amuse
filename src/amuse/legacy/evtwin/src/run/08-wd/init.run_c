@@ -1,0 +1,19 @@
+     1     1    15     5    16     1   200   200
+  3.000E-01  3.000E-01    1
+  1.000E-01  5.000E-02    1
+  6.000E-01  3.000E-01    1
+  6.000E+00  1  0.000E+00
+ -1.00E+00 -1.00000E+00  0.00E+00  1.00E+06 -1.00E+00  0.00E+00 -1.00E+00  0.00E+00    1
+  1.00E-01  2.00E+10  1.00E+02  0.00E+00  3.00E+00  5.30E+00  1.20E+00
+  6.30E+00  3.00E+02  0.00E+00  1.00E-06  1.00E+06  1.00E+03  1.00E+03
+ -1.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00  0.00E+00
+
+
+last five lines:
+    ROT     KR   EX   : KR=1 -> P1 = Pcrit1*10**ROT;  KR=2 -> P1 = Porb*10**ROT
+alternative initial conditions if JMX >= 0, and if any item is non-negative:
+    SM       DTY          AGE       PER       BMS       ECC       P1        ENC       JMX
+conditions for termination:  
+    rlf1     age      LCarb     rlf2      LHe        rho      MCO 
+    rho      mdot     XHe       He-eps    dtmin      sm8      vmh8
+    XH       rest     not       yet       used       ...      ...

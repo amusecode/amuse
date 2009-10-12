@@ -1,0 +1,33 @@
+ Some WDs, constructed thus:
+(a) For a He WD, evolve *1 of a conservative binary with log M = 0.3,
+log Q = 0.1, log X = 0.6 (which is one of the grid of binaries in
+run05). It ends up as a He WD of 0.317 Msun with a thin H layer of
+~ 0.002 Msun. The output file (fort.15 = af15) contains this remnant
+at various stages of cooling, from model 1800 on (every 100th stored).
+One could make a sequence of more massive He WDs by (i) using a little
+artificial mass loss to get rid of the H envelope, and then (ii)
+artificially accreting mass ad libitum. Note that any mass added to
+any star is *assumed* to have the same composition as the gainer's
+surface. This ought to be improved.
+(b) For a CO WD, take a single ZAHeMS star from run07c (0.531 Msun), and 
+evolve it with no mass loss. By model 1000 it is a very hot (~ 100,000 K)
+pre-WD, with a CO core of 0.496 msun, although there are traces of He
+down to ~ 0.4 msun. By model 2400, at great age, it has cooled to
+~ 3500K. There is *numerical* diffusion of He/C, so that traces of He
+now appear at 0.25 msun, although He is less than 0.0001 below 0.4 msun.
+Nevertheless the He shell as defined by the position where Y(He)=0.35
+has only moved in to 0.493 msun.
+    
+      Of course a genuine WD may have layers of both H and He above a
+CO core, with the massses of these shells, and the distribution of
+composition within them, depending on what might be a quite complicated 
+history, probably including sporadic shell flashes. They will also
+depend on gravitational settling, which is not included in the code
+(yet). I tend not to get thermal shell flashes, because of the great
+numerical stability of the implicit adaptive mesh. People who *do* get
+them do not neccessarily get them at the right time, since even the
+more usual mesh-spacing procedures generally have some degree of 
+numerical stability in them that might delay an incipient thermal
+instabilty. Also, most implicit codes do not handle shell flashes
+very accurately, anyway.
+

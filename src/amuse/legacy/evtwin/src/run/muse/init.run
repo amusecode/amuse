@@ -1,0 +1,43 @@
+This file contains parameters that control a normal run See the I/O manual
+for the meaning of some of these variables you can set
+
+&INIT_RUN
+ ISB     =           1,  KTW     =           1
+
+ IP1     =          16,  IM1     =           1
+ 
+ IP2     =          16,  IM2     =           1
+ 
+ KPT     =        2000,  KP      =         200
+
+ STARTFILE = ''
+ 
+ ML1     =  0.00E+00,  DML     =  0.30E+00,  KML     =  1
+ QL1     =  5.00E-02,  DQL     =  5.00E-02,  KQL     =  1
+ XL1     =  6.00E+00,  DXL     =  0.30E+00,  KXL     =  1
+
+ ROT     =  1.0,          KR      =  1
+ EX      =  0.0
+
+ SM      =  1.0
+ DTY     = -1.0
+ AGE     =  0.0
+ PER     = -1.0
+ BMS     = -1.0
+ ECC     =  0.0
+ P       = -1.0
+ ENC     =  0.0
+ JMX     =  1
+
+ START_WITH_RIGID_ROTATION = TRUE
+
+ UC      =    
+  1.00E-01, 2.00E+12, 1.00E+02, 0.00E+00, 3.00E+00, 5.30E+00, 1.20E+00,
+  6.30E+00, 3.00E+02, 0.00E+00, 1.00E-06, 1.00E+06, 1.00E+03, 1.00E+03,
+  0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00, 0.00E+00
+/
+
+Conditions for termination (UC):
+    rlf1     age      LCarb     rlf2      LHe        rho      MCO 
+    rho      mdot     XHe       He-eps    dtmin      sm8      vmh8
+    XH       rest     not       yet       used       ...      ...

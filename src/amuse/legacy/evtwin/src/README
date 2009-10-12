@@ -1,0 +1,137 @@
+Utrecht branch of Eggleton's TWIN/STARS code
+
+TERMS OF USE
+------------
+This code is based on Peter Eggleton's stellar evolution code and his terms
+of use apply. In particular, you should cite one or more of the papers listed 
+at the beginning of doc/writeup.ps in published work. In addition, you should
+refer to papers describing enhancements made to the code in Utrecht where
+relevant:
+ * For thermohaline mixing:
+   Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A
+ * For the OPAL 1996 opacity tables:
+   Eldridge & Tout, 2004 MNRAS 348
+ * For enhancements to the solver:
+   Glebbeek, Pols & Hurley, 2008 A&A 
+In addition, there are uses of the code where you might consider asking
+Evert Glebbeek or other people from Utrecht University whether they would
+like to be more closely involved in what you are doing and would like to
+co-author any papers. At this time of writing and for this version of the
+code, such usage include:
+ * importing and evolving models of stellar mergers
+ * using the code as a stellar evolution library embedded in another code
+ * differential rotation and rotational mixing (experimental)
+ * semiconvection
+ * anything involving pair production/pair instability
+
+Contact one of us if in doubt.
+
+INSTALLING
+----------
+To install this code you need a FORTRAN-90 compatible FORTRAN compiler. A
+plain FORTRAN 77 compiler will NOT work.
+The Makefile is designed to pass the proper compiler options to a number
+of "supported" compilers. We recommend that you do NOT edit the Makefile unless
+the defautl settings do not work for you or your compiler is not in the list.
+
+a) Preparations
+---------------
+There is a configure script that will try to detect some system-specific
+settings. Most of these have to do with getting the Python integration to
+work, so you may not need to run this, but it doesn't hurt (and one day
+I'll make it detect your compiler too). Go to the top-level stars/
+directory and run
+ $ ./configure.pl
+(you'll need Perl). Next, you will need to generate the list of
+dependencies for the source files. This is nescessary because some of the
+files produce modules and need to be compiled before others. Run
+  $ make depend
+This requires that Perl is installed on your system. If it is not, an
+alternative bash-based method is available through
+  $ make old-depend
+This will generate the order properly, but it will not recognise all
+dependencies and as such will not properly recompile the code if one of the
+modules has changed. The Perl based build script is prefered.
+
+b) Selecting your compiler
+--------------------------
+To compile the code you need to tell make which FORTRAN compiler to use. This
+is done through the FORT environment variable, through one of
+   $ export FORT=gfortran
+   $ make
+or
+   $ FORT=gfortran make
+or
+   $ make FORT=gfortran
+Substitute the name of your FORTRAN compiler for gfortran in the examples
+above. This is used in the Makefile to set the compiler options, which you may
+want to play with to improve the speed (or stability) of the code.
+Known FORTRAN compilers:
+   FORT        Name
+   gfortran    The GNU FORTRAN compiler, from GCC 4.1+
+   g95         Another free FORTRAN compiler based on gcc. It predates gfortran
+   ifort       The Intel compiler
+   pgf95       The Portland Group compiler
+   lf95        The Lahey compiler. This has not been recently tested.
+After compilation, you should have an executable called "ev" in the code/
+subdirectory. If you wish, this can be installed in your $HOME/bin directory by
+running
+  $ make install
+c) Makefile targets
+The following Makefile targets are available:
+   all         Compiles code/ev. Conterary to its name, it does not compile 
+               "all".  This is the default target
+   libs        Compiles the TWIN code is a static library (lib/libtwin.a) and
+               a shared object (lib/libtwin.so) for using the code embedded 
+               within another project
+   runtwin     Compiles a test program (code/twin.f) that shows how to use the 
+               TWIN code as a library.
+   museplugin  Compiles the code as a shared library and builds the Python
+               interface, so that the code can be called from the MUSE
+               environment.
+   depend      Generate the dependencies for all FORTRAN files
+   install     Copy code/ev to $HOME/bin, for convenience
+   clean       Removed code/ev, all libraries, modules and objectfiles.
+   veryclean   Like clean, but also removes makefile.dep
+
+RUNNING THE CODE
+----------------
+Let us assume that you have "ev" in your path somewhare. In order to run,
+ev needs to know three things: where to find its input files, what metallicity
+to use (for the opacity tables and ZAMS library) and what basename to use for
+your output. The easiest way to do this is to pass this information directly to
+ev in the following way
+  $ ev basename metallicity path-to-datafiles
+For instance
+  $ ev sun 02 $HOME/stars
+See the top of the sourcefile code/aamain.f for a more detailed description.
+In order to run, EV needs two files with settings, referred to here init.dat
+and init.run. These names are mainly for backward compatibility with older
+versions of the code. If these do not exist, it will fall back to basename.run 
+and basename.dat, so multiple instances of the code can use the same directory
+and you do not lose your original input files if you run a separate model in the
+same directory. Using basename.run and basename.dat is recommended.
+
+There are two formats for init.run and init.dat. The original (legacy) format
+uses a matrix of numbers and can be found in the run/ directory tree. The newer
+format can be found in the stars_standards/ tree. The code will accept either,
+but some options can only be changed from their defaults with the new format.
+For a description of the various parameters, see doc/iomanual.pdf or the Utrecht
+STARS code Wiki (http://www.phys.uu.nl/~glebbeek/starswiki/bin/view).
+
+THE TWIN CODE LIBRARY
+---------------------
+The current version of TWIN can be used in another project as a stellar
+evolution library. This is still experimental at the moment!
+
+Missing functionality:
+   * Proper evaluation of stop conditions
+   * No clean way to return the cause of code breakdown at the moment
+   * The stand-alone version can work around the He flash, the library
+     version does not and will just break down.
+   * Binaries do not work. This is actually very easy to fix (at least for
+     binaries evolved in TWIN mode).
+   * More accessor functions for querying the evolutionary state of the star,
+     getting convergence information or dumping the internal structure are
+     needed.
+

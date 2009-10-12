@@ -1,0 +1,111 @@
+#!/usr/bin/perl
+use strict;
+
+# Path and name of the shared object library
+my $path = "obj";
+my $so_name = "pic_library.o";
+
+if (!-f "$path/$so_name") { $so_name = "pic_$so_name"; }
+
+# Name of the function to check for and the name of the segment its in
+my $find_string = "initialise_twin";
+my $find_g_string = "funcs1";
+my $find_section = "T";
+
+if (not (-e "$path/$so_name")) {
+   print STDERR "Cannot find $so_name\n";
+   exit -1;
+}
+
+# Determine FORTRAN name mangling for both module functions and functions
+# in the global namespace, since compilers may do these differently
+my ($f_prefix, $f_suffix) = get_fortran_fixes($find_string, $find_section);
+$so_name = "pic_cfuncs.o";
+my ($fg_prefix, $fg_suffix) = get_fortran_fixes($find_g_string, $find_section);
+my ($c_prefix, $c_suffix) = get_c_fixes();
+
+# Now "subtract" C prefix and suffix from FORTRAN
+#printf "Guess FORTRAN prefix: \"$f_prefix\", FORTRAN suffix \"$f_suffix\"\n";
+$f_prefix =~ s/^$c_prefix(.*)/$1/g;
+$f_suffix =~ s/(.*)$c_suffix$/$1/g;
+$fg_prefix =~ s/^$c_prefix(.*)/$1/g;
+$fg_suffix =~ s/(.*)$c_suffix$/$1/g;
+printf "C prefix: \"$c_prefix\", C suffix \"$c_suffix\"\n";
+printf "FORTRAN module prefix: \"$f_prefix\", FORTRAN suffix \"$f_suffix\"\n";
+printf "FORTRAN global prefix: \"$fg_prefix\", FORTRAN suffix \"$fg_suffix\"\n";
+
+$f_prefix = "$f_prefix"."##" if ((defined $f_prefix) and ($f_prefix ne ''));
+$f_suffix = "##"."$f_suffix" if ((defined $f_suffix) and ($f_suffix ne ''));
+
+$fg_prefix = "$fg_prefix"."##" if ((defined $fg_prefix) and ($fg_prefix ne ''));
+$fg_suffix = "##"."$fg_suffix" if ((defined $fg_suffix) and ($fg_suffix ne ''));
+
+open FILE, ">config.h";
+print FILE "#define FORTRAN_NAME(s) ${f_prefix}s${f_suffix}\n";
+print FILE "#define GLOBAL_FORTRAN_NAME(s) ${fg_prefix}s${fg_suffix}\n";
+close FILE;
+
+
+# Determine FORTRAN prefix and suffix
+sub get_fortran_fixes
+{
+   my $find_string = shift;
+   my $find_section = shift;
+
+   if (not (-e "$path/$so_name")) {
+      print STDERR "Cannot find $so_name in $path/\n";
+      exit -1;
+   }
+
+# Determine the prefix and suffix that the FORTRAN compiler has used for 
+# function names in the object files.
+# Look for the "initialise_twin" string in the text  ('T') section of the
+# code
+
+   my $so_function_name;
+   open OBJDUMP, "nm $path/$so_name|" || die "Cannot start nm";
+   while (<OBJDUMP>) {
+      if (m/.*$find_section.*$find_string/) {
+         $so_function_name =  (split)[-1];
+         last;
+      }
+   }
+   close OBJDUMP;
+
+   if (not defined($so_function_name)) {
+      print STDERR "Error: could not find $find_string in section $find_section of $path/$so_name\n";
+      exit -1;
+   }
+
+   return split /$find_string/, $so_function_name;
+}
+
+sub get_c_fixes
+{
+
+# Determine prefix and suffix that the C compiler will use for function
+# names.
+   my $so_function_name;
+   my $tempfile = "configure_muse_wrapper_test_c_$$";
+   open FILE, ">/tmp/$tempfile.c";
+   print FILE "int $find_string(void) {return 42;}\n";
+   close FILE;
+   system "gcc /tmp/$tempfile.c -c -o /tmp/$tempfile.o > /dev/null";
+
+   open OBJDUMP, "nm /tmp/$tempfile.o|" || die "Cannot start nm";
+   while (<OBJDUMP>) {
+      if (m/.*$find_section.*$find_string/) {
+         $so_function_name =  (split)[-1];
+         last;
+      }
+   }
+   close OBJDUMP;
+   unlink "/tmp/$tempfile.{c,o}";
+
+   if (not defined($so_function_name)) {
+      print STDERR "Error: could not find $find_string in section $find_section of $path/$so_name\n";
+      exit -1;
+   }
+
+   return split /$find_string/, $so_function_name;
+}

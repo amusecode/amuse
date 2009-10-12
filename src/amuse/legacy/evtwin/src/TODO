@@ -1,0 +1,16 @@
+ * Cleanup differential rotation/rotational mixing in code
+ 
+ * Convert the code to using a staggered mesh
+
+ * Convert scheme for calculating fp and ft to fully implicit (may need an extra
+   equation for the psi integral)
+
+ * Fix detection of presence of symbolic links. Right now, it doesn't work
+   properly for overriding output fort.nnn files.
+   
+ * Add He3 to the structure part
+
+ * Check detection of when to break a FUDGED_SOLVER loop and rewrite the check
+   so that it is really "floating point safe"
+
+ * Merge nucleosynthesis code from Richard - with proper boundary conditions

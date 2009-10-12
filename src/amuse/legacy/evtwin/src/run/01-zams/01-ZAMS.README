@@ -1,0 +1,86 @@
+   This run pseudo-evolves a ZAMS, starting from 0.1 Msun and going up
+in equal steps of log10(M) to ~200 Msun. Although H is not allowed
+to be consumed in the core, there is partial burning to the extent
+that  C and N are brought into equilibrium in the range ~ 1 - 2 Msun,
+and C, N and O are brought into equilibrium at somewhat higher masses.
+The starting model is taken from the pre-existing file f14 
+[= zams02_start.mod] in this directory (with a small amount of extra 
+information from f18 [= zams_start.out]). Mass is added at a constant 
+(logarithmic) rate, and the timestep is not allowed to change, so that 
+there are equal increments of log(mass). 
+
+   Construction of a ZAMS can be done using a variety of metallicities, 
+though the one mainly used here is `solar', ie Z = 0.02. The
+sub-directory ../input/metals contains sub-sub-directories for Z=0.0001, 
+0.0003, 0.001, 0.004, 0.01, 0.02, 0.03. These have the physical data 
+file fort.20 [= phys.z**], and model data (file f14 [= zams**_start.mod]) 
+for an initial ZAMS model of 0.1 Msun. The present f18 will do for any 
+metallicity, since the information taken from it is negligible in the 
+case of ZAMSs.
+
+
+   The script ev_zams will construct a ZAMS for a specified Z-value.
+Usage:
+       ev_zams <Z>
+
+where Z equals one of {0001, 0003, 001, 004, 01, 02, 03}. The result
+is a couple of files  zams<Z>.*  of which zams<Z>.out, zams<Z>.mas 
+and zams<Z>.mod are required for the regular evolution runs (see
+sub-directories 02-single, etc).  After construction these three 
+files should be stored for further use, e.g. in sub-directory ../input.
+
+   Below are the original instructions from PPE (all of which is taken
+care of by the ev_zams script). However see further down for tips how 
+to construct a ZAMS for a different mass interval or -spacing.
+                                                                -Onno
+
+
+    To generate the necessary fort.16 and fort.18 for later runs,
+the steps are as follows. I assume you have gunzipped everything.
+Supposing you are in this directory to start with:  
+
+cd ..
+make
+rm -f fort.1 fort.2 fort.3 fort.4 fort.8 fort.9 fort.13 fort.14 fort.15
+cp run01/f22 fort.22
+cp run01/f23 fort.23
+cp run01/f18 fort.18
+cp metals/z02/f20 fort.20        or z0001, z0003, etc.
+cp metals/z02/f14 fort.14   [or cp run01/f14 fort.14; it's the same file]
+ev &
+
+This should run for some time, ~ 1 hr on my laptop, and when it 
+exits then
+
+cp fort.1 fort.18
+cp fort.15 fort.16
+cp fort.29 fort.19
+
+This is then ready for running other jobs, eg run02 which evolves a
+coarse mass-grid of single stars from the ZAMS to as far as the
+code goes.
+
+rm -f ... as above
+cp run02/f22 fort.22
+cp run02/f23 fort.23
+ev &
+
+This runs all night on my lap top.
+
+If you want a ZAMS library that starts at a different log M, and
+with a different spacing and upper limit, then you might
+(a) run the present job, to generate fort.16, 18 and 19 as above
+(b) run a second job that starts from one of these models, and
+has a new timestep and total number of timesteps, i.e. you have to
+alter ML, NPT and DTY in fort.23, and perhaps CMI and NSV in
+fort.22. This run will generate new
+versions of fort.1, 15 and 29, to be copied to fort.18, 16 and
+19 for later input. If you want the mass to increase by a factor 
+of 10 in N*NSV equal (log) steps, with every NSVth model saved, 
+you need
+     DTY=(1 - 10**(-1/(NSV*N)))/CMI
+CMI, NSV in fort.22 = 5e-9, 20 currently. The present N is in fact
+determined by DTY rather than vice versa, and is 40. If you want 
+the mass increase in total to be a factor of 10**X, you will need
+     NPT = X*N*NSV (2640 currently).
+An extra 1 is added automatically by the code.	 

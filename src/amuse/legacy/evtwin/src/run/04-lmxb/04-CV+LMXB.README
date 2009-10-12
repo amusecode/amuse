@@ -1,0 +1,14 @@
+    Evolves one component of a binary, assuming the other does not
+evolve except to the extent that it might accrete a fraction (to be
+specified) of the mass lost by the target star, and in addition eject,
+by `bipolar re-emission', a further fraction of the accreted mass. 
+The two runs here assume either a neutron star (1.4 msun) or a white 
+dwarf (0.6 msun). The model of dynamo-driven stellar wind is used for
+the target star.
+     The parameter CPA=0.25 means 25% `partial accretion' of the
+stellar wind, but diminished further by a factor (Rloser/Rlobe)**2. In
+addition, of course, is any mass loss by RLOF. The parameter CBR=1.0 
+means 100% `bipolar re-emission' from the gainer. Whether the mass
+lost by the loser goes directly to infinity, or indirectly via bipolar
+re-emission from the gainer, determines the amount of angular momentum
+it carries off.

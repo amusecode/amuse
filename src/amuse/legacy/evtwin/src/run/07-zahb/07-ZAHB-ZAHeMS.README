@@ -1,0 +1,22 @@
+  Three runs to create a ZAHB, a low-mass ZAHeMS star, and a ZAHeMS
+running from 0.32 to 20 Msun. 
+    Run (a) starts with a 3.16 Msun ZAMS star, and evolves it with 
+normal H burning, but with He burning *partly* suppressed. The He 
+burns, but is not allowed to be consumed (very biblical). By model 
+1000 the star is a ZAHB star with a core of 0.460 Msun. But the core
+keeps growing, and is 1.55 Msun by the end (1500 timesteps).
+   Run (b) starts from model 1000 of the first run's output
+fort.15. A constant rate of mass loss (negative CMI) was given. 
+The envelope was stripped down to pure He by model 820, and the
+star continued down the ZAHeMS to the bottom of the ZAHeMS at 
+0.299 Msun by model 1045. It was not able to continue losing more
+mass, to become a hot HeWD, because the thermal energy generation 
+term was switched off.
+   Run (c) starts from model 1000 of the previous run, at 0.305 msun. 
+It was run  with *positive* CMI, and 1500 *fixed* timesteps, to provide 
+a series of ZAHeMS stars with 
+log M = -0.5, -0.475, ... 1.30. The starting mass was changed successfully
+in the initial step from .305 to .316 msun, to get log M =-0.5.
+log M = 1.30 was reached at model 720. The HeMS continued a little further 
+and then died. I'm not sure why, but it could be that the opacity ran off 
+the edge of the table.

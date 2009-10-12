@@ -1,0 +1,7 @@
+ev
+*.o
+*.mod
+*.swp
+*.orig
+*.rej
+*.diff

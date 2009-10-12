@@ -1,0 +1,35 @@
+init.run_grid (PPE)
+-------------------
+    Evolves a grid of 10 single stars, masses log10(M) = -0.6 (0.3) 2.1.
+They are subject to the mass-loss rate for luminous stars of de Jager
+et al (1988), or to a wind/superwind formalism of my own where mass 
+loss rate is proportional to luminosity divided by the binding energy
+of the envelope. The code uses the greater of the two estimates for
+mass-loss rate.
+    For low-mass stars, the helium flash is fudged. The code notes the
+core mass and total mass at the onset of the flash, constructs a ZAHB
+star of the same core mass and total mass, and then continues the evolution.
+    They terminate at: 
+0.25 msun -- age reached 20 Gyr 
+ 0.5 msun -- age reached 20 Gyr
+   1 msun -- late AGB; M reduced to 0.545 msun. Should go on to PNN
+   2 msun -- late AGB; M reduced to 0.706 msun. Ditto
+   4 msun -- late AGB; M(core) = 0.890msun; M reduced to 1.029 msun. Ditto
+   8 msun -- C-burning luminosity 100 Lsun; M reduced to 7.72 msun
+  16 msun -- C-burning luminosity 100 Lsun; M reduced to 13.4 msun
+  32 msun -- core He burning; too short dt; M reduced to 14.5 msun
+  64 msun -- core He burning; too short dt; M reduced to 27.5 msun
+ 128 msun -- Hertzsprung gap; too short dt; M reduced to 60.8 msun.
+
+
+init.run_m4 (Onno)
+------------------
+Evolves a single star of 4.0 Msun.
+
+Note that some of the termination conditions are different from those
+used above.  MCO is allowed to run up to 1.4 Msun, and LC and LHe up
+to 1E7.  Set LHe to a smaller value (e.g. 1.00E+02) to circumvent the 
+core He flash in a low-mass star.
+
+N.B. in the grid run, EPS is set to 1E-4 if XHe < 0.15, i.e. the
+convergence criterion is weakened. This is disabled in this run.

@@ -1,0 +1,16 @@
+   A few runs where non-conservative effects are included
+for *both* components. This means using the TWIN version, which
+solves the evolution of both components simultaneously.
+   The first is BY-Dra-like, two low-mass K dwarfs in a 6.5d 
+eccentric orbit. The more massive is forced to spin at an 
+equilibrium period of 5.4d by the combination of tidal friction 
+and magnetic braking, once the period is reduced to 6d as 
+observed. For the less massive, the corresponding equilibrium 
+spin period is 14.3d.
+   The second is RZ Eri, and the third is Z Her.
+
+   The run with input init.dat_b and init.run_b evolves a
+massive binary with tidal interaction and mass loss (de Jager, 
+Reimers), but without the dynamo-driven mass and AM loss model.
+CMT is increased to 1.0E1 to prevent large RLF (and correspondingly
+too-low mass transfer rates).

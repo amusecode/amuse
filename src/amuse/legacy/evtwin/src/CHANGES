@@ -1,0 +1,100 @@
+This version is a branch of the main trunk, version 2005.1
+This development branch does not have discrete version numbers, so changes to 
+this branch since v2005.1 are not listed here. However, many improvements here
+were backported to the trunk and can be found in the relevant CHANGES file
+in there.
+
+Utrecht branch of Eggleton's TWIN/STARS code, version 2005.1
+
+Changes between 2005.1 and 2005.0
+=================================
+= Changes to the evolution code =
+=================================
+ * Added NPX integer constant to hold the number of variables in the PX and
+   SX arrays in the /VBLES / comon block and increased this to 60
+ * Optionally added RPP, RPC, RPNG, RPN, RPO and RAN to the output variables as
+   numbers 50-55 and changed IPX to output these as well as variables 22-26 and
+   added them to the .mdl file (fort.33/34).
+ * Added central pressure (in dPa) to the plot file, column 82
+ * Made XFe and XSi, the iron and silicon baryonnumber fractions, only be
+   calculated once in remesh instead of letting them be calculated incorrectly 
+   at each timestep.
+ * Added N14 equations and N14 as an independent variable.
+   Nitrogen 14 is independent variable 16, and the corresponding equation
+   is equation 13.
+ * Added an optional equation to solve for Mg24. Mg24 uses variable 21, which
+   is a shared variable between the two stars in a TWIN run. In other words,
+   one should NOT use Mg24 as an independent variable in TWIN mode.
+   There are two possible equations to use for Mg24: 14 and 15.
+   Equation 14 is a composition balance equation similar to equations
+   1, 2, 3, 4, 5 and 13. Using this, conservation of baryon number is not
+   imposed by the code (but surprisingly well achieved in my opinion).
+   Equation 15 is just the sum of the equations 1,2,3,4,5,13 and 14 which
+   has the effect of requireing that the total baryon number does not
+   change. That fractions sum to 1 is imposed by starting conditions.
+   
+   There is a small block of code in beginn that checks if either equation 14
+   or equation 15 is listed as an equation that needs to be solved. If it is,
+   then it will set the boolean flag use_mg24_eqn defined in xtraelem.f
+   to signal that Mg24 should be updated through these equations. If the
+   variable is not listed, then the Mg24 abundance is simply calculated as in
+   the old version of the code.
+
+   So in practice, Mg24 can be solved for by adding variable 21 and either 
+   equation 14 or 15. Not listing these equations makes the code behave as it
+   did previously.
+   
+   (Note: one could, in principle, do the same for N14 if that is ever wanted)
+ * Richard Stancliffe fixed a few minor bugs that choked some compilers (but
+   not others).
+ * Selma de Mink and Marc v/d Sluys added a termination condition for the
+   end of the main sequence. Set the desired hydrogen abundance to -1.0 to
+   disable this (default).
+ * Added a sanity check when updating the composition variables so that they
+   are always between 0 and 1 (although the code should never encounter the
+   latter anyway). This seems to resolve some stability issues.
+ * Changed the desired accuracy at the end of Helium burning to the `normal'
+   1e-6 during hydrogen burning in all testjobs, since He burning is now 
+   assumed to be more stable.
+
+=================================
+=    Changes to the makefile    =
+=================================
+ * The makefile will try to detect the Fortran compiler and set the proper
+   compiler options to use by checking the FORT variable. Set this once
+   from your shell startup script, for instance with `export FORT=ifort' and
+   make will automagically call the proper compiler. You can also override it
+   on the make commandline: `make FORT=ifort'. The default is lf95, for the
+   Lahey compiler.
+ * You can enable debugging information by defining the DEBUGMODE variable
+   before calling make, eg `make DEBUGMODE=1'.
+   
+=================================
+=   Changes to the ev scripts   =
+=================================
+ * The evolve and ev_zams scripts uses an extra variable, EV, to call the 
+   executable. This allows you to save the executable in a different location
+   from the input files.
+ * The evolve script will only set the evpath, EV and Z variables if those
+   haven't been set before. That means it is possible to specify these without
+   having to modify the shellscript:
+     export evpath = $HOME/some/path/with/input/files
+     export EV = $HOME/some/other/path/to/ev
+     export Z = 002
+ * The ev_zams script has undergone a similar change with respect to the EV
+   and evpath variables.
+
+=================================
+=     Miscellaneous remarks     =
+=================================
+ * The 02-single test run appears to be quite broken, at least when it comes
+   to doing normal evolution: it doesn't solve any of the composition equations.
+   The notes by PPE in his writeup suggests that this is not the intention.
+ * I may have bodged some of the equation/variable numbers in the TWIN input
+   file. Please check and report errors in case of peculiar behavior.
+ * Do not allow the code too many iterations (no more than 10, say) before 
+   changing the timestep. The Mg24 abundance does some funky stuff otherwise
+   if it isn't being solved for explicitly. Maybe changing the DEL parameter in
+   init.dat to 1e-3 (from 1e-2) will help with this a little.
+   However, if you can, just solve for Mg24 as well as the other composition
+   variables.

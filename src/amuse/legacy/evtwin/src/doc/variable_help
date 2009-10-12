@@ -1,0 +1,474 @@
+ABUND Holds information about element abundances.
+ATDATA Holds atomic data such as atomic weights and ionization energies.
+CONSTS Holds constants: numerical (e.g. pi), physical (e.g. c), and astronomical (e.g. Msolar).
+INE Used for passing data to and from EQUNS2.
+INF Used for passing data to and from FUNCS1.
+NAMEIN Holds the named variables and their changes which are the input for FUNCS1 and EQUNS1.
+NAMOUT Holds the named functions which are the output for FUNCS1 and EQUNS1.
+NCDATA Holds nuclear reaction data.
+QUERY Holds control information for the run such as number of timesteps.
+SOLV Holds the working data used in solving the difference equations.
+STAT1 Holds constant data such as the opacity tables.
+STAT2 Holds the state variables to be evaluated by STATEF.
+STAT3 Holds data for opacity interpolation.
+STATFD Holds the Fermi-Dirac integral approximation information.
+STORE Holds previous state information for backup.
+TVBLES Holds variables such as timestep, age, period, and mass.
+UBVDAT Holds data for converting from luminosity and temperature to B-V and U-B.
+VBLES Holds variables such as thermal gradient and mesh spacing function.
+AF Value of degeneracy ln(f) at current mesh point; independent variable 1 (in NAMEIN)
+AGE Stellar age in years (in TVBLES)
+AI Moment of inertia of interior material in 10^55 gm cm^2 units; independent variable 12 (in NAMEIN)
+AME Electron mass in grams (in CONSTS)
+AMU Atomic mass unit in grams (in CONSTS)
+AP Ln(pressure) at current mesh point (in STAT2)
+APER Rotation period of star in days; independent variable 13 (in NAMEIN)
+AR Ln(R in 10^11 cm units); independent variable 7 (in NAMEIN)
+ARHO Ln(density) at current mesh point (in STAT2)
+AT Value of ln(T) at current mesh point; independent variable 2 (in NAMEIN)
+AVM Moles of baryons per gram of star (in ABUND)
+BCA Boundary condition for orbital angular momentum (non-TWIN case) (in NAMOUT)
+BCE Boundary condition for eccentricity (non-TWIN case) (in NAMOUT)
+BCF Boundary condition for potential on L1 surface (in NAMOUT)
+BCM Boundary condition for stellar mass (non TWIN case) (in NAMOUT)
+BCMB Boundary condition for total mass of binary (in NAMOUT)
+BCP Surface pressure boundary condition (in NAMOUT)
+BCPH Boundary condition for surface potential eigenvalue (in NAMOUT)
+BCS Boundary condition for spins (non TWIN case) (in NAMOUT)
+BCT Surface temperature boundary condition (in NAMOUT)
+BM Total mass of binary system in 10^33 g units (in TVBLES)
+BOLTZM Boltzmann's constant k_B (erg/K) (in CONSTS)
+C3RD 1/3 (in CONSTS)
+CA Radiation constant (in CONSTS)
+CALP \alpha for mixing length (2.0) (in CONSTS)
+CASN Solar age in years (in CONSTS)
+CB Conversion factor for P* to PE. = 8 \pi m_e c^2 / \Lambda_C^3, \Lambda_C=h/(m_e c) (in CONSTS)
+CBR `bipolar re-emission' fraction (0) (in CONSTS)
+CC C abundance as fraction of metals (.176) (in CONSTS)
+CD 8 \pi (m_e c/h)^3 (grams/amu) (in CONSTS)
+CDD Target value for average change in variables; used in adjusting timestep (in TVBLES)
+CEN H^3/(2 \pi k_B)^{3/2}/(grams/amu)^{5/2} (in CONSTS)
+CET Time scale for ENC changes (1e-6) (in CONSTS)
+CEVB (ergs per electron volt)/k_B (in CONSTS)
+CG Gravitational constant (in CONSTS)
+CG1 1e5 G^{1/2} (in CONSTS)
+CG2 CG1 0.432/ \pi (in CONSTS)
+CGR Defines the semiconvection boundary for printing (.001) (in CONSTS)
+CGRT 6.4 (\pi/4.32e4)^6 (1e11/c)^5 (in CONSTS)
+CH Initial H mass fraction (in CONSTS)
+CH2 Molecular hydrogen parameters (in ATDATA)
+CHAT Table of neutrino loss rates and nuclear reaction rates (in STAT1)
+CHE M_e c^2 (in CONSTS)
+CL Speed of light in cm/sec (in CONSTS)
+CLN Ln(10); for converting between ln and log10 (in CONSTS)
+CLSN Lsolar*1e-33 erg/s (in CONSTS)
+CLT Prefactor for heat flux between components of contact binary (in CONSTS)
+CME (ergs/MeV)/(grams/amu) (in CONSTS)
+CMG Mg abundance as fraction of metals (.034) (in CONSTS)
+CMI In surface dM/dt, prefactor for M for artificial mass gain (0, +/- 5e-9, or +/- 1e-6) (in CONSTS)
+CMJ In surface dM/dt, prefactor for mass-loss rate from luminous-star wind (0 or 1) (in CONSTS)
+CML In surface dM/dt, prefactor for mass-loss rate from dynamo-driven wind (0 or 1) (in CONSTS)
+CMR In surface dM/dt, prefactor for mass-loss rate from Reimers-like wind (0, .2, or 1) (in CONSTS)
+CMS In surface dM/dt, prefactor of log(r/rlobe)^3 for Roche lobe overflow (0 or 1e4) (in CONSTS)
+CMSN Msolar*1e-33 grams (in CONSTS)
+CMT In surface dM/dt, prefactor for Roche lobe overflow (Msolar/yr) (0 or 1e-2) (in CONSTS)
+CMU (ergs/MeV)/(grams/amu) [AKA CME] (in CONSTS)
+CN N abundance as fraction of metals (.052) (in CONSTS)
+CO O abundance as fraction of metals (.502) (in CONSTS)
+COM Statistical weights (for Saha equation) (in ATDATA)
+COS Convective overshoot parameter for H-burning cores (.12) (in CONSTS)
+CPA Partial accretion: fraction of one star's wind accreted by the other (0) (in CONSTS)
+CPI \pi (in CONSTS)
+CPI4 4\pi (in CONSTS)
+CPL (4 \pi e^3)/(k_B^3(grams/amu)), where e is electron charge (in CONSTS)
+CPS Convective overshoot parameter for He-burning cores (.12) (in CONSTS)
+CR K_B/ gas constant (erg/K/mole) (in CONSTS)
+CRD Prefactor for convective mixing (1e-4) (in CONSTS)
+CRHO 8 \pi (m_e c/h)^3 (in CONSTS)
+CRSN Rsolar*1e-11 cm (in CONSTS)
+CS Opacity tables (in STAT1)
+CSD `spin-down' from loss of material (in CONSTS)
+CSI Si abundance as fraction of metals (.072) (in CONSTS)
+CSY Seconds per year (in CONSTS)
+CT1 Used to limit DT adjustments.  min change factor. (0.8 or 1) (in CONSTS)
+CT2 Used to limit DT adjustments.  max change factor. (1.1 or 1) (in CONSTS)
+CT3 Decrease DT by this factor if fail to converge (0.3 to 0.5) (in CONSTS)
+CTE K_B/(m_e c^2) (in CONSTS)
+CTF Prefactor for tidal friction rate (0 or .01) (in CONSTS)
+CU Convective diffusion parameter (0.1) (in CONSTS)
+CXB Defines core boundary for printing (0.15) (in CONSTS)
+CZA Constant for electron screening.   (in NCDATA)
+CZB Constant for electron screening.   (in NCDATA)
+DAF Change in ln(F) during the previous timestep (in NAMEIN)
+DAI Change in moment of inertia during the previous timestep (in NAMEIN)
+DAP Change in rotation period of star during the previous timestep (in NAMEIN)
+DAT Change in ln(T) during the previous timestep (in NAMEIN)
+DE Change in orbital eccentricity during the previous timestep (in NAMEIN)
+DEL Max size of error correction (0.01).  same as EP(2) (in)
+DG \nabla_r-\nabla_a at current meshpoint (in VBLES)
+DH0 Variation size for Jacobian matrix partials (1e-7).  same as EP(3) (in)
+DM Change in stellar mass in 10^33 g units during the previous timestep (in NAMEIN)
+DMB Change in binary mass in  10^33 g units during the previous timestep (in NAMEIN)
+DMT DM/dt, change in mass during the previous timestep (in INF)
+DOA Change in orbital angular momentum in previous timestep (in NAMEIN)
+DT The timestep in seconds (in TVBLES)
+DX1 Change in fractional abundance by mass of H1 during the previous timestep (in NAMEIN)
+DX4 Change in fractional abundance by mass of He4 during the previous timestep (in NAMEIN)
+DX12 Change in fractional abundance by mass of C12 during the previous timestep (in NAMEIN)
+DX16 Change in fractional abundance by mass of O16 during the previous timestep (in NAMEIN)
+DX20 Change in fractional abundance by mass of X20 during the previous timestep (in NAMEIN)
+DXI Change in mass flux from *1 towards *2 during the previous timestep (in NAMEIN)
+E0 (in TVBLES)
+ECC Orbital eccentricity; independent variable 18 (in NAMEIN)
+ECHAR Elementary charge in e.s.u (in CONSTS)
+EG Superadiabaticity for convection (in VBLES)
+EGR (in VBLES)
+EN Neutrino losses from sources other than the nuclear reaction network (in STAT2)
+ENC Generation rate for adding extra energy to star (0) (in TVBLES)
+EPS Desired accuracy for SOLVER (1e-6).  same as EP(1) (in)
+ETA (in TVBLES)
+ETH Thermal  energy release in ergs/g/sec (e.g., T DS/Dt term) (in VBLES)
+EVOLT Ergs per electron volt (in CONSTS)
+#EX Nuclear reaction energy release in ergs/g/sec (in STAT2)
+EX Initial eccentricity
+FK Opacity at current meshpoint (in STAT2)
+FLT (in NAMEIN)
+FRM Densities for opacity interpolation (in STAT3)
+FSPL Opacity interpolation tables (in STAT3)
+GGR Data from (L,T) to (U,B,V) conversion (in UBVDAT)
+GMR (in VBLES)
+GRAD Actual temperature gradient, \nabla; dln(T)/dln(P) (in VBLES)
+GRADA Adiabatic temperature gradient, \nabla_a; dln(T)/dln(P) for adiabatic change (in STAT2)
+GRADT Same as GRAD (in VBLES)
+HP (in VBLES)
+HPR Previous values for array H (in STORE)
+ID (KE1,KE2,KE3,KBC,KEV,KFN,KL,JH1,JH2,JH3) +  3 permutations of var 's (in)
+IE Same form as ID array (in)
+IHOLD After backtrack, do this many steps before letting timestep change (in TVBLES)
+JB Which star of binary we're doing now (1 -> *1, 2 -> *2) (in QUERY)
+JHOLD The number of timesteps taken since last BACKUP (in TVBLES)
+JKH Controls debugging output from SOLVER (in QUERY)
+JM1 Previous JMOD (in TVBLES)
+JM2 Previous JM1 (in TVBLES)
+JMOD Model number (in QUERY)
+JNN Number of timesteps taken (in QUERY)
+JOC 1 -> calling SOLVER for structure, mesh, and composition variables (in QUERY)
+JTER Number of iterations done by SOLVER (in QUERY)
+KBC Number of boundary conditions (5) (in SOLV)
+KCL 1 -> use Coulomb correction to pressure; 0 -> don't  (1) (in CONSTS)
+KCN 0 -> use standard nuclear reaction network; 1 -> use CNO equilibrium fudge (0).  same as KCL(7) (in CONSTS)
+KCSX Number of subcompositions tabulated for opacities (8 or 9) (in STAT1)
+KE1 Number of 1st order equations (8) (in SOLV)
+KE2 Number of 2nd order equations (5) (in SOLV)
+KE3 Number of 3rd order equations (0) (in SOLV)
+KEQ Number of actual variables that vary on mesh (13) (in SOLV)
+KEV Number of `eigenvalues' constant on mesh (6) (in SOLV)
+KFN Number of functions evaluated by FUNCS1 (in SOLV)
+KH Number of mesh points (199) (in)
+KION Do ionization calculation for this number of ions   (in CONSTS)
+KL 0 -> start solution at surface; 1 -> start at center  (1) (in SOLV)
+KN Number of variables used for determining next timestep (in CONSTS)
+KOP 1 -> use spline interpolation for opacity; 0 -> use bilinear (1). same as KCL(4) (in CONSTS)
+KQ Increment for next meshpoint in SOLVER (in SOLV)
+KSX Indicates which variables to print (in CONSTS)
+KT1 Print internal details of every KT1st model (20 or n*200). same as KT(1) (in CONSTS)
+KT2 Print internal details of every KT2nd mesh point (1 or 2). same as KT(2) (in CONSTS)
+KT3 Print KT3 `pages' of information (1, 2, or 3). same as KT(3) (in CONSTS)
+KT4 Print 5 line summary every KT4th timestep (1, 2 or 4). same as KT(4) (in CONSTS)
+KTH Prefactor for T DS/Dt in luminosity equation (0 or 1) (in CONSTS)
+KTW 1 -> normal operation; 2 -> TWIN mode (in)
+KVB Number of independent variables (11) (in SOLV)
+KX Prefactor for DX/Dt in luminosity equation where X is H1 abundance (0 or 1). same as KTH(2) (in CONSTS)
+KY Prefactor for DY/Dt in luminosity equation where Y is He4 abundance (0 or 1). same as KTH(3) (in CONSTS)
+KZ Prefactor for DZ/Dt in luminosity equation where Z is metals abundance (0 or 1). same as KTH(4) (in CONSTS)
+LDRK Heat transfer due to differential rotation (in NAMOUT)
+LEDD Eddington luminosity (in VBLES)
+LK The part of dL/dk that is not multiplied by dM/dt (in NAMOUT)
+LQ The part of dL/dk that is multiplied by dM/dt (in NAMOUT)
+M0 (in TVBLES)
+MB Binary mass in 10^33 g units; independent variable 20.  ? (in NAMEIN)
+MC Mas (in 10^33 g units) for *1 and *2.  ? (in TVBLES)
+MCB Array of overshoot boundaries (EG = 0) in Msolar units (in TVBLES)
+ML Log10(mass of *1 in solar units); outer loop in MAIN (in QUERY)
+MS (in STORE)
+MSB Array of convective/semiconvective boundaries (EG = CGR) in Msolar units (in TVBLES)
+MT DM/dt (in NAMOUT)
+MTA (in TVBLES)
+N1 Moles of H1 per gram of star;   = NA(1) (in ABUND)
+N4 Moles of He4 per gram of star;  = NA(2) (in ABUND)
+N12 Moles of C12 per gram of star;  = NA(3) (in ABUND)
+N14 Moles of N14 per gram of star;  = NA(4) (in ABUND)
+N16 Moles of O16 per gram of star;  = NA(5) (in ABUND)
+N20 Moles of Ne20 per gram of star; = NA(6) (in ABUND)
+N24 Moles of Mg24 per gram of star; = NA(7) (in ABUND)
+N28 Moles of Si28 per gram of star; = NA(8) (in ABUND)
+N56 Moles of Fe56 per gram of star; = NA(9) (in ABUND)
+NE Moles of free electrons per gram of star (in ABUND)
+NE0 Moles of electrons per gram of star (bound and free) (in ABUND)
+NI Moles of molecule (including monatomic) per gram. (in ABUND)
+NIO Moles of nuclei per gram of star (in ABUND)
+NZZ Moles of Z^2's per gram of star where Z is nuclear charge (in ABUND)
+OA Orbital angular momentum in 10^50 gm cm^2/sec units; independent variable 17 (in NAMEIN)
+OM Mass of other star in 10^33 g units (in TVBLES)
+OM0 ? M0 for `other' star (in TVBLES)
+OMTA ? MTA for `other' star (in TVBLES)
+PE Pressure of electron gas (in STATFD)
+PEF D\rho*/dln(F) (in STATFD)
+PET D\rho*/dln(T) (in STATFD)
+PER Binary orbital period in days (in TVBLES)
+PF DP/dln(F) (in STAT2)
+PG Gas pressure (in STAT2)
+PHI Centrifugal-gravitational potential in ergs (in NAMEIN)
+PHIK DPHI/dk (in NAMOUT)
+PHIM DPHI/dM (in VBLES)
+PHIS Potential at the surface minus potential at L1; independent variable 15 (in NAMEIN)
+PLANCK Planck's constant h (in CONSTS)
+PPR Holds previous PR for BACKUP (in TVBLES)
+PR Holds previous ZQ for BACKUP (in TVBLES)
+PSI Electron degeneracy parameter.
+PT DP/dln(T) (in STAT2)
+Q33 MeV per He3 (He3,2p) He4 (in NCDATA)
+Q3A MeV per triple alpha reaction, 3 He4 -> C12 (in NCDATA)
+QA (in VBLES)
+QAO MeV per O16 + He4 -> Ne20 (in NCDATA)
+QANE MeV per Ne20 + He4 -> Mg24 (in NCDATA)
+QCCA MeV per 2 C12 -> Ne20 + He4 (in NCDATA)
+QCCG MeV per 2 C12 -> Mg24 (in NCDATA)
+QCO MeV per C12 + O16 -> Mg24 + He4 (in NCDATA)
+QE Q*, intermediate in calculation of s* and U* (in STATFD)
+QEF D\rho*/dln(F) (in STATFD)
+QET D\rho*/dln(T) (in STATFD)
+QGMG MeV per Mg24 -> Ne20 + He4 (in NCDATA)
+QGNE MeV per Ne20 -> O16 + He4 (in NCDATA)
+QL Log10(mass *1 / mass *2) from outer loop in MAIN (in QUERY)
+QM DQQ/dM (in VBLES)
+QNT Neutrino Q values in MeV per reaction (in NCDATA)
+QOO MeV per 2 O16 -> Mg24 + 2 He4 (in NCDATA)
+QPNA MeV per N14 + 2 p -> C12 + He4 (in NCDATA)
+QPNG MeV per N14 + 2 p -> O16 (in NCDATA)
+QPO MeV per O16 + 2 p -> N14 + He4 (in NCDATA)
+QPP MeV per P-P reaction which consumes 2 p to make 1/2 He4 (in NCDATA)
+QQ The meshpoint spacing function (in VBLES)
+R33 Reaction rate for pp-I chain.  He3 (He3,2p) He4, in reactions per ? per second (in STAT2)
+R3A Triple alpha reaction rate, 3 He4 -> C12, in reactions per ? per second (in STAT2)
+RAC Rate of C12 + He4 -> O16, in reactions per ? per second (in STAT2)
+RAN Rate of N14 + 3/2 He4 -> Ne20, in reactions per ? per second (in STAT2)
+RAO Rate of O16 + He4 -> Ne20, in reactions per ? per second (in STAT2)
+RANE Rate of Ne20 + He4 -> Mg24, in reactions per ? per second (in STAT2)
+RCB TVBLES/ array of radiative/convective boundaries (\nabla_r=\nabla_a) in Rsolar units.
+RCC Rate of 2 C12 -> Ne20 + He4, in reactions per ? per second (in STAT2)
+RCCA Same as RCC (in STAT2)
+RCCG Rate of 2 C12 -> Mg24, in reactions per ? per second (in STAT2)
+RCO Rate of C12 + O16 -> Mg24 + He4, in reactions per ? per second (in STAT2)
+RE RE = \rho* = (\Lambda_C^3 \rho)/(8 \pi \mu_e m_H) (in STATFD)
+REF D\rho*/dln(F) (in STATFD)
+RET D\rho*/dln(T) (in STATFD)
+RGMG Rate of Mg24 -> Ne20 + He4, in reactions per ? per second (in STAT2)
+RGNE Rate of Ne20 -> O16 + He4, in reactions per ? per second (in STAT2)
+RHO Density at current meshpoint (in STAT2)
+RLF (in VBLES)
+ROO Rate of 2 O16 -> Mg24 + 2 He4, in reactions per ? per second (in STAT2)
+RPP Rate of PP chain, 2 p -> 1/2 He4, in reactions per ? per second (in STAT2)
+RPC Rate of C12 + 2 p -> N14, in reactions per ? per second (in STAT2)
+RPN Rate of N14 + 2 p -> C12 + He4, in reactions per ? per second (in STAT2)
+RPNA Same as RPN (in STAT2)
+RPNG Rate of N14 + 2 p -> O16, in reactions per ? per second (in STAT2)
+RPO Rate of O16 + 2 p -> N14 + He4, in reactions per ? per second (in STAT2)
+SCP Specific heat capacity at constant pressure (in STAT2)
+SE S* = (entropy per mole of free electrons) / (CR*NE) (in STORE)
+SF DS/dln(F) (in STAT2)
+SG \sigma, diffusion coefficient for convective mixing (in NAMOUT)
+SM *1 mass in solar units (in TVBLES) any changes you make will be ignored
+ST DS/dln(T) (in STAT2)
+T0 (in TVBLES)
+TAB (in UBVDAT)
+TCT Array of convective turnover times for zones in RCB (=0 for nonconvective regions) (in TVBLES)
+TFM Temperatures for opacity interpolation (in STAT3)
+TGR (in UBVDAT)
+TW (in VBLES)
+VI Moment of inertia.  variable for difference equation 11 (in NAMOUT)
+VIK DVI/dk (in NAMOUT)
+VL Luminosity term for mesh spacing function QQ (in NAMOUT)
+VLC Integrated luminosity from C burning in solar units (in TVBLES)
+VLE Integrated luminosity from He burning in solar units (in TVBLES)
+VLH Integrated luminosity from H burning in solar units (in TVBLES)
+VLN Integrated loss from neutrino cooling in solar units (in TVBLES)
+VLT Integrated thermal energy in solar units (in TVBLES)
+VM Mass term for mesh spacing function QQ.  variable for difference equation 10 (in NAMOUT)
+VMC Locatio (in Msolar) where C12 abundance XC reaches 0.05 as go out from center. (in TVBLES)
+VME Locatio (in Msolar) where He4 abundance XHE reaches CXB as go out from center. (in TVBLES)
+VMH Locatio (in Msolar) where H1 abundance XH reaches CXB as go out from center. (in TVBLES)
+VMK DVM/dk (in NAMOUT)
+VP Pressure term for mesh spacing function QQ (in NAMOUT)
+VPK DVP/dk (in NAMOUT)
+VPHI Centrifugal gravitational potential (in NAMOUT)
+VQK Derivative wrt meshpoint k of meshpoint spacing function QQ (in NAMEIN)
+VR Radius term for mesh spacing function QQ.  variable for difference equation 7 (in NAMOUT)
+VRK DVR/dk (in NAMOUT)
+VT Temperature term for mesh spacing function QQ.  variable for difference equation 8 (in NAMOUT)
+VTK DVT/dk (in NAMOUT)
+VX1 Fractional abundance by mass of H;  independent variable 5 (in NAMEIN)
+VX4 Fractional abundance by mass of He4; variable 9 (in NAMEIN)
+VX12 Fractional abundance by mass of C12;  variable 10 (in NAMEIN)
+VX16 Fractional abundance by mass of O16; variable 3 (in NAMEIN)
+VX20 Fractional abundance by mass of Ne20; variable 11 (in NAMEIN)
+VZ Constant for electron screening.    (in NCDATA)
+WCV Convection velocity (in VBLES)
+WL Convection velocity times mixing length (in VBLES)
+WNE0 Same as NE0 (in ABUND)
+WNE Same as NE (in ABUND)
+WT (in NAMOUT)
+WX Array of function values. also known as Y or FN1 (in INF)
+X1 H1 abundance. variable for difference equation 1 (in NAMOUT)
+X1T DX1/dt (in NAMOUT)
+X12 C12 abundance. variable for difference equation 4 (in NAMOUT)
+X12T DX12/dt (in NAMOUT)
+X16 O16 abundance. variable for difference equation 2 (in NAMOUT)
+X16T DX16/dt (in NAMOUT)
+X20 Ne20 abundance. variable for difference equation 5 (in NAMOUT)
+X20T DX20/dt (in NAMOUT)
+X4 He4 abundance. variable for difference equation 3 (in NAMOUT)
+X4T DX4/dt (in NAMOUT)
+XC Grams of C12 per gram of star. same as XA(3) (in ABUND)
+XH Grams of H1 per gram of star. same as XA(1) (in ABUND)
+XHE Grams of He4 per gram of star. same as XA(2) (in ABUND)
+XHI Thermal conductivity = 4 a c T^3/(3 \kappa \rho^2 c_P). (cm^2/sec) (in STAT2)
+XIK DXIM/dk (in NAMOUT)
+XL Log10(initial period / period for R-lobe overflow for *1 on ZAMS) (in QUERY)
+XN Grams of N14 per gram of star. same as XA(4) (in ABUND)
+XO Grams of O16 per gram of star. same as XA(5) (in ABUND)
+XSI Grams of Si28 per gram of star. same as XA(8) (in ABUND)
+IP1 fort.IP1 is used to load in a model, any changes you make will be ignored.
+
+KH2 The number of mesh-points you want (199)
+KR1 The maximum number of iterations allowed on the first timestep (12)
+KR2 The maximum number of iterations allowed on later timesteps (12)
+JCH REMESH control: if =1 REMESH does nothing, if =2 some variables are initiailised (e.g. mass), if =3 as 2 with new mesh spacing function by interpolation, =4 as 3 with uniform composition (for ZAMS). In some cases JMX must be 0 if JCH>1.
+KTH Thermal energy = KTH * (T DS/Dt); so with KTH=0 this term is ignored
+KX DX(H1)/Dt=KX*burning rate of H1, so you can ignore composition changes while keeping energy production
+KY As KX for helium
+KZ As KX for C12 and O16
+KCL Coulomb corrections: set to 1 to include them
+KION Number of ions to include in equation of state, in the order H,He,C,N,O,Ne,Mg,Si,Fe. 5 is good. 
+KAM Not used.
+KOP If unity, spline interpolation instead of bilinear interpolation is used for the opacity tables.
+KCC Not Kent County Council and not used.
+KNUC Not used.
+KCN If 0, gives standard nuclear network. If 1, fudges CNO for ZAMS models.
+KT1 Print internal details of every KT1'th model (20 or 200) any changes you make will be ignored
+KT2 Print internal details of every KT2'th meshpoint of the KT1'th model (1 or 2) any changes you make will be ignored
+KT3 Print KT3 pages of details for every KT1'th model (1,2 or 3)
+KT4 Print a five-line summary of every KT4'th model to screen and save every KT4'th model to file.plt*
+KT5 Print a one-line summary of each iteration, except for the first KT5 iterations (0 or 2)
+KSV an output model is stored in file.mod (fort.15) after every KSV'th timestep in a run, in th eorm needed as input for a further run. THe last model of a run is automatically also stored, in file.last* (fort.13,14) (5000) any changes you make will be ignored
+EPS The accuracy to which SOLVER is expected to solve the equations (10^-6)
+DEL (10^-2)
+DH0 (10^-7)
+CDC [1-5] The mean increment that you would like in a timestep. 1: ZAMS-He ignition (0.01) , 2: Core helium burning (0.25), 3: Further evolution (1.0), 4: Double-shell burning (4.0), 5: Unused
+KE1 The number of first order difference equations
+KE2 The number of second order difference equations
+KE3 Subset of KE1 that involves 3 rather than 2 adjacent mesh points (0, not yet used)
+KBC The number of boundary conditions
+KEV The number of eigenvalues
+KFN The number of intermediate functions
+KL Determines where to start the calculations (0=surface, 1=centre, currently 1)
+JH1 Used for debugging
+JH2 Used for debugging
+JH3 Used for debugging
+KD Lots of integers...
+KSX Integers to specify the quantities to be output
+KN The number of variables that will be used for determining the next time step
+CT1 The next timestep cannot be less than CT1 times the present timestep (0.8,0.9 or 1.0)
+CT2 The next timesteps cannot be greater than CT2 times the present timestep. 
+CT3 When the solution package fails to converge, the code retreats to the second-last converged model, and continues with the timestep decreased by the factor CT3 (0.3 or 0.5)
+CT Coefficients used for the mesh-spacing function Q.
+CC Fraction of metallicity that is carbon at the ZAMS (0.176)
+CN Fraction of metallicity that is nitrogen at the ZAMS (0.052)
+CO Fraction of metallicity that is oxygen at the ZAMS (0.502)
+CNE Fraction of metallicity that is neon at the ZAMS (0.092)
+CMG Fraction of metallicity that is magnesium at the ZAMS (0.034)
+CSI Fraction of metallicity that is silicon at the ZAMS (no crime scenes!) (0.072)
+CFe Fraction of metallicity that is iron at the ZAMS (0.072)
+CALP The mixing length ratio (2.0)
+CU Along with COS and CPS, a convective overshoot parameter (See CRD) (0.1)
+COS A convective overshoot parameter for H-burning cores, see CRD. Zero implies no overshoot. (0.12)
+CPS as COS for He-burning cores. (0.12)
+CRD The diffusion coefficient for a convective mixing is CRD times the legitimate rate (10^-4).
+CXB Defines the boundary of the core to have an abundance of CXB (0.15)
+CGR Defines the boundary between a convection and semiconvection zone (0.001)
+CEA Determines how ENC changes with time (1e2) see ENC and CET.
+CET Determines how ENC changes with time (1e-6) where ENC increases exponentially on a timescale 1/CET, saturating at ENC~CEA.
+CMT One of two mass transfer rates at RLOF (see CMS) (1e-2 - 1e2)
+CMS One of two mass transfer rates at RLOF (see CMT) (0 or 1e4)
+CMI a constant mass-gain/loss rate, for running up or down the ZAMS (yr^-1, 0, +/-5e-9 or +/-1e-6)
+CMR Reimers mass loss rate multiplier (0 or 0.2-1.0)
+CMJ mass-loss rate for luminous stars (de Jager et al 1988) (0.0 or 1.0)
+CML mass-loss rate from simple dynamo theory (0 or 1)
+CHL Factor multiplying the rate of ang. mom. loss associated with mass loss, according to simple dynamo model (see CML)
+CTF Factor multiplyng tidal friction rate (0 or 0.01)
+CLT Coefficient used in the estimation of heat fluw between components in contact. It doesn't really work yet (or does it?)
+CPA Partial accretion: the fraction of one star's wind that is accreted by the other (0.0)
+CBR Bipolar re-emission: the fraction of material accreted by a star that is ejected in biolar jets. Needed for CVs, LMXBs (0.0)
+CSU  Spin-up due to accretion. (0.0)
+CSD Spin-down due to accretion (0.0)
+CDF Converts a step function into a smooth function (0.01)
+CGW Turns grav. radiation on and off (0 or 1)
+CSO A switch to turn spin-orbit coupling on and off (0 or 1)
+CMB A multiplication factor to determine the strength of an alternative magnetic braking law, currently the one by Rappaport, Verbunt and Joss 1983 (0 - 1)
+
+ISB Single (1) or Binary (2) operation.
+KTW Normal (1) or TWIN (2) operation.
+IOP1 The number of the file (13-16 i.e. fort.13 - fort.16) where the initial model for star 1 comes from. (ZAMS=16)
+IM1 The sequential number of the model required on fort.IOP1 (computed automatically for ZAMS=IOP1=16)
+IOP2 as IOP1 for star 2
+IM2 as IM1 for star 1
+KPT KPT is the maximum number of timesteps for each star before the other is evolved. (2000 to 4000)
+KP As KPT for star 2 (?)
+ML1 Starting mass (in log10 solar units) for mass loop.
+DML Mass loop step (in log10 solar units)
+KML Number of stars in mass loop.
+QL1 Starting log10 (q) value. 
+DQL log10(q) loop step
+KQL Number of stars in log10(q) loop
+XL1 Number of stars in log10(period/period for RLOF on ZAMS) loop.
+DXL Period loop step.
+KXL Number of stars in period loop.
+ROT Rotational period for each star = breakup period * 10^ROT, if KR=1, =max(1.05*breakup,orbital_period*10^ROT) if KR=2
+KR Option for ROT, See ROT above
+SM Primary mass (solar units) any changes you make will be ignored (use the menu above)
+DTY Timestep (years)
+AGE Starting model age (years)
+PER Orbital period (days)
+BMS Total binary mass (solar units)
+ECC Orbital eccentricity
+P1 Spin period of the primary (days)
+P Spin period of the primary (days)
+ENC Artificial energy rate, see CEA and CET.
+JMX New model number (JMOD)
+UC Criteria to determine when the run has ended (array, not yet officially supported by Window to the stars)
+
+CTH Boolean flag for thermohaline mixing (1=on, 0=off)
+
+
+KJN The variables which determine the next timestep
+KL_2 As KL for post-processing
+KNUC Not used.
+DEL If the error is larger than DEL the corrections are reduced in magnitude.
+DH0 Amount by which variables are changed to compute numerical derivatives.
+KP_VAR List and order of variables to solve
+KP_EQN List and order of equations to solve
+KP_BC List and order of boundary conditions
+CDC5 Unused
+CDC_MS Timestep control on the main sequence
+CDC_HES Timestep control during helium shell burning
+CDC_HEC Timestep control during helium core burning
+CDC_DBLSH Timestep control during double shell burning
+
+X4AC Mass fraction of helium in accreted material
+X12AC Mass fraction of C12 in accreted material
+X14AC Mass fraction of N14 in accreted material
+X16AC Mass fraction of O16 in accreted material
+X20AC Mass fraction of Ne20 in accreted material
+X24AC Mass fraction of Mg24 in accreted material
+
+

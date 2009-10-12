@@ -1,0 +1,12 @@
+   The input file init.run_grid (=> init.run) does four of the 9 runs as 
+in run04, but evolved non-conservatively,
+with my model of dynamo-driven wind, magnetic braking and tidal friction.
+Only star 1 was allowed to have these effects, but both components 
+were evolved. Non-conservation makes quite a difference to the lowest-mass 
+runs (2 msun initially), but very little at the higher mass (4 msun 
+initially): hardly surprising, since the periods were too short for 4 msun
+stars to develop substantial convective envelopes.
+   The input file init.run_b (=> init.run) sets up the job whose output is
+illustrated in Fig B of the write-up. It evolves non-conservatively a 
+binary of 2.0 + 1.8 Msun, Porb = 3.5 days and e = 0.3. Initial rotation 
+period is 2.0 days.

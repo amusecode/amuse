@@ -1,0 +1,55 @@
+Constructing a ZAHB model
+-------------------------
+
+To construct a ZAHB model requires a few steps:
+
+1. Start with a star that is massive enough to avoid the helium flash,
+evolve it until it has a large enough core (it has to be doing steady
+helium burning), then terminate the run.
+
+2. Strip the hydrogen envelope from the last model of the previous run
+until you are left with a low-mass helium burning star.
+
+3. Bring this model into equilibrium, so that the code can reliably start
+from it and accrete new material onto the model.
+
+4. Test it!
+
+Running "make" in this directory causes each of these steps to be run (ok,
+so you need to run "make test" manually):
+
+1. The input files m225.run and m225.dat evolve a star of approximately
+2.25 solar masses from the ZAMS until it has a core mass of of 0.4 solar masses
+
+2. The input files strip.run and strip.dat are setup to take the last
+output model of the m225 run and strip the mass down to 0.39 solar masses,
+eliminating almost all of the hydrogen envelope.
+
+3. The input files relax.run and relax.dat take the last model from that
+run and let it evolve until the end of time while doing absolutely nothing.
+This is overkill, it could be run for less time.
+
+These three steps will be completed in sequence and produce a file
+"zahb.mod" that can be used for post-helium flash model construction.
+It can be tested by running "make test". CHECK THE OUTPUT OF THIS RUN TO
+MAKE SURE EVERYTHING LOOKS AS YOU EXPECT.
+To install it in the stars/input/ directory, you can run "make install".
+The file is then also renamed zahb$Z.mod.
+
+Finally, you can run "make clean" to eliminate all temporary files.
+
+Environment variables:
+ Z - metallicity
+ evpath - path to evolution code, assumed to be $PWD/../../ if not set
+ EV - path to the ev program, assumed to be $evpath/code/ev if not set
+
+Example:
+Make a ZAHB starting model for Z=0.0001, install it and clean up
+afterwards:
+$ make Z=0001
+$ make Z=0001 install
+$ make clean
+Or in one line:
+$ make Z=0001 install && make clean
+
+Evert Glebbeek, 25 September 2008
