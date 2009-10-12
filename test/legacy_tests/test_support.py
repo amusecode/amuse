@@ -32,7 +32,7 @@ class TestLegacyFunction(unittest.TestCase):
     def send_string():
         function = RemoteFunction()
         function.id = 3
-        function.addParameter('parameter1', dtype='uint8', direction=function.IN)
+        function.addParameter('parameter1', dtype='string', direction=function.IN)
         return function
         
     def test1(self):
@@ -207,7 +207,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         function = RemoteFunction()      
         function.name = "test_one"   
         function.id = 1
-        function.addParameter('parameter1', dtype='uint8', direction=function.IN)
+        function.addParameter('parameter1', dtype='string', direction=function.IN)
         x = self._class_to_test()
         x.specification = function
         string = x.result
@@ -249,9 +249,9 @@ class TestMakeACHeaderDefinitionStringOfALegacyFunctionSpecification(unittest.Te
         function = RemoteFunction()      
         function.name = "test_with_out"   
         function.id = 1
-        function.addParameter('parameter1', dtype=numpy.int32, direction=function.IN)
+        function.addParameter('parameter1', dtype='int32', direction=function.IN)
         function.addParameter('parameter2', dtype='i', direction=function.OUT)
-        function.addParameter('doublep', dtype=numpy.float64, direction=function.OUT)
+        function.addParameter('doublep', dtype='float64', direction=function.OUT)
         function.result_type = 'd'
         x = self._class_to_test()
         x.specification = function

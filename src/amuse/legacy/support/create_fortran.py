@@ -7,13 +7,13 @@ from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDicti
 import numpy
 
 dtype_to_spec = DTypeToSpecDictionary({
-    numpy.int32 : DTypeSpec('integers_in','integers_out', 
+    'int32' : DTypeSpec('integers_in','integers_out', 
                     'number_of_integers', 'integer', 'MPI_INTEGER'),
-    numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
+    'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'double precision', 'MPI_DOUBLE_PRECISION'),
-    numpy.float32 : DTypeSpec('floats_in', 'floats_out',
+    'float32' : DTypeSpec('floats_in', 'floats_out',
                     'number_of_floats', 'real', 'MPI_SINGLE_PRECISION'),
-    numpy.uint8 : DTypeSpec('chars_in', 'chars_out',
+    'string' : DTypeSpec('chars_in', 'chars_out',
                     'number_of_chars', 'character', 'MPI_CHARACTER'),
 })
         

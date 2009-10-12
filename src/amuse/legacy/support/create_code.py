@@ -12,7 +12,7 @@ class DTypeSpec(object):
         self.type = type
         self.mpi_type = mpi_type
 
-dtypes = [numpy.float64, numpy.int32, numpy.float32, numpy.uint8]
+dtypes = ['float64', 'int32', 'float32', 'string']
 
 class MakeCodeString(object):
     def __init__(self):
@@ -88,10 +88,10 @@ class DTypeToSpecDictionary(object):
     def __init__(self, dict):
         self.mapping = {}
         for datatype, value in dict.iteritems():
-            self.mapping[datatype.__name__] = value
+            self.mapping[datatype] = value
         
     def __getitem__(self, datatype):
-        return self.mapping[datatype.__name__]
+        return self.mapping[datatype]
     
     def __len__(self):
         return len(self.mapping)

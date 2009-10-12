@@ -34,7 +34,24 @@ class FloatDataType(DataType):
 
 
 def _typecode_to_datatype(typecode):
-    return None if typecode is None else numpy.obj2sctype(typecode)
+    if typecode is None:
+        return None
+    
+    mapping = {
+        'd':'float64',
+        'i':'int32',
+        'f':'float32',
+        's':'string',
+    }
+    if typecode in mapping:
+        return mapping[typecode]
+    
+    values = mapping.values()
+    if typecode in values:
+        return typecode
+    
+    print typecode
+    raise Exception("{0} is not a valid typecode".format(typecode))
     
 class LegacyCall(object):
     """A legacy_call implements the runtime call to the remote process.
@@ -54,18 +71,18 @@ class LegacyCall(object):
             parameter = self.specification.input_parameters[index]
             names_in_argument_list.add(parameter.name)
             
-            values = dtype_to_values[parameter.datatype.__name__]
+            values = dtype_to_values[parameter.datatype]
             values[parameter.input_index] = argument
         
         for index, parameter in enumerate(self.specification.input_parameters):
                 if parameter.name in keyword_arguments:
-                    values = dtype_to_values[parameter.datatype.__name__]
+                    values = dtype_to_values[parameter.datatype]
                     values[parameter.input_index] = keyword_arguments[parameter.name]
         
         dtype_to_keyword = {
-            numpy.float64.__name__ : 'doubles_in',
-            numpy.int32.__name__  : 'ints_in',
-            numpy.uint8.__name__  : 'chars_in',
+            'float64' : 'doubles_in',
+            'int32'  : 'ints_in',
+            'string'  : 'chars_in',
         }       
         call_keyword_arguments = {}
         for dtype, values in dtype_to_values.iteritems():
@@ -85,11 +102,11 @@ class LegacyCall(object):
             if self.specification.result_type is None:
                 return None
                 
-            if self.specification.result_type.__name__ == numpy.int32.__name__:
+            if self.specification.result_type == 'int32':
                 return ints[0]       
-            if self.specification.result_type.__name__ == numpy.float64.__name__:
+            if self.specification.result_type == 'float64':
                 return doubles[0] 
-            if self.specification.result_type.__name__ == numpy.float32.__name__:
+            if self.specification.result_type == 'float32':
                 return floats[0] 
         
         if number_of_outputs == 1 \
@@ -103,15 +120,15 @@ class LegacyCall(object):
         
         result = OrderedDictionary()
         dtype_to_array = {
-            numpy.float64.__name__ : list(reversed(doubles)),
-            numpy.int32.__name__ : list(reversed(ints)),
-            numpy.float32.__name__ : list(reversed(floats))
+            'float64' : list(reversed(doubles)),
+            'int32' : list(reversed(ints)),
+            'float32' : list(reversed(floats))
         }
         for parameter in self.specification.output_parameters:
-            result[parameter.name] = dtype_to_array[parameter.datatype.__name__].pop()
+            result[parameter.name] = dtype_to_array[parameter.datatype].pop()
         
         if not self.specification.result_type is None:
-            result["__result"] =  dtype_to_array[self.specification.result_type.__name__].pop()
+            result["__result"] =  dtype_to_array[self.specification.result_type].pop()
         
         return result
        
@@ -249,7 +266,7 @@ class RemoteFunction(object):
     def new_dtype_to_values(self):
         result = {}
         for dtype, parameters in self.dtype_to_input_parameters.iteritems():
-            result[dtype.__name__] =  [None] * len(parameters)   
+            result[dtype] =  [None] * len(parameters)   
         return result
     
     def prepare_output_parameters(self):

@@ -7,13 +7,13 @@ from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDicti
 import numpy
 
 dtype_to_spec = DTypeToSpecDictionary({
-    numpy.int32 : DTypeSpec('ints_in','ints_out',
+    'int32' : DTypeSpec('ints_in','ints_out',
                     'number_of_ints', 'int', 'MPI_INT'),
-    numpy.float64 : DTypeSpec('doubles_in', 'doubles_out',
+    'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'double', 'MPI_DOUBLE'),
-    numpy.float32 : DTypeSpec('floats_in', 'floats_out',
+    'float32' : DTypeSpec('floats_in', 'floats_out',
                     'number_of_floats', 'float', 'MPI_FLOAT'),
-    numpy.uint8 : DTypeSpec('chars_in', 'chars_out',
+    'string' : DTypeSpec('chars_in', 'chars_out',
                     'number_of_chars', 'char', 'MPI_CHARACTER'),
 })
 
@@ -452,6 +452,24 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf().lf() + 'MPI_Finalize();'
         self.out.lf() + 'return 0;'
         self.out.dedent().lf()+'}'
+    
+        
+        
+        
+
+class MakeACHeaderStringOfAClassWithLegacyFunctions\
+    (MakeCodeStringOfAClassWithLegacyFunctions):
+
+    @late
+    def dtype_to_spec(self):
+        return dtype_to_spec
+
+    def make_legacy_function(self):
+        return MakeACHeaderDefinitionStringOfALegacyFunctionSpecification()
+        
+    def start(self):                
+        self.output_legacy_functions()
+        self._result = self.out
     
         
         

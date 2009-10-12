@@ -119,6 +119,8 @@ class MonitoredDirectory(object):
         names = os.listdir(self.path)
         for name in names:
             path = os.path.join(self.path, name)
+            if os.path.islink(path):
+                continue
             element = self.new_element(path)
             self.elements.append(element)
             self.path_to_element[path] = element
