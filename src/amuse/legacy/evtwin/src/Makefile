@@ -44,20 +44,20 @@ SWIG = swig
 
 # Determine appropriate compiler settings for different compilers
 # Compiler flags for the PortlandGroup compiler
-ifeq ($(FORT),pgf95)
+ifeq ($(notdir $(FORT)),pgf95)
    FFLAGS += -O2 -Mextend
    FFLAGS += -module $(MODDIR) -I$(MODDIR)
 endif
 
 # Compiler flags for the g95 compiler
-ifeq ($(FORT),g95)
+ifeq ($(notdir $(FORT)),g95)
    FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -fmod=$(MODDIR)
    FFLAGS += -fzero -O -finline -pipe
 	FLIB = -lg95
 endif
 
 # Compiler flags for the gfortran compiler
-ifeq ($(FORT),gfortran)
+ifeq ($(notdir $(FORT)),gfortran)
    FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -J$(MODDIR)
    FFLAGS += -O2
 	FLIB = -lgfortran
@@ -68,12 +68,12 @@ endif
 endif
 
 # Compiler flags for the Lahey compiler
-ifeq ($(FORT),lf95)
+ifeq ($(notdir $(FORT)),lf95)
    FFLAGS += -O --wide -I$(MODDIR) -M$(MODDIR)
 endif
 
 # Compiler flags for the Intel compiler
-ifeq ($(FORT),ifort)
+ifeq ($(notdir $(FORT)),ifort)
    #FFLAGS += -fltconsistency
    FFLAGS += -fpconstant
    FFLAGS += -extend_source

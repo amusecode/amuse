@@ -75,7 +75,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
                 
             if parameter.direction == RemoteFunction.IN:
                 self.out.n() + spec.input_var_name
-                if not spec.type == 'char':
+                if not parameter.datatype == 'string':
                     self.out + '[' + self.index_string(parameter.input_index) + ']'
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + '&' + spec.input_var_name 
@@ -160,6 +160,8 @@ class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCCodeString
             self.out + spec.type
             self.out + ' '
             if parameter.is_output():
+                self.out + '*' + ' '
+            if parameter.datatype == 'string':
                 self.out + '*' + ' '
             self.out + parameter.name
                 
@@ -467,9 +469,12 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
     def make_legacy_function(self):
         return MakeACHeaderDefinitionStringOfALegacyFunctionSpecification()
         
-    def start(self):                
+    def start(self):  
+        self.out + 'extern "C" {'
+        self.out.indent().lf()
         self.output_legacy_functions()
         self._result = self.out
+        self.out.dedent().lf() + '}'
     
         
         
