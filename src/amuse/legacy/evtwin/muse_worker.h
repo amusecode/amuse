@@ -1,4 +1,5 @@
 extern "C" {
+
 double wrapper_get_age(int id);
 double wrapper_get_mass(int id);
 double wrapper_get_radius(int id);
@@ -14,4 +15,5 @@ int wrapper_twin_evolve();
 void wrapper_swap_in_star(int id);
 double wrapper_get_luminosity(int id);
 int wrapper_get_stellar_type(int id);
+
 }

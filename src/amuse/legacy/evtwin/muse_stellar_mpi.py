@@ -103,20 +103,20 @@ class EVtwin(LegacyInterface):
     @legacy_function
     def wrapper_set_init_dat_name():
         function = RemoteFunction()
-        function.addParameter('new_init_dat_name', dtype='uint8', direction=function.IN)
+        function.addParameter('new_init_dat_name', dtype='string', direction=function.IN)
         return function
         
     @legacy_function
     def wrapper_set_init_run_name():
         function = RemoteFunction()
-        function.addParameter('new_init_run_name', dtype='uint8', direction=function.IN)
+        function.addParameter('new_init_run_name', dtype='string', direction=function.IN)
         return function
 
         
     @legacy_function
     def wrapper_initialise_twin():
         function = RemoteFunction()
-        function.addParameter('path', dtype='uint8', direction=function.IN)
+        function.addParameter('path', dtype='string', direction=function.IN)
         function.addParameter('nstars', dtype='i', direction=function.IN)
         function.addParameter('z', dtype='d', direction=function.IN)
         function.result_type = 'i'

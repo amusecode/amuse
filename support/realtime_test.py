@@ -18,7 +18,7 @@ from nose.plugins.skip import Skip, SkipTest
 from nose.core import TestProgram
 from multiprocessing import Process, Queue
 from optparse import OptionParser
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from StringIO import StringIO
 
 test_is_running = False
@@ -508,12 +508,12 @@ class RunAllTestsWhenAChangeHappens(object):
                         ))
                     process.start()
                     report = result_queue.get() 
-                    process.join(2)
-                    print report
                     self.server.last_report = report
-                    del result_queue
                     self.server.tests_finished.set()
-                    
+                    print "report:",report
+                    process.join(2)
+                    print "joined!"
+                    del result_queue
                     print "end test run"
                 finally:
                     test_is_running = False
@@ -523,9 +523,24 @@ class RunAllTestsWhenAChangeHappens(object):
                 time.sleep(0.5)
                 monitor.check()
                 
+osascript_to_open_xcode = """on run argv
+ set linenumber to (item 1 of argv) as integer
+ set filename_string to item 2 of argv
+ set file_to_open to POSIX file filename_string
+ tell application "Xcode"
+  activate
+  set doc_to_edit to (open file_to_open)
+  tell doc_to_edit 
+   set its selection to item linenumber of paragraph  of it
+  end tell
+ end tell
+end run"""
+
 def open_file(path, lineno = 1):
-    if os.uname()[0] == 'Darwin':
-        call(['xed','-l', str(lineno), '"' + path + '"'])
+    if sys.platform == 'darwin':        
+        program = Popen(['osascript', '-', str(lineno), os.path.join(os.getcwd(), path) ], stdin = PIPE, stdout = PIPE, stderr = PIPE)
+        out, err = program.communicate(osascript_to_open_xcode)
+        print out, err
     else:
         call(['geany', path, '+'+str(lineno)])
     

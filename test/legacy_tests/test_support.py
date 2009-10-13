@@ -1,6 +1,5 @@
 import unittest
 import sys
-import numpy
 
 from amuse.legacy.support.core import *
 from amuse.legacy.support.create_c import *

@@ -1,17 +1,18 @@
 """
 """
-from amuse.support.core import late
-from amuse.support.core import print_out
-from amuse.support.core import OrderedDictionary
-
-from zlib import crc32
-from mpi4py import MPI
-import os.path
-
 import inspect
 import numpy
 import weakref
 import atexit
+import os.path
+
+from zlib import crc32
+from mpi4py import MPI
+
+from amuse.support.core import late
+from amuse.support.core import print_out
+from amuse.support.core import OrderedDictionary
+from amuse.legacy.interface.create_definition import CreateDescriptionOfALegacyFunctionDefinition
 
 class DataType(object):
     pass
@@ -135,7 +136,12 @@ class LegacyCall(object):
     def __str__(self):
         return str(self.specification)
         
-        
+    @property
+    def __doc__(self):
+        x = CreateDescriptionOfALegacyFunctionDefinition()
+        x.specification = self.specification
+        x.start()
+        return x.out.string
         
 class legacy_function(object):
     """The meta information for a function call to a code
@@ -158,9 +164,17 @@ class legacy_function(object):
             result.name = self.specification_function.__name__
         if result.id is None:
             result.id = abs(crc32(result.name))
+        if result.description is None:
+            import pydoc
+            result.description = pydoc.getdoc(self.specification_function)
         return result
     
-        
+    @property
+    def __doc__(self):
+        x = CreateDescriptionOfALegacyFunctionDefinition()
+        x.specification = self.specification
+        x.start()
+        return x.out.string
         
 class legacy_global(object):
     """The meta information for globals of the code
@@ -206,11 +220,12 @@ class legacy_global(object):
      
 class Parameter(object):
     
-    def __init__(self, name, dtype, direction):
+    def __init__(self, name, dtype, direction, description):
         self.name = name
         self.direction = direction
         self.input_index = -1
         self.output_index = -1
+        self.description = description
         self.datatype = _typecode_to_datatype(dtype)
         
     def is_input(self):
@@ -232,14 +247,16 @@ class RemoteFunction(object):
         self.name = None
         self.id = None
         self.result_type = None
+        self.description = None
         self.input_parameters = []
         self.output_parameters = []
         self.dtype_to_input_parameters = {}
         self.dtype_to_output_parameters = {}
         self.can_handle_array = False
+        self.result_doc = ''
         
-    def addParameter(self, name, dtype = 'i', direction = IN):
-        parameter = Parameter(name, dtype, direction)
+    def addParameter(self, name, dtype = 'i', direction = IN, description = ""):
+        parameter = Parameter(name, dtype, direction, description)
         self.parameters.append(parameter)
         
         if parameter.is_input():

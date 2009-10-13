@@ -25,6 +25,7 @@ distclean:
 muse_worker: muse_worker.cc muse_worker.h
 	make -C src all FORT=$(FORTRAN)
 	make -C src $(OBJ_EVT) FORT=$(FORTRAN)
+	make -C src lib/libtwin.a FORT=$(FORTRAN)
 	mpicxx $< $(EVTWINLIB) $(OBJ) -o $@ -lgfortran
 
 
