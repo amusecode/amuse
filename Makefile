@@ -21,3 +21,6 @@ doc:
 html:
 	make -C doc html 
 
+latexpdf:
+	make -C doc latexpdf 
+
