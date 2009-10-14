@@ -3,11 +3,12 @@
 Installation of the prerequisite software
 =========================================
 
-Before installing AMUSE several software packages must be installed.
+Before installing AMUSE several software packages must be installed. These 
+software packages can be installed manually or with two prepared installation
+scripts. The installation scripts will install python and the 
+other prerequisites in a user directory. No "root" access is required.
 
-
-Requirements
-~~~~~~~~~~~~
+These are the packages AMUSE needs:
 
 * Python (version >= 2.6)
 * Numpy (version >= 1.3.0)
@@ -15,97 +16,41 @@ Requirements
 * h5py (version >= 1.2.0)
 * MPI (OpenMPI or MPICH2)
 * mpi4py (version >= 1.2)
+* nose (version >= 0.11)
 
-Python
--------
-Python is probably already installed on your system. To check the version of python do:
 
-.. code-block:: sh
+In first the section installation_ we explain how to use the two
+installation scripts to install AMUSE. In the last section manual_ 
+we have specified the required packages with the needed version for each.
 
-	> python --version
-	Python 2.6.2
-
-You can download python from `http://www.python.org`. 
-
-Numpy
--------
-To check if numpy is installed on your system do:
-
-.. code-block:: sh
-
-	> python -c 'import numpy; print numpy.version.version'
-	1.3.0
-
-If this fails with an error or a version before 1.3 you need to install numpy.
-You can download numpy from `http://www.scipy.org/NumPy`. 
-
-HDF5 library
-------------
-HDF5 is a data format specification. The HDF group provides a C library to write and access HDF files.
-
-To check if the HDF library is installed on your system do:
-
-.. code-block:: sh
-
-	> h5ls -V
-	h5ls: Version 1.8.3
-
-If this fails with an error or a version before 1.8.3 you need to install the HDF library.
-You can download HDF from `http://www.hdfgroup.org/`. 
-
-h5py
-----
-To access HDF5 files from python we use the ``h5py`` library.
-
-To check if the h5py library is installed on your system do:
-
-.. code-block:: sh
-
-	> python -c 'import h5py; print h5py.version.version'
-	1.2.0
-
-If this fails with an error or a version before 1.2.0 you need to install h5py.
-You can download h5py from `http://code.google.com/p/h5py/`. 
-
-MPI
----
-The installed MPI framewor must be MPI 2 compatible. MPICH2 is a portable
-implementation of the MPI 2 standard.
-
-To check if MPICH2 is installed on your system do:
-
-.. code-block:: sh
-    
-    > mpdhelp
-    
-    The following mpd commands are available.  For usage of any specific one,
-    invoke it with the single argument --help .
-
-    mpd           start an mpd daemon
-    mpdtrace      show all mpd's in ring
-    mpdboot       start a ring of daemons all at once
-    mpdringtest   test how long it takes 
-    ...
-    
-If this fails with an error you need to install MPICH2.
-You can download MPICH2 from `http://www.mcs.anl.gov/research/projects/mpich2/`.
+.. _installation:
 
 Installation scripts
 ~~~~~~~~~~~~~~~~~~~~
 
-We have created a two installation scripts to automate the installation of all requirement packages on a LINUX system.
-These scripts will install all packages in a user directory. These scripts install all requirements. As everything is installed in a user directory they can run even if a version of the software is already installed on your system. AMUSE will use the requirements software as installed by these scripts.
+We have created two installation scripts to automate the installation of
+the required packages on a LINUX and OS.X system. These scripts will
+install these packages in a user directory. One script downloads and
+installs python while the other script downloads and installs the libraries
+and python packages. As everything is installed in a user directory these
+packages can be installed even if a version of the software is already 
+installed on your system. 
 
-
-Before running the scripts you must set the ``PREFIX`` environment variable and change the path
+The scripts will download and install the software in a user directory. These
+user directory must be specified with an ``PREFIX`` environment variable. Before
+running the installation scripts you must set the ``PREFIX`` environment 
+variable and update the path and library path. For shell (bash) you need to do:
 
 .. code-block:: sh
 
 	export PREFIX=~/amuse/prerequisites
 	export PATH=${PREFIX}/bin:${PATH}
+  	export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
 
-One script will download, build and install python on your system. The other script is written in Python and will download and install the other packages. 
+One script will download, build and install python on your system. The other 
+script is written in Python and will download and install the other packages. 
+Both scripts can be found in the ``doc/install`` directory. 
 
 To start the installation do:
 
@@ -135,18 +80,137 @@ To start the installation do:
 
 You should now be able to install AMUSE.
 
-Installation on OS X
-~~~~~~~~~~~~~~~~~~~~~
+Using the installation scripts on OS X
+---------------------------------------
 
-When installing the code on OS.X all steps are the same.The only difference is in setting the PATH variable. The PATH must be extended like this:
+When installing the code on OS.X all steps are the same.The only difference 
+is in setting the PATH variable. The PATH must be extended like this:
 
 .. code-block:: sh
 
-	export PATH=$PREFIX/Framework/Python.framework/Versions/2.5/bin:$PREFIX/bin:$PATH
+	export PATH=$PREFIX/Framework/Python.framework/Versions/2.6/bin:$PREFIX/bin:$PATH
 
+.. _manual:
+
+Manually installing the prerequisites
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Python
+-------
+Python is probably already installed on your system. To check the version of python do:
+
+.. code-block:: sh
+
+	> python --version
+	Python 2.6.2
+
+You can download python from http://www.python.org. 
+
+Numpy
+-------
+To check if numpy is installed on your system do:
+
+.. code-block:: sh
+
+	> python -c 'import numpy; print numpy.version.version'
+	1.3.0
+
+If this fails with an error or a version before 1.3 you need to install numpy.
+You can download numpy from http://www.scipy.org/NumPy. 
+
+HDF5 library
+------------
+HDF5 is a data format specification. The HDF group provides a C library 
+to write and access HDF files.
+
+To check if the HDF library is installed on your system do:
+
+.. code-block:: sh
+
+	> h5ls -V
+	h5ls: Version 1.8.3
+
+If this fails with an error or a version before 1.8.3 you 
+need to install the HDF library. 
+You can download HDF from http://www.hdfgroup.org/. 
+
+h5py
+----
+To access HDF5 files from python we use the ``h5py`` library.
+
+To check if the h5py library is installed on your system do:
+
+.. code-block:: sh
+
+	> python -c 'import h5py; print h5py.version.version'
+	1.2.0
+
+If this fails with an error or a version before 1.2.0 you need to install h5py.
+You can download h5py from http://code.google.com/p/h5py/. 
+
+MPI
+---
+The installed MPI framework must be MPI 2 compatible. AMUSE will work with 
+MPICH2 or OpenMPI
+
+MPICH2
+******
+MPICH2 is a portable implementation of the MPI 2 standard.
+
+To check if MPICH2 is installed on your system do:
+
+.. code-block:: sh
+    
+    > mpdhelp
+    
+    The following mpd commands are available.  For usage of any specific one,
+    invoke it with the single argument --help .
+
+    mpd           start an mpd daemon
+    mpdtrace      show all mpd's in ring
+    mpdboot       start a ring of daemons all at once
+    mpdringtest   test how long it takes 
+    ...
+    
+If this fails with an error you need to install MPICH2 or check for OpenMPI
+support.
+You can download MPICH2 from http://www.mcs.anl.gov/research/projects/mpich2/.
+
+OpenMPI
+*******
+OpenMPI is another portable implementation of the MPI 2 standard
+
+To check if OpenMPI is installed on your system do:
+
+.. code-block:: sh
+    
+    > mpicxx -v 
+    
+
+If this fails with an error you need to install MPICH2 or OpenMPI
+support. Most examples in the dopcumentation assume OpenMPI.
+You can download OpenMPI from http://www.open-mpi.org/.
+
+
+Nose
+-----
+Nose is an extension of the python testing framework. It is used for all
+unit testing in AMUSE.
+
+
+To check if Nose is installed on your system do:
+
+.. code-block:: sh
+    
+    > nosetests --version
+    nosetests version 0.11.1
+    ...
+    
+If this fails with an error or a version before 0.11 you need to install nose.
+You can download nose from http://somethingaboutorange.com/mrl/projects/nose/. 
 
 author: Arjen van Elteren (vanelteren@strw.leidenuniv.nl)
-date: 2009/09/29
+date: 2009/10/05
 
 
 

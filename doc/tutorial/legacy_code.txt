@@ -137,7 +137,7 @@ This daemon process manages the start of child processes.
 
 .. code-block:: bash
     
-    >> nohup mpd >/dev/null &
+    >> mpd &
 
 We can use ``amuse.sh`` and try the interface.
 
@@ -254,7 +254,7 @@ We can complete out interface by defining the ``divide`` function.
             function.addParameter('x', 'd', function.IN)
             function.addParameter('y', 'd', function.IN)
             function.addParameter('result', 'd', function.OUT)
-            function.result_type = None
+            function.result_type = 'i'
             return function
             
 On line 22 we define the parameter "result" as an OUT parameter. In python
