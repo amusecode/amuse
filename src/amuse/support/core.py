@@ -33,12 +33,15 @@ class print_out(object):
     def __init__(self):
         self.parts = []
         self._indent = 0
+        self.number_of_characters_on_current_line = 0
     
     def __add__(self, x):
         if self.isstring(x):
             self.parts.append(x)
+            self.number_of_characters_on_current_line += len(x)
         elif self.isnumber(x):
             self.parts.append(str(x))
+            self.number_of_characters_on_current_line += len(str(x))
         return self
         
     def n(self):
@@ -59,12 +62,14 @@ class print_out(object):
         
     def lf(self):
         self.parts.append('\n')
+        self.number_of_characters_on_current_line = 0
         self.do_indent()
         return self
 
     def do_indent(self):
         for i in range(self._indent):
             self.parts.append(self.indent_characters())
+            self.number_of_characters_on_current_line += len(self.indent_characters())
 
     def indent_characters(self):
         return '  '

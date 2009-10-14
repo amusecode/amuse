@@ -29,7 +29,7 @@ class TestGravitationalDynamics(unittest.TestCase):
         print x.out.string
         
         self.assertTrue(x.out.string.find('void test(float64 one)') > 0)
-        self.assertTrue(x.out.string.find('Example function') > 0)
+        self.assertTrue(x.out.string.find('Example function') >= 0)
         self.assertTrue(x.out.string.find(':param one:') > 0)
 
 
