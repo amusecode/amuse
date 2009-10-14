@@ -99,10 +99,13 @@ class CreateDescriptionOfALegacyFunctionDefinition(object):
                 selt.out + ' &'
                 self.out.lf()
             self.out + parameter.name
-
+        
+        self.out + ')'
+        self.out.dedent()
+        
         dtype_to_parameters = {}
         for parameter in self.specification.parameters: 
-            parameters = dtype_to_parameters.getdefault(parameter.datatype,[])
+            parameters = dtype_to_parameters.get(parameter.datatype,[])
             parameters.append(parameter)
             dtype_to_parameters[parameter.datatype] = parameters
             
@@ -110,31 +113,29 @@ class CreateDescriptionOfALegacyFunctionDefinition(object):
         for dtype,parameters in dtype_to_parameters.iteritems():
             typestring = dtype_to_fortan[dtype]
             first = True
+            
+            self.out.lf()
             self.out + typestring + ' '
-            for x in parameters:
-              if first:
-                first = False
-              else:
-                self.out + ', '
+            
+            for parameter in parameters:
+                if first:
+                    first = False
+                else:
+                    self.out + ', '
               
-            length_of_the_argument_statement = len(parameter.name)
-            new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
-            if new_length_of_the_line > 74:
-                self.out.lf()
-                self.out + typestring + ' '
-            
-            self.out + parameter.name
-            
-             
+                length_of_the_argument_statement = len(parameter.name)
+                new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
+                if new_length_of_the_line > 74:
+                    self.out.lf()
+                    self.out + typestring + ' '
                 
-                
-        
-        self.out + ')'
-        self.out.dedent()
-        self.out.lf()
-        
-        
-        
+                self.out + parameter.name    
+            
+        if not self.specification.result_type is None:
+            typestring = dtype_to_fortan[self.specification.result_type]
+            self.out.lf()
+            self.out + typestring + ' ' + self.specification.name
+
         self.out.dedent()
         self.out.lf()
         self.out + 'END ' + type
