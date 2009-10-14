@@ -332,7 +332,7 @@ class GravitationalDynamics(object):
         function.result_doc = """
          0 - OK
             The indices of the collision partners were set
-        -1 - ERROR
+         -1 - ERROR
             No collision detected during evolve
         """
         return function  
@@ -368,14 +368,18 @@ class GravitationalDynamics(object):
             description = "The position vector of the point")
         function.addParameter('z', dtype='int32', direction=function.IN,
             description = "The position vector of the point")
-        function.addParameter('force', dtype='float64', direction=function.OUT,
+        function.addParameter('forcex', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('forcey', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('forcez', dtype='float64', direction=function.OUT,
             description = "Force created by the particles in the code at the given position")
         function.result_type = 'int32'
         function.result_doc = """
          0 - OK
             Force could be calculated
         -1 - ERROR
-            No forca calculated supported
+            No force calculation supported
         """
         return function  
     
@@ -419,7 +423,7 @@ class GravitationalDynamics(object):
         function.result_doc = """
          0 - OK
             Index was set
-         -1 - ERROR
+         1 - ERROR
             Code has no particles, or cannot set the index
         """
         return function
@@ -439,8 +443,10 @@ class GravitationalDynamics(object):
         function.result_doc = """
          0 - OK
             Index was set
-         -1 - ERROR
+         1 - STATE
             Last index was reached
+         -1 - ERROR
+            Particle could not be found
         """
         return function  
 

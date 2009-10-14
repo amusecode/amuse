@@ -33,17 +33,9 @@ All functions in the interface follow the same template. Every function returns 
 or status code. Results are returned through the function arguments. In C these arguments need
 to be pointers to valid memory locations.
 
-.. cfunction:: int32 example_function(int32 input, float64 * output)
-    
-    Example template for the other functions defined in this specification. All functions
-    should follow this example. 
-    
-    :param input: Typical input parameter, the argument is passed by value to the function.
-    :type input: int32, IN
-    :param output: Typical output parameter, the argument is passed by reference. The 
-          argument should point to a valid memory location.
-    :type output: float64, OUT
-    :returns: Function will return an error code.
+
+.. autoclass:: amuse.legacy.interface.example.ExampleInterface
+   :members:
         
 
 The error codes all have the same general form. Zero stands for no error, a negative
