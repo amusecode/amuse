@@ -165,7 +165,7 @@ class GravitationalDynamics(object):
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            particle was removed from the model
+            current value was retrieved
         -1 - ERROR
             particle could not be found
         """
@@ -194,6 +194,73 @@ class GravitationalDynamics(object):
         """
         return function    
     
+    @legacy_function
+    def get_acceleration():
+        """
+        Retrieve the acceleration vector of a particle. Second time derivative of the position.
+        """
+        function = RemoteFunction()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to new_particle_")
+        function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
+    def set_acceleration():
+        """
+        Update the acceleration of a particle. 
+        *Defined for symetry with the get_acceleration function.*
+        *Should be removed if physaccily unsound*
+        *Maybe moved to snapshot support functionality*
+        """
+        function = RemoteFunction()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to new_particle_")
+        function.addParameter('x', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
+        function.result_type = 'int32'
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            code does not support updating of a particle 
+        """
+    
+     @legacy_function
+    def get_potential():
+        """
+        Retrieve the potential vector of a particle. 
+        *Need better description of use and relation to get_acceleration and get_gravity*
+        """
+        function = RemoteFunction()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to new_particle_")
+        function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+        
     @legacy_function
     def evolve():
         """
@@ -318,6 +385,7 @@ class GravitationalDynamics(object):
         """
         return function  
    
+    
     @legacy_function
     def get_indices_of_colliding_particles():
         """
@@ -350,11 +418,93 @@ class GravitationalDynamics(object):
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-            Current value of the time was set
+            Current value of the time was retrieved
         -1 - ERROR
             The code does not have support for querying the time
         """
         return function
+    
+    
+    
+    @legacy_function
+    def get_total_mass():
+        """
+        Retrieve the sum of the masses of all particles.
+        """
+        function = RemoteFunction()  
+        function.addParameter('mass', dtype='float64', direction=function.OUT,
+            description = "The total mass of the model")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the kinetic mass was retrieved 
+        -1 - ERROR
+            Total mass could not be provided
+        """
+        return function
+    
+    @legacy_function
+    def get_center_of_mass_position():
+        """
+        Retrieve the center of mass (a point in space) of all particles.
+        """
+        function = RemoteFunction()  
+        function.addParameter('x', dtype='float64', direction=function.OUT,
+            description = "The center of mass of the model")
+        function.addParameter('y', dtype='float64', direction=function.OUT,
+            description = "The center of mass of the model")
+        function.addParameter('z', dtype='float64', direction=function.OUT,
+            description = "The center of mass of the model")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the center was retrieved 
+        -1 - ERROR
+            The mass could not be provided
+        """
+        return function
+    
+    @legacy_function
+    def get_center_of_mass_velocity():
+        """
+        Retrieve mass weighted mean of the velocity of all particles.
+        """
+        function = RemoteFunction()  
+        function.addParameter('vx', dtype='float64', direction=function.OUT,
+            description = "The mean velocity of the model")
+        function.addParameter('vy', dtype='float64', direction=function.OUT,
+            description = "The mean velocity of the model")
+        function.addParameter('vz', dtype='float64', direction=function.OUT,
+            description = "The mean velocity  of the model")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the center of mass velocity was retrieved 
+        -1 - ERROR
+            The value could not be provided
+        """
+        return function
+    
+    
+    @legacy_function
+    def get_total_radius():
+        """
+        Return the radius of the sphere centered on the center of mass that
+        contains all the particles. *get_size?*
+        """
+        function = RemoteFunction()  
+        function.addParameter('radius', dtype='float64', direction=function.OUT,
+            description = "The maximum distance from a star to the center of mass of the model")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the radius was retrieved 
+        -1 - ERROR
+            The value could not be provided
+        """
+        return function
+    
+
     
     @legacy_function
     def get_gravity_at_point():

@@ -115,7 +115,7 @@ class CreateDescriptionOfALegacyFunctionDefinition(object):
             first = True
             
             self.out.lf()
-            self.out + typestring + ' '
+            self.out + typestring + ' :: '
             
             for parameter in parameters:
                 if first:
@@ -127,14 +127,14 @@ class CreateDescriptionOfALegacyFunctionDefinition(object):
                 new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
                 if new_length_of_the_line > 74:
                     self.out.lf()
-                    self.out + typestring + ' '
+                    self.out + typestring + ' :: '
                 
                 self.out + parameter.name    
             
         if not self.specification.result_type is None:
             typestring = dtype_to_fortan[self.specification.result_type]
             self.out.lf()
-            self.out + typestring + ' ' + self.specification.name
+            self.out + typestring + ' :: ' + self.specification.name
 
         self.out.dedent()
         self.out.lf()

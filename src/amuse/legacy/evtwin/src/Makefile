@@ -203,6 +203,7 @@ $(EV): $(OBJS)
 
 $(LIBTWIN): $(FPIC_OBJS)
 	$(AR) $@ $(FPIC_OBJS)
+	$(RANLIB) $@
 
 $(LIBTWINSO): $(FPIC_OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(FPIC_OBJS)

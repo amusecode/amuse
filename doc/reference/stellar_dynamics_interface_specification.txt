@@ -92,7 +92,7 @@ functions must get or set one scalar property (1 argument) or a vector property 
 
 
 .. autoclass:: amuse.legacy.interface.gd.GravitationalDynamics
-   :members: get_mass, set_mass, get_position, set_position
+   :members: get_mass, set_mass, get_position, set_position, set_acceleration, get_acceleration, get_potential
 
 
 Model evolution
@@ -110,7 +110,7 @@ The state of the code can be queried, before, during and after the model calcula
 function can be used to query the exact model time, the total energies and colliding particles.
 
 .. autoclass:: amuse.legacy.interface.gd.GravitationalDynamics
-   :members: get_time, get_kinetic_energy, get_potential_energy, get_indices_of_colliding_particles
+   :members: get_time, get_kinetic_energy, get_potential_energy, get_indices_of_colliding_particles, get_center_of_mass_velocity, get_center_of_mass_position, get_total_mass, get_total_radius
 
 Services
 ~~~~~~~~
