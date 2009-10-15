@@ -239,7 +239,7 @@ class GravitationalDynamics(object):
             code does not support updating of a particle 
         """
     
-     @legacy_function
+    @legacy_function
     def get_potential():
         """
         Retrieve the potential vector of a particle. 
