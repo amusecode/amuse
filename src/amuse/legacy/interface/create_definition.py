@@ -72,76 +72,11 @@ class CreateDescriptionOfALegacyFunctionDefinition(object):
         self.out.lf().lf()
         
     def output_fortran_function_definition(self):
-        self.out + '.. code-block:: fortran'
-        self.out.indent()
-        self.out.lf().lf()
+        x = CreateFortranStub()
+        x.out = self.out
+        x.specification = self.specification
+        x.start()
         
-        if self.specification.result_type is None:
-            type = 'SUBROUTINE'
-        else:
-            type = 'FUNCTION'
-
-        self.out + type + ' '
-        self.out + self.specification.name
-        self.out + '('
-        self.out.indent()
-        self.out.indent()
-        first = True
-        for parameter in self.specification.parameters:
-            if first:
-                first = False
-            else:
-                self.out + ', '
-            
-            length_of_the_argument_statement = len(parameter.name)
-            new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
-            if new_length_of_the_line > 74:
-                selt.out + ' &'
-                self.out.lf()
-            self.out + parameter.name
-        
-        self.out + ')'
-        self.out.dedent()
-        
-        dtype_to_parameters = {}
-        for parameter in self.specification.parameters: 
-            parameters = dtype_to_parameters.get(parameter.datatype,[])
-            parameters.append(parameter)
-            dtype_to_parameters[parameter.datatype] = parameters
-            
-        dtype_to_fortan = {'int32':'INTEGER', 'float64':'DOUBLE PRECISION', 'float32':'REAL'}
-        for dtype,parameters in dtype_to_parameters.iteritems():
-            typestring = dtype_to_fortan[dtype]
-            first = True
-            
-            self.out.lf()
-            self.out + typestring + ' :: '
-            
-            for parameter in parameters:
-                if first:
-                    first = False
-                else:
-                    self.out + ', '
-              
-                length_of_the_argument_statement = len(parameter.name)
-                new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
-                if new_length_of_the_line > 74:
-                    self.out.lf()
-                    self.out + typestring + ' :: '
-                
-                self.out + parameter.name    
-            
-        if not self.specification.result_type is None:
-            typestring = dtype_to_fortan[self.specification.result_type]
-            self.out.lf()
-            self.out + typestring + ' :: ' + self.specification.name
-
-        self.out.dedent()
-        self.out.lf()
-        self.out + 'END ' + type
-        
-        self.out.dedent()
-        self.out.lf().lf()
     
     def output_parameter_descriptions(self):
         for parameter in self.specification.parameters:
@@ -182,3 +117,107 @@ class CreateInterfaceDefinitionDocument(object):
         
     def start(self):
         pass
+        
+class CreateFortranStub(object):
+    @late
+    def out(self):
+        return print_out()
+        
+    def start(self):
+        self.out + '.. code-block:: fortran'
+        self.out.indent()
+        self.out.lf().lf()
+        self.output_subprogram_start()
+        self.output_parameter_type_definiton_lines()
+        self.output_subprogram_end()
+                           
+        self.out.dedent()
+        self.out.lf().lf()
+
+    
+    @late 
+    def specification_is_for_function(self):
+        return not self.specification.result_type is None
+    
+    @late 
+    def subprogram_string(self):
+        if self.specification_is_for_function:
+            return 'FUNCTION'
+        else:
+            return 'SUBROUTINE'
+            
+    @late
+    def dtype_to_parameters(self):
+        result = {}
+        for parameter in self.specification.parameters: 
+            parameters = result.get(parameter.datatype,[])
+            parameters.append(parameter)
+            result[parameter.datatype] = parameters
+        return result
+        
+    @late
+    def dtype_to_fortantype(self):
+        return {
+            'int32':'INTEGER' , 
+            'float64':'DOUBLE PRECISION' , 
+            'float32':'REAL' ,
+            'string':'CHARACTER(LEN=*)',
+        }
+        
+    def output_subprogram_start(self):
+        self.out + self.subprogram_string + ' '
+        self.out + self.specification.name
+        self.out + '('
+        self.out.indent()
+        self.out.indent()
+        first = True
+        for parameter in self.specification.parameters:
+            if first:
+                first = False
+            else:
+                self.out + ', '
+            
+            length_of_the_argument_statement = len(parameter.name)
+            new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
+            if new_length_of_the_line > 74:
+                selt.out + ' &'
+                self.out.lf()
+            self.out + parameter.name
+        
+        self.out + ')'
+        self.out.dedent()
+
+    def output_parameter_type_definiton_lines(self):
+        for dtype,parameters in self.dtype_to_parameters.iteritems():
+            typestring = self.dtype_to_fortantype[dtype]
+            first = True
+            
+            self.out.lf()
+            self.out + typestring + ' :: '
+            
+            for parameter in parameters:
+                if first:
+                    first = False
+                else:
+                    self.out + ', '
+              
+                length_of_the_argument_statement = len(parameter.name)
+                new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
+                if new_length_of_the_line > 74:
+                    self.out.lf()
+                    self.out + typestring + ' :: '
+                
+                self.out + parameter.name 
+    
+    def output_function_type(self):
+        if self.specification_is_for_function:
+            typestring = self.dtype_to_fortantype[self.specification.result_type]
+            self.out.lf()
+            self.out + typestring + ' :: ' + self.specification.name
+
+    def output_subprogram_end(self):
+        self.out.dedent()
+        self.out.lf()
+        self.out + 'END ' + self.subprogram_string
+
+        
