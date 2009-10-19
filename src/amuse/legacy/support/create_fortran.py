@@ -371,7 +371,8 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf().lf() + 'program muse_worker'
         self.out.indent()
         self.output_mpi_include()
-        self.out.lf() + 'call MPI_INIT(mpierror)'
+        self.out.lf() + 'integer :: provided'
+        self.out.lf() + 'call MPI_INIT_THREAD(MPI_THREAD_MULTIPLE, provided, mpierror)'
         self.out.lf().lf() + 'call run_loop()'
         self.out.lf().lf() + 'call MPI_FINALIZE(mpierror)'
         self.out.dedent().lf()+'end program muse_worker'
