@@ -449,7 +449,9 @@ class MakeACStringOfAClassWithLegacyFunctions\
     def output_main(self):
         self.out.lf().lf() + 'int main(int argc, char *argv[])'
         self.out.lf() + '{'
-        self.out.indent().lf() + 'MPI::Init(argc, argv);'
+        self.out.indent().lf() 
+        self.out.lf() + 'int provided;'
+        self.out.lf() + 'MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE, &provided);'
         self.out.lf().lf() + 'run_loop();'
         self.out.lf().lf() + 'MPI_Finalize();'
         self.out.lf() + 'return 0;'
