@@ -211,7 +211,9 @@ void run_loop() {
 
 int main(int argc, char *argv[])
 {
-  MPI::Init(argc, argv);
+  
+  int provided;
+  MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);
   
   run_loop();
   

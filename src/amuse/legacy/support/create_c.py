@@ -451,7 +451,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf() + '{'
         self.out.indent().lf() 
         self.out.lf() + 'int provided;'
-        self.out.lf() + 'MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE, &provided);'
+        self.out.lf() + 'MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);'
         self.out.lf().lf() + 'run_loop();'
         self.out.lf().lf() + 'MPI_Finalize();'
         self.out.lf() + 'return 0;'
