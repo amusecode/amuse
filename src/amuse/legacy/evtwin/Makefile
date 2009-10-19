@@ -36,7 +36,7 @@ distclean:
 	
 muse_worker: muse_worker.cc muse_worker.h
 	make -C src lib/libtwin.a $(OBJ_EVT) FORT=$(FORTRAN)
-	mpicxx $< $(EVTWINLIB) $(OBJ) -o $@ -lgfortran
+	mpicxx $< $(OBJ) -o $@ -lgfortran $(EVTWINLIB)
 
 
 muse_worker.h: muse_stellar_mpi.py

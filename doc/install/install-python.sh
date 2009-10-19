@@ -7,20 +7,31 @@
 #
 
 #APPVER=2.5.4
-APPVER=2.6.2
+APPVER=2.6.3
 APPFILE=Python-${APPVER}.tar.bz2
 APP_DIR=Python-${APPVER}
 URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
 
+if [ -z ${PREFIX} ]; then
+	echo The PREFIX variable is not set, please set it to an user directory
+	exit 1
+fi
+
+if [ ! -d ${PREFIX} ]; then
+	echo ${PREFIX} directory does not exists, please create it first!
+	exit 1
+ 
+fi
+
+ 
+
 INSTALL_DIR=$PREFIX/install
 mkdir $INSTALL_DIR
-
 cd $INSTALL_DIR
 
-
-DOWNLOAD_DIR=_downloaded
-BUILD_DIR=_build
-SOURCE_DIR=_source
+DOWNLOAD_DIR=$INSTALL_DIR/_downloaded
+BUILD_DIR=$INSTALL_DIR/_build
+SOURCE_DIR=$INSTALL_DIR/_source
 
 mkdir ${DOWNLOAD_DIR}
 mkdir ${SOURCE_DIR}
@@ -32,7 +43,11 @@ cd  ${DOWNLOAD_DIR}
 if [ -e ${APPFILE} ] ; then
 	echo "...File already downloaded";
 else
-	curl -O ${URL} ;
+	if which curl >/dev/null; then
+		curl -O ${URL} ;
+	else
+		wget ${URL};		
+	fi
 fi
 
 cd ..
@@ -42,7 +57,7 @@ echo "Done"
 cd ${SOURCE_DIR}
 rm -Rf ${APP_DIR}
 echo "Unpacking source files.."
-tar -xf ../${DOWNLOAD_DIR}/$APPFILE
+tar -xf ${DOWNLOAD_DIR}/$APPFILE
 echo "..Done"
 
 cd ..
@@ -55,14 +70,14 @@ cd ${APP_DIR}
 
 UNAME=`uname`
 if [ $UNAME == 'Darwin' ] ; then
-	../../${SOURCE_DIR}/${APP_DIR}/configure \
+	${SOURCE_DIR}/${APP_DIR}/configure \
 		--with-dyld \
 		--enable-framework=${PREFIX}/Framework \
 		--enable-universal-sdk \
 		--prefix=${PREFIX} \
 		--program-suffix=.exe ;
 else
-	../../${SOURCE_DIR}/${APP_DIR}/configure \
+	${SOURCE_DIR}/${APP_DIR}/configure \
 		--prefix=${PREFIX} \
 		--enable-shared \
 		--program-suffix=.exe ;

@@ -46,6 +46,7 @@ class InstallPrerequisites(object):
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           ('mpi4py', ['mpich2'], '1.0.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
         ]
+        
     @late
     def temp_dir(self):
         return os.path.join(self.prefix,'install','_temp')
@@ -86,7 +87,10 @@ class InstallPrerequisites(object):
         commands = []
         commands.append([
           './configure','--prefix='+self.prefix,
-          '--enable-sharedlibs=gcc','--enable-f90'
+          '--enable-mpi-threads', 
+          '--enable-cxx-exceptions',
+          '--enable-debug',
+          '--enable-orterun-prefix-by-default',
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -132,6 +136,7 @@ class InstallPrerequisites(object):
                 print "Downloading ", app_file
                 urllib.urlretrieve(url, os.path.join(self.temp_dir, app_file))
                 print "...Finished"
+                
     def unpack_apps(self, names):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
@@ -147,6 +152,7 @@ class InstallPrerequisites(object):
             print "Unpacking ", app_file
             self.run_application(['tar','-xf',app_file], cwd=self.temp_dir)
             print "...Finished"
+            
     def build_apps(self, names):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
