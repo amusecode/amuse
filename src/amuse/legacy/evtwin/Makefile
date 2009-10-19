@@ -12,8 +12,20 @@ OBJ_EVT=obj/twinmuse.o
 
 EVTWINLIB=src/lib/libtwin.a
 
-all:    muse_worker
+all:    src/makefile.dep src/makefile.sys muse_worker
 
+src/makefile.dep: src/Makefile
+	@echo building makefile.deb
+	@cd src && perl depend.pl code/*.f > makefile.dep
+	@echo done
+	
+
+src/makefile.sys: src/Makefile
+	@echo running confiure
+	@cd src && perl configure.pl
+	@echo done	
+	
+	
 clean:
 	make -C src clean
 	/bin/rm -f *~ *.so *.o src/*.o src/sse muse_worker muse_worker.cc
