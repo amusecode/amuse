@@ -46,7 +46,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to be removed. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle to be removed. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -64,7 +64,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
         function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
@@ -90,7 +90,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
         function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
@@ -119,7 +119,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
         function.result_type = 'int32'
         function.result_doc = """
@@ -137,7 +137,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
         function.result_type = 'int32'
         function.result_doc = """
@@ -158,7 +158,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
@@ -178,7 +178,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
@@ -201,7 +201,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
@@ -224,7 +224,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
@@ -247,7 +247,7 @@ class GravitationalDynamics(object):
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to new_particle_")
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
         function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
         function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
@@ -467,7 +467,8 @@ class GravitationalDynamics(object):
     @legacy_function
     def get_center_of_mass_velocity():
         """
-        Retrieve mass weighted mean of the velocity of all particles.
+        Retrieve the velocity of the center of mass of all particles. This 
+        velocity is mass weighted mean of the velocity of all particles.
         """
         function = RemoteFunction()  
         function.addParameter('vx', dtype='float64', direction=function.OUT,

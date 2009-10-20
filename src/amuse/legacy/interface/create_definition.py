@@ -180,7 +180,7 @@ class CreateFortranStub(object):
             length_of_the_argument_statement = len(parameter.name)
             new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
             if new_length_of_the_line > 74:
-                selt.out + ' &'
+                self.out + ' &'
                 self.out.lf()
             self.out + parameter.name
         
