@@ -37,6 +37,18 @@ class LegacyCommand(Command):
         self.set_sapporo_variables()
         
     def set_fortran_variables(self):
+        if 'FORTRAN' in os.environ:
+            self.environment['FORTRAN'] = os.environ['FORTRAN']
+            return
+        
+        if 'FC' in os.environ:
+            self.environment['FORTRAN'] = os.environ['FC']
+            return
+            
+        if 'FORT' in os.environ:
+            self.environment['FORTRAN'] = os.environ['FORT']
+            return
+
         compiler = fcompiler.new_fcompiler(requiref90=True)
         fortran_executable = compiler.executables['compiler_f90'][0]
         self.environment['FORTRAN'] = fortran_executable

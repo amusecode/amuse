@@ -24,9 +24,9 @@ from StringIO import StringIO
 test_is_running = False
 
 def number_str(number, singular, plural = None):
-        if plural == None:
-            plural = singular + 's'
-        return str(number) + ' ' + (singular if number == 1 else plural)
+    if plural == None:
+        plural = singular + 's'
+    return str(number) + ' ' + (singular if number == 1 else plural)
 
 def find_method_in_class(name_of_the_method, code, class_to_search):
     if name_of_the_method in class_to_search.__dict__:
@@ -48,7 +48,6 @@ def extract_tb(tb, limit = None):
         filename = co.co_filename
         name = co.co_name
         linecache.checkcache(filename)
-        #line = linecache.getline(filename, lineno, f.f_globals)
         line = ""
         if '__file__' in f.f_globals:
             for global_name, x in f.f_globals.iteritems():
@@ -356,7 +355,10 @@ class MakeAReportOfATestRun(object):
     
     def to_dict(self):
         result = {}
-        for x in [ 'errors', 'failures', 'tests' , 'start_time', 'end_time', 'skipped', 'problem_text']:
+        for x in [ 
+            'errors', 'failures', 'tests' , 
+            'start_time', 'end_time', 'skipped',
+            'problem_text']:
             result[x] = getattr(self, x)
         
         testcases = list(self.address_to_report.values())
@@ -426,12 +428,13 @@ def _perform_one_test(directory, results_queue, address):
         os.stdin = null_device
         select = Select(address)
         plugins = [select, Skip()]  
-        result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
-        print "end test run"
+        result = TestProgram(
+            exit = False, 
+            argv=['nose', directory], 
+            plugins=plugins)
         result = select.buffer
         result = result[:min(1000, len(result) - 1)]
         results_queue.put(result)
-        print sys.stderr << "results put in queue"
     except:
         results_queue.put('exception happened')
     finally:
@@ -460,8 +463,6 @@ def _run_test_with_address(address):
     print "start to join"
     process.join(2)
     print "process joined"
-    
-    print "test finished:", result
     return result    
      
 
@@ -508,16 +509,15 @@ class RunAllTestsWhenAChangeHappens(object):
                 self.server.last_report = report
                 self.server.tests_finished.set()
                 test_is_running = False
-                print "report:",report
                 process.join(2)
                 print "joined!"
                 del result_queue
-                print "end test run"
                     
                 monitor.check()
             else:
                 time.sleep(0.5)
                 monitor.check()
+                
                 
 osascript_to_open_xcode = """on run argv
  set linenumber to (item 1 of argv) as integer
@@ -534,9 +534,10 @@ end run"""
 
 def open_file(path, lineno = 1):
     if sys.platform == 'darwin':        
-        program = Popen(['osascript', '-', str(lineno), os.path.join(os.getcwd(), path) ], stdin = PIPE, stdout = PIPE, stderr = PIPE)
+        program = Popen(
+            ['osascript', '-', str(lineno), os.path.join(os.getcwd(), path) ], 
+            stdin = PIPE, stdout = PIPE, stderr = PIPE)
         out, err = program.communicate(osascript_to_open_xcode)
-        print out, err
     else:
         call(['geany', path, '+'+str(lineno)])
     
@@ -590,17 +591,14 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         
         self.send_response(200)
         self.send_header("Content-type", content_type)
-        self.send_header("Content-Length", str(len(string)))
-        #self.send_header("Connection", "keep-alive")
-        
+        self.send_header("Content-Length", str(len(string)))        
         self.end_headers()
         self.wfile.write(string)
     
     def do_long_poll(self):
         print self.request_version
         self.send_response(200)
-        self.send_header("Content-Type", "text/javascript")   
-        #self.send_header("connection", "keep-alive")
+        self.send_header("Content-Type", "text/javascript")  
         self.send_header("Transfer-Encoding", "chunked")
         self.send_header("Cache-Control", "no-cache, no-store")
         self.send_header("Pragma", "no-cache")
@@ -617,7 +615,6 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
                     
     def send_chunk(self, string):
         hex_length = hex(len(string))[2:]
-        #print hex(len(string)), hex_length
         self.wfile.write('%s \r\n' % hex_length)
         self.wfile.flush()
 
@@ -644,7 +641,7 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
 class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
     
     def __init__(self, port):
-        BaseHTTPServer.HTTPServer.__init__(self, ('',port), HandleRequest)
+        BaseHTTPServer.HTTPServer.__init__(self, ('', port), HandleRequest)
         self.last_report = None
         self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
         self.run_all_tests.start()
@@ -675,6 +672,7 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         
         process.join(2) 
         del result_queue
+        
     def stop(self):
         self.run_all_tests.stop()
         self.shutdown()
