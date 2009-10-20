@@ -5,7 +5,8 @@ Stellar Evolution Interface Definition
 =========== ============ ========= =========
 Date        Author(s)    Version   State
 =========== ============ ========= =========
-13-10-2009  AvE          1.0       Initial
+13-10-2009  AvE          0.1       Initial
+20-10-2009  AvE          0.2       Initial, after first review with IP
 =========== ============ ========= =========
 
 Introduction
