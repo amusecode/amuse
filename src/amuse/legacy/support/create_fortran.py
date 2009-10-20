@@ -78,7 +78,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
             if parameter.direction == RemoteFunction.IN:
                 if parameter.datatype == 'string':
                     self.out.n() + 'characters('
-                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +') + 2'
+                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
                     self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
                     self.out  + ')'
                 else:
@@ -212,11 +212,14 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
     def output_mpi_include(self):
         self.out.n() + "INCLUDE 'mpif.h'"
         
-    def output_local_includes(self):
-        self.out.n()
-        for x in ['muse_dynamics.h', 'parameters.h', 'local.h']:
-            self.out.n() + '#include "' + x + '"'
+  
             
+    def output_modules(self):
+        self.out.n()
+        if hasattr(self.class_with_legacy_functions, 'use_modules'):
+            for x in self.class_with_legacy_functions.use_modules:
+                self.out.n() + 'use ' + x 
+                
     def output_legacy_functions_declarations(self):
         for x in self.legacy_functions:
             specification = x.specification
@@ -248,7 +251,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf() + 'IF (index .lt. 1) THEN'
         self.out.indent().lf() + 'get_offset = 1'
         self.out.dedent().lf() + 'ELSE'
-        self.out.indent().lf() + 'get_offset = offsets(index)'
+        self.out.indent().lf() + 'get_offset = offsets(index) + 2'
         self.out.dedent().lf() + 'END IF'
         
         self.out.dedent()
@@ -267,6 +270,8 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'SUBROUTINE run_loop'
         self.out.indent()
+        self.output_modules()
+        self.out.lf()
         self.output_mpi_include()
         self.out.n() + 'integer :: rank, parent, ioerror, maxlen = 255'
         self.out.n() + 'integer :: must_run_loop'

@@ -440,6 +440,7 @@ class MpiChannel(object):
                 if length == 1:
                     bytes.extend([ord(ch) for ch in strings])
                     bytes.append(0)
+                    print "str:", strings
                 else:
                     for string in strings:
                         bytes.extend([ord(ch) for ch in string])
