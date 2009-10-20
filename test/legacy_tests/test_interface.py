@@ -1,11 +1,12 @@
-import unittest
+
+from legacy_support import TestWithMPI
 
 from amuse.legacy.interface import gd
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface import create_definition
 from amuse.legacy.support.core import RemoteFunction
 
-class TestGravitationalDynamics(unittest.TestCase):
+class TestGravitationalDynamics(TestWithMPI):
     def test1(self):
         x = GravitationalDynamics()
         

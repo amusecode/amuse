@@ -1,4 +1,4 @@
-import unittest
+
 import sys
 
 from amuse.legacy.phiGRAPE import muse_dynamics_mpi as mpi_interface
@@ -6,6 +6,8 @@ from amuse.legacy.phiGRAPE import muse_dynamics_mpi as mpi_interface
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+
+from legacy_support import TestWithMPI
 
 import numpy
 
@@ -16,7 +18,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
-class TestMPIInterface(unittest.TestCase):
+class TestMPIInterface(TestWithMPI):
     
     def test1(self):
         instance = mpi_interface.PhiGRAPE()
@@ -165,7 +167,7 @@ class TestMPIInterface(unittest.TestCase):
         del instance
         
 
-class TestSunAndEarthSystem(unittest.TestCase):
+class TestSunAndEarthSystem(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 

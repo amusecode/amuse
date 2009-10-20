@@ -16,6 +16,7 @@ from amuse.support.units import units
 from amuse.legacy.hermite0.muse_dynamics_mpi import Hermite
 from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
 from amuse.legacy.sse.muse_stellar_mpi import SSE
+from amuse.legacy.support.core import is_mpd_running
 
 from amuse.experiments.plummer import MakePlummerModel
 
@@ -200,6 +201,7 @@ def test_simulate_small_cluster():
     run with all other tests. This method simulates
     a too small cluster, this is done to limit the testing time.
     """
+    assert is_mpd_running()
     simulate_small_cluster(5, 4 | units.Myr)
     
 if __name__ == '__main__':

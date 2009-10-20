@@ -1,4 +1,5 @@
-import unittest
+
+from legacy_support import TestWithMPI
 import sys
 
 from amuse.legacy.hermite0.muse_dynamics_mpi import Hermite
@@ -17,7 +18,7 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-class TestAmuseInterface(unittest.TestCase):
+class TestAmuseInterface(TestWithMPI):
     def new_system_sun_and_earth(self):
         result = Particles(2)
         sun = result[0]

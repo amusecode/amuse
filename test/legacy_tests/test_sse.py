@@ -1,4 +1,3 @@
-import unittest
 import sys
 
 from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
@@ -6,7 +5,9 @@ from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
 from amuse.support.data.core import Stars
 from amuse.support.units import units
 
-class TestMPIInterface(unittest.TestCase):
+from legacy_support import TestWithMPI
+
+class TestMPIInterface(TestWithMPI):
     
     class state(object):
         def __init__(self):
@@ -190,7 +191,7 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(len(result['mass']), 3999)
         del sse
         
-class TestSSE(unittest.TestCase):
+class TestSSE(TestWithMPI):
     
     def test1(self):
         sse = mpi_interface.SSE()

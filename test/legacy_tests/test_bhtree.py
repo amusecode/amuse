@@ -1,5 +1,6 @@
-import unittest
+
 import sys
+import support
 
 from amuse.legacy.bhtree import muse_dynamics_mpi as mpi_interface
 
@@ -9,6 +10,7 @@ from amuse.support.units import units
 
 import numpy
 
+from legacy_support import TestWithMPI
 
 try:
     from matplotlib import pyplot
@@ -18,7 +20,7 @@ except ImportError:
     
     
 
-class TestMPIInterface(unittest.TestCase):
+class TestMPIInterface(TestWithMPI):
     
     def test1(self):
         instance = mpi_interface.BHTree()
@@ -46,7 +48,7 @@ class TestMPIInterface(unittest.TestCase):
         self.assertEquals(0, instance.flag_collision)
         del instance
         
-class TestAmuseInterface(unittest.TestCase):
+class TestAmuseInterface(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
