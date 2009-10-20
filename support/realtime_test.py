@@ -445,27 +445,25 @@ def _run_test_with_address(address):
     if test_is_running:
         return 'test is already running'
     test_is_running = True
-    try:
-        result_queue = Queue()
-        process = Process(
-            target=_perform_one_test, 
-            args=(
-                os.getcwd(), 
-                result_queue,
-                address
-            ))
-        process.start()
-        
-        print "start to join"
-        process.join(30)
-        print "process joined"
-        result = result_queue.get()
-        
-        print "test finished:", result
-        return result 
-    finally:
-        test_is_running = False
+    result_queue = Queue()
+    process = Process(
+        target=_perform_one_test, 
+        args=(
+            os.getcwd(), 
+            result_queue,
+            address
+        ))
+    process.start()
     
+    result = result_queue.get()
+    test_is_running = False
+    print "start to join"
+    process.join(2)
+    print "process joined"
+    
+    print "test finished:", result
+    return result    
+     
 
 class RunAllTestsWhenAChangeHappens(object):
     
@@ -497,26 +495,24 @@ class RunAllTestsWhenAChangeHappens(object):
                     continue
                     
                 test_is_running = True
-                try:
-                    result_queue = Queue()
-                    process = Process(
-                        target=_perform_the_testrun, 
-                        args=(
-                            os.getcwd(), 
-                            result_queue, 
-                            self.server.last_report
-                        ))
-                    process.start()
-                    report = result_queue.get() 
-                    self.server.last_report = report
-                    self.server.tests_finished.set()
-                    print "report:",report
-                    process.join(2)
-                    print "joined!"
-                    del result_queue
-                    print "end test run"
-                finally:
-                    test_is_running = False
+                result_queue = Queue()
+                process = Process(
+                    target=_perform_the_testrun, 
+                    args=(
+                        os.getcwd(), 
+                        result_queue, 
+                        self.server.last_report
+                    ))
+                process.start()
+                report = result_queue.get() 
+                self.server.last_report = report
+                self.server.tests_finished.set()
+                test_is_running = False
+                print "report:",report
+                process.join(2)
+                print "joined!"
+                del result_queue
+                print "end test run"
                     
                 monitor.check()
             else:
@@ -665,19 +661,20 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
             return
         
         test_is_running = True
-        try:
-            result_queue = Queue()
-            process = Process(
-                target=_perform_the_testrun, 
-                args=(os.getcwd(), result_queue))
-            process.start()
-            process.join()
-            report = result_queue.get() 
-            self.last_report = report
-            del result_queue
-            self.tests_finished.set()
-        finally:
-            test_is_running = False
+        result_queue = Queue()
+        
+        process = Process(
+            target=_perform_the_testrun, 
+            args=(os.getcwd(), result_queue))
+        process.start()
+        report = result_queue.get()
+        self.last_report = report
+        self.tests_finished.set()
+        
+        test_is_running = False
+        
+        process.join(2) 
+        del result_queue
     def stop(self):
         self.run_all_tests.stop()
         self.shutdown()

@@ -13,8 +13,8 @@ dtype_to_spec = DTypeToSpecDictionary({
                     'number_of_doubles', 'double', 'MPI_DOUBLE'),
     'float32' : DTypeSpec('floats_in', 'floats_out',
                     'number_of_floats', 'float', 'MPI_FLOAT'),
-    'string' : DTypeSpec('chars_in', 'chars_out',
-                    'number_of_chars', 'char', 'MPI_CHARACTER'),
+    'string' : DTypeSpec('strings_in', 'strings_out',
+                    'number_of_strings', 'int', 'MPI_INTEGER'),
 })
 
 
@@ -74,8 +74,14 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
                 self.out + ' ,'
                 
             if parameter.direction == RemoteFunction.IN:
-                self.out.n() + spec.input_var_name
-                if not parameter.datatype == 'string':
+                if parameter.datatype == 'string':
+                    self.out.n() + 'characters + ' 
+                    self.out + '( ' + self.index_string(parameter.input_index) + '- 1 < 0 ? 0 :' 
+                    self.out + spec.input_var_name
+                    self.out + '[' + self.index_string(parameter.input_index ) +  ' - 1] + 1'
+                    self.out + ')'
+                else:    
+                    self.out.n() + spec.input_var_name
                     self.out + '[' + self.index_string(parameter.input_index) + ']'
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + '&' + spec.input_var_name 
@@ -351,6 +357,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out + 'MPI::COMM_WORLD.Get_parent();'
         self.out.n() + 'int rank = parent.Get_rank();'
         self.out.lf().lf() + 'bool must_run_loop = true;'
+        self.out.lf() + 'char * characters = 0;'
         
         self.out.lf().lf() + 'int max_len = ' + 10 + ';'
         self.output_new_statements(True)
@@ -382,6 +389,19 @@ class MakeACStringOfAClassWithLegacyFunctions\
             self.out + ', ' + 'request_header.' + spec.counter_name 
             self.out + ' * ' + 'request_header.len'
             self.out + ', ' + spec.mpi_type+ ', 0);'
+            
+            if dtype == 'string':
+                self.out.lf() + 'characters = new char['
+                self.out +  spec.input_var_name + '[' + 'request_header.' + spec.counter_name 
+                self.out + ' * ' + 'request_header.len' + ' - 1] + 1'
+                self.out + '];'
+                self.out.lf() + 'parent.Bcast(' 
+                self.out + 'characters'
+                self.out + ',  ' 
+                self.out + spec.input_var_name + '[' + 'request_header.' + spec.counter_name 
+                self.out + ' * ' + 'request_header.len' + '- 1] + 1'
+                self.out + ', ' + spec.mpi_type+ ', 0);'
+            
             self.out.dedent().lf() +'}'
             
         self.out.lf().lf() + 'reply_header.tag = request_header.tag;'
@@ -414,6 +434,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
             self.out + ', ' + spec.mpi_type+ ', 0, 999);'
             self.out.dedent().lf() +'}'
         
+        self.out.lf() + 'if (characters) { delete characters; characters = 0;}'
         self.out.dedent()
         self.out.lf() + '}'
         

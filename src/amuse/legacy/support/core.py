@@ -297,7 +297,7 @@ class RemoteFunction(object):
                 
     
     def __str__(self):
-        typecode_to_name = {'i':'int', 'd':'double', 'f':'float'}
+        typecode_to_name = {'int32':'int', 'float64':'double', 'float32':'float'}
         p = print_out()
         p + 'function: '
         if self.result_type is None:
@@ -313,7 +313,7 @@ class RemoteFunction(object):
                 first = False
             else:
                 p + ', '
-            p + typecode_to_name[x.dtype]
+            p + typecode_to_name[x.datatype]
             p + ' '
             p + x.name
         p + ')'
@@ -384,12 +384,20 @@ class MpiChannel(object):
                 length = len(ints_in[0])
             except:
                 pass
+        if chars_in:
+            try:
+                if not isinstance(chars_in[0], str):
+                    length = len(chars_in[0])
+                    print "length:", length
+            except:
+                pass
+                    
         
-        if len(chars_in) == 1:
-            number_of_characters = len(chars_in[0])+1
-        else:
-            number_of_characters = 0
-        header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in), number_of_characters], dtype='i')
+        #if len(chars_in) == 1:
+        #    number_of_characters = len(chars_in[0])+1
+        #else:
+        #    number_of_characters = 0
+        header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in), len(chars_in)], dtype='i')
         
         self.intercomm.Bcast([header, MPI.INT], root=MPI.ROOT)
         if doubles_in:
@@ -409,9 +417,36 @@ class MpiChannel(object):
             self.intercomm.Bcast([floats, MPI.FLOAT], root=MPI.ROOT)
 
         if chars_in:
-            as_array_of_bytes = [ord(ch) for ch in chars_in[0]]
-            as_array_of_bytes.append(0)
-            chars = numpy.array(as_array_of_bytes, dtype=numpy.uint8)
+            offsets = numpy.zeros(length * len(chars_in), dtype='i')
+            offset = 0
+            index = 0
+            for strings in chars_in:
+                if length == 1:
+                    offset += len(strings)
+                    offsets[index] = offset
+                    offset += 1
+                    index += 1
+                else:
+                    for string in strings:
+                        offset += len(string)
+                        offsets[index] = offset
+                        offset += 1
+                        index += 1
+                
+            print offsets
+            self.intercomm.Bcast([offsets, MPI.INT], root=MPI.ROOT)    
+            bytes = []
+            for strings in chars_in:
+                if length == 1:
+                    bytes.extend([ord(ch) for ch in strings])
+                    bytes.append(0)
+                else:
+                    for string in strings:
+                        bytes.extend([ord(ch) for ch in string])
+                        bytes.append(0)
+              
+            print bytes
+            chars = numpy.array(bytes, dtype=numpy.uint8)
             self.intercomm.Bcast([chars, MPI.CHARACTER], root=MPI.ROOT)
             
     def recv_message(self, tag):

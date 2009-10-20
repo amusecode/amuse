@@ -44,6 +44,9 @@ muse_worker.h: muse_stellar_mpi.py
 
 muse_worker.cc: muse_stellar_mpi.py
 	../../../../bin/create_c_worker.py muse_stellar_mpi.py EVtwin > $@
+
+muse_worker.f90: muse_stellar_mpi.py
+	../../../../bin/create_f90_worker.py muse_stellar_mpi.py EVtwin > $@
 	
 .f.o: $<
 	$(FORTRAN) -c -o $@ $< 

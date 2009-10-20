@@ -13,8 +13,8 @@ dtype_to_spec = DTypeToSpecDictionary({
                     'number_of_doubles', 'double precision', 'MPI_DOUBLE_PRECISION'),
     'float32' : DTypeSpec('floats_in', 'floats_out',
                     'number_of_floats', 'real', 'MPI_SINGLE_PRECISION'),
-    'string' : DTypeSpec('chars_in', 'chars_out',
-                    'number_of_chars', 'character', 'MPI_CHARACTER'),
+    'string' : DTypeSpec('strings_in', 'strings_out',
+                    'number_of_strings', 'integer', 'MPI_INTEGER'),
 })
         
 class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
@@ -28,7 +28,10 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
             if index == 0:
                 return 'i'
             else:
-                return '( %d * len_in) + i' % index
+                if index == -1:
+                    return "i - 1"
+                else:
+                    return '( %d * len_in) + i' % index
         else:
             return index + 1
             
@@ -73,8 +76,14 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
                 self.out + ' ,&'
                 
             if parameter.direction == RemoteFunction.IN:
-                self.out.n() + spec.input_var_name 
-                self.out + '(' + self.index_string(parameter.input_index) + ')'
+                if parameter.datatype == 'string':
+                    self.out.n() + 'characters('
+                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +') + 2'
+                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
+                    self.out  + ')'
+                else:
+                    self.out.n() + spec.input_var_name 
+                    self.out + '(' + self.index_string(parameter.input_index) + ')'
             if parameter.direction == RemoteFunction.INOUT:
                 self.out.n() + spec.input_var_name 
                 self.out + '(' + self.index_string(parameter.input_index) + ')'
@@ -191,6 +200,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         return MakeAFortranStringOfALegacyFunctionSpecification()
    
     def start(self):
+        self.output_character_index_function()
         self.output_runloop_function_def_start()
         self.output_switch_start()
         self.output_legacy_functions()
@@ -217,52 +227,77 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
             spec = self.dtype_to_spec[specification.result_type]
             self.out.lf() +  spec.type + ' :: ' + specification.name
         
+    def output_allocate_arrays(self):
+        maximum_number_of_inputvariables_of_a_type = 255
+        for dtype_spec in self.dtype_to_spec.values():
+            self.out.lf() + 'ALLOCATE('
+            self.out + dtype_spec.input_var_name 
+            self.out + '( maxlen *' + maximum_number_of_inputvariables_of_a_type + ')'
+            self.out + ')'
+            
+            self.out.lf() + 'ALLOCATE(' 
+            self.out + dtype_spec.output_var_name 
+            self.out + '( maxlen * ' + maximum_number_of_inputvariables_of_a_type + ')'
+            self.out + ')'
+
+    def output_character_index_function(self):
+        self.out.lf().lf() + 'FUNCTION get_offset(index, offsets)'
+        self.out.indent()
+        self.out.lf() + 'integer :: index, get_offset'
+        self.out.lf() + 'integer,dimension(:) :: offsets'
+        self.out.lf() + 'IF (index .lt. 1) THEN'
+        self.out.indent().lf() + 'get_offset = 1'
+        self.out.dedent().lf() + 'ELSE'
+        self.out.indent().lf() + 'get_offset = offsets(index)'
+        self.out.dedent().lf() + 'END IF'
+        
+        self.out.dedent()
+        self.out.lf() + 'END FUNCTION'
+        
+    def output_character_index_inderface(self):
+        self.out.lf() + 'INTERFACE'
+        self.out.indent()
+        self.out.lf().lf() + 'FUNCTION get_offset(index, offsets)'
+        self.out.indent()
+        self.out.lf() + 'integer :: index, get_offset'
+        self.out.lf() + 'integer,dimension(:) :: offsets'
+        self.out.dedent().lf() + 'END FUNCTION'
+        self.out.dedent().lf() + 'end interface'
         
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'SUBROUTINE run_loop'
         self.out.indent()
         self.output_mpi_include()
-        self.out.n() + 'integer :: rank, parent, ioerror'
+        self.out.n() + 'integer :: rank, parent, ioerror, maxlen = 255'
         self.out.n() + 'integer :: must_run_loop'
         self.out.n() + 'integer i'
+        self.out.n() + 'character (len=100000) :: characters'
         self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
         self.out.lf().lf() + 'integer header(' 
         self.out + self.length_of_the_header + ')'
         self.out.lf().lf() + 'integer :: tag_in, tag_out'
         self.out.lf().lf() + 'integer :: len_in, len_out'
+        self.output_character_index_inderface()
         self.out.lf()
         self.output_legacy_functions_declarations()
         
-        maximum_number_of_inputvariables_of_a_type = 255 * 5000
         for dtype_spec in self.dtype_to_spec.values():
-            
             self.out.lf() + dtype_spec.type 
-            self.out + ', DIMENSION(:), ALLOCATABLE ::' 
+            self.out + ', DIMENSION(:), ALLOCATABLE :: ' 
             self.out + dtype_spec.input_var_name 
-            #self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
             
             self.out.lf() + dtype_spec.type 
-            self.out + ', DIMENSION(:), ALLOCATABLE ::' 
+            self.out + ', DIMENSION(:), ALLOCATABLE :: ' 
             self.out + dtype_spec.output_var_name 
-            #self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
             
             self.out.lf() + 'integer ::' + ' ' 
             self.out + dtype_spec.counter_name + '_out' 
             self.out + ', ' + dtype_spec.counter_name + '_in'
             
+            
         self.out.lf()
-        for dtype_spec in self.dtype_to_spec.values():
-            
-            self.out.lf() + 'ALLOCATE('
-            self.out + dtype_spec.input_var_name 
-            self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
-            self.out + ')'
-            
-            self.out.lf() + 'ALLOCATE(' 
-            self.out + dtype_spec.output_var_name 
-            self.out + '(' + maximum_number_of_inputvariables_of_a_type + ')'
-            self.out + ')'
-            
+        self.output_allocate_arrays()
+        self.out.lf() 
         self.out.lf().lf() + 'call MPI_COMM_GET_PARENT(parent, ioerror)'
         self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, mpierror)'
         self.out.lf().lf() + 'must_run_loop = 1'
@@ -294,6 +329,16 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
             self.out.lf() + spec.counter_name + '_out' + ' =  0' 
         self.out.lf()
         
+        
+        self.out.lf() + 'IF (len_in .gt. max_len) THEN'
+        self.out.indent()
+        self.out.lf() + 'max_len = len_in + 255;'
+        self.output_deallocate_statements()
+        self.output_allocate_arrays()
+        self.out.dedent()
+        self.out.lf() + 'END IF'
+
+        
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
             self.out.lf() + 'if (' + spec.counter_name + '_in' 
@@ -308,7 +353,25 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
             self.out.indent().n() + spec.mpi_type
             self.out + ', 0, parent,&'
             self.out.n() + 'ioError);'
+            if dtype == 'string':
+            
+                self.out.dedent()
 
+                #self.out.lf() + 'DEALLOCATE(characters)'
+                #self.out.lf()
+                #self.out + 'IF (' 
+                #self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1'
+                #self.out +') .gt. 100000) THEN'
+                #self.out
+                
+                self.out.lf() + 'call MPI_BCast('
+                self.out + 'characters' + ', ' 
+                self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1' 
+                self.out + ', &'
+
+                self.out.indent().n() + spec.mpi_type
+                self.out + ', 0, parent,&'
+                self.out.n() + 'ioError);'
             self.out.dedent().dedent().lf()
             self.out + 'end if'
          
@@ -358,15 +421,18 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         
         
         self.out.lf()
-        for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + 'DEALLOCATE(' + dtype_spec.input_var_name  + ')'
-            self.out.lf() + 'DEALLOCATE(' + dtype_spec.output_var_name  + ')'
+        self.output_deallocate_statements()
             
         
         self.out.lf() + 'return'
         
         self.out.dedent().lf() + 'end subroutine'
-        
+    
+    def output_deallocate_statements(self):
+        for dtype_spec in self.dtype_to_spec.values():
+            self.out.lf() + 'DEALLOCATE(' + dtype_spec.input_var_name  + ')'
+            self.out.lf() + 'DEALLOCATE(' + dtype_spec.output_var_name  + ')'
+                        
     def output_main(self):
         self.out.lf().lf() + 'program muse_worker'
         self.out.indent()
