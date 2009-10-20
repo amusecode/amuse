@@ -5,7 +5,7 @@ Contains the source code of production codes and softwar to embed these codes in
 """
 
 from amuse.legacy.support.core import LegacyInterface, legacy_function, legacy_global
-from amuse.legacy.support.core import RemoteFunction
+from amuse.legacy.support.core import RemoteFunction, is_mpd_running
 from amuse.support.data import parameters
 from amuse.support.data import attributes
 from amuse.support.units import units

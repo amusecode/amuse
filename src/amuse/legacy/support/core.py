@@ -8,6 +8,7 @@ import os.path
 
 from zlib import crc32
 from mpi4py import MPI
+from subprocess import Popen, PIPE
 
 from amuse.support.core import late
 from amuse.support.core import print_out
@@ -32,6 +33,17 @@ class FloatDataType(DataType):
     mpi_type = MPI.FLOAT
     pass
 
+def is_mpd_running():
+    name_of_the_vendor, version = MPI.get_vendor()
+    if name_of_the_vendor == 'MPICH2':
+        is_mpd_running = True
+        process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
+        (output_string, error_string) = process.communicate()
+        if process.returncode == 255:
+            is_mpd_running = False
+        return is_mpd_running
+    else:
+        return True
 
 
 def _typecode_to_datatype(typecode):
