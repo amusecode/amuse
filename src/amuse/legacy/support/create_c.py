@@ -163,7 +163,10 @@ class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCCodeString
             else:
                 self.out + ', '
                 
-            self.out + spec.type
+            if parameter.datatype == 'string':
+                self.out + 'char'
+            else:
+                self.out + spec.type
             self.out + ' '
             if parameter.is_output():
                 self.out + '*' + ' '
