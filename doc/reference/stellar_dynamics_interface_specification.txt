@@ -14,7 +14,7 @@ Introduction
 
 Data Types
 ----------
-The exact size (in bytes) and type of the values send between the python layer and the legacy
+The exact size (in bytes) and type of the values sent between the python layer and the legacy
 codes is very important. In this document we will specify the type of each argument and return 
 value. 
 
@@ -40,7 +40,7 @@ to be pointers to valid memory locations.
         
 
 The error codes all have the same general form. Zero stands for no error, a negative
-value indicates some error happened, a positve value is returned when the function
+value indicates some error happened, a positive value is returned when the function
 ends in a special state.
 
 0 - OK
@@ -55,7 +55,7 @@ ends in a special state.
 Parameters
 ~~~~~~~~~~
 Gravity dynamics codes have at least one specified parameter. Other parameters need
-to be specified on a per code bases. All parameters have to be accessed with functions following
+to be specified on a per code basis. All parameters have to be accessed with functions following
 the template of the ``get_eps`` and ``set_eps`` functions. A parameter access function may only
 retrieve or update the value of a single parameter. After all parameters have been set, the 
 ``initialize_code`` function should be called, this gives the code the opertunity prepare the
@@ -98,7 +98,7 @@ functions must get or set one scalar property (1 argument) or a vector property 
 
 Model evolution
 ~~~~~~~~~~~~~~~
-The gravitational dynamics code evolve the properties of the particles in time. The following functions
+The gravitational dynamics codes evolve the properties of the particles in time. The following functions
 are needed to control the evolution in the code.
 
 .. autoclass:: amuse.legacy.interface.gd.GravitationalDynamics

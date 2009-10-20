@@ -16,10 +16,10 @@ is handled by the next-level interfaces described in nextlevel_.
 
 Data Types
 ----------
-The exact size (in bytes) and type of the values send between the python 
+The exact size (in bytes) and type of the values sent between the python 
 layer and the legacy codes is very important. In this document we will 
 specify the type of each argument and return value. 
-Currently AMUSE supports 4 types, these described in the following table. 
+Currently AMUSE supports 4 types, these are described in the following table. 
 
 ========== ======== ================ ================
 Type name  Size     Fortran          C               
@@ -42,7 +42,7 @@ to valid memory locations.
    :members: example_function
         
 The error codes all have the same general form. Zero stands for no error, a negative
-value indicates some error happened, a positve value is returned when the function
+value indicates some error happened, a positive value is returned when the function
 ends in a special state.
 
 0 - OK
@@ -66,7 +66,7 @@ a specific code. The domain specific parameters are defined on the domain specif
 interfaces, when a legacy code supports the parameter it should implement the
 specified functions. Other parameters have to be accessed with functions following
 the template of the :meth:`~ amuse.legacy.interface.example.ExampleInterface.get_example_parameter` 
- and :meth:`~amuse.legacy.interface.example.ExampleInterface.set_example_parameter` functions. 
+and :meth:`~amuse.legacy.interface.example.ExampleInterface.set_example_parameter` functions. 
 
 .. autoclass:: amuse.legacy.interface.example.ExampleInterface
    :members: get_example_parameter, set_example_parameter
@@ -76,7 +76,7 @@ A function used to access (set or get) a parameter may only retrieve
 or update the value of a single parameter. Functions setting two or more
 parameters in one go are not supported by the next-level interfaces. After all 
 parameters have been set, the  :meth:`~amuse.legacy.interface.example.ExampleInterface.initialize_code`
-function should be called, this gives the code the opertunity prepare the model.
+function should be called, this gives the code the opportunity prepare the model.
 
 
 .. autoclass:: amuse.legacy.interface.example.ExampleInterface
@@ -92,7 +92,7 @@ and query the particles or gridpoints in the codes.
 When a code supports objects, the code is responsible for managing these objects. 
 The code needs to assign a unique index to a particle so that the particle can be 
 referred to in other function calls. This is a *major* difference with the 
-``MUSE`` code. Where the user of the code was reponsible for assigning unique ids
+``MUSE`` code. Where the user of the code was responsible for assigning unique ids
 to the particles. This change makes the implementation of the legacy simpler and
 allows the code to support creation of new objects during simulation. For example
 a hydrocode can add or delete gridpoints during the evolution of the model.
@@ -125,7 +125,7 @@ no pattern is defined for the functions in this category.
 Diagnostics
 ~~~~~~~~~~~
 The state of the code can be queried, before, during and after the model
-calculations. All the funtions in this category follow 
+calculations. All the functions in this category follow 
 the 'get_name' pattern. The state of code should not change during a function 
 call to a function in this category. The functions must either get
 a scalar property (1 argument) or a vector property (3 arguments).
