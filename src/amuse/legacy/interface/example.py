@@ -52,7 +52,7 @@ class ExampleInterface(object):
     def set_example_parameter():
         """
         Update the value of the parameter. The type of the new value argument
-        must be the same as the ''get_example_parameter'' function.
+        must be the same as the :meth:`get_example_parameter` function.
         """
         function = RemoteFunction()  
         function.addParameter('value', dtype='float64', direction=function.IN,

@@ -133,7 +133,7 @@ class GravitationalDynamics(object):
     @legacy_function
     def set_mass():
         """
-        Update the mass of a particle. Mass is a scalar property of a particle
+        Update the mass of a particle. Mass is a scalar property of a particle.
         """
         function = RemoteFunction()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
@@ -490,7 +490,7 @@ class GravitationalDynamics(object):
     @legacy_function
     def get_total_radius():
         """
-        Return the radius of the sphere centered on the center of mass that
+        Return the radius of the sphere, centered on the center of mass that
         contains all the particles. *get_size?*
         """
         function = RemoteFunction()  
