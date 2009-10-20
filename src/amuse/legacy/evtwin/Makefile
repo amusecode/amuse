@@ -9,7 +9,7 @@ OBJDIR=src/obj
 LIBTWINA=$(LIBDIR)/libtwin.a
 OBJ=$(OBJDIR)/twinmuse.o 
 OBJ_EVT=obj/twinmuse.o 
-
+MODDIR=src/modules
 EVTWINLIB=src/lib/libtwin.a
 
 all:    src/makefile.dep src/makefile.sys muse_worker
@@ -28,22 +28,29 @@ src/makefile.sys: src/Makefile
 	
 clean:
 	make -C src clean
-	/bin/rm -f *~ *.so *.o src/*.o src/sse muse_worker muse_worker.cc
+	/bin/rm -f *~ *.so *.o src/*.o src/sse 
+	/bin/rm -f muse_worker muse_worker.f90 twin_library.mod
+	/bin/rm -f muse_worker.cc  muse_worker_c muse_worker.h
 
 distclean:
 	make -C src distclean
 	/bin/rm -f *.pyc
 	
-muse_worker: muse_worker.cc muse_worker.h
+muse_worker_c: muse_worker_c.cc muse_worker.h
 	make -C src lib/libtwin.a $(OBJ_EVT) FORT=$(FORTRAN)
 	mpicxx $< $(OBJ) -o $@ -lgfortran $(EVTWINLIB)
+	
+muse_worker: muse_worker.f90	
+	make -C src lib/libtwin.a FORT=$(FORTRAN)
+	cp $(MODDIR)/twin_library.mod .
+	mpif90 $< -o $@ $(EVTWINLIB)
 
 
 muse_worker.h: muse_stellar_mpi.py
-	../../../../bin/create_c_header.py muse_stellar_mpi.py EVtwin > $@
+	../../../../bin/create_c_header.py muse_stellar_mpi.py EVtwinC > $@
 
-muse_worker.cc: muse_stellar_mpi.py
-	../../../../bin/create_c_worker.py muse_stellar_mpi.py EVtwin > $@
+muse_worker_c.cc: muse_stellar_mpi.py
+	../../../../bin/create_c_worker.py muse_stellar_mpi.py EVtwinC > $@
 
 muse_worker.f90: muse_stellar_mpi.py
 	../../../../bin/create_f90_worker.py muse_stellar_mpi.py EVtwin > $@
