@@ -9,7 +9,7 @@ from amuse.legacy.support.create_fortran import *
 class TestLegacyFunction(unittest.TestCase):
     @legacy_function
     def get_time_step():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
         function.addParameter('parameter2', dtype='d', direction=function.IN)
@@ -17,7 +17,7 @@ class TestLegacyFunction(unittest.TestCase):
         return function
     @legacy_function
     def interleave_ints_and_doubles():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.id = 2
         function.addParameter('parameter1', dtype='i', direction=function.IN)
         function.addParameter('parameter2', dtype='d', direction=function.IN)
@@ -29,7 +29,7 @@ class TestLegacyFunction(unittest.TestCase):
     
     @legacy_function
     def send_string():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.id = 3
         function.addParameter('parameter1', dtype='string', direction=function.IN)
         return function
@@ -121,7 +121,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeACStringOfALegacyFunctionSpecification
     
     def test1(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"     
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -136,7 +136,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         self.assertEquals(string_no_spaces, 'case1:test_one(ints_in[0],doubles_in[0],doubles_in[1]);break;')
     
     def test2(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -148,7 +148,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         self.assertEquals(string_no_spaces, 'case1:ints_out[0]=test_one(ints_in[0]);reply_header.number_of_ints=1;break;')
     
     def test3(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -162,7 +162,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
     
    
     def test4(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -177,7 +177,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
     
   
     def test5(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -191,7 +191,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
 
 
     def test6(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -205,7 +205,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         self.assertEquals(string_no_spaces, 'case1:doubles_out[0]=test_one(ints_in[0],&ints_in[1],&doubles_in[0]);ints_out[0]=ints_in[1];doubles_out[1]=doubles_in[0];reply_header.number_of_ints=1;reply_header.number_of_doubles=2;break;')
            
     def test7(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='string', direction=function.IN)
@@ -217,7 +217,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         
 
     def test8(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -250,7 +250,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
         
 
     def test9(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.can_handle_array = True
@@ -281,7 +281,7 @@ class TestMakeACHeaderDefinitionStringOfALegacyFunctionSpecification(unittest.Te
     _class_to_test = MakeACHeaderDefinitionStringOfALegacyFunctionSpecification
     
     def test1(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"     
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -295,7 +295,7 @@ class TestMakeACHeaderDefinitionStringOfALegacyFunctionSpecification(unittest.Te
         self.assertEquals(string, 'void test_one(int parameter1, double parameter2, double name);')
         
     def test2(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -306,7 +306,7 @@ class TestMakeACHeaderDefinitionStringOfALegacyFunctionSpecification(unittest.Te
         self.assertEquals(string, 'int test_one(int parameter1);')
     
     def test3(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_with_out"   
         function.id = 1
         function.addParameter('parameter1', dtype='int32', direction=function.IN)
@@ -376,7 +376,7 @@ class TestMakeACStringOfAClassWithLegacyFunctions(unittest.TestCase):
     
     @legacy_function
     def get_time_step():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
         function.addParameter('parameter2', dtype='d', direction=function.IN)
@@ -415,7 +415,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
     _class_to_test = MakeAFortranStringOfALegacyFunctionSpecification
     
     def test1(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"     
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -430,7 +430,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         self.assertEquals(string_no_spaces, 'CASE(1)CALLtest_one(&integers_in(1),&doubles_in(1),&doubles_in(2)&)')
         
     def test2(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -445,7 +445,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         
         
     def test3(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -460,7 +460,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
 
     def test4(self):
         
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -485,7 +485,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         self.assertEquals(string_no_spaces, 'CASE(1)\nCALLtest_one(&\nintegers_in(0),&\nintegers_in(1),&\ndoubles_in(0)&\n)\nintegers_out(0)=integers_in(1)\ndoubles_out(0)=doubles_in(0)\nnumber_of_integers_out=1\nnumber_of_doubles_out=1\n')
     
     def test6(self):
-        function = RemoteFunction()      
+        function = LegacyFunctionSpecification()      
         function.name = "test_one"   
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
@@ -520,7 +520,7 @@ class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
     
     @legacy_function
     def get_time_step():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.id = 1
         function.addParameter('parameter1', dtype='i', direction=function.IN)
         function.addParameter('parameter2', dtype='d', direction=function.IN)
@@ -530,7 +530,7 @@ class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
     
     @legacy_function
     def get_number():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.id = 2
         function.result_type = 'i'
         return function

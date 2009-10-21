@@ -2,7 +2,7 @@
 Example function for documentation purposess
 """
 
-from amuse.legacy.support.core import legacy_function, RemoteFunction
+from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 
 class ExampleInterface(object):
     @legacy_function   
@@ -11,7 +11,7 @@ class ExampleInterface(object):
         Example template for the other functions defined in this 
         specification. All functions should follow this example..
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('input', dtype='int32', direction=function.IN
             , description="Typical input parameter, the argument is passed by value to the function.")
         function.addParameter('output', dtype='float64', direction=function.OUT
@@ -34,7 +34,7 @@ class ExampleInterface(object):
         Retrieve the current value of the parameter. Note, values can be any
         of the supported types.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('value', dtype='float64', direction=function.OUT,
             description = "The current value of the parameter.")
         function.result_type = 'int32'
@@ -54,7 +54,7 @@ class ExampleInterface(object):
         Update the value of the parameter. The type of the new value argument
         must be the same as the :meth:`get_example_parameter` function.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('value', dtype='float64', direction=function.IN,
             description = "The new value of the parameter.")
         function.result_type = 'int32'
@@ -73,7 +73,7 @@ class ExampleInterface(object):
         Let the code perform initialization actions after all parameters have been set.
         Should be called once per running code instance.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK

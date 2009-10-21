@@ -216,15 +216,15 @@ class legacy_global(object):
         
     @late
     def set_specification(self):
-        result = RemoteFunction()
+        result = LegacyFunctionSpecification()
         result.id = self.id
         result.name = self.name
-        result.addParameter('value', dtype=self.datatype, direction=RemoteFunction.IN)
+        result.addParameter('value', dtype=self.datatype, direction=LegacyFunctionSpecification.IN)
         return result
         
     @late
     def get_specification(self):
-        result = RemoteFunction()
+        result = LegacyFunctionSpecification()
         result.id = self.id
         result.name = self.name
         result.result_type = self.datatype
@@ -241,15 +241,15 @@ class Parameter(object):
         self.datatype = _typecode_to_datatype(dtype)
         
     def is_input(self):
-        return ( self.direction == RemoteFunction.IN 
-            or self.direction == RemoteFunction.INOUT)
+        return ( self.direction == LegacyFunctionSpecification.IN 
+            or self.direction == LegacyFunctionSpecification.INOUT)
             
     
     def is_output(self):
-        return ( self.direction == RemoteFunction.OUT 
-            or self.direction == RemoteFunction.INOUT)
+        return ( self.direction == LegacyFunctionSpecification.OUT 
+            or self.direction == LegacyFunctionSpecification.INOUT)
                     
-class RemoteFunction(object):
+class LegacyFunctionSpecification(object):
     IN = object()
     OUT = object()
     INOUT = object()
@@ -531,7 +531,7 @@ class LegacyInterface(object):
         
     @legacy_function
     def _stop_worker():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.id = 0
         return function   
 

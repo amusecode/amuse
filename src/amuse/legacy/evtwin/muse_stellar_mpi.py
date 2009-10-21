@@ -12,40 +12,40 @@ class EVtwinC(LegacyInterface):
 
     @legacy_function   
     def wrapper_swap_in_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         return function
 
 
     @legacy_function   
     def wrapper_swap_out_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         return function
 
 
     @legacy_function   
     def wrapper_select_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         return function
 
 
     @legacy_function   
     def wrapper_flush_star():
-        return RemoteFunction()        
+        return LegacyFunctionSpecification()        
         
     
     @legacy_function   
     def wrapper_get_luminosity():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def wrapper_get_mass():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
@@ -53,42 +53,42 @@ class EVtwinC(LegacyInterface):
     
     @legacy_function   
     def wrapper_get_radius():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def wrapper_get_temperature():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def wrapper_get_age():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def wrapper_get_stellar_type():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function
         
     @legacy_function   
     def wrapper_get_stellar_type():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function
         
     @legacy_function   
     def wrapper_load_zams_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('mass', dtype='d', direction=function.IN)
         function.addParameter('age_tag', dtype='d', direction=function.IN)
         function.result_type = 'i'
@@ -96,26 +96,26 @@ class EVtwinC(LegacyInterface):
         
     @legacy_function   
     def wrapper_twin_evolve():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.result_type = 'i'
         return function
     
     @legacy_function
     def wrapper_set_init_dat_name():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.addParameter('new_init_dat_name', dtype='string', direction=function.IN)
         return function
         
     @legacy_function
     def wrapper_set_init_run_name():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.addParameter('new_init_run_name', dtype='string', direction=function.IN)
         return function
 
         
     @legacy_function
     def wrapper_initialise_twin():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.addParameter('path', dtype='string', direction=function.IN)
         function.addParameter('nstars', dtype='i', direction=function.IN)
         function.addParameter('z', dtype='d', direction=function.IN)
@@ -131,40 +131,40 @@ class EVtwin(LegacyInterface):
 
     @legacy_function   
     def swap_in_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         return function
 
 
     @legacy_function   
     def swap_out_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         return function
 
 
     @legacy_function   
     def select_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         return function
 
 
     @legacy_function   
     def flush_star():
-        return RemoteFunction()        
+        return LegacyFunctionSpecification()        
         
     
     @legacy_function   
     def get_luminosity():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def get_mass():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
@@ -172,42 +172,42 @@ class EVtwin(LegacyInterface):
     
     @legacy_function   
     def get_radius():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def get_temperature():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def get_age():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
         
     @legacy_function   
     def get_stellar_type():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function
         
     @legacy_function   
     def get_stellar_type():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function
         
     @legacy_function   
     def load_zams_star():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('mass', dtype='d', direction=function.IN)
         function.addParameter('age_tag', dtype='d', direction=function.IN)
         function.result_type = 'i'
@@ -215,26 +215,26 @@ class EVtwin(LegacyInterface):
         
     @legacy_function   
     def twin_evolve():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.result_type = 'i'
         return function
     
     @legacy_function
     def set_init_dat_name():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.addParameter('new_init_dat_name', dtype='string', direction=function.IN)
         return function
         
     @legacy_function
     def set_init_run_name():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.addParameter('new_init_run_name', dtype='string', direction=function.IN)
         return function
 
         
     @legacy_function
     def initialise_twin():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.addParameter('path', dtype='string', direction=function.IN)
         function.addParameter('nstars', dtype='i', direction=function.IN)
         function.addParameter('z', dtype='string', direction=function.IN)

@@ -38,32 +38,32 @@ class PhiGRAPE(LegacyInterface):
 
     @legacy_function   
     def setup_module():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
         
     @legacy_function      
     def cleanup_module():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
     
     @legacy_function    
     def initialize_particles():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
 
     @legacy_function  
     def reinitialize_particles():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
                 
     @legacy_function    
     def add_particle():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
@@ -73,7 +73,7 @@ class PhiGRAPE(LegacyInterface):
 
     @legacy_function    
     def evolve():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('time_end', dtype='d', direction=function.IN)
         function.addParameter('synchronize', dtype='i', direction=function.IN)
         function.result_type = 'i'
@@ -81,20 +81,20 @@ class PhiGRAPE(LegacyInterface):
         
     @legacy_function   
     def get_number():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def get_eps2():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function;
 
              
     @legacy_function    
     def get_state():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
@@ -102,7 +102,7 @@ class PhiGRAPE(LegacyInterface):
 
     @legacy_function      
     def get_potential():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'd'
         return function
@@ -110,7 +110,7 @@ class PhiGRAPE(LegacyInterface):
         
     @legacy_function
     def set_mass():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
@@ -118,70 +118,70 @@ class PhiGRAPE(LegacyInterface):
 
     @legacy_function      
     def get_time():
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.result_type = 'd'
         return function
 
     @legacy_function      
     def get_time_step():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
 
     @legacy_function      
     def set_eps():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('eps2', dtype='d', direction=function.IN)
         return function
 
     @legacy_function      
     def set_eta():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('etas', dtype='d', direction=function.IN)
         function.addParameter('eta', dtype='d', direction=function.IN)
         return function
 
     @legacy_function      
     def set_eta_s():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('value', dtype='d', direction=function.IN)
         return function
 
     @legacy_function      
     def set_eta1():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('value', dtype='d', direction=function.IN)
         return function
 
 
     @legacy_function      
     def get_eta():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
         
     @legacy_function      
     def get_eta_s():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
 
 
     @legacy_function      
     def get_kinetic_energy():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
 
     @legacy_function      
     def get_potential_energy():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
 
     @legacy_function      
     def get_energy_error():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
 
@@ -193,14 +193,14 @@ class PhiGRAPE(LegacyInterface):
 
     @legacy_function      
     def find_colliding_secondary():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id1', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function
 
     @legacy_function          
     def remove_particle():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function    

@@ -69,27 +69,27 @@ class BHTree(LegacyInterface):
 
     @legacy_function   
     def setup_module():
-        function = RemoteFunction() 
+        function = LegacyFunctionSpecification() 
         function.result_type = 'i'
         return function
     
     
     @legacy_function      
     def cleanup_module():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
     
     @legacy_function    
     def initialize_particles():
-        function = RemoteFunction() 
+        function = LegacyFunctionSpecification() 
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
         
     @legacy_function    
     def add_particle():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
@@ -99,7 +99,7 @@ class BHTree(LegacyInterface):
         
     @legacy_function    
     def get_state():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('id_out', dtype='i', direction=function.OUT)
@@ -110,7 +110,7 @@ class BHTree(LegacyInterface):
         
     @legacy_function    
     def evolve():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('time_end', dtype='d', direction=function.IN)
         function.addParameter('synchronize', dtype='i', direction=function.IN)
         function.result_type = 'i'
@@ -118,19 +118,19 @@ class BHTree(LegacyInterface):
         
     @legacy_function  
     def reinitialize_particles():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
         
     @legacy_function   
     def get_number():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function;
      
     @legacy_function
     def set_mass():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
@@ -138,19 +138,19 @@ class BHTree(LegacyInterface):
     
     @legacy_function
     def get_time():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function;
     
     @legacy_function      
     def get_kinetic_energy():
-        function = RemoteFunction() 
+        function = LegacyFunctionSpecification() 
         function.result_type = 'd'
         return function
 
     @legacy_function      
     def get_potential_energy():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
          

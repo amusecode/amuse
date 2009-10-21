@@ -12,6 +12,6 @@ class PhiGRAPE(PhiGRAPE_basic):
         
     @legacy_function
     def start_viewer():
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         return function
 

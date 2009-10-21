@@ -4,7 +4,7 @@ from legacy_support import TestWithMPI
 from amuse.legacy.interface import gd
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface import create_definition
-from amuse.legacy.support.core import RemoteFunction
+from amuse.legacy.support.core import LegacyFunctionSpecification
 
 class TestGravitationalDynamics(TestWithMPI):
     def test1(self):
@@ -15,7 +15,7 @@ class TestGravitationalDynamics(TestWithMPI):
         self.assertTrue(specification.description.startswith("Define a new particle"))
         
     def test2(self):
-        specification = RemoteFunction()
+        specification = LegacyFunctionSpecification()
         specification.name ='test'
         specification.addParameter('one','d',specification.IN, 'first parameter')
         specification.description = 'Example function'
@@ -31,7 +31,7 @@ class TestGravitationalDynamics(TestWithMPI):
 
         
     def test3(self):
-        specification = RemoteFunction()
+        specification = LegacyFunctionSpecification()
         specification.name ='test'
         specification.addParameter('one','d',specification.IN, 'first parameter')
         specification.result_type = 'i'
@@ -48,7 +48,7 @@ class TestGravitationalDynamics(TestWithMPI):
     
         
     def test4(self):
-        specification = RemoteFunction()
+        specification = LegacyFunctionSpecification()
         specification.name ='test'
         specification.addParameter('one','d',specification.IN, 'first parameter')
         specification.result_type = 'i'

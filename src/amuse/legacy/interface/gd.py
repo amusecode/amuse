@@ -2,7 +2,7 @@
 Stellar Dynamics Interface Defintion
 """
 
-from amuse.legacy.support.core import legacy_function, RemoteFunction
+from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 
 class GravitationalDynamics(object):
 
@@ -13,7 +13,7 @@ class GravitationalDynamics(object):
         mass, radius, position and velocity. This function returns an index that can be used to refer
         to this particle.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT
             , description = 
             """
@@ -44,7 +44,7 @@ class GravitationalDynamics(object):
         no longer part of the model evolution. It is up to the code if the index will be reused. 
         This function is optional.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to be removed. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.result_type = 'int32'
@@ -62,7 +62,7 @@ class GravitationalDynamics(object):
         Retrieve the current state of a particle. The *minimal* information of a stellar 
         dynamics particle (mass, radius, position and velocity) is returned.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
@@ -88,7 +88,7 @@ class GravitationalDynamics(object):
         Update the current state of a particle. The *minimal* information of a stellar 
         dynamics particle (mass, radius, position and velocity) is updated.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
@@ -117,7 +117,7 @@ class GravitationalDynamics(object):
         Retrieve the mass of a particle. Mass is a scalar property of a particle,
         this function has one OUT argument.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
@@ -135,7 +135,7 @@ class GravitationalDynamics(object):
         """
         Update the mass of a particle. Mass is a scalar property of a particle.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
@@ -156,7 +156,7 @@ class GravitationalDynamics(object):
         Retrieve the position vector of a particle. Position is a vector property,
         this function has 3 OUT arguments.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
@@ -176,7 +176,7 @@ class GravitationalDynamics(object):
         """
         Update the position of a particle.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
@@ -199,7 +199,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the acceleration vector of a particle. Second time derivative of the position.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
@@ -222,7 +222,7 @@ class GravitationalDynamics(object):
         *Should be removed if physaccily unsound*
         *Maybe moved to snapshot support functionality*
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
@@ -245,7 +245,7 @@ class GravitationalDynamics(object):
         Retrieve the potential vector of a particle. 
         *Need better description of use and relation to get_acceleration and get_gravity*
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
@@ -266,7 +266,7 @@ class GravitationalDynamics(object):
         """
         Evolve the model until the given time or until a collision happens.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('time', dtype='float64', direction=function.IN,
             description = "Model time to evolve the code to. The model will be evolved until this time is reached exactly or just before")
         function.addParameter('collision_flag', dtype='float64', direction=function.IN, 
@@ -288,7 +288,7 @@ class GravitationalDynamics(object):
         Let the code perform initialization actions after all particles have loaded
         in the model. Called before the first evolve call and after the last new_particle call.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -303,7 +303,7 @@ class GravitationalDynamics(object):
         """
         Let the code perform initialization actions after all parameters have been set.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -319,7 +319,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the current value of the squared smoothing parameter.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('epsilon_squared', dtype='float64', direction=function.OUT,
             description = "The current value of the smooting parameter, squared.")
         function.result_type = 'int32'
@@ -337,7 +337,7 @@ class GravitationalDynamics(object):
         """
         Update the value of the squared smoothing parameter.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('epsilon_squared', dtype='float64', direction=function.IN,
             description = "The new value of the smooting parameter, squared.")
         function.result_type = 'int32'
@@ -356,7 +356,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the current kinetic energy of the model
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('kinetic_energy', dtype='float64', direction=function.OUT,
             description = "The kinetic energy of the model")
         function.result_type = 'int32'
@@ -373,7 +373,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the current potential energy of the model
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('potential_energy', dtype='float64', direction=function.OUT,
             description = "The potential energy of the model")
         function.result_type = 'int32'
@@ -391,7 +391,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the two indices of the colliding particles
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_particle1', dtype='int32', direction=function.OUT,
             description = "Index of the first colliding partner")
         function.addParameter('index_of_particle2', dtype='int32', direction=function.OUT,
@@ -412,7 +412,7 @@ class GravitationalDynamics(object):
         in the evolve code. Or, when a collision was detected, it will be the
         model time of the collision.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('time', dtype='float64', direction=function.OUT,
             description = "The current model time")
         function.result_type = 'int32'
@@ -431,7 +431,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the sum of the masses of all particles.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('mass', dtype='float64', direction=function.OUT,
             description = "The total mass of the model")
         function.result_type = 'int32'
@@ -448,7 +448,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the center of mass (a point in space) of all particles.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('x', dtype='float64', direction=function.OUT,
             description = "The center of mass of the model")
         function.addParameter('y', dtype='float64', direction=function.OUT,
@@ -470,7 +470,7 @@ class GravitationalDynamics(object):
         Retrieve the velocity of the center of mass of all particles. This 
         velocity is mass weighted mean of the velocity of all particles.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('vx', dtype='float64', direction=function.OUT,
             description = "The mean velocity of the model")
         function.addParameter('vy', dtype='float64', direction=function.OUT,
@@ -493,7 +493,7 @@ class GravitationalDynamics(object):
         Return the radius of the sphere, centered on the center of mass that
         contains all the particles. *get_size?*
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('radius', dtype='float64', direction=function.OUT,
             description = "The maximum distance from a star to the center of mass of the model")
         function.result_type = 'int32'
@@ -512,7 +512,7 @@ class GravitationalDynamics(object):
         """
         Determine the gravitational force on a given point
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('x', dtype='int32', direction=function.IN,
             description = "The position vector of the point")
         function.addParameter('y', dtype='int32', direction=function.IN,
@@ -541,7 +541,7 @@ class GravitationalDynamics(object):
         """
         Retrieve the total number of particles defined in the code
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('number_of_particles', dtype='int32', direction=function.OUT,
             description = "Count of the particles in the code")
         function.result_type = 'int32'
@@ -567,7 +567,7 @@ class GravitationalDynamics(object):
                 print mass
                 error, current_index = instance.get_index_of_next_particle(current_index)
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT,
             description = "Index of the first particle")
         function.result_type = 'int32'
@@ -585,7 +585,7 @@ class GravitationalDynamics(object):
         Retrieve the index of the particle following the provided index. The
         iteration direction is determined by the code.  
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle")
         function.addParameter('index_of_the_next_particle', dtype='int32', direction=function.OUT,

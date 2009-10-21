@@ -2,7 +2,7 @@
 Stellar Dynamics Interface Defintion
 """
 
-from amuse.legacy.support.core import legacy_function, RemoteFunction
+from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 
 class StellarEvolution(object): 
 
@@ -12,7 +12,7 @@ class StellarEvolution(object):
         """
         Remove the star with the given index from the code.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to remove")
         function.result_type = 'int32'
@@ -31,7 +31,7 @@ class StellarEvolution(object):
         """
         Retrieve the current luminosity of the star.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('luminosity', dtype='float64', direction=function.OUT
@@ -50,7 +50,7 @@ class StellarEvolution(object):
         """
         Retrieve the current mass of the star.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('mass', dtype='float64', direction=function.OUT
@@ -70,7 +70,7 @@ class StellarEvolution(object):
         """
         Retrieve the current radius of the star.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('radius', dtype='float64', direction=function.OUT
@@ -90,7 +90,7 @@ class StellarEvolution(object):
         """
         Retrieve the current temperature of the star.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('temperature', dtype='float64', direction=function.OUT
@@ -109,7 +109,7 @@ class StellarEvolution(object):
         """
         Retrieve the current age of the star.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('age', dtype='float64', direction=function.OUT
@@ -129,7 +129,7 @@ class StellarEvolution(object):
         Retrieve the type of the star. The meaning of the stellar type is defined
         by the code. (Difference between stellar type and type must be explained)
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the type of")
         function.addParameter('type', dtype='int32', direction=function.OUT
@@ -149,7 +149,7 @@ class StellarEvolution(object):
         Retrieve the stellar type of the star. The meaning of the stellar type is defined
         by the code. (Difference between stellar type and type must be explained)
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the stellar type of")
         function.addParameter('stellar_type', dtype='int32', direction=function.OUT
@@ -168,7 +168,7 @@ class StellarEvolution(object):
         """
         Define a new star in the code. The star will start with the given mass.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
             , description="The new index for the star. This index can be used to refer to this star in other functions")
         function.addParameter('mass', dtype='float64', direction=function.IN
@@ -191,7 +191,7 @@ class StellarEvolution(object):
         be evolved after this function is finished. See the ``get_age`` function for retrieving
         the current age of the star.
         """
-        function = RemoteFunction()
+        function = LegacyFunctionSpecification()
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star, as returned by the new_zams_star function")
         function.result_type = 'int32'
@@ -209,7 +209,7 @@ class StellarEvolution(object):
         """
         Let the code perform initialization actions after all parameters have been set.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -226,7 +226,7 @@ class StellarEvolution(object):
         Retrieve the current value of the metallicity. The range of metallicities
         one can simulate will be dependent on the code.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('metallicity', dtype='float64', direction=function.OUT,
             description = "The current value of the metallicity")
         function.result_type = 'int32'
@@ -244,7 +244,7 @@ class StellarEvolution(object):
         """
         Update the value of the metallicity.
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.addParameter('metallicity', dtype='float64', direction=function.IN,
             description = "The new value of the metallicity.")
         function.result_type = 'int32'
@@ -264,7 +264,7 @@ class StellarEvolution(object):
         code needs this functionality. And it may be possible to create stars after this
         function has been called
         """
-        function = RemoteFunction()  
+        function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK

@@ -1,5 +1,5 @@
 from amuse.support.core import late
-from amuse.legacy.support.core import RemoteFunction
+from amuse.legacy.support.core import LegacyFunctionSpecification
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
 from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
@@ -73,7 +73,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
             else:
                 self.out + ' ,'
                 
-            if parameter.direction == RemoteFunction.IN:
+            if parameter.direction == LegacyFunctionSpecification.IN:
                 if parameter.datatype == 'string':
                     self.out.n() + 'characters + ' 
                     self.out + '( ' + self.index_string(parameter.input_index) + '- 1 < 0 ? 0 :' 
@@ -83,10 +83,10 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
                 else:    
                     self.out.n() + spec.input_var_name
                     self.out + '[' + self.index_string(parameter.input_index) + ']'
-            if parameter.direction == RemoteFunction.INOUT:
+            if parameter.direction == LegacyFunctionSpecification.INOUT:
                 self.out.n() + '&' + spec.input_var_name 
                 self.out + '[' + self.index_string(parameter.input_index) + ']'
-            elif parameter.direction == RemoteFunction.OUT:
+            elif parameter.direction == LegacyFunctionSpecification.OUT:
                 self.out.n() + '&' + spec.output_var_name
                 self.out + '[' + self.index_string(parameter.output_index) + ']'
     
@@ -96,7 +96,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
         
-            if parameter.direction == RemoteFunction.INOUT:
+            if parameter.direction == LegacyFunctionSpecification.INOUT:
                 self.out.n() + spec.output_var_name
                 self.out + '[' + self.index_string(parameter.output_index) + ']'
                 self.out + ' = '
