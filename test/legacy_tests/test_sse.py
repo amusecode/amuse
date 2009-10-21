@@ -221,7 +221,7 @@ class TestSSE(TestWithMPI):
             120.9 | units.Myr,
             121.5 | units.Myr
         )
-        for result, expected in map(None, results, times):
+        for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
             
         masses = ( 
@@ -232,7 +232,7 @@ class TestSSE(TestWithMPI):
             4.895 | units.MSun,
             0.997 | units.MSun
         )
-        for result, expected in map(None, results, masses):
+        for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
          
         del sse
