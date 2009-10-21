@@ -9,5 +9,6 @@ Contents:
    introduction.txt
    stellar_dynamics_interface_specification.txt
    stellar_evolution_interface_specification.txt
+   message-protocol.txt
    
 

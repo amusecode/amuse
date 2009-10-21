@@ -1,0 +1,211 @@
+================================================
+Message protocol between python and legacy codes
+================================================
+
+Introduction
+------------
+
+The implementation of the interfaces of the legacy codes is based
+on sending messages. These messages are encoded as MPI primitive datatypes
+and send to the legacy codes using MPI. In this section we will describe the
+overall operation of the interface implementation and specify the message
+format.
+
+Overall Operation
+-----------------
+The method call interface is a request/response protocol. For every method
+call a message is send to the legacy code. This message is decoded 
+by the legacy code into a function-id and arguments. The legacy code will call 
+the function with the function-id using the decoded arguments. After the
+function completes a result message is returned containing all the
+results and the function-id of the called function. This process is depicted
+in the following table.
+
+============================= === =============
+Python script                 ..  Legacy Code
+(client)                      ..  (server)
+============================= === =============
+start of function call
+encode arguments
+send MPI messages              >  
+..                                receive MPI messages
+..                                decode messages
+..                                handle (setting data, evolving the solution)
+..                                encode response messages
+..                             <  send response messages
+receive MPI response messages 
+decode response message
+return result to script
+end of function call
+============================= === =============
+
+
+Message format
+--------------
+Every message sent between the python script and a legacy code has the
+same format. This format consists of a header and zero or more
+content arrays. The header contains the function-id, 
+the number of calls to the same function and 
+the number of values (arguments or results) per primitive type for
+one function call. Every content array contains the sent values of 
+a primitive datatype. For example, a content array with 
+all the integer values in the arguments of the function. 
+
+.. code-block:raw
+    HEADER
+        function id
+        number of calls
+        number of values of type 1
+        ...
+        number of values of type n
+
+    CONTENT-ARRAY 1
+        int 1
+        ...
+        int m
+    ...
+    CONTENT-ARRAY n
+        double 1
+        ...
+        double m
+
+Message header
+~~~~~~~~~~~~~~
+The header is sent with a MPI broadcast message. The header consists
+of an array of ``n + 2`` integers. ``1`` integer to specify the function, ``1`` 
+integer to specify the number of calls and ``n`` integers to 
+specify the number of arguments of each type. Version 0.2 of the
+interface contains support for 4 types (float64, int32, float32 and string)
+The header is a 5 integer long array, the specification of each integer is given
+in the following table:
+
+*Message header*
+
+=========  ===============
+Position   Description
+=========  ===============
+0          function-id
+1          number of calls
+2          number of arguments/results of type float64
+3          number of arguments/results of type int32
+4          number of arguments/results of type float32
+5          number of arguments/results of type string
+=========  ===============
+
+
+Content array
+~~~~~~~~~~~~~
+The arguments are sent with a MPI broadcast message, the results are
+sent with a MPI send message. The arguments or results are sent when
+1 or more values are needed for a function. If no values are needed for 
+a type, no message is sent for that type.
+
+Encoding of the content arrays
+******************************
+To sent the arguments or results values of a function, the values must
+be encoded in arrays (each of a different primitive type).
+
+The arguments of a function are normally not sorted by type. The first argument
+may be an integer, the second a double and the last an integer. The message 
+format does specify a fixed sorting, all float64 values are sent first, then 
+the integers, then the other types. To sent the arguments or result, the
+values are encoded following a fixed scheme.
+
+The arguments are encoded by extracting all values of a primitive type in the 
+order they occur in the function definition. This is done for every type. For 
+example when the first argument of a function is an integer, the second
+a double and the last an integer, two content arrays will be sent.
+One for the two integers and one for the single double. 
+The integer array has at the first position the first argument 
+and at the second position the last argument. The double array has at the
+first position the second double.
+
+
+For this function::
+
+  int example_function(int id, double x, int type)
+
+Two content arrays are sent::
+
+  int[id, type] 
+         (the first argument and the last argument 
+          to the method are integers)
+          
+  double[x] 
+         (the second, argument to the method is a double)
+
+The arguments are encoded in order, going from left to right in C or
+fortran function definition. A content array is as long as the number of arguments 
+or results of a primitive type, the specification of member in a content array
+is given in the following table:
+
+*Content Array*
+
+=========  ===============
+Position   Description
+=========  ===============
+0          first argument of type X
+1          second argument of type X
+...
+n          last argument of type X
+=========  ===============
+
+
+
+Multiple calls to the same function
+***********************************
+The MPI messaging has a significant overhead. To reduce this overhead
+the arguments and results of a number of calls to the same method
+can be encoded in one set of messages (header and content-arrays).
+
+Creating arrays of values:
+    
+    x = [i for i in range(1000)]
+    y = [i * 2 for i in range(1000)]
+    z = [i * 3 for i in range(1000)]
+
+Calling the same function multiple times with different values for the arguments::
+
+    for i in range(100):
+        instance.add_position(x[i], y[i], z[i])
+
+Can be converted to calling the function once with an array of arguments::
+    
+    instance.add_position(x, y, z)
+
+The encoding of the arguments for the call with arrays
+follows the same strategy as the call with single value. The values of
+the first argument are encoded first, the values of the second found argument 
+of a type are encoded second etc. 
+
+*Content Array format, when message is encoded for multiple calls to the same function*
+
+=========  ===============
+Position   Description
+=========  ===============
+0          first value in the array of the first argument of type X
+1          second value in the array of the first argument of type X
+...
+m - 1      last value in the array of the first argument of type X
+m          first value in the array of the second argument of type X
+m + 1      second value in the array of the second argument of type X
+...
+n * m      last value in the array of the last argument of type X
+=========  ===============
+
+To get the value of the Mth value of the Nth argument of a type (starting 
+to count at zero, n = 0 is the first argument, m = 0 is the first value of 
+the argument)::
+
+    value = array[ n * len + m ]
+    
+This encoding degrades into the case for the single call when len = 1 (m = 0, as
+the array contains only one value)::
+
+    value = array[ n ]
+
+
+Examples
+--------
+
+

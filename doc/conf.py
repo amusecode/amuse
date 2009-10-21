@@ -181,6 +181,8 @@ htmlhelp_basename = 'AMUSEdoc'
 latex_documents = [
   ('index', 'AMUSE.tex', u'AMUSE Documentation',
    u'The AMUSE Team', 'manual'),
+  ('reference/index', 'reference-doc.tex', u'Reference Documentation',
+   u'The AMUSE Team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
