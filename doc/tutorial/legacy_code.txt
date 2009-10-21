@@ -173,7 +173,7 @@ the MyCode class.
              
         @legacy_function
         def sum():
-            function = RemoteFunction()
+            function = LegacyFunctionSpecification()
             function.addParameter('x', 'd', function.IN)
             function.addParameter('y', 'd', function.IN)
             function.result_type = 'd'
@@ -184,7 +184,7 @@ decorator will convert the following function into a specification that
 can be used to call the function and generate the C++ code. On line 10
 we give the function the same name as the function in our code. This
 function may not have any arguments. On line 11 we create an instance of
-the "RemoteFunction" class, this class has methods to specify the intercase.
+the "LegacyFunctionSpecification" class, this class has methods to specify the intercase.
 On line 12 and 13 we specify the parameters for out functions. Parameters have
 a name, type and direction. The type is specified with a single character
 *type code*. The following type codes are defined:
@@ -242,7 +242,7 @@ We can complete out interface by defining the ``divide`` function.
              
         @legacy_function
         def sum():
-            function = RemoteFunction()
+            function = LegacyFunctionSpecification()
             function.addParameter('x', 'd', function.IN)
             function.addParameter('y', 'd', function.IN)
             function.result_type = 'd'
@@ -250,7 +250,7 @@ We can complete out interface by defining the ``divide`` function.
 
         @legacy_function
         def divide():
-            function = RemoteFunction()
+            function = LegacyFunctionSpecification()
             function.addParameter('x', 'd', function.IN)
             function.addParameter('y', 'd', function.IN)
             function.addParameter('result', 'd', function.OUT)
@@ -312,7 +312,7 @@ to handle arrays.
              
         @legacy_function
         def sum():
-            function = RemoteFunction()
+            function = LegacyFunctionSpecification()
             function.addParameter('x', 'd', function.IN)
             function.addParameter('y', 'd', function.IN)
             function.result_type = 'd'
