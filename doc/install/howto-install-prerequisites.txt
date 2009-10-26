@@ -249,7 +249,9 @@ To install these, do::
     > sudo apt-get install gfortran g++
 
 Ubuntu does not provide installation packages for MPICH2. You can 
-build MPICH2 by hand, or install openmpi from the Ubuntu packages.
+build MPICH2 by hand (a good HOWTO can be found at 
+https://wiki.ubuntu.com/MpichCluster), or install openmpi from the
+Ubuntu packages.
 All packages, except ''mpi4py'' and ''h5py'' can be installed 
 with the following command 
 (this will install openmpi, hdf and python packages)::
