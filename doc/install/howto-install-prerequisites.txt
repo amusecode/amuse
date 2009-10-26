@@ -12,10 +12,10 @@ These are the packages AMUSE needs:
 
 * Python (version >= 2.6)
 * Numpy (version >= 1.3.0)
-* HDF (version >= 1.8.3)
+* HDF (version 1.6.5 - 1.8.3)
 * h5py (version >= 1.2.0)
 * MPI (OpenMPI or MPICH2)
-* mpi4py (version >= 1.2)
+* mpi4py (version >= 1.0)
 * nose (version >= 0.11)
 
 
@@ -130,7 +130,7 @@ To check if the HDF library is installed on your system do:
 	> h5ls -V
 	h5ls: Version 1.8.3
 
-If this fails with an error or a version before 1.8.3 you 
+If this fails with an error or a version before 1.6.5 you 
 need to install the HDF library. 
 You can download HDF from http://www.hdfgroup.org/. 
 
@@ -191,6 +191,18 @@ If this fails with an error you need to install MPICH2 or OpenMPI
 support. Most examples in the dopcumentation assume OpenMPI.
 You can download OpenMPI from http://www.open-mpi.org/.
 
+MPI4PY
+------
+To access MPI from python we use the ``mpi4py`` software.
+To check if the mpi4py library is installed on your system do:
+
+.. code-block:: sh
+
+	> python -c 'import mpi4py; print mpi4py.__version__'
+	1.0.0
+
+If this fails with an error or a version before 1.0 you need to install mpi4py.
+You can download mpi4py from http://code.google.com/p/mpi4py/. 
 
 Nose
 -----
@@ -208,6 +220,50 @@ To check if Nose is installed on your system do:
     
 If this fails with an error or a version before 0.11 you need to install nose.
 You can download nose from http://somethingaboutorange.com/mrl/projects/nose/. 
+
+
+Installing on Ubuntu 9.04
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this section we asume a default Ubuntu installation. Ubuntu comes 
+with python2.6 pre-installed, you can check if python is installed
+by doing:
+
+.. code-block:: sh
+
+	> python --version
+	Python 2.6.2
+    
+If this failes with an error or a version before 2.6, please install 
+python first(the package is called ``python2.6``). To compile python
+package, you need the ``python2.6-dev`` development package.
+To install it, do::
+
+    > sudo apt-get install python2.6-dev
+
+By default, Ubuntu does not install a fortran 90 or a C++ compiler. We
+suggest using gfortran and g++, these compilers can be found in 
+the ``gfotran`` and the ``g++`` packages. 
+To install these, do::
+
+    > sudo apt-get install gfortran g++
+
+Ubuntu does not provide installation packages for MPICH2. You can 
+build MPICH2 by hand, or install openmpi from the Ubuntu packages.
+All packages, except ''mpi4py'' and ''h5py'' can be installed 
+with the following command 
+(this will install openmpi, hdf and python packages)::
+
+    > sudo apt-get install libopenmpi-dev openmpi-bin \
+        libhdf5-serial-dev hdf5-tools \
+        python-nose python-numpy python-setuptools
+
+The ''mpi4py'' and ''h5py'' can be installed with the ''easy_install''
+command::
+
+    > sudo easy_install mpi4py
+    > sudo easy_install h5py
+    
 
 author: Arjen van Elteren (vanelteren@strw.leidenuniv.nl)
 date: 2009/10/05
