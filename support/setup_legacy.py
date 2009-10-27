@@ -147,8 +147,6 @@ class BuildLegacy(LegacyCommand):
     def get_special_targets(self, directory, environment):
         process = Popen(['make','-p' , '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
-        print stdoutstring
-        print stderrstring
         lines = stdoutstring.splitlines()
         result = []
         for line in lines:
