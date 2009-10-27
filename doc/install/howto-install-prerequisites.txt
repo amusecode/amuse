@@ -249,10 +249,10 @@ GCC
 ---
 By default, Ubuntu does not install a fortran 90 or a C++ compiler. We
 suggest using gfortran and g++. These compilers are installed with
-the ``build-essential`` package. 
-To install it, do::
+the ``build-essential`` and the ``gfortran`` package. 
+To install these, do::
 
-    > sudo apt-get install build-essential
+    > sudo apt-get install build-essential gfortran
 
 MPI2
 ----
@@ -291,6 +291,76 @@ command::
     > sudo easy_install h5py
     
 
+
+Installing on Fedora 11
+~~~~~~~~~~~~~~~~~~~~~~~
+
+In this section we asume a live-cd install of Fedora 11 installation.
+
+Python
+------
+Fedora comes with python2.6 pre-installed, you can check if
+python is installed by doing:
+
+.. code-block:: sh
+
+	> python --version
+	Python 2.6.2
+
+If this failes with an error or a version before 2.6, please install 
+python first(the package is called ``python``). You also need 
+the ``python-devel` development package.
+To install it, do::
+
+    > sudo yum install python-devel
+    
+
+GCC
+---
+By default, Fedora does not install a fortran 90 or a C++ compiler. We
+suggest using gfortran and g++. These compilers are installed with
+the ``gcc``, ``gcc-c++`` and the ``gcc-gfortran`` packages. 
+To install these, do::
+
+    > sudo yum install gcc gcc-c++ gcc-gfortran
+
+MPI2
+----
+Fedora comes with packages for MPICH2 and Openmpi.
+
+To install MPICH2, do::
+    
+    > sudo yum install mpich2 mpich2-devel
+
+If you prefer OpenMpi over MPICH2, tou can install openmpi
+from the Fedora yum database. 
+To install the openmpi packages, do::
+
+     > sudo yum install openmpi openmpi-devel
+
+HDF5
+----
+Amuse can work with HDF5 versions 1.6.* and 1.8.3. Ubuntu 9.04 comes
+with HDF5 version 1.6.6. To install it, do::
+
+    > sudo yum install hdf5 hdf5-devel
+
+Python packages in Ubuntu
+-------------------------
+Ubuntu comes with python packages for nose and numpy. You also need 
+the setuptools package to be able to install the ``mpi4py`` and ``h5py`` 
+software. To install these , do::
+
+    > sudo apt-get python-nose python-numpy python-setuptools
+
+Python packages with easy_install
+---------------------------------
+The ``mpi4py`` and ``h5py`` can be installed with the ``easy_install``
+command::
+
+    > sudo easy_install mpi4py
+    > sudo easy_install h5py
+    
 author: Arjen van Elteren (vanelteren@strw.leidenuniv.nl)
 date: 2009/10/05
 

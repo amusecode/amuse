@@ -359,10 +359,11 @@ class LegacyFunctionSpecification(object):
     
 class MpiChannel(object):
     
-    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type):
+    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type, debug_with_gdb = False):
         self.name_of_the_worker = name_of_the_worker
         self.number_of_workers = number_of_workers
         self.legacy_interface_type = legacy_interface_type
+        self.debug_with_gdb = debug_with_gdb
         
     def start(self):
         tried_workers = []
@@ -380,7 +381,18 @@ class MpiChannel(object):
                     raise Exception("The worker application does not exists, it should be at: {0}".format(tried_workers))
             else:
                 found = True
-        self.intercomm = MPI.COMM_SELF.Spawn(full_name_of_the_worker, None, self.number_of_workers)
+                
+        if self.debug_with_gdb:
+            if not 'DISPLAY' in os.environ:
+                arguments = None
+                command = full_name_of_the_worker
+            else:
+                arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb',  full_name_of_the_worker]
+                command = 'xterm'
+        else:
+            arguments = None
+            command = full_name_of_the_worker
+        self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers)
 
     def stop(self):
         self.intercomm.Free()
@@ -515,8 +527,8 @@ class LegacyInterface(object):
     instances = []
     atexit.register(stop_interfaces)
     
-    def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1):
-        self.channel = MpiChannel(name_of_the_worker, number_of_workers, type(self))
+    def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1, debug_with_gdb = False):
+        self.channel = MpiChannel(name_of_the_worker, number_of_workers, type(self), debug_with_gdb)
         self.channel.start()
         self.instances.append(weakref.ref(self))
         

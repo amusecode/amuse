@@ -33,7 +33,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
     def test2(self):
-        instance = mpi_interface.BHTree()
+        instance = mpi_interface.BHTree(debug_with_gdb=False)
         instance.eps2 = 0.101
         self.assertEquals(0.101, instance.eps2)
         instance.eps2 = 0.110

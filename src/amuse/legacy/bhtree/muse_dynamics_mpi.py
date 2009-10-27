@@ -61,8 +61,8 @@ class BHTree(LegacyInterface):
         ),
     ]    
       
-    def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self)
+    def __init__(self, convert_nbody = None, **kwargs):
+        LegacyInterface.__init__(self, **kwargs)
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         self.convert_nbody = convert_nbody
         
