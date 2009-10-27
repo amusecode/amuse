@@ -1,6 +1,9 @@
 __revision__ = "$Id:$"
 
 import sys, os, re, subprocess
+import ConfigParser
+import os.path
+
 from stat import ST_MODE
 from distutils import sysconfig
 from distutils.core import Command
@@ -32,11 +35,16 @@ class LegacyCommand(Command):
         if self.legacy_dir is None:
             self.legacy_dir = os.path.join(self.amuse_src_dir,'legacy')
         
+        self.update_environment_from_cfgfile()
         self.set_fortran_variables()
         self.set_cuda_variables()
         self.set_libdir_variables()
+        self.save_cfgfile_if_not_exists()
         
     def set_fortran_variables(self):
+        if 'FORTRAN' in self.environment:
+            return
+            
         if 'FORTRAN' in os.environ:
             self.environment['FORTRAN'] = os.environ['FORTRAN']
             return
@@ -53,10 +61,17 @@ class LegacyCommand(Command):
         fortran_executable = compiler.executables['compiler_f90'][0]
         self.environment['FORTRAN'] = fortran_executable
     
+    
     def set_cuda_variables(self):
+        if ('CUDA_LIBDIRS' in self.environment 
+                and 'CUDA_LIBS' in self.environment):
+            return
+            
         dir = spawn.find_executable('nvcc')
         if dir is None:
             self.found_cuda = False
+            self.environment_notset['CUDA_LIBDIRS'] = '-L<directory>'
+            self.environment_notset['CUDA_LIBS'] = '-lcudart'
             return
         cuda_dir = os.path.dirname(os.path.dirname(dir))
         self.environment['CUDA_LIBDIRS'] = '-L'+cuda_dir+'/lib'
@@ -66,6 +81,9 @@ class LegacyCommand(Command):
     
     def set_libdir_variables(self):
         for varname in ('SAPPORO_LIBDIRS', 'GRAPE6_LIBDIRS'):
+            if varname in self.environment:
+                continue
+                
             if varname in os.environ:
                 self.environment[varname] = os.environ[varname]
             else:
@@ -86,7 +104,30 @@ class LegacyCommand(Command):
                 makefile_path = os.path.join(x, name)
                 if os.path.exists(makefile_path):
                     yield x
-    
+
+    def update_environment_from_cfgfile(self):
+        if os.path.exists('amuse.cfg'):
+            config = ConfigParser.ConfigParser()
+            config.read(['amuse.cfg'])
+            for name, value in config.items('environment'):
+                if isinstance(value, str) and value:
+                    varname = name.upper()
+                    self.environment[varname] = value
+                    if varname in self.environment_notset:
+                        del self.environment_notset[varname]
+                        
+    def save_cfgfile_if_not_exists(self):
+        if not os.path.exists('amuse.cfg'):
+            config = ConfigParser.RawConfigParser()
+            config.add_section('environment')
+            for name, value in self.environment.iteritems():
+                config.set('environment', name, value)
+                
+            for name, value in self.environment_notset.iteritems():
+                config.set('environment', name, '')
+            
+            with open('amuse.cfg', 'wb') as f:
+                config.write(f)
 
 class BuildLegacy(LegacyCommand):
 
