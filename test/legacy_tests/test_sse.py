@@ -1,4 +1,4 @@
-import sys
+import platform
 
 from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
 
@@ -114,9 +114,32 @@ class TestMPIInterface(TestWithMPI):
             'sse_age': '0x1.0c6f7a0b5ed8dp-20' ,
             'age': '0x1.0c6f7a0b5ed8dp-20' ,
         };    
-        for x in expected:
-            #print x, getattr(updated_state, x).hex()
-            self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
+
+        expected_32bit = {
+            'core_radius' : '0x0.0p+0',
+            'zams_mass' : '0x1.0000000000000p+0',
+            'envelope_mass' : '0x1.0d6fc100ab50fp-5',
+            'radius' : '0x1.c6c8a1c793bd0p-1',
+            't_ms' : '0x1.57d90abe54642p+13',
+            'spin' : '0x1.07413b0522d61p+10',
+            'luminosity' : '0x1.653b1b2d0333ap-1',
+            'age' : '0x1.0c6f7a0b5ed8dp-20',
+            'envelope_radius' : '0x1.db27631ba0e5cp-3',
+            'sse_age' : '0x1.0c6f7a0b5ed8dp-20',
+            'epoch' : '0x0.0p+0',
+            'mass' : '0x1.0000000000000p+0',
+            'core_mass' : '0x0.0p+0',
+        };
+
+        architecture, linkage_format = platform.architecture()
+        if architecture == '32bit':
+            for x in expected:
+                #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
+                #self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
+                self.assertEqual(float.fromhex(expected_32bit[x]),getattr(updated_state, x))
+        else:
+            for x in expected:
+                self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
         self.assertEquals(updated_state.age, 1e-06)
         dt = sse.get_time_step(updated_state.type,
@@ -153,7 +176,6 @@ class TestMPIInterface(TestWithMPI):
             sse_age, 
             age
         )
-        print list(result.keys()), result['mass']
         self.assertEquals(result['mass'][0], 10)
         self.assertEquals(result['mass'][1], 5)
         self.assertAlmostEqual(result['mass'][2], 3.941, 2)
@@ -169,7 +191,6 @@ class TestMPIInterface(TestWithMPI):
         envelope_radius =  spin = epoch =\
         t_ms = [0.0 for x in range(1,4000)]
         
-        print masses
         sse_age = age = [1e-06 for x in range(1,4000)]
         result = sse.evolve(
             types, 
@@ -187,7 +208,6 @@ class TestMPIInterface(TestWithMPI):
             sse_age, 
             age
         )
-        print result['mass']
         self.assertEquals(len(result['mass']), 3999)
         del sse
         
