@@ -69,7 +69,7 @@ FFLAGS+= -I./src/
 all: muse_worker 
 
 
-muse_worker: muse_worker.f90 muse_interface.o $(G6OBJS)
+muse_worker: muse_worker.f90 muse_interface.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
 
