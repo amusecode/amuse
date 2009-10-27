@@ -15,7 +15,9 @@ OBJECTS = \
  src/sendbodydata.o \
  src/sendinpdata.o src/sumforces.o src/sync.o \
  src/timestep.o src/update_grape.o src/update_loc_p.o src/writebh.o \
- src/writerestartfile.o src/predict_potential.o src/wtimef.o src/g6lib.o
+ src/writerestartfile.o src/predict_potential.o src/wtimef.o 
+
+G6OBJS = src/g6lib.o
 
 GLOBJECTS=src/fthread.o src/stars3d.o src/libpt.a
 
@@ -32,9 +34,14 @@ ifndef SAPPORO_LIBDIRS
 	SAPPORO_LIBDIRS = -L/data1/pelupes/libraries/sapporo_v1.5
 endif
 
+ifndef GRAPE6_LIBDIRS
+	GRAPE6_LIBDIRS = -L$(GRAPE6)/lib
+endif
 
-LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
-LIBS     = $(CUDA_LIBS) -lsapporo -lboost_thread-mt -lpthread 
+
+LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS) $(GRAPE6_LIBDIRS)
+GPULIBS  = $(CUDA_LIBS) -lsapporo -lboost_thread-mt -lpthread 
+GRAPE6LIBS  = -lg6hib
 LIBS     = -lm  
 LIBS     =  -lm -lpthread
 
@@ -59,12 +66,22 @@ FFLAGS  = -O2 $(OPTS) -fPIC
 FFLAGS+= -I./src/
 
 
-all: muse_worker
+all: muse_worker 
 
 
-muse_worker: muse_worker.f90 muse_interface.o 
+muse_worker: muse_worker.f90 muse_interface.o $(G6OBJS)
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES)
+	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
+
+
+muse_worker_gpu: muse_worker.f90 muse_interface.o 
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
+	
+muse_worker_grape: muse_worker.f90 muse_interface.o 
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
+
 
 muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o 
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"

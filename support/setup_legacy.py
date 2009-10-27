@@ -8,7 +8,7 @@ from distutils.dep_util import newer
 from distutils.util import convert_path
 from distutils import log
 from distutils import spawn
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from numpy.distutils import fcompiler
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
@@ -34,7 +34,7 @@ class LegacyCommand(Command):
         
         self.set_fortran_variables()
         self.set_cuda_variables()
-        self.set_sapporo_variables()
+        self.set_libdir_variables()
         
     def set_fortran_variables(self):
         if 'FORTRAN' in os.environ:
@@ -64,13 +64,15 @@ class LegacyCommand(Command):
         self.found_cuda = True
 
     
-    def set_sapporo_variables(self):
-        self.found_sapporo = False
-        sapporo_libdirs = 'SAPPORO_LIBDIRS'
-        if sapporo_libdirs in os.environ:
-            self.environment[sapporo_libdirs] = os.environ[sapporo_libdirs]
-        else:
-            self.environment_notset['SAPPORO_LIBDIRS'] ='-L<directory>'
+    def set_libdir_variables(self):
+        for varname in ('SAPPORO_LIBDIRS', 'GRAPE6_LIBDIRS'):
+            if varname in os.environ:
+                self.environment[varname] = os.environ[varname]
+            else:
+                self.environment_notset[varname] ='-L<directory>'
+     
+    
+            
     def subdirs_in_legacy_dir(self):
         names = os.listdir(self.legacy_dir)
         for name in names:
@@ -97,11 +99,22 @@ class BuildLegacy(LegacyCommand):
         environment.update(self.environment)
         for x in list(self.makefile_paths()):
             self.announce("building " + x)
+            shortname = x[len(self.legacy_dir) + 1:]
             returncode = call(['make','-C', x, 'all'], env = environment)
             if returncode == 2:
-                not_build.append(x[len(self.legacy_dir) + 1:])
+                not_build.append(shortname)
             else:
-                build.append(x[len(self.legacy_dir) + 1:])
+                build.append(shortname)
+            
+            special_targets = self.get_special_targets(x, environment)
+            for target,target_name in special_targets:
+                self.announce("building " + x + " version: " + target_name)
+                returncode = call(['make','-C', x, target], env = environment)
+                if returncode == 2:
+                    not_build.append(shortname + " - " + target_name)
+                else:
+                    build.append(shortname + " - " + target_name)
+                
         sorted_keys = sorted(self.environment_notset.keys())
         print
         print "Environment variables not set"
@@ -131,7 +144,20 @@ class BuildLegacy(LegacyCommand):
             for x in build:
                 print '*' , x
         
- 
+    def get_special_targets(self, directory, environment):
+        process = Popen(['make','-p' , '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
+        stdoutstring, stderrstring = process.communicate()
+        print stdoutstring
+        print stderrstring
+        lines = stdoutstring.splitlines()
+        result = []
+        for line in lines:
+            if line.startswith('muse_worker_gpu:'):
+                result.append(('muse_worker_gpu', 'GPU',))
+            if line.startswith('muse_worker_grape:'):
+                result.append(('muse_worker_grape', 'GRAPE6',))
+        return result
+        
  
 class CleanLegacy(LegacyCommand):
 
