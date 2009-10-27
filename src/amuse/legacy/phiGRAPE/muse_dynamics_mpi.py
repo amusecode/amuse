@@ -30,12 +30,24 @@ class PhiGRAPE(LegacyInterface):
         ),
     ]
     
-             
-    def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self)
+    MODE_G6LIB = 'g6lib'
+    MODE_GPU   = 'gpu'
+    MODE_GRAPE = 'grape'
+    
+    def __init__(self, convert_nbody = None, mode = MODE_G6LIB):
+        
+        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode))
         self.convert_nbody = convert_nbody
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
-
+        
+    def name_of_the_muse_worker(self, mode):
+        if mode == self.MODE_G6LIB:
+            return 'muse_worker'
+        if mode == self.MODE_GPU:
+            return 'muse_worker_gpu'
+        if mode == self.MODE_GRAPE:
+            return 'muse_worker_grape'
+            
     @legacy_function   
     def setup_module():
         function = LegacyFunctionSpecification()  
