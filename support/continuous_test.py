@@ -10,7 +10,7 @@ from nose.plugins.capture import Capture
 from nose.core import TestProgram
 from nose.plugins.skip import Skip, SkipTest
 from optparse import OptionParser
-from subprocess import call
+from subprocess import call, Popen, PIPE
 
 
 def number_str(number, singular, plural = None):
@@ -264,6 +264,42 @@ def _run_the_tests(directory):
     result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
     return report
     
+class MakeSVNStatusReport(object):
+    from xml.dom import minidom 
+    
+    def start(self):
+        process = Popen(['svn','info' , '--xml'], stdout = PIPE, stderr = PIPE)
+        stdoutstring, stderrstring = process.communicate()
+        doc = self.minidom.parseString(stdoutstring)
+        commit_node = list(doc.getElementsByTagName('commit'))[0]
+        revision = commit_node.getAttribute('revision')
+        self.result = 'SVN revision: {0}'.format(revision)
+        print self.result
+        return self
+        
+class MakePlatformReport(object):
+    import platform
+    
+    def start(self):
+        w = []
+        w.append('<table>')
+        for x in ['uname', 'system', 'node', 'release', 'version', 'machine', 'processor']:
+            
+            w.append('<tr>') 
+            w.append('<td>')
+            w.append(x)
+            w.append('</td>')
+            w.append('<td>')
+            w.append(str(getattr(self.platform, x)()))
+            w.append('</td>')
+            w.append('</tr>') 
+            w.append('\n')
+        w.append('</table>')
+        self.result = ''.join(w)
+        return self
+    
+
+        
 class WriteTestReportOnTestingBlog(object):
     
     def __init__(self, report):
@@ -317,10 +353,15 @@ class WriteTestReportOnTestingBlog(object):
         filename = time.strftime("%Y%m%d_%H_%M.txt", time_struct)
         path = os.path.join(self.local_directory, filename)
         with open(path,"w") as file:
-            
             file.write(self.titlestring_for_the_report())
             file.write('\n\n')
             
+            file.write('<p>')
+            file.write(MakeSVNStatusReport().start().result)
+            file.write('</p>')
+            file.write('\n\n')
+            file.write(MakePlatformReport().start().result)
+            file.write('\n\n')
             testcases = list(self.report.address_to_report.values())
             testcases.sort(key=lambda x: os.path.basename(x.address[0]))
             
@@ -380,7 +421,7 @@ class WriteTestReportOnTestingBlog(object):
                 file.write('\n')
                 file.write('</li>')
             file.write('</ul>')
-        #call(["scp", path, "doctor:"+self.remote_directory])
+        call(["scp", path, "castle.strw.leidenuniv.nl:"+self.remote_directory])
         
         
 
