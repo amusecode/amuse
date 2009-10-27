@@ -787,13 +787,14 @@ C---  get array address
          GOTO 999
       ENDIF
 
-
+      CALL initgrape
 C---  synchronize system
       CALL selectsync(time_cur)
 C          ----------
       CALL sync
 C          ----
-
+C     close grape before continuing
+      CALL g6_close(clusterid)
 
 C---  shift particles after ip to free spot
       DO i=ip,N-1
