@@ -3,6 +3,7 @@ import sys
 import support
 
 from amuse.legacy.bhtree import muse_dynamics_mpi as mpi_interface
+from amuse.legacy.support import core as legacy_core
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system
@@ -46,6 +47,20 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(1, instance.flag_collision)
         instance.flag_collision = 0
         self.assertEquals(0, instance.flag_collision)
+        del instance
+        
+    def test4(self):
+        class BHTree2(mpi_interface.BHTree):
+            channel_factory = legacy_core.MultiprocessingMPIChannel
+            pass
+        
+        instance = BHTree2()
+        instance.setup_module()
+        instance.add_particle(1, 11.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        retrieved_state = instance.get_state(1)
+        self.assertEquals(11.0,  retrieved_state['mass'])
+        self.assertEquals(instance.get_number(), 1)
+        instance.cleanup_module()
         del instance
         
 class TestAmuseInterface(TestWithMPI):

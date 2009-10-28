@@ -5,6 +5,9 @@ import numpy
 import weakref
 import atexit
 import os.path
+import cPickle as pickle
+import sys
+import struct
 
 from zlib import crc32
 from mpi4py import MPI
@@ -357,41 +360,47 @@ class LegacyFunctionSpecification(object):
         
     result_type = property(get_result_type, set_result_type);
     
-class MpiChannel(object):
+class MessageChannel(object):
     
-    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type, debug_with_gdb = False):
-        self.name_of_the_worker = name_of_the_worker
-        self.number_of_workers = number_of_workers
-        self.legacy_interface_type = legacy_interface_type
-        self.debug_with_gdb = debug_with_gdb
-        
-    def start(self):
+    def get_full_name_of_the_worker(self, type):
         tried_workers = []
         found = False
-        current_type=self.legacy_interface_type
+        current_type=type
         while not found:
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
             full_name_of_the_worker = os.path.join(directory_of_this_module , self.name_of_the_worker)
             found = os.path.exists(full_name_of_the_worker)
             if not found:
-            
                 tried_workers.append(full_name_of_the_worker)
                 current_type = current_type.__bases__[0]
                 if current_type is LegacyInterface:
                     raise Exception("The worker application does not exists, it should be at: {0}".format(tried_workers))
             else:
                 found = True
-                
+        return full_name_of_the_worker
+        
+class MpiChannel(MessageChannel):
+    
+    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type = None, debug_with_gdb = False):
+        self.name_of_the_worker = name_of_the_worker
+        self.number_of_workers = number_of_workers
+        if not legacy_interface_type is None:
+            self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
+        else:
+            self.full_name_of_the_worker = self.name_of_the_worker
+        self.debug_with_gdb = debug_with_gdb
+        
+    def start(self):
         if self.debug_with_gdb:
             if not 'DISPLAY' in os.environ:
                 arguments = None
-                command = full_name_of_the_worker
+                command = self.full_name_of_the_worker
             else:
-                arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb',  full_name_of_the_worker]
+                arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb',  self.full_name_of_the_worker]
                 command = 'xterm'
         else:
             arguments = None
-            command = full_name_of_the_worker
+            command = self.full_name_of_the_worker
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers)
 
     def stop(self):
@@ -516,6 +525,132 @@ class MpiChannel(object):
         return (doubles_result, ints_result)
         
 
+
+class MultiprocessingMPIChannel(MessageChannel):
+    
+    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type, debug_with_gdb = False):
+        self.name_of_the_worker = name_of_the_worker
+        self.number_of_workers = number_of_workers
+        if not legacy_interface_type is None:
+            self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
+        else:
+            self.full_name_of_the_worker = self.name_of_the_worker
+        self.debug_with_gdb = debug_with_gdb
+    
+    def start(self):
+        self.name_of_the_socket, self.server_socket = self._createAServerUNIXSocket("/tmp/amuse")
+        environment = os.environ.copy()
+        if 'PYTHONPATH' in environment:
+            environment['PYTHONPATH'] = environment['PYTHONPATH'] + ';' +  self._extra_path_item(__file__)
+        else:
+            environment['PYTHONPATH'] =  self._extra_path_item(__file__)
+        template = "from amuse.legacy.support import core\nm = core.MultiprocessingMPIChannel('{0}',{1},None,{2})\nm.run_mpi_channel('{3}')"
+        code_string = template.format(self.full_name_of_the_worker, self.number_of_workers, self.debug_with_gdb, self.name_of_the_socket)
+        self.process =  Popen([sys.executable, "-c", code_string], env = environment)
+        self.client_socket, undef = self.server_socket.accept()
+        
+    def stop(self):
+        self._send(self.client_socket,('stop',(),))
+        result = self._recv(self.client_socket)    
+        self.process.wait()
+        self.client_socket.close()
+        self.server_socket.close()
+        self._remove_socket(self.name_of_the_socket)
+        
+    def run_mpi_channel(self, name_of_the_socket):
+        channel = MpiChannel(self.full_name_of_the_worker, self.number_of_workers, None, self.debug_with_gdb)
+        channel.start()
+        socket = self._createAClientUNIXSocket(name_of_the_socket)
+        try:
+            is_running = True
+            while is_running:
+                message, args = self._recv(socket)
+                result = None
+                if message == 'stop':
+                    channel.stop()
+                    is_running = False
+                if message == 'send_message':
+                    result = channel.send_message(*args)
+                if message == 'recv_message':
+                    result = channel.recv_message(*args)
+                self._send(socket, result)
+        finally:
+            socket.close()
+         
+    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+        self._send(self.client_socket, ('send_message',(tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length),))
+        result = self._recv(self.client_socket)    
+        return result
+            
+    def recv_message(self, tag):
+        self._send(self.client_socket, ('recv_message',(tag,),))
+        result = self._recv(self.client_socket)    
+        return result
+    
+    def _send(self, client_socket, message):
+        message_string = pickle.dumps(message)
+        header = struct.pack("i", len(message_string))
+        client_socket.sendall(header)
+        client_socket.sendall(message_string)
+        
+    def _recv(self, client_socket):
+        header = self._recvall(client_socket, 4)
+        length = struct.unpack("i", header)
+        message_string = self._recvall(client_socket, length[0])
+        return pickle.loads(message_string)
+        
+    def _recvall(self, client_socket, number_of_bytes):
+        block_size = 4096
+        bytes_left = number_of_bytes
+        blocks = []
+        while bytes_left > 0:
+            if bytes_left < block_size:
+                block_size = bytes_left
+            block = client_socket.recv(block_size)
+            blocks.append(block)
+            bytes_left -= len(block)
+        return ''.join(blocks)
+        
+            
+    def _createAServerUNIXSocket(self, name_of_the_directory, name_of_the_socket = None):
+        import uuid
+        import socket
+        
+        if name_of_the_socket == None:
+            name_of_the_socket = os.path.join(name_of_the_directory,str(uuid.uuid1()))
+            
+        if not os.path.exists(name_of_the_directory):
+            os.makedirs(name_of_the_directory)
+            
+        server_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        self._remove_socket(name_of_the_socket)
+        server_socket.bind(name_of_the_socket)
+        server_socket.listen(5)
+        return (name_of_the_socket, server_socket)
+
+    def _createAClientUNIXSocket(self, name_of_the_socket):
+        import socket
+        client_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        #client_socket.settimeout(0)
+        client_socket.connect(name_of_the_socket)
+        return client_socket
+                
+    def _remove_socket(self, name_of_the_socket):
+        try:
+            os.remove(name_of_the_socket)
+        except OSError:
+            pass
+            
+    def _extra_path_item(self, path_of_the_module):
+        result = ''
+        for x in sys.path:
+            if path_of_the_module.startswith(x):
+                if len(x) > len(result):
+                    result = x
+        return result
+        
+            
+
 def stop_interfaces():
     for reference in LegacyInterface.instances:
         x = reference()
@@ -526,9 +661,10 @@ def stop_interfaces():
 class LegacyInterface(object):
     instances = []
     atexit.register(stop_interfaces)
+    channel_factory = MpiChannel
     
     def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1, debug_with_gdb = False):
-        self.channel = MpiChannel(name_of_the_worker, number_of_workers, type(self), debug_with_gdb)
+        self.channel = self.channel_factory(name_of_the_worker, number_of_workers, type(self), debug_with_gdb)
         self.channel.start()
         self.instances.append(weakref.ref(self))
         
@@ -540,6 +676,7 @@ class LegacyInterface(object):
             self._stop_worker()
             self.channel.stop()
             del self.channel
+            stop_interfaces()
         
     @legacy_function
     def _stop_worker():
@@ -547,9 +684,3 @@ class LegacyInterface(object):
         function.id = 0
         return function   
 
-
-
-        
-                
-        
-            

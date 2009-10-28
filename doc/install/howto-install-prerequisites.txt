@@ -225,7 +225,7 @@ You can download nose from http://somethingaboutorange.com/mrl/projects/nose/.
 Installing on Ubuntu 9.04
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In this section we asume a default Ubuntu installation.
+In this section we asume a default Ubuntu desktop installation.
 
 Python
 ------
@@ -351,7 +351,8 @@ Ubuntu comes with python packages for nose and numpy. You also need
 the setuptools package to be able to install the ``mpi4py`` and ``h5py`` 
 software. To install these , do::
 
-    > sudo yum install python-nose numpy python-setuptools python-setuptools-devel
+    > sudo yum install python-nose numpy numpy-f2py \
+        python-setuptools python-setuptools-devel
 
 Python packages with easy_install
 ---------------------------------

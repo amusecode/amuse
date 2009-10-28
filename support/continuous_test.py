@@ -5,6 +5,9 @@ import time
 import datetime
 import nose
 import nose.plugins
+import traceback
+import linecache
+import inspect
 
 from nose.plugins.capture import Capture
 from nose.core import TestProgram
@@ -279,6 +282,7 @@ class MakeSVNStatusReport(object):
         
 class MakePlatformReport(object):
     import platform
+    import mpi4py.MPI
     
     def start(self):
         w = []
@@ -290,18 +294,28 @@ class MakePlatformReport(object):
             items.append('mac_ver')
                     
         for x in items:
-            w.append('<tr>') 
-            w.append('<td>')
-            w.append(x)
-            w.append('</td>')
-            w.append('<td>')
-            w.append(str(getattr(self.platform, x)()))
-            w.append('</td>')
-            w.append('</tr>') 
-            w.append('\n')
+            self.addRow(w, x, str(getattr(self.platform, x)()))
+            
+        name_of_the_vendor, version = self.mpi4py.MPI.get_vendor()
+        self.addRow(w, 'MPI vendor', str(name_of_the_vendor))
+        self.addRow(w, 'MPI version', str(version))
+        
         w.append('</table>')
         self.result = ''.join(w)
         return self
+    
+    def addRow(self, w,  string1, string2):
+        w.append('<tr>') 
+        w.append('<td>')
+        w.append(string1)
+        w.append('</td>')
+        w.append('<td>')
+        w.append(string2)
+        w.append('</td>')
+        w.append('</tr>') 
+        w.append('\n')
+
+
     
 
         
