@@ -283,8 +283,13 @@ class MakePlatformReport(object):
     def start(self):
         w = []
         w.append('<table>')
-        for x in ['uname', 'system', 'node', 'release', 'version', 'machine', 'processor']:
-            
+        items = ['uname', 'system', 'node', 'release', 'version', 'machine', 'processor', 'architecture']
+        if self.platform.system() == 'Linux':
+            items.append('linux_distribution')
+        if self.platform.system() == 'Darwin':
+            items.append('mac_ver')
+                    
+        for x in items:
             w.append('<tr>') 
             w.append('<td>')
             w.append(x)
