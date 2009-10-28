@@ -377,6 +377,8 @@ class WriteTestReportOnTestingBlog(object):
                     if x.failed:
                         print x
                         filename = x.address[0][len(os.getcwd()):]
+                        if filename.endswith('.pyc'):
+                            filename = filename[:-3] + 'py'
                         file.write('<li>')
                         file.write('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(x.lineno)+'">')
                         file.write(str(x.id))
@@ -397,6 +399,8 @@ class WriteTestReportOnTestingBlog(object):
                     if x.errored:
                         print x
                         filename = x.address[0][len(os.getcwd()):]
+                        if filename.endswith('.pyc'):
+                            filename = filename[:-3] + 'py'
                         file.write('<li>')
                         file.write('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(x.lineno)+'">')
                         file.write(str(x.id))
@@ -414,6 +418,8 @@ class WriteTestReportOnTestingBlog(object):
             file.write('<ul>')
             for x in testcases:
                 filename = x.address[0][len(os.getcwd()):]
+                if filename.endswith('.pyc'):
+                    filename = filename[:-3] + 'py'
                 file.write('<li>')
                 file.write('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(x.lineno)+'">')
                 file.write(str(x.id))
