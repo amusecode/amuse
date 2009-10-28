@@ -252,9 +252,9 @@ class MakeAReportOfATestRun(object):
 def _run_the_tests(directory):
     
     print "updating the code"
-    #call(["svn", "update"])
-    #call(["make", "clean"])
-    #call(["make", "all"])
+    call(["svn", "update"])
+    call(["make", "clean"])
+    call(["make", "all"])
     
     print "start test run"
     null_device = open('/dev/null')

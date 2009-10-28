@@ -351,7 +351,7 @@ Ubuntu comes with python packages for nose and numpy. You also need
 the setuptools package to be able to install the ``mpi4py`` and ``h5py`` 
 software. To install these , do::
 
-    > sudo apt-get python-nose python-numpy python-setuptools
+    > sudo yum install python-nose numpy python-setuptools
 
 Python packages with easy_install
 ---------------------------------
