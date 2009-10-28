@@ -676,7 +676,6 @@ class LegacyInterface(object):
             self._stop_worker()
             self.channel.stop()
             del self.channel
-            stop_interfaces()
         
     @legacy_function
     def _stop_worker():
