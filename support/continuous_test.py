@@ -371,83 +371,92 @@ class WriteTestReportOnTestingBlog(object):
         time_struct = time.gmtime(self.report.start_time)
         filename = time.strftime("%Y%m%d_%H_%M.txt", time_struct)
         path = os.path.join(self.local_directory, filename)
-        with open(path,"w") as file:
-            file.write(self.titlestring_for_the_report())
-            file.write('\n\n')
-            
-            file.write('<p>')
-            file.write(MakeSVNStatusReport().start().result)
-            file.write('</p>')
-            file.write('\n\n')
-            file.write(MakePlatformReport().start().result)
-            file.write('\n\n')
-            testcases = list(self.report.address_to_report.values())
-            testcases.sort(key=lambda x: os.path.basename(x.address[0]))
-            
-            if self.report.failures > 0:
-                file.write('<p>Failed tests:</p>')
-                file.write('<ul>')
-                for x in testcases:
-                    if x.failed:
-                        print x
-                        filename = x.address[0][len(os.getcwd()):]
-                        if filename.endswith('.pyc'):
-                            filename = filename[:-3] + 'py'
-                        file.write('<li>')
-                        file.write('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(x.lineno)+'">')
-                        file.write(str(x.id))
-                        file.write('</a>')
-                        file.write(' - ')
-                        delta_t = x.end_time - x.start_time
-                        delta_t = round(delta_t, 3)
-                        file.write(str(delta_t))
-                        file.write(' seconds')
-                        file.write('\n')
-                        file.write('</li>')
-                file.write('</ul>')
-                
-            if self.report.errors > 0:
-                file.write('<p>Errored tests:</p>')
-                file.write('<ul>')
-                for x in testcases:
-                    if x.errored:
-                        print x
-                        filename = x.address[0][len(os.getcwd()):]
-                        if filename.endswith('.pyc'):
-                            filename = filename[:-3] + 'py'
-                        file.write('<li>')
-                        file.write('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(x.lineno)+'">')
-                        file.write(str(x.id))
-                        file.write('</a>')
-                        file.write(' - ')
-                        delta_t = x.end_time - x.start_time
-                        delta_t = round(delta_t, 3)
-                        file.write(str(delta_t))
-                        file.write(' seconds')
-                        file.write('\n')
-                        file.write('</li>')
-                file.write('</ul>')
-            
-            file.write('<p>Tests run:</p>')
-            file.write('<ul>')
+        self.parts = []
+        
+        self.parts.append(self.titlestring_for_the_report())
+        self.parts.append('\n\n')
+        
+        self.parts.append('<p>')
+        self.parts.append(MakeSVNStatusReport().start().result)
+        self.parts.append('</p>')
+        self.parts.append('\n\n')
+        self.parts.append(MakePlatformReport().start().result)
+        self.parts.append('\n\n')
+        
+        testcases = list(self.report.address_to_report.values())
+        testcases.sort(key=lambda x: os.path.basename(x.address[0]))
+        
+        if self.report.failures > 0:
+            self.parts.append('<p>Failed tests:</p>')
+            self.parts.append('<ul>')
             for x in testcases:
-                filename = x.address[0][len(os.getcwd()):]
-                if filename.endswith('.pyc'):
-                    filename = filename[:-3] + 'py'
-                file.write('<li>')
-                file.write('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(x.lineno)+'">')
-                file.write(str(x.id))
-                file.write('</a>')
-                file.write(' - ')
-                delta_t = x.end_time - x.start_time
-                delta_t = round(delta_t, 3)
-                file.write(str(delta_t))
-                file.write(' seconds')
-                file.write('\n')
-                file.write('</li>')
-            file.write('</ul>')
+                if x.failed:
+                    self.write_item_on_test(x)
+            self.parts.append('</ul>')
+            
+        if self.report.errors > 0:
+            self.parts.append('<p>Errored tests:</p>')
+            self.parts.append('<ul>')
+            for x in testcases:
+                if x.errored:
+                    self.write_item_on_test(x)
+            self.parts.append('</ul>')
+        
+        self.parts.append('<p>Tests run:</p>')
+        self.parts.append('<ul>')
+        for x in testcases:
+            self.write_item_on_test(x)
+        self.parts.append('</ul>')
+        
+        with open(path,"w") as file:
+            file.write(''.join(self.parts))
+            
         call(["scp", path, "castle.strw.leidenuniv.nl:"+self.remote_directory])
         
+    def write_item_on_test(self, x):
+        self.parts.append('<li>')
+        self.write_link_to_file_in_svn(x.address[0], x.lineno, x.id)
+        self.parts.append(' - ')
+        delta_t = x.end_time - x.start_time
+        delta_t = round(delta_t, 3)
+        self.parts.append(str(delta_t))
+        self.parts.append(' seconds')
+        self.parts.append('\n')
+        if x.failed or x.errored:
+            self.write_error_and_traceback(x)
+        self.parts.append('</li>')
+    
+    def write_error_and_traceback(self, x):
+        self.parts.append('<ul>')
+        self.parts.append('<li>')
+        for y in x.error_string:
+            self.parts.append(y)
+        self.parts.append('</li>')
+        self.parts.append('<li>') 
+        self.parts.append('<ul>')
+        for filename, lineno, name, line in x.traceback:
+            self.parts.append('<li>') 
+            self.write_link_to_file_in_svn(filename, lineno)
+            self.parts.append(' - ')
+            self.parts.append(name)
+            self.parts.append(' - ')
+            self.parts.append(str(line))
+            self.parts.append('</li>')
+        self.parts.append('</ul>')
+        self.parts.append('</li>')
+        self.parts.append('</ul>')
+        
+    def write_link_to_file_in_svn(self, filename, lineno, id = None):
+        if id is None:
+            id = filename + ':' + str(lineno)
+            
+        filename = filename[len(os.getcwd()):]
+        if filename.endswith('.pyc'):
+            filename = filename[:-3] + 'py'
+        
+        self.parts.append('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(lineno)+'">')
+        self.parts.append(str(id))
+        self.parts.append('</a>')
         
 
 def handler(signum, frame):
@@ -467,7 +476,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(400)
+    signal.alarm(1200) #building and testing must be done in 20 minutes
 
     report = _run_the_tests(options.directory) 
     WriteTestReportOnTestingBlog(report).start()
