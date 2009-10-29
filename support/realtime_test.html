@@ -26,13 +26,34 @@ function on_run_button_click(event) {
 }
 
 
-var request = new XMLHttpRequest();
-var previousLength = 0;
+
+function handle_results_of_poll(data) {
+    if (data.length == 0) {
+        return;
+    }
+    for(var i = 0 ; i < data.length; i++) {
+        var event = data[i];
+        if(event == 'done') {
+             $.getJSON("/get_last_report", handle_last_report);
+        }
+    }
+}
+
+function do_one_poll() {
+    $.getJSON("/events", handle_results_of_poll)
+}
 
 function poll_for_events() {
+    setInterval(do_one_poll, 1000)
     request.open('GET', '/events', true); 
+}
+
+
+var request = new XMLHttpRequest();
+var previousLength = 0;    
+function long_poll() {
     request.onreadystatechange = function (event) {  
-      if (request.readyState == 3) {  
+      if (request.readyState == 4) {  
          if(request.status == 200)  {
           var message = request.responseText.slice(previousLength);
           var value = eval(message);
@@ -49,6 +70,34 @@ function poll_for_events() {
 }
 
 
+function document_title(report) {
+    startDate = new Date(report.start_time * 1000);
+    endDate = new Date(report.end_time * 1000);
+    
+    delta_time = report.end_time - report.start_time;
+    var title = '';
+    if (report.errors + report.failures == 0) {
+        title += "OK "
+    } else {
+        title += "FAIL "
+    }
+    if(report.errors > 0) {
+        title += 'E' + report.errors + ' ';
+    }
+    if(report.failures > 0) {
+        title += 'F' + report.failures + ' ';
+    }
+    title += '+' + report.tests + ' ';
+    if(report.skipped > 0) {
+        title += 'S' + report.skipped + ' ';
+    }
+    
+    title += 'T' + (report.tests + report.skipped  + report.failures + report.errors) + ' ';
+    title += delta_time.toFixed(2) + 's';
+    title += ' ';
+    title += startDate.toLocaleTimeString();
+    return title;
+}
 
 function handle_last_report(report) {
     if(!report) {
@@ -75,6 +124,9 @@ function handle_last_report(report) {
     }
     title += delta_time.toFixed(2) + 's';
     $('#report-title').html(title);
+    
+    
+    document.title = document_title(report);
     
     $('#number-of-errors').text(report.errors);
     $('#number-of-failures').text(report.failures);

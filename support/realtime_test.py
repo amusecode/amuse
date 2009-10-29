@@ -21,7 +21,6 @@ from optparse import OptionParser
 from subprocess import call, Popen, PIPE
 from StringIO import StringIO
 
-test_is_running = False
 EDITOR = None
 
 def number_str(number, singular, plural = None):
@@ -426,72 +425,103 @@ class Select(object):
         else:
             return "none"
 
-def _perform_the_testrun(directory, results_queue, previous_report = None):
-    try:
-        print "start test run"
-        null_device = open('/dev/null')
-        os.stdin = null_device
-        report = MakeAReportOfATestRun(previous_report)
-        plugins = [report , Skip(), Capture()]  
-        result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
-        results_queue.put(report)
-    except:
-        results_queue.put('exception happened')
-    finally:
-        MPI.Finalize()
-
-
-def _perform_one_test(directory, results_queue, address):
-    try:
-        print "start test run"
-        null_device = open('/dev/null')
-        os.stdin = null_device
-        select = Select(address)
-        plugins = [select, Skip()]  
-        result = TestProgram(
-            exit = False, 
-            argv=['nose', directory], 
-            plugins=plugins)
-        result = select.buffer
-        result = result[:min(1000, len(result) - 1)]
-        results_queue.put(result)
-    except:
-        results_queue.put('exception happened')
-    finally:
-        print sys.stderr << "calling finalize"
-        MPI.Finalize()
-        print "calling finalize done"
-
-def _run_test_with_address(address):
-    server.run_all_tests.paused = False
-    global test_is_running
-    if test_is_running:
-        return 'test is already running'
-    test_is_running = True
-    result_queue = Queue()
-    process = Process(
-        target=_perform_one_test, 
-        args=(
-            os.getcwd(), 
-            result_queue,
-            address
-        ))
-    process.start()
+class RunTests(object):
     
-    result = result_queue.get()
-    test_is_running = False
-    print "start to join"
-    process.join(2)
-    print "process joined"
-    return result    
+    def __init__(self):
+        self.test_is_running = False
+        
+    def _perform_the_testrun(self, directory, results_queue, previous_report = None):
+        try:
+            null_device = open('/dev/null')
+            os.stdin = null_device
+            report = MakeAReportOfATestRun(previous_report)
+            plugins = [report , Skip(), Capture()]  
+            result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
+            results_queue.put(('test-report', report,) )
+        except :
+            results_queue.put(('test-error', 'Exception happened: ' + str(exc_info()[0]) + " - " + str(sys.exc_info()[1]), ))
+        finally:
+            MPI.Finalize()
+
+
+    def _perform_one_test(self, directory, results_queue, address):
+        try:
+            print "start test run"
+            null_device = open('/dev/null')
+            os.stdin = null_device
+            select = Select(address)
+            plugins = [select, Skip()]  
+            result = TestProgram(
+                exit = False, 
+                argv=['nose', directory], 
+                plugins=plugins)
+            success = result.success
+            if success:
+                result = 'Success'
+            else:
+                result = 'Failure'
+            
+            if select.buffer:
+                result += ' - '
+                if len(select.buffer > 1000):
+                    result += select.buffer[:min(1000, len(result) - 1)] 
+                    result += ' ' + str(result - 1000) + ' more ...'
+                else:
+                    result += select.buffer
+            
+            results_queue.put(result)
+        except:
+            results_queue.put('exception happened')
+        finally:
+            print sys.stderr << "calling finalize"
+            MPI.Finalize()
+            print "calling finalize done"
+
+    def run_test_with_address(self, address):
+        result = self.run_in_another_process(self._perform_one_test, address)
+        return result 
+         
+    def run_tests(self, previous_report):
+        typestring, result = self.run_in_another_process(self._perform_the_testrun, previous_report)
+        if typestring == 'test-error':
+            print result
+            raise Exception(result)
+        else:
+            return result  
+            
+    def can_start_a_test(self):
+        return not self.test_is_running
+        
+    def run_in_another_process(self, method, argument):
+        if self.test_is_running:
+            raise Exception("Test is already running")
+            
+        self.test_is_running = True
+        try:
+            result_queue = Queue()
+            process = Process(
+                target=method, 
+                args=(
+                    os.getcwd(), 
+                    result_queue, 
+                    argument
+                ))
+            process.start()
+            result = result_queue.get()
+        finally:
+            self.test_is_running = False
+            
+        process.join(2)
+        del result_queue
+        return result
      
+RunTests.instance = RunTests()
 
 class RunAllTestsWhenAChangeHappens(object):
     
     def __init__(self, server):
         self.must_run = False
         self.server = server
-        self.paused = False
         
     def start(self):
         self.must_run = True;
@@ -503,36 +533,22 @@ class RunAllTestsWhenAChangeHappens(object):
         self.must_run = False;
         
     def run(self):
-        global test_is_running
         paths = [os.path.join(os.getcwd(), 'src'), os.path.join(os.getcwd(), 'test')]
+        
         monitor = MonitorDirectories(paths)
         monitor.check()
         monitor.changed = True
         while self.must_run:
             if monitor.changed:
-                if test_is_running or self.paused:
+                if not RunTests.instance.can_start_a_test():
                     monitor.check()
                     time.sleep(0.5)
                     continue
-                    
-                test_is_running = True
-                result_queue = Queue()
-                process = Process(
-                    target=_perform_the_testrun, 
-                    args=(
-                        os.getcwd(), 
-                        result_queue, 
-                        self.server.last_report
-                    ))
-                process.start()
-                report = result_queue.get() 
-                self.server.last_report = report
-                self.server.tests_finished.set()
-                test_is_running = False
-                process.join(2)
-                print "joined!"
-                del result_queue
-                    
+                
+                report = RunTests.instance.run_tests(self.server.last_report)
+                
+                self.server.set_last_report(report)
+             
                 monitor.check()
             else:
                 time.sleep(0.5)
@@ -589,10 +605,7 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         parsed_path = urlparse.urlparse(self.path)
         
         if parsed_path.path == '/start':
-
-            thread = threading.Thread(target=self.server.start_run_tests)
-            thread.daemon = True;
-            thread.start()
+            self.server.restart_testrunner()
             string = 'null'
             content_type = 'text/javascript'
         elif parsed_path.path == '/stop':
@@ -600,14 +613,11 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
             string = 'null'
             content_type = 'text/javascript'
         elif parsed_path.path == '/pause':
-            self.pause()
+            self.server.stop_testrunner()
             string = 'null'
             content_type = 'text/javascript'
         elif parsed_path.path == '/get_last_report':
-            if self.server.last_report is None:
-                string = "null"
-            else:
-                string = json.dumps(self.server.last_report.to_dict())
+            string = json.dumps(self.server.get_last_report_as_dict())
             content_type = 'text/javascript'
         elif parsed_path.path == '/open_file':
             parameters = urlparse.parse_qs(parsed_path.query)
@@ -622,11 +632,14 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
             a1 = parameters['a1'][0]
             a2 = parameters['a2'][0]
             address = (a0, a1, a2)
-            string = json.dumps(_run_test_with_address(address))
+            result = RunTests.instance.run_test_with_address(address)
+            string = json.dumps(result)
             content_type = 'text/javascript'
+            self.server.continue_testrunner()
         elif parsed_path.path == '/events':
-            self.do_long_poll()
-            return
+            new_events = self.server.get_all_events_since_previous_query()
+            string = json.dumps(new_events)
+            content_type = 'text/javascript'
         else:
             string, content_type = self.index_file()
         
@@ -637,7 +650,6 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         self.wfile.write(string)
     
     def do_long_poll(self):
-        print self.request_version
         self.send_response(200)
         self.send_header("Content-Type", "text/javascript")  
         self.send_header("Transfer-Encoding", "chunked")
@@ -668,15 +680,19 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         thread.daemon = True;
         thread.start()
         
-    def pause(self):
-        server.run_all_tests.paused = True
-        
     def index_file(self):
         base = os.path.split(__file__)[0]
         filename = os.path.join(base, "realtime_test.html")
         with open(filename, "r") as file:
             contents = file.read()
             return contents, 'text/html'
+            
+    def log_message(self, format, *args):
+        pass
+        #sys.stderr.write("%s - - [%s] %s\n" %
+        #                 (self.address_string(),
+        #                  self.log_date_time_string(),
+        #                  format%args))
         
 
 class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
@@ -687,41 +703,53 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
         self.run_all_tests.start()
         self.daemon_threads = True
-        self.tests_finished = threading.Event()
+        self.events_queue = queue.Queue()
+        
         
     def start(self):
         self.serve_forever()
-        
-    def start_run_tests(self):
-        server.run_all_tests.paused = False
-        global test_is_running
-        if test_is_running:
-            return
-        
-        test_is_running = True
-        result_queue = Queue()
-        
-        process = Process(
-            target=_perform_the_testrun, 
-            args=(os.getcwd(), result_queue))
-        process.start()
-        report = result_queue.get()
-        self.last_report = report
-        self.tests_finished.set()
-        
-        test_is_running = False
-        
-        process.join(2) 
-        del result_queue
         
     def stop(self):
         self.run_all_tests.stop()
         self.shutdown()
         
+    def restart_testrunner(self):
+        self.run_all_tests.stop()
+        self.last_report = None
+        self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
+        self.run_all_tests.start()
+        
+    def stop_testrunner(self):
+        self.run_all_tests.stop()        
+    
+    def continue_testrunner(self):
+        if not self.run_all_tests.must_run:
+            self.restart_testrunner()
+        
+    def get_last_report_as_dict(self):
+        if self.last_report is None:
+            return None
+        else:
+            return self.last_report.to_dict()
 
-
+    def set_last_report(self, report):
+        self.last_report = report
+        self.events_queue.put('done')
+        
+    def get_all_events_since_previous_query(self):
+        try:
+            events = []
+            while True:
+                events.append(self.events_queue.get(False))
+        except queue.Empty:
+            pass
+            
+        return events
+            
+            
 if __name__ == '__main__':
     parser = OptionParser() 
+    
     
     parser.add_option("-p", "--port", 
       dest="serverport",
@@ -738,10 +766,6 @@ if __name__ == '__main__':
       type="string")
       
     (options, args) = parser.parse_args()
-    
-    
-    
-    
     
     print "starting server on port: ", options.serverport
     print "will use editor: ", options.editor
