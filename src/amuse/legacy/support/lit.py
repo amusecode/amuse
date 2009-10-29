@@ -9,18 +9,28 @@ class LiteratureRefs(object):
         self.fill_literature_list()
  
     @classmethod
-    def print_refs(self, modus):
-        print "Your are currently using the following codes, which contain literature references"
-        for s in self.literature_list:
-            print '\n\t"%s"' % s[0]
-            for key_and_note in s[1]:
-                print '\t\t%s: %s' % (key_and_note[0],key_and_note[1])
-    
+    def print_refs(cls, modus):
+        print "You are currently using the following codes, which contain literature references"
+        print cls.all_literature_references_string()
+ 
     @classmethod
-    def fill_literature_list(self):
+    def names_of_classes_with_references(cls):
+        return [x[0] for x in cls.literature_list]
+
+    @classmethod
+    def all_literature_references_string(cls):
+        lines = []
+        for s in cls.literature_list:
+            lines.append('\n\t"%s"' % s[0])
+            for key_and_note in s[1]:
+                lines.append('\t\t%s' % (key_and_note[1]))
+        return "\n".join(lines)
+        
+    @classmethod
+    def fill_literature_list(cls):
         """filter the refs form the docstring, if no refs there is no append"""
-        docstringin = self.__doc__
-        objectname = self.__name__
+        docstringin = cls.__doc__
+        objectname = cls.__name__
         Mydoctree  = core.publish_doctree(source = docstringin)
         footnote_list = []
         for ikey, ival in Mydoctree.ids.iteritems():
@@ -30,4 +40,4 @@ class LiteratureRefs(object):
         filled = bool(footnote_list)
         
         if filled:
-            self.literature_list.append([objectname, footnote_list])
+            cls.literature_list.append([objectname, footnote_list])
