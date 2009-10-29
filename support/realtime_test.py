@@ -22,6 +22,7 @@ from subprocess import call, Popen, PIPE
 from StringIO import StringIO
 
 test_is_running = False
+EDITOR = None
 
 def number_str(number, singular, plural = None):
     if plural == None:
@@ -88,8 +89,15 @@ class MonitoredFile(object):
             self.container.remove(self)
             monitor.deleted(self)
             return
+    
         
         measured_timestamp = self.get_last_modification_time()
+        
+        if measured_timestamp < 0:
+            self.container.remove(self)
+            monitor.errored(self)
+            return
+            
         if self.timestamp < measured_timestamp:
             self.timestamp = measured_timestamp
             monitor.updated(self)
@@ -98,8 +106,11 @@ class MonitoredFile(object):
         monitor.unchanged(self)
     
     def get_last_modification_time(self):
-        statinfo = os.stat(self.path)
-        return statinfo.st_mtime
+        try:
+            statinfo = os.stat(self.path)
+            return statinfo.st_mtime
+        except:
+            return -1
 
     
         
@@ -164,26 +175,35 @@ class MonitorDirectories(object):
             x.check(self)
     
     def deleted(self, monitored_element):
-        if monitored_element.path.endswith('.pyc'):
+        if not self.must_monitor_file(monitored_element):
             return
+        print monitored_element.path
         self.changed = True
         
     def created(self, monitored_element):
-        if monitored_element.path.endswith('.pyc'):
+        if not self.must_monitor_file(monitored_element):
             return
-            
+        print monitored_element.path
         self.changed = True
         
     def unchanged(self, monitored_element):
         pass
+        
+    def errored(self, monitored_element):
+        print "error while monitoring file: ", monitored_element.path
+        pass
     
     def updated(self, monitored_element):
-        if monitored_element.path.endswith('.pyc'):
+        if not self.must_monitor_file(monitored_element):
             return
         print monitored_element.path
         self.changed = True
 
-
+    def must_monitor_file(self, monitored_element):
+        return (
+            monitored_element.path.endswith('.py') and
+            not os.path.basename(monitored_element.path).startswith('.')
+        )
 
 class TestCaseReport(object):
     def __init__(self, test):
@@ -533,14 +553,35 @@ osascript_to_open_xcode = """on run argv
 end run"""
 
 def open_file(path, lineno = 1):
+    global EDITOR
+    
     if sys.platform == 'darwin':        
         program = Popen(
             ['osascript', '-', str(lineno), os.path.join(os.getcwd(), path) ], 
             stdin = PIPE, stdout = PIPE, stderr = PIPE)
         out, err = program.communicate(osascript_to_open_xcode)
     else:
-        #call(['geany', path, '+'+str(lineno)])
-        call(['kate','--line',str(lineno),path])
+        possible_programs = (
+            ['geany', path, '+'+str(lineno)],
+            ['kate', '-u', '--line',str(lineno),path],
+            ['emacs', '+'+str(lineno), path],
+            ['nedit-client','-line', str(lineno), path],
+        )
+        
+        for program in possible_programs:
+            if program[0] == EDITOR:
+                returncode = call(['which', program[0]])
+                if returncode == 0:
+                    call(program)
+                    return 
+        
+        for program in possible_programs:
+            returncode = call(['which', program[0]])
+            if returncode == 0:
+                call(program)
+                return 
+        
+        call([EDITOR, path])
     
 class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
@@ -677,6 +718,8 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.run_all_tests.stop()
         self.shutdown()
         
+
+
 if __name__ == '__main__':
     parser = OptionParser() 
     
@@ -687,9 +730,22 @@ if __name__ == '__main__':
       default=9070,
       type="int")
       
+    parser.add_option("-e", "--editor", 
+      dest="editor",
+      help="preferred EDITOR for editing the files", 
+      metavar="EDITOR", 
+      default="geany",
+      type="string")
+      
     (options, args) = parser.parse_args()
     
+    
+    
+    
+    
     print "starting server on port: ", options.serverport
+    print "will use editor: ", options.editor
+    EDITOR = options.editor
     
     server = ContinuosTestWebServer(options.serverport)
     server.start()
