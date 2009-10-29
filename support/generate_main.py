@@ -43,9 +43,18 @@ class generate_main(Command):
                 script_file.write(x)
             
             script_file.write('\n')
-            script_file.write('python $*\n')
+            script_file.write('python $*\n')       
         os.chmod('amuse.sh', stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC) 
-        
+        with open('iamuse.sh','w') as script_file:
+            script_file.write('#!'+self.amuse_dir+'/bin/python')
+            script_file.write('\n\n')
+            script_file.write('import IPython.Shell\n')
+            script_file.write('import os, sys\n')
+            script_file.write("sys.path.append(os.path.abspath('../test'))\n")
+            script_file.write("sys.path.append(os.path.abspath('../src'))\n")
+            script_file.write('IPython.Shell.start().mainloop()\n')
+        os.chmod('iamuse.sh', stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)  
+
         
         
         
