@@ -104,7 +104,7 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-sharedlibs=gcc',
           '--enable-f90', 
-          '--with-device=ch3:sock',
+         # '--with-device=ch3:sock',
          #'F90=gfortran',
         ])
         commands.append(['make'])
