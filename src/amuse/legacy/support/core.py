@@ -4,6 +4,7 @@ import inspect
 import numpy
 import weakref
 import atexit
+import os
 import os.path
 import cPickle as pickle
 import sys
@@ -538,10 +539,11 @@ class MultiprocessingMPIChannel(MessageChannel):
         self.debug_with_gdb = debug_with_gdb
     
     def start(self):
-        self.name_of_the_socket, self.server_socket = self._createAServerUNIXSocket("/tmp/amuse")
+        name_of_dir = "/tmp/amuse_"+os.getenv('USER')
+        self.name_of_the_socket, self.server_socket = self._createAServerUNIXSocket(name_of_dir)
         environment = os.environ.copy()
         if 'PYTHONPATH' in environment:
-            environment['PYTHONPATH'] = environment['PYTHONPATH'] + ';' +  self._extra_path_item(__file__)
+            environment['PYTHONPATH'] = environment['PYTHONPATH'] + ':' +  self._extra_path_item(__file__)
         else:
             environment['PYTHONPATH'] =  self._extra_path_item(__file__)
         template = "from amuse.legacy.support import core\nm = core.MultiprocessingMPIChannel('{0}',{1},None,{2})\nm.run_mpi_channel('{3}')"

@@ -539,8 +539,8 @@ def open_file(path, lineno = 1):
             stdin = PIPE, stdout = PIPE, stderr = PIPE)
         out, err = program.communicate(osascript_to_open_xcode)
     else:
-        call(['geany', path, '+'+str(lineno)])
-    
+        #call(['geany', path, '+'+str(lineno)])
+        call(['kate','--line',str(lineno),path])
     
 class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
