@@ -152,7 +152,10 @@ class nbody_to_si(object):
     @classmethod
     def get_default(cls):
         if cls.DEFAULT_CONVERTER is None:
-            raise Exception("Asked for the default nbody to SI converter, but no converter has been set!.\nPlease create a nbody_to_si converter first, and use the 'set_as_default' method.")
+            raise Exception("Asked for the default nbody to SI converter,"
+            " but no converter has been set!.\n"
+            "Please create a nbody_to_si converter first,"
+            " and use the 'set_as_default' method.")
         else:
             return cls.DEFAULT_CONVERTER
             
