@@ -33,6 +33,7 @@ def is_nbody_unit(unit):
     
     
 class nbody_to_si(object): 
+    DEFAULT_CONVERTER = None
     
     def __init__(self, value1 , value2):
         self.value1 = value1
@@ -57,6 +58,7 @@ class nbody_to_si(object):
                     unit_was_found[i] = True
         if len(filter(None, unit_was_found)) < 2:
             raise Exception("Must provide more units")
+        self.set_default_converter_if_uninitialised(self)
             
         
     @property
@@ -140,7 +142,28 @@ class nbody_to_si(object):
                 new_unit *= (unit ** n)
         return new_quantity(number * factor, new_unit)
         
+    def set_as_default(self):
+        """Install this converter as the default converter for the
+        modules. When a native nbody module is created it will choose
+        this converter (if no other converter is given during creation)
+        """
+        self.set_default_converter(self)
+    
+    @classmethod
+    def get_default(cls):
+        if cls.DEFAULT_CONVERTER is None:
+            raise Exception("Asked for the default nbody to SI converter, but no converter has been set!.\nPlease create a nbody_to_si converter first, and use the 'set_as_default' method.")
+        else:
+            return cls.DEFAULT_CONVERTER
+            
+    @classmethod
+    def set_default_converter(cls, object):
+        cls.DEFAULT_CONVERTER = object
         
+    @classmethod
+    def set_default_converter_if_uninitialised(cls, object):
+        if cls.DEFAULT_CONVERTER is None:
+            cls.set_default_converter(object)
 
 class noconvert_nbody_to_si(object): 
     

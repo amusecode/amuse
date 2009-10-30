@@ -97,7 +97,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         x.position = x.position.value() - center_of_mass
     print  particles.center_of_mass()
                 
-    gravity = BHTree(convert_nbody)
+    gravity = BHTree()
     gravity.setup_module()
     gravity.dt_dia = 10000
     

@@ -7,6 +7,8 @@
     <title>AMUSE Testing</title>
   
 <script type="text/javascript">
+var event_polling_interval_id;
+var current_interval = 10000;
 
 function on_line_click(event) {
     path = $(this).attr('path');
@@ -28,6 +30,12 @@ function on_run_button_click(event) {
 
 
 function handle_results_of_poll(data) {
+    if (current_interval > 1000) {
+        current_interval = 1000;
+        clearInterval(event_polling_interval_id);
+        event_polling_interval_id = setInterval(do_one_poll, current_interval)
+    }
+    
     if (data.length == 0) {
         return;
     }
@@ -44,7 +52,8 @@ function do_one_poll() {
 }
 
 function poll_for_events() {
-    setInterval(do_one_poll, 1000)
+    current_interval = 1000;
+    event_polling_interval_id = setInterval(do_one_poll, current_interval)
     request.open('GET', '/events', true); 
 }
 
@@ -248,7 +257,16 @@ function handle_last_report(report) {
     }
 }
 
+function handle_ajax_error(request,textStatus, errorThrown) { 
+    if(current_interval < 2000) { 
+        current_interval = 10000;
+        clearInterval(event_polling_interval_id);
+        event_polling_interval_id = setInterval(do_one_poll, current_interval);
+   }
+}
+
 function startPage() {
+     $.ajaxSetup({"error":handle_ajax_error});
      $('#start-button').click(function() {$.getJSON("/start", function(data){});});
      $('#stop-button').click(function() {$.getJSON("/stop", function(data){});});
      $('#pause-button').click(function() {$.getJSON("/pause", function(data){});});

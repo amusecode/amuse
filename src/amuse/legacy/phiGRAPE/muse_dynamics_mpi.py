@@ -35,8 +35,9 @@ class PhiGRAPE(LegacyInterface):
     MODE_GRAPE = 'grape'
     
     def __init__(self, convert_nbody = None, mode = MODE_G6LIB):
-        
         LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode))
+        if convert_nbody is None:
+            convert_nbody = nbody_system.nbody_to_si.get_default()
         self.convert_nbody = convert_nbody
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         

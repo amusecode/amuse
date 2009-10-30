@@ -388,7 +388,7 @@ class MakeAReportOfATestRun(object):
 
 
 
-class Select(object):
+class SelectOneTestAndStoreOutput(object):
     name = 'select one test'
     enabled = True
     score = 10
@@ -449,7 +449,7 @@ class RunTests(object):
             print "start test run"
             null_device = open('/dev/null')
             os.stdin = null_device
-            select = Select(address)
+            select = SelectOneTestAndStoreOutput(address)
             plugins = [select, Skip()]  
             result = TestProgram(
                 exit = False, 

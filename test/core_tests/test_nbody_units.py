@@ -60,4 +60,37 @@ class TestNbodyUnits(unittest.TestCase):
     def test8(self):
         self.assertTrue(is_nbody_unit(time / length))
         self.assertFalse(is_nbody_unit(units.s / units.m))
+
+class TestNbodyUnitsDefaultSettings(unittest.TestCase):
+    def assertIdentical(self, expected, actual, msg = None):
+        if not actual is expected:
+            raise self.failureException, \
+                  (msg or '%r is not %r' % (expected, actual))
+                
+    
+    def test1(self):
+        nbody_to_si.set_default_converter(None)
+        try:
+           nbody_to_si.get_default()
+           self.fail("No default has been set, the get_default call should fail")
+        except:
+           pass
+           
+    def test2(self):
+        nbody_to_si.set_default_converter(None)
+        convert_nbody = nbody_to_si(1 | units.kg , 1 | units.m / units. s )
+        self.assertIdentical(convert_nbody, nbody_to_si.get_default())
+    
+    def test3(self):
+        nbody_to_si.set_default_converter(None)
+        convert_nbody1 = nbody_to_si(1 | units.kg , 1 | units.m / units. s )
+        convert_nbody2 = nbody_to_si(1 | units.kg , 1 | units.m / units. s )
+        self.assertIdentical(convert_nbody1, nbody_to_si.get_default())
+        convert_nbody2.set_as_default()
+        self.assertIdentical(convert_nbody2, nbody_to_si.get_default())
+        
+        
+    
+    
+        
         

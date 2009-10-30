@@ -59,8 +59,10 @@ class Hermite(LegacyInterface):
         ),
     ]
     
-    def __init__(self, convert_nbody = nbody_system.noconvert_nbody_to_si()):
+    def __init__(self, convert_nbody = None):
         LegacyInterface.__init__(self)
+        if convert_nbody is None:
+            convert_nbody = nbody_system.nbody_to_si.get_default()
         self.convert_nbody = convert_nbody
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
 
