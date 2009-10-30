@@ -5,8 +5,10 @@ Contents:
 
 .. toctree::
    :maxdepth: 2
-   :glob:
    
-   *
+   introduction
+   packages
+   model
+   mpi
    
 

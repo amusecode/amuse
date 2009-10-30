@@ -23,7 +23,15 @@ sys.path.append(os.path.abspath('../src'))
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.doctest', 'sphinx.ext.todo', 'sphinx.ext.pngmath', 'sphinx.ext.ifconfig']
+extensions = [
+ 'sphinx.ext.autodoc',
+ 'sphinx.ext.doctest', 
+ 'sphinx.ext.todo',
+ 'sphinx.ext.pngmath', 
+ 'sphinx.ext.ifconfig', 
+ 'sphinx.ext.graphviz',
+ 'sphinx.ext.inheritance_diagram',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -182,6 +190,8 @@ latex_documents = [
   ('index', 'AMUSE.tex', u'AMUSE Documentation',
    u'The AMUSE Team', 'manual'),
   ('reference/index', 'reference-doc.tex', u'Reference Documentation',
+   u'The AMUSE Team', 'manual'),
+  ('design/index', 'design-doc.tex', u'Design Documentation',
    u'The AMUSE Team', 'manual'),
 ]
 

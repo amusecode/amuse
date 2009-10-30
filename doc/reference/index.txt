@@ -6,10 +6,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
    
-   introduction.txt
-   stellar_dynamics_interface_specification.txt
-   stellar_evolution_interface_specification.txt
-   message-protocol.txt
-   style_guide.txt
+   introduction
+   stellar_dynamics_interface_specification
+   stellar_evolution_interface_specification
+   message-protocol
+   style_guide
+   glossary
    
 
