@@ -5,7 +5,7 @@ AMUSE Style Guide
 
 This Style Guide covers the sourcecode written in the AMUSE project. The
 source of the existing codes, integrated into AMUSE, do not have to
-follow this code. Existing codes are not rewritten.
+follow this guide. Existing codes are not rewritten.
 
 Python Code
 -----------
@@ -62,7 +62,7 @@ Naming Conventions
      * Loop index variables, when used as ``for i in range(10):``, 
        only name allowed is 'i'. Thus when writing a loop in a loop, you need
        to use longer names.
-       For example, to iterate over every item in a 10 by 5 table, do:
+       For example, to iterate over every item in a 10 by 5 table, do:s:
             
             for row in range(10):
                 for column in range(5):
@@ -93,6 +93,9 @@ All Fortran code written in AMUSE should be Fortran 90.  We will follow
 the coding standard given in 
 `Fortran Coding Standard for the Community Atmospheric Model <http://www.ccsm.ucar.edu/working_groups/Software/dev_guide/dev_guide/node7.html>`_
 
+File Names
+    All fortran 90 files should have a ``.f90`` suffix.
+    
 Layout
     Source code should follow the "free form" fortran 90. Do not use
     the "fixed form" fortran 77 layout.
