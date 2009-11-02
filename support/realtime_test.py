@@ -390,6 +390,7 @@ class RunTests(object):
 RunTests.instance = RunTests()
 
 class RunAllTestsWhenAChangeHappens(object):
+    DIRECTORIES = ['src', 'test']
     
     def __init__(self, server):
         self.must_run = False
@@ -405,8 +406,9 @@ class RunAllTestsWhenAChangeHappens(object):
         self.must_run = False;
         
     def run(self):
-        paths = [os.path.join(os.getcwd(), 'src'), os.path.join(os.getcwd(), 'test')]
-        
+        cwd = os.getcwd()
+        paths = [os.path.join(cwd, x) for x in self.DIRECTORIES] 
+	
         monitor_directories = monitor.MonitorDirectories(paths)
         monitor_directories.check()
         monitor_directories.changed = True
