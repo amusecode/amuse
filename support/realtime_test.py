@@ -21,7 +21,8 @@ from optparse import OptionParser
 from subprocess import call, Popen, PIPE
 from StringIO import StringIO
 
-EDITOR = None
+import webserver
+import monitor
 
 def number_str(number, singular, plural = None):
     if plural == None:
@@ -74,135 +75,6 @@ def extract_tb(tb, limit = None):
         n = n+1
     return list
 
-class MonitoredFile(object):
-    def __init__(self, path, container):
-        self.path = path
-        self.container = container
-        self.timestamp = self.get_last_modification_time()
-      
-    def is_file(self):
-        return True
-  
-    def check(self, monitor):
-        if not os.path.exists(self.path):
-            self.container.remove(self)
-            monitor.deleted(self)
-            return
-    
-        
-        measured_timestamp = self.get_last_modification_time()
-        
-        if measured_timestamp < 0:
-            self.container.remove(self)
-            monitor.errored(self)
-            return
-            
-        if self.timestamp < measured_timestamp:
-            self.timestamp = measured_timestamp
-            monitor.updated(self)
-            return
-        
-        monitor.unchanged(self)
-    
-    def get_last_modification_time(self):
-        try:
-            statinfo = os.stat(self.path)
-            return statinfo.st_mtime
-        except:
-            return -1
-
-    
-        
-class MonitoredDirectory(object):
-    def __init__(self, path, container = None):
-        self.path = path
-        self.elements = []
-        self.container = container
-        self.path_to_element = {}
-        self.setup_from_filesystem()
-         
-    def is_file(self):
-        return False
-        
-    def setup_from_filesystem(self):
-        names = os.listdir(self.path)
-        for name in names:
-            path = os.path.join(self.path, name)
-            if os.path.islink(path):
-                continue
-            element = self.new_element(path)
-            self.elements.append(element)
-            self.path_to_element[path] = element
-    
-    def new_element(self, path):
-        if os.path.isdir(path):
-            return MonitoredDirectory(path, self)
-        else:
-            return MonitoredFile(path, self)
-                
-    def remove(self, element):
-        self.elements.remove(element)
-        del self.path_to_element[element.path]
-        
-    def check(self, monitor):
-        if not os.path.exists(self.path):
-            if not self.container is None:
-                self.container.remove(self)
-            monitor.deleted(self)
-            return
-            
-        for x in self.elements:
-            x.check(monitor)
-            
-        names = os.listdir(self.path)
-        for name in names:
-            path = os.path.join(self.path, name)
-            if not path in self.path_to_element:
-                element = self.new_element(path)
-                monitor.created(element)
-                self.elements.append(element)
-                self.path_to_element[path] = element
-            
-class MonitorDirectories(object):
-    def __init__(self, paths):
-        self.elements = map(lambda x : MonitoredDirectory(x), paths)
-        self.changed = False
-        
-    def check(self):
-        self.changed = False
-        for x in self.elements:
-            x.check(self)
-    
-    def deleted(self, monitored_element):
-        if not self.must_monitor_file(monitored_element):
-            return
-        print monitored_element.path
-        self.changed = True
-        
-    def created(self, monitored_element):
-        if not self.must_monitor_file(monitored_element):
-            return
-        print monitored_element.path
-        self.changed = True
-        
-    def unchanged(self, monitored_element):
-        pass
-        
-    def errored(self, monitored_element):
-        print "error while monitoring file: ", monitored_element.path
-        pass
-    
-    def updated(self, monitored_element):
-        if not self.must_monitor_file(monitored_element):
-            return
-        print monitored_element.path
-        self.changed = True
-
-    def must_monitor_file(self, monitored_element):
-        return (
-            monitored_element.path.endswith('.py') and
-            not os.path.basename(monitored_element.path).startswith('.')
-        )
 
 class TestCaseReport(object):
     def __init__(self, test):
@@ -535,13 +407,13 @@ class RunAllTestsWhenAChangeHappens(object):
     def run(self):
         paths = [os.path.join(os.getcwd(), 'src'), os.path.join(os.getcwd(), 'test')]
         
-        monitor = MonitorDirectories(paths)
-        monitor.check()
-        monitor.changed = True
+        monitor_directories = monitor.MonitorDirectories(paths)
+        monitor_directories.check()
+        monitor_directories.changed = True
         while self.must_run:
-            if monitor.changed:
+            if monitor_directories.changed:
                 if not RunTests.instance.can_start_a_test():
-                    monitor.check()
+                    monitor_directories.check()
                     time.sleep(0.5)
                     continue
                 
@@ -549,136 +421,43 @@ class RunAllTestsWhenAChangeHappens(object):
                 
                 self.server.set_last_report(report)
              
-                monitor.check()
+                monitor_directories.check()
             else:
                 time.sleep(0.5)
-                monitor.check()
+                monitor_directories.check()
                 
                 
-osascript_to_open_xcode = """on run argv
- set linenumber to (item 1 of argv) as integer
- set filename_string to item 2 of argv
- set file_to_open to POSIX file filename_string
- tell application "Xcode"
-  activate
-  set doc_to_edit to (open file_to_open)
-  tell doc_to_edit 
-   set its selection to item linenumber of paragraph  of it
-  end tell
- end tell
-end run"""
+    
+class HandleRequest(webserver.HandleRequest):
+    
+    def do_start(self):
+        self.server.restart_testrunner()
+        string = 'null'
+        content_type = 'text/javascript'
+        return string, content_type
+    
+    
+    def do_pause(self):
+        self.server.stop_testrunner()
+        return 'null', 'text/javascript' 
+    
+    def do_get_last_report(self):
+        string = json.dumps(self.server.get_last_report_as_dict())
+        content_type = 'text/javascript'
+        return string, content_type
 
-def open_file(path, lineno = 1):
-    global EDITOR
-    
-    if sys.platform == 'darwin':        
-        program = Popen(
-            ['osascript', '-', str(lineno), os.path.join(os.getcwd(), path) ], 
-            stdin = PIPE, stdout = PIPE, stderr = PIPE)
-        out, err = program.communicate(osascript_to_open_xcode)
-    else:
-        possible_programs = (
-            ['geany', path, '+'+str(lineno)],
-            ['kate', '-u', '--line',str(lineno),path],
-            ['emacs', '+'+str(lineno), path],
-            ['nedit-client','-line', str(lineno), path],
-        )
-        
-        for program in possible_programs:
-            if program[0] == EDITOR:
-                returncode = call(['which', program[0]])
-                if returncode == 0:
-                    call(program)
-                    return 
-        
-        for program in possible_programs:
-            returncode = call(['which', program[0]])
-            if returncode == 0:
-                call(program)
-                return 
-        
-        call([EDITOR, path])
-    
-class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
-    protocol_version = "HTTP/1.1"
-    def do_GET(self):
-        parsed_path = urlparse.urlparse(self.path)
-        
-        if parsed_path.path == '/start':
-            self.server.restart_testrunner()
-            string = 'null'
-            content_type = 'text/javascript'
-        elif parsed_path.path == '/stop':
-            self.stop_server()
-            string = 'null'
-            content_type = 'text/javascript'
-        elif parsed_path.path == '/pause':
-            self.server.stop_testrunner()
-            string = 'null'
-            content_type = 'text/javascript'
-        elif parsed_path.path == '/get_last_report':
-            string = json.dumps(self.server.get_last_report_as_dict())
-            content_type = 'text/javascript'
-        elif parsed_path.path == '/open_file':
-            parameters = urlparse.parse_qs(parsed_path.query)
-            path = parameters['path'][0]
-            lineno = int(parameters['lineno'][0])
-            open_file(path, lineno)
-            string = 'null'
-            content_type = 'text/javascript'
-        elif parsed_path.path == '/run_test':
-            parameters = urlparse.parse_qs(parsed_path.query)
-            a0 = parameters['a0'][0]
-            a1 = parameters['a1'][0]
-            a2 = parameters['a2'][0]
-            address = (a0, a1, a2)
-            result = RunTests.instance.run_test_with_address(address)
-            string = json.dumps(result)
-            content_type = 'text/javascript'
-            self.server.continue_testrunner()
-        elif parsed_path.path == '/events':
-            new_events = self.server.get_all_events_since_previous_query()
-            string = json.dumps(new_events)
-            content_type = 'text/javascript'
-        else:
-            string, content_type = self.index_file()
-        
-        self.send_response(200)
-        self.send_header("Content-type", content_type)
-        self.send_header("Content-Length", str(len(string)))        
-        self.end_headers()
-        self.wfile.write(string)
-    
-    def do_long_poll(self):
-        self.send_response(200)
-        self.send_header("Content-Type", "text/javascript")  
-        self.send_header("Transfer-Encoding", "chunked")
-        self.send_header("Cache-Control", "no-cache, no-store")
-        self.send_header("Pragma", "no-cache")
-        self.end_headers()
-        while True:
-            self.server.tests_finished.wait(10.0)
-            if self.server.tests_finished.is_set():
-                self.send_chunk('true')
-                self.server.tests_finished.clear()
-            else:
-                self.send_chunk('false')
-        self.wfile.write('0\r\n\r\n')
-        self.wfile.flush()
-                    
-    def send_chunk(self, string):
-        hex_length = hex(len(string))[2:]
-        self.wfile.write('%s \r\n' % hex_length)
-        self.wfile.flush()
-
-        self.wfile.write(string)
-        self.wfile.write('\r\n')
-        self.wfile.flush()
-       
-    def stop_server(self):
-        thread = threading.Thread(target=self.server.stop)
-        thread.daemon = True;
-        thread.start()
+  
+    def do_run_test(self):
+        parameters = urlparse.parse_qs(parsed_path.query)
+        a0 = parameters['a0'][0]
+        a1 = parameters['a1'][0]
+        a2 = parameters['a2'][0]
+        address = (a0, a1, a2)
+        result = RunTests.instance.run_test_with_address(address)
+        string = json.dumps(result)
+        content_type = 'text/javascript'
+        self.server.continue_testrunner()
+        return string, content_type
         
     def index_file(self):
         base = os.path.split(__file__)[0]
@@ -687,27 +466,15 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
             contents = file.read()
             return contents, 'text/html'
             
-    def log_message(self, format, *args):
-        pass
-        #sys.stderr.write("%s - - [%s] %s\n" %
-        #                 (self.address_string(),
-        #                  self.log_date_time_string(),
-        #                  format%args))
-        
 
-class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPServer):
+class ContinuosTestWebServer(webserver.WebServer):
     
     def __init__(self, port):
-        BaseHTTPServer.HTTPServer.__init__(self, ('', port), HandleRequest)
+        webserver.WebServer.__init__(self,  port, HandleRequest)
         self.last_report = None
         self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
         self.run_all_tests.start()
-        self.daemon_threads = True
-        self.events_queue = queue.Queue()
         
-        
-    def start(self):
-        self.serve_forever()
         
     def stop(self):
         self.run_all_tests.stop()
@@ -736,15 +503,6 @@ class ContinuosTestWebServer(SocketServer.ThreadingMixIn, BaseHTTPServer.HTTPSer
         self.last_report = report
         self.events_queue.put('done')
         
-    def get_all_events_since_previous_query(self):
-        try:
-            events = []
-            while True:
-                events.append(self.events_queue.get(False))
-        except queue.Empty:
-            pass
-            
-        return events
             
             
 if __name__ == '__main__':
@@ -769,7 +527,7 @@ if __name__ == '__main__':
     
     print "starting server on port: ", options.serverport
     print "will use editor: ", options.editor
-    EDITOR = options.editor
+    webserver.EDITOR = options.editor
     
     server = ContinuosTestWebServer(options.serverport)
     server.start()

@@ -1,0 +1,278 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.js"></script>
+    <title>Lint</title>
+  
+<script type="text/javascript">
+var event_polling_interval_id;
+var current_interval = 10000;
+
+function on_line_click(event) {
+    path = $(this).attr('path');
+    lineno = $(this).attr('lineno');
+     $.getJSON("/open_file", {'path':path, 'lineno':lineno}, function handle_result(data){});
+}
+
+
+function handle_run_test_result(data) {
+    alert(data);
+}
+
+function on_run_button_click(event) {
+    var a0 = $(this).attr('a0');
+    var a1 = $(this).attr('a1');
+    var a2 = $(this).attr('a2');
+     $.getJSON("/run_test", {'a0':a0, 'a1': a1, 'a2': a2}, handle_run_test_result);
+}
+
+
+
+function handle_results_of_poll(data) {
+    if (current_interval > 1000) {
+        current_interval = 1000;
+        clearInterval(event_polling_interval_id);
+        event_polling_interval_id = setInterval(do_one_poll, current_interval)
+    }
+    
+    if (data.length == 0) {
+        return;
+    }
+    for(var i = 0 ; i < data.length; i++) {
+        var event = data[i];
+        if(event == 'done') {
+             $.getJSON("/get_last_report", handle_last_report);
+        }
+    }
+}
+
+function do_one_poll() {
+    $.getJSON("/events", handle_results_of_poll)
+}
+
+function poll_for_events() {
+    current_interval = 1000;
+    event_polling_interval_id = setInterval(do_one_poll, current_interval)
+    request.open('GET', '/events', true); 
+}
+
+
+var request = new XMLHttpRequest();
+var previousLength = 0;    
+function long_poll() {
+    request.onreadystatechange = function (event) {  
+      if (request.readyState == 4) {  
+         if(request.status == 200)  {
+          var message = request.responseText.slice(previousLength);
+          var value = eval(message);
+          if(value) {
+             $.getJSON("/get_last_report", handle_last_report);
+          }
+          previousLength = request.responseText.length;
+         } else  {
+          alert("Error loading page\n");  
+        }
+      } 
+    };   
+    request.send(null); 
+}
+
+
+function document_title(report) {
+    startDate = new Date(report.start_time * 1000);
+    endDate = new Date(report.end_time * 1000);
+    
+    delta_time = report.end_time - report.start_time;
+    var title = '';
+    if (report.errors + report.failures == 0) {
+        title += "OK "
+    } else {
+        title += "FAIL "
+    }
+    if(report.errors > 0) {
+        title += 'E' + report.errors + ' ';
+    }
+    if(report.failures > 0) {
+        title += 'F' + report.failures + ' ';
+    }
+    title += '+' + report.tests + ' ';
+    if(report.skipped > 0) {
+        title += 'S' + report.skipped + ' ';
+    }
+    
+    title += 'T' + (report.tests + report.skipped  + report.failures + report.errors) + ' ';
+    title += delta_time.toFixed(2) + 's';
+    title += ' ';
+    title += startDate.toLocaleTimeString();
+    return title;
+}
+
+function handle_last_report(report) {
+    if(!report) {
+        return;
+    }
+    
+   
+    
+    //document.title = document_title(report);
+    
+   
+    
+    states = ['C','R','W','F','E'];
+    $('#files-checked').children().remove()
+    add_table_header();
+    for (var i = 0; i < report.filereports.length; i++) {
+        var filereport = report.filereports[i];
+        var tr = $('<tr></tr>');
+        
+        var filename = filereport.filename.split('/').pop();
+        
+        var file_link = $('<a></a>');
+        file_link.attr('href','/show_file?path=' + filereport.filename);
+        file_link.addClass('file');
+        file_link.append(filename);
+        //file_link.attr('path',filename);
+        //file_link.click(on_file_selected);
+        
+        var td = $('<td></td>');
+        file_link.appendTo(td);
+        td.appendTo(tr);
+        
+        for(var j = 0 ; j < states.length; j++) {
+            var state_char = states[j];
+            var count = filereport.state_to_number_of_messages[state_char]
+            
+            td = $('<td></td>');
+            td.append(count);
+            if (count > 0) {
+                td.addClass('set-' + state_char )
+            } else {
+                td.addClass('unset-' + state_char)
+            }
+            td.appendTo(tr);
+            
+        }
+        tr.appendTo($('#files-checked'));
+    }
+}
+
+function add_table_header() {
+    var tr = $('<tr></tr>');
+    
+    headers = ['filename', 'C','R','W','F','E'];
+    for(var j = 0 ; j < headers.length; j++) {
+        var header = headers[j];
+        var th = $('<th></th>');
+        th.append(header);
+        th.appendTo(tr);
+    }
+    tr.appendTo($('#files-checked'));
+}
+
+function handle_ajax_error(request,textStatus, errorThrown) { 
+    if(current_interval < 2000) { 
+        current_interval = 10000;
+        clearInterval(event_polling_interval_id);
+        event_polling_interval_id = setInterval(do_one_poll, current_interval);
+   }
+}
+
+function startPage() {
+     $.ajaxSetup({"error":handle_ajax_error});
+     $('#start-button').click(function() {$.getJSON("/start", function(data){});});
+     $('#stop-button').click(function() {$.getJSON("/stop", function(data){});});
+     $('#pause-button').click(function() {$.getJSON("/pause", function(data){});});
+     $.getJSON("/get_last_report", handle_last_report);
+     //poll_for_events();
+}
+
+$(document).ready(startPage);
+  
+</script>
+<style  type="text/css"> 
+
+body {
+    font-family: 'Arial', 'Georgia', 'Palatino';
+    font-size: 10pt;
+}
+li{
+    margin-left: 1em; 
+}
+.traceback-list li {
+    list-style-type:none;
+    padding-left: 1em;
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+}
+.even {
+    background-color: rgba(255,255,255,0.5);
+
+}
+
+.odd {
+    background-color: rgba(255,255,255,0.3);
+}
+
+#tests-run li {
+    padding-top:0.1em;
+    padding-bottom:0.1em;
+}
+
+#summary li {
+    list-style-type:none;
+}
+
+.hidden {
+    display: none;
+}
+
+
+#file-box {
+    background-color: #eee;
+}
+
+#skip-box {
+    background-color: #E0FFFF;
+}
+
+a:visited, a {
+    color: black;
+}
+a:hover {
+    color: #CD5C5C;
+}
+
+#files-checked {
+    background-color: white;
+}
+.set-C {background-color: lightblue;}
+.unset-C {background-color: #eee;}
+.set-R {background-color: #666;}
+.unset-R {background-color: #eee;}
+.set-W {background-color: yellow;}
+.unset-W {background-color: #eee;}
+.set-E {background-color: red;}
+.unset-E {background-color: #eee;}
+.set-F {background-color: orange;}
+.unset-F {background-color: #eee;}
+</style>
+</head>
+<body>
+<h2 id="report-title"></h2>
+<a id="start-button" href="#">start check</a>
+<a id="pause-button" href="#">pause</a>
+<a id="stop-button" href="#">stop</a>
+<div id = "summary-box">
+<ul id="summary">
+</ul>
+</div>
+
+<div id = "file-box">
+ <h3>Checked files</h3>
+ <table id = "files-checked">
+ </table>
+</div>
+</body>
+</html>
