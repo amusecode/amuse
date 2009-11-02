@@ -6,7 +6,6 @@ class Quantity(object):
     
     def __init__(self, unit):
         self.unit = unit
-        self.number = None
         
     def is_quantity(self):
         return True
