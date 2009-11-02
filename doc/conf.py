@@ -187,12 +187,16 @@ htmlhelp_basename = 'AMUSEdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'AMUSE.tex', u'AMUSE Documentation',
-   u'The AMUSE Team', 'manual'),
+#  ('index', 'AMUSE.tex', u'AMUSE Documentation',
+#   u'The AMUSE Team', 'manual'),
   ('reference/index', 'reference-doc.tex', u'Reference Documentation',
    u'The AMUSE Team', 'manual'),
   ('design/index', 'design-doc.tex', u'Design Documentation',
    u'The AMUSE Team', 'manual'),
+  ('tutorial/index', 'tutorial.tex', u'Tutorials',
+   u'The AMUSE Team', 'howto'),
+  ('install/index', 'installation.tex', u'Installing AMUSE',
+   u'The AMUSE Team', 'howto'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

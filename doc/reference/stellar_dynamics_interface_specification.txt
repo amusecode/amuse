@@ -7,50 +7,13 @@ Date        Author(s)    Version   State
 =========== ============ ========= =========
 13-10-2009  AvE          0.1       Initial
 20-10-2009  AvE          0.2       Initial, after first review with IP
+02-11-2009  AvE          0.3       Initial, after second review with MR
 =========== ============ ========= =========
 
 Introduction
 ~~~~~~~~~~~~
 
-Data Types
-----------
-The exact size (in bytes) and type of the values sent between the python layer and the legacy
-codes is very important. In this document we will specify the type of each argument and return 
-value. 
-
-========== ======== ================ ================
-Type name  Size     Fortran          C               
-..         bytes    type             type             
-========== ======== ================ ================ 
-int32      4        integer          long             
-float64    8        double precision double
-float32    4        real             float
-string     n                         char *
-========== ======== ================ ================ 
-
-Function template
-------------------
-All functions in the interface follow the same template. Every function returns an error
-or status code. Results are returned through the function arguments. In C these arguments need
-to be pointers to valid memory locations.
-
-
-.. autoclass:: amuse.legacy.interface.example.ExampleInterface
-   :members:
-        
-
-The error codes all have the same general form. Zero stands for no error, a negative
-value indicates some error happened, a positive value is returned when the function
-ends in a special state.
-
-0 - OK
-    Function encountered no error or special state
-<0 - ERROR
-    Something went wrong in the execution of the function
->0 - STATE
-    Function has encountered an expected special state. For example the code
-    has detected a collision between two stars.
-    
+In this chapter we describe the common interface for all stellar dynamics codes.
 
 Parameters
 ~~~~~~~~~~

@@ -1,0 +1,18 @@
+======================
+Source Code Management
+======================
+
+
+
+
+Commiting Code
+--------------
+
+
+SVN repository location
+-----------------------
+
+The AMUSE source code repository can be found at::
+
+    http://castle.strw.leidenuniv.nl/projects/amuse/trunk
+
