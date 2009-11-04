@@ -133,11 +133,18 @@ function handle_last_report(report) {
         file_link.attr('href','/show_file?path=' + filereport.filename);
         file_link.addClass('file');
         file_link.append(filename);
+
         //file_link.attr('path',filename);
         //file_link.click(on_file_selected);
         
         var td = $('<td></td>');
         file_link.appendTo(td);
+        td.appendTo(tr);
+        
+        
+        var td = $('<td></td>');
+        td.addClass('path');
+        td.append(filereport.filename);
         td.appendTo(tr);
         
         for(var j = 0 ; j < states.length; j++) {
@@ -161,7 +168,7 @@ function handle_last_report(report) {
 function add_table_header() {
     var tr = $('<tr></tr>');
     
-    headers = ['filename', 'C','R','W','F','E'];
+    headers = ['filename', 'path', 'C','R','W','F','E'];
     for(var j = 0 ; j < headers.length; j++) {
         var header = headers[j];
         var th = $('<th></th>');
@@ -185,7 +192,7 @@ function startPage() {
      $('#stop-button').click(function() {$.getJSON("/stop", function(data){});});
      $('#pause-button').click(function() {$.getJSON("/pause", function(data){});});
      $.getJSON("/get_last_report", handle_last_report);
-     //poll_for_events();
+     poll_for_events();
 }
 
 $(document).ready(startPage);

@@ -10,6 +10,7 @@ import monitor
 import webserver
 import json
 import urlparse
+import threading
 
 ReportMessageLine = namedtuple('ReportMessageLine', 'filename lineno state message_id method_id message_string')
 ReportOnAFile = namedtuple('ReportOnAFile', 'filename state_to_number_of_messages')
@@ -245,6 +246,10 @@ class HandleRequest(webserver.HandleRequest):
             contents = file.read()
             return contents, 'text/html'
     
+    def do_start(self):
+        self.server.start_lint()
+        return 'null', 'text/javascript'
+    
     def do_show_file(self):
         parameters = urlparse.parse_qs(self.parsed_path.query)
         filename = parameters['path'][0]
@@ -263,9 +268,18 @@ class LintWebServer(webserver.WebServer):
     
     def __init__(self, port):
         webserver.WebServer.__init__(self,  port, HandleRequest)
+        self.run_lint()
+        
+    def start_lint(self):
+        thread = threading.Thread(target=self.run_lint)
+        thread.start()
+        
+    def run_lint(self):
+        print "running lint"
         self.set_last_report(InterfaceToPyLint().run_onfile(
-            'src/amuse/support/data', 
+            'src/amuse', 
             [os.path.join(os.getcwd(), 'src')]))
+        print "done..."
         
     def get_last_report_as_dict(self):
         return self.last_report.to_dict()

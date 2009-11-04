@@ -2,6 +2,7 @@
 
 import sys
 import os.path
+import os
 
 if __name__ == "__main__":
     script_directory = sys.path[0]
@@ -15,6 +16,8 @@ if __name__ == "__main__":
         
     from amuse.legacy.support import create_c
 
+    sys.path.append(os.getcwd())
+    
     if len(sys.argv) < 3:
         print "Usage: " + sys.argv[0] + "name_of_module name_of_class"
         sys.exit(1)

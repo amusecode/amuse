@@ -19,33 +19,13 @@ from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
 from amuse.legacy.interface.create_definition import CreateDescriptionOfALegacyFunctionDefinition
 
-class DataType(object):
-    pass
-    
-class IntDataType(DataType):
-    short_key = 'i'
-    mpi_type = MPI.INT
-    pass
-    
-class DoubleDataType(DataType):
-    short_key = 'd'
-    mpi_type = MPI.DOUBLE
-    pass
-    
-class FloatDataType(DataType):
-    short_key = 'f'
-    mpi_type = MPI.FLOAT
-    pass
 
 def is_mpd_running():
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
-        is_mpd_running = True
         process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
         (output_string, error_string) = process.communicate()
-        if process.returncode == 255:
-            is_mpd_running = False
-        return is_mpd_running
+        return not (process.returncode == 255)
     else:
         return True
 
@@ -92,9 +72,9 @@ class LegacyCall(object):
             values[parameter.input_index] = argument
         
         for index, parameter in enumerate(self.specification.input_parameters):
-                if parameter.name in keyword_arguments:
-                    values = dtype_to_values[parameter.datatype]
-                    values[parameter.input_index] = keyword_arguments[parameter.name]
+            if parameter.name in keyword_arguments:
+                values = dtype_to_values[parameter.datatype]
+                values[parameter.input_index] = keyword_arguments[parameter.name]
         
         dtype_to_keyword = {
             'float64' : 'doubles_in',
@@ -435,16 +415,20 @@ class MpiChannel(MessageChannel):
         
         self.intercomm.Bcast([header, MPI.INT], root=MPI.ROOT)
         if doubles_in:
-            doubles = numpy.zeros(length * len(doubles_in), dtype='d')
+            
+            doubles = numpy.zeros( (len(doubles_in), length), dtype='d')
             for i in range(len(doubles_in)):
                 offset = i * length
-                doubles[offset:offset+length] = doubles_in[i]
+                doubles[i] = doubles_in[i]
+            doubles.reshape(len(doubles_in) * length)
             self.intercomm.Bcast([doubles, MPI.DOUBLE], root=MPI.ROOT)
         if ints_in:
             ints = numpy.zeros(length * len(ints_in), dtype='i')
             for i in range(len(ints_in)):
                 offset = i * length
                 ints[offset:offset+length] = ints_in[i]
+            
+            #ints = numpy.hstack(ints_in)
             self.intercomm.Bcast([ints, MPI.INT], root=MPI.ROOT)
         if floats_in:
             floats = numpy.array(floats_in, dtype='f')

@@ -25,7 +25,7 @@ class late(object):
         if instance is None:
             return self
         value = self.initializer(instance)
-        setattr(instance,self.initializer.__name__,value)
+        setattr(instance,self.initializer.__name__, value)
         return value
         
         
@@ -67,7 +67,7 @@ class print_out(object):
         return self
 
     def do_indent(self):
-        for i in range(self._indent):
+        for ignore in range(self._indent):
             self.parts.append(self.indent_characters())
             self.number_of_characters_on_current_line += len(self.indent_characters())
 

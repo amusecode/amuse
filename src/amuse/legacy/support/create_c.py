@@ -3,8 +3,6 @@ from amuse.legacy.support.core import LegacyFunctionSpecification
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
 from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
-      
-import numpy
 
 dtype_to_spec = DTypeToSpecDictionary({
     'int32' : DTypeSpec('ints_in','ints_out',
@@ -24,7 +22,13 @@ class MakeCCodeString(MakeCodeString):
         return dtype_to_spec
        
          
-class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
+
+class MakeCStringFromAFunctionSpecification(MakeCCodeString):
+    @late
+    def specification(self):
+        raise Exception("No specification set, please set the specification first")
+        
+class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecification):
 
         
     def start(self):
@@ -143,8 +147,8 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCCodeString):
         
         
 
-class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCCodeString):
-
+class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecification):
+   
         
     def start(self):
         self.output_function_start()
@@ -189,7 +193,9 @@ class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCCodeString
         self.out + self.specification.name + '('
         
 class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
-    
+    @late
+    def legacy_global(self):
+        raise Exception("No legacy_global set, please set the legacy_global first")
     
             
     def start(self):
@@ -304,6 +310,10 @@ class MakeCMessageHeaderClassDefinition(MakeCCodeString):
 class MakeACStringOfAClassWithLegacyFunctions\
     (MakeCodeStringOfAClassWithLegacyFunctions):
 
+    @late
+    def class_with_legacy_functions(self):
+        raise Exception("No class_with_legacy_functions set, please set the class_with_legacy_functions first")
+    
     @late
     def dtype_to_spec(self):
         return dtype_to_spec

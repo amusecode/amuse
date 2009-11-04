@@ -17,7 +17,14 @@ dtype_to_spec = DTypeToSpecDictionary({
                     'number_of_strings', 'integer', 'MPI_INTEGER'),
 })
         
-class MakeAFortranStringOfALegacyFunctionSpecification(MakeCodeString):
+        
+
+class MakeAFortranStringFromAFunctionSpecification(MakeCodeString):
+    @late
+    def specification(self):
+        raise Exception("No specification set, please set the specification first")
+        
+class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFunctionSpecification):
     
     @late
     def dtype_to_spec(self):

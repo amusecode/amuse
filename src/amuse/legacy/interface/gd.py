@@ -238,6 +238,7 @@ class GravitationalDynamics(object):
         -2 - ERROR
             code does not support updating of a particle 
         """
+        return function
     
     @legacy_function
     def get_potential():
@@ -267,10 +268,19 @@ class GravitationalDynamics(object):
         Evolve the model until the given time or until a collision happens.
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('time', dtype='float64', direction=function.IN,
-            description = "Model time to evolve the code to. The model will be evolved until this time is reached exactly or just before")
-        function.addParameter('collision_flag', dtype='float64', direction=function.IN, 
-            description = "(1) Stop evolving the model when a collision is detected by the code (0) Continue evolving the code, ignore collisions")
+        function.addParameter('time',
+            dtype='float64',
+            direction=function.IN,
+            description =  
+                "Model time to evolve the code to. " 
+                "The model will be evolved until "
+                "this time is reached exactly or just before")
+        function.addParameter('collision_flag',
+            dtype='float64',
+            direction=function.IN, 
+            description = 
+                "(1) Stop evolving the model when a collision is detected by the code "
+                "(0) Continue evolving the code, ignore collisions")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -285,8 +295,10 @@ class GravitationalDynamics(object):
     @legacy_function
     def initialize_particles():
         """
-        Let the code perform initialization actions after all particles have loaded
-        in the model. Called before the first evolve call and after the last new_particle call.
+        Let the code perform initialization actions
+        after all particles have loaded in the model. 
+        Called before the first evolve call and 
+        after the last new_particle call.
         """
         function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
