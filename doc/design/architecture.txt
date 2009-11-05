@@ -1,0 +1,262 @@
+============
+Architecture
+============
+
+Layers
+------
+The AMUSE architecture is based on a layered design. This layerd design
+can be described with 3 layers. The highest layer is a python script, written
+for a single problem or set of problems. For example, a simulation of the evolution
+of a cluster. The next layer contains the AMUSE code. This layer integrates 
+the legacy codes and provides unit handling and data input/output. The
+lowest layer contains all the existing codes. In this layer the actual
+physical models are implemented. Each layer builds upon a lower layer, as
+is depicted in the following figure.
+
+.. raw:: latex
+
+   \begin{figure}[htp] \centering
+   
+.. graphviz::
+    
+    digraph layers0 {
+      level1 [label = "1. User Script", shape=box, style=filled,fillcolor=lightsalmon3];
+      level2 [label = "2. AMUSE Code", shape=box, style=filled,fillcolor=mediumseagreen];
+      level3 [label = "3. Legacy Codes", shape=box, style=filled,fillcolor=lightyellow];
+      level1 -> level2 -> level3
+    }
+
+.. raw:: latex
+
+   \caption{The 3 layers in AMUSE}
+   \end{figure} 
+
+
+
+
+Each layer has a different function:
+
+1. User Script. This layer contains all the user scripts. The scripts
+   are written in ``python`` and use the functionality provided by the AMUSE
+   code layer. Each script can be seen as a realisation of the AMUSE 
+   framework for one problem (or a set of problems with the same physics).
+
+2. AMUSE Code. This layer interfaces to the legacy codes and provides
+   generic functionalities, such as unit handling and data conversion.This
+   layer is very generic, it is not specific for one problem or for one
+   physical domain. This layer is written in ``python`` with small interfacing
+   parts written in ``C++`` or ``Fortran``.
+   
+3. Legacy Codes. This layer contains the existing codes. These codes
+   may be written in ``C++`` or ``Fortran`` or ``python``. The code in
+   this layer is generic in respect to problems, but speficic
+   for different physical domains.
+
+
+Legacy codes
+~~~~~~~~~~~~
+
+The legacy codes layer contains the source code of existing applications
+and the code to interface with these applications. 
+
+
+.. raw:: latex
+
+   \begin{figure}[htp] \centering
+
+.. graphviz::
+
+   digraph layers4 {
+        node [shape=box, style=filled, fillcolor=lightyellow];
+        "Python Interfaces" -> "Legacy Codes";
+        "Legacy Codes" -> "Gravitational Dynamics";
+        "Legacy Codes" -> "Stellar Evolution";
+        "Legacy Codes" -> "Hydro Dynamics";
+        "Legacy Codes" -> "Radiative Transfer";
+    }
+
+.. raw:: latex
+
+   \caption{Legacy codes are categorized in different domains}
+   \end{figure} 
+
+
+
+The interface to an legacy code is made up out of a set of functions. This
+set can be divided into three subsets.
+
+1. **Specific for the legacy code.** This set of functions is needed to
+   provide access to a functionality or property that is defined
+   in one legacy code and not in any other legacy codes. For example,
+   a code might need a unique parameter, only used by that code.
+2. **Specific for the physical domain.** This set of functions is needed to
+   provide access to a functionality or property that is common to *most*
+   applications in a physical domain. For example, all hydrodynamics codes
+   can evolve their model in time and implement the same function to do so.
+   Note that the function does not have to be implemented in all codes,
+   it is possible to implement only part of this interface.   
+3. **Generic for all interfaces.** This set of functions is needed to\
+    provide access to a functionality or property that is common to *most*
+    legacy codes. For example, all codes need clean-up and shutdown code. 
+    Also, handling of snapshot files might fall under this category.
+
+.. raw:: latex
+
+   \begin{figure}[htp] \centering
+
+.. graphviz::
+
+   digraph layers4 {
+        node [shape=box, style=filled, fillcolor=lightyellow];
+        "Specific for the legacy code" -> "Specific for the physical domain" -> "Generic for all interfaces";
+    }
+
+.. raw:: latex
+
+   \caption{Interface is build up out of different layers of functionality}
+   \end{figure} 
+
+
+Domain specific interfaces
+**************************
+All the interfaces that are specific for a physical domain can be further
+split up in different interfaces. These sub-interfaces are categorized as:
+
+1. Code Management. Contains the functions to manage start-up and
+   shutdown of the code. Also, functions to initialize or re-initialize
+   the code after parameters have been set or changed.
+2. Parameters. Contains the functions to set or change the parameters
+   of a code.
+3. Object Management. Contains the functions to manage creation 
+   and deletation of objects (star, gas-particles, gridpoints). Also,
+   querying the existing ids and walking over the defined objects.
+4. Object State. Contains the functions to set or change the properties
+   of an object.
+5. Model evolution. Contains the functions to evolve the model, or
+   the evolve the properties of a single particle.
+6. Diagnostics. Contains the functions to query the overall code or
+   mode state. For example, total mass or total kinetic energy.
+7. Services.  Contains the functions to help other modules. For example,
+   calculating the density at a specified point.
+
+.. raw:: latex
+
+   \begin{figure}[htp] \centering
+
+.. graphviz::
+
+   graph interface1 {
+        graph [splines=true, overlap=false, rankdir = "RL", layout="twopi"] ;
+
+        interface [label = "Domain Interface", shape=box]
+        interface -- "Code Management";
+        interface -- "Parameters";
+        interface -- "Object Management";
+        interface -- "Object State";
+        interface -- "Model evolution";
+        interface -- "Diagnostics";
+        interface -- "Services";
+    }
+
+.. raw:: latex
+
+   \caption{Different sub-interfaces in a domain interface}
+   \end{figure} 
+
+AMUSE Code
+~~~~~~~~~~
+.. graphviz::
+
+    digraph layers_1 {
+      compound=true;
+      ranksep=.75;
+      nodesep=.5;
+      
+      subgraph cluster0 {
+        node [shape=box, style=filled, fillcolor=white];
+        style=filled;
+        color=mediumseagreen;
+        label="Support";
+        
+        "Input/Output";
+        "Units";
+       }
+       
+       subgraph cluster1 {
+        node [shape=box, style=filled, fillcolor=white];
+        style=filled;
+        color=lightyellow;
+        label="Legacy";
+        
+        "Python Interfaces" -> "Legacy Codes";
+       }
+       
+       subgraph cluster2 {
+        node [shape=box, style=filled, fillcolor=white];
+        style=filled;
+        color=lightblue;
+        label="Interface";
+        
+        "Data Model";
+        "Integration of Units";
+        "Storage"
+       }
+       
+      
+     
+      "Integration of Units" -> "Units"[lhead=cluster0, ltail=cluster2]; 
+      "Data Model" -> "Python Interfaces"[lhead=cluster1, ltail=cluster2]; 
+    }
+   
+   
+
+User Script
+~~~~~~~~~~~
+
+This layer contains all the scripts written by a researcher for
+a specific problem or set of problems. These scripts are written
+in *python* and can use all the functionality provided by different
+blocks in the AMUSE code layer. 
+
+.. graphviz::
+
+   digraph layers2 {
+      "Interface" [shape=box, style=filled,fillcolor=lightblue];
+      "Support" [shape=box, style=filled,fillcolor=mediumseagreen];
+      "Legacy"[shape=box, style=filled,fillcolor=lightyellow];
+      "User Script" [shape=box, style=filled,fillcolor=lightsalmon3];
+      "User Script" -> "Interface"
+      "User Script" -> "Legacy"
+      "User Script" -> "Support"
+   }
+
+
+
+Implementation Languages
+------------------------
+
+.. graphviz::
+
+   digraph layers0 {
+      level1 [label = "1. User Script - python ", shape=box, style=filled,fillcolor=lightsalmon3];
+      level2 [label = "2. AMUSE Code - python and parts C++ / Fortran", shape=box, style=filled,fillcolor=mediumseagreen];
+      level3 [label = "3. Legacy Codes - C++ / Fortran / python", shape=box, style=filled,fillcolor=lightyellow];
+      level1 <> level2 -> level3
+   }
+
+
+
+
+Algorithm levels
+----------------
+
+A multipurpose framework like AMUSE can provide astrophysical
+algorithms on different levels. These levels can range from very low
+level building blocks like an integrator or force calculator to higher
+level codes that only thake input and provide output. In AMUSE all 
+physical modules are self contained, high level building blocks. Every 
+module can be seen as a self contained set of functions to evolve a 
+physical model. Every module will provide IO and control functions. One 
+cannot combine the force calculation functions of one module with the 
+integrator of another.
+
