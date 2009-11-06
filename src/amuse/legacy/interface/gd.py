@@ -289,6 +289,8 @@ class GravitationalDynamics(object):
             Stopped after a collision
         -1 - ERROR
             Model did not converge 
+        -2 - ERROR
+            Procedure get_kinetic_energy FAILED
         """
         return function  
     
