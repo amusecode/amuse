@@ -452,7 +452,8 @@ int evolve_system(real t_end, int sync)
 {
     real epot;			// potential energy of the n-body system
     real coll_time;		// collision (close encounter) time scale
-
+    int nest_err;               // error of subprocedure
+              
     // May be overkill to compute acc and jerk at start and end of
     // this routine, as usually the stars won't have changed on
     // return.  This way, however, we can guarantee that the particles
@@ -478,7 +479,9 @@ int evolve_system(real t_end, int sync)
 	    dt = calculate_step(coll_time);
             evolve_step(dt, epot, coll_time);	// sets t, t_evolve
 	    if (test_mode) {
-		real E = get_kinetic_energy() + epot;
+	        real E;
+	        nest_err = get_kinetic_energy(&E); 
+		E += epot;
 		if (!init_flag) {
 		    einit = E;
 		    init_flag = true;
@@ -519,7 +522,15 @@ int evolve_system(real t_end, int sync)
     // otherwise, we set t_evolve = t_end.  If sync is set, we will
     // have t = t_end.
 
-    return id_coll_primary;
+    //return id_coll_primary;
+    if (!nest_err){
+      nest_err = id_coll_primary;
+    }
+    else{
+      nest_err = -2;
+    }
+    
+    return nest_err;
 }
 
 int get_n_steps()
@@ -794,7 +805,7 @@ double get_radius(int id)
 	return -1;
 }
 
-double get_kinetic_energy()
+int get_kinetic_energy(double * kinetic_energy)
 {
     int n = ident.size();
     real ekin = 0;
@@ -804,10 +815,11 @@ double get_kinetic_energy()
 	    real v = vel[i][k] + acc[i][k]*dt + jerk[i][k]*dt*dt/2;
 	    ekin += mass[i] * v * v;
 	}
-    return 0.5*ekin;
+    *kinetic_energy = 0.5*ekin;
+    return 0;
 }
 
-double get_potential_energy()
+int get_potential_energy(double * potential_energy)
 {
     int n = ident.size();
     real (* save_pos)[NDIM] = new real[n][NDIM];
@@ -835,7 +847,8 @@ double get_potential_energy()
 	    }
     }
 
-    return epot;
+    *potential_energy = epot;
+    return 0;
 }
 
 int get_escaper()		{return -1;}	// not implemented yet
