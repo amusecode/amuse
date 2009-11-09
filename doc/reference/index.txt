@@ -6,8 +6,9 @@ Reference documentation
    
    interface_specification
    message-protocol
-   legacy_support
    routines
+   core_support
+   legacy_support
    style_guide
    code_management
    glossary

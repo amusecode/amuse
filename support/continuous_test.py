@@ -12,6 +12,7 @@ import inspect
 from nose.plugins.capture import Capture
 from nose.core import TestProgram
 from nose.plugins.skip import Skip, SkipTest
+from nose.plugins.doctests import Doctest
 from optparse import OptionParser
 from subprocess import call, Popen, PIPE
 
@@ -80,7 +81,9 @@ class TestCaseReport(object):
         
         self.number_of_suite_runs = 0.0
         
-        if hasattr(test.test, "_testMethodName"):
+        if hasattr(test.test, "_dt_test"):
+            self.lineno = test.test._dt_test.lineno
+        elif hasattr(test.test, "_testMethodName"):
             method = getattr(test.test, getattr(test.test, "_testMethodName"))
             self.lineno = method.func_code.co_firstlineno
         else:
@@ -263,8 +266,8 @@ def _run_the_tests(directory):
     null_device = open('/dev/null')
     os.stdin = null_device
     report = MakeAReportOfATestRun()
-    plugins = [report , Skip() ,Capture()] 
-    result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
+    plugins = [report , Skip() ,Capture(), Doctest()] 
+    result = TestProgram(exit = False, argv=['nose', directory, '--with-doctest'], plugins=plugins);
     return report
     
 class MakeSVNStatusReport(object):

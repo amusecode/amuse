@@ -15,6 +15,7 @@ import Queue as queue
 from mpi4py import MPI
 from nose.plugins.capture import Capture
 from nose.plugins.skip import Skip, SkipTest
+from nose.plugins.doctests import Doctest
 from nose.core import TestProgram
 from multiprocessing import Process, Queue
 from optparse import OptionParser
@@ -88,7 +89,10 @@ class TestCaseReport(object):
         
         self.number_of_suite_runs = 0.0
         
-        if hasattr(test.test, "_testMethodName"):
+        
+        if hasattr(test.test, "_dt_test"):
+            self.lineno = test.test._dt_test.lineno
+        elif hasattr(test.test, "_testMethodName"):
             method = getattr(test.test, getattr(test.test, "_testMethodName"))
             self.lineno = method.func_code.co_firstlineno
         else:
@@ -307,11 +311,13 @@ class RunTests(object):
             null_device = open('/dev/null')
             os.stdin = null_device
             report = MakeAReportOfATestRun(previous_report)
-            plugins = [report , Skip(), Capture()]  
-            result = TestProgram(exit = False, argv=['nose', directory], plugins=plugins);
+            doctest = Doctest()
+            doctest.enabled = True
+            plugins = [doctest, report , Skip(), Capture(), ]  
+            result = TestProgram(exit = False, argv=['nose', directory, '--with-doctest'], plugins=plugins);
             results_queue.put(('test-report', report,) )
         except :
-            results_queue.put(('test-error', 'Exception happened: ' + str(exc_info()[0]) + " - " + str(sys.exc_info()[1]), ))
+            results_queue.put(('test-error', 'Exception happened: ' + str(sys.exc_info()[0]) + " - " + str(sys.exc_info()[1]), ))
         finally:
             MPI.Finalize()
 

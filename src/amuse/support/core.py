@@ -49,21 +49,66 @@ class late(object):
         
         
 class print_out(object):
+    """
+    Efficient way to contruct large strings.
+    
+    Strings are build up out of parts. Objects of this
+    class store these parts while building the string.
+    Only on request the parts are concatenated into
+    a large string.
+    
+    Strings and numbers can be added to the print_out.
+    For other objects str(object) is called before
+    adding it to the print_out.
+    
+    >>> p = print_out()
+    >>> p + "number of counts : " + 10 #doctest: +ELLIPSIS
+    <amuse.support.core.print_out object at 0x...>
+    >>> print p.string
+    number of counts : 10
+    
+    All methods return the print_out instance, so that
+    calls can be chained.
+    """
+    
     def __init__(self):
         self.parts = []
         self._indent = 0
         self.number_of_characters_on_current_line = 0
     
     def __add__(self, x):
+        """Add a new part to the print_out.
+        """    
+    
         if self.isstring(x):
             self.parts.append(x)
             self.number_of_characters_on_current_line += len(x)
         elif self.isnumber(x):
             self.parts.append(str(x))
             self.number_of_characters_on_current_line += len(str(x))
+        elif isinstance(x, print_out):
+            self.parts.extend(x.parts)
+        else:
+            part = str(x)
+            self.parts.append(part)
+            self.number_of_characters_on_current_line += len(part) 
         return self
         
     def n(self):
+        """Start a new-line, if the current line is not-empty.
+        
+        >>> p = print_out()
+        >>> for i in range(3):
+        ...     p.n() + i #doctest: +ELLIPSIS
+        ...
+        <amuse.support.core.print_out object at 0x...>
+        <amuse.support.core.print_out object at 0x...>
+        <amuse.support.core.print_out object at 0x...>
+        >>> print p.string
+        0
+        1
+        2
+        """
         if not self.parts:
             return self
         if self.parts[-1] == '\n':
@@ -72,14 +117,40 @@ class print_out(object):
         return self
         
     def indent(self):
+        """Increase the indent. The next line will start indented.
+        
+        >>> p = print_out()
+        >>> p + "01" #doctest: +ELLIPSIS
+        <amuse.support.core.print_out object at 0x...>
+        >>> p.indent().lf() + "2" #doctest: +ELLIPSIS
+        <amuse.support.core.print_out object at 0x...>
+        >>> print p.string
+        01
+          2
+        """
         self._indent += 1
         return self
         
     def dedent(self):
+        """Decrease the indent. The next line will start dedented.
+        
+        >>> p = print_out()
+        >>> p + "01" #doctest: +ELLIPSIS
+        <amuse.support.core.print_out object at 0x...>
+        >>> p.indent().lf() + "2" #doctest: +ELLIPSIS
+        <amuse.support.core.print_out object at 0x...>
+        >>> p.dedent().lf() + "01" #doctest: +ELLIPSIS
+        <amuse.support.core.print_out object at 0x...>
+        >>> print p.string
+        01
+          2
+        01
+        """
         self._indent -= 1
         return self
         
     def lf(self):
+        """Start a new-line"""
         self.parts.append('\n')
         self.number_of_characters_on_current_line = 0
         self.do_indent()
@@ -91,6 +162,10 @@ class print_out(object):
             self.number_of_characters_on_current_line += len(self.indent_characters())
 
     def indent_characters(self):
+        """ The indent characters, by default 2 spaces.
+        
+        Override this method to change the indent characters.
+        """
         return '  '
         
     def __str__(self):
@@ -98,6 +173,8 @@ class print_out(object):
         
     @property
     def string(self):
+        """String version of the print_out.
+        """
         return str(self)
         
     def isstring(self, x):
@@ -108,13 +185,27 @@ class print_out(object):
         
         
 class OrderedDictionary(object):
+    """A dictionary that keeps the keys in the dictionary in order.
+    
+    Ordered dictionaries are just like regular dictionaries but they remember the
+    order that items were inserted.  When iterating over an ordered dictionary,
+    the values are returned in the order their keys were first added.
+
+    >>> d = OrderedDictionary()
+    >>> d["first"] = 0
+    >>> d["second"] = 1
+    >>> d["third"] = 2
+    >>> [x for x in d]
+    [0, 1, 2]
+    """
     def __init__(self):
         self.mapping = {}
         self.orderedKeys = []
         
     def __setitem__(self, key, value):
         if key in self.mapping:
-            raise Exception("key " + key + " already in the dictionary")
+            self.mapping[key] = value
+            return
         self.orderedKeys.append(key)
         self.mapping[key] = value
         
