@@ -195,6 +195,14 @@ class legacy_function(object):
         ...          specification = LegacyFunctionSpecification()
         ...          return specification
         ...
+        >>> x = LegacyExample()
+        >>> x.evolve.specification #doctest: +ELLIPSIS
+        <amuse.legacy.support.core.LegacyFunctionSpecification object at 0x...>
+        >>> LegacyExample.evolve #doctest: +ELLIPSIS
+        <amuse.legacy.support.core.legacy_function object at 0x...>
+        >>> x.evolve #doctest: +ELLIPSIS
+        <amuse.legacy.support.core.LegacyCall object at 0x...>
+        
                     
         :argument specification_function: The function to be decorated
                     
@@ -440,7 +448,19 @@ class LegacyFunctionSpecification(object):
     result_type = property(_get_result_type, _set_result_type);
     
 class MessageChannel(object):
+    """
+    Abstract base class of all message channel.
     
+    A message channel is used to send and retrieve messages from
+    a remote party. A message channel can also setup the remote
+    party. For example starting an instance of an application
+    using MPI calls.
+    
+    The messages are encoded as arguments to the send and retrieve
+    methods. Each message has an id and and optional list of doubles,
+    integers, floats and/or strings.
+    
+    """
     def get_full_name_of_the_worker(self, type):
         tried_workers = []
         found = False
@@ -458,17 +478,23 @@ class MessageChannel(object):
                 found = True
         return full_name_of_the_worker
 
+    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+        pass
 
-import time
-import ctypes
-
-clib_library = ctypes.CDLL("libc.so.6")
-
-memcpy = clib_library.memcpy
-memcpy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
+    
+    def recv_message(self, tag):
+        pass
+        
+#import time
+#import ctypes
+#clib_library = ctypes.CDLL("libc.so.6")
+#memcpy = clib_library.memcpy
+#memcpy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
 
 class MpiChannel(MessageChannel):
-    
+    """
+    Message channel based on MPI calls to send and recv the messages
+    """
     def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type = None, debug_with_gdb = False):
         self.name_of_the_worker = name_of_the_worker
         self.number_of_workers = number_of_workers
@@ -640,7 +666,25 @@ class MpiChannel(MessageChannel):
 
 
 class MultiprocessingMPIChannel(MessageChannel):
+    """
+    Message channel based on JSON messages. 
     
+    The remote party functions as a message forwarder.
+    Each message is forwarded to a real application using MPI.
+    This is message channel is a lot slower than the MPI message
+    channel. But, it is useful during testing with
+    the MPICH2 nemesis channel. As the tests will run as one
+    application on one node they will cause oversaturation 
+    of the processor(s) on the node. Each legacy code
+    will call the MPI_FINALIZE call and this call will wait
+    for the MPI_FINALIZE call of the main test process. During
+    this wait it will consume about 10% of the processor power.
+    To mitigate this problem, we can use objects of this class
+    instead of the normal MPIChannel. Then, part of the
+    test is performed in a separate application (at least
+    as MPI sees it) and this part can be stopped after each
+    sub-test, thus removing unneeded applications. 
+    """
     def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type, debug_with_gdb = False):
         self.name_of_the_worker = name_of_the_worker
         self.number_of_workers = number_of_workers
@@ -766,18 +810,48 @@ class MultiprocessingMPIChannel(MessageChannel):
             
 
 def stop_interfaces():
+    """
+    Stop the workers of all instantiated interfaces.
+    
+    All instantiated interfaces will become unstable
+    after this call!
+    """
     for reference in LegacyInterface.instances:
         x = reference()
         if not x is None:
             x._stop()
-        
+
+atexit.register(stop_interfaces)
 
 class LegacyInterface(object):
+    """
+    Abstract base class for all interfaces to legacy codes.
+    
+    When a subclass is instantiated, a number of subprocesses
+    will be started. These subprocesses are called workers
+    as they implement the interface and do the actual work
+    of the instantiated object.
+    """
     instances = []
-    atexit.register(stop_interfaces)
     channel_factory = MpiChannel
     
     def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1, debug_with_gdb = False):
+        """
+        Instantiates an object, starting the worker.
+        
+        Deleting the instance, with ``del``, will stop
+        the worker.
+        
+        The worker can be started with a gdb session. The code
+        will start gdb in a new xterm window. To enable this
+        debugging support, the ``DISPLAY`` environment variable must be
+        set and the X display must be accessable, ``xhost +``.
+        
+        :argument name_of_the_worker: The filename of the application to start
+        :argument number_of_workers: Number of applications to start. The application must have parallel MPI support if this is more than 1.
+        :argument debug_with_gdb: Start the worker(s) in a gdb session in a separate xterm
+
+        """
         self.channel = self.channel_factory(name_of_the_worker, number_of_workers, type(self), debug_with_gdb)
         self.channel.start()
         self.instances.append(weakref.ref(self))
