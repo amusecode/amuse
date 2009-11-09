@@ -1,27 +1,46 @@
 """
-usefull objects
+
 """
 import types 
 
 class late(object):    
-    """  A late initialized property.
-    The property is initialized at first access. 
+    """
+    An attribute that is set at first access. 
+    
+    The value of the attribute will be determined from the *initializer*
+    method. The name of the attribute is the same as the name of
+    the *initializer* method.
+    
+    A late attribute is comparible with attributes set in the
+    *__init__* method. Except the value of the late attribute is
+    determined when first accessed and not when the class is
+    instantiated.
     """ 
     def __init__(self, initializer):
-        """late(initializer) -> late attribute
-        
-        initializer is a function to be used for getting the initial attribute value
+        """
+        Called when used as a decorator.
         
         Typical use to define a managed attribute x:
-        class C(object):
-            @late
-            def x(self):
-                return "i'm late!"
+        
+        >>> class C(object):
+        ...    @late
+        ...    def x(self):
+        ...        return "i'm late!"
+        ...
+        >>> c = C()
+        >>> print c.x
+        i'm late!
+        >>> c.x = "overridden"
+        >>> print c.x
+        overridden
+        
+        :argument initializer: function to determine the initial value of the property
+        :returns: a descriptor to determine and set the value on first access
         """
         self.initializer = initializer
+        self.__doc__ = self.initializer.__doc__
+        
     def __get__(self, instance, owner):
-        """Initialize the value of the property using the *initializer* function
-        """
         if instance is None:
             return self
         value = self.initializer(instance)

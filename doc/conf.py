@@ -25,12 +25,14 @@ sys.path.append(os.path.abspath('../src'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
  'sphinx.ext.autodoc',
+ 'sphinx.ext.autosummary',
  'sphinx.ext.doctest', 
  'sphinx.ext.todo',
  'sphinx.ext.pngmath', 
  'sphinx.ext.ifconfig', 
  'sphinx.ext.graphviz',
  'sphinx.ext.inheritance_diagram',
+ 'sphinx.ext.doctest',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -215,3 +217,4 @@ latex_documents = [
 
 # If false, no module index is generated.
 #latex_use_modindex = True
+

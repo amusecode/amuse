@@ -1,13 +1,13 @@
-AMUSE reference documentation
-=============================
-
-Contents:
+Reference documentation
+=======================
 
 .. toctree::
    :maxdepth: 2
    
    interface_specification
    message-protocol
+   legacy_support
+   routines
    style_guide
    code_management
    glossary

@@ -55,6 +55,20 @@ After starting `mpd` we can start the tests.
 
     OK
 
+.. compound::
+    
+    On some laptops the hostname will not point
+    to the correct internet address. For these laptops 
+    you can start the mpd daemon on the localhost ip. To do so,
+    you need to set the ``--ifhn`` option::
+    
+        >> mpd --ifhn localhost &
+        
+    
+    
+
+
+
 Real-time testing
 ~~~~~~~~~~~~~~~~~
 The code includes support for real-time testing. The real-time testing 

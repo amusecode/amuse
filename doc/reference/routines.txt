@@ -1,0 +1,10 @@
+=================
+Routines
+=================
+
+.. currentmodule:: amuse.legacy.support.core
+
+
+.. autosummary::
+
+    is_mpd_running, legacy_function

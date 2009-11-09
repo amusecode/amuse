@@ -1,0 +1,6 @@
+============================================
+Support code for the legacy code interfaces
+============================================
+
+.. automodule:: amuse.legacy.support.core
+    :members: is_mpd_running, LegacyCall, legacy_function, LegacyFunctionSpecification

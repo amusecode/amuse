@@ -1,5 +1,9 @@
 """
+This module implements the code to the define interfaces between python
+code and C++ or Fortran legacy codes. It provides the abstract base
+class for all legacy codes.
 """
+
 import inspect
 import numpy
 import weakref
@@ -7,6 +11,8 @@ import atexit
 import os
 import os.path
 import cPickle as pickle
+
+
 import sys
 import struct
 
@@ -17,10 +23,28 @@ from subprocess import Popen, PIPE
 from amuse.support.core import late
 from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
-from amuse.legacy.interface.create_definition import CreateDescriptionOfALegacyFunctionDefinition
+from amuse.legacy.interface import LegacyDocStringProperty
 
 
 def is_mpd_running():
+    """
+    Determine if the MPD daemon process is running.
+    
+    
+    Needed for installations of AMUSE in a MPICH2 environment using
+    the default MPD daemon. The MPD deamon must be
+    running before the first MPI_COMN_SPAWN call is made.
+    Returns True for other MPI vendors (OpenMPI)
+    
+    :returns: Boolean result of check whether MPD daemon is running.
+    :rtype: bool
+    
+    
+    >>> is_mpd_running()
+    True
+    
+        
+    """
     name_of_the_vendor, version = MPI.get_vendor()
     if name_of_the_vendor == 'MPICH2':
         process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
@@ -51,46 +75,32 @@ def _typecode_to_datatype(typecode):
     raise Exception("{0} is not a valid typecode".format(typecode))
     
 class LegacyCall(object):
-    """A legacy_call implements the runtime call to the remote process.
-    """
+    
+    __doc__ = LegacyDocStringProperty()
+   
     def __init__(self, interface, owner, specification):
+        """
+        Implementation of the runtime call to the remote process.
+
+        Performs the encoding of python arguments into lists
+        of values, sends a message over an MPI channel and
+        waits for a result message, decodes this message and
+        returns.
+        """
         self.interface = interface
         self.owner = owner
         self.specification = specification
     
     def __call__(self, *arguments_list, **keyword_arguments):
+        keyword_arguments_for_the_mpi_channel = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
+        self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
+        (doubles, ints) = self.interface.channel.recv_message(self.specification.id)
+        return self.converted_results(doubles, ints)
         
-        
-        dtype_to_values = self.specification.new_dtype_to_values()
-        
-        names_in_argument_list = set([])
-        for index, argument in enumerate(arguments_list):
-            parameter = self.specification.input_parameters[index]
-            names_in_argument_list.add(parameter.name)
-            
-            values = dtype_to_values[parameter.datatype]
-            values[parameter.input_index] = argument
-        
-        for index, parameter in enumerate(self.specification.input_parameters):
-            if parameter.name in keyword_arguments:
-                values = dtype_to_values[parameter.datatype]
-                values[parameter.input_index] = keyword_arguments[parameter.name]
-        
-        dtype_to_keyword = {
-            'float64' : 'doubles_in',
-            'int32'  : 'ints_in',
-            'string'  : 'chars_in',
-        }       
-        call_keyword_arguments = {}
-        for dtype, values in dtype_to_values.iteritems():
-            keyword = dtype_to_keyword[dtype]
-            call_keyword_arguments[keyword] = values
-            
-        return self.do_call(self.specification.id, **call_keyword_arguments)
-        
-    def do_call(self, id, **keyword_arguments):
-        self.interface.channel.send_message(id , **keyword_arguments)
-        (doubles, ints) = self.interface.channel.recv_message(id)
+    """
+    Convert results from an MPI message to a return value.
+    """
+    def converted_results(self, doubles, ints):
         floats = []
         
         number_of_outputs = len(self.specification.output_parameters)
@@ -129,20 +139,66 @@ class LegacyCall(object):
         
         return result
        
+    """
+    Convert keyword arguments and list arguments to an MPI message
+    """
+    def converted_keyword_and_list_arguments(self, arguments_list, keyword_arguments):
+        dtype_to_values = self.specification.new_dtype_to_values()
+        
+        names_in_argument_list = set([])
+        for index, argument in enumerate(arguments_list):
+            parameter = self.specification.input_parameters[index]
+            names_in_argument_list.add(parameter.name)
+            
+            values = dtype_to_values[parameter.datatype]
+            values[parameter.input_index] = argument
+        
+        for index, parameter in enumerate(self.specification.input_parameters):
+            if parameter.name in keyword_arguments:
+                values = dtype_to_values[parameter.datatype]
+                values[parameter.input_index] = keyword_arguments[parameter.name]
+        
+        dtype_to_keyword = {
+            'float64' : 'doubles_in',
+            'int32'  : 'ints_in',
+            'string'  : 'chars_in',
+        }       
+        call_keyword_arguments = {}
+        for dtype, values in dtype_to_values.iteritems():
+            keyword = dtype_to_keyword[dtype]
+            call_keyword_arguments[keyword] = values
+
+        return call_keyword_arguments
+        
     def __str__(self):
         return str(self.specification)
         
-    @property
-    def __doc__(self):
-        x = CreateDescriptionOfALegacyFunctionDefinition()
-        x.specification = self.specification
-        x.start()
-        return x.out.string
         
 class legacy_function(object):
-    """The meta information for a function call to a code
-    """
+    
+    __doc__ = LegacyDocStringProperty()
+    
     def __init__(self, specification_function):
+        """Decorator for legacy functions.
+    
+        The decorated function cannot have any arguments. This
+        means the decorated function must not have a ``self``
+        argument.
+        
+        The decorated function must return 
+        a LegacyFunctionSpecification.
+        
+            
+        >>> class LegacyExample(object):
+        ...     @legacy_function
+        ...     def evolve():
+        ...          specification = LegacyFunctionSpecification()
+        ...          return specification
+        ...
+                    
+        :argument specification_function: The function to be decorated
+                    
+        """
         self.specification_function = specification_function
         
     def __get__(self, instance, owner):
@@ -155,6 +211,9 @@ class legacy_function(object):
         
     @late
     def specification(self):
+        """
+        The legacy function specification of the call.
+        """
         result = self.specification_function()
         if result.name is None:
             result.name = self.specification_function.__name__
@@ -165,17 +224,15 @@ class legacy_function(object):
             result.description = pydoc.getdoc(self.specification_function)
         return result
     
-    @property
-    def __doc__(self):
-        x = CreateDescriptionOfALegacyFunctionDefinition()
-        x.specification = self.specification
-        x.start()
-        return x.out.string
         
 class legacy_global(object):
-    """The meta information for globals of the code
-    """
+  
     def __init__(self, name , id = None, dtype = 'i'):
+        """
+        Decorator for legacy globals.
+        
+        *to be removed*
+        """
         self.name = name
         self.id = id
         self.datatype = _typecode_to_datatype(dtype)
@@ -214,9 +271,10 @@ class legacy_global(object):
         result.result_type = self.datatype
         return result
      
-class Parameter(object):
-    
+class ParameterSpecification(object):
     def __init__(self, name, dtype, direction, description):
+        """Specification of a parameter of a legacy function 
+        """
         self.name = name
         self.direction = direction
         self.input_index = -1
@@ -234,9 +292,37 @@ class Parameter(object):
             or self.direction == LegacyFunctionSpecification.INOUT)
                     
 class LegacyFunctionSpecification(object):
+    """
+    Specification of a legacy function.
+    Describes the name, result type and parameters of a
+    legacy function. 
+    
+    The legacy functions are implemented by legacy codes. 
+    The implementation of legacy functions is in C/C++ or Fortran.
+    To interact with these functions a specification of the
+    legacy function is needed.
+    This specification is used to determine how to encode
+    and decode the parameters and results of the function.
+    Objects of this class describe the specification of one
+    function.
+    
+    >>> specification = LegacyFunctionSpecification()
+    >>> specification.name = "test"
+    >>> specification.addParameter("one", dtype="int32", direction = specification.IN)
+    >>> specification.result_type = "int32"
+    >>> print specification
+    function: int test(int one)
+    
+    """
+    
     IN = object()
+    """Used to specify that a parameter is used as an input parameter, passed by value"""
+    
     OUT = object()
+    """Used to specify that a parameter is used as an output parameter, passed by reference"""
+    
     INOUT = object()
+    """Used to specify that a parameter is used as an input and an outpur parameter, passed by reference"""
     
     def __init__(self):
         self.parameters = []
@@ -252,7 +338,19 @@ class LegacyFunctionSpecification(object):
         self.result_doc = ''
         
     def addParameter(self, name, dtype = 'i', direction = IN, description = ""):
-        parameter = Parameter(name, dtype, direction, description)
+        """
+        Extend the specification with a new parameter.
+        
+        The sequence of calls to addParameter is important. The first
+        call will be interpreted as the first argument, the second
+        call as the second argument etc.
+        
+        :argument name: Name of the parameter, used in documentation and function generation
+        :argument dtype: Datatype specification string
+        :argument direction: Direction of the argument, can be IN, OUT or INOUT
+        :argument description: Description of the argument, for documenting purposes
+        """
+        parameter = ParameterSpecification(name, dtype, direction, description)
         self.parameters.append(parameter)
         
         if parameter.is_input():
@@ -333,13 +431,13 @@ class LegacyFunctionSpecification(object):
         return p.string
         
     
-    def get_result_type(self):
+    def _get_result_type(self):
         return self._result_type
     
-    def set_result_type(self, value):
+    def _set_result_type(self, value):
         self._result_type = _typecode_to_datatype(value)
         
-    result_type = property(get_result_type, set_result_type);
+    result_type = property(_get_result_type, _set_result_type);
     
 class MessageChannel(object):
     
@@ -359,7 +457,16 @@ class MessageChannel(object):
             else:
                 found = True
         return full_name_of_the_worker
-        
+
+
+import time
+import ctypes
+
+clib_library = ctypes.CDLL("libc.so.6")
+
+memcpy = clib_library.memcpy
+memcpy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
+
 class MpiChannel(MessageChannel):
     
     def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type = None, debug_with_gdb = False):
@@ -370,6 +477,8 @@ class MpiChannel(MessageChannel):
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
         self.debug_with_gdb = debug_with_gdb
+        
+        self.cached = None
         
     def start(self):
         if self.debug_with_gdb:
@@ -411,30 +520,46 @@ class MpiChannel(MessageChannel):
         #    number_of_characters = len(chars_in[0])+1
         #else:
         #    number_of_characters = 0
+       
         header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in), len(chars_in)], dtype='i')
-        
         self.intercomm.Bcast([header, MPI.INT], root=MPI.ROOT)
+        
         if doubles_in:
+            #t0 = time.time()
+            if self.cached  is None:
+                doubles = numpy.empty(length * len(doubles_in), dtype='d')
+                self.cached = doubles
+            else:
+                if self.cached.size == length * len(doubles_in):
+                    doubles = self.cached
+                else:
+                    doubles = numpy.empty(length * len(doubles_in), dtype='d')
+                    self.cached = doubles
             
-            doubles = numpy.zeros( (len(doubles_in), length), dtype='d')
+            dst_pointer = doubles.__array_interface__['data'][0]
             for i in range(len(doubles_in)):
                 offset = i * length
-                doubles[i] = doubles_in[i]
-            doubles.reshape(len(doubles_in) * length)
+                doubles[offset:offset+length] = doubles_in[i]
+                #print  (8.0 * length) / 1024.0 / 1024.0
+                #memcpy(ctypes.c_void_p(dst_pointer + (offset * 8)), ctypes.c_void_p( doubles_in[i].__array_interface__['data'][0]), 8 * length)
+            
             self.intercomm.Bcast([doubles, MPI.DOUBLE], root=MPI.ROOT)
+            #t1 = time.time()
+            #print "D", t1 - t0
         if ints_in:
-            ints = numpy.zeros(length * len(ints_in), dtype='i')
+            ints = numpy.empty(length * len(ints_in), dtype='i')
             for i in range(len(ints_in)):
                 offset = i * length
                 ints[offset:offset+length] = ints_in[i]
             
-            #ints = numpy.hstack(ints_in)
             self.intercomm.Bcast([ints, MPI.INT], root=MPI.ROOT)
+            
         if floats_in:
             floats = numpy.array(floats_in, dtype='f')
             self.intercomm.Bcast([floats, MPI.FLOAT], root=MPI.ROOT)
 
         if chars_in:
+            print "C"
             offsets = numpy.zeros(length * len(chars_in), dtype='i')
             offset = 0
             index = 0
@@ -467,9 +592,11 @@ class MpiChannel(MessageChannel):
             print bytes
             chars = numpy.array(bytes, dtype=numpy.uint8)
             self.intercomm.Bcast([chars, MPI.CHARACTER], root=MPI.ROOT)
-            
+       
+        
+        
     def recv_message(self, tag):
-        header = numpy.empty(6,  dtype='i')
+        header = numpy.zeros(6,  dtype='i')
         self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
         length = header[1]
         n_doubles = header[2]
@@ -488,6 +615,7 @@ class MpiChannel(MessageChannel):
         else:
             doubles_result = []
         if n_ints > 0:
+            
             ints_mpi = numpy.empty(n_ints * length,  dtype='i')
             self.intercomm.Recv([ints_mpi, MPI.INT], source=0, tag=999)
             ints_result = []

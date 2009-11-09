@@ -4,6 +4,7 @@ from legacy_support import TestWithMPI
 from amuse.legacy.interface import gd
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface import create_definition
+from amuse.legacy.interface import LegacyDocStringProperty
 from amuse.legacy.support.core import LegacyFunctionSpecification
 
 class TestGravitationalDynamics(TestWithMPI):
@@ -62,4 +63,29 @@ class TestGravitationalDynamics(TestWithMPI):
         self.assertTrue(x.out.string.find('FUNCTION test(one)') >= 0)
         self.assertTrue(x.out.string.find('END FUNCTION') > 0)
         self.assertTrue(x.out.string.find('DOUBLE PRECISION :: one') > 0)
+        
+    def test5(self):
+        class WithLegacyDocStringProperty(object):
+            
+            def __init__(self):
+                "orignal doc"
+                pass
+            
+            @property
+            def specification(self):
+                specification = LegacyFunctionSpecification()
+                specification.name ='test'
+                specification.addParameter('one','d',specification.IN, 'first parameter')
+                specification.result_type = 'i'
+                specification.result_doc = 'an integer'
+                specification.description = 'Example function'
+                return specification
+                
+            __doc__ = LegacyDocStringProperty()
+            
+            
+        self.assertEquals("orignal doc", WithLegacyDocStringProperty.__doc__)
+        instance = WithLegacyDocStringProperty()
+        instance_documentation =  WithLegacyDocStringProperty().__doc__
+        self.assertTrue(instance_documentation.find('FUNCTION test(one)') >= 0)
         

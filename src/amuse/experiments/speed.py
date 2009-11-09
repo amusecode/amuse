@@ -3,7 +3,12 @@ import sys
 import numpy
 
 from amuse.legacy.hermite0 import muse_dynamics_mpi as mpi_interface
-from matplotlib import pyplot
+
+try:
+    from matplotlib import pyplot
+    HAVE_MATPLOTLIB = True
+except ImportError:
+    HAVE_MATPLOTLIB = False
 
 def calculate_speed(range_of_number_of_particles):
     result = []

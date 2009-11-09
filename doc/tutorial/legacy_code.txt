@@ -118,7 +118,13 @@ the build process.
         
     .c.o: $<
         g++ $(CXXFLAGS) -c -o $@ $<
-        
+
+.. compound:
+
+    You need to convert the spaces into tabs, 
+    if you copy the above text to a new file.
+    
+
 Let's start make and build the ``muse_worker`` application
 
 .. code-block:: bash
