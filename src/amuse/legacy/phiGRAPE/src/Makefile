@@ -67,9 +67,12 @@ SAO     = $(SAF:.F=.o)
 
 all: phiGRAPE
 
-gl: stars3d.o libpt.a fthread.o
+gl: viewer.o libpt.a fthread.o
 
 stars3d.o: stars3d.f90
+	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
+
+viewer.o: viewer.f90
 	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 libpt.a: pt.c ptf77.c pt.h

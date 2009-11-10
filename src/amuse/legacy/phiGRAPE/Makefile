@@ -19,7 +19,7 @@ OBJECTS = \
 
 G6OBJS = src/g6lib.o
 
-GLOBJECTS=src/fthread.o src/stars3d.o src/libpt.a
+GLOBJECTS=src/fthread.o src/viewer.o src/libpt.a
 
 ifndef CUDA_LIBDIRS
 	CUDA_LIBDIRS = -L/data1/pelupes/programs/cuda/lib 
@@ -86,7 +86,8 @@ muse_worker_grape: muse_worker.f90 muse_interface.o
 muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o 
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(GLOBJECTS) $(LIBRARIES) $(GLLIB) $(X11LIB) $(THREADLIB)
+	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(GLOBJECTS) $(LIBRARIES) \
+	  $(GLLIB)  $(X11LIB) $(THREADLIB)
         
 muse_worker.f90: muse_dynamics_mpi.py
 	../../../../bin/create_f90_worker.py muse_dynamics_mpi.py PhiGRAPE > $@
