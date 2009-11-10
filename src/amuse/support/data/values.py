@@ -9,7 +9,7 @@ class Quantity(object):
     for VectorQuantity and ScalarQuantity.
     
     Quantities should be constructed using *or-operator* ("|"),
-    *new_quantity* or *unit.new_quantity".
+    *new_quantity* or *unit.new_quantity*.
     
     Quantities emulate numeric types.
     
@@ -110,7 +110,7 @@ class Quantity(object):
         in the given unit.
         
         A number is returned without any unit information. Use this
-        function oply to transfer values to other libraries that have
+        function only to transfer values to other libraries that have
         no support for quantities (for example plotting).
         
         :argument unit: wanted unit of the value
@@ -127,7 +127,7 @@ class Quantity(object):
 
 class ScalarQuantity(Quantity):
     """
-    A ScalarQuantity objects represents a physical scalar 
+    A ScalarQuantity object represents a physical scalar 
     quantity.
     """
     
@@ -170,8 +170,16 @@ class ScalarQuantity(Quantity):
             
 class VectorQuantity(Quantity):
     """
-    A ScalarQuantity objects represents a physical vector 
+    A VectorQuantity object represents a physical vector 
     quantity.
+    
+    >>> from amuse.support.units import units
+    >>> v1 = [0.0, 1.0, 2.0] | units.kg
+    >>> v2 = [2.0, 4.0, 6.0] | units.kg
+    >>> v1 + v2
+    quantity<[2.0, 5.0, 8.0] kg>
+    >>> len(v1)
+    3
     """
     def __init__(self, array, unit):
         Quantity.__init__(self, unit)
@@ -180,7 +188,9 @@ class VectorQuantity(Quantity):
     def is_vector(self):
         return True
     
-    
+    def __len__(self):
+        return len(self._number)
+        
     def __getitem__(self, index):
         """Return the "index" component as a quantity.
         
