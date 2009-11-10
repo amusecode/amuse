@@ -1,0 +1,34 @@
+==========================
+Quantities and Units
+==========================
+
+Quantities
+----------
+.. inheritance-diagram:: amuse.support.data.values
+
+.. automodule:: amuse.support.data.values
+    
+    .. autoclass:: Quantity
+        :members:
+    
+    
+    .. autoclass:: ScalarQuantity
+        :members:
+
+    .. autoclass:: VectorQuantity
+        :members:
+
+        .. automethod:: __getitem__
+        
+        
+        .. automethod:: __setitem__
+        
+
+Units
+-----
+.. inheritance-diagram:: amuse.support.units.core
+
+.. automodule:: amuse.support.units.core
+    :members:
+    
+    
