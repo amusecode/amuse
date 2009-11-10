@@ -1,12 +1,5 @@
-
-"""
-Unit conversion support
-=======================
-
-Definition of the 7 base units
-
-"""
 from amuse.support.data import values
+
 import numpy
 
 class system(object):
@@ -51,6 +44,10 @@ class unit(object):
             return pow_unit(other, self)
         
     def __call__(self, x):
+        return self.new_quantity(x)
+        
+    
+    def new_quantity(self, x):
         return values.new_quantity(x, self)
         
     def to_simple_form(self):
