@@ -208,6 +208,8 @@ class unit(object):
         >>> kph = units.km / units.hour
         >>> mps.has_same_base_as(kph)
         True
+        >>> mps.has_same_base_as(units.km)
+        False
         
         """
         return other.base == self.base
