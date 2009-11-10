@@ -40,4 +40,4 @@ class TestStars(TestBase):
         stars[0].position = units.m(numpy.array([1.0,2.0,1.0])) 
         stars[1].mass = 10 | units.g
         stars[1].position = units.m(numpy.array([0.0,0.0,0.0]))
-        self.assertEquals(0.5, stars.center_of_mass().x)
+        self.assertEquals(0.5 | units.m, stars.center_of_mass().x)

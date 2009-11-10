@@ -83,23 +83,98 @@ class ScalarQuantity(Quantity):
 class VectorQuantity(Quantity):
     def __init__(self, array, unit):
         Quantity.__init__(self, unit)
-        self.x = array[0]
-        self.y = array[1]
-        self.z = array[2]
-          
+        self._number = numpy.array(array)
+        
     def is_vector(self):
         return True
+    
+    
+    def __getitem__(self, index):
+        """Return the "index" component as a quantity.
+        
+        :argument index: index of the component, valid values
+            for 3 dimensional vectors are: ``[0,1,2]``
+        :returns: quantity with the same units
+        
+        >>> from amuse.support.units import si
+        >>> vector = [0.0, 1.0, 2.0] | si.kg
+        >>> print vector[1]
+        1.0 kg
+        """
+        return new_quantity( self._number[index] , self.unit )
+        
+    
+    def __setitem__(self, index, quantity):
+        """Update the "index" component to the specified quantity.
+        
+        :argument index: index of the component, valid values
+            for 3 dimensional vectors are: ``[0,1,2]``
+        :quantity: quantity to set, will be converted to
+            the unit of this vector
+        
+        >>> from amuse.support.units import si
+        >>> vector = [0.0, 1.0, 2.0] | si.kg
+        >>> g = si.kg / 1000
+        >>> vector[1] = 3500 | g
+        >>> print vector
+        [0.0, 3.5, 2.0] kg
+        """
+        quantity_in_my_units = quantity.in_(self.unit)
+        self._number[index] = quantity_in_my_units.number
         
     @property
     def number(self):
-        return numpy.array([self.x, self.y, self.z])
+        return self._number
+        
+    @property
+    def x(self):
+        """The x axis component of a 3 dimensional vector.
+        This is equavalent to the first item in an array.
+        
+        :returns: x axis component as a quantity
+        
+        >>> from amuse.support.units import si
+        >>> vector = [1.0, 2.0, 3.0] | si.kg
+        >>> print vector.x
+        1.0 kg
+        """
+        return self[0]
+        
+    @property
+    def y(self):
+        """The y axis component of a 3 dimensional vector.
+        This is equavalent to the first item in an array.
+        
+        :returns: y axis component as a quantity
+        
+        >>> from amuse.support.units import si
+        >>> vector = [1.0, 2.0, 3.0] | si.kg
+        >>> print vector.y
+        2.0 kg
+        """
+        return self[1]
+        
+    @property
+    def z(self):
+        """The z axis component of a 3 dimensional vector.
+        This is equavalent to the first item in an array.
+        
+        :returns: z axis component as a quantity
+        
+        >>> from amuse.support.units import si
+        >>> vector = [1.0, 2.0, 3.0] | si.kg
+        >>> print vector.z
+        3.0 kg
+        """
+        return self[2]
         
     def __str__(self):
         unit_str = str(self.unit)
+        array_str = '[' + ', '.join([str(x) for x in self._number]) + ']'
         if unit_str:
-            return '[' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ']' + ' | ' + unit_str
+            return array_str + ' ' + unit_str
         else:
-            return '[' + str(self.x) + ', ' + str(self.y) + ', ' + str(self.z) + ']'
+            return array_str
             
 
     def __lt__(self, other):
@@ -116,7 +191,11 @@ class VectorQuantity(Quantity):
         
     def __neq__(self, other):
         other_in_my_units = other.in_(self.unit)
-        return self.number != other_in_my_units.number        
+        return self.number != other_in_my_units.number   
+            
+    def indices(self):
+        for x in len(self._number):
+            yield x
                  
         
 def new_quantity(value, unit):
