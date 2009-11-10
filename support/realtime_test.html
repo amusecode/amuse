@@ -203,7 +203,11 @@ function handle_last_report(report) {
         address.append(testcase.address[2]) ;
         address.appendTo(item);
         var delta_time = $('<span></span>');
-        delta_time.text('(' + (testcase.end_time - testcase.start_time).toFixed(3) + ')')
+        if(testcase.skipped ) {
+            delta_time.text('(' + (testcase.mean_time).toFixed(3) + ')')
+        } else {
+            delta_time.text('(' + (testcase.end_time - testcase.start_time).toFixed(3) + ')')
+        }
         item.append(' ');
         delta_time.appendTo(item);
         

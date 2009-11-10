@@ -154,7 +154,9 @@ class TestCaseReport(object):
         self.errored = False
         
     def to_dict(self):
-        return self.__dict__.copy()
+        result = self.__dict__.copy()
+        result['mean_time'] = self.mean_time()
+        return result
         
         
 class MakeAReportOfATestRun(object):
