@@ -12,6 +12,8 @@ OBJ_EVT=obj/twinmuse.o
 MODDIR=src/modules
 EVTWINLIB=src/lib/libtwin.a
  
+FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
+
 all:    src/makefile.dep src/makefile.sys worker_code
 
 src/makefile.dep: src/Makefile
@@ -39,16 +41,18 @@ distclean:
 	
 muse_worker_c: muse_worker_c.cc muse_worker.h
 	make -C src lib/libtwin.a $(OBJ_EVT) FORT=$(FORTRAN)
-	mpicxx $< $(OBJ) -o $@ -lgfortran $(EVTWINLIB)
+	mpicxx $< $(OBJ) -o $@ $(FLIB) $(EVTWINLIB)
 	
 muse_worker: muse_worker.f90	
 	make -C src lib/libtwin.a FORT=$(FORTRAN)
 	cp $(MODDIR)/twin_library.mod .
+	cp $(MODDIR)/mesh.mod .
 	mpif90 $< -o $@ $(EVTWINLIB)
 
 worker_code: mpi_code.f90
 	make -C src lib/libtwin.a FORT=$(FORTRAN)
 	cp $(MODDIR)/twin_library_v2.mod .
+	cp $(MODDIR)/mesh.mod .
 	mpif90 $< -o $@ $(EVTWINLIB)
 	
 
