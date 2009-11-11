@@ -150,8 +150,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
                 if time < 1.0 | units.Myr: 
                     continue
                 index += 1
-                x_point = position.in_(units.lightyear).x
-                y_point = position.in_(units.lightyear).y
+                x_point = position.x.value_in(units.lightyear)
+                y_point = position.y.value_in(units.lightyear)
                 t, mass = x.mass.get_value_at_time(time)
                 
                 color = 'b'
