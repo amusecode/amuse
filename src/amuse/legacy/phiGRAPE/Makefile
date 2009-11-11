@@ -41,7 +41,7 @@ endif
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS) $(GRAPE6_LIBDIRS)
 GPULIBS  = $(CUDA_LIBS) -lsapporo -lboost_thread-mt -lpthread 
-GRAPE6LIBS  = -lg6hib
+GRAPE6LIBS  = -lg6lx
 LIBS     = -lm  
 LIBS     =  -lm -lpthread
 
