@@ -131,11 +131,15 @@ class LegacyCall(object):
             'int32' : list(reversed(ints)),
             'float32' : list(reversed(floats))
         }
+        
+        if not self.specification.result_type is None:
+            return_value =  dtype_to_array[self.specification.result_type].pop()
+        
         for parameter in self.specification.output_parameters:
             result[parameter.name] = dtype_to_array[parameter.datatype].pop()
         
         if not self.specification.result_type is None:
-            result["__result"] =  dtype_to_array[self.specification.result_type].pop()
+            result["__result"] =  return_value
         
         return result
        
@@ -855,6 +859,8 @@ class LegacyInterface(object):
         self.channel = self.channel_factory(name_of_the_worker, number_of_workers, type(self), debug_with_gdb)
         self.channel.start()
         self.instances.append(weakref.ref(self))
+        
+   
         
     def __del__(self):
         self._stop()

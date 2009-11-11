@@ -134,7 +134,7 @@ CFLAGS += $(ARCHITECTURE_FLAG)
 SHARED_SRC = initdat.f initrun.f nremesh.f extrapolate_dh.f mesh.f control.f xtraelem.f fcompare.f consts.f menc.f plotvars.f bbegin.f cfuncs.f estate.f massloss.f file_exists.f positron_fdirac.f printb.f fgb2hb_comp.f
 SHARED_SRC += dsolve.f 
 RAWSRC = aamain.f $(SHARED_SRC)
-LIBSRC = library.f $(SHARED_SRC) prtoft.f import.f export.f
+LIBSRC = library_v2.f library.f $(SHARED_SRC) prtoft.f import.f export.f
 
 # Target object files
 OBJS = $(addprefix $(OBJDIR)/,$(RAWSRC:.f=.o))

@@ -22,8 +22,8 @@ from amuse.experiments.plummer import MakePlummerModel
 
 class SalpeterIMF(object):
     def __init__(self, mass_min = 0.1 | units.MSun, mass_max = 125 | units.MSun, alpha = -2.35):
-        self.mass_min = mass_min.in_(units.MSun)
-        self.mass_max = mass_max.in_(units.MSun)
+        self.mass_min = mass_min.as_quantity_in(units.MSun)
+        self.mass_max = mass_max.as_quantity_in(units.MSun)
         self.alpha = alpha
         self.random = random.Random()
         self.random.seed()
@@ -182,9 +182,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             figure = pyplot.figure()
             axes_3d = axes3d.Axes3D(figure)
             positions = particles.get_values_of_attribute('position')
-            xs = numpy.array([position.in_(units.lightyear).x for position in positions])
-            ys = numpy.array([position.in_(units.lightyear).y for position in positions])
-            zs = numpy.array([position.in_(units.lightyear).z for position in positions])
+            xs = numpy.array([position.x.value_in(units.lightyear) for position in positions])
+            ys = numpy.array([position.y.value_in(units.lightyear) for position in positions])
+            zs = numpy.array([position.z.value_in(units.lightyear) for position in positions])
             #print xs, yz, zs
             
             plot = axes_3d.scatter(xs, ys, zs)

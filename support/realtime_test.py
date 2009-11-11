@@ -126,8 +126,7 @@ class TestCaseReport(object):
         self.error_string = traceback.format_exception_only(error_type, error_value)
         self.traceback = list(reversed(extract_tb(error_traceback)))
         
-        self.number_of_runs = 0
-        self.total_time = 0.0
+        self.reset_timing()
         
         self.failed = False
         self.errored = True
@@ -139,8 +138,7 @@ class TestCaseReport(object):
         self.error_string = traceback.format_exception_only(error_type, error_value)
         self.traceback = list(reversed(traceback.extract_tb(error_traceback)))
         
-        self.number_of_runs = 0
-        self.total_time = 0.0
+        self.reset_timing()
         
         self.failed = True
         self.errored = False
@@ -152,6 +150,10 @@ class TestCaseReport(object):
         self.skipped = True
         self.failed = False
         self.errored = False
+        
+    def reset_timing(self):
+        self.number_of_runs = 0
+        self.total_time = 0.0
         
     def to_dict(self):
         result = self.__dict__.copy()
@@ -343,7 +345,7 @@ class RunTests(object):
             
             if select.buffer:
                 result += ' - '
-                if len(select.buffer > 1000):
+                if len(select.buffer) > 1000:
                     result += select.buffer[:min(1000, len(result) - 1)] 
                     result += ' ' + str(result - 1000) + ' more ...'
                 else:
@@ -352,8 +354,8 @@ class RunTests(object):
             results_queue.put(result)
         except:
             results_queue.put('exception happened')
+            print sys.exc_info()
         finally:
-            print sys.stderr << "calling finalize"
             MPI.Finalize()
             print "calling finalize done"
 
@@ -416,7 +418,7 @@ class RunAllTestsWhenAChangeHappens(object):
     def run(self):
         cwd = os.getcwd()
         paths = [os.path.join(cwd, x) for x in self.DIRECTORIES] 
-	
+
         monitor_directories = monitor.MonitorDirectories(paths)
         monitor_directories.check()
         monitor_directories.changed = True
@@ -426,6 +428,17 @@ class RunAllTestsWhenAChangeHappens(object):
                     monitor_directories.check()
                     time.sleep(0.5)
                     continue
+                
+                if not self.server.last_report is None:
+                    for element in monitor_directories.updated_elements:
+                        if not element.is_file():
+                            continue
+                        for x in self.server.last_report.address_to_report.values():
+                            path, module, testcase =  x.address
+                            if path == element.path:
+                                x.reset_timing()
+                                print "will rerun: ", module, testcase
+                        
                 
                 report = RunTests.instance.run_tests(self.server.last_report)
                 
@@ -458,7 +471,7 @@ class HandleRequest(webserver.HandleRequest):
 
   
     def do_run_test(self):
-        parameters = urlparse.parse_qs(parsed_path.query)
+        parameters = urlparse.parse_qs(self.parsed_path.query)
         a0 = parameters['a0'][0]
         a1 = parameters['a1'][0]
         a2 = parameters['a2'][0]

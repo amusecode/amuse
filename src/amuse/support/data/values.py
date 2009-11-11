@@ -82,18 +82,20 @@ class Quantity(object):
         return new_quantity(self.number / other.number , (self.unit / other.unit).to_simple_form())
         
     def __add__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return new_quantity(self.number + other_in_my_units.number , self.unit)
         
     def __sub__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return new_quantity(self.number - other_in_my_units.number , self.unit)
 
     def __mul__(self, other):
         return  new_quantity(self.number * other.number , (self.unit * other.unit).to_simple_form())
         
-            
-    def in_(self, another_unit):
+    def in_(self, x):
+        return self.as_quantity_in(x)
+    
+    def as_quantity_in(self, another_unit): 
         """
         Reproduce quantity in another unit.
         The new unit must have the same basic si quantities.
@@ -101,7 +103,7 @@ class Quantity(object):
         :argument another_unit: unit to convert quantity to
         :returns: quantity converted to new unit
         """
-        value_of_unit_in_another_unit = self.unit.in_(another_unit)
+        value_of_unit_in_another_unit = self.unit.as_quantity_in(another_unit)
         return new_quantity(self.number * value_of_unit_in_another_unit.number, another_unit)
 
     def value_in(self, unit):
@@ -122,7 +124,7 @@ class Quantity(object):
         10000.0
         
         """
-        value_of_unit_in_another_unit = self.unit.in_(unit)
+        value_of_unit_in_another_unit = self.unit.as_quantity_in(unit)
         return self.number * value_of_unit_in_another_unit.number
 
 class ScalarQuantity(Quantity):
@@ -146,19 +148,19 @@ class ScalarQuantity(Quantity):
             return str(self.number)
                                 
     def __lt__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number < other_in_my_units.number
         
     def __gt__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number > other_in_my_units.number
         
     def __eq__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number == other_in_my_units.number
         
     def __neq__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number != other_in_my_units.number
 
     def __le__(self, other):
@@ -221,7 +223,7 @@ class VectorQuantity(Quantity):
         >>> print vector
         [0.0, 3.5, 2.0] kg
         """
-        quantity_in_my_units = quantity.in_(self.unit)
+        quantity_in_my_units = quantity.as_quantity_in(self.unit)
         self._number[index] = quantity_in_my_units.number
         
     @property
@@ -280,19 +282,19 @@ class VectorQuantity(Quantity):
             
 
     def __lt__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number < other_in_my_units.number
         
     def __gt__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number > other_in_my_units.number
         
     def __eq__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number == other_in_my_units.number
         
     def __neq__(self, other):
-        other_in_my_units = other.in_(self.unit)
+        other_in_my_units = other.as_quantity_in(self.unit)
         return self.number != other_in_my_units.number   
             
     def indices(self):

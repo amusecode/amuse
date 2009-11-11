@@ -123,31 +123,30 @@ class StellarEvolution(object):
         """
         return function
         
-    @legacy_function   
-    def get_type():
-        """
-        Retrieve the type of the star. The meaning of the stellar type is defined
-        by the code. (Difference between stellar type and type must be explained)
-        """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the type of")
-        function.addParameter('type', dtype='int32', direction=function.OUT
-            , description="The type. ")
-        function.result_type = 'i'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            A star with the given index was not found.
-        """
-        return function
+    #@legacy_function   
+    #def get_type():
+    #    """
+    #    Retrieve the type of the star. The meaning of the stellar type is defined
+    #    by the code. (Difference between stellar type and type must be explained)
+    #    """
+    #   function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+    #        , description="The index of the star to get the type of")
+    #    function.addParameter('type', dtype='int32', direction=function.OUT
+    #        , description="The type. ")
+    #    function.result_type = 'i'
+    #    function.result_doc = """
+    #    0 - OK
+    #        The value has been set.
+    #    -1 - ERROR
+    #        A star with the given index was not found.
+    #    """
+    #return function
         
     @legacy_function   
     def get_stellar_type():
         """
         Retrieve the stellar type of the star. The meaning of the stellar type is defined
-        by the code. (Difference between stellar type and type must be explained)
+        by the code.
         """
         function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN

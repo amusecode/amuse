@@ -124,9 +124,11 @@ class MonitorDirectories(object):
     def __init__(self, paths):
         self.elements = map(lambda x : MonitoredDirectory(x), paths)
         self.changed = False
+        self.updated_elements = []
         
     def check(self):
         self.changed = False
+        self.updated_elements = []
         for x in self.elements:
             x.check(self)
     
@@ -151,6 +153,7 @@ class MonitorDirectories(object):
         if not self.must_monitor_file(monitored_element):
             return
         self.changed = True
+        self.updated_elements.append(monitored_element)
 
     def walk(self, callback_function):
         self.callback_function = callback_function

@@ -23,7 +23,7 @@ class TestAttributeParameterDefintions(unittest.TestCase):
             test = 123
         o = TestModule()
         value = x.get_value(o)
-        self.assertAlmostEqual(value.in_(units.m).number, 123000, 3)
+        self.assertAlmostEqual(value.value_in(units.m), 123000, 3)
         self.assertTrue(value.unit.has_same_base_as(units.m))
         
     def test3(self):

@@ -135,9 +135,9 @@ class unit(object):
             raise Exception("Cannot expres: " + str(x) + " in " + str(self))
       
     def in_(self, x):
-        return self.as_a_quantity_in(x)
+        return self.as_quantity_in(x)
     
-    def as_a_quantity_in(self, unit):
+    def as_quantity_in(self, unit):
         """Express this unit as a quantity in the given unit
         
         :argument unit: The unit to express this unit in
@@ -147,7 +147,7 @@ class unit(object):
         
         >>> from amuse.support.units import units
         >>> ton = 1000 * units.kg
-        >>> ton.as_a_quantity_in(units.kg)
+        >>> ton.as_quantity_in(units.kg)
         quantity<1000.0 kg>
         """
         if isinstance(unit, values.Quantity):
