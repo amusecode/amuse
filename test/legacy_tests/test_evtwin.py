@@ -2,7 +2,7 @@ from legacy_support import TestWithMPI
 import sys
 import os
 
-from amuse.legacy.evtwin.interface import EVtwin
+from amuse.legacy.evtwin.interface import EVtwin, EVtwinBinding
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system
@@ -102,7 +102,26 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)      
         self.assertTrue(age > 0)      
         
-        del instance     
+        del instance   
+        
+class TestInterfaceBinding(TestWithMPI):
+    class EVtwinWithBinding(EVtwin, EVtwinBinding):
+        """
+        """
+        def __init__(self):
+            EVtwin.__init__(self)
+            EVtwinBinding.__init__(self)
+            
+    
+    def test1(self):
+        instance = self.EVtwinWithBinding()
+        
+        instance.parameters.set_defaults()
+        
+        self.assertEquals(10.0 | units.no_unit , instance.parameters.maximum_number_of_stars)
+        instance.parameters.maximum_number_of_stars = 12 | units.no_unit
+        self.assertEquals(12.0 | units.no_unit , instance.parameters.maximum_number_of_stars)
+        del instance
     
         
         

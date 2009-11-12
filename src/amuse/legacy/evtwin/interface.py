@@ -116,7 +116,7 @@ class EVtwinBinding(object):
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         
     parameter_definitions = [
-        parameters.ModuleMethodParameterDefinition(
+        parameters.ModuleMethodParameterDefinition_Next(
             "get_maximum_number_of_stars",
             "set_maximum_number_of_stars",
             "maximum_number_of_stars", 
@@ -125,7 +125,7 @@ class EVtwinBinding(object):
             10 | units.none
         ),
         
-        parameters.ModuleMethodParameterDefinition(
+        parameters.ModuleMethodParameterDefinition_Next(
             "get_metallicity",
             "set_metallicity",
             "metallicity", 
@@ -135,7 +135,7 @@ class EVtwinBinding(object):
         ),
         
         
-        parameters.ModuleMethodParameterDefinition(
+        parameters.ModuleMethodParameterDefinition_Next(
             None,
             "set_ev_path",
             "path_to_data", 
@@ -153,8 +153,8 @@ class EVtwinBinding(object):
             "type",
             "type",
             "star type",
-             units.none,
-             1 | units.none
+             units.stellar_type,
+             1 | units.stellar_type
         ),
         attributes.ScalarAttributeDefinition(
             None,

@@ -16,16 +16,25 @@ class Parameters(object):
     
     def __getattr__(self, name):
         if not name in self._mapping_from_name_to_definition:
-            raise Exception("tried to get unknown parameter %s for module %s".format((name, type(self._instance).__name__)))
-        return self._mapping_from_name_to_definition[name].get_value(self._instance())
+            raise AttributeError("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+        
+        definition = self._mapping_from_name_to_definition[name]
+        return definition.get_value(self._instance())
     
     def __setattr__(self, name, value):
         if not name in self._mapping_from_name_to_definition:
-            raise Exception("tried to set unknown parameter %s for module %s".format((name, type(self._instance).__name__)))
-        self._mapping_from_name_to_definition[name].set_value(self._instance(), value)
+            raise AttributeError("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+        
+        definition = self._mapping_from_name_to_definition[name]
+        definition.set_value(self._instance(), value)
         
     def names(self):
         return self._mapping_from_name_to_definition.keys()
+        
+    def set_defaults(self):
+        for parameter_definition in self._definitions:
+            parameter_definition.set_default_value(self._instance())
+            
         
 class ParameterDefinition(object):
     def __init__(self, name, description, unit, default_value = None):
@@ -34,7 +43,7 @@ class ParameterDefinition(object):
         self.unit = unit
         self.default_value = default_value
     
-        
+    
     def get_value(self, object):
         result = self.get_legacy_value(object) | self.unit
         if nbody_system.is_nbody_unit(self.unit):
@@ -51,10 +60,10 @@ class ParameterDefinition(object):
         self.set_legacy_value(object, quantity.value_in(self.unit))
         
     def set_default_value(self, object):
-        if self.default_value:
+        if self.default_value is None:
             pass
         else:
-            self.set_value(self, object, self.default_value)
+            self.set_value(object, self.default_value)
         
 class ModuleAttributeParameterDefinition(ParameterDefinition):
     def __init__(self, attribute_name, name, description, unit, default_value = None):
@@ -85,6 +94,48 @@ class ModuleMethodParameterDefinition(ParameterDefinition):
         getattr(object, self.set_method)(number)
         if self.get_method is None:
             self.stored_value = number
+            
+class ParameterException(AttributeError):
+    template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")
+        
+    def __init__(self, object, parameter_name, errorcode, is_get):
+        print is_get, "get" if is_get  else "set"
+        AttributeError.__init__(self, self.template.format(
+            "get" if is_get else "set",
+            parameter_name,
+            type(object).__name__,
+            errorcode
+        ))
+        self.errorcode = errorcode
+        self.parameter_name = parameter_name
+        
+
+        
+class ModuleMethodParameterDefinition_Next(ParameterDefinition):
+    def __init__(self, get_method, set_method, name, description, unit, default_value = None):
+        ParameterDefinition.__init__(self, name, description, unit, default_value)
+        self.get_method = get_method
+        self.set_method = set_method
+        self.stored_value = None
+        
+        
+    def get_legacy_value(self, object):
+        if self.get_method is None:
+            return self.stored_value
+        else:
+            (result, error) = getattr(object, self.get_method)()
+            if error < 0:
+                raise ParameterException(object, self.name, error, True)
+            else:
+                return result
+        
+    def set_legacy_value(self, object, number):
+        error = getattr(object, self.set_method)(number)
+        if error < 0:
+            raise ParameterException(object, self.name, error, False)
+        else:
+            if self.get_method is None:
+                self.stored_value = number
         
 
     
