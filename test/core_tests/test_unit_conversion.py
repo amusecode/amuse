@@ -57,3 +57,11 @@ class TestUnitConversions(unittest.TestCase):
         self.assertEqual("0.02 kg * m", str(x.as_quantity_in(kg * m)))
         x = (10 | kg) * (2000 | g) 
         self.assertEqual("20000 0.001 * kg**2", str(x))
+        
+    def test9(self):
+        speed_of_light = 1 | (lightyear * yr**-1)
+        time = 1e-9 | s
+        length = speed_of_light * time
+        length_in_m = length.value_in(m)
+        self.assertAlmostEqual(0.2997988, length_in_m, 6)
+

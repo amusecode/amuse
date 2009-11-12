@@ -36,7 +36,7 @@ class TestQuantities(unittest.TestCase):
         x[0] = 3000.0 | g
         self.assertEquals(str(x), "[3.0, 2.0, 3.0] kg")
         
-    def test4(self):
+    def test5(self):
         number_of_stars = 10
         stars = core.Stars(number_of_stars)
         for i, star in enumerate(stars):
@@ -55,5 +55,12 @@ class TestQuantities(unittest.TestCase):
     
         self.assertEquals(str(minpos), "[1000.0, 2000.0, -10000.0] m")
         self.assertEquals(str(maxpos), "[10000.0, 20000.0, -1000.0] m")
+        
+    def test6(self):
+        x = [1.0, 2.0, 3.0] | si.kg
+        y = x.copy()
+        y[0] = 3.0 | si.kg
+        self.assertEquals(x[0].value_in(si.kg), 1.0)
+        self.assertEquals(y[0].value_in(si.kg), 3.0)
         
         

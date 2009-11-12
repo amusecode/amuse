@@ -330,7 +330,9 @@ class mul_unit(derived_unit):
    
     @property
     def base(self):
-        return tuple(map(lambda x: (x[0] + x[1], x[2]),self.combine_bases(self.left_hand.base, self.right_hand.base)))
+        return tuple(
+            filter(lambda x: x[0] != 0,
+            map(lambda x: (x[0] + x[1], x[2]),self.combine_bases(self.left_hand.base, self.right_hand.base))))
         
 class pow_unit(derived_unit):
     

@@ -169,6 +169,8 @@ class ScalarQuantity(Quantity):
     def __ge__(self, other):
         return self.__eq__(other) or self.__gt__(other)
             
+    def copy(self):
+        return new_quantity(self.number, self.unit)
             
 class VectorQuantity(Quantity):
     """
@@ -300,6 +302,10 @@ class VectorQuantity(Quantity):
     def indices(self):
         for x in len(self._number):
             yield x
+            
+    
+    def copy(self):
+        return new_quantity(self.number.copy(), self.unit)
                  
         
 def new_quantity(value, unit):
