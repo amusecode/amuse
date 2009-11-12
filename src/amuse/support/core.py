@@ -15,28 +15,26 @@ class late(object):
     *__init__* method. Except the value of the late attribute is
     determined when first accessed and not when the class is
     instantiated.
+    
+    Typical use to define a managed attribute x:
+    
+    >>> class C(object):
+    ...    @late
+    ...    def x(self):
+    ...        return "i'm late!"
+    ...
+    >>> c = C()
+    >>> print c.x
+    i'm late!
+    >>> c.x = "overridden"
+    >>> print c.x
+    overridden
+    
+    :argument initializer: function to determine the initial value of the property
+    :returns: a descriptor to determine and set the value on first access
     """ 
     def __init__(self, initializer):
-        """
-        Called when used as a decorator.
         
-        Typical use to define a managed attribute x:
-        
-        >>> class C(object):
-        ...    @late
-        ...    def x(self):
-        ...        return "i'm late!"
-        ...
-        >>> c = C()
-        >>> print c.x
-        i'm late!
-        >>> c.x = "overridden"
-        >>> print c.x
-        overridden
-        
-        :argument initializer: function to determine the initial value of the property
-        :returns: a descriptor to determine and set the value on first access
-        """
         self.initializer = initializer
         self.__doc__ = self.initializer.__doc__
         
@@ -62,7 +60,7 @@ class print_out(object):
     adding it to the print_out.
     
     >>> p = print_out()
-    >>> p + "number of counts : " + 10 #doctest: +ELLIPSIS
+    >>> p + "number of counts : " + 10    #doctest: +ELLIPSIS
     <amuse.support.core.print_out object at 0x...>
     >>> print p.string
     number of counts : 10
@@ -117,16 +115,20 @@ class print_out(object):
         return self
         
     def indent(self):
-        """Increase the indent. The next line will start indented.
+        """Increase the indent. The next and following lines
+        will start indented.
         
         >>> p = print_out()
         >>> p + "01" #doctest: +ELLIPSIS
         <amuse.support.core.print_out object at 0x...>
         >>> p.indent().lf() + "2" #doctest: +ELLIPSIS
         <amuse.support.core.print_out object at 0x...>
+        >>> p.lf() + "3" #doctest: +ELLIPSIS
+        <amuse.support.core.print_out object at 0x...>
         >>> print p.string
         01
           2
+          3
         """
         self._indent += 1
         return self
