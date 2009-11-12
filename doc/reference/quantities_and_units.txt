@@ -22,6 +22,9 @@ Quantities
         
         
         .. automethod:: __setitem__
+    
+    .. autoclass:: NonNumericQuantity
+        :members:
         
 
 Units

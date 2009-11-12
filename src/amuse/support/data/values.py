@@ -307,6 +307,56 @@ class VectorQuantity(Quantity):
     def copy(self):
         return new_quantity(self.number.copy(), self.unit)
                  
+
+class NonNumericQuantity(Quantity):
+    """
+    A Non Numeric Quantity object represents a quantity without
+    a physical meaning. 
+    
+    These Quantity objects cannot be used in 
+    numeric operations (like addition or multiplication). Also,
+    conversion to another unit is not possible.
+    
+    Examples are string quantities or enumerated value quantities.
+    
+    >>> from amuse.support.units.core import enumeration_unit
+    >>> my_unit = enumeration_unit(
+    ...     "x",
+    ...     "x", 
+    ...     [1,3,4], 
+    ...     ["first", "second", "third"])
+    ...
+    >>> 3 | my_unit
+    quantity<3 - second>
+    >>> (3 | my_unit).value_in(my_unit)
+    3
+    
+    """
+    
+    def __init__(self, value, unit):
+        Quantity.__init__(self, unit)
+        self.value = value
+        if not unit.is_valid_value(value):
+            raise Exception("<{0}> is not a valid value for {1!r}".format(value, unit))
+    
+    def as_quantity_in(self, another_unit): 
+        if not another_unit == self.unit:
+            raise Exception("Cannot convert non-numeric quantities in to another unit")
+            
+        return new_quantity(self.value, another_unit)
+
+    def value_in(self, unit):
+        if not unit == self.unit:
+            raise Exception("Cannot convert non-numeric quantities in to another unit")
+        
+        return self.value
+        
+    def __str__(self):
+        return self.unit.value_to_string(self.value)
+        
+    def __repr__(self):
+        return 'quantity<'+str(self.value)+ ' - ' +str(self)+'>'
+
         
 def new_quantity(value, unit):
     """Create a new Quantity object.
@@ -316,9 +366,11 @@ def new_quantity(value, unit):
     :argument unit: unit of the quantity
     :returns: new ScalarQuantity or VectorQuantity object
     """
+    if unit.is_non_numeric():
+        return NonNumericQuantity(value, unit)
     if isinstance(value, list):
-       return VectorQuantity(value, unit)
+        return VectorQuantity(value, unit)
     if isinstance(value, numpy.ndarray):
-       return VectorQuantity(value, unit)
+        return VectorQuantity(value, unit)
     return ScalarQuantity(value, unit)
        

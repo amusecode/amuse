@@ -110,4 +110,88 @@ class EVtwin(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
+class EVtwinBinding(object):
+    
+    def __init__(self):
+        self.parameters = parameters.Parameters(self.parameter_definitions, self)
+        
+    parameter_definitions = [
+        parameters.ModuleMethodParameterDefinition(
+            "get_maximum_number_of_stars",
+            "set_maximum_number_of_stars",
+            "maximum_number_of_stars", 
+            "Maximum number of stars that can be allocated", 
+            units.none, 
+            10 | units.none
+        ),
+        
+        parameters.ModuleMethodParameterDefinition(
+            "get_metallicity",
+            "set_metallicity",
+            "metallicity", 
+            "Metallicity of all stats", 
+            units.percentage, 
+            0.02 | units.percentage
+        ),
+        
+        
+        parameters.ModuleMethodParameterDefinition(
+            None,
+            "set_ev_path",
+            "path_to_data", 
+            "Path to the data directory", 
+            units.string, 
+            "src" | units.string
+        ),
+        
+    ]
+    
+    attribute_definitions = [
+        attributes.ScalarAttributeDefinition(
+            None,
+            "get_stellar_type",
+            "type",
+            "type",
+            "star type",
+             units.none,
+             1 | units.none
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            "get_mass",
+            None,
+            "mass",
+            "mass of a star",
+             units.MSun,
+             0.0 | units.MSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            "get_age",
+            None,
+            "mass",
+            "current mass of a star",
+             units.MSun,
+             1.0 | units.MSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            "get_radius",
+            None,
+            "radius",
+            "radius of a star",
+             units.RSun,
+             1.0 | units.RSun
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "lum",
+            "luminocity",
+            "luminocity of a star",
+             units.LSun,
+             1.0 | units.LSun
+        ),
+    ]
+        
         

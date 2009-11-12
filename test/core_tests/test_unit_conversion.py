@@ -66,4 +66,60 @@ class TestUnitConversions(unittest.TestCase):
         self.assertAlmostEqual(0.2997988, length_in_m, 6)
         
     
+class TestNonNumericUnits(unittest.TestCase):
+    def test1(self):
+        try:
+            x = units.string.as_quantity_in(m)
+            self.fail("Should not be able to convert a string unit into a numeric unit")
+        except:
+            pass
 
+    def test2(self):
+        x = "test" | string
+        self.assertEquals("test", x.value_in(string))  
+            
+    def test3(self):
+        test_unit = core.enumeration_unit(
+            "test", 
+            "test",
+            [1,2,3],
+            ["one", "two", "three"]
+        )
+        x = 1 | test_unit
+        self.assertEquals(1, x.value_in(test_unit))    
+        self.assertEquals("one", str(x))  
+        try:
+            x = 4 | test_unit
+            self.fail("Should not be able to make a quantity outside the enumerated range")
+        except Exception as ex:
+            self.assertEquals("<4> is not a valid value for unit<test>", str(ex))
+    
+    def test4(self):
+        try:
+            x = 1 | string
+            self.fail("Should not be able to make a quantity with a string from an integer")
+        except Exception as ex:
+            self.assertEquals("<1> is not a valid value for unit<string>", str(ex))
+            
+    def test5(self):
+        test_unit = core.enumeration_unit(
+            "test", 
+            "test",
+            [1,2,3],
+            ["one", "two", "three"]
+        )
+        self.assertEquals(3 , len(list(test_unit.quantities())))  
+        for x, y in  zip(test_unit.quantities(), ["one", "two", "three"]):
+            self.assertEquals(str(x), y)
+    
+       
+    def test6(self):
+        test_unit = core.enumeration_unit(
+            "test", 
+            "test",
+            [1,4,7]
+        )
+        self.assertEquals(3 , len(list(test_unit.quantities())))  
+        for x, y in  zip(test_unit.quantities(), ["1", "4", "7"]):
+            self.assertEquals(str(x), y)
+       

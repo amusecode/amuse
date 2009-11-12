@@ -29,3 +29,30 @@ LSun = named('solar luminotisity', 'LSun', 3.839e26 * W)
 Pa = named('Pascal', 'Pa', N / (m ** 2))
 weber = named('weber', 'Wb', kg * m ** 2 * s ** -2 * A ** -1) 
 tesla = named('tesla', 'T', weber / (m ** 2))
+
+percentage = core.none_unit('percentage', '%')
+string = core.string_unit('string', 'string')
+
+stellar_type = core.enumeration_unit(
+    'stellar type',
+    'stellar type',
+    None,
+    [
+        "deeply or fully convective low mass MS star",
+        "Main Sequence star",
+        "Hertzsprung Gap",
+        "First Giant Branch",
+        "Core Helium Burning",
+        "First Asymptotic Giant Branch",
+        "Second Asymptotic Giant Branch",
+        "Main Sequence Naked Helium star",
+        "Hertzsprung Gap Naked Helium star",
+        "Giant Branch Naked Helium star",
+        "Helium White Dwarf",
+        "Carbon/Oxygen White Dwarf",
+        "Oxygen/Neon White Dwarf",
+        "Neutron Star",
+        "Black Hole",
+        "Massless Supernova"
+    ]
+)

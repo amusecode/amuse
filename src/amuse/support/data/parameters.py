@@ -1,27 +1,31 @@
 import weakref
 
 from amuse.support.units import nbody_system
+from amuse.support.data import values
 
 
 
 class Parameters(object):
     def __init__(self, definitions, instance):
-        object.__setattr__(self, 'instance', weakref.ref(instance))
-        object.__setattr__(self, 'definitions', definitions)
-        object.__setattr__(self, 'mapping_from_name_to_definition', {})
+        object.__setattr__(self, '_instance', weakref.ref(instance))
+        object.__setattr__(self, '_definitions', definitions)
+        object.__setattr__(self, '_mapping_from_name_to_definition', {})
         
         for x in definitions:
-            self.mapping_from_name_to_definition[x.name] = x
+            self._mapping_from_name_to_definition[x.name] = x
     
     def __getattr__(self, name):
-        if not name in self.mapping_from_name_to_definition:
-            raise Exception("tried to get unknown parameter %s for module %s".format((name, type(instance).__name__)))
-        return self.mapping_from_name_to_definition[name].get_value(self.instance())
+        if not name in self._mapping_from_name_to_definition:
+            raise Exception("tried to get unknown parameter %s for module %s".format((name, type(self._instance).__name__)))
+        return self._mapping_from_name_to_definition[name].get_value(self._instance())
     
     def __setattr__(self, name, value):
-        if not name in self.mapping_from_name_to_definition:
-            raise Exception("tried to set unknown parameter %s for module %s".format((name, type(instance).__name__)))
-        self.mapping_from_name_to_definition[name].set_value(self.instance(), value)
+        if not name in self._mapping_from_name_to_definition:
+            raise Exception("tried to set unknown parameter %s for module %s".format((name, type(self._instance).__name__)))
+        self._mapping_from_name_to_definition[name].set_value(self._instance(), value)
+        
+    def names(self):
+        return self._mapping_from_name_to_definition.keys()
         
 class ParameterDefinition(object):
     def __init__(self, name, description, unit, default_value = None):
@@ -38,6 +42,10 @@ class ParameterDefinition(object):
         return result
         
     def set_value(self, object, quantity):
+        if self.unit.is_non_numeric():
+            if not isinstance(quantity, values.Quantity):
+                quantity = quantity | self.unit          
+                  
         if nbody_system.is_nbody_unit(self.unit):
             quantity = object.convert_nbody.to_nbody(quantity)
         self.set_legacy_value(object, quantity.value_in(self.unit))
@@ -64,12 +72,19 @@ class ModuleMethodParameterDefinition(ParameterDefinition):
         ParameterDefinition.__init__(self, name, description, unit, default_value)
         self.get_method = get_method
         self.set_method = set_method
+        self.stored_value = None
+        
         
     def get_legacy_value(self, object):
-        return getattr(object, self.get_method)()
+        if self.get_method is None:
+            return self.stored_value
+        else:
+            return getattr(object, self.get_method)()
         
     def set_legacy_value(self, object, number):
         getattr(object, self.set_method)(number)
+        if self.get_method is None:
+            self.stored_value = number
         
 
     

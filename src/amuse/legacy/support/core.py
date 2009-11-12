@@ -498,16 +498,30 @@ class MessageChannel(object):
 class MpiChannel(MessageChannel):
     """
     Message channel based on MPI calls to send and recv the messages
+    
+    :argument name_of_the_worker: Name of the application to start
+    :argument number_of_workers: Number of parallel processes
+    :argument legacy_interface_type: Type of the legacy interface
+    :argument debug_with_gdb: If True opens an xterm with a gdb to debug the remote process
+    :argument hostname: Name of the node to run the application on
     """
-    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type = None, debug_with_gdb = False):
+    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type = None, debug_with_gdb = False, hostname = None):
         self.name_of_the_worker = name_of_the_worker
         self.number_of_workers = number_of_workers
+        
         if not legacy_interface_type is None:
             self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
+            
         self.debug_with_gdb = debug_with_gdb
-        
+            
+        if not hostname is None:
+            self.info = MPI.Info.Create()
+            self.info['host'] = hostname
+        else:
+            self.info = MPI.INFO_NULL
+            
         self.cached = None
         
     def start(self):
@@ -521,7 +535,7 @@ class MpiChannel(MessageChannel):
         else:
             arguments = None
             command = self.full_name_of_the_worker
-        self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers)
+        self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
 
     def stop(self):
         self.intercomm.Free()
@@ -689,7 +703,7 @@ class MultiprocessingMPIChannel(MessageChannel):
     as MPI sees it) and this part can be stopped after each
     sub-test, thus removing unneeded applications. 
     """
-    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type, debug_with_gdb = False):
+    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type, debug_with_gdb = False, hostname = None):
         self.name_of_the_worker = name_of_the_worker
         self.number_of_workers = number_of_workers
         if not legacy_interface_type is None:
@@ -839,7 +853,7 @@ class LegacyInterface(object):
     instances = []
     channel_factory = MpiChannel
     
-    def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1, debug_with_gdb = False):
+    def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1, debug_with_gdb = False, hostname = None):
         """
         Instantiates an object, starting the worker.
         
@@ -854,9 +868,9 @@ class LegacyInterface(object):
         :argument name_of_the_worker: The filename of the application to start
         :argument number_of_workers: Number of applications to start. The application must have parallel MPI support if this is more than 1.
         :argument debug_with_gdb: Start the worker(s) in a gdb session in a separate xterm
-
+        :argument hostname: Start the worker on the node with this name
         """
-        self.channel = self.channel_factory(name_of_the_worker, number_of_workers, type(self), debug_with_gdb)
+        self.channel = self.channel_factory(name_of_the_worker, number_of_workers, type(self), debug_with_gdb, hostname)
         self.channel.start()
         self.instances.append(weakref.ref(self))
         
