@@ -16,7 +16,7 @@ class AttributeDefinition(object):
             values = [object.convert_nbody.to_nbody(x) for x in values]
         return [x.value_in(self.unit) for x in values]
     
-    def convert_to_values_in_model_units(self, object, numbers):
+    def convert_to_quantities(self, object, numbers):
         values = [self.unit(x) for x in numbers]
         if nbody_system.is_nbody_unit(self.unit):
             values = [object.convert_nbody.to_si(x) for x in values]
@@ -24,10 +24,11 @@ class AttributeDefinition(object):
         
     def set_values(self, object, ids, values):
         numbers = self.convert_to_numbers_in_legacy_units(object, values)
-        print numbers
+        self.set_legacy_values(object, ids, numbers)
         
     def get_values(self, object, ids):
-        pass
+        numbers = self.get_legacy_values(object, ids)
+        return self.convert_to_quantities(object, numbers)
         
 class ScalarAttributeDefinition(AttributeDefinition):
     def __init__(self, set_method, get_method, parameter_name,  name, description, unit, default_value):
@@ -42,7 +43,50 @@ class ScalarAttributeDefinition(AttributeDefinition):
     
     def get_keyword_results(self, object, keyword_results):
         numbers = keyword_results[self.parameter_name]
-        values = self.convert_to_values_in_model_units(object, numbers)
+        values = self.convert_to_quantities(object, numbers)
+        return values
+        
+
+class AttributeException(AttributeError):
+    template = ("Could not {0} value(s) for atttribute '{1}' of a '{2}' object, got errorcode <{3}>")
+        
+    def __init__(self, object, parameter_name, errorcode, is_get):
+        print is_get, "get" if is_get  else "set"
+        AttributeError.__init__(self, self.template.format(
+            "get" if is_get else "set",
+            parameter_name,
+            type(object).__name__,
+            errorcode
+        ))
+        self.errorcode = errorcode
+        self.parameter_name = parameter_name
+
+
+class ScalarAttributeDefinition_Next(AttributeDefinition):
+    def __init__(self, set_method, get_method, parameter_name,  name, description, unit, default_value):
+        AttributeDefinition.__init__(self, name, description, unit, default_value)
+        self.set_method = set_method
+        self.get_method = get_method
+        self.parameter_name = parameter_name
+        
+    def set_keyword_arguments(self, object, values, keyword_arguments):
+        numbers = self.convert_to_numbers_in_legacy_units(object, values)
+        keyword_arguments[self.parameter_name] = numbers
+    
+    def get_keyword_results(self, object, keyword_results):
+        numbers = keyword_results[self.parameter_name]
+        values = self.convert_to_quantities(object, numbers)
+        return values
+    
+    def set_legacy_values(self, object, ids, values):
+        error = getattr(object, self.set_method)(ids, values)
+        if error < 0:
+            raise AttributeException(object, self.name, error, False)
+    
+    def get_legacy_values(self, object, ids):
+        values, error = getattr(object, self.get_method)(ids)
+        if error < 0:
+            raise AttributeException(object, self.name, error, True)
         return values
         
 class VectorAttributeDefinition(AttributeDefinition):
@@ -64,7 +108,7 @@ class VectorAttributeDefinition(AttributeDefinition):
             numbers[i] = keyword_results[x]
         numbers = numpy.array(numbers)
         numbers = numbers.transpose()
-        values = self.convert_to_values_in_model_units(object, numbers)
+        values = self.convert_to_quantities(object, numbers)
         return values
 
 class DomainMetaclass(type):

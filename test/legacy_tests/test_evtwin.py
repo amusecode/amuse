@@ -105,6 +105,7 @@ class TestInterface(TestWithMPI):
         del instance   
         
 class TestInterfaceBinding(TestWithMPI):
+    
     class EVtwinWithBinding(EVtwin, EVtwinBinding):
         """
         """
