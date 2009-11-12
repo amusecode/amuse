@@ -345,7 +345,9 @@ class pow_unit(derived_unit):
         
     @property
     def base(self):
-        return tuple(map(lambda x : (x[0] * self.power, x[1]), self.unit.base))
+        return tuple(
+            filter(lambda x: x[0] != 0,
+            map(lambda x : (x[0] * self.power, x[1]), self.unit.base)))
         
     @property
     def factor(self):

@@ -479,7 +479,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
     
     signal.signal(signal.SIGALRM, handler)
-    signal.alarm(1200) #building and testing must be done in 20 minutes
+    signal.alarm(60 * 60) #building and testing must be done in 1 hour
 
     report = _run_the_tests(options.directory) 
     WriteTestReportOnTestingBlog(report).start()
