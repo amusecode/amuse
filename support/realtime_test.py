@@ -154,7 +154,7 @@ class TestCaseReport(object):
     def reset_timing(self):
         self.number_of_runs = 0
         self.total_time = 0.0
-        
+            
     def to_dict(self):
         result = self.__dict__.copy()
         result['mean_time'] = self.mean_time()
@@ -171,7 +171,7 @@ class MakeAReportOfATestRun(object):
         self.start_time = 0
         self.end_time = 0
         self.skipped = 0
-        self.problem_text = ""
+        self.report_id = -1
         
         if previous_report is None:
             self.address_to_report = {}
@@ -233,9 +233,7 @@ class MakeAReportOfATestRun(object):
         self.end_time = time.time()
         for key, report in list(self.address_to_report.iteritems()):
             if not report.found:
-                del self.address_to_report[key]
-        pass
-        
+                del self.address_to_report[key]        
 
     def startTest(self, test):
         if self.is_test_able_to_run(test):
@@ -252,12 +250,59 @@ class MakeAReportOfATestRun(object):
             return (report.number_of_suite_runs % 5) == 0
         return (report.number_of_suite_runs % 10) == 0
     
-    def to_dict(self):
+    def has_errors(self):
+        return self.errors > 0
+    
+    def has_failures(self):
+        return self.failures > 0
+        
+    def has_skipped_tests(self):
+        return self.skipped > 0
+        
+    def total_number_of_tests(self):
+        return self.tests + self.skipped  + self.failures + self.errors
+        
+    def title_string(self):
+        delta_time = self.end_time - self.start_time
+        title = '';
+        if self.has_failures() or self.has_errors():
+            title += "FAIL "
+        else:
+            title += "OK "
+
+        
+        if self.has_errors():
+            title += 'E' + str(self.errors) + ' '
+        
+        if self.has_failures():
+            title += 'F' + str(self.failures) + ' '
+        
+        
+        title += '+' + str(self.tests) + ' '
+        
+        if self.has_skipped_tests():
+            title += 'S' + str(self.skipped) + ' '
+        
+        title += 'T' + str(self.total_number_of_tests()) + ' '
+        title += ("%10.3f" % delta_time) + 's';
+        title += ' ';
+        title += time.strftime("%H:%M:%S", time.gmtime(self.start_time))
+        return title;
+
+    def to_information_dict(self):
         result = {}
+        result['report_id'] = self.report_id
+        result['title'] = self.title_string()
+        result['success'] = not self.has_errors() and not self.has_failures()
+        return result
+    
+    def to_dict(self):
+        result = self.to_information_dict()
+        
         for x in [ 
             'errors', 'failures', 'tests' , 
             'start_time', 'end_time', 'skipped',
-            'problem_text']:
+            ]:
             result[x] = getattr(self, x)
         
         testcases = list(self.address_to_report.values())
@@ -469,7 +514,11 @@ class HandleRequest(webserver.HandleRequest):
         content_type = 'text/javascript'
         return string, content_type
 
-  
+    def do_get_last_report_information(self):
+        string = json.dumps(self.server.get_last_report_information())
+        content_type = 'text/javascript'
+        return string, content_type
+    
     def do_run_test(self):
         parameters = urlparse.parse_qs(self.parsed_path.query)
         a0 = parameters['a0'][0]
@@ -497,6 +546,7 @@ class ContinuosTestWebServer(webserver.WebServer):
         self.last_report = None
         self.run_all_tests = RunAllTestsWhenAChangeHappens(self)
         self.run_all_tests.start()
+        self.report_id = 0
         
         
     def stop(self):
@@ -521,9 +571,17 @@ class ContinuosTestWebServer(webserver.WebServer):
             return None
         else:
             return self.last_report.to_dict()
-
+            
+    def get_last_report_information(self):
+        if self.last_report is None:
+            return {'report_id':-1, 'title':'running'}
+        else:
+            return self.last_report.to_information_dict()
+            
     def set_last_report(self, report):
         self.last_report = report
+        self.report_id += 1
+        self.last_report.report_id = self.report_id
         self.events_queue.put('done')
         
             

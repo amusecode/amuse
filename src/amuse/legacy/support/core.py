@@ -633,7 +633,6 @@ class MpiChannel(MessageChannel):
                         bytes.extend([ord(ch) for ch in string])
                         bytes.append(0)
               
-            print bytes
             chars = numpy.array(bytes, dtype=numpy.uint8)
             self.intercomm.Bcast([chars, MPI.CHARACTER], root=MPI.ROOT)
        

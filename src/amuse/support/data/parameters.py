@@ -99,7 +99,6 @@ class ParameterException(AttributeError):
     template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")
         
     def __init__(self, object, parameter_name, errorcode, is_get):
-        print is_get, "get" if is_get  else "set"
         AttributeError.__init__(self, self.template.format(
             "get" if is_get else "set",
             parameter_name,

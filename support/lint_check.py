@@ -82,10 +82,18 @@ class InterfaceToPyLint(object):
         messages = []
         lines = string.splitlines()
         regexp = re.compile("(.+?)\:(\d+)\: \[(.)(\d\d\d\d)(?:, (.+?))?\] (.*)")
+        number_of_statements_re = re.compile("(\d+) statements analysed.")
         for line in lines:
             match = regexp.match(line)
             if not match is None:
                 messages.append(ReportMessageLine(*match.groups()))
+            match = number_of_statements_re.match(line)
+            if not match is None:
+                print match.groups()
+
+                print match.group(1)
+                number_of_statements = int(match.group(1))
+            
         return PylintReport(messages)
         
     def get_environment_with_pythonpath(self, extra_python_paths):
@@ -278,7 +286,7 @@ class LintWebServer(webserver.WebServer):
         print "running lint"
         self.set_last_report(InterfaceToPyLint().run_onfile(
             'src/amuse', 
-            [os.path.join(os.getcwd(), 'src')]))
+            [os.path.join(os.getcwd(), 'src/amuse/support')]))
         print "done..."
         
     def get_last_report_as_dict(self):

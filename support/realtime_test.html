@@ -9,6 +9,7 @@
 <script type="text/javascript">
 var event_polling_interval_id;
 var current_interval = 10000;
+var last_report_id = -1;
 
 function on_line_click(event) {
     path = $(this).attr('path');
@@ -29,26 +30,22 @@ function on_run_button_click(event) {
 
 
 
-function handle_results_of_poll(data) {
+function handle_results_of_poll(report) {
     if (current_interval > 1000) {
         current_interval = 1000;
         clearInterval(event_polling_interval_id);
         event_polling_interval_id = setInterval(do_one_poll, current_interval)
     }
     
-    if (data.length == 0) {
-        return;
-    }
-    for(var i = 0 ; i < data.length; i++) {
-        var event = data[i];
-        if(event == 'done') {
-             $.getJSON("/get_last_report", handle_last_report);
-        }
+    document.title = report.title;
+    if (report.report_id != last_report_id) {
+        $.getJSON("/get_last_report", handle_last_report);
+        last_report_id=report.report_id
     }
 }
 
 function do_one_poll() {
-    $.getJSON("/events", handle_results_of_poll)
+    $.getJSON("/get_last_report_information", handle_results_of_poll)
 }
 
 function poll_for_events() {
@@ -80,32 +77,8 @@ function long_poll() {
 
 
 function document_title(report) {
-    startDate = new Date(report.start_time * 1000);
-    endDate = new Date(report.end_time * 1000);
     
-    delta_time = report.end_time - report.start_time;
-    var title = '';
-    if (report.errors + report.failures == 0) {
-        title += "OK "
-    } else {
-        title += "FAIL "
-    }
-    if(report.errors > 0) {
-        title += 'E' + report.errors + ' ';
-    }
-    if(report.failures > 0) {
-        title += 'F' + report.failures + ' ';
-    }
-    title += '+' + report.tests + ' ';
-    if(report.skipped > 0) {
-        title += 'S' + report.skipped + ' ';
-    }
-    
-    title += 'T' + (report.tests + report.skipped  + report.failures + report.errors) + ' ';
-    title += delta_time.toFixed(2) + 's';
-    title += ' ';
-    title += startDate.toLocaleTimeString();
-    return title;
+    return report.title;
 }
 
 function handle_last_report(report) {

@@ -132,7 +132,7 @@ class TestMPIInterface(TestWithMPI):
         };
 
         architecture, linkage_format = platform.architecture()
-        if architecture == '32bit':
+        if architecture == '32bit' and platform.system() != 'Darwin':
             for x in expected:
                 #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
                 #self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))

@@ -7,7 +7,7 @@
 #
 
 #APPVER=2.5.4
-APPVER=2.6.3
+APPVER=2.6.4
 APPFILE=Python-${APPVER}.tar.bz2
 APP_DIR=Python-${APPVER}
 URL=http://www.python.org/ftp/python/${APPVER}/${APPFILE}
