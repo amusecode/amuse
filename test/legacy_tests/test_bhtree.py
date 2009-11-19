@@ -24,6 +24,8 @@ except ImportError:
 class TestMPIInterface(TestWithMPI):
     
     def setUp(self):
+        super(TestMPIInterface, self).setUp()
+        
         nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         
     def test1(self):
@@ -35,6 +37,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(instance.get_number(), 1)
         instance.cleanup_module()
         del instance
+
         
     def test2(self):
         instance = mpi_interface.BHTree(debug_with_gdb=False)
