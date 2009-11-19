@@ -14,6 +14,8 @@ class Hermite(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     eps2 = legacy_global(name='eps2',id=23,dtype='d')
     flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
 
+    
+
     parameter_definitions = [
         parameters.ModuleAttributeParameterDefinition(
             "eps2",
@@ -67,11 +69,12 @@ class Hermite(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     def __init__(self, convert_nbody = None):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code")
 
+        """
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
         self.convert_nbody = convert_nbody
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
-
+        """
         LiteratureRefs.__init__(self)
 
         
@@ -80,8 +83,8 @@ class Hermite(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         for attribute_definition in self.attribute_definitions:
             values = particles.get_values_of_attribute(attribute_definition.name)
             attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
-        #keyword_arguments['id'] = list(particles.ids)
-        particles.ids = self.new_particle(**keyword_arguments)['index_of_the_particle']
+        keyword_arguments['id'] = list(particles.ids)
+        self.new_particle(**keyword_arguments)['index_of_the_particle']
 
     def update_particles(self, particles):
         state = self.get_state(list(particles.ids))
