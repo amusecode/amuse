@@ -13,15 +13,16 @@ class GravitationalDynamics(object):
         mass, radius, position and velocity. This function returns an index that can be used to refer
         to this particle.
         """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT
-            , description = 
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT, description = 
             """
             An index assigned to the newly created particle. 
             This index is supposed to be a local index for the code
             (and not valid in other instances of the code or in other codes)
             """
             )
+          
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The mass of the particle")
         function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle")
         function.addParameter('x', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
@@ -53,6 +54,8 @@ class GravitationalDynamics(object):
             particle was removed from the model
         -1 - ERROR
             particle could not be removed
+        -2 - ERROR
+            not yet implemented
         """
         return function
 
@@ -62,7 +65,8 @@ class GravitationalDynamics(object):
         Retrieve the current state of a particle. The *minimal* information of a stellar 
         dynamics particle (mass, radius, position and velocity) is returned.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True 
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
@@ -89,6 +93,7 @@ class GravitationalDynamics(object):
         dynamics particle (mass, radius, position and velocity) is updated.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True 
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
@@ -106,10 +111,11 @@ class GravitationalDynamics(object):
         -1 - ERROR
             particle could not be found
         -2 - ERROR
-            code does not support updating of a particle 
+            code does not support updating of a particle
+        -3 - ERROR
+            not yet implemented
         """
         return function    
-        
 
     @legacy_function
     def get_mass():
@@ -151,6 +157,44 @@ class GravitationalDynamics(object):
         return function    
 
     @legacy_function
+    def get_radius():
+        """
+        Retrieve the radius of a particle. Radius is a scalar property of a particle,
+        this function has one OUT argument.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The current radius of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was retreived
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+
+    @legacy_function
+    def set_radius():
+        """
+        Set the radius of a particle. Radius is a scalar property of a particle.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the radius of. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The new radius of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was retreived
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
     def get_position():
         """
         Retrieve the position vector of a particle. Position is a vector property,
@@ -168,6 +212,8 @@ class GravitationalDynamics(object):
             current value was retrieved
         -1 - ERROR
             particle could not be found
+        -2 - ERROR
+            not yet implemented
         """
         return function
 
@@ -195,6 +241,53 @@ class GravitationalDynamics(object):
         return function    
     
     @legacy_function
+    def get_velocity():
+        """
+        Retrieve the velocity vector of a particle. Position is a vector property,
+        this function has 3 OUT arguments.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the velocity from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('vx', dtype='float64', direction=function.OUT, description = "The current x component of the position vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.OUT, description = "The current y component of the position vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current z component of the position vector of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+
+
+    @legacy_function
+    def set_velocity():
+        """
+        Set the velocity vector of a particle. 
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('vx', dtype='float64', direction=function.IN, description = "The current x component of the velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN, description = "The current y component of the velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN, description = "The current z component of the velocity vector of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+
+
+    @legacy_function
     def get_acceleration():
         """
         Retrieve the acceleration vector of a particle. Second time derivative of the position.
@@ -202,15 +295,17 @@ class GravitationalDynamics(object):
         function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
-        function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
-        function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('ax', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('ay', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('az', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             current value was retrieved
         -1 - ERROR
             particle could not be found
+        -2 - ERROR
+            not yet implemented
         """
         return function
 
@@ -225,9 +320,9 @@ class GravitationalDynamics(object):
         function = LegacyFunctionSpecification()  
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('x', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
-        function.addParameter('y', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
-        function.addParameter('z', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
+        function.addParameter('ax', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
+        function.addParameter('ay', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
+        function.addParameter('az', dtype='float64', direction=function.IN, description = "The new acceleration vector of the particle")
         function.result_type = 'int32'
         function.result_type = 'int32'
         function.result_doc = """
@@ -236,28 +331,32 @@ class GravitationalDynamics(object):
         -1 - ERROR
             particle could not be found
         -2 - ERROR
-            code does not support updating of a particle 
+            code does not support updating of a particle
+        -3 - ERROR
+            not yet implemented
         """
         return function
     
     @legacy_function
     def get_potential():
         """
-        Retrieve the potential vector of a particle. 
+        Retrieve the potential at a position (vector). 
+
         *Need better description of use and relation to get_acceleration and get_gravity*
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
-            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
-        function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
-        function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
-        function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current potential vector of the particle")
+        function.addParameter('x', dtype='float64', direction=function.IN, description = "The current position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN, description = "The current position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN, description = "The current position vector of the particle")
+        function.addParameter('V', dtype='float64', direction=function.OUT, description = "The current scalar potential...")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             current value was retrieved
         -1 - ERROR
             particle could not be found
+        -2 - ERROR
+            not yet implemented
         """
         return function
     
@@ -275,12 +374,15 @@ class GravitationalDynamics(object):
                 "Model time to evolve the code to. " 
                 "The model will be evolved until "
                 "this time is reached exactly or just before")
+        """
+        cello, probably gonna kill this one...........
         function.addParameter('collision_flag',
             dtype='float64',
             direction=function.IN, 
             description = 
                 "(1) Stop evolving the model when a collision is detected by the code "
                 "(0) Continue evolving the code, ignore collisions")
+        """
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -322,8 +424,10 @@ class GravitationalDynamics(object):
         function.result_doc = """
         0 - OK
             Code is initialized
-         -1 - ERROR
+        -1 - ERROR
             Error happened during initialization, this error needs to be further specified by every code implemention 
+        -2 - ERROR
+            not yet implemented
         """
         return function  
         
@@ -416,6 +520,8 @@ class GravitationalDynamics(object):
             The indices of the collision partners were set
          -1 - ERROR
             No collision detected during evolve
+         -2 - ERROR
+            not yet implemented
         """
         return function  
     
@@ -454,6 +560,8 @@ class GravitationalDynamics(object):
             Current value of the kinetic mass was retrieved 
         -1 - ERROR
             Total mass could not be provided
+        -2 - ERROR
+            not yet implemented
         """
         return function
     
@@ -475,6 +583,8 @@ class GravitationalDynamics(object):
             Current value of the center was retrieved 
         -1 - ERROR
             The mass could not be provided
+        -2 - ERROR
+            not yet implemented
         """
         return function
     
@@ -519,19 +629,17 @@ class GravitationalDynamics(object):
         """
         return function
     
-
-    
     @legacy_function
     def get_gravity_at_point():
         """
         Determine the gravitational force on a given point
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('x', dtype='int32', direction=function.IN,
+        function.addParameter('x', dtype='float64', direction=function.IN,
             description = "The position vector of the point")
-        function.addParameter('y', dtype='int32', direction=function.IN,
+        function.addParameter('y', dtype='float64', direction=function.IN,
             description = "The position vector of the point")
-        function.addParameter('z', dtype='int32', direction=function.IN,
+        function.addParameter('z', dtype='float64', direction=function.IN,
             description = "The position vector of the point")
         function.addParameter('forcex', dtype='float64', direction=function.OUT,
             description = "Force created by the particles in the code at the given position")
@@ -547,8 +655,6 @@ class GravitationalDynamics(object):
             No force calculation supported
         """
         return function  
-    
-
 
     @legacy_function
     def get_number_of_particles():

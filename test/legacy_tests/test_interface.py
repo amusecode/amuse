@@ -89,3 +89,5 @@ class TestGravitationalDynamics(TestWithMPI):
         instance_documentation =  WithLegacyDocStringProperty().__doc__
         self.assertTrue(instance_documentation.find('FUNCTION test(one)') >= 0)
         
+    def test6(self):
+        pass
