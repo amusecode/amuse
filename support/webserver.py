@@ -81,7 +81,10 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
            method = getattr(self,method_name)
            string, content_type =  method()
         else:
-           string, content_type = self.index_file()
+            if path.endswith(".js"):
+                string, content_type = self.javascript_file(path)
+            else:
+                string, content_type = self.index_file()
         
         self.send_response(200)
         self.send_header("Content-type", content_type)
@@ -121,6 +124,15 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         with open(filename, "r") as file:
             contents = file.read()
             return contents, 'text/html'
+            
+    def javascript_file(self, path):
+        base = os.path.split(__file__)[0]
+        filename = os.path.join(base, path)
+        if not os.path.exists(path):
+            return  '', 'text/javascript'
+        with open(filename, "r") as file:
+            contents = file.read()
+            return contents, 'text/javascript'
             
     def log_message(self, format, *args):
         pass
