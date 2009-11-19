@@ -83,6 +83,12 @@ class Particles(object):
         for particle, value in map(None, self, values):
             getattr(particle, attribute).set_value_at_time(time, value)
         
+    def ids_for_module_with_id(self, module_id):
+        for x in self.particles:
+            if module_id in x._module_ids_to_index:
+                yield  x._module_ids_to_index[module_id][1]
+            else:
+                pass
         
 class Stars(Particles):
     
@@ -160,6 +166,7 @@ class Particle(object):
     def __init__(self, id = -1, set = None, **keyword_arguments):
         object.__setattr__(self, "id", id)
         object.__setattr__(self, "attributes", {})
+        object.__setattr__(self, "_module_ids_to_index", {})
         if not set is None:
             object.__setattr__(self, "set", set)
             

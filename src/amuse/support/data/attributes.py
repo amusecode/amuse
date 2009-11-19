@@ -88,6 +88,50 @@ class ScalarAttributeDefinition_Next(AttributeDefinition):
             raise AttributeException(object, self.name, error, True)
         return values
         
+
+class VectorAttributeDefinition_Next(AttributeDefinition):
+    def __init__(self, set_method, get_method, parameter_names,  name, description, unit, default_value):
+        AttributeDefinition.__init__(self, name, description, unit, default_value)
+        self.set_method = set_method
+        self.get_method = get_method
+        self.parameter_names = parameter_names
+        
+    def set_keyword_arguments(self, object, values, keyword_arguments):
+        numbers = self.convert_to_numbers_in_legacy_units(object, values)
+        for i, x in enumerate(self.parameter_names):
+            keyword_arguments[x] = [number[i] for number in numbers]
+    
+    
+    def get_keyword_results(self, object, keyword_results):
+        numbers = [None for x in self.parameter_names]
+        for i, x in enumerate(self.parameter_names):
+            numbers[i] = keyword_results[x]
+        numbers = numpy.array(numbers)
+        numbers = numbers.transpose()
+        values = self.convert_to_quantities(object, numbers)
+        return values
+        
+    def set_legacy_values(self, object, ids, values):
+        values = numpy.vstack(values)
+        print values
+        error = getattr(object, self.set_method)(
+            ids, 
+            values[...,0],
+            values[...,1], 
+            values[...,2]
+        )
+        if error < 0:
+            raise AttributeException(object, self.name, error, False)
+    
+    def get_legacy_values(self, object, ids):
+        component1, component2, component3, error = getattr(object, self.get_method)(ids)
+        values = numpy.vstack((component1, component2, component3))
+        values = values.transpose()
+        if error < 0:
+            raise AttributeException(object, self.name, error, True)
+        return values
+        
+        
 class VectorAttributeDefinition(AttributeDefinition):
     def __init__(self, set_method, get_method, parameter_names,  name, description, unit, default_value):
         AttributeDefinition.__init__(self, name, description, unit, default_value)

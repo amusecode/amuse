@@ -46,6 +46,10 @@ class LiteratureRefs(object):
                                                          )
 
         docstring_in = cls.__doc__
+        
+        if not docstring_in:
+            return
+            
         objectname = cls.__name__
         Mydoctree  = core.publish_doctree(source = docstring_in)
 

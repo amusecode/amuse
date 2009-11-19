@@ -1,7 +1,7 @@
 from legacy_support import TestWithMPI
 import sys
 
-from amuse.legacy.hermite0.interface import Hermite
+from amuse.legacy.hermite0.interface import HermiteInterface, Hermite
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system
@@ -19,11 +19,11 @@ except ImportError:
 class TestMPIInterface(TestWithMPI):
 
     def test0(self):
-        instance = Hermite()
+        instance = HermiteInterface()
         self.assertTrue("Hut" in instance.all_literature_references_string())
     
     def test1(self):
-        instance = Hermite()
+        instance = HermiteInterface()
         instance.setup_module()
 
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
@@ -44,7 +44,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
 
     def test2(self):
-        instance = Hermite()
+        instance = HermiteInterface()
         instance.setup_module()
 
         for i in [0, 1, 2]:
@@ -63,7 +63,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
         
     def test3(self):
-        hermite = Hermite()
+        hermite = HermiteInterface()
         hermite.eps2 = 0.101
         self.assertEquals(0.101, hermite.eps2)
         hermite.eps2 = 0.110
@@ -71,7 +71,7 @@ class TestMPIInterface(TestWithMPI):
         del hermite
 
     def test4(self):
-        hermite = Hermite()
+        hermite = HermiteInterface()
         hermite.flag_collision = 1
         self.assertEquals(1, hermite.flag_collision)
         hermite.flag_collision = 0
@@ -79,7 +79,7 @@ class TestMPIInterface(TestWithMPI):
         del hermite
 
     def test5(self):
-        hermite = Hermite()
+        hermite = HermiteInterface()
         hermite.setup_module()
         
         hermite.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
@@ -93,8 +93,6 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(hermite.get_number_of_particles()['number_of_particles'], 2)
         hermite.cleanup_module()
         
-#these tests involve higher level interface, which is not yet updated to comply with 
-#new low level interface. Therefore currently dissabled
 
 class TestAmuseInterface(TestWithMPI):
     def new_system_of_sun_and_earth(self):
@@ -113,7 +111,46 @@ class TestAmuseInterface(TestWithMPI):
         
         return stars
         
-    def donttest2(self):
+    
+    def test1(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+
+        hermite = Hermite(convert_nbody)
+        hermite.parameters.epsilon_squared = 0.0 | units.AU**2
+        hermite.setup_module()
+        hermite.dt_dia = 5000
+        
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+                
+        hermite.setup_particles(stars)
+        
+        hermite.evolve_model(365.0 | units.day)
+        hermite.update_particles(stars)
+        
+        position_at_start = earth.position.get_value_at_time(0 | units.s)[1].value_in(units.AU)[0]
+        position_after_full_rotation = earth.position.value().value_in(units.AU)[0]
+        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
+        
+        hermite.evolve_model(365.0 + (365.0 / 2) | units.day)
+        
+        hermite.update_particles(stars)
+        position_after_half_a_rotation = earth.position.value().value_in(units.AU)[0]
+        print position_after_half_a_rotation
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
+                
+        hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
+        
+        hermite.update_particles(stars)
+        position_after_half_a_rotation = earth.position.value().value_in(units.AU)[1]
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
+        
+        hermite.cleanup_module()
+        
+        del hermite
+        
+
+    def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = Hermite(convert_nbody)
@@ -123,7 +160,7 @@ class TestAmuseInterface(TestWithMPI):
         
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
-        instance.new_particles(stars)
+        instance.setup_particles(stars)
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
@@ -145,42 +182,4 @@ class TestAmuseInterface(TestWithMPI):
         instance.cleanup_module()
         del instance
 
-    def donttest1(self):
-        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
-        hermite = Hermite(convert_nbody)
-        hermite.parameters.epsilon_squared = 0.0 | units.AU**2
-        hermite.setup_module()
-        hermite.dt_dia = 5000
-        
-        stars = self.new_system_of_sun_and_earth()
-        earth = stars[1]
-                
-        hermite.new_particles(stars)
-        
-        hermite.evolve_model(365.0 | units.day)
-        hermite.update_particles(stars)
-        
-        position_at_start = earth.position.get_value_at_time(0 | units.s)[1].value_in(units.AU)[0]
-        print position_at_start#0.999
-        position_after_full_rotation = earth.position.value().value_in(units.AU)[0]
-        print position_after_full_rotation
-        #self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 6)
-        
-        hermite.evolve_model(365.0 + (365.0 / 2) | units.day)
-        
-        hermite.update_particles(stars)
-        position_after_half_a_rotation = earth.position.value().value_in(units.AU)[0]
-        print position_after_half_a_rotation
-        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
-                
-        hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
-        
-        hermite.update_particles(stars)
-        position_after_half_a_rotation = earth.position.value().value_in(units.AU)[1]
-        self.assertAlmostEqual(-position_at_start, postion_after_half_a_rotation, 3)
-        
-        hermite.cleanup_module()
-        
-        del hermite
         

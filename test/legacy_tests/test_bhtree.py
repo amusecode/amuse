@@ -25,7 +25,6 @@ class TestMPIInterface(TestWithMPI):
     
     def setUp(self):
         super(TestMPIInterface, self).setUp()
-        
         nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         
     def test1(self):

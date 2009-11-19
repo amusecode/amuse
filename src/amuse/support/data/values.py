@@ -293,7 +293,16 @@ class VectorQuantity(Quantity):
         
     def __eq__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number == other_in_my_units.number
+        if not len(self.number) == len(other_in_my_units.number):
+            return False
+            
+        return all(
+            map(
+                lambda x,y : x == y, 
+                self.number, 
+                other_in_my_units.number
+                )
+            )
         
     def __neq__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
