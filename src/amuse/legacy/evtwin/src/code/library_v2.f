@@ -316,7 +316,7 @@
       ! init.run and init.dat are present in the current directory.
       OVERRIDE_RUN = .FALSE.
       OVERRIDE_DAT = .FALSE.
-      
+      ! VERBOSE = 1
       ! Check if all input files exist and open them as needed
       DO I=1, N_INP_FILES
          WRITE (FNAME, '("fort.",I2)') INPUTUNITS(I)
@@ -834,15 +834,16 @@ c Determine whether I and phi are computed or not, for OUTPUT
       initialize_stars = 0
       end function
       
-      function new_zams_star(star_id, mass, age)
+      function new_particle(star_id, mass)
       implicit none
-      integer :: new_zams_star, star_id
+      integer :: new_particle, star_id
       double precision :: mass, age
+      age = 0.0
       star_id = load_zams_star(mass, age)
       if (star_id .EQ. 0) then
-        new_zams_star = -1
+        new_particle = -1
       else
-        new_zams_star = 0
+        new_particle = 0
       end if
       end function
       

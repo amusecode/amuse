@@ -1,5 +1,6 @@
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamics
+from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 from amuse.legacy.support.lit import LiteratureRefs
 
 class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
@@ -48,7 +49,7 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         """
         return function
         
-class HermiteBinding(object):
+class HermiteBinding(NBodyGravitationalDynamicsBinding):
     parameter_definitions = [
         parameters.ModuleAttributeParameterDefinition(
             "eps2",
@@ -99,42 +100,24 @@ class HermiteBinding(object):
     ]
 
     def __init__(self, convert_nbody = None):
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-        self.convert_nbody = convert_nbody
-        
-        self.parameters = parameters.Parameters(self.parameter_definitions, self)
-        
+        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
     
-    def setup_particles(self, particles):
-        keyword_arguments = {}
-        for attribute_definition in self.attribute_definitions:
-            values = particles.get_values_of_attribute(attribute_definition.name)
-            attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
-        
-        indices, errors = self.new_particle(**keyword_arguments)
-        
-        for errorcode in errors:
-            if errorcode < 0:
-                raise Exception("Could not setup a particle")
-        
-        module_id = id(self)
-        for particle, new_index in zip(particles, indices):
-            particle._module_ids_to_index[module_id] = (self, new_index)
+    def current_model_time(self):
+        return self.convert_nbody.to_si( self.t | nbody_system.time)
             
-
-    def update_particles(self, particles):
-        state = self.get_state(list(particles.ids_for_module_with_id(id(self))))
-        time = self.convert_nbody.to_si( self.t | nbody_system.time)
-        for attribute_definition in self.attribute_definitions:
-            values = attribute_definition.get_keyword_results(self, state)
-            particles.set_values_of_attribute(attribute_definition.name, time, values)
-
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
         return result
         
 class Hermite(HermiteInterface, HermiteBinding):
+    """  
+    N-body integration module with shared but variable time step
+    (the same for all particles but its size changing in time),
+    using the Hermite integration scheme.
+
+    
+    .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
+    """	
     
     def __init__(self, convert_nbody = None):
         HermiteInterface.__init__(self)

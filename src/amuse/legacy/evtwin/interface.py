@@ -1,6 +1,7 @@
 from amuse.legacy import *
 from amuse.legacy.interface.se import StellarEvolution
 from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 
 import os
 
@@ -110,10 +111,11 @@ class EVtwin(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
-class EVtwinBinding(object):
+class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding):
     
     def __init__(self):
-        self.parameters = parameters.Parameters(self.parameter_definitions, self)
+        InterfaceWithParametersBinding.__init__(self)
+        InterfaceWithObjectsBinding.__init__(self)
         
     parameter_definitions = [
         parameters.ModuleMethodParameterDefinition_Next(
@@ -147,51 +149,96 @@ class EVtwinBinding(object):
     ]
     
     attribute_definitions = [
-        attributes.ScalarAttributeDefinition(
+        attributes.ScalarAttributeDefinition_Next(
             None,
             "get_stellar_type",
-            "type",
+            None,
             "type",
             "star type",
              units.stellar_type,
              1 | units.stellar_type
         ),
-        attributes.ScalarAttributeDefinition(
+        attributes.ScalarAttributeDefinition_Next(
             None,
             "get_mass",
-            None,
             "mass",
-            "mass of a star",
+            "mass",
+            "mass of the star",
              units.MSun,
              0.0 | units.MSun
         ),
-        attributes.ScalarAttributeDefinition(
+        attributes.ScalarAttributeDefinition_Next(
             None,
             "get_age",
             None,
-            "mass",
-            "current mass of a star",
-             units.MSun,
-             1.0 | units.MSun
+            "age",
+            "current age of the star",
+             units.Myr,
+             1.0 | units.Myr
         ),
-        attributes.ScalarAttributeDefinition(
+        attributes.ScalarAttributeDefinition_Next(
             None,
             "get_radius",
             None,
             "radius",
-            "radius of a star",
+            "current radius of the star",
              units.RSun,
              1.0 | units.RSun
         ),
-        attributes.ScalarAttributeDefinition(
+        attributes.ScalarAttributeDefinition_Next(
             None,
+            "get_luminosity",
             None,
-            "lum",
-            "luminocity",
-            "luminocity of a star",
+            "luminosity",
+            "current luminosity of the star",
              units.LSun,
              1.0 | units.LSun
         ),
     ]
+    
+    
+    def update_particles(self, particles):
+        ids = list(particles.ids_for_module_with_id(id(self)))
+        attribute_definition = self.get_attribute_definition("age");
+        times =  attribute_definition.get_values(self, ids)
         
+        module_id = id(self)
+        for attribute_definition in self.attribute_definitions:
+            values = attribute_definition.get_values(self, ids)
+            particles.set_values_of_attribute_for_module_with_id(module_id, attribute_definition.name, values=values, times=times)
+            
+    def evolve_particles(self, particles, end_time):
+        module_id = id(self)
+        
+        
+        for particle in particles:
+            if not module_id in particle._module_ids_to_index:
+                    continue
+                    
+            index = particle._module_ids_to_index[module_id][1]
+            
+                
+            current_age, error = self.get_age(index)
+            current_age |= units.Myr
+            
+            print index, current_age
+            
+            while current_age < end_time:
+                
+                errorcode = self.evolve(index)
+                if errorcode < 0:
+                    raise Exception("Error during evolution of a star, errorcode = " + errorcode)
+                
+                current_age, error = self.get_age(index)
+                current_age |= units.Myr
+                
+                print current_age
+                
+                for attribute_defintion in self.attribute_definitions:
+                    values = attribute_definition.get_values(self, [index])
+                    particle.set_value_of_attribute(
+                        attribute_definition.name,
+                        values[0]
+                    )
+                
         

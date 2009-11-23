@@ -1,6 +1,6 @@
 from legacy_support import TestWithMPI
 import sys
-import os
+import os.path
 
 from amuse.legacy.evtwin.interface import EVtwin, EVtwinBinding
 
@@ -80,8 +80,8 @@ class TestInterface(TestWithMPI):
         error = instance.initialize_code()
         self.assertEquals(0, error)      
         
-        (index_of_the_star, error) = instance.new_zams_star(10, 0)
-        self.assertEquals(0, error)      
+        (index_of_the_star, error) = instance.new_particle(10)
+        self.assertEquals(0, error)       
         
         self.assertTrue(index_of_the_star >= 0)      
         
@@ -123,6 +123,34 @@ class TestInterfaceBinding(TestWithMPI):
         instance.parameters.maximum_number_of_stars = 12 | units.no_unit
         self.assertEquals(12.0 | units.no_unit , instance.parameters.maximum_number_of_stars)
         del instance
+    
+    def test2(self):
+        instance = self.EVtwinWithBinding()
+        instance.parameters.set_defaults()
+        instance.set_ev_path(instance.default_path_to_ev_database)
+        
+        path = os.path.join(instance.default_path_to_ev_database, 'run')
+        path = os.path.join(path, 'muse')
+        
+        #instance.set_init_dat_name(os.path.join(path,'init.dat'))
+        #instance.set_init_run_name(os.path.join(path,'init.run'))
+        
+        stars = core.Stars(1)
+        stars[0].mass = 10 | units.MSun
+        
+        instance.initialize_code()
+        
+        instance.setup_particles(stars)
+        instance.initialize_stars()
+        
+        #instance.evolve_particles(stars, 2 | units.Myr)
+        instance.update_particles(stars)
+        
+        print stars[0]
+        
+        self.assertEquals(stars[0].mass.value(), 10 | units.MSun)
+        self.assertAlmostEquals(stars[0].luminosity.value().value_in(units.LSun), 5695.19757302 , 6)
+        
     
         
         

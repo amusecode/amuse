@@ -163,7 +163,7 @@ class StellarEvolution(object):
         return function
         
     @legacy_function   
-    def new_zams_star():
+    def new_particle():
         """
         Define a new star in the code. The star will start with the given mass.
         """
@@ -172,8 +172,8 @@ class StellarEvolution(object):
             , description="The new index for the star. This index can be used to refer to this star in other functions")
         function.addParameter('mass', dtype='float64', direction=function.IN
             , description="The initial mass of the star")
-        function.addParameter('age_tag', dtype='float64', direction=function.IN
-            , description="Starting age of the star *to be specified exactly*")
+        #function.addParameter('age_tag', dtype='float64', direction=function.IN
+        #    , description="Starting age of the star *to be specified exactly*")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK

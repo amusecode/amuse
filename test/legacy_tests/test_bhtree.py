@@ -28,7 +28,7 @@ class TestMPIInterface(TestWithMPI):
         nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         
     def test1(self):
-        instance = mpi_interface.BHTree()
+        instance = mpi_interface.BHTreeInterface()
         instance.setup_module()
         instance.add_particle(1, 11.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
@@ -39,7 +39,7 @@ class TestMPIInterface(TestWithMPI):
 
         
     def test2(self):
-        instance = mpi_interface.BHTree(debug_with_gdb=False)
+        instance = mpi_interface.BHTreeInterface(debug_with_gdb=False)
         instance.eps2 = 0.101
         self.assertEquals(0.101, instance.eps2)
         instance.eps2 = 0.110
@@ -47,7 +47,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
     def test3(self):
-        instance = mpi_interface.BHTree()
+        instance = mpi_interface.BHTreeInterface()
         instance.flag_collision = 1
         self.assertEquals(1, instance.flag_collision)
         instance.flag_collision = 0
@@ -55,7 +55,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
     def test4(self):
-        class BHTree2(mpi_interface.BHTree):
+        class BHTree2(mpi_interface.BHTreeInterface):
             channel_factory = legacy_core.MultiprocessingMPIChannel
             pass
         
@@ -72,7 +72,7 @@ class TestMPIInterface(TestWithMPI):
         import socket
         hostname = socket.gethostname()
         
-        instance = mpi_interface.BHTree(hostname = hostname)
+        instance = mpi_interface.BHTreeInterface(hostname = hostname)
         instance.setup_module()
         instance.cleanup_module()
         del instance

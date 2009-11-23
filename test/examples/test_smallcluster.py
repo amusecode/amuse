@@ -13,7 +13,7 @@ except ImportError:
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 
-from amuse.legacy.hermite0.muse_dynamics_mpi import Hermite
+from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.support.core import is_mpd_running
@@ -99,6 +99,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
                 
     gravity = BHTree()
     gravity.setup_module()
+    
     gravity.dt_dia = 10000
     
     stellar_evolution = SSE()
@@ -132,7 +133,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         
         print "evolved model to t = " + str(time)
         
-        gravity.update_attributes(particles.mass)
+        gravity.set_attribute("mass", particles)
         time += 2 |units.Myr
     
    

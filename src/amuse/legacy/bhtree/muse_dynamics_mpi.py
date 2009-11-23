@@ -1,6 +1,7 @@
 from amuse.legacy import *
+from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 
-class BHTree(LegacyInterface):
+class BHTreeInterface(LegacyInterface):
     include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h']
     
     timestep = legacy_global(name='timestep',id=21,dtype='d')
@@ -12,62 +13,10 @@ class BHTree(LegacyInterface):
     
     dt_dia = legacy_global(name='dt_dia',id=246,dtype='d')
     
-    parameter_definitions = [
-        parameters.ModuleAttributeParameterDefinition(
-            "eps2_for_gravity",
-            "epsilon_squared", 
-            "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.3 | nbody_system.length * nbody_system.length
-        )
-    ]
     
-    attribute_definitions = [
-        attributes.ScalarAttributeDefinition(
-            "set_mass",
-            None,
-            "mass",
-            "mass",
-            "mass of a star",
-             nbody_system.mass,
-             1 | nbody_system.mass
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "radius",
-            "radius",
-            "radius of a star, used for collision detection",
-             nbody_system.length,
-             1 | nbody_system.length
-        ),
-        attributes.VectorAttributeDefinition(
-            None,
-            None,
-            ["x","y","z"],
-            "position",
-            "cartesian coordinates of a star",
-             nbody_system.length,
-             [0.0, 0.0, 0.0] | nbody_system.length
-        ),
-        attributes.VectorAttributeDefinition(
-            None,
-            None,
-            ["vx","vy","vz"],
-            "velocity",
-            "velocity of a star",
-            nbody_system.speed,
-            [0.0, 0.0, 0.0] | nbody_system.speed
-        ),
-    ]    
       
     def __init__(self, convert_nbody = None, **kwargs):
         LegacyInterface.__init__(self, **kwargs)
-        self.parameters = parameters.Parameters(self.parameter_definitions, self)
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-            
-        self.convert_nbody = convert_nbody
         
 
     @legacy_function   
@@ -157,30 +106,99 @@ class BHTree(LegacyInterface):
         function.result_type = 'd'
         return function
          
+    
+  
+
+class BHTreeBinding(NBodyGravitationalDynamicsBinding):
+    parameter_definitions = [
+        parameters.ModuleAttributeParameterDefinition(
+            "eps2_for_gravity",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.3 | nbody_system.length * nbody_system.length
+        )
+    ]
+    
+    attribute_definitions = [
+        attributes.ScalarAttributeDefinition(
+            "set_mass",
+            None,
+            "mass",
+            "mass",
+            "mass of a star",
+             nbody_system.mass,
+             1 | nbody_system.mass
+        ),
+        attributes.ScalarAttributeDefinition(
+            None,
+            None,
+            "radius",
+            "radius",
+            "radius of a star, used for collision detection",
+             nbody_system.length,
+             1 | nbody_system.length
+        ),
+        attributes.VectorAttributeDefinition(
+            None,
+            None,
+            ["x","y","z"],
+            "position",
+            "cartesian coordinates of a star",
+             nbody_system.length,
+             [0.0, 0.0, 0.0] | nbody_system.length
+        ),
+        attributes.VectorAttributeDefinition(
+            None,
+            None,
+            ["vx","vy","vz"],
+            "velocity",
+            "velocity of a star",
+            nbody_system.speed,
+            [0.0, 0.0, 0.0] | nbody_system.speed
+        ),
+    ]    
+
+    def __init__(self, convert_nbody = None):
+        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+        
+    def current_model_time(self):
+        return self.convert_nbody.to_si( self.get_time() | nbody_system.time)
+    
+    def setup_particles(self, particles):
+        keyword_arguments = {}
+        for attribute_definition in self.attribute_definitions:
+            values = particles.get_values_of_attribute(attribute_definition.name)
+            attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
+        
+        indices, errors = self.new_particle(**keyword_arguments)
+        
+        for errorcode in errors:
+            if errorcode < 0:
+                raise Exception("Could not setup a particle")
+        
+        module_id = id(self)
+        for particle, new_index in zip(particles, indices):
+            particle._module_ids_to_index[module_id] = (self, new_index)
+            
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time), 1)
         return result
-            
+        
+        
     def add_particles(self, particles):
         keyword_arguments = {}
         for attribute_definition in self.attribute_definitions:
             values = particles.get_values_of_attribute(attribute_definition.name)
             attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
         keyword_arguments['id'] = list(particles.ids)
-        print keyword_arguments
-        self.add_particle(**keyword_arguments)
-            
-    def update_particles(self, particles):
-        state = self.get_state(list(particles.ids))
-        time = self.convert_nbody.to_si( self.get_time() | nbody_system.time)
-        for attribute_definition in self.attribute_definitions:
-            values = attribute_definition.get_keyword_results(self, state)
-            particles.set_values_of_attribute(attribute_definition.name, time, values)
-            
-    def update_attributes(self, attributes):
-        for id, x in attributes:
-            if x.name == 'mass':
-                self.set_mass(id, self.convert_nbody.to_nbody(x.value()).value_in(nbody_system.mass))
+        
+        indices = self.add_particle(**keyword_arguments)
+        
+        
+        module_id = id(self)
+        for particle, new_index in zip(particles, indices):
+            particle._module_ids_to_index[module_id] = (self, new_index)
         
     def get_energies(self):
         energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2
@@ -188,4 +206,12 @@ class BHTree(LegacyInterface):
         potential_energy = self.get_potential_energy() | energy_unit
         return (self.convert_nbody.to_si(kinetic_energy), self.convert_nbody.to_si(potential_energy))
     
-  
+        
+        
+class BHTree(BHTreeInterface, BHTreeBinding):
+    """ 
+    """	
+    
+    def __init__(self, convert_nbody = None):
+        BHTreeInterface.__init__(self)
+        BHTreeBinding.__init__(self, convert_nbody)

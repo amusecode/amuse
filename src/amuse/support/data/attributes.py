@@ -37,7 +37,12 @@ class ScalarAttributeDefinition(AttributeDefinition):
         self.get_method = get_method
         self.parameter_name = parameter_name
         
+    def is_required_for_setup(self):
+        return not self.parameter_name is None
+        
     def set_keyword_arguments(self, object, values, keyword_arguments):
+        if self.parameter_name is None:
+            return
         numbers = self.convert_to_numbers_in_legacy_units(object, values)
         keyword_arguments[self.parameter_name] = numbers
     
@@ -45,7 +50,14 @@ class ScalarAttributeDefinition(AttributeDefinition):
         numbers = keyword_results[self.parameter_name]
         values = self.convert_to_quantities(object, numbers)
         return values
+
+    def set_legacy_values(self, object, ids, values):
+        getattr(object, self.set_method)(ids, values)
         
+    
+    def get_legacy_values(self, object, ids):
+        values = getattr(object, self.get_method)(ids)
+        return values        
 
 class AttributeException(AttributeError):
     template = ("Could not {0} value(s) for atttribute '{1}' of a '{2}' object, got errorcode <{3}>")
@@ -68,23 +80,30 @@ class ScalarAttributeDefinition_Next(AttributeDefinition):
         self.get_method = get_method
         self.parameter_name = parameter_name
         
+    def is_required_for_setup(self):
+        return not self.parameter_name is None
+        
     def set_keyword_arguments(self, object, values, keyword_arguments):
+        if self.parameter_name is None:
+            return
         numbers = self.convert_to_numbers_in_legacy_units(object, values)
         keyword_arguments[self.parameter_name] = numbers
     
     def get_keyword_results(self, object, keyword_results):
+        if self.parameter_name is None:
+            return None
         numbers = keyword_results[self.parameter_name]
         values = self.convert_to_quantities(object, numbers)
         return values
     
     def set_legacy_values(self, object, ids, values):
-        error = getattr(object, self.set_method)(ids, values)
-        if error < 0:
+        errors = getattr(object, self.set_method)(ids, values)
+        if any(map(lambda error: error < 0, errors)):
             raise AttributeException(object, self.name, error, False)
     
     def get_legacy_values(self, object, ids):
-        values, error = getattr(object, self.get_method)(ids)
-        if error < 0:
+        values, errors = getattr(object, self.get_method)(ids)
+        if any(map(lambda error: error < 0, errors)):
             raise AttributeException(object, self.name, error, True)
         return values
         
@@ -96,13 +115,20 @@ class VectorAttributeDefinition_Next(AttributeDefinition):
         self.get_method = get_method
         self.parameter_names = parameter_names
         
+    def is_required_for_setup(self):
+        return not self.parameter_names is None
+        
     def set_keyword_arguments(self, object, values, keyword_arguments):
+        if self.parameter_names is None:
+            return
         numbers = self.convert_to_numbers_in_legacy_units(object, values)
         for i, x in enumerate(self.parameter_names):
             keyword_arguments[x] = [number[i] for number in numbers]
     
     
     def get_keyword_results(self, object, keyword_results):
+        if self.parameter_names is None:
+            return None
         numbers = [None for x in self.parameter_names]
         for i, x in enumerate(self.parameter_names):
             numbers[i] = keyword_results[x]

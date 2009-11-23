@@ -44,7 +44,7 @@ class TestLegacyFunction(unittest.TestCase):
                 self.in_doubles = doubles_in
                 self.in_ints = ints_in
             
-            def recv_message(self, id):
+            def recv_message(self, id, handle_as_array):
                 return ([1,2],[3.0,4.0])
                 
         self.channel = TestChannel()
@@ -61,7 +61,7 @@ class TestLegacyFunction(unittest.TestCase):
                 self.in_doubles = doubles_in
                 self.in_ints = ints_in
             
-            def recv_message(self, id):
+            def recv_message(self, id, handle_as_array):
                 return ([1,2],[3.0,4.0])
                 
         self.channel = TestChannel()
@@ -81,7 +81,7 @@ class TestLegacyFunction(unittest.TestCase):
                 self.in_doubles = doubles_in
                 self.in_ints = ints_in
             
-            def recv_message(self, id):
+            def recv_message(self, id, handle_as_array):
                 return ([1,2],[3.0,4.0])
                 
         self.channel = TestChannel()
@@ -104,7 +104,7 @@ class TestLegacyFunction(unittest.TestCase):
             def send_message(self, id, doubles_in = [], ints_in = [], chars_in=[]):
                 self.chars_in = chars_in
             
-            def recv_message(self, id):
+            def recv_message(self, id, handle_as_array):
                 return [[], []]
                 
         self.channel = TestChannel()

@@ -89,6 +89,33 @@ class Particles(object):
                 yield  x._module_ids_to_index[module_id][1]
             else:
                 pass
+    
+    
+    def get_values_of_attribute_for_module_with_id(self, module_id, attribute, time = None):
+        result = []
+        for x in self:
+            if module_id in x._module_ids_to_index:
+                result.append(getattr(x, attribute).get_value_at_time(time))
+            else:
+                pass
+        return result
+        
+    
+    
+    def set_values_of_attribute_for_module_with_id(self, module_id, attribute, values, time = None, times = None):
+        result = []
+        index = 0
+        for x in self:
+            if module_id in x._module_ids_to_index:
+                if times is not None:
+                    time = times[index]
+                if not hasattr(x, attribute):
+                    setattr(x, attribute, values[index])
+                getattr(x, attribute).set_value_at_time(time, values[index])
+                index += 1
+            else:
+                pass
+        return result
         
 class Stars(Particles):
     
@@ -207,6 +234,9 @@ class Particle(object):
         for x in self.attributes:
             value = getattr(self,x)
             setattr(self, x, convert_nbody.to_si(value))
+            
+    def set_value_of_attribute(self, attribute, value, time = None):
+        getattr(self, attribute).set_value_at_time(time, values[index])
             
 class Star(Particle):
     pass

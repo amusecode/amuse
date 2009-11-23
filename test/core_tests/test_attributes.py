@@ -20,11 +20,11 @@ class TestScalarAttributeDefinition(unittest.TestCase):
             def __init__(self):
                 self.values = [1.0, 2.0, 3.0]
             def get_test(self, ids):
-                return ([self.values[x] for x in ids],0)
+                return ([self.values[x] for x in ids],[0 for x in ids])
             def set_test(self, ids, values):
                 for index, value in zip(ids, values):
                     self.values[index] = value
-                return 0
+                return [0 for x in ids]
                 
         o = TestModule()
         values = definition.get_values(o, [0,2])

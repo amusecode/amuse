@@ -3,6 +3,8 @@ Stellar Dynamics Interface Defintion
 """
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
+from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
+from amuse.support.units import nbody_system
 
 class GravitationalDynamics(object):
 
@@ -719,6 +721,30 @@ class GravitationalDynamics(object):
          -1 - ERROR
             Particle could not be found
         """
-        return function  
+        return function 
+        
+class NBodyGravitationalDynamicsBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding):
+    
+    def __init__(self, convert_nbody):
+        InterfaceWithParametersBinding.__init__(self);
+        InterfaceWithObjectsBinding.__init__(self);
+        
+        if convert_nbody is None:
+            convert_nbody = nbody_system.nbody_to_si.get_default()
+        self.convert_nbody = convert_nbody
+        
+        
+    def get_energies(self):
+        energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2
+        kinetic_energy, errors = self.get_kinetic_energy()
+        kinetic_energy |= energy_unit
+        potential_energy, errors = self.get_potential_energy()
+        potential_energy |= energy_unit
+        return (self.convert_nbody.to_si(kinetic_energy), self.convert_nbody.to_si(potential_energy))
+  
+            
+    def evolve_model(self, time_end):
+        result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
+        return result
 
     

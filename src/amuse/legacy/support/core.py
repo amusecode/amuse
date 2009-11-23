@@ -93,8 +93,17 @@ class LegacyCall(object):
     
     def __call__(self, *arguments_list, **keyword_arguments):
         keyword_arguments_for_the_mpi_channel = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
+        
+        handle_as_array = False
+        for x in keyword_arguments_for_the_mpi_channel.values():
+           if x and hasattr(x[0],"__len__"):
+              handle_as_array = len(x[0]) > 0
+              break
+                
         self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
-        (doubles, ints) = self.interface.channel.recv_message(self.specification.id)
+        (doubles, ints) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
+       
+            
         return self.converted_results(doubles, ints)
         
     """
@@ -486,7 +495,7 @@ class MessageChannel(object):
         pass
 
     
-    def recv_message(self, tag):
+    def recv_message(self, tag, handle_as_array = False):
         pass
         
 #import time
@@ -638,7 +647,7 @@ class MpiChannel(MessageChannel):
        
         
         
-    def recv_message(self, tag):
+    def recv_message(self, tag, handle_as_array):
         header = numpy.zeros(6,  dtype='i')
         self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
         length = header[1]
@@ -649,7 +658,7 @@ class MpiChannel(MessageChannel):
             doubles_mpi = numpy.empty(n_doubles * length,  dtype='d')
             self.intercomm.Recv([doubles_mpi, MPI.DOUBLE], source=0, tag=999)
             doubles_result = []
-            if length > 1:
+            if length > 1 or handle_as_array:
                 for i in range(n_doubles):
                     offset = i * length
                     doubles_result.append(doubles_mpi[offset:offset+length])
@@ -662,7 +671,7 @@ class MpiChannel(MessageChannel):
             ints_mpi = numpy.empty(n_ints * length,  dtype='i')
             self.intercomm.Recv([ints_mpi, MPI.INT], source=0, tag=999)
             ints_result = []
-            if length > 1:
+            if length > 1 or handle_as_array:
                 for i in range(n_ints):
                     offset = i * length
                     ints_result.append(ints_mpi[offset:offset+length])
@@ -757,8 +766,8 @@ class MultiprocessingMPIChannel(MessageChannel):
         result = self._recv(self.client_socket)    
         return result
             
-    def recv_message(self, tag):
-        self._send(self.client_socket, ('recv_message',(tag,),))
+    def recv_message(self, tag, handle_as_array):
+        self._send(self.client_socket, ('recv_message',(tag,handle_as_array),))
         result = self._recv(self.client_socket)    
         return result
     
