@@ -4,6 +4,8 @@
 from amuse.support.data import values
 from amuse.support.units import si
 
+import numpy
+
 class TemporalAttribute(object):
     def __init__(self, name):
         self.values = []
@@ -50,11 +52,126 @@ class TemporalAttribute(object):
     def __str__(self):
         return str(self.time()) + " - " + str(self.value())
     
+class AttributeList(object):
+    
+    def __init__(self, particles, attributes, lists_of_values, units):
+        d = {}
+        for index, particle in enumerate(particles):
+            d[id(particle)] = index
+        self.mapping_from_particle_to_index = d
+        
+        self.mapping_from_attribute_to_values_and_unit = {}
+        for attribute, values, unit in zip(attributes, lists_of_values, units):
+            self.mapping_from_attribute_to_values_and_unit[attribute] = (unit,values)
+        
+        self.particles = particles
+        
+    def get_value_of(self, particle, attribute):
+        if not attribute in self.mapping_from_attribute_to_values_and_unit:
+            return None
+        unit,values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        
+        index = self.mapping_from_particle_to_index.get(id(particle))
+        if index is None:
+            return None
+        else:
+            return values[index] | unit
+            
+    def iter_values_of(self, attribute):
+        if not attribute in self.mapping_from_attribute_to_values_and_unit:
+            return
+            
+        unit,values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        particles = self.particles
+        
+        for index in range(len(self.particles)):
+            yield particles[i], (values[i] | unit)
+    
+    
+    def get_indices_of(self, particles):
+        mapping_from_particle_to_index = self.mapping_from_particle_to_index 
+        result = numpy.zeros(len(particles),dtype='int32')
+        #result = [mapping_from_particle_to_index[id(particle)] for particle in particles]
+        
+        index = 0
+        for index, particle in enumerate(particles):
+            result[index] = mapping_from_particle_to_index[id(particle)]
+            index += 1
+        return result
+        
+    
+    
+    def get_values_of_particles_in_units(self, particles, attributes, target_units):
+        indices = self.get_indices_of(particles)
+        results = []
+        for attribute, target_unit in zip(attributes, target_units):
+             unit, values = self.mapping_from_attribute_to_values_and_unit[attribute]
+             value_of_unit_in_target_unit = unit.value_in(target_unit )
+             selected_values = values.take(indices)
+             if value_of_unit_in_target_unit != 1.0:
+                selected_values *= value_of_unit_in_target_unit
+             results.append(selected_values)
+        
+        return results
+    
+    
+    def set_values_of_particles_in_units(self, particles, attributes, list_of_values_to_set, source_units):
+        indices = self.get_indices_of(particles)
+        
+        results = []
+        for attribute, values_to_set, source_unit in zip(attributes, list_of_values_to_set, source_units):
+             self.set_values_of_indexed_attribute_in_units(indices, attribute, values_to_set, source_unit)
+                 
+        return results
+        
+    def set_values_of_indexed_attribute_in_units(self, indices, attribute, values_to_set, source_unit):
+        if attribute in self.mapping_from_attribute_to_values_and_unit:
+             unit, values = self.mapping_from_attribute_to_values_and_unit[attribute]
+             value_of_source_unit_in_list_unit = source_unit.value_in(unit)
+             selected_values = values_to_set
+             if value_of_source_unit_in_list_unit != 1.0:
+                 selected_values *= value_of_source_unit_in_list_unit
+             values.put(indices, selected_values)
+        else:
+             values = numpy.empty(len(self.particles))
+             unit = source_unit
+             self.mapping_from_attribute_to_values_and_unit[attribute] = (unit, values)
+             selected_values = values_to_set
+             values.put(indices, selected_values)
+             
+    def merge_into(self, others):
+        source_attributes = []
+        source_units = []
+        source_valeus = []
+        for attribute in self.mapping_from_attribute_to_values_and_unit:
+            source_unit, source_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            source_attributes.append(attribute)
+            source_values.append(source_values)
+            source_units.append(source_units)
+            
+                
+        other.set_values_of_particles_in_units(self.particles, source_attributes, source_values, source_units)
+        
+    def remove_particles(self, particles):
+        indices = self.get_indices_of(particles)
+        
+        for attribute in self.mapping_from_attribute_to_values_and_unit:
+            unit, values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            values.delete(indices)
+        
+        
+        
+
+        
+        
+    
+    
+    
 class Particles(object):
     """A set of particle objects"""
     def __init__(self, size = 0):
         self.particles = [Particle(i+1, self) for i in range(size)]
-        
+        #selt.attributelist = AttributeList(
     def __iter__(self):
         return iter(self.particles)
 
