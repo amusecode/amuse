@@ -155,7 +155,7 @@ class SSE(LegacyInterface):
         
         star.age = 0.0 | units.s
         star.initial_mass = 1.0 | units.MSun
-        star.mass = star.initial_mass.value()
+        star.mass = star.initial_mass
         star.type = 1 | units.no_unit
         star.luminocity = 0.0 | units.LSun
         star.radius = 0.0 | units.RSun
@@ -217,57 +217,69 @@ class SSE(LegacyInterface):
             pts1, pts2, pts3)
         
     def initialize_star(self, star):
-        star.initial_mass = star.mass.value()
-        star.ensure_attributes_like(self.prototype_star)
-        star.x_time = 0 | units.Myr
+        star.initial_mass = star.mass
+        star.age = 0.0 | units.s
+        star.initial_mass = star.mass
+        star.type = 1 | units.no_unit
+        star.luminocity = 0.0 | units.LSun
+        star.core_mass = 0.0 | units.MSun
+        star.core_radius = 0.0 | units.RSun
+        star.envelope_mass = 0.0 | units.MSun
+        star.envelope_radius = 0.0 | units.RSun
+        star.spin = 0.0 | units.km / units.s
+        star.epoch = 0.0 | units.Myr
+        star.current_time = 0.0 | units.Myr
+        star.main_sequence_lifetime = 0.0 | units.Myr
+        star.set_default("radius", 1.0 | units.RSun)
         self.evolve_star(star, 1e-06 | units.Myr)
+        
+        
             
     def evolve_star(self, star, target_time):
         
         current_values = {}
-        current_values['kw'] = star.type.to_number_in(units.none)
-        current_values['mass'] = star.initial_mass.to_number_in(units.MSun)
-        current_values['mt'] = star.mass.to_number_in(units.MSun)
-        current_values['r'] = star.radius.to_number_in(units.RSun)
-        current_values['lum'] = star.luminocity.to_number_in(units.LSun)
-        current_values['mc'] = star.core_mass.to_number_in(units.MSun)
-        current_values['rc'] = star.core_radius.to_number_in(units.RSun)
-        current_values['menv'] = star.envelope_mass.to_number_in(units.MSun)
-        current_values['renv'] = star.envelope_radius.to_number_in(units.RSun)
-        current_values['ospin'] = star.spin.to_number_in(units.km / units.s)
-        current_values['epoch'] = star.epoch.to_number_in(units.Myr)
-        current_values['tm'] = star.main_sequence_lifetime.to_number_in(units.Myr)
-        current_values['tphys'] = star.current_time.to_number_in(units.Myr)
+        current_values['kw'] = star.type.value_in(units.none)
+        current_values['mass'] = star.initial_mass.value_in(units.MSun)
+        current_values['mt'] = star.mass.value_in(units.MSun)
+        current_values['r'] = star.radius.value_in(units.RSun)
+        current_values['lum'] = star.luminocity.value_in(units.LSun)
+        current_values['mc'] = star.core_mass.value_in(units.MSun)
+        current_values['rc'] = star.core_radius.value_in(units.RSun)
+        current_values['menv'] = star.envelope_mass.value_in(units.MSun)
+        current_values['renv'] = star.envelope_radius.value_in(units.RSun)
+        current_values['ospin'] = star.spin.value_in(units.km / units.s)
+        current_values['epoch'] = star.epoch.value_in(units.Myr)
+        current_values['tm'] = star.main_sequence_lifetime.value_in(units.Myr)
+        current_values['tphys'] = star.current_time.value_in(units.Myr)
         current_values['tphysf'] = target_time.value_in(units.Myr)
         new_values = self.evolve(**current_values)
         
         time = new_values['tphysf']| units.Myr
         
-        
-        star.initial_mass.set_value_at_time(time, new_values['mass'] | units.MSun)
-        star.mass.set_value_at_time(time, new_values['mt'] | units.MSun)
-        star.type.set_value_at_time(time, new_values['kw']  | units.no_unit)
-        star.luminocity.set_value_at_time(time, new_values['lum'] | units.LSun)
-        star.radius.set_value_at_time(time, new_values['r']  | units.RSun)
-        star.core_mass.set_value_at_time(time, new_values['mc'] | units.MSun)
-        star.core_radius.set_value_at_time(time, new_values['rc'] | units.RSun)
-        star.envelope_mass.set_value_at_time(time, new_values['menv'] | units.MSun)
-        star.envelope_radius.set_value_at_time(time, new_values['renv']| units.RSun)
-        star.spin.set_value_at_time(time, new_values['ospin'] | units.km / units.s)
-        star.epoch.set_value_at_time(time, new_values['epoch'] | units.Myr)
-        star.main_sequence_lifetime.set_value_at_time(time, new_values['tm'] | units.Myr)
-        star.current_time.set_value_at_time(time, time)
-        star.x_time.set_value_at_time(time, new_values['tphys'] | units.Myr)
+        star.initial_mass =  new_values['mass'] | units.MSun
+        star.mass =  new_values['mt'] | units.MSun
+        star.type =  new_values['kw']  | units.no_unit
+        star.luminocity =  new_values['lum'] | units.LSun
+        star.radius =  new_values['r']  | units.RSun
+        star.core_mass =  new_values['mc'] | units.MSun
+        star.core_radius =  new_values['rc'] | units.RSun
+        star.envelope_mass =  new_values['menv'] | units.MSun
+        star.envelope_radius =  new_values['renv']| units.RSun
+        star.spin =  new_values['ospin'] | units.km / units.s
+        star.epoch =  new_values['epoch'] | units.Myr
+        star.main_sequence_lifetime =  new_values['tm'] | units.Myr
+        star.current_time =  time
+        star.x_time =  new_values['tphys'] | units.Myr
         
     def get_time_step_for_star(self, star):
         
         current_values = {}
-        current_values['kw'] = star.type.to_number_in(units.none)
-        current_values['mass'] = star.initial_mass.to_number_in(units.MSun)
-        current_values['mt'] = star.mass.to_number_in(units.MSun)
-        current_values['tm'] = star.main_sequence_lifetime.to_number_in(units.Myr)
-        current_values['age'] = star.current_time.to_number_in(units.Myr)
-        current_values['epoch'] = star.epoch.to_number_in(units.Myr)
+        current_values['kw'] = star.type.value_in(units.none)
+        current_values['mass'] = star.initial_mass.value_in(units.MSun)
+        current_values['mt'] = star.mass.value_in(units.MSun)
+        current_values['tm'] = star.main_sequence_lifetime.value_in(units.Myr)
+        current_values['age'] = star.current_time.value_in(units.Myr)
+        current_values['epoch'] = star.epoch.value_in(units.Myr)
         
         result = self.get_time_step(**current_values)
         
@@ -275,8 +287,8 @@ class SSE(LegacyInterface):
         
         
     def evolve_particle(self, particle, time_end):
-        t = particle.current_time.value()
-        if particle.type.to_number_in(units.none) == 15:
+        t = particle.current_time
+        if particle.type.value_in(units.none) == 15:
             return
         while t < time_end:
             t0 = t
@@ -284,13 +296,13 @@ class SSE(LegacyInterface):
             if t > time_end:
                 t = time_end
             self.evolve_star(particle, t)
-            t1 = particle.current_time.value()
+            t1 = particle.current_time
             dt = t1 - t0
             t0 = t1
             if dt.value_in(units.Myr) == 0.0:
                 print t, t0, t1, dt, "BREAK BREAK BREAK!"
                 return
-            if particle.type.to_number_in(units.none) == 15:
+            if particle.type.value_in(units.none) == 15:
                 return
     
     def evolve_particles(self, particles, time_end):

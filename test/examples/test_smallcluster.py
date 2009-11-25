@@ -94,7 +94,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print  particles.center_of_mass()
     center_of_mass = particles.center_of_mass()
     for x in particles:
-        x.position = x.position.value() - center_of_mass
+        x.position = x.position - center_of_mass
     print  particles.center_of_mass()
                 
     gravity = BHTree()
@@ -116,13 +116,16 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     gravity.add_particles(particles)
     
         
-    time = 1 | units.Myr
+    time = 0 | units.Myr
     
     
     print "evolving the model until t = " + str(end_time)
     
+    particles.savepoint()
+    
     total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
     while time < end_time:
+        time += 2 |units.Myr
         gravity.evolve_model(time)
         
         total_energy_at_this_time = sum(gravity.get_energies(), 0 | units.J)
@@ -131,10 +134,12 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         gravity.update_particles(particles)
         stellar_evolution.evolve_particles(particles,time)
         
+        if (time.value_in(units.Myr) % 4) == 0:
+            particles.savepoint()
+            
         print "evolved model to t = " + str(time)
         
         gravity.set_attribute("mass", particles)
-        time += 2 |units.Myr
     
    
     del gravity
@@ -145,37 +150,16 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         figure = pyplot.figure(figsize = (40,40))
         plots = map(lambda x : figure.add_subplot(5,5,x), range(1,int(int(end_time.value_in(units.Myr)) / 2 + 2)))
         
-        for x in particles:
-            index = 0
-            for (time,position) in x.position.values:
-                if time < 1.0 | units.Myr: 
-                    continue
-                index += 1
-                x_point = position.x.value_in(units.lightyear)
-                y_point = position.y.value_in(units.lightyear)
-                t, mass = x.mass.get_value_at_time(time)
-                
-                color = 'b'
-                if mass > 4.999 | units.MSun:
-                    color = 'b'
-                elif mass > 4 | units.MSun:
-                    color = 'y'
-                elif mass > 2 | units.MSun:
-                    color = 'm'
-                elif mass > 1 | units.MSun:
-                    color = 'r'
-                else:
-                    color = 'c'
-                
-                color = mass.value_in(units.MSun) / 0.4
-                if color > 0.98:
-                    color = 0.98
-                
-                plots[index].plot([x_point],[y_point], color =  str(color), marker='o')
+        index = 0
+        for data in particles.history:
+            (x_values, y_values, mass_values) = data.get_values_of_all_particles_in_units(["x","y","mass"],[units.parsec, units.parsec, units.MSun])
+            
+            plots[index].scatter(x_values,y_values, marker='o')
+            index += 1
             
         for plot in plots:
-            plot.set_xlim(-10.0,10.0)
-            plot.set_ylim(-10.0,10.0)
+            plot.set_xlim(-3.0,3.0)
+            plot.set_ylim(-3.0,3.0)
 
         figure.savefig(name_of_the_figure)
         if False:
@@ -203,7 +187,7 @@ def test_simulate_small_cluster():
     a too small cluster, this is done to limit the testing time.
     """
     assert is_mpd_running()
-    simulate_small_cluster(5, 4 | units.Myr)
+    simulate_small_cluster(5, 20 | units.Myr)
     
 if __name__ == '__main__':
     simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr, sys.argv[3])

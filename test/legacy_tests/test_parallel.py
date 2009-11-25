@@ -39,6 +39,7 @@ class TestAmuseInterface(TestWithMPI):
         for x in range(1, day + delta_days, delta_days):
             instance.evolve_model(x | units.day)
             instance.update_particles(particles)
+            particles.savepoint()
             
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
@@ -67,29 +68,31 @@ class TestAmuseInterface(TestWithMPI):
         thread2.join()
         
         
+        
         if HAS_MATPLOTLIB:
-            figure = pyplot.figure(figsize = (10,10))
+            figure = pyplot.figure()
             plot = figure.add_subplot(1,1,1)
             
+            earth = bhtree_particles[1]
+            x_points = bhtree_particles.get_timeline_of_attribute(earth, "x")
+            y_points = bhtree_particles.get_timeline_of_attribute(earth, "y")
+            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
+            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
             
-            earth = list(bhtree_particles)[1]
-            for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.value_in(units.AU)[0]
-                y_point = position.value_in(units.AU)[1]
-                color = 'b'
-                plot.plot([x_point],[y_point], color + 'o')
-                
-            earth = list(hermite_particles)[1]
-            for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.value_in(units.AU)[0]
-                y_point = position.value_in(units.AU)[1]
-                color = 'g'
-                plot.plot([x_point],[y_point], color + 'o')
-                
-            plot.set_xlim(-1.1, 1.1)
-            plot.set_ylim(-1.1, 1.1)
+            plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
-            figure.savefig("earth-sun.svg")    
+            earth = hermite_particles[1]
+            x_points = hermite_particles.get_timeline_of_attribute(earth, "x")
+            y_points = hermite_particles.get_timeline_of_attribute(earth, "y")
+            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
+            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            
+            plot.scatter(x_points_in_AU,y_points_in_AU, color = "g", marker = 'o')
+            
+            plot.set_xlim(-1.5, 1.5)
+            plot.set_ylim(-1.5, 1.5)
+            
+            figure.savefig("parallel-earth-sun.svg")   
         
         bhtree.cleanup_module()
         hermite.cleanup_module()

@@ -148,8 +148,8 @@ class TestInterfaceBinding(TestWithMPI):
         
         print stars[0]
         
-        self.assertEquals(stars[0].mass.value(), 10 | units.MSun)
-        self.assertAlmostEquals(stars[0].luminosity.value().value_in(units.LSun), 5695.19757302 , 6)
+        self.assertEquals(stars[0].mass, 10 | units.MSun)
+        self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302 , 6)
         
     
         

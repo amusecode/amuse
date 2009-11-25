@@ -51,10 +51,25 @@ class TemporalAttribute(object):
         
     def __str__(self):
         return str(self.time()) + " - " + str(self.value())
+
+class AttributeValues(object):
+    __slots__ = ["attribute", "values", "unit", "model_time"]
     
+    def __init__(self, attribute, unit, values = None,  model_time = None, length = None):
+        self.attribute = attribute
+        self.unit = unit
+        self.model_time = model_time
+        if values is None:
+            self.values = numpy.empty(length)
+        else:
+            self.values = values
+        
+    def copy(self):
+        return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_time)
+        
 class AttributeList(object):
     
-    def __init__(self, particles, attributes, lists_of_values, units):
+    def __init__(self, particles, attributes = [], lists_of_values = [], units = [], model_time = None):
         d = {}
         for index, particle in enumerate(particles):
             d[id(particle)] = index
@@ -62,30 +77,91 @@ class AttributeList(object):
         
         self.mapping_from_attribute_to_values_and_unit = {}
         for attribute, values, unit in zip(attributes, lists_of_values, units):
-            self.mapping_from_attribute_to_values_and_unit[attribute] = (unit,values)
+            self.mapping_from_attribute_to_values_and_unit[attribute] = AttributeValues(
+                attribute,
+                unit,
+                values,
+                model_time
+            )
         
-        self.particles = particles
+        self.particles = numpy.array(particles)
+        
+    def copy(self):
+        copy = AttributeList([])
+        copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
+        copy.particles = self.particles.copy()
+        for attribute, attribute_values in self.mapping_from_attribute_to_values_and_unit.iteritems():
+            copy.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values.copy()
+        return copy
         
     def get_value_of(self, particle, attribute):
         if not attribute in self.mapping_from_attribute_to_values_and_unit:
-            return None
-        unit,values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            raise AttributeError("particle does not have a "+attribute)
         
-        index = self.mapping_from_particle_to_index.get(id(particle))
+        attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        
+        index = self.mapping_from_particle_to_index[id(particle)]
+        
+        return attribute_values.values[index] | attribute_values.unit
+        
+    def get_values_of_attributes_of_particle(self, particle, attributes):
+        
+        index = self.mapping_from_particle_to_index[id(particle)]
+        result = []
+        for attribute in attribute:
+            if not attribute in self.mapping_from_attribute_to_values_and_unit:
+                raise AttributeError("particle does not have a "+attribute)
+            
+            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            
+            result.append(attribute_values.values[index] | attribute_values.unit)
+        return result
+        
+    
+    def set_value_of(self, particle, attribute, quantity):
+        index = self.mapping_from_particle_to_index[id(particle)]
+            
         if index is None:
-            return None
-        else:
-            return values[index] | unit
+            raise Exception("unknown particle " + particle)
+            
+        attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
+             
+        value_to_set = quantity.value_in(attribute_values.unit)
+        attribute_values.values[index] = value_to_set
+        
+            
+    def iter_values_of_particle(self, particle):
+        index = self.mapping_from_particle_to_index[id(particle)]
+        for attribute in self.mapping_from_attribute_to_values_and_unit:
+            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            yield attribute, (attribute_values.values[index] | attribute_values.unit)
+    
+    
             
     def iter_values_of(self, attribute):
         if not attribute in self.mapping_from_attribute_to_values_and_unit:
             return
             
-        unit,values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        values = attribute_values.values
+        unit = attribute_values.unit
         particles = self.particles
         
         for index in range(len(self.particles)):
             yield particles[i], (values[i] | unit)
+            
+    def iter_particles(self):
+        index = 0
+        for particle in self.particles:
+            yield particle
+            index += 1
+            
+    def _get_value_of_particle_with_index(self, index, attribute):
+        if not attribute in self.mapping_from_attribute_to_values_and_unit:
+            return None
+        attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        
+        return attribute_values.values[index] | attribute_values.unit
     
     
     def get_indices_of(self, particles):
@@ -105,11 +181,24 @@ class AttributeList(object):
         indices = self.get_indices_of(particles)
         results = []
         for attribute, target_unit in zip(attributes, target_units):
-             unit, values = self.mapping_from_attribute_to_values_and_unit[attribute]
-             value_of_unit_in_target_unit = unit.value_in(target_unit )
-             selected_values = values.take(indices)
+             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+             value_of_unit_in_target_unit = attribute_values.unit.value_in(target_unit )
+             selected_values = attribute_values.values.take(indices)
              if value_of_unit_in_target_unit != 1.0:
                 selected_values *= value_of_unit_in_target_unit
+             results.append(selected_values)
+        
+        return results
+        
+    
+    def get_values_of_all_particles_in_units(self, attributes, target_units):
+        results = []
+        for attribute, target_unit in zip(attributes, target_units):
+             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+             value_of_unit_in_target_unit = attribute_values.unit.value_in(target_unit )
+             selected_values = attribute_values.values
+             if value_of_unit_in_target_unit != 1.0:
+                selected_values = selected_values * value_of_unit_in_target_unit
              results.append(selected_values)
         
         return results
@@ -126,28 +215,31 @@ class AttributeList(object):
         
     def set_values_of_indexed_attribute_in_units(self, indices, attribute, values_to_set, source_unit):
         if attribute in self.mapping_from_attribute_to_values_and_unit:
-             unit, values = self.mapping_from_attribute_to_values_and_unit[attribute]
-             value_of_source_unit_in_list_unit = source_unit.value_in(unit)
+             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+             value_of_source_unit_in_list_unit = source_unit.value_in(attribute_values.unit)
              selected_values = values_to_set
              if value_of_source_unit_in_list_unit != 1.0:
                  selected_values *= value_of_source_unit_in_list_unit
-             values.put(indices, selected_values)
+             attribute_values.values.put(indices, selected_values)
         else:
-             values = numpy.empty(len(self.particles))
-             unit = source_unit
-             self.mapping_from_attribute_to_values_and_unit[attribute] = (unit, values)
+             attribute_values = AttributeValues(
+                attribute,
+                source_unit,
+                length = len(self.particles)
+             )
+             self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
              selected_values = values_to_set
-             values.put(indices, selected_values)
+             attribute_values.values.put(indices, selected_values)
              
     def merge_into(self, others):
         source_attributes = []
         source_units = []
         source_valeus = []
         for attribute in self.mapping_from_attribute_to_values_and_unit:
-            source_unit, source_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            source_attributes.append(attribute)
-            source_values.append(source_values)
-            source_units.append(source_units)
+            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            source_attributes.append(attribute_values.attribute)
+            source_values.append(attribute_values.values)
+            source_units.append(attribute_values.unit)
             
                 
         other.set_values_of_particles_in_units(self.particles, source_attributes, source_values, source_units)
@@ -155,13 +247,55 @@ class AttributeList(object):
     def remove_particles(self, particles):
         indices = self.get_indices_of(particles)
         
-        for attribute in self.mapping_from_attribute_to_values_and_unit:
-            unit, values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            values.delete(indices)
+        mapping_from_attribute_to_values_and_unit = self.mapping_from_attribute_to_values_and_unit.copy()
+        for attribute in mapping_from_attribute_to_values_and_unit:
+            attribute_values = mapping_from_attribute_to_values_and_unit[attribute]
+            attribute_values.values = numpy.delete(attribute_values.values,indices)
         
+        self.particles = numpy.delete(self.particles,indices)
         
+        #self.mapping_from_particle_to_index = None
+        d = {}
+        index = 0
+        for particle in self.particles:
+            d[id(particle)] = index
+            index += 1
+          
+        self.mapping_from_particle_to_index = d
         
-
+    def get_attribute_as_vector(self, particle, names_of_the_scalar_attributes):
+        index = self.mapping_from_particle_to_index[id(particle)]
+        vector = []
+        for i, attribute in enumerate(names_of_the_scalar_attributes):
+            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            vector.append(attribute_values.values[index])
+            unit_of_the_vector = attribute_values.unit
+        return vector | unit_of_the_vector
+        
+    def get_attributevalues_for(self, attribute, unit):
+        if attribute in self.mapping_from_attribute_to_values_and_unit:
+            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        else:
+            attribute_values = AttributeValues(
+                attribute,
+                unit,
+                length = len(self.particles)
+            )
+            self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
+        return attribute_values
+        
+    def set_attribute_as_vector(self, particle, names_of_the_scalar_attributes, quantity):
+        index = self.mapping_from_particle_to_index[id(particle)]
+        vector = []
+        for i, attribute  in enumerate(names_of_the_scalar_attributes):
+            attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
+        
+            value_to_set = quantity[i].value_in(attribute_values.unit)
+            attribute_values.values[index] = value_to_set
+            
+    def attributes(self):
+        return set(self.mapping_from_attribute_to_values_and_unit.keys())
+    
         
         
     
@@ -171,13 +305,24 @@ class Particles(object):
     """A set of particle objects"""
     def __init__(self, size = 0):
         self.particles = [Particle(i+1, self) for i in range(size)]
-        #selt.attributelist = AttributeList(
+        self.attributelist = AttributeList(self.particles)
+        self.history = []
+        
     def __iter__(self):
-        return iter(self.particles)
+        return self.attributelist.iter_particles()
 
     def __getitem__(self, index):
         return self.particles[index]
         
+    def savepoint(self):
+        self.history.append(self.attributelist.copy())
+    
+    def get_timeline_of_attribute(self, particle, attribute):
+        timeline = []
+        for x in reversed(self.history):
+            timeline.append((None, x.get_value_of(particle, attribute)))
+        return timeline
+            
     @property
     def mass(self):
         result = []
@@ -193,13 +338,13 @@ class Particles(object):
     def get_values_of_attribute(self, attribute, time = None):
         result = []
         for x in self:
-            result.append(getattr(x, attribute).get_value_at_time(time))
+            result.append(getattr(x, attribute))
         return result
         
     def set_values_of_attribute(self, attribute, time, values):
         for particle, value in map(None, self, values):
-            getattr(particle, attribute).set_value_at_time(time, value)
-        
+            setattr(particle, attribute, value) 
+            
     def ids_for_module_with_id(self, module_id):
         for x in self.particles:
             if module_id in x._module_ids_to_index:
@@ -212,7 +357,7 @@ class Particles(object):
         result = []
         for x in self:
             if module_id in x._module_ids_to_index:
-                result.append(getattr(x, attribute).get_value_at_time(time))
+                result.append(getattr(x, attribute))
             else:
                 pass
         return result
@@ -228,7 +373,7 @@ class Particles(object):
                     time = times[index]
                 if not hasattr(x, attribute):
                     setattr(x, attribute, values[index])
-                getattr(x, attribute).set_value_at_time(time, values[index])
+                setattr(x, attribute, values[index])
                 index += 1
             else:
                 pass
@@ -240,8 +385,8 @@ class Stars(Particles):
         sum_mass = 0.0 | si.kg
         sum_massposition = [0.0, 0.0, 0.0] | si.kg * si.m
         for star in self:
-            sum_mass += star.mass.value()
-            sum_massposition += star.position.value() * star.mass.value()
+            sum_mass += star.mass
+            sum_massposition += star.position * star.mass
         return sum_massposition / sum_mass
         
 class Measurement(object):
@@ -295,6 +440,19 @@ class Measurement(object):
         colnumber = self.attribute_to_colnumber[attribute]
         return self.values[colnumber][rownumber] | self.units[colnumber]
             
+class VectorAttribute(object):
+    def __init__(self, names_of_the_scalar_components):
+        self.names_of_the_scalar_components = names_of_the_scalar_components
+        
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        else:
+            return instance.set.attributelist.get_attribute_as_vector(instance, self.names_of_the_scalar_components)
+    
+    
+    def __set__(self, instance, quantity):
+        instance.set.attributelist.set_attribute_as_vector(instance, self.names_of_the_scalar_components, quantity)
             
 class Particle(object):
     """A physical object or a physical region simulated as a 
@@ -306,54 +464,57 @@ class Particle(object):
     for multiple modules. Other attributes are *specific* and are 
     only applicable for a single module.
     """
+    __slots__ = ["id", "attributes", "set", "_module_ids_to_index"]
+    
+    position = VectorAttribute(("x","y","z"))
+    velocity = VectorAttribute(("vx","vy","vz"))
     
     def __init__(self, id = -1, set = None, **keyword_arguments):
         object.__setattr__(self, "id", id)
         object.__setattr__(self, "attributes", {})
         object.__setattr__(self, "_module_ids_to_index", {})
-        if not set is None:
-            object.__setattr__(self, "set", set)
-            
+        object.__setattr__(self, "set", set)
+        
         for attribute_name in keyword_arguments:
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
             
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
-        if not name_of_the_attribute in self.attributes:
-            self.attributes[name_of_the_attribute] = TemporalAttribute(name_of_the_attribute)
+        if name_of_the_attribute == 'position':
+            type(self).position.__set__(self, new_value_for_the_attribute)
+            return
+        if name_of_the_attribute == 'velocity':
+            type(self).velocity.__set__(self, new_value_for_the_attribute)
+            return
+            
         if isinstance(new_value_for_the_attribute, values.Quantity):
-            self.attributes[name_of_the_attribute].set_value_at_time( 0 | si.s ,new_value_for_the_attribute)
+            self.set.attributelist.set_value_of(self, name_of_the_attribute, new_value_for_the_attribute)
         else:
             raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")
     
-    def __getattr__(self, name):
-         return self.attributes[name] 
+    def __getattr__(self, name_of_the_attribute):
+         return self.set.attributelist.get_value_of(self, name_of_the_attribute)
          
-    def ensure_attributes_like(self, prototype_star):
-        for name, attribute in prototype_star.attributes.iteritems():
-            if not name in self.attributes:
-                setattr(self, name, attribute.value())
                 
     def __str__(self):
         output = 'Particle '
         output += str(self.id)
         output += ''
         output += '\n'
-        for x in self.attributes:
-            output += x
+        for name, value in self.set.attributelist.iter_values_of_particle(self):
+            output += name
             output += ': {'
-            output += str(getattr(self,x))
+            output += str(value)
             output += '}, '
             output += '\n'
         return output
-    
-    def to_si(self, convert_nbody):
-        for x in self.attributes:
-            value = getattr(self,x)
-            setattr(self, x, convert_nbody.to_si(value))
-            
+        
     def set_value_of_attribute(self, attribute, value, time = None):
         getattr(self, attribute).set_value_at_time(time, values[index])
+        
+    def set_default(self, attribute, quantity):
+        if not attribute in self.set.attributelist.attributes():
+            self.set.attributelist.set_value_of(self, attribute, quantity)
             
 class Star(Particle):
     pass

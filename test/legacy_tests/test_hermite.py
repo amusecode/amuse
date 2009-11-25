@@ -144,22 +144,22 @@ class TestAmuseInterface(TestWithMPI):
         hermite.evolve_model(365.0 | units.day)
         hermite.update_particles(stars)
         
-        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].value_in(units.AU)[0]
-        postion_after_full_rotation = earth.position.value().value_in(units.AU)[0]
+        postion_at_start = earth.position.value_in(units.AU)[0]
+        postion_after_full_rotation = earth.position.value_in(units.AU)[0]
         
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 6)
         
         hermite.evolve_model(365.0 + (365.0 / 2) | units.day)
         
         hermite.update_particles(stars)
-        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[0]
+        postion_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
         
         
         hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
         hermite.update_particles(stars)
-        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[1]
+        postion_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         hermite.cleanup_module()
         del hermite
@@ -177,20 +177,26 @@ class TestAmuseInterface(TestWithMPI):
         earth = stars[1]
         instance.add_particles(stars)
     
+        stars.savepoint()
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
             instance.update_particles(stars)
+            stars.savepoint()
         
         if HAS_MATPLOTLIB:
-            figure = pyplot.figure(figsize = (40,40))
+            figure = pyplot.figure()
             plot = figure.add_subplot(1,1,1)
             
+            x_points = stars.get_timeline_of_attribute(earth, "x")
+            y_points = stars.get_timeline_of_attribute(earth, "y")
+            print x_points
+            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
+            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
             
-            for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.value_in(units.AU)[0]
-                y_point = position.value_in(units.AU)[1]
-                color = 'b'
-                plot.plot([x_point],[y_point], color + 'o')
+            plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
+            
+            plot.set_xlim(-1.5, 1.5)
+            plot.set_ylim(-1.5, 1.5)
             
             figure.savefig("hermite-earth-sun.svg")    
         

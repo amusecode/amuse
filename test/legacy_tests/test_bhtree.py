@@ -89,23 +89,23 @@ class TestAmuseInterface(TestWithMPI):
         
         sun = stars[0]
         sun.mass = units.MSun(1.0)
-        sun.position = units.m(numpy.array((0.0,0.0,0.0)))
-        sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
+        sun.position = [0.0,0.0,0.0] | units.m
+        sun.velocity = [0.0,0.0,0.0] | units.ms
         sun.radius = units.RSun(1.0)
 
         earth = stars[1]
         earth.mass = units.kg(5.9736e24)
         earth.radius = units.km(6371) 
-        earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
-        earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
+        earth.position = [149.5e6, 0.0, 0.0] | units.km
+        earth.velocity = [0.0, 29800, 0.0] | units.ms
 
         instance.add_particles(stars)
 
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
         
-        postion_at_start = earth.position.get_value_at_time(0 | units.s)[1].value_in(units.AU)[0]
-        postion_after_full_rotation = earth.position.value().value_in(units.AU)[0]
+        postion_at_start = earth.position.value_in(units.AU)[0]
+        postion_after_full_rotation = earth.position.value_in(units.AU)[0]
        
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 3)
         
@@ -113,7 +113,7 @@ class TestAmuseInterface(TestWithMPI):
         
         instance.update_particles(stars)
         
-        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[0]
+        postion_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
         
         
@@ -121,7 +121,7 @@ class TestAmuseInterface(TestWithMPI):
          
         instance.update_particles(stars)
         
-        postion_after_half_a_rotation = earth.position.value().value_in(units.AU)[1]
+        postion_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 1)
         instance.cleanup_module()
@@ -155,18 +155,23 @@ class TestAmuseInterface(TestWithMPI):
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
             instance.update_particles(stars)
-        
+            stars.savepoint()
+            
         if HAS_MATPLOTLIB:
-            figure = pyplot.figure(figsize = (40,40))
+            figure = pyplot.figure()
             plot = figure.add_subplot(1,1,1)
             
-            for index, (time,position) in enumerate(earth.position.values):
-                x_point = position.value_in(units.AU)[0]
-                y_point = position.value_in(units.AU)[1]
-                color = 'b'
-                plot.plot([x_point],[y_point], color + 'o')
+            x_points = stars.get_timeline_of_attribute(earth, "x")
+            y_points = stars.get_timeline_of_attribute(earth, "y")
+            
+            x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
+            y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
+            
+            plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
+            
             plot.set_xlim(-1.5, 1.5)
             plot.set_ylim(-1.5, 1.5)
+               
             
             figure.savefig("bhtree-earth-sun.svg")    
         

@@ -47,11 +47,11 @@ class TestQuantities(unittest.TestCase):
         maxpos = [-float(sys.maxint)] * 3 | units.m
         for star in stars:
             for i in range(3):
-                print star.position.value()[i], minpos[i]
-                if star.position.value()[i] < minpos[i]:
-                    minpos[i] = star.position.value()[i]
-                if star.position.value()[i] > maxpos[i]:
-                    maxpos[i] = star.position.value()[i]
+                print star.position[i], minpos[i]
+                if star.position[i] < minpos[i]:
+                    minpos[i] = star.position[i]
+                if star.position[i] > maxpos[i]:
+                    maxpos[i] = star.position[i]
     
         self.assertEquals(str(minpos), "[1000.0, 2000.0, -10000.0] m")
         self.assertEquals(str(maxpos), "[10000.0, 20000.0, -1000.0] m")

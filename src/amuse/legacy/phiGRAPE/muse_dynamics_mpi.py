@@ -220,9 +220,9 @@ class PhiGRAPE(LegacyInterface):
         
     def add_star(self, star):
         id = star.id
-        mass = self.convert_nbody.to_nbody(star.mass.value())
-        position = self.convert_nbody.to_nbody(star.position.value())
-        velocity = self.convert_nbody.to_nbody(star.velocity.value())
+        mass = self.convert_nbody.to_nbody(star.mass)
+        position = self.convert_nbody.to_nbody(star.position)
+        velocity = self.convert_nbody.to_nbody(star.velocity)
         
         mass = mass.number
         x = position.number[0]
@@ -231,15 +231,15 @@ class PhiGRAPE(LegacyInterface):
         vx = velocity.number[0]
         vy = velocity.number[1]
         vz = velocity.number[2]
-        radius = self.convert_nbody.to_nbody(star.radius.value()).number
+        radius = self.convert_nbody.to_nbody(star.radius).number
         self.add_particle(id, mass, radius, x, y, z, vx, vy, vz)
         
     def update_star(self, star):
         state = self.get_state(star.id)
         time = self.convert_nbody.to_si( 0.0 | nbody_system.time)
         #star.mass.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.mass(state.mass)))
-        star.position.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.length(numpy.array((state['x'], state['y'], state['z'])))))
-        star.velocity.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.speed(numpy.array((state['vx'], state['vy'], state['vz'])))))
+        star.position = self.convert_nbody.to_si(nbody_system.length(numpy.array((state['x'], state['y'], state['z']))))
+        star.velocity = self.convert_nbody.to_si(nbody_system.speed(numpy.array((state['vx'], state['vy'], state['vz']))))
         return star
          
     def evolve_model(self, time_end):
