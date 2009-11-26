@@ -1,6 +1,8 @@
 from amuse.legacy import *
 from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 
+import numpy
+
 class BHTreeInterface(LegacyInterface):
     include_headers = ['muse_dynamics.h', 'parameters.h', 'local.h']
     
@@ -121,41 +123,37 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
     ]
     
     attribute_definitions = [
-        attributes.ScalarAttributeDefinition(
-            "set_mass",
-            None,
-            "mass",
-            "mass",
-            "mass of a star",
-             nbody_system.mass,
-             1 | nbody_system.mass
+        attributes.AttributeDefinition(
+            name = "mass",
+            setup_parameters = ["mass"],
+            setter = ("set_mass", ["mass"]),
+            description = "mass of a star",
+            unit = nbody_system.mass,
+            default = 1 | nbody_system.mass          
         ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "radius",
-            "radius",
-            "radius of a star, used for collision detection",
-             nbody_system.length,
-             1 | nbody_system.length
+        attributes.AttributeDefinition(
+            name = "radius",
+            setup_parameters = ["radius"],
+            setter = ("set_radius", ["radius"]),
+            description = "radius of a star",
+            unit = nbody_system.length,
+            default = 1 | nbody_system.length          
         ),
-        attributes.VectorAttributeDefinition(
-            None,
-            None,
-            ["x","y","z"],
-            "position",
-            "cartesian coordinates of a star",
-             nbody_system.length,
-             [0.0, 0.0, 0.0] | nbody_system.length
+        attributes.AttributeDefinition(
+            names = ["x","y","z"],
+            setup_parameters = ["x","y","z"],
+            setter = ("set_position", ["x","y","z"]),
+            description = "coordinate of a star",
+            unit = nbody_system.length,
+            default = 0.0 | nbody_system.length          
         ),
-        attributes.VectorAttributeDefinition(
-            None,
-            None,
-            ["vx","vy","vz"],
-            "velocity",
-            "velocity of a star",
-            nbody_system.speed,
-            [0.0, 0.0, 0.0] | nbody_system.speed
+        attributes.AttributeDefinition(
+            names = ["vx","vy","vz"],
+            setup_parameters = ["vx","vy","vz"],
+            setter = ("set_velocity", ["vx","vy","vz"]),
+            description = "coordinate of a star",
+            unit = nbody_system.speed,
+            default = 0.0 | nbody_system.speed          
         ),
     ]    
 
@@ -165,40 +163,17 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
     def current_model_time(self):
         return self.convert_nbody.to_si( self.get_time() | nbody_system.time)
     
-    def setup_particles(self, particles):
-        keyword_arguments = {}
-        for attribute_definition in self.attribute_definitions:
-            values = particles.get_values_of_attribute(attribute_definition.name)
-            attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
+    def new_particle(self, **keyword_arguments):
+        x = keyword_arguments['x']
+        keyword_arguments['id'] = numpy.arange(len(x))
         
-        indices, errors = self.new_particle(**keyword_arguments)
+        self.add_particle(self, **keyword_arguments)
         
-        for errorcode in errors:
-            if errorcode < 0:
-                raise Exception("Could not setup a particle")
-        
-        module_id = id(self)
-        for particle, new_index in zip(particles, indices):
-            particle._module_ids_to_index[module_id] = (self, new_index)
+        return keyword_arguments['id'],numpy.zeros(len(x))
             
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time), 1)
         return result
-        
-        
-    def add_particles(self, particles):
-        keyword_arguments = {}
-        for attribute_definition in self.attribute_definitions:
-            values = particles.get_values_of_attribute(attribute_definition.name)
-            attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
-        keyword_arguments['id'] = list(particles.ids)
-        
-        indices = self.add_particle(**keyword_arguments)
-        
-        
-        module_id = id(self)
-        for particle, new_index in zip(particles, indices):
-            particle._module_ids_to_index[module_id] = (self, new_index)
         
     def get_energies(self):
         energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2

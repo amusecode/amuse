@@ -10,61 +10,12 @@ class Hermite(LegacyInterface):
     flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
             
             
-    parameter_definitions = [
-        parameters.ModuleAttributeParameterDefinition(
-            "eps2",
-            "epsilon_squared", 
-            "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.0 | nbody_system.length * nbody_system.length
-        )
-    ]
-    
-    attribute_definitions = [
-        attributes.ScalarAttributeDefinition(
-            "set_mass",
-            None,
-            "mass",
-            "mass",
-            "mass of a star",
-             nbody_system.mass,
-             1 | nbody_system.mass
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "radius",
-            "radius",
-            "radius of a star, used for collision detection",
-             nbody_system.length,
-             1 | nbody_system.length
-        ),
-        attributes.VectorAttributeDefinition(
-            None,
-            None,
-            ["x","y","z"],
-            "position",
-            "cartesian coordinates of a star",
-             nbody_system.length,
-             [0.0, 0.0, 0.0] | nbody_system.length
-        ),
-        attributes.VectorAttributeDefinition(
-            None,
-            None,
-            ["vx","vy","vz"],
-            "velocity",
-            "velocity of a star",
-            nbody_system.speed,
-            [0.0, 0.0, 0.0] | nbody_system.speed
-        ),
-    ]
     
     def __init__(self, convert_nbody = None):
         LegacyInterface.__init__(self)
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
         self.convert_nbody = convert_nbody
-        self.parameters = parameters.Parameters(self.parameter_definitions, self)
 
     @legacy_function   
     def setup_module():

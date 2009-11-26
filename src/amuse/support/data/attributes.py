@@ -4,181 +4,87 @@ from amuse.support.units import nbody_system
 
 import numpy
 
+
 class AttributeDefinition(object):
+    def __init__(self, 
+            unit, 
+            name = None,
+            names = None, 
+            setup_parameters = None,
+            state_parameters = None,
+            getter=None, 
+            setter=None, 
+            description="",  
+            default=None,
+        ):
+        
+        self.name = name
+        if not name is None and names is None:
+            self.names = [name]
+        else:
+            self.names = names
+            
+        self.description = description
+        self.unit = unit
+        self.default_value = default
+        self.getter = getter
+        self.setter = setter
+        self.setup_parameters = setup_parameters
+        if state_parameters is None:
+            self.state_parameters = self.setup_parameters
+        else:
+            self.state_parameters = state_parameters
+            
+    def is_required_for_setup(self):
+        return not self.setup_parameters is None
+        
+        
+    def for_setup_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
+        for name, parameter_name in zip(self.names, self.setup_parameters):
+            attributes.append(name)
+            units.append(self.unit)
+            keywords.append(parameter_name)
+        
+    
+    def for_state_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
+        for name, parameter_name in zip(self.names, self.state_parameters):
+            attributes.append(self.name)
+            units.append(self.unit)
+            keywords.append(parameter_name)
+            
+    
+    def for_state_fill_arguments_for_attributelist_set(self, states,  attributes, units, values):
+        for name, parameter_name in zip(self.names, self.state_parameters):
+            units.append(self.unit)
+            attributes.append(name)
+            values.append(states[parameter_name])
+            
+    
+    def for_setter_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
+        for name, parameter_name in zip(self.names, self.setter[1]):
+            attributes.append(self.name)
+            units.append(self.unit)
+            keywords.append(parameter_name)
+            
+    
+    def for_getter_fill_arguments_for_attributelist_set(self, states,  attributes, units, values):
+        for name, parameter_name in zip(self.names, self.getter[1]):
+            units.append(self.unit)
+            attributes.append(name)
+            values.append(states[parameter_name])
+         
+        
+        
+    
+        
+
+class AttributeDefinition_Old(object):
     def __init__(self, name, description, unit, default_value):
         self.name = name
         self.description = description
         self.unit = unit
         self.default_value = default_value
-    
-    def convert_to_numbers_in_legacy_units(self, object, values):
-        if nbody_system.is_nbody_unit(self.unit):
-            values = [object.convert_nbody.to_nbody(x) for x in values]
-        return [x.value_in(self.unit) for x in values]
-    
-    def convert_to_quantities(self, object, numbers):
-        values = [self.unit(x) for x in numbers]
-        if nbody_system.is_nbody_unit(self.unit):
-            values = [object.convert_nbody.to_si(x) for x in values]
-        return values
-        
-    def set_values(self, object, ids, values):
-        numbers = self.convert_to_numbers_in_legacy_units(object, values)
-        self.set_legacy_values(object, ids, numbers)
-        
-    def get_values(self, object, ids):
-        numbers = self.get_legacy_values(object, ids)
-        return self.convert_to_quantities(object, numbers)
-        
-class ScalarAttributeDefinition(AttributeDefinition):
-    def __init__(self, set_method, get_method, parameter_name,  name, description, unit, default_value):
-        AttributeDefinition.__init__(self, name, description, unit, default_value)
-        self.set_method = set_method
-        self.get_method = get_method
-        self.parameter_name = parameter_name
-        
-    def is_required_for_setup(self):
-        return not self.parameter_name is None
-        
-    def set_keyword_arguments(self, object, values, keyword_arguments):
-        if self.parameter_name is None:
-            return
-        numbers = self.convert_to_numbers_in_legacy_units(object, values)
-        keyword_arguments[self.parameter_name] = numbers
-    
-    def get_keyword_results(self, object, keyword_results):
-        numbers = keyword_results[self.parameter_name]
-        values = self.convert_to_quantities(object, numbers)
-        return values
 
-    def set_legacy_values(self, object, ids, values):
-        getattr(object, self.set_method)(ids, values)
-        
-    
-    def get_legacy_values(self, object, ids):
-        values = getattr(object, self.get_method)(ids)
-        return values        
-
-class AttributeException(AttributeError):
-    template = ("Could not {0} value(s) for atttribute '{1}' of a '{2}' object, got errorcode <{3}>")
-        
-    def __init__(self, object, parameter_name, errorcode, is_get):
-        AttributeError.__init__(self, self.template.format(
-            "get" if is_get else "set",
-            parameter_name,
-            type(object).__name__,
-            errorcode
-        ))
-        self.errorcode = errorcode
-        self.parameter_name = parameter_name
-
-
-class ScalarAttributeDefinition_Next(AttributeDefinition):
-    def __init__(self, set_method, get_method, parameter_name,  name, description, unit, default_value):
-        AttributeDefinition.__init__(self, name, description, unit, default_value)
-        self.set_method = set_method
-        self.get_method = get_method
-        self.parameter_name = parameter_name
-        
-    def is_required_for_setup(self):
-        return not self.parameter_name is None
-        
-    def set_keyword_arguments(self, object, values, keyword_arguments):
-        if self.parameter_name is None:
-            return
-        numbers = self.convert_to_numbers_in_legacy_units(object, values)
-        keyword_arguments[self.parameter_name] = numbers
-    
-    def get_keyword_results(self, object, keyword_results):
-        if self.parameter_name is None:
-            return None
-        numbers = keyword_results[self.parameter_name]
-        values = self.convert_to_quantities(object, numbers)
-        return values
-    
-    def set_legacy_values(self, object, ids, values):
-        errors = getattr(object, self.set_method)(ids, values)
-        if any(map(lambda error: error < 0, errors)):
-            raise AttributeException(object, self.name, error, False)
-    
-    def get_legacy_values(self, object, ids):
-        values, errors = getattr(object, self.get_method)(ids)
-        if any(map(lambda error: error < 0, errors)):
-            raise AttributeException(object, self.name, error, True)
-        return values
-        
-
-class VectorAttributeDefinition_Next(AttributeDefinition):
-    def __init__(self, set_method, get_method, parameter_names,  name, description, unit, default_value):
-        AttributeDefinition.__init__(self, name, description, unit, default_value)
-        self.set_method = set_method
-        self.get_method = get_method
-        self.parameter_names = parameter_names
-        
-    def is_required_for_setup(self):
-        return not self.parameter_names is None
-        
-    def set_keyword_arguments(self, object, values, keyword_arguments):
-        if self.parameter_names is None:
-            return
-        numbers = self.convert_to_numbers_in_legacy_units(object, values)
-        for i, x in enumerate(self.parameter_names):
-            keyword_arguments[x] = [number[i] for number in numbers]
-    
-    
-    def get_keyword_results(self, object, keyword_results):
-        if self.parameter_names is None:
-            return None
-        numbers = [None for x in self.parameter_names]
-        for i, x in enumerate(self.parameter_names):
-            numbers[i] = keyword_results[x]
-        numbers = numpy.array(numbers)
-        numbers = numbers.transpose()
-        values = self.convert_to_quantities(object, numbers)
-        return values
-        
-    def set_legacy_values(self, object, ids, values):
-        values = numpy.vstack(values)
-        print values
-        error = getattr(object, self.set_method)(
-            ids, 
-            values[...,0],
-            values[...,1], 
-            values[...,2]
-        )
-        if error < 0:
-            raise AttributeException(object, self.name, error, False)
-    
-    def get_legacy_values(self, object, ids):
-        component1, component2, component3, error = getattr(object, self.get_method)(ids)
-        values = numpy.vstack((component1, component2, component3))
-        values = values.transpose()
-        if error < 0:
-            raise AttributeException(object, self.name, error, True)
-        return values
-        
-        
-class VectorAttributeDefinition(AttributeDefinition):
-    def __init__(self, set_method, get_method, parameter_names,  name, description, unit, default_value):
-        AttributeDefinition.__init__(self, name, description, unit, default_value)
-        self.set_method = set_method
-        self.get_method = get_method
-        self.parameter_names = parameter_names
-        
-    def set_keyword_arguments(self, object, values, keyword_arguments):
-        numbers = self.convert_to_numbers_in_legacy_units(object, values)
-        for i, x in enumerate(self.parameter_names):
-            keyword_arguments[x] = [number[i] for number in numbers]
-    
-    
-    def get_keyword_results(self, object, keyword_results):
-        numbers = [None for x in self.parameter_names]
-        for i, x in enumerate(self.parameter_names):
-            numbers[i] = keyword_results[x]
-        numbers = numpy.array(numbers)
-        numbers = numbers.transpose()
-        values = self.convert_to_quantities(object, numbers)
-        return values
 
 class DomainMetaclass(type):
     def __new__(metaclass, name, bases, dict):
@@ -186,7 +92,7 @@ class DomainMetaclass(type):
         for key, value in dict.iteritems():
             if isinstance(value, tuple):
                 default_value, description = value
-                replacement_dictionary[key] = AttributeDefinition(
+                replacement_dictionary[key] = AttributeDefinition_Old(
                         key, description, 
                         default_value.unit, default_value)
             else:

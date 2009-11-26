@@ -128,7 +128,7 @@ class TestAmuseInterface(TestWithMPI):
         
         return stars
         
-    def test1(self):
+    def xtest1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         hermite = mpi_interface.Hermite(convert_nbody)
@@ -165,7 +165,7 @@ class TestAmuseInterface(TestWithMPI):
         del hermite
 
     
-    def test2(self):
+    def xtest2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = mpi_interface.Hermite(convert_nbody)
@@ -203,7 +203,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.cleanup_module()
         del instance
         
-    def test3(self):
+    def xtest3(self):
         convert_nbody = nbody_system.nbody_to_si(units.MSun(1.0), units.km(149.5e6))
 
         instance = mpi_interface.Hermite(convert_nbody)

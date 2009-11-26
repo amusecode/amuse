@@ -2,7 +2,7 @@
 from legacy_support import TestWithMPI
 import sys
 
-from amuse.legacy.hermite0.muse_dynamics_mpi import Hermite
+from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
 
 from amuse.support.data.core import Particles
@@ -49,14 +49,14 @@ class TestAmuseInterface(TestWithMPI):
         bhtree.setup_module()
             
         bhtree_particles = self.new_system_sun_and_earth()
-        bhtree.add_particles(bhtree_particles)
+        bhtree.setup_particles(bhtree_particles)
         
         hermite = Hermite(convert_nbody)
         hermite.dt_dia = 5000
         hermite.setup_module()
             
         hermite_particles = self.new_system_sun_and_earth()
-        hermite.add_particles(hermite_particles)
+        hermite.setup_particles(hermite_particles)
         
         thread1 = threading.Thread(target = self.evolve_model_unit_day, args = (bhtree, bhtree_particles, 365))
         thread2 = threading.Thread(target = self.evolve_model_unit_day, args = (hermite, hermite_particles, 365))

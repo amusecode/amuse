@@ -113,7 +113,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     print "initializing the particles"
     stellar_evolution.initialize_particles(particles)
-    gravity.add_particles(particles)
+    gravity.setup_particles(particles)
     
         
     time = 0 | units.Myr

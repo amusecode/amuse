@@ -149,63 +149,50 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
     ]
     
     attribute_definitions = [
-        attributes.ScalarAttributeDefinition_Next(
-            None,
-            "get_stellar_type",
-            None,
-            "type",
-            "star type",
-             units.stellar_type,
-             1 | units.stellar_type
+        attributes.AttributeDefinition(
+            name = "type",
+            getter = ("get_stellar_type", ["stellar_type"]),
+            description = "star type",
+            unit = units.stellar_type,
+            default = 1 | units.stellar_type             
         ),
-        attributes.ScalarAttributeDefinition_Next(
-            None,
-            "get_mass",
-            "mass",
-            "mass",
-            "mass of the star",
-             units.MSun,
-             0.0 | units.MSun
+        attributes.AttributeDefinition(
+            name = "mass",
+            setup_parameters = ["mass"],
+            getter = ("get_mass", ["mass"]),
+            description = "mass of the star",
+            unit = units.MSun,
+            default = 0.0 | units.MSun             
         ),
-        attributes.ScalarAttributeDefinition_Next(
-            None,
-            "get_age",
-            None,
-            "age",
-            "current age of the star",
-             units.Myr,
-             1.0 | units.Myr
+        attributes.AttributeDefinition(
+            name = "age",
+            getter = ("get_age", ["age"]),
+            description = "current age of the star",
+            unit = units.Myr,
+            default = 1.0 | units.Myr ,            
         ),
-        attributes.ScalarAttributeDefinition_Next(
-            None,
-            "get_radius",
-            None,
-            "radius",
-            "current radius of the star",
-             units.RSun,
-             1.0 | units.RSun
+        attributes.AttributeDefinition(
+            name = "radius",
+            getter = ("get_radius", ["radius"]),
+            description = "current radius of the star",
+            unit = units.RSun,
+            default = 1.0 | units.RSun             
         ),
-        attributes.ScalarAttributeDefinition_Next(
-            None,
-            "get_luminosity",
-            None,
-            "luminosity",
-            "current luminosity of the star",
-             units.LSun,
-             1.0 | units.LSun
+        attributes.AttributeDefinition(
+            name = "luminosity",
+            getter = ("get_luminosity", ["luminosity"]),
+            description = "current luminosity of the star",
+            unit = units.LSun,
+            default = 1.0 | units.LSun             
         ),
     ]
     
     
     def update_particles(self, particles):
-        ids = list(particles.ids_for_module_with_id(id(self)))
-        attribute_definition = self.get_attribute_definition("age");
-        times =  attribute_definition.get_values(self, ids)
+        self._current_model_time = None
         
-        module_id = id(self)
         for attribute_definition in self.attribute_definitions:
-            values = attribute_definition.get_values(self, ids)
-            particles.set_values_of_attribute_for_module_with_id(module_id, attribute_definition.name, values=values, times=times)
+            self.update_attribute(attribute_definition.name, particles)
             
     def evolve_particles(self, particles, end_time):
         module_id = id(self)
@@ -240,5 +227,8 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
                         attribute_definition.name,
                         values[0]
                     )
+                    
+    def current_model_time(self):
+        return self._current_model_time
                 
         

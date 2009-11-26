@@ -113,6 +113,19 @@ class nbody_to_si(object):
                 new_unit *= (unit ** n)
         return new_quantity(number * factor, new_unit)
         
+    
+    def unit_to_unit_in_si(self, unit):
+        factor = unit.factor
+        new_unit = 1
+        for n, unit in unit.base:
+            unit_in_nbody, unit_in_si = self.find_si_unit_for(unit)
+            if not unit_in_si is None:
+                factor = factor * (unit_in_si.factor ** n)
+                new_unit *= (unit_in_si.base[0][1] ** n)
+            else:
+                new_unit *= (unit ** n)
+        return factor * new_unit
+        
         
     def find_si_unit_for(self, unit):
         for unit_nbody, unit_in_si in self.units:
@@ -141,6 +154,21 @@ class nbody_to_si(object):
             else:
                 new_unit *= (unit ** n)
         return new_quantity(number * factor, new_unit)
+        
+    
+    def unit_to_unit_in_nbody(self, unit):
+        nbody_units_in_si = self.units
+        base = unit.base
+        factor = unit.factor
+        new_unit = 1
+        for n, unit in base:
+            unit_in_nbody, unit_in_si = self.find_nbody_unit_for(unit)
+            if not unit_in_si is None:
+                factor = factor / (unit_in_si.factor ** n)
+                new_unit *= (unit_in_nbody.base[0][1] ** n)
+            else:
+                new_unit *= (unit ** n)
+        return factor * new_unit
         
     def set_as_default(self):
         """Install this converter as the default converter for the

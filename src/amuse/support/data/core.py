@@ -53,27 +53,30 @@ class TemporalAttribute(object):
         return str(self.time()) + " - " + str(self.value())
 
 class AttributeValues(object):
-    __slots__ = ["attribute", "values", "unit", "model_time"]
+    __slots__ = ["attribute", "values", "unit", "model_times"]
     
-    def __init__(self, attribute, unit, values = None,  model_time = None, length = None):
+    def __init__(self, attribute, unit, values = None,  model_times = None, length = None):
         self.attribute = attribute
         self.unit = unit
-        self.model_time = model_time
+        self.model_times = model_times
         if values is None:
             self.values = numpy.empty(length)
         else:
             self.values = values
         
     def copy(self):
-        return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_time)
+        return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_times)
         
 class AttributeList(object):
     
-    def __init__(self, particles, attributes = [], lists_of_values = [], units = [], model_time = None):
+    def __init__(self, particles, attributes = [], lists_of_values = [], units = [], model_times = None):
         d = {}
         for index, particle in enumerate(particles):
             d[id(particle)] = index
         self.mapping_from_particle_to_index = d
+        
+        if not model_times is None and isinstance(model_times, values.Quantity):
+            model_times = numpy.fromfunction(lambda x : model_times, (len(particles),))
         
         self.mapping_from_attribute_to_values_and_unit = {}
         for attribute, values, unit in zip(attributes, lists_of_values, units):
@@ -81,7 +84,7 @@ class AttributeList(object):
                 attribute,
                 unit,
                 values,
-                model_time
+                model_times
             )
         
         self.particles = numpy.array(particles)
@@ -155,14 +158,6 @@ class AttributeList(object):
         for particle in self.particles:
             yield particle
             index += 1
-            
-    def _get_value_of_particle_with_index(self, index, attribute):
-        if not attribute in self.mapping_from_attribute_to_values_and_unit:
-            return None
-        attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-        
-        return attribute_values.values[index] | attribute_values.unit
-    
     
     def get_indices_of(self, particles):
         mapping_from_particle_to_index = self.mapping_from_particle_to_index 
@@ -174,8 +169,6 @@ class AttributeList(object):
             result[index] = mapping_from_particle_to_index[id(particle)]
             index += 1
         return result
-        
-    
     
     def get_values_of_particles_in_units(self, particles, attributes, target_units):
         indices = self.get_indices_of(particles)
@@ -190,7 +183,6 @@ class AttributeList(object):
         
         return results
         
-    
     def get_values_of_all_particles_in_units(self, attributes, target_units):
         results = []
         for attribute, target_unit in zip(attributes, target_units):
@@ -203,33 +195,41 @@ class AttributeList(object):
         
         return results
     
-    
-    def set_values_of_particles_in_units(self, particles, attributes, list_of_values_to_set, source_units):
+    def set_values_of_particles_in_units(self, particles, attributes, list_of_values_to_set, source_units, model_times = None):
         indices = self.get_indices_of(particles)
         
+        if not model_times is None and isinstance(model_times, values.Quantity):
+            model_times = numpy.fromfunction(lambda x : model_times, (len(particles),))
+        
+        previous_model_times = None
         results = []
         for attribute, values_to_set, source_unit in zip(attributes, list_of_values_to_set, source_units):
-             self.set_values_of_indexed_attribute_in_units(indices, attribute, values_to_set, source_unit)
+            selected_values = values_to_set
+            
+            if attribute in self.mapping_from_attribute_to_values_and_unit:
+                attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+                
+                
+            else:
+                 attribute_values = AttributeValues(
+                    attribute,
+                    source_unit,
+                    length = len(self.particles)
+                 )
+                 self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
                  
+            value_of_source_unit_in_list_unit = source_unit.value_in(attribute_values.unit)
+            if value_of_source_unit_in_list_unit != 1.0:
+             selected_values *= value_of_source_unit_in_list_unit 
+             
+            attribute_values.values.put(indices, selected_values)
+            if not model_times is None:
+                if not previous_model_times is attribute_values.model_times:
+                    attribute_values.model_times.put(indices, model_times)
+                    previous_model_times = attribute_values.model_times
+            
         return results
         
-    def set_values_of_indexed_attribute_in_units(self, indices, attribute, values_to_set, source_unit):
-        if attribute in self.mapping_from_attribute_to_values_and_unit:
-             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-             value_of_source_unit_in_list_unit = source_unit.value_in(attribute_values.unit)
-             selected_values = values_to_set
-             if value_of_source_unit_in_list_unit != 1.0:
-                 selected_values *= value_of_source_unit_in_list_unit
-             attribute_values.values.put(indices, selected_values)
-        else:
-             attribute_values = AttributeValues(
-                attribute,
-                source_unit,
-                length = len(self.particles)
-             )
-             self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
-             selected_values = values_to_set
-             attribute_values.values.put(indices, selected_values)
              
     def merge_into(self, others):
         source_attributes = []
@@ -314,6 +314,9 @@ class Particles(object):
     def __getitem__(self, index):
         return self.particles[index]
         
+    def __len__(self):
+        return len(self.particles)
+        
     def savepoint(self):
         self.history.append(self.attributelist.copy())
     
@@ -334,50 +337,7 @@ class Particles(object):
     def ids(self):
         for x in self.particles:
             yield x.id
-
-    def get_values_of_attribute(self, attribute, time = None):
-        result = []
-        for x in self:
-            result.append(getattr(x, attribute))
-        return result
-        
-    def set_values_of_attribute(self, attribute, time, values):
-        for particle, value in map(None, self, values):
-            setattr(particle, attribute, value) 
             
-    def ids_for_module_with_id(self, module_id):
-        for x in self.particles:
-            if module_id in x._module_ids_to_index:
-                yield  x._module_ids_to_index[module_id][1]
-            else:
-                pass
-    
-    
-    def get_values_of_attribute_for_module_with_id(self, module_id, attribute, time = None):
-        result = []
-        for x in self:
-            if module_id in x._module_ids_to_index:
-                result.append(getattr(x, attribute))
-            else:
-                pass
-        return result
-        
-    
-    
-    def set_values_of_attribute_for_module_with_id(self, module_id, attribute, values, time = None, times = None):
-        result = []
-        index = 0
-        for x in self:
-            if module_id in x._module_ids_to_index:
-                if times is not None:
-                    time = times[index]
-                if not hasattr(x, attribute):
-                    setattr(x, attribute, values[index])
-                setattr(x, attribute, values[index])
-                index += 1
-            else:
-                pass
-        return result
         
 class Stars(Particles):
     

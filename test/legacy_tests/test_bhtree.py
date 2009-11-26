@@ -99,7 +99,7 @@ class TestAmuseInterface(TestWithMPI):
         earth.position = [149.5e6, 0.0, 0.0] | units.km
         earth.velocity = [0.0, 29800, 0.0] | units.ms
 
-        instance.add_particles(stars)
+        instance.setup_particles(stars)
 
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
@@ -150,7 +150,7 @@ class TestAmuseInterface(TestWithMPI):
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        instance.add_particles(stars)
+        instance.setup_particles(stars)
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)

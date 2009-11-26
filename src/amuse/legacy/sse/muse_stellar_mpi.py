@@ -3,98 +3,12 @@ from amuse.support.data.core import Particles
 
 from amuse.legacy import *
 
-class SSE(LegacyInterface): 
+from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
+
+class SSEInterface(LegacyInterface): 
     def __init__(self):
         LegacyInterface.__init__(self)
 
-    #current_values['ospin'] = star.spin.to_number_in(units.km / units.s)
-    #current_values['epoch'] = star.epoch.to_number_in(units.Myr)
-    #current_values['tm'] = star.main_sequence_lifetime.to_number_in(units.Myr)
-    #current_values['tphys'] = star.current_time.to_number_in(units.Myr)
-    #current_values['tphysf'] = target_time.in_(units.Myr).number
-    attribute_definitions = [
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "kw",
-            "type",
-            "star type",
-             units.none,
-             1 | units.none
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "mass",
-            "initial_mass",
-            "initial ZAMS mass of a star",
-             units.MSun,
-             0.0 | units.MSun
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "mt",
-            "mass",
-            "current mass of a star",
-             units.MSun,
-             1.0 | units.MSun
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "r",
-            "radius",
-            "radius of a star",
-             units.RSun,
-             1.0 | units.RSun
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "lum",
-            "luminocity",
-            "luminocity of a star",
-             units.LSun,
-             1.0 | units.LSun
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "mc",
-            "core_mass",
-            "mass of the inner core of the star",
-             units.MSun,
-             0.0 | units.MSun
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "rc",
-            "core_radius",
-            "radiues of the inner core of the star",
-             units.RSun,
-             0.0 | units.RSun
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "menv",
-            "envelope_mass",
-            "mass of the outer envelope of the star",
-             units.MSun,
-             0.0 | units.MSun
-        ),
-        attributes.ScalarAttributeDefinition(
-            None,
-            None,
-            "renv",
-            "envelope_radius",
-            "radiues of the outer envelope of the star",
-             units.RSun,
-             0.0 | units.RSun
-        ),
-    ]
     
     @legacy_function   
     def initialize():
@@ -312,5 +226,110 @@ class SSE(LegacyInterface):
     def initialize_particles(self, particles):
         for x in particles:
             self.initialize_star(x)
+        
+class SSEBinding(InterfaceWithParametersBinding):
+    
+    def __init__(self):
+        InterfaceWithParametersBinding.__init__(self)
+        
+    attribute_definitions = [
+        attributes.AttributeDefinition(
+            name = "type",
+            setup_parameters = ["kw"],
+            description = "star type",
+            unit = units.stellar_type,
+            default = 1 | units.stellar_type             
+        ),
+        attributes.AttributeDefinition(
+            name = "initial_mass",
+            setup_parameters = ["mass"],
+            description = "initial ZAMS mass of a star",
+            unit = units.MSun,
+            default = 1 | units.MSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "mass",
+            setup_parameters = ["mt"],
+            description = "current mass of a star",
+            unit = units.MSun,
+            default = 1 | units.MSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "radius",
+            setup_parameters = ["r"],
+            description = "radius of a star",
+            unit = units.RSun,
+            default = 1 | units.RSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "luminosity",
+            setup_parameters = ["lum"],
+            description = "luminosity of a star",
+            unit = units.RSun,
+            default = 1 | units.RSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "core_mass",
+            setup_parameters = ["mc"],
+            description = "mass of the inner core of the star",
+            unit = units.MSun,
+            default = 1 | units.MSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "core_radius",
+            setup_parameters = ["rc"],
+            description = "radius of the inner core of the star",
+            unit = units.RSun,
+            default = 1 | units.RSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "envelope_mass",
+            setup_parameters = ["menv"],
+            description = "mass of the outer envelope core of the star",
+            unit = units.MSun,
+            default = 1 | units.MSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "epoch",
+            setup_parameters = ["epoch"],
+            description = "epoch of the star",
+            unit = units.Myr,
+            default = 1 | units.Myr             
+        ),
+        attributes.AttributeDefinition(
+            name = "spin",
+            setup_parameters = ["ospin"],
+            description = "spin of the star",
+            unit = units.none,
+            default = 1 | units.none             
+        ),
+        attributes.AttributeDefinition(
+            name = "main_sequence_lifetime",
+            setup_parameters = ["tm"],
+            description = "main sequence lifetime of the star",
+            unit = units.Myr,
+            default = 1 | units.Myr             
+        ),
+        attributes.AttributeDefinition(
+            name = "current_time",
+            setup_parameters = ["tphys"],
+            description = "current time of the star",
+            unit = units.Myr,
+            default = 1 | units.Myr             
+        ),
+        attributes.AttributeDefinition(
+            name = "target_time",
+            setup_parameters = ["tphysf"],
+            description = "target time of the star",
+            unit = units.Myr,
+            default = 1 | units.Myr             
+        ),    
+    ]
+    
+class SSE(SSEInterface, SSEBinding):
+    
+    def __init__(self):
+        SSEInterface.__init__(self)
+        SSEBinding.__init__(self)
         
         

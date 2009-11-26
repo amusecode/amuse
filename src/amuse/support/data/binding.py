@@ -1,6 +1,8 @@
 from amuse.support.data import parameters
 import numpy
 
+from amuse.support.units import nbody_system
+
 class InterfaceWithParametersBinding(object):
     parameter_definitions = []
     
@@ -10,35 +12,84 @@ class InterfaceWithParametersBinding(object):
         
 
 class InterfaceWithObjectsBinding(object):
-   
+    def __init__(self):
+        self.mapping_from_particleid_to_index = {}
+        
     
     def setup_particles(self, particles):
         keyword_arguments = {}
+        
+        attributes = []
+        units = []
+        keywords = []
+        
         for attribute_definition in self.attribute_definitions:
             if attribute_definition.is_required_for_setup():
-                values = particles.get_values_of_attribute(attribute_definition.name)
-                attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
+                attribute_definition.for_setup_fill_arguments_for_attributelist_get(
+                    attributes,
+                    units,
+                    keywords,
+                )
         
-        print keyword_arguments
+        def convert_to_nbody(x):
+            if nbody_system.is_nbody_unit(x):
+                return self.convert_nbody.unit_to_unit_in_si(x)
+            else:
+                return x
+                
+        units = map(convert_to_nbody, units)
+        
+        list_of_values = particles.attributelist.get_values_of_all_particles_in_units(attributes, units)
+    
+        
+        for keyword, values in zip(keywords, list_of_values):
+            keyword_arguments[keyword] = values
+            
         indices, errors = self.new_particle(**keyword_arguments)
         
         for errorcode in errors:
             if errorcode < 0:
                 raise Exception("Could not setup a particle")
         
-        module_id = id(self)
-        for particle, new_index in zip(particles, indices):
-            particle._module_ids_to_index[module_id] = (self, new_index)
+        d = {}
+        
+        for index in range(len(particles)):
+            d[particles[index]] = indices[index]
             
+        self.mapping_from_particleid_to_index = d
+        
 
     def update_particles(self, particles):
-        ids = list(particles.ids_for_module_with_id(id(self)))
-        state = self.get_state(ids)
-        time = self.current_model_time()
+        ids = map(lambda x : self.mapping_from_particleid_to_index[x], particles)
+        
+        states = self.get_state(ids)
+        
+        attributes = []
+        units = []
+        values = []
+        
         for attribute_definition in self.attribute_definitions:
-            values = attribute_definition.get_keyword_results(self, state)
-            particles.set_values_of_attribute(attribute_definition.name, time, values)
-            
+            if attribute_definition.is_required_for_setup():
+                attribute_definition.for_state_fill_arguments_for_attributelist_set(
+                    states,
+                    attributes,
+                    units,
+                    values,
+                )
+        
+        def convert_to_nbody(x):
+            if nbody_system.is_nbody_unit(x):
+                return self.convert_nbody.unit_to_unit_in_si(x)
+            else:
+                return x
+          
+        
+        units = map(convert_to_nbody, units)
+        
+        time = self.current_model_time()
+        
+        particles.attributelist.set_values_of_particles_in_units(particles.particles, attributes, values, units, time)
+        
     
     def set_attribute(self, attribute_name, particles):
         attribute_definition = self.get_attribute_definition(attribute_name)
@@ -46,13 +97,36 @@ class InterfaceWithObjectsBinding(object):
         if attribute_definition is None:
             return
             
-        values = particles.get_values_of_attribute_for_module_with_id(
-            id(self), 
-            attribute_definition.name
-        )
-        ids = list(particles.ids_for_module_with_id(id(self)))
+        attributes = []
+        units = []
+        keywords = []
         
-        attribute_definition.set_values(self, ids, values)
+        attribute_definition.for_setter_fill_arguments_for_attributelist_get(
+            attributes,
+            units,
+            keywords,
+        )
+        
+        
+        def convert_to_nbody(x):
+            if nbody_system.is_nbody_unit(x):
+                return self.convert_nbody.unit_to_unit_in_si(x)
+            else:
+                return x
+          
+        units = map(convert_to_nbody, units)
+        
+        list_of_values = particles.attributelist.get_values_of_all_particles_in_units(attributes, units)
+        
+        keyword_arguments = {}
+        for keyword, values in zip(keywords, list_of_values):
+            keyword_arguments[keyword] = values
+            
+        ids = map(lambda x : self.mapping_from_particleid_to_index[x], particles)
+        keyword_arguments['id'] = ids
+        
+        print keyword_arguments
+        errors = getattr(self, attribute_definition.setter[0])(**keyword_arguments)
 
     def update_attribute(self, attribute_name, particles):
         attribute_definition = self.get_attribute_definition(attribute_name)
@@ -60,16 +134,36 @@ class InterfaceWithObjectsBinding(object):
         if attribute_definition is None:
             return
             
+        ids = map(lambda x : self.mapping_from_particleid_to_index[x], particles)
+        
+        results = getattr(self, attribute_definition.getter[0])(ids)
+        
+        if isinstance(results, tuple):
+            results, errors = results
+        
+        attributes = []
+        units = []
+        values = []
+        
+        attribute_definition.for_getter_fill_arguments_for_attributelist_set(
+            results,
+            attributes,
+            units,
+            values,
+        )
+        
+        def convert_to_nbody(x):
+            if nbody_system.is_nbody_unit(x):
+                return self.convert_nbody.unit_to_unit_in_si(x)
+            else:
+                return x
+          
+        
+        units = map(convert_to_nbody, units)
+        
         time = self.current_model_time()
         
-        ids =  list(particles.ids_for_module_with_id(id(self)))
-        values = attribute_definition.get_values(self, ids)
-        
-        particles.set_values_of_attribute_for_module_with_id(
-            id(self), 
-            attribute_definition.name, 
-            time, 
-            values)
+        particles.attributelist.set_values_of_particles_in_units(particles.particles, attributes, values, units, time)
                 
     
     def get_attribute_definition(self, attribute_name):
