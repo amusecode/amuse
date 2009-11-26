@@ -72,6 +72,14 @@ class AttributeDefinition(object):
             units.append(self.unit)
             attributes.append(name)
             values.append(states[parameter_name])
+            
+    
+    def for_default_fill_arguments_for_attributelist_set(self, attributes, units, values, length):
+        for name in self.names:
+            attributes.append(self.name)
+            units.append(self.unit)
+            values.append([self.default_value.value_in(self.unit)] * length)
+            
          
         
         

@@ -174,6 +174,7 @@ class AttributeList(object):
         indices = self.get_indices_of(particles)
         results = []
         for attribute, target_unit in zip(attributes, target_units):
+            
              attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
              value_of_unit_in_target_unit = attribute_values.unit.value_in(target_unit )
              selected_values = attribute_values.values.take(indices)

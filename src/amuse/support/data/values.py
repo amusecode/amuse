@@ -312,7 +312,6 @@ class VectorQuantity(Quantity):
         for x in len(self._number):
             yield x
             
-    
     def copy(self):
         return new_quantity(self.number.copy(), self.unit)
                  
@@ -365,7 +364,13 @@ class NonNumericQuantity(Quantity):
         
     def __repr__(self):
         return 'quantity<'+str(self.value)+ ' - ' +str(self)+'>'
-
+        
+    def __eq__(self, other):
+        if not other.unit == self.unit:
+            return False
+        return self.value == other.value
+    
+    
         
 def new_quantity(value, unit):
     """Create a new Quantity object.

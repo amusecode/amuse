@@ -3,6 +3,7 @@ from amuse.support.data.core import Particles
 
 from amuse.legacy import *
 
+from amuse.support.data.values import Quantity
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 
 class SSEInterface(LegacyInterface): 
@@ -33,7 +34,7 @@ class SSEInterface(LegacyInterface):
     def evolve():
         function = LegacyFunctionSpecification()  
         function.name = 'evolve0'
-        #function.can_handle_array = True 
+        function.can_handle_array = True 
         function.addParameter('kw', dtype='i', direction=function.INOUT)
         function.addParameter('mass', dtype='d', direction=function.INOUT)
         function.addParameter('mt', dtype='d', direction=function.INOUT)
@@ -53,7 +54,7 @@ class SSEInterface(LegacyInterface):
     @legacy_function      
     def get_time_step():
         function = LegacyFunctionSpecification() 
-        #function.can_handle_array = True  
+        function.can_handle_array = True  
         function.addParameter('kw', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)
         function.addParameter('age', dtype='d', direction=function.IN)
@@ -62,29 +63,7 @@ class SSEInterface(LegacyInterface):
         function.addParameter('epoch', dtype='d', direction=function.IN)
         function.addParameter('dt', dtype='d', direction=function.OUT)
         return function
-    
-    @property
-    def prototype_star(self):
-        star = Particles(1)[0]
-        
-        star.age = 0.0 | units.s
-        star.initial_mass = 1.0 | units.MSun
-        star.mass = star.initial_mass
-        star.type = 1 | units.no_unit
-        star.luminocity = 0.0 | units.LSun
-        star.radius = 0.0 | units.RSun
-        star.core_mass = 0.0 | units.MSun
-        star.core_radius = 0.0 | units.RSun
-        star.envelope_mass = 0.0 | units.MSun
-        star.envelope_radius = 0.0 | units.RSun
-        star.spin = 0.0 | units.km / units.s
-        star.epoch = 0.0 | units.Myr
-        star.current_time = 0.0 | units.Myr
-        star.main_sequence_lifetime = 0.0 | units.Myr
-        #star.nuclear_burning_lifetime = 0.0 | units.Myr
-        
-        return star
-    
+
     
     def initialize_module_with_default_parameters(self):
         """
@@ -129,66 +108,13 @@ class SSEInterface(LegacyInterface):
             neta, bwind, hewind, sigma,
             ifflag, wdflag, bhflag, nsflag, mxns,
             pts1, pts2, pts3)
-        
-    def initialize_star(self, star):
-        star.initial_mass = star.mass
-        star.age = 0.0 | units.s
-        star.initial_mass = star.mass
-        star.type = 1 | units.no_unit
-        star.luminocity = 0.0 | units.LSun
-        star.core_mass = 0.0 | units.MSun
-        star.core_radius = 0.0 | units.RSun
-        star.envelope_mass = 0.0 | units.MSun
-        star.envelope_radius = 0.0 | units.RSun
-        star.spin = 0.0 | units.km / units.s
-        star.epoch = 0.0 | units.Myr
-        star.current_time = 0.0 | units.Myr
-        star.main_sequence_lifetime = 0.0 | units.Myr
-        star.set_default("radius", 1.0 | units.RSun)
-        self.evolve_star(star, 1e-06 | units.Myr)
-        
-        
             
-    def evolve_star(self, star, target_time):
-        
-        current_values = {}
-        current_values['kw'] = star.type.value_in(units.none)
-        current_values['mass'] = star.initial_mass.value_in(units.MSun)
-        current_values['mt'] = star.mass.value_in(units.MSun)
-        current_values['r'] = star.radius.value_in(units.RSun)
-        current_values['lum'] = star.luminocity.value_in(units.LSun)
-        current_values['mc'] = star.core_mass.value_in(units.MSun)
-        current_values['rc'] = star.core_radius.value_in(units.RSun)
-        current_values['menv'] = star.envelope_mass.value_in(units.MSun)
-        current_values['renv'] = star.envelope_radius.value_in(units.RSun)
-        current_values['ospin'] = star.spin.value_in(units.km / units.s)
-        current_values['epoch'] = star.epoch.value_in(units.Myr)
-        current_values['tm'] = star.main_sequence_lifetime.value_in(units.Myr)
-        current_values['tphys'] = star.current_time.value_in(units.Myr)
-        current_values['tphysf'] = target_time.value_in(units.Myr)
-        new_values = self.evolve(**current_values)
-        
-        time = new_values['tphysf']| units.Myr
-        
-        star.initial_mass =  new_values['mass'] | units.MSun
-        star.mass =  new_values['mt'] | units.MSun
-        star.type =  new_values['kw']  | units.no_unit
-        star.luminocity =  new_values['lum'] | units.LSun
-        star.radius =  new_values['r']  | units.RSun
-        star.core_mass =  new_values['mc'] | units.MSun
-        star.core_radius =  new_values['rc'] | units.RSun
-        star.envelope_mass =  new_values['menv'] | units.MSun
-        star.envelope_radius =  new_values['renv']| units.RSun
-        star.spin =  new_values['ospin'] | units.km / units.s
-        star.epoch =  new_values['epoch'] | units.Myr
-        star.main_sequence_lifetime =  new_values['tm'] | units.Myr
-        star.current_time =  time
-        star.x_time =  new_values['tphys'] | units.Myr
+   
         
     def get_time_step_for_star(self, star):
         
         current_values = {}
-        current_values['kw'] = star.type.value_in(units.none)
+        current_values['kw'] = star.type.value_in(units.stellar_type)
         current_values['mass'] = star.initial_mass.value_in(units.MSun)
         current_values['mt'] = star.mass.value_in(units.MSun)
         current_values['tm'] = star.main_sequence_lifetime.value_in(units.Myr)
@@ -219,13 +145,6 @@ class SSEInterface(LegacyInterface):
             if particle.type.value_in(units.none) == 15:
                 return
     
-    def evolve_particles(self, particles, time_end):
-        for x in particles:
-            self.evolve_particle(x, time_end)
-    
-    def initialize_particles(self, particles):
-        for x in particles:
-            self.initialize_star(x)
         
 class SSEBinding(InterfaceWithParametersBinding):
     
@@ -245,91 +164,214 @@ class SSEBinding(InterfaceWithParametersBinding):
             setup_parameters = ["mass"],
             description = "initial ZAMS mass of a star",
             unit = units.MSun,
-            default = 1 | units.MSun             
+            default = None            
         ),
         attributes.AttributeDefinition(
             name = "mass",
             setup_parameters = ["mt"],
             description = "current mass of a star",
             unit = units.MSun,
-            default = 1 | units.MSun             
+            default = None         
         ),
         attributes.AttributeDefinition(
             name = "radius",
             setup_parameters = ["r"],
             description = "radius of a star",
             unit = units.RSun,
-            default = 1 | units.RSun             
+            default = None   
         ),
         attributes.AttributeDefinition(
             name = "luminosity",
             setup_parameters = ["lum"],
             description = "luminosity of a star",
-            unit = units.RSun,
-            default = 1 | units.RSun             
+            unit = units.LSun,
+            default = 0 | units.LSun             
         ),
         attributes.AttributeDefinition(
             name = "core_mass",
             setup_parameters = ["mc"],
             description = "mass of the inner core of the star",
             unit = units.MSun,
-            default = 1 | units.MSun             
+            default = 0 | units.MSun             
         ),
         attributes.AttributeDefinition(
             name = "core_radius",
             setup_parameters = ["rc"],
             description = "radius of the inner core of the star",
             unit = units.RSun,
-            default = 1 | units.RSun             
+            default = 0 | units.RSun             
         ),
         attributes.AttributeDefinition(
             name = "envelope_mass",
             setup_parameters = ["menv"],
-            description = "mass of the outer envelope core of the star",
+            description = "mass of the outer envelope of the star",
             unit = units.MSun,
-            default = 1 | units.MSun             
+            default = 0 | units.MSun             
+        ),
+        attributes.AttributeDefinition(
+            name = "envelope_radius",
+            setup_parameters = ["renv"],
+            description = "radius of the oute envelope of the star",
+            unit = units.RSun,
+            default = 0 | units.RSun             
         ),
         attributes.AttributeDefinition(
             name = "epoch",
             setup_parameters = ["epoch"],
             description = "epoch of the star",
             unit = units.Myr,
-            default = 1 | units.Myr             
+            default = 0 | units.Myr             
         ),
         attributes.AttributeDefinition(
             name = "spin",
             setup_parameters = ["ospin"],
             description = "spin of the star",
             unit = units.none,
-            default = 1 | units.none             
+            default = 0 | units.none             
         ),
         attributes.AttributeDefinition(
             name = "main_sequence_lifetime",
             setup_parameters = ["tm"],
             description = "main sequence lifetime of the star",
             unit = units.Myr,
-            default = 1 | units.Myr             
+            default = 0 | units.Myr             
         ),
         attributes.AttributeDefinition(
             name = "current_time",
             setup_parameters = ["tphys"],
             description = "current time of the star",
             unit = units.Myr,
-            default = 1 | units.Myr             
+            default = 0 | units.Myr             
         ),
-        attributes.AttributeDefinition(
-            name = "target_time",
-            setup_parameters = ["tphysf"],
-            description = "target time of the star",
-            unit = units.Myr,
-            default = 1 | units.Myr             
-        ),    
     ]
+    
+    
+    def setup_particles(self, particles):
+        self.particles = particles
+        
+        attributes = []
+        all_units = []
+        values = []
+        
+        for attribute_definition in self.attribute_definitions:
+            if not attribute_definition.default_value is None:
+                attribute_definition.for_default_fill_arguments_for_attributelist_set(
+                    attributes,
+                    all_units,
+                    values,
+                    len(particles)                    
+                )
+         
+        list_of_values = particles.attributelist.get_values_of_particles_in_units(particles.particles, ["mass"], [units.MSun])
+        
+        attributes.append("initial_mass")
+        all_units.append(units.MSun)
+        values.append(list_of_values[0])
+        
+        particles.attributelist.set_values_of_particles_in_units(particles.particles, attributes, values, all_units)
+        self.evolve_particles(particles, 1e-06 | units.Myr)
+        
+    
+    def evolve_model(self, time_end):
+        timesteps = self.get_timesteps(self.particles)
+        
+        values_in_myr = timesteps.value_in(units.Myr)
+        time_end_in_myr = time_end.value_in(units.Myr)
+        
+        while t < time_end:
+            t0 = t
+            t  = t0 + self.get_time_step_for_star(particle)
+            if t > time_end:
+                t = time_end
+            self.evolve_star(particle, t)
+            t1 = particle.current_time
+            dt = t1 - t0
+            t0 = t1
+            if dt.value_in(units.Myr) == 0.0:
+                print t, t0, t1, dt, "BREAK BREAK BREAK!"
+                return
+            if particle.type.value_in(units.none) == 15:
+                return
+    
+    def evolve_particles(self, particles, target_times):
+       
+        attributes = []
+        all_units = []
+        values = []
+        keywords = []
+        
+        for attribute_definition in self.attribute_definitions:
+            attribute_definition.for_setup_fill_arguments_for_attributelist_get(
+                attributes,
+                all_units,
+                keywords,
+            )
+    
+        list_of_values = particles.attributelist.get_values_of_particles_in_units(particles.particles, attributes, all_units)
+        
+        keyword_arguments = {}
+        for keyword, values in zip(keywords, list_of_values):
+            keyword_arguments[keyword] = values
+        
+        
+        if isinstance(target_times, Quantity):
+            keyword_arguments['tphysf'] = [target_times.value_in(units.Myr)] * len(particles)
+        else:
+            keyword_arguments['tphysf'] = [x.value_in(units.Myr) for x in target_times]
+        
+        
+        results = self.evolve(**keyword_arguments)
+        
+        attributes = []
+        all_units = []
+        values = []
+        
+        
+        for attribute_definition in self.attribute_definitions:
+            attribute_definition.for_state_fill_arguments_for_attributelist_set(
+                results,
+                attributes,
+                all_units,
+                values,
+            )
+        
+        time = None
+        
+        particles.attributelist.set_values_of_particles_in_units(particles.particles, attributes, values, all_units, time)
+        
+    def get_timesteps(self, particles):
+        attribute_names = ["type","initial_mass","mass","main_sequence_lifetime", "current_time", "epoch"]
+        keywords = ["kw", "mass", "mt", "tm", "age", "epoch"]
+        all_units = [units.stellar_type, units.MSun, units.MSun, units.Myr, units.Myr, units.Myr]
+                
+        list_of_values = particles.attributelist.get_values_of_particles_in_units(particles.particles, attribute_names, all_units)
+        
+        keyword_arguments = {}
+        for keyword, values in zip(keywords, list_of_values):
+            keyword_arguments[keyword] = values
+        
+        
+        results = self.get_time_step(**keyword_arguments)
+        return results | units.Myr
+        
+    
+    def get_attribute_definition(self, attribute_name):
+        for attribute_definition in self.attribute_definitions:
+            if attribute_definition.name == attribute_name:
+                return attribute_definition
+        return None
+    
     
 class SSE(SSEInterface, SSEBinding):
     
     def __init__(self):
         SSEInterface.__init__(self)
         SSEBinding.__init__(self)
+        
+    
+        
+        
+        
+         
         
         

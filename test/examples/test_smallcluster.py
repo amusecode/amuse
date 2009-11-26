@@ -110,9 +110,10 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print "setting masses of the stars"
     for i, x in enumerate(particles):
         x.mass = masses[i]
+        x.radius = 0.0 | units.RSun
     
     print "initializing the particles"
-    stellar_evolution.initialize_particles(particles)
+    stellar_evolution.setup_particles(particles)
     gravity.setup_particles(particles)
     
         

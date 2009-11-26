@@ -167,7 +167,7 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
         x = keyword_arguments['x']
         keyword_arguments['id'] = numpy.arange(len(x))
         
-        self.add_particle(self, **keyword_arguments)
+        self.add_particle(**keyword_arguments)
         
         return keyword_arguments['id'],numpy.zeros(len(x))
             

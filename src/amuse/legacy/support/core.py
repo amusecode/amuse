@@ -158,6 +158,7 @@ class LegacyCall(object):
     def converted_keyword_and_list_arguments(self, arguments_list, keyword_arguments):
         dtype_to_values = self.specification.new_dtype_to_values()
         
+        input_parameters_seen = set(map(lambda x : x.name, self.specification.input_parameters))
         names_in_argument_list = set([])
         for index, argument in enumerate(arguments_list):
             parameter = self.specification.input_parameters[index]
@@ -165,12 +166,17 @@ class LegacyCall(object):
             
             values = dtype_to_values[parameter.datatype]
             values[parameter.input_index] = argument
+            input_parameters_seen.remove(parameter.name)
         
         for index, parameter in enumerate(self.specification.input_parameters):
             if parameter.name in keyword_arguments:
                 values = dtype_to_values[parameter.datatype]
                 values[parameter.input_index] = keyword_arguments[parameter.name]
+                input_parameters_seen.remove(parameter.name)
         
+        if input_parameters_seen:
+            raise Exception("Not enough parameters in call, missing" + str(input_parameters_seen))
+            
         dtype_to_keyword = {
             'float64' : 'doubles_in',
             'int32'  : 'ints_in',

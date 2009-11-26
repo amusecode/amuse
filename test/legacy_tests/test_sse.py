@@ -178,7 +178,7 @@ class TestMPIInterface(TestWithMPI):
         )
         self.assertEquals(result['mass'][0], 10)
         self.assertEquals(result['mass'][1], 5)
-        self.assertAlmostEqual(result['mass'][2], 3.941, 2)
+        self.assertAlmostEqual(result['mass'][2], 4.0, 2)
         del sse
         
     def test4(self):
@@ -216,18 +216,21 @@ class TestSSE(TestWithMPI):
     def test1(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        star = Stars(1)[0]
+        stars =  Stars(1)
+        
+        star = stars[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
-        sse.initialize_star(star)
+        
+        sse.setup_particles(stars)
+        
         previous_type = star.type
         results = []
         t0 = 0 | units.Myr
         print star
         while t0 < (125 | units.Myr):
-            t0 += sse.get_time_step_for_star(star)
-            sse.evolve_star(star, t0)
-            print t0
+            t0 += sse.get_timesteps(stars)[0]
+            sse.evolve_particles(stars, [t0])
             if not star.type == previous_type:
                 results.append((star.current_time, star.mass, star.type))
                 previous_type = star.type
@@ -272,7 +275,7 @@ class TestSSE(TestWithMPI):
         star.radius = 0.0 | units.RSun
         
         
-        sse. initialize_particles(stars)
+        sse.setup_particles(stars)
         previous_type = star.type
         results = []
         t0 = 0 | units.Myr
