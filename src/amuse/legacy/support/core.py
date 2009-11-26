@@ -71,7 +71,6 @@ def _typecode_to_datatype(typecode):
     if typecode in values:
         return typecode
     
-    print typecode
     raise Exception("{0} is not a valid typecode".format(typecode))
     
 class LegacyCall(object):
@@ -570,7 +569,6 @@ class MpiChannel(MessageChannel):
             try:
                 if not isinstance(chars_in[0], str):
                     length = len(chars_in[0])
-                    print "length:", length
             except:
                 pass
                     
@@ -618,7 +616,6 @@ class MpiChannel(MessageChannel):
             self.intercomm.Bcast([floats, MPI.FLOAT], root=MPI.ROOT)
 
         if chars_in:
-            print "C"
             offsets = numpy.zeros(length * len(chars_in), dtype='i')
             offset = 0
             index = 0
@@ -635,14 +632,12 @@ class MpiChannel(MessageChannel):
                         offset += 1
                         index += 1
                 
-            print offsets
             self.intercomm.Bcast([offsets, MPI.INT], root=MPI.ROOT)    
             bytes = []
             for strings in chars_in:
                 if length == 1:
                     bytes.extend([ord(ch) for ch in strings])
                     bytes.append(0)
-                    print "str:", strings
                 else:
                     for string in strings:
                         bytes.extend([ord(ch) for ch in string])

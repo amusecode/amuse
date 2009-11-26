@@ -259,40 +259,58 @@ class TestSSE(TestWithMPI):
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
          
+        types = (
+            "Hertzsprung Gap",
+            "First Giant Branch",
+            "Core Helium Burning",
+            "First Asymptotic Giant Branch",
+            "Second Asymptotic Giant Branch",
+            "Carbon/Oxygen White Dwarf",
+        )
+        
+        for result, expected in zip(results, types):
+            self.assertEquals(str(result[2]), expected)
+        
         del sse
             
-    def xtest2(self):
+    def test2(self):
         sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters()
-        stars = Stars(2)
+        sse.initialize_module_with_default_parameters() 
+        stars =  Stars(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        star = stars[1]
-        star.mass = 10 | units.MSun
-        star.radius = 0.0 | units.RSun
-        
-        
         sse.setup_particles(stars)
+        
         previous_type = star.type
         results = []
-        t0 = 0 | units.Myr
-        while t0 < (100 | units.Myr):
-            t0 += sse.get_time_step_for_star(star)
-            sse.evolve_star(star, t0)
-            
+        
+        sse.evolve_particles(stars, 120.1 | units.Myr)
+                
+        self.assertAlmostEqual(star.mass.value_in(units.MSun), 4.932, 3)
+         
+        del sse
+        
     
-    def xtest3(self):
+    def test3(self):
         sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters()
-        stars = Stars(1)
+        sse.initialize_module_with_default_parameters() 
+        stars =  Stars(1)
         
         star = stars[0]
-        star.mass = 0.11 | units.MSun
+        star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
-        sse.initialize_particles(stars)
-        t0 = 2 | units.Myr
-        sse.evolve_particles(stars, t0)
+        
+        sse.setup_particles(stars)
+        
+        previous_type = star.type
+        results = []
+        
+        sse.evolve_particles(stars, 121.5 | units.Myr)
+                
+        self.assertAlmostEqual(star.mass.value_in(units.MSun), 0.997, 3)
+         
+        del sse
 

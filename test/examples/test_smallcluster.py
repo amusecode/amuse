@@ -127,15 +127,20 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
     while time < end_time:
         time += 2 |units.Myr
+        print "gravity evolve step starting"
         gravity.evolve_model(time)
+        print "gravity evolve step done"
         
         total_energy_at_this_time = sum(gravity.get_energies(), 0 | units.J)
         
         print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-        gravity.update_particles(particles)
-        stellar_evolution.evolve_particles(particles,time)
+    
+        print "stellar evolution step starting"
+        stellar_evolution.evolve_particles(particles, time)
+        print "stellar evolution step done"
         
         if (time.value_in(units.Myr) % 4) == 0:
+            gravity.update_particles(particles)
             particles.savepoint()
             
         print "evolved model to t = " + str(time)
@@ -188,7 +193,7 @@ def test_simulate_small_cluster():
     a too small cluster, this is done to limit the testing time.
     """
     assert is_mpd_running()
-    simulate_small_cluster(5, 20 | units.Myr)
+    simulate_small_cluster(5, 5 | units.Myr)
     
 if __name__ == '__main__':
     simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr, sys.argv[3])

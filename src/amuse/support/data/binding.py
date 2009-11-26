@@ -124,8 +124,8 @@ class InterfaceWithObjectsBinding(object):
             
         ids = map(lambda x : self.mapping_from_particleid_to_index[x], particles)
         keyword_arguments['id'] = ids
+        keyword_arguments['index_of_the_particle'] = ids
         
-        print keyword_arguments
         errors = getattr(self, attribute_definition.setter[0])(**keyword_arguments)
 
     def update_attribute(self, attribute_name, particles):
