@@ -91,13 +91,20 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
    
-    print  particles.center_of_mass()
+    print  "center of mass:" , particles.center_of_mass()
+    print  "center of mass velocity:" , particles.center_of_mass_velocity()
+    
     center_of_mass = particles.center_of_mass()
+    center_of_mass_velocity = particles.center_of_mass_velocity()
+    
     for x in particles:
         x.position = x.position - center_of_mass
-    print  particles.center_of_mass()
+        x.velocity = x.velocity - center_of_mass_velocity
+        
+    print  "center of mass:" , particles.center_of_mass()
+    print  "center of mass velocity:" , particles.center_of_mass_velocity()
                 
-    gravity = BHTree()
+    gravity = Hermite()
     gravity.setup_module()
     
     gravity.dt_dia = 10000
@@ -145,6 +152,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             
         print "evolved model to t = " + str(time)
         
+        
+        print  "center of mass:" , particles.center_of_mass()
+        print  "center of mass velocity:" , particles.center_of_mass_velocity()
         gravity.set_attribute("mass", particles)
     
    

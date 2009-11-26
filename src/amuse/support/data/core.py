@@ -343,12 +343,25 @@ class Particles(object):
 class Stars(Particles):
     
     def center_of_mass(self):
-        sum_mass = 0.0 | si.kg
-        sum_massposition = [0.0, 0.0, 0.0] | si.kg * si.m
-        for star in self:
-            sum_mass += star.mass
-            sum_massposition += star.position * star.mass
-        return sum_massposition / sum_mass
+        masses, x_values, y_values, z_values = self.attributelist.get_values_of_all_particles_in_units(["mass","x","y","z"],[si.kg, si.m, si.m, si.m])
+        total_mass = numpy.sum(masses)
+        massx = numpy.sum(masses * x_values)
+        massy = numpy.sum(masses * y_values)
+        massz = numpy.sum(masses * z_values)
+        position = numpy.array([massx, massy, massz])
+
+        return values.new_quantity(position / total_mass, si.m)
+    
+    
+    def center_of_mass_velocity(self):
+        masses, x_values, y_values, z_values = self.attributelist.get_values_of_all_particles_in_units(["mass","vx","vy","vz"],[si.kg, si.m / si.s, si.m / si.s, si.m / si.s])
+        total_mass = numpy.sum(masses)
+        massx = numpy.sum(masses * x_values)
+        massy = numpy.sum(masses * y_values)
+        massz = numpy.sum(masses * z_values)
+        position = numpy.array([massx, massy, massz])
+
+        return values.new_quantity(position / total_mass, si.m / si.s)
         
 class Measurement(object):
     def __init__(self, timestamp,  attributes, units,  ids, values=None):
