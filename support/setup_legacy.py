@@ -136,8 +136,10 @@ class BuildLegacy(LegacyCommand):
     def run (self):
         not_build = []
         build = []
-        environment = os.environ.copy()
-        environment.update(self.environment)
+        environment = self.environment
+        environment.update(os.environ)
+        
+        #environment.update(self.environment)
         for x in list(self.makefile_paths()):
             self.announce("building " + x)
             shortname = x[len(self.legacy_dir) + 1:]
