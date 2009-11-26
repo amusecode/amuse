@@ -44,7 +44,7 @@ class InstallPrerequisites(object):
           ('h5py', ['hdf'], '1.2.1', 'h5py-' , '.tar.gz', 'http://h5py.googlecode.com/files/', self.h5py_build) ,
           ('mpich2', [], '1.1', 'mpich2-', '.tar.gz', 'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', self.mpich2_build) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
-          ('mpi4py', ['mpich2'], '1.0.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
+          ('mpi4py', ['mpich2'], '1.1.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
         ]
         
     @late
