@@ -91,20 +91,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
    
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
-    
-    center_of_mass = particles.center_of_mass()
-    center_of_mass_velocity = particles.center_of_mass_velocity()
-    
-    for x in particles:
-        x.position = x.position - center_of_mass
-        x.velocity = x.velocity - center_of_mass_velocity
-        
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
-                
-    gravity = Hermite()
+    gravity = BHTree()
     gravity.setup_module()
     
     gravity.dt_dia = 10000
@@ -119,6 +106,20 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         x.mass = masses[i]
         x.radius = 0.0 | units.RSun
     
+    
+    print  "center of mass:" , particles.center_of_mass()
+    print  "center of mass velocity:" , particles.center_of_mass_velocity()
+    
+    center_of_mass = particles.center_of_mass()
+    center_of_mass_velocity = particles.center_of_mass_velocity()
+    
+    for x in particles:
+        x.position = x.position - center_of_mass
+        x.velocity = x.velocity - center_of_mass_velocity
+        
+    print  "center of mass:" , particles.center_of_mass()
+    print  "center of mass velocity:" , particles.center_of_mass_velocity()
+                
     print "initializing the particles"
     stellar_evolution.setup_particles(particles)
     gravity.setup_particles(particles)
@@ -131,9 +132,13 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     particles.savepoint()
     
+    gravity.update_particles(particles)
+    print  "center of mass:" , particles.center_of_mass()
+    print  "center of mass velocity:" , particles.center_of_mass_velocity()
+        
     total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
     while time < end_time:
-        time += 2 |units.Myr
+        time += 0.5 |units.Myr
         print "gravity evolve step starting"
         gravity.evolve_model(time)
         print "gravity evolve step done"
@@ -146,9 +151,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         stellar_evolution.evolve_particles(particles, time)
         print "stellar evolution step done"
         
-        if (time.value_in(units.Myr) % 4) == 0:
-            gravity.update_particles(particles)
-            particles.savepoint()
+        gravity.update_particles(particles)
+        particles.savepoint()
             
         print "evolved model to t = " + str(time)
         
@@ -163,8 +167,11 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     if HAS_MATPLOTLIB:
         print "plotting the data"
-        figure = pyplot.figure(figsize = (40,40))
-        plots = map(lambda x : figure.add_subplot(5,5,x), range(1,int(int(end_time.value_in(units.Myr)) / 2 + 2)))
+        
+        make_a_movie(particles)
+        
+        figure = pyplot.figure(figsize = (40, 40))
+        plots = map(lambda x : figure.add_subplot(4, 4, x+1), range(4*4))
         
         index = 0
         for data in particles.history:
@@ -174,8 +181,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             index += 1
             
         for plot in plots:
-            plot.set_xlim(-3.0,3.0)
-            plot.set_ylim(-3.0,3.0)
+            plot.set_xlim(-2.0, 2.0)
+            plot.set_ylim(-2.0, 2.0)
 
         figure.savefig(name_of_the_figure)
         if False:
@@ -195,7 +202,47 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             
             figure.savefig("3d_"+name_of_the_figure)
         
-    
+def make_a_movie(particles):
+    index = 0
+    for data in particles.history:
+        figure = pyplot.figure(figsize=(6,3))
+        plot = figure.add_subplot(1,2,1)
+        
+        (
+            x_values, 
+            y_values, 
+            mass_values
+        ) = data.get_values_of_all_particles_in_units(
+            ["x","y","mass"],
+            [units.parsec, units.parsec, units.MSun]
+        )
+            
+        plot.scatter(x_values,y_values, marker='+', color="b")
+        
+        
+        plot.set_xlim(-4.0, 4.0)
+        plot.set_ylim(-4.0, 4.0)
+        
+        plot = figure.add_subplot(1,2,2)
+        
+        (
+            x_values, 
+            y_values, 
+            mass_values
+        ) = data.get_values_of_all_particles_in_units(
+            ["x","y","mass"],
+            [units.parsec, units.parsec, units.MSun]
+        )
+            
+        plot.scatter(x_values,y_values, marker='+', color="g")
+        
+        
+        plot.set_xlim(-1.0, 1.0)
+        plot.set_ylim(-1.0, 1.0)
+        
+        index += 1
+        figure.savefig("frame_"+format(index, "03d")+".png")
+        
 def test_simulate_small_cluster():
     """test_simulate_small_cluster
     This method is found by the testing framework and automatically

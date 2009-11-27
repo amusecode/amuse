@@ -6,52 +6,6 @@ from amuse.support.units import si
 
 import numpy
 
-class TemporalAttribute(object):
-    def __init__(self, name):
-        self.values = []
-        self.name = name
-    
-    def get_times(self):
-        for time, value in self.values:
-            yield time
-            
-    def set_value_at_time(self, time, value):
-        self.values.append((time, value))
-    
-    def get_value_at_time(self, requested_time = None):
-        if requested_time is None:
-            return self.value()
-            
-        min = 0
-        max = len(self.values) - 1
-        while True:
-            index_of_midpoint = (max + min) / 2 
-            time, value = self.values[index_of_midpoint]
-            requested_time_is_after_time_of_index = requested_time > time
-            if max - min == 1:
-                if requested_time_is_after_time_of_index:
-                    return self.values[max]
-                else:
-                    return self.values[min]
-                    
-            if requested_time_is_after_time_of_index:
-                min = index_of_midpoint
-            else:
-                max = index_of_midpoint
-            
-    
-    def value(self):
-        return self.values[-1][1]
-    
-    def time(self):
-        return self.values[-1][0]
-        
-    def to_number_in(self, units):
-        return self.value().value_in(units)
-        
-    def __str__(self):
-        return str(self.time()) + " - " + str(self.value())
-
 class AttributeValues(object):
     __slots__ = ["attribute", "values", "unit", "model_times"]
     
@@ -60,7 +14,7 @@ class AttributeValues(object):
         self.unit = unit
         self.model_times = model_times
         if values is None:
-            self.values = numpy.empty(length)
+            self.values = numpy.zeros(length)
         else:
             self.values = values
         
@@ -70,6 +24,27 @@ class AttributeValues(object):
 class AttributeList(object):
     
     def __init__(self, particles, attributes = [], lists_of_values = [], units = [], model_times = None):
+        
+        if len(lists_of_values) != len(attributes):
+            raise Exception(
+                "you need to provide the same number of value list as attributes, found {0} attributes and {1} list of values".format(
+                    len(attributes), len(lists_of_values)
+                )
+            )
+        if len(attributes) != len(units):
+             raise Exception(
+                "you need to provide the same number of value list as attributes, found {0} attributes and {1} list of values".format(
+                    len(attributes), len(units)
+                )
+            )
+        if len(lists_of_values) > 0 and len(particles) != len(lists_of_values[0]):
+            raise Exception(
+                "you need to provide the same number of values as particles, found {0} values and {1} particles".format(
+                    len(lists_of_values[0]), len(particles)
+                )
+            )
+        
+        
         d = {}
         for index, particle in enumerate(particles):
             d[id(particle)] = index
@@ -297,8 +272,48 @@ class AttributeList(object):
     def attributes(self):
         return set(self.mapping_from_attribute_to_values_and_unit.keys())
     
+    def __str__(self):
+        attributes = sorted(self.attributes)
         
+        columns = map(lambda x : [x], attributes)
+        columns.insert(0,['id'])
         
+        for index, attribute in enumerate(attributes):
+            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            column = columns[index + 1]
+            column.append(str(attribute_values.unit))
+            column.append('========')
+            if len(attribute_values.values) > 40:
+                values_to_show = list(attribute_values.values[:20])
+                values_to_show.append(attribute_values.values[-20:])
+            else:
+                values_to_show = attribute_values.values
+            
+            for value in values_to_show:
+                column.append(str(value))
+            column.append('========')
+            
+        column = columns[0]
+        column.append("-")
+        column.append('========')
+        if len(self.particles) > 40:
+            values_to_show = list(self.particles[:20])
+            values_to_show.append(self.particles[-20:])
+        else:
+            values_to_show = self.particles
+                    
+        for value in values_to_show:
+            column.append(str(id(value)))
+            
+        column.append('========')
+            
+        rows = []
+        for i in range(len(columns[0])):
+            row = [x[i] for x in columns]
+            rows.append(row)
+            
+        line = map(lambda  x : '\t'.join(x), rows)
+        return '\n'.join(lines)
     
     
     
@@ -363,56 +378,8 @@ class Stars(Particles):
 
         return values.new_quantity(position / total_mass, si.m / si.s)
         
-class Measurement(object):
-    def __init__(self, timestamp,  attributes, units,  ids, values=None):
-        self.timestamp = timestamp
-        self.ids = ids
-        self.attributes = attributes
-        if values == None:
-            self.values = zeros((len(attributes), len(ids)))
-        else:
-            self.values = values
-        self.units = units
-        
-        if self.values.ndim != 2:
-            raise Exception("values must be a 2 dimensional array")
-        if self.values.shape[0] != len(self.attributes):
-            raise Exception("there must be the same number of columns in the values array as there are attributes")
-        if len(self.attributes) != len(self.units):
-            raise Exception("there must be the same number of attributes as units")
-        if self.values.shape[1] != len(ids):
-            raise Exception("there must be the same number of rows in the values array as there are ids")
             
-        self.ids_to_rownumber = {}
-        for rownumber, id in enumerate(self.ids):
-            self.ids_to_rownumber[id] = rownumber
-            
-        self.attribute_to_colnumber = {}
-        for colnumber, attribute in enumerate(self.attributes):
-            self.attribute_to_colnumber[attribute] = colnumber
-            
-    def __str__(self):
-        rows = []
-        columns = map(lambda x : str(x), self.attributes)
-        columns.insert(0,'id')
-        rows.append(columns)
         
-        columns = map(lambda x : str(x), self.units)
-        columns.insert(0,'-')
-        rows.append(columns)
-        rows.append(map(lambda x : '========', range(len(self.units)+1)))
-        for i in range(self.values.shape[1]):
-            row = [str(self.ids[i])]
-            for j in range(self.values.shape[0]):
-                row.append(str(self.values[j,i]))
-            rows.append(row)
-        lines = map(lambda  x : '\t'.join(x), rows)
-        return '\n'.join(lines)
-        
-    def get_value(self, attribute, id):
-        rownumber = self.ids_to_rownumber[id]
-        colnumber = self.attribute_to_colnumber[attribute]
-        return self.values[colnumber][rownumber] | self.units[colnumber]
             
 class VectorAttribute(object):
     def __init__(self, names_of_the_scalar_components):
