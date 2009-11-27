@@ -1,4 +1,5 @@
 from amuse.support.data import values
+from amuse.support.core import late
 
 import numpy
 
@@ -29,6 +30,7 @@ class unit(object):
 
     Units can also be named, by creating a named unit.
     """
+    
     
     def __mul__(self, other):
        
@@ -252,7 +254,7 @@ class base_unit(unit):
         """
         return 1
         
-    @property
+    @late
     def base(self):
         """
         The base represented as a list of tuples.
@@ -272,7 +274,7 @@ class none_unit(unit):
     def factor(self):
         return 1.0
         
-    @property
+    @late
     def base(self):
         return ()
         
@@ -455,11 +457,11 @@ class named_unit(unit):
     def __str__(self):
         return self.symbol
     
-    @property
+    @late
     def factor(self):
         return self.unit.factor
         
-    @property
+    @late
     def base(self):
         return self.unit.base
         
@@ -504,11 +506,11 @@ class factor_unit(derived_unit):
             return str(self.local_factor) + ' * ' + str(self.unit)
         return self.symbol + str(self.unit) 
     
-    @property
+    @late
     def factor(self):
         return self.local_factor * self.unit.factor
         
-    @property
+    @late
     def base(self):
         return self.unit.base
         
@@ -538,11 +540,11 @@ class mul_unit(derived_unit):
     def __str__(self):
         return str(self.left_hand) + ' * ' + str(self.right_hand) 
         
-    @property
+    @late
     def factor(self):
         return self.left_hand.factor * self.right_hand.factor
    
-    @property
+    @late
     def base(self):
         return tuple(
             filter(lambda x: x[0] != 0,
@@ -578,13 +580,13 @@ class pow_unit(derived_unit):
     def __str__(self):
         return str(self.unit) + '**' + str(self.power)
         
-    @property
+    @late
     def base(self):
         return tuple(
             filter(lambda x: x[0] != 0,
             map(lambda x : (x[0] * self.power, x[1]), self.unit.base)))
         
-    @property
+    @late
     def factor(self):
         return self.unit.factor ** self.power
         
@@ -613,11 +615,11 @@ class div_unit(derived_unit):
     def __str__(self):
         return str(self.left_hand) + ' / ' + str(self.right_hand)+''
         
-    @property
+    @late
     def factor(self):
         return  self.left_hand.factor * 1.0  / self.right_hand.factor
         
-    @property
+    @late
     def base(self):
         return tuple(
                     filter(lambda x: x[0] != 0,
@@ -650,3 +652,26 @@ def k(unit):
     
 
     
+def numpy_or_operator(array, other, out = None):
+    if isinstance(other, unit):
+        return other.new_quantity(array)
+    else:
+        return numpy.bitwise_or(array, other, out)
+
+_previous_operator = None
+
+def set_numpy_or_operator():
+    import atexit
+    
+    global _previous_operator
+    
+    _previous_operator = numpy.set_numeric_ops(bitwise_or = numpy_or_operator)['bitwise_or']
+    atexit.register(unset_numpy_or_operator)    
+    
+def unset_numpy_or_operator():
+    global _previous_operator
+    numpy.set_numeric_ops(bitwise_or = _previous_operator)
+    
+set_numpy_or_operator()
+       
+

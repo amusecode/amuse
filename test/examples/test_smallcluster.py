@@ -2,6 +2,7 @@ import sys
 import unittest
 import numpy 
 import random
+import collections
 
 try:
     from matplotlib import pyplot
@@ -107,6 +108,11 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         x.radius = 0.0 | units.RSun
     
     
+    
+                
+    print "initializing the particles"
+    stellar_evolution.setup_particles(particles)
+    
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
     
@@ -119,9 +125,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
-                
-    print "initializing the particles"
-    stellar_evolution.setup_particles(particles)
+    
     gravity.setup_particles(particles)
     
         
@@ -131,10 +135,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print "evolving the model until t = " + str(end_time)
     
     particles.savepoint()
-    
     gravity.update_particles(particles)
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
         
     total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
     while time < end_time:
@@ -147,11 +148,12 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         
         print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
     
+        gravity.update_particles(particles)
+        
         print "stellar evolution step starting"
         stellar_evolution.evolve_particles(particles, time)
         print "stellar evolution step done"
         
-        gravity.update_particles(particles)
         particles.savepoint()
             
         print "evolved model to t = " + str(time)
@@ -204,6 +206,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         
 def make_a_movie(particles):
     index = 0
+    previous_x = None
+    previous_y = None
     for data in particles.history:
         figure = pyplot.figure(figsize=(6,3))
         plot = figure.add_subplot(1,2,1)
@@ -219,7 +223,6 @@ def make_a_movie(particles):
             
         plot.scatter(x_values,y_values, marker='+', color="b")
         
-        
         plot.set_xlim(-4.0, 4.0)
         plot.set_ylim(-4.0, 4.0)
         
@@ -234,14 +237,35 @@ def make_a_movie(particles):
             [units.parsec, units.parsec, units.MSun]
         )
             
-        plot.scatter(x_values,y_values, marker='+', color="g")
+        #plot.scatter(x_values,y_values, marker='+', color="g")
+        
+        if previous_x is None:
+            previous_x = [collections.deque() for x in range(len(x_values))]
+            previous_y = [collections.deque() for x in range(len(y_values))]
+            
         
         
-        plot.set_xlim(-1.0, 1.0)
-        plot.set_ylim(-1.0, 1.0)
+        for i in range(len(x_values)):
+            previous_x[i].append(x_values[i])
+            previous_y[i].append(y_values[i])
+            
+            if(len(previous_x[i]) > 5):
+                previous_x[i].popleft()
+                previous_y[i].popleft()
+            
+            plot.plot(previous_x[i],previous_y[i])
+            
+        
+        plot.set_xlim(-0.5, 0.5)
+        plot.set_ylim(-0.5, 0.5)
+        
+                
+        
         
         index += 1
         figure.savefig("frame_"+format(index, "03d")+".png")
+    #["mencoder","mf://fr*.png -mf w=800:h=600:fps=20:type=png -ovc copy -oac copy -o movie.avi
+
         
 def test_simulate_small_cluster():
     """test_simulate_small_cluster

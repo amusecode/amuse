@@ -54,6 +54,8 @@ class Quantity(object):
 
     
     """
+    __slots__ = ['unit']
+    
     def __init__(self, unit):
         self.unit = unit
         
@@ -124,14 +126,15 @@ class Quantity(object):
         10000.0
         
         """
-        value_of_unit_in_another_unit = self.unit.as_quantity_in(unit)
-        return self.number * value_of_unit_in_another_unit.number
+        value_of_unit_in_another_unit = self.unit.value_in(unit)
+        return self.number * value_of_unit_in_another_unit
 
 class ScalarQuantity(Quantity):
     """
     A ScalarQuantity object represents a physical scalar 
     quantity.
     """
+    __slots__ = ['number']
     
     def __init__(self, number, unit):
         Quantity.__init__(self, unit)
@@ -185,6 +188,8 @@ class VectorQuantity(Quantity):
     >>> len(v1)
     3
     """
+    __slots__ = ['_number']
+    
     def __init__(self, array, unit):
         Quantity.__init__(self, unit)
         self._number = numpy.array(array)
@@ -207,6 +212,7 @@ class VectorQuantity(Quantity):
         >>> print vector[1]
         1.0 kg
         """
+        
         return new_quantity( self._number[index] , self.unit )
         
     
@@ -387,4 +393,5 @@ def new_quantity(value, unit):
     if isinstance(value, numpy.ndarray):
         return VectorQuantity(value, unit)
     return ScalarQuantity(value, unit)
-       
+    
+    
