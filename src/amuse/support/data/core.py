@@ -302,7 +302,7 @@ class AttributeList(object):
         return set(self.mapping_from_attribute_to_values_and_unit.keys())
     
     def __str__(self):
-        attributes = sorted(self.attributes)
+        attributes = sorted(self.attributes())
         
         columns = map(lambda x : [x], attributes)
         columns.insert(0,['id'])
@@ -341,7 +341,7 @@ class AttributeList(object):
             row = [x[i] for x in columns]
             rows.append(row)
             
-        line = map(lambda  x : '\t'.join(x), rows)
+        lines = map(lambda  x : '\t'.join(x), rows)
         return '\n'.join(lines)
         
     def get_attribute_as_quantity(self, attribute):
@@ -352,7 +352,25 @@ class AttributeList(object):
         
         return attribute_values.values | attribute_values.unit
         
-    
+    def set_attribute_as_quantity(self, attribute, quantity):
+        if not isinstance(quantity, values.VectorQuantity):
+            raise AttributeError("can only set a vector of values")
+        
+        if not len(quantity) == len(self.particles):
+            raise AttributeError("vector of values must have the same length as the particles in the system")
+            
+        if not (
+            isinstance(quantity._number[0], int) or isinstance(quantity._number[0], float)
+            ):
+            raise AttributeError("values must be ints or floats")
+            
+        attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
+        attribute_values.values = numpy.array(quantity._number)
+        attribute_values.unit = quantity.unit
+        
+        
+        
+        
     def get_attributes_as_vector_quantities(self, attributes):
         for attribute in attributes:
             if not attribute in self.mapping_from_attribute_to_values_and_unit:
@@ -374,7 +392,12 @@ class AttributeList(object):
         
         results = numpy.dstack(results)[0]
         return results | unit_of_the_values
-    
+        
+    def set_model_time(self, value): 
+        print "setting model time to ", value
+        model_times = self._convert_model_times(value, self.particles)
+        for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
+            attribute_values.model_times = model_times
     
 class Particles(object):
     class ScalarProperty(object):
@@ -387,7 +410,13 @@ class Particles(object):
                 return self
             else:
                 return instance.attributelist.get_attribute_as_quantity(self.attribute_name)
-            
+        
+        def __set__(self, instance, value):
+            if instance == None:
+                return self
+            else:
+                return instance.attributelist.set_attribute_as_quantity(self.attribute_name, value)
+                
     class VectorProperty(object):
         
         def  __init__(self, attribute_names):
@@ -398,6 +427,22 @@ class Particles(object):
                 return self
             else:
                 return instance.attributelist.get_attributes_as_vector_quantities(self.attribute_names)
+                
+    class ModelTimeProperty(object):
+        
+        def __get__(self, instance, owner):
+            if instance == None:
+                return self
+            else:
+                raise Exception("TBD")
+                
+            
+        def __set__(self, instance, value):
+            if instance == None:
+                return self
+            else:
+                instance.attributelist.set_model_time(value)
+        
     
     """A set of particle objects"""
     def __init__(self, size = 0):
@@ -422,6 +467,8 @@ class Particles(object):
         for x in reversed(self.history):
             timeline.append((None, x.get_value_of(particle, attribute)))
         return timeline
+
+    model_time = ModelTimeProperty()
             
     
             
@@ -429,7 +476,17 @@ class Particles(object):
 class Stars(Particles):
     
     mass = Particles.ScalarProperty("mass")
+    
     radius = Particles.ScalarProperty("radius")
+    
+    x = Particles.ScalarProperty("x")
+    y = Particles.ScalarProperty("y")
+    z = Particles.ScalarProperty("z")
+    
+    vx = Particles.ScalarProperty("vx")
+    vy = Particles.ScalarProperty("vy")
+    vz = Particles.ScalarProperty("vz")
+    
     position = Particles.VectorProperty(["x","y","z"])
     velocity = Particles.VectorProperty(["vx","vy","vz"])
     

@@ -313,7 +313,7 @@ class VectorQuantity(Quantity):
     def __neq__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
         return self.number != other_in_my_units.number   
-            
+        
     def indices(self):
         for x in len(self._number):
             yield x

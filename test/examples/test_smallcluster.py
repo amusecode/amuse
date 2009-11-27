@@ -3,6 +3,7 @@ import unittest
 import numpy 
 import random
 import collections
+import os
 
 try:
     from matplotlib import pyplot
@@ -18,6 +19,7 @@ from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.support.core import is_mpd_running
+#from amuse.support.io import store
 
 from amuse.experiments.plummer import MakePlummerModel
 
@@ -136,7 +138,12 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     particles.savepoint()
     gravity.update_particles(particles)
-        
+    
+    
+    #if os.path.exists('small.hdf5'):
+    #    os.remove('small.hdf5')
+    #store.StoreHDF("small.hdf5").store(particles)
+    
     total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
     while time < end_time:
         time += 0.5 |units.Myr

@@ -54,5 +54,12 @@ class TestStars(TestBase):
         stars[0].y = 2000.0 | units.m
         stars[0].z = 3500.0 | units.m
         
-        self.assertEquals(stars.position[0], [1000.0, 2000.0, 3500.0] | units.m)      
+        self.assertEquals(stars.position[0], [1000.0, 2000.0, 3500.0] | units.m)    
+        
+    def test5(self):
+        stars = core.Stars(2)
+        stars.mass = [1.0 , 2.0]  | units.kg
+        self.assertEquals(stars.mass[0], 1.0|units.kg)
+        
+        
         

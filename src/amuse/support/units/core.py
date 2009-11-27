@@ -111,7 +111,13 @@ class unit(object):
             
         result = self.factor
         for n, base in self.base:
-            result =  result * (base ** n)
+            if n == 1:
+                if result == 1:
+                    result = base
+                else:
+                    result = result * base
+            else:
+                result =  result * (base ** n)
         
         return result
     
