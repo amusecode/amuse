@@ -13,6 +13,7 @@ day = 24 * hour
 yr =   named('year', 'yr', 365.2422 * day)
 myr = named('million year', 'Myr', 1000000 * yr)
 Myr = myr
+AUd = named('AU per day','AUd', 149597870691.0  * m / 365 / day)
 ms = named('meter per seconds', 'ms', m / s)
 g = named('gram','g', 1e-3 * kg)
 one = 1 | none
