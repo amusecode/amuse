@@ -352,7 +352,7 @@ class SSEBinding(InterfaceWithParametersBinding):
         
         
         results = self.get_time_step(**keyword_arguments)
-        return results | units.Myr
+        return units.Myr.new_quantity(results)
         
     
     def get_attribute_definition(self, attribute_name):

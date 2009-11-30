@@ -75,7 +75,7 @@ class AttributeList(object):
         
         index = self.mapping_from_particle_to_index[id(particle)]
         
-        return attribute_values.values[index] | attribute_values.unit
+        return attribute_values.unit.new_quantity(attribute_values.values[index])
         
     def get_values_of_attributes_of_particle(self, particle, attributes):
         
@@ -199,7 +199,7 @@ class AttributeList(object):
     
     def _convert_model_times(self, model_times, particles):
         if not model_times is None and isinstance(model_times, values.ScalarQuantity):
-            return numpy.linspace(model_times.number, model_times.number, len(self.particles)) | model_times.unit
+            return model_times.unit.new_quantity(numpy.linspace(model_times.number, model_times.number, len(self.particles)) )
         else:
             return model_times
     
@@ -350,7 +350,7 @@ class AttributeList(object):
         
         attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
         
-        return attribute_values.values | attribute_values.unit
+        return attribute_values.unit.new_quantity(attribute_values.values)
         
     def set_attribute_as_quantity(self, attribute, quantity):
         if not isinstance(quantity, values.VectorQuantity):
@@ -391,7 +391,7 @@ class AttributeList(object):
                     results.append(attribute_values.values)
         
         results = numpy.dstack(results)[0]
-        return results | unit_of_the_values
+        return unit_of_the_values.new_quantity(results)
         
     def set_model_time(self, value): 
         print "setting model time to ", value

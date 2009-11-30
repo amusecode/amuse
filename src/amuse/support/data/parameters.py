@@ -45,7 +45,7 @@ class ParameterDefinition(object):
     
     
     def get_value(self, object):
-        result = self.get_legacy_value(object) | self.unit
+        result = self.unit.new_quantity(self.get_legacy_value(object))
         if nbody_system.is_nbody_unit(self.unit):
             return object.convert_nbody.to_si(result)
         return result

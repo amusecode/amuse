@@ -678,6 +678,6 @@ def unset_numpy_or_operator():
     global _previous_operator
     numpy.set_numeric_ops(bitwise_or = _previous_operator)
     
-set_numpy_or_operator()
+#set_numpy_or_operator()
        
 

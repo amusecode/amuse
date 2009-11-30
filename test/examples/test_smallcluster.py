@@ -215,6 +215,10 @@ def make_a_movie(particles):
     index = 0
     previous_x = None
     previous_y = None
+    indices = None
+    random_stream = random.Random()
+    random_stream.seed()
+    
     for data in particles.history:
         figure = pyplot.figure(figsize=(6,3))
         plot = figure.add_subplot(1,2,1)
@@ -247,14 +251,18 @@ def make_a_movie(particles):
         #plot.scatter(x_values,y_values, marker='+', color="g")
         
         if previous_x is None:
-            previous_x = [collections.deque() for x in range(len(x_values))]
-            previous_y = [collections.deque() for x in range(len(y_values))]
+            indices = []
+            for x in range(len(x_values)):
+                if random_stream.random() > 0.9:
+                    indices.append(x)
+            previous_x = [collections.deque() for x in indices]
+            previous_y = [collections.deque() for x in indices]
             
         
         
-        for i in range(len(x_values)):
-            previous_x[i].append(x_values[i])
-            previous_y[i].append(y_values[i])
+        for i, index in enumerate(indices):
+            previous_x[i].append(x_values[index])
+            previous_y[i].append(y_values[index])
             
             if(len(previous_x[i]) > 5):
                 previous_x[i].popleft()
