@@ -64,7 +64,12 @@ class InstallPrerequisites(object):
         print "finished " , ' '.join(args)
     
     def h5py_build(self, path):
-        self.run_application(['python','setup.py','configure', '--hdf5='+self.prefix, '--api=18'], cwd=path)
+        self.run_application([
+            'python',
+            'setup.py',
+            'configure', 
+            '--hdf5='+self.prefix, 
+            '--api=18'],cwd=path)
         self.python_build(path)
         
     def setuptools_install(self, path):
