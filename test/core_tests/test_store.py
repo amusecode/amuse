@@ -21,7 +21,16 @@ class TestStoreHDF(unittest.TestCase):
         print p.attributelist
         
         instance.store(p)
-        #self.assertTrue(False)
+        
+        loaded_particles = instance.load()
+        
+        print loaded_particles.attributelist
+        
+        loaded_mass_in_kg = loaded_particles.mass.value_in(units.kg)
+        previous_mass_in_kg = p.mass.value_in(units.kg)
+        for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
+            self.assertEquals(expected, actual)
+        
         
         
         
