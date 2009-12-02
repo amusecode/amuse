@@ -85,6 +85,7 @@ class BHTreeInterface(LegacyInterface):
     @legacy_function
     def set_mass():
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.result_type = 'i'
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('mass', dtype='d', direction=function.IN)

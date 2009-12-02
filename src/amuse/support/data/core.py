@@ -448,7 +448,8 @@ class Particles(object):
     def __init__(self, size = 0):
         self.particles = [Particle(i+1, self) for i in range(size)]
         self.attributelist = AttributeList(self.particles)
-        self.history = []
+        self.previous = None
+    
         
     def __iter__(self):
         return self.attributelist.iter_particles()
@@ -460,12 +461,26 @@ class Particles(object):
         return len(self.particles)
         
     def savepoint(self):
-        self.history.append(self.attributelist.copy())
+        instance = type(self)()
+        instance.particles = self.particles
+        instance.attributelist = self.attributelist.copy()
+        instance.previous = self.previous
+        self.previous = instance
+        
+    def iter_history(self):
+        current = self
+        while not current is None:
+            yield current
+            current = current.previous
     
+    @property
+    def history(self):
+        return reversed(list(self.iter_history()))
+        
     def get_timeline_of_attribute(self, particle, attribute):
         timeline = []
-        for x in reversed(self.history):
-            timeline.append((None, x.get_value_of(particle, attribute)))
+        for x in self.history:
+            timeline.append((None, x.attributelist.get_value_of(particle, attribute)))
         return timeline
 
     model_time = ModelTimeProperty()

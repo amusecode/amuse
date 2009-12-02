@@ -126,6 +126,15 @@ class InterfaceWithObjectsBinding(object):
         keyword_arguments['id'] = ids
         keyword_arguments['index_of_the_particle'] = ids
         
+        setter_method = getattr(self, attribute_definition.setter[0])
+        
+        if len(ids) > 0: 
+            if hasattr(setter_method, "specification"):
+                if not setter_method.specification.can_handle_array:
+                    raise Exception(
+                        "setter method <{0}> of a '{1}' object, cannot handle arrays".format(attribute_definition.setter[0], type(self).__name__)\
+                    )
+                    
         errors = getattr(self, attribute_definition.setter[0])(**keyword_arguments)
 
     def update_attribute(self, attribute_name, particles):

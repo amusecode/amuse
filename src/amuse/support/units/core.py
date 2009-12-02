@@ -107,7 +107,7 @@ class unit(object):
         """
         
         if not self.base:
-            return none_unit('no unit', '')
+            return none_unit('none', 'none')
             
         result = self.factor
         for n, base in self.base:

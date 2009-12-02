@@ -35,8 +35,8 @@ percentage = core.none_unit('percentage', '%')
 string = core.string_unit('string', 'string')
 
 stellar_type = core.enumeration_unit(
-    'stellar type',
-    'stellar type',
+    'stellar_type',
+    'stellar_type',
     None,
     [
         "deeply or fully convective low mass MS star",
