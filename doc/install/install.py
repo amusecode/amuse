@@ -45,6 +45,9 @@ class InstallPrerequisites(object):
           ('mpich2', [], '1.1', 'mpich2-', '.tar.gz', 'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', self.mpich2_build) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           ('mpi4py', ['mpich2'], '1.1.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
+          #('setuptools', [], '0.6c11', 'setuptools-', '-py2.6.egg', 'http://pypi.python.org/packages/2.6/s/setuptools/', self.setuptools_install) ,
+          #http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
+          ('docutils', [], 'snapshot', 'docutils-','.tgz', 'http://docutils.sf.net/', self.python_build)
         ]
         
     @late
@@ -64,12 +67,18 @@ class InstallPrerequisites(object):
         self.run_application(['python','setup.py','configure', '--hdf5='+self.prefix, '--api=18'], cwd=path)
         self.python_build(path)
         
+    def setuptools_install(self, path):
+        self.run_application(['sh',], cwd=path)
+        
     def hdf5_build(self, path):
         commands = []
         commands.append([
-          './configure','--prefix='+self.prefix,
-          '--enable-shared', '--enable-production',
-          '--with-pthread=/usr', '--enable-threadsafe'
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared', 
+          '--enable-production',
+          '--with-pthread=/usr', 
+          '--enable-threadsafe'
         ])
         commands.append(['make'])
         commands.append(['make', 'install'])
@@ -161,8 +170,14 @@ class InstallPrerequisites(object):
             app_dir = prefix + version 
             temp_app_dir = os.path.join(self.temp_dir , app_dir)
             if not os.path.exists(temp_app_dir):
-                print "Package was not correctly unpacked: ", app_file
-                return
+                if prefix.endswith('-'):
+                    app_dir = prefix[:-1]
+                else:
+                    app_dir = prefix
+                temp_app_dir = os.path.join(self.temp_dir , app_dir)
+                if not os.path.exists(temp_app_dir):
+                    print "Package was not correctly unpacked: ", app_file
+                    return
     
             print "Building ", app_file
             function(temp_app_dir)
