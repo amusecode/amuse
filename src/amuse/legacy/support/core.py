@@ -248,7 +248,6 @@ class legacy_function(object):
         name_of_defining_file = self.specification_function.func_code.co_filename
         if os.path.exists(name_of_defining_file):
             time_of_defining_file = os.stat(name_of_defining_file).st_mtime
-            print name_of_defining_file, name_of_defining_file, time_of_the_compiled_file
             return time_of_defining_file <= time_of_the_compiled_file
         return True
         

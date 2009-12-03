@@ -125,7 +125,7 @@ class AttributeList(object):
             
     def iter_particles_as_views(self):
         class ParticleView(object):
-            __slots__=['index']
+            __slots__=['key', 'index', 'version']
             pass
         
         class AttributeViewProperty(object):
@@ -556,7 +556,7 @@ class Particle(object):
     for multiple modules. Other attributes are *specific* and are 
     only applicable for a single module.
     """
-    __slots__ = ["id", "attributes", "set", "_module_ids_to_index"]
+    __slots__ = ["id", "attributes", "set"]
     
     position = VectorAttribute(("x","y","z"))
     velocity = VectorAttribute(("vx","vy","vz"))
@@ -564,7 +564,6 @@ class Particle(object):
     def __init__(self, id = -1, set = None, **keyword_arguments):
         object.__setattr__(self, "id", id)
         object.__setattr__(self, "attributes", {})
-        object.__setattr__(self, "_module_ids_to_index", {})
         object.__setattr__(self, "set", set)
         
         for attribute_name in keyword_arguments:
