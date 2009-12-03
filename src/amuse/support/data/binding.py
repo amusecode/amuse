@@ -11,71 +11,97 @@ class InterfaceWithParametersBinding(object):
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         
 
-class InterfaceWithObjectsBinding(object):
-    def __init__(self):
-        self.mapping_from_particleid_to_index = {}
-        
+
+class ParticlesInterface(object):
     
-    def setup_particles(self, particles):
-        keyword_arguments = {}
+    def __init__(self, code_interface):
+        self.code_interface = code_interface
+        
+    #def __getattr__(self, name_of_the_attribute):
+    #    pass
+        
+    #def __setattr__(self, name_of_the_attribute, value):
+    #    pass
+        
+    def __len__(self):
+        return interface.get_len()
+    
+    def iter_particles(self):
+        pass
+        
+    def add_particles(self, particles):
+        attribute_definitions = filter(
+            lambda x : x.is_required_for_setup(), 
+            self.code_interface.attribute_definitions
+        )
         
         attributes = []
         units = []
         keywords = []
         
-        for attribute_definition in self.attribute_definitions:
-            if attribute_definition.is_required_for_setup():
-                attribute_definition.for_setup_fill_arguments_for_attributelist_get(
-                    attributes,
-                    units,
-                    keywords,
-                )
+        for attribute_definition in attribute_definitions:
+            attribute_definition.for_setup_fill_arguments_for_attributelist_get(
+                attributes,
+                units,
+                keywords,
+            )
         
-        def convert_to_nbody(x):
-            if nbody_system.is_nbody_unit(x):
-                return self.convert_nbody.unit_to_unit_in_si(x)
-            else:
-                return x
-                
-        units = map(convert_to_nbody, units)
+        units = map(self.code_interface.convert_to_nbody, units)
         
-        list_of_values = particles.attributelist.get_values_of_all_particles_in_units(attributes, units)
-    
+        lists_of_values = particles.attributelist.get_values_of_all_particles_in_units(attributes, units)
         
-        for keyword, values in zip(keywords, list_of_values):
+        keyword_arguments = {}
+        for keyword, values in zip(keywords, lists_of_values):
             keyword_arguments[keyword] = values
             
-        indices, errors = self.new_particle(**keyword_arguments)
+        indices, errors = self.code_interface.new_particle(**keyword_arguments)
         
         for errorcode in errors:
             if errorcode < 0:
                 raise Exception("Could not setup a particle")
         
+        
+        keys = particles.attributelist.particle_keys
         d = {}
-        
         for index in range(len(particles)):
-            d[particles[index]] = indices[index]
+            d[keys[index]] = indices[index]
             
-        self.mapping_from_particleid_to_index = d
+        self.mapping_from_particle_key_to_index = d
         
-
-    def update_particles(self, particles):
-        ids = map(lambda x : self.mapping_from_particleid_to_index[x], particles)
+    def copy_to(self, particles):
+        attribute_definitions = filter(
+            lambda x : x.is_required_for_setup(), 
+            self.code_interface.attribute_definitions
+        )
         
-        states = self.get_state(ids)
+        indices_in_the_code = []
+        
+        keys = particles.attributelist.particle_keys
+        selected_keys = []
+        for particle_key in particles.attributelist.particle_keys:
+            if particle_key in self.mapping_from_particle_key_to_index:
+                indices_in_the_code.append(self.mapping_from_particle_key_to_index[particle_key])
+                selected_keys.append(particle_key)
+            else:
+                pass #raise an exception?
+                
+        keyword_results = self.code_interface.get_state(indices_in_the_code)
+        
+        if '__result' in keyword_results:
+            errorcodes = keyword_results['__result']
+            pass
         
         attributes = []
         units = []
         values = []
         
-        for attribute_definition in self.attribute_definitions:
-            if attribute_definition.is_required_for_setup():
-                attribute_definition.for_state_fill_arguments_for_attributelist_set(
-                    states,
-                    attributes,
-                    units,
-                    values,
-                )
+        for attribute_definition in attribute_definitions:
+            attribute_definition.for_state_fill_arguments_for_attributelist_set(
+                keyword_results,
+                attributes,
+                units,
+                values,
+            )
         
         def convert_to_nbody(x):
             if nbody_system.is_nbody_unit(x):
@@ -84,68 +110,30 @@ class InterfaceWithObjectsBinding(object):
                 return x
           
         
-        units = map(convert_to_nbody, units)
+        units = map(self.code_interface.convert_to_nbody, units)
         
-        time = self.current_model_time()
+        time = self.code_interface.current_model_time()
         
-        particles.attributelist.set_values_of_particles_in_units(particles.particles, attributes, values, units, time)
-        
+        particles.attributelist.set_values_of_particles_in_units(selected_keys, attributes, values, units, time)
     
-    def set_attribute(self, attribute_name, particles):
-        attribute_definition = self.get_attribute_definition(attribute_name)
+    def copy_values_of_attribute_to(self, attribute_name, particles):
+        attribute_definition = self.code_interface.get_attribute_definition(attribute_name)
         
         if attribute_definition is None:
             return
             
-        attributes = []
-        units = []
-        keywords = []
+        indices_in_the_code = []
         
-        attribute_definition.for_setter_fill_arguments_for_attributelist_get(
-            attributes,
-            units,
-            keywords,
-        )
-        
-        
-        def convert_to_nbody(x):
-            if nbody_system.is_nbody_unit(x):
-                return self.convert_nbody.unit_to_unit_in_si(x)
+        keys = particles.attributelist.particle_keys
+        selected_keys = []
+        for particle_key in particles.attributelist.particle_keys:
+            if particle_key in self.mapping_from_particle_key_to_index:
+                indices_in_the_code.append(self.mapping_from_particle_key_to_index[particle_key])
+                selected_keys.append(particle_key)
             else:
-                return x
-          
-        units = map(convert_to_nbody, units)
+                pass #raise an exception?
         
-        list_of_values = particles.attributelist.get_values_of_all_particles_in_units(attributes, units)
-        
-        keyword_arguments = {}
-        for keyword, values in zip(keywords, list_of_values):
-            keyword_arguments[keyword] = values
-            
-        ids = map(lambda x : self.mapping_from_particleid_to_index[x], particles)
-        keyword_arguments['id'] = ids
-        keyword_arguments['index_of_the_particle'] = ids
-        
-        setter_method = getattr(self, attribute_definition.setter[0])
-        
-        if len(ids) > 0: 
-            if hasattr(setter_method, "specification"):
-                if not setter_method.specification.can_handle_array:
-                    raise Exception(
-                        "setter method <{0}> of a '{1}' object, cannot handle arrays".format(attribute_definition.setter[0], type(self).__name__)\
-                    )
-                    
-        errors = getattr(self, attribute_definition.setter[0])(**keyword_arguments)
-
-    def update_attribute(self, attribute_name, particles):
-        attribute_definition = self.get_attribute_definition(attribute_name)
-        
-        if attribute_definition is None:
-            return
-            
-        ids = map(lambda x : self.mapping_from_particleid_to_index[x], particles)
-        
-        results = getattr(self, attribute_definition.getter[0])(ids)
+        results = getattr(self.code_interface, attribute_definition.getter[0])(indices_in_the_code)
         
         if isinstance(results, tuple):
             results, errors = results
@@ -161,19 +149,88 @@ class InterfaceWithObjectsBinding(object):
             values,
         )
         
-        def convert_to_nbody(x):
-            if nbody_system.is_nbody_unit(x):
-                return self.convert_nbody.unit_to_unit_in_si(x)
+        units = map(self.code_interface.convert_to_nbody, units)
+        
+        time = self.code_interface.current_model_time()
+        
+        particles.attributelist.set_values_of_particles_in_units(selected_keys, attributes, values, units, time)
+    
+    
+    
+    def take_values_of_attribute_from(self, attribute_name, particles):
+        attribute_definition = self.code_interface.get_attribute_definition(attribute_name)
+        
+        if attribute_definition is None:
+            return
+            
+        indices_in_the_code = []
+        
+        keys = particles.attributelist.particle_keys
+        selected_keys = []
+        for particle_key in particles.attributelist.particle_keys:
+            if particle_key in self.mapping_from_particle_key_to_index:
+                indices_in_the_code.append(self.mapping_from_particle_key_to_index[particle_key])
+                selected_keys.append(particle_key)
             else:
-                return x
-          
-        
-        units = map(convert_to_nbody, units)
-        
-        time = self.current_model_time()
-        
-        particles.attributelist.set_values_of_particles_in_units(particles.particles, attributes, values, units, time)
+                pass #raise an exception?
                 
+        attributes = []
+        units = []
+        keywords = []
+        
+        attribute_definition.for_setter_fill_arguments_for_attributelist_get(
+            attributes,
+            units,
+            keywords,
+        )
+        
+        units = map(self.code_interface.convert_to_nbody, units)
+        
+        list_of_values = particles.attributelist.get_values_of_all_particles_in_units(attributes, units)
+        
+        keyword_arguments = {}
+        for keyword, values in zip(keywords, list_of_values):
+            keyword_arguments[keyword] = values
+            
+        
+        keyword_arguments['id'] = indices_in_the_code
+        keyword_arguments['index_of_the_particle'] = indices_in_the_code
+        
+        setter_method = getattr(self.code_interface, attribute_definition.setter[0])
+        
+        if len(indices_in_the_code) > 0: 
+            if hasattr(setter_method, "specification"):
+                if not setter_method.specification.can_handle_array:
+                    raise Exception(
+                        "setter method <{0}> of a '{1}' object, cannot handle arrays".format(attribute_definition.setter[0], type(self).__name__)
+                    )
+                    
+        errors = setter_method(**keyword_arguments)
+                
+        
+        
+class InterfaceWithObjectsBinding(object):
+    def __init__(self):
+        self.mapping_from_particleid_to_index = {}
+        self.particles = ParticlesInterface(self)
+    
+    def convert_to_nbody(self, x):
+        if nbody_system.is_nbody_unit(x):
+            return self.convert_nbody.unit_to_unit_in_si(x)
+        else:
+            return x
+                
+    def setup_particles(self, particles):
+        self.particles.add_particles(particles)
+        
+    def update_particles(self, particles):
+        self.particles.copy_to(particles)
+    
+    def set_attribute(self, attribute_name, particles):
+        self.particles.take_values_of_attribute_from(attribute_name, particles)
+
+    def update_attribute(self, attribute_name, particles):
+        self.particles.copy_values_of_attribute_to(attribute_name, particles) 
     
     def get_attribute_definition(self, attribute_name):
         for attribute_definition in self.attribute_definitions:

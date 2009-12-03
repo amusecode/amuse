@@ -244,7 +244,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
           reply_header.number_of_doubles = 2;
           break;
         """
-        print string
+        
         expected_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , expected))
         self.assertEquals(string_no_spaces, expected_no_spaces);
         
@@ -270,7 +270,7 @@ class TestMakeACStringOfALegacyFunctionSpecification(unittest.TestCase):
           }
           break;
         """
-        print string
+        
         expected_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , expected))
         self.assertEquals(string_no_spaces, expected_no_spaces);
 
@@ -425,7 +425,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         x = self._class_to_test()
         x.specification = function
         string = x.result
-        print string
+        
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
         self.assertEquals(string_no_spaces, 'CASE(1)CALLtest_one(&integers_in(1),&doubles_in(1),&doubles_in(2)&)')
         
@@ -438,7 +438,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         x = self._class_to_test()
         x.specification = function
         string = x.result
-        print string
+        
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , string))
         self.assertEquals(string_no_spaces, 'CASE(1)CALLtest_one(&integers_in(1),&integers_out(1)&)number_of_integers_out=1')
         
@@ -454,7 +454,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         x = self._class_to_test()
         x.specification = function
         string = x.result
-        print string
+        
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\r' , string))
         self.assertEquals(string_no_spaces, 'CASE(1)\nCALLtest_one(&\nintegers_in(1),&\nintegers_out(1),&\ndoubles_out(1)&\n)\nnumber_of_integers_out=1\nnumber_of_doubles_out=1\n')
 
@@ -469,7 +469,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         x = self._class_to_test()
         x.specification = function
         string = x.result
-        print string
+        
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\r' , string))
         self.assertEquals(string_no_spaces, 'CASE(1)\nCALLtest_one(&\nintegers_in(1),&\nintegers_in(2),&\ndoubles_in(1)&\n)\nintegers_out(1)=integers_in(2)\ndoubles_out(1)=doubles_in(1)\nnumber_of_integers_out=1\nnumber_of_doubles_out=1\n')
     
@@ -480,7 +480,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
         x = self._class_to_test()
         x.specification = function
         string = x.result
-        print string
+        
         string_no_spaces = ''.join(filter(lambda x : x not in ' \t\r' , string))
         self.assertEquals(string_no_spaces, 'CASE(1)\nCALLtest_one(&\nintegers_in(0),&\nintegers_in(1),&\ndoubles_in(0)&\n)\nintegers_out(0)=integers_in(1)\ndoubles_out(0)=doubles_in(0)\nnumber_of_integers_out=1\nnumber_of_doubles_out=1\n')
     
@@ -511,7 +511,7 @@ class TestMakeAFortranStringOfALegacyFunctionSpecification(unittest.TestCase):
           number_of_integers_out = 1
           number_of_doubles_out = 2
         """
-        print string
+        
         expected_no_spaces = ''.join(filter(lambda x : x not in ' \t\n\r' , expected))
         self.assertEquals(string_no_spaces, expected_no_spaces);
       
@@ -539,7 +539,7 @@ class TestMakeAFortranStringOfAClassWithLegacyFunctions(unittest.TestCase):
         x = self._class_to_test()
         x.class_with_legacy_functions = TestMakeAFortranStringOfAClassWithLegacyFunctions
         string = x.result
-        print string
+        
         self.assertTrue('run_loop' in string)
         
     def test2(self):

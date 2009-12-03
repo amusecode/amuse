@@ -18,7 +18,7 @@ class TestAttributeList(unittest.TestCase):
         
 
     def test2(self):
-        particles = [Particle(0), Particle(1), Particle(2)]
+        particles = [0,1,2]
         attributes = "a", "b"
         values = [numpy.array([1.0,2.0,3.0]),  numpy.array([4.0,5.0,6.0])]
         units_of_attributes = [units.m, units.kg]

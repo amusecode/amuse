@@ -80,7 +80,7 @@ class StoreHDF(object):
             
             
             particles.attributelist = AttributeList(
-                    particles.particles,
+                    particles.particle_keys,
                     attributes = attributes, 
                     lists_of_values = lists_of_values, 
                     units = all_units)

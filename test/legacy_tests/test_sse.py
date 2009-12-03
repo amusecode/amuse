@@ -313,4 +313,30 @@ class TestSSE(TestWithMPI):
         self.assertAlmostEqual(star.mass.value_in(units.MSun), 0.997, 3)
          
         del sse
+        
+    
+    def test4(self):
+        sse = mpi_interface.SSE()
+        sse.initialize_module_with_default_parameters() 
+        stars =  Stars(1)
+        
+        star = stars[0]
+        star.mass = 35 | units.MSun
+        star.radius = 0.0 | units.RSun
+        
+        sse.setup_particles(stars)
+        
+        previous_type = star.type
+        results = []
+        
+        dt = 1 | units.Myr
+        t = 0 | units.Myr
+        while t < 30 | units.Myr:
+            t += dt
+            sse.evolve_particles(stars, t)
+            print star.type, star.mass
+                
+        self.assertTrue(star.mass.value_in(units.MSun) < 10.6)
+         
+        del sse
 

@@ -208,8 +208,6 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             current_age, error = self.get_age(index)
             current_age |= units.Myr
             
-            print index, current_age
-            
             while current_age < end_time:
                 
                 errorcode = self.evolve(index)
@@ -218,8 +216,6 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
                 
                 current_age, error = self.get_age(index)
                 current_age |= units.Myr
-                
-                print current_age
                 
                 for attribute_defintion in self.attribute_definitions:
                     values = attribute_definition.get_values(self, [index])

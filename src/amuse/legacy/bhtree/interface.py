@@ -65,7 +65,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
             values = particles.get_values_of_attribute(attribute_definition.name)
             attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
         keyword_arguments['id'] = list(particles.ids)
-        print keyword_arguments
+        
         self.add_particle(**keyword_arguments)
             
     #def update_attributes(self, attributes):

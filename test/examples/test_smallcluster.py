@@ -19,7 +19,8 @@ from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.support.core import is_mpd_running
-#from amuse.support.io import store
+
+from amuse.support.io import store
 
 from amuse.experiments.plummer import MakePlummerModel
 
@@ -49,13 +50,13 @@ class SalpeterIMF(object):
         return self.mass(self.random.random())
         
     def next_set(self, number_of_stars):
-        set_of_masses = []
+        set_of_masses = numpy.zeros(number_of_stars)
         total_mass = 0.0 | units.MSun
-        for x in range(number_of_stars):
+        for i in range(number_of_stars):
            mass = self.next_mass()
-           set_of_masses.append(mass)
+           set_of_masses[i] = mass.value_in(units.MSun)
            total_mass += mass
-        return (total_mass, set_of_masses)
+        return (total_mass, units.MSun.new_quantity(set_of_masses))
         
 class SalpeterIMFTests(unittest.TestCase):
     def test1(self):
@@ -88,7 +89,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     random.seed()
     
     initial_mass_function = SalpeterIMF()
-    total_mass, masses = initial_mass_function.next_set(number_of_stars)
+    total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
     
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1 | units.parsec)
     
@@ -102,18 +103,19 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     stellar_evolution = SSE()
     stellar_evolution.initialize_module_with_default_parameters() 
     
-    gravity.parameters.epsilon_squared = 0.3 | units.parsec ** 2
+    gravity.parameters.epsilon_squared = 0.15 | units.parsec ** 2
     
     print "setting masses of the stars"
-    for i, x in enumerate(particles):
-        x.mass = masses[i]
-        x.radius = 0.0 | units.RSun
     
-    
+    particles.radius = units.RSun.new_quantity(numpy.zeros(len(particles)))
+    print salpeter_masses
+    particles.mass = salpeter_masses
     
                 
     print "initializing the particles"
     stellar_evolution.setup_particles(particles)
+    
+    print "centering the particles"
     
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
@@ -121,10 +123,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     center_of_mass = particles.center_of_mass()
     center_of_mass_velocity = particles.center_of_mass_velocity()
     
-    for x in particles:
-        x.position = x.position - center_of_mass
-        x.velocity = x.velocity - center_of_mass_velocity
-        
+    particles.position = particles.position - center_of_mass
+    particles.velocity = particles.velocity - center_of_mass_velocity     
+    
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
     
@@ -140,13 +141,16 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     gravity.update_particles(particles)
     
     
-    #if os.path.exists('small.hdf5'):
-    #    os.remove('small.hdf5')
-    #store.StoreHDF("small.hdf5").store(particles)
+    if os.path.exists('small.hdf5'):
+        os.remove('small.hdf5')
+    storage = store.StoreHDF("small.hdf5")
+    storage.store(particles)
     
     total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
+      
+    
     while time < end_time:
-        time += 0.5 |units.Myr
+        time += 0.25 | units.Myr
         print "gravity evolve step starting"
         gravity.evolve_model(time)
         print "gravity evolve step done"
@@ -162,13 +166,17 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         print "stellar evolution step done"
         
         particles.savepoint()
-            
+        storage.store(particles)   
         print "evolved model to t = " + str(time)
         
         
         print  "center of mass:" , particles.center_of_mass()
         print  "center of mass velocity:" , particles.center_of_mass_velocity()
+        
+    
         gravity.set_attribute("mass", particles)
+    
+        
     
    
     del gravity
@@ -177,16 +185,21 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     if HAS_MATPLOTLIB:
         print "plotting the data"
         
-        make_a_movie(particles)
         
         figure = pyplot.figure(figsize = (40, 40))
-        plots = map(lambda x : figure.add_subplot(4, 4, x+1), range(4*4))
+        plots = map(lambda x : figure.add_subplot(4,4, x+1), range(4*4))
         
         index = 0
         for data in particles.history:
-            (x_values, y_values, mass_values) = data.get_values_of_all_particles_in_units(["x","y","mass"],[units.parsec, units.parsec, units.MSun])
+            if index > 15:
+                break
             
-            plots[index].scatter(x_values,y_values, marker='o')
+            x_values = data.x.value_in(units.parsec)
+            y_values = data.y.value_in(units.parsec)
+            mass_values = data.mass.value_in(units.MSun)
+            
+            sizes = mass_values * 10.0
+            plots[index].scatter(x_values,y_values, marker='o', s=sizes)
             index += 1
             
         for plot in plots:
@@ -211,75 +224,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             
             figure.savefig("3d_"+name_of_the_figure)
         
-def make_a_movie(particles):
-    index = 0
-    previous_x = None
-    previous_y = None
-    indices = None
-    random_stream = random.Random()
-    random_stream.seed()
-    
-    for data in particles.history:
-        figure = pyplot.figure(figsize=(6,3))
-        plot = figure.add_subplot(1,2,1)
-        
-        (
-            x_values, 
-            y_values, 
-            mass_values
-        ) = data.get_values_of_all_particles_in_units(
-            ["x","y","mass"],
-            [units.parsec, units.parsec, units.MSun]
-        )
-            
-        plot.scatter(x_values,y_values, marker='+', color="b")
-        
-        plot.set_xlim(-4.0, 4.0)
-        plot.set_ylim(-4.0, 4.0)
-        
-        plot = figure.add_subplot(1,2,2)
-        
-        (
-            x_values, 
-            y_values, 
-            mass_values
-        ) = data.get_values_of_all_particles_in_units(
-            ["x","y","mass"],
-            [units.parsec, units.parsec, units.MSun]
-        )
-            
-        #plot.scatter(x_values,y_values, marker='+', color="g")
-        
-        if previous_x is None:
-            indices = []
-            for x in range(len(x_values)):
-                if random_stream.random() > 0.9:
-                    indices.append(x)
-            previous_x = [collections.deque() for x in indices]
-            previous_y = [collections.deque() for x in indices]
-            
-        
-        
-        for i, index in enumerate(indices):
-            previous_x[i].append(x_values[index])
-            previous_y[i].append(y_values[index])
-            
-            if(len(previous_x[i]) > 5):
-                previous_x[i].popleft()
-                previous_y[i].popleft()
-            
-            plot.plot(previous_x[i],previous_y[i])
-            
-        
-        plot.set_xlim(-0.5, 0.5)
-        plot.set_ylim(-0.5, 0.5)
-        
-                
-        
-        
-        index += 1
-        figure.savefig("frame_"+format(index, "03d")+".png")
-    #["mencoder","mf://fr*.png -mf w=800:h=600:fps=20:type=png -ovc copy -oac copy -o movie.avi
 
         
 def test_simulate_small_cluster():
@@ -289,7 +233,7 @@ def test_simulate_small_cluster():
     a too small cluster, this is done to limit the testing time.
     """
     assert is_mpd_running()
-    simulate_small_cluster(5, 5 | units.Myr)
+    simulate_small_cluster(4, 4 | units.Myr)
     
 if __name__ == '__main__':
     simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr, sys.argv[3])

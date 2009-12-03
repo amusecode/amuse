@@ -6,6 +6,24 @@ from amuse.support.units import si
 
 import numpy
 
+class BasicUniqueKeyGenerator(object):
+    
+    def __init__(self):
+        self.lowest_unique_key = 1
+    
+    def next(self):
+        new_key = self.lowest_unique_key
+        self.lowest_unique_key += 1
+        return new_key
+        
+    def next_set_of_keys(self, length):
+        from_key = self.lowest_unique_key
+        to_key = from_key + lenght;
+        self.lowest_unique_key += length
+        return numpy.arrange(from_key, to_key)
+        
+UniqueKeyGenerator = BasicUniqueKeyGenerator()
+
 class AttributeValues(object):
     __slots__ = ["attribute", "values", "unit", "model_times"]
     
@@ -23,7 +41,7 @@ class AttributeValues(object):
         
 class AttributeList(object):
     
-    def __init__(self, particles, attributes = [], lists_of_values = [], units = [], model_times = None):
+    def __init__(self, particle_keys, attributes = [], lists_of_values = [], units = [], model_times = None):
         
         if len(lists_of_values) != len(attributes):
             raise Exception(
@@ -37,15 +55,15 @@ class AttributeList(object):
                     len(attributes), len(units)
                 )
             )
-        if len(lists_of_values) > 0 and len(particles) != len(lists_of_values[0]):
+        if len(lists_of_values) > 0 and len(particle_keys) != len(lists_of_values[0]):
             raise Exception(
                 "you need to provide the same number of values as particles, found {0} values and {1} particles".format(
-                    len(lists_of_values[0]), len(particles)
+                    len(lists_of_values[0]), len(particle_keys)
                 )
             )
         
         
-        model_times = self._convert_model_times(model_times, particles)
+        model_times = self._convert_model_times(model_times, len(particle_keys))
         
         self.mapping_from_attribute_to_values_and_unit = {}
         for attribute, values, unit in zip(attributes, lists_of_values, units):
@@ -56,30 +74,30 @@ class AttributeList(object):
                 model_times
             )
         
-        self.particles = numpy.array(particles)
+        self.particle_keys = numpy.array(particle_keys)
         self.reindex()
         
     def copy(self):
         copy = AttributeList([])
         copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
-        copy.particles = self.particles.copy()
+        copy.particle_keys = self.particle_keys.copy()
         for attribute, attribute_values in self.mapping_from_attribute_to_values_and_unit.iteritems():
             copy.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values.copy()
         return copy
         
-    def get_value_of(self, particle, attribute):
+    def get_value_of(self, particle_key, attribute):
         if not attribute in self.mapping_from_attribute_to_values_and_unit:
             raise AttributeError("particle does not have a "+attribute)
         
         attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
         
-        index = self.mapping_from_particle_to_index[id(particle)]
+        index = self.mapping_from_particle_to_index[particle_key]
         
         return attribute_values.unit.new_quantity(attribute_values.values[index])
         
-    def get_values_of_attributes_of_particle(self, particle, attributes):
+    def get_values_of_attributes_of_particle(self, particle_key, attributes):
         
-        index = self.mapping_from_particle_to_index[id(particle)]
+        index = self.mapping_from_particle_to_index[particle_key]
         result = []
         for attribute in attribute:
             if not attribute in self.mapping_from_attribute_to_values_and_unit:
@@ -91,11 +109,11 @@ class AttributeList(object):
         return result
         
     
-    def set_value_of(self, particle, attribute, quantity):
-        index = self.mapping_from_particle_to_index[id(particle)]
+    def set_value_of(self, particle_key, attribute, quantity):
+        index = self.mapping_from_particle_to_index[particle_key]
             
         if index is None:
-            raise Exception("unknown particle " + particle)
+            raise Exception("particle with key '{0}' is not in this set".format(particle_key))
             
         attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
              
@@ -103,8 +121,8 @@ class AttributeList(object):
         attribute_values.values[index] = value_to_set
         
             
-    def iter_values_of_particle(self, particle):
-        index = self.mapping_from_particle_to_index[id(particle)]
+    def iter_values_of_particle(self, particle_key):
+        index = self.mapping_from_particle_to_index[particle_key]
         for attribute in self.mapping_from_attribute_to_values_and_unit:
             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
             yield attribute, (attribute_values.values[index] | attribute_values.unit)
@@ -118,9 +136,9 @@ class AttributeList(object):
         attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
         values = attribute_values.values
         unit = attribute_values.unit
-        particles = self.particles
+        particles = self.particle_keys
         
-        for index in range(len(self.particles)):
+        for index in range(len(self.particle_keys)):
             yield particles[i], (values[i] | unit)
             
     def iter_particles_as_views(self):
@@ -149,7 +167,7 @@ class AttributeList(object):
             )
             
         index = 0
-        for index in range(len(self.particles)):
+        for index in range(len(self.particle_keys)):
             p = ParticleView()
             p.index = index
             yield p
@@ -157,8 +175,8 @@ class AttributeList(object):
             
             
     def iter_particles(self):
-        for particle in self.particles:
-            yield particle
+        for particle_key in self.particle_keys:
+            yield particle_key
     
     def get_indices_of(self, particles):
         mapping_from_particle_to_index = self.mapping_from_particle_to_index 
@@ -166,8 +184,8 @@ class AttributeList(object):
         #result = [mapping_from_particle_to_index[id(particle)] for particle in particles]
         
         index = 0
-        for index, particle in enumerate(particles):
-            result[index] = mapping_from_particle_to_index[id(particle)]
+        for index, particle_key in enumerate(particles):
+            result[index] = mapping_from_particle_to_index[particle_key]
             index += 1
         return result
     
@@ -197,16 +215,16 @@ class AttributeList(object):
         
         return results
     
-    def _convert_model_times(self, model_times, particles):
+    def _convert_model_times(self, model_times, length):
         if not model_times is None and isinstance(model_times, values.ScalarQuantity):
-            return model_times.unit.new_quantity(numpy.linspace(model_times.number, model_times.number, len(self.particles)) )
+            return model_times.unit.new_quantity(numpy.linspace(model_times.number, model_times.number, length) )
         else:
             return model_times
     
     def set_values_of_particles_in_units(self, particles, attributes, list_of_values_to_set, source_units, model_times = None):
         indices = self.get_indices_of(particles)
         
-        model_times = self._convert_model_times(model_times, particles)
+        model_times = self._convert_model_times(model_times, len(particles))
         
         previous_model_times = None
         results = []
@@ -219,7 +237,7 @@ class AttributeList(object):
                 attribute_values = AttributeValues(
                    attribute,
                    source_unit,
-                   length = len(self.particles)
+                   length = len(self.particle_keys)
                 )
                 self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
                  
@@ -247,7 +265,7 @@ class AttributeList(object):
             source_units.append(attribute_values.unit)
             
                 
-        other.set_values_of_particles_in_units(self.particles, source_attributes, source_values, source_units)
+        other.set_values_of_particles_in_units(self.particle_keys, source_attributes, source_values, source_units)
         
     def remove_particles(self, particles):
         indices = self.get_indices_of(particles)
@@ -256,20 +274,20 @@ class AttributeList(object):
         for attribute, attribute_values in mapping_from_attribute_to_values_and_unit.iteritems():
             attribute_values.values = numpy.delete(attribute_values.values,indices)
         
-        self.particles = numpy.delete(self.particles,indices)
+        self.particle_keys = numpy.delete(self.particle_keys,indices)
         self.reindex()
         
     def reindex(self):
         d = {}
         index = 0
-        for particle in self.particles:
-            d[id(particle)] = index
+        for particle_key in self.particle_keys:
+            d[particle_key] = index
             index += 1
           
         self.mapping_from_particle_to_index = d
         
-    def get_attribute_as_vector(self, particle, names_of_the_scalar_attributes):
-        index = self.mapping_from_particle_to_index[id(particle)]
+    def get_attribute_as_vector(self, particle_key, names_of_the_scalar_attributes):
+        index = self.mapping_from_particle_to_index[particle_key]
         vector = []
         for i, attribute in enumerate(names_of_the_scalar_attributes):
             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
@@ -284,13 +302,13 @@ class AttributeList(object):
             attribute_values = AttributeValues(
                 attribute,
                 unit,
-                length = len(self.particles)
+                length = len(self.particle_keys)
             )
             self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
         return attribute_values
         
-    def set_attribute_as_vector(self, particle, names_of_the_scalar_attributes, quantity):
-        index = self.mapping_from_particle_to_index[id(particle)]
+    def set_attribute_as_vector(self, particle_key, names_of_the_scalar_attributes, quantity):
+        index = self.mapping_from_particle_to_index[particle_key]
         vector = []
         for i, attribute  in enumerate(names_of_the_scalar_attributes):
             attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
@@ -325,14 +343,14 @@ class AttributeList(object):
         column = columns[0]
         column.append("-")
         column.append('========')
-        if len(self.particles) > 40:
-            values_to_show = list(self.particles[:20])
-            values_to_show.append(self.particles[-20:])
+        if len(self.particle_keys) > 40:
+            values_to_show = list(self.particle_keys[:20])
+            values_to_show.append(self.particle_keys[-20:])
         else:
-            values_to_show = self.particles
+            values_to_show = self.particle_keys
                     
         for value in values_to_show:
-            column.append(str(id(value)))
+            column.append(str(value))
             
         column.append('========')
             
@@ -356,7 +374,7 @@ class AttributeList(object):
         if not isinstance(quantity, values.VectorQuantity):
             raise AttributeError("can only set a vector of values")
         
-        if not len(quantity) == len(self.particles):
+        if not len(quantity) == len(self.particle_keys):
             raise AttributeError("vector of values must have the same length as the particles in the system")
             
         if not (
@@ -394,8 +412,7 @@ class AttributeList(object):
         return unit_of_the_values.new_quantity(results)
         
     def set_model_time(self, value): 
-        print "setting model time to ", value
-        model_times = self._convert_model_times(value, self.particles)
+        model_times = self._convert_model_times(value, len(self.particle_keys))
         for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
             attribute_values.model_times = model_times
     
@@ -446,8 +463,8 @@ class Particles(object):
     
     """A set of particle objects"""
     def __init__(self, size = 0):
-        self.particles = [Particle(i+1, self) for i in range(size)]
-        self.attributelist = AttributeList(self.particles)
+        self.particle_keys = [Particle(i+1, self) for i in range(size)]
+        self.attributelist = AttributeList(self.particle_keys)
         self.previous = None
     
         
@@ -455,14 +472,14 @@ class Particles(object):
         return self.attributelist.iter_particles()
 
     def __getitem__(self, index):
-        return self.particles[index]
+        return self.particle_keys[index]
         
     def __len__(self):
-        return len(self.particles)
+        return len(self.particle_keys)
         
     def savepoint(self):
         instance = type(self)()
-        instance.particles = self.particles
+        instance.particle_keys = self.particle_keys
         instance.attributelist = self.attributelist.copy()
         instance.previous = self.previous
         self.previous = instance
@@ -477,10 +494,10 @@ class Particles(object):
     def history(self):
         return reversed(list(self.iter_history()))
         
-    def get_timeline_of_attribute(self, particle, attribute):
+    def get_timeline_of_attribute(self, particle_key, attribute):
         timeline = []
         for x in self.history:
-            timeline.append((None, x.attributelist.get_value_of(particle, attribute)))
+            timeline.append((None, x.attributelist.get_value_of(particle_key, attribute)))
         return timeline
 
     model_time = ModelTimeProperty()
