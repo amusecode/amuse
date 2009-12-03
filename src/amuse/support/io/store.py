@@ -27,7 +27,6 @@ class StoreHDF(object):
         
         
         group.attrs["number_of_particles"] = len(particles)
-        
         group.attrs["class_of_the_particles"] = pickle.dumps(type(particles))
         
         previous_model_times = None
