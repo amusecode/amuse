@@ -66,13 +66,15 @@ FFLAGS  = -O2 $(OPTS) -fPIC
 FFLAGS+= -I./src/
 
 
-all: muse_worker 
-
+all: muse_worker worker_code 
 
 muse_worker: muse_worker.f90 muse_interface.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
 
+worker_code: worker_code.f90 phiGRAPE_code.o
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
 
 muse_worker_gpu: muse_worker.f90 muse_interface.o 
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
@@ -92,6 +94,9 @@ muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o
 muse_worker.f90: muse_dynamics_mpi.py
 	../../../../bin/create_f90_worker.py muse_dynamics_mpi.py PhiGRAPE > $@
 
+worker_code.f90: interface.py
+	../../../../bin/create_f90_worker.py interface.py PhiGRAPE > $@
+
 muse_worker_gl.f90: muse_dynamics_gl.py
 	../../../../bin/create_f90_worker.py muse_dynamics_gl.py PhiGRAPE > $@
 
@@ -103,7 +108,7 @@ clean:
 	make -C src clean
 	rm -f *.o .m* .n* *.lst *.L *~ muse_worker
 	rm muse_worker muse_worker_gl muse_worker.f90 muse_worker_gl.f90
-
+	rm worker_code worker_code.f90
 .f.o:
 	$(FC) $(FFLAGS) -c $<
 
