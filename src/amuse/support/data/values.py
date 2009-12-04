@@ -386,12 +386,12 @@ def new_quantity(value, unit):
     :argument unit: unit of the quantity
     :returns: new ScalarQuantity or VectorQuantity object
     """
-    if unit.is_non_numeric():
-        return NonNumericQuantity(value, unit)
     if isinstance(value, list):
         return VectorQuantity(value, unit)
     if isinstance(value, numpy.ndarray):
         return VectorQuantity(value, unit)
+    if unit.is_non_numeric():
+        return NonNumericQuantity(value, unit)
     return ScalarQuantity(value, unit)
     
     

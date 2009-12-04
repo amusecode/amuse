@@ -1,13 +1,13 @@
 import unittest
 import numpy
 
-from amuse.support.data.core import AttributeList, Particle
+from amuse.support.data.core import AttributeList
 from amuse.support.units  import units
 
 class TestAttributeList(unittest.TestCase):
     
     def test1(self):
-        particles = [Particle(0), Particle(1), Particle(2)]
+        particles = [0,1,2]
         attributes = "a", "b"
         values = [[1,2,3], [4,5,6]]
         units_of_attributes = [units.m, units.kg]
@@ -46,7 +46,7 @@ class TestAttributeList(unittest.TestCase):
         
     
     def test3(self):
-        particles = [Particle(0), Particle(1), Particle(2)]
+        particles = [0,1,2]
         attributes = "a", "b"
         values = [numpy.array([1.0,2.0,3.0]),  numpy.array([4.0,5.0,6.0])]
         units_of_attributes = [units.m, units.kg]
@@ -67,7 +67,7 @@ class TestAttributeList(unittest.TestCase):
         
     
     def test4(self):
-        particles = [Particle(0), Particle(1), Particle(2), Particle(3)]
+        particles = [0,1,2, 3]
         attributes = "a", "b"
         values = [numpy.array([1.0,2.0,3.0, 4.0]),  numpy.array([4.0,5.0,6.0, 7.0])]
         units_of_attributes = [units.m, units.kg]

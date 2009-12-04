@@ -262,13 +262,14 @@ class SSEBinding(InterfaceWithParametersBinding):
                     len(particles)                    
                 )
          
-        list_of_values = particles.attributelist.get_values_of_particles_in_units(particles.particle_keys, ["mass"], [units.MSun])
+        list_of_values = particles.attributelist._get_values(None, ["mass"])
+        
         
         attributes.append("initial_mass")
         all_units.append(units.MSun)
-        values.append(list_of_values[0])
+        values.append(list_of_values[0].value_in(units.MSun))
         
-        particles.attributelist.set_values_of_particles_in_units(particles.particle_keys, attributes, values, all_units)
+        particles.attributelist.set_values_of_particles_in_units(None, attributes, values, all_units)
         self.evolve_particles(particles, 1e-06 | units.Myr)
         
     
@@ -307,7 +308,7 @@ class SSEBinding(InterfaceWithParametersBinding):
                 keywords,
             )
     
-        list_of_values = particles.attributelist.get_values_of_particles_in_units(particles.particle_keys, attributes, all_units)
+        list_of_values = particles.attributelist.get_values_of_particles_in_units(None, attributes, all_units)
         
         keyword_arguments = {}
         for keyword, values in zip(keywords, list_of_values):
@@ -337,14 +338,14 @@ class SSEBinding(InterfaceWithParametersBinding):
         
         time = None
         
-        particles.attributelist.set_values_of_particles_in_units(particles.particle_keys, attributes, values, all_units, time)
+        particles.attributelist.set_values_of_particles_in_units(None, attributes, values, all_units, time)
         
     def get_timesteps(self, particles):
         attribute_names = ["type","initial_mass","mass","main_sequence_lifetime", "current_time", "epoch"]
         keywords = ["kw", "mass", "mt", "tm", "age", "epoch"]
         all_units = [units.stellar_type, units.MSun, units.MSun, units.Myr, units.Myr, units.Myr]
                 
-        list_of_values = particles.attributelist.get_values_of_particles_in_units(particles.particle_keys, attribute_names, all_units)
+        list_of_values = particles.attributelist.get_values_of_particles_in_units(None, attribute_names, all_units)
         
         keyword_arguments = {}
         for keyword, values in zip(keywords, list_of_values):

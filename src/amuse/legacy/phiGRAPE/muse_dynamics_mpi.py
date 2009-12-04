@@ -219,7 +219,7 @@ class PhiGRAPE(LegacyInterface):
         return function    
         
     def add_star(self, star):
-        id = star.id
+        id = star.key
         mass = self.convert_nbody.to_nbody(star.mass)
         position = self.convert_nbody.to_nbody(star.position)
         velocity = self.convert_nbody.to_nbody(star.velocity)
@@ -235,7 +235,7 @@ class PhiGRAPE(LegacyInterface):
         self.add_particle(id, mass, radius, x, y, z, vx, vy, vz)
         
     def update_star(self, star):
-        state = self.get_state(star.id)
+        state = self.get_state(star.key)
         time = self.convert_nbody.to_si( 0.0 | nbody_system.time)
         #star.mass.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.mass(state.mass)))
         star.position = self.convert_nbody.to_si(nbody_system.length(numpy.array((state['x'], state['y'], state['z']))))
@@ -254,32 +254,6 @@ class PhiGRAPE(LegacyInterface):
         for x in particles:
             self.update_star(x)
             
-    def xadd_particles(self, particles):
-        mass = []
-        x_ = []
-        y = []
-        z = []
-        vx = []
-        vy = []
-        vz = []
-        radius = []
-        id = []
-        for x in particles:
-            #self.update_star(x)
-            id.append(x.id)
-            mass_ = self.convert_nbody.to_nbody(x.mass.value())
-            position = self.convert_nbody.to_nbody(x.position.value())
-            velocity = self.convert_nbody.to_nbody(x.velocity.value())
-            
-            mass.append(mass_.number)
-            x_.append(position.number[0])
-            y.append(position.number[1])
-            z.append(position.number[2])
-            vx.append(velocity.number[0])
-            vy.append(velocity.number[1])
-            vz.append(velocity.number[2])
-            radius.append(self.convert_nbody.to_nbody(x.radius.value()).number)
-        self._add_particle(id, mass, radius, x_, y, z, vx, vy, vz)
             
     def update_attributes(self, attributes):
         for id, x in attributes:

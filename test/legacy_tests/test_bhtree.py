@@ -161,8 +161,8 @@ class TestAmuseInterface(TestWithMPI):
             figure = pyplot.figure()
             plot = figure.add_subplot(1,1,1)
             
-            x_points = stars.get_timeline_of_attribute(earth, "x")
-            y_points = stars.get_timeline_of_attribute(earth, "y")
+            x_points = earth.get_timeline_of_attribute("x")
+            y_points = earth.get_timeline_of_attribute("y")
             
             x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
             y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)

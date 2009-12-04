@@ -32,6 +32,7 @@ class StellarEvolution(object):
         Retrieve the current luminosity of the star.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('luminosity', dtype='float64', direction=function.OUT
@@ -50,7 +51,8 @@ class StellarEvolution(object):
         """
         Retrieve the current mass of the star.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('mass', dtype='float64', direction=function.OUT
@@ -71,6 +73,7 @@ class StellarEvolution(object):
         Retrieve the current radius of the star.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('radius', dtype='float64', direction=function.OUT
@@ -91,6 +94,7 @@ class StellarEvolution(object):
         Retrieve the current temperature of the star.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('temperature', dtype='float64', direction=function.OUT
@@ -110,6 +114,7 @@ class StellarEvolution(object):
         Retrieve the current age of the star.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('age', dtype='float64', direction=function.OUT
@@ -149,6 +154,7 @@ class StellarEvolution(object):
         by the code.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the stellar type of")
         function.addParameter('stellar_type', dtype='int32', direction=function.OUT
@@ -168,6 +174,7 @@ class StellarEvolution(object):
         Define a new star in the code. The star will start with the given mass.
         """
         function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
             , description="The new index for the star. This index can be used to refer to this star in other functions")
         function.addParameter('mass', dtype='float64', direction=function.IN

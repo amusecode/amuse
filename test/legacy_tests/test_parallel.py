@@ -74,16 +74,16 @@ class TestAmuseInterface(TestWithMPI):
             plot = figure.add_subplot(1,1,1)
             
             earth = bhtree_particles[1]
-            x_points = bhtree_particles.get_timeline_of_attribute(earth, "x")
-            y_points = bhtree_particles.get_timeline_of_attribute(earth, "y")
+            x_points = earth.get_timeline_of_attribute("x")
+            y_points = earth.get_timeline_of_attribute("y")
             x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
             y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
             
             plot.scatter(x_points_in_AU,y_points_in_AU, color = "b", marker = 'o')
             
             earth = hermite_particles[1]
-            x_points = hermite_particles.get_timeline_of_attribute(earth, "x")
-            y_points = hermite_particles.get_timeline_of_attribute(earth, "y")
+            x_points = earth.get_timeline_of_attribute("x")
+            y_points = earth.get_timeline_of_attribute("y")
             x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
             y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
             

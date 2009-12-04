@@ -227,4 +227,5 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
     def current_model_time(self):
         return self._current_model_time
                 
-        
+    def get_state(self, indices):
+        return self.get_mass(indices)

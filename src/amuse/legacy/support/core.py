@@ -168,7 +168,7 @@ class LegacyCall(object):
                 input_parameters_seen.remove(parameter.name)
         
         if input_parameters_seen:
-            raise Exception("Not enough parameters in call, missing" + str(input_parameters_seen))
+            raise Exception("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
             
         dtype_to_keyword = {
             'float64' : 'doubles_in',

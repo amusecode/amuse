@@ -37,8 +37,14 @@ class AttributeDefinition(object):
             
     def is_required_for_setup(self):
         return not self.setup_parameters is None
-        
-        
+
+    
+    def state_mapping_from_name_to_keyword_and_unit(self):
+        result = {}
+        for name, parameter_name in zip(self.names, self.setup_parameters):
+            result[name] = (parameter_name, self.unit)
+        return result
+    
     def for_setup_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
         for name, parameter_name in zip(self.names, self.setup_parameters):
             attributes.append(name)
@@ -80,12 +86,38 @@ class AttributeDefinition(object):
             units.append(self.unit)
             values.append([self.default_value.value_in(self.unit)] * length)
             
-         
-        
-        
+    def attributes_in_getter(self, set_of_attributes):
+        if self.getter is None:
+            return None
+            
+        result = {}
+        for name, parameter_name in zip(self.names, self.getter[1]):
+            if name in set_of_attributes:
+                result[name] = (parameter_name, self.unit)
+                set_of_attributes.remove(name)
+        if result:
+            return (self.getter[0], result)
+        else:
+            return None
     
+    def attributes_in_setter(self, set_of_attributes):
+        if self.setter is None:
+            return {}
+            
+        result = {}
+        for name, parameter_name in zip(self.names, self.setter[1]):
+            if name in set_of_attributes:
+                result[name] = (parameter_name, self.unit)
+                set_of_attributes.remove(name)
+            else:
+                if result:
+                    raise Exception("{0} must be set together", self.names)
+        if result:
+            return (self.setter[0], result)
+        else:
+            return None
         
-
+        
 class AttributeDefinition_Old(object):
     def __init__(self, name, description, unit, default_value):
         self.name = name
