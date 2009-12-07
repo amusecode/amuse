@@ -119,6 +119,21 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         return function
 
     """
+    
+    @legacy_function
+    def synchronize_model():
+        """
+        evolve all particles up to current sys time
+        """
+        function = LegacyFunctionSpecification() 
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            
+        """
+        return function  
+
+  
 
     @legacy_function      
     def get_time_step():

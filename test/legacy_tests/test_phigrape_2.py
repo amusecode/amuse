@@ -156,9 +156,10 @@ class TestMPIInterface(TestWithMPI):
             [0.0,0.0] )
         instance.initialize_particles(0.0) 
         #HAS NO RESULT...
-        instance.evolve(3.14159)  
+        result = instance.evolve(3.14159)  
+        print result
         tnow=instance.get_time()['time']
-        print tnow
+        print "after evolve(pi), tnow = %f" %  (tnow)
         #self.assertEqual( id1, 1)
         """
         instance.evolve(instance.get_time(),1)

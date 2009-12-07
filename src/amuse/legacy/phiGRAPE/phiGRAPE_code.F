@@ -834,31 +834,35 @@ C---  setting particle
       END
 
 
-      FUNCTION get_time()
+      FUNCTION get_time(system_time)
       IMPLICIT NONE 
 #include "general.inc"
 
 C---  local vars
-      DOUBLE PRECISION get_time
+      INTEGER get_time
+      DOUBLE PRECISION system_time
 
-      get_time = time_cur
+      system_time = time_cur
 
-      RETURN
+      get_time = 0
+
       END
 
-      FUNCTION get_time_step()
+      FUNCTION get_time_step(time_step_arg)
       IMPLICIT NONE 
 #include "general.inc"
 
 C---  local vars
-      DOUBLE PRECISION get_time_step
+      INTEGER  get_time_step
+      DOUBLE PRECISION time_step_arg
 
 C---  get minimum time step from particles
       CALL get_min_t
 C          ---------
-      get_time_step = min_t - time_cur
-
-      RETURN
+      time_step_arg = min_t - time_cur
+      
+      get_time_step = 0
+      
       END
 
       FUNCTION get_kinetic_energy(kinetic_energy)
@@ -1134,7 +1138,6 @@ C---  synchronize system if flag is set
 C--------------------------------------------------------------------
 
 C-- flag will be global ????
-
 C      IF (isync.EQ.1) THEN
 C
 C         CALL selectsync(time_cur)
@@ -1142,6 +1145,7 @@ C             ----------
 C         CALL sync
 C             ----
 C      ENDIF
+
 
 
       CALL gatherParts
@@ -1158,6 +1162,19 @@ C     close grape before exiting (fip)
       CALL g6_close(clusterid)
 
       evolve = 0
+
+      END
+
+      FUNCTION synchronize_model()
+      IMPLICIT NONE
+#include "general.inc"
+      INTEGER synchronize_model
+
+      CALL selectsync(time_cur)
+
+      CALL sync
+
+      synchronize_model = 0
 
       END
 

@@ -361,7 +361,6 @@ class GravitationalDynamics(object):
             not yet implemented
         """
         return function
-    
         
     @legacy_function
     def evolve():
