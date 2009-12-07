@@ -135,12 +135,14 @@ class BuildLegacy(LegacyCommand):
     
     def run (self):
         not_build = []
+        not_build_special = []
         build = []
         environment = self.environment
         environment.update(os.environ)
         
         #environment.update(self.environment)
-        for x in list(self.makefile_paths()):
+        makefile_paths = sorted(set(self.makefile_paths()))
+        for x in makefile_paths:
             self.announce("building " + x)
             shortname = x[len(self.legacy_dir) + 1:]
             returncode = call(['make','-C', x, 'all'], env = environment)
@@ -154,35 +156,38 @@ class BuildLegacy(LegacyCommand):
                 self.announce("building " + x + " version: " + target_name)
                 returncode = call(['make','-C', x, target], env = environment)
                 if returncode == 2:
-                    not_build.append(shortname + " - " + target_name)
+                    not_build_special.append(shortname + " - " + target_name)
                 else:
                     build.append(shortname + " - " + target_name)
                 
-        sorted_keys = sorted(self.environment_notset.keys())
-        print
-        print "Environment variables not set"
-        print "============================="
-        for x in sorted_keys:
-            print "%s\t%s" % (x , self.environment_notset[x] )
-        print
-        sorted_keys = sorted(self.environment.keys())
+        
         print
         print "Environment variables"
         print "====================="
+        sorted_keys = sorted(self.environment.keys())
         for x in sorted_keys:
             print "%s\t%s" % (x , self.environment[x] )
         print
-        if not_build:
+        print "Environment variables not set"
+        print "============================="
+        sorted_keys = sorted(self.environment_notset.keys())
+        for x in sorted_keys:
+            print "%s\t%s" % (x , self.environment_notset[x] )
+        print
+        print
+        if not_build or not_build_special:
             print
             print
-            print "legacy codes not build (because of errors):"
+            print "Legacy codes not build (because of errors):"
             print "==========================================="
             for x in not_build:
-                print '*' , x
+                print '*' , x 
+            for x in not_build_special:
+                print '*' , x, '** optional, needs special libraries or hardware to compile **'
         if build:
             print
             print
-            print "legacy codes build"
+            print "Legacy codes build"
             print "=================="
             for x in build:
                 print '*' , x
