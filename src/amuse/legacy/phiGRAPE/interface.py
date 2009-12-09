@@ -52,7 +52,9 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
-                
+
+    """                
+    OBSOLETE
     @legacy_function    
     def add_particle():
         function = LegacyFunctionSpecification()  
@@ -63,7 +65,7 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         function.result_type = 'i'
         return function
 
-    """cello in gd 
+    cello in gd 
     @legacy_function    
     def evolve():
         function = LegacyFunctionSpecification()  
@@ -132,8 +134,6 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
             
         """
         return function  
-
-  
 
     @legacy_function      
     def get_time_step():
@@ -221,79 +221,12 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         function.result_type = 'i'
         return function    
     """    
-    def add_star(self, star):
-        id = star.id
-        mass = self.convert_nbody.to_nbody(star.mass)
-        position = self.convert_nbody.to_nbody(star.position)
-        velocity = self.convert_nbody.to_nbody(star.velocity)
-        
-        mass = mass.number
-        x = position.number[0]
-        y = position.number[1]
-        z = position.number[2]
-        vx = velocity.number[0]
-        vy = velocity.number[1]
-        vz = velocity.number[2]
-        radius = self.convert_nbody.to_nbody(star.radius).number
-        self.add_particle(id, mass, radius, x, y, z, vx, vy, vz)
-        
-    def update_star(self, star):
-        state = self.get_state(star.id)
-        time = self.convert_nbody.to_si( 0.0 | nbody_system.time)
-        #star.mass.set_value_at_time(time, self.convert_nbody.to_si(nbody_system.mass(state.mass)))
-        star.position = self.convert_nbody.to_si(nbody_system.length(numpy.array((state['x'], state['y'], state['z']))))
-        star.velocity = self.convert_nbody.to_si(nbody_system.speed(numpy.array((state['vx'], state['vy'], state['vz']))))
-        return star
-         
-    def evolve_model(self, time_end):
-        result = self.evolve(self.convert_nbody.to_nbody(time_end).number, 0.0)
-        return result
-    
-    def add_particles(self, particles):
-        for x in particles:
-            self.add_star(x)
-            
-    def update_particles(self, particles):
-        for x in particles:
-            self.update_star(x)
-            
-    def xadd_particles(self, particles):
-        mass = []
-        x_ = []
-        y = []
-        z = []
-        vx = []
-        vy = []
-        vz = []
-        radius = []
-        id = []
-        for x in particles:
-            #self.update_star(x)
-            id.append(x.id)
-            mass_ = self.convert_nbody.to_nbody(x.mass.value())
-            position = self.convert_nbody.to_nbody(x.position.value())
-            velocity = self.convert_nbody.to_nbody(x.velocity.value())
-            
-            mass.append(mass_.number)
-            x_.append(position.number[0])
-            y.append(position.number[1])
-            z.append(position.number[2])
-            vx.append(velocity.number[0])
-            vy.append(velocity.number[1])
-            vz.append(velocity.number[2])
-            radius.append(self.convert_nbody.to_nbody(x.radius.value()).number)
-        self._add_particle(id, mass, radius, x_, y, z, vx, vy, vz)
-            
-    def update_attributes(self, attributes):
-        for id, x in attributes:
-            if x.name == 'mass':
-                self.set_mass(id, self.convert_nbody.to_nbody(x.value()).number)
         
 class PhiGRAPEBinding(NBodyGravitationalDynamicsBinding):
    
     parameter_definitions = [
         parameters.ModuleMethodParameterDefinition(
-            "get_eps", "set_eps",
+            "get_eps2", "set_eps2",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
@@ -315,15 +248,48 @@ class PhiGRAPEBinding(NBodyGravitationalDynamicsBinding):
         ),
     ]
 
+    attribute_definitions = [
+        attributes.AttributeDefinition(
+            name = "mass",
+            setup_parameters = ["mass"],
+            setter = ("set_mass", ["mass"]),
+            description = "mass of a star",
+            unit = nbody_system.mass,
+            default = 1 | nbody_system.mass          
+        ),
+        attributes.AttributeDefinition(
+            name = "radius",
+            setup_parameters = ["radius"],
+            setter = ("set_radius", ["radius"]),
+            description = "radius of a star",
+            unit = nbody_system.length,
+            default = 1 | nbody_system.length          
+        ),
+        attributes.AttributeDefinition(
+            names = ["x","y","z"],
+            setup_parameters = ["x","y","z"],
+            setter = ("set_position", ["x","y","z"]),
+            description = "coordinate of a star",
+            unit = nbody_system.length,
+            default = 0.0 | nbody_system.length          
+        ),
+        attributes.AttributeDefinition(
+            names = ["vx","vy","vz"],
+            setup_parameters = ["vx","vy","vz"],
+            setter = ("set_velocity", ["vx","vy","vz"]),
+            description = "coordinate of a star",
+            unit = nbody_system.speed,
+            default = 0.0 | nbody_system.speed          
+        ),
+    ]
+
+
     def __init__(self, convert_nbody = None):
         NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
     
     def current_model_time(self):
         return self.convert_nbody.to_si( self.t | nbody_system.time)
             
-    def evolve_model(self, time_end):
-        result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
-        return result
 
 class PhiGRAPE(PhiGRAPEInterface, PhiGRAPEBinding):
     
