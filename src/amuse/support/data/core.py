@@ -577,11 +577,14 @@ class Particles(object):
         return timeline
 
     model_time = ModelTimeProperty()
-            
+                    
     def copy(self):
-        result = type(self)()
-        result.attributelist = self.attributelist.copy()
-        return result
+         attributes = self.attributelist._state_attributes()
+         keys = self._get_keys()
+         values = self._get_values(None, attributes)
+         result = Particles()
+         result._set_particles(keys, attributes, values)
+         return result
         
     def _set_particles(self, keys, attributes = [], values = []):
         self.attributelist._set_particles(keys, attributes, values)
@@ -608,6 +611,16 @@ class Particles(object):
     def new_channel_to(self, other):
         return ParticleInformationChannel(self, other)
         
+    def add_particles(self, particles):
+        attributes = self._get_attributes()
+        keys = particles._get_keys()
+        values = particles._get_values(None, attributes)
+        self._set_particles(keys, attributes, values)
+        
+    def copy_values_of_state_attributes_to(self, particles):
+        channel = self.new_channel_to(particles)
+        channel.copy_attributes(self.attributelist._state_attributes())  
+              
 class ParticleInformationChannel(object):
     
     def __init__(self, from_particles, to_particles):
