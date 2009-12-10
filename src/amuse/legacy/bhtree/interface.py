@@ -125,19 +125,6 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
     def current_model_time(self):
         return self.convert_nbody.to_si( self.get_time()['time'] | nbody_system.time)
     
-    def new_particle(self, **keyword_arguments):
-        x = keyword_arguments['x']
-        keyword_arguments['id'] = numpy.arange(len(x))
-       
-        self.new_particle(**keyword_arguments)
-        
-        return keyword_arguments['id'],numpy.zeros(len(x))
-       
-    def get_energies(self):
-        energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2
-        kinetic_energy = self.get_kinetic_energy() | energy_unit
-        potential_energy = self.get_potential_energy() | energy_unit
-        return (self.convert_nbody.to_si(kinetic_energy), self.convert_nbody.to_si(potential_energy))
        
 class BHTree(BHTreeInterface, BHTreeBinding):
     """ 
