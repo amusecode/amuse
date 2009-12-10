@@ -12,28 +12,16 @@ class InterfaceWithParametersBinding(object):
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         
 
-
-class ParticlesInterface(object):
+class ParticlesInTheModule(object):
     
     def __init__(self, code_interface):
         self.code_interface = code_interface
         self.mapping_from_particle_key_to_index_in_the_code = {}
         self.particle_keys = []
-        self.attributelist = self
-        
-    #def __getattr__(self, name_of_the_attribute):
-    #    pass
-        
-    #def __setattr__(self, name_of_the_attribute, value):
-    #    pass
-        
+                
     def __len__(self):
         return interface.get_len()
-    
-    def iter_particles(self):
-        pass
         
-    
     def complies_with_state(self, attributes):
         attributes_in_getstate = self._mapping_from_attribute_names_to_set_keyword_and_unit().keys()
         print attributes_in_getstate
@@ -185,58 +173,19 @@ class ParticlesInterface(object):
     
     def _get_keys(self):
         return self.particle_keys
-    
-    def copy(self):
-        attributes = self._get_attributes()
-        keys = self._get_keys()
-        values = self._get_values(None, attributes)
-        result = Particles()
-        result._set_particles(keys, attributes, values)
-        return result
-    
-    def add_particles(self, particles):
-        attributes = self._mapping_from_attribute_names_to_set_keyword_and_unit().keys()
-        keys = particles._get_keys()
-        values = particles._get_values(None, attributes)
-        self._set_particles(keys, attributes, values)
-        
-    def copy_values_of_state_attributes_to(self, particles):
-        selected_keys = self.intersecting_keys(particles)
-                
-        attributes = self._mapping_from_attribute_names_to_set_keyword_and_unit().keys()
-        values = self._get_values(selected_keys, attributes)
-        particles._set_values(selected_keys, attributes, values)
-        
-    def copy_values_of_attribute_to(self, attribute_name, particles):
-        selected_keys = self.intersecting_keys(particles)
-        
-        attributes = [attribute_name]
-        values = self._get_values(selected_keys, attributes)
-        particles._set_values(selected_keys, attributes, values)
-                
-    def intersecting_keys(self, other):
-        keys = other._get_keys()
-        selected_keys = []
-        for particle_key in keys:
-            if particle_key in self.mapping_from_particle_key_to_index_in_the_code:
-                selected_keys.append(particle_key)
-            else:
-                pass
-        return selected_keys
-    
+
     def _has_key(self, key):
         return key in self.mapping_from_particle_key_to_index_in_the_code
-        
-    def new_channel_to(self, other):
-        return ParticleInformationChannel(self, other)
-        
-    def __getitem__(self, index):
-        return Particle(self._get_keys()[index], self)
+    
+    def _state_attributes(self):
+        return self._mapping_from_attribute_names_to_set_keyword_and_unit().keys()
+
     
 class InterfaceWithObjectsBinding(object):
     def __init__(self):
         self.mapping_from_particleid_to_index = {}
-        self.particles = ParticlesInterface(self)
+        self.particles = Particles()
+        self.particles.attributelist = ParticlesInTheModule(self)
     
     def convert_to_nbody(self, x):
         if nbody_system.is_nbody_unit(x):
