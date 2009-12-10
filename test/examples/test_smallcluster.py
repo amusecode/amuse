@@ -16,7 +16,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 
 from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
+from amuse.legacy.bhtree.interface import BHTree
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.support.core import is_mpd_running
 
@@ -108,7 +108,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print "setting masses of the stars"
     
     particles.radius = units.RSun.new_quantity(numpy.zeros(len(particles)))
-    print salpeter_masses
+    
     particles.mass = salpeter_masses
     
                 
@@ -156,11 +156,12 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         print "gravity evolve step done"
         
         total_energy_at_this_time = sum(gravity.get_energies(), 0 | units.J)
-        
+        print gravity.get_energies()
         print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
     
         gravity.update_particles(particles)
-        
+        print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
+        print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
         print "stellar evolution step starting"
         stellar_evolution.evolve_particles(particles, time)
         print "stellar evolution step done"
@@ -236,4 +237,7 @@ def test_simulate_small_cluster():
     simulate_small_cluster(4, 4 | units.Myr)
     
 if __name__ == '__main__':
+    import cProfile
+    cProfile.run('foo()')
+
     simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr, sys.argv[3])

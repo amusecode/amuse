@@ -3,6 +3,7 @@
 
 from amuse.support.data import values
 from amuse.support.units import si
+from amuse.support.units import units
 
 import numpy
 
@@ -516,6 +517,19 @@ class Particles(object):
             else:
                 return instance.attributelist.get_attributes_as_vector_quantities(self.attribute_names)
                 
+        def __set__(self, instance, value):
+            if instance == None:
+                return self
+            else:
+                vectors = value.number
+                split = numpy.hsplit(vectors,len(self.attribute_names))
+                list_of_values = []
+                for i in range(len(self.attribute_names)):
+                    values = value.unit.new_quantity(split[i].reshape(len(split[i])))
+                    list_of_values.append(values)
+                    
+                instance._set_values(None, self.attribute_names, list_of_values)
+                
     class ModelTimeProperty(object):
         
         def __get__(self, instance, owner):
@@ -680,6 +694,42 @@ class Stars(Particles):
         position = numpy.array([massx, massy, massz])
 
         return values.new_quantity(position / total_mass, si.m / si.s)
+        
+    def kinetic_energy(self):
+        mass = self.mass
+        vx = self.vx
+        vy = self.vy
+        vz = self.vz
+        v_squared = (vx * vx) + (vy * vy) + (vz * vz)
+        m_v_squared = mass * v_squared
+        return 0.5 * m_v_squared.sum()
+        
+    
+    def potential_energy(self, smoothing_length_squared = 0 | units.m * units.m):
+        mass = self.mass
+        x_vector = self.x
+        y_vector = self.y
+        z_vector = self.z
+        
+        sum_of_energies = 0 | units.J
+        
+        for i in range(len(self)):
+           x = x_vector[i]
+           y = y_vector[i]
+           z = z_vector[i]
+           dx = x - x_vector[i+1:]
+           dy = y - y_vector[i+1:]
+           dz = z - z_vector[i+1:]
+           dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+           dr = (dr_squared+smoothing_length_squared).sqrt()
+           m_m = mass[i] * mass[i+1:]
+           
+           energy_of_this_particle = (m_m / dr).sum()
+           sum_of_energies +=  -1 * units.G * energy_of_this_particle
+            
+        return sum_of_energies
+        
+        
         
         
         

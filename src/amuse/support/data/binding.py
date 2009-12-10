@@ -160,7 +160,7 @@ class ParticlesInTheModule(object):
             if len(indices_in_the_code) > 1: 
                 if hasattr(method, "specification") and not method.specification.can_handle_array:
                     raise Exception(
-                        "setter method <{0}> of a '{1}' object, cannot handle arrays".format(method_name, type(self).__name__)
+                        "setter method <{0}> of a '{1}' object, cannot handle arrays".format(method_name, type(self.code_interface).__name__)
                     )
                     
             keyword_arguments['id'] = indices_in_the_code

@@ -80,9 +80,6 @@ class Quantity(object):
     def __repr__(self):
         return 'quantity<'+str(self)+'>'
 
-    def __div__(self, other):
-        return new_quantity(self.number / other.number , (self.unit / other.unit).to_simple_form())
-        
     def __add__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
         return new_quantity(self.number + other_in_my_units.number , self.unit)
@@ -90,10 +87,31 @@ class Quantity(object):
     def __sub__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
         return new_quantity(self.number - other_in_my_units.number , self.unit)
+        
 
     def __mul__(self, other):
-        return  new_quantity(self.number * other.number , (self.unit * other.unit).to_simple_form())
+        if hasattr(other, "unit"):
+            return new_quantity(self.number * other.number , (self.unit * other.unit).to_simple_form())
+        else:
+            return new_quantity(self.number * other , self.unit.to_simple_form())
         
+    
+    def __pow__(self, other):
+        return new_quantity(self.number ** other , self.unit ** other)
+        
+    def __rmul__(self, other):
+        return self.__mul__(other)
+        
+      
+    def __div__(self, other):
+        if hasattr(other, "unit"):
+            return new_quantity(self.number / other.number , (self.unit / other.unit).to_simple_form())
+        else:
+            return new_quantity(self.number / other , self.unit.to_simple_form())
+    
+    def __rdiv__(self, other):
+        return self.__div__(other)
+            
     def in_(self, x):
         return self.as_quantity_in(x)
     
@@ -199,6 +217,13 @@ class VectorQuantity(Quantity):
     
     def __len__(self):
         return len(self._number)
+    
+    def sum(self):
+        return new_quantity(numpy.sum(self.number), self.unit)
+        
+    def sqrt(self):
+        return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
+    
         
     def __getitem__(self, index):
         """Return the "index" component as a quantity.
