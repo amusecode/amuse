@@ -212,6 +212,16 @@ class VectorQuantity(Quantity):
         Quantity.__init__(self, unit)
         self._number = numpy.array(array)
         
+    @classmethod
+    def new_from_scalar_quantities(cls, *values):
+        unit = None
+        array = []
+        for x in values:
+            if unit is None:
+                unit = x.unit
+            array.append(x.value_in(unit))
+        return cls(array, unit)
+    
     def is_vector(self):
         return True
     

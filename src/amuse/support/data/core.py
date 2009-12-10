@@ -163,20 +163,6 @@ class AttributeList(object):
         
         return attribute_values.unit.new_quantity(attribute_values.values[index])
         
-    def get_values_of_attributes_of_particle(self, particle_key, attributes):
-        
-        index = self.mapping_from_particle_to_index[particle_key]
-        result = []
-        for attribute in attribute:
-            if not attribute in self.mapping_from_attribute_to_values_and_unit:
-                raise AttributeError("particle does not have a "+attribute)
-            
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            
-            result.append(attribute_values.values[index] | attribute_values.unit)
-        return result
-        
-    
     def set_value_of(self, particle_key, attribute, quantity):
         index = self.mapping_from_particle_to_index[particle_key]
             
@@ -209,39 +195,7 @@ class AttributeList(object):
         for index in range(len(self.particle_keys)):
             yield particles[i], (values[i] | unit)
             
-    def iter_particles(self):
-        class ParticleView(object):
-            __slots__=['key', 'index', 'version']
-            pass
-        
-        class AttributeViewProperty(object):
-            __slots__ = ['attribute', 'values','unit']
-            def __init__(self, list, attribute):
-                self.attribute = attribute
-                self.values = list.mapping_from_attribute_to_values_and_unit[attribute].values
-                self.unit = list.mapping_from_attribute_to_values_and_unit[attribute].unit
-            
-            def __get__(self, instance, owner):
-                return  values.ScalarQuantity(self.values[instance.index] , self.unit)
-                
-            def __set__(self, instance, value):
-                self.values[instance.index] = value.value_in(self.unit)
-                
-        for attribute in self.mapping_from_attribute_to_values_and_unit:
-            setattr(
-                ParticleView, 
-                attribute, 
-                AttributeViewProperty(self, attribute)
-            )
-            
-        index = 0
-        for key in self.particle_keys:
-            p = Particle(key, self)
-            yield p
-            index += 1
-            
-            
-    
+   
     def get_indices_of(self, particles):
         if particles is None:
             return numpy.arange(0,len(self.particle_keys))
@@ -274,19 +228,7 @@ class AttributeList(object):
         return results
         
     
-        
-    def get_values_of_all_particles_in_units(self, attributes, target_units):
-        results = []
-        for attribute, target_unit in zip(attributes, target_units):
-             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-             value_of_unit_in_target_unit = attribute_values.unit.value_in(target_unit )
-             selected_values = attribute_values.values
-             if value_of_unit_in_target_unit != 1.0:
-                selected_values = selected_values * value_of_unit_in_target_unit
-             results.append(selected_values)
-        
-        return results
-    
+            
     def _convert_model_times(self, model_times, length):
         if not model_times is None and isinstance(model_times, values.ScalarQuantity):
             return model_times.unit.new_quantity(numpy.linspace(model_times.number, model_times.number, length) )
@@ -366,7 +308,18 @@ class AttributeList(object):
             vector.append(attribute_values.values[index])
             unit_of_the_vector = attribute_values.unit
         return vector | unit_of_the_vector
+                
+    def set_attribute_as_vector(self, particle_key, names_of_the_scalar_attributes, quantity):
+        index = self.mapping_from_particle_to_index[particle_key]
+        vector = []
+        for i, attribute  in enumerate(names_of_the_scalar_attributes):
+            attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
         
+            value_to_set = quantity[i].value_in(attribute_values.unit)
+            attribute_values.values[index] = value_to_set
+           
+            
+    
     def get_attributevalues_for(self, attribute, unit):
         if attribute in self.mapping_from_attribute_to_values_and_unit:
             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
@@ -378,16 +331,8 @@ class AttributeList(object):
             )
             self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
         return attribute_values
-        
-    def set_attribute_as_vector(self, particle_key, names_of_the_scalar_attributes, quantity):
-        index = self.mapping_from_particle_to_index[particle_key]
-        vector = []
-        for i, attribute  in enumerate(names_of_the_scalar_attributes):
-            attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
-        
-            value_to_set = quantity[i].value_in(attribute_values.unit)
-            attribute_values.values[index] = value_to_set
-            
+
+
     def attributes(self):
         return set(self.mapping_from_attribute_to_values_and_unit.keys())
     
@@ -432,32 +377,7 @@ class AttributeList(object):
             rows.append(row)
             
         lines = map(lambda  x : '\t'.join(x), rows)
-        return '\n'.join(lines)
-        
-    def get_attribute_as_quantity(self, attribute):
-        if not attribute in self.mapping_from_attribute_to_values_and_unit:
-            raise AttributeError("unknown attribute '{0}'".format(attribute))
-        
-        attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-        
-        return attribute_values.unit.new_quantity(attribute_values.values)
-        
-    def set_attribute_as_quantity(self, attribute, quantity):
-        if not isinstance(quantity, values.VectorQuantity):
-            raise AttributeError("can only set a vector of values")
-        
-        if not len(quantity) == len(self.particle_keys):
-            raise AttributeError("vector of values must have the same length as the particles in the system")
-            
-        if not (
-            isinstance(quantity._number[0], int) or isinstance(quantity._number[0], float)
-            ):
-            raise AttributeError("values must be ints or floats")
-            
-        attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
-        attribute_values.values = numpy.array(quantity._number)
-        attribute_values.unit = quantity.unit
-        
+        return '\n'.join(lines)        
         
         
         
@@ -675,25 +595,40 @@ class Stars(Particles):
     
     
     def center_of_mass(self):
-        masses, x_values, y_values, z_values = self.attributelist.get_values_of_all_particles_in_units(["mass","x","y","z"],[si.kg, si.m, si.m, si.m])
-        total_mass = numpy.sum(masses)
-        massx = numpy.sum(masses * x_values)
-        massy = numpy.sum(masses * y_values)
-        massz = numpy.sum(masses * z_values)
-        position = numpy.array([massx, massy, massz])
+        masses = self.mass
+        x_values = self.x
+        y_values = self.y
+        z_values = self.z
+        
+        total_mass = masses.sum()
+        massx = (masses * x_values).sum()
+        massy = (masses * y_values).sum()
+        massz = (masses * z_values).sum()
 
-        return values.new_quantity(position / total_mass, si.m)
+        return values.VectorQuantity.new_from_scalar_quantities(
+            massx/total_mass,
+            massy/total_mass,
+            massz/total_mass
+        )
+
     
     
     def center_of_mass_velocity(self):
-        masses, x_values, y_values, z_values = self.attributelist.get_values_of_all_particles_in_units(["mass","vx","vy","vz"],[si.kg, si.m / si.s, si.m / si.s, si.m / si.s])
-        total_mass = numpy.sum(masses)
-        massx = numpy.sum(masses * x_values)
-        massy = numpy.sum(masses * y_values)
-        massz = numpy.sum(masses * z_values)
-        position = numpy.array([massx, massy, massz])
+        masses = self.mass
+        x_values = self.vx
+        y_values = self.vy
+        z_values = self.vz
+        
+        total_mass = masses.sum()
+        massx = (masses * x_values).sum()
+        massy = (masses * y_values).sum()
+        massz = (masses * z_values).sum()
 
-        return values.new_quantity(position / total_mass, si.m / si.s)
+        return values.VectorQuantity.new_from_scalar_quantities(
+            massx/total_mass,
+            massy/total_mass,
+            massz/total_mass
+        )
         
     def kinetic_energy(self):
         mass = self.mass
