@@ -17,7 +17,6 @@ class TestBase(unittest.TestCase):
         
     
     def test1(self):
-        
         o = self.Test()
         o.errorcode = 0
         o.property_value = 2.0
@@ -29,6 +28,12 @@ class TestBase(unittest.TestCase):
             self.fail("method returned an errorcode, so the property should raise an exception")
         except Exception, ex:
             self.assertEquals(str(ex), "calling 'get_property' to get the value for property 'test_property' resulted in an error (errorcode -1)")
+            
+        try:
+            o.test_property = 4.0 | units.m
+            self.fail("values of properties cannot be set")
+        except Exception, ex:
+            self.assertEquals(str(ex), "property 'test_property' of a 'Test' object is read-only, you cannot change it's value")
     
     def test2(self):
         o = self.Test()

@@ -200,8 +200,9 @@ function handle_last_report(report) {
             }
             item = $('<li></li>').appendTo($('<ul></ul>').appendTo(root));
             item = $('<pre></pre>').appendTo(item);
+            
             for(var j = 0; j < testcase.error_string.length; j++) {
-                item.append(testcase.error_string[j]);
+                item.append(document.createTextNode(testcase.error_string[j]));
             }
             traceback = $('<ul></ul>');
             traceback.addClass('traceback-list');

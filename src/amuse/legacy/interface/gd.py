@@ -4,6 +4,7 @@ Stellar Dynamics Interface Defintion
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
+from amuse.support.data.binding import CodeProperty
 from amuse.support.units import nbody_system
 
 class GravitationalDynamics(object):
@@ -668,7 +669,7 @@ class GravitationalDynamics(object):
     @legacy_function
     def get_number_of_particles():
         """
-        Retrieve the total number of particles defined in the code
+        Retrieve the total number of particles define  d in the code
         """
         function = LegacyFunctionSpecification()  
         function.addParameter('number_of_particles', dtype='int32', direction=function.OUT,
@@ -740,18 +741,20 @@ class NBodyGravitationalDynamicsBinding(InterfaceWithParametersBinding, Interfac
             convert_nbody = nbody_system.nbody_to_si.get_default()
         self.convert_nbody = convert_nbody
         
-        
     def get_energies(self):
-        energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2
-        kinetic_energy, errors = self.get_kinetic_energy()
-        kinetic_energy |= energy_unit
-        potential_energy, errors = self.get_potential_energy()
-        potential_energy |= energy_unit
-        return (self.convert_nbody.to_si(kinetic_energy), self.convert_nbody.to_si(potential_energy))
-  
-            
+        return (self.convert_nbody.to_si(self.kinetic_energy), self.convert_nbody.to_si(self.potential_energy))
+
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
         return result
-
+        
+    kinetic_energy = CodeProperty("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
+    potential_energy = CodeProperty("get_potential_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
+    total_radius = CodeProperty("get_total_radius", nbody_system.length)
+    center_of_mass_position = CodeProperty("get_center_of_mass_position", nbody_system.length)
+    center_of_mass_velocity = CodeProperty("get_center_of_mass_velocity", nbody_system.length / nbody_system.time)
+    total_mass = CodeProperty("get_total_mass", nbody_system.mass)
+    model_time = CodeProperty("get_time", nbody_system.time)
+    
+    
     

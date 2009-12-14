@@ -101,6 +101,7 @@ class HermiteBinding(NBodyGravitationalDynamicsBinding):
     def current_model_time(self):
         return self.convert_nbody.to_si( self.t | nbody_system.time)
             
+    
     def evolve_model(self, time_end):
         result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
         return result

@@ -73,9 +73,37 @@ class TestParticlesWithBinding(TestBase):
                 default = 1 | units.g         
             ),
         ]
-        
+        class InCodeAttributeStorage(binding.InCodeAttributeStorage2):
+            new_particle_method = binding.NewParticleMethod(
+                "new_particle", 
+                (
+                    ("mass", "mass", units.g),
+                )
+            )
+            
+            getters = (
+                binding.ParticleGetAttributesMethod(
+                    "get_mass",
+                    (
+                        ("mass", "mass", units.g),
+                    )
+                ),
+            )
+            
+            
+            setters = (
+                binding.ParticleGetAttributesMethod(
+                    "set_mass",
+                    (
+                        ("mass", "mass", units.g),
+                    )
+                ),
+            )
+            
         def __init__(self):
             binding.InterfaceWithObjectsBinding.__init__(self)
+            self.particles = core.Particles()
+            self.particles.attributelist = self.InCodeAttributeStorage(self)
             self.masses = {}
             
         def get_mass(self, id):
@@ -109,6 +137,16 @@ class TestParticlesWithBinding(TestBase):
                 
             return (ids, errors)
         
+        def delete_particle(self, ids):
+            errors = []
+            for x in ids:
+                del self.masses[x]
+                errors.append(0)
+            return errors
+            
+        def get_number_of_particles(self):
+            return (len(self.masses), 0)
+            
         set_state = set_mass
         get_state = get_mass
         
@@ -117,7 +155,7 @@ class TestParticlesWithBinding(TestBase):
     def test1(self):
         interface = self.TestInterface()
         interface.particles._set_particles(
-            ["1","2"],
+            [1,2],
             ["mass"],
             [[3.0, 4.0] | units.kg]
         )
@@ -138,6 +176,38 @@ class TestParticlesWithBinding(TestBase):
         
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3.5)
         self.assertEquals(local_particles[0].mass.value_in(units.kg), 3.5)
+        
+        
+    
+    
+    def test2(self):
+        interface = self.TestInterface()
+        interface.particles._set_particles(
+            [1, 2],
+            ["mass"],
+            [[3.0, 4.0] | units.kg]
+        )
+        
+        remote_particles = interface.particles
+        
+        self.assertEquals(len(remote_particles), 2)
+        
+        interface.particles._set_particles(
+            [3, 4],
+            ["mass"],
+            [[5.0, 6.0] | units.kg]
+        )
+        
+        self.assertEquals(len(remote_particles), 4)
+        
+        self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3)
+        self.assertEquals(remote_particles[2].mass.value_in(units.kg), 5)
+        
+        interface.particles._remove_particles((1,3))
+        
+        self.assertEquals(len(remote_particles), 2)
+        self.assertEquals(remote_particles[0].mass.value_in(units.kg), 4)
+        self.assertEquals(remote_particles[1].mass.value_in(units.kg), 6)
         
         
         

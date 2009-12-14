@@ -5,6 +5,7 @@ from amuse.legacy import *
 
 from amuse.support.data.values import Quantity
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
+from amuse.support.data.binding import ParticleAttributesModifier
 
 class SSEInterface(LegacyInterface): 
     def __init__(self):
@@ -151,6 +152,39 @@ class SSEBinding(InterfaceWithParametersBinding):
     def __init__(self):
         InterfaceWithParametersBinding.__init__(self)
         
+    stime_step = ParticleAttributesModifier(
+        "get_time_step",
+        (
+            ("type", "kw", units.stellar_type),
+            ("initial_mass", "mass", units.MSun),
+            ("mass", "mt", units.MSun),
+            ("main_sequence_lifetime", "tm", units.Myr),
+            ("current_time", "age", units.Myr),
+            ("epoch", "epoch", units.Myr),
+            ("dt", "timestep", units.Myr),
+        )
+    )
+        
+         
+    evolve_particles = ParticleAttributesModifier(
+        "evolve",
+        (
+            ("type", "kw", units.stellar_type),
+            ("initial_mass", "mass", units.MSun),
+            ("mass", "mt", units.MSun),
+            ("radius", "r", units.RSun),
+            ("luminosity", "lum", units.LSun),
+            ("core_mass", "mc", units.MSun),
+            ("core_radius", "rc", units.RSun),
+            ("envelope_mass", "menv", units.MSun),
+            ("envelope_radius", "renv", units.RSun),
+            ("epoch", "epoch", units.Myr),
+            ("spin", "spin", units.none),
+            ("main_sequence_lifetime", "tm", units.Myr),
+            ("current_time", "tphys", units.Myr),
+        )
+    )
+    
     attribute_definitions = [
         attributes.AttributeDefinition(
             name = "type",
@@ -365,10 +399,11 @@ class SSEBinding(InterfaceWithParametersBinding):
     
 class SSE(SSEInterface, SSEBinding):
     
+        
     def __init__(self):
         SSEInterface.__init__(self)
         SSEBinding.__init__(self)
-        
+    
     
         
         

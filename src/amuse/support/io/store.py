@@ -3,7 +3,7 @@ import numpy
 import pickle
 import os.path
 
-from amuse.support.data.core import AttributeList, Particles
+from amuse.support.data.core import Particles
 from amuse.support.units import si, units
 
 

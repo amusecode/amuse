@@ -43,24 +43,13 @@ class AttributeValues(object):
     def copy(self):
         return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_times)
         
-class AttributeList(object):
+class InMemoryAttributeStorage(object):
     
-    def __init__(self, particle_keys, attributes = [], lists_of_values = [], units = [], model_times = None):
-        
-        
-        model_times = self._convert_model_times(model_times, len(particle_keys))
-        
+    def __init__(self):
+        self.model_times = None
         self.mapping_from_attribute_to_values_and_unit = {}
-        for attribute, values, unit in zip(attributes, lists_of_values, units):
-            self.mapping_from_attribute_to_values_and_unit[attribute] = AttributeValues(
-                attribute,
-                unit,
-                values,
-                model_times
-            )
-        
-        self.particle_keys = numpy.array(particle_keys)
-        self.reindex()
+        self.mapping_from_particle_to_index = {}
+        self.particle_keys = []
 
     def _set_particles(self, keys, attributes = [], values = []):
         if len(values) != len(attributes):
@@ -76,18 +65,41 @@ class AttributeList(object):
                 )
             )
         
-        self.mapping_from_attribute_to_values_and_unit = {}
-        
-        for attribute, quantity in zip(attributes, values):
-            self.mapping_from_attribute_to_values_and_unit[attribute] = AttributeValues(
-                attribute,
-                quantity.unit,
-                quantity.number,
-                None
-            )
-         
-        self.particle_keys = numpy.array(keys)
-        self.reindex()
+        if len(self.particle_keys) > 0:
+            for attribute, values_to_set in zip(attributes, values):
+                if attribute in self.mapping_from_attribute_to_values_and_unit:
+                    attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+                else:
+                    attribute_values = AttributeValues(
+                        attribute,
+                        values_to_set.unit,
+                        length = len(self.particle_keys)
+                    )
+                
+                    self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
+                values_in_the_right_units = values_to_set.value_in(attribute_values.unit)
+                attribute_values.values = numpy.concatenate((attribute_values.values, values_in_the_right_units))
+                            
+            index = len(self.particle_keys)
+            
+            self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(keys)))
+            for particle_key in keys:
+                self.mapping_from_particle_to_index[particle_key] = index
+                index += 1
+        else:
+            self.mapping_from_attribute_to_values_and_unit = {}
+            
+            for attribute, quantity in zip(attributes, values):
+                self.mapping_from_attribute_to_values_and_unit[attribute] = AttributeValues(
+                    attribute,
+                    quantity.unit,
+                    quantity.number,
+                    None
+                )
+             
+            self.particle_keys = numpy.array(keys)
+            
+            self.reindex()
     
     def _get_values(self, particles, attributes):
         indices = self.get_indices_of(particles)
@@ -146,7 +158,7 @@ class AttributeList(object):
         return len(self.particle_keys)
         
     def copy(self):
-        copy = AttributeList([])
+        copy = InMemoryAttributeStorage()
         copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
         copy.particle_keys = self.particle_keys.copy()
         for attribute, attribute_values in self.mapping_from_attribute_to_values_and_unit.iteritems():
@@ -286,6 +298,15 @@ class AttributeList(object):
         
         mapping_from_attribute_to_values_and_unit = self.mapping_from_attribute_to_values_and_unit.copy()
         for attribute, attribute_values in mapping_from_attribute_to_values_and_unit.iteritems():
+            attribute_values.values = numpy.delete(attribute_values.values,indices)
+        
+        self.particle_keys = numpy.delete(self.particle_keys,indices)
+        self.reindex()
+        
+    def _remove_particles(self, keys):
+        indices = self.get_indices_of(keys)
+        
+        for attribute, attribute_values in self.mapping_from_attribute_to_values_and_unit.iteritems():
             attribute_values.values = numpy.delete(attribute_values.values,indices)
         
         self.particle_keys = numpy.delete(self.particle_keys,indices)
@@ -469,7 +490,7 @@ class Particles(object):
     """A set of particle objects"""
     def __init__(self, size = 0):
         particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
-        self.attributelist = AttributeList([])
+        self.attributelist = InMemoryAttributeStorage()
         self._set_particles(particle_keys)
         
         self.previous = None
@@ -522,6 +543,9 @@ class Particles(object):
         
     def _set_particles(self, keys, attributes = [], values = []):
         self.attributelist._set_particles(keys, attributes, values)
+        
+    def _remove_particles(self, keys):
+        self.attributelist._remove_particles(keys)
     
     def _get_values(self, keys, attributes):
         return self.attributelist._get_values(keys, attributes)
