@@ -31,7 +31,6 @@ class unit(object):
     Units can also be named, by creating a named unit.
     """
     
-    
     def __mul__(self, other):
        
         if isinstance(other, unit):
