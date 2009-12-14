@@ -229,11 +229,36 @@ class VectorQuantity(Quantity):
         return len(self._number)
     
     def sum(self):
+        """Calculate the sum of the vector components
+
+        >>> from amuse.support.units import units
+        >>> v1 = [0.0, 1.0, 2.0] | units.kg
+        >>> v1.sum()
+        quantity<3.0 kg>
+        """
         return new_quantity(numpy.sum(self.number), self.unit)
         
     def sqrt(self):
+        """Calculate the square root of each component
+
+        >>> from amuse.support.units import units
+        >>> v1 = [16.0, 25.0, 36.0] | units.kg
+        >>> v1.sqrt()
+        quantity<[4.0, 5.0, 6.0] kg**0.5>
+        """
         return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
     
+    def length(self):
+        """Calculate the length of the vector.
+        
+        >>> from amuse.support.units import units
+        >>> v1 = [0.0, 3.0, 4.0] | units.m
+        >>> v1.length()
+        quantity<5.0 m>
+        """
+        squared = self * self
+        dot_product = squared.sum()
+        return (dot_product ** 0.5).as_quantity_in(self.unit)
         
     def __getitem__(self, index):
         """Return the "index" component as a quantity.
@@ -410,6 +435,7 @@ class NonNumericQuantity(Quantity):
         if not other.unit == self.unit:
             return False
         return self.value == other.value
+        
     
     
         

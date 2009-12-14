@@ -120,11 +120,24 @@ class TestCaseReport(object):
             return 0.0
         return self.total_time / self.number_of_runs
 
+    def add_syntax_error_file_to_traceback(self, error_type, error_value):
+        if not issubclass(error_type, SyntaxError):
+            return
+            
+        try:
+            msg, (filename, lineno, offset, badline) = error_value.args
+        except Exception:
+            pass
+        
+        self.traceback.insert(0, (filename, lineno, "", ""))
+        
     def end_with_error(self, error_tuple):
         self.end_time = time.time()
         error_type, error_value, error_traceback = error_tuple        
         self.error_string = traceback.format_exception_only(error_type, error_value)
         self.traceback = list(reversed(extract_tb(error_traceback)))
+        
+        self.add_syntax_error_file_to_traceback(error_type, error_value)
         
         self.reset_timing()
         
@@ -137,6 +150,7 @@ class TestCaseReport(object):
         error_type, error_value, error_traceback = error_tuple        
         self.error_string = traceback.format_exception_only(error_type, error_value)
         self.traceback = list(reversed(traceback.extract_tb(error_traceback)))
+        self.add_syntax_error_file_to_traceback(error_type, error_value)
         
         self.reset_timing()
         

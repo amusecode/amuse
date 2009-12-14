@@ -214,3 +214,38 @@ class InterfaceWithObjectsBinding(object):
     def current_model_time(self):
         raise AttributeError("Must implement current_model_time method")
         
+class CodeProperty(object):
+    
+    def __init__(self, function_or_attribute_name, unit):
+        self.function_or_attribute_name = function_or_attribute_name
+        self.unit = unit
+    
+    def _name(self, instance):
+        class_of_the_instance = type(instance)
+        attribute_names = dir(class_of_the_instance)
+        for name in attribute_names:
+            if not name.startswith('_'):
+                if getattr(class_of_the_instance, name) == self:
+                    return name
+        
+        return '<unknown name>'
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+        
+        function_or_attribute = getattr(instance, self.function_or_attribute_name)
+        if hasattr(function_or_attribute, '__call__'):
+            value, errorcode = function_or_attribute()
+            if errorcode < 0:
+                raise Exception("calling '{0}' to get the value for property '{1}' resulted in an error (errorcode {2})".format(self.function_or_attribute_name, self._name(instance), errorcode))
+            else:
+                return self.unit.new_quantity(value)
+        else:
+            return self.unit.new_quantity(function_or_attribute)
+            
+    def __set__(self, instance, value):
+        if instance is None:
+            return self
+            
+        raise Exception("property '{0}' of a '{0}' is read-only, you cannot change it's value".format(self._name(instance), type(instance).__name__))
