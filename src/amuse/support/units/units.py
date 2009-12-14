@@ -13,7 +13,7 @@ julianyr = named('julian yr','julianyr',365.25* day)
 ms = named('meter per seconds', 'ms', m / s)
 kms = named('kilometer per seconds', 'kms', km / s)
 
-N = named('Newton', 'N', kg / m /s**2)
+N = named('Newton', 'N', kg * m /s**2)
 J = named('joule','J', kg * m **2  * s ** -2)
 W = named('watt', 'W', J / s)
 
