@@ -1,3 +1,4 @@
+import numpy
 from amuse.support.units.si import *
 
 # handy definitions
@@ -16,8 +17,13 @@ kms = named('kilometer per seconds', 'kms', km / s)
 N = named('Newton', 'N', kg * m /s**2)
 J = named('joule','J', kg * m **2  * s ** -2)
 W = named('watt', 'W', J / s)
+F = named('farad','F', s**4*A**2*m**-2*kg**-1)
+C = named('coulomb','C', A*s)
+V = named('volt','V', J/C)
 
 amu=named('atomic mass unit', 'amu',1.66053886*10**-27 * kg)
+e=named('electron charge','e',1.6021765314e-19 * C)
+eV=named('electron volt','eV', e*V)
 
 # cgs
 g = named('gram','g', 1e-3 * kg)
@@ -28,6 +34,10 @@ erg = named('energy','erg', 1e-7 * J)
 G = 6.673e-11 | m**3/kg/s**2
 kboltz = 1.3806503 * 10**-23 | m**2 * kg / s**2 / K
 c=299792458. | m / s
+h=6.6260689633e-34 | J * s
+hbar=h/2/numpy.pi
+eps0=8.854187817e-12 | F/m
+
 
 # astronomical units
 AU =  named('astronomical unit', 'AU', 149597870691.0  * m)
