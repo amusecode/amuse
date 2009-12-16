@@ -17,7 +17,7 @@ kms = named('kilometer per seconds', 'kms', km / s)
 N = named('Newton', 'N', kg * m /s**2)
 J = named('joule','J', kg * m **2  * s ** -2)
 W = named('watt', 'W', J / s)
-F = named('farad','F', s**4*A**2*m**-2*kg**-1)
+F = named('farad','F', s**4*A**2*m**(-2)*kg**(-1))
 C = named('coulomb','C', A*s)
 V = named('volt','V', J/C)
 
@@ -36,7 +36,8 @@ kboltz = 1.3806503 * 10**-23 | m**2 * kg / s**2 / K
 c=299792458. | m / s
 h=6.6260689633e-34 | J * s
 hbar=h/2/numpy.pi
-eps0=8.854187817e-12 | F/m
+mu0=4*numpy.pi*1.e-7 | N/A**2
+eps0=mu0**-1*c**-2
 
 
 # astronomical units
