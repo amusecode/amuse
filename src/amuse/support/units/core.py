@@ -106,8 +106,8 @@ class unit(object):
         """
         
         if not self.base:
-            return none_unit('none', 'none')
-            
+            return none_unit('none', 'none') * self.factor
+        
         result = self.factor
         for n, base in self.base:
             if n == 1:
@@ -268,16 +268,17 @@ class base_unit(unit):
         return ((1,self),)
         
 class none_unit(unit):
-    def __init__(self, name, symbol):
+    def __init__(self, name,  symbol):
         self.name = name
         self.symbol = symbol
         
     def __str__(self):
         return self.symbol
+        
     
-    @property
+    @late
     def factor(self):
-        return 1.0
+        return 1
         
     @late
     def base(self):

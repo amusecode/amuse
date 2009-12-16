@@ -110,7 +110,7 @@ class Quantity(object):
             return new_quantity(self.number / other , self.unit.to_simple_form())
     
     def __rdiv__(self, other):
-        return self.__div__(other)
+        return new_quantity(other.number / self.number , (other.unit / self.unit).to_simple_form())
             
     def in_(self, x):
         return self.as_quantity_in(x)

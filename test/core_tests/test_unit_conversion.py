@@ -1,4 +1,5 @@
 import unittest
+import numpy
 
 from amuse.support.units.units import *
 
@@ -64,6 +65,17 @@ class TestUnitConversions(unittest.TestCase):
         length = speed_of_light * time
         length_in_m = length.value_in(m)
         self.assertAlmostEqual(0.2997988, length_in_m, 6)
+        
+    def test10(self):
+        eps0_1 = mu0**-1*c**-2
+        eps0_2 = (1 | none)/(mu0*(c**2))
+        print (eps0_1 - eps0_2) / eps0_1
+        self.assertTrue((eps0_1 - eps0_2) / eps0_1 < (1e-10 | none))
+        b =((1.|e)**2)
+        f = (hbar*c*4.*numpy.pi* eps0)**-1
+        fine_structure_constant_calculated = (b * f).as_quantity_in(none)
+        fine_structure_constant = 7.297352537650e-3 | none
+        self.assertAlmostEquals(fine_structure_constant_calculated.number, fine_structure_constant.number, 5)
         
     
 class TestNonNumericUnits(unittest.TestCase):

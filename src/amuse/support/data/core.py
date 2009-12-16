@@ -575,6 +575,11 @@ class Particles(object):
         values = particles._get_values(None, attributes)
         self._set_particles(keys, attributes, values)
         
+    def new_particle(self):
+        new_particles = type(self)(1)
+        self.add_particles(new_particles)
+        return Particle(self, new_particles[0].key, self) 
+        
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
         channel.copy_attributes(self.attributelist._state_attributes())  
