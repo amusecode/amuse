@@ -54,7 +54,7 @@ def simulate_evolution_tracks(name_of_the_figure = "HR_evolution_tracks.png"):
                     current_Teff.value_in(units.K), star.type.value_in(units.stellar_type))]
         previous_type = star.type
         
-#       Evolve this star up to until it changes into a compact stellar remnant (white dwarf, neutron star, or black hole)
+#       Evolve this star until it changes into a compact stellar remnant (white dwarf, neutron star, or black hole)
         while star.type.value_in(units.stellar_type) < 10:
 #           Store current values of luminosity and effective temperature
             luminosity_at_time.append(star.luminosity.value_in(units.LSun))
@@ -125,7 +125,4 @@ def simulate_evolution_tracks(name_of_the_figure = "HR_evolution_tracks.png"):
     print "All done!"
         
 if __name__ == '__main__':
-    import cProfile
-    cProfile.run('foo()')
-
     simulate_evolution_tracks(sys.argv[1])
