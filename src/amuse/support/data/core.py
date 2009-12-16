@@ -578,7 +578,22 @@ class Particles(object):
     def new_particle(self):
         new_particles = type(self)(1)
         self.add_particles(new_particles)
-        return Particle(self, new_particles[0].key, self) 
+        return Particle(self, new_particles[0].key, self)
+        
+    def sychronize_to(self, other_particles):
+        other_keys = set(other_particles._get_keys())
+        my_keys = set(self._get_keys())
+        added_keys = my_keys - other_keys
+        removed_keys = other_keys - my_keys
+        
+        attributes = self._get_attributes()
+        values = self._get_values(added_keys, attributes)
+        other_particles._set_particles(added_keys, attributes, values)
+        
+        other_particles.remove_keys(removed_keys)
+        
+        
+        
         
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
