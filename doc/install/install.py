@@ -118,6 +118,7 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-sharedlibs=gcc',
           '--enable-f90', 
+          '--with-python='+self.prefix + '/bin/python2.6'
          # '--with-device=ch3:sock',
          #'F90=gfortran',
         ])
