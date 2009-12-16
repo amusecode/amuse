@@ -580,7 +580,7 @@ class Particles(object):
         self.add_particles(new_particles)
         return Particle(self, new_particles[0].key, self)
         
-    def sychronize_to(self, other_particles):
+    def synchronize_to(self, other_particles):
         other_keys = set(other_particles._get_keys())
         my_keys = set(self._get_keys())
         added_keys = my_keys - other_keys
