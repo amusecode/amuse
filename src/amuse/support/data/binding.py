@@ -450,9 +450,9 @@ class InCodeAttributeStorage2(object):
     def _set_particles(self, keys, attributes = [], values = []):
         
         indices = self.new_particle_method.apply(self.code_interface, attributes, values)
-            
+        
         if len(self.particle_keys) > 0:
-            self.particle_keys = numpy.concatenate((self.particle_keys, keys))
+            self.particle_keys = numpy.concatenate((self.particle_keys, numpy.array(list(keys))))
         else:
             self.particle_keys = numpy.array(keys)
 

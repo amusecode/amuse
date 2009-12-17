@@ -589,7 +589,7 @@ class AbstractParticleSet(object):
         values = self._get_values(added_keys, attributes)
         other_particles._set_particles(added_keys, attributes, values)
         
-        other_particles.remove_keys(removed_keys)
+        other_particles._remove_particles(removed_keys)
         
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
