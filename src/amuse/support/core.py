@@ -2,6 +2,7 @@
 
 """
 import types 
+import collections
 
 class late(object):    
     """
@@ -241,3 +242,84 @@ class OrderedDictionary(object):
     def values(self):
         for x in self.orderedKeys:
             yield self.mapping[x]
+            
+class OrderedSet(collections.MutableSet):
+    class Node(object):
+        __slots__ = ['key', 'next', 'previous']
+        
+        def __init__(self, key, next = None, previous = None):
+            self.key = key
+            if next is None:
+                next = self
+            if previous is None:
+                previous = self
+                
+            self.next = next
+            self.previous = previous
+
+            self.link()
+            
+        def link(self):
+            self.next.previous = self
+            self.previous.next = self
+            
+        def discard(self):
+            self.previous.next = self.next
+            self.next.previous = self.previous
+            
+    def __init__(self, iterable=None):
+        self.end = Node(None, None, None)
+        self.end.prev = end
+        self.end.next = end
+        self.map = {}
+        if iterable is not None:
+            self |= iterable
+
+    def __len__(self):
+        return len(self.map)
+
+    def __contains__(self, key):
+        return key in self.map
+
+    def add(self, key):
+        if key not in self.map:
+            self.map[key] = self.Node(key, end.previous, end.next)
+
+    def discard(self, key):
+        if key in self.map:        
+            current = self.map.pop(key)
+            current.discard()
+
+    def __iter__(self):
+        end = self.end
+        current = end.next
+        while current is not end:
+            yield current.key
+            current = current.next
+
+    def __reversed__(self):
+        end = self.end
+        current = end.previous
+        while current is not end:
+            yield current.key
+            current = current.previous
+
+    def pop(self, last=True):
+        if not self:
+            raise KeyError('set is empty')
+        key = next(reversed(self)) if last else next(iter(self))
+        self.discard(key)
+        return key
+
+    def __repr__(self):
+        if not self:
+            return '%s()' % (self.__class__.__name__,)
+        return '%s(%r)' % (self.__class__.__name__, list(self))
+
+    def __eq__(self, other):
+        if isinstance(other, OrderedSet):
+            return len(self) == len(other) and list(self) == list(other)
+        return not self.isdisjoint(other)
+
+    def __del__(self):
+        self.clear()

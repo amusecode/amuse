@@ -30,7 +30,6 @@ class TestInterface(TestWithMPI):
     def test2(self):
         instance = EVtwin()
         
-        print instance.get_maximum_number_of_stars()
         (value, error) = instance.get_maximum_number_of_stars()
         self.assertEquals(0, error)      
         
@@ -50,7 +49,6 @@ class TestInterface(TestWithMPI):
         instance = EVtwin()
         dir = os.path.dirname(sys.modules[instance.__module__].__file__)
         path_to_ev_database = os.path.join(dir, 'src')
-        print dir
         error = instance.set_ev_path(path_to_ev_database)
         self.assertEquals(0, error)      
         
@@ -145,8 +143,6 @@ class TestInterfaceBinding(TestWithMPI):
         
         #instance.evolve_particles(stars, 2 | units.Myr)
         instance.update_particles(stars)
-        
-        print stars[0]
         
         self.assertEquals(stars[0].mass, 10 | units.MSun)
         self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302 , 6)

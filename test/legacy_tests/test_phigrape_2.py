@@ -80,7 +80,6 @@ class TestMPIInterface(TestWithMPI):
             , values
             , values)
         retrieved_state = instance.get_state(3999)
-        print "result:", retrieved_state
         self.assertEquals(3999.0,  retrieved_state['mass'])
         instance.cleanup_module()
         
@@ -102,7 +101,6 @@ class TestMPIInterface(TestWithMPI):
                 , values[i])
                 
         retrieved_state = instance.get_state(1)
-        print "result:", retrieved_state
         self.assertEquals(1.0,  retrieved_state['mass'])
         instance.cleanup_module()
 
@@ -218,7 +216,6 @@ class TestSunAndEarthSystem(TestWithMPI):
         
         instance.update_particles(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
-        print position_after_half_a_rotation
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
                 
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)

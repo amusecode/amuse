@@ -53,7 +53,6 @@ class TestMPIInterface(TestWithMPI):
             , [2.5,3.5,4.5,5.5]
             , [2.6,3.6,4.6,5.6])
         retrieved_state = instance.get_state(1)
-        print "result:", retrieved_state
         self.assertEquals(11.0,  retrieved_state['mass'])
         
         retrieved_state = instance.get_state([2,3,4])
@@ -79,7 +78,6 @@ class TestMPIInterface(TestWithMPI):
             , values
             , values)
         retrieved_state = instance.get_state(3999)
-        print "result:", retrieved_state
         self.assertEquals(3999.0,  retrieved_state['mass'])
         instance.cleanup_module()
         
@@ -101,7 +99,6 @@ class TestMPIInterface(TestWithMPI):
                 , values[i])
                 
         retrieved_state = instance.get_state(1)
-        print "result:", retrieved_state
         self.assertEquals(1.0,  retrieved_state['mass'])
         instance.cleanup_module()
 
@@ -168,7 +165,7 @@ class TestMPIInterface(TestWithMPI):
         
 
 class TestSunAndEarthSystem(TestWithMPI):
-    def test1(self):
+    def xtest1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = mpi_interface.PhiGRAPE(convert_nbody)
@@ -219,7 +216,7 @@ class TestSunAndEarthSystem(TestWithMPI):
         del instance
         
         
-    def test2(self):
+    def xtest2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = mpi_interface.PhiGRAPE(convert_nbody)

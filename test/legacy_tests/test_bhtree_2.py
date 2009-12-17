@@ -106,7 +106,6 @@ class TestMPIInterface(TestWithMPI):
     def test6(self):
         interface = BHTreeInterface()
         interface.setup_module()
-        print interface.get_time()
         interface.cleanup_module()
         del interface
 

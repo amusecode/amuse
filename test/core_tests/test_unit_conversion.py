@@ -69,7 +69,6 @@ class TestUnitConversions(unittest.TestCase):
     def test10(self):
         eps0_1 = mu0**-1*c**-2
         eps0_2 = (1 | none)/(mu0*(c**2))
-        print (eps0_1 - eps0_2) / eps0_1
         self.assertTrue((eps0_1 - eps0_2) / eps0_1 < (1e-10 | none))
         b =((1.|e)**2)
         f = (hbar*c*4.*numpy.pi* eps0)**-1

@@ -48,7 +48,6 @@ class TestQuantities(unittest.TestCase):
         maxpos = [-float(sys.maxint)] * 3 | units.m
         for star in stars:
             for i in range(3):
-                print star.position[i], minpos[i]
                 if star.position[i] < minpos[i]:
                     minpos[i] = star.position[i]
                 if star.position[i] > maxpos[i]:

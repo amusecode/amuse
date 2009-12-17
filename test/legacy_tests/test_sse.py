@@ -227,7 +227,6 @@ class TestSSE(TestWithMPI):
         previous_type = star.type
         results = []
         t0 = 0 | units.Myr
-        print star
         while t0 < (125 | units.Myr):
             t0 += sse.get_timesteps(stars)[0]
             sse.evolve_particles(stars, [t0])
@@ -334,7 +333,6 @@ class TestSSE(TestWithMPI):
         while t < 30 | units.Myr:
             t += dt
             sse.evolve_particles(stars, t)
-            print star.type, star.mass
                 
         self.assertTrue(star.mass.value_in(units.MSun) < 10.6)
          

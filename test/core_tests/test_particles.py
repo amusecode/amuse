@@ -38,10 +38,7 @@ class TestStars(TestBase):
         stars[1].mass = 10 | units.g
         stars[1].velocity = (units.m / units.s)(numpy.array([0.0,0.0,0.0]))
         stars[1].position = units.m(numpy.array([0.0,0.0,0.0]))
-        print stars.mass
-        print stars.position[0]
-        print stars.position
-        print core.Stars.mass
+        
         
         self.assertEquals(stars.mass[0], 10|units.g)
         
@@ -103,7 +100,7 @@ class TestParticlesWithBinding(TestBase):
         def __init__(self):
             binding.InterfaceWithObjectsBinding.__init__(self)
             self.particles = core.Particles()
-            self.particles.attributelist = self.InCodeAttributeStorage(self)
+            self.particles._private.attribute_storage = self.InCodeAttributeStorage(self)
             self.masses = {}
             
         def get_mass(self, id):
@@ -208,6 +205,79 @@ class TestParticlesWithBinding(TestBase):
         self.assertEquals(len(remote_particles), 2)
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 4)
         self.assertEquals(remote_particles[1].mass.value_in(units.kg), 6)
+        
+    
+    def test3(self):
+        interface = self.TestInterface()
+        
+        local_particles = core.Stars(2)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles)
+        
+        self.assertEquals(len(remote_particles), 2)
+        
+        local_particles2 = core.Stars(2)
+        local_particles2.mass = units.kg.new_quantity([5.0, 6.0])
+       
+        remote_particles.add_particles(local_particles2)
+        
+        self.assertEquals(len(remote_particles), 4)
+        
+        self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3)
+        self.assertEquals(remote_particles[2].mass.value_in(units.kg), 5)
+        
+        keys = remote_particles._get_keys()
+        interface.particles._remove_particles((keys[0], keys[2]))
+        
+        self.assertEquals(len(remote_particles), 2)
+        self.assertEquals(remote_particles[0].mass.value_in(units.kg), 4)
+        self.assertEquals(remote_particles[1].mass.value_in(units.kg), 6)
+        
+        
+    
+    def test4(self):
+        interface = self.TestInterface()
+        
+        local_particles = core.Stars(2)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles)
+        
+        self.assertEquals(len(remote_particles), 2)
+        
+        particle = core.Particle()
+        particle.mass = units.g.new_quantity(10.0)
+        local_particles.add_particle(particle)
+        
+        self.assertEquals(len(local_particles), 3)
+        
+    
+    
+    def test5(self):
+        interface = self.TestInterface()
+        
+        local_particles1 = core.Stars(2)
+        local_particles1.mass = units.kg.new_quantity([3.0, 4.0])
+        local_particles2 = core.Stars(2)
+        local_particles2.mass = units.kg.new_quantity([5.0, 6.0])
+        
+        local_particles1.add_particles(local_particles2)
+        
+        self.assertEquals(len(local_particles1), 4)
+        self.assertEquals(len(local_particles2), 2)
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles1)
+        remote_particles.add_particles(local_particles2)
+        
+        self.assertEquals(len(remote_particles), 6)
+        
+        
         
         
         

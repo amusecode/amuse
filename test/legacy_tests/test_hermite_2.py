@@ -136,7 +136,6 @@ class TestAmuseInterface(TestWithMPI):
         
         hermite.update_particles(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
-        print position_after_half_a_rotation
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
                 
         hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)

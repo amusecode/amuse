@@ -147,7 +147,6 @@ class TestMethodParameterDefintions(unittest.TestCase):
                 
         instance = TestInterface()
         
-        print list(instance.parameters.names())
         self.assertTrue('test_name' in list(instance.parameters.names()))
         
         instance.parameters.test_name = 1 | units.km
@@ -185,7 +184,6 @@ class TestMethodParameterDefintions(unittest.TestCase):
                 
         instance = TestInterface()
         
-        print list(instance.parameters.names())
         self.assertTrue('test_name' in list(instance.parameters.names()))
         
         instance.parameters.test_name = 1 | units.km

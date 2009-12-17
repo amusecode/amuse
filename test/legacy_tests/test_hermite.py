@@ -59,7 +59,6 @@ class TestMPIInterface(TestWithMPI):
             , [2.5,3.5,4.5,5.5]
             , [2.6,3.6,4.6,5.6])
         retrieved_state = hermite.get_state(1)
-        print "result:", retrieved_state
         self.assertEquals(11.0,  retrieved_state['mass'])
         
         retrieved_state = hermite.get_state([2,3,4])
@@ -84,7 +83,6 @@ class TestMPIInterface(TestWithMPI):
             , values
             , values)
         retrieved_state = hermite.get_state(3999)
-        print "result:", retrieved_state
         self.assertEquals(3999.0,  retrieved_state['mass'])
         hermite.cleanup_module()
         
@@ -106,7 +104,6 @@ class TestMPIInterface(TestWithMPI):
                 , values[i])
                 
         retrieved_state = hermite.get_state(1)
-        print "result:", retrieved_state
         self.assertEquals(1.0,  retrieved_state['mass'])
         hermite.cleanup_module()
         del hermite
@@ -189,7 +186,6 @@ class TestAmuseInterface(TestWithMPI):
             
             x_points = stars.get_timeline_of_attribute(earth, "x")
             y_points = stars.get_timeline_of_attribute(earth, "y")
-            print x_points
             x_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), x_points)
             y_points_in_AU = map(lambda (t,x) : x.value_in(units.AU), y_points)
             
@@ -213,7 +209,6 @@ class TestAmuseInterface(TestWithMPI):
         stars = self.new_system_of_sun_and_earth()
         instance.add_particles(stars)
         factor = instance.get_energies()[0] / (instance.get_energies()[1] / (-2 | units.none))
-        print factor
         total_energy0 =  sum(instance.get_energies(), 0|units.J)
         self.assertAlmostEqual(factor.value_in(units.none), 1.000, 3)
         instance.evolve_model(100 | units.day)

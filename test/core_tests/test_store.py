@@ -18,13 +18,9 @@ class TestStoreHDF(unittest.TestCase):
         p.mass = [x * 2.0 for x in range(number_of_particles)] | units.kg
         p.model_time = 2.0 | units.s
         
-        print p.attributelist
-        
         instance.store(p)
         
         loaded_particles = instance.load()
-        
-        print loaded_particles.attributelist
         
         loaded_mass_in_kg = loaded_particles.mass.value_in(units.kg)
         previous_mass_in_kg = p.mass.value_in(units.kg)

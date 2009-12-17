@@ -6,6 +6,7 @@ from amuse.support.units import si
 from amuse.support.units import units
 
 import numpy
+import random
 
 class BasicUniqueKeyGenerator(object):
     
@@ -26,7 +27,24 @@ class BasicUniqueKeyGenerator(object):
         self.lowest_unique_key += length
         return numpy.arange(from_key, to_key)
         
-UniqueKeyGenerator = BasicUniqueKeyGenerator()
+
+class RandomNumberUniqueKeyGenerator(object):
+    DEFAULT_NUMBER_OF_BITS = 64
+    
+    def __init__(self, number_of_bits = DEFAULT_NUMBER_OF_BITS):
+        if number_of_bits > 64:
+            raise Exception("number of bits is larger than 64, this is currently unsupported!")
+        self.number_of_bits = number_of_bits
+        
+    def next(self):
+        return random.getrandbits(self.number_of_bits)
+        
+    def next_set_of_keys(self, length):
+        if length == 0:
+            return  []
+        return numpy.array([random.getrandbits(64) for i in range(length)], dtype='uint64')
+        
+UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
 
 class AttributeValues(object):
     __slots__ = ["attribute", "values", "unit", "model_times"]
@@ -79,7 +97,14 @@ class InMemoryAttributeStorage(object):
                     self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
                 values_in_the_right_units = values_to_set.value_in(attribute_values.unit)
                 attribute_values.values = numpy.concatenate((attribute_values.values, values_in_the_right_units))
-                            
+            
+            old_length = len(self.particle_keys)
+            zeros_for_concatenation = numpy.zeros(len(keys))
+            for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
+                if len(attribute_values.values) == old_length:
+                    attribute_values.values = numpy.concatenate((attribute_values.values, zeros_for_concatenation))
+            
+                    
             index = len(self.particle_keys)
             
             self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(keys)))
@@ -121,7 +146,18 @@ class InMemoryAttributeStorage(object):
         model_times = self._convert_model_times(model_times, len(indices))
         
         previous_model_times = None
-        results = []
+        if list_of_values_to_set is None:
+            for attribute in attributes:
+                if attribute in self.mapping_from_attribute_to_values_and_unit:
+                    attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+                else:
+                    raise Exception("unknown attribute '{0}'".format(attribute))
+                     
+                selected_values = numpy.zeros(len(indices))
+                
+                attribute_values.values.put(indices, selected_values)
+            return
+            
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
             if attribute in self.mapping_from_attribute_to_values_and_unit:
                 attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
@@ -141,7 +177,6 @@ class InMemoryAttributeStorage(object):
                     attribute_values.model_times.put(indices, model_times)
                     previous_model_times = attribute_values.model_times
             
-        return results
     
     
     def _get_attributes(self):
@@ -428,144 +463,110 @@ class InMemoryAttributeStorage(object):
         model_times = self._convert_model_times(value, len(self.particle_keys))
         for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
             attribute_values.model_times = model_times
+
+
+class AbstractParticleSet(object):
     
-class Particles(object):
-    class ScalarProperty(object):
-        
-        def  __init__(self, attribute_name):
-            self.attribute_name = attribute_name
-        
-        def __get__(self, instance, owner):
-            if instance == None:
-                return self
-            else:
-                return instance._get_values(None, [self.attribute_name])[0]
-        
-        def __set__(self, instance, value):
-            if instance == None:
-                return self
-            else:
-                return instance._set_values(None, [self.attribute_name], [value])
-                
-    class VectorProperty(object):
+    class PrivateProperties(object):
+        """
+        Defined for superclasses to store private properties.
+        As __setattr__ is defined on subclasses these
+        do not need to use object.__setattr__ syntax.
+        """
+        pass
+    
+    class VectorAttribute:
         
         def  __init__(self, attribute_names):
             self.attribute_names = attribute_names
         
-        def __get__(self, instance, owner):
-            if instance == None:
-                return self
-            else:
-                return instance.attributelist.get_attributes_as_vector_quantities(self.attribute_names)
+        def _get_values(self, instance):
+            return instance._private.attribute_storage.get_attributes_as_vector_quantities(self.attribute_names)
                 
-        def __set__(self, instance, value):
-            if instance == None:
-                return self
-            else:
-                vectors = value.number
-                split = numpy.hsplit(vectors,len(self.attribute_names))
-                list_of_values = []
-                for i in range(len(self.attribute_names)):
-                    values = value.unit.new_quantity(split[i].reshape(len(split[i])))
-                    list_of_values.append(values)
-                    
-                instance._set_values(None, self.attribute_names, list_of_values)
+        def _set_values(self, instance, value):
+            vectors = value.number
+            split = numpy.hsplit(vectors,len(self.attribute_names))
+            list_of_values = []
+            for i in range(len(self.attribute_names)):
+                values = value.unit.new_quantity(split[i].reshape(len(split[i])))
+                list_of_values.append(values)
                 
-    class ModelTimeProperty(object):
-        
-        def __get__(self, instance, owner):
-            if instance == None:
-                return self
-            else:
-                raise Exception("TBD")
-                
-            
-        def __set__(self, instance, value):
-            if instance == None:
-                return self
-            else:
-                instance.attributelist.set_model_time(value)
-        
+            instance._set_values(instance._get_keys(), self.attribute_names, list_of_values)
     
-    """A set of particle objects"""
-    def __init__(self, size = 0):
-        particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
-        self.attributelist = InMemoryAttributeStorage()
-        self._set_particles(particle_keys)
-        
-        self.previous = None
     
         
+    def __init__(self):
+        object.__setattr__(self, "_vector_attributes", {})
+        object.__setattr__(self, "_private", self.PrivateProperties())
+    
+    def __getattr__(self, name_of_the_attribute):
+        if name_of_the_attribute in self._vector_attributes:
+            return self._vector_attributes[name_of_the_attribute]._get_values(self)
+        else:
+            return self._get_values(self._get_keys(), [name_of_the_attribute])[0]
+    
+    def __setattr__(self, name_of_the_attribute, value):
+        if name_of_the_attribute in self._vector_attributes:
+            self._vector_attributes[name_of_the_attribute]._set_values(self, value)
+        else:
+            self._set_values(self._get_keys(), [name_of_the_attribute], [value])
+    
+    #
+    # Particle storage interface
+    #
+    
+    def _get_values(self, keys, attribues):
+        pass
+    
+    def _set_values(self, keys, attributes, values):
+        pass
+        
+    def _set_particles(self, keys, attributes, values):
+        pass
+        
+    def _remove_particles(self, keys):
+        pass
+    
+    def _get_keys(self):
+        return []
+        
+    def _has_key(self):
+        return False
+        
+    def add_vector_attribute(self, name_of_the_attribute, name_of_the_components):
+        self._vector_attributes[name_of_the_attribute] = self.VectorAttribute(name_of_the_components)
+        
+        
+    #
+    # public API
+    #
     def __iter__(self):
         index = 0
-        for key in self.attributelist._get_keys():
+        for key in self._get_keys():
             p = Particle(key, self)
             yield p
             index += 1
 
     def __getitem__(self, index):
-        return Particle(self.attributelist._get_keys()[index], self)
+        return Particle(self._get_keys()[index], self)
         
     def __len__(self):
-        return len(self.attributelist)
+        return len(self._get_keys())
         
-    def savepoint(self):
-        instance = type(self)()
-        instance.attributelist = self.attributelist.copy()
-        instance.previous = self.previous
-        self.previous = instance
-        
-    def iter_history(self):
-        current = self
-        while not current is None:
-            yield current
-            current = current.previous
-    
-    @property
-    def history(self):
-        return reversed(list(self.iter_history()))
-        
-    def get_timeline_of_attribute(self, particle_key, attribute):
-        timeline = []
-        for x in self.history:
-            timeline.append((None, x.attributelist.get_value_of(particle_key, attribute)))
-        return timeline
-
-    model_time = ModelTimeProperty()
-                    
+     
     def copy(self):
-         attributes = self.attributelist._state_attributes()
+         attributes = self._get_attributes()
          keys = self._get_keys()
          values = self._get_values(None, attributes)
          result = Particles()
          result._set_particles(keys, attributes, values)
          return result
-        
-    def _set_particles(self, keys, attributes = [], values = []):
-        self.attributelist._set_particles(keys, attributes, values)
-        
-    def _remove_particles(self, keys):
-        self.attributelist._remove_particles(keys)
+         
     
-    def _get_values(self, keys, attributes):
-        return self.attributelist._get_values(keys, attributes)
-        
-    def _set_values(self, keys, attributes, values):
-        self.attributelist._set_values(keys, attributes, values)
-    
-    def _get_attributes(self):
-        return self.attributelist._get_attributes()
-        
-    def _get_keys(self):
-        return self.attributelist._get_keys()
-        
-    def _has_key(self, key):
-        return self.attributelist._has_key(key)
-        
     def copy_values_of_attribute_to(self, attribute_name, particles):
         channel = self.new_channel_to(particles)
         channel.copy_attributes([attribute_name])
-        
+    
     def new_channel_to(self, other):
         return ParticleInformationChannel(self, other)
         
@@ -574,11 +575,9 @@ class Particles(object):
         keys = particles._get_keys()
         values = particles._get_values(None, attributes)
         self._set_particles(keys, attributes, values)
-        
-    def new_particle(self):
-        new_particles = type(self)(1)
-        self.add_particles(new_particles)
-        return Particle(self, new_particles[0].key, self)
+    
+    def add_particle(self, particle):
+        self.add_particles(particle.as_set())
         
     def synchronize_to(self, other_particles):
         other_keys = set(other_particles._get_keys())
@@ -592,13 +591,111 @@ class Particles(object):
         
         other_particles.remove_keys(removed_keys)
         
-        
-        
-        
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
-        channel.copy_attributes(self.attributelist._state_attributes())  
+        channel.copy_attributes(self._private.attribute_storage._state_attributes())   
+
+    
+class Particles(AbstractParticleSet):
+    
+    """A set of particle objects"""
+    def __init__(self, size = 0):
+        AbstractParticleSet.__init__(self)
+        particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
+        self._private.attribute_storage = InMemoryAttributeStorage()
+        self._set_particles(particle_keys)
+        self._private.previous = None
+        
+    def savepoint(self):
+        instance = type(self)()
+        instance._private.attribute_storage = self._private.attribute_storage.copy()
+        instance._private.previous = self._private.previous
+        self._private._previous = instance
+        
+    def iter_history(self):
+        current = self
+        while not current is None:
+            yield current
+            current = current._private.previous
+    
+    @property
+    def history(self):
+        return reversed(list(self.iter_history()))
+        
+    def get_timeline_of_attribute(self, particle_key, attribute):
+        timeline = []
+        for x in self.history:
+            timeline.append((None, x._private.attribute_storage.get_value_of(particle_key, attribute)))
+        return timeline
+                    
+    def copy(self):
+         attributes = self._private.attribute_storage._state_attributes()
+         keys = self._get_keys()
+         values = self._get_values(None, attributes)
+         result = Particles()
+         result._set_particles(keys, attributes, values)
+         return result
+        
+    def _set_particles(self, keys, attributes = [], values = []):
+        self._private.attribute_storage._set_particles(keys, attributes, values)
+        
+    def _remove_particles(self, keys):
+        self._private.attribute_storage._remove_particles(keys)
+    
+    def _get_values(self, keys, attributes):
+        return self._private.attribute_storage._get_values(keys, attributes)
+        
+    def _set_values(self, keys, attributes, values):
+        self._private.attribute_storage._set_values(keys, attributes, values)
+    
+    def _get_attributes(self):
+        return self._private.attribute_storage._get_attributes()
+        
+    def _get_keys(self):
+        return self._private.attribute_storage._get_keys()
+        
+    def _has_key(self, key):
+        return self._private.attribute_storage._has_key(key)
+        
               
+              
+
+class ParticlesSubset(AbstractParticleSet):
+    """A sub set of particle objects"""
+    def __init__(self, particles, keys):
+        AbstractParticleSet.__init__(self)
+        
+        self._private.particles = particles
+        self._private.keys = numpy.array(keys)
+        self._private.set_of_keys = set(keys)
+              
+        
+    def _set_particles(self, keys, attributes = [], values = []):
+        self._private.keys = numpy.concatenate((self.keys,  numpy.array(keys)))
+        self._private.set_of_keys += set(keys)
+        self._private.particles._set_particles(keys, attributes, values)
+        
+    def _remove_particles(self, keys):
+        raise Exception("Cannot remove particles from a subset")
+    
+    def _get_values(self, keys, attributes):
+        return self._private.particles._get_values(keys, attributes)
+        
+    def _set_values(self, keys, attributes, values):
+        self._private.particles._set_values(keys, attributes, values)
+    
+    def _get_attributes(self):
+        return self._private.particles._get_attributes()
+        
+    def _get_keys(self):
+        return self._private.keys
+        
+    def _has_key(self, key):
+        return key in self._private.set_of_keys
+        
+        
+
+
 class ParticleInformationChannel(object):
     
     def __init__(self, from_particles, to_particles):
@@ -621,21 +718,11 @@ class ParticleInformationChannel(object):
         self.to_particles._set_values(self.keys, attributes, data)
     
 class Stars(Particles):
-    
-    mass = Particles.ScalarProperty("mass")
-    
-    radius = Particles.ScalarProperty("radius")
-    
-    x = Particles.ScalarProperty("x")
-    y = Particles.ScalarProperty("y")
-    z = Particles.ScalarProperty("z")
-    
-    vx = Particles.ScalarProperty("vx")
-    vy = Particles.ScalarProperty("vy")
-    vz = Particles.ScalarProperty("vz")
-    
-    position = Particles.VectorProperty(["x","y","z"])
-    velocity = Particles.VectorProperty(["vx","vy","vz"])
+
+    def __init__(self, size = 0):
+        Particles.__init__(self, size)
+        self.add_vector_attribute("position", ["x","y","z"])
+        self.add_vector_attribute("velocity", ["vx","vy","vz"])
     
     
     def center_of_mass(self):
@@ -723,11 +810,11 @@ class VectorAttribute(object):
         if instance is None:
             return self
         else:
-            return instance.particles_set.attributelist.get_attribute_as_vector(instance.key, self.names_of_the_scalar_components)
+            return instance.particles_set._private.attribute_storage.get_attribute_as_vector(instance.key, self.names_of_the_scalar_components)
     
     
     def __set__(self, instance, quantity):
-        instance.particles_set.attributelist.set_attribute_as_vector(instance.key, self.names_of_the_scalar_components, quantity)
+        instance.particles_set._private.attribute_storage.set_attribute_as_vector(instance.key, self.names_of_the_scalar_components, quantity)
             
 class Particle(object):
     """A physical object or a physical region simulated as a 
@@ -745,7 +832,11 @@ class Particle(object):
     position = VectorAttribute(("x","y","z"))
     velocity = VectorAttribute(("vx","vy","vz"))
     
-    def __init__(self, key, particles_set = None, **keyword_arguments):
+    def __init__(self, key = None, particles_set = None, **keyword_arguments):
+        if particles_set is None:
+            particles_set = Particles(1)
+            key = particles_set._get_keys()[0]
+        
         object.__setattr__(self, "key", key)
         object.__setattr__(self, "particles_set", particles_set)
         
@@ -759,12 +850,12 @@ class Particle(object):
             return
             
         if isinstance(new_value_for_the_attribute, values.Quantity):
-            self.particles_set.attributelist.set_value_of(self.key, name_of_the_attribute, new_value_for_the_attribute)
+            self.particles_set._private.attribute_storage.set_value_of(self.key, name_of_the_attribute, new_value_for_the_attribute)
         else:
             raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")
     
     def __getattr__(self, name_of_the_attribute):
-         return self.particles_set.attributelist._get_values([self.key], [name_of_the_attribute])[0][0]
+         return self.particles_set._private.attribute_storage._get_values([self.key], [name_of_the_attribute])[0][0]
          
                 
     def __str__(self):
@@ -772,7 +863,7 @@ class Particle(object):
         output += str(self.key)
         output += ''
         output += '\n'
-        for name, value in self.particles_set.attributelist.iter_values_of_particle(self.key):
+        for name, value in self.particles_set._private.attribute_storage.iter_values_of_particle(self.key):
             output += name
             output += ': {'
             output += str(value)
@@ -781,9 +872,12 @@ class Particle(object):
         return output
         
     def set_default(self, attribute, quantity):
-        if not attribute in self.set.attributelist.attributes():
-            self.particles_set.attributelist.set_value_of(self, attribute, quantity)
+        if not attribute in self.set._private.attribute_storage.attributes():
+            self.particles_set._private.attribute_storage.set_value_of(self, attribute, quantity)
             
     def get_timeline_of_attribute(self, attribute):
         return self.particles_set.get_timeline_of_attribute(self.key, attribute)
+        
+    def as_set(self):
+        return ParticlesSubset(self.particles_set, [self.key])
             

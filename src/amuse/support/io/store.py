@@ -32,7 +32,7 @@ class HDFParticleStorageInterface(object):
             return numpy.arange(0,len(self.particle_keys))
             
         mapping_from_particle_to_index = self.mapping_from_particle_to_index 
-        result = numpy.zeros(len(particles),dtype='int32')
+        result = numpy.zeros(len(keys),dtype='int32')
         
         index = 0
         for index, particle_key in enumerate(keys):
@@ -60,7 +60,7 @@ class HDFParticleStorageInterface(object):
         
         return results
         
-    def _get_keys():
+    def _get_keys(self):
         return self.particle_keys
         
     def _set_values(self, particles, attributes, quantities):
@@ -68,9 +68,9 @@ class HDFParticleStorageInterface(object):
         
         for attribute, quantity in zip(attributes, quantities):
             if attribute in self.attributesgroup:
-                dataset = attributes_group[attribute]
+                dataset = self.attributesgroup[attribute]
             else:
-                dataset = attributes_group.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
+                dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
                 dataset["unit"] =  str(quantity.unit.to_simple_form())
             dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
         
@@ -132,12 +132,12 @@ class StoreHDF(object):
             dataset.read_direct(keys)
 
             particles = class_of_the_particles()
-            particles.attributelist = HDFParticleStorageInterface(keys, group)
+            particles._private.attribute_storage = HDFParticleStorageInterface(keys, group)
             all_particle_sets[int(group_index) - 1] = particles
             
         previous = None
         for x in all_particle_sets:
-            x.previous = previous
+            x._private.previous = previous
             previous = x
             
         return all_particle_sets[-1]

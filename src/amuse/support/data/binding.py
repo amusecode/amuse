@@ -161,7 +161,6 @@ class InCodeAttributeStorage(object):
         
     def complies_with_state(self, attributes):
         attributes_in_getstate = self._mapping_from_attribute_names_to_set_keyword_and_unit().keys()
-        print attributes_in_getstate
         if not attributes_in_getstate:
             return False
         
@@ -352,7 +351,7 @@ class InterfaceWithObjectsBinding(object):
     def __init__(self):
         self.mapping_from_particleid_to_index = {}
         self.particles = Particles()
-        self.particles.attributelist = InCodeAttributeStorage(self)
+        self.particles._private.attribute_storage = InCodeAttributeStorage(self)
     
     def convert_to_nbody(self, x):
         if nbody_system.is_nbody_unit(x):

@@ -74,8 +74,6 @@ class SalpeterIMFTests(unittest.TestCase):
         total_mass, set_of_masses = instance.next_set(10000)
         mean = total_mass.value_in(units.MSun) / float(n)
         exact_mean = instance.mass_mean().value_in(units.MSun)
-        print mean
-        print abs(mean - exact_mean) 
         self.assertTrue(abs(mean - exact_mean) < 0.1)
         
     def test4(self):
