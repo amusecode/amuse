@@ -107,7 +107,7 @@ class InMemoryAttributeStorage(object):
                     
             index = len(self.particle_keys)
             
-            self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(keys)))
+            self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys))))
             for particle_key in keys:
                 self.mapping_from_particle_to_index[particle_key] = index
                 index += 1
