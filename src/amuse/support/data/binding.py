@@ -234,7 +234,7 @@ class InCodeAttributeStorage(object):
                 raise Exception("Could not setup a particle")
             
         if len(self.particle_keys) > 0:
-            self.particle_keys = numpy.concatenate((self.particle_keys, keys))
+            self.particle_keys = numpy.concatenate((self.particle_keys, list(keys)))
         else:
             self.particle_keys = numpy.array(keys)
 
