@@ -106,8 +106,9 @@ class InMemoryAttributeStorage(object):
             
                     
             index = len(self.particle_keys)
-            
+
             self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys))))
+  
             for particle_key in keys:
                 self.mapping_from_particle_to_index[particle_key] = index
                 index += 1
@@ -586,12 +587,14 @@ class AbstractParticleSet(object):
         removed_keys = other_keys - my_keys
         
         added_keys = list(added_keys)
-        attributes = self._get_attributes()
-        values = self._get_values(added_keys, attributes)
-        other_particles._set_particles(added_keys, attributes, values)
+        if added_keys:
+            attributes = self._get_attributes()
+            values = self._get_values(added_keys, attributes)
+            other_particles._set_particles(added_keys, attributes, values)
         
         removed_keys = list(removed_keys)
-        other_particles._remove_particles(removed_keys)
+        if removed_keys:
+            other_particles._remove_particles(removed_keys)
         
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
