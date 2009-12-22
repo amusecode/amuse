@@ -208,5 +208,5 @@ class twobody(object):
         self.particles[1]['vy']=cmvel[1]-f1*dvel[1]
         self.particles[1]['vz']=cmvel[2]-f1*dvel[2]                         
       self.tnow=self.tnow+dt
-      return 0
+      return collisionflag
 
