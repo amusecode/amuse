@@ -97,7 +97,7 @@ def universal_time_radius_solver(radius,mu,pos0,vel0,dt):
     return universal_kepler_dxidxi(xi,r0,vr0,smu,alpha)
       
   smu=math.sqrt(mu)
-  xi0=0.
+  xi0=1/math.sqrt(alpha)
   xi,err=newton(f,xi0,fprime=df,tol=1.e-10)  
   dt_coll=universal_kepler(xi,r0,vr0,smu,alpha)/smu
   if(dt_coll > 0 and dt_coll < dt):
@@ -212,3 +212,9 @@ class twobody(object):
       self.tnow=self.tnow+dt
       return collisionflag
 
+if __name__=='__main__':
+  nb=twobody()
+  nb.new_particle(5.9742e24,6.371e6,3.85e8,0.,0.,0.,0.,0.)
+  err=nb.evolve(3600.*24*30)
+  dt,err=nb.get_time()
+  print dt/24/3600.
