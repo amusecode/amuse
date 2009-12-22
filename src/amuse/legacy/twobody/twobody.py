@@ -148,6 +148,8 @@ class twobody(object):
       return copy.deepcopy(self.particles[pid]),0
     except:        
       return {},-1
+  def get_time(self):
+    return self.tnow,0
   def evolve(self,time_end):
       if(len(self.particles)!=1 and len(self.particles)!=2):
         return -1

@@ -24,11 +24,11 @@ class test_twobody(unittest.TestCase):
     self.assertAlmostEqual(state['vz']/(-0.967872571269e3),1.,7)
 
   def test2(self):
-    radius=7.1e6
-    #6.371e6
-    mu=5.9742e24*6.673e-11
-    pos0=numpy.array([0.,7.e6,-1.2124e7])
-    vel0=numpy.array([0.,2.6679e3,4.6210e3])    
-    dt,err=twobody.collision(radius,mu,pos0,vel0,3600.)
+    nb=twobody.twobody()
+    nb.new_particle(5.9742e24,7.1e6,0.,7.e6,-1.2124e7,0.,2.6679e3,4.6210e3)
+    err=nb.evolve(3600.)
     self.assertEqual(err,1)
+    dt,err=nb.get_time()
     self.assertAlmostEqual(dt/2584.9554627,1.,7)
+    state,err=nb.get_state(0)
+    self.assertAlmostEqual((state['x']**2+state['y']**2+state['z']**2)/(7.1e6)**2,1.,7)
