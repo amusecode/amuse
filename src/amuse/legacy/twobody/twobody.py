@@ -90,7 +90,11 @@ def universal_time_radius_solver(radius,mu,pos0,vel0,dt):
     return dt,0 
   if(r0==radius):
     return 0.,1
-
+  if(alpha>0):
+    ra=p/(1-math.sqrt(1-p*alpha))
+    if(radius > ra):
+      return dt,0 
+    
   def f(xi):
     return universal_kepler_dxi(xi,r0,vr0,smu,alpha)-radius
   def df(xi):
