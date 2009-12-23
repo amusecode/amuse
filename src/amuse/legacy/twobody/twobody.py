@@ -62,7 +62,6 @@ def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
     return x0
   i=0
   x=x0
-  x1=0  
   while (i<maxiter):
     fv=f(x,*args)
     dfv=fprime(x,*args)
@@ -78,7 +77,7 @@ def newton(f,x0,fprime=None,args=(),tol=1.48e-8,maxiter=50):
 def universal_time_radius_solver(radius,mu,pos0,vel0,dt):
   r02=reduce(lambda x,y: x+ y**2,pos0,0)
   v02=reduce(lambda x,y: x+ y**2,vel0,0)
-  v0r0=(reduce(lambda x,y: x+y, pos0*vel0,0))
+  v0r0=reduce(lambda x,y: x+y, pos0*vel0,0)
   r0=math.sqrt(r02)
   v0=math.sqrt(v02)
   vr0=v0r0/r0
@@ -94,15 +93,17 @@ def universal_time_radius_solver(radius,mu,pos0,vel0,dt):
     ra=p/(1-math.sqrt(1-p*alpha))
     if(radius > ra):
       return dt,0 
-    
+
+  smu=math.sqrt(mu)
+  xi0=1/math.sqrt(alpha)
+      
   def f(xi):
     return universal_kepler_dxi(xi,r0,vr0,smu,alpha)-radius
   def df(xi):
     return universal_kepler_dxidxi(xi,r0,vr0,smu,alpha)
       
-  smu=math.sqrt(mu)
-  xi0=1/math.sqrt(alpha)
   xi,err=newton(f,xi0,fprime=df,tol=1.e-10)  
+
   dt_coll=universal_kepler(xi,r0,vr0,smu,alpha)/smu
   if(dt_coll > 0 and dt_coll < dt):
     return dt_coll,1
