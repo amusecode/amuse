@@ -477,8 +477,8 @@ def new_quantity(value, unit):
         return VectorQuantity(value, unit)
     if unit.is_non_numeric():
         return NonNumericQuantity(value, unit)
-    if not unit.base:
-        return value
+#    if not unit.base:
+#        return value
     return ScalarQuantity(value, unit)
     
     
