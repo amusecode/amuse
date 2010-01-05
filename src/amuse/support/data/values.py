@@ -114,6 +114,10 @@ class Quantity(object):
             
     def in_(self, x):
         return self.as_quantity_in(x)
+
+    def in_base(self):
+        unit=self.unit.base_unit()
+        return self.as_quantity_in(unit)
     
     def as_quantity_in(self, another_unit): 
         """
@@ -195,6 +199,10 @@ class ScalarQuantity(Quantity):
             
     def copy(self):
         return new_quantity(self.number, self.unit)
+
+    def to_unit(self):
+        in_base=self.in_base()
+        return in_base.number * in_base.unit
             
 class VectorQuantity(Quantity):
     """
@@ -469,6 +477,8 @@ def new_quantity(value, unit):
         return VectorQuantity(value, unit)
     if unit.is_non_numeric():
         return NonNumericQuantity(value, unit)
+    if not unit.base:
+        return value
     return ScalarQuantity(value, unit)
     
     

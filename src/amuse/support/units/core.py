@@ -220,8 +220,19 @@ class unit(object):
         
         """
         return other.base == self.base
-            
-    
+
+    def base_unit(self):
+        if not self.base:
+            return none_unit('none', 'none')
+        
+        unit = 1
+        for n, base in self.base:
+            if n == 1:
+                unit = unit*base 
+            else:
+                unit = unit*(base ** n)        
+        return unit
+                
     def is_non_numeric(self):
         return False
         
