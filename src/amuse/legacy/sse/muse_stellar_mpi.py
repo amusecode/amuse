@@ -190,9 +190,10 @@ class SSEParticles(Particles):
         
         super(SSEParticles, self)._set_particles(keys, all_attributes, all_values)
         
-        self._private.code_interface.evolve_model(1e-06 | units.Myr)
+        added_particles = ParticlesSubset(self, keys)
+        self._private.code_interface.evolve_particles_method._run(self._privat.code_interface, added_particles, 1e-06 | units.Myr)
     
-    def _get_attributes_old(self):
+    def _state_attributes(self):
         return ["mass", "radius"]
         
 class SSEBinding(InterfaceWithParametersBinding):

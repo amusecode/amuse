@@ -393,6 +393,9 @@ class InMemoryAttributeStorage(object):
     def attributes(self):
         return set(self.mapping_from_attribute_to_values_and_unit.keys())
     
+    def _state_attributes(self):
+        return self.attributes()
+        
     def __str__(self):
         attributes = sorted(self.attributes())
         
@@ -721,6 +724,10 @@ class ParticleInformationChannel(object):
         
     def copy_attributes(self, attributes):
         data = self.from_particles._get_values(self.keys, attributes)
+        self.to_particles._set_values(self.keys, attributes, data)
+    
+    def copy(self):
+        data = self.from_particles._get_values(self.keys, self.from_particles._get_attributes())
         self.to_particles._set_values(self.keys, attributes, data)
     
 class Stars(Particles):

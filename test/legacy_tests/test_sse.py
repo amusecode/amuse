@@ -222,7 +222,9 @@ class TestSSE(TestWithMPI):
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        sse.setup_particles(stars)
+        sse.particles.add_particles(stars)
+        from_sse_to_model = sse.particles.new_channel_to(stars)
+        from_sse_to_model.copy()
         
         previous_type = star.type
         results = []
@@ -281,14 +283,10 @@ class TestSSE(TestWithMPI):
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        sse.setup_particles(stars)
-        
-        previous_type = star.type
-        results = []
-        
-        sse.evolve_particles(stars, 120.1 | units.Myr)
+        sse.particles.add_particles(stars)
+        sse.evolve_model(120.1 | units.Myr)
                 
-        self.assertAlmostEqual(star.mass.value_in(units.MSun), 4.932, 3)
+        self.assertAlmostEqual(sse.particles[0].mass.value_in(units.MSun), 4.932, 3)
          
         del sse
         
