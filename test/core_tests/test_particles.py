@@ -1,6 +1,7 @@
 import unittest
 
 from amuse.support.units import units
+from amuse.support.units import nbody_system
 from amuse.support.data import core
 from amuse.support.data import binding
 from amuse.support.data import attributes
@@ -286,6 +287,72 @@ class TestParticlesWithBinding(TestBase):
         
         
         
+        
+        
+class TestParticlesWithUnitsConverted(TestBase):
+    
+    def test1(self):
+        stars = core.Stars(2)
+        stars[0].mass = 10 | units.g
+        stars[1].mass = 20 | units.g
+        
+        class LengthMassConverter(object):
+            "source == length, m"
+            "target == mass, g"
+            source_unit = units.m
+            target_unit = units.g
+            
+            def from_source_to_target(self, quantity):
+                value = quantity.value_in(self.source_unit)
+                return self.target_unit.new_quantity(value) 
+                
+            def from_target_to_source(self, quantity):
+                value = quantity.value_in(self.target_unit)
+                return self.source_unit.new_quantity(value) 
+        
+        converted_stars = core.ParticlesWithUnitsConverted(stars, LengthMassConverter())
+        
+        self.assertEquals(stars[0].mass, 10 | units.g)
+        self.assertEquals(converted_stars[0].mass, 10 | units.m)
+        
+        
+        converted_stars[0].mass = 30 | units.m
+        
+        self.assertEquals(stars[0].mass, 30 | units.g)
+        
+    
+    def test2(self):
+        convert_nbody = nbody_system.nbody_to_si(10 | units.kg , 5 | units.m )
+        
+        stars = core.Stars(1)
+        stars[0].mass = 10 | nbody_system.mass
+        stars[0].x = 10.0 | nbody_system.length
+        stars[0].y = 20.0 | nbody_system.length
+        stars[0].z = 30.0 | nbody_system.length
+        
+        
+        converted_stars = core.ParticlesWithUnitsConverted(
+            stars, 
+            convert_nbody.as_converter_from_si_to_nbody())
+        
+        self.assertEquals(stars[0].mass, 10 | nbody_system.mass)
+        print converted_stars[0].mass.number 
+        print (100.0 | units.kg).number 
+        self.assertAlmostEqual(converted_stars[0].mass.value_in(units.kg), 100.0, 5)
+        
+        converted_star = converted_stars[0]
+        
+        expected = [50.0, 100.0, 150.0]
+        for i in range(3):
+            self.assertAlmostEqual(converted_star.position[i].value_in(units.m), expected[i], 6)
+            
+        converted_star.position = [100.0, 200.0, 300.0] | units.m
+        star = stars[0]
+        
+        expected = [20.0, 40.0, 60.0]
+        for i in range(3):
+            self.assertAlmostEqual(star.position[i].value_in(nbody_system.length), expected[i], 6)
+            
         
         
         

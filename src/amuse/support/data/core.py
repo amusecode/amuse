@@ -211,17 +211,6 @@ class InMemoryAttributeStorage(object):
         
         return attribute_values.unit.new_quantity(attribute_values.values[index])
         
-    def set_value_of(self, particle_key, attribute, quantity):
-        index = self.mapping_from_particle_to_index[particle_key]
-            
-        if index is None:
-            raise Exception("particle with key '{0}' is not in this set".format(particle_key))
-            
-        attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
-             
-        value_to_set = quantity.value_in(attribute_values.unit)
-        attribute_values.values[index] = value_to_set
-        
             
     def iter_values_of_particle(self, particle_key):
         index = self.mapping_from_particle_to_index[particle_key]
@@ -356,39 +345,6 @@ class InMemoryAttributeStorage(object):
             index += 1
           
         self.mapping_from_particle_to_index = d
-        
-    def get_attribute_as_vector(self, particle_key, names_of_the_scalar_attributes):
-        index = self.mapping_from_particle_to_index[particle_key]
-        vector = []
-        for i, attribute in enumerate(names_of_the_scalar_attributes):
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            vector.append(attribute_values.values[index])
-            unit_of_the_vector = attribute_values.unit
-        return vector | unit_of_the_vector
-                
-    def set_attribute_as_vector(self, particle_key, names_of_the_scalar_attributes, quantity):
-        index = self.mapping_from_particle_to_index[particle_key]
-        vector = []
-        for i, attribute  in enumerate(names_of_the_scalar_attributes):
-            attribute_values = self.get_attributevalues_for(attribute, quantity.unit)
-        
-            value_to_set = quantity[i].value_in(attribute_values.unit)
-            attribute_values.values[index] = value_to_set
-           
-            
-    
-    def get_attributevalues_for(self, attribute, unit):
-        if attribute in self.mapping_from_attribute_to_values_and_unit:
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-        else:
-            attribute_values = AttributeValues(
-                attribute,
-                unit,
-                length = len(self.particle_keys)
-            )
-            self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
-        return attribute_values
-
 
     def attributes(self):
         return set(self.mapping_from_attribute_to_values_and_unit.keys())
@@ -441,27 +397,6 @@ class InMemoryAttributeStorage(object):
         
         
         
-    def get_attributes_as_vector_quantities(self, attributes):
-        for attribute in attributes:
-            if not attribute in self.mapping_from_attribute_to_values_and_unit:
-                raise AttributeError("unknown attribute '{0}'".format(attribute))
-        
-        unit_of_the_values = None
-        results = []
-        for attribute in attributes:
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            if unit_of_the_values is None:
-                unit_of_the_values = attribute_values.unit
-                results.append(attribute_values.values)
-            else:
-                conversion_factor = attribute_values.unit.value_in(unit_of_the_values)
-                if conversion_factor != 1.0:
-                    results.append(attribute_values.values * conversion_factor)
-                else:                    
-                    results.append(attribute_values.values)
-        
-        results = numpy.dstack(results)[0]
-        return unit_of_the_values.new_quantity(results)
         
     def set_model_time(self, value): 
         model_times = self._convert_model_times(value, len(self.particle_keys))
@@ -469,7 +404,10 @@ class InMemoryAttributeStorage(object):
             attribute_values.model_times = model_times
 
 
+
+
 class AbstractParticleSet(object):
+    GLOBAL_VECTOR_ATTRIBUTES = {}
     
     class PrivateProperties(object):
         """
@@ -485,8 +423,18 @@ class AbstractParticleSet(object):
             self.attribute_names = attribute_names
         
         def _get_values(self, instance):
-            return instance._private.attribute_storage.get_attributes_as_vector_quantities(self.attribute_names)
+            values = instance._get_values(instance._get_keys(), self.attribute_names)
+              
+            unit_of_the_values = None
+            results = []
+            for quantity in values:
+                if unit_of_the_values is None:
+                    unit_of_the_values = quantity.unit
+                results.append(quantity.value_in(unit_of_the_values))
                 
+            results = numpy.dstack(results)[0]
+            return unit_of_the_values.new_quantity(results)
+
         def _set_values(self, instance, value):
             vectors = value.number
             split = numpy.hsplit(vectors,len(self.attribute_names))
@@ -496,11 +444,29 @@ class AbstractParticleSet(object):
                 list_of_values.append(values)
                 
             instance._set_values(instance._get_keys(), self.attribute_names, list_of_values)
-    
-    
         
+        def get_value_for_particle(self, instance,  key):
+            values = instance._get_values([key], self.attribute_names)
+              
+            unit_of_the_values = None
+            results = []
+            for quantity in values:
+                if unit_of_the_values is None:
+                    unit_of_the_values = quantity.unit
+                results.append(quantity.value_in(unit_of_the_values))
+                
+            results = numpy.dstack(results)[0]
+            return unit_of_the_values.new_quantity(results[0])
+    
+        def set_value_for_particle(self, instance, key, vector):
+            list_of_values = []
+            for quantity in vector:
+                list_of_values.append(quantity.as_vector_with_length(1))
+            instance._set_values([key], self.attribute_names, list_of_values)
+        
+            
     def __init__(self):
-        object.__setattr__(self, "_vector_attributes", {})
+        object.__setattr__(self, "_vector_attributes", self.GLOBAL_VECTOR_ATTRIBUTES.copy())
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     def __getattr__(self, name_of_the_attribute):
@@ -515,11 +481,24 @@ class AbstractParticleSet(object):
         else:
             self._set_values(self._get_keys(), [name_of_the_attribute], [value])
     
+    def _get_value_of_attribute(self, key, attribute):
+        if attribute in self._vector_attributes:
+            return self._vector_attributes[attribute].get_value_for_particle(self, key)
+        else:
+            return self._get_values([key], [attribute])[0][0]
+            
+    
+    def _set_value_of_attribute(self, key, attribute, value):
+        if attribute in self._vector_attributes:
+            return self._vector_attributes[attribute].set_value_for_particle(self, key, value)
+        else:
+            return self._set_values([key], [attribute], value.as_vector_with_length(1))
+        
     #
     # Particle storage interface
     #
     
-    def _get_values(self, keys, attribues):
+    def _get_values(self, keys, attributes):
         pass
     
     def _set_values(self, keys, attributes, values):
@@ -549,6 +528,9 @@ class AbstractParticleSet(object):
     def add_vector_attribute(self, name_of_the_attribute, name_of_the_components):
         self._vector_attributes[name_of_the_attribute] = self.VectorAttribute(name_of_the_components)
         
+    @classmethod
+    def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
+        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = cls.VectorAttribute(name_of_the_components)
         
     #
     # public API
@@ -732,6 +714,56 @@ class ParticlesSubset(AbstractParticleSet):
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
 
 
+
+
+class ParticlesWithUnitsConverted(AbstractParticleSet):
+    """A sub set of particle objects"""
+    def __init__(self, particles, converter):
+        AbstractParticleSet.__init__(self)
+        
+        self._private.particles = particles
+        self._private.converter = converter
+              
+        
+    def _set_particles(self, keys, attributes = [], values = []):
+        converted_values = []
+        for quantity in values:
+            converted_quantity = self._private.converter.from_source_to_target(quantity)
+            converted_values.append(converted_quantity)
+        self._private.particles._set_particles(keys, attributes, converted_values)
+        
+    def _remove_particles(self, keys):
+        self._private.particles._remove_particles(keys)
+        
+    def _get_values(self, keys, attributes):
+        values = self._private.particles._get_values(keys, attributes)
+        converted_values = []
+        for quantity in values:
+            converted_quantity = self._private.converter.from_target_to_source(quantity)
+            converted_values.append(converted_quantity)
+        return converted_values
+        
+    def _set_values(self, keys, attributes, values):
+        converted_values = []
+        for quantity in values:
+            converted_quantity = self._private.converter.from_source_to_target(quantity)
+            converted_values.append(converted_quantity)
+        self._private.particles._set_values(keys, attributes, converted_values)
+    
+    def _get_attributes(self):
+        return self._private.particles._get_attributes()
+        
+    def _get_keys(self):
+        return self._private.particles._get_keys()
+        
+    def _has_key(self, key):
+        return self._private.particles._has_key(key)
+        
+    def to_set(self):
+        return ParticlesSubset(self, self._get_keys())
+    
+            
+
 class ParticleInformationChannel(object):
     
     def __init__(self, from_particles, to_particles):
@@ -756,12 +788,12 @@ class ParticleInformationChannel(object):
     def copy(self):
         self.copy_attributes(self.from_particles._get_attributes())
     
+
+        
 class Stars(Particles):
 
     def __init__(self, size = 0):
         Particles.__init__(self, size)
-        self.add_vector_attribute("position", ["x","y","z"])
-        self.add_vector_attribute("velocity", ["vx","vy","vz"])
     
     
     def center_of_mass(self):
@@ -781,8 +813,6 @@ class Stars(Particles):
             massz/total_mass
         )
 
-    
-    
     def center_of_mass_velocity(self):
         masses = self.mass
         x_values = self.vx
@@ -833,28 +863,7 @@ class Stars(Particles):
            sum_of_energies +=  -1 * units.G * energy_of_this_particle
             
         return sum_of_energies
-        
-        
-        
-        
-        
-            
-        
-            
-class VectorAttribute(object):
-    def __init__(self, names_of_the_scalar_components):
-        self.names_of_the_scalar_components = names_of_the_scalar_components
-        
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        else:
-            return instance.particles_set._private.attribute_storage.get_attribute_as_vector(instance.key, self.names_of_the_scalar_components)
-    
-    
-    def __set__(self, instance, quantity):
-        instance.particles_set._private.attribute_storage.set_attribute_as_vector(instance.key, self.names_of_the_scalar_components, quantity)
-            
+
 class Particle(object):
     """A physical object or a physical region simulated as a 
     physical object (cload particle).
@@ -868,8 +877,6 @@ class Particle(object):
     __slots__ = ["key", "particles_set"]
     
     
-    position = VectorAttribute(("x","y","z"))
-    velocity = VectorAttribute(("vx","vy","vz"))
     
     def __init__(self, key = None, particles_set = None, **keyword_arguments):
         if particles_set is None:
@@ -884,17 +891,14 @@ class Particle(object):
             setattr(self, attribute_name, attribute_value)
             
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
-        if hasattr(type(self), name_of_the_attribute):
-            getattr(type(self), name_of_the_attribute).__set__(self, new_value_for_the_attribute)
-            return
-            
+       
         if isinstance(new_value_for_the_attribute, values.Quantity):
-            self.particles_set._private.attribute_storage.set_value_of(self.key, name_of_the_attribute, new_value_for_the_attribute)
+            self.particles_set._set_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
         else:
             raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")
     
     def __getattr__(self, name_of_the_attribute):
-         return self.particles_set._private.attribute_storage._get_values([self.key], [name_of_the_attribute])[0][0]
+         return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
          
                 
     def __str__(self):
@@ -911,12 +915,16 @@ class Particle(object):
         return output
         
     def set_default(self, attribute, quantity):
-        if not attribute in self.set._private.attribute_storage.attributes():
-            self.particles_set._private.attribute_storage.set_value_of(self, attribute, quantity)
+        if not attribute in self.particles_set._get_attributes():
+            self.particles_set._set_value_of_attribute(self, attribute, quantity)
             
     def get_timeline_of_attribute(self, attribute):
         return self.particles_set.get_timeline_of_attribute(self.key, attribute)
         
     def as_set(self):
         return ParticlesSubset(self.particles_set, [self.key])
+        
+
+AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
+AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
             

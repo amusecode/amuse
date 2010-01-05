@@ -195,6 +195,19 @@ class nbody_to_si(object):
     def set_default_converter_if_uninitialised(cls, object):
         if cls.DEFAULT_CONVERTER is None:
             cls.set_default_converter(object)
+            
+    def as_converter_from_si_to_nbody(self):
+        class SiToNBodyConverter(object):
+            def __init__(self, nbody_to_si):
+                self.nbody_to_si = nbody_to_si
+            
+            def from_source_to_target(self, quantity):
+                return self.nbody_to_si.to_nbody(quantity) 
+                
+            def from_target_to_source(self, quantity):
+                return self.nbody_to_si.to_si(quantity) 
+                
+        return SiToNBodyConverter(self)
 
 class noconvert_nbody_to_si(object): 
     
