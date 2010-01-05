@@ -107,7 +107,10 @@ class ParticleAttributesModifier(CodeMethod):
                 continue  
             attribute_name, unit = self.mapping_from_parameter_name_to_attribute_and_unit[parameter.name]
             if parameter.is_output():
-                setattr(particles, attribute_name, unit.new_quantity(result_dictionary[parameter.name]))
+                if not hasattr(result_dictionary, "keys"):
+                    setattr(particles, attribute_name, unit.new_quantity(result_dictionary))
+                else:
+                    setattr(particles, attribute_name, unit.new_quantity(result_dictionary[parameter.name]))
     
         
             

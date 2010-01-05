@@ -6,7 +6,7 @@ from amuse.legacy import *
 from amuse.support.data.values import Quantity
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 from amuse.support.data.binding import ParticleAttributesModifier
-from amuse.support.data.core import Particles
+from amuse.support.data.core import Particles, ParticlesSubset
 
 class SSEInterface(LegacyInterface): 
     def __init__(self):
@@ -181,7 +181,7 @@ class SSEParticles(Particles):
         if not "initial_mass" in given_attributes:
             index_of_mass_attibute = attributes.index("mass")
             all_attributes.append("initial_mass")
-            all_values.append(values[index_of_mass_attibute])
+            all_values.append(values[index_of_mass_attibute] * 1.0)
         
         for attribute, default_value in mapping_from_attribute_to_default_value.iteritems():
             if not attribute in given_attributes:
@@ -191,7 +191,7 @@ class SSEParticles(Particles):
         super(SSEParticles, self)._set_particles(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
-        self._private.code_interface.evolve_particles_method._run(self._privat.code_interface, added_particles, 1e-06 | units.Myr)
+        self._private.code_interface.evolve_particles_method._run(self._private.code_interface, added_particles, 1e-06 | units.Myr)
     
     def _state_attributes(self):
         return ["mass", "radius"]
@@ -211,7 +211,7 @@ class SSEBinding(InterfaceWithParametersBinding):
             ("main_sequence_lifetime", "tm", units.Myr),
             ("current_time", "age", units.Myr),
             ("epoch", "epoch", units.Myr),
-            ("dt", "timestep", units.Myr),
+            ("time_step", "dt", units.Myr),
         )
     )
         

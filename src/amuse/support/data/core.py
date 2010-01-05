@@ -727,8 +727,7 @@ class ParticleInformationChannel(object):
         self.to_particles._set_values(self.keys, attributes, data)
     
     def copy(self):
-        data = self.from_particles._get_values(self.keys, self.from_particles._get_attributes())
-        self.to_particles._set_values(self.keys, attributes, data)
+        self.copy_attributes(self.from_particles._get_attributes())
     
 class Stars(Particles):
 

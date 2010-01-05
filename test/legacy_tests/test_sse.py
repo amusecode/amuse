@@ -229,9 +229,17 @@ class TestSSE(TestWithMPI):
         previous_type = star.type
         results = []
         t0 = 0 | units.Myr
-        while t0 < (125 | units.Myr):
-            t0 += sse.get_timesteps(stars)[0]
-            sse.evolve_particles(stars, [t0])
+        current_time = t0
+        
+        while current_time < (125 | units.Myr):
+            sse.update_time_steps()
+            
+            current_time = current_time + sse.particles[0].time_step
+            
+            sse.evolve_model(current_time)
+
+            from_sse_to_model.copy()
+            
             if not star.type == previous_type:
                 results.append((star.current_time, star.mass, star.type))
                 previous_type = star.type
