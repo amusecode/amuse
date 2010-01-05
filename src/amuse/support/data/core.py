@@ -572,7 +572,7 @@ class AbstractParticleSet(object):
         return ParticleInformationChannel(self, other)
         
     def add_particles(self, particles):
-        attributes = self._get_attributes()
+        attributes = particles._get_attributes()
         keys = particles._get_keys()
         values = particles._get_values(None, attributes)
         self._set_particles(keys, attributes, values)
@@ -640,6 +640,7 @@ class Particles(AbstractParticleSet):
          result = Particles()
          result._set_particles(keys, attributes, values)
          return result
+    
         
     def _set_particles(self, keys, attributes = [], values = []):
         self._private.attribute_storage._set_particles(keys, attributes, values)

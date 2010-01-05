@@ -4,7 +4,7 @@ Stellar Dynamics Interface Defintion
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
-from amuse.support.data.binding import CodeProperty
+from amuse.support.data.binding import CodeProperty, InCodeAttributeStorage2
 from amuse.support.units import nbody_system
 
 class GravitationalDynamics(object):
@@ -755,6 +755,7 @@ class NBodyGravitationalDynamicsBinding(InterfaceWithParametersBinding, Interfac
     center_of_mass_velocity = CodeProperty("get_center_of_mass_velocity", nbody_system.length / nbody_system.time)
     total_mass = CodeProperty("get_total_mass", nbody_system.mass)
     model_time = CodeProperty("get_time", nbody_system.time)
+    
     
     
     

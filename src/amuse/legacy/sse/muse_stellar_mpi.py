@@ -6,6 +6,7 @@ from amuse.legacy import *
 from amuse.support.data.values import Quantity
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 from amuse.support.data.binding import ParticleAttributesModifier
+from amuse.support.data.core import Particles
 
 class SSEInterface(LegacyInterface): 
     def __init__(self):
@@ -147,12 +148,60 @@ class SSEInterface(LegacyInterface):
                 return
     
         
+class SSEParticles(Particles):
+    
+    def __init__(self, code_interface):
+        Particles.__init__(self)
+        self._private.code_interface = code_interface 
+        
+    def _set_particles(self, keys, attributes = [], values = []):
+        if len(keys) == 0:
+            return
+            
+        all_attributes = []
+        all_attributes.extend(attributes)
+        all_values = []
+        all_values.extend(values)
+        
+        mapping_from_attribute_to_default_value = {
+            "type" : 1 | units.stellar_type,
+            "luminosity":  0 | units.LSun,
+            "core_mass": 0 | units.MSun,
+            "core_radius": 0 | units.RSun,
+            "envelope_mass": 0 | units.MSun,
+            "envelope_radius": 0 | units.RSun,
+            "epoch": 0 | units.Myr ,
+            "spin": 0 | units.none ,
+            "main_sequence_lifetime": 0 | units.Myr,
+            "current_time": 0 | units.Myr
+        }
+        
+        given_attributes = set(attributes)
+        
+        if not "initial_mass" in given_attributes:
+            index_of_mass_attibute = attributes.index("mass")
+            all_attributes.append("initial_mass")
+            all_values.append(values[index_of_mass_attibute])
+        
+        for attribute, default_value in mapping_from_attribute_to_default_value.iteritems():
+            if not attribute in given_attributes:
+                all_attributes.append(attribute)
+                all_values.append(default_value.as_vector_with_length(len(keys)))
+        
+        super(SSEParticles, self)._set_particles(keys, all_attributes, all_values)
+        
+        self._private.code_interface.evolve_model(1e-06 | units.Myr)
+    
+    def _get_attributes_old(self):
+        return ["mass", "radius"]
+        
 class SSEBinding(InterfaceWithParametersBinding):
     
     def __init__(self):
         InterfaceWithParametersBinding.__init__(self)
+        self.particles = SSEParticles(self)
         
-    stime_step = ParticleAttributesModifier(
+    update_time_step_method = ParticleAttributesModifier(
         "get_time_step",
         (
             ("type", "kw", units.stellar_type),
@@ -166,7 +215,7 @@ class SSEBinding(InterfaceWithParametersBinding):
     )
         
          
-    evolve_particles = ParticleAttributesModifier(
+    evolve_particles_method = ParticleAttributesModifier(
         "evolve",
         (
             ("type", "kw", units.stellar_type),
@@ -179,9 +228,12 @@ class SSEBinding(InterfaceWithParametersBinding):
             ("envelope_mass", "menv", units.MSun),
             ("envelope_radius", "renv", units.RSun),
             ("epoch", "epoch", units.Myr),
-            ("spin", "spin", units.none),
+            ("spin", "ospin", units.none),
             ("main_sequence_lifetime", "tm", units.Myr),
             ("current_time", "tphys", units.Myr),
+        ),
+        (
+            ("end_time", 'tphysf', units.Myr),
         )
     )
     
@@ -306,27 +358,18 @@ class SSEBinding(InterfaceWithParametersBinding):
         particles._private.attribute_storage.set_values_of_particles_in_units(None, attributes, values, all_units)
         self.evolve_particles(particles, 1e-06 | units.Myr)
         
-    
-    def evolve_model(self, time_end):
-        timesteps = self.get_timesteps(self.particles)
         
-        values_in_myr = timesteps.value_in(units.Myr)
-        time_end_in_myr = time_end.value_in(units.Myr)
+    def evolve_model(self, end_time):
+        self.evolve_particles_method._run(self, self.particles, end_time)
         
-        while t < time_end:
-            t0 = t
-            t  = t0 + self.get_time_step_for_star(particle)
-            if t > time_end:
-                t = time_end
-            self.evolve_star(particle, t)
-            t1 = particle.current_time
-            dt = t1 - t0
-            t0 = t1
-            if dt.value_in(units.Myr) == 0.0:
-                print t, t0, t1, dt, "BREAK BREAK BREAK!"
-                return
-            if particle.type.value_in(units.none) == 15:
-                return
+    def update_time_steps(self):
+        self.update_time_step_method._run(self, self.particles)
+        
+    def evolve_model_using_timesteps(self, time_end):
+        self.update_time_steps()
+        next_time = self.particles.time_step + self.particles.current_time
+        self.evolve_model(next_time)
+        
     
     def evolve_particles(self, particles, target_times):
        

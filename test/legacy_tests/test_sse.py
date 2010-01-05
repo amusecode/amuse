@@ -302,19 +302,24 @@ class TestSSE(TestWithMPI):
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        sse.setup_particles(stars)
+        stars.synchronize_to(sse.particles)
         
-        previous_type = star.type
+        channel = sse.particles.new_channel_to(stars)
+        channel.copy_attributes(sse.particles._get_attributes())   
+        
+        previous_type = sse.particles.type
         results = []
         
-        sse.evolve_particles(stars, 121.5 | units.Myr)
-                
+        sse.evolve_model(121.5 | units.Myr)
+        
+        channel.copy_attributes(sse.particles._get_attributes())   
+        
         self.assertAlmostEqual(star.mass.value_in(units.MSun), 0.997, 3)
          
         del sse
         
     
-    def test4(self):
+    def test5(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
         stars =  Stars(1)
@@ -323,7 +328,10 @@ class TestSSE(TestWithMPI):
         star.mass = 35 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        sse.setup_particles(stars)
+        stars.synchronize_to(sse.particles)
+        
+        channel = sse.particles.new_channel_to(stars)
+        channel.copy_attributes(sse.particles._get_attributes())   
         
         previous_type = star.type
         results = []
@@ -332,9 +340,9 @@ class TestSSE(TestWithMPI):
         t = 0 | units.Myr
         while t < 30 | units.Myr:
             t += dt
-            sse.evolve_particles(stars, t)
+            sse.evolve_model(t)
                 
-        self.assertTrue(star.mass.value_in(units.MSun) < 10.6)
+        self.assertTrue(sse.particles[0].mass.value_in(units.MSun) < 10.6)
          
         del sse
 

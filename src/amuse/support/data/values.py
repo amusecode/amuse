@@ -110,7 +110,7 @@ class Quantity(object):
             return new_quantity(self.number / other , self.unit.to_simple_form())
     
     def __rdiv__(self, other):
-        return new_quantity(other.number / self.number , (other.unit / self.unit).to_simple_form())
+        return new_quantity(other / self.number , (1.0 / self.unit).to_simple_form())
             
     def in_(self, x):
         return self.as_quantity_in(x)
@@ -160,7 +160,10 @@ class ScalarQuantity(Quantity):
                   
     def is_scalar(self):
         return True
-      
+    
+    def as_vector_with_length(self, length):
+        return VectorQuantity(numpy.ones(length) * self.number, self.unit)
+        
     def __str__(self):
         unit_str = str(self.unit)
         if unit_str:
@@ -211,7 +214,7 @@ class VectorQuantity(Quantity):
     def __init__(self, array, unit):
         Quantity.__init__(self, unit)
         self._number = numpy.array(array)
-        
+    
     @classmethod
     def new_from_scalar_quantities(cls, *values):
         unit = None
@@ -221,9 +224,16 @@ class VectorQuantity(Quantity):
                 unit = x.unit
             array.append(x.value_in(unit))
         return cls(array, unit)
+
     
     def is_vector(self):
         return True
+        
+    
+    def as_vector_with_length(self, length):
+        if length != len(self):
+            raise Exception("Can only return a vector with the same length")
+        return self
     
     def __len__(self):
         return len(self._number)
@@ -435,6 +445,12 @@ class NonNumericQuantity(Quantity):
         if not other.unit == self.unit:
             return False
         return self.value == other.value
+        
+    
+    def as_vector_with_length(self, length):
+        return VectorQuantity(numpy.ones(length) * self.value, self.unit)
+        
+    
         
     
     

@@ -2,6 +2,9 @@ from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.data.core import Particles
+from amuse.support.data.binding import InCodeAttributeStorage2
+from amuse.support.data import binding
 
 class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     """ 
@@ -49,6 +52,71 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         """
         return function
         
+        
+
+class HermiteInCodeAttributeStorage(InCodeAttributeStorage2):
+    new_particle_method = binding.NewParticleMethod(
+        "new_particle", 
+        (
+            ("mass", "mass", nbody_system.mass),
+            ("radius", "radius", nbody_system.length),
+            ("x", "x", nbody_system.length),
+            ("y", "y", nbody_system.length),
+            ("z", "z", nbody_system.length),
+            ("vx", "vx", nbody_system.speed),
+            ("vy", "vy", nbody_system.speed),
+            ("vz", "vz", nbody_system.speed),
+        )
+    )
+    
+    getters = (
+        binding.ParticleGetAttributesMethod(
+            "get_mass",
+            (
+                ("mass", "mass", nbody_system.mass),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_radius",
+            (
+                ("radius", "radius", nbody_system.length),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_position",
+            (
+                ("vx", "vx", nbody_system.speed),
+                ("vy", "vy", nbody_system.speed),
+                ("vz", "vz", nbody_system.speed),
+            )
+        ),
+    )
+    
+    
+    setters = (
+        binding.ParticleSetAttributesMethod(
+            "set_mass",
+            (
+                ("mass", "mass", nbody_system.mass),
+            )
+        ),
+        binding.ParticleSetAttributesMethod(
+            "set_radius",
+            (
+                ("radius", "radius", nbody_system.length),
+            )
+        ),
+        binding.ParticleSetAttributesMethod(
+            "set_position",
+            (
+                ("x", "x", nbody_system.length),
+                ("y", "y", nbody_system.length),
+                ("z", "z", nbody_system.length),
+            )
+        ),
+        
+    )
+            
 class HermiteBinding(NBodyGravitationalDynamicsBinding):
     parameter_definitions = [
         parameters.ModuleAttributeParameterDefinition(
@@ -59,6 +127,9 @@ class HermiteBinding(NBodyGravitationalDynamicsBinding):
             0.0 | nbody_system.length * nbody_system.length
         )
     ]
+    
+    
+    
     
     attribute_definitions = [
         attributes.AttributeDefinition(
@@ -97,6 +168,10 @@ class HermiteBinding(NBodyGravitationalDynamicsBinding):
 
     def __init__(self, convert_nbody = None):
         NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+        
+        self.nbody_particles = Particles()
+        self.nbody_particles._private.attribute_storage = HermiteInCodeAttributeStorage(self)
+        
     
     def current_model_time(self):
         return self.convert_nbody.to_si( self.t | nbody_system.time)

@@ -106,12 +106,14 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print "setting masses of the stars"
     
     particles.radius = units.RSun.new_quantity(numpy.zeros(len(particles)))
-    
     particles.mass = salpeter_masses
     
                 
     print "initializing the particles"
-    stellar_evolution.setup_particles(particles)
+    stellar_evolution.particles.add_particles(particles)
+    
+    from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(particles)
+    from_stellar_evolution_to_model.copy_attributes(["mass"])
     
     print "centering the particles"
     
@@ -127,7 +129,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
     
-    gravity.setup_particles(particles)
+    gravity.particles.add_particles(particles)
     
         
     time = 0 | units.Myr
@@ -146,6 +148,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
       
+    from_model_to_gravity = particles.new_channel_to(gravity.particles)
     
     while time < end_time:
         time += 0.25 | units.Myr
@@ -161,7 +164,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
         print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
         print "stellar evolution step starting"
-        stellar_evolution.evolve_particles(particles, time)
+        stellar_evolution.evolve_model(time)
+        from_stellar_evolution_to_model.copy_attributes(["mass", "radius"])
         print "stellar evolution step done"
         
         particles.savepoint()
@@ -173,7 +177,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         print  "center of mass velocity:" , particles.center_of_mass_velocity()
         
     
-        gravity.set_attribute("mass", particles)
+        from_model_to_gravity.copy_attributes(["mass"])
     
         
     

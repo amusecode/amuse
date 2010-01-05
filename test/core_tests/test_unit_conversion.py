@@ -133,4 +133,6 @@ class TestNonNumericUnits(unittest.TestCase):
         self.assertEquals(3 , len(list(test_unit.quantities())))  
         for x, y in  zip(test_unit.quantities(), ["1", "4", "7"]):
             self.assertEquals(str(x), y)
+            
+            
        

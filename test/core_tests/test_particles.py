@@ -278,7 +278,9 @@ class TestParticlesWithBinding(TestBase):
         
         local_particles1.synchronize_to(remote_particles)
         
-        self.assertEquals(len(remote_particles), 5)
+        local_particles1._remove_particles([local_particles1._get_keys()[0]])
+        local_particles1.synchronize_to(remote_particles)
+        self.assertEquals(len(remote_particles), 4)
         
         
         

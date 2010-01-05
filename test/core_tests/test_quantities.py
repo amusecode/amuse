@@ -63,4 +63,10 @@ class TestQuantities(unittest.TestCase):
         self.assertEquals(x[0].value_in(si.kg), 1.0)
         self.assertEquals(y[0].value_in(si.kg), 3.0)
         
+    def test7(self):
+        x = 2.0 | si.kg
+        y = 1 / x
+        self.assertEquals(y.value_in(1/si.kg), 0.5)
+        
+        
         
