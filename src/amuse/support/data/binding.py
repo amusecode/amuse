@@ -635,9 +635,9 @@ class InCodeAttributeStorage2(object):
         
         self.attributes = set([])
         for x in self.getters:
-            self.attributes = set(x.attributes())
+            self.attributes |= set(x.attributes())
         for x in self.setters:
-            self.attributes = set(x.attributes())
+            self.attributes |= set(x.attributes())
         
         
     def __len__(self):

@@ -585,7 +585,9 @@ c Determine whether I and phi are computed or not, for OUTPUT
       ! We need some kind of initialisation for the star, cf the calls
       ! to printb in star12
       ! Actually, we need to pull some data from printb anyway...
+      
       call swap_in_star(star_id)
+      
       JO = 0
 ! Solve for structure, mesh, and major composition variables
       JOC = 1
@@ -605,7 +607,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
          do while (JO /= 0)
             CALL BACKUP ( DTY, JO )
             IF ( JO.EQ.2 ) THEN
-               twin_evolve = JO
+               evolve = -JO
                return
             endif
             CALL NEXTDT ( DTY, JO, IT )
@@ -613,7 +615,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
             if (verbose) print *, 'Timestep reduced to', DTY,'yr'
 
             IF ( JO.EQ.3 ) THEN
-               twin_evolve = JO
+               evolve = -JO
                return
             endif
             JNN = JNN + 1
@@ -621,6 +623,8 @@ c Determine whether I and phi are computed or not, for OUTPUT
             CALL SMART_SOLVER ( ITER, ID, KT5, JO )
          end do
       END IF
+      
+      evolve = -JO
       IF (JO == 0) THEN
          if (verbose) print *, 'Converged on timestep'
          call timestep_heuristic ( JO, 1 )
@@ -628,10 +632,10 @@ c Determine whether I and phi are computed or not, for OUTPUT
          CALL NEXTDT ( DTY, JO, 22 )
          IF ( JNN > switch_iterations ) ITER = KR2
          JNN = JNN + 1
+         
+         call swap_out_star(star_id)
+         evolve = 0
       END IF
-
-! Report results
-      evolve = 0;
       end function
 
 ! dump_twin_model:
@@ -825,6 +829,14 @@ c Determine whether I and phi are computed or not, for OUTPUT
       maximum_number_of_stars = value
       
       set_maximum_number_of_stars = 0
+      end function
+      
+      function get_number_of_particles(value)
+      implicit none
+      integer :: get_number_of_particles
+      integer :: value
+      value = num_stars
+      get_number_of_particles = 0
       end function
 
 

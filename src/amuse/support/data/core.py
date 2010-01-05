@@ -536,7 +536,16 @@ class AbstractParticleSet(object):
         
     def _has_key(self):
         return False
+    
+    
+    def _values_of_particle(self, key):
+        attributes = self._get_attributes()
+        keys = [key]
+        values = self._get_values(keys, attributes)
         
+        for attribute, val in zip(attributes, values):
+            yield attribute, val[0]
+    
     def add_vector_attribute(self, name_of_the_attribute, name_of_the_components):
         self._vector_attributes[name_of_the_attribute] = self.VectorAttribute(name_of_the_components)
         
@@ -666,8 +675,10 @@ class Particles(AbstractParticleSet):
     def _has_key(self, key):
         return self._private.attribute_storage._has_key(key)
         
-              
-              
+    def to_set(self):
+        return ParticlesSubset(self, self._get_keys())
+    
+    
 
 class ParticlesSubset(AbstractParticleSet):
     """A sub set of particle objects"""
@@ -701,8 +712,24 @@ class ParticlesSubset(AbstractParticleSet):
         
     def _has_key(self, key):
         return key in self._private.set_of_keys
+    
+            
+    def select(self, selection_function, attributes):
+        keys = self._private.keys
+        values = self._get_values(keys, attributes)
+        selected_keys = []
+        for index in range(len(keys)):
+            key = keys[index]
+            arguments = [None] * len(attributes)
+            for attr_index, attribute in enumerate(attributes):
+                arguments[attr_index] = values[attr_index][index]
+            if selection_function(*arguments):
+                selected_keys.append(key)
+        return ParticlesSubset(self._private.particles, selected_keys)
         
-        
+    def difference(self, other):
+        new_set_of_keys = self._private.set_of_keys.difference(other._private.set_of_keys)
+        return ParticlesSubset(self._private.particles, list(new_set_of_keys))
 
 
 class ParticleInformationChannel(object):
@@ -875,7 +902,7 @@ class Particle(object):
         output += str(self.key)
         output += ''
         output += '\n'
-        for name, value in self.particles_set._private.attribute_storage.iter_values_of_particle(self.key):
+        for name, value in self.particles_set._values_of_particle(self.key):
             output += name
             output += ': {'
             output += str(value)

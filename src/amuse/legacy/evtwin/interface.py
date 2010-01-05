@@ -3,9 +3,15 @@ from amuse.legacy.interface.se import StellarEvolution
 from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 
+from amuse.support.data.core import Particles
+from amuse.support.data.binding import InCodeAttributeStorage2
+from amuse.support.data import binding
+
+
+
 import os
 
-class EVtwin(LegacyInterface, LiteratureRefs, StellarEvolution):
+class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     """
     Need to have docs
     """
@@ -111,11 +117,59 @@ class EVtwin(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
+class EVtwinInCodeAttributeStorage(InCodeAttributeStorage2):
+    name_of_delete_particle = "delete_star"
+    
+    new_particle_method = binding.NewParticleMethod(
+        "new_particle", 
+        (
+            ("mass", "mass", units.MSun),
+            ("radius", "radius", units.RSun),
+        )
+    )
+    
+    getters = (
+        binding.ParticleGetAttributesMethod(
+            "get_mass",
+            (
+                ("mass", "mass", units.MSun),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_radius",
+            (
+                ("radius", "radius", units.RSun),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_stellar_type",
+            (
+                ("type", "stellar_type", units.stellar_type),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_age",
+            (
+                ("age", "age", units.Myr),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_luminosity",
+            (
+                ("luminosity", "luminosity", units.LSun),
+            )
+        ),
+        
+    )
+    
 class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding):
     
     def __init__(self):
         InterfaceWithParametersBinding.__init__(self)
         InterfaceWithObjectsBinding.__init__(self)
+        
+        self.particles = Particles()
+        self.particles._private.attribute_storage = EVtwinInCodeAttributeStorage(self)
         
     parameter_definitions = [
         parameters.ModuleMethodParameterDefinition_Next(
@@ -148,84 +202,46 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
         
     ]
     
-    attribute_definitions = [
-        attributes.AttributeDefinition(
-            name = "type",
-            getter = ("get_stellar_type", ["stellar_type"]),
-            description = "star type",
-            unit = units.stellar_type,
-            default = 1 | units.stellar_type             
-        ),
-        attributes.AttributeDefinition(
-            name = "mass",
-            setup_parameters = ["mass"],
-            getter = ("get_mass", ["mass"]),
-            description = "mass of the star",
-            unit = units.MSun,
-            default = 0.0 | units.MSun             
-        ),
-        attributes.AttributeDefinition(
-            name = "age",
-            getter = ("get_age", ["age"]),
-            description = "current age of the star",
-            unit = units.Myr,
-            default = 1.0 | units.Myr ,            
-        ),
-        attributes.AttributeDefinition(
-            name = "radius",
-            getter = ("get_radius", ["radius"]),
-            description = "current radius of the star",
-            unit = units.RSun,
-            default = 1.0 | units.RSun             
-        ),
-        attributes.AttributeDefinition(
-            name = "luminosity",
-            getter = ("get_luminosity", ["luminosity"]),
-            description = "current luminosity of the star",
-            unit = units.LSun,
-            default = 1.0 | units.LSun             
-        ),
-    ]
-    
-    
-    def update_particles(self, particles):
-        self._current_model_time = None
+    def initialize_module_with_default_parameters(self):
+        self.parameters.set_defaults()
+        self.set_ev_path(self.default_path_to_ev_database)
+        self.initialize_code()
         
-        for attribute_definition in self.attribute_definitions:
-            self.update_attribute(attribute_definition.name, particles)
+    def setup_particles(self, particles):
+        self.particles.add_particles(particles)
+        
+    def evolve_model(self, end_time = None):
+        if end_time is None:
+            self._evolve_particles(self.particles)
+            return
             
-    def evolve_particles(self, particles, end_time):
-        module_id = id(self)
+        end_times = end_time.as_vector_with_length(len(self.particles))
         
-        
+        particles_set = particles.to_set()
+        while len(particles_set) > 0:
+            self._evolve_particles(particles_set)
+            particles_set = particles_set.select(lambda x : x < end_time, ["age"])
+            
+                
+    def _evolve_particles(self, particles):
+        print "EVO1"
         for particle in particles:
-            if not module_id in particle._module_ids_to_index:
-                    continue
-                    
-            index = particle._module_ids_to_index[module_id][1]
+            index = self.particles._private.attribute_storage.mapping_from_particle_key_to_index_in_the_code[particle.key]
             
-                
-            current_age, error = self.get_age(index)
-            current_age |= units.Myr
-            
-            while current_age < end_time:
-                
-                errorcode = self.evolve(index)
-                if errorcode < 0:
-                    raise Exception("Error during evolution of a star, errorcode = " + errorcode)
-                
-                current_age, error = self.get_age(index)
-                current_age |= units.Myr
-                
-                for attribute_defintion in self.attribute_definitions:
-                    values = attribute_definition.get_values(self, [index])
-                    particle.set_value_of_attribute(
-                        attribute_definition.name,
-                        values[0]
-                    )
-                    
+            errorcode = self.evolve(index)
+            print index, errorcode
+            if errorcode != 0:
+                raise Exception("Error during evolve of particle")
+            print particle
+        
     def current_model_time(self):
         return self._current_model_time
-                
-    def get_state(self, indices):
-        return self.get_mass(indices)
+        
+class EVtwin(EVtwinInterface, EVtwinBinding):
+    """  
+    """
+    
+    def __init__(self):
+        EVtwinInterface.__init__(self)
+        EVtwinBinding.__init__(self)
+        

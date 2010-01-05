@@ -190,6 +190,23 @@ class StellarEvolution(object):
         """
         return function
         
+    @legacy_function
+    def get_number_of_particles():
+        """
+        Retrieve the total number of particles define  d in the code
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('number_of_particles', dtype='int32', direction=function.OUT,
+            description = "Count of the particles in the code")
+        function.result_type = 'int32'
+        function.result_doc = """
+         0 - OK
+            Count could be determined
+         -1 - ERROR
+            Unable to determine the count
+        """
+        return function 
+        
     @legacy_function   
     def evolve():
         """

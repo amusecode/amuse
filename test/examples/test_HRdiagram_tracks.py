@@ -11,9 +11,10 @@ except ImportError:
 from amuse.support.units import units
 from amuse.support.data import core
 from amuse.legacy.sse.muse_stellar_mpi import SSE
+from amuse.legacy.evtwin.interface import EVtwin
+from amuse.legacy.support.core import is_mpd_running
 
-def simulate_evolution_tracks(name_of_the_figure = "HR_evolution_tracks.png"):
-    masses = [.5, 1., 2., 5., 10., 20., 30.] | units.MSun
+def simulate_evolution_tracks(masses = [.5, 1., 2., 5., 10., 20., 30.] | units.MSun, name_of_the_figure = "HR_evolution_tracks.png"):
     number_of_stars=len(masses)
 
     Stefan_Boltzmann_constant = 5.670400e-8 | units.J * units.s**-1 * units.m**-2 * units.K**-4
@@ -39,9 +40,13 @@ def simulate_evolution_tracks(name_of_the_figure = "HR_evolution_tracks.png"):
         print "Setting mass of star to: ", masses[j]
         star.mass = masses[j]
         star.radius = 0.0 | units.RSun
-            
+        print star
 #       Initialize the star
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
+        stellar_evolution.initialize_stars()
+        
+        star = stellar_evolution.particles[0]
+        print star
         time = 0 | units.Myr
             
 #       Lists to monitor changes of the star with time:
@@ -66,10 +71,8 @@ def simulate_evolution_tracks(name_of_the_figure = "HR_evolution_tracks.png"):
                 properties_at_switch_state.append((time.value_in(units.Myr), star.luminosity.value_in(units.LSun), \
                     current_Teff.value_in(units.K), star.type.value_in(units.stellar_type)))
                 previous_type = star.type
-                
-#           Retreive a sensible timestep from the stellar evolution code, and evolve the star up to time+timestep
-            time += stellar_evolution.get_timesteps(stars)[0]
-            stellar_evolution.evolve_particles(stars, time)
+                    
+            stellar_evolution.evolve_model()
 
         print " ... evolved model to t = " + str(time)
         print "Star has now become a: ", star.type, "(stellar_type: "+str(star.type.value_in(units.stellar_type))+")"
@@ -124,5 +127,11 @@ def simulate_evolution_tracks(name_of_the_figure = "HR_evolution_tracks.png"):
         
     print "All done!"
         
+        
+        
+def test_simulate_one_star():
+    assert is_mpd_running()
+    simulate_evolution_tracks([5.0] | units.MSun)
+    
 if __name__ == '__main__':
-    simulate_evolution_tracks(sys.argv[1])
+    simulate_evolution_tracks(name_of_the_figure = sys.argv[1])

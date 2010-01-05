@@ -241,7 +241,7 @@ class TestSSE(TestWithMPI):
             from_sse_to_model.copy()
             
             if not star.type == previous_type:
-                results.append((star.current_time, star.mass, star.type))
+                results.append((star.age, star.mass, star.type))
                 previous_type = star.type
                 
         self.assertEqual(len(results), 6)
