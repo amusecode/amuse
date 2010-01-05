@@ -36,13 +36,15 @@ class unit(object):
         if isinstance(other, unit):
             return mul_unit(self, other)
         else:
-            return factor_unit(other, self)
+            return other*self
+#            return factor_unit(other, self)
         
     def __div__(self, other):
         if isinstance(other, unit):
             return div_unit(self, other)
         else:
-            return factor_unit(1.0 / other, self)
+            return (1.0/other)*self
+#            return factor_unit(1.0 / other, self)
 
     def __rmul__(self, other):
         if other == 1:
@@ -77,7 +79,14 @@ class unit(object):
         
     def __call__(self, x):
         return self.new_quantity(x)
+
+    @property
+    def number(self):
+        return 1.0
         
+    @property
+    def unit(self):
+        return self
     
     def new_quantity(self, value):
         """Create a new Quantity object.
@@ -469,18 +478,18 @@ class named_unit(unit):
     def __init__(self, name, symbol, unit):
         self.name = name
         self.symbol = symbol
-        self.unit = unit
+        self.local_unit = unit
         
     def __str__(self):
         return self.symbol
     
     @late
     def factor(self):
-        return self.unit.factor
+        return self.local_unit.factor
         
     @late
     def base(self):
-        return self.unit.base
+        return self.local_unit.base
         
 
 class derived_unit(unit):
@@ -516,20 +525,20 @@ class factor_unit(derived_unit):
         self.name = name
         self.symbol = symbol
         self.local_factor = factor
-        self.unit = unit
+        self.local_unit = unit
         
     def __str__(self):
         if self.symbol is None:
-            return str(self.local_factor) + ' * ' + str(self.unit)
-        return self.symbol + str(self.unit) 
+            return str(self.local_factor) + ' * ' + str(self.local_unit)
+        return self.symbol + str(self.local_unit) 
     
     @late
     def factor(self):
-        return self.local_factor * self.unit.factor
+        return self.local_factor * self.local_unit.factor
         
     @late
     def base(self):
-        return self.unit.base
+        return self.local_unit.base
         
 class mul_unit(derived_unit):
     """
@@ -592,20 +601,20 @@ class pow_unit(derived_unit):
     """
     def __init__(self, power , unit):
         self.power = power
-        self.unit = unit
+        self.local_unit = unit
         
     def __str__(self):
-        return str(self.unit) + '**' + str(self.power)
+        return str(self.local_unit) + '**' + str(self.power)
         
     @late
     def base(self):
         return tuple(
             filter(lambda x: x[0] != 0,
-            map(lambda x : (x[0] * self.power, x[1]), self.unit.base)))
+            map(lambda x : (x[0] * self.power, x[1]), self.local_unit.base)))
         
     @late
     def factor(self):
-        return self.unit.factor ** self.power
+        return self.local_unit.factor ** self.power
         
 class div_unit(derived_unit):
     """
