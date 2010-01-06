@@ -7,6 +7,7 @@ from amuse.legacy.evtwin.interface import EVtwin, EVtwinInterface
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.legacy.support import channel
 
 class TestInterface(TestWithMPI):
     
@@ -70,7 +71,10 @@ class TestInterface(TestWithMPI):
         del instance     
     
     def test5(self):
+        #code/library_v2.f:602
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = EVtwinInterface()
+        channel.MessageChannel.DEBUGGER = None
         
         error = instance.set_ev_path(instance.default_path_to_ev_database)
         self.assertEquals(0, error)      
@@ -78,22 +82,27 @@ class TestInterface(TestWithMPI):
         error = instance.initialize_code()
         self.assertEquals(0, error)      
         
-        (index_of_the_star, error) = instance.new_particle(1.0)
+        (index_of_the_star, error) = instance.new_particle(1.05)
         self.assertEquals(0, error)       
         
         self.assertTrue(index_of_the_star >= 0)      
         
         (mass, error) = instance.get_mass(index_of_the_star)
         self.assertEquals(0, error)      
-        self.assertEquals(1.0, mass)    
+        self.assertEquals(1.05, mass)    
         
         error = instance.evolve(index_of_the_star)
         self.assertEquals(0, error)      
           
+        for i in range(20):
+            error = instance.evolve(index_of_the_star)
+            if error != 0:
+                print "ERROR in evolving the star: ", error
+                break
         
         (mass, error) = instance.get_mass(index_of_the_star)
         self.assertEquals(0, error)      
-        self.assertEquals(1.0, mass)  
+        self.assertEquals(1.05, mass)  
         
         
     
