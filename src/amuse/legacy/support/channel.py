@@ -26,6 +26,27 @@ class MessageChannel(object):
     integers, floats and/or strings.
     
     """
+    DEBUGGER = None
+    
+    
+    @classmethod
+    def GDB(cls, full_name_of_the_worker):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb',  full_name_of_the_worker]
+        command = 'xterm'
+        return command, arguments
+        
+    @classmethod
+    def DDD(cls, full_name_of_the_worker):
+        arguments = ['-display', os.environ['DISPLAY'], '-e', 'ddd',  full_name_of_the_worker]
+        command = 'xterm'
+        return command, arguments
+        
+    @classmethod
+    def XTERM(cls, full_name_of_the_worker):
+        arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', full_name_of_the_worker]
+        command = 'xterm'
+        return command, arguments
+        
     def get_full_name_of_the_worker(self, type):
         tried_workers = []
         found = False
@@ -86,13 +107,15 @@ class MpiChannel(MessageChannel):
         self.cached = None
         
     def start(self):
-        if self.debug_with_gdb:
+        if self.debug_with_gdb or (not self.DEBUGGER is None):
             if not 'DISPLAY' in os.environ:
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
-                arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'gdb',  self.full_name_of_the_worker]
-                command = 'xterm'
+                if self.DEBUGGER is None:
+                    command, arguments = self.GDB(self.full_name_of_the_worker)
+                else:
+                    command, arguments = self.DEBUGGER(self.full_name_of_the_worker)
         else:
             arguments = None
             command = self.full_name_of_the_worker
