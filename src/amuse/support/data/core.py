@@ -1,6 +1,3 @@
-"""
-"""
-
 from amuse.support.data import values
 from amuse.support.units import si
 from amuse.support.units import units
@@ -604,12 +601,15 @@ class Particles(AbstractParticleSet):
         self._private.attribute_storage = InMemoryAttributeStorage()
         self._set_particles(particle_keys)
         self._private.previous = None
+        self._private.timestamp = None
         
-    def savepoint(self):
+    def savepoint(self, timestamp=None):
         instance = type(self)()
         instance._private.attribute_storage = self._private.attribute_storage.copy()
+        instance._private.timestamp = timestamp
         instance._private.previous = self._private.previous
-        self._private._previous = instance
+        self._private.previous = instance
+        
         
     def iter_history(self):
         current = self
@@ -624,7 +624,8 @@ class Particles(AbstractParticleSet):
     def get_timeline_of_attribute(self, particle_key, attribute):
         timeline = []
         for x in self.history:
-            timeline.append((None, x._private.attribute_storage.get_value_of(particle_key, attribute)))
+            if x._has_key(particle_key):
+                timeline.append((x._private.timestamp, x._private.attribute_storage.get_value_of(particle_key, attribute)))
         return timeline
                     
     def copy(self):
