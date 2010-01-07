@@ -8,13 +8,7 @@ endif
 OBJS	=	amuse_interface.o integrate.o analyze.o
 EXE	=	smallN2 triple
 
-all:
-ifdef STARLAB_INSTALL_PATH
-	@echo "Found Starlab at STARLAB_INSTALL_PATH = $(STARLAB_INSTALL_PATH)"
-	.compile
-else
-	.warning
-endif
+all:	$(TARGS)
 
 CXXFLAGS +=	-I$(STARLAB_INSTALL_PATH)/include/starlab -DHAVE_CONFIG_H -O -g
 LDLIBS	 +=	-L$(STARLAB_INSTALL_PATH)/lib/starlab \
