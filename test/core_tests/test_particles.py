@@ -71,7 +71,7 @@ class TestParticlesWithBinding(TestBase):
                 default = 1 | units.g         
             ),
         ]
-        class InCodeAttributeStorage(binding.InCodeAttributeStorage2):
+        class InCodeAttributeStorage(binding.InCodeAttributeStorage):
             new_particle_method = binding.NewParticleMethod(
                 "new_particle", 
                 (

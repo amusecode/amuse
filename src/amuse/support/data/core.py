@@ -4,6 +4,7 @@ from amuse.support.units import units
 
 import numpy
 import random
+import inspect
 
 class BasicUniqueKeyGenerator(object):
     
@@ -513,6 +514,15 @@ class AbstractParticleSet(object):
     def _has_key(self):
         return False
     
+    def _get_attributes(self):
+        return []
+    
+    def _get_state_attributes(self):
+        return []
+        
+    #
+    #
+    #
     
     def _values_of_particle(self, key):
         attributes = self._get_attributes()
@@ -589,7 +599,7 @@ class AbstractParticleSet(object):
         
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
-        channel.copy_attributes(self._private.attribute_storage._state_attributes())   
+        channel.copy_attributes(self._get_state_attributes())   
 
     
 class Particles(AbstractParticleSet):
@@ -652,6 +662,10 @@ class Particles(AbstractParticleSet):
     def _get_attributes(self):
         return self._private.attribute_storage._get_attributes()
         
+    def _get_state_attributes(self):
+        return self._private.attribute_storage._state_attributes()
+        
+        
     def _get_keys(self):
         return self._private.attribute_storage._get_keys()
         
@@ -696,6 +710,8 @@ class ParticlesSubset(AbstractParticleSet):
     def _has_key(self, key):
         return key in self._private.set_of_keys
     
+    def _get_state_attributes(self):
+        return self._private.particles._get_state_attributes(self)
             
     def select(self, selection_function, attributes):
         keys = self._private.keys
@@ -753,6 +769,9 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     
     def _get_attributes(self):
         return self._private.particles._get_attributes()
+        
+    def _get_state_attributes(self):
+        return self._private.particles._get_state_attributes()
         
     def _get_keys(self):
         return self._private.particles._get_keys()
@@ -928,4 +947,48 @@ class Particle(object):
 
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
+
+
+class InterfaceWithUnitsConverted(AbstractParticleSet):
+    class UnitsConvertionMethod(object):
+        def __init__(self, real_method, converter):
+            self.real_method = real_method
+            self.converter = converter
             
+        def __call__(self, *list_arguments, **keyword_arguments):
+            converted_list_arguments = [self.from_source_to_target(x) for x in list_arguments]
+            converted_keyword_arguments = {}
+            for key, value in keyword_arguments:
+                converted_keyword_arguments[key] = self.from_source_to_target(value)
+            
+            result = self.real_method(*converted_list_arguments, **converted_keyword_arguments)
+            return self.from_target_to_source(result)
+            
+        def from_source_to_target(self, x):
+            if isinstance(x, values.Quantity):
+                return self.converter.from_source_to_target(quantity)
+            else:
+                x
+                
+        def from_target_to_source(self, x):
+            if isinstance(x, values.Quantity):
+                return self.converter.from_target_to_source(quantity)
+            else:
+                x
+    
+    def __init__(self, interface, converter):
+        self.converter = converter
+        self.interface = interface
+            
+              
+    def __getattr__(self, name):
+        attribute = getattr(self.interace, name)
+        if inspect.ismethod(attribute):
+            return self.UnitsConvertionMethod(attribute)
+        elif isinstance(attribute, AbstractParticleSet):
+            return ParticlesWithUnitsConverted(attribute, self.converter)
+        elif isinstance(attribute, values.Quantity):
+            return self.converter.from_target_to_source(quantity)
+        else:
+            return attribute
+        

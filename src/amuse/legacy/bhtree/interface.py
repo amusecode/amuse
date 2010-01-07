@@ -3,6 +3,10 @@ from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.data.core import Particles,ParticlesWithUnitsConverted
+from amuse.support.data.binding import InCodeAttributeStorage
+from amuse.support.data import binding
+
 
 class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     """
@@ -73,6 +77,85 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     #        if x.name == 'mass':
     #            self.set_mass(id, self.convert_nbody.to_nbody(x.value()).value_in(nbody_system.mass))
    
+
+
+class BHTreeInCodeAttributeStorage(InCodeAttributeStorage):
+    new_particle_method = binding.NewParticleMethod(
+        "new_particle", 
+        (
+            ("mass", "mass", nbody_system.mass),
+            ("radius", "radius", nbody_system.length),
+            ("x", "x", nbody_system.length),
+            ("y", "y", nbody_system.length),
+            ("z", "z", nbody_system.length),
+            ("vx", "vx", nbody_system.speed),
+            ("vy", "vy", nbody_system.speed),
+            ("vz", "vz", nbody_system.speed),
+        )
+    )
+    
+    getters = (
+        binding.ParticleGetAttributesMethod(
+            "get_state",
+            (
+                ("mass", "mass", nbody_system.mass),
+                ("radius", "radius", nbody_system.length),
+                ("x", "x", nbody_system.length),
+                ("y", "y", nbody_system.length),
+                ("z", "z", nbody_system.length),
+                ("vx", "vx", nbody_system.speed),
+                ("vy", "vy", nbody_system.speed),
+                ("vz", "vz", nbody_system.speed),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_mass",
+            (
+                ("mass", "mass", nbody_system.mass),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_radius",
+            (
+                ("radius", "radius", nbody_system.length),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_position",
+            (
+                ("x", "x", nbody_system.length),
+                ("y", "y", nbody_system.length),
+                ("z", "z", nbody_system.length),
+            )
+        ),
+    )
+    
+    
+    setters = (
+        binding.ParticleSetAttributesMethod(
+            "set_mass",
+            (
+                ("mass", "mass", nbody_system.mass),
+            )
+        ),
+        binding.ParticleSetAttributesMethod(
+            "set_radius",
+            (
+                ("radius", "radius", nbody_system.length),
+            )
+        ),
+        binding.ParticleSetAttributesMethod(
+            "set_position",
+            (
+                ("x", "x", nbody_system.length),
+                ("y", "y", nbody_system.length),
+                ("z", "z", nbody_system.length),
+            )
+        ),
+        
+    )
+
+   
 class BHTreeBinding(NBodyGravitationalDynamicsBinding):
     parameter_definitions = [
         parameters.ModuleAttributeParameterDefinition(
@@ -84,43 +167,13 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
         )
     ]
     
-    attribute_definitions = [
-        attributes.AttributeDefinition(
-            name = "mass",
-            setup_parameters = ["mass"],
-            setter = ("set_mass", ["mass"]),
-            description = "mass of a star",
-            unit = nbody_system.mass,
-            default = 1 | nbody_system.mass          
-        ),
-        attributes.AttributeDefinition(
-            name = "radius",
-            setup_parameters = ["radius"],
-            setter = ("set_radius", ["radius"]),
-            description = "radius of a star",
-            unit = nbody_system.length,
-            default = 1 | nbody_system.length          
-        ),
-        attributes.AttributeDefinition(
-            names = ["x","y","z"],
-            setup_parameters = ["x","y","z"],
-            setter = ("set_position", ["x","y","z"]),
-            description = "coordinate of a star",
-            unit = nbody_system.length,
-            default = 0.0 | nbody_system.length          
-        ),
-        attributes.AttributeDefinition(
-            names = ["vx","vy","vz"],
-            setup_parameters = ["vx","vy","vz"],
-            setter = ("set_velocity", ["vx","vy","vz"]),
-            description = "coordinate of a star",
-            unit = nbody_system.speed,
-            default = 0.0 | nbody_system.speed          
-        ),
-    ]    
 
     def __init__(self, convert_nbody = None):
         NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+        
+        self.nbody_particles = Particles()
+        self.nbody_particles._private.attribute_storage = BHTreeInCodeAttributeStorage(self)
+        self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
         
     def current_model_time(self):
         return self.convert_nbody.to_si( self.get_time()['time'] | nbody_system.time)

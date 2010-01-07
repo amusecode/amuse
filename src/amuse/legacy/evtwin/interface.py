@@ -4,7 +4,7 @@ from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 
 from amuse.support.data.core import Particles
-from amuse.support.data.binding import InCodeAttributeStorage2
+from amuse.support.data.binding import InCodeAttributeStorage
 from amuse.support.data import binding
 
 
@@ -117,7 +117,7 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
-class EVtwinInCodeAttributeStorage(InCodeAttributeStorage2):
+class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
     name_of_delete_particle = "delete_star"
     
     new_particle_method = binding.NewParticleMethod(
@@ -150,7 +150,7 @@ class EVtwinInCodeAttributeStorage(InCodeAttributeStorage2):
         binding.ParticleGetAttributesMethod(
             "get_age",
             (
-                ("age", "age", units.Myr),
+                ("age", "age", units.yr),
             )
         ),
         binding.ParticleGetAttributesMethod(
@@ -224,7 +224,6 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             
                 
     def _evolve_particles(self, particles):
-        print "EVO1"
         for particle in particles:
             index = self.particles._private.attribute_storage.mapping_from_particle_key_to_index_in_the_code[particle.key]
             

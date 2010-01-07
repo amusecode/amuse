@@ -105,6 +105,7 @@ class MpiChannel(MessageChannel):
             self.info = MPI.INFO_NULL
             
         self.cached = None
+        self.intercomm = None
         
     def start(self):
         if self.debug_with_gdb or (not self.DEBUGGER is None):
@@ -122,7 +123,9 @@ class MpiChannel(MessageChannel):
         self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
 
     def stop(self):
-        self.intercomm.Free()
+        if not self.intercomm is None:
+            self.intercomm.Free()
+            self.intercomm = None
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         if doubles_in:
@@ -260,6 +263,9 @@ class MpiChannel(MessageChannel):
             raise Exception("Not a valid message!")
         return (doubles_result, ints_result)
         
+    def is_active(self):
+        return self.intercomm is not None
+        
 
 
 class MultiprocessingMPIChannel(MessageChannel):
@@ -290,6 +296,7 @@ class MultiprocessingMPIChannel(MessageChannel):
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
         self.debug_with_gdb = debug_with_gdb
+        self.process = None
     
     def start(self):
         name_of_dir = "/tmp/amuse_"+os.getenv('USER')
@@ -312,6 +319,9 @@ m.run_mpi_channel('{3}')"""
         )
         self.process =  Popen([sys.executable, "-c", code_string], env = environment)
         self.client_socket, undef = self.server_socket.accept()
+    
+    def is_active(self):
+        return self.process is not None
         
     def stop(self):
         self._send(self.client_socket,('stop',(),))
@@ -320,6 +330,7 @@ m.run_mpi_channel('{3}')"""
         self.client_socket.close()
         self.server_socket.close()
         self._remove_socket(self.name_of_the_socket)
+        self.process = None
         
     def run_mpi_channel(self, name_of_the_socket):
         channel = MpiChannel(self.full_name_of_the_worker, self.number_of_workers, None, self.debug_with_gdb)

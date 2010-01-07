@@ -200,8 +200,14 @@ class BuildLegacy(LegacyCommand):
         for line in lines:
             if line.startswith('muse_worker_gpu:'):
                 result.append(('muse_worker_gpu', 'GPU',))
-            if line.startswith('muse_worker_grape:'):
+            elif line.startswith('muse_worker_grape:'):
                 result.append(('muse_worker_grape', 'GRAPE6',))
+            elif line.startswith('muse_worker_'):
+                index_of_the_colon = line.index(':')
+                if(index_of_the_colon > 0):
+                    name = line[len('muse_worker_'):index_of_the_colon]
+                    print name
+                    result.append((line[:index_of_the_colon], name,))
         return result
         
  

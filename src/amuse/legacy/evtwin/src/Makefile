@@ -114,7 +114,7 @@ endif
 	#FLIB = -limf -lifcore -lifport -lguide
 endif
 
-#DEBUGMODE=1
+DEBUGMODE=1
 ifdef DEBUGMODE
    FFLAGS += -g 
    ifeq ($(FORT),ifort)

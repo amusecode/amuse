@@ -886,7 +886,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       integer, external :: find_stellar_type
       CALL COMPUTE_OUTPUT_QUANTITIES ( JSTAR )
       CALL UPDATE_TIMESTEP_PARAMETERS ( JSTAR )
-      CALL CHECK_STOP_CONDITIONS ( JSTAR, JO, JCM )
+      CALL CHECK_STOP_CONDITIONS ( JSTAR, JO, JCM, 0 ) !IF must be set, we take 0 for now, 24 has meaning!
       star_list(current_star)%stellar_type = find_stellar_type()
       end subroutine
 

@@ -522,8 +522,9 @@ class LegacyInterface(object):
     
     def _stop(self):
         if hasattr(self, 'channel'):
-            self._stop_worker()
-            self.channel.stop()
+            if self.channel.is_active():
+                self._stop_worker()
+                self.channel.stop()
             del self.channel
         
     def _check_if_worker_is_up_to_date(self):

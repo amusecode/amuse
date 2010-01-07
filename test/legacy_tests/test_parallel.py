@@ -3,7 +3,7 @@ from legacy_support import TestWithMPI
 import sys
 
 from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.bhtree.muse_dynamics_mpi import BHTree
+from amuse.legacy.bhtree.interface import BHTree
 
 from amuse.support.data.core import Particles
 from amuse.support.units import nbody_system

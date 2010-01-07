@@ -8,7 +8,9 @@ endif
 OBJS	=	amuse_interface.o integrate.o analyze.o
 EXE	=	smallN2 triple
 
-all:	compile $(EXE)
+all:
+	@echo "Nothing build by default"
+
 
 CXXFLAGS +=	-I$(STARLAB_INSTALL_PATH)/include/starlab -DHAVE_CONFIG_H -O -g
 LDLIBS	 +=	-L$(STARLAB_INSTALL_PATH)/lib/starlab \
@@ -77,7 +79,7 @@ clean:
 muse_worker.cc: muse_dynamics_mpi.py
 	../../../../bin/create_c_worker.py muse_dynamics_mpi.py SmallN > $@
 
-muse_worker:        muse_worker.cc $(OBJS)
+muse_worker_starlab:        muse_worker.cc $(OBJS)
 	mpicxx $(CXXFLAGS) $(LDLIBS) $@.cc $(OBJS) -o $@
 
 .cc.o: $<

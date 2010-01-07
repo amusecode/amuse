@@ -4,7 +4,7 @@ Stellar Dynamics Interface Defintion
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
-from amuse.support.data.binding import CodeProperty, InCodeAttributeStorage2
+from amuse.support.data.binding import CodeProperty, InCodeAttributeStorage
 from amuse.support.units import nbody_system
 
 class GravitationalDynamics(object):
