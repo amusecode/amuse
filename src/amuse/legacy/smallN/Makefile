@@ -9,8 +9,12 @@ OBJS	=	amuse_interface.o integrate.o analyze.o
 EXE	=	smallN2 triple
 
 all:
-	@echo "Nothing build by default"
-
+ifdef STARLAB_INSTALL_PATH
+	@echo "Found Starlab at STARLAB_INSTALL_PATH = $(STARLAB_INSTALL_PATH)"
+	.compile
+else
+	.warning
+endif
 
 CXXFLAGS +=	-I$(STARLAB_INSTALL_PATH)/include/starlab -DHAVE_CONFIG_H -O -g
 LDLIBS	 +=	-L$(STARLAB_INSTALL_PATH)/lib/starlab \
@@ -27,9 +31,9 @@ LIBS	  =	$(STARLAB_INSTALL_PATH)/lib/starlab/libhdyn.a \
 		$(STARLAB_INSTALL_PATH)/lib/starlab/libhdyn.a \
 		$(STARLAB_INSTALL_PATH)/lib/starlab/libsstar.a
 
-compile:	$(TARGS)
+#compile:	$(TARGS)
 
-.compile: muse_worker 
+.compile: muse_worker_starlab 
 
 .warning:
 	@echo ""
@@ -70,21 +74,17 @@ triple:	triple.o amuse_interface.o integrate.o analyze.o
 	       $(LDLIBS) -o $@
 
 cleanall: clean
-	$(RM) muse_worker $(EXE) *~
-	rm -Rf muse_worker.dSYM/
+	$(RM) muse_worker_starlab $(EXE) *~
+	rm -Rf muse_worker_starlab.dSYM/
 
 clean:
-	rm -f *.so *.o *.pyc muse_worker.cc
+	rm -f *.so *.o *.pyc muse_worker_starlab.cc
 
-muse_worker.cc: muse_dynamics_mpi.py
-	../../../../bin/create_c_worker.py muse_dynamics_mpi.py SmallN > $@
-
-muse_worker_starlab:        muse_worker.cc $(OBJS)
+muse_worker_starlab:        muse_dynamics_mpi.py $(OBJS)
+	../../../../bin/create_c_worker.py muse_dynamics_mpi.py SmallN > $@.cc
 	mpicxx $(CXXFLAGS) $(LDLIBS) $@.cc $(OBJS) -o $@
 
-.cc.o: $<
+%.o: %.cc
+ifdef STARLAB_INSTALL_PATH
 	g++ $(CXXFLAGS) -c -o $@ $<
-
-.c.o: $<
-	g++ $(CXXFLAGS) -c -o $@ $<
-
+endif

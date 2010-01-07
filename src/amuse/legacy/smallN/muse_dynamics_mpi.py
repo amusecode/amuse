@@ -18,7 +18,7 @@ class SmallN(LegacyInterface):
 
 
     def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self)
+        LegacyInterface.__init__(self, name_of_the_worker='muse_worker_starlab')
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
         self.convert_nbody = convert_nbody
@@ -111,7 +111,7 @@ class SmallN(LegacyInterface):
 
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
         particle_index = -1
-
+        #TODO
 
     def get_particle_by_index(self, index):
         """ Returns a Particle by index.  """
@@ -131,4 +131,7 @@ class SmallN(LegacyInterface):
         p.vz = self.convert_nbody.to_si(vz | nbody_speed)
         return p
 
-
+class BinaryStar(Particle):
+    def __init__(self, key, component_particle1, component_particle2, period, \
+                 eccentricity):
+        Particle.__init__(self, key)
