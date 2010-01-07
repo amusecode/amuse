@@ -74,7 +74,7 @@ class TestInterface(TestWithMPI):
         #code/library_v2.f:602
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = EVtwinInterface()
-        channel.MessageChannel.DEBUGGER = None
+        #channel.MessageChannel.DEBUGGER = None
         
         error = instance.set_ev_path(instance.default_path_to_ev_database)
         self.assertEquals(0, error)      
@@ -94,15 +94,14 @@ class TestInterface(TestWithMPI):
         error = instance.evolve(index_of_the_star)
         self.assertEquals(0, error)      
           
-        for i in range(20):
+        for i in range(2):
             error = instance.evolve(index_of_the_star)
-            if error != 0:
-                print "ERROR in evolving the star: ", error
-                break
+            self.assertEquals(0, error)      
+    
         
         (mass, error) = instance.get_mass(index_of_the_star)
         self.assertEquals(0, error)      
-        self.assertEquals(1.05, mass)  
+        self.assertTrue(mass < 1.05)  
         
         
     
