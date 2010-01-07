@@ -77,7 +77,7 @@
       integer, parameter, private :: switch_iterations = 5
 
       ! Print verbose output to stdout yes or no.
-      logical, private :: verbose = .true.
+      logical, private :: verbose = .false.
       
       ! Name of the init.dat input file, if not otherwise specified
       character*500, private :: init_dat_name = 'init.dat'

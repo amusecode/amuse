@@ -60,7 +60,7 @@ endif
 ifeq ($(notdir $(FORT)),gfortran)
    FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -J$(MODDIR)
    #FFLAGS += -ffpe-trap=zero,invalid -fsignaling-nans
-   #FFLAGS += -O2
+   FFLAGS += -O2
    FLIB = -lgfortran
 
 ifdef OPENMP
@@ -114,7 +114,7 @@ endif
 	#FLIB = -limf -lifcore -lifport -lguide
 endif
 
-DEBUGMODE=1
+#DEBUGMODE=1
 ifdef DEBUGMODE
    FFLAGS += -g 
    ifeq ($(FORT),ifort)
