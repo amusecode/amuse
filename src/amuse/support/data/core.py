@@ -601,7 +601,9 @@ class AbstractParticleSet(object):
     
     def _get_state_attributes(self):
         return []
-        
+    
+    def _particles(self):
+        return self
     #
     #
     #
@@ -727,7 +729,7 @@ class AbstractParticleSet(object):
         Returns a subset view on this set. The subset
         will contain all particles of this set.
         """
-        return ParticlesSubset(self, self._get_keys())
+        return ParticlesSubset(self._particles(), self._get_keys())
     
     
     def select(self, selection_function, attributes):
@@ -758,7 +760,7 @@ class AbstractParticleSet(object):
                 arguments[attr_index] = values[attr_index][index]
             if selection_function(*arguments):
                 selected_keys.append(key)
-        return ParticlesSubset(self, selected_keys)
+        return ParticlesSubset(self._particles(), selected_keys)
     
     def difference(self, other):
         """
@@ -901,6 +903,9 @@ class ParticlesSubset(AbstractParticleSet):
     def _get_state_attributes(self):
         return self._private.particles._get_state_attributes(self)
             
+        
+    def _particles(self):
+        return self._private.particles
         
     def difference(self, other):
         new_set_of_keys = self._private.set_of_keys.difference(other.to_set()._private.set_of_keys)
