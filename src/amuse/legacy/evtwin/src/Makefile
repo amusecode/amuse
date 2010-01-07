@@ -59,8 +59,9 @@ endif
 # Compiler flags for the gfortran compiler
 ifeq ($(notdir $(FORT)),gfortran)
    FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -J$(MODDIR)
-   FFLAGS += -O2
-	FLIB = -lgfortran
+   #FFLAGS += -ffpe-trap=zero,invalid -fsignaling-nans
+   #FFLAGS += -O2
+   FLIB = -lgfortran
 
 ifdef OPENMP
    FFLAGS += -fopenmp
@@ -113,6 +114,7 @@ endif
 	#FLIB = -limf -lifcore -lifport -lguide
 endif
 
+DEBUGMODE=1
 ifdef DEBUGMODE
    FFLAGS += -g 
    ifeq ($(FORT),ifort)
@@ -131,7 +133,7 @@ FFLAGS += $(ARCHITECTURE_FLAG)
 CFLAGS += $(ARCHITECTURE_FLAG)
 
 # Main source
-SHARED_SRC = initdat.f initrun.f nremesh.f extrapolate_dh.f mesh.f control.f xtraelem.f fcompare.f consts.f menc.f plotvars.f bbegin.f cfuncs.f estate.f massloss.f file_exists.f positron_fdirac.f printb.f fgb2hb_comp.f
+SHARED_SRC = initdat.f initrun.f nremesh.f extrapolate_dh.f mesh.f control.f xtraelem.f fcompare.f consts.f menc.f plotvars.f bbegin.f cfuncs.f estate.f massloss.f file_exists.f positron_fdirac.f printb.f fgb2hb_comp.f nucleosynthesis.f
 SHARED_SRC += dsolve.f 
 RAWSRC = aamain.f $(SHARED_SRC)
 LIBSRC = library_v2.f library.f $(SHARED_SRC) prtoft.f import.f export.f

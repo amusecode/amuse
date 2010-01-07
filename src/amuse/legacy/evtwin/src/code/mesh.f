@@ -18,6 +18,8 @@
 
       ! Total number of variables      
       INTEGER, PARAMETER :: NVAR = NSVAR + NXVAR
+      INTEGER, PARAMETER :: NVSTAR = NSVSTAR + NXVSTAR
+      INTEGER, PARAMETER :: NVBIN = NSVBIN + NXVBIN
       
       ! The arrays holding independent variables can hold up to NVAR numbers.
       ! The first NSVAR of these are treated in the `old' way, which means that

@@ -39,8 +39,8 @@
       double precision :: NEO, NIO, NZZ, AVM, NE
       COMMON /ABUND / XA, NA, NEO, NIO, NZZ, AVM, NE
 
-      double precision :: HPR(NVAR,NM), HT(60025+4*NM)
-      COMMON /STORE / HPR, HT
+      double precision :: HPR(NVAR,NM), MS(60025)
+      COMMON /STORE / HPR, MS
 
       integer, intent(in) :: jstar     ! Which component of a binary
       double precision, intent(out) :: model(13,KH)

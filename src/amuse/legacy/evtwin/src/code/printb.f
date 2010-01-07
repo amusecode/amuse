@@ -24,13 +24,14 @@ C     Meshpoint were maximum temperature is reached
       INTEGER :: IM_TMAX
       END MODULE
 
-      SUBROUTINE CHECK_STOP_CONDITIONS ( JSTAR, JO, JCM )
+      SUBROUTINE CHECK_STOP_CONDITIONS ( JSTAR, JO, JCM, IFT )
       USE MESH
       USE SETTINGS
       USE CONSTANTS
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: JSTAR
       INTEGER, INTENT(INOUT) :: JO, JCM
+      INTEGER, INTENT(IN) :: IFT
 !     / /
       DOUBLE PRECISION :: H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0
       INTEGER :: KH, KTW, KW(260)
@@ -60,8 +61,11 @@ C     Meshpoint were maximum temperature is reached
       DOUBLE PRECISION :: Q(NVAR), QD(NVAR), 
      &     FILLUP_COMMONBLOCK_INF(NFUNC+NVAR*NFUNC)
       COMMON /INF   / Q, QD, FILLUP_COMMONBLOCK_INF
+      DOUBLE PRECISION :: X1AC, X4AC, X12AC, X14AC, X16AC, X20AC, X24AC
+      DOUBLE PRECISION :: XAC(7, 2)
+      COMMON /ACCRET/ X1AC, X4AC, X12AC, X14AC, X16AC, X20AC, X24AC, XAC
 
-      DOUBLE PRECISION :: SDC, DMT, TKH
+      DOUBLE PRECISION :: SDC, DMT, TKH, M
       SDC = DLOG10(SX(3,2))      ! log10 central density
       DMT = SX(34, KH+1)         ! dM/dt
       TKH = 1.0D22*CG*Q(4)*Q(4)/(R*Q(8)*CSY)
@@ -81,10 +85,23 @@ C     Meshpoint were maximum temperature is reached
       !IF ( SX(11,2) < UC(10) ) EPS = UC(11)     !0.15D0, 1.0D-4 !! fudge
       ! restore old value when XHe < 1e-6
       !IF ( SX(11,2) < 1.0D-6 .AND. EPS > 1.0D-6 ) EPS = 1.0D-6     
-      IF ( SM+1.0D-6 >= UC(13)) CMI = 0.0D0
       IF ( SX(10,2) < UC(15) ) JO = 51                      ! Stop at TAMS
       IF ( PX(17) > UC(16) .AND. UC(16) > 0.0D0) JO = 52    ! Radius > limit
-      IF ( MH > UC(14)) JO = 13        ! End of ZAHB construction
+! ZAHB construction
+      IF (IFT == 24) THEN
+         M = SM + 1.0d-6                              ! Target mass + eps
+! Switch on composition adjustment when the mass exceeds the target core
+! mass; if we adjust the composition before this point the code runs
+! very unstable (we're not reconstructing the H burning shell properly).
+         IF (M > MH) THEN
+            CCAC = 1.0d0
+         END IF
+! Check for various intermediate stages and goals
+         IF ( M >= UC(13) ) CMI = 0.0D0   ! Target mass reached, switch off CMI
+         IF ( MH >= UC(14) ) KX = 0       ! Core mass reached, stop burning
+         IF ( M>=UC(13) .and. MH>=UC(14) .AND. DT>1.0d6*CSY) JO = 13 !  Done
+         IF ( JO == 5) JO = 0    ! Don't look at age during ZAHB construction
+      END IF
       IF ( MH < MHE .OR. MHE < MCO ) JO = 14
       END SUBROUTINE
 
@@ -124,6 +141,7 @@ C     Meshpoint were maximum temperature is reached
       SUBROUTINE UPDATE_TIMESTEP_PARAMETERS( JSTAR )
       USE MESH
       USE SETTINGS
+      USE CONSTANTS
       USE PLOTVARIABLES
       IMPLICIT NONE      
       INTEGER, INTENT(IN) :: JSTAR
@@ -150,11 +168,16 @@ C     Meshpoint were maximum temperature is reached
      & MSB, RCB, TCT, QR, PPR, JHOLD, JM2, JM1
       DOUBLE PRECISION, SAVE :: RLF_PREV(2) = (/0.0, 0.0/)
       DOUBLE PRECISION, SAVE :: QCNV_PREV(2) = (/0.0, 0.0/)
+      DOUBLE PRECISION, SAVE :: LNUC_PREV(2) = (/0.0, 0.0/)
+      DOUBLE PRECISION :: LNUC, TNUC
 
       IF ( SX(10, KH+1) < CXB ) MH = SX(9, KH+1) 
+      LNUC = LH + LHE + LC
       CDD = CDC(1)
 ! Allow larger or smaller time-increments, according to rules-of-thumb
       IF ( MHE <= MH ) THEN
+         ! Pre-main sequence
+         !IF (SX(4,2) < 1.0d7) CDD = CDC(1)*2.0
 ! End of main sequence, reduce timestep to resolve hook
          IF (SX(10,2) < 5.0D-2 .AND. SX(10,2) > 1.0D-5) CDD = CDC(1)*CDC(6)
 ! Hertzsprung gap/end of core hydrogen burning
@@ -177,8 +200,21 @@ C     Meshpoint were maximum temperature is reached
 ! Switch off Reimers-like wind for He stars
          IF ( MHE > 0.96D0*SX(9, KH+1) ) CMR = 0.0D0
       END IF
+! Check for thermo-nuclear "flashes" and cut back the timestep as they are
+! detected. Based on ideas by Attay Kovetz
+      IF (LNUC_PREV(JSTAR) > 0.0d0 .AND. LNUC>1.1d0*SX(18, NM+1)) THEN
+         TNUC = DT
+! Adjust timestep such that we will only allow a timestep that changes the
+! luminosity by at most 10%.
+         IF (LNUC>1.1D0*LNUC_PREV(JSTAR)) THEN
+            TNUC = DLOG(1.1d0)*DT / DLOG(LNUC / LNUC_PREV(JSTAR))
+            !print *, LNUC/LNUC_PREV(JSTAR), TNUC/CSY, DT/CSY
+         END IF
+         CDD = CDD * MIN(TNUC, DT) / DT
+      END IF
       RLF_PREV(JSTAR) = RLF(JSTAR)
       QCNV_PREV(JSTAR) = QCNV
+      LNUC_PREV(JSTAR) = LNUC
 
 ! Dirty hacks to help get through He-flash; not all work well and none
 ! work well enough
@@ -204,6 +240,7 @@ C     Meshpoint were maximum temperature is reached
       USE SETTINGS
       USE EXPLICIT_FUNCTIONS
       USE FGB2HB_COMPOSITION
+      USE PRINTB_GLOBAL_VARIABLES
       IMPLICIT NONE
       INTEGER, INTENT(INOUT) :: JO
       INTEGER, INTENT(IN) :: JSTAR
@@ -421,6 +458,7 @@ C     Meshpoint were maximum temperature is reached
       USE SETTINGS
       USE PLOTVARIABLES
       USE PRINTB_GLOBAL_VARIABLES
+      USE SOLVER_GLOBAL_VARIABLES, ONLY: DEFAULT_ER
       IMPLICIT NONE
 !     Subroutine Arguments
       INTEGER, INTENT (IN) :: JSTAR
@@ -428,7 +466,7 @@ C     Meshpoint were maximum temperature is reached
       DOUBLE PRECISION :: H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0
       INTEGER :: KH, KTW, KW(260)
 !     /STORE /
-      DOUBLE PRECISION :: HPR(NVAR,NM), HT(4,NM), MS(60025)
+      DOUBLE PRECISION :: HPR(NVAR,NM), MS(60025)
 !     /QUERY /
       DOUBLE PRECISION :: ML, QL, XL, UC(21)
       INTEGER ::  JMOD, JB, JNN, JTER, JOC, JKH
@@ -459,12 +497,12 @@ C     Meshpoint were maximum temperature is reached
 !     /NCDATA /
       DOUBLE PRECISION :: QPP, Q33, Q34, QBE, QBP, QPC, QPNA, QPO, Q3A,
      $     QAC,QAN, QAO, QANE, QCCA, QCO, QOO, QGNE, QGMG, QCCG, QPNG,
-     $     CNUC(109)
+     $     CNUC(20+9+4*90)
 !     /LSMOOTH /
       DOUBLE PRECISION :: LK_PREV(NM), LQ_PREV(NM), ENUC_PREV(NM)
 
       COMMON H, DH, EPS, DEL, DH0, KH, KTW, KW
-      COMMON /STORE / HPR, HT, MS
+      COMMON /STORE / HPR, MS
       COMMON /QUERY / ML, QL, XL, UC, JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ, HSPN, RLF, ZET, XIT, AGE, 
      : BM, MC, OM, PER, SM, ENC, TC, TFR, T0, M0, MTA, OM0, OMTA, 
@@ -686,6 +724,9 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
          IF ( PX(12) > 0.05D0 .AND. SX(12,IKK) < 0.05D0 ) MCO = 
      :    (PX(9)*(0.05D0 - SX(12, IKK)) + SX(9, IKK)*(PX(12) - 0.05D0))
      :    /(PX(12) - SX(12, IKK))
+         MH = MAX(MH, 0.0d0)
+         MHE = MAX(MHE, 0.0d0)
+         MCO = MAX(MCO, 0.0d0)
 ! Locate boundaries of nuclear burning regions, EX > EXLIM (Onno)
          IF((PX(20)-EXLIM)*(SX(20,IKK)-EXLIM) <= 0.0D0.AND.JE < 12.AND.
      &        IKK >= 2) THEN
@@ -723,6 +764,8 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
 ! save the last 5 places for TWIN variables
          SX(1:39, IKK + 1) = PX(1:39)
       END DO
+! set the luminosity scale for the solver
+      DEFAULT_ER(8+(JSTAR-1)*24) = MAX(DABS(LNU), DABS(LTH), LH+LHE+LC)*CLSN
 ! Compute FT and FP correction factors
       !XR(1:KH) = SX(17, 2:KH+1)
       !XM(1:KH) = SX(9, 2:KH+1)
@@ -965,7 +1008,7 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
 ! -------------------------------------------------------------------
 ! Update quantities that have to be calculated explicitly
 ! -------------------------------------------------------------------
-      CALL UPDATE_EXPLICIT_QUANTITIES( JO, JSTAR )
+      CALL UPDATE_EXPLICIT_QUANTITIES( JO, JSTAR, IFT )
 
 ! -------------------------------------------------------------------
 ! Update the control parameters for the next timestep
@@ -980,9 +1023,7 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
 ! -------------------------------------------------------------------
 ! Check termination conditions
 ! -------------------------------------------------------------------
-      CALL CHECK_STOP_CONDITIONS ( JSTAR, JO, JCM )
-! Don't look at age during ZAHB construction
-      IF ( IFT == 24 .AND. JO == 5) JO = 0
+      CALL CHECK_STOP_CONDITIONS ( JSTAR, JO, JCM, IFT )
 
 ! -------------------------------------------------------------------
 ! Output
@@ -998,6 +1039,9 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
 
 ! Print the short summary, for every KT4'th model, 1,2: file.out1,2
       IF ( KT4>0 .AND. MOD(JMOD, KT4) == 0 ) CALL WRITE_SUMMARY ( JSTAR, JMAD, IG )
+
+! Same, for nucleosynthesis
+      IF ( KT4>0 .AND. MOD(JMOD, KT4) == 0 ) CALL WRITE_NUCSYN_SUMMARY ( JSTAR, JMAD, 34 + IG )
 
 ! Funny composition profile - flag this as a problem
       IF ( MH < MHE .OR. MHE < MCO ) WRITE (IG,*) 'ccc', MH, MHE, MCO
@@ -1016,6 +1060,7 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
          END IF
          LMOD(IG) = JMAD
          CALL WRITE_PLT_FILE(JSTAR, JMAD, 30+IG, KT4)
+         CALL WRITE_NUCSYN_PLT_FILE(JSTAR, JMAD, 36+IG, KT4)
       END IF
 
 ! Write detailed model data for plotting purposes, 33,34: file.mdl1,2
@@ -1024,6 +1069,7 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
 ! FIXME: in case of convergence failure, go back and delete previous
 ! model, as done for the PLT file above
       IF (IG <= 2 .AND. MOD(JMAD, KT1) == 0) CALL WRITE_MDL_FILE(JSTAR, JMAD, 32+IG)
+      IF (IG <= 2 .AND. MOD(JMAD, KT1) == 0) CALL WRITE_NUCSYN_MDL_FILE(JSTAR, JMAD, 38+IG)
       RETURN
       END
 
@@ -1168,6 +1214,78 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
       END SUBROUTINE
 
 
+
+      SUBROUTINE WRITE_NUCSYN_PLT_FILE ( JSTAR, JMAD, IG, KT4 )
+      USE CONSTANTS
+      USE MESH_ENC
+      USE PLOTVARIABLES
+      USE PRINTB_GLOBAL_VARIABLES
+      USE NUCLEOSYNTHESIS
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: JSTAR, JMAD, IG, KT4
+      CHARACTER*5 NUCNAME(46)
+      INTEGER :: NUCVAR(44) = (/
+     &   41,3,  4,42,  5,  6,  7,  43,8,9, 44,10, 45,11,12, 13, 46,14,15,
+     &   16,17, 18,19,20, 22,23, 24,25,26, 27, 28,29,30, 31,32,33,34,35,
+     &   36, 37,38,39,40,1
+     &/)
+!     / /
+      DOUBLE PRECISION :: H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0
+      INTEGER :: KH, KTW, KW(260)
+      COMMON H, DH, EPS, DEL, DH0, KH, KTW, KW
+!     /QUERY /
+      DOUBLE PRECISION :: ML, QL, XL, UC(21)
+      INTEGER ::  JMOD, JB, JNN, JTER, JOC, JKH
+      COMMON /QUERY / ML, QL, XL, UC, JMOD, JB, JNN, JTER, JOC, JKH
+!     /VBLES/
+      DOUBLE PRECISION :: LOLEDD, DG, EG, GRAD, ETH, EGR, R, QQ, QM,WL,
+     &     WCV, HP, WT, PHIM, GMR, SEP, M3, PX(NPX), SX(NPX,NM+1),QA(NM)
+      COMMON /VBLES / LOLEDD, DG, EG, GRAD, ETH, EGR, R, QQ, QM,
+     & WL, WCV, HP, WT, PHIM, GMR, SEP, M3, PX, SX, QA
+!     /TVBLES/
+      DOUBLE PRECISION :: DT, ZQ(1), HSPN(2), RLF(2), ZET(2),
+     &     XIT(2), AGE,BM, MC(2), OM, PER, SM, ENC, TC(2), TFR, T0, M0,
+     &     MTA, OM0, OMTA,A0, ATA, E0, ETA, CDD, BP, HORB, RO, RA2, RS,
+     &     SE, TN(2), WMH,WMHE, MH, MHE, MCO, VMG, BE(2), LH, LHE, LC,
+     &     LNU, LTH, MCB(8),MSB(6), RCB(8), TCT(8), QR(81), PPR(81)
+      INTEGER :: JHOLD, JM2, JM1 
+      COMMON /TVBLES/ DT, ZQ, HSPN, RLF, ZET, XIT, AGE, 
+     & BM, MC, OM, PER, SM, ENC, TC, TFR, T0, M0, MTA, OM0, OMTA, 
+     & A0, ATA, E0, ETA, CDD, BP, HORB, RO, RA2, RS, SE, TN, WMH, 
+     & WMHE, MH, MHE, MCO, VMG, BE, LH, LHE, LC, LNU, LTH, MCB, 
+     & MSB, RCB, TCT, QR, PPR, JHOLD, JM2, JM1
+      LOGICAL :: FIRST_TIME(2) = (/.TRUE., .TRUE./)
+      INTEGER :: I, J
+      DOUBLE PRECISION :: DTY
+      DATA NUCNAME/'  g  ','  n  ','  D  ',' He3 ',' Li7 ',' Be7 ',' B11 ',
+     &     ' C13 ',' C14 ',' N15 ',' O17 ',' O18 ',' F19 ',' Ne21',
+     &     ' Ne22', ' Na22',' Na23',' Mg24',' Mg25',' Mg26','Al26M',
+     &     'Al26G',' Al27',' Si28',' Si29',' Si30',' P31 ',' S32 ',
+     &     ' S33 ',' S34 ', ' Fe56',' Fe57',' Fe58',' Fe59',' Fe60',' Co59',
+     &     ' Ni58',' Ni59',' Ni60',' Ni61', ' H1  ',' He4 ',' C12 ',
+     &     ' N14 ',' O16 ','Ne20 '/
+
+      DTY = DT/CSY
+
+      IF ( .NOT. ALLOCATED(HNUC) ) RETURN
+
+! Write number of cols to the first line of the star.plt[12] files
+      IF(FIRST_TIME(JSTAR)) THEN
+         REWIND(IG)
+         WRITE(IG, '(1P,1X,45A6)'), '#', (NUCNAME(NUCVAR(I)), I=1,44)
+         WRITE(IG,'(I4)') 14+44
+         FIRST_TIME(JSTAR) = .FALSE.
+      ENDIF
+! The first 14 output quantities are the same as for the normal .plt file
+      WRITE (IG,12100) JMAD,AJ,DTY,SM,MH,MHE,MCO,
+     &      LOG10(PX(17)),LOG10(PX(18)),LOG10(PX(4)),LOG10(SX(4,2)),STM,
+     &      LOG10(SX(3,2)),SDM,(HNUC(JSTAR, NUCVAR(I), 1), I=1,44)
+      CALL FLUSH(IG)
+12100 FORMAT (I6,ES17.9,ES14.6,12ES13.5,7ES12.4,3ES13.5,17ES12.4,
+     &  39ES13.5,ES14.6,ES13.5,ES14.6)
+      END SUBROUTINE
+
+
 !     Write structure output (the values of some physical parameters on
 !     each meshpoint) to a file usually called star.mdl1 or star.mdl2
 !
@@ -1219,6 +1337,72 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
          WRITE (IG,12202) 
      &     (dsign(MIN(dabs(SX(IPX(J),KK+1)),1.0D99),
      &             SX(IPX(J),KK+1) ), J=1, NWRT5)  
+      END DO
+      CALL FLUSH(IG)
+12201 FORMAT (I6,1P,E17.9,0P)
+12202 FORMAT (1P,E13.6,4E11.4,80E11.3,0P)
+      END SUBROUTINE
+
+
+!     Write structure output for nucleosynthesis (the values of some
+!     physical parameters on each meshpoint) to a file usually called
+!     star.nucmdl1 or star.nucmdl2
+!
+!     INPUT VARIABLES
+!     IG = indicates which starr: 1 for primary, 2 for secondary component
+!     JMAD = model number
+      SUBROUTINE WRITE_NUCSYN_MDL_FILE ( JSTAR, JMAD, IG )
+      USE MESH
+      USE SETTINGS
+      USE PLOTVARIABLES
+      USE PRINTB_GLOBAL_VARIABLES
+      USE NUCLEOSYNTHESIS
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: JSTAR, IG, JMAD
+!     / /
+      DOUBLE PRECISION :: H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0
+      INTEGER :: KH, KTW, KW(260)
+      COMMON H, DH, EPS, DEL, DH0, KH, KTW, KW
+!     /VBLES/
+      DOUBLE PRECISION :: LOLEDD, DG, EG, GRAD, ETH, EGR, R, QQ, QM,WL,
+     &     WCV, HP, WT, PHIM, GMR, SEP, M3, PX(NPX), SX(NPX,NM+1),QA(NM)
+      COMMON /VBLES / LOLEDD, DG, EG, GRAD, ETH, EGR, R, QQ, QM,
+     & WL, WCV, HP, WT, PHIM, GMR, SEP, M3, PX, SX, QA
+  
+      LOGICAL :: FIRST_TIME(2) =(/ .true., .true./)       
+      INTEGER :: KK, J
+      INTEGER, PARAMETER :: NWRT5 = 8     ! Parameters to write from SX
+      INTEGER :: NUCVAR(44) = (/          ! Nucleosynthesis abund. perm.
+     &   41,3,  4,42,  5,  6,  7,  43,8,9, 44,10, 45,11,12, 13, 46,14,15,
+     &   16,17, 18,19,20, 22,23, 24,25,26, 27, 28,29,30, 31,32,33,34,35,
+     &   36, 37,38,39,40,1
+     &/)
+      INTEGER :: IPX(NWRT5)   
+!     IPX: List of Indices of the entries in the array SX containing
+!     physcial pars as calculated during latest call cfuncs. This
+!     determines the order in which these pars are written to the output
+!     file .mdl[12]. 
+      DATA IPX/9, 17,  2,  3,  4,    5,  6 , 8/
+
+      IF ( .NOT. ALLOCATED(HNUC) ) RETURN
+
+!     If this function is called for the first time, write a header
+!     (expected by onno's yorick routines)
+      IF ( FIRST_TIME(JSTAR)) THEN
+         REWIND(IG)
+         WRITE (IG,'(2I6,F7.3)') KH, NWRT5, COS      
+         FIRST_TIME(JSTAR) = .FALSE.
+      ENDIF
+! Every time this fuction is called write a block header, and a datablock
+! The first 8 variables are the same as in the structure output for the
+! .mdl1 file
+      WRITE (IG,12201) JMAD, AJ
+      DO KK = 1, KH
+         ! Limit range of output exponent so it fits in the output format
+         WRITE (IG,12202) 
+     &     (dsign(MIN(dabs(SX(IPX(J),KK+1)),1.0D99),
+     &             SX(IPX(J),KK+1) ), J=1, NWRT5),
+     &      ( HNUC(JSTAR, NUCVAR(J), KH+1 - KK), J=1,44 )
       END DO
       CALL FLUSH(IG)
 12201 FORMAT (I6,1P,E17.9,0P)
@@ -1287,4 +1471,107 @@ C      ZQ(38:80) = 0.0D0    ! replaced by explicit statements below. -SdM
          WRITE (IG, '(1P, 3D16.9, I6)'), CURR_MAXDIFFSQR, CURR_DIFFSQR, BEST_DIFFSQR, BEST_MOD
       END IF
       CALL FLUSH ( IG )
+      END SUBROUTINE
+
+      SUBROUTINE WRITE_NUCSYN_SUMMARY ( JSTAR, JMAD, IG )
+      USE CONSTANTS
+      USE MESH_ENC
+      USE PLOTVARIABLES
+      USE PRINTB_GLOBAL_VARIABLES
+      USE CONSTANTS
+      USE NUCLEOSYNTHESIS
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: JSTAR, JMAD, IG
+      DOUBLE PRECISION :: AVGHNUC(NVAR_NUC)
+      DOUBLE PRECISION :: M, DM
+      DOUBLE PRECISION :: DTY
+      INTEGER :: K, KC, KS, KM, I
+! RJS Column headings for nucleosynthesis output - plus more precise output format
+! One day I'll make these selectable...
+      CHARACTER*5 NUCNAME(46)
+!     Common block /TVBLES/
+      DOUBLE PRECISION :: DT, ZQ(1), HSPN(2), RLF(2), ZET(2),
+     &     XIT(2), AGE,BM, MC(2), OM, PER, SM, ENC, TC(2), TFR, T0, M0,
+     &     MTA, OM0, OMTA,A0, ATA, E0, ETA, CDD, BP, HORB, RO, RA2, RS,
+     &     SE, TN(2), WMH,WMHE, MH, MHE, MCO, VMG, BE(2), LH, LHE, LC,
+     &     LNU, LTH, MCB(8),MSB(6), RCB(8), TCT(8), QR(81), PPR(81)
+      INTEGER :: JHOLD, JM2, JM1 
+      COMMON /TVBLES/ DT, ZQ, HSPN, RLF, ZET, XIT, AGE, 
+     & BM, MC, OM, PER, SM, ENC, TC, TFR, T0, M0, MTA, OM0, OMTA, 
+     & A0, ATA, E0, ETA, CDD, BP, HORB, RO, RA2, RS, SE, TN, WMH, 
+     & WMHE, MH, MHE, MCO, VMG, BE, LH, LHE, LC, LNU, LTH, MCB, 
+     & MSB, RCB, TCT, QR, PPR, JHOLD, JM2, JM1
+      INTEGER :: NUCVAR(44) = (/
+     &   41,3,  4,42,  5,  6,  7,  43,8,9, 44,10, 45,11,12, 13, 46,14,15,
+     &   16,17, 18,19,20, 22,23, 24,25,26, 27, 28,29,30, 31,32,33,34,35,
+     &   36, 37,38,39,40,1
+     &/)
+      DATA NUCNAME/'  g  ','  n  ','  D  ',' He3 ',' Li7 ',' Be7 ',' B11 ',
+     &     ' C13 ',' C14 ',' N15 ',' O17 ',' O18 ',' F19 ',' Ne21',
+     &     ' Ne22', ' Na22',' Na23',' Mg24',' Mg25',' Mg26','Al26M',
+     &     'Al26G',' Al27',' Si28',' Si29',' Si30',' P31 ',' S32 ',
+     &     ' S33 ',' S34 ', ' Fe56',' Fe57',' Fe58',' Fe59',' Fe60',' Co59',
+     &     ' Ni58',' Ni59',' Ni60',' Ni61', ' H1  ',' He4 ',' C12 ',
+     &     ' N14 ',' O16 ','Ne20 '/
+99900 FORMAT (I4, 1P, 17(1X,D12.5))
+99901 FORMAT (/, '  K  ', 17(4X, A5, 4X),/)
+
+      DTY = DT/CSY
+
+!     Nothing to do if we're not computing nucleosynthesis output
+      IF ( .NOT. ALLOCATED(HNUC) ) RETURN
+
+!     Calculate mass-averaged abundances
+      AVGHNUC(:) = 0.0D0
+      M = 0.0D0
+      DO K=1, KH_NUC-1
+         DM = DABS(HT(JSTAR, 4, K))
+         M = M + DM
+         AVGHNUC(:) = AVGHNUC(:) + HNUC(JSTAR,:,K)*DM
+      END DO
+
+      AVGHNUC(:) = AVGHNUC(:)/M
+      KC = KH_NUC-1
+      KS = 1
+      KM = KC - (IM_TMAX-1) + 1
+
+      WRITE (IG, 11994) JMAD,
+     &             (NUCNAME(NUCVAR(I)), I = 1, 14),
+     &         SM, (HNUC(JSTAR, NUCVAR(I), KC), I=1, 14),      'cntr',
+     &        DTY, (HNUC(JSTAR, NUCVAR(I), KM), I = 1, 14),    'Tmax',
+     &         AJ, (HNUC(JSTAR, NUCVAR(I), KS), I = 1, 14),    'surf',
+     &             (AVGHNUC(NUCVAR(I)), I = 1, 14),     'Mavg',
+     &             (NUCNAME(NUCVAR(I)), I = 15, 28),
+     &        STC, (HNUC(JSTAR, NUCVAR(I), KC), I=15, 28),     'cntr',
+     &        STM, (HNUC(JSTAR, NUCVAR(I), KM), I = 15, 28),   'Tmax',
+     &        STS, (HNUC(JSTAR, NUCVAR(I), KS), I = 15, 28),   'surf',
+     &         FL, (AVGHNUC(NUCVAR(I)), I = 15, 28),    'Mavg',
+     &             (NUCNAME(NUCVAR(I)), I = 29, 42),
+     &        SDC, (HNUC(JSTAR, NUCVAR(I), KC), I=29, 42),     'cntr', 
+     &        SDM, (HNUC(JSTAR, NUCVAR(I), KM), I = 29, 42),   'Tmax', 
+     &        SDS, (HNUC(JSTAR, NUCVAR(I), KS), I = 29, 42),   'surf',
+     &         FR, (AVGHNUC(NUCVAR(I)), I = 29, 42),    'Mavg'
+      CALL FLUSH ( IG )
+11994 FORMAT (/,
+     :I6,' M/dty/age ', 14('  ',A5,'   '),/,
+     : 3(1P, D16.9, 14D10.3, 2X, A4, /),
+     :  (1P, 16X,   14D10.3, 2X, A4, /),
+     :6X,' logT/logL ', 14('  ',A5,'   '),/,
+     : 4(1P, D16.9, 14D10.3, 2X, A4, /),
+     :6X,'logrho/logR', 14('  ',A5,'   '),/,
+     : 4(1P, D16.9, 14D10.3, 2X, A4, /))
+11995 FORMAT (/,
+     :I6,' M/dty/age    g         n         D         He3       Li7  ',
+     :  '     Be7       B11       C13       C14       N15       O17  ',
+     :  '     O18       F19      Ne21   ', /,
+     : 3(1P, D16.9, 14D10.3, 2X, A4, /),
+     :  (1P, 16X,   14D10.3, 2X, A4, /),
+     :6X,' logT/logL   Ne22     Na22      Na23       Mg24      Mg25  ',
+     :  '    Mg26      Al26M     Al26G     Al27      Si28      Si29  ',
+     :  '    Si30       P31       S32   ', /,
+     : 4(1P, D16.9, 14D10.3, 2X, A4, /),
+     :6X,'logrho/logR   S33      S34      Fe56       Fe57      Fe58',
+     :  '    Fe59      Fe60      Co59      Ni58      Ni59      Ni60',
+     :  '    Ni61       H1        He4   ', /,
+     : 4(1P, D16.9, 14D10.3, 2X, A4, /))
       END SUBROUTINE

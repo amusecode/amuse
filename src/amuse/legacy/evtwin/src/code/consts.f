@@ -299,6 +299,11 @@
       
       double precision :: CLIMIT = 1.0D-1    ! Limit changes in variables during iterations
 
+      ! Desired accuracy. The solver will aim for an accuracy between
+      !   EPS (in the unnamed COMMON block) and WANTED_EPS
+      ! No effect if WANTED_EPS <= EPS
+      double precision :: wanted_eps = 1.0D-8
+
       double precision :: CPHOTONTIRE = 0.0  ! Switch to include photon tiring
 
       ! Emergency energy generation term, normally set to 0.
@@ -374,6 +379,9 @@
       integer :: KCL, KION, KAM, KOP, KCC, KNUC, KCN
       integer :: KSX(45)
       integer :: KN, KJN(40)
+
+! Number of allowed iterations for the nucleosynthesis code
+      integer :: KR_NUCSYN = 60
 
 c Variables derived from Settings and never changed
       double precision :: CLOGZ

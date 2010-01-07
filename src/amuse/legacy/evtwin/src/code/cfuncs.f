@@ -22,6 +22,7 @@
       USE MASSLOSS      
       USE PLOTVARIABLES
       USE EXPLICIT_FUNCTIONS
+      USE NUCLEOSYNTHESIS
 !      IMPLICIT REAL*8 (A-H, L-Z)  
       IMPLICIT NONE
 C DECLARING SUBROUTINE VARIABLES
@@ -44,7 +45,7 @@ C DECLARING COMMON BLCOK VARIABLES EXPLICITLY
       DOUBLE PRECISION :: LOLEDD, DG, EG, GRADT, ETH, EGR, R, QQ, QMU, 
      : WL, WCV, HP, TW, PHIMU, GMR, SEP, M3,PX(NPX), SX(NPX,NM+1),QA(NM)
 !     /STORE /
-      DOUBLE PRECISION ::  HPR(NVAR,NM), HT(4,NM), MS(60025)
+      DOUBLE PRECISION ::  HPR(NVAR,NM), MS(60025)
 !     /INF   /
       DOUBLE PRECISION :: X(NVAR), DX(NVAR), Y(NFUNC), Z(NVAR*NFUNC)
 !     /NAMEIN/  SIZE(NAMEIN) = 3*NFUNC
@@ -62,7 +63,8 @@ C DECLARING COMMON BLCOK VARIABLES EXPLICITLY
      $     DAF, DAT, DX16, DM, DX1, DVQK, DAR, DL, DX4, DX12,
      $     DX20,DAI, DOMEGA, DPHI, DPHIS, DX14,       !16 stellar var. changes
      $     DOA, DE, DXI, DMB,DX24, DMENC, DMEA, DMET, ! 8 bin var. changes
-     $     FILLUP_COMMONBLOCK_NAMEIN(3*NFUNC-16-8-16-8)            ! fillup    
+     $     FILLUP_COMMONBLOCK_NAMEIN(3*NFUNC-(NVSTAR+NVBIN)),  ! Padding
+     $     STARVAR, BINVAR, DSTARVAR, DBINVAR                  ! Padding
 !     /NAMOUT/   ! SIZE(NAMEOUT) = NFUNC
       DOUBLE PRECISION ::  BCP, BCT, VP, VPK, VR, VRK, VT, VTK, VL, LK,
      $     LQ, MT, VM, VMK, SG, WT, X1, X1T, X16, X16T, X4, X4T, X12,
@@ -98,9 +100,6 @@ C DECLARING COMMON BLCOK VARIABLES EXPLICITLY
 !     /ATDATA/ 
       DOUBLE PRECISION :: CH2(4), CHI(26,9), COM(27), CAN(9), CBN(9)
       INTEGER :: KZN(9)
-!     /PLOT  / 
-!      DOUBLE PRECISION ::WML, MTR, DHDT, DHSP(2), DHMB(2), DHSO(2), DHML,
-!     & DHGW, DHMT(2), QCNV, TEFF  
 !      /LSMOOTH/
       DOUBLE PRECISION :: LK_PREV(NM), LQ_PREV(NM), ENUC_PREV(NM)
 ! Various stuff, needed for gravitational settling
@@ -118,7 +117,7 @@ C DECLARING COMMON BLOCKS
      : MSB, RCB, TCT, HR, PPR, JHOLD, JM2, JM1
       COMMON /VBLES / LOLEDD, DG, EG, GRADT, ETH, EGR, R, QQ, QMU, 
      : WL, WCV, HP, TW, PHIMU, GMR, SEP, M3,PX, SX,QA
-      COMMON /STORE / HPR, HT, MS
+      COMMON /STORE / HPR, MS
 c The first 40 vbles of /INF/ are the guessed quantities at each meshpt,
 c the next 40 are their changes since previous t-step. Only 11 or 13 or 19
 c vbles are used currently (34 if KTW = 2). The next 100 vbles are 
@@ -128,12 +127,16 @@ c In NAMES1, X, DX of /INF/ are equivalenced to /NAMEIN/, Y to /NAMOUT/
 !  last time step.
       COMMON /INF   / X, DX, Y, Z
       COMMON /NAMEIN/ AF, AT, VX16, M, VX1, VQK, AR, L, VX4, VX12, VX20, 
-     : AI, VOMEGA, PHI, PHIS, VX14,                ! 16 entries for *1
-     : OA, ECC, XI, MB, VX24, VMENC, VMEA, VMET,   ! 8 entries for bin
+     : AI, VOMEGA, PHI, PHIS, VX14, VX24,          ! 17 entries for *1
+     : STARVAR(NVSTAR - 17),                       ! Padding
+     : OA, ECC, XI, MB,                            ! 4 entries for bin
+     : BINVAR(NVBIN - 4),                          ! Padding
      : DAF, DAT, DX16, DM, DX1, DVQK, DAR, DL, DX4, DX12, DX20, 
-     : DAI, DOMEGA, DPHI, DPHIS, DX14,             ! 16 entries for *1
-     : DOA, DE, DXI, DMB, DX24, DMENC, DMEA, DMET, ! 8 entries for bin
-     : FILLUP_COMMONBLOCK_NAMEIN                               ! fillup remaining space
+     : DAI, DOMEGA, DPHI, DPHIS, DX14, DX24,       ! 17 entries for *1
+     : DSTARVAR(NVSTAR - 17),                      ! Padding
+     : DOA, DE, DXI, DMB,                          ! 4 entries for bin
+     : DBINVAR(NVBIN - 4),                         ! Padding
+     : FILLUP_COMMONBLOCK_NAMEIN                   ! fill up remaining space
       COMMON /NAMOUT/ BCP, BCT, VP, VPK, VR, VRK, VT,
      : VTK, VL, LK, LQ, MT, VM, VMK, SG, WT, X1, X1T, X16, X16T, X4, 
      : X4T, X12, X12T, X20, X20T, BCM, VI, VIK, VPHI, PHIK, BCF, BCS, 
@@ -151,8 +154,6 @@ c In NAMES1, X, DX of /INF/ are equivalenced to /NAMEIN/, Y to /NAMOUT/
       COMMON /ABUND / XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, NA, NEO, NIO, NZZ, AVMA, NE
       COMMON /ACCRET/ X1AC, X4AC, X12AC, X14AC, X16AC, X20AC, X24AC, XAC
       COMMON /ATDATA/ CH2, CHI, COM, CAN, CBN, KZN
-!     COMMON /PLOT  / WML, MTR, DHDT, DHSP, DHMB, DHSO, DHML,
-!    & DHGW, DHMT, QCNV, TEFF  ! MvdS Transport variables to printb
       COMMON /LSMOOTH/ LK_PREV, LQ_PREV, ENUC_PREV
 
 C DECLARING LOCAL FUNCTIONS
@@ -354,6 +355,7 @@ c Convert d/dm to d/dk = (d/dm)(dm/dk)
 ! Above is probably wrong - should it be something like this in stead?
       !WT = XHI*DT/(1.0D22 * R2MU*MUK)
       WT = OFF_CENTRE_WEIGHT * XHI*DT/(R2*1.0D22)
+      !IF (XH < 1.0d-9 .and. L>1.0d6) print *, XHI*DT/(R2*1.0d22)
       WT = SIGN(MIN(ABS(WT), 1.0D302), WT)
       TW = WT 
 c potential equation, moment of inertia, angular frequency
@@ -521,7 +523,8 @@ C overshooting from the Schwarzschild boundary.
          SGTH_NUMER = 16.0 * CPI * R2 * HP * CA * CL * T**3
          SGTH_DENOM = -GTA * SCP * FK * RHO * AVMU * ABS(MK)
          ! DTH is in 1e-11 cm^2/s
-         DTH = SGTH_NUMER/SGTH_DENOM
+         DTH = 0.0d0
+         IF (SGTH_DENOM /= 0.0d0) DTH = SGTH_NUMER/SGTH_DENOM
 
          ! correct for radiation pressure, see Kippenhahn, Ruschenplatt & 
          ! Thomas, A&A 91, 1980 equations (34) and (A6).
@@ -785,11 +788,17 @@ c FIXME: this does NOT work properly in TWIN mode
 
       SX(76, IKK) = XFS(FX_DES)
       SX(78, IKK) = XFS(FX_DGMU)
-c values needed for FUNS2, EQUNS2
-      HT(1, JK) = RHO
-      HT(2, JK) = SG
-      HT(3, JK) = ZT
-      HT(4, JK) = MK
+c values needed for nucleosynthesis calculations in FUNCS2, EQUNS2
+      HT(JSTAR, 1, JK) = RHO
+      HT(JSTAR, 2, JK) = SG
+      HT(JSTAR, 3, JK) = ZT
+      HT(JSTAR, 4, JK) = MK
+      HT(JSTAR, 5, JK) = NEO
+      HT(JSTAR, 6, JK) = NIO
+      HT(JSTAR, 7, JK) = NZZ
+      HT(JSTAR, 8, JK) = AVMA
+      HT(JSTAR, 9, JK) = NE
+      HT(JSTAR, 10:18, JK) = NA(1:9)
  4    IF ( JK /= 1 ) GO TO 2  
 C pressure, temperature surface boundary conditions
       ABSL = DABS(L)
@@ -1306,7 +1315,7 @@ c D is the smoothing length
 c Smoothed step function (IHT=1) or triangle function (IHT=2)
       IMPLICIT REAL*8 (A-H, L-Z)
       X = F + D  
-      IF ( X.LE.0.0D0 ) THEN
+      IF ( X.LE.1.0D-150 ) THEN  ! Make sure that X**2>0 numerically
          SMF = 0.0D0
       ELSE
          IF(X < 1.D130) THEN    ! safety net for big numbers !SdM
@@ -1633,13 +1642,15 @@ c *independent* of KL, KQ, so a factor of KQ is put in.
          WTA = 0.5D0*KQ
          WTB = 0.5D0*(WT(2) + WT(3))
          WTC = WTA*WTB/(1.0D0 + WTB)
+         !IF (WTC < 0.3) WTC = 0.0d0
+         !IF (WTC > 0.7) WTC = 1.0d0
          WTD = KQ - WTC
          EQU(6) = VP(3) - VP(2) - WTC*VPK(3 - KL) - WTD*VPK(2 + KL)
          EQU(7) = VR(3) - VR(2) - WTD*VRK(3 - KL) - WTC*VRK(2 + KL)
          EQU(8) = VT(3) - VT(2) - WTC*VTK(3 - KL) - WTD*VTK(2 + KL)
 c Luminosity equn: MT gives advective term, DLRK heat transfer in contact
-         WTC = (0.5 + 0.5D0*(1.0D0 - EGEN_SMOOTH)) * KQ
-         WTD = KQ - WTC
+         !WTC = (0.5 + 0.5D0*(1.0D0 - EGEN_SMOOTH)) * KQ
+         !WTD = KQ - WTC
          II = 2*JSTAR - 3
          EQU(9) = L(3) - L(2) - WTD*LK(3 - KL) - WTC*LK(2 + KL) 
      :        - LQ(2)*PSTV(KQ*MT(2),0.0D0) + LQ(3)*PSTV(-KQ*MT(3),0.0D0)
@@ -1684,23 +1695,40 @@ C central boundary conditions for first-order equations
       IMPLICIT REAL*8 (A-H, L-Z)
       INTEGER :: I, II
       COMMON /INF   / X(NVAR), DX(NVAR), Y(NFUNC), Z(NVAR,NFUNC)
-      COMMON /NAMEIN/ V(3*NFUNC)
+      COMMON /NAMEIN/ VAR(NVSTAR), BINVAR(NVBIN),
+     &               DVAR(NVSTAR), DBINVAR(NVBIN),
+     &               V(3*NFUNC-2*(NVSTAR+NVBIN))
       COMMON /NAMOUT/ W(NFUNC)
       COMMON /XIN1  / XVS(NXVSTAR), XVB(NXVBIN), DXVS(NXVSTAR), DXVB(NXVBIN)
       COMMON /XOUT1 / XWS(NXFSTAR), XWB(NXFBIN)
       DIMENSION IM(4), IN(4), IP(4), IQ(4)
 c nv1=16 each, nv2=8 both; nf1=42 each, nf2=16 both: 16/8/16, 42/16/42
-      DATA IM, IN /24, 16, 42, 42, 0, 24,  0, 58/ 
-      DATA IP, IQ /24, 24, 43, 43, 0, 24, 58, 58/ 
+      DATA IM /24, 16, 42, 42/ 
+      DATA IN / 0, 24,  0, 58/ 
+      DATA IP /24, 24, 43, 43/ 
+      DATA IQ / 0, 24, 58, 58/ 
       II = 2*JBE + JSTAR - 2
       IF ( JBE == 1 ) THEN          ! X, DX->NAMEIN
          ! Copy normal variables (up to NSFUNC)
-         V( 1 : IM(II) ) = X( IN(II)+1 : IN(II)+IM(II) )
-         V( IP(II)+1 : IP(II)+IM(II) ) = DX( IQ(II)+1 : IQ(II)+IM(II) )
+         !V( 1 : IM(II) ) = X( IN(II)+1 : IN(II)+IM(II) )
+         I = (JSTAR-1)*24
+         VAR(1:16) = X(1+I:16+I)
+         BINVAR(1:8) = X(17:24)
+         !V( IP(II)+1 : IP(II)+IM(II) ) = DX( IQ(II)+1 : IQ(II)+IM(II) )
+         DVAR(1:16) = DX(1+I:16+I)
+         DBINVAR(1:8) = DX(17:24)
          
          ! Copy extra variables, star 1 or star 2
-         ! The blocklayout is different here: the star blocks come first.
-         !  followed by the binary parameters block.
+         I = NSVAR+(JSTAR-1)*NXVSTAR
+         VAR(17:NVSTAR) = X(I+1:I+NXVSTAR)
+         DVAR(17:NVSTAR) = DX(I+1:I+NXVSTAR)
+
+         ! Extra binary variables
+         I = NSVAR+2*NXVSTAR
+         BINVAR(9:NVBIN) = X(I+1:I+NXVBIN)
+         DBINVAR(9:NVBIN) = DX(I+1:I+NXVBIN)
+
+         ! Copy extra variables, star 1 or star 2
          I = NSVAR+(JSTAR-1)*NXVSTAR
          XVS(1:NXVSTAR) = X(I+1:I+NXVSTAR)
          DXVS(1:NXVSTAR) = DX(I+1:I+NXVSTAR)
@@ -1787,7 +1815,7 @@ c constructs new mesh spacing. JCH=4: also initialises compos. to uniformity
       USE SETTINGS
       IMPLICIT REAL*8 (A-H, L-Z)
       COMMON H(NVAR,NM), DH(NVAR,NM), EP(3), KH, KTW, ID(260)
-      COMMON /STORE / HPR(NVAR,NM), HT(4,NM), MS(60025)
+      COMMON /STORE / HPR(NVAR,NM), MS(60025)
       COMMON /TVBLES/ ZQ(12), MC(2), OM(230), JHOLD(3)
       COMMON /VBLES / LOLEDD, DG, EG, GRAD, ETH, EGR, R, QQ, QMU, WL, 
      : WCV, HP, WT, PHIMU, GMR, SEP, M3, PX(NPX*(NM+2)), QA(NM)
@@ -1830,7 +1858,7 @@ c constructs new mesh spacing. JCH=4: also initialises compos. to uniformity
       IF (USE_MG24_EQN) THEN
          !H(21,1:KH) = XMG
          DO IK=1, KH
-            H(21,IK) = MAX(0.0D0, 1.0 - (H(5,IK) + H(9, IK) + H(10, IK) + H(3, IK) + H(11, IK) + H(16, IK) + XFE + XSI))
+            H(NMG24,IK) = MAX(0.0D0, 1.0 - (H(5,IK) + H(9, IK) + H(10, IK) + H(3, IK) + H(11, IK) + H(16, IK) + XFE + XSI))
          END DO
       END IF
       IF ( JCH >= 4 ) THEN
@@ -1916,8 +1944,8 @@ C Preliminary integration for M.I. and potential
          END IF
          EX_MAX = MAX(EX, 0.0D0)
 c Integration for L-dependent mesh spacing.
-         QE = QE + CT(2)*EX*HT(4, IK)*1.0D-8
-         QA(IK) = QA(IK) + QE                   ! Update meshspacing
+         !QE = QE + CT(2)*EX*HT(4, IK)*1.0D-8
+         !QA(IK) = QA(IK) + QE                   ! Update meshspacing
       END DO
 ! Find values of mesh spacing function at the external points
 ! Needed to calculate the new mesh, where the meshspacing gradient is
@@ -1978,7 +2006,7 @@ C Some new variables that may not have been read in from stored model
          END IF
       END DO
       IF (EX_MAX < 1.0D-3) ENC_PARACHUTE = 1.1*H(8, 1) / H(4, 1)
-      H(NTAM, 1:KH) = H(12, 1:KH)/P1;
+      H(NTAM, 1:KH) = H(12, 1:KH)*H(13, 1);
       RETURN
       END SUBROUTINE
 
@@ -2170,9 +2198,9 @@ c In particular, this deals with composition variables
       DIMENSION IX(20)
       DATA IX/3, 5, 9, 10, 11, 16, 18, 27, 29, 33, 34, 35, 40, 7*3/
 ! Composition variables - should not be negative!
-      DO I = 1, 6
-         IJ = IX(I)
-         DO IK = 1, KH
+      DO IK = 1, KH
+         DO I = 1, 6
+            IJ = IX(I)
             IF ( H(IJ, IK) + DH(IJ, IK) < 0.0 ) THEN
                DH(IJ, IK) = -H(IJ, IK)
                H(IJ, IK) = 0.0D0
@@ -2180,9 +2208,9 @@ c In particular, this deals with composition variables
          END DO
       END DO
 ! Other variables
-      DO I = 7, 13
-         IJ = IX(I)
-         DO IK = 1, KH
+      DO IK = 1, KH
+         DO I = 7, 13
+            IJ = IX(I)
             IF ( H(IJ, IK) + DH(IJ, IK) <= 1.0D-12 ) THEN
                H(IJ, IK) = 0.0D0
                DH(IJ, IK) = 0.0D0
@@ -2297,164 +2325,3 @@ c In particular, this deals with composition variables
       END DO
       RETURN
       END SUBROUTINE
-
-      SUBROUTINE FUNCS2 ( K, K1, K2 )
-      USE MESH
-      IMPLICIT REAL*8 (A-H, L-Z)
-      COMMON /TVBLES/ DT, ZQ(243), JHOLD, JM2, JM1
-      COMMON /STORE / HPR(NVAR,NM), HT(4,NM), MS(60025)
-      COMMON /STAT2 / W1(4), RHO, W2(4), ZT, W3(9), F1, F3, F4, F14, 
-     :                F16, F3A, F12A, FAN, FCC, FOO, F12, FW(14), DELTA,
-     &                PHI, EXT, FKT, FKR, PRANDTL
-      COMMON /INF   / W(1), AT, Y2, M, Y1, VQK, AR, L, X1, X4, X12, X14, 
-     :  X16, X24, X3,XW(25), EW(3), DM, V5(4), DX1, DX4, DX12, DX14,
-     : DX16, DX24, DX3, DW(25), YDOT(6), Y(6), SIG, DMT, WQ(86),
-     : YLIN(NVAR,NFUNC), 
-     : FILLUP_COMMONBLOCK_INF_FUNCS2(2*NVAR+NFUNC - 180)
-      COMMON /ABUND / WA1(9), YA(9), VNE0, WA(2), AVM, VNE
-      DIMENSION BARYN(6), IX(6)
-      DATA BARYN/1.0D0, 3.0D0, 4.0D0, 12.0D0, 14.0D0, 16.0D0/, 
-     :     IX/11, 17, 12, 13, 14, 15/
-      IF ( K.LE.K1 ) THEN
-         DO I1 = 1, 6
-            DO I2 = 1, 6
-               YLIN(I1, I2) = 0.0D0
-            END DO
-         END DO
-      END IF
-      RHO = HT(1, K)
-      SIG = HT(2, K)
-      ZT = HT(3, K)
-      DMT = DM/DT
-      DMK = HT(4, K)
-      W1(4) = 0.0D0
-      CALL NUCRAT ( AT )
-      F12 = 100.0D0*F14
-C      EVALUATE SEVERAL RECURRENT FACTORS
-      F1X1 = F1*X1
-      F3X3 = F3*X3
-      F34X3 = F4*X3
-      F34X4 = F4*X4
-      F12X1 = F12*X1
-      F14X1 = F14*X1
-      F16X1 = F16*X1
-      F12X12 = F12*X12
-      F14X14 = F14*X14
-      F16X16 = F16*X16
-      F3AXA2 = F3A*X4*X4
-      F12A12 = F12A*X12
-      F12AXA = F12A*X4
-      F = 0.0008D0
-      FM = 1. - F
-      F14M = F14X14*FM
-      F1X4F = F14X14*F
-      F14XM = F14X1*FM
-      YD11 = -2.0D0*(F12X12+F14X14+F16X16)
-      YD31 = F14M + F16X16
-      YD41 = -F12X12 + F14M
-      YD51 = F12X12 - F14X14 + F16X16
-      YD61 = F1X4F - F16X16
-C  EVALUATE COMPOSITION CHANGE
-      YDOT(1) = X1*(-3.0D0*F1X1+YD11) + X3*(2.0D0*F3X3-F34X4)
-      YDOT(2) = F1X1*X1 + X3*(-2.*F3X3-F34X4)
-      YDOT(3) = X3*(F3X3+F34X4) + X1*YD31 - X4*(3.0D0*F3AXA2+F12A12)
-      YDOT(4) = X1*YD41 + X4*(F3AXA2-F12A12)
-      YDOT(5) = X1*YD51
-      YDOT(6) = X1*YD61 + F12A12*X4
-C  EVALUATE DERIVATIVES
-C  FIRST EQ H1
-      YLIN(1, 1) = -6.0D0*F1X1 + YD11
-      YLIN(2, 1) = 4.0D0*F3X3 - F34X4
-      YLIN(3, 1) = -F34X3
-      YLIN(4, 1) = -2.0D0*F12X1
-      YLIN(5, 1) = -2.0D0*F14X1
-      YLIN(6, 1) = -2.0D0*F16X1
-C  2ND EQ HE3
-      YLIN(1, 2) = 2.0D0*F1X1
-      YLIN(2, 2) = -4.0D0*F3X3 - F34X4
-      YLIN(3, 2) = -F34X3
-C  3RD EQ HE4
-      YLIN(1, 3) = YD31
-      YLIN(2, 3) = 2.0D0*F3X3 + F34X4
-      YLIN(3, 3) = F34X3 - 9.0D0*F3AXA2 - F12A12
-      YLIN(4, 3) = -F12AXA
-      YLIN(5, 3) = F14XM
-      YLIN(6, 3) = F16X1
-C  4TH EQ C12
-      YLIN(1, 4) = YD41
-      YLIN(3, 4) = 3.0D0*F3AXA2 - F12A12
-      YLIN(4, 4) = -F12X1 - F12AXA
-      YLIN(5, 4) = F14XM
-C  5TH EQ N14
-      YLIN(1, 5) = YD51
-      YLIN(4, 5) = F12X1
-      YLIN(5, 5) = -F14X1
-      YLIN(6, 5) = F16X1
-C  6TH EQ O16
-      YLIN(1, 6) = YD61
-      YLIN(3, 6) = F12A12
-      YLIN(4, 6) = F12AXA
-      YLIN(5, 6) = F14X1*F
-      YLIN(6, 6) = -F16X1
-      DO I1 = 1, 6
-         DO I2 = 1, 6
-            YLIN(I2, I1) = -YLIN(I2, I1)*BARYN(I1)*DMK
-         END DO
-         Y(I1) = W(IX(I1))
-         YLIN(I1, I1) = YLIN(I1, I1) + DMK/DT
-         YDOT(I1) = (-YDOT(I1)*BARYN(I1) + DW(IX(I1))/DT)*DMK
-      END DO
-      RETURN
-      END
-
-      SUBROUTINE EQUNS2 ( JK, K1, K2, KE )
-      USE MESH
-      IMPLICIT REAL*8 (A-H, L-Z)
-      COMMON /INE   / XT(3, 6), X(3, 6), SG(3), DMT(3), WW(258),
-     :  DXT(3, NVAR, 100), EQU(NEQ), DEQU(NEQ, 3, NEQ), 
-     :  FILLUP_COMMONBLOCK_INE_EQUNS2((3*NFUNC + 3*NVAR*NFUNC + NEQ + 3*NVAR*NVAR) - 
-     :  (300 + 3*NVAR*100 + NEQ + 3*NEQ*NEQ))
-      IF ( JK /= K1 ) THEN
-         IF ( JK.LE.K1 + 1 ) THEN
-            SG2 = 0.5D0*(SG(2) + SG(3))
-            DO I1 = 1, KE
-               DO I2 = 1, KE
-                  DEQU(I2, 1, I1) = 0.0D0
-                  DEQU(I2, 2, I1) = -DXT(2, I2, I1)
-                  DEQU(I2, 3, I1) = 0.0D0
-               END DO
-               DEQU(I1, 2, I1) = DEQU(I1, 2, I1) - SG2
-               DEQU(I1, 3, I1) = SG2
-               EQU(I1) = SG2*(X(3,I1) - X(2,I1)) - XT(2, I1)
-            END DO
-         ELSE IF ( JK > K2 ) THEN
-            SG1 = 0.5D0*(SG(3) + SG(2))
-            DO I1 = 1, KE
-               DO I2 = 1, KE
-                  DEQU(I2, 2, I1) = -0.5D0*DXT(2, I2, I1)
-                  DEQU(I2, 3, I1) = 1.5D0*DXT(3, I2, I1)
-               END DO
-               DEQU(I1, 2, I1) = DEQU(I1, 2, I1) - SG1
-               DEQU(I1, 3, I1) = DEQU(I1, 3, I1) + SG1
-               EQU(I1) = SG1*(X(3, I1) - X(2, I1)) + 1.5D0*XT(3, I1)
-     :                   - 0.5D0*XT(2, I1)
-            END DO
-         ELSE
-!            SG1 = 0.5D0*(SG(2) + SG(1)) - SMF(2, DMT(2), 0.0D0)
-!            SG2 = 0.5D0*(SG(3) + SG(2)) - SMF(2, -DMT(2), 0.0D0)
-            SG1 = 0.5D0*(SG(2) + SG(1)) - PSTV(DMT(2), 0.0D0)
-            SG2 = 0.5D0*(SG(3) + SG(2)) - PSTV(-DMT(2), 0.0D0)
-            DO I1 = 1, KE
-               DO I2 = 1, KE
-                  DEQU(I2, 2, I1) = -DXT(2, I2, I1)
-               END DO
-               DEQU(I1, 1, I1) = SG1
-               DEQU(I1, 2, I1) = DEQU(I1, 2, I1) - SG1 - SG2
-               DEQU(I1, 3, I1) = SG2  
-               EQU(I1) = (X(3, I1) - X(2, I1))*SG2 
-     :                   - (X(2, I1) - X(1, I1))*SG1 - XT(2, I1)
-            END DO
-         END IF
-      END IF
-      RETURN
-      END

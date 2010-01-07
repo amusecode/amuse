@@ -22,6 +22,7 @@ foreach $file (@ARGV) {
       if (m/^\s*use /i){
          my $module_name = $_;
          $module_name =~ s/\s*use\s*//i;
+         $module_name =~ s/(, only:.*)+//gi;
          $module_name =~ s/[^a-zA-Z0-9_]//g;
          $module_name =~ s/(\w+)/\L$1/g;
          unless (grep(/$module_name/,@wants_modules)) {

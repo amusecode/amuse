@@ -51,18 +51,23 @@ C The working of this programme is described in a file `writeup.tex';
       COMMON /CINIT_RUN/ ISB, IP1, IM1, IP2, IM2, KPT, KP, ML1, DML, KML,
      & QL1, DQL, KQL, XL1, DXL, KXL, ROT, KR, EX, JMX, STARTFILE, ZAMSFILE
 !MvdS Added to create different filenames for different loops
-      INTEGER NML,NQL,NXL,DUMMY,NARG,IARGC,FLEN,UNITS(12),NOUT(2)
-      CHARACTER FNAME*500,FNAME2*6,COMMAND*500,SUFFIX(12)*6,TMPSTR*80
+      INTEGER NML,NQL,NXL,DUMMY,NARG,IARGC,FLEN
+      CHARACTER FNAME*500,FNAME2*6,COMMAND*500,TMPSTR*80
       INTEGER DATEVAL(8)
       CHARACTER EVPATH*500, ZSTR*8
-      INTEGER, PARAMETER :: N_INP_FILES = 13
+      INTEGER, PARAMETER :: N_INP_FILES = 15
+      INTEGER, PARAMETER :: N_OUT_FILES = 18
+      CHARACTER :: SUFFIX(N_OUT_FILES)*8
       CHARACTER*500 :: INPUTFILENAMES(N_INP_FILES)
-      INTEGER :: INPUTUNITS(N_INP_FILES)     = (/12, 24, 16, 18, 19, 20, 21, 26, 63, 22, 23, 41, 42/)
-      INTEGER :: INPUT_REQUIRED(N_INP_FILES) = (/ 0,  0,  1,  1,  1,  0,  1,  1, -1,  1,  1,  0,  1/)
-      SUFFIX = (/'.out1 ','.io12 ','.log  ','.out  ','.last1','.last2',
-     &'.mod  ','.plt1 ','.mdl1 ','.out2 ','.plt2 ','.mdl2 '/)
-      UNITS = (/1,3,8,9,13,14,15,31,33,2,32,34/)
-      NOUT = (/9,12/) !N of output files for ISB=1,2
+      INTEGER :: UNITS(N_OUT_FILES), NOUT(2)
+      INTEGER :: INPUTUNITS(N_INP_FILES)     = (/12, 24, 16, 18, 19, 20, 21, 26, 63, 22, 23, 41, 42, 43, 44/)
+      INTEGER :: INPUT_REQUIRED(N_INP_FILES) = (/ 0,  0,  1,  1,  1,  0, 1,  1, -1,  1,  1,  0,  1, 1, 1/)
+      SUFFIX = (/'.io12   ','.log    ','.out    ','.last1  ','.last2  ',
+     &'.mod    ',
+     &'.out1   ','.plt1   ','.mdl1   ','.nucout1', '.nucplt1', '.nucmdl1',
+     &'.out2   ','.plt2   ','.mdl2   ','.nucout2', '.nucplt2', '.nucmdl2'/)
+      UNITS = (/3,8,9,13,14,15, 1,31,33,35,37,39, 2,32,34,36,38,40/)
+      NOUT = (/12,18/) !N of output files for ISB=1,2
 !MvdS Added to create different filenames for different loops
 
 ! Setup metalicity and evolution code directory.
@@ -97,6 +102,8 @@ C The working of this programme is described in a file `writeup.tex';
       INPUTFILENAMES(11)='init.run'
       INPUTFILENAMES(12)=TRIM(EVPATH)//"/input/COtables/COtables_z"//TRIM(ZSTR)
       INPUTFILENAMES(13)=TRIM(EVPATH)//"/input/physinfo.dat"
+      INPUTFILENAMES(14)=TRIM(EVPATH)//"/input/rates.dat"
+      INPUTFILENAMES(15)=TRIM(EVPATH)//"/input/nrates.dat"
 
 ! If init.dat does not exist, try name.dat; likewise for init.run
       IF(IARGC() > 0) THEN
@@ -148,6 +155,7 @@ C The working of this programme is described in a file `writeup.tex';
      &   OPEN (UNIT=25, ACTION='WRITE', STATUS = 'SCRATCH')
       
       CALL SETSUP
+      CALL LOAD_NUCLEOSYNTHESIS_RATES(INPUTUNITS(14), INPUTUNITS(15))
    92 FORMAT (1X, 1P, 40D23.15, 0P)
    95 FORMAT (1X, 1P, 8D23.15, 0P, 6I6) !MvdS 5I5->5I6 to allow >10k models
    99 FORMAT (3(1P, E16.9, 5E10.3, 0P, F8.3, 7F8.5, 2F8.4, F9.5, /), 
@@ -196,6 +204,7 @@ c JO = 1 won't stop the code, but it may lead to JO = 2
       WRITE (8,*) ' 14 -- PRINTB -- funny compos. distribution'
       WRITE (8,*) ' 15 -- STAR12 -- terminated by hand'
       WRITE (8,*) ' 16 -- MAIN   -- ZAHB didnt converge'
+      WRITE (8,*) ' 17 -- BEGINN -- Nucleosynthesis didn'//"'"//'t converge'
       WRITE (8,*) ' 51 -- PRINTB -- end of MS (core H below limit)'
       WRITE (8,*) ' 52 -- PRINTB -- Radius exceeds limit'
       WRITE (8,*) ' 53 -- PRINTB -- Convergence to target model reached minimum'
@@ -212,30 +221,30 @@ c JO = 1 won't stop the code, but it may lead to JO = 2
       IF ( IP1.LE.14 ) IP2 = IP1
       
 !MvdS Create a list of model properties for this run, including date and pwd
-      OPEN(UNIT=40, STATUS='UNKNOWN', FORM='FORMATTED', FILE=TRIM(FNAME)//'.list')
-      WRITE(40,'(A1)')' ' 
+      OPEN(UNIT=50, STATUS='UNKNOWN', FORM='FORMATTED', FILE=TRIM(FNAME)//'.list')
+      WRITE(50,'(A1)')' ' 
 ! Get date and time for list file
       CALL DATE_AND_TIME(TMPSTR, TMPSTR, TMPSTR, DATEVAL)
-      WRITE(40, '(I4"-"I2"-"I2, " ", I2":"I2,":"I2, " UT"A5)') 
+      WRITE(50, '(I4"-"I2"-"I2, " ", I2":"I2,":"I2, " UT"A5)') 
      &   DATEVAL(1:3), DATEVAL(5:7), TMPSTR
 ! Write hostname
       CALL GETENV("HOSTNAME", TMPSTR);
-      WRITE(40,'(A80)') TMPSTR      
+      WRITE(50,'(A80)') TMPSTR      
 ! Write current working directory
       CALL GETENV("PWD", TMPSTR);
-      WRITE(40,'(A80)') TMPSTR
+      WRITE(50,'(A80)') TMPSTR
 ! Write names of files used
       DO I=1, N_INP_FILES
          IF (FILE_EXISTS(INPUTFILENAMES(I)) .AND. .NOT. FILE_EXISTS(FNAME)) THEN
-            WRITE (40, *) "Using ",TRIM(INPUTFILENAMES(I))," for unit", INPUTUNITS(I)
+            WRITE (50, *) "Using ",TRIM(INPUTFILENAMES(I))," for unit", INPUTUNITS(I)
          END IF
       END DO
       IF ( LEN(TRIM(STARTFILE))>0 ) THEN
-         WRITE (40, *) "Using initial model ",TRIM(STARTFILE)," for unit", IP1
+         WRITE (50, *) "Using initial model ",TRIM(STARTFILE)," for unit", IP1
       END IF
-      WRITE(40,'(A1)')' ' 
-      WRITE(40,'(16X,A4,4(8X,A3))')'File','M1i','M2i',' Qi',' Pi'
-      CLOSE(40)
+      WRITE(50,'(A1)')' ' 
+      WRITE(50,'(16X,A4,4(8X,A3))')'File','M1i','M2i',' Qi',' Pi'
+      CLOSE(50)
 
 !BEGIN LOOP      
 c Cycle on *1's mass.
@@ -247,10 +256,10 @@ c Locate the *1 model, optionally in the ZAMS (fort.16) library
          IF ( IP1==16 .AND. LEN(TRIM(ZAMSFILE))>0 ) THEN
             ! Override the ZAMS file from which the starting model is to be
             ! obtained; Necessary for stars > 200Msun
-            OPEN(UNIT=40, FILE=TRIM(ZAMSFILE))
+            OPEN(UNIT=50, FILE=TRIM(ZAMSFILE))
             IM1 = 1
-            CALL LOAD_STAR_MODEL(40,IM1, H1, DH1, SM1,DTY1,AGE1,PER1,BMS1,ECC1,P1,ENC 1,KH1,JN1,JF1)
-            CLOSE(40)
+            CALL LOAD_STAR_MODEL(50,IM1, H1, DH1, SM1,DTY1,AGE1,PER1,BMS1,ECC1,P1,ENC 1,KH1,JN1,JF1)
+            CLOSE(50)
          ELSE
             IF ( IP1.EQ.16 ) IM1 = (ML - MLO)/DM + 1.501D0
             CALL LOAD_STAR_MODEL(IP1,IM1, H1, DH1, SM1,DTY1,AGE1,PER1,BMS1,ECC1,P1,ENC1,KH1,JN1,JF1)
@@ -291,16 +300,16 @@ c Cycle on initial period
 !BEGIN ACTUAL LOOP
 !MvdS Make a list of models in each file	       
                WRITE(FNAME2,'(3I2.2)')NML,NQL,NXL
-               OPEN(UNIT=40, STATUS='UNKNOWN', POSITION='APPEND', 
+               OPEN(UNIT=50, STATUS='UNKNOWN', POSITION='APPEND', 
      &         FORM='FORMATTED', FILE=TRIM(FNAME)//'.list')
                IF(KML*KQL*KXL.EQ.1) THEN
-                  WRITE(40,'(A20,4(2X,ES9.3))')TRIM(FNAME),
+                  WRITE(50,'(A20,4(2X,ES9.3))')TRIM(FNAME),
      &           10**ML,10**(ML-QL),10**QL,10**XL
                ELSE
-                  WRITE(40,'(A20,4(2X,ES9.3))')TRIM(FNAME)//FNAME2,
+                  WRITE(50,'(A20,4(2X,ES9.3))')TRIM(FNAME)//FNAME2,
      &           10**ML,10**(ML-QL),10**QL,10**XL
                ENDIF
-               CLOSE(40)
+               CLOSE(50)
 
 
 c For ZAMS models, replace SMn, ..., JMn by correct values
@@ -385,9 +394,8 @@ c Store the *1 and *2 initial models in one file (fort.14)
                CALL FLUSH (JOP)
                REWIND (JOP)
                KNT = 0
+               JO1 = -1
                DO
-                  JO1 = -1
-                  JO2 = -1
                   JIP = JOP
                   IF (MUTATE) THEN
                      ! Do mutation run of the code
@@ -409,6 +417,7 @@ c He flash (JO=8): replace last model by ZAHB model, then continue
                   IF ( JO1.EQ.8 ) THEN
                      JO3 = -1
                      CALL FGB2HB ( JOP, 1, JO3 )
+                     JO1 = JO3   ! Pass on ZAHB flag to STAR12
                      IF ( JO3.EQ.13 ) CYCLE
                      JO1 = 16
                   END IF

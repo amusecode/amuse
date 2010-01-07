@@ -77,7 +77,7 @@
       integer, parameter, private :: switch_iterations = 5
 
       ! Print verbose output to stdout yes or no.
-      logical, private :: verbose = .false.
+      logical, private :: verbose = .true.
       
       ! Name of the init.dat input file, if not otherwise specified
       character*500, private :: init_dat_name = 'init.dat'
@@ -310,6 +310,8 @@
       INPUTFILENAMES(13)=TRIM(EVPATH)//"/input/physinfo.dat"
       INPUTFILENAMES(14)=TRIM(EVPATH)//"/run/muse/init.dat" ! Sensible defaults
       INPUTFILENAMES(15)=TRIM(EVPATH)//"/run/muse/init.run" ! Sensible defaults
+      !INPUTFILENAMES(14)=TRIM(EVPATH)//"/xxx/init.dat" ! Sensible defaults
+      !INPUTFILENAMES(15)=TRIM(EVPATH)//"/xxx/init.run" ! Sensible defaults
 
       
       ! We want to override the default init.run and init.dat settings if
@@ -389,14 +391,14 @@ c Create short (`pruned') summary of ZAMS models from long file
 
 !     Autodetect if we should solve for N14 or not by checking if the
 !     corresponding equation is in the list of equations
-      USE_N14_EQN = .FALSE.
-      DO II = 1, 40
-         IF (KP_EQN(II) == EN14) THEN
-            USE_N14_EQN = .TRUE.
-            EXIT
-         ENDIF
-         IF (KP_EQN(II) == 0) EXIT   ! Break loop if end of list found
-      ENDDO
+      !USE_N14_EQN = .FALSE.
+      !DO II = 1, 40
+      !   IF (KP_EQN(II) == EN14) THEN
+      !      USE_N14_EQN = .TRUE.
+      !      EXIT
+      !   ENDIF
+      !   IF (KP_EQN(II) == 0) EXIT   ! Break loop if end of list found
+      !ENDDO
 !     Autodetect if we should solve for Mg24 or not by checking if the
 !     corresponding equation is in the list of equations
       USE_MG24_EQN = .FALSE.
@@ -410,7 +412,7 @@ c Create short (`pruned') summary of ZAMS models from long file
       
 C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       CMI = CMI/CSY
-      CMJ = CMJ*CMSN/CSY
+      !CMJ = CMJ*CMSN/CSY
       CMS = CMS/CSY
       CMT = CMT*1.0D-11
 
@@ -532,6 +534,7 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       !star%dt = 3.0e2*CSY
       star%dt = CT3*1.0d-4 * TNUC*CSY
       if (mass > 1.0 .and. mass < 1.2) star%dt = 1.0d-2*star%dt
+      !star%dt = 100
       if (verbose) print *, 'Setting initial timestep for star',num_stars,'to',star%dt,'s'
       
       ! Initialise some more variables
@@ -539,7 +542,7 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       star%age = age
       if (P1>0) star%p = P1
       star%jhold = 0
-      star%jmod = 0
+      star%jmod = 1
       star%jf = JF1
       star%er(:) = 0.0D0
       
@@ -582,6 +585,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       COMMON H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0, KH, KTW, ID(130), IE(130) 
       COMMON /QUERY / ML(3), UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(81), PR(81), PPR(81), IHOLD, JM2(2)
+      
       ! We need some kind of initialisation for the star, cf the calls
       ! to printb in star12
       ! Actually, we need to pull some data from printb anyway...
@@ -595,7 +599,8 @@ c Determine whether I and phi are computed or not, for OUTPUT
       DTY = DT/CSY
       JTER = 0
       if (verbose) print *, 'Taking timestep ',DTY,'yr for star', current_star
-            
+    
+      
       CALL SMART_SOLVER ( ITER, ID, KT5, JO )
       if (verbose) print *, 'Did', jter, 'out of', iter, 'iterations'
 
@@ -607,7 +612,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
          do while (JO /= 0)
             CALL BACKUP ( DTY, JO )
             IF ( JO.EQ.2 ) THEN
-               evolve = -JO
+               evolve = JO
                return
             endif
             CALL NEXTDT ( DTY, JO, IT )
@@ -615,7 +620,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
             if (verbose) print *, 'Timestep reduced to', DTY,'yr'
 
             IF ( JO.EQ.3 ) THEN
-               evolve = -JO
+               evolve = JO
                return
             endif
             JNN = JNN + 1
@@ -624,17 +629,18 @@ c Determine whether I and phi are computed or not, for OUTPUT
          end do
       END IF
       
-      evolve = -JO
+      evolve = JO
       IF (JO == 0) THEN
          if (verbose) print *, 'Converged on timestep'
+         
          call timestep_heuristic ( JO, 1 )
+         
          CALL UPDATE ( DTY )
          CALL NEXTDT ( DTY, JO, 22 )
          IF ( JNN > switch_iterations ) ITER = KR2
          JNN = JNN + 1
          
          call swap_out_star(star_id)
-         evolve = 0
       END IF
       end function
 

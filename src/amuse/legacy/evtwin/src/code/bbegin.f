@@ -7,6 +7,7 @@
       USE SETTINGS
       USE EXTRAPOLATE_DH
       USE EXPLICIT_FUNCTIONS
+      USE NUCLEOSYNTHESIS
       IMPLICIT REAL*8 (A-H, L-Z)
       COMMON H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0, KH, KTW, ID(130), IE(130) 
       COMMON /QUERY / ML(3), UC(21), JMOD, JB, JNN, JTER, JOC, JKH
@@ -15,7 +16,6 @@
       DOUBLE PRECISION :: CDD_1, CDD_2
 C Read an initial model
       JNN = 0
-      JTER = 0
       EXPL_VAR(:, :, :) = 0.0D0
       CALL BEGINN ( JOP, JIP, DTY, KP, KR1, KR2, KSV, KT5, IT, JO, JF )
       IF ( JO == -2 ) GO TO 3
@@ -36,7 +36,7 @@ C Read an initial model
       ITER = KR1
 C Begin evolutionary loop of KP time steps
       JNN = 1
-
+      JTER = 0
       DO
          JO = 0
 C Solve for structure, mesh, and major composition variables
@@ -44,24 +44,50 @@ C Solve for structure, mesh, and major composition variables
 
          CALL SMART_SOLVER ( ITER, ID, KT5, JO )
 
-         IF ( JO.EQ.0 ) GO TO 2
 C If no convergence, restart from 2 steps back, DT decreased substantially
- 5       CALL BACKUP ( DTY, JO )
-         IF (USE_QUADRATIC_PREDICTIONS) THEN
-            CALL RESTORE_PREVIOUS_MODEL()
-            CALL PREDICT_DH(DTY, DH)
+    5    IF (JO /= 0) THEN
+            CALL BACKUP ( DTY, JO )
+            IF (USE_QUADRATIC_PREDICTIONS) THEN
+               CALL RESTORE_PREVIOUS_MODEL()
+               CALL PREDICT_DH(DTY, DH)
+            END IF
+            IF ( JO.EQ.2 ) EXIT     ! Abort if timestep below limit
+            GO TO 4
          END IF
-! Abort if timestep below limit
-         IF ( JO.EQ.2 ) EXIT
-         GO TO 4
 C If required, solve for minor composition vbles; mesh, structure fixed.
-    2    JOC = 2
-         CALL SOLVER ( ITER, IE, KT5, JO )
+         JOC = 2
+         CALL SOLVER ( KR_NUCSYN, IE, KT5, JO )
+         IF (JO /= 0) THEN
+            JO = 0
+            DHNUC(1, :, :) = 0.0d0
+            CALL SOLVER ( KR_NUCSYN, IE, KT5, JO )
+         END IF
+         IF (JO /= 0) THEN
+            JO = 0
+            DO IK = 1, KH_NUC
+               DO IJ = 1, NVAR_NUC
+                  IF ( HNUC(JSTAR, IJ, IK) < 1.0d-20) HNUC(JSTAR, IJ, IK) = 0.0d0
+               END DO
+               IF (H(5 + (JSTAR-1)*24, IK) == 0.0d0) HNUC(JSTAR, 41, IK) = 0.0d0
+            END DO
+            CALL SOLVER ( KR_NUCSYN, IE, KT5, JO )
+         END IF
+         IF (JO /= 0) JO = 17
+C If no convergence, restart from 2 steps back, DT decreased substantially
+         IF (JO /= 0) THEN
+            CALL BACKUP ( DTY, JO )
+            IF (USE_QUADRATIC_PREDICTIONS) THEN
+               CALL RESTORE_PREVIOUS_MODEL()
+               CALL PREDICT_DH(DTY, DH)
+            END IF
+            IF ( JO.EQ.2 ) EXIT     ! Abort if timestep below limit
+            GO TO 4
+         END IF
 !Mvds: If mass < 0, probably NaN, so exit with code 99
 ! (works for Lahey F95, but probably compiler-dependent!)
          IF(H(4,1).LT.0.) JO = 99
 C If model didn't converge, give up
-         IF ( JO.GE.1 ) EXIT
+         IF ( JO >= 1 ) EXIT
 
          PRZ = RZ
          CALL PRINTB ( DTY, JO, JCM, RZ, 1, IT )
@@ -84,23 +110,24 @@ C If model didn't converge, give up
          WRITE (11, *) 0
          CLOSE (11)
 
-         IF ( JO.GE.2 ) EXIT
+         IF ( JO >= 2 ) EXIT
          CALL UPDATE ( DTY )
+         CALL UPDATE2
          IF (USE_QUADRATIC_PREDICTIONS) CALL STORE_CURRENT_MODEL()
 !        IF (MOD(JMOD,KSV).EQ.0 .OR. JNN.EQ.1)   !MvdSnew: should save every model and model 1000 iso 1001, etc. JNN=1 saves the first model
-         IF ( MOD(JMOD, KSV).EQ.1 .OR. KSV.EQ.1 )   !MvdS: added 2nd option to save every model, doesn't work with mod
+         IF ( MOD(JMOD, KSV) == 1 .OR. KSV == 1 )   !MvdS: added 2nd option to save every model, doesn't work with mod
      &       CALL OUTPUT ( KP, 15, JO, JF )
     4    CALL NEXTDT ( DTY, JO, IT )
          IF (USE_QUADRATIC_PREDICTIONS) CALL PREDICT_DH(DTY, DH)
-         IF ( JO.EQ.3 ) EXIT
+         IF ( JO == 3 ) EXIT
          IF ( JO == 5 ) EXIT        ! Reached age limit
-         IF ( JNN.GE.4 ) ITER = KR2
+         IF ( JNN >= 4 ) ITER = KR2
          JNN = JNN + 1
 C Don't break the run just as RLOF starts!
          KR = DABS(RZ)/(DABS(RZ - PRZ) + 1.0D-6)
-         IF ( KP.EQ.1 ) EXIT
+         IF ( KP == 1 ) EXIT
          
-         IF (.NOT.( JNN<=KP .OR. IHOLD<3 .OR. JTER>2 .OR. KR<=10 )) EXIT
+         IF (.NOT.( (JNN<=KP .OR. KP<0) .OR. IHOLD<3 .OR. JTER>2 .OR. KR<=10 )) EXIT
       ENDDO
  3    CONTINUE
 C Output the last converged model, unless it's at the He flash
@@ -124,7 +151,7 @@ C Output the last converged model, unless it's at the He flash
       SUBROUTINE FUDGED_SOLVER ( ITER, IG, KT5, JO, FACTOR, FH, DFH )
       USE MESH
       USE MESH_ENC
-      USE FUDGE_CONTROL
+      USE SETTINGS
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ITER, KT5, IG(130);
       INTEGER, INTENT(INOUT) :: JO
@@ -152,7 +179,6 @@ C Output the last converged model, unless it's at the He flash
          FACTOR = 0.0
          JO = 0
          CALL SOLVER ( ITER, IG, KT6, JO )
-         CALL POLISH_SOLUTION ( ITER, WANTED_EPS, KT6, JO )
 
          FACTOR = START_FACTOR
          IFTRY = 0
@@ -171,8 +197,6 @@ C Output the last converged model, unless it's at the He flash
 ! Restore H from before the last call to SOLVER; keep DH
             H(1:NVAR, 1:KH) = FH(1:NVAR, 1:KH)
             CALL SOLVER ( ITER, IG, KT6, JO )
-! Try to polish the solution a little by converging it with a better accuracy
-            CALL POLISH_SOLUTION ( ITER, WANTED_EPS, KT6, JO )
             IF (JO /= 0) THEN
 ! Not converged, backtrack and try with a reduced factor
                IFTRY = IFTRY+1
@@ -200,6 +224,7 @@ C Output the last converged model, unless it's at the He flash
       SUBROUTINE SMART_SOLVER ( ITER, IG, KT5, JO )
       USE MESH
       USE MESH_ENC
+      USE SETTINGS
       USE FUDGE_CONTROL
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ITER, KT5, IG(130);
@@ -209,9 +234,7 @@ C Output the last converged model, unless it's at the He flash
       INTEGER :: IFTRY, KT6
       DOUBLE PRECISION :: H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0
       INTEGER :: KH, KTW, ID(130), IE(130)
-      DOUBLE PRECISION :: ERR,  ERRPPR, BESTERR, BESTH(NVAR,NM), BESTDH(NVAR,NM)
       INTEGER, PARAMETER :: VERBOSITY = 0;
-      COMMON /SOLMON/ ERR, ERRPPR, BESTERR, BESTH, BESTDH
       COMMON H, DH, EPS, DEL, DH0, KH, KTW, ID 
       
 ! Store H and DH for possible reuse
@@ -223,19 +246,19 @@ C Output the last converged model, unless it's at the He flash
 !  that first.
 
 ! The first is trivial: if we are about to converge, then stopping now is silly
-      IF ( ALLOW_EXTENSION .AND. (JO == 1) .AND. (ERR < ERRPPR)
-     &    .AND. ( (EPS - ERRPPR)/(ERR - ERRPPR) < 0.5D0*ITER ) ) THEN
-         write (1, *) 'Expecting convergence soon - extending iterations'
-         JO = 0
-         H(1:NVAR, 1:KH) = FH(1:NVAR, 1:KH)
-         DH(1:NVAR, 1:KH) = DFH(1:NVAR, 1:KH)
-         CALL SOLVER ( (3*ITER+1)/2, IG, KT5, JO )
-         IF (JO == 0) THEN
-            write(1, *) 'Succes! :)'
-         ELSE
-            write(1, *) 'Failed :('
-         ENDIF
-      END IF
+!      IF ( ALLOW_EXTENSION .AND. (JO == 1) .AND. (ERR < ERRPPR)
+!     &    .AND. ( (EPS - ERRPPR)/(ERR - ERRPPR) < 0.5D0*ITER ) ) THEN
+!         write (1, *) 'Expecting convergence soon - extending iterations'
+!         JO = 0
+!         H(1:NVAR, 1:KH) = FH(1:NVAR, 1:KH)
+!         DH(1:NVAR, 1:KH) = DFH(1:NVAR, 1:KH)
+!         CALL SOLVER ( (3*ITER+1)/2, IG, KT5, JO )
+!         IF (JO == 0) THEN
+!            write(1, *) 'Succes! :)'
+!         ELSE
+!            write(1, *) 'Failed :('
+!         ENDIF
+!      END IF
 
 ! Try reducing DH0
       IF (JO /= 0) THEN
@@ -250,8 +273,6 @@ C Output the last converged model, unless it's at the He flash
          CALL SOLVER ( ITER, IG, KT6, JO )
          IF (JO == 0) THEN
             IF (VERBOSITY>0) write(1, *) 'Succes! :)'
-! Try to polish the solution a little by converging it with a better accuracy
-            CALL POLISH_SOLUTION ( ITER, WANTED_EPS, KT6, JO )
          ELSE
             IF (VERBOSITY>0) write(1, *) 'Failed :('
          ENDIF
@@ -270,8 +291,6 @@ C Output the last converged model, unless it's at the He flash
          CALL SOLVER ( ITER, IG, KT6, JO )
          IF (JO == 0) THEN
             IF (VERBOSITY>0) write(1, *) 'Succes! :)'
-! Try to polish the solution a little by converging it with a better accuracy
-            CALL POLISH_SOLUTION ( ITER, WANTED_EPS, KT6, JO )
          ELSE
             IF (VERBOSITY>0) write(1, *) 'Failed :('
          ENDIF
@@ -291,8 +310,6 @@ C Output the last converged model, unless it's at the He flash
          CALL SOLVER ( ITER, IG, KT6, JO )
          IF (JO == 0) THEN
             IF (VERBOSITY>0) write(1, *) 'Succes! :)'
-! Try to polish the solution a little by converging it with a better accuracy
-            CALL POLISH_SOLUTION ( ITER, WANTED_EPS, KT6, JO )
          ELSE
             IF (VERBOSITY>0) write(1, *) 'Failed :('
          ENDIF
@@ -359,72 +376,16 @@ C Output the last converged model, unless it's at the He flash
          CALL SOLVER ( ITER, IG, KT5/2, JO )
       END IF
 
-! Try to polish the solution a little by converging it with a better accuracy
-      CALL POLISH_SOLUTION ( ITER, WANTED_EPS, KT5, JO )
-
 ! Restore previous values of some settings
       AVMU_SMOOTH = BCKAVMU_SMOOTH
 
       END SUBROUTINE
 
-! Tries to polish a solution by attempting to converge it to a higher accuracy      
-      SUBROUTINE POLISH_SOLUTION ( ITER, WANTEDEPS, KT5, JO )
-      USE MESH
-      IMPLICIT NONE
-      INTEGER :: KH, KTW, ID(130), IE(130), JMOD, JB, JNN, JTER, JOC, JKH, JO1
-      INTEGER :: KT5
-      DOUBLE PRECISION :: H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0
-      DOUBLE PRECISION :: ERR, BESTERR, BESTH(NVAR,NM), BESTDH(NVAR,NM)
-      INTEGER, INTENT(IN) :: ITER, JO
-      DOUBLE PRECISION, INTENT(IN) :: WANTEDEPS
-      DOUBLE PRECISION :: FH(NVAR,NM), DFH(NVAR,NM)
-      DOUBLE PRECISION :: BEPS, ERRPR, ERRPPR, BDH0;
-      COMMON H, DH, EPS, DEL, DH0, KH, KTW, ID, IE
-      COMMON /SOLMON/ ERR, ERRPPR, BESTERR, BESTH, BESTDH
-
-      IF (JO == 0 .AND. ERR >= WANTEDEPS) THEN
-! Store current values for later retrieval
-         BEPS = EPS
-         EPS = WANTEDEPS
-         ERRPR = ERR
-         BDH0 = DH0
-         
-         DH0 = MIN(DH0, WANTEDEPS/10.0)
-         
-         FH(1:NVAR, 1:KH) = H(1:NVAR, 1:KH)
-         DFH(1:NVAR, 1:KH) = DH(1:NVAR, 1:KH)
-         JO1 = 0
-         IF (KT5 == 0) write(1, *) 'POLISH'
-         CALL SOLVER ( ITER, ID, KT5, JO1 )
-! Don't trust that the last solution found will be the more accurate one
-         IF (BESTERR  < ERR) THEN
-            H(1:NVAR,1:KH) = BESTH(1:NVAR,1:KH)
-            DH(1:NVAR,1:KH) = BESTDH(1:NVAR,1:KH)
-            ERR = BESTERR
-         END IF
-         IF ( JO1 /= 0 ) THEN
-! Restore H and DH from before attempt at polishing
-! The solution we found is NOT dodgy we could not polish it, it's  just less
-! accurate than we'd like.
-            IF (ERR > ERRPR) THEN
-               H(1:NVAR, 1:KH) = FH(1:NVAR, 1:KH)
-               DH(1:NVAR, 1:KH) = DFH(1:NVAR, 1:KH)
-               ERR = ERRPR
-               IF (KT5 == 0) write(1, *) 'POLISH - Tarnished :('
-            ELSE
-               IF (KT5 == 0) write(1, *) 'POLISH - Minor polish :|'
-            END IF
-         ELSE
-            IF (KT5 == 0) write(1, *) 'POLISH - Shiny! :)'
-         END IF
-         EPS = BEPS
-         DH0 = BDH0
-      END IF
-      END SUBROUTINE
-
       ! Function for reading init.dat (fort.22) in either `classical'
       ! numbers-only format or more modern `with names' format      
       FUNCTION READ_INIT_DAT(IT, KH2, KR1, KR2, KSV, KT5, JCH)
+      USE ZAMS_NUCLEOSYNTHESIS_ABUNDANCES
+      USE NUCLEOSYNTHESIS
       USE MESH
       USE CONSTANTS
       USE SETTINGS
@@ -478,6 +439,14 @@ C Output the last converged model, unless it's at the He flash
       ! Namelist for the accretion of matter
       NAMELIST /ACCRET/ X1AC, X4AC, X12AC, X14AC, X16AC, X20AC, X24AC, ACCRET_COMPOSITION
 
+      ! Namelist for initial (ZAMS) nucleosynthesis abundances
+      NAMELIST /ABUND/ CXD, CXHE3, CXLI7, CXBE7, CXB11, CXC12, CXC13,
+     &CXC14, CXN14, CXN15, CXO16, CXO18, CXO17, CXF19, CXNE21, CXNE20,
+     &CXNE22, CXNA22, CXNA23, CXMG24, CXMG25, CXMG26, CXAL26M, CXAL27,
+     &CXAL26G, CXSI28, CXSI30, CXSI29, CXP31, CXS33, CXS32, CXS34, CXFE57,
+     &CXFE60, CXFE56, CXFE58, CXFE59, CXCO59, CXNI61, CXNI59, CXNI58,
+     &CXNI60
+
       ! FORMAT specifier for the old init.dat format
   993 FORMAT (8I5, /, 7I5, /, 6I5, /, 1P, 8D8.1, 0P, /, 2(10I4, /,
      & 6(20I3, /)), 3(15I3, /), I3, /, 2(20I3, /), 10F5.2, 1P, 3D8.1, /,
@@ -528,8 +497,11 @@ C Output the last converged model, unless it's at the He flash
 ! First, try to read the NAMELIST formatted init.dat
       READ (IT, NML=INIT_DAT, IOSTAT=IOERROR)
       KFN = NFUNC    ! Just copy all functions; common error to forget. 
+      KFN_2 = NFUNC  ! Just copy all functions; common error to forget. 
+      IF (KE2_2 /= 0) NUCLEOSYNTHESIS_ENABLED = .TRUE.
       IF (CH < 0.0) CH = CH_OPAC    ! Use CH from opacity table
       IF (USE_PREVIOUS_MU) AVMU_SMOOTH = 0.0 ! Use mu from prev. timestep
+      IF (WANTED_EPS > EPS) WANTED_EPS = EPS
 ! Turn on mass loss recipes in smart mass loss routine, pass on the
 ! exponent for metallicity scaling that is to be used.
       multiplier_dejager = CMJ
@@ -573,6 +545,9 @@ C Output the last converged model, unless it's at the He flash
          ! This is a bit ugly, but do we want to use another fort.nnn file for
          ! this?
          READ (IT, NML=ACCRET, IOSTAT=IOERROR)
+
+         ! Finally, read the nucleosynthesis abundances
+         READ (IT, NML=ABUND, IOSTAT=IOERROR)
          
          RETURN
       END IF
@@ -601,6 +576,7 @@ C Output the last converged model, unless it's at the He flash
       CDC(3) = CDC_HES
       CDC(4) = CDC_DBLSH
       CDC(5) = CDC5
+      WANTED_EPS = EPS
 
       IF (IOERROR == 0) THEN
          IF (USE_QUADRATIC_PREDICTIONS) CALL INITIALISE_PARABOLA_STORAGE_SPACE(KH2, KE1+KE2+KEV)
@@ -625,7 +601,7 @@ C Output the last converged model, unless it's at the He flash
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(9), AGE, BM, MC(2), OM, PER, SM, ENC,
      : TC(64), PR(81), PPR(81), JHOLD, JM2, JM1
-      COMMON /STORE / HPR(NVAR,NM), HT(4,NM), MS(9999), ST(9999),
+      COMMON /STORE / HPR(NVAR,NM), MS(9999), ST(9999),
      &  SDT(9999), SCM(9999), SANG(9999), SE(9999), WW(16), WX(15)
       DOUBLE PRECISION :: X1AC, X4AC, X12AC, X14AC, X16AC, X20AC, X24AC
       DOUBLE PRECISION :: XAC(7, 2)
@@ -662,6 +638,18 @@ C Read miscellaneous data, usually unchanged during one evol run
          STOP
       END IF
 
+!     Just constructed a ZAHB model; DON'T homogenise the model,
+!     whatever the input .dat file says.
+!     Without this flag, the post-he flash model will have its
+!     composition reset to ZAMS composition if we started from a
+!     homogeneous model - which is not what we want.
+!     We should also force the accretion mode to exponential.
+      IF (JO == 13) THEN
+         JCH = MIN(3, JCH)
+         JO = -1
+         CMI_MODE = 1
+      END IF
+
       IF (MUTATE .AND. KH>0) THEN
          ! Don't rezone the model
          KH2 = KH
@@ -684,17 +672,6 @@ C Read miscellaneous data, usually unchanged during one evol run
          JO = -2
          RETURN
       END IF
-
-      ! Autodetect if we should solve for N14 or not by checking if the
-      ! corresponding equation is in the list of equations
-      USE_N14_EQN = .FALSE.
-      DO II = 51, 100
-         IF (KW(II) == EN14) THEN
-            USE_N14_EQN = .TRUE.
-            EXIT
-         ENDIF
-         IF (KW(II) == 0) EXIT   ! Break loop if end of list found
-      ENDDO
 
       ! Autodetect if we should solve for Mg24 or not by checking if the
       ! corresponding equation is in the list of equations
@@ -729,7 +706,7 @@ C e.g. SM = stellar mass, solar units; DTY = next timestep, years
          WRITE(0, *) 'Error reading "', TRIM(JIP_NAME),'"'
          STOP
       END IF
-      IF ( JMOD.EQ.0 ) KP = KP + 1
+      IF ( JMOD == 0 .AND. KP>0 ) KP = KP + 1
       IF ( JIP.EQ.13 .OR. JIP.EQ.14 ) DTY = CT3*DTY
       IF ( II.EQ.2 ) JB = 1
       IF ( JMOD.LT.10 .AND. II.EQ.1 ) WRITE (JB, 993) 
@@ -803,11 +780,19 @@ c also initialise some variables that were not in input model.
       ELSE
          CALL REMESH ( KH2, JCH, BM, TM, P1, ECC, OA, II, JF )
       END IF
+!     Load the nucleosynthesis data structures
+      CALL ALLOCATE_NUCLEOSYNTHESIS_DATA(KH)
+      CALL SET_INITIAL_NUCLEOSYNTHESIS_ABUNDANCES
+
 ! ZAHB construction, we need to take special care here since the ZAHB
-! starting model will not have the correct envelope abundance.
-      IF (IT == 24) THEN
-         CCAC = 1.0
-      END IF
+! starting model will not have the correct envelope abundance. This is
+! corrected by accreting material of the right composition, but we
+! cannot do this immediately because we need to H burning shell to stay
+! active and dumping pure He on top of it will make it less numerically
+! stable.
+! Composition accretion is switched on in printb when the stellar mass
+! reaches the desired core mass.
+      IF (IT == 24) CCAC = 0.0
       IF ( II.EQ.KTW ) GO TO 12
 ! Backup the model in case we need to go back a timestep
 ! Backup the extra variables
@@ -839,6 +824,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
 
       SUBROUTINE FGB2HB ( JOP, JJB, JO3 )
       USE MESH
+      USE MESH_ENC
       USE FUDGE_CONTROL
       USE FGB2HB_COMPOSITION
 c Evolve a standard ZAHB model (stored on fort.12, with init.dat in fort.24)
@@ -850,7 +836,9 @@ c to the required ZAHB model: same total mass (SM) and core mass (VMH)
       COMMON /ABUND / XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, XW(14)
       INTEGER :: CMI_MODE_BCK
       UC(13) = SM
-      UC(14) = VMH 
+! FIXME: the core mass must be >= the mass of the ZAHB construction model
+! Probably doen't matter much in practice.
+      UC(14) = MAX(0.40, VMH)
       REWIND (JOP)
       CMI_MODE_BCK = CMI_MODE
       CMI_MODE = 1
@@ -979,7 +967,7 @@ c a collision remnant.
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(9), AGE, BM(10), T0, M0, MTA, OM0, OMTA, 
      : A0, ATA, E0, ETA, CDD, BP(213), JHOLD, JM1(2)
-      COMMON /STORE / HPR(NVAR,NM), HT(4,NM), MS(9999), ST(9999),
+      COMMON /STORE / HPR(NVAR,NM), MS(9999), ST(9999),
      &  SDT(9999), SCM(9999), SANG(9999), SE(9999), WW(16), WX(15)
 c Find change from last timestep
       SUM = 0.0D0
@@ -1066,13 +1054,13 @@ c For *2, some factors relating to accretion from *1. Ignored if this is *1
 
       SUBROUTINE UPDATE ( DTY )
       USE MESH
-      USE MESH_ENC;
+      USE MESH_ENC
       IMPLICIT REAL*8 (A-H, L-Z)
       COMMON H(NVAR,NM), DH(NVAR,NM), EP(3), KH, KTW, KW(260)
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(9), AGE, BM(71), PR(81), PPR(81), JHOLD,
      : JM2, JM1
-      COMMON /STORE / HPR(NVAR,NM), HT(4,NM), MS(9999), ST(50026)
+      COMMON /STORE / HPR(NVAR,NM), MS(9999), ST(50026)
 c Store certain current and previous values, for possible emergency backup
       AGE = AGE + DTY
       JMOD = JMOD + 1
@@ -1084,6 +1072,7 @@ c Store certain current and previous values, for possible emergency backup
 c Update the stored models: previous and anteprevious
       HPR(:, 1:KH) = H(:, 1:KH)
       H(:, 1:KH) = H(:, 1:KH) + DH(:, 1:KH)
+! Update nucleosynthesis
       JHOLD = JHOLD + 1 
       RETURN
       END
@@ -1093,11 +1082,12 @@ c Update the stored models: previous and anteprevious
       USE MESH_ENC
       USE CONSTANTS
       USE SETTINGS
+      USE NUCLEOSYNTHESIS
       IMPLICIT REAL*8 (A-H, L-Z)
       COMMON H(NVAR,NM), DH(NVAR,NM), EP(3), KH, KTW, KW(260)
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(81), PR(81), PPR(81), JHOLD, JM2, JM1
-      COMMON /STORE / HPR(NVAR,NM), HT(60025+4*NM)
+      COMMON /STORE / HPR(NVAR,NM), MS(60025)
       ZQ(1:81) = PPR(1:81)
 c *don't* backup DT!!
       JMOD = JM2
@@ -1106,6 +1096,7 @@ c *don't* backup DT!!
       IF ( DT.LT.UC(12) .OR. JMOD.LE.2 .OR. CT3.GT.0.9999D0 ) JO = 2
       DH(:, 1:KH) = 0.0D0 
       H(:, 1:KH) = HPR(:, 1:KH)
+      CALL BACKUP2
       JHOLD = -1
       RETURN
       END
@@ -1121,7 +1112,8 @@ c Write an intermediate or final model to disc
       COMMON /TVBLES/ DT, ZQ(9), AGE, BM, MC(2), OM, PER, SM, ENC,
      : TC(18), SE, TN(207), JHOLD, JM2, JM1
 ! Save some parameters so that they can be restored after the He flash
-      COMMON /HE2HB / AJ, JMD, KP_BCK
+      DOUBLE PRECISION, SAVE :: AJ
+      INTEGER, SAVE :: JMD, KP_BCK
       INTEGER*4 I1(2), I2(2)
       DATA I1, I2 / 0, 24, 24, 16/
    92 FORMAT (1X, 1P, 40D23.15, 0P)
@@ -1140,6 +1132,7 @@ c Write an intermediate or final model to disc
          DT = 5.0D4*CSY
          ! The number of remaining models to calculate. Do at least a few.
          KP = MAX(KP_BCK - JMOD, 10)
+         IF (KP_BCK < 0) KP = KP_BCK
       END IF
       IF ( MUTATE .AND. JMOD>0 ) DT = MIN(DT, 1.0D3*CSY)
       JP = JOP

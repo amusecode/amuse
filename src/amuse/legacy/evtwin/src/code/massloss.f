@@ -130,6 +130,8 @@
       double precision :: mdot
       double precision :: xx
 
+      mdot_r = 0.0d0
+      recipe_errno = 0
       calculate_mdot = 0.0d0
       logZ = log10(Z0/CZSN)
       logL = log10(L)
@@ -879,7 +881,7 @@ c ------------------------------------------------------------------------------
 ! CALC_MDOT_WR_NL:
 !  Wolf-Rayet star mass loss rate from Nugis & Lamers 2000 A&A,
 !  based on their expressions (20) and (21). An alternative would be their (22)
-!  for all WR types, but Eldridge & Lamers give a different scaling with initial
+!  for all WR types, but Nugis & Lamers give a different scaling with initial
 !  Z for the different types.
 !  The distinction between different Wolf-Rayet types is based on
 !  Eldirdge & Vink 2006 A&A

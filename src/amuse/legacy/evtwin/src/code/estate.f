@@ -54,7 +54,7 @@ c......../........./........./........./........./........./........./..
       ! Calculate F and G parameters, needed to calculate Fermi-Dirac integrals
       F = DEXP(AF)
       T = DEXP(AT)
-      T = MAX(1000.0, T)         ! Don't trust T < 1000K
+      !T = MAX(1000.0, T)         ! Don't trust T < 1000K
       UF = F/(1.0D0 + F)
       WF = DSQRT(1.0D0 + F)
       PSI = AF + 2.0D0*(WF - DLOG(1.0D0 + WF))
@@ -360,6 +360,8 @@ c......../........./........./........./........./........./........./..
      &           + TU*(RN*CNU(IT, IR + 1, 2) + RU*CNU(IT, IR, 2))
          EN = -10.0D0**ENP - NZZ*10.0D0**ENB
       END IF
+! Neutrino rate, from Itoh et al. (1996)
+!      CALL GET_NEUTRINO_RATE(T, RHO, NIO, NEO, EN)
       RETURN
       END
 
@@ -399,9 +401,7 @@ c T, f. XTT etc are 2nd and 3rd log derivs of rho*
       END DO
       IND = 4
       DO I = 1, 3
-         DO IL = 1, IND
-               VX(IL,1:IND+1-IL) = 0.0D0
-         END DO
+         VX(1:IND, 1:IND) = 0.0d0
          DO IJ = 1, 4
             DO IK = 1, 4
                VW(1, 1) = C(IK, IJ, I)*GG(IJ)*FF(IK)
@@ -411,17 +411,13 @@ c T, f. XTT etc are 2nd and 3rd log derivs of rho*
                      VW(IL, IM + 1) = (IK - 1)*VW(IL, IM)
                   end do
                end do
-               DO IL = 1, IND
-                  VX(IL, 1:IND+1-IL) = VX(IL, 1:IND+1-IL) + VW(IL, 1:IND+1-IL)
-               end do
+               VX(1:IND, 1:IND) = VX(1:IND, 1:IND) + VW(1:IND, 1:IND)
             end do
          end do
          
          WV = 1.0D0/VX(1, 1)
          VX(1, 2:IND) = VX(1, 2:IND)*WV
-         DO IL = 2, IND
-            VX(IL, 1:IND+1-IL) = VX(IL, 1:IND+1-IL)*WV
-         end do
+         VX(2:IND, 1:IND-1) = VX(2:IND, 1:IND-1)*WV
          D(I, 1) = FDF*VX(1, 1)
          D(I, 2) = VX(2, 1) + 1.5D0 - 1.5D0*UG
          WW = 0.5D0*D(I, 2) - 4.0D0
@@ -627,8 +623,8 @@ c derivatives w.r.t. X, Y; in effect w.r.t. Ne, V, and T, since X = Ne/V
       COMMON /ABUND / XA(9), N1, N4, N12, N14, N16, N20, N24, N28, N56,
      &                NE, NI, NZZ, AVM, NE1
 c......../........./........./........./........./........./........./..
-      COMMON /NCDATA/ QRT(20), QNT(20), CZA(20), CZB(20), CZC(20),
-     &                CZD(20), VZ(9)
+      COMMON /NCDATA/ QRT(20), QNT(20), CZA(92), CZB(92), CZC(92),
+     &                CZD(92), VZ(9)
       DOUBLE PRECISION :: RTT(20)
       DOUBLE PRECISION, PARAMETER :: CSA = 0.624
       DOUBLE PRECISION, PARAMETER :: CSB = 0.316
@@ -833,13 +829,37 @@ c statistical weights (COM); molecular hydrogen parameters (CH2)
       IMPLICIT REAL*8 (A-H, L-Z)
       INTEGER, INTENT(IN) :: FILE
       COMMON /ATDATA/ CH2(4), CHI(26,9), COM(27), CAN(9), CBN(9), KZN(9)
-      COMMON /NCDATA/ QRT(20), QNT(20), CZA(20), CZB(20), CZC(20),
-     &                CZD(20), VZ(9)
+      COMMON /NCDATA/ QRT(20), QNT(20), CZA(92), CZB(92), CZC(92),
+     &                CZD(92), VZ(9)
+      INTEGER Z1(92), Z2(92), I, J
+      DOUBLE PRECISION :: CXA,CXB,CXC,CXD
+      DATA Z1 /1,2,2,4,4,6,7,8,4,6,7,8,10,6,8,8,10,12,0,0,1,1,1,0,1,1,1,
+     &    2,2,2,2,1,1,2,1,1,2,2,1,1,2,1,2,2,1,2,2,0,0,1,1,1,1,1,4,1,1,1,
+     &    4,4,4,1,1,1,1,4,4,4,0,0,0,1,0,0,0,1,0,0,0,1,1,1,4,4,4,4,1,1,1,
+     &    1,1,1/
+      DATA Z2 /1,2,2,0,1,1,1,1,2,2,2,2, 2,6,6,8, 0, 0,0,0,1,3,4,4,6,7,8,
+     &     6,7,8,3,5,6,6,8,8,8,8,9,9,9,10,10,10,10,10,10,11,11,11,11,11,
+     &     11,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,13,13,13,13,
+     &     13,13,13,13,13,13,13,13,13,13,13,11,11,11,14,14,14,7,6,10/
   992 FORMAT (1P, 12(10D12.4,/), 32(9D12.4,/), 4D12.4,/, 9I12)
 
       READ (FILE,992) 
-     : QRT, QNT, CZA, CZB, CZC, CZD, VZ, CBN, CAN, COM, CHI, CH2, KZN 
+     & QRT, QNT, CZA(1:20), CZB(1:20), CZC(1:20), CZD(1:20),
+     & VZ, CBN, CAN, COM, CHI, CH2, KZN 
       CLOSE (FILE)
+
+!     Compute screening factors: mainly because not all of those that are
+!     needed for the nucleosynthesis code are in the data file.
+      CXA = 5.0/3.0
+      CXC = CXA - 1.0
+      CXB = 2.0*CXC
+      CXD = 1.86
+      DO J = 1, 92
+         CZA(J) = (Z1(J)+Z2(J))**CXA - Z1(J)**CXA - Z2(J)**CXA
+         CZB(J) = (Z1(J)+Z2(J))**CXB - Z1(J)**CXB - Z2(J)**CXB
+         CZC(J) = -((Z1(J)+Z2(J))**CXC - Z1(J)**CXC - Z2(J)**CXC)
+         CZD(J) = (Z1(J)+Z2(J))**CXD - Z1(J)**CXD - Z2(J)**CXD
+      END DO
       END
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1088,7 +1108,6 @@ c Set up coefficients for cubic spline interpolation in opacity
 
 
       SUBROUTINE LOAD_REACTION_AND_NEUTRINO_RATES(FILE)
-      USE SETTINGS
       IMPLICIT REAL*8 (A-H, L-Z)
       INTEGER, INTENT(IN) :: FILE
       COMMON /STAT1 / CSX(10), CS(90, 127, 10), CHAT(8920), KCSX
@@ -1096,7 +1115,6 @@ c Set up coefficients for cubic spline interpolation in opacity
 c Read nuclear reaction and neutrino loss rate data
       READ (FILE, 991) CHAT
       REWIND (FILE)
-
       END
 
 

@@ -8,9 +8,6 @@ C     If you (temporarily) need any additional output in the plt or mdl
 C     files, which is available in FUNCS1, this is the module you're
 C     looking for. 
 C
-C     To do
-C     - make this module a substitute for the commonblock /PLOT/
-C
 C     Hist:
 C     SdM 30jan09
       IMPLICIT NONE

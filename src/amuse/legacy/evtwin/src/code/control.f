@@ -47,11 +47,6 @@
       ! 1.0 means apply full corrections at each timestep.
       double precision :: impose_composition_factor = 1.0d-4
 
-      ! Upper range of accuracy for the solver (compare EPS); the solver
-      !  is satisfied with EPS, but tries to get to WANTED_EPS.
-      ! No effect if WANTED_EPS <= EPS
-      double precision :: wanted_eps = 1.0D-8
-
       ! Try fudging the luminosity by supressing (or not) the TdS/dt contribution
       ! 1.0 means this term is completely taken along, 0.0 means it is completely ignored
       double precision :: luminosity_fudge = 1.0

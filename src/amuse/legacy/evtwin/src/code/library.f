@@ -359,16 +359,6 @@ c Create short (`pruned') summary of ZAMS models from long file
       IF (VERBOSE) print *, 'Read settings'
       IF (VERBOSE) print *, 'Using', KH2, 'meshpoints per star'
 
-!     Autodetect if we should solve for N14 or not by checking if the
-!     corresponding equation is in the list of equations
-      USE_N14_EQN = .FALSE.
-      DO II = 1, 40
-         IF (KP_EQN(II) == EN14) THEN
-            USE_N14_EQN = .TRUE.
-            EXIT
-         ENDIF
-         IF (KP_EQN(II) == 0) EXIT   ! Break loop if end of list found
-      ENDDO
 !     Autodetect if we should solve for Mg24 or not by checking if the
 !     corresponding equation is in the list of equations
       USE_MG24_EQN = .FALSE.
@@ -773,7 +763,7 @@ C Solve for structure, mesh, and major composition variables
       COMMON H(NVAR,NM), DH(NVAR,NM), EP(3), KH, KTW, KW(260)
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(9), AGE, BM(71), PR(81), PPR(81), JHOLD, JM2, JM1
-      COMMON /STORE / HPR(NVAR,NM), HT(4,NM), MS(9999), ST(50026)
+      COMMON /STORE / HPR(NVAR,NM), MS(9999), ST(50026)
       COMMON /SOLV  / C(NM+1,NEQ,NVAR+1), S(NEQ,121), ER(NVAR), KEQ, KJ2, KJ5, 
      :         KJ6, KJ10, KJ12, KI4, KEE, IA(1), KE1, KE2, KE3, KBC, 
      :         KEV, KFN, KL, JH1, JH2, JH3, KD(120), KQ, KVB, KVC
@@ -882,7 +872,7 @@ C Solve for structure, mesh, and major composition variables
       COMMON H(NVAR,NM), DH(NVAR,NM), EP(3), KH, KTW, KW(260)
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(9), AGE, BM(71), PR(81), PPR(81), JHOLD, JM2, JM1
-      COMMON /STORE / HPR(NVAR,NM), HT(4,NM), MS(9999), ST(50026)
+      COMMON /STORE / HPR(NVAR,NM), MS(9999), ST(50026)
       COMMON /SOLV  / C(NM+1,NEQ,NVAR+1), S(NEQ,121), ER(NVAR), KEQ, KJ2, KJ5, 
      :         KJ6, KJ10, KJ12, KI4, KEE, IA(1), KE1, KE2, KE3, KBC, 
      :         KEV, KFN, KL, JH1, JH2, JH3, KD(120), KQ, KVB, KVC

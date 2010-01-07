@@ -43,8 +43,8 @@
      & A0, ATA, E0, ETA, CDD, BP, HORB, RO, RA2, RS, SE, TN, WMH, 
      & WMHE, MH, MHE, MCO, VMG, BE, LH, LHE, LC, LNU, LTH, MCB, 
      & MSB, RCB, TCT, QR, PPR, JHOLD, JM2, JM1
-      DOUBLE PRECISION :: HPR(NVAR,NM), HT(60025+4*NM)
-      COMMON /STORE / HPR, HT
+      DOUBLE PRECISION :: HPR(NVAR,NM), MS(60025)
+      COMMON /STORE / HPR, MS
 
       type(init_dat_settings) :: initdat
       integer :: KH2, KR1, KR2, KSV, KT5, JCH

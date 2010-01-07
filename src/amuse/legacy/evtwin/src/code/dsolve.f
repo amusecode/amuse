@@ -14,19 +14,30 @@
       DOUBLE PRECISION, ALLOCATABLE :: DDH(:,:)
 !      DOUBLE PRECISION, ALLOCATABLE :: GRADF(:)
 
+      ! Default scalings for variables. Normally 1, but these can be
+      ! overwritten by other parts of the code (eg. printb)
+      DOUBLE PRECISION, SAVE :: DEFAULT_ER(NVAR)
+
       ! Quantities needed for "linesearch" algorithm, see equations (9.7.7)
       ! through (9.7.9) in Numerical Recipes (2nd edition)
       DOUBLE PRECISION :: RESIDUE         ! Called g in NR
       DOUBLE PRECISION :: PREV_RESIDUE    ! Value of RESIDUE on previous iter
       DOUBLE PRECISION :: RESIDUE_DERIV   ! Called g' in NR
       
+      ! How many equations can be solved for; init.dat only allows input of
+      ! up to 40, but this can be extended in principle. For
+      ! nucleosynthesis, we need at least 50 (45 actually).
+      INTEGER, PARAMETER :: NKD = 50
       INTEGER :: KEQ, KVB, KVC
       INTEGER :: KQ, KEE
       INTEGER :: KJ2, KJ5, KJ6, KJ10, KJ12, KI4
       INTEGER :: KE1, KE2, KE3, KE4, KBC, KEV, KFN, KL, JH1, JH2, JH3
       INTEGER :: KI1, KI2, KI3, KJ1, KJ11, KJ3, KJ4, KJ7, KJ8, KJ9
       INTEGER :: IK_FIRST, IK_LAST
-      INTEGER :: KD(3*40)     ! 3 sets of 40 integers, for 40 variables
+      INTEGER :: KD(3*NKD)    ! 3 sets of NKD integers, for NKD variables
+
+      ! Initialise data structures
+      DATA DEFAULT_ER / NVAR*1.0 /
 
       END MODULE
 
@@ -34,6 +45,7 @@
       USE MESH
       USE SETTINGS
       USE SOLVER_GLOBAL_VARIABLES
+      USE NUCLEOSYNTHESIS
 c     Explicitly type all variables (Steve, 5/08):
       IMPLICIT NONE
 
@@ -56,23 +68,26 @@ c     Common variables:
 
       DOUBLE PRECISION :: h, dh, eps, del, dh0
       DOUBLE PRECISION :: ml, ql, xl, uc
-      DOUBLE PRECISION :: errs, errppr, besterr, besth, bestdh
 
       COMMON H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0, KH, KTW, KW(260)
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
-      COMMON /SOLMON/ ERRS, ERRPPR, BESTERR, BESTH(NVAR,NM), BESTDH(NVAR,NM)
+      DOUBLE PRECISION :: OUTRES, BESTERR, BESTERR_RESIDUE
+      DOUBLE PRECISION :: BESTH(NVAR,KH), BESTDH(NVAR,KH)
+      DOUBLE PRECISION :: RESH(NVAR,KH), RESDH(NVAR,KH)
+      DOUBLE PRECISION :: BEST_RESIDUE, BEST_RESIDUEERR
 
       CHARACTER*7 VARNAMES(1:NVAR)
+      CHARACTER*5 NUCNAME(46)
 
       DATA VARNAMES/'   ln f','   ln T','    X16','      M','     X1',
      &              '      C','   ln r','      L','     X4','    X12',
      &              '    X20','      I','   Prot','    phi','  phi_s',
      &              '    X14','  H_orb','      e','     xi','    M_B',
-     &              ' *1:X24','  22   ','  23   ','  24   ','*2:ln f',
+     &              '  21   ','  22   ','  23   ','  24   ','*2:ln f',
      &              '*2:ln T','*2: X16','*2:   M','*2:  X1','*2:   C',
      &              '*2:ln r','*2:   L','*2:  X4','*2: X12','*2: X20',
      &              '*2:   I','*2:Prot','*2: phi','*2:phis','*2: X14',
-     &              '  41   ','  42   ','  43   ','  44   ','  45   ',
+     &              '    X24',' H_spin','  43   ','  44   ','  45   ',
      &              '  46   ','  47   ','  48   ','  49   ','  50   ',
      &              '  51   ','  52   ','  53   ','  54   ','  55   ',
      &              '  56   ','  57   ','  58   ','  59   ','  60   ',
@@ -88,6 +103,14 @@ c     Common variables:
      &              ' 106   ',' 107   ',' 108   ',' 109   ',' 110   ',
      &              ' 111   ',' 112   ',' 113   ',' 114   ',' 115   ',
      &              ' 116   ',' 117   ',' 118   ',' 119   ',' 120   '/
+
+      DATA NUCNAME/'  g  ','  n  ','  D  ',' He3 ',' Li7 ',' Be7 ',' B11 ',
+     &     ' C13 ',' C14 ',' N15 ',' O17 ',' O18 ',' F19 ',' Ne21',
+     &     ' Ne22', ' Na22',' Na23',' Mg24',' Mg25',' Mg26','Al26M',
+     &     'Al26G',' Al27',' Si28',' Si29',' Si30',' P31 ',' S32 ',
+     &     ' S33 ',' S34 ', ' Fe56',' Fe57',' Fe58',' Fe59',' Fe60',' Co59',
+     &     ' Ni58',' Ni59',' Ni60',' Ni61', ' H1  ',' He4 ',' C12 ',
+     &     ' N14 ',' O16 ','Ne20 '/
 
 c-----------------------------------------------------------------------
 c     Explicitly initialize local variables (Steve, 5/08).
@@ -112,7 +135,16 @@ c-----------------------------------------------------------------------
       JH1 = IG(8)
       JH2 = IG(9)
       JH3 = IG(10)
-      KD(1:120) = IG(11:130)        ! Permutations of variables/equations
+      KD( 1:40)  = IG(11:50)              ! Permutations of variables/equations
+      KD(NKD+1:NKD+40)  = IG(51:90)       ! Permutations of variables/equations
+      KD(2*NKD+1:2*NKD+40) = IG(91:130)   ! Permutations of variables/equations
+      IF (JOC > 1) THEN ! Nucleosynthesis post-processing: no permutations
+         DO IJ = 1, NKD
+            KD(IJ) = IJ
+            KD(NKD+IJ) = IJ
+            KD(2*NKD+IJ) = IJ
+         ENDDO
+      END IF
       KQ = 1 - 2*KL
       KEQ = KE1 + KE2               ! Total number of equations in block matrix
       IF ( KEQ == 0 ) RETURN        ! No equns to solve
@@ -166,16 +198,27 @@ C FIRST MESHPOINT IS IK_FIRST, LAST IS IK_LAST
       IK_FIRST = 1 + KL*(KH - 1)
       IK_LAST = KH + 1 - IK_FIRST
 C DETERMINE 'TYPICAL', USUALLY MAXIMAL, VALUES FOR EACH VARIABLE
-      DO IJ = 1, KVB
-         I = KD(IJ)
-         IF ( JNN > 1 ) ES(I) = ER(I) 
-         ER(I) = 1.0D0
-         DO K = 1, KH
-            ER(I) = DMAX1(ER(I), DABS(H(I, K)))
+      IF (JOC == 1) THEN
+         DO IJ = 1, KVB
+            I = KD(IJ)
+            ER(I) = DEFAULT_ER(I)
+            DO K = 1, KH
+               ER(I) = DMAX1(ER(I), DABS(H(I, K)))
+               !IF (I == 7) ER(I) = MIN(1.0d6, ER(I))
+            END DO
+            IF ( ER(I) == 0.0D0 ) ER(I) = 1.0D0
+            IF ( JNN > 1 .AND. ES(I) /= 1.0D0 ) ER(I) = 0.5D0*(ER(I) + ES(I))
          END DO
-         IF ( ER(I) == 0.0D0 ) ER(I) = 1.0D0
-         IF ( JNN > 1 .AND. ES(I) /= 1.0D0 ) ER(I) = 0.5D0*(ER(I) + ES(I))
-      END DO
+      ELSE
+         ES(:) = ER(:)
+         DO IJ = 1, KVB
+            I = KD(IJ)
+            ER(I) = 1.0D-8
+            DO K = 1, KH
+               ER(I) = DMAX1(ER(I), DABS(HNUC(1,I, K)))
+            END DO
+         END DO
+      END IF
 
 !     Now determine typical values for each equation, based on current
 !     values in H(,) and the current timestep.
@@ -192,25 +235,30 @@ C DETERMINE 'TYPICAL', USUALLY MAXIMAL, VALUES FOR EACH VARIABLE
 C BEGIN ITERATIVE LOOP
       FAC = 1.0D0
       BESTERR = 1.0D0
+      BEST_RESIDUE = 1.0d6
+      BESTERR_RESIDUE = 1.0d8
       CONVERGED = .FALSE.
       C(:,:,:) = 0.0D0
       S(:, :) = 0.0D0
       RESIDUE = 0.0D0
       PREV_RESIDUE = 0.0D0
       DO JTER = 1, ITER
-      ERRPPR = ERRPR
       ERRPR = ERR
       ERR = 0.0D0
       JKH = 0
-      IF ( JNN == JH1 .AND. JTER == JH2 ) JKH = 1
+      !IF ( JNN == JH1 .AND. JTER == JH2 ) JKH = 1
 C Solve system of linear equations by Gaussian elimination
       CALL INVERT_MATRIX( JO )
-      IF (JO == 1) EXIT
+      IF (JOC == 1 .AND. JO == 1) EXIT
 C ESTIMATE ACCURACY OF ITERATION
       DO IJ = 1, KVB
          VX = 0.0D0
          DO IK = 1, KH
-            DDH(IK, IJ) = MIN(CLIMIT, C(IK, IJ, 1))*ER(KD(IJ))
+            IF (JOC == 1) THEN
+               DDH(IK, IJ) = MIN(CLIMIT, C(IK, IJ, 1))*ER(KD(IJ))
+            ELSE
+               DDH(IK, IJ) = C(IK, IJ, 1)*ER(KD(IJ))
+            END IF
             VZ = DABS(C(IK, IJ, 1))
             IF ( VZ >= VX ) THEN
                VX = VZ
@@ -221,6 +269,11 @@ C ESTIMATE ACCURACY OF ITERATION
          ERT(IJ) = VX
       END DO
       ERR = ERR/(KVB*KH)
+      IF (ERR /= 0.0d0 .AND. JO == 1) EXIT
+      IF (ERR == 0.0d0) ERR = WANTED_EPS**2
+
+      OUTRES = RESIDUE
+      IF (RESIDUE == 0.0d0) OUTRES = 1.0d-16
 
 C Alternative to using a line search algorithm: decrease FAC, more or less
 C ad-hoc
@@ -229,6 +282,10 @@ C ad-hoc
       ELSE
          FAC = MIN(DEL/DMAX1(ERR, DEL), 1.1D0*FAC)
       ENDIF
+      IF (JOC > 1) THEN
+         FAC = 1.0
+         IF (ERR > 1.0d-5) FAC = 0.9
+      END IF
       !IF (JTER > 1) FAC = LINESEARCH( JO )
       !FAC = 1.0d0
       !IF (JTER > 1 .AND. RESIDUE > PREV_RESIDUE) FAC = LINESEARCH( JO )
@@ -236,37 +293,107 @@ C ad-hoc
       ERT(1:KVB) = DLOG10(ERT(1:KVB) + 1.3D-10)
 
 C Write convergence information to summary file
+      IF (JOC == 1) THEN
       IF ( JTER == KT5+1 )
      & WRITE (JB, '(A4,2X,A3,1X,A4,2X,A3,1X, 17(1X,A7),/,3(20X,17(1X,A7),/))') 
      &        'Iter', 'Err', 'Ferr', 'Fac', (VARNAMES(KD(IJ)), IJ=1,KVB)
       IF ( JTER > KT5 )
-     : WRITE (JB, 992) JTER, FRR, LOG10(RESIDUE), FAC, (IKM(IJ), ERT(IJ), IJ = 1, KVB) 
-  992 FORMAT (1X, I2, 3F6.2, 17(I4, F4.1),/, 3(21X, 17(I4, F4.1),/))
+     : WRITE (JB, 992) JTER, FRR, LOG10(OUTRES), FAC, (IKM(IJ), ERT(IJ), IJ = 1, KVB) 
       CALL FLUSH ( JB )
+      ELSE
+      IF ( JTER == KT5+1 )
+     & WRITE (35, '(A4,2X,A3,1X,A4,2X,A3,1X, 17(1X,A7),/,3(20X,17(1X,A7),/))') 
+     &        'Iter', 'Err', 'Ferr', 'Fac', (NUCNAME(KD(IJ)), IJ=1,46)
+      IF ( JTER > KT5 )
+     : WRITE (35, 992) JTER, FRR, LOG10(OUTRES), FAC, (IKM(IJ), ERT(IJ), IJ = 1, KVB) 
+      CALL FLUSH ( 35 )
+      END IF
+  992 FORMAT (1X, I2, 3F6.2, 17(I4, F4.1),/, 3(21X, 17(I4, F4.1),/))
 C APPLY CORRECTIONS, SCALED DOWN IF TOO LARGE
       DO I = 1, KVB
          IJ = KD(I)
-         DH(IJ, 1:KH) = DH(IJ, 1:KH) - FAC*DDH(1:KH, I)
+         IF (JOC == 1) THEN
+            DH(IJ, 1:KH) = DH(IJ, 1:KH) - FAC*DDH(1:KH, I)
+         ELSE
+            DHNUC(1, IJ, 1:KH) = DHNUC(1, IJ, 1:KH) - FAC*DDH(1:KH, I)
+         END IF
       END DO
       CALL CHECKS
-      IF ( ERR < BESTERR ) THEN
+      IF (JOC > 1) CALL CHECKS2(JOC-1)
+      IF ( JOC == 1 .AND. ERR < BESTERR ) THEN
          BESTH(1:NVAR,1:KH) = H(1:NVAR,1:KH)
          BESTDH(1:NVAR,1:KH) = DH(1:NVAR,1:KH)
          BESTERR = ERR
+         BESTERR_RESIDUE = RESIDUE
       END IF
-      ERRS = ERR
-      IF ( ERR > 1.0D1*DEL ) JO = 1
-      DO I = 1, KVB
-         IF (ERT(I) > 0.0d0) JO = 1
-      END DO
-      IF (ERR < EPS) CONVERGED = .TRUE.
-      !IF (ERR < EPS .OR. RESIDUE < EPS*EPS) CONVERGED = .TRUE.
-      IF (RESIDUE < EPS*EPS) CONVERGED = .TRUE.
+      IF ( JOC == 1 .AND. RESIDUE < BEST_RESIDUE ) THEN
+         RESH(1:NVAR,1:KH) = H(1:NVAR,1:KH)
+         RESDH(1:NVAR,1:KH) = DH(1:NVAR,1:KH)
+         BEST_RESIDUEERR = ERR
+         BEST_RESIDUE = RESIDUE
+      END IF
+
+!     For the nucleosynthesis, don't break the run if corrections are huge
+!     since this could be fine.
+      IF (JOC == 1) THEN
+         IF ( ERR > 1.0D1*DEL ) JO = 1
+!        Check all variables: if one of them has a very big error, then abort.
+!        In practice we will not converge in this situation anymore.
+         DO I = 1, KVB
+            IF (ERT(I) > 0.0D0) JO = 1
+         END DO
+      END IF
+
+!     Check whether the solution has converged sufficiently accurately that
+!     we can terminate the iteration
+      IF (ERR < WANTED_EPS) CONVERGED = .TRUE.
+      IF (RESIDUE > 0.0d0 .AND. RESIDUE < EPS*EPS) CONVERGED = .TRUE.
+
+!     Nucleosynthesis should be a little bit more accurate
+      IF (JOC > 1) THEN
+         CONVERGED = .FALSE.
+         IF (ERR < 1.0d-1*EPS) CONVERGED = .TRUE.
+      END IF
+
+! RJS sort out neutrons once convergence is complete
+! (could/should be done earlier?)
+      IF ( CONVERGED .AND. JOC > 1 ) CALL NEUTRON
+
+!     Keep most accurate solution if it's really a lot better
+!      IF (CONVERGED .AND. BEST_RESIDUEERR<EPS .AND. BEST_RESIDUE<0.1d0*BESTERR_RESIDUE) THEN
+!         frr = dlog10(BEST_RESIDUEERR)
+!         write (JB, "('Preferring solution with ERR = ', F6.2,
+!     &                     'and FERR = ', F6.2, ' < ', F6.2)")
+!     &            frr, dlog10(best_residue), dlog10(besterr_residue)
+!         H(1:NVAR,1:KH) = RESH(1:NVAR,1:KH)
+!         DH(1:NVAR,1:KH) = RESDH(1:NVAR,1:KH)
+!      END IF
+
       IF ( CONVERGED .OR. JO == 1 ) THEN
+         IF (JOC == 1) ES(:) = ER(:)      ! Store typical size of variables
          RETURN
       END IF
 C CONTINUE ITERATING IF NOT YET ACCURATE ENOUGH
       END DO
+!     Aledgedly not converged (to accuracy WANTED_EPS), but we may have
+!     converged to accuracy EPS!
+      IF (JOC == 1 .AND. BESTERR < EPS) THEN
+         frr = dlog10(besterr)
+         write (JB, "('Accepting solution with ERR = ', F6.2)") frr
+         !IF (BEST_RESIDUE<WANTED_EPS .AND. BEST_RESIDUE<0.1d0*BESTERR_RESIDUE) THEN
+         !   frr = dlog10(BEST_RESIDUEERR)
+         !   write (JB, "('Preferring solution with ERR = ', F6.2,
+     &   !                  'and FERR = ', F6.2, ' < ', F6.2)")
+     &   !         frr, dlog10(best_residue), dlog10(besterr_residue)
+         !   H(1:NVAR,1:KH) = RESH(1:NVAR,1:KH)
+         !   DH(1:NVAR,1:KH) = RESDH(1:NVAR,1:KH)
+         !ELSE
+            H(1:NVAR,1:KH) = BESTH(1:NVAR,1:KH)
+            DH(1:NVAR,1:KH) = BESTDH(1:NVAR,1:KH)
+         !END IF
+         ES(:) = ER(:)
+         RETURN
+      END IF
       JO = 1
       RETURN
       END SUBROUTINE
@@ -291,19 +418,19 @@ C Local variables
       JK = IK_FIRST + KL
 C EVALUATE FUNCTIONS AT FIRST MESHPOINT
       XD(:) = 0.0D0
-      CALL DIFFERENCES ( JK, KI2, KEQ, 80 + KEV ) 
+      CALL DIFFERENCES ( JK, KI2, KEQ, 2*NKD + KEV ) 
       CALL DIVIDE_ROWS ( KI2, KJ6, KEQ, JK, JO ) 
       IF ( JO == 1 ) RETURN
       JK = JK + KQ
       IF ( IK_FIRST == IK_LAST ) RETURN
 C DITTO SECOND, ELIMINATING SOME UNKNOWNS
-      CALL DIFFERENCES ( JK, 1, KEQ, 40 )
+      CALL DIFFERENCES ( JK, 1, KEQ, NKD )
       CALL ELIMINATE   ( 1, KJ2, KEQ, KJ3, KI2, KJ4, KJ5, JK - KQ,   1 ) 
       CALL DIVIDE_ROWS ( 1, KJ4, KEQ, JK, JO) 
       IF ( JO == 1 ) RETURN
       DO JK = IK_FIRST + KL + 2*KQ, IK_LAST + KL, KQ
 C DITTO REMAINING MESHPOINTS EXCEPT LAST
-         CALL DIFFERENCES ( JK, 1, KEQ, 40 )
+         CALL DIFFERENCES ( JK, 1, KEQ, NKD )
          CALL ELIMINATE   ( 1,   1, KE4, KBC, KI2, KJ1, KEQ, JK - 2*KQ, 1 )
          CALL ELIMINATE   ( 1, KJ1, KE4, KEQ,   1, KJ4, KJ5, JK - KQ,   2 )
          CALL ELIMINATE   ( 1, KJ2, KEQ, KJ3, KI2, KJ4, KJ5, JK - KQ,   3 )
@@ -312,7 +439,7 @@ C DITTO REMAINING MESHPOINTS EXCEPT LAST
       END DO
       JK = IK_LAST + KL + KQ
 C DITTO LAST MESHPOINT
-      CALL DIFFERENCES ( JK, 1, KI3, 80 ) 
+      CALL DIFFERENCES ( JK, 1, KI3, 2*NKD ) 
       CALL ELIMINATE   ( 1, KJ2, KE4, KJ3, KI2, KJ4, KJ5, JK - 2*KQ, 1 )
       CALL ELIMINATE   ( 1, KJ4, KE4, KJ5,   1, KJ8, KJ9, JK - KQ,   2 )
       CALL ELIMINATE   ( 1, KJ6, KI3, KJ7, KI2, KJ8, KJ9, JK - KQ,   3 )
@@ -458,6 +585,7 @@ C     Restore DH and return
       SUBROUTINE COMPFUNCS ( K )
       USE MESH
       USE SOLVER_GLOBAL_VARIABLES
+      USE NUCLEOSYNTHESIS
       IMPLICIT NONE
 c     Parameter:
       INTEGER :: k
@@ -474,10 +602,12 @@ c     Common variables:
       DOUBLE PRECISION :: ml, ql, xl, uc
       DOUBLE PRECISION :: var, dvar, fn1, dfn1
       DOUBLE PRECISION :: fn2, dfn2, equ, dequ
+      DOUBLE PRECISION :: VARNUC, DVARNUC, FN1NUC, DFN1NUC
 
       COMMON H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0, KH, KTW, KW(260)
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /INF   / VAR(NVAR), DVAR(NVAR), FN1(NFUNC), DFN1(NVAR,NFUNC)
+      COMMON /INF2  / VARNUC(50), DVARNUC(50), FN1NUC(110), DFN1NUC(50, 110)
       COMMON /INE   / FN2(3,NFUNC), DFN2(3,NVAR,NFUNC), EQU(NEQ), DEQU(NVAR,3,NEQ)
       DOUBLE PRECISION :: FF(NFUNC)
 
@@ -524,6 +654,8 @@ C VARYING INDEP. VBLES IN TURN, EVALUATE NUMERIC DERIVATIVES OF FUNCS
          FN1(:) = FF(:)
       ELSE
 C ALTERNATIVE TO BE USED IF DERIVS COMPUTED ANALYTICALLY
+         DVARNUC(1:50) = DHNUC(1, 1:50,K-KL)
+         VARNUC(1:50) = HNUC(1, 1:50,K-KL) + DVARNUC(1:50)
          CALL FUNCS2 ( K - KL, 1, KH )
       END IF
       END SUBROUTINE COMPFUNCS
@@ -547,9 +679,11 @@ c     Common variables:
       DOUBLE PRECISION :: ml, ql, xl, uc
       DOUBLE PRECISION :: var, dvar, fn1, dfn1
       DOUBLE PRECISION :: fn2, dfn2, equ, dequ
+      DOUBLE PRECISION :: VARNUC, DVARNUC, FN1NUC, DFN1NUC
 
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /INF   / VAR(NVAR), DVAR(NVAR), FN1(NFUNC), DFN1(NVAR,NFUNC)
+      COMMON /INF2  / VARNUC(50), DVARNUC(50), FN1NUC(110), DFN1NUC(50, 110)
       COMMON /INE   / FN2(3,NFUNC), DFN2(3,NVAR,NFUNC), EQU(NEQ), DEQU(NVAR,3,NEQ)
 
 c-----------------------------------------------------------------------
@@ -585,10 +719,10 @@ C * varying indep. vbles in turn, evaluate numeric derivatives of funcs
 C * Or: Store result of derivs computed analytically
 C These values can be recomputed (typically) or stored in a cache
          CALL COMPFUNCS( K )
-         FN2(3, 1:NFUNC) = FN1(1:NFUNC)
-         DFN2(3, 1:KVB, 1:NFUNC) = DFN1(1:KVB, 1:NFUNC)
       END IF
       IF ( JOC == 1 ) THEN
+         FN2(3, 1:NFUNC) = FN1(1:NFUNC)
+         DFN2(3, 1:KVB, 1:NFUNC) = DFN1(1:KVB, 1:NFUNC)
 C EVALUATE AND STORE THE DIFFERENCE EQUNS WHICH ARE TO BE SATISFIED
          CALL EQUNS1 ( K, KL, KQ )
          DO IEQ = JX, JY
@@ -639,8 +773,12 @@ C VARYING INDEP. VBLES IN TURN, EVALUATE NUMERIC DERIVATIVES OF EQUNS
             END DO
          END DO
       ELSE
+         DO I = 1, KVB
+            DFN2(3, I, 1:110) = DFN1NUC(I, 1:110)
+         END DO
+         FN2(3, 1:110) = FN1NUC(1:110)
 C ALTERNATIVE TO BE USED IF DERIVS COMPUTED ANALYTICALLY
-         CALL EQUNS2 ( K, 1, BLOCK_NMESH, KEQ )
+         CALL EQUNS2 ( K, 1, BLOCK_NMESH, KL, KQ, KEQ )
          DO J = JX, JY
             JJ = KD(J + JZ)
             DO I = 1, KEQ
@@ -731,6 +869,7 @@ c the ratio of largest |element| = VM to sum of remaining |elements| = VS
       DO I = ID1, ID2
          IF ( ITYPE(I) >= POSSIBLE_PIVOT ) THEN
             VM = 0.0
+            JL = 0
             DO J = JD1, JD2
                JJ = J - JD1 + ID1
                IF ( .NOT. IDONE(JJ) ) THEN
@@ -752,8 +891,8 @@ c the ratio of largest |element| = VM to sum of remaining |elements| = VS
                VX = 0.0D0
             END IF
             IF ( VS == 0.0D0 ) THEN    ! Only one non-zero element in row
-               ITYPE(I) = FORCED_PIVOT
                IF ( VM > 0.0D0 ) THEN
+                  ITYPE(I) = FORCED_PIVOT
                   IDONE(JL) = .TRUE.
                   VX = 2.0D0
                END IF
