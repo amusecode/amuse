@@ -405,13 +405,95 @@ class InMemoryAttributeStorage(object):
 
 
 class AbstractParticleSet(object):
+    """
+    Abstract superclass of all sets of particles. 
+    This class defines common code for all particle sets.
+    
+    Particle sets define dynamic attributes. Attributes
+    can be set and retrieved on the particles using common python
+    syntax. These attributes can only have values with units.
+    
+    >>> particles = Particles(2)
+    >>> particles.mass = [10.0, 20.0] | units.kg
+    >>> particles.mass
+    quantity<[10.0, 20.0] kg>
+    
+    >>> particles.mass = 1.0 | units.kg
+    >>> particles.mass
+    quantity<[1.0, 1.0] kg>
+    
+    Particle sets can be iterated over. 
+    
+    >>> particles = Particles(2)
+    >>> particles.mass = [10.0, 20.0] | units.kg
+    >>> for particle in particles:
+    ...     print particle.mass
+    ...
+    10.0 kg
+    20.0 kg
+    
+    
+    Particle sets can be indexed.
+    
+    >>> particles = Particles(3)
+    >>> particles.x = [10.0, 20.0, 30.0] | units.m
+    >>> particles[1].x
+    quantity<20.0 m>
+    
+    
+    Particle sets can be copied.
+    
+    >>> particles = Particles(3)
+    >>> particles.x = [10.0, 20.0, 30.0] | units.m
+    >>> copy = particles.copy()
+    >>> particles.x = 2.0 | units.m
+    >>> particles.x
+    quantity<[2.0, 2.0, 2.0] m>
+    >>> copy.x
+    quantity<[10.0, 20.0, 30.0] m>
+    
+    Particle sets can have instance based or global vector attributes.
+    A particle set stores a list of scalar values for each attribute.
+    Some attributes are more naturally accessed as lists 
+    of vector values. Once defined, a particle set can
+    convert the scalar values of 2 or more attributes into one
+    vector attribute.
+    
+    >>> particles = Particles(2)
+    >>> particles.x = [1.0 , 2.0] | units.m
+    >>> particles.y = [3.0 , 4.0] | units.m
+    >>> particles.z = [5.0 , 6.0] | units.m
+    >>> particles.add_vector_attribute("p", ["x","y","z"])
+    >>> particles.p
+    quantity<[[ 1.  3.  5.], [ 2.  4.  6.]] m>
+    >>> particles.p[0]
+    quantity<[1.0, 3.0, 5.0] m>
+    >>> particles.position # "position" is a global vector attribute, coupled to x,y,z
+    quantity<[[ 1.  3.  5.], [ 2.  4.  6.]] m>
+    
+    
+
+
+    """
     GLOBAL_VECTOR_ATTRIBUTES = {}
     
     class PrivateProperties(object):
         """
         Defined for superclasses to store private properties.
-        As __setattr__ is defined on subclasses these
-        do not need to use object.__setattr__ syntax.
+        A particle set has ```__setattr__``` defined.
+        The ```__setattr__``` function will set all attributes
+        of the particles in the set to the specified value(s).
+        To be able to define attributes on the set itself we
+        use an instance of this class, attributes can be defined as::
+        
+            self._private.new_attribute = 'new value'
+        
+        Subclass implementers do not need to
+        use the ```object.__setattr__``` syntax.
+        
+        For documentation about the __setattr__ call please
+        see the ```python data model``` documentation on the python
+        website.
         """
         pass
     
@@ -533,10 +615,43 @@ class AbstractParticleSet(object):
             yield attribute, val[0]
     
     def add_vector_attribute(self, name_of_the_attribute, name_of_the_components):
+        """
+        Define a vector attribute, coupling two or more scalar attributes into
+        one vector attribute. 
+        
+        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
+        
+        >>> particles = Particles(2)
+        >>> particles.vx = [1.0 , 2.0] | units.m / units.s
+        >>> particles.vy = [3.0 , 4.0] | units.m / units.s
+        >>> particles.add_vector_attribute("v", ["vx","vy"])
+        >>> particles.v
+        quantity<[[ 1.  3.], [ 2.  4.]] m / s>
+        
+        """
+        
         self._vector_attributes[name_of_the_attribute] = self.VectorAttribute(name_of_the_components)
         
     @classmethod
     def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
+        """
+        Define a *global* vector attribute, coupling two or more scalar attributes into
+        one vector attribute. The vector will be defined for all particle sets
+        created after calling this function.
+        
+        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
+        
+        
+        >>> Particles.add_global_vector_attribute('v', ['vx','vy'])
+        >>> particles = Particles(2)
+        >>> particles.vx = [1.0 , 2.0] | units.m / units.s
+        >>> particles.vy = [3.0 , 4.0] | units.m / units.s
+        >>> particles.v
+        quantity<[[ 1.  3.], [ 2.  4.]] m / s>
+        
+        """
         cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = cls.VectorAttribute(name_of_the_components)
         
     #
@@ -557,12 +672,18 @@ class AbstractParticleSet(object):
         
      
     def copy(self):
-         attributes = self._get_attributes()
-         keys = self._get_keys()
-         values = self._get_values(None, attributes)
-         result = Particles()
-         result._set_particles(keys, attributes, values)
-         return result
+        """
+        Creates a new in memory particle set and copies
+        all attributes and values into this set. The history
+        of the set is not copied over.
+        """
+        attributes = self._get_attributes()
+        keys = self._get_keys()
+        values = self._get_values(None, attributes)
+        result = Particles()
+        result._set_particles(keys, attributes, values)
+        result._private._vector_attributes = self._private._vector_attributes.copy()
+        return result
          
     
     def copy_values_of_attribute_to(self, attribute_name, particles):
@@ -600,11 +721,74 @@ class AbstractParticleSet(object):
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
         channel.copy_attributes(self._get_state_attributes())   
-
     
+    def to_set(self):
+        """
+        Returns a subset view on this set. The subset
+        will contain all particles of this set.
+        """
+        return ParticlesSubset(self, self._get_keys())
+    
+    
+    def select(self, selection_function, attributes):
+        """
+        Returns a subset view on this set. The subset
+        will contain all particles for which the selection
+        function returned True. The selection function 
+        is called with scalar quantities defined by
+        the attributes parameter
+        
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> particles.x = [1.0, 2.0, 3.0] | units.m
+        >>> subset = particles.select(lambda x : x > 15.0 | units.kg, ["mass"])
+        >>> print subset.mass
+        [20.0, 30.0] kg
+        >>> print subset.x
+        [2.0, 3.0] m
+        
+        """
+        keys = self._get_keys()
+        values = self._get_values(keys, attributes)
+        selected_keys = []
+        for index in range(len(keys)):
+            key = keys[index]
+            arguments = [None] * len(attributes)
+            for attr_index, attribute in enumerate(attributes):
+                arguments[attr_index] = values[attr_index][index]
+            if selection_function(*arguments):
+                selected_keys.append(key)
+        return ParticlesSubset(self, selected_keys)
+    
+    def difference(self, other):
+        """
+        Returns a new subset containing the difference between
+        this set and the provided set.
+        
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> particles.x = [1.0, 2.0, 3.0] | units.m
+        >>> subset = particles.select(lambda x : x > 15.0 | units.kg, ["mass"])
+        >>> less_than_15kg = particles.difference(subset)
+        >>> len(subset)
+        2
+        >>> len(less_than_15kg)
+        1
+        
+        """
+        return self.to_set().difference(other)
+        
 class Particles(AbstractParticleSet):
+    """
+    A set of particles. Attributes and values are stored in
+    a private storage model. This storage model can store
+    the values in the python memory space, in the memory space
+    of the code or in a HDF5 file. By default the storage
+    model is in memory.
     
-    """A set of particle objects"""
+    
+    
+    """
     def __init__(self, size = 0):
         AbstractParticleSet.__init__(self)
         particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
@@ -672,13 +856,17 @@ class Particles(AbstractParticleSet):
     def _has_key(self, key):
         return self._private.attribute_storage._has_key(key)
         
-    def to_set(self):
-        return ParticlesSubset(self, self._get_keys())
     
     
 
 class ParticlesSubset(AbstractParticleSet):
-    """A sub set of particle objects"""
+    """A subset of particles. Attribute values are not
+    stored by the subset. The subset provides a limited view
+    to the particles. 
+    
+    Particle subset objects are not supposed to be created
+    directly. Instead use the ``to_set`` or ``select`` methods.
+    """
     def __init__(self, particles, keys):
         AbstractParticleSet.__init__(self)
         
@@ -713,23 +901,13 @@ class ParticlesSubset(AbstractParticleSet):
     def _get_state_attributes(self):
         return self._private.particles._get_state_attributes(self)
             
-    def select(self, selection_function, attributes):
-        keys = self._private.keys
-        values = self._get_values(keys, attributes)
-        selected_keys = []
-        for index in range(len(keys)):
-            key = keys[index]
-            arguments = [None] * len(attributes)
-            for attr_index, attribute in enumerate(attributes):
-                arguments[attr_index] = values[attr_index][index]
-            if selection_function(*arguments):
-                selected_keys.append(key)
-        return ParticlesSubset(self._private.particles, selected_keys)
         
     def difference(self, other):
-        new_set_of_keys = self._private.set_of_keys.difference(other._private.set_of_keys)
+        new_set_of_keys = self._private.set_of_keys.difference(other.to_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
-
+    
+    def to_set(self):
+        return self
 
 
 
@@ -949,7 +1127,7 @@ AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 
 
-class InterfaceWithUnitsConverted(AbstractParticleSet):
+class InterfaceWithUnitsConverted(object):
     class UnitsConvertionMethod(object):
         def __init__(self, real_method, converter):
             self.real_method = real_method

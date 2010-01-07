@@ -10,6 +10,7 @@ Reference documentation
    core_support
    legacy_support
    quantities_and_units
+   particles
    interface_binding
    style_guide
    code_management

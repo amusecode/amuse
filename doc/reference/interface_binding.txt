@@ -5,15 +5,17 @@ Interface Binding
 Introduction
 ------------
 The binding between the legacy interface and the AMUSE data
-model is implemented in the """binding""" module.
+model is implemented in the ```binding``` module.
 
 In the AMUSE datamodel a code has one or more sets of
-particles. These sets all have the same interface each set
+particles. These sets all have the same interface. Each set
 provide methods to access the attributes of one or more
 particles in a generic way. The binding code is needed
 to map this generic interface to the specific interface
 provided by the code. The binding code also adds
-support for units to the code.
+support for units to the code. 
+
+
 
 Binding
 -------

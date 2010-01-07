@@ -1,0 +1,37 @@
+==========================
+Datamodel
+==========================
+
+
+Introduction
+------------
+The AMUSE datamodel is based on sets of particles. 
+
+Different astrophysical objects are all
+refered to as Particles in the AMUSE code. 
+These objects can be:
+
+* Star
+* Black hole
+* Gas Particle
+* Dark Matter Particle
+
+The astrophysical objects are all modelled using 
+the ``Particle`` class . 
+Objects of this class can have a varying set of attributes. These 
+attributes can be defined by a script or a code.
+
+Sets of particles
+------------------
+The AMUSE datamodel assumes all particles come in sets. The
+data of a particle is stored in the set.
+
+
+.. automodule:: amuse.support.data.core
+    
+    .. autoclass:: AbstractParticleSet
+        :members:
+        
+    .. autoclass:: Particles
+        :members:
+    

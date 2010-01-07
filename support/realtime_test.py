@@ -320,6 +320,11 @@ class MakeAReportOfATestRun(object):
             result[x] = getattr(self, x)
         
         testcases = list(self.address_to_report.values())
+        for x in testcases:
+            if x.address[0] is None:
+                x.address = list(x.address)
+                x.address[0] = ''
+                
         testcases.sort(key=lambda x: os.path.basename(x.address[0]))
         result['testcases'] = map(lambda x: x.to_dict(),testcases )
         
