@@ -689,6 +689,11 @@ class AbstractParticleSet(object):
          
     
     def copy_values_of_attribute_to(self, attribute_name, particles):
+        """
+        Copy values of the attributes from this set to the 
+        other set. Will only copy values for the particles
+        in both sets
+        """
         channel = self.new_channel_to(particles)
         channel.copy_attributes([attribute_name])
     
@@ -696,15 +701,78 @@ class AbstractParticleSet(object):
         return ParticleInformationChannel(self, other)
         
     def add_particles(self, particles):
+        """
+        Adds particles from the supplied set to this set. Attributes
+        and values are copied over. 
+        
+        **Note** For performance reasons the particles
+        are not checked for duplicates. When the same particle 
+        is part of both sets errors may occur.
+        
+        :parameter particles: set of particles to copy values from
+        
+        >>> particles1 = Particles(2)
+        >>> particles1.x = [1.0, 2.0] | units.m
+        >>> particles2 = Particles(2)
+        >>> particles2.x = [3.0, 4.0] | units.m
+        >>> particles1.add_particles(particles2)
+        >>> print len(particles1)
+        4
+        >>> print particles1.x
+        [1.0, 2.0, 3.0, 4.0] m
+        """
         attributes = particles._get_attributes()
         keys = particles._get_keys()
         values = particles._get_values(None, attributes)
         self._set_particles(keys, attributes, values)
     
     def add_particle(self, particle):
+        """
+        Add one particle to the set. 
+        
+        :parameter particle: particle to add
+        
+        >>> particles = Particles()
+        >>> print len(particles)
+        0
+        >>> particle = Particle()
+        >>> particle.x = 1.0 | units.m
+        >>> particles.add_particle(particle)
+        >>> print len(particles)
+        1
+        >>> print particles.x
+        [1.0] m
+        
+        """
         self.add_particles(particle.as_set())
         
     def synchronize_to(self, other_particles):
+        """
+        Synchronize the particles of this set
+        with the contents of the provided set.
+        After this call the proveded set will have
+        the same particles as the given set. This call
+        will check if particles have been removed or
+        added it will not copy values of existing particles
+        over.
+        
+        :parameter other_particles: particle set wich has to be updated
+        
+        >>> particles = Particles(2)
+        >>> particles.x = [1.0, 2.0] | units.m
+        >>> copy = particles.copy()
+        >>> new_particle = Particle()
+        >>> new_particle.x = 3.0 | units.m
+        >>> particles.add_particle(new_particle)
+        >>> print particles.x
+        [1.0, 2.0, 3.0] m
+        >>> print copy.x
+        [1.0, 2.0] m
+        >>> particles.synchronize_to(copy)
+        >>> print copy.x
+        [1.0, 2.0, 3.0] m
+        
+        """
         other_keys = set(other_particles._get_keys())
         my_keys = set(self._get_keys())
         added_keys = my_keys - other_keys
@@ -779,6 +847,13 @@ class AbstractParticleSet(object):
         
         """
         return self.to_set().difference(other)
+        
+    def has_duplicates(self):
+        """
+        Returns two when a set contains a particle with the
+        same key more than once.
+        """
+        return len(self) != len(set(self._get_keys()))
         
 class Particles(AbstractParticleSet):
     """
@@ -917,7 +992,64 @@ class ParticlesSubset(AbstractParticleSet):
 
 
 class ParticlesWithUnitsConverted(AbstractParticleSet):
-    """A sub set of particle objects"""
+    """
+    A view on a particle sets. Used when to convert
+    values between incompatible sets of units. For example to
+    convert from si units to nbody units.
+    
+    The converter must have implement the ConverterInterface.
+    
+    >>> from amuse.support.units import nbody_system
+    >>> particles_nbody = Particles(2)
+    >>> particles_nbody.x = [10.0 , 20.0] | nbody_system.length
+    >>> convert_nbody = nbody_system.nbody_to_si(10 | units.kg , 5 | units.m )
+    >>> particles_si = ParticlesWithUnitsConverted(
+    ...     particles_nbody,
+    ...     convert_nbody.as_converter_from_si_to_nbody())
+    ...
+    >>> print particles_nbody.x
+    [10.0, 20.0] nbody length
+    >>> print particles_si.x
+    [50.0, 100.0] m
+    >>> particles_si.x = [200.0, 400.0] | units.m
+    >>> print particles_nbody.x
+    [40.0, 80.0] nbody length
+
+    
+    """
+    
+    class ConverterInterface(object):
+        """
+        Interface definition for the converter.
+        
+        source
+            The source quantity is in the units of the user of a
+            ParticlesWithUnitsConverted object
+        target
+            The target quantity must be in the units of the
+            internal particles set.
+        
+        """
+        def from_source_to_target(quantity):
+            """
+            Converts the quantity from the source units
+            to the target units.
+            
+            :parameter quantity: quantity to convert
+            """
+            return quantity
+            
+        
+        def from_target_to_source(quantity):
+            """
+            Converts the quantity from the target units
+            to the source units.
+            
+            :parameter quantity: quantity to convert
+            """
+            return quantity
+            
+        
     def __init__(self, particles, converter):
         AbstractParticleSet.__init__(self)
         
@@ -1069,13 +1201,15 @@ class Stars(Particles):
 
 class Particle(object):
     """A physical object or a physical region simulated as a 
-    physical object (cload particle).
+    physical object (cloud particle).
     
     All attributes defined on a particle are specific for 
     that particle (for example mass or position). A particle contains 
-    a set of attributes, some attributes are *generic* and applicaple
+    a set of attributes, some attributes are *generic* and applicable
     for multiple modules. Other attributes are *specific* and are 
     only applicable for a single module.
+    
+    
     """
     __slots__ = ["key", "particles_set"]
     
@@ -1125,6 +1259,21 @@ class Particle(object):
         return self.particles_set.get_timeline_of_attribute(self.key, attribute)
         
     def as_set(self):
+        """
+        Returns a subset view on the set containing this particle. The
+        subset view includes this particle and no other particles.
+        
+        >>> particles = Particles(2)
+        >>> particles.x = [1.0, 2.0] | units.m
+        >>> particle2 = particles[1]
+        >>> print particle2.x
+        2.0 m
+        >>> particles_with_one_particle = particle2.as_set()
+        >>> len(particles_with_one_particle)
+        1
+        >>> print particles_with_one_particle.x
+        [2.0] m
+        """
         return ParticlesSubset(self.particles_set, [self.key])
         
 

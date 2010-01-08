@@ -21,6 +21,37 @@ the ``Particle`` class .
 Objects of this class can have a varying set of attributes. These 
 attributes can be defined by a script or a code.
 
+Identity
+--------
+All particles have a unique 64-bit key. This key is generator
+using a random number generator. The changes of duplicate keys
+using 64-bit integers are finite but very low.This change of a duplicate
+key can be determined by a generalization of the birthday problem.
+
+Duplicate keys::
+    >>> # given n random integers drawn from a discrete uniform distribution 
+    >>> # with range [1,highest_integer], what is the probability
+    >>> # p(n;highest_integer) that at least two numbers are the same?
+    >>> import math
+    >>> number_of_bits = 64
+    >>> highest_integer = 2**number_of_bits
+    >>> number_of_particles = 1000000.0 # one million
+    >>> probablity = 1.0 - exp( (-number_of_particles * (number_of_particles - 1.0))/ (2.0* highest_integer) )
+    >>> print probability
+    2.71050268896e-08
+    >>> # can also set the probablity and determine the set size
+    >>> probablity = 0.00001 # 0.001 percent
+    >>> number_of_particles = math.sqrt(2 * highest_integer * math.log(1 / (1.0 - probablity)))
+    >>> print number_of_particles
+    19207725.6894
+    
+If you use large sets or want to load a lot of simulations with different
+particles into a script the probablity of encountering a duplicate
+may be too high. An extension to more larger key sizes is planned but
+not yet implemented. You can check for duplicates in a set of particles
+by calling ``has_duplicates`` on a set.
+    
+
 Sets of particles
 ------------------
 The AMUSE datamodel assumes all particles come in sets. The
@@ -33,5 +64,18 @@ data of a particle is stored in the set.
         :members:
         
     .. autoclass:: Particles
+        :members:
+        
+    .. autoclass:: ParticlesSubset
+        :members:
+        
+    .. autoclass:: ParticlesWithUnitsConverted
+        :members:
+        
+    Particle object
+    ---------------
+
+
+    .. autoclass:: Particle
         :members:
     
