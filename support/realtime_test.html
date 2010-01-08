@@ -31,19 +31,37 @@ function on_run_button_click(event) {
 }
 
 
+var clear_testcases = false;
 
-function handle_results_of_poll(report) {
-    if (current_interval > 1000) {
-        current_interval = 1000;
+function set_polling_interval(x) {
+    if(current_interval != x) {
+        current_interval = x;
         clearInterval(event_polling_interval_id);
         event_polling_interval_id = setInterval(do_one_poll, current_interval)
     }
+}
+function handle_results_of_poll(report) {
+    if (current_interval > 1000) {
+        set_polling_interval(1000);
+    }
     
     document.title = report.title;
+    
     if (report.report_id != last_report_id) {
         $.getJSON("/get_last_report", handle_last_report);
         last_report_id=report.report_id
+        clear_testcases = true;
+        set_polling_interval(1000);
+        return;
     }
+    
+    if (report.reports.length > 0) {
+        document.title = "running...";
+        handle_intermediate_results(report.reports);
+        set_polling_interval(100);
+        return
+    }
+    
 }
 
 function do_one_poll() {
@@ -81,6 +99,20 @@ function long_poll() {
 function document_title(report) {
     
     return report.title;
+}
+
+
+function handle_intermediate_results(testcases)
+{
+    if(clear_testcases) {
+        $('#tests-errored').children().remove()
+        $('#tests-run').children().remove()
+        $('#tests-failed').children().remove()
+        $('#tests-skipped').children().remove()
+        clear_testcases = false
+    }
+    
+    print_testcases(testcases)
 }
 
 function handle_last_report(report) {
@@ -122,7 +154,6 @@ function handle_last_report(report) {
     $('#delta-time').text(delta_time.toFixed(3));
     $('#number-of-tests').text(report.tests);
     
-    testcases = report.testcases
     
     $('#tests-errored').children().remove()
     $('#tests-run').children().remove()
@@ -137,16 +168,11 @@ function handle_last_report(report) {
         $('#report-title').addClass('no-errors');
             
     }
-    if(report.errors > 0) {
-        $('#error-box').removeClass('hidden')
-    } else {
-        $('#error-box').addClass('hidden')
-    }
-    if(report.failures > 0) {
-        $('#fail-box').removeClass('hidden')
-    } else {
-        $('#fail-box').addClass('hidden')
-    }
+    print_testcases(report.testcases)
+}
+
+function print_testcases(testcases) {
+    
     for (var i = 0; i < testcases.length; i++) {
         var testcase = testcases[i];
         var item = $('<li></li>');

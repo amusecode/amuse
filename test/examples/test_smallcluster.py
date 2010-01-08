@@ -97,6 +97,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     gravity = BHTree()
     gravity.setup_module()
     
+    
     gravity.dt_dia = 10000
     
     stellar_evolution = SSE()
@@ -240,7 +241,4 @@ def test_simulate_small_cluster():
     simulate_small_cluster(4, 4 | units.Myr)
     
 if __name__ == '__main__':
-    import cProfile
-    cProfile.run('foo()')
-
     simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr, sys.argv[3])
