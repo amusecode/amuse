@@ -24,3 +24,8 @@ html:
 latexpdf:
 	make -C doc latexpdf 
 
+ctags:
+	find src -name "*.py" | xargs ctags
+	find src -name "*.cc" | xargs ctags -a
+	find src -name "*.[cCfFhH]" | xargs ctags -a
+
