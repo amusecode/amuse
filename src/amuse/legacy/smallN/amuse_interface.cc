@@ -1398,9 +1398,9 @@ local dyn *integrate_true_multiple(hdyn *b,
   ko.perturber_criterion = 2;
   b->set_kira_options(&ko);
 
-  b->set_system_time(0);
+  b->set_system_time(start_time);
   for_all_nodes(hdyn, b, bi)
-    bi->set_time(0);
+    bi->set_time(start_time);
 
   if (verbose > 0) my_sys_stats(b, verbose);
 
@@ -1576,7 +1576,8 @@ local void print_total_energy(dyn *d, real de_internal = 0)
 // integrate_multiple() -- the MUSE interface function.  Note that
 // most of the actual work is done by integrate_true_multiple().
 
-int integrate_multiple(real *end_time, 
+int integrate_multiple(real start_time,
+		       real *end_time, 
 		       int  verbose,	// default = 1
 		       real eps2)	// default = 0
 		       
@@ -1742,7 +1743,7 @@ int integrate_multiple(real *end_time,
   // nodes, probably widely separated.
 
   real de_internal = 0;
-  dyn *d = integrate_true_multiple(b, de_internal, rscale, end_time, verbose, eps2);
+  dyn *d = integrate_true_multiple(b, de_internal, rscale, start_time, end_time, verbose, eps2);
 
   if (verbose > 0) {
     cout << "after integrate_true_multiple..." << endl << flush;

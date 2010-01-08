@@ -86,6 +86,9 @@ if __name__ == "__main__":
     particle.vz = 0.0 | units.AU / units.yr
     mult.add_particle(particle)
 
+    start_time = 100 | units.yr
+    mult.set_time(start_time)
+
     for k in range(0,2):
         print mult.get_particle_by_index(k)
     print mult.get_total_energy()
@@ -99,8 +102,10 @@ if __name__ == "__main__":
     print mult.get_total_energy()
     mult.report_multiples(level=1)
 
-    print "Interaction took %.2f years" % mult.get_time().value_in(units.yr)
-    time_in_nbody = myunits.to_nbody(mult.get_time())
+    end_time = mult.get_time()
+    duration = end_time - start_time
+    print "Interaction took %.2f years" % duration.value_in(units.yr)
+    time_in_nbody = myunits.to_nbody(duration)
     print "  = %.2e nbody times" % time_in_nbody.number
     mult.reset_close_encounter()
 

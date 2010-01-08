@@ -69,6 +69,7 @@ class SmallN(LegacyInterface):
     @legacy_function
     def integrate_multiple():
         function = LegacyFunctionSpecification()
+        function.addParameter('start_time', 'd', function.IN)
         function.addParameter('end_time', 'd', function.OUT)
         function.addParameter('verbose', 'i', function.IN)
         function.addParameter('eps2', 'd', function.IN)
@@ -82,6 +83,9 @@ class SmallN(LegacyInterface):
 
     def get_time(self):
         return self.convert_nbody.to_si(self.time | nbody_system.time)
+
+    def set_time(self, new_time_value):
+        self.time = self.convert_nbody.to_nbody(new_time_value).number
 
     @legacy_function
     def add_binary():
@@ -108,7 +112,7 @@ class SmallN(LegacyInterface):
             verbose_int = 1
         if super_verbose:
             verbose_int = 100
-        end_time = self.integrate_multiple(verbose_int, self.eps2)
+        end_time = self.integrate_multiple(self.time, verbose_int, self.eps2)
         self.time = end_time
 
     def add_particle(self, particle):
