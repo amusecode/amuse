@@ -826,16 +826,18 @@ int initialize_code()
   return -2;
 }
 
-int get_eps2(double *eps2)
+int get_eps2(double *_eps2)
 // cello, proj1 NYI?!
 {
-  return -2;
+  *_eps2 = eps2;
+  return 0;
 }
 
-int set_eps2(double eps2)
-// cello, proj1 NYI!!
+int set_eps2(double _eps2)
+// cello, test implementation!
 {
-  return -2;
+  eps2 = _eps2;
+  return 0;
 }
 
 int get_kinetic_energy(double *kinetic_energy)
