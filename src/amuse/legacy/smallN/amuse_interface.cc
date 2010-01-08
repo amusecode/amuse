@@ -1296,6 +1296,8 @@ local void get_top_level_mult_energies(dyn *b,
 local dyn *integrate_true_multiple(hdyn *b,
 				   real &de_internal,
 				   real rscale,
+				   real start_time,
+				   real *end_time,
 				   int verbose = 1,
 				   real eps2 = 0)
 {
@@ -1416,6 +1418,8 @@ local dyn *integrate_true_multiple(hdyn *b,
     PRL(b->get_time());
     my_sys_stats(b, verbose);
   }
+
+  *end_time = b->get_time();
 
   if (verbose > 2) {
     cout << "hdyn tree:" << endl;
@@ -1572,7 +1576,8 @@ local void print_total_energy(dyn *d, real de_internal = 0)
 // integrate_multiple() -- the MUSE interface function.  Note that
 // most of the actual work is done by integrate_true_multiple().
 
-int integrate_multiple(int  verbose,	// default = 1
+int integrate_multiple(real *end_time, 
+		       int  verbose,	// default = 1
 		       real eps2)	// default = 0
 		       
 {
@@ -1737,7 +1742,7 @@ int integrate_multiple(int  verbose,	// default = 1
   // nodes, probably widely separated.
 
   real de_internal = 0;
-  dyn *d = integrate_true_multiple(b, de_internal, rscale, verbose, eps2);
+  dyn *d = integrate_true_multiple(b, de_internal, rscale, end_time, verbose, eps2);
 
   if (verbose > 0) {
     cout << "after integrate_true_multiple..." << endl << flush;

@@ -56,4 +56,4 @@ int is_new_particle(int k);
 
 // Integrate a multipe interaction:
 
-int integrate_multiple(int verbose = 1, real eps2 = 0);
+int integrate_multiple(real *end_time, int verbose = 1, real eps2 = 0);

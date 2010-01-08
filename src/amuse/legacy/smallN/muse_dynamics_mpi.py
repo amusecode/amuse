@@ -25,6 +25,7 @@ class SmallN(LegacyInterface):
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         self.has_run = False
         self.eps2 = 0.0
+        self.time = 0.0
 
     @legacy_function
     def report_multiples():
@@ -68,6 +69,7 @@ class SmallN(LegacyInterface):
     @legacy_function
     def integrate_multiple():
         function = LegacyFunctionSpecification()
+        function.addParameter('end_time', 'd', function.OUT)
         function.addParameter('verbose', 'i', function.IN)
         function.addParameter('eps2', 'd', function.IN)
         return function;
@@ -77,6 +79,9 @@ class SmallN(LegacyInterface):
 
     def set_eps2(self, new_eps2_value):
         self.eps2 = new_eps2_value
+
+    def get_time(self):
+        return self.convert_nbody.to_si(self.time | nbody_system.time)
 
     @legacy_function
     def add_binary():
@@ -89,13 +94,22 @@ class SmallN(LegacyInterface):
         function.addParameter('eccentricity', 'd', function.IN)
         return function;
 
-    def evolve(self, verbose=False):
+    @legacy_function
+    def clear_multiple():
+        function = LegacyFunctionSpecification()
+        return function;
+
+
+    def evolve(self, verbose=False, super_verbose=False):
         """ Evolves the system until a stable configuration is reached. """
         self.has_run = True
         verbose_int = 0
         if verbose:
             verbose_int = 1
-        return self.integrate_multiple(verbose_int, self.eps2)
+        if super_verbose:
+            verbose_int = 100
+        end_time = self.integrate_multiple(verbose_int, self.eps2)
+        self.time = end_time
 
     def add_particle(self, particle):
         """ Adds the specified Particle to the simulation. """
@@ -131,7 +145,19 @@ class SmallN(LegacyInterface):
         p.vz = self.convert_nbody.to_si(vz | nbody_speed)
         return p
 
+    def reset_close_encounter(self):
+        """ Resets the internal variables so that a new close encounter can be
+        run.  This method should be called once before every close encounter to
+        ensure that no data remains from the previous close encounter. """
+        self.clear_multiple()
+        self.time = 0.0
+
 class BinaryStar(Particle):
     def __init__(self, key, component_particle1, component_particle2, period, \
-                 eccentricity):
-        Particle.__init__(self, key)
+                 eccentricity, particles_set=None, **keyword_arguments):
+        Particle.__init__(self, key, particles_set, *keyword_arguments)
+        self.component_particle1 = component_particle1
+        self.component_particle2 = component_particle2
+        self.period = period
+        self.eccentricity = eccentricity
+
