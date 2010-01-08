@@ -256,6 +256,8 @@ class SSEBinding(InterfaceWithParametersBinding):
         while len(particles_set) > 0:
             self._evolve_particles(particles_set)
             particles_set = particles_set.select(lambda x : x < end_time, ["age"])
+            print len(particles_set)
+            print particles_set.age
             
                 
     def _evolve_particles(self, particles):

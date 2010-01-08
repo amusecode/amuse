@@ -165,6 +165,23 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
             nbody_system.length * nbody_system.length, 
             0.3 | nbody_system.length * nbody_system.length
         )
+        ,
+        parameters.ModuleAttributeParameterDefinition(
+            "timestep",
+            "timestep", 
+            "constant timestep for iteration", 
+            nbody_system.time, 
+            0.7 | nbody_system.time
+        )
+        ,
+        parameters.ModuleAttributeParameterDefinition(
+            "theta_for_tree",
+            "openings_angle", 
+            "openings angle for building the tree between 0 and 1", 
+            units.none,
+            0.5 | units.none
+        )
+        
     ]
     
 

@@ -646,11 +646,11 @@ class AbstractParticleSet(object):
         :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
         
         
-        >>> Particles.add_global_vector_attribute('v', ['vx','vy'])
+        >>> Particles.add_global_vector_attribute('vel', ['vx','vy'])
         >>> particles = Particles(2)
         >>> particles.vx = [1.0 , 2.0] | units.m / units.s
         >>> particles.vy = [3.0 , 4.0] | units.m / units.s
-        >>> particles.v
+        >>> particles.vel
         quantity<[[ 1.  3.], [ 2.  4.]] m / s>
         
         """

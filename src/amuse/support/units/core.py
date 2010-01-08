@@ -633,6 +633,7 @@ class div_unit(derived_unit):
     >>> speed_with_powers = si.m * si.s ** -1
     >>> speed.as_quantity_in(speed_with_powers)
     quantity<1.0 m * s**-1>
+    
     """
     def __init__(self, left_hand , right_hand):
         self.left_hand = left_hand

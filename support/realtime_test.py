@@ -18,6 +18,7 @@ from nose.plugins.skip import Skip, SkipTest
 from nose.plugins.doctests import Doctest
 from nose.core import TestProgram
 from multiprocessing import Process, Queue
+
 from optparse import OptionParser
 from subprocess import call, Popen, PIPE
 from StringIO import StringIO
@@ -102,7 +103,10 @@ class TestCaseReport(object):
         self.errored = False
         self.skipped = False
         self.found = False
-        
+    
+    def __str__(self):
+        return str(self.id)
+    
     def start(self):
         self.start_time = time.time()
         self.found = True
@@ -178,7 +182,7 @@ class TestCaseReport(object):
 class MakeAReportOfATestRun(object):
     score = 2000
     
-    def __init__(self, previous_report = None):
+    def __init__(self, previous_report = None, reports_queue = None):
         self.errors = 0
         self.failures = 0
         self.tests = 0
@@ -186,6 +190,12 @@ class MakeAReportOfATestRun(object):
         self.end_time = 0
         self.skipped = 0
         self.report_id = -1
+        
+        if reports_queue is None:
+            self._queue_report = self.ignore_report
+        else:
+            self._queue_report = self.store_report
+            self._reports_queue = reports_queue
         
         if previous_report is None:
             self.address_to_report = {}
@@ -196,9 +206,24 @@ class MakeAReportOfATestRun(object):
         self.name = 'report on a test'
         self.enabled = True
 
+    def __getstate__(self):
+        result = {}
+        for key, value in self.__dict__.iteritems():
+            if not key.startswith('_'):
+                result[key] = value
+        return result
+        
+        
+    def ignore_report(self, report):
+        pass
+        
+    def store_report(self, report):
+        self._reports_queue.put(('unit-report',report.to_dict()))
+        
     def addSuccess(self,test):
         report = self.get_report(test)
         report.end()
+        self._queue_report(report)
         
     def addError(self,test,error_tuple):
         report = self.get_report(test)
@@ -210,11 +235,15 @@ class MakeAReportOfATestRun(object):
         else: 
             report.end_with_error(error_tuple)
             self.errors += 1
+        
+        self._queue_report(report)
     
     def addFailure(self, test, error_tuple):
         self.failures += 1
         report = self.get_report(test)
         report.end_with_failure(error_tuple)
+        
+        self._queue_report(report)
            
     def get_report(self, test):
         address = test.address()
@@ -373,20 +402,22 @@ class RunTests(object):
     
     def __init__(self):
         self.test_is_running = False
+        self.report_queue = queue.Queue()
         
     def _perform_the_testrun(self, directory, results_queue, previous_report = None):
         try:
             null_device = open('/dev/null')
             os.stdin = null_device
-            report = MakeAReportOfATestRun(previous_report)
+            report = MakeAReportOfATestRun(previous_report, results_queue)
             doctest = Doctest()
             doctest.enabled = True
-            plugins = [doctest, report , Skip(), Capture(), ]  
+            plugins = [doctest, report , Skip(), Capture()]  
             result = TestProgram(exit = False, argv=['nose', directory, '--with-doctest'], plugins=plugins);
             results_queue.put(('test-report', report,) )
         except :
             results_queue.put(('test-error', 'Exception happened: ' + str(sys.exc_info()[0]) + " - " + str(sys.exc_info()[1]), ))
         finally:
+            results_queue.put(None)
             MPI.Finalize()
 
 
@@ -415,17 +446,17 @@ class RunTests(object):
                 else:
                     result += select.buffer
             
-            results_queue.put(result)
+            results_queue.put(('test-output',result))
         except:
-            results_queue.put('exception happened')
-            print sys.exc_info()
+            results_queue.put(('test-error', 'Exception happened: ' + str(sys.exc_info()[0]) + " - " + str(sys.exc_info()[1]), ))
         finally:
+            results_queue.put(None)
             MPI.Finalize()
             print "calling finalize done"
 
     def run_test_with_address(self, address):
-        result = self.run_in_another_process(self._perform_one_test, address)
-        return result 
+        typestring, result = self.run_in_another_process(self._perform_one_test, address)
+        return result
          
     def run_tests(self, previous_report):
         typestring, result = self.run_in_another_process(self._perform_the_testrun, previous_report)
@@ -441,7 +472,8 @@ class RunTests(object):
     def run_in_another_process(self, method, argument):
         if self.test_is_running:
             raise Exception("Test is already running")
-            
+        
+        self.clear_reports_queue()
         self.test_is_running = True
         try:
             result_queue = Queue()
@@ -453,14 +485,47 @@ class RunTests(object):
                     argument
                 ))
             process.start()
-            result = result_queue.get()
+            
+            last_message = None
+            while True:
+                message = result_queue.get()
+                if message is None:
+                    break;
+                if message[0] == 'unit-report':
+                    print message[1]['address'][2]
+                    self.report_queue.put(message[1])
+                last_message = message
+            result = last_message 
         finally:
             self.test_is_running = False
+            self.clear_reports_queue()
             
         process.join(2)
         del result_queue
         return result
      
+    def clear_reports_queue(self):
+        
+        must_clear = not self.report_queue.empty()
+        while must_clear:
+            try:
+                self.report_queue.get_nowait()
+                must_clear = not self.report_queue.empty()
+            except queue.Empty:
+                must_clear = False
+                
+    def get_reports(self):
+        result = []
+        must_clear = not self.report_queue.empty()
+        while must_clear:
+            try:
+                result.append(self.report_queue.get_nowait())
+                must_clear = not self.report_queue.empty()
+            except queue.Empty:
+                must_clear = False
+        return result
+        
+            
 RunTests.instance = RunTests()
 
 class RunAllTestsWhenAChangeHappens(object):
@@ -593,15 +658,20 @@ class ContinuosTestWebServer(webserver.WebServer):
             
     def get_last_report_information(self):
         if self.last_report is None:
-            return {'report_id':-1, 'title':'running'}
+            result = {'report_id':-1, 'title':'running'} 
         else:
-            return self.last_report.to_information_dict()
-            
+            result =  self.last_report.to_information_dict()
+        result['reports'] = self.get_live_reports();
+        return result
+    
+    def get_live_reports(self):
+        return RunTests.instance.get_reports()
+        
     def set_last_report(self, report):
         self.last_report = report
         self.report_id += 1
         self.last_report.report_id = self.report_id
-        self.events_queue.put('done')
+        #self.events_queue.put('done')
         
             
             
