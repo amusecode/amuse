@@ -305,23 +305,26 @@ class PhiGRAPEInCodeAttributeStorage(InCodeAttributeStorage):
 class PhiGRAPEBinding(NBodyGravitationalDynamicsBinding):
    
     parameter_definitions = [
-        parameters.ModuleMethodParameterDefinition(
-            "get_eps2", "set_eps2",
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_eps2", 
+            "set_eps2",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
             0.0 | nbody_system.length * nbody_system.length
         ),
-        parameters.ModuleMethodParameterDefinition(
-            "get_eta", "set_eta1",
-            "eta", 
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_eta", 
+            "set_eta1",
+            "time_step_parameter", 
             "timestep parameter", 
             units.none , 
             0.01 |  units.none
         ),
-        parameters.ModuleMethodParameterDefinition(
-            "get_eta_s", "set_eta_s",
-            "eta_s", 
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_eta_s", 
+            "set_eta_s",
+            "intital_time_step_parameter", 
             "parameter to determine the initial timestep", 
             units.none , 
             0.002 |  units.none
