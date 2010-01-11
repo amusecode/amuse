@@ -2,7 +2,8 @@ from amuse.legacy.smallN.muse_dynamics_mpi import *
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data.core import Particle
-import math
+from time import time
+import math, sys
 
 # MPI Debugging
 from amuse.legacy.support import channel
@@ -11,13 +12,16 @@ from amuse.legacy.support import channel
 #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
 
 if __name__ == "__main__":
+    test_list = [1, 2]
+
     myunits = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
     myunits.set_as_default()
     MEarth = 5.9742e24 | units.kg
 
     mult = SmallN(myunits)
     
-    if True:
+    if 1 in test_list:
+        print "=== Test 1: An Earth-mass body moving past the Sun at low speed ==="
         particle = Particle(key=1)
         particle.mass = 1.0 | nbody_system.mass 
         particle.x = 0.0 | nbody_system.length
@@ -39,74 +43,84 @@ if __name__ == "__main__":
         particle.vz = 1.0 | units.AU / units.yr
         mult.add_particle(particle)
 
-
-#    p3 = Particle(key=3)
-#    p3.mass = 1.0 | units.MSun
-#    p4 = Particle(key=4)
-#    p4.mass = 1.0 | units.MSun
-#    binary = BinaryStar(key=11, component_particle1=p3, component_particle2=p4, \
-#                    period = 1.0 | units.yr, eccentricity = 0.1)
-#    mult.report_multiples(level=1)
-
         for k in range(0,2):
+            print "==> Dump of Particle %d" % (k+1)
             print mult.get_particle_by_index(k)
-        print mult.get_total_energy()
+        print "==> Total Energy is %.2f" % (mult.get_total_energy())
         mult.report_multiples(level=1)
 
+        print "==> Particles set up.  Evolving until a stable regime is reached."
+        sys.stdout.flush()
+        start_time = time()
         mult.evolve(verbose=True)
+        end_time = time()
+        sys.stdout.flush()
+        print "==> Evolution complete.  Real time used: %.3f milliseconds." % ((end_time-start_time)*1000)
+        print "==> NB: Evolve method is not necessarily synchronised to your output stream."
+        sys.stdout.flush()
 
         for k in range(0,2):
             print mult.get_particle_by_index(k)
         print mult.get_total_energy()
         mult.report_multiples(level=1)
-        print "Interaction took %.2f years" % mult.get_time().value_in(units.yr)
+        print "==> Interaction took %.2f years" % mult.get_time().value_in(units.yr)
         time_in_nbody = myunits.to_nbody(mult.get_time())
-        print "  = %.2e nbody times" % time_in_nbody.number
+        print "==>   = %.2e nbody times" % time_in_nbody.number
 
         mult.reset_close_encounter()
+        print "===================END TEST========================"
+        sys.stdout.flush()
 
-    particle = Particle(key=1)
-    particle.mass = 1.0 | nbody_system.mass 
-    particle.x = 0.0 | nbody_system.length
-    particle.y = 0.0 | nbody_system.length
-    particle.z = 0.0 | nbody_system.length
-    nbody_speed = nbody_system.length / nbody_system.time
-    particle.vx = 0.0 | nbody_speed 
-    particle.vy = 0.0 | nbody_speed 
-    particle.vz = 0.0 | nbody_speed 
-    mult.add_particle(particle)
 
-    particle = Particle(key=2)
-    particle.mass = 1.0 * MEarth 
-    particle.x = 1.0 | units.AU
-    particle.y = 0.0 | units.AU
-    particle.z = 0.0 | units.AU
-    particle.vx = 0.0 | units.AU / units.yr
-    particle.vy = 2.0*math.pi | units.AU / units.yr
-    particle.vz = 0.0 | units.AU / units.yr
-    mult.add_particle(particle)
+    if 2 in test_list:
+        print "=== Test 2: An Earth-mass body orbiting the Sun ==="
+        particle = Particle(key=1)
+        particle.mass = 1.0 | nbody_system.mass 
+        particle.x = 0.0 | nbody_system.length
+        particle.y = 0.0 | nbody_system.length
+        particle.z = 0.0 | nbody_system.length
+        nbody_speed = nbody_system.length / nbody_system.time
+        particle.vx = 0.0 | nbody_speed 
+        particle.vy = 0.0 | nbody_speed 
+        particle.vz = 0.0 | nbody_speed 
+        mult.add_particle(particle)
 
-    start_time = 100 | units.yr
-    mult.set_time(start_time)
+        particle = Particle(key=2)
+        particle.mass = 1.0 * MEarth 
+        particle.x = 1.0 | units.AU
+        particle.y = 0.0 | units.AU
+        particle.z = 0.0 | units.AU
+        particle.vx = 0.0 | units.AU / units.yr
+        particle.vy = 2.0*math.pi | units.AU / units.yr
+        particle.vz = 0.0 | units.AU / units.yr
+        mult.add_particle(particle)
 
-    for k in range(0,2):
-        print mult.get_particle_by_index(k)
-    print mult.get_total_energy()
-    mult.report_multiples(level=1)
+        for k in range(0,2):
+            print "==> Dump of Particle %d" % (k+1)
+            print mult.get_particle_by_index(k)
+        print "==> Total Energy is %.2f" % (mult.get_total_energy())
+        mult.report_multiples(level=1)
 
-    #mult.evolve(super_verbose=True)
-    mult.evolve()
+        print "==> Particles set up.  Evolving until a stable regime is reached."
+        sys.stdout.flush()
+        start_time = time()
+        mult.evolve(verbose=True)
+        end_time = time()
+        sys.stdout.flush()
+        print "==> Evolution complete.  Real time used: %.3f milliseconds." % ((end_time-start_time)*1000)
+        print "==> NB: Evolve method is not necessarily synchronised to your output stream."
+        sys.stdout.flush()
 
-    for k in range(0,2):
-        print mult.get_particle_by_index(k)
-    print mult.get_total_energy()
-    mult.report_multiples(level=1)
+        for k in range(0,2):
+            print mult.get_particle_by_index(k)
+        print mult.get_total_energy()
+        mult.report_multiples(level=1)
+        print "==> Interaction took %.2f years" % mult.get_time().value_in(units.yr)
+        time_in_nbody = myunits.to_nbody(mult.get_time())
+        print "==>   = %.2e nbody times" % time_in_nbody.number
 
-    end_time = mult.get_time()
-    duration = end_time - start_time
-    print "Interaction took %.2f years" % duration.value_in(units.yr)
-    time_in_nbody = myunits.to_nbody(duration)
-    print "  = %.2e nbody times" % time_in_nbody.number
-    mult.reset_close_encounter()
+        mult.reset_close_encounter()
+        print "===================END TEST========================"
+        sys.stdout.flush()
 
 
