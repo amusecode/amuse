@@ -753,8 +753,10 @@ class AbstractParticleSet(object):
         """
         attributes = particles._get_attributes()
         keys = particles._get_keys()
-        values = particles._get_values(None, attributes)
+        values = particles._get_values(keys, attributes)
         self._set_particles(keys, attributes, values)
+        
+    
     
     def add_particle(self, particle):
         """
@@ -775,6 +777,45 @@ class AbstractParticleSet(object):
         
         """
         self.add_particles(particle.as_set())
+        
+    
+    def remove_particles(self, particles):
+        """
+        Removes particles from the supplied set from this set.
+        
+        :parameter particles: set of particles to remove from this set
+        
+        >>> particles1 = Particles(2)
+        >>> particles1.x = [1.0, 2.0] | units.m
+        >>> particles2 = Particles()
+        >>> particles2.add_particle(particles1[0])
+        >>> particles1.remove_particles(particles2)
+        >>> print len(particles1)
+        1
+        >>> print particles1.x
+        [2.0] m
+        """
+        keys = particles._get_keys()
+        self._remove_particles(keys)
+        
+    
+    def remove_particle(self, particle):
+        """
+        Removes a particle from this set.
+        
+        Result is undefined if particle is not part of the set
+        
+        :parameter particle: particle to remove from this set
+        
+        >>> particles1 = Particles(2)
+        >>> particles1.x = [1.0, 2.0] | units.m
+        >>> particles1.remove_particle(particles1[0])
+        >>> print len(particles1)
+        1
+        >>> print particles1.x
+        [2.0] m
+        """
+        self.remove_particles(particle.as_set())
         
     def synchronize_to(self, other_particles):
         """
@@ -983,12 +1024,28 @@ class ParticlesSubset(AbstractParticleSet):
               
         
     def _set_particles(self, keys, attributes = [], values = []):
+        """
+        Adds particles from to the subset, also
+        adds the particles to the superset
+        """
         self._private.keys = numpy.concatenate((self.keys,  numpy.array(keys)))
         self._private.set_of_keys += set(keys)
         self._private.particles._set_particles(keys, attributes, values)
         
     def _remove_particles(self, keys):
-        raise Exception("Cannot remove particles from a subset")
+        """
+        Removes particles from the subset, does not remove particles
+        from the super set
+        """
+        set_to_remove = set(keys)
+        self._private.set_of_keys -= set_to_remove
+        index = 0
+        indices = []
+        for x in self._private.keys:
+            if x in set_to_remove:
+                indices.append(index)
+            index += 1
+        self._private.keys =  numpy.delete(self._private.keys,indices)
     
     def _get_values(self, keys, attributes):
         return self._private.particles._get_values(keys, attributes)
