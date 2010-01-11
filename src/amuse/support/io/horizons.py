@@ -3,7 +3,7 @@ from datetime import date, timedelta
 class LoadStar(object):
 
     def __init__(self, planet):
-        f = open(planet+'.txt','r')
+        f = open('../viewer/'+planet+'.txt','r')
         M = f.readlines()
         f.close()
         """
