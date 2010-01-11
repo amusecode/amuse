@@ -262,6 +262,31 @@ c         PRINT*, 'Warning: system not initialised yet'
       RETURN
       END
 
+      FUNCTION set_dt_max(_dt_max)
+      IMPLICIT NONE
+#include "general.inc"
+      
+      INTEGER set_dt_max
+      DOUBLE PRECISION _dt_max
+      
+      dt_max = _dt_max
+
+      set_dt_max = 0
+      END
+
+      FUNCTION set_dt_max(_dt_max)
+      IMPLICIT NONE
+#include "general.inc"
+      
+      INTEGER set_dt_max
+      DOUBLE PRECISION _dt_max
+      
+      dt_max = _dt_max
+
+      set_dt_max = 0
+      END
+
+
       FUNCTION set_eps2(e2)
       IMPLICIT NONE
 #include "general.inc"
@@ -300,7 +325,7 @@ c         PRINT*, 'Warning: system not initialised yet'
       set_nbh = 0
       RETURN
       END
-
+ 
       FUNCTION set_eta(es,e)
       IMPLICIT NONE
 #include "general.inc"
