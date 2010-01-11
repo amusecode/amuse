@@ -3,11 +3,11 @@ import numpy
 import pickle
 import os.path
 
-from amuse.support.data.core import Particles
+from amuse.support.data.core import Particles, AttributeStorage
 from amuse.support.units import si, units
 
 
-class HDFParticleStorageInterface(object):
+class HDF5AttributeStorage(AttributeStorage):
 
     def __init__(self, keys, hdfgroup):
         self.hdfgroup = hdfgroup
@@ -132,7 +132,7 @@ class StoreHDF(object):
             dataset.read_direct(keys)
 
             particles = class_of_the_particles()
-            particles._private.attribute_storage = HDFParticleStorageInterface(keys, group)
+            particles._private.attribute_storage = HDF5AttributeStorage(keys, group)
             all_particle_sets[int(group_index) - 1] = particles
             
         previous = None

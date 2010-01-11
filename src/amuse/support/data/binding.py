@@ -1,5 +1,6 @@
 from amuse.support.data import parameters
 from amuse.support.data.core import Particles, ParticleInformationChannel, Particle
+from amuse.support.data.core import AttributeStorage
 import numpy
 
 from amuse.support.units import nbody_system
@@ -412,7 +413,7 @@ class InterfaceWithObjectsBinding(object):
         
         
 
-class InCodeAttributeStorage(object):
+class InCodeAttributeStorage(AttributeStorage):
     name_of_number_of_particles_getter = "get_number_of_particles"
     new_particle_method = NewParticleMethod("new_particle", ())
     name_of_delete_particle = "delete_particle"

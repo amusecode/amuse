@@ -58,8 +58,38 @@ class AttributeValues(object):
         
     def copy(self):
         return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_times)
+
+
+class AttributeStorage(object):
+    
+    def _set_particles(self, keys, attributes = [], values = []):
+        pass
         
-class InMemoryAttributeStorage(object):
+    def _remove_particles(self, keys):
+        pass
+        
+    def _get_values(self, particles, attributes):
+        pass
+        
+    def _set_values(self, particles, attributes, list_of_values_to_set):
+        pass
+        
+    def _set_particles(self, keys, attributes = [], values = []):
+        pass
+        
+    def _get_attributes(self):
+        pass
+    
+    def _has_key(self, key):
+        return False
+        
+    def _get_keys(self):
+        return []
+        
+    def __len__(self):
+        return 0
+        
+class InMemoryAttributeStorage(AttributeStorage):
     
     def __init__(self):
         self.model_times = None
@@ -1236,7 +1266,16 @@ class Particle(object):
     
     def __getattr__(self, name_of_the_attribute):
          return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
-         
+    
+    def children(self):
+        return self.particles_set.select(lambda x : x == self.key | units.none, ["parent_id"])
+        
+        
+    def add_child(self, child):
+        if self.particles_set != child.particles_set:
+            raise Exception("The parent and child particles should be in the same set")
+        
+        child.parent_id = self.key | units.none
                 
     def __str__(self):
         output = 'Particle '

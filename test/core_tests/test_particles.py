@@ -355,6 +355,97 @@ class TestParticlesWithUnitsConverted(TestBase):
             
         
         
+
+
+class TestParticlesWithChildren(TestBase):
+    
+    def test1(self):
+        
+        all = core.Particles(3)
+        parent = all[0]
+        child1 = all[1]
+        child2 = all[2]
+        
+        parent.add_child(child1)
+        parent.add_child(child2)
+        
+        
+        self.assertEquals(parent.parent_id, 0 | units.none)
+        
+        children = parent.children()
+        
+        self.assertEquals(len(children), 2)
+        
+    def test2(self):
+        
+        code1 = TestParticlesWithBinding.TestInterface()
+        code2 = TestParticlesWithBinding.TestInterface()
+        
+        
+        all = core.Particles(3)
+        all.mass = [4.0, 3.0, 1.0] | units.kg
+        parent = all[0]
+        child1 = all[1]
+        child2 = all[2]
+        
+        parent.add_child(child1)
+        parent.add_child(child2)
+        
+        code1.particles.add_particles(parent.as_set())
+        code2.particles.add_particles(parent.children())
+        
+        self.assertEquals(len(code1.particles), 1)
+        self.assertEquals(len(code2.particles), 2)
+        
+        code1.set_mass([0], [10000.0])
+        code2.set_mass([0], [9000.0])
+        
+        self.assertEquals(parent.mass , 4.0 | units.kg)
+        self.assertEquals(child1.mass , 3.0 | units.kg)
+        
+        code1.update_particles(all)
+        
+        self.assertEquals(parent.mass , 10.0 | units.kg)
+        self.assertEquals(child1.mass , 3.0 | units.kg)
+        
+        
+        code2.update_particles(all)
+        
+        self.assertEquals(parent.mass , 10.0 | units.kg)
+        self.assertEquals(child1.mass , 9.0 | units.kg)
+        
+        
+        code1.update_particles(all)
+        code2.update_particles(all)
+        
+    
+    def test3(self):
+        
+        code1 = TestParticlesWithBinding.TestInterface()
+        code2 = TestParticlesWithBinding.TestInterface()
+        
+        
+        all = core.Particles(5)
+        all.mass = [4.0, 3.0, 1.0, 6.0, 5.0] | units.kg
+        parent = all[0]
+        child1 = all[1]
+        child2 = all[2]
+        
+        parent.add_child(child1)
+        parent.add_child(child2)
+        
+        all_except_children = all.difference(parent.children())
+        code1.particles.add_particles(all_except_children)
+        code2.particles.add_particles(parent.children())
+        
+        self.assertEquals(len(code1.particles), 3)
+        self.assertEquals(len(code2.particles), 2)
+        
+        
+        
+        
+        
+        
         
         
         
