@@ -218,7 +218,40 @@ class TestInterfaceBinding(TestWithMPI):
             self.assertEquals(str(result[2]), expected)
         
         del instance
+        
+    def test4(self):
+#       Test whether a set of stars evolve synchronously
+#       Create an array of stars with a range in stellar mass
+#        masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
+        # no high mass stars for now.. (problems with 2nd Asymp. Giant Branch)
+        masses = [.5, 1., 2.] | units.MSun
+
+        number_of_stars=len(masses)
+        stars =  core.Stars(number_of_stars)
+        for i, star in enumerate(stars):
+            star.mass = masses[i]
+            star.radius = 0.0 | units.RSun
+
+#       Initialize stellar evolution code
+        instance = EVtwin()
+        instance.initialize_module_with_default_parameters() 
+        if instance.get_maximum_number_of_stars() < number_of_stars:
+            instance.set_maximum_number_of_stars(number_of_stars)
+        instance.setup_particles(stars)
+#       Let the code perform initialization actions after all particles have been created. 
+#       Called before the first evolve call and after the last new_particle call.
+        instance.initialize_stars()
+        
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
+        
+        instance.evolve_model(end_time = 125 | units.Myr)
+        from_code_to_model.copy()
+                
+        for i in range(number_of_stars):
+            self.assertTrue(stars[i].age.value_in(units.Myr) > 125)
+            self.assertTrue(stars[i].mass < masses[i])
+                
+        del instance
             
-        
-        
         

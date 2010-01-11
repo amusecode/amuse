@@ -2,7 +2,8 @@ import platform
 
 from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
 
-from amuse.support.data.core import Stars
+#from amuse.support.data.core import Stars
+from amuse.support.data import core
 from amuse.support.units import units
 
 from legacy_support import TestWithMPI
@@ -216,7 +217,7 @@ class TestSSE(TestWithMPI):
     def test1(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        stars =  Stars(1)
+        stars =  core.Stars(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
@@ -285,7 +286,7 @@ class TestSSE(TestWithMPI):
     def test2(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        stars =  Stars(1)
+        stars =  core.Stars(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
@@ -302,7 +303,7 @@ class TestSSE(TestWithMPI):
     def test3(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        stars =  Stars(1)
+        stars =  core.Stars(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
@@ -328,7 +329,7 @@ class TestSSE(TestWithMPI):
     def test5(self):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
-        stars =  Stars(1)
+        stars =  core.Stars(1)
         
         star = stars[0]
         star.mass = 35 | units.MSun
@@ -351,4 +352,44 @@ class TestSSE(TestWithMPI):
         self.assertTrue(sse.particles[0].mass.value_in(units.MSun) < 10.6)
          
         del sse
+
+
+    def test6(self):
+#       Test whether a set of stars evolve synchronously
+#       Create an array of stars with a range in stellar mass
+        masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
+        number_of_stars = len(masses)
+        stars = core.Stars(number_of_stars)
+        for i, star in enumerate(stars):
+            star.mass = masses[i]
+            star.radius = 0.0 | units.RSun
+
+#       Initialize stellar evolution code
+        instance = mpi_interface.SSE()
+        instance.initialize_module_with_default_parameters() 
+        instance.setup_particles(stars)
+#       Let the code perform initialization actions after all particles have been created. 
+#       Called before the first evolve call and after the last new_particle call.
+        instance.initialize_stars()
+        
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
+        
+        instance.evolve_model(end_time = 125 | units.Myr)
+        from_code_to_model.copy()
+                
+        end_types = (
+            "deeply or fully convective low mass MS star",
+            "Main Sequence star",
+            "Main Sequence star",
+            "Carbon/Oxygen White Dwarf",
+            "Neutron Star",
+            "Black Hole",
+        )
+        for i in range(number_of_stars):
+            self.assertTrue(stars[i].age.value_in(units.Myr) > 125)
+            self.assertTrue(stars[i].mass <= masses[i])
+            self.assertEquals(str(stars[i].type), end_types[i])
+
+        del instance
 

@@ -217,7 +217,7 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             
         end_times = end_time.as_vector_with_length(len(self.particles))
         
-        particles_set = particles.to_set()
+        particles_set = self.particles.to_set()
         while len(particles_set) > 0:
             self._evolve_particles(particles_set)
             particles_set = particles_set.select(lambda x : x < end_time, ["age"])
@@ -228,10 +228,12 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             index = self.particles._private.attribute_storage.mapping_from_particle_key_to_index_in_the_code[particle.key]
             
             errorcode = self.evolve(index)
-            print index, errorcode
+            #print index, errorcode
             if errorcode != 0:
+                print index, errorcode
+                print particle
                 raise Exception("Error during evolve of particle")
-            print particle
+            #print particle
         
     def current_model_time(self):
         return self._current_model_time
