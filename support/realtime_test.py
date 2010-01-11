@@ -404,15 +404,19 @@ class RunTests(object):
         self.test_is_running = False
         self.report_queue = queue.Queue()
         
-    def _perform_the_testrun(self, directory, results_queue, previous_report = None):
+    def _perform_the_testrun(self, directories, results_queue, previous_report = None):
         try:
             null_device = open('/dev/null')
             os.stdin = null_device
             report = MakeAReportOfATestRun(previous_report, results_queue)
             doctest = Doctest()
             doctest.enabled = True
-            plugins = [doctest, report , Skip(), Capture()]  
-            result = TestProgram(exit = False, argv=['nose', directory, '--with-doctest'], plugins=plugins);
+            plugins = [doctest, report , Skip(), Capture()] 
+            argv = ['nose']
+            argv.extend( directories)
+            argv.extend(['--with-doctest', '--doctest-extension=txt'])
+           
+            result = TestProgram(exit = False, argv=argv, plugins=plugins);
             results_queue.put(('test-report', report,) )
         except :
             results_queue.put(('test-error', 'Exception happened: ' + str(sys.exc_info()[0]) + " - " + str(sys.exc_info()[1]), ))
@@ -421,16 +425,18 @@ class RunTests(object):
             MPI.Finalize()
 
 
-    def _perform_one_test(self, directory, results_queue, address):
+    def _perform_one_test(self, directories, results_queue, address):
         try:
             print "start test run"
             null_device = open('/dev/null')
             os.stdin = null_device
             select = SelectOneTestAndStoreOutput(address)
             plugins = [select, Skip()]  
+            argv = ['nose']
+            argv.extend( directories)
             result = TestProgram(
                 exit = False, 
-                argv=['nose', directory], 
+                argv=argv, 
                 plugins=plugins)
             success = result.success
             if success:
@@ -477,10 +483,12 @@ class RunTests(object):
         self.test_is_running = True
         try:
             result_queue = Queue()
+            cwd = os.getcwd()
+            paths = [os.path.join(cwd, x) for x in RunAllTestsWhenAChangeHappens.DIRECTORIES]  
             process = Process(
                 target=method, 
                 args=(
-                    os.getcwd(), 
+                    paths, 
                     result_queue, 
                     argument
                 ))
@@ -492,7 +500,6 @@ class RunTests(object):
                 if message is None:
                     break;
                 if message[0] == 'unit-report':
-                    print message[1]['address'][2]
                     self.report_queue.put(message[1])
                 last_message = message
             result = last_message 
@@ -529,7 +536,7 @@ class RunTests(object):
 RunTests.instance = RunTests()
 
 class RunAllTestsWhenAChangeHappens(object):
-    DIRECTORIES = ['src', 'test']
+    DIRECTORIES = ['doc', 'src', 'test']
     
     def __init__(self, server):
         self.must_run = False

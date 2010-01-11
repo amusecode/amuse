@@ -36,12 +36,12 @@ Duplicate keys::
     >>> number_of_bits = 64
     >>> highest_integer = 2**number_of_bits
     >>> number_of_particles = 1000000.0 # one million
-    >>> probablity = 1.0 - exp( (-number_of_particles * (number_of_particles - 1.0))/ (2.0* highest_integer) )
+    >>> probability = 1.0 - math.exp( (-number_of_particles * (number_of_particles - 1.0))/ (2.0* highest_integer) )
     >>> print probability
     2.71050268896e-08
     >>> # can also set the probablity and determine the set size
-    >>> probablity = 0.00001 # 0.001 percent
-    >>> number_of_particles = math.sqrt(2 * highest_integer * math.log(1 / (1.0 - probablity)))
+    >>> probability = 0.00001 # 0.001 percent
+    >>> number_of_particles = math.sqrt(2 * highest_integer * math.log(1 / (1.0 - probability)))
     >>> print number_of_particles
     19207725.6894
     
