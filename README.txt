@@ -2,7 +2,6 @@ This directory contains the AMUSE software. With AMUSE you
 can write scripts to simulate astrophysical problems in
 different domains.
 
-
 Getting Started
 ===============
 
@@ -67,7 +66,8 @@ export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 Building AMUSE
 ==============
 
-All modules can be build with one make command.
+All modules can be build with one make command. Start make
+from the main amuse directory (directory this README file lives in)
 
 1. Build the code with make
 
@@ -88,7 +88,10 @@ instructed by the mpd command.
 
 Running the tests
 =================
-AMUSE comes with a large set of tests, most can be run automatically.
+AMUSE comes with a large set of tests, most can be run automatically. 
+Start the nosetests command from the main 
+amuse directory (directory this README file lives in).
+
 To run these tests do:
 
 1. Run the unit tests

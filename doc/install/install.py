@@ -80,9 +80,9 @@ class InstallPrerequisites(object):
           (
             'mpich2', 
             [], 
-            '1.1', 
+            '1.2.1', 
             'mpich2-', '.tar.gz', 
-            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', 
+            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.2.1/', 
             self.mpich2_build
           ) ,
           (
@@ -196,6 +196,7 @@ class InstallPrerequisites(object):
           '--enable-f90', 
           '--with-python='+self.prefix + '/bin/python2.6',
           '--with-device=ch3:sock',
+          #'--with-pm=mpd'
         ]
         if not self.fortran90_compiler is None:
             command.append('F90=' + self.fortran90_compiler)
@@ -223,17 +224,17 @@ class InstallPrerequisites(object):
             print "After changing the environment variables,"
             print "you can restart the install with:"
             print
-            print "./install.py install mpich2 mpi4py"
+            print "  ./install.py install mpich2 mpi4py"
             print
             print "You can rerun the build by hand, using:"
             print 
-            print "cd", path
+            print "  cd", path
             for command in commands:
                 print
                 if len(command) < 3:
-                    print ' '.join(command)
+                    print ' ', ' '.join(command)
                 else:
-                    print ' \\\n    '.join(command)
+                    print '   \\\n    '.join(command)
             
             sys.exit(1)
             
