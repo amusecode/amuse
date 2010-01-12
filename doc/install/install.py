@@ -42,12 +42,12 @@ class InstallPrerequisites(object):
           ('nose', [], '0.11.1', 'nose-' , '.tar.gz', 'http://somethingaboutorange.com/mrl/projects/nose/', self.python_build),
           ('hdf' , [],  '1.8.4' , 'hdf5-' , '.tar.gz' , 'http://www.hdfgroup.org/ftp/HDF5/current/src/', self.hdf5_build) ,
           ('h5py', ['hdf'], '1.2.1', 'h5py-' , '.tar.gz', 'http://h5py.googlecode.com/files/', self.h5py_build) ,
+          ('docutils', [], 'snapshot', 'docutils-','.tgz', 'http://docutils.sf.net/', self.python_build),
           ('mpich2', [], '1.1', 'mpich2-', '.tar.gz', 'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', self.mpich2_build) ,
-          #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           ('mpi4py', ['mpich2'], '1.1.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
+          #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           #('setuptools', [], '0.6c11', 'setuptools-', '-py2.6.egg', 'http://pypi.python.org/packages/2.6/s/setuptools/', self.setuptools_install) ,
           #http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
-          ('docutils', [], 'snapshot', 'docutils-','.tgz', 'http://docutils.sf.net/', self.python_build)
         ]
         
     @late
@@ -155,8 +155,40 @@ class InstallPrerequisites(object):
         commands.append(command)
         commands.append(['make'])
         commands.append(['make', 'install'])
+        
         for x in commands:
             self.run_application(x, path)
+            
+        self.check_mpich2_install(commands, path)
+        
+    def check_mpich2_install(self, commands, path):
+        bin_directory = os.path.join(self.prefix, 'bin')
+        mpif90_filename = os.path.join(bin_directory, 'mpif90')
+        if not os.path.exists(mpif90_filename):
+            print "-----------------------------------------------------------------"
+            print "MPICH build incomplete, no fortran 90 support"
+            print "-----------------------------------------------------------------"
+            print "The 'mpif90' command was not build"
+            print "This is usually caused by an incompatible C and fortran compiler"
+            print "Please set the F90, F77 and CC environment variables"
+            print 
+            print "After changing the environment variables,"
+            print "you can restart the install with:"
+            print
+            print "./install.py install mpich2 mpi4py"
+            print
+            print "You can rerun the build by hand, using:"
+            print 
+            print "cd", path
+            for command in commands:
+                print
+                if len(command) < 3:
+                    print ' '.join(command)
+                else:
+                    print ' \\\n    '.join(command)
+            
+            sys.exit(1)
+            
             
     def openssl_build(self, path):
         commands = []
@@ -204,19 +236,25 @@ class InstallPrerequisites(object):
             try:
                 self.run_application(['tar','-xf',app_file], cwd=self.temp_dir)
             except:
-                print "Could not unpack source file of ", name
+                print "----------------------------------------------------------"
+                print "Could not unpack source file of", name
+                print "----------------------------------------------------------"
+                print
                 print "Download location may have changed"
-                print "Pleas download the source file yourself by changing the url in one of the following lines"
+                print "Please download the source file yourself, "
+                print "or contact the AMUSE development team."
+                print "http://castle.strw.leidenuniv/trac/amuse"
+                print
+                print "To download the file you can update the URL in"
+                print "one of the following lines and run the command."
                 print
                 print "curl ", url, "-o", temp_app_file
                 print
                 print "or" 
                 print
-                print "curl ", url, "-o", temp_app_file
+                print "wget ", url, "-O", temp_app_file
                 print
-                print "you can return to this directory with"
-                print
-                print "cd" , os.getcwd()
+                print "Note: The name of the output file must not be changed (after the -o or -O parameter)"
                 sys.exit(1)
             print "...Finished"
             
@@ -255,6 +293,11 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         commands.append(['make', 'install'])
         for x in commands:
             self.run_application(x, path)
+        
+        self.check_mpich2_install(commands, path)
+        
+            
+            
      
 if IS_ON_OSX:
     INSTALL = InstallPrerequisitesOnOSX()
