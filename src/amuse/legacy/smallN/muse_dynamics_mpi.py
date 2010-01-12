@@ -2,8 +2,30 @@ from amuse.legacy import *
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data.core import Particle
+from amuse.support.data.binding import InCodeAttributeStorage
+from amuse.support.data import binding
 
 class SmallN(LegacyInterface):
+    """
+        Interface to the Kira Small-N Integrator and Kepler modules from
+        Starlab.  http://www.ids.ias.edu/~starlab/
+        
+        You will need to download Starlab from the above site, make it, install
+        it, and then set the STARLAB_INSTALL_PATH variable to be equal to the
+        installation directory (typically something like ~/starlab/usr).
+
+        Starlab is available under the GNU General Public Licence (version 2),
+        and is developed by:
+            * Piet Hut
+            * Steve McMillan
+            * Jun Makino
+            * Simon Portegies Zwart
+        Other Starlab Contributors:
+            * Douglas Heggie
+            * Kimberly Engle
+            * Peter Teuben 
+            
+    """
     include_headers = ['amuse_interface.h']
 
     parameter_definitions = [
@@ -156,12 +178,53 @@ class SmallN(LegacyInterface):
         self.clear_multiple()
         self.time = 0.0
 
-class BinaryStar(Particle):
-    def __init__(self, key, component_particle1, component_particle2, period, \
-                 eccentricity, particles_set=None, **keyword_arguments):
-        Particle.__init__(self, key, particles_set, *keyword_arguments)
-        self.component_particle1 = component_particle1
-        self.component_particle2 = component_particle2
-        self.period = period
-        self.eccentricity = eccentricity
+class SmallNInCodeAttributeStorage(InCodeAttributeStorage):
+    new_particle_method = binding.NewParticleMethod(
+        "new_particle", 
+        (
+            ("mass", "mass", nbody_system.mass),
+            ("radius", "radius", nbody_system.length),
+            ("x", "x", nbody_system.length),
+            ("y", "y", nbody_system.length),
+            ("z", "z", nbody_system.length),
+            ("vx", "vx", nbody_system.speed),
+            ("vy", "vy", nbody_system.speed),
+            ("vz", "vz", nbody_system.speed),
+        )
+    )
 
+    getters = (
+        binding.ParticleGetAttributesMethod(
+            "get_state",
+            (
+                ("mass", "mass", nbody_system.mass),
+                ("radius", "radius", nbody_system.length),
+                ("x", "x", nbody_system.length),
+                ("y", "y", nbody_system.length),
+                ("z", "z", nbody_system.length),
+                ("vx", "vx", nbody_system.speed),
+                ("vy", "vy", nbody_system.speed),
+                ("vz", "vz", nbody_system.speed),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_mass",
+            (
+                ("mass", "mass", nbody_system.mass),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_radius",
+            (
+                ("radius", "radius", nbody_system.length),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_position",
+            (
+                ("x", "x", nbody_system.length),
+                ("y", "y", nbody_system.length),
+                ("z", "z", nbody_system.length),
+            )
+        ),
+    )

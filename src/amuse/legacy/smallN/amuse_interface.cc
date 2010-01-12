@@ -33,7 +33,7 @@ static vector<int> ident;	// multiple IDs
 static vector<dyn*> msys;	// multiple dyn trees
 				// note: store dyns but integrate with hdyns
 
-static int nstart=100, delta_n=100, n_next[4]={100,200,300,400};
+static int nstart=10000000, delta_n=10000000, n_next[5]={0,10000000,20000000,30000000,40000000};
 
 static real rmax_system = VERY_LARGE_NUMBER;
 static real top_level_energy_error = 0;
@@ -150,14 +150,13 @@ void set_name_ranges(int ns, int del)
   // Categories are binaries, triples, quadruples, and "higher."
 
   for (int k = 0; k < 4; k++)
-    n_next[k] = ns + k*delta_n;
+    n_next[k+1] = ns + k*delta_n;
 }
 
 local int get_new_name(int n)
 {
-  if (n < 2) return -1;
   if (n > 5) n = 5;
-  return n_next[n-2]++;
+  return n_next[n-1]++;
 }
 
 // The only way to make anything other than a binary is to do it
