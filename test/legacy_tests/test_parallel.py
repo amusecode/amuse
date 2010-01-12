@@ -58,8 +58,8 @@ class TestAmuseInterface(TestWithMPI):
         hermite_particles = self.new_system_sun_and_earth()
         hermite.setup_particles(hermite_particles)
         
-        thread1 = threading.Thread(target = self.evolve_model_unit_day, args = (bhtree, bhtree_particles, 365))
-        thread2 = threading.Thread(target = self.evolve_model_unit_day, args = (hermite, hermite_particles, 365))
+        thread1 = threading.Thread(target = self.evolve_model_unit_day, args = (bhtree, bhtree_particles, 10))
+        thread2 = threading.Thread(target = self.evolve_model_unit_day, args = (hermite, hermite_particles, 10))
         
         thread1.start()
         thread2.start()
