@@ -69,6 +69,8 @@ class InstallPrerequisites(object):
             return os.environ['FC']
         elif 'FORTRAN' in os.environ:
             return os.environ['FORTRAN']
+        elif 'F77' in os.environ:
+            return os.environ['F77']
         elif 'FORT' in os.environ:
             return os.environ['FORT']
         else:
@@ -82,7 +84,11 @@ class InstallPrerequisites(object):
     
     def run_application(self, args, cwd):
         print "starting " , ' '.join(args)
-        subprocess.Popen(args, cwd=cwd).wait()
+        process = subprocess.Popen(args, cwd=cwd)
+        returncode = process.wait()
+        if returncode != 0:
+            commandline = ' '.join(args)
+            raise Exception("Error when running <" + commandline + ">")
         print "finished " , ' '.join(args)
     
     def h5py_build(self, path):
@@ -140,7 +146,7 @@ class InstallPrerequisites(object):
           '--prefix='+self.prefix,
           '--enable-sharedlibs=gcc',
           '--enable-f90', 
-          '--with-python='+self.prefix + '/bin/python2.6'
+          '--with-python='+self.prefix + '/bin/python2.6',
           '--with-device=ch3:sock',
         ]
         if not self.fortran90_compiler is None:
@@ -177,6 +183,11 @@ class InstallPrerequisites(object):
                 urllib.urlretrieve(url, os.path.join(self.temp_dir, app_file))
                 print "...Finished"
                 
+    
+    def list_apps(self, names):
+        for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
+            print name, " - dowloaded from", url_prefix
+                
     def unpack_apps(self, names):
         for (name, dependencies, version, prefix, suffix, url_prefix, function) in self.applications:
             if names and name not in names:
@@ -190,7 +201,23 @@ class InstallPrerequisites(object):
                 shutil.rmtree(temp_app_dir)
             
             print "Unpacking ", app_file
-            self.run_application(['tar','-xf',app_file], cwd=self.temp_dir)
+            try:
+                self.run_application(['tar','-xf',app_file], cwd=self.temp_dir)
+            except:
+                print "Could not unpack source file of ", name
+                print "Download location may have changed"
+                print "Pleas download the source file yourself by changing the url in one of the following lines"
+                print
+                print "curl ", url, "-o", temp_app_file
+                print
+                print "or" 
+                print
+                print "curl ", url, "-o", temp_app_file
+                print
+                print "you can return to this directory with"
+                print
+                print "cd" , os.getcwd()
+                sys.exit(1)
             print "...Finished"
             
     def build_apps(self, names):
@@ -241,27 +268,40 @@ def install(names):
     INSTALL.download_apps(names)
     INSTALL.unpack_apps(names)
     INSTALL.build_apps(names)
+    
+def list(names):
+    INSTALL.list_apps(names)
 
 _commands = {
     'download' : download,
-    'install' : install
+    'install' : install,
+    'list' : list,
 }
 
 if __name__ == '__main__':
-    print "files are installed to: ", INSTALL.prefix
-    print "files are downloaded to: ", INSTALL.temp_dir
+    print "Files are installed in: ", INSTALL.prefix
+    print "Files are downloaded to: ", INSTALL.temp_dir
+    print ""
+    
     if INSTALL.fortran90_compiler is None:
-        print """No fortran compiler environment variable set.
-FORTRAN compiler is needed for MPI and several module, please set F90 or FC first by:
-export F90 = gfortran
-or:
+        print """No fortran 90 compiler environment variable set.
+A FORTRAN 90 compiler is needed for MPI and several module, 
+please set F90 first by (bash):
+
+export F90=gfortran
+export F77=gfortran
+
+or (csh):
+
 setenv F90 gfortran 
+setenv F77 gfortran 
 
 """
         sys.exit(1)
     else:
         print "Fortran compiler used will be: ", INSTALL.fortran90_compiler
-        
+    
+    print ""
     INSTALL.setup_temp_dir()
     do = []
     names = []
@@ -275,3 +315,23 @@ setenv F90 gfortran
                 names.append(x)
     for x in do:
     	_commands[x](names)
+    
+    if len(do) == 0:
+        print "Usage: install.py download|install|list [package names]"
+        print ""
+        print "download  download the packages to the download directory"
+        print "install   unpack and install the packages to the prefix directory"
+        print ""
+        print "you can also install download or install individual packages"
+        print "please specify a list of packages to install"
+        print ""
+        print "to install all prerequisites do:"
+        print ""
+        print "./install.py install"
+        print ""
+        print "to get a list of all packages:"
+        print ""
+        print "./install.py list"
+    
+
+        
