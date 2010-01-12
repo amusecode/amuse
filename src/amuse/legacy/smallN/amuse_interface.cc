@@ -873,23 +873,27 @@ void clear_multiple()
   is_new.clear();
 }
 
-void add_to_interaction(int i, real m, real x[3], real v[3])
+int add_to_interaction(int *id, real m, real x[3], real v[3])
 {
-  input_id.push_back(i);
+  *id = get_new_name(1);    // N = 1, a single star
+  input_id.push_back(*id);
   input_mass.push_back(m);
   input_pos.push_back(vec(x[0],x[1],x[2]));
   input_vel.push_back(vec(v[0],v[1],v[2]));
   number_of_singles += 1;
+  return AMUSE_OK;
 }
 
-void add_to_interaction(int i, real m, real x, real y, real z,
+int add_to_interaction(int *id, real m, real x, real y, real z,
 			real vx, real vy, real vz)
 {
-  input_id.push_back(i);
+  *id = get_new_name(1);    // N = 1, a single star
+  input_id.push_back(*id);
   input_mass.push_back(m);
   input_pos.push_back(vec(x,y,z));
   input_vel.push_back(vec(vx,vy,vz));
   number_of_singles += 1;
+  return AMUSE_OK;
 }
 
 int get_status(int i)		// i is an id, not an index

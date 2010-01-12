@@ -65,7 +65,7 @@ class SmallNInterface(LegacyInterface):
     @legacy_function
     def add_to_interaction():
         function = LegacyFunctionSpecification()
-        function.addParameter('i', 'i', function.IN)    # "i" is an ID, not an index
+        function.addParameter('id', 'i', function.OUT)
         for x in ['m', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, 'd', function.IN)
         return function;
@@ -128,8 +128,6 @@ class SmallNInterface(LegacyInterface):
         function.addParameter('number_of_particles', 'i', function.OUT)
         return function;
 
-
-
     def evolve(self, verbose=False, super_verbose=False):
         """ Evolves the system until a stable configuration is reached. """
         self.has_run = True
@@ -151,7 +149,19 @@ class SmallNInterface(LegacyInterface):
         vx = self.convert_nbody.to_nbody(particle.vx).number
         vy = self.convert_nbody.to_nbody(particle.vy).number
         vz = self.convert_nbody.to_nbody(particle.vz).number
-        self.add_to_interaction(particle.key, mass, x, y, z, vx, vy, vz)
+        return self.add_to_interaction(mass, x, y, z, vx, vy, vz)
+
+    def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
+        newp = Particle()
+        newp.mass = mass | nbody_system.kg
+        newp.radius = radius | nbody_system.length
+        newp.x = x | nbody_system.length
+        newp.y = y | nbody_system.length
+        newp.z = z | nbody_system.length
+        newp.vx = vx | nbody_system.speed
+        newp.vy = vy | nbody_system.speed
+        newp.vz = vz | nbody_system.speed
+        return self.add_particle(newp)
 
     def get_particle_by_index(self, index):
         """ Returns a Particle by index.  """
@@ -177,6 +187,14 @@ class SmallNInterface(LegacyInterface):
         ensure that no data remains from the previous close encounter. """
         self.clear_multiple()
         self.time = 0.0
+
+    def get_state(self, index):
+        if self.has_run:
+            (key, mass, x, y, z, vx, vy, vz) = self.get_particle_result(index)
+        else:
+            (key, mass, x, y, z, vx, vy, vz) = self.get_particle_original(index)
+        radius = 0.0
+        return (mass, radius, x, y, z, vx, vy, vz), 0   # The last zero is the OK code.
 
 class SmallNInCodeAttributeStorage(InCodeAttributeStorage):
     new_particle_method = binding.NewParticleMethod(

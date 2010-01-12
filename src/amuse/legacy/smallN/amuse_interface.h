@@ -44,8 +44,8 @@ bool is_multiple(int id);
 // Set up an interaction:
 
 void clear_multiple();
-void add_to_interaction(int i, real m, real x[3], real v[3]);
-void add_to_interaction(int i, real m, real x, real y, real z,
+int add_to_interaction(int *id, real m, real x[3], real v[3]);
+int add_to_interaction(int *id, real m, real x, real y, real z,
 			real vx, real vy, real vz);
 
 // Get the results of an interaction:
