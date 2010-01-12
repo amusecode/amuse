@@ -15,8 +15,20 @@ from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
 
 def simulate_evolution_tracks(masses = [.5, 1., 2., 5., 10., 20., 30.] | units.MSun, name_of_the_figure = "HR_evolution_tracks.png"):
+    """
+    For every mass in the `masses' array, a stellar evolution track across the Hertzsprung-Russell
+    diagram will be calculated and plotted. Each star will be created, evolved and removed one by 
+    one. This is only necessary because the time span of each track is different (a solar mass star
+    evolution track takes billions of years, but we don't want to also evolve high mass stars for 
+    billions of years) In most applications the stars have to be evolved up to a common end time,
+    which can be more easily accomplished by creating an array (stars = core.Stars(number_of_stars))
+    and using evolve_model(end_time = ...).
+    """
     number_of_stars=len(masses)
-
+    if number_of_stars < 1:
+        print "No tracks to simulate. Set 'masses' of stars to be simulated, or use the default value."
+        return
+    
     Stefan_Boltzmann_constant = 5.670400e-8 | units.J * units.s**-1 * units.m**-2 * units.K**-4
 
     print "The evolution across the Hertzsprung-Russell diagram of ", str(number_of_stars), \
@@ -30,32 +42,29 @@ def simulate_evolution_tracks(masses = [.5, 1., 2., 5., 10., 20., 30.] | units.M
 #   Initialize the stellar evolution code
     stellar_evolution = SSE()
     stellar_evolution.initialize_module_with_default_parameters() 
-    
+
 #   Simulate evolution of stars with mass=`masses', one by one:
     for j in range(number_of_stars):
 #       Create an "array" of one star
         stars = core.Stars(1)
         star=stars[0]
-        
-        print "Setting mass of star to: ", masses[j]
         star.mass = masses[j]
         star.radius = 0.0 | units.RSun
-        print star
-#       Initialize the star
-        stellar_evolution.particles.add_particles(stars)
+#       Initialize the stars
+        stellar_evolution.setup_particles(stars)
         stellar_evolution.initialize_stars()
-        
-        star = stellar_evolution.particles[0]
+        from_code_to_model = stellar_evolution.particles.new_channel_to(stars)
+        from_code_to_model.copy()
+    
         print star
-        time = 0 | units.Myr
-            
+                    
 #       Lists to monitor changes of the star with time:
         luminosity_at_time = []
         Teff_at_time       = []
         
 #       Remember initial properties of the star
         current_Teff = ((star.luminosity/(4*numpy.pi*Stefan_Boltzmann_constant*star.radius**2))**.25).in_(units.K)
-        properties_at_switch_state = [(time.value_in(units.Myr), star.luminosity.value_in(units.LSun), \
+        properties_at_switch_state = [(star.age.value_in(units.Myr), star.luminosity.value_in(units.LSun), \
                     current_Teff.value_in(units.K), star.type.value_in(units.stellar_type))]
         previous_type = star.type
         
@@ -68,13 +77,19 @@ def simulate_evolution_tracks(masses = [.5, 1., 2., 5., 10., 20., 30.] | units.M
 
 #           Store some more details whenever the star switches state:
             if not star.type == previous_type:
-                properties_at_switch_state.append((time.value_in(units.Myr), star.luminosity.value_in(units.LSun), \
+                properties_at_switch_state.append((star.age.value_in(units.Myr), star.luminosity.value_in(units.LSun), \
                     current_Teff.value_in(units.K), star.type.value_in(units.stellar_type)))
                 previous_type = star.type
-                    
+            
+            current_age=star.age
             stellar_evolution.evolve_model()
+            from_code_to_model.copy()
+            if star.age == current_age:
+                print "Age did not increase during timestep. Stop evolving..."
+                print star
+                break
 
-        print " ... evolved model to t = " + str(time)
+        print " ... evolved model to t = " + str(star.age)
         print "Star has now become a: ", star.type, "(stellar_type: "+str(star.type.value_in(units.stellar_type))+")"
         print
         
@@ -84,6 +99,9 @@ def simulate_evolution_tracks(masses = [.5, 1., 2., 5., 10., 20., 30.] | units.M
         all_props_at_switch.append(transpose)
         all_tracks_lumi.append(luminosity_at_time)
         all_tracks_Teff.append(Teff_at_time)
+        
+#       Remove the star before creating the next one. See comments at the top.
+        stellar_evolution.particles.remove_particles(stars)
 
     del stellar_evolution
         
@@ -123,6 +141,7 @@ def simulate_evolution_tracks(masses = [.5, 1., 2., 5., 10., 20., 30.] | units.M
         pyplot.axis([300000., 2500., 1.e-2, 1.e6])
 #       Or use these axes to also view neutron stars and black holes:
 #        pyplot.axis([1.e7, 2500., 1.e-11, 1.e6])
+
         pyplot.savefig(name_of_the_figure)
         
     print "All done!"

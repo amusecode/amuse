@@ -250,6 +250,7 @@ class SSEBinding(InterfaceWithParametersBinding):
     def update_time_steps(self):
         self.update_time_step_method._run(self, self.particles)
     
+    # Currently unused:
     def evolve_model_using_timesteps(self, end_time = None):
         
         particles_set = particles.to_set()
