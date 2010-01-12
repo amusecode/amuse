@@ -72,3 +72,26 @@ All modules can be build with one make command.
 1. Build the code with make
 
     make 
+    
+
+Starting the MPI daemon process
+===============================
+For MPICH2, you need to start the mpd daemon process. If this
+is the firt time the damon is run, it will complain about a
+.mpd.conf file. If so, please create the .mpd.conf file as
+instructed by the mpd command.
+
+1. Start the mpd daemon
+
+    mpd &
+    
+
+Running the tests
+=================
+AMUSE comes with a large set of tests, most can be run automatically.
+To run these tests do:
+
+1. Run the unit tests
+
+    nosetests -v
+    

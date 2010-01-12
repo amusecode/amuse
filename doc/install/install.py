@@ -38,13 +38,61 @@ class InstallPrerequisites(object):
     def applications(self):
        return [
           #('openssl' , [], '0.9.8k' , 'openssl-', '.tar.gz', 'http://www.openssl.org/source/', self.openssl_build),
-          ('numpy' , [], '1.4.0' , 'numpy-', '.tar.gz', 'http://ignum.dl.sourceforge.net/sourceforge/numpy/', self.python_build),
-          ('nose', [], '0.11.1', 'nose-' , '.tar.gz', 'http://somethingaboutorange.com/mrl/projects/nose/', self.python_build),
-          ('hdf' , [],  '1.8.4' , 'hdf5-' , '.tar.gz' , 'http://www.hdfgroup.org/ftp/HDF5/current/src/', self.hdf5_build) ,
-          ('h5py', ['hdf'], '1.2.1', 'h5py-' , '.tar.gz', 'http://h5py.googlecode.com/files/', self.h5py_build) ,
-          ('docutils', [], 'snapshot', 'docutils-','.tgz', 'http://docutils.sf.net/', self.python_build),
-          ('mpich2', [], '1.1', 'mpich2-', '.tar.gz', 'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', self.mpich2_build) ,
-          ('mpi4py', ['mpich2'], '1.1.0', 'mpi4py-', '.tar.gz', 'http://mpi4py.googlecode.com/files/', self.python_build) ,
+          (
+            'numpy' ,                  #name to refer by
+            [],                        #names of prerequisites (unused)
+            '1.4.0' ,                  #version string
+            'numpy-', '.tar.gz',       #pre- and postfix for filename
+            'http://ignum.dl.sourceforge.net/sourceforge/numpy/', #download url, filename is appended
+            self.python_build          #method to use for building
+          ),
+          (
+            'nose', 
+            [], 
+            '0.11.1', 
+            'nose-' , '.tar.gz', 
+            'http://somethingaboutorange.com/mrl/projects/nose/', 
+            self.python_build
+          ),
+          (
+            'hdf' ,
+            [],  
+            '1.8.4' , 
+            'hdf5-' , '.tar.gz' , 
+            'http://www.hdfgroup.org/ftp/HDF5/current/src/', 
+            self.hdf5_build
+          ) ,
+          (
+            'h5py', 
+            ['hdf'], 
+            '1.2.1', 
+            'h5py-' , '.tar.gz', 
+            'http://h5py.googlecode.com/files/', self.h5py_build
+          ) ,
+          (
+            'docutils', 
+            [], 
+            'snapshot', 
+            'docutils-','.tgz', 
+            'http://docutils.sf.net/', 
+            self.python_build
+          ) ,
+          (
+            'mpich2', 
+            [], 
+            '1.1', 
+            'mpich2-', '.tar.gz', 
+            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.1/', 
+            self.mpich2_build
+          ) ,
+          (
+            'mpi4py', 
+            ['mpich2'], 
+            '1.1.0', 
+            'mpi4py-', '.tar.gz', 
+            'http://mpi4py.googlecode.com/files/', 
+            self.python_build
+          ) ,
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           #('setuptools', [], '0.6c11', 'setuptools-', '-py2.6.egg', 'http://pypi.python.org/packages/2.6/s/setuptools/', self.setuptools_install) ,
           #http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
@@ -342,7 +390,7 @@ setenv F77 gfortran
 """
         sys.exit(1)
     else:
-        print "Fortran compiler used will be: ", INSTALL.fortran90_compiler
+        print "Fortran 90 compiler used will be: ", INSTALL.fortran90_compiler
     
     print ""
     INSTALL.setup_temp_dir()
