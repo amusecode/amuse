@@ -72,7 +72,12 @@ def extract_tb(tb, limit = None):
 class TestCaseReport(object):
     def __init__(self, test):
         self.id = test.id()
-        self.address = test.address()
+        try:
+            self.address = test.address()
+        except Exception:
+            self.address = ('unknown', 'unknown', self.id)
+            pass
+            
         if self.address[0] is None:
             self.address = list(self.address)
             self.address[0] = ""
@@ -193,7 +198,11 @@ class MakeAReportOfATestRun(object):
         report.end_with_failure(error_tuple)
            
     def get_report(self, test):
-        address = test.address()
+        try:
+            address = test.address()
+        except Exception:
+            address = ('unknown', 'unknown', test.id())
+            
         if not address in self.address_to_report:
             self.address_to_report[address] = TestCaseReport(test)
         return self.address_to_report[address] 
