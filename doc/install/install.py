@@ -54,6 +54,28 @@ class InstallPrerequisites(object):
     def temp_dir(self):
         return os.path.join(self.prefix,'install','_temp')
     
+    
+    @late
+    def fortran90_compiler(self):
+        if 'F90' in os.environ:
+            return os.environ['F90']
+        else:
+            return self.fortran_compiler
+            
+    
+    @late
+    def fortran_compiler(self):
+        if 'FC' in os.environ:
+            return os.environ['FC']
+        elif 'FORTRAN' in os.environ:
+            return os.environ['FORTRAN']
+        elif 'FORT' in os.environ:
+            return os.environ['FORT']
+        else:
+            return None
+            
+            
+        
     def setup_temp_dir(self):
         if not os.path.exists(self.temp_dir):
             os.makedirs(self.temp_dir)
@@ -113,15 +135,18 @@ class InstallPrerequisites(object):
             
     def mpich2_build(self, path):
         commands = []
-        commands.append([
+        command = [
           './configure',
           '--prefix='+self.prefix,
           '--enable-sharedlibs=gcc',
           '--enable-f90', 
           '--with-python='+self.prefix + '/bin/python2.6'
-         # '--with-device=ch3:sock',
-         #'F90=gfortran',
-        ])
+          '--with-device=ch3:sock',
+        ]
+        if not self.fortran90_compiler is None:
+            command.append('F90=' + self.fortran90_compiler)
+        
+        commands.append(command)
         commands.append(['make'])
         commands.append(['make', 'install'])
         for x in commands:
@@ -225,6 +250,18 @@ _commands = {
 if __name__ == '__main__':
     print "files are installed to: ", INSTALL.prefix
     print "files are downloaded to: ", INSTALL.temp_dir
+    if INSTALL.fortran90_compiler is None:
+        print """No fortran compiler environment variable set.
+FORTRAN compiler is needed for MPI and several module, please set F90 or FC first by:
+export F90 = gfortran
+or:
+setenv F90 gfortran 
+
+"""
+        sys.exit(1)
+    else:
+        print "Fortran compiler used will be: ", INSTALL.fortran90_compiler
+        
     INSTALL.setup_temp_dir()
     do = []
     names = []
