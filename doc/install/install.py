@@ -37,7 +37,7 @@ class InstallPrerequisites(object):
     @late
     def applications(self):
        return [
-          ('openssl' , [], '0.9.8k' , 'openssl-', '.tar.gz', 'http://www.openssl.org/source/', self.openssl_build),
+          #('openssl' , [], '0.9.8k' , 'openssl-', '.tar.gz', 'http://www.openssl.org/source/', self.openssl_build),
           ('numpy' , [], '1.4.0' , 'numpy-', '.tar.gz', 'http://ignum.dl.sourceforge.net/sourceforge/numpy/', self.python_build),
           ('nose', [], '0.11.1', 'nose-' , '.tar.gz', 'http://somethingaboutorange.com/mrl/projects/nose/', self.python_build),
           ('hdf' , [],  '1.8.4' , 'hdf5-' , '.tar.gz' , 'http://www.hdfgroup.org/ftp/HDF5/current/src/', self.hdf5_build) ,

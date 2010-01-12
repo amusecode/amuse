@@ -9,6 +9,19 @@ Getting Started
 A detailed description of the installation procedure can be
 found in the documents in the 'doc/install' directory. 
 
+Compilers
+=========
+
+To build AMUSE from source you need to have a working 
+build environment. The AMUSE build system needs
+a C++ and fortan 90 compiler. Please check first if you
+have a working build environment on your system.
+
+In Ubuntu you can setup the environment with (as root):
+
+    apt-get install build-essential curl g++ gfortran gettext 
+
+
 Installing Prerequisites
 ========================
 
