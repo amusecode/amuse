@@ -17,7 +17,7 @@ if __name__=='__main__':
                          4.840393580601162E-05]) | AUd
   mass_earth=5.9742e24 | kg
   mass_moon=7.3477e22 | kg 
-  radius_earth=6.371 | km
+  radius_earth=6371 | km
   radius_moon=1737.1 | km
 
   cmpos=(pos_earth*mass_earth+pos_moon*mass_moon)/(mass_earth+mass_moon)
