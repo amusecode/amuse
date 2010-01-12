@@ -1,11 +1,12 @@
 from amuse.legacy import *
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.data.core import Particle
+from amuse.support.data.core import Particle, Particles, ParticlesWithUnitsConverted
 from amuse.support.data.binding import InCodeAttributeStorage
 from amuse.support.data import binding
+from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 
-class SmallN(LegacyInterface):
+class SmallNInterface(LegacyInterface):
     """
         Interface to the Kira Small-N Integrator and Kepler modules from
         Starlab.  http://www.ids.ias.edu/~starlab/
@@ -85,8 +86,7 @@ class SmallN(LegacyInterface):
         function.addParameter('id', 'i', function.OUT)
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, 'd', function.OUT)
-        return function;
-
+        return function
 
     @legacy_function
     def integrate_multiple():
@@ -97,11 +97,8 @@ class SmallN(LegacyInterface):
         function.addParameter('eps2', 'd', function.IN)
         return function;
 
-    def get_eps2(self):
-        return self.eps2
-
-    def set_eps2(self, new_eps2_value):
-        self.eps2 = new_eps2_value
+    def delete_particle(self, id):
+        return -1   # -1 == Not yet implemented.
 
     def get_time(self):
         return self.convert_nbody.to_si(self.time | nbody_system.time)
@@ -124,6 +121,13 @@ class SmallN(LegacyInterface):
     def clear_multiple():
         function = LegacyFunctionSpecification()
         return function;
+
+    @legacy_function
+    def get_number_of_particles():
+        function = LegacyFunctionSpecification()
+        function.addParameter('number_of_particles', 'i', function.OUT)
+        return function;
+
 
 
     def evolve(self, verbose=False, super_verbose=False):
@@ -148,10 +152,6 @@ class SmallN(LegacyInterface):
         vy = self.convert_nbody.to_nbody(particle.vy).number
         vz = self.convert_nbody.to_nbody(particle.vz).number
         self.add_to_interaction(particle.key, mass, x, y, z, vx, vy, vz)
-
-    def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
-        particle_index = -1
-        #TODO
 
     def get_particle_by_index(self, index):
         """ Returns a Particle by index.  """
@@ -228,3 +228,44 @@ class SmallNInCodeAttributeStorage(InCodeAttributeStorage):
             )
         ),
     )
+
+class SmallNBinding(NBodyGravitationalDynamicsBinding):
+    parameter_definitions = [
+         parameters.ModuleAttributeParameterDefinition(
+            "eps2",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.0 | nbody_system.length * nbody_system.length
+        ),
+        parameters.ModuleAttributeParameterDefinition(
+            "number_of_particles",
+            "number_of_particles", 
+            "The number of particles being managed by the SmallN module", 
+            units.none, 
+            0 | units.none
+        )
+    ]
+   
+    attribute_definitions = [ ]
+
+    def __init__(self, convert_nbody = None):
+        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+       
+        self.nbody_particles = Particles()
+        self.nbody_particles._private.attribute_storage = SmallNInCodeAttributeStorage(self)
+        self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
+   
+    def current_model_time(self):
+        return self.convert_nbody.to_si( self.t | nbody_system.time)
+           
+   
+    def evolve_model(self, time_end):
+        result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
+        return result
+
+class SmallN(SmallNInterface, SmallNBinding):
+    def __init__(self, convert_nbody = None):
+        SmallNInterface.__init__(self)
+        SmallNBinding.__init__(self, convert_nbody)
+

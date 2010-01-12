@@ -35,9 +35,10 @@ int remove_multiple(int id);
 real get_energy(int id);
 real get_total_energy();
 real get_top_level_energy_error();
-real get_mass(int id);
+real get_mass_by_id(int id);
 real get_radius(int id);
 real get_n(int id);
+int get_number_of_particles(int *number_of_particles);
 bool is_multiple(int id);
 
 // Set up an interaction:

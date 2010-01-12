@@ -14,7 +14,7 @@
 //	get_energy(int id)
 //	get_total_energy()
 //	get_top_level_energy_error()
-//	get_mass(int id)
+//	get_mass_by_id(int id)
 //	get_radius(int id)
 //	get_n(int id)
 //	int integrate_multiple(real eps2 = 0);
@@ -27,6 +27,10 @@
 //	void get_particle(int k, int &i, int &isn, real &m,
 //			  real x[3], real v[3])
 
+// AMUSE Conventions
+#define AMUSE_OK 0
+
+
 // Internal data management:
 
 static vector<int> ident;	// multiple IDs
@@ -34,6 +38,7 @@ static vector<dyn*> msys;	// multiple dyn trees
 				// note: store dyns but integrate with hdyns
 
 static int nstart=10000000, delta_n=10000000, n_next[5]={0,10000000,20000000,30000000,40000000};
+static int number_of_singles = 0;	// AMUSE needs to know how many particles the module is managing.
 
 static real rmax_system = VERY_LARGE_NUMBER;
 static real top_level_energy_error = 0;
@@ -281,7 +286,7 @@ real get_top_level_energy_error()
   return top_level_energy_error;
 }
 
-real get_mass(int id)
+real get_mass_by_id(int id)
 {
   // Locate id, return its total mass.
 
@@ -338,6 +343,12 @@ real get_n(int id)
     return msys[i]->n_leaves();
   else
     return -1;
+}
+
+int get_number_of_particles(int *number_of_particles)
+{
+  *number_of_particles = number_of_singles + (int)ident.size();
+  return AMUSE_OK;
 }
 
 bool is_multiple(int id)
@@ -868,6 +879,7 @@ void add_to_interaction(int i, real m, real x[3], real v[3])
   input_mass.push_back(m);
   input_pos.push_back(vec(x[0],x[1],x[2]));
   input_vel.push_back(vec(v[0],v[1],v[2]));
+  number_of_singles += 1;
 }
 
 void add_to_interaction(int i, real m, real x, real y, real z,
@@ -877,6 +889,7 @@ void add_to_interaction(int i, real m, real x, real y, real z,
   input_mass.push_back(m);
   input_pos.push_back(vec(x,y,z));
   input_vel.push_back(vec(vx,vy,vz));
+  number_of_singles += 1;
 }
 
 int get_status(int i)		// i is an id, not an index
