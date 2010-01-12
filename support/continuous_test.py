@@ -73,7 +73,10 @@ class TestCaseReport(object):
     def __init__(self, test):
         self.id = test.id()
         self.address = test.address()
-        
+        if self.address[0] is None:
+            self.address = list(self.address)
+            self.address[0] = ""
+            
         self.start_time = 0.0
         self.end_time = 0.0
         self.total_time = 0.0
@@ -387,6 +390,7 @@ class WriteTestReportOnTestingBlog(object):
         self.parts.append('\n\n')
         
         testcases = list(self.report.address_to_report.values())
+
         testcases.sort(key=lambda x: os.path.basename(x.address[0]))
         
         if self.report.failures > 0:
