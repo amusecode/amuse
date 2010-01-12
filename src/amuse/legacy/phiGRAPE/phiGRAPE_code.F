@@ -232,13 +232,14 @@ C---  done
 
       END
 
-      FUNCTION get_eps2()
+      FUNCTION get_eps2(ref_eps2)
       IMPLICIT NONE
 #include "general.inc"
 
-      DOUBLE PRECISION get_eps2
-
-      get_eps2=eps2
+      INTEGER get_eps2
+      DOUBLE PRECISION ref_eps2
+      
+      ref_eps2=eps2
 
       RETURN
       END
@@ -262,26 +263,14 @@ c         PRINT*, 'Warning: system not initialised yet'
       RETURN
       END
 
-      FUNCTION set_dt_max(_dt_max)
+      FUNCTION set_dt_max(new_dt_max)
       IMPLICIT NONE
 #include "general.inc"
       
       INTEGER set_dt_max
-      DOUBLE PRECISION _dt_max
+      DOUBLE PRECISION new_dt_max
       
-      dt_max = _dt_max
-
-      set_dt_max = 0
-      END
-
-      FUNCTION set_dt_max(_dt_max)
-      IMPLICIT NONE
-#include "general.inc"
-      
-      INTEGER set_dt_max
-      DOUBLE PRECISION _dt_max
-      
-      dt_max = _dt_max
+      dt_max = new_dt_max
 
       set_dt_max = 0
       END
