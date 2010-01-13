@@ -66,9 +66,15 @@ export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 Building AMUSE
 ==============
 
-All modules can be build with one make command. Start make
-from the main amuse directory (directory this README file lives in)
+All modules can be build with a configure and make commands. Start make
+from the main amuse directory (directory this README file lives in).
+The main task of the configure script is to check if the
+prerequisite packages have been installed.
 
+1. Configure the source code 
+
+    ./configure 
+    
 1. Build the code with make
 
     make 
