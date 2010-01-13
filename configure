@@ -1,0 +1,128 @@
+#!/bin/env python
+
+import sys
+
+class CheckPythonSystem(object):
+    NormalColor = '\033[0m'
+    RedColor = '\033[0;31m'
+    GreenColor = '\033[0;32m'
+    
+    def __init__(self):
+        self.are_all_checks_ok = True
+        
+    def check(self, check_function, check, actual = None):
+        sys.stdout.write(check)
+        sys.stdout.write(' ... ')
+        sys.stdout.flush()
+        
+        is_correct = check_function()
+        if is_correct:
+            sys.stdout.write(self.GreenColor)
+            sys.stdout.write('yes')
+            sys.stdout.write(self.NormalColor)
+        else:
+            sys.stdout.write(self.RedColor)
+            sys.stdout.write('no')
+            sys.stdout.write(self.NormalColor)
+        
+        if not actual is None:
+            sys.stdout.write('   (')
+            sys.stdout.write(actual)
+            sys.stdout.write(')')
+        
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+        
+        if not is_correct:
+            self.are_all_checks_ok = False
+            
+        
+    def get_version_as_number(self, version_string, separator):
+        parts = version_string.split(separator)
+        int_parts = map(lambda x : int(x), parts)
+        multipliers = list(reversed(map(lambda x : 255 ** x, range(4))))
+        result = 0
+        for index, value in enumerate(int_parts):
+            result += multipliers[index] * value
+        return result
+            
+    def check_version_of(self, name, actual_version_string, minimal_version_string, separator = '.'):
+        actual_number = self.get_version_as_number(actual_version_string, separator)
+        minimal_number = self.get_version_as_number(minimal_version_string, separator)
+        self.check(
+            check_function = lambda : actual_number >= minimal_number,
+            check = '%s version >= %s' % (name,minimal_version_string),
+            actual = actual_version_string
+        )
+        
+    def check_python_version(self):
+        self.check_version_of(
+            name = 'python',
+            actual_version_string = sys.version[:5],
+            minimal_version_string = '2.6'
+        )
+        
+    
+    def check_module(self, name, version_function = None, minimal_version_string = ''):
+        
+        is_installed = False
+        try:
+            module = __import__(name)
+            if not version_function is None:
+                version_string = version_function(module)
+            is_installed = True
+        except ImportError:
+            is_installed = False
+        
+            
+        self.check(
+            check_function = lambda : is_installed,
+            check = '%s is installed' % (name,),
+        )
+        
+        if is_installed and version_function is not None:
+            self.check_version_of(name, version_function(module), minimal_version_string)
+        
+        
+    def check_numpy_version(self):
+        import numpy
+        self.check_version_of(
+            name = 'numpy',
+            actual_version_string = numpy.__version__,
+            minimal_version_string = '1.3.0'
+        )
+    
+
+    def run_all_checks(self):
+        print "configuring AMUSE source code"
+        print "checking prerequisites..."
+        self.check_python_version()
+        self.check_module("numpy", lambda module : module.__version__, '1.3.0')
+        self.check_module("h5py", lambda module : module.version.version, '1.1.0')
+        self.check_module("mpi4py", lambda module : module.__version__, '1.1.0')
+        self.check_module("nose", lambda module : module.__version__, '0.11')
+        
+        if not self.are_all_checks_ok:
+            print "missing required prerequisites"
+        else:
+            print "all prerequisites found"
+            
+        
+        if not self.are_all_checks_ok:
+            print "configuration failed"
+        else:
+            print "configuration succeeded"
+        
+        sys.exit(0 if self.are_all_checks_ok else 1)
+            
+            
+
+if __name__ == '__main__':
+    CheckPythonSystem().run_all_checks()
+    
+
+
+
+
+
+
