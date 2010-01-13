@@ -27,7 +27,7 @@ Installing Prerequisites
 This document describes installation of all 
 prerequisite software in a user directory. If you have
 Ubuntu or Fedora distribution you can follow the installation
-instuctrions in `doc/install/howto-install-prerequisites.txt` 
+instructions in `doc/install/howto-install-prerequisites.txt` 
 to install the packages as part of the system.
 
 1. Make prerequisite software directory (can be set to any directory)
