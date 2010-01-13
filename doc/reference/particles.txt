@@ -24,8 +24,8 @@ attributes can be defined by a script or a code.
 Identity
 --------
 All particles have a unique 64-bit key. This key is generator
-using a random number generator. The changes of duplicate keys
-using 64-bit integers are finite but very low.This change of a duplicate
+using a random number generator. The chances of duplicate keys
+using 64-bit integers are finite but very low.This chance of a duplicate
 key can be determined by a generalization of the birthday problem.
 
 Duplicate keys::
