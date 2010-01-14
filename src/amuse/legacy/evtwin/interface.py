@@ -283,8 +283,8 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
                     error_string = 'Unknown errorcode: ' + str(errorcode)
                     
                 # Just print the error message or raise an exception: (have to sort out what would be more convenient later)
-                #print error_string
                 raise Exception(error_string)
+                print error_string
                 
                 # Abort evolving because of error (errorcode!=0)
                 return errorcode
