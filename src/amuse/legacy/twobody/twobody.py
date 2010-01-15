@@ -128,6 +128,10 @@ def universal_solver(mu,pos0,vel0,dt):
      math.sign(dt)*smu/math.sqrt(-alpha)*(1-r0*alpha)) )
 # this last formula is 4.5.11 in bate et al., fundamentals of astrodynamics 
 # with +1 in the logarithm
+    dxi0=smu/r0*dt
+    if(abs(alpha*dxi0**2)<1):
+      xi0=dxi0
+
   
   def f(xi):
     return universal_kepler(xi,r0,vr0,smu,alpha)-smu*dt
@@ -135,7 +139,7 @@ def universal_solver(mu,pos0,vel0,dt):
     return universal_kepler_dxi(xi,r0,vr0,smu,alpha)
   
   xi,err=newton(f,xi0,fprime=df,tol=1.e-10)  
-#  print xi,xi0,smu,alpha
+  print dt,xi,xi0,alpha*dxi0**2,dxi0
   
   pos=pos0*lagrange_f(xi,r0,vr0,smu,alpha)+vel0*lagrange_g(xi,r0,vr0,smu,alpha)
   r=math.sqrt(reduce(lambda x,y: x+ y**2,pos,0))
