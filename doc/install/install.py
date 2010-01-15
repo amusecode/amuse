@@ -378,7 +378,8 @@ if __name__ == '__main__':
     if INSTALL.fortran90_compiler is None:
         print """No fortran 90 compiler environment variable set.
 A FORTRAN 90 compiler is needed for MPI and several module, 
-please set F90 first by (bash):
+please set F90 first by (bash, replace gfortran with your preferred
+compiler):
 
 export F90=gfortran
 export F77=gfortran
@@ -398,6 +399,7 @@ setenv F77 gfortran
     do = []
     names = []
     flag = False
+    
     for x in sys.argv:
         if x in _commands.keys():
             do.append(x)
@@ -424,6 +426,8 @@ setenv F77 gfortran
         print "to get a list of all packages:"
         print ""
         print "./install.py list"
+        
+        sys.exit(1)
     
 
         
