@@ -74,6 +74,9 @@ class MakePlummerModel(object):
     def new_model(self):
         if not self.random_state is None:
             numpy.random.set_state(self.random_state)
+        else:
+            self.random_state = numpy.random.get_state()
+            
         m = numpy.zeros((self.number_of_particles,1)) + (1.0 / self.number_of_particles)
         radius, theta, phi = self.new_positions_spherical_coordinates()
         position =  numpy.hstack(self.coordinates_from_spherical(radius, theta, phi))

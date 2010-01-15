@@ -18,7 +18,7 @@ have a working build environment on your system.
 
 In Ubuntu you can setup the environment with (as root):
 
-    apt-get install build-essential curl g++ gfortran gettext 
+    apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
 
 
 Installing Prerequisites
