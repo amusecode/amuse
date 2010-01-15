@@ -121,7 +121,13 @@ def universal_solver(mu,pos0,vel0,dt):
   vr0=(reduce(lambda x,y: x+y, pos0*vel0,0))/r0
   alpha=2./r0-v0**2/mu
     
-  xi0=smu*abs(alpha)*dt
+  if(alpha >= 0):
+    xi0=smu*alpha*dt
+  else:
+    xi0=math.sign(dt)/math.sqrt(-alpha)*math.log(1-2*mu*dt*alpha/((vr0*r0)+ \
+     math.sign(dt)*smu/math.sqrt(-alpha)*(1-r0*alpha)) )
+# this last formula is 4.5.11 in bate et al., fundamentals of astrodynamics 
+# with +1 in the logarithm
   
   def f(xi):
     return universal_kepler(xi,r0,vr0,smu,alpha)-smu*dt
@@ -129,6 +135,7 @@ def universal_solver(mu,pos0,vel0,dt):
     return universal_kepler_dxi(xi,r0,vr0,smu,alpha)
   
   xi,err=newton(f,xi0,fprime=df,tol=1.e-10)  
+#  print xi,xi0,smu,alpha
   
   pos=pos0*lagrange_f(xi,r0,vr0,smu,alpha)+vel0*lagrange_g(xi,r0,vr0,smu,alpha)
   r=math.sqrt(reduce(lambda x,y: x+ y**2,pos,0))
@@ -137,10 +144,16 @@ def universal_solver(mu,pos0,vel0,dt):
   return pos,vel
 
 class twobody(object):
-  __G=6.673e-11
+#  __G=6.673e-11
+  __G=1.
+  
   def __init__(self):
     self.particles=[]
     self.tnow=0.
+  def setup_module(self):
+    pass
+  def initialize(self):
+    pass
   def new_particle(self,mass,radius,x,y,z,vx,vy,vz):
     if( len(self.particles)>=2):
       return 0,-1
@@ -155,6 +168,45 @@ class twobody(object):
       return {},-1
   def get_time(self):
     return self.tnow,0
+  def get_kinetic_energy(self):
+    if(len(self.particles)!=1 and len(self.particles)!=2):
+      return 0,-1
+    if(len(self.particles)==1):
+      dvel=numpy.array( [self.particles[0]['vx'], \
+                         self.particles[0]['vy'], \
+                         self.particles[0]['vz']] )
+      mass=self.particles[0]['mass']
+    if(len(self.particles)==2):
+      vel0=numpy.array( [self.particles[0]['vx'], \
+                         self.particles[0]['vy'], \
+                         self.particles[0]['vz']] )
+      vel1=numpy.array( [self.particles[1]['vx'], \
+                         self.particles[1]['vy'], \
+                         self.particles[1]['vz']] )
+      dvel=vel0-vel1
+      mass=self.particles[0]['mass']+self.particles[1]['mass']
+    v2=reduce(lambda x,y: x+ y**2,dvel,0)
+    return 0.5*mass*v2,0 
+  def get_potential_energy(self):
+    if(len(self.particles)!=1 and len(self.particles)!=2):
+      return 0,-1
+    if(len(self.particles)==1):
+      dpos=numpy.array( [self.particles[0]['x'], \
+                         self.particles[0]['y'], \
+                         self.particles[0]['z']] )
+      mu=self.__G*self.particles[0]['mass']
+    if(len(self.particles)==2):
+      pos0=numpy.array( [self.particles[0]['x'], \
+                         self.particles[0]['y'], \
+                         self.particles[0]['z']] )
+      pos1=numpy.array( [self.particles[1]['x'], \
+                         self.particles[1]['y'], \
+                         self.particles[1]['z']] )
+      dpos=pos0-pos1
+      mu=self.__G*(self.particles[0]['mass']+self.particles[1]['mass'])
+    r=math.sqrt(reduce(lambda x,y: x+ y**2,dpos,0))
+    return -mu/r,0  
+
   def evolve(self,time_end):
       if(len(self.particles)!=1 and len(self.particles)!=2):
         return -1
