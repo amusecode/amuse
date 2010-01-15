@@ -148,8 +148,8 @@ def universal_solver(mu,pos0,vel0,dt):
   return pos,vel
 
 class twobody(object):
-#  __G=6.673e-11
-  __G=1.
+  __G=6.673e-11
+#  __G=1.
   
   def __init__(self):
     self.particles=[]
