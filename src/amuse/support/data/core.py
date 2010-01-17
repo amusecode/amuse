@@ -755,7 +755,7 @@ class AbstractParticleSet(object):
         keys = particles._get_keys()
         values = particles._get_values(keys, attributes)
         self._set_particles(keys, attributes, values)
-        
+        return ParticlesSubset(self._particles(), keys)
     
     
     def add_particle(self, particle):
