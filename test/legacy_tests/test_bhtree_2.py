@@ -160,6 +160,7 @@ class TestAmuseInterface(TestWithMPI):
         del instance
         
     def test2(self):
+	#not completed 
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = BHTree(convert_nbody)
