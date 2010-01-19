@@ -745,7 +745,8 @@ class AbstractParticleSet(object):
         >>> particles1.x = [1.0, 2.0] | units.m
         >>> particles2 = Particles(2)
         >>> particles2.x = [3.0, 4.0] | units.m
-        >>> particles1.add_particles(particles2)
+        >>> particles1.add_particles(particles2)  # doctest:+ELLIPSIS
+        <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(particles1)
         4
         >>> print particles1.x
