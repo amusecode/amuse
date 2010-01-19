@@ -80,45 +80,8 @@ class SalpeterIMFTests(unittest.TestCase):
         instance = SalpeterIMF(0.1 | units.MSun, 125 | units.MSun, alpha = -2.35)
         self.assertAlmostEqual( 1.0 / instance.mass_mean().value_in(units.MSun), 2.8253, 4)
        
-   
-        
 
-def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
-    random.seed()
-    
-    initial_mass_function = SalpeterIMF()
-    total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
-    
-    convert_nbody = nbody_system.nbody_to_si(total_mass, 1 | units.parsec)
-    convert_nbody.set_as_default()
-    
-    particles = MakePlummerModel(number_of_stars, convert_nbody).result;
-   
-    gravity = BHTree()
-    gravity.setup_module()
-    
-    
-    gravity.dt_dia = 10000
-    
-    stellar_evolution = SSE()
-    stellar_evolution.initialize_module_with_default_parameters() 
-    
-    gravity.parameters.epsilon_squared = 0.15 | units.parsec ** 2
-    
-    print "setting masses of the stars"
-    
-    particles.radius = units.RSun.new_quantity(numpy.zeros(len(particles)))
-    particles.mass = salpeter_masses
-    
-                
-    print "initializing the particles"
-    stellar_evolution.particles.add_particles(particles)
-    
-    from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(particles)
-    from_stellar_evolution_to_model.copy_attributes(["mass"])
-    
-    print "centering the particles"
-    
+def move_particles_to_center_of_mass(particles):
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
     
@@ -130,62 +93,9 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
-    
-    gravity.particles.add_particles(particles)
-    
-        
-    time = 0 | units.Myr
-    
-    
-    print "evolving the model until t = " + str(end_time)
-    
-    particles.savepoint()
-    gravity.update_particles(particles)
-    
-    
-    if os.path.exists('small.hdf5'):
-        os.remove('small.hdf5')
-    storage = store.StoreHDF("small.hdf5")
-    storage.store(particles)
-    
-    total_energy_at_t0 = sum(gravity.get_energies(), 0 | units.J)
-      
-    from_model_to_gravity = particles.new_channel_to(gravity.particles)
-    
-    while time < end_time:
-        time += 0.25 | units.Myr
-        print "gravity evolve step starting"
-        gravity.evolve_model(time)
-        print "gravity evolve step done"
-        
-        total_energy_at_this_time = sum(gravity.get_energies(), 0 | units.J)
-        print gravity.get_energies()
-        print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-    
-        gravity.update_particles(particles)
-        print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
-        print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
-        print "stellar evolution step starting"
-        stellar_evolution.evolve_model(time)
-        from_stellar_evolution_to_model.copy_attributes(["mass", "radius"])
-        print "stellar evolution step done"
-        
-        particles.savepoint()
-        storage.store(particles)   
-        print "evolved model to t = " + str(time)
-        
-        
-        print  "center of mass:" , particles.center_of_mass()
-        print  "center of mass velocity:" , particles.center_of_mass_velocity()
-        
-    
-        from_model_to_gravity.copy_attributes(["mass"])
-    
-        
-    
    
-    del gravity
-    del stellar_evolution
+     
+def plot_particles(particles):
     
     if HAS_MATPLOTLIB:
         print "plotting the data"
@@ -228,6 +138,91 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
             axes_3d.set_zlim(-10.0,10.0)        
             
             figure.savefig("3d_"+name_of_the_figure)
+
+def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
+    random.seed()
+    
+    initial_mass_function = SalpeterIMF()
+    total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
+    
+    convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
+    convert_nbody.set_as_default()
+    
+    particles = MakePlummerModel(number_of_stars, convert_nbody).result;
+   
+    gravity = BHTree()
+    gravity.setup_module()
+    gravity.parameters.epsilon_squared = 0.15 | units.parsec ** 2
+        
+    stellar_evolution = SSE()
+    stellar_evolution.initialize_module_with_default_parameters() 
+    
+    print "setting masses of the stars"
+    particles.radius = 0.0 | units.RSun
+    particles.mass = salpeter_masses
+    
+    print "initializing the particles"
+    stellar_evolution.particles.add_particles(particles)
+    
+    from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(particles)
+    from_stellar_evolution_to_model.copy_attributes(["mass"])
+    
+    print "centering the particles"
+    move_particles_to_center_of_mass(particles)
+    
+    gravity.particles.add_particles(particles)
+    from_model_to_gravity = particles.new_channel_to(gravity.particles)
+    
+        
+    time = 0.0 | units.Myr    
+    particles.savepoint(time)
+    total_energy_at_t0 = sum(gravity.get_energies(), 0.0 | units.J)
+    
+    print "evolving the model until t = " + str(end_time)
+    while time < end_time:
+        time += 0.25 | units.Myr
+        
+        print "gravity evolve step starting"
+        gravity.evolve_model(time)
+        print "gravity evolve step done"
+        
+        total_energy_at_this_time = sum(gravity.get_energies(), 0.0 | units.J)    
+        
+        gravity.update_particles(particles)
+        
+        print gravity.get_energies()
+        print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
+        print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
+        print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
+        
+        print "stellar evolution step starting"
+        stellar_evolution.evolve_model(time)
+        print "stellar evolution step done"
+
+        
+        from_stellar_evolution_to_model.copy_attributes(["mass", "radius"])
+                
+        particles.savepoint(time)  
+        
+        print "evolved model to t = " + str(time)
+        print  "center of mass:" , particles.center_of_mass()
+        print  "center of mass velocity:" , particles.center_of_mass_velocity()
+        
+    
+        from_model_to_gravity.copy_attributes(["mass"])
+    
+        
+    
+    if os.path.exists('small.hdf5'):
+        os.remove('small.hdf5')
+    storage = store.StoreHDF("small.hdf5")
+    storage.store(particles)
+   
+    del gravity
+    del stellar_evolution
+    
+    plot_particles(particles)
+    
         
 
         

@@ -72,11 +72,11 @@ UNAME=`uname`
 if [ $UNAME == 'Darwin' ] ; then
 	${SOURCE_DIR}/${APP_DIR}/configure \
 		--with-dyld \
-		--enable-framework=${PREFIX}/Framework \
-		--enable-universal-sdk \
 		--prefix=${PREFIX} \
-        --enable-unicode=ucs4\
+	        --enable-unicode=ucs4\
 		--program-suffix=.exe ;
+#--enable-framework=${PREFIX}/Framework \
+#--enable-universal-sdk \
 else
 	${SOURCE_DIR}/${APP_DIR}/configure \
 		--prefix=${PREFIX} \
