@@ -153,18 +153,61 @@ C---  get array address
       get_position = -2
       END
 
-      FUNCTION set_velocity()
-      IMPLICIT NONE
+      FUNCTION set_velocity(id, vx, vy, vz)
+      IMPLICIT NONE 
 #include "general.inc"
-      INTEGER set_velocity
-      set_velocity = -2
+
+C---  local vars
+      INTEGER          id,ip, set_velocity
+      DOUBLE PRECISION vx,vy,vz
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_particle: No such particle exists',
+     $           ' use add_particle'
+         set_velocity = -1
+         GOTO 999
+      ENDIF
+
+C---  setting particle
+      v(1,ip) = vx
+      v(2,ip) = vy
+      v(3,ip) = vz
+
+      set_velocity = 0
+ 999  CONTINUE
+      RETURN
       END
 
-      FUNCTION set_position()
-      IMPLICIT NONE
+
+      FUNCTION set_position(id, xx, yy, zz)
+      IMPLICIT NONE 
 #include "general.inc"
-      INTEGER set_position
-      set_position = -2
+
+C---  local vars
+      INTEGER          id,ip, set_position
+      DOUBLE PRECISION xx,yy,zz
+
+
+C---  get array address
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_particle: No such particle exists',
+     $           ' use add_particle'
+         set_position = -1
+         GOTO 999
+      ENDIF
+
+C---  setting particle
+      x(1,ip) = xx
+      x(2,ip) = yy
+      x(3,ip) = zz
+
+      set_position = 0
+ 999  CONTINUE
+      RETURN
       END
 
       FUNCTION get_acceleration()
@@ -353,13 +396,15 @@ c         PRINT*, 'Warning: system not initialised yet'
       RETURN
       END
 
-      FUNCTION get_eta_s()
+      FUNCTION get_eta_s(new_eta_s)
       IMPLICIT NONE
 #include "general.inc"
 
-      DOUBLE PRECISION get_eta_s
+      INTEGER get_eta_s
+      DOUBLE PRECISION new_eta_s
 
-      get_eta_s   = eta_s
+      new_eta_s = eta_s
+      get_eta_s   = 0
       END
       
       FUNCTION get_eta()
