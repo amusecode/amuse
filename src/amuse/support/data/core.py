@@ -506,6 +506,7 @@ class AbstractParticleSet(object):
 
     """
     GLOBAL_VECTOR_ATTRIBUTES = {}
+    GLOBAL_CALCULATED_ATTRIBUTES = {}
     
     class PrivateProperties(object):
         """
@@ -573,15 +574,37 @@ class AbstractParticleSet(object):
             for quantity in vector:
                 list_of_values.append(quantity.as_vector_with_length(1))
             instance._set_values([key], self.attribute_names, list_of_values)
+            
+    
+    
+    class CalculatedAttribute:
+        
+        def  __init__(self, function):
+            self.function = function
+            arguments, varargs, kwargs, defaults = inspect.getargspec(function)
+            self.attribute_names = arguments 
+        
+        def _get_values(self, instance):
+            values = instance._get_values(instance._get_keys(), self.attribute_names)
+            return self.function(*values)
+        
+        def get_value_for_particle(self, instance,  key):
+            values = instance._get_values([key], self.attribute_names)
+            return self.function(*values)[0]
+              
+
         
             
     def __init__(self):
         object.__setattr__(self, "_vector_attributes", self.GLOBAL_VECTOR_ATTRIBUTES.copy())
+        object.__setattr__(self, "_calculated_attributes", self.GLOBAL_CALCULATED_ATTRIBUTES.copy())
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     def __getattr__(self, name_of_the_attribute):
         if name_of_the_attribute in self._vector_attributes:
             return self._vector_attributes[name_of_the_attribute]._get_values(self)
+        elif name_of_the_attribute in self._calculated_attributes:
+            return self._calculated_attributes[name_of_the_attribute]._get_values(self)
         else:
             return self._get_values(self._get_keys(), [name_of_the_attribute])[0]
     
@@ -594,6 +617,8 @@ class AbstractParticleSet(object):
     def _get_value_of_attribute(self, key, attribute):
         if attribute in self._vector_attributes:
             return self._vector_attributes[attribute].get_value_for_particle(self, key)
+        elif attribute in self._calculated_attributes:
+            return self._calculated_attributes[attribute].get_value_for_particle(self, key)
         else:
             return self._get_values([key], [attribute])[0][0]
             
@@ -664,7 +689,7 @@ class AbstractParticleSet(object):
         """
         
         self._vector_attributes[name_of_the_attribute] = self.VectorAttribute(name_of_the_components)
-        
+    
     @classmethod
     def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
         """
@@ -685,7 +710,67 @@ class AbstractParticleSet(object):
         
         """
         cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = cls.VectorAttribute(name_of_the_components)
+    
+    
+    def add_calculated_attribute(self, name_of_the_attribute, function):
+        """
+        Define a read-only calculated attribute, values for the attribute are
+        calculated using the given function. The functions argument 
+        names are interperted as attribute names. For example, if
+        the given function is::
         
+            def norm(x, y):
+                return (x*x + y*y).sqrt()
+                
+        The attributes "x" and "y" will be retrieved from the particles
+        and send to the "norm" function.
+        
+        The calculated values are not stored on the particles. Values
+        are recalculated every time this attribute is accessed.
+        
+        :argument name_of_the_attribute: Name to reference the attribute by. 
+        :argument function: Function to call, when attribute is accessed
+          
+        
+        >>> particles = Particles(2)
+        >>> particles.x = [1.0 , 2.0] | units.m 
+        >>> particles.y = [3.0 , 4.0] | units.m
+        >>> particles.add_calculated_attribute("xy", lambda x, y : x * y)
+        >>> print particles.xy
+        [3.0, 8.0] m**2
+        >>> particles[0].x = 4.0 | units.m
+        >>> print particles.xy
+        [12.0, 8.0] m**2
+        >>> print particles[1].xy
+        8.0 m**2
+        
+        """
+        
+        self._calculated_attributes[name_of_the_attribute] = self.CalculatedAttribute(function)
+    
+    
+    @classmethod
+    def add_global_calculated_attribute(cls, name_of_the_attribute, function):
+        """
+        Define a *global* vector attribute, coupling two or more scalar attributes into
+        one vector attribute. The vector will be defined for all particle sets
+        created after calling this function.
+        
+        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
+        
+        
+        >>> Particles.add_global_calculated_attribute("xy", lambda x, y : x * y)
+        >>> particles = Particles(2)
+        >>> particles.x = [1.0 , 2.0] | units.m 
+        >>> particles.y = [3.0 , 4.0] | units.m
+        >>> print particles.xy
+        [3.0, 8.0] m**2
+        
+        """
+        cls.GLOBAL_CALCULATED_ATTRIBUTES[name_of_the_attribute] = cls.CalculatedAttribute(function)
+    
+    
     #
     # public API
     #

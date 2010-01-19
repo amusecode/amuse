@@ -139,6 +139,14 @@ def plot_particles(particles):
             
             figure.savefig("3d_"+name_of_the_figure)
 
+def print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time):
+    print "Evolved model to t = " + str(time)
+    print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
+    #print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
+    #print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
+    print  "center of mass:" , particles.center_of_mass()
+    print  "center of mass velocity:" , particles.center_of_mass_velocity()
+    
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
     random.seed()
     
@@ -163,8 +171,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     print "initializing the particles"
     stellar_evolution.particles.add_particles(particles)
-    
     from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(particles)
+    
     from_stellar_evolution_to_model.copy_attributes(["mass"])
     
     print "centering the particles"
@@ -172,6 +180,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     gravity.particles.add_particles(particles)
     from_model_to_gravity = particles.new_channel_to(gravity.particles)
+    from_gravity_to_model = gravity.particles.new_channel_to(particles)
     
         
     time = 0.0 | units.Myr    
@@ -186,32 +195,20 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         gravity.evolve_model(time)
         print "gravity evolve step done"
         
-        total_energy_at_this_time = sum(gravity.get_energies(), 0.0 | units.J)    
-        
-        gravity.update_particles(particles)
-        
-        print gravity.get_energies()
-        print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
-        print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
-        print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
-        
         print "stellar evolution step starting"
         stellar_evolution.evolve_model(time)
         print "stellar evolution step done"
 
-        
+        from_gravity_to_model.copy()
         from_stellar_evolution_to_model.copy_attributes(["mass", "radius"])
-                
+
         particles.savepoint(time)  
         
-        print "evolved model to t = " + str(time)
-        print  "center of mass:" , particles.center_of_mass()
-        print  "center of mass velocity:" , particles.center_of_mass_velocity()
-        
-    
         from_model_to_gravity.copy_attributes(["mass"])
-    
         
+        total_energy_at_this_time = sum(gravity.get_energies(), 0.0 | units.J)    
+        print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time)
+
     
     if os.path.exists('small.hdf5'):
         os.remove('small.hdf5')

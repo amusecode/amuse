@@ -119,6 +119,20 @@ class Quantity(object):
         unit=self.unit.base_unit()
         return self.as_quantity_in(unit)
     
+    
+    def sqrt(self):
+        """Calculate the square root of each component
+
+        >>> from amuse.support.units import units
+        >>> s1 = 144.0 | units.m**2
+        >>> s1.sqrt()
+        quantity<12.0 m>
+        >>> v1 = [16.0, 25.0, 36.0] | units.kg
+        >>> v1.sqrt()
+        quantity<[4.0, 5.0, 6.0] kg**0.5>
+        """
+        return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
+        
     def as_quantity_in(self, another_unit): 
         """
         Reproduce quantity in another unit.
@@ -256,15 +270,6 @@ class VectorQuantity(Quantity):
         """
         return new_quantity(numpy.sum(self.number), self.unit)
         
-    def sqrt(self):
-        """Calculate the square root of each component
-
-        >>> from amuse.support.units import units
-        >>> v1 = [16.0, 25.0, 36.0] | units.kg
-        >>> v1.sqrt()
-        quantity<[4.0, 5.0, 6.0] kg**0.5>
-        """
-        return new_quantity(numpy.sqrt(self.number), (self.unit ** 0.5).to_simple_form())
     
     def length(self):
         """Calculate the length of the vector.
@@ -400,7 +405,16 @@ class VectorQuantity(Quantity):
         return new_quantity(self.number.copy(), self.unit)
         
     def append(self, scalar_quantity):
-        self._number.append(scalar_quantity.value_in(self.unit))
+        """
+        Append a scalar quantity to this vector.
+
+        >>> from amuse.support.units import si
+        >>> vector = [1.0, 2.0, 3.0] | si.kg
+        >>> vector.append(4.0 | si.kg)
+        >>> print vector
+        [1.0, 2.0, 3.0, 4.0] kg
+        """
+        self._number = numpy.append(self._number, [scalar_quantity.value_in(self.unit)])
     
                  
 

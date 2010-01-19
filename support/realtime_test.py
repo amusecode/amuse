@@ -220,6 +220,13 @@ class MakeAReportOfATestRun(object):
     def store_report(self, report):
         self._reports_queue.put(('unit-report',report.to_dict()))
         
+    
+    def prepareTest(self, suite):
+        pass
+        #all_tests = list(suite)
+        #number_of_tests = 0
+        #self._reports_queue.put(('start-report',{"number_of_tests": number_of_tests}))
+        
     def addSuccess(self,test):
         report = self.get_report(test)
         report.end()
@@ -501,6 +508,8 @@ class RunTests(object):
                     break;
                 if message[0] == 'unit-report':
                     self.report_queue.put(message[1])
+                if message[0] == 'start-report':
+                    print message[1]
                 last_message = message
             result = last_message 
         finally:
