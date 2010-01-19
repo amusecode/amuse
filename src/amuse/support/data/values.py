@@ -398,6 +398,10 @@ class VectorQuantity(Quantity):
             
     def copy(self):
         return new_quantity(self.number.copy(), self.unit)
+        
+    def append(self, scalar_quantity):
+        self._number.append(scalar_quantity.value_in(self.unit))
+    
                  
 
 class NonNumericQuantity(Quantity):
