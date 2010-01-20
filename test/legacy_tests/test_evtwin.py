@@ -257,26 +257,28 @@ class TestInterfaceBinding(TestWithMPI):
     def test5_add_and_remove(self):
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
+        stars = core.Stars(0)
 #       Create an "array" of one star
-        stars = core.Stars(1)
-        star=stars[0]
-        star.mass = 1.0 | units.MSun
-        star.radius = 0.0 | units.RSun
+        stars1 = core.Stars(1)
+        star1=stars1[0]
+        star1.mass = 1.0 | units.MSun
+        star1.radius = 0.0 | units.RSun
 #       Create another "array" of one star
         stars2 = core.Stars(1)
         star2=stars2[0]
         star2.mass = 1.0 | units.MSun
         star2.radius = 0.0 | units.RSun
-        print stars._get_keys()
-        print
-        print stars2._get_keys()
-        print
+        key1 = stars1._get_keys()[0]
+        key2 = stars2._get_keys()[0]
+        stars.add_particles(stars1)
         stars.add_particles(stars2)
-        print stars._get_keys()
-        print
+        self.assertEquals(stars._get_keys()[1], key2)
         self.assertEquals(len(instance.particles), 0) # before creation
         instance.setup_particles(stars)
         instance.initialize_stars()
+        indices_in_the_code = instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())
+        for i in range(len(instance.particles)):
+            self.assertEquals(indices_in_the_code[i], i+1)
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         instance.evolve_model(end_time=2.0|units.Myr)
@@ -284,12 +286,12 @@ class TestInterfaceBinding(TestWithMPI):
         self.assertEquals(len(instance.particles), 2) # before remove
         for i in range(len(instance.particles)):
             self.assertTrue(stars[i].age.value_in(units.Myr) > 2.0)
-        instance.particles.remove_particle(stars[1])
+        instance.particles.remove_particle(stars[0])
+        self.assertEquals(instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())[0], 2)
         self.assertEquals(len(instance.particles), 1) # in between remove
         self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
-        stars.remove_particle(stars[1])
-        print stars._get_keys()
-        print
+        stars.remove_particle(stars[0])
+        self.assertEquals(stars._get_keys()[0], key2)
         self.assertEquals(len(stars), 1) # after remove
         from_code_to_model = instance.particles.new_channel_to(stars)
         instance.evolve_model(end_time=4.0|units.Myr)
@@ -301,15 +303,18 @@ class TestInterfaceBinding(TestWithMPI):
         star3=stars3[0]
         star3.mass = 1.0 | units.MSun
         star3.radius = 0.0 | units.RSun
-        print
-        print stars3._get_keys()
-        print
+        key3 = stars3._get_keys()[0]
         stars.add_particles(stars3)
-        stars.add_particles(stars2)
-        print stars._get_keys()
-        print
+        stars.add_particles(stars1)
+        self.assertEquals(stars._get_keys()[0], key2)
+        self.assertEquals(stars._get_keys()[1], key3)
+        self.assertEquals(stars._get_keys()[2], key1)
         instance.particles.add_particles(stars3)
-        instance.particles.add_particles(stars2)
+        instance.particles.add_particles(stars1)
+        indices_in_the_code = instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())
+        self.assertEquals(indices_in_the_code[0], 2)
+        self.assertEquals(indices_in_the_code[1], 1)
+        self.assertEquals(indices_in_the_code[2], 3)
         self.assertEquals(len(instance.particles), 3) # it's back...
         self.assertEquals(stars[1].age.value_in(units.Myr), 0.0)
         self.assertEquals(stars[2].age.value_in(units.Myr), 0.0) # ... and rejuvenated

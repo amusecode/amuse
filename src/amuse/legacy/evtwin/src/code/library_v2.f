@@ -11,6 +11,9 @@
          sequence
          ! Flag to indicate wether this star still needs some initialisation
          logical :: virgin
+         
+         ! Flag that tells whether this star still exists (i.e. it has not been removed)
+         logical :: star_exists
 
          integer :: number_of_variables
          integer :: number_of_meshpoints
@@ -62,8 +65,9 @@
       ! Data structure to store a number of stars in memory.
       integer, private :: max_stars = -1        ! Maximum number of stars
       type(twin_star_t), private, allocatable, target :: star_list(:)
-      integer, private :: current_star = 0      ! Currently selected star
-      integer, private :: num_stars = 0         ! Number of allocated stars
+      integer, private :: current_star = 0        ! Currently selected star
+      integer, private :: highest_star_index = 0  ! Highest index assigned to a star so far
+      integer, private :: num_stars = 0           ! Number of currently allocated (i.e. not removed) stars
 
       ! Some data read from init.dat that is not saved to COMMON blocks
       integer, private :: KH2, KR1, KR2, KSV, KT5, JCH, iter
@@ -485,7 +489,7 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       use settings
       IMPLICIT REAL*8 (A-H, L-Z)    ! Ugly hack, needs to be changed to none!
       type(twin_star_t), pointer :: star
-      integer :: load_zams_star
+      integer :: load_zams_star, new_id
       double precision, intent(in) :: mass, age
       COMMON H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0, KH, KTW, ID(130), IE(130) 
       COMMON /T1 / SM1, DTY1, AGE1, PER1, BMS1, ECC1, P1, ENC1
@@ -511,9 +515,25 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
          load_zams_star = 0
          return
       end if
+      
+      ! Find an unused index for the new star
+      if (num_stars < highest_star_index) then
+        new_id = 1
+        do while (star_list(new_id)%star_exists)
+          new_id = new_id + 1
+        end do
+        if (new_id > max_stars) then
+          print *, 'Error - If you get this message, blame Nathan.'
+          load_zams_star = 0
+          return
+        end if          
+      else
+        highest_star_index = highest_star_index + 1
+        new_id = highest_star_index
+      end if
       num_stars = num_stars + 1
-      if (verbose) print *, 'Setting local pointer to star', num_stars
-      star => star_list(num_stars)
+      if (verbose) print *, 'Setting local pointer to star', new_id
+      star => star_list(new_id)
 
       ! Allocate memory to store the star
       star%number_of_variables = actual_number_of_variables
@@ -526,7 +546,7 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       ! that is in TWIN (main/beginn).
       ! Essentially, we push the initialised data onto the stack
       JNN = 0
-      call swap_out_star(num_stars)
+      call swap_out_star(new_id)
       
       ! Estimate nuclear timescale for this star
       TNUC = 1.0d10 * mass**(-2.8)
@@ -535,9 +555,10 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       star%dt = CT3*1.0d-4 * TNUC*CSY
       if (mass > 1.0 .and. mass < 1.2) star%dt = 1.0d-2*star%dt
       !star%dt = 100
-      if (verbose) print *, 'Setting initial timestep for star',num_stars,'to',star%dt,'s'
+      if (verbose) print *, 'Setting initial timestep for star',new_id,'to',star%dt,'s'
       
       ! Initialise some more variables
+      star%star_exists = .TRUE.
       star%zams_mass = mass
       star%age = age
       if (P1>0) star%p = P1
@@ -565,10 +586,10 @@ c Determine whether I and phi are computed or not, for OUTPUT
       star%virgin = .true.
       
       ! Save all settings
-      call swap_in_star(num_stars)
-      call swap_out_star(num_stars)
+      call swap_in_star(new_id)
+      call swap_out_star(new_id)
 
-      load_zams_star = num_stars
+      load_zams_star = new_id
       end function
 
 ! evolve_star:
@@ -585,6 +606,13 @@ c Determine whether I and phi are computed or not, for OUTPUT
       COMMON H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0, KH, KTW, ID(130), IE(130) 
       COMMON /QUERY / ML(3), UC(21), JMOD, JB, JNN, JTER, JOC, JKH
       COMMON /TVBLES/ DT, ZQ(81), PR(81), PPR(81), IHOLD, JM2(2)
+      
+      ! Check whether the star exists, and that it hasn't been removed.
+      if (star_id<1 .or. star_id>highest_star_index .or. .not. star_list(star_id)%star_exists) then
+        if (verbose) print *, 'Error: no star to evolve. Star_id=', star_id, ', star_exists=', star_list(star_id)%star_exists
+        evolve = -1
+        return
+      end if
       
       ! We need some kind of initialisation for the star, cf the calls
       ! to printb in star12
@@ -678,7 +706,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       double precision :: value
       integer, intent(in) :: id
       
-      if (id<1 .or. id>num_stars) then
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_luminosity = -1
          value = 0.0
          return
@@ -696,7 +724,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       integer :: get_mass
       integer, intent(in) :: id
       double precision, intent(out) :: mass
-      if (id<1 .or. id>num_stars) then
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          mass = 0.0
          get_mass = -1
          return
@@ -716,7 +744,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       double precision, intent(out) :: radius
       integer, intent(in) :: id
       
-      if (id<1 .or. id>num_stars) then
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          radius = 0.0
          get_radius = -1
          return
@@ -735,7 +763,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       double precision :: value
       integer, intent(in) :: id
       
-      if (id<1 .or. id>num_stars) then
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_temperature = -1
          value = 0
          return
@@ -754,7 +782,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       double precision :: value
       integer, intent(in) :: id
       
-      if (id<1 .or. id>num_stars) then
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_age = -1
          value = 0.0
          return
@@ -773,7 +801,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       integer :: value
       integer, intent(in) :: id
       
-      if (id<1 .or. id>num_stars) then
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_stellar_type = -1
          value = -1
          return
@@ -874,8 +902,27 @@ c Determine whether I and phi are computed or not, for OUTPUT
       
       function delete_star(star_id)
       implicit none
-      integer :: delete_star, star_id
-      delete_star =  -1
+      integer :: delete_star, star_id, new_id
+      type(twin_star_t), pointer :: star
+      ! Check whether the star exists, and that it hasn't been removed.
+      if (star_id<1 .or. star_id>highest_star_index) then
+        delete_star = -1
+        return
+      end if
+      star => star_list(star_id)
+      if (.not. star%star_exists) then
+        if (verbose) print *, 'Error: no star to delete (star was already removed).'
+        delete_star = -1
+        return
+      end if
+      ! Deallocate memory of the star
+      deallocate(star%h)
+      deallocate(star%dh)
+      deallocate(star%hpr)
+      ! Tell the bad news to the star 
+      star%star_exists = .FALSE.
+      num_stars = num_stars - 1
+      delete_star = 0
       end function
 
       subroutine timestep_heuristic ( JO, JSTAR )
@@ -896,7 +943,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       implicit none
       integer, intent(in) :: id, KT1, KT2, JNN
       
-      if (id<1 .or. id>num_stars) then
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          return
       end if
       

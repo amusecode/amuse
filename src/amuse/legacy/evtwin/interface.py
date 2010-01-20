@@ -218,7 +218,6 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
         end_times = end_time.as_vector_with_length(len(self.particles))
         
         particles_set = self.particles.to_set()
-        print 'len(particles_set): ', len(particles_set)
         while len(particles_set) > 0:
             result = self._evolve_particles(particles_set)
             if result != 0:
