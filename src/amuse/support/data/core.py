@@ -862,7 +862,7 @@ class AbstractParticleSet(object):
         [1.0] m
         
         """
-        self.add_particles(particle.as_set())
+        return self.add_particles(particle.as_set())[0]
         
     
     def remove_particles(self, particles):
