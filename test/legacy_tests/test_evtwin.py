@@ -224,7 +224,7 @@ class TestInterfaceBinding(TestWithMPI):
 #       Create an array of stars with a range in stellar mass
 #        masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
         # no high mass stars for now.. (problems with 2nd Asymp. Giant Branch)
-        masses = [.5, 1., 2.] | units.MSun
+        masses = [.5, 1., 1.5] | units.MSun
 
         number_of_stars=len(masses)
         stars =  core.Stars(number_of_stars)
@@ -245,13 +245,82 @@ class TestInterfaceBinding(TestWithMPI):
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         
-        instance.evolve_model(end_time = 125 | units.Myr)
+        instance.evolve_model(end_time = 10 | units.Myr)
         from_code_to_model.copy()
                 
         for i in range(number_of_stars):
-            self.assertTrue(stars[i].age.value_in(units.Myr) > 125)
+            self.assertTrue(stars[i].age.value_in(units.Myr) > 10)
             self.assertTrue(stars[i].mass < masses[i])
                 
         del instance
-            
         
+    def test5_add_and_remove(self):
+        instance = EVtwin()
+        instance.initialize_module_with_default_parameters() 
+#       Create an "array" of one star
+        stars = core.Stars(1)
+        star=stars[0]
+        star.mass = 1.0 | units.MSun
+        star.radius = 0.0 | units.RSun
+#       Create another "array" of one star
+        stars2 = core.Stars(1)
+        star2=stars2[0]
+        star2.mass = 1.0 | units.MSun
+        star2.radius = 0.0 | units.RSun
+        print stars._get_keys()
+        print
+        print stars2._get_keys()
+        print
+        stars.add_particles(stars2)
+        print stars._get_keys()
+        print
+        self.assertEquals(len(instance.particles), 0) # before creation
+        instance.setup_particles(stars)
+        instance.initialize_stars()
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
+        instance.evolve_model(end_time=2.0|units.Myr)
+        from_code_to_model.copy()
+        self.assertEquals(len(instance.particles), 2) # before remove
+        for i in range(len(instance.particles)):
+            self.assertTrue(stars[i].age.value_in(units.Myr) > 2.0)
+        instance.particles.remove_particle(stars[1])
+        self.assertEquals(len(instance.particles), 1) # in between remove
+        self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
+        stars.remove_particle(stars[1])
+        print stars._get_keys()
+        print
+        self.assertEquals(len(stars), 1) # after remove
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        instance.evolve_model(end_time=4.0|units.Myr)
+        from_code_to_model.copy()
+        age_of_star=stars[0].age
+        self.assertTrue(age_of_star.value_in(units.Myr) > 4.0)
+#       Create another "array" of one star
+        stars3 = core.Stars(1)
+        star3=stars3[0]
+        star3.mass = 1.0 | units.MSun
+        star3.radius = 0.0 | units.RSun
+        print
+        print stars3._get_keys()
+        print
+        stars.add_particles(stars3)
+        stars.add_particles(stars2)
+        print stars._get_keys()
+        print
+        instance.particles.add_particles(stars3)
+        instance.particles.add_particles(stars2)
+        self.assertEquals(len(instance.particles), 3) # it's back...
+        self.assertEquals(stars[1].age.value_in(units.Myr), 0.0)
+        self.assertEquals(stars[2].age.value_in(units.Myr), 0.0) # ... and rejuvenated
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        instance.evolve_model(end_time=2.0|units.Myr)
+        from_code_to_model.copy()
+        self.assertTrue(stars[1].age.value_in(units.Myr) > 2.0 and stars[1].age.value_in(units.Myr) < 4.0)
+        self.assertEquals(stars[1].age, stars[2].age)
+        instance.evolve_model(end_time=4.0|units.Myr)
+        from_code_to_model.copy()
+        self.assertAlmostEqual(stars[1].age.value_in(units.Myr), age_of_star.value_in(units.Myr), 3)
+        self.assertTrue(stars[0].age > age_of_star)
+        del instance
+
