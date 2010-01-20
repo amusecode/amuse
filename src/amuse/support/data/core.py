@@ -1290,10 +1290,12 @@ class ParticleInformationChannel(object):
         return filter(lambda x : self.to_particles._has_key(x), from_keys)
         
     def copy_attributes(self, attributes):
+        self._reindex()
         data = self.from_particles._get_values(self.keys, attributes)
         self.to_particles._set_values(self.keys, attributes, data)
     
     def copy(self):
+        self._reindex()
         self.copy_attributes(self.from_particles._get_attributes())
     
 

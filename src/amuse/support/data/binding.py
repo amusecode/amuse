@@ -499,6 +499,7 @@ class InCodeAttributeStorage(AttributeStorage):
             
         for particle_key in keys:
             indices_in_the_code.append(self.mapping_from_particle_key_to_index_in_the_code[particle_key])
+            
         return indices_in_the_code
         
    
