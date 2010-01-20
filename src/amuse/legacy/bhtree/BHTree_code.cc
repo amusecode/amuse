@@ -481,9 +481,11 @@ int set_acceleration(int index_of_the_particle, double ax, double ay, double az)
   return -2;
 }
 
-int get_indices_of_colliding_particles(int * index_of_particle1, int * index_of_particle2)
+int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2)
 {
-  return -2;
+  *index_of_particle1 = find_colliding_primary();
+  *index_of_particle2 = find_colliding_secondary(*index_of_particle1);
+  return 0;
 }
 
 int get_center_of_mass_position(double *x, double *y, double *z)

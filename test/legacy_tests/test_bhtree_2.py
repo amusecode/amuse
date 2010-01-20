@@ -211,3 +211,39 @@ class TestAmuseInterface(TestWithMPI):
         instance.cleanup_module()
         del instance
 
+    def test3(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+
+        instance = BHTree(convert_nbody)
+        #instance.dt_dia = 1
+        instance.parameters.epsilon_squared = 0.001 | units.AU**2
+        #instance.timestep = 0.0001
+        #instance.use_self_gravity = 0
+        instance.setup_module()
+        
+        
+        stars = core.Stars(2)
+        star1 = stars[0]
+        star2 = stars[1]
+
+        star1.mass = units.MSun(1.0)
+        star1.position = units.AU(numpy.array((-.10,0.0,0.0)))
+        star1.velocity = units.AUd(numpy.array((0.0,0.0,0.0)))
+        star1.radius = units.RSun(1.0)
+
+        star2.mass = units.MSun(1.0)
+        star2.position = units.AU(numpy.array((.10,0.0,0.0)))
+        star2.velocity = units.AUd(numpy.array((0.0,0.0,0.0)))
+        star2.radius = units.RSun(100.0)
+        
+        instance.setup_particles(stars)
+    
+        for x in range(1,200,1):
+            instance.evolve_model(x | units.day)
+            instance.update_particles(stars)
+            print instance.get_indices_of_colliding_particles()
+            #print stars[0].position-stars[1].position
+            stars.savepoint()
+        
+         
+

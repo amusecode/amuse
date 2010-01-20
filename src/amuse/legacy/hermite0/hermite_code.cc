@@ -886,10 +886,53 @@ int get_potential_energy(double *potential_energy)
     return 0;
 }
 
-int get_indices_of_colliding_particles(int *id1, int *id2)
+int get_colliding_primary()
+{
+    id_coll_primary = id_coll_secondary = -1;
+
+    int n = ident.size();
+    for (int i = 0; i < n-1; i++) {	// inefficient; better to flag
+					// collisions during the force loop
+	for (int j = i+1; j < n; j++) {
+	    real r2 = 0;
+	    for(int k = 0; k < NDIM; k++){
+		real dx = pos[i][k]-pos[j][k];
+		r2+=dx*dx;
+	    }
+	    real rsum = radius[i] + radius[j];
+	    if (r2 <= rsum*rsum) {
+		if (mass[i] >= mass[j]) {
+		    id_coll_primary = ident[i];
+		    id_coll_secondary = ident[j];
+		} else {
+		    id_coll_primary = ident[j];
+		    id_coll_secondary = ident[i];
+		}
+		return id_coll_primary;
+	    }
+	}
+    }
+    return -1;
+}
+
+int get_colliding_secondary(int id1)
+{
+    if (id1 >= 0 && id1 == id_coll_primary && id_coll_secondary >= 0)
+      {
+        return id_coll_secondary;  
+      }
+    else
+      {
+	return -1;
+      }
+}
+
+int get_indices_of_colliding_particles(int *new_id1, int *new_id2)
 //cello, proj1 NYI
 {
-  return -2;
+  *new_id1 = get_colliding_primary();
+  *new_id2 = get_colliding_secondary(*new_id1);
+  return 0;
 }
 
 int get_time(double *_t)
@@ -1018,42 +1061,5 @@ int get_time_step(double *time_step)
 int initialize_time_step() {return 0;}
 
 int finalize_time_step() {return 0;}
-
-int get_colliding_primary()
-{
-    id_coll_primary = id_coll_secondary = -1;
-
-    int n = ident.size();
-    for (int i = 0; i < n-1; i++) {	// inefficient; better to flag
-					// collisions during the force loop
-	for (int j = i+1; j < n; j++) {
-	    real r2 = 0;
-	    for(int k = 0; k < NDIM; k++){
-		real dx = pos[i][k]-pos[j][k];
-		r2+=dx*dx;
-	    }
-	    real rsum = radius[i] + radius[j];
-	    if (r2 <= rsum*rsum) {
-		if (mass[i] >= mass[j]) {
-		    id_coll_primary = ident[i];
-		    id_coll_secondary = ident[j];
-		} else {
-		    id_coll_primary = ident[j];
-		    id_coll_secondary = ident[i];
-		}
-		return id_coll_primary;
-	    }
-	}
-    }
-    return -1;
-}
-
-int get_colliding_secondary(int id1)
-{
-    if (id1 >= 0 && id1 == id_coll_primary && id_coll_secondary >= 0)
-	return id_coll_secondary;
-    else
-	return -1;
-}
 
 int get_escaper(){return -1;}	// not implemented yet

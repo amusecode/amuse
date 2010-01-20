@@ -251,9 +251,12 @@ int get_colliding_primary();
 
 //* The primary is id; return -1 if no secondary found. */
 
-int get_colliding_secondary(int id);
+int get_colliding_secondary(int id1);
 
 //-------------------------------------------------------------------------
+
+
+int get_indices_of_colliding_particles(int *id1, int *id2);
 
 /// Return the id of the next escaper found, -1 if none exists.
 
