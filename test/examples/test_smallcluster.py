@@ -95,7 +95,7 @@ def move_particles_to_center_of_mass(particles):
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
    
      
-def plot_particles(particles):
+def plot_particles(particles, name_of_the_figure):
     
     if HAS_MATPLOTLIB:
         print "plotting the data"
@@ -218,7 +218,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     del gravity
     del stellar_evolution
     
-    plot_particles(particles)
+    plot_particles(particles, name_of_the_figure)
     
         
 
