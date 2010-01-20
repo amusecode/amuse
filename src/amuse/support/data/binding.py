@@ -429,6 +429,7 @@ class InCodeAttributeStorage(AttributeStorage):
         self._get_number_of_particles = getattr(self.code_interface, self.name_of_number_of_particles_getter)
         self._delete_particle = getattr(self.code_interface, self.name_of_delete_particle)
         
+        
         self.attributes = set([])
         for x in self.getters:
             self.attributes |= set(x.attributes())
@@ -500,6 +501,20 @@ class InCodeAttributeStorage(AttributeStorage):
             indices_in_the_code.append(self.mapping_from_particle_key_to_index_in_the_code[particle_key])
         return indices_in_the_code
         
+   
+    def get_key_indices_of(self, keys):
+        result = []
+        if keys is None:
+            keys = self.particle_keys
+        
+        keys_set = set(keys)
+        for index in range(len(self.particle_keys)):
+           key = self.particle_keys[index]
+           if key in keys_set:
+               result.append(index)
+          
+        return index
+         
     def _get_values(self, keys, attributes):
         indices_in_the_code = self.get_indices_of(keys)
         
@@ -521,14 +536,10 @@ class InCodeAttributeStorage(AttributeStorage):
             setter.apply(self.code_interface, indices_in_the_code, attributes, values)
     
     def _remove_particles(self, keys):
-        indices_in_the_code = []
-        if keys is None:
-            keys = self.particle_keys
-            
-        for particle_key in keys:
-            indices_in_the_code.append(self.mapping_from_particle_key_to_index_in_the_code[particle_key])
+        indices_in_the_code = self.get_indices_of(keys)
         
         method = getattr(self.code_interface, self.name_of_delete_particle)
+        
         errors = method(indices_in_the_code)
         for errorcode in errors:
             if errorcode < 0:
@@ -537,9 +548,9 @@ class InCodeAttributeStorage(AttributeStorage):
         d = self.mapping_from_particle_key_to_index_in_the_code
         for key in keys:
             del d[key]
-            
-        self.particle_keys =  numpy.delete(self.particle_keys, indices_in_the_code)
-        
+         
+        indices_to_delete = self.get_key_indices_of(keys)
+        self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
             
     def _get_attributes(self):
         return self.attributes
