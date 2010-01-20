@@ -491,6 +491,7 @@ class InCodeAttributeStorage(AttributeStorage):
         for key in keys:
             d[key] = indices[index]
             index = index + 1
+        #self.mapping_from_particle_key_to_index_in_the_code = d
         
     def get_indices_of(self, keys):
         indices_in_the_code = []
@@ -514,7 +515,7 @@ class InCodeAttributeStorage(AttributeStorage):
            if key in keys_set:
                result.append(index)
           
-        return index
+        return result
          
     def _get_values(self, keys, attributes):
         indices_in_the_code = self.get_indices_of(keys)

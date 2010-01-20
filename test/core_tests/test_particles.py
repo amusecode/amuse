@@ -283,6 +283,31 @@ class TestParticlesWithBinding(TestBase):
         local_particles1.synchronize_to(remote_particles)
         self.assertEquals(len(remote_particles), 4)
         
+    
+    def test6(self):
+        interface = self.TestInterface()
+        
+        local_particles1 = core.Stars(2)
+        local_particles1.mass = units.kg.new_quantity([3.0, 4.0])
+        
+        remote_particles = interface.particles
+        remote_particles.add_particles(local_particles1)
+        
+        local_particle = core.Particle()
+        local_particle.mass = units.kg.new_quantity(5.0)
+        
+        local_particles1.add_particle(local_particle)
+        
+        self.assertEquals(len(local_particles1), 3)
+        self.assertEquals(len(remote_particles), 2)
+        
+        local_particles1.synchronize_to(remote_particles)
+        
+        self.assertEquals(len(remote_particles), 3)
+        
+        remote_particles.remove_particle(local_particle)
+        self.assertEquals(len(remote_particles), 2)
+        
         
         
         
