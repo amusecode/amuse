@@ -348,7 +348,7 @@ class PhiGRAPEBinding(NBodyGravitationalDynamicsBinding):
 class PhiGRAPE(PhiGRAPEInterface, PhiGRAPEBinding):
     
     def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB):
-        PhiGRAPEInterface.__init__(self)
-        PhiGRAPEBinding.__init__(self, convert_nbody, mode)
+        PhiGRAPEInterface.__init__(self, mode=mode)
+        PhiGRAPEBinding.__init__(self, convert_nbody)
         
   
