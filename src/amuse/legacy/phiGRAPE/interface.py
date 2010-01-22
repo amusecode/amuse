@@ -27,9 +27,9 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         if mode == self.MODE_G6LIB:
             return 'worker_code'
         if mode == self.MODE_GPU:
-            return 'muse_worker_gpu'
+            return 'worker_code_gpu'
         if mode == self.MODE_GRAPE:
-            return 'muse_worker_grape'
+            return 'worker_code_grape'
             
     @legacy_function   
     def setup_module():

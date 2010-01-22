@@ -282,8 +282,9 @@ C---  done
       INTEGER get_eps2
       DOUBLE PRECISION ref_eps2
       
-      ref_eps2=eps2
-
+      ref_eps2 = eps * eps
+      get_eps2 = 0
+    
       RETURN
       END
 

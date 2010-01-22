@@ -208,6 +208,12 @@ class BuildLegacy(LegacyCommand):
                     name = line[len('muse_worker_'):index_of_the_colon]
                     print name
                     result.append((line[:index_of_the_colon], name,))
+            elif line.startswith('worker_code_'):
+                index_of_the_colon = line.index(':')
+                if(index_of_the_colon > 0):
+                    name = line[len('worker_code_'):index_of_the_colon]
+                    print name
+                    result.append((line[:index_of_the_colon], name,))
         return result
         
  

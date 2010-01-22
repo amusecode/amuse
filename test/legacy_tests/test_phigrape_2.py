@@ -6,6 +6,7 @@ from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.legacy.support import channel
 
 from legacy_support import TestWithMPI
 
@@ -36,11 +37,15 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
     def test2(self):
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
         instance = PhiGRAPEInterface()
-        instance.eps2 = 0.101
-        self.assertEquals(0.101, instance.eps2)
-        instance.eps2 = 0.110
-        self.assertEquals(0.110, instance.eps2)
+        #channel.MessageChannel.DEBUGGER = None
+        for x in [0.101, 4.0]:
+            error = instance.set_eps2(x)
+            self.assertEquals(error, 0)            
+            value, error = instance.get_eps2()
+            self.assertEquals(error, 0)
+            self.assertEquals(x, value)
         del instance
         
     

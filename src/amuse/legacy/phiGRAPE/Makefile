@@ -75,6 +75,14 @@ muse_worker: muse_worker.f90 muse_interface.o
 worker_code: worker_code.f90 phiGRAPE_code.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
+	
+worker_code_gpu: worker_code.f90 phiGRAPE_code.o
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
+	
+worker_code_grape: worker_code.f90 phiGRAPE_code.o
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
 
 muse_worker_gpu: muse_worker.f90 muse_interface.o 
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
