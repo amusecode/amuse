@@ -855,7 +855,8 @@ class AbstractParticleSet(object):
         0
         >>> particle = Particle()
         >>> particle.x = 1.0 | units.m
-        >>> particles.add_particle(particle)
+        >>> particles.add_particle(particle)  # doctest:+ELLIPSIS
+        <amuse.support.data.core.Particle object at ...>
         >>> print len(particles)
         1
         >>> print particles.x
@@ -874,7 +875,8 @@ class AbstractParticleSet(object):
         >>> particles1 = Particles(2)
         >>> particles1.x = [1.0, 2.0] | units.m
         >>> particles2 = Particles()
-        >>> particles2.add_particle(particles1[0])
+        >>> particles2.add_particle(particles1[0]) # doctest:+ELLIPSIS
+        <amuse.support.data.core.Particle object at ...>
         >>> particles1.remove_particles(particles2)
         >>> print len(particles1)
         1
@@ -920,7 +922,8 @@ class AbstractParticleSet(object):
         >>> copy = particles.copy()
         >>> new_particle = Particle()
         >>> new_particle.x = 3.0 | units.m
-        >>> particles.add_particle(new_particle)
+        >>> particles.add_particle(new_particle)# doctest:+ELLIPSIS
+        <amuse.support.data.core.Particle object at ...>
         >>> print particles.x
         [1.0, 2.0, 3.0] m
         >>> print copy.x

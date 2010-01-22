@@ -14,7 +14,7 @@ from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
 
-def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun, name_of_the_figure = "HR_evolution_tracks.png", use_SSE=True):
+def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun, name_of_the_figure = "HR_evolution_tracks.png", use_SSE=False):
     """
     For every mass in the `masses' array, a stellar evolution track across the Hertzsprung-Russell
     diagram will be calculated and plotted. Each star will be created, evolved and removed one by 
@@ -154,7 +154,7 @@ def calculate_effective_temperature(luminosity,radius):
 
 def test_simulate_one_star():
     assert is_mpd_running()
-    simulate_evolution_tracks([5.0] | units.MSun)
+    simulate_evolution_tracks([20.0] | units.MSun, use_SSE=True)
     
 if __name__ == '__main__':
     simulate_evolution_tracks(name_of_the_figure = sys.argv[1])
