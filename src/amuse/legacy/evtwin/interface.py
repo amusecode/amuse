@@ -35,7 +35,7 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         handled by this instance.
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('metallicity', dtype='int32', direction=function.OUT,
+        function.addParameter('maximum_number_of_stars', dtype='int32', direction=function.OUT,
             description = "The current value of the maximum number of stars")
         function.result_type = 'int32'
         function.result_doc = """
@@ -54,7 +54,7 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         changed once initialize_code has been called.
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('metallicity', dtype='int32', direction=function.IN,
+        function.addParameter('maximum_number_of_stars', dtype='int32', direction=function.IN,
             description = "The new value of the maximum number of stars.")
         function.result_type = 'int32'
         function.result_doc = """
