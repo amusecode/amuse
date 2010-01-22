@@ -40,7 +40,7 @@ endif
 
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS) $(GRAPE6_LIBDIRS)
-GPULIBS  = $(CUDA_LIBS) -lsapporo -lboost_thread-mt -lpthread 
+GPULIBS  = $(CUDA_LIBS) -lsapporo -L/opt/local/lib -lboost_thread-mt -lpthread -L/usr/lib -lstdc++.6
 GRAPE6LIBS  = -lg6lx
 LIBS     = -lm  
 LIBS     =  -lm -lpthread
@@ -117,6 +117,8 @@ clean:
 	rm -f *.o .m* .n* *.lst *.L *~ muse_worker
 	
 	rm worker_code worker_code.f90
+
+
 .f.o:
 	$(FC) $(FFLAGS) -c $<
 
