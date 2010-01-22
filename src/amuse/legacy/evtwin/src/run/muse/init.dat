@@ -51,7 +51,7 @@ somewhat optimised for speed. In particular:
  KCL   = 1
  KION  = 2
  KAM   = 1
- KOP   = 1
+ KOP   = 4
  KCC   = 0
  KNUC  = 0
  KCN   = 0

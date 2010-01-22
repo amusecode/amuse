@@ -12,14 +12,14 @@ for the meaning of some of these variables you can set
 
  STARTFILE = ''
  
- ML1     =  0.00E+00,  DML     =  0.30E+00,  KML     =  1
+ ML1     =  0.30E+00,  DML     =  0.30E+00,  KML     =  1
  QL1     =  5.00E-02,  DQL     =  5.00E-02,  KQL     =  1
  XL1     =  6.00E+00,  DXL     =  0.30E+00,  KXL     =  1
 
  ROT     =  1.0,          KR      =  1
  EX      =  0.0
 
- SM      =  1.0
+ SM      =  2.0
  DTY     = -1.0
  AGE     =  0.0
  PER     = -1.0
