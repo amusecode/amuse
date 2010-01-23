@@ -228,14 +228,15 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
                 self.out.n() + 'use ' + x 
                 
     def output_legacy_functions_declarations(self):
-        for x in self.legacy_functions:
-            specification = x.specification
-            if specification.id == 0:
-                continue
-            if specification.result_type is None:
-                continue
-            spec = self.dtype_to_spec[specification.result_type]
-            self.out.lf() +  spec.type + ' :: ' + specification.name
+        if not hasattr(self.class_with_legacy_functions, 'use_modules'):
+            for x in self.legacy_functions:
+                specification = x.specification
+                if specification.id == 0:
+                    continue
+                if specification.result_type is None:
+                    continue
+                spec = self.dtype_to_spec[specification.result_type]
+                self.out.lf() +  spec.type + ' :: ' + specification.name
         
     def output_allocate_arrays(self):
         maximum_number_of_inputvariables_of_a_type = 255
