@@ -14,6 +14,7 @@
       IF (.NOT. STATUS) THEN
 ! delimiter = CALL get_environment_variable('DELIMITER',delimiter)
         delimiter ='/'
+        PRINT * , FILENAME//delimiter//'.'
         INQUIRE(file=FILENAME//delimiter//'.',EXIST=STATUS)
       END IF
       FILE_EXISTS = STATUS
