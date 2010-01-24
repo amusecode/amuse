@@ -138,8 +138,12 @@
       character(len=*), intent(in) :: new_ev_path;
 
       IF (.NOT. FILE_EXISTS(new_ev_path) ) THEN
-         IF (VERBOSE) PRINT *, "Warning: file ",TRIM(new_ev_path)," for ", TRIM(ev_path), " does not exist!"
-         set_ev_path = -1
+         IF (.NOT. FILE_EXISTS(TRIM(new_ev_path)//"/input/lt2ubv.dat") ) THEN
+            IF (VERBOSE) PRINT *, "Warning: file ",TRIM(new_ev_path)," for ", TRIM(ev_path), " does not exist!"
+            set_ev_path = -1
+         ELSE
+            set_ev_path = 0
+         END IF
       ELSE
          set_ev_path = 0
       END IF
