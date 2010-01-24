@@ -197,7 +197,7 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             "path_to_data", 
             "Path to the data directory", 
             units.string, 
-            "src" | units.string
+            None
         ),
         
     ]
