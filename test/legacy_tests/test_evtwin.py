@@ -270,6 +270,10 @@ class TestInterfaceBinding(TestWithMPI):
         
         instance.evolve_model(end_time = 10 | units.Myr)
         from_code_to_model.copy()
+        
+        timesteps = instance.particles.time_step
+        self.assertTrue(timesteps[2]<timesteps[1] and timesteps[1]<timesteps[0])
+        self.assertAlmostEqual(timesteps[0].value_in(units.yr), 3610347.1768, 3)
                 
         for i in range(number_of_stars):
             self.assertTrue(stars[i].age.value_in(units.Myr) > 10)

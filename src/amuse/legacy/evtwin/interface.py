@@ -133,13 +133,12 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         -1 - ERROR
             The code could not retrieve the value.
         """
-
         return function
-    @legacy_function
     
+    @legacy_function
     def set_max_age_stop_condition():
         """
-        Set the current maximum age stop condition of this instance (in years).
+        Set the new maximum age stop condition of this instance (in years).
         Evolution will stop once the star has reached this maximum age.
         This needs to be set after calling :method:`initialize_code`. It will 
         be overridden by initialize_code otherwise.
@@ -154,8 +153,30 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         -1 - ERROR
             The code could not set the value.
         """
-
         return function
+        
+    @legacy_function
+    def get_time_step():
+        """
+        Retrieve the current time step (yr) to be taken for the evolution of this star.
+        Note that the stellar evolution code might change the value during an 
+        evolve_model call, if it fails to converge using the current value.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the stellar type of")
+        function.addParameter('time_step', dtype='float64', direction=function.OUT
+            , description="The current time step (yr) to be taken for the evolution of this star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+
         
 class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
     name_of_delete_particle = "delete_star"
@@ -199,6 +220,12 @@ class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
                 ("luminosity", "luminosity", units.LSun),
             )
         ),
+        binding.ParticleGetAttributesMethod(
+            "get_time_step",
+            (
+                ("time_step", "time_step", units.yr),
+            )
+        ),
         
     )
     
@@ -239,6 +266,17 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             None
         ),
         
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_max_age_stop_condition",
+            "set_max_age_stop_condition",
+            "max_age_stop_condition", 
+            "The maximum age stop condition of this instance.",
+            units.yr, 
+            None #Default value of 10e12 yr will be set by initialize_code later.
+        ),
+        
+        
+
     ]
     
     def initialize_module_with_default_parameters(self):

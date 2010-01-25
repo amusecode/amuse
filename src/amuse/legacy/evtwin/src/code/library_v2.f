@@ -898,6 +898,22 @@ c Determine whether I and phi are computed or not, for OUTPUT
       UC(2) = value
       set_max_age_stop_condition = 0
       end function
+      
+! Return the current time step to be taken for the evolution of this star.
+      function get_time_step(id, value)
+      use constants
+      implicit none
+      integer :: get_time_step
+      integer, intent(in) :: id
+      double precision :: value
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
+         get_time_step = -1
+         value = -1.0
+         return
+      end if
+      value = star_list(id)%dt/CSY ! Convert from seconds to yr
+      get_time_step = 0
+      end function
 
       function initialize_stars()
       implicit none
