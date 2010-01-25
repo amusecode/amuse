@@ -112,6 +112,7 @@ class TestInterface(TestWithMPI):
         del instance   
         
     def test6(self):
+        print "Testing EVtwin stop conditions..."
         instance = EVtwinInterface()
         error = instance.set_ev_path(instance.default_path_to_ev_database)
         self.assertEquals(0, error)      
@@ -130,6 +131,18 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, error)      
             self.assertEquals(10 ** x, value)      
         
+        (value, error) = instance.get_min_timestep_stop_condition()
+        self.assertEquals(0, error)      
+        self.assertAlmostEqual(0.031689, value, 5)      
+        
+        for x in range(-3,2):
+            error = instance.set_min_timestep_stop_condition(10 ** x)
+            self.assertEquals(0, error)      
+            
+            (value, error) = instance.get_min_timestep_stop_condition()
+            self.assertEquals(0, error)      
+            self.assertEquals(10 ** x, value)      
+
         del instance
 
     

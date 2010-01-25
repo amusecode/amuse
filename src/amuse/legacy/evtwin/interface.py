@@ -142,10 +142,50 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         Evolution will stop once the star has reached this maximum age.
         This needs to be set after calling :method:`initialize_code`. It will 
         be overridden by initialize_code otherwise.
-         """
+        """
         function = LegacyFunctionSpecification()  
         function.addParameter('max_age_stop_condition', dtype='float64', direction=function.IN
             , description="The new maximum age stop condition of this instance (in years).")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+        
+    @legacy_function
+    def get_min_timestep_stop_condition():
+        """
+        Retrieve the current minimum timestep stop condition of this instance (in years).
+        Evolution will stop if the timestep required by the solver in order to converge
+        has decreased below this minimum timestep.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('min_timestep_stop_condition', dtype='float64', direction=function.OUT
+            , description="The current minimum timestep stop condition of this instance (in years).")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_min_timestep_stop_condition():
+        """
+        Set the new minimum timestep stop condition of this instance (in years).
+        Evolution will stop if the timestep required by the solver in order to converge
+        has decreased below this minimum timestep.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('min_timestep_stop_condition', dtype='float64', direction=function.IN
+            , description="The new minimum timestep stop condition of this instance (in years).")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -273,6 +313,15 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             "The maximum age stop condition of this instance.",
             units.yr, 
             None #Default value of 10e12 yr will be set by initialize_code later.
+        ),
+        
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_min_timestep_stop_condition",
+            "set_min_timestep_stop_condition",
+            "min_timestep_stop_condition", 
+            "The minimum timestep stop condition of this instance.",
+            units.yr, 
+            None #Default value of 1e6 seconds will be set by initialize_code later.
         ),
         
         

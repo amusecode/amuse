@@ -899,6 +899,30 @@ c Determine whether I and phi are computed or not, for OUTPUT
       set_max_age_stop_condition = 0
       end function
       
+      function get_min_timestep_stop_condition(value)
+      use constants
+      implicit none
+      integer :: get_min_timestep_stop_condition
+      double precision :: value
+      DOUBLE PRECISION :: ML, QL, XL, UC(21)
+      INTEGER :: JMOD, JB, JNN, JTER, JOC, JKH
+      COMMON /QUERY / ML, QL, XL, UC, JMOD, JB, JNN, JTER, JOC, JKH
+      value = UC(12)/CSY ! Convert from seconds to yr
+      get_min_timestep_stop_condition = 0
+      end function
+      
+      function set_min_timestep_stop_condition(value)
+      use constants
+      implicit none
+      integer :: set_min_timestep_stop_condition
+      double precision :: value
+      DOUBLE PRECISION :: ML, QL, XL, UC(21)
+      INTEGER :: JMOD, JB, JNN, JTER, JOC, JKH
+      COMMON /QUERY / ML, QL, XL, UC, JMOD, JB, JNN, JTER, JOC, JKH
+      UC(12) = value*CSY ! Convert from yr to seconds
+      set_min_timestep_stop_condition = 0
+      end function
+      
 ! Return the current time step to be taken for the evolution of this star.
       function get_time_step(id, value)
       use constants
