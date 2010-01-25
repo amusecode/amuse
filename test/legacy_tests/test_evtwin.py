@@ -111,6 +111,29 @@ class TestInterface(TestWithMPI):
         
         del instance   
         
+    def test6(self):
+        instance = EVtwinInterface()
+        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        self.assertEquals(0, error)      
+        error = instance.initialize_code()
+        self.assertEquals(0, error)      
+        
+        (value, error) = instance.get_max_age_stop_condition()
+        self.assertEquals(0, error)      
+        self.assertEquals(2.0e12, value)      
+        
+        for x in range(10,14):
+            error = instance.set_max_age_stop_condition(10 ** x)
+            self.assertEquals(0, error)      
+            
+            (value, error) = instance.get_max_age_stop_condition()
+            self.assertEquals(0, error)      
+            self.assertEquals(10 ** x, value)      
+        
+        del instance
+
+    
+    
 class TestInterfaceBinding(TestWithMPI):
     
             

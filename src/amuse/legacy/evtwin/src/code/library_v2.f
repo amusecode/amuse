@@ -876,7 +876,28 @@ c Determine whether I and phi are computed or not, for OUTPUT
       value = num_stars
       get_number_of_particles = 0
       end function
-
+      
+      function get_max_age_stop_condition(value)
+      implicit none
+      integer :: get_max_age_stop_condition
+      double precision :: value
+      DOUBLE PRECISION :: ML, QL, XL, UC(21)
+      INTEGER :: JMOD, JB, JNN, JTER, JOC, JKH
+      COMMON /QUERY / ML, QL, XL, UC, JMOD, JB, JNN, JTER, JOC, JKH
+      value = UC(2)
+      get_max_age_stop_condition = 0
+      end function
+      
+      function set_max_age_stop_condition(value)
+      implicit none
+      integer :: set_max_age_stop_condition
+      double precision :: value
+      DOUBLE PRECISION :: ML, QL, XL, UC(21)
+      INTEGER :: JMOD, JB, JNN, JTER, JOC, JKH
+      COMMON /QUERY / ML, QL, XL, UC, JMOD, JB, JNN, JTER, JOC, JKH
+      UC(2) = value
+      set_max_age_stop_condition = 0
+      end function
 
       function initialize_stars()
       implicit none

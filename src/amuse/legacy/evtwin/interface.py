@@ -117,6 +117,46 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
+    @legacy_function
+    def get_max_age_stop_condition():
+        """
+        Retrieve the current maximum age stop condition of this instance (in years).
+        Evolution will stop once the star has reached this maximum age.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('max_age_stop_condition', dtype='float64', direction=function.OUT
+            , description="The current maximum age stop condition of this instance (in years).")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+
+        return function
+    @legacy_function
+    
+    def set_max_age_stop_condition():
+        """
+        Set the current maximum age stop condition of this instance (in years).
+        Evolution will stop once the star has reached this maximum age.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+         """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('max_age_stop_condition', dtype='float64', direction=function.IN
+            , description="The new maximum age stop condition of this instance (in years).")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+
+        return function
+        
 class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
     name_of_delete_particle = "delete_star"
     
@@ -189,7 +229,6 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             units.percentage, 
             0.02 | units.percentage
         ),
-        
         
         parameters.ModuleMethodParameterDefinition_Next(
             None,
