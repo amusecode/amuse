@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from legacy_support import TestWithMPI
+import os
 import sys
 
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
@@ -7,6 +8,7 @@ from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from support import path_to_test_results
 
 import numpy
 
@@ -206,7 +208,9 @@ class TestAmuseInterface(TestWithMPI):
             plot.set_ylim(-1.5, 1.5)
                
             
-            figure.savefig("bhtree-earth-sun.svg")    
+            test_results_path = path_to_test_results.get_path_to_test_results()
+            output_file = os.path.join(test_results_path, "bhtree-earth-sun.svg")
+            figure.savefig(output_file)    
         
         instance.cleanup_module()
         del instance

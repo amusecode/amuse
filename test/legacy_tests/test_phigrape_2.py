@@ -1,4 +1,4 @@
-
+import os
 import sys
 
 from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
@@ -9,6 +9,7 @@ from amuse.support.units import units
 from amuse.legacy.support import channel
 
 from legacy_support import TestWithMPI
+from support import path_to_test_results
 
 import numpy
 
@@ -267,8 +268,10 @@ class TestSunAndEarthSystem(TestWithMPI):
             
             plot.set_xlim(-1.5, 1.5)
             plot.set_ylim(-1.5, 1.5)
-               
-            figure.savefig("phiGRAPE-earth-sun2.svg")    
+            
+            test_results_path = path_to_test_results.get_path_to_test_results()
+            output_file = os.path.join(test_results_path, "phiGRAPE-earth-sun2.svg")
+            figure.savefig(output_file)
         
         instance.cleanup_module()
         del instance

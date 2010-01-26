@@ -13,6 +13,7 @@ from amuse.support.data import core
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
+from support import path_to_test_results
 
 def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun, \
     name_of_the_figure = "HR_evolution_tracks.png", use_SSE=True):
@@ -155,7 +156,9 @@ def calculate_effective_temperature(luminosity,radius):
 
 def test_simulate_one_star():
     assert is_mpd_running()
-    simulate_evolution_tracks([20.0] | units.MSun, use_SSE=True)
+    test_results_path = path_to_test_results.get_path_to_test_results()
+    output_file = os.path.join(test_results_path, "HR_evolution_tracks.png")
+    simulate_evolution_tracks([20.0] | units.MSun, name_of_the_figure=output_file, use_SSE=True)
     
 if __name__ == '__main__':
     if len(sys.argv) == 1:

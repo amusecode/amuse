@@ -19,6 +19,7 @@ from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.interface import BHTree
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.support.core import is_mpd_running
+from support import path_to_test_results
 
 from amuse.support.io import store
 
@@ -210,9 +211,11 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time)
 
     
-    if os.path.exists('small.hdf5'):
-        os.remove('small.hdf5')
-    storage = store.StoreHDF("small.hdf5")
+    test_results_path = path_to_test_results.get_path_to_test_results()
+    output_file = os.path.join(test_results_path, "small.hdf5")
+    if os.path.exists(output_file):
+        os.remove(output_file)
+    storage = store.StoreHDF(output_file)
     storage.store(particles)
    
     del gravity
@@ -230,7 +233,9 @@ def test_simulate_small_cluster():
     a too small cluster, this is done to limit the testing time.
     """
     assert is_mpd_running()
-    simulate_small_cluster(4, 4 | units.Myr)
+    test_results_path = path_to_test_results.get_path_to_test_results()
+    output_file = os.path.join(test_results_path, "test-2.svg")
+    simulate_small_cluster(4, 4 | units.Myr, name_of_the_figure = output_file)
     
 if __name__ == '__main__':
     simulate_small_cluster(int(sys.argv[1]), int(sys.argv[2]) | units.Myr, sys.argv[3])

@@ -1,6 +1,7 @@
 from amuse.support.io import store
 from amuse.support.units import units
 from amuse.support.data.core import Stars
+from support import path_to_test_results
 
 import unittest
 import os
@@ -8,10 +9,11 @@ import os
 class TestStoreHDF(unittest.TestCase):
     
     def test1(self):
-        if os.path.exists('test.hdf5'):
-            os.remove('test.hdf5')
-            
-        instance = store.StoreHDF("test.hdf5")
+        test_results_path = path_to_test_results.get_path_to_test_results()
+        output_file = os.path.join(test_results_path, "test.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        instance = store.StoreHDF(output_file)
         
         number_of_particles = 10
         p = Stars(number_of_particles)

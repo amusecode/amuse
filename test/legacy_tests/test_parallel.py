@@ -1,5 +1,6 @@
 
 from legacy_support import TestWithMPI
+import os
 import sys
 
 from amuse.legacy.hermite0.interface import Hermite
@@ -8,6 +9,7 @@ from amuse.legacy.bhtree.interface import BHTree
 from amuse.support.data.core import Particles
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from support import path_to_test_results
 
 import numpy
 import threading
@@ -92,8 +94,10 @@ class TestAmuseInterface(TestWithMPI):
             plot.set_xlim(-1.5, 1.5)
             plot.set_ylim(-1.5, 1.5)
             
-            figure.savefig("parallel-earth-sun.svg")   
-        
+            test_results_path = path_to_test_results.get_path_to_test_results()
+            output_file = os.path.join(test_results_path, "parallel-earth-sun.svg")
+            figure.savefig(output_file)
+                    
         bhtree.cleanup_module()
         hermite.cleanup_module()
         del bhtree
