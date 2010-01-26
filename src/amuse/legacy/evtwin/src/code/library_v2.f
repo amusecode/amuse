@@ -81,7 +81,7 @@
       integer, parameter, private :: switch_iterations = 5
 
       ! Print verbose output to stdout yes or no.
-      logical, private :: verbose = .false.
+      logical, private :: verbose = .true.
       
       ! Name of the init.dat input file, if not otherwise specified
       character*500, private :: init_dat_name = 'init.dat'
@@ -103,6 +103,8 @@
       implicit none
       integer :: set_init_dat_name
       character(len=*), intent(in) :: new_init_dat_name;
+
+      PRINT * , new_init_dat_name
 
       IF (.NOT. FILE_EXISTS(new_init_dat_name) ) THEN
          IF (VERBOSE) PRINT *, "Warning: file ",TRIM(new_init_dat_name)," for ", TRIM(init_dat_name), " does not exist!"

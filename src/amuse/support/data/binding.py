@@ -114,7 +114,8 @@ class ParticleAttributesModifier(CodeMethod):
                     setattr(particles, attribute_name, unit.new_quantity(result_dictionary[parameter.name]))
     
         
-            
+        
+
 class ParticleGetAttributesMethod(CodeMethod):
     """
     Objects of this class retrieve the values of the specified attributes
@@ -345,6 +346,39 @@ class ParticleSetAttributesMethod(CodeMethod):
                 raise Exception("Could not add a particle")
 
 
+
+class ParticleQueryMethod(object):
+    """
+    Objects of this class get indices from the code and return a subset.
+    
+    The Query function implementation must not take any parameters
+    """
+    
+    def __init__(self, name_of_the_function, name_of_the_out_parameters):
+        self.name_of_the_function = name_of_the_function
+        self.name_of_the_out_parameters = name_of_the_out_parameters
+
+    def _run(self, code_interface, particles):
+            
+        function = getattr(code_interface, self.name_of_the_function)
+        keyword_results = function()
+        
+        errorcode = keyword_results['__result']
+        if errorcode < 0:
+            raise Exception("Could not query")
+            
+        indices = []
+        for name in self.name_of_the_out_parameters:
+            indices.append(keyword_results[name])
+            
+        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
+        return particles._subset(keys)
+        
+        
+            
+        
+        
+
 class NewParticleMethod(CodeMethod):
     
     def __init__(self, name_of_the_function, attribute_specification):
@@ -424,6 +458,7 @@ class InCodeAttributeStorage(AttributeStorage):
     def __init__(self, code_interface):
         self.code_interface = code_interface
         self.mapping_from_particle_key_to_index_in_the_code = {}
+        self.mapping_from_index_in_the_code_to_particle_key = {}
         self.particle_keys = []
         
         self._get_number_of_particles = getattr(self.code_interface, self.name_of_number_of_particles_getter)
@@ -486,12 +521,11 @@ class InCodeAttributeStorage(AttributeStorage):
         else:
             self.particle_keys = numpy.array(keys)
 
-        d = self.mapping_from_particle_key_to_index_in_the_code
         index = 0
         for key in keys:
-            d[key] = indices[index]
+            self.mapping_from_particle_key_to_index_in_the_code[key] = indices[index]
+            self.mapping_from_index_in_the_code_to_particle_key[indices[index]] = key
             index = index + 1
-        #self.mapping_from_particle_key_to_index_in_the_code = d
         
     def get_indices_of(self, keys):
         indices_in_the_code = []
@@ -550,6 +584,10 @@ class InCodeAttributeStorage(AttributeStorage):
         d = self.mapping_from_particle_key_to_index_in_the_code
         for key in keys:
             del d[key]
+        
+        for i in indices_in_the_code:
+            del self.mapping_from_index_in_the_code_to_particle_key[i]
+        
          
         indices_to_delete = self.get_key_indices_of(keys)
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
@@ -565,6 +603,12 @@ class InCodeAttributeStorage(AttributeStorage):
 
     def _has_key(self, key):
         return key in self.mapping_from_particle_key_to_index_in_the_code
+        
+    def _get_keys_for_indices_in_the_code(self, indices):
+        result = []
+        for i in indices:
+            result.append(self.mapping_from_index_in_the_code_to_particle_key[i])
+        return result
     
     
 

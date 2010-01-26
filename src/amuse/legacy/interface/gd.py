@@ -757,5 +757,14 @@ class NBodyGravitationalDynamicsBinding(InterfaceWithParametersBinding, Interfac
     model_time = CodeProperty("get_time", nbody_system.time)
     
     
+    colliding_particles_method =  binding.ParticleQueryMethod(
+        "get_indices_of_colliding_particles",
+        ("index_of_particle1","index_of_particle2")
+    )
+    
+    def get_colliding_particles(self):
+        subset = self.colliding_particles_method._run(self, self.particles)
+        return subset
+    
     
     

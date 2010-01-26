@@ -1014,6 +1014,14 @@ class AbstractParticleSet(object):
         same key more than once.
         """
         return len(self) != len(set(self._get_keys()))
+    
+    
+    def as_subset_in(self, other):
+        selected_keys = filter(lambda x : other._has_key(x), self._get_keys())
+        return other._subset(selected_keys)
+        
+    def _subset(self, keys):
+        return ParticlesSubset(self._particles(), keys)
         
 class Particles(AbstractParticleSet):
     """

@@ -34,6 +34,7 @@ clean:
 	/bin/rm -f muse_worker muse_worker.f90 twin_library.mod
 	/bin/rm -f muse_worker.cc  muse_worker_c muse_worker.h
 	/bin/rm -f mpi_code.f90 worker_code twin_library_v2.mod
+	/bin/rm -f src/makefile.dep src/makefile.sys
 
 distclean:
 	make -C src distclean
