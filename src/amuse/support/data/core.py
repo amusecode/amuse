@@ -1048,7 +1048,9 @@ class Particles(AbstractParticleSet):
         instance._private.timestamp = timestamp
         instance._private.previous = self._private.previous
         self._private.previous = instance
-        
+    
+    def get_timestamp(self):
+        return self._private.timestamp
         
     def iter_history(self):
         current = self
@@ -1056,15 +1058,19 @@ class Particles(AbstractParticleSet):
             yield current
             current = current._private.previous
     
+    def previous_state(self):
+        return self._private.previous
+        
     @property
     def history(self):
         return reversed(list(self.iter_history()))
         
     def get_timeline_of_attribute(self, particle_key, attribute):
+        print attribute
         timeline = []
         for x in self.history:
             if x._has_key(particle_key):
-                timeline.append((x._private.timestamp, x._private.attribute_storage.get_value_of(particle_key, attribute)))
+                timeline.append((x._private.timestamp, x._get_value_of_attribute(particle_key, attribute)))
         return timeline
                     
     def copy(self):

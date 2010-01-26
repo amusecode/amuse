@@ -10,6 +10,23 @@ import numpy
 
 class TestBase(unittest.TestCase):
     pass
+    
+class TestParticles(TestBase):
+    
+    def test1(self):
+        
+        particles = core.Particles(2)
+        for i in range(3):
+            particles.mass = (i * 1.0) | units.kg
+            particles.savepoint((i + 1) * 1.0 | units.s)
+        
+        particles = particles.previous_state()
+        
+        masses = particles[0].get_timeline_of_attribute("mass")
+        self.assertEquals(len(masses), 3)
+        self.assertEquals(masses[0][0], 1.0 | units.s)
+        self.assertEquals(masses[1][0], 2.0 | units.s)
+        self.assertEquals(masses[2][0], 3.0 | units.s)
         
 class TestStars(TestBase):
 

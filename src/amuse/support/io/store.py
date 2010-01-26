@@ -44,7 +44,7 @@ class HDF5AttributeStorage(AttributeStorage):
         dataset = self.attributesgroup[attribute]
         return eval(dataset.attrs["units"], units.__dict__) 
         
-    def _get_attributes():
+    def _get_attributes(self):
         return self.attributesgroup.keys()
         
     def _get_values(self, particles, attributes):
@@ -60,6 +60,9 @@ class HDF5AttributeStorage(AttributeStorage):
         
         return results
         
+    def _has_key(self, key):
+        return key in self.mapping_from_particle_to_index
+    
     def _get_keys(self):
         return self.particle_keys
         
@@ -92,12 +95,17 @@ class StoreHDF(object):
         group = particles_group.create_group(name)
         
         attributes_group = group.create_group("attributes")
-        times_group = group.create_group("times")
         
         
         group.attrs["number_of_particles"] = len(particles)
         group.attrs["class_of_the_particles"] = pickle.dumps(type(particles))
         
+        quantity = particles.get_timestamp()
+        if not quantity is None:
+            group.attrs["timestamp"] = quantity.value_in(quantity.unit)
+            group.attrs["timestamp_unit"] = str(quantity.unit.to_simple_form())
+        
+        #times_group = group.create_group("times")
         #previous_model_times = None
         #all_stored_model_time_references = {}
         #for attribute_values in particles._get_attributes():
@@ -130,9 +138,17 @@ class StoreHDF(object):
             dataset = group["keys"]
             keys = numpy.ndarray(len(dataset), dtype = dataset.dtype)
             dataset.read_direct(keys)
-
+            
+            if "timestamp" in group.attrs:
+                unit = eval(group.attrs["timestamp_unit"], units.__dict__) 
+                timestamp = unit.new_quantity(group.attrs["timestamp"])
+            else:
+                timestamp = None
+            
             particles = class_of_the_particles()
             particles._private.attribute_storage = HDF5AttributeStorage(keys, group)
+            particles._private.timestamp = timestamp
+            
             all_particle_sets[int(group_index) - 1] = particles
             
         previous = None
