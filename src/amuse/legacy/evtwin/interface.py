@@ -216,7 +216,49 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             The code could not retrieve the value.
         """
         return function
-
+        
+    @legacy_function
+    def get_number_of_ionization_elements():
+        """
+        Retrieve the current number of elements used for ionization of this instance.
+        With the default value (2), only the ionization of H and He are taken into account
+        in the EoS. For values 3, 4, 5, 6, 7, 8, 9:
+        the elements:          C, N, O, Ne,Mg,Si,Fe are also included. Don't try 9.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('number_of_ionization_elements', dtype='int32', direction=function.OUT
+            , description="The current number of elements used for ionization in EoS solver of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_number_of_ionization_elements():
+        """
+        Set the new number of elements used for ionization of this instance.
+        With the default value (2), only the ionization of H and He are taken into account
+        in the EoS. For values 3, 4, 5, 6, 7, 8, 9:
+        the elements:          C, N, O, Ne,Mg,Si,Fe are also included. Don't try 9.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('number_of_ionization_elements', dtype='int32', direction=function.IN
+            , description="The new number of elements used for ionization in EoS solver of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+        
         
 class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
     name_of_delete_particle = "delete_star"
@@ -322,6 +364,15 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             "The minimum timestep stop condition of this instance.",
             units.yr, 
             None #Default value of 1e6 seconds (~ 0.03 yr) will be set by initialize_code later.
+        ),
+        
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_number_of_ionization_elements",
+            "set_number_of_ionization_elements",
+            "number_of_ionization_elements", 
+            "The number of elements used for ionization in EoS solver of this instance.",
+            units.none, 
+            None #Default value of (2) will be set by initialize_code later.
         ),
         
         

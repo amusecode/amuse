@@ -143,6 +143,18 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, error)
             self.assertEquals(10 ** x, value)
 
+        (value, error) = instance.get_number_of_ionization_elements()
+        self.assertEquals(0, error)      
+        self.assertEquals(2, value)      
+        
+        for x in range(1,10):
+            error = instance.set_number_of_ionization_elements(x)
+            self.assertEquals(0, error)      
+            
+            (value, error) = instance.get_number_of_ionization_elements()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+
         del instance
 
     

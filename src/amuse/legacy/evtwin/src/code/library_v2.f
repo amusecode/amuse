@@ -709,13 +709,11 @@ c Determine whether I and phi are computed or not, for OUTPUT
       integer :: get_luminosity
       double precision :: value
       integer, intent(in) :: id
-      
       if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_luminosity = -1
          value = 0.0
          return
       end if
-      
       get_luminosity = 0
       value = star_list(id)%hpr(INV_VAR_PERM(8), 1)/CLSN
       end function
@@ -733,7 +731,6 @@ c Determine whether I and phi are computed or not, for OUTPUT
          get_mass = -1
          return
       end if
-      
       mass = star_list(id)%hpr(INV_VAR_PERM(4), 1)/CMSN
       get_mass = 0
       end function
@@ -743,17 +740,14 @@ c Determine whether I and phi are computed or not, for OUTPUT
       function get_radius(id, radius)
       use constants
       implicit none
-      
       integer :: get_radius
       double precision, intent(out) :: radius
       integer, intent(in) :: id
-      
       if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          radius = 0.0
          get_radius = -1
          return
       end if
-      
       radius = exp(star_list(id)%hpr(INV_VAR_PERM(7), 1))/CRSN
       get_radius = 0
       end function
@@ -766,13 +760,11 @@ c Determine whether I and phi are computed or not, for OUTPUT
       integer :: get_temperature
       double precision :: value
       integer, intent(in) :: id
-      
       if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_temperature = -1
          value = 0
          return
       end if
-      
       get_temperature = 0
       value = exp(star_list(id)%hpr(INV_VAR_PERM(2), 1))
       end function
@@ -784,27 +776,23 @@ c Determine whether I and phi are computed or not, for OUTPUT
       implicit none
       integer :: get_age
       double precision :: value
-      integer, intent(in) :: id
-      
+      integer, intent(in) :: id      
       if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_age = -1
          value = 0.0
          return
       end if
-      
       value = star_list(id)%age
       get_age = 0
       end function
       
-
-
+! get_stellar_type:
 ! Return the stellar type of the specified star
       function get_stellar_type(id, value)
       implicit none
       integer :: get_stellar_type
       integer :: value
       integer, intent(in) :: id
-      
       if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
          get_stellar_type = -1
          value = -1
@@ -814,25 +802,26 @@ c Determine whether I and phi are computed or not, for OUTPUT
       get_stellar_type = 0
       end function
     
+! get_metallicity:
 ! Return the metallicity parameter
       function get_metallicity(value)
       implicit none
       integer :: get_metallicity
       double precision :: value
       character*503 :: metallicity_str_with_zero = '0.0'
-      
       metallicity_str_with_zero(3:) = metallicity_str
       READ (metallicity_str_with_zero, '(F10.8)') value
       get_metallicity = 0
       end function
       
+! set_metallicity:
+! Set the metallicity parameter
       function set_metallicity(value)
       implicit none
       integer :: set_metallicity, i
       integer :: must_remove_zero = 1
       double precision :: value
       character*503 :: metallicity_str_with_zero = '0.0'
-      
       WRITE(metallicity_str_with_zero,'(F10.8)') value
       must_remove_zero  = 1
       DO i = 10, 3, -1
@@ -843,11 +832,11 @@ c Determine whether I and phi are computed or not, for OUTPUT
         end if
       END DO
       metallicity_str = metallicity_str_with_zero(3:)
-      
       set_metallicity = 0
       end function
 
-    ! Return the maximum_number_of_stars parameter
+! get_maximum_number_of_stars:
+! Return the maximum_number_of_stars parameter
       function get_maximum_number_of_stars(value)
       implicit none
       integer :: get_maximum_number_of_stars
@@ -856,6 +845,8 @@ c Determine whether I and phi are computed or not, for OUTPUT
       get_maximum_number_of_stars = 0
       end function
       
+! set_maximum_number_of_stars:
+! Set the maximum_number_of_stars parameter
       function set_maximum_number_of_stars(value)
       implicit none
       integer :: set_maximum_number_of_stars
@@ -865,10 +856,11 @@ c Determine whether I and phi are computed or not, for OUTPUT
         return
       end if
       maximum_number_of_stars = value
-      
       set_maximum_number_of_stars = 0
       end function
       
+! get_number_of_particles:
+! Return the number of stars created
       function get_number_of_particles(value)
       implicit none
       integer :: get_number_of_particles
@@ -877,6 +869,8 @@ c Determine whether I and phi are computed or not, for OUTPUT
       get_number_of_particles = 0
       end function
       
+! get_max_age_stop_condition:
+! Return the maximum age stop condition
       function get_max_age_stop_condition(value)
       implicit none
       integer :: get_max_age_stop_condition
@@ -888,6 +882,8 @@ c Determine whether I and phi are computed or not, for OUTPUT
       get_max_age_stop_condition = 0
       end function
       
+! set_max_age_stop_condition:
+! Set the maximum age stop condition
       function set_max_age_stop_condition(value)
       implicit none
       integer :: set_max_age_stop_condition
@@ -899,6 +895,8 @@ c Determine whether I and phi are computed or not, for OUTPUT
       set_max_age_stop_condition = 0
       end function
       
+! get_min_timestep_stop_condition:
+! Return the minimum timestep stop condition
       function get_min_timestep_stop_condition(value)
       use constants
       implicit none
@@ -911,6 +909,8 @@ c Determine whether I and phi are computed or not, for OUTPUT
       get_min_timestep_stop_condition = 0
       end function
       
+! set_min_timestep_stop_condition:
+! Set the minimum timestep stop condition
       function set_min_timestep_stop_condition(value)
       use constants
       implicit none
@@ -923,6 +923,7 @@ c Determine whether I and phi are computed or not, for OUTPUT
       set_min_timestep_stop_condition = 0
       end function
       
+! get_time_step:
 ! Return the current time step to be taken for the evolution of this star.
       function get_time_step(id, value)
       use constants
@@ -938,7 +939,27 @@ c Determine whether I and phi are computed or not, for OUTPUT
       value = star_list(id)%dt/CSY ! Convert from seconds to yr
       get_time_step = 0
       end function
+      
+! get_number_of_ionization_elements:
+! Retrieve the current number of elements used for ionization in the EoS
+      function get_number_of_ionization_elements(value)
+      use settings
+      implicit none
+      integer :: get_number_of_ionization_elements, value
+      value = KION
+      get_number_of_ionization_elements = 0
+      end function
 
+! set_number_of_ionization_elements:
+! Set the current number of elements used for ionization in the EoS
+      function set_number_of_ionization_elements(value)
+      use settings
+      implicit none
+      integer :: set_number_of_ionization_elements, value
+      KION = value
+      set_number_of_ionization_elements = 0
+      end function
+      
       function initialize_stars()
       implicit none
       integer :: initialize_stars
