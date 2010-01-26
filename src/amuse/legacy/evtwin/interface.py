@@ -321,7 +321,7 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             "min_timestep_stop_condition", 
             "The minimum timestep stop condition of this instance.",
             units.yr, 
-            None #Default value of 1e6 seconds will be set by initialize_code later.
+            None #Default value of 1e6 seconds (~ 0.03 yr) will be set by initialize_code later.
         ),
         
         

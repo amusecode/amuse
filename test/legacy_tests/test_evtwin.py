@@ -129,8 +129,8 @@ class TestInterface(TestWithMPI):
             
             (value, error) = instance.get_max_age_stop_condition()
             self.assertEquals(0, error)      
-            self.assertEquals(10 ** x, value)      
-        
+            self.assertEquals(10 ** x, value)
+                
         (value, error) = instance.get_min_timestep_stop_condition()
         self.assertEquals(0, error)      
         self.assertAlmostEqual(0.031689, value, 5)      
@@ -140,8 +140,8 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, error)      
             
             (value, error) = instance.get_min_timestep_stop_condition()
-            self.assertEquals(0, error)      
-            self.assertEquals(10 ** x, value)      
+            self.assertEquals(0, error)
+            self.assertEquals(10 ** x, value)
 
         del instance
 
@@ -261,6 +261,7 @@ class TestInterfaceBinding(TestWithMPI):
 #        masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
         # no high mass stars for now.. (problems with 2nd Asymp. Giant Branch)
         masses = [.5, 1., 1.5] | units.MSun
+        max_age = 12 | units.Myr
 
         number_of_stars=len(masses)
         stars =  core.Stars(number_of_stars)
@@ -273,9 +274,11 @@ class TestInterfaceBinding(TestWithMPI):
         instance.initialize_module_with_default_parameters() 
         if instance.get_maximum_number_of_stars() < number_of_stars:
             instance.set_maximum_number_of_stars(number_of_stars)
+        self.assertEqual(instance.parameters.max_age_stop_condition, 2e6 | units.Myr)
+        instance.parameters.max_age_stop_condition = max_age
+        self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
         instance.setup_particles(stars)
 #       Let the code perform initialization actions after all particles have been created. 
-#       Called before the first evolve call and after the last new_particle call.
         instance.initialize_stars()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
@@ -284,14 +287,18 @@ class TestInterfaceBinding(TestWithMPI):
         instance.evolve_model(end_time = 10 | units.Myr)
         from_code_to_model.copy()
         
-        timesteps = instance.particles.time_step
-        self.assertTrue(timesteps[2]<timesteps[1] and timesteps[1]<timesteps[0])
-        self.assertAlmostEqual(timesteps[0].value_in(units.yr), 3610347.1768, 3)
-                
         for i in range(number_of_stars):
             self.assertTrue(stars[i].age.value_in(units.Myr) > 10)
+            self.assertTrue(stars[i].age < max_age)
             self.assertTrue(stars[i].mass < masses[i])
+            self.assertTrue(stars[i].time_step < max_age)
                 
+        try:
+            instance.evolve_model(end_time = 2*max_age)
+            self.fail("Should not be able to evolve beyond maximum age.")
+        except Exception as ex:
+            self.assertEquals("  2 -- BACKUP -- tstep reduced below limit; quit", str(ex))
+
         del instance
         
     def test5_add_and_remove(self):
