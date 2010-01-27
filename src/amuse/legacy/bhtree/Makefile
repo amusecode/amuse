@@ -16,6 +16,12 @@ A_OBJS = BHTree_code.o \
 	$(BHTCDIR)/BHtree.o $(BHTCDIR)/gravity.o \
 	$(BHTCDIR)/pgetopt.o $(BHTCDIR)/second.o $(BHTC_EXTRAS)
 
+ifndef AMUSE_DIR
+	AMUSE_DIR=../../../..
+endif
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 all:	compile muse_worker worker_code
 
 compile: $(BHTC)
@@ -29,16 +35,16 @@ clean:
 	cd $(BHTCDIR) && $(MAKE) clean
 
 muse_worker.cc: muse_dynamics_mpi.py
-	../../../../bin/create_c_worker.py muse_dynamics_mpi.py BHTree > $@
+	$(CODE_GENERATOR) --type=c --mode=mpi muse_dynamics_mpi.py BHTree > $@
 
 muse_worker:	muse_worker.cc $(OBJS)
 	mpicxx $@.cc $(OBJS) -o $@
 
 worker_code.cc: interface.py
-	../../../../bin/create_c_worker.py interface.py BHTree > $@
+	$(CODE_GENERATOR) --type=c interface.py BHTree -o $@
 
 worker_code.h: interface.py
-	../../../../bin/create_c_header.py interface.py BHTree > $@
+	$(CODE_GENERATOR) --type=h interface.py BHTree -o $@
 
 worker_code: worker_code.cc worker_code.h $(A_OBJS)
 	mpicxx $@.cc $(A_OBJS) -o $@

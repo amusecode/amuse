@@ -3,6 +3,12 @@ ifndef FORTRAN
 	FORTRAN = gfortran
 endif
 
+ifndef AMUSE_DIR
+	AMUSE_DIR=../../../..
+endif
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 LIBDIR=src/lib
 OBJDIR=src/obj
 
@@ -47,7 +53,7 @@ worker_code: mpi_code.f90
 	mpif90 $< -o $@ $(EVTWINLIB)
 
 mpi_code.f90: interface.py
-	../../../../bin/create_f90_worker.py interface.py EVtwin > $@
+	$(CODE_GENERATOR) --type=f90 interface.py EVtwin -o $@
 	
 .f.o: $<
 	$(FORTRAN) -c -o $@ $< 

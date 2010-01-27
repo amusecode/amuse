@@ -3,6 +3,12 @@ ifndef FORTRAN
 	FORTRAN = gfortran
 endif
 
+ifndef AMUSE_DIR
+	AMUSE_DIR=../../../..
+endif
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 OBJ	= src/deltat.o src/evolv1.o src/hrdiag.o src/kick.o \
 	  src/mlwind.o src/mrenv.o src/ran3.o src/star.o \
 	  src/zcnsts.o src/zfuncs.o
@@ -19,7 +25,7 @@ muse_worker:	muse_worker.f90  SSE_muse_interface.o  $(OBJ)
 
 
 muse_worker.f90: muse_stellar_mpi.py
-	../../../../bin/create_f90_worker.py muse_stellar_mpi.py SSE > $@
+	$(CODE_GENERATOR) --type=f90 muse_stellar_mpi.py SSE -o $@
 
 .f.o: $<
 	$(FORTRAN) -c -fPIC -o $@ $< 

@@ -8,19 +8,25 @@ OBJS = muse_dynamics.o
 
 A_OBJS = hermite_code.o
 
+ifndef AMUSE_DIR
+	AMUSE_DIR=../../../..
+endif
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 all: muse_worker worker_code
 
 cleanall: clean 
 	$(RM) muse_worker *~ worker_code
 
 muse_worker.cc: muse_dynamics_mpi.py
-	../../../../bin/create_c_worker.py muse_dynamics_mpi.py Hermite > $@
+	$(CODE_GENERATOR) --type=c muse_dynamics_mpi.py Hermite -o $@
 	
 worker_code.cc: interface.py
-	../../../../bin/create_c_worker.py interface.py Hermite > $@
+	$(CODE_GENERATOR) --type=c interface.py Hermite -o $@
 
 worker_code.h: interface.py
-	../../../../bin/create_c_header.py interface.py Hermite > $@
+	$(CODE_GENERATOR) --type=h interface.py Hermite -o $@
 
 muse_worker:	muse_worker.cc $(OBJS)
 	mpicxx $@.cc $(OBJS) -o $@

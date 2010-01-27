@@ -94,6 +94,12 @@ the build process.
 .. code-block:: make
     :linenos:
     
+    ifndef AMUSE_DIR
+        AMUSE_DIR=../../../..
+    endif
+
+    CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
     CXXFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
     LDFLAGS = -lm $(MUSE_LD_FLAGS)
 
@@ -108,9 +114,9 @@ the build process.
         rm -f *.so *.o *.pyc muse_worker.cc
 
     muse_worker.cc: interface.py
-        ../../../../bin/create_c_worker.py interface.py MyCode > $@
+        $(CODE_GENERATOR) --type=c interface.py MyCode -o $@
 
-    muse_worker:	muse_worker.cc $(OBJS)
+    muse_worker: muse_worker.cc $(OBJS)
         mpicxx $@.cc $(OBJS) -o $@
 
     .cc.o: $<

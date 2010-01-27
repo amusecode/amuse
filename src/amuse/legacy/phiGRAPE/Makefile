@@ -4,6 +4,12 @@ CC = mpicc
 
 OPTS+=-DNOMPI
 
+ifndef AMUSE_DIR
+	AMUSE_DIR=../../../..
+endif
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 SRCDIR = src
 
 OBJECTS = \
@@ -100,13 +106,13 @@ muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o
 	  $(GLLIB)  $(X11LIB) $(THREADLIB)
         
 muse_worker.f90: muse_dynamics_mpi.py
-	../../../../bin/create_f90_worker.py muse_dynamics_mpi.py PhiGRAPE > $@
+	$(CODE_GENERATOR) --type=f90 muse_dynamics_mpi.py PhiGRAPE -o $@
 
 worker_code.f90: interface.py
-	../../../../bin/create_f90_worker.py interface.py PhiGRAPE > $@
+	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPE -o $@
 
 muse_worker_gl.f90: muse_dynamics_gl.py
-	../../../../bin/create_f90_worker.py muse_dynamics_gl.py PhiGRAPE > $@
+	$(CODE_GENERATOR) --type=f90 muse_dynamics_gl.py PhiGRAPE -o $@
 
 
 interface_gl:	$(OBJECTS) $(MUSE_IF) muse_interface_gl.F 

@@ -5,6 +5,12 @@ else
     TARGS = .warning
 endif
 
+ifndef AMUSE_DIR
+	AMUSE_DIR=../../../..
+endif
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 OBJS	=	amuse_interface.o integrate.o analyze.o
 EXE	=	smallN2 triple
 
@@ -75,7 +81,7 @@ clean:
 	rm -f *.so *.o *.pyc muse_worker_starlab.cc
 
 muse_worker_starlab:        muse_dynamics_mpi.py $(OBJS)
-	../../../../bin/create_c_worker.py muse_dynamics_mpi.py SmallN > $@.cc
+	$(CODE_GENERATOR) --type=c muse_dynamics_mpi.py SmallN -o $@.cc
 	mpicxx $(CXXFLAGS) $(LDLIBS) $@.cc $(OBJS) -o $@
 
 %.o: %.cc

@@ -516,8 +516,8 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
         self.out + 'extern "C" {'
         self.out.indent().lf()
         self.output_legacy_functions()
-        self._result = self.out
         self.out.dedent().lf() + '}'
+        self._result = self.out.string
     
         
         
