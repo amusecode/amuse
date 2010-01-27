@@ -65,53 +65,6 @@ class SSEInterface(LegacyInterface):
         function.addParameter('epoch', dtype='d', direction=function.IN)
         function.addParameter('dt', dtype='d', direction=function.OUT)
         return function
-
-    
-    def initialize_module_with_default_parameters(self):
-        """
-        * neta is the Reimers mass-loss coefficent (neta*4x10^-13; 0.5 normally).
-        * bwind is the binary enhanced mass loss parameter (inactive for single).
-        * hewind is a helium star mass loss factor (1.0 normally). 
-        * sigma is the dispersion in the Maxwellian for the SN kick speed (190 km/s). 
-        *
-        * ifflag > 0 uses WD IFMR of HPE, 1995, MNRAS, 272, 800 (0). 
-        * wdflag > 0 uses modified-Mestel cooling for WDs (0). 
-        * bhflag > 0 allows velocity kick at BH formation (0). 
-        * nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1). 
-        * mxns is the maximum NS mass (1.8, nsflag=0; 3.0, nsflag=1). 
-        * idum is the random number seed used in the kick routine. 
-        *
-        * Next come the parameters that determine the timesteps chosen in each
-        * evolution phase:
-        *                 pts1 - MS                  (0.05)
-        *                 pts2 - GB, CHeB, AGB, HeGB (0.01)
-        *                 pts3 - HG, HeMS            (0.02)
-        * as decimal fractions of the time taken in that phase.
-        """
-        metallicity = 0.02
-        
-        neta = 0.5
-        bwind =  0.0
-        hewind =  0.5
-        sigma =  190.0
-        
-        ifflag = 0
-        wdflag =  1
-        bhflag =  0 
-        nsflag =  1
-        mxns =  3.0
-        
-        pts1 = 0.05
-        pts2 = 0.01
-        pts3 = 0.02
-    
-    
-        status = self.initialize(metallicity,
-            neta, bwind, hewind, sigma,
-            ifflag, wdflag, bhflag, nsflag, mxns,
-            pts1, pts2, pts3)
-            
-   
         
     def get_time_step_for_star(self, star):
         
@@ -201,7 +154,114 @@ class SSEBinding(InterfaceWithParametersBinding):
     def __init__(self):
         InterfaceWithParametersBinding.__init__(self)
         self.particles = SSEParticles(self)
+    
+    parameter_definitions = [
+        parameters.ModuleCachingParameterDefinition(
+            "metallicity",
+            "metallicity",
+            "Metallicity of all stars",
+            units.none,
+            0.02 | units.none
+        ),
+                
+        parameters.ModuleCachingParameterDefinition(
+            "neta",
+            "reimers_mass_loss_coefficient",
+            "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
+            units.none,
+            0.5 | units.none
+        ),
         
+        parameters.ModuleCachingParameterDefinition(
+            "bwind",
+            "binary_enhanced_mass_loss_parameter",
+            "The binary enhanced mass loss parameter (inactive for single).",
+            units.none,
+            0.0 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "hewind",
+            "helium_star_mass_loss_factor",
+            "Helium star mass loss factor",
+            units.none,
+            0.5 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "sigma",
+            "SN_kick_speed_dispersion",
+            "The dispersion in the Maxwellian for the SN kick speed (190 km/s).",
+            units.km / units.s,
+            190.0 | units.km / units.s
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "ifflag",
+            "white_dwarf_IFMR_flag", 
+            "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
+            units.none, 
+            0 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "wdflag",
+            "white_dwarf_cooling_flag", 
+            "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
+            units.none, 
+            1 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "bhflag",
+            "black_hole_kick_flag",
+            "bhflag > 0 allows velocity kick at BH formation (0).",
+            units.none,
+            0 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "nsflag",
+            "neutron_star_mass_flag",
+            "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
+            units.none,
+            1 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "mxns",
+            "maximum_neutron_star_mass",
+            "The maximum neutron star mass (1.8, nsflag=0; 3.0, nsflag=1).",
+            units.MSun,
+            3.0 | units.MSun
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "pts1",
+            "fractional_time_step_1", 
+            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
+            units.none, 
+            0.05 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "pts2",
+            "fractional_time_step_2", 
+            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
+            units.none, 
+            0.01 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
+            "pts3",
+            "fractional_time_step_3", 
+            "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
+            units.none, 
+            0.02 | units.none
+        ),
+        
+    ]
+    
     update_time_step_method = ParticleAttributesModifier(
         "get_time_step",
         (
@@ -268,6 +328,84 @@ class SSEBinding(InterfaceWithParametersBinding):
     
     def initialize_stars(self):
         pass
+    
+    def initialize_module_with_current_parameters(self):
+        #parameter_values = []
+        #for parameter in self.parameters:
+        #    parameter_values.append(parameter)
+        #status = self.initialize(*parameter_values)
+        status = self.initialize(self.parameters.metallicity.value_in(units.none),
+            self.parameters.reimers_mass_loss_coefficient.value_in(units.none), 
+            self.parameters.binary_enhanced_mass_loss_parameter.value_in(units.none), 
+            self.parameters.helium_star_mass_loss_factor.value_in(units.none), 
+            self.parameters.SN_kick_speed_dispersion.value_in(units.km / units.s),
+            self.parameters.white_dwarf_IFMR_flag.value_in(units.none), 
+            self.parameters.white_dwarf_cooling_flag.value_in(units.none), 
+            self.parameters.black_hole_kick_flag.value_in(units.none), 
+            self.parameters.neutron_star_mass_flag.value_in(units.none), 
+            self.parameters.maximum_neutron_star_mass.value_in(units.MSun),
+            self.parameters.fractional_time_step_1.value_in(units.none), 
+            self.parameters.fractional_time_step_2.value_in(units.none), 
+            self.parameters.fractional_time_step_3.value_in(units.none))
+        
+    def initialize_module_with_default_parameters(self):
+        """
+        * neta is the Reimers mass-loss coefficent (neta*4x10^-13; 0.5 normally).
+        * bwind is the binary enhanced mass loss parameter (inactive for single).
+        * hewind is a helium star mass loss factor (1.0 normally). 
+        * sigma is the dispersion in the Maxwellian for the SN kick speed (190 km/s). 
+        *
+        * ifflag > 0 uses WD IFMR of HPE, 1995, MNRAS, 272, 800 (0). 
+        * wdflag > 0 uses modified-Mestel cooling for WDs (0). 
+        * bhflag > 0 allows velocity kick at BH formation (0). 
+        * nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1). 
+        * mxns is the maximum NS mass (1.8, nsflag=0; 3.0, nsflag=1). 
+        * idum is the random number seed used in the kick routine. 
+        *
+        * Next come the parameters that determine the timesteps chosen in each
+        * evolution phase:
+        *                 pts1 - MS                  (0.05)
+        *                 pts2 - GB, CHeB, AGB, HeGB (0.01)
+        *                 pts3 - HG, HeMS            (0.02)
+        * as decimal fractions of the time taken in that phase.
+        """
+        #metallicity = 0.02
+        
+        #neta = 0.5
+        #bwind =  0.0
+        #hewind =  0.5
+        #sigma =  190.0
+        
+        #ifflag = 0
+        #wdflag =  1
+        #bhflag =  0 
+        #nsflag =  1
+        #mxns =  3.0
+        
+        #pts1 = 0.05
+        #pts2 = 0.01
+        #pts3 = 0.02
+        
+        #status = self.initialize(metallicity,
+        #    neta, bwind, hewind, sigma,
+        #    ifflag, wdflag, bhflag, nsflag, mxns,
+        #    pts1, pts2, pts3)
+
+        self.parameters.metallicity = 0.02 | units.none
+        self.parameters.reimers_mass_loss_coefficient = 0.5 | units.none
+        self.parameters.binary_enhanced_mass_loss_parameter = 0.0 | units.none
+        self.parameters.helium_star_mass_loss_factor = 0.5 | units.none
+        self.parameters.SN_kick_speed_dispersion = 190.0 | units.km / units.s
+        self.parameters.white_dwarf_IFMR_flag = 0 | units.none
+        self.parameters.white_dwarf_cooling_flag = 1 | units.none
+        self.parameters.black_hole_kick_flag = 0 | units.none
+        self.parameters.neutron_star_mass_flag = 1 | units.none
+        self.parameters.maximum_neutron_star_mass = 3.0 | units.MSun
+        self.parameters.fractional_time_step_1 = 0.05 | units.none
+        self.parameters.fractional_time_step_2 = 0.01 | units.none
+        self.parameters.fractional_time_step_3 = 0.02 | units.none
+        self.initialize_module_with_current_parameters()
+    
     
 class SSE(SSEInterface, SSEBinding):
     

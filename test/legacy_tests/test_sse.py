@@ -2,7 +2,6 @@ import platform
 
 from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
 
-#from amuse.support.data.core import Stars
 from amuse.support.data import core
 from amuse.support.units import units
 
@@ -211,6 +210,23 @@ class TestMPIInterface(TestWithMPI):
         )
         self.assertEquals(len(result['mass']), 3999)
         del sse
+
+    def test5(self):
+        instance = mpi_interface.SSE()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        myvalue = 0.7 | units.none
+        instance.parameters.reimers_mass_loss_coefficient = myvalue
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
+        instance.initialize_module_with_current_parameters()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
+        del instance
+        
+        instance = mpi_interface.SSE()
+        myvalue = 0.7 | units.none
+        instance.parameters.reimers_mass_loss_coefficient = myvalue
+        instance.initialize_module_with_default_parameters()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        del instance
         
 class TestSSE(TestWithMPI):
     
