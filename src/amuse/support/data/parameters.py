@@ -135,6 +135,21 @@ class ModuleMethodParameterDefinition_Next(ParameterDefinition):
         else:
             if self.get_method is None:
                 self.stored_value = number
+                
+                
+        
+class ModuleCachingParameterDefinition(ParameterDefinition):
+    def __init__(self, parameter_name, name, description, unit, default_value = None):
+        ParameterDefinition.__init__(self, name, description, unit, default_value)
+        self.stored_value = None
+        self.parameter_name = parameter_name
+        
+        
+    def get_legacy_value(self, object):
+        return self.stored_value
+        
+    def set_legacy_value(self, object, number):
+        self.stored_value = number
         
 
     
