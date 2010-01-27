@@ -335,8 +335,8 @@ class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding)
             "set_metallicity",
             "metallicity", 
             "Metallicity of all stats", 
-            units.percentage, 
-            0.02 | units.percentage
+            units.none, 
+            0.02 | units.none
         ),
         
         parameters.ModuleMethodParameterDefinition_Next(
