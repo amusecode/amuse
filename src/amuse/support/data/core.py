@@ -1023,6 +1023,21 @@ class AbstractParticleSet(object):
     def _subset(self, keys):
         return ParticlesSubset(self._particles(), keys)
         
+        
+    def __dir__(self):
+        result = []
+        result.extend(dir(type(self)))
+        result.extend(self._attributes_for_dir())
+        return result
+
+    
+    def _attributes_for_dir(self):
+        result = []
+        result.extend(self._get_attributes())
+        result.extend(self._calculated_attributes.keys())
+        result.extend(self._vector_attributes.keys())
+        return result
+        
 class Particles(AbstractParticleSet):
     """
     A set of particles. Attributes and values are stored in
@@ -1451,6 +1466,13 @@ class Particle(object):
             output += '}, '
             output += '\n'
         return output
+    
+    def __dir__(self):
+        result = []
+        result.extend(dir(type(self)))
+        result.extend(self.particles_set._attributes_for_dir())
+        return result
+        
         
     def set_default(self, attribute, quantity):
         if not attribute in self.particles_set._get_attributes():
