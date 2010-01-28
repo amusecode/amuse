@@ -154,7 +154,8 @@ class SSEBinding(InterfaceWithParametersBinding):
     def __init__(self):
         InterfaceWithParametersBinding.__init__(self)
         self.particles = SSEParticles(self)
-    
+        self.parameters.set_defaults()
+   
     parameter_definitions = [
         parameters.ModuleCachingParameterDefinition(
             "metallicity",
@@ -330,10 +331,6 @@ class SSEBinding(InterfaceWithParametersBinding):
         pass
     
     def initialize_module_with_current_parameters(self):
-        #parameter_values = []
-        #for parameter in self.parameters:
-        #    parameter_values.append(parameter)
-        #status = self.initialize(*parameter_values)
         status = self.initialize(self.parameters.metallicity.value_in(units.none),
             self.parameters.reimers_mass_loss_coefficient.value_in(units.none), 
             self.parameters.binary_enhanced_mass_loss_parameter.value_in(units.none), 
@@ -369,41 +366,7 @@ class SSEBinding(InterfaceWithParametersBinding):
         *                 pts3 - HG, HeMS            (0.02)
         * as decimal fractions of the time taken in that phase.
         """
-        #metallicity = 0.02
-        
-        #neta = 0.5
-        #bwind =  0.0
-        #hewind =  0.5
-        #sigma =  190.0
-        
-        #ifflag = 0
-        #wdflag =  1
-        #bhflag =  0 
-        #nsflag =  1
-        #mxns =  3.0
-        
-        #pts1 = 0.05
-        #pts2 = 0.01
-        #pts3 = 0.02
-        
-        #status = self.initialize(metallicity,
-        #    neta, bwind, hewind, sigma,
-        #    ifflag, wdflag, bhflag, nsflag, mxns,
-        #    pts1, pts2, pts3)
-
-        self.parameters.metallicity = 0.02 | units.none
-        self.parameters.reimers_mass_loss_coefficient = 0.5 | units.none
-        self.parameters.binary_enhanced_mass_loss_parameter = 0.0 | units.none
-        self.parameters.helium_star_mass_loss_factor = 0.5 | units.none
-        self.parameters.SN_kick_speed_dispersion = 190.0 | units.km / units.s
-        self.parameters.white_dwarf_IFMR_flag = 0 | units.none
-        self.parameters.white_dwarf_cooling_flag = 1 | units.none
-        self.parameters.black_hole_kick_flag = 0 | units.none
-        self.parameters.neutron_star_mass_flag = 1 | units.none
-        self.parameters.maximum_neutron_star_mass = 3.0 | units.MSun
-        self.parameters.fractional_time_step_1 = 0.05 | units.none
-        self.parameters.fractional_time_step_2 = 0.01 | units.none
-        self.parameters.fractional_time_step_3 = 0.02 | units.none
+        self.parameters.set_defaults()
         self.initialize_module_with_current_parameters()
     
     
