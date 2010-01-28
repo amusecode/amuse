@@ -144,12 +144,19 @@ class ModuleCachingParameterDefinition(ParameterDefinition):
         self.stored_value = None
         self.parameter_name = parameter_name
         
-        
     def get_legacy_value(self, object):
-        return self.stored_value
+        if hasattr(object, "_parameters"):
+            if self.name in object._parameters:
+                return object._parameters[self.name]
+            else:
+                return self.stored_value
+        else:
+            return self.stored_value
         
     def set_legacy_value(self, object, number):
-        self.stored_value = number
+        if hasattr(object, "_parameters"):
+            object._parameters[self.name] = number
+        else:
+            object._parameters = {self.name: number}
         
-
     
