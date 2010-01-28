@@ -21,6 +21,10 @@ In Ubuntu you can setup the environment with (as root):
     apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
 
 
+In Fedora you can setup the environment with (as root)::
+
+    yum groupinstall "Development Tools" "Development Libraries"
+
 Installing Prerequisites
 ========================
 
