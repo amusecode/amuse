@@ -10,6 +10,20 @@ the python ``site-packages`` library. Instead, all code is build
 in the AMUSE source directories. With this setup we can easily edit
 the code and run it, without the need for an extra installation step.
 
+
+Configuring the code
+--------------------
+The code is configured using the ``configure`` command. 
+Before building the code, run 'configure' in the AMUSE
+root directory.
+
+.. code-block:: sh
+    
+    > configure
+    
+The 'configure' script will check for all prerequisite software
+and report if any are missing.
+
 Building the code
 -----------------
 
