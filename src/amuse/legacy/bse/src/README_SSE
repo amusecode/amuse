@@ -1,0 +1,170 @@
+************************************************************************
+
+Information on the SSE package. 
+
+Created by Jarrod Hurley at the Institute of Astronomy, Cambridge, UK 
+in collaboration with Onno Pols and Christopher Tout. 
+12th February 2000. 
+
+More information can be found in the paper: 
+
+"Comprehensive analytic formulae for stellar evolution as a function 
+ of mass and metallicity" 
+ Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543. 
+
+This reference should be used for any publications that utilise the 
+SSE package. 
+
+Any queries that are not answered by referring to the paper can be addressed 
+to: jhurley@astro.swin.edu.au 
+
+************************************************************************
+
+Mass range:        0.1 -> 100 Msun 
+Metallicity Range: 0.0001 -> 0.03 (0.02 is solar) 
+
+************************************************************************
+
+The SSE package contains the following FORTRAN files: 
+
+sse.f       - Main routine. Evolves one star and creates data files. 
+const_bse.h - parameter file 
+deltat.f    - determines stellar evolution update timestep
+evolv1.f    - routine that controls the evolution of each star 
+evolve.in   - input file for sse.f 
+hrdiag.f    - subroutine to decide which evolution stage the star is 
+              currently at and then the appropriate luminosity, radius 
+              and core mass are calculated 
+kick.f      - generates supernova kick 
+mlwind.f    - subroutine which contains the preferred mass loss prescription 
+mrenv.f     - calculates envelope parameters
+ran3.f      - random number generator
+star.f      - subroutine which derives the landmark timescales and 
+              luminosities that divide the various evolution stages. 
+zcnsts.f  -   subroutine which sets all the constants of the formulae which 
+              depend on metallicity so that there is no Z dependence 
+              elsewhere 
+zdata.h   -   data file which contains all the coefficient values 
+zfuncs.f  -   contains all the formulae as a collection of separate functions 
+
+and 
+
+Makefile  - f77 compiler. Use command "make sse"
+
+************************************************************************
+
+The main routine sse.f contains comments that should (hopefully?)
+make everything self-explanatory. It is simply an example to show how 
+EVOLV1 should be used. 
+
+In the case of EVOLV1 being called in a loop over many stars 
+be careful to initialise each new star, i.e. 
+
+mt = mass
+kw = 1
+tphys = 0.0 
+epoch = 0.0
+ospin = 0.0
+
+However, the routine ZCNSTS only needs to be called each time you change
+metallicity.
+
+Note that the epoch is required because the physical time and the 
+age of the star are not always the same. 
+For example, when a star becomes a WD, at say time tWD, its' effective age
+becomes zero because the WD evolution formulae start from t=0.0. Therefore
+we set epoch = tWD and from then on the age of the star is age = t - epoch.
+The same happens when the star becomes a naked helium star, NS or BH. The
+epoch parameter is also very useful in binary evolution when a star needs    
+to be rejuvenated or aged as a result of mass transfer.
+
+You may not want to use sse.f at all and instead, for example, prefer to use 
+EVOLV1 directly as the main routine. 
+Also, you may want to utilise the individual subroutines in different ways. 
+For example, if instead of actually evolving the stars all you want 
+is an estimate of evolution timescales then, given the mass of a star 
+(and mt=mass, kw=1), a call to STAR will return the array TSCLS 
+which contains the necessary information. 
+
+PROBLEMS: if the program stops with a 'FATAL ERROR' then more information 
+          should be contained in the fort.99 file. When you have 
+          identified the initial conditions that produce the error then 
+          please contact me and I may help to fix the bug - assuming it 
+          can be reproduced! 
+
+************************************************************************
+
+Definitions of the various data arrays are contained in the header of the 
+subroutine where they are filled. A summary is also given here: 
+
+*       ---------------------------------------------------------------------
+       MASS    Initial stellar mass in solar units
+       AJ      Current age in Myr
+       MT      Current mass in solar units (used for R)
+       TM      Main sequence lifetime
+       TN      Nuclear burning lifetime assuming no further mass loss 
+       TSCLS   Evolution timescales for different stages
+       LUMS    Landmark luminosities 
+       GB      Giant branch parameters
+       ZPARS   Parameters for distinguishing various mass intervals
+       R       Stellar radius in solar units
+       KW      Evolution type (0 - 15).
+       MC      Core mass in solar units 
+*       ------------------------------------------------------------
+ KW
+              0 - deeply or fully convective low mass MS star
+              1 - Main Sequence star
+              2 - Hertzsprung Gap
+              3 - First Giant Branch
+              4 - Core Helium Burning
+              5 - First Asymptotic Giant Branch
+              6 - Second Asymptotic Giant Branch
+              7 - Main Sequence Naked Helium star
+              8 - Hertzsprung Gap Naked Helium star
+              9 - Giant Branch Naked Helium star
+             10 - Helium White Dwarf
+             11 - Carbon/Oxygen White Dwarf
+             12 - Oxygen/Neon White Dwarf
+             13 - Neutron Star
+             14 - Black Hole
+             15 - Massless Supernova
+*       ------------------------------------------------------------
+ TSCLS (all timescales are in Myr units) 
+              1; BGB              2; He ignition   3; He burning
+              4; Giant t(inf1)    5; Giant t(inf2) 6; Giant t(Mx)
+              7; FAGB t(inf1)     8; FAGB t(inf2)  9; FAGB  t(Mx)
+             10; SAGB t(inf1)    11; SAGB t(inf2) 12; SAGB  t(Mx)
+             13; TP              14; t(Mcmax)
+*       ------------------------------------------------------------
+ LUMS (all luminosities are in solar units) 
+              1; ZAMS             2; End MS        3; BGB
+              4; He ignition      5; He burning    6; L(Mx)
+              7; BAGB             8; TP
+*       ------------------------------------------------------------
+ GB = giant branch parameters 
+              1; effective A(H)   2; A(H,He)       3; B
+              4; D                5; p             6; q
+              7; Mx               8; A(He)         9; Mc,BGB
+*       ------------------------------------------------------------
+ ZPARS 
+              1; M below which hook doesn't appear on MS, Mhook.
+              2; M above which He ignition occurs non-degenerately, Mhef.
+              3; M above which He ignition occurs on the HG, Mfgb.
+              4; M below which C/O ignition doesn't occur, Mup.
+              5; M above which C ignites in the centre, Mec.
+              6; value of log D for M<= zpars(3)
+              7; value of x for Rgb propto M^(-x)
+              8; value of x for tMS = MAX(tHOOK,x*tBGB)
+              9; constant for McHeIf when computing Mc,BGB, mchefl.
+             10; constant for McHeIf when computing Mc,HeI, mchefl.
+             11; hydrogen abundance.
+             12; helium abundance.
+             13; constant x in rmin = rgb*x**y used by LM CHeB.
+             14; z**0.4 to be used for WD L formula.
+*       ------------------------------------------------------------
+
+
+Good luck!
+
+************************************************************************
+

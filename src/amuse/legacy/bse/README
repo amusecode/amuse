@@ -1,0 +1,20 @@
+
+To update/replace the current version of BSE, just unpack a new
+tarball in the bse/src directory.  The AMUSE module uses the BSE
+distribution unchanged, and relies only on the calling sequences to
+
+??? Update for BSE:
+zcnsts(), evolv2(), star(), and deltat().
+
+Scientific papers written using this module should reference the 
+papers (BSE and SSE paper, respectively):
+
+"Evolution of binary stars and the effect of tides on binary 
+ populations" 
+ Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897. 
+
+"Comprehensive analytic formulae for stellar evolution as a function 
+ of mass and metallicity" 
+ Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543 
+
+(See src/README_BSE and src/README_SSE for more details.)
