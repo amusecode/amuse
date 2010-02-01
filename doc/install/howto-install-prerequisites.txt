@@ -36,14 +36,14 @@ In Ubuntu you can setup the environment with (as root)::
 
 .. code-block:: sh
 
-    apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
+	apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
     
 
 In Fedora you can setup the environment with (as root)::
 
 .. code-block:: sh
 
-    yum groupinstall "Development Tools" "Development Libraries"
+	yum groupinstall "Development Tools" "Development Libraries"
 
 
 Installation scripts
