@@ -10,6 +10,12 @@ from amuse.support.data.binding import ParticleAttributesModifier
 from amuse.support.data.core import Particles, ParticlesSubset
 
 class BSEInterface(LegacyInterface, LiteratureRefs): 
+    """
+        .. [#]  Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897:
+                Evolution of binary stars and the effect of tides on binary populations
+        .. [#]  Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
+                Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
+    """
     def __init__(self):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code")
         LiteratureRefs.__init__(self)
@@ -481,8 +487,6 @@ class BSEBinding(InterfaceWithParametersBinding):
     
     
 class BSE(BSEInterface, BSEBinding):
-    
-        
     def __init__(self):
         BSEInterface.__init__(self)
         BSEBinding.__init__(self)

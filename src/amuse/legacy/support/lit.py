@@ -45,24 +45,18 @@ class LiteratureRefs(object):
                                                          "id footnote"
                                                          )
 
-        docstring_in = cls.__doc__
-        
-        if not docstring_in:
-            return
-            
-        objectname = cls.__name__
-        Mydoctree  = core.publish_doctree(source = docstring_in)
-
-        literature_references_of_class = []
-        
-        for ikey, ival in Mydoctree.ids.iteritems():
-            if isinstance(ival,nodes.footnote):
-                literature_references_of_class.append(literature_references_of_class_item(ikey, ival.rawsource))
-        
-        filled = bool(literature_references_of_class)
-        
-        if filled:
-            cls.literature_list.append(classes_with_references_item(objectname, 
-                                                                    literature_references_of_class
-                                                                    )
-                                       )
+        for current_class in cls.__mro__:
+            docstring_in = current_class.__doc__
+            if docstring_in:
+                objectname = current_class.__name__
+                Mydoctree  = core.publish_doctree(source = docstring_in)
+                literature_references_of_class = []
+                for ikey, ival in Mydoctree.ids.iteritems():
+                    if isinstance(ival,nodes.footnote):
+                        literature_references_of_class.append(literature_references_of_class_item(ikey, ival.rawsource))
+                filled = bool(literature_references_of_class)
+                if filled:
+                    cls.literature_list.append(classes_with_references_item(objectname, 
+                                                                            literature_references_of_class
+                                                                            )
+                                            )
