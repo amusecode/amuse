@@ -32,16 +32,16 @@ To build AMUSE from source you need to have a working  build environment.
 The AMUSE build system needs a C++ and fortan 90 compiler. Please check first if you
 have a working build environment on your system.
 
-In Ubuntu you can setup the environment with (as root)::
+In Ubuntu you can setup the environment with (as root):
 
-.. code-block:: sh
+..code-block:: sh
 
 	apt-get install build-essential curl g++ gfortran gettext zlib1g-dev
     
 
-In Fedora you can setup the environment with (as root)::
+In Fedora you can setup the environment with (as root):
 
-.. code-block:: sh
+..code-block:: sh
 
 	yum groupinstall "Development Tools" "Development Libraries"
 
