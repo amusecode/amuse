@@ -79,9 +79,9 @@ class BSEInterface(LegacyInterface, LiteratureRefs):
         function.addParameter('MS_lifetime1', dtype='d', direction=function.INOUT)
         function.addParameter('MS_lifetime2', dtype='d', direction=function.INOUT)
         function.addParameter('age', dtype='d', direction=function.INOUT)
-        function.addParameter('end_time', dtype='d', direction=function.INOUT)
         function.addParameter('orbital_period', dtype='d', direction=function.INOUT)
         function.addParameter('eccentricity', dtype='d', direction=function.INOUT)
+        function.addParameter('end_time', dtype='d', direction=function.INOUT)
         return function
         
     @legacy_function      
@@ -102,15 +102,20 @@ class BSEInterface(LegacyInterface, LiteratureRefs):
         function.addParameter('time_step', dtype='d', direction=function.OUT)
         return function
         
-    def get_time_step_for_star(self, star):
+    def get_time_step_for_binary(self, binary):
         
         current_values = {}
-        current_values['kw'] = star.type.value_in(units.stellar_type)
-        current_values['mass'] = star.initial_mass.value_in(units.MSun)
-        current_values['mt'] = star.mass.value_in(units.MSun)
-        current_values['tm'] = star.main_sequence_lifetime.value_in(units.Myr)
-        current_values['age'] = star.age.value_in(units.Myr)
-        current_values['epoch'] = star.epoch.value_in(units.Myr)
+        current_values['type1'] = binary.type1.value_in(units.stellar_type)
+        current_values['type2'] = binary.type2.value_in(units.stellar_type)
+        current_values['initial_mass1'] = binary.initial_mass1.value_in(units.MSun)
+        current_values['initial_mass2'] = binary.initial_mass2.value_in(units.MSun)
+        current_values['mass1'] = binary.mass1.value_in(units.MSun)
+        current_values['mass2'] = binary.mass2.value_in(units.MSun)
+        current_values['MS_lifetime1'] = binary.MS_lifetime1.value_in(units.Myr)
+        current_values['MS_lifetime2'] = binary.MS_lifetime2.value_in(units.Myr)
+        current_values['epoch1'] = binary.epoch1.value_in(units.Myr)
+        current_values['epoch2'] = binary.epoch2.value_in(units.Myr)
+        current_values['age'] = binary.age.value_in(units.Myr)
         
         result = self.get_time_step(**current_values)
         
@@ -123,7 +128,7 @@ class BSEInterface(LegacyInterface, LiteratureRefs):
             return
         while t < time_end:
             t0 = t
-            t  = t0 + self.get_time_step_for_star(particle)
+            t  = t0 + self.get_time_step_for_binary(particle)
             if t > time_end:
                 t = time_end
             self.evolve_star(particle, t)
@@ -153,23 +158,38 @@ class BSEParticles(Particles):
         all_values.extend(values)
         
         mapping_from_attribute_to_default_value = {
-            "type" : 1 | units.stellar_type,
-            "luminosity":  0 | units.LSun,
-            "core_mass": 0 | units.MSun,
-            "core_radius": 0 | units.RSun,
-            "envelope_mass": 0 | units.MSun,
-            "envelope_radius": 0 | units.RSun,
-            "epoch": 0 | units.Myr ,
-            "spin": 0 | units.none ,
-            "main_sequence_lifetime": 0 | units.Myr,
+            "type1" : 1 | units.stellar_type,
+            "type2" : 1 | units.stellar_type,
+            "luminosity1":  0 | units.LSun,
+            "luminosity2":  0 | units.LSun,
+            "core_mass1": 0 | units.MSun,
+            "core_mass2": 0 | units.MSun,
+            "core_radius1": 0 | units.RSun,
+            "core_radius2": 0 | units.RSun,
+            "envelope_mass1": 0 | units.MSun,
+            "envelope_mass2": 0 | units.MSun,
+            "envelope_radius1": 0 | units.RSun,
+            "envelope_radius2": 0 | units.RSun,
+            "epoch1": 0 | units.Myr,
+            "epoch2": 0 | units.Myr,
+            "spin1": 0 | units.none,
+            "spin2": 0 | units.none,
+            "MS_lifetime1": 0 | units.Myr,
+            "MS_lifetime2": 0 | units.Myr,
+#            "orbital_period": 200.0 | units.day,
+#            "eccentricity": 0.5 | units.none,
             "age": 0 | units.Myr
         }
         
         given_attributes = set(attributes)
         
-        if not "initial_mass" in given_attributes:
-            index_of_mass_attibute = attributes.index("mass")
-            all_attributes.append("initial_mass")
+        if not "initial_mass1" in given_attributes:
+            index_of_mass_attibute = attributes.index("mass1")
+            all_attributes.append("initial_mass1")
+            all_values.append(values[index_of_mass_attibute] * 1.0)
+        if not "initial_mass2" in given_attributes:
+            index_of_mass_attibute = attributes.index("mass2")
+            all_attributes.append("initial_mass2")
             all_values.append(values[index_of_mass_attibute] * 1.0)
         
         for attribute, default_value in mapping_from_attribute_to_default_value.iteritems():
@@ -183,7 +203,7 @@ class BSEParticles(Particles):
         self._private.code_interface.evolve_particles_method._run(self._private.code_interface, added_particles, 1e-06 | units.Myr)
     
     def _state_attributes(self):
-        return ["mass", "radius"]
+        return ["mass1", "mass2", "radius1", "radius2"]
         
 class BSEBinding(InterfaceWithParametersBinding):
     
@@ -382,36 +402,54 @@ class BSEBinding(InterfaceWithParametersBinding):
     update_time_step_method = ParticleAttributesModifier(
         "get_time_step",
         (
-            ("type", "kw", units.stellar_type),
-            ("initial_mass", "mass", units.MSun),
-            ("mass", "mt", units.MSun),
-            ("main_sequence_lifetime", "tm", units.Myr),
+            ("type1", "type1", units.stellar_type),
+            ("type2", "type2", units.stellar_type),
+            ("initial_mass1", "initial_mass1", units.MSun),
+            ("initial_mass2", "initial_mass2", units.MSun),
+            ("mass1", "mass1", units.MSun),
+            ("mass2", "mass2", units.MSun),
+            ("MS_lifetime1", "MS_lifetime1", units.Myr),
+            ("MS_lifetime2", "MS_lifetime2", units.Myr),
+            ("epoch1", "epoch1", units.Myr),
+            ("epoch2", "epoch2", units.Myr),
             ("age", "age", units.Myr),
-            ("epoch", "epoch", units.Myr),
-            ("time_step", "dt", units.Myr),
+            ("time_step", "time_step", units.Myr),
         )
     )
-        
-         
+    
     evolve_particles_method = ParticleAttributesModifier(
         "evolve",
         (
-            ("type", "kw", units.stellar_type),
-            ("initial_mass", "mass", units.MSun),
-            ("mass", "mt", units.MSun),
-            ("radius", "r", units.RSun),
-            ("luminosity", "lum", units.LSun),
-            ("core_mass", "mc", units.MSun),
-            ("core_radius", "rc", units.RSun),
-            ("envelope_mass", "menv", units.MSun),
-            ("envelope_radius", "renv", units.RSun),
-            ("epoch", "epoch", units.Myr),
-            ("spin", "ospin", units.none),
-            ("main_sequence_lifetime", "tm", units.Myr),
-            ("age", "tphys", units.Myr),
+            ("type1", "type1", units.stellar_type),
+            ("type2", "type2", units.stellar_type),
+            ("initial_mass1", "initial_mass1", units.MSun),
+            ("initial_mass2", "initial_mass2", units.MSun),
+            ("mass1", "mass1", units.MSun),
+            ("mass2", "mass2", units.MSun),
+            ("radius1", "radius1", units.RSun),
+            ("radius2", "radius2", units.RSun),
+            ("luminosity1", "luminosity1", units.LSun),
+            ("luminosity2", "luminosity2", units.LSun),
+            ("core_mass1", "core_mass1", units.MSun),
+            ("core_mass2", "core_mass2", units.MSun),
+            ("core_radius1", "core_radius1", units.RSun),
+            ("core_radius2", "core_radius2", units.RSun),
+            ("envelope_mass1", "envelope_mass1", units.MSun),
+            ("envelope_mass2", "envelope_mass2", units.MSun),
+            ("envelope_radius1", "envelope_radius1", units.RSun),
+            ("envelope_radius2", "envelope_radius2", units.RSun),
+            ("spin1", "spin1", units.none),
+            ("spin2", "spin2", units.none),
+            ("epoch1", "epoch1", units.Myr),
+            ("epoch2", "epoch2", units.Myr),
+            ("MS_lifetime1", "MS_lifetime1", units.Myr),
+            ("MS_lifetime2", "MS_lifetime2", units.Myr),
+            ("age", "age", units.Myr),
+            ("orbital_period", "orbital_period", units.day),
+            ("eccentricity", "eccentricity", units.none),
         ),
         (
-            ("end_time", 'tphysf', units.Myr),
+            ("end_time", 'end_time', units.Myr),
         )
     )
     
@@ -451,7 +489,10 @@ class BSEBinding(InterfaceWithParametersBinding):
             self.parameters.reimers_mass_loss_coefficient.value_in(units.none), 
             self.parameters.binary_enhanced_mass_loss_parameter.value_in(units.none), 
             self.parameters.helium_star_mass_loss_factor.value_in(units.none), 
-            self.parameters.SN_kick_speed_dispersion.value_in(units.km / units.s),
+            self.parameters.common_envelope_efficiency.value_in(units.none), 
+            self.parameters.common_envelope_binding_energy_factor.value_in(units.none), 
+            self.parameters.common_envelope_model_flag.value_in(units.none), 
+            self.parameters.tidal_circularisation_flag.value_in(units.none), 
             self.parameters.white_dwarf_IFMR_flag.value_in(units.none), 
             self.parameters.white_dwarf_cooling_flag.value_in(units.none), 
             self.parameters.black_hole_kick_flag.value_in(units.none), 
@@ -459,7 +500,14 @@ class BSEBinding(InterfaceWithParametersBinding):
             self.parameters.maximum_neutron_star_mass.value_in(units.MSun),
             self.parameters.fractional_time_step_1.value_in(units.none), 
             self.parameters.fractional_time_step_2.value_in(units.none), 
-            self.parameters.fractional_time_step_3.value_in(units.none))
+            self.parameters.fractional_time_step_3.value_in(units.none),
+            self.parameters.SN_kick_speed_dispersion.value_in(units.km / units.s),
+            self.parameters.wind_velocity_factor.value_in(units.none), 
+            self.parameters.wind_accretion_efficiency.value_in(units.none), 
+            self.parameters.wind_accretion_factor.value_in(units.none), 
+            self.parameters.nova_retained_accreted_matter_fraction.value_in(units.none), 
+            self.parameters.Eddington_mass_transfer_limit_factor.value_in(units.none), 
+            self.parameters.Roche_angular_momentum_factor.value_in(units.none))
         
     def initialize_module_with_default_parameters(self):
         """

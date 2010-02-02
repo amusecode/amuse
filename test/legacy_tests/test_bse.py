@@ -40,6 +40,7 @@ class TestMPIInterface(TestWithMPI):
             self.eccentricity = 0.0
         
     def test1(self):
+        print "Test initialization..."
         instance = BSE()
         metallicity = 0.02
         neta = 0.5
@@ -74,37 +75,9 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
     def test2(self):
+        print "Test basic operations (legacy functions evolve & get_time_step)..."
         instance = BSE()
-        metallicity = 0.02
-        neta = 0.5
-        bwind =  0.0
-        hewind =  0.5
-        alpha1 = 1.0
-        CElambda = 0.5
-        ceflag = 0
-        tflag = 1
-        ifflag = 0
-        wdflag =  1
-        bhflag =  0 
-        nsflag =  1
-        mxns =  3.0
-        pts1 = 0.05
-        pts2 = 0.01
-        pts3 = 0.02
-        sigma =  190.0
-        beta = 1.0/8.0
-        xi = 1.0
-        acc2 = 3.0/2.0
-        epsnov = 0.001
-        eddfac = 1.0
-        gamma = -1.0
-
-        status = instance.initialize(metallicity,
-            neta, bwind, hewind, alpha1, CElambda,
-            ceflag, tflag, ifflag, wdflag, bhflag,
-            nsflag, mxns, pts1, pts2, pts3,
-            sigma,beta,xi,acc2,epsnov,eddfac,gamma)
-        self.assertEqual(status,0)
+        instance.initialize_module_with_default_parameters()
         new_state = self.state()
         new_state.mass1 = 3.0
         new_state.mass2 = 1.0
@@ -123,7 +96,7 @@ class TestMPIInterface(TestWithMPI):
             new_state.envelope_mass1, new_state.envelope_mass2, new_state.envelope_radius1,
             new_state.envelope_radius2, new_state.spin1, new_state.spin2, new_state.epoch1,
             new_state.epoch2, new_state.t_ms1, new_state.t_ms2, new_state.bse_age,
-            new_state.end_time, new_state.orbital_period, new_state.eccentricity
+            new_state.orbital_period, new_state.eccentricity, new_state.end_time
         )
         print result
         updated_state = self.state()
@@ -134,8 +107,8 @@ class TestMPIInterface(TestWithMPI):
             updated_state.envelope_mass1,updated_state.envelope_mass2,updated_state.envelope_radius1,
             updated_state.envelope_radius2, updated_state.spin1, updated_state.spin2,
             updated_state.epoch1, updated_state.epoch2, updated_state.t_ms1, updated_state.t_ms2,
-            updated_state.bse_age, updated_state.end_time,
-            updated_state.orbital_period, updated_state.eccentricity) = result        
+            updated_state.bse_age, updated_state.orbital_period,
+            updated_state.eccentricity, updated_state.end_time) = result        
          
         expected = {
             'radius2' : '0x1.c6c8a1c793bcep-1',
@@ -187,67 +160,71 @@ class TestMPIInterface(TestWithMPI):
         self.assertAlmostEqual(dt, 18.8768, 3)
         del instance
      
-    def xtest3(self):
+    def test3(self):
+        print "Test whether the interface can handle arrays..."
         instance = BSE()
-        instance.initialize_module_with_default_parameters()  
-        types = [1,1,1]
-        masses = [10,5,4]
-        radii = [5.0, 2.0, 1.0]
-        luminosity = core_mass = core_radius =  envelope_mass =\
-        envelope_radius =  spin = epoch = t_ms = [0.0,0.0,0.0]
-        sse_age = age = [1e-6, 1e-06, 1e-6]
+        instance.initialize_module_with_default_parameters()
+        masses1 = [10.0,5.0,4.0]
+        masses2 = [1.0,1.0,1.0]
+        types1 = types2 = [1,1,1]
+        orbital_periods = [100.0,200.0,300.0]
+        eccentricities = [0.5,0.6,0.7]
+
+        radii1 = luminosity1 = core_mass1 = core_radius1 =  envelope_mass1 =\
+        envelope_radius1 = spin1 = epoch1 = t_ms1 = [0.0,0.0,0.0]
+        radii2 = luminosity2 = core_mass2 = core_radius2 =  envelope_mass2 =\
+        envelope_radius2 = spin2 = epoch2 = t_ms2 = [0.0,0.0,0.0]
+        init_mass1 = masses1
+        init_mass2 = masses2
+        bse_age = [0.0,0.0,0.0]
+        end_time = [10.0, 10.0, 10.0]
         result = instance.evolve(
-            types, 
-            masses, 
-            masses, 
-            radii, 
-            luminosity, 
-            core_mass, 
-            core_radius,
-            envelope_mass,
-            envelope_radius, 
-            spin,
-            epoch, 
-            t_ms, 
-            sse_age, 
-            age
+            types1, types2, init_mass1, init_mass2,
+            masses1, masses2, radii1, radii2,
+            luminosity1, luminosity2, core_mass1, core_mass2,
+            core_radius1, core_radius2, envelope_mass1, envelope_mass2,
+            envelope_radius1, envelope_radius2, spin1, spin2,
+            epoch1, epoch2, t_ms1, t_ms2, 
+            bse_age, orbital_periods, eccentricities, end_time
         )
-        self.assertEquals(result['mass'][0], 10)
-        self.assertEquals(result['mass'][1], 5)
-        self.assertAlmostEqual(result['mass'][2], 4.0, 2)
+        self.assertAlmostEqual(result['mass1'][0], 9.977, 2)
+        self.assertAlmostEqual(result['mass1'][1], 5.0, 2)
+        self.assertAlmostEqual(result['mass1'][2], 4.0, 2)
         del instance
         
-    def xtest4(self):
+    def test4(self):
+        print "Test large number of particles..."
+        number_of_particles = 2000
         instance = BSE()
         instance.initialize_module_with_default_parameters()  
-        types = [1 for x in range(1,4000)]
-        masses = [1.0 + ((x / 4000.0) * 10.0) for x in range(1,4000)]
-        radii = [1.0 for x in range(1,4000)]
-        luminosity = core_mass = core_radius =  envelope_mass =\
-        envelope_radius =  spin = epoch =\
-        t_ms = [0.0 for x in range(1,4000)]
+        masses1 = [1.0 + ((x / 1.0*number_of_particles) * 10.0) for x in range(1,number_of_particles+1)]
+        masses2 = [2.0 + ((x / 1.0*number_of_particles) * 5.0) for x in range(1,number_of_particles+1)]
+        orbital_periods = [100.0 + ((x / 1.0*number_of_particles) * 900.0) for x in range(1,number_of_particles+1)]
+        eccentricities = [0.5 + ((x / 1.0*number_of_particles) * 0.4) for x in range(1,number_of_particles+1)]
         
-        sse_age = age = [1e-06 for x in range(1,4000)]
+        types1 = types2 = [1 for x in range(1,number_of_particles+1)]
+        radii1 = luminosity1 = core_mass1 = core_radius1 =  envelope_mass1 =\
+        envelope_radius1 =  spin1 = epoch1 = t_ms1 =\
+        radii2 = luminosity2 = core_mass2 = core_radius2 =  envelope_mass2 =\
+        envelope_radius2 =  spin2 = epoch2 = t_ms2 =\
+        bse_age = [0.0 for x in range(1,number_of_particles+1)]
+        end_time = [1.0 for x in range(1,number_of_particles+1)]
+        init_mass1 = masses1
+        init_mass2 = masses2
+        
         result = instance.evolve(
-            types, 
-            masses, 
-            masses, 
-            radii, 
-            luminosity, 
-            core_mass, 
-            core_radius,
-            envelope_mass,
-            envelope_radius, 
-            spin,
-            epoch, 
-            t_ms, 
-            sse_age, 
-            age
+            types1, types2, init_mass1, init_mass2,
+            masses1, masses2, radii1, radii2,
+            luminosity1, luminosity2, core_mass1, core_mass2,
+            core_radius1, core_radius2, envelope_mass1, envelope_mass2,
+            envelope_radius1, envelope_radius2, spin1, spin2,
+            epoch1, epoch2, t_ms1, t_ms2, 
+            bse_age, orbital_periods, eccentricities, end_time
         )
-        self.assertEquals(len(result['mass']), 3999)
+        self.assertEquals(len(result['mass1']), number_of_particles)
         del instance
 
-    def xtest5(self):
+    def test5(self):
         instance = BSE()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
@@ -266,20 +243,24 @@ class TestMPIInterface(TestWithMPI):
         
 class TestSSE(TestWithMPI):
     
-    def xtest1(self):
+    def test1(self):
         instance = BSE()
         instance.initialize_module_with_default_parameters() 
         stars =  core.Stars(1)
         
-        star = stars[0]
-        star.mass = 5 | units.MSun
-        star.radius = 0.0 | units.RSun
+        binary = stars[0]
+        binary.mass1 = 5 | units.MSun
+        binary.radius1 = 0.0 | units.RSun
+        binary.mass2 = 1 | units.MSun
+        binary.radius2 = 0.0 | units.RSun
+        binary.orbital_period = 200.0 | units.day
+        binary.eccentricity = 0.5 | units.none
         
         instance.particles.add_particles(stars)
         from_sse_to_model = instance.particles.new_channel_to(stars)
         from_sse_to_model.copy()
         
-        previous_type = star.type
+        previous_type1 = binary.type1
         results = []
         t0 = 0 | units.Myr
         current_time = t0
@@ -287,47 +268,42 @@ class TestSSE(TestWithMPI):
         while current_time < (125 | units.Myr):
             instance.update_time_steps()
             
-            current_time = current_time + instance.particles[0].time_step
+            current_time = current_time + max(instance.particles[0].time_step, 0.0001 | units.Myr)
             
             instance.evolve_model(current_time)
 
             from_sse_to_model.copy()
             
-            if not star.type == previous_type:
-                results.append((star.age, star.mass, star.type))
-                previous_type = star.type
-                
-        self.assertEqual(len(results), 6)
+            if not binary.type1 == previous_type1:
+                results.append((binary.age, binary.mass1, binary.type1))
+                previous_type1 = binary.type1
+            
+        print results
+        self.assertEqual(len(results), 4)
         
         times = ( 
             104.0 | units.Myr, 
-            104.4 | units.Myr, 
-            104.7 | units.Myr, 
-            120.1 | units.Myr,
-            120.9 | units.Myr,
-            121.5 | units.Myr
+            104.1 | units.Myr, 
+            105.2 | units.Myr, 
+            105.4 | units.Myr,
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
             
         masses = ( 
             5.000 | units.MSun, 
-            5.000 | units.MSun, 
-            4.998 | units.MSun, 
-            4.932 | units.MSun,
-            4.895 | units.MSun,
-            0.997 | units.MSun
+            4.985 | units.MSun, 
+            4.576 | units.MSun, 
+            1.687 | units.MSun,
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
          
         types = (
             "Hertzsprung Gap",
-            "First Giant Branch",
-            "Core Helium Burning",
-            "First Asymptotic Giant Branch",
-            "Second Asymptotic Giant Branch",
-            "Carbon/Oxygen White Dwarf",
+            "Main Sequence Naked Helium star",
+            "Hertzsprung Gap Naked Helium star",
+            "Neutron Star",
         )
         
         for result, expected in zip(results, types):

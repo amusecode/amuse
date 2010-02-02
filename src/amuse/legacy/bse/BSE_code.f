@@ -63,8 +63,8 @@ c     Input parameters are passed from MUSE, rather than being read here.
      &         core_mass1, core_mass2, core_radius1, core_radius2,
      &         envelope_mass1, envelope_mass2, envelope_radius1,
      &         envelope_radius2, spin1, spin2, epoch1, epoch2,
-     &         MS_lifetime1, MS_lifetime2, age, end_time,
-     &         orbital_period, eccentricity)
+     &         MS_lifetime1, MS_lifetime2, age,
+     &         orbital_period, eccentricity, end_time)
       
       implicit none
       integer,intent(inout) :: type1, type2
