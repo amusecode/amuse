@@ -114,7 +114,10 @@ c     Input parameters are passed from MUSE, rather than being read here.
 * store data only at the start and end while a value of dtp greater than 
 * tphysf will mean that no data is stored.
 *
-      dtp = end_time
+      dtp = end_time+1
+!      dtp = end_time
+!      dtp = 0.0d0
+!      dtp = age+1
 
 c      call evolv2(type1,type2,initial_mass1,initial_mass2, 
 c     &         mass1, mass2, radius1, radius2, luminosity1, luminosity2, 

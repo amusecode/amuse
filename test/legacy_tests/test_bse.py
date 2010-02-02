@@ -241,9 +241,10 @@ class TestMPIInterface(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         del instance
         
-class TestSSE(TestWithMPI):
+class TestBSE(TestWithMPI):
     
     def test1(self):
+        print "Testing evolution of a close binary system."
         instance = BSE()
         instance.initialize_module_with_default_parameters() 
         stars =  core.Stars(1)
@@ -257,8 +258,8 @@ class TestSSE(TestWithMPI):
         binary.eccentricity = 0.5 | units.none
         
         instance.particles.add_particles(stars)
-        from_sse_to_model = instance.particles.new_channel_to(stars)
-        from_sse_to_model.copy()
+        from_bse_to_model = instance.particles.new_channel_to(stars)
+        from_bse_to_model.copy()
         
         previous_type1 = binary.type1
         results = []
@@ -267,13 +268,9 @@ class TestSSE(TestWithMPI):
         
         while current_time < (125 | units.Myr):
             instance.update_time_steps()
-            
             current_time = current_time + max(instance.particles[0].time_step, 0.0001 | units.Myr)
-            
             instance.evolve_model(current_time)
-
-            from_sse_to_model.copy()
-            
+            from_bse_to_model.copy()
             if not binary.type1 == previous_type1:
                 results.append((binary.age, binary.mass1, binary.type1))
                 previous_type1 = binary.type1
@@ -283,16 +280,16 @@ class TestSSE(TestWithMPI):
         
         times = ( 
             104.0 | units.Myr, 
-            104.1 | units.Myr, 
+            104.0 | units.Myr, 
             105.2 | units.Myr, 
-            105.4 | units.Myr,
+            105.3 | units.Myr,
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
             
         masses = ( 
             5.000 | units.MSun, 
-            4.985 | units.MSun, 
+            4.995 | units.MSun, 
             4.576 | units.MSun, 
             1.687 | units.MSun,
         )
