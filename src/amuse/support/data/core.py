@@ -1025,6 +1025,18 @@ class AbstractParticleSet(object):
         
         
     def __dir__(self):
+        """
+        Utility function for introspection of paricle objects
+        
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> particles.x = [1.0, 2.0, 3.0] | units.m
+        >>> print 'mass' in dir(particles)
+        True
+        >>> print 'x' in dir(particles)
+        True
+        
+        """
         result = []
         result.extend(dir(type(self)))
         result.extend(self._attributes_for_dir())
