@@ -3,7 +3,6 @@ from amuse.legacy.interface.se import StellarEvolution
 from amuse.legacy.support.lit import LiteratureRefs
 
 from amuse.support.data.core import Particles
-from amuse.support.data.binding import InCodeAttributeStorage
 from amuse.support.data import binding
 from amuse.support.interface import CodeInterface
 

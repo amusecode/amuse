@@ -4,7 +4,6 @@ from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data.core import Particles,ParticlesWithUnitsConverted
-from amuse.support.data.binding import InCodeAttributeStorage
 from amuse.support.data import binding
 
 
@@ -188,8 +187,7 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
     def __init__(self, convert_nbody = None):
         NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
         
-        self.nbody_particles = Particles()
-        self.nbody_particles._private.attribute_storage = BHTreeInCodeAttributeStorage(self)
+        self.nbody_particles = Particles(storage = BHTreeInCodeAttributeStorage(self))
         self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
         
     def current_model_time(self):

@@ -601,7 +601,9 @@ class AbstractParticleSet(object):
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     def __getattr__(self, name_of_the_attribute):
-        if name_of_the_attribute in self._vector_attributes:
+        if name_of_the_attribute == 'key':
+            return self._get_keys()
+        elif name_of_the_attribute in self._vector_attributes:
             return self._vector_attributes[name_of_the_attribute]._get_values(self)
         elif name_of_the_attribute in self._calculated_attributes:
             return self._calculated_attributes[name_of_the_attribute]._get_values(self)
@@ -1061,11 +1063,18 @@ class Particles(AbstractParticleSet):
     
     
     """
-    def __init__(self, size = 0):
+    def __init__(self, size = 0, storage = None):
         AbstractParticleSet.__init__(self)
-        particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
-        self._private.attribute_storage = InMemoryAttributeStorage()
-        self._set_particles(particle_keys)
+        
+        if storage is None:
+            self._private.attribute_storage = InMemoryAttributeStorage()
+        else:
+            self._private.attribute_storage = storage
+    
+        if size > 0:
+            particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
+            self._set_particles(particle_keys)
+            
         self._private.previous = None
         self._private.timestamp = None
         

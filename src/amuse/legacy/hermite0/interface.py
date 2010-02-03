@@ -146,8 +146,7 @@ class HermiteBinding(NBodyGravitationalDynamicsBinding):
     def __init__(self, convert_nbody = None):
         NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
         
-        self.nbody_particles = Particles()
-        self.nbody_particles._private.attribute_storage = HermiteInCodeAttributeStorage(self)
+        self.nbody_particles = Particles(storage = HermiteInCodeAttributeStorage(self))
         self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
     
     def current_model_time(self):

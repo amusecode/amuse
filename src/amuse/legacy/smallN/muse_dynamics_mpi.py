@@ -2,7 +2,6 @@ from amuse.legacy import *
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data.core import Particle, Particles, ParticlesWithUnitsConverted
-from amuse.support.data.binding import InCodeAttributeStorage
 from amuse.support.data import binding
 from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 
@@ -270,8 +269,7 @@ class SmallNBinding(NBodyGravitationalDynamicsBinding):
     def __init__(self, convert_nbody = None):
         NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
        
-        self.nbody_particles = Particles()
-        self.nbody_particles._private.attribute_storage = SmallNInCodeAttributeStorage(self)
+        self.nbody_particles = Particles(storage =  SmallNInCodeAttributeStorage(self))
         self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
    
     def current_model_time(self):

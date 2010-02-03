@@ -567,12 +567,6 @@ class InCodeAttributeStorage(AttributeStorage):
             result.append(self.mapping_from_index_in_the_code_to_particle_key[i])
         return result
     
-    
-
-
-        
-        
-        
 class CodeProperty(object):
     
     def __init__(self, function_or_attribute_name, unit):
