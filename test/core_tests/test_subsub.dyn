@@ -1,0 +1,112 @@
+(Particle
+  N = 7
+(Log
+ ===>  Thu Jan 28 14:47:51 2010
+       Starlab 4.4.4 (user marosvolgyi) : ./makeplummer -n 100
+       random number generator seed = 1264686471
+  initial_mass = 7
+  initial_total_energy = -0.25
+  initial_rvirial = 1
+)Log
+(Dynamics
+  system_time  =  0
+  m  =  16
+  r  =  0 0 0
+  v  =  0 0 0
+  com_time = 0
+  com_pos = 0 0 0
+  com_vel = 0 0 0
+  total_energy = -0.25
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  mass_scale     =  -1
+  size_scale     =  -1
+  time_scale     =  -1
+)Star
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  8
+  r  =  -10 0 0
+  v  =  0 0 0
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  4
+  r  =  -15 0 0
+  v  =  0 0 0
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  8
+  r  =  10 0 0
+  v  =  0 0 0
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  4
+  r  =  5 0 0
+  v  =  0 0 0
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  4
+  r  = 15 0 0
+  v  =  0 0 0
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  2
+  r  = 17 0 0
+  v  =  0 0 0
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+)Particle
+)Particle
+)Particle
