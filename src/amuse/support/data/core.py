@@ -777,12 +777,12 @@ class AbstractParticleSet(object):
     def __iter__(self):
         index = 0
         for key in self._get_keys():
-            p = Particle(key, self)
+            p = Particle(key, self._particles())
             yield p
             index += 1
 
     def __getitem__(self, index):
-        return Particle(self._get_keys()[index], self)
+        return Particle(self._get_keys()[index], self._particles())
         
     def __len__(self):
         return len(self._get_keys())
@@ -1196,11 +1196,31 @@ class ParticlesSubset(AbstractParticleSet):
         return self._private.particles._get_state_attributes(self)
             
         
+        
     def _particles(self):
         return self._private.particles
         
     def difference(self, other):
         new_set_of_keys = self._private.set_of_keys.difference(other.to_set()._private.set_of_keys)
+        return ParticlesSubset(self._private.particles, list(new_set_of_keys))
+        
+    def union(self, other):
+        """
+        Returns a new subset containing the union between
+        this set and the provided set.
+        
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> subset1 = particles.select(lambda x : x > 25.0 | units.kg, ["mass"])
+        >>> subset2 = particles.select(lambda x : x < 15.0 | units.kg, ["mass"])
+        >>> union = subset1.union(subset2)
+        >>> len(union)
+        2
+        >>> sorted(union.mass.value_in(units.kg))
+        [10.0, 30.0]
+        """
+        
+        new_set_of_keys = self._private.set_of_keys.union(other.to_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
     
     def to_set(self):
@@ -1458,7 +1478,16 @@ class Particle(object):
     
     def children(self):
         return self.particles_set.select(lambda x : x == self.key | units.none, ["parent_id"])
-        
+    
+    def descendents(self):
+        result = self.children()
+        stack = list(result)
+        while len(stack) > 0:
+            current = stack.pop()
+            children = current.children()
+            result = result.union(children)
+            stack.extend(children)
+        return result
         
     def add_child(self, child):
         if self.particles_set != child.particles_set:
@@ -1546,8 +1575,7 @@ class InterfaceWithUnitsConverted(object):
     def __init__(self, interface, converter):
         self.converter = converter
         self.interface = interface
-            
-              
+        
     def __getattr__(self, name):
         attribute = getattr(self.interace, name)
         if inspect.ismethod(attribute):
@@ -1558,4 +1586,8 @@ class InterfaceWithUnitsConverted(object):
             return self.converter.from_target_to_source(quantity)
         else:
             return attribute
+            
+    def __dir__(self):
+        return dir(self.interface)
+        
         

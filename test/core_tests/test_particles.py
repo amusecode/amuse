@@ -483,6 +483,25 @@ class TestParticlesWithChildren(TestBase):
         self.assertEquals(len(code1.particles), 3)
         self.assertEquals(len(code2.particles), 2)
         
+    def test4(self):
+        all = core.Particles(5)
+        all.mass = [1.0, 2.0, 3.0, 4.0 , 5.0] | units.kg
+        parent = all[0]
+        child1 = all[1]
+        child2 = all[2]
+        child3 = all[3]
+        child4 = all[4]
+        
+        parent.add_child(child1)
+        child1.add_child(child2)
+        child2.add_child(child3)
+        child3.add_child(child4)
+        
+        self.assertEquals(len(parent.children()), 1)
+        self.assertEquals(len(parent.descendents()), 4)
+        self.assertEquals(len(child1.descendents()), 3)
+        self.assertEquals(len(child2.descendents()), 2)
+        self.assertEquals(len(child3.descendents()), 1)
         
         
         
