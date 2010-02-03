@@ -4,7 +4,7 @@
      &              alpha1_in, CElambda_in,
      &              ceflag_in, tflag_in,
      &			    ifflag_in, wdflag_in, bhflag_in,
-     &			    nsflag_in, mxns_in,
+     &			    nsflag_in, mxns_in, idum_in,
      &			    pts1_in, pts2_in, pts3_in,
      &              sigma_in, beta_in, xi_in, acc2_in,
      &              epsnov_in, eddfac_in, gamma_in,
@@ -16,8 +16,8 @@
       real*8 alpha1_in, CElambda_in
       integer ceflag_in, tflag_in
       integer ifflag_in, wdflag_in, bhflag_in
-      integer nsflag_in, mxns_in
-      real*8 pts1_in, pts2_in, pts3_in
+      integer nsflag_in, idum_in
+      real*8 mxns_in, pts1_in, pts2_in, pts3_in
       real*8 sigma_in, beta_in, xi_in, acc2_in
       real*8 epsnov_in, eddfac_in, gamma_in
       integer status
@@ -39,6 +39,7 @@ c     Input parameters are passed from MUSE, rather than being read here.
       bhflag = bhflag_in
       nsflag = nsflag_in
       mxns = mxns_in
+      idum = idum_in
       pts1 = pts1_in
       pts2 = pts2_in
       pts3 = pts3_in

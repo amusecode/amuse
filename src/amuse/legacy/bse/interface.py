@@ -35,7 +35,8 @@ class BSEInterface(LegacyInterface, LiteratureRefs):
         function.addParameter('wdflag_in', dtype='i', direction=function.IN)
         function.addParameter('bhflag_in', dtype='i', direction=function.IN)
         function.addParameter('nsflag_in', dtype='i', direction=function.IN)
-        function.addParameter('mxns_in', dtype='i', direction=function.IN)
+        function.addParameter('mxns_in', dtype='d', direction=function.IN)
+        function.addParameter('idum_in', dtype='i', direction=function.IN)
         function.addParameter('pts1_in', dtype='d', direction=function.IN)
         function.addParameter('pts2_in', dtype='d', direction=function.IN)
         function.addParameter('pts3_in', dtype='d', direction=function.IN)
@@ -318,6 +319,14 @@ class BSEBinding(CodeInterface):
         ),
         
         parameters.ModuleCachingParameterDefinition(
+            "idum",
+            "SN_kick_random_seed", 
+            "The random number seed used in the kick routine.",
+            units.none, 
+            29769 | units.none
+        ),
+        
+        parameters.ModuleCachingParameterDefinition(
             "pts1",
             "fractional_time_step_1", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
@@ -498,6 +507,7 @@ class BSEBinding(CodeInterface):
             self.parameters.black_hole_kick_flag.value_in(units.none), 
             self.parameters.neutron_star_mass_flag.value_in(units.none), 
             self.parameters.maximum_neutron_star_mass.value_in(units.MSun),
+            self.parameters.SN_kick_random_seed.value_in(units.none), 
             self.parameters.fractional_time_step_1.value_in(units.none), 
             self.parameters.fractional_time_step_2.value_in(units.none), 
             self.parameters.fractional_time_step_3.value_in(units.none),

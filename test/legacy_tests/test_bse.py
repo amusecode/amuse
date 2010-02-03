@@ -55,6 +55,7 @@ class TestMPIInterface(TestWithMPI):
         bhflag =  0 
         nsflag =  1
         mxns =  3.0
+        idum = 29769
         pts1 = 0.05
         pts2 = 0.01
         pts3 = 0.02
@@ -69,7 +70,7 @@ class TestMPIInterface(TestWithMPI):
         status = instance.initialize(metallicity,
             neta, bwind, hewind, alpha1, CElambda,
             ceflag, tflag, ifflag, wdflag, bhflag,
-            nsflag, mxns, pts1, pts2, pts3,
+            nsflag, mxns, idum, pts1, pts2, pts3,
             sigma,beta,xi,acc2,epsnov,eddfac,gamma)
         self.assertEqual(status,0)
         del instance
@@ -224,6 +225,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
 
     def test5(self):
+        print "Testing additional parameters for initialization..."
         instance = BSE()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
@@ -234,6 +236,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
         instance = BSE()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         instance.initialize_module_with_default_parameters()
@@ -243,9 +246,11 @@ class TestMPIInterface(TestWithMPI):
 class TestBSE(TestWithMPI):
     
     def test1(self):
-        print "Testing evolution of a close binary system."
+        print "Testing evolution of a close binary system..."
         instance = BSE()
         instance.parameters.metallicity = 0.001 | units.none
+        instance.parameters.helium_star_mass_loss_factor = 1.0 | units.none
+        instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.initialize_module_with_current_parameters()
         stars =  core.Stars(1)
         
@@ -268,14 +273,13 @@ class TestBSE(TestWithMPI):
         
         while current_time < (480 | units.Myr):
             instance.update_time_steps()
-            current_time = current_time + max(instance.particles[0].time_step, 0.001 | units.Myr)
+            current_time = current_time + max(instance.particles[0].time_step, 0.01 | units.Myr)
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
             if not binary.type1 == previous_type1:
                 results.append((binary.age, binary.mass1, binary.type1))
                 previous_type1 = binary.type1
             
-        print results
         self.assertEqual(len(results), 6)
         
         types = (
@@ -284,8 +288,7 @@ class TestBSE(TestWithMPI):
             "Core Helium Burning",
             "First Asymptotic Giant Branch",
             "Hertzsprung Gap Naked Helium star",
-            "Main Sequence star", # weird, should be:
-#            "Carbon/Oxygen White Dwarf",
+            "Carbon/Oxygen White Dwarf",
         )
         
         for result, expected in zip(results, types):
@@ -297,8 +300,7 @@ class TestBSE(TestWithMPI):
             287.7848 | units.Myr, 
             331.1454 | units.Myr, 
             331.3983 | units.Myr, 
-            332.1618 | units.Myr, # weird, should be:
-#            332.2786 | units.Myr,
+            332.2786 | units.Myr,
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
@@ -309,8 +311,7 @@ class TestBSE(TestWithMPI):
             2.999 | units.MSun, 
             2.956 | units.MSun,
             0.888 | units.MSun,
-            1.164 | units.MSun, # REALLY weird, should be:
-#            0.707 | units.MSun,
+            0.707 | units.MSun,
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
