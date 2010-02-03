@@ -7,6 +7,8 @@ ifndef AMUSE_DIR
 	AMUSE_DIR=../../../..
 endif
 
+FFLAGS=-fPIC -ftrapuv -fpe0 -traceback -fpstkchk -check all
+
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 OBJ	= src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
@@ -27,11 +29,11 @@ clean:
 	/bin/rm -f *~ *.so *.o src/*.o src/bse worker_code worker_code.f90
 
 worker_code:	worker_code.f90  BSE_code.o  $(BSEOBJ)
-	make -C src bse CMPLR=$(FORTRAN)
+	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
 	mpif90 $^ -o $@ 
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py BSE -o $@
 
 .f.o: $<
-	$(FORTRAN) -c -fPIC -o $@ $< 
+	$(FORTRAN) -c $(FFLAGS) -o $@ $< 
