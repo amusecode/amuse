@@ -273,7 +273,8 @@ class TestBSE(TestWithMPI):
         
         while current_time < (480 | units.Myr):
             instance.update_time_steps()
-            current_time = current_time + max(instance.particles[0].time_step, 0.01 | units.Myr)
+            # The next line appears a bit weird, but saves time for this simple test.
+            current_time = current_time + max(5.0*instance.particles[0].time_step, 0.3 | units.Myr)
             instance.evolve_model(current_time)
             from_bse_to_model.copy()
             if not binary.type1 == previous_type1:
@@ -303,7 +304,7 @@ class TestBSE(TestWithMPI):
             332.2786 | units.Myr,
         )
         for result, expected in zip(results, times):
-            self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
+            self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
             
         masses = ( 
             3.000 | units.MSun, 
@@ -314,7 +315,7 @@ class TestBSE(TestWithMPI):
             0.707 | units.MSun,
         )
         for result, expected in zip(results, masses):
-            self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
+            self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
          
         del instance
             
