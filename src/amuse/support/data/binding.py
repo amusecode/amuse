@@ -403,49 +403,6 @@ class NewParticleMethod(CodeMethod):
         
         return indices
                 
-                
-class InterfaceWithParametersBinding(object):
-    parameter_definitions = []
-    
-    def __init__(self, convert_nbody = None):
-               
-        self.parameters = parameters.Parameters(self.parameter_definitions, self)
-        
-
-class InterfaceWithObjectsBinding(object):
-    def __init__(self):
-        self.mapping_from_particleid_to_index = {}
-        
-    def convert_to_nbody(self, x):
-        if nbody_system.is_nbody_unit(x):
-            return self.convert_nbody.unit_to_unit_in_si(x)
-        else:
-            return x
-                
-    def setup_particles(self, particles):
-        self.particles.add_particles(particles)
-        
-    def update_particles(self, particles):
-        self.particles.copy_values_of_state_attributes_to(particles)
-    
-    def set_attribute(self, attribute_name, particles):
-        particles.copy_values_of_attribute_to(attribute_name, self.particles)
-        
-    def update_attribute(self, attribute_name, particles):
-        self.particles.copy_values_of_attribute_to(attribute_name, particles) 
-    
-    def get_attribute_definition(self, attribute_name):
-        for attribute_definition in self.attribute_definitions:
-            if attribute_definition.name == attribute_name:
-                return attribute_definition
-        return None
-            
-    def current_model_time(self):
-        raise AttributeError("Must implement current_model_time method")
-        
-        
-        
-        
 
 class InCodeAttributeStorage(AttributeStorage):
     name_of_number_of_particles_getter = "get_number_of_particles"

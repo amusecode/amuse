@@ -3,7 +3,7 @@ Stellar Dynamics Interface Defintion
 """
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
-from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
+from amuse.support.interface import CodeInterface
 from amuse.support.data.binding import CodeProperty, InCodeAttributeStorage
 from amuse.support.data import binding
 from amuse.support.units import nbody_system
@@ -732,11 +732,10 @@ class GravitationalDynamics(object):
         """
         return function 
         
-class NBodyGravitationalDynamicsBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding):
+class NBodyGravitationalDynamicsBinding(CodeInterface):
     
     def __init__(self, convert_nbody):
-        InterfaceWithParametersBinding.__init__(self);
-        InterfaceWithObjectsBinding.__init__(self);
+        CodeInterface.__init__(self)
         
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()

@@ -46,7 +46,7 @@ class TestBase(unittest.TestCase):
         
 
 class TestParticlesWithBinding(TestBase):
-    class TestInterface(binding.InterfaceWithObjectsBinding):
+    class TestInterface(object):
         class InCodeAttributeStorage(binding.InCodeAttributeStorage):
             new_particle_method = binding.NewParticleMethod(
                 "new_particle", 
@@ -75,7 +75,6 @@ class TestParticlesWithBinding(TestBase):
             )
             
         def __init__(self):
-            binding.InterfaceWithObjectsBinding.__init__(self)
             self.particles = core.Particles()
             self.particles._private.attribute_storage = self.InCodeAttributeStorage(self)
             self.masses = {}

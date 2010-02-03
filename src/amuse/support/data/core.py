@@ -657,7 +657,7 @@ class AbstractParticleSet(object):
     def _get_state_attributes(self):
         return []
     
-    def _particles(self):
+    def _real_particles(self):
         return self
     #
     #
@@ -777,12 +777,12 @@ class AbstractParticleSet(object):
     def __iter__(self):
         index = 0
         for key in self._get_keys():
-            p = Particle(key, self._particles())
+            p = Particle(key, self._real_particles())
             yield p
             index += 1
 
     def __getitem__(self, index):
-        return Particle(self._get_keys()[index], self._particles())
+        return Particle(self._get_keys()[index], self._real_particles())
         
     def __len__(self):
         return len(self._get_keys())
@@ -841,7 +841,7 @@ class AbstractParticleSet(object):
         keys = particles._get_keys()
         values = particles._get_values(keys, attributes)
         self._set_particles(keys, attributes, values)
-        return ParticlesSubset(self._particles(), keys)
+        return ParticlesSubset(self._real_particles(), keys)
     
     
     def add_particle(self, particle):
@@ -957,7 +957,7 @@ class AbstractParticleSet(object):
         Returns a subset view on this set. The subset
         will contain all particles of this set.
         """
-        return ParticlesSubset(self._particles(), self._get_keys())
+        return ParticlesSubset(self._real_particles(), self._get_keys())
     
     
     def select(self, selection_function, attributes):
@@ -988,7 +988,7 @@ class AbstractParticleSet(object):
                 arguments[attr_index] = values[attr_index][index]
             if selection_function(*arguments):
                 selected_keys.append(key)
-        return ParticlesSubset(self._particles(), selected_keys)
+        return ParticlesSubset(self._real_particles(), selected_keys)
     
     def difference(self, other):
         """
@@ -1021,7 +1021,7 @@ class AbstractParticleSet(object):
         return other._subset(selected_keys)
         
     def _subset(self, keys):
-        return ParticlesSubset(self._particles(), keys)
+        return ParticlesSubset(self._real_particles(), keys)
         
         
     def __dir__(self):
@@ -1197,7 +1197,7 @@ class ParticlesSubset(AbstractParticleSet):
             
         
         
-    def _particles(self):
+    def _real_particles(self):
         return self._private.particles
         
     def difference(self, other):

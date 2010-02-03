@@ -7,7 +7,8 @@ ifndef AMUSE_DIR
 	AMUSE_DIR=../../../..
 endif
 
-FFLAGS=-fPIC -ftrapuv -fpe0 -traceback -fpstkchk -check all
+#FFLAGS=-fPIC -ftrapuv -fpe0 -traceback -fpstkchk -check all
+FFLAGS=
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 

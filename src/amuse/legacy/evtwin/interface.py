@@ -1,11 +1,11 @@
 from amuse.legacy import *
 from amuse.legacy.interface.se import StellarEvolution
 from amuse.legacy.support.lit import LiteratureRefs
-from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 
 from amuse.support.data.core import Particles
 from amuse.support.data.binding import InCodeAttributeStorage
 from amuse.support.data import binding
+from amuse.support.interface import CodeInterface
 
 
 
@@ -311,11 +311,10 @@ class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
         
     )
     
-class EVtwinBinding(InterfaceWithParametersBinding, InterfaceWithObjectsBinding):
+class EVtwinBinding(CodeInterface):
     
     def __init__(self):
-        InterfaceWithParametersBinding.__init__(self)
-        InterfaceWithObjectsBinding.__init__(self)
+        CodeInterface.__init__(self)
         
         self.particles = Particles()
         self.particles._private.attribute_storage = EVtwinInCodeAttributeStorage(self)

@@ -5,9 +5,9 @@ from amuse.legacy import *
 from amuse.legacy.support.lit import LiteratureRefs
 
 from amuse.support.data.values import Quantity
-from amuse.support.data.binding import InterfaceWithParametersBinding, InterfaceWithObjectsBinding
 from amuse.support.data.binding import ParticleAttributesModifier
 from amuse.support.data.core import Particles, ParticlesSubset
+from amuse.support.interface import CodeInterface
 
 class BSEInterface(LegacyInterface, LiteratureRefs): 
     """
@@ -205,10 +205,10 @@ class BSEParticles(Particles):
     def _state_attributes(self):
         return ["mass1", "mass2", "radius1", "radius2"]
         
-class BSEBinding(InterfaceWithParametersBinding):
+class BSEBinding(CodeInterface):
     
     def __init__(self):
-        InterfaceWithParametersBinding.__init__(self)
+        CodeInterface.__init__(self)
         self.particles = BSEParticles(self)
         self.parameters.set_defaults()
    
