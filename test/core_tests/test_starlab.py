@@ -4,6 +4,7 @@ from amuse.support.units import units
 
 import unittest
 import pylab as pl
+import os.path
 
 class Test(unittest.TestCase):
 
@@ -33,7 +34,9 @@ class Test(unittest.TestCase):
                 +---------------------------------------------------------------------+   
 
         """
-        I = starlab.ParticlesFromDyn('test_subsub.dyn')
+        directory = os.path.dirname(__file__)
+        
+        I = starlab.ParticlesFromDyn(os.path.join(directory, 'test_subsub.dyn'))
 
         All = I.Particles
         print All.mass
