@@ -27,7 +27,7 @@ class MessageChannel(object):
     
     """
     DEBUGGER = None
-    
+    REDIRECTION = ("/dev/null", "/dev/null", "/dev/null")
     
     @classmethod
     def GDB(cls, full_name_of_the_worker):
@@ -46,7 +46,21 @@ class MessageChannel(object):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
+
+    
+    @classmethod
+    def redirect_to_devnull(self):
+        self.redirect_to("/dev/null", "/dev/null", "/dev/null")
         
+    @classmethod
+    def redirect_to(self, input_filename, output_filename, error_filename):
+        self.REDIRECTION = (input_filename, output_filename, error_filename)
+    
+    @classmethod
+    def no_redirection(self):
+        self.REDIRECTION = None
+        
+    
     def get_full_name_of_the_worker(self, type):
         tried_workers = []
         found = False
@@ -120,8 +134,30 @@ class MpiChannel(MessageChannel):
         else:
             arguments = None
             command = self.full_name_of_the_worker
-        self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
-
+        
+        if not self.REDIRECTION is None:
+            input_filename, output_filename, error_filename = self.REDIRECTION
+            
+            fd_stdin = os.dup(0)
+            zero = open(input_filename,'r')
+            os.dup2(zero.fileno(), 0)
+            
+            fd_stdout = os.dup(1)
+            zero2 = open(output_filename,'a')
+            os.dup2(zero2.fileno(), 1)
+            
+            fd_stderr = os.dup(2)
+            zero2 = open(error_filename,'a')
+            os.dup2(zero2.fileno(), 2)
+        
+        try:
+            self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
+        finally:
+            if not self.REDIRECTION is None:
+                os.dup2(fd_stdin, 0)
+                os.dup2(fd_stdout, 1)
+                os.dup2(fd_stderr, 2)
+            
     def stop(self):
         if not self.intercomm is None:
             self.intercomm.Free()
