@@ -344,6 +344,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
     def output_mpi_include(self):
         self.out.n() + '#include <mpi.h>'
+
+        self.out.n() + '#include <iostream>'
         
     def output_local_includes(self):
         self.out.n()
@@ -460,7 +462,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
         self.output_delete_statements()
         
-        self.out.lf().lf() + 'parent.Free();'
+        self.out.lf().lf() + 'parent.Disconnect();'
         self.out.dedent()
         self.out.lf() + '}'
     

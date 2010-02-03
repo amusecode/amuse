@@ -436,7 +436,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf()
         self.output_deallocate_statements()
             
-        
+        self.out.lf() + 'call MPI_COMM_DISCONNECT(parent, mpierror)'
         self.out.lf() + 'return'
         
         self.out.dedent().lf() + 'end subroutine'

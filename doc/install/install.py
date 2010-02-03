@@ -195,7 +195,7 @@ class InstallPrerequisites(object):
           '--enable-sharedlibs=gcc',
           '--enable-f90', 
           '--with-python='+self.prefix + '/bin/python2.6',
-          '--with-device=ch3:sock',
+          #'--with-device=ch3:sock',
           #'--with-pm=mpd'
         ]
         if not self.fortran90_compiler is None:

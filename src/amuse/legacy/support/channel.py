@@ -27,7 +27,7 @@ class MessageChannel(object):
     
     """
     DEBUGGER = None
-    REDIRECTION = ("/dev/null", "/dev/null", "/dev/null")
+    REDIRECTION = None #("/dev/null", "/dev/null", "/dev/null")
     
     @classmethod
     def GDB(cls, full_name_of_the_worker):
@@ -160,7 +160,7 @@ class MpiChannel(MessageChannel):
             
     def stop(self):
         if not self.intercomm is None:
-            self.intercomm.Free()
+            self.intercomm.Disconnect()
             self.intercomm = None
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
