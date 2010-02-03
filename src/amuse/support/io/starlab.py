@@ -12,20 +12,14 @@ class Dyn2Xml(object):
 
         self._xml = ""
     
-    def convertToXml(self,inputfile):
+    def convert_to_xml(self,inputfile):
         """
-            convertToXml converts legacy starlab fileformat .dyn to .xml
+            Converts legacy starlab fileformat .dyn to xml string
        
         """
 
-        try:
-            f = open(inputfile,'r')
-        except IOError: # as (errno, strerror):
-            print "I/O error({0}): {1}".format(errno, strerror)
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
-        
+        f = open(inputfile,'r')
+
         fooline = f.readline()
             
         #lines either start with (,) followed by name of stories or Particle
@@ -79,12 +73,10 @@ class Dyn2Xml(object):
         f.close()
 
         if closepar!=openpar:
-            print "\nConversion failure, parenthesis mismatch. Return: no output string written\n"
-            return 1#Error
-        else:
-            self._xmls = xmls
-            return 0#no Error
-    
+            raise("\nConversion failure, parenthesis mismatch. Return: no output string written\n")
+
+        self._xmls = xmls
+            
     def convert_storyline(self, fooline):
         
         if "===>" in fooline or fooline.startswith("       "):
@@ -100,30 +92,27 @@ class Xml2Particles(object):
     def __init__(self):
 
         self.xmls = ""
-
         self.reclim = sys.getrecursionlimit()
-        
         self.system = core.Stars(0)
-
         self.translator = {'N':'number','m':'mass','r':'position','v':'velocity'}
 
     def add_particle_with_parameters(self, subnode, Parent):
-    	new_particle = core.Stars(1)                                  
-    	self.system.add_particles(new_particle)                       
-    	added_particle = self.system[-1]                              
-    	self._findNodes(subnode.childNodes,                           
+        new_particle = core.Stars(1)                                  
+        self.system.add_particles(new_particle)                       
+        added_particle = self.system[-1]                              
+        self._find_nodes(subnode.childNodes,                           
     	                added_particle, Parent = added_particle)      
     	if Parent == None:                                            
     	    pass
     	else:                                                         
     	    Parent.add_child(added_particle)                          
 
-    def _findNodes(self, nodeList, SCL, Parent = None):
+    def _find_nodes(self, nodeList, SCL, Parent = None):
 
         for subnode in nodeList:
             if subnode.nodeType == subnode.ELEMENT_NODE:
                 if subnode.tagName == "System":
-                    self._findNodes(subnode.childNodes, SCL)
+                    self._find_nodes(subnode.childNodes, SCL)
                 if subnode.tagName == "Particle":
                     self.add_particle_with_parameters(subnode, Parent)
                 elif subnode.tagName == u"pm":                                
@@ -131,7 +120,7 @@ class Xml2Particles(object):
                     value = subnode.getAttribute(key)
                     self.copy_starlab_parameter_to_star(key, value, SCL)
                 elif subnode.tagName in ["Log", "Dynamics", "Star", "Hydro"]:  
-                    self._findNodes(subnode.childNodes,SCL)  
+                    self._find_nodes(subnode.childNodes,SCL)  
 
     def copy_starlab_parameter_to_star(self, key, value, SCL):
 
@@ -145,7 +134,7 @@ class Xml2Particles(object):
 	         SCL.velocity = self.convert2vec(value)|(units.m/units.s)      
         
     def convert2vec(self, attribute):
-
+        
         maybe_vec = attribute.split()
 
         if len(maybe_vec)>1:
@@ -186,9 +175,10 @@ class Xml2Particles(object):
         
         
     def elementstr(self,SCL,oc):
-        #write an element node,
-        #If particle is root then it is called System
-        
+        """
+        write an element node,
+        If particle is root then it is called System
+        """
         if oc == "open":
             prestr = "<"
         elif oc == "close":
@@ -205,61 +195,64 @@ class Xml2Particles(object):
         return barstr
     
     def convert2propstr(self,foostr):
-        #if foostr is a vector we dont want the brackets and the ,'s
+        """
+            if foostr is a vector we dont want the brackets and the ,'s
+        """
         return foostr.replace("[","").replace("]","").replace(","," ")
 
     def makexml(self):
-        #clear and init xmls
+        """
+            clear and init xmls
+        """
         self.xmls = '<?xml version="1.0"?>\n'
         self.walk_me(self.System)
     
     def dumpxml(self):
-        #Convert System to xml string and dump it on the screen
+        """
+            Convert System to xml string and dump it on the screen
+        """
         self.makexml()
         print self.xmls
 
     def savexml(self, file):
-        #Convert System to xml string and put it in file with name file
+        """
+            Convert System to xml string and put it in file with name file
+        """
         f = open(file,'w')
         self.makexml()
         f.writelines(self.xmls)
         f.close()
        
     def loadxml(self,file):
-        #Parse file into dom doc
-        try:
-            f = open(file,'r')
-        except IOError as (errno, strerror):
-            print "I/O error({0}): {1}".format(errno, strerror)
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
-            raise
-        
+        """
+            Parse file into dom doc and then create particles accordingly 
+        """
+        f = open(file,'r')
         doc = xml.dom.minidom.parse(f)
         f.close()
 
         #copy the doc to a system object
-        self._findNodes(nodeList=doc.childNodes, SCL = self.system)
+        self._find_nodes(nodeList=doc.childNodes, SCL = self.system)
 
     def parse_xml(self, xmlstring):
+        """
+            Parse xml string into dom doc and then create particles accordingly 
+        """
         doc = xml.dom.minidom.parseString(xmlstring)
-        self._findNodes(nodeList=doc.childNodes, SCL = self.system)
+        self._find_nodes(nodeList=doc.childNodes, SCL = self.system)
 
 class ParticlesFromDyn(object):
     
     def __init__(self, dyn_filename=None):
         
-        Foo = Dyn2Xml()
-        err0 = Foo.convertToXml(dyn_filename)
-        xml_string = Foo._xmls
-        del Foo
+        dyn2xml = Dyn2Xml()
+        dyn2xml.convert_to_xml(dyn_filename)
+        xml_string = dyn2xml._xmls
         
-        if not err0:
-            Foo2 = Xml2Particles()
-            err1 = Foo2.parse_xml(xml_string)
+        xml2particles = Xml2Particles()
+        err1 = xml2particles.parse_xml(xml_string)
         
-            self.Particles = Foo2.system
-            del Foo2
+        self.Particles = xml2particles.system
         
     def number_of_particles(self):
         return len(self.Particles)
