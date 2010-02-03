@@ -222,6 +222,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
         instance = mpi_interface.SSE()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         instance.initialize_module_with_default_parameters()
