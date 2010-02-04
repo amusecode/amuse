@@ -27,7 +27,7 @@ class MessageChannel(object):
     
     """
     DEBUGGER = None
-    REDIRECTION = None #("/dev/null", "/dev/null", "/dev/null")
+    REDIRECTION = ("/dev/null", "/dev/null", "/dev/null")
     
     @classmethod
     def GDB(cls, full_name_of_the_worker):
@@ -62,6 +62,10 @@ class MessageChannel(object):
         
     
     def get_full_name_of_the_worker(self, type):
+        if os.path.isabs(self.name_of_the_worker):
+            if os.path.exists(self.name_of_the_worker):
+                return self.name_of_the_worker
+            
         tried_workers = []
         found = False
         current_type=type

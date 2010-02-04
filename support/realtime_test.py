@@ -11,6 +11,7 @@ import os.path
 import BaseHTTPServer
 import SocketServer
 import Queue as queue
+import webbrowser
 
 from mpi4py import MPI
 from nose.plugins.capture import Capture
@@ -298,7 +299,10 @@ class MakeAReportOfATestRun(object):
             return True
         if time_taken < 1.0:
             return (report.number_of_suite_runs % 5) == 0
-        return (report.number_of_suite_runs % 10) == 0
+        if time_taken < 3.0:
+            return (report.number_of_suite_runs % 15) == 0
+            
+        return (report.number_of_suite_runs % 30) == 0
     
     def has_errors(self):
         return self.errors > 0
@@ -689,7 +693,10 @@ class ContinuosTestWebServer(webserver.WebServer):
         self.last_report.report_id = self.report_id
         #self.events_queue.put('done')
         
-            
+
+def start_browser(serverport):
+    time.sleep(2.0)
+    webbrowser.open("http://localhost:{0}/".format(serverport))
             
 if __name__ == '__main__':
     parser = OptionParser() 
@@ -714,6 +721,9 @@ if __name__ == '__main__':
     print "starting server on port: ", options.serverport
     print "will use editor: ", options.editor
     webserver.EDITOR = options.editor
+    
+    thread = threading.Thread(target = start_browser, args = (options.serverport,))
+    thread.start()
     
     server = ContinuosTestWebServer(options.serverport)
     server.start()

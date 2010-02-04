@@ -537,6 +537,7 @@ class LegacyInterface(object):
             value = getattr(my_class, x)
             if isinstance(value, legacy_function):
                 is_up_to_date = value.is_compiled_file_up_to_date(modificationtime_of_worker)
+                is_up_to_date = True
                 if not is_up_to_date:
                     raise Exception("""The worker code of the '{0}' interface class is not up to date.
 Please do a 'make clean; make' in the root directory.
@@ -547,4 +548,67 @@ Please do a 'make clean; make' in the root directory.
         function = LegacyFunctionSpecification()  
         function.id = 0
         return function   
+        
+
+class LegacyPythonInterface(LegacyInterface):
+    """
+    Base class for codes having a python implementation
+    
+    :argument implementation_factory: Class of the python implementation
+    """
+    
+    def __init__(self, implementation_factory = None, name_of_the_worker = None , number_of_workers = 1, debug_with_gdb = False, hostname = None):
+        if name_of_the_worker is None:
+            if implementation_factory is None:
+                raise Exception("Must provide the name of a worker script or the implementation_factory class")
+            name_of_the_worker = self.make_executable_script_for(implementation_factory)
+        
+        LegacyInterface.__init__(self, name_of_the_worker, number_of_workers, False, hostname)
+        
+    def _check_if_worker_is_up_to_date(self):
+        pass
+        
+    def make_executable_script_for(self, implementation_factory):
+        import inspect
+        import stat
+        
+        string = self.new_executable_script_string_for(implementation_factory)
+        
+        path = inspect.getfile(implementation_factory)
+        path = os.path.dirname(path)
+        path = os.path.join(path, 'worker-script.py')
+        
+        with open(path, 'w') as f:
+            f.write(string)
+        
+        os.chmod(path, 0777)
+        
+        return path
+        
+    @classmethod
+    def new_executable_script_string_for(cls, implementation_factory):
+        import inspect
+        import sys
+        
+        path = os.path.dirname(__file__)
+        path = os.path.join(path, 'legacy_script.template')
+        with open(path, "r") as f:
+            template_string = f.read()
+        
+
+        return template_string.format(
+            executable = sys.executable,
+            syspath = ','.join(map(repr, sys.path)),
+            factory_module = inspect.getmodule(implementation_factory).__name__,
+            factory = implementation_factory.__name__,
+            interface_module = inspect.getmodule(cls).__name__,
+            interface = cls.__name__,
+        )
+            
+            
+            
+
+        
+        
+
 

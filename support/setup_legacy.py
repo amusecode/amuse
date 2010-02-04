@@ -35,7 +35,7 @@ class LegacyCommand(Command):
         if self.legacy_dir is None:
             self.legacy_dir = os.path.join(self.amuse_src_dir,'legacy')
         
-        self.update_environment_from_cfgfile()
+        #self.update_environment_from_cfgfile()
         self.set_fortran_variables()
         self.set_cuda_variables()
         self.set_libdir_variables()
