@@ -537,7 +537,6 @@ class LegacyInterface(object):
             value = getattr(my_class, x)
             if isinstance(value, legacy_function):
                 is_up_to_date = value.is_compiled_file_up_to_date(modificationtime_of_worker)
-                is_up_to_date = True
                 if not is_up_to_date:
                     raise Exception("""The worker code of the '{0}' interface class is not up to date.
 Please do a 'make clean; make' in the root directory.
