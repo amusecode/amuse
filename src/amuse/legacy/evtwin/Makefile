@@ -1,11 +1,6 @@
 
-ifndef FORTRAN
-	FORTRAN = gfortran
-endif
-
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
-endif
+FORTRAN ?= gfortran
+AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -56,4 +51,4 @@ mpi_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwin -o $@
 	
 .f.o: $<
-	$(FORTRAN) -c -o $@ $< 
+	$(FORTRAN) $(FFLAGS) -c -o $@ $< 

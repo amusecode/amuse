@@ -1,28 +1,22 @@
 
-CC = gcc
-CPP = g++
 
-CFLAGS = -g 
-CPPFLAGS = -Wall -g -DTREE -DNOGRAPHICS 
-#CPPFLAGS = -Wall -g -DNOGRAPHICS
+CXXFLAGS += -Wall -DTREE -DNOGRAPHICS 
 
 OBJ = BHTC.o nbody.o BHtree.o gravity.o pgetopt.o second.o
-
 
 all: BHTC
 
 clean:
 	rm -f *.o BHTC *~
 
-
 BHTC: $(OBJ)
-	$(CPP) $(CPPFLAGS) $(OBJ) -lm -o BHTC
+	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC
 
 .c.o:
 	$(CC) $(CFLAGS) -c $?
 
 .C.o:
-	$(CPP) $(CPPFLAGS) -c $?
+	$(CXX) $(CXXFLAGS) -c $?
 
 test: compile
 

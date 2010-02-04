@@ -32,12 +32,12 @@ RANLIB = ranlib
 # works better because the compiler will also include the proper library
 # dependancies.
 LD = $(FORT)
-LDFLAGS = -shared
+LDFLAGS += -shared
 LIBS = -lm
 
 # C compiler options, for the SWIG C wrapper for the MUSE plugin
-CC = gcc
-CFLAGS = -O3 -fomit-frame-pointer -fPIC
+CC ?= gcc
+CFLAGS += -O3 -fomit-frame-pointer -fPIC
 
 # SWIG
 SWIG = swig

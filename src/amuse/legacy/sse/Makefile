@@ -1,11 +1,6 @@
 
-ifndef FORTRAN
-	FORTRAN = gfortran
-endif
-
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
-endif
+FORTRAN ?= gfortran
+AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -27,5 +22,5 @@ muse_worker:	muse_worker.f90  SSE_muse_interface.o  $(OBJ)
 muse_worker.f90: muse_stellar_mpi.py
 	$(CODE_GENERATOR) --type=f90 muse_stellar_mpi.py SSE -o $@
 
-.f.o: $<
-	$(FORTRAN) -c -fPIC -o $@ $< 
+.f.o: $<                                                                 
+	$(FORTRAN) -c $(FFLAGS) -o $@ $< 

@@ -5,9 +5,7 @@ else
     TARGS = .warning
 endif
 
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
-endif
+AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -86,5 +84,5 @@ muse_worker_starlab:        muse_dynamics_mpi.py $(OBJS)
 
 %.o: %.cc
 ifdef STARLAB_INSTALL_PATH
-	g++ $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 endif

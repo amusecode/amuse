@@ -1,6 +1,6 @@
 
-CFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
-CXXFLAGS = $(CFLAGS) 
+CFLAGS ?= -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR)
+CXXFLAGS ?= $(CFLAGS) 
 
 LDFLAGS = -lm $(MUSE_LD_FLAGS)
 
@@ -8,9 +8,7 @@ OBJS = muse_dynamics.o
 
 A_OBJS = hermite_code.o
 
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
-endif
+AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -29,13 +27,14 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py Hermite -o $@
 
 muse_worker:	muse_worker.cc $(OBJS)
-	mpicxx $@.cc $(OBJS) -o $@
+	mpicxx $(CXXFLAGS) $@.cc $(OBJS) -o $@
 
 worker_code:	worker_code.cc worker_code.h $(A_OBJS)
-	mpicxx $@.cc $(A_OBJS) -o $@
+	mpicxx $(CXXFLAGS) $@.cc $(A_OBJS) -o $@
 
 .cc.o: $<
-	g++ $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	
 .C.o:
 	$(CC) $(CFLAGS) -c -o $@ $?
 	

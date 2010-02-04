@@ -202,10 +202,17 @@ class nbody_to_si(object):
                 self.nbody_to_si = nbody_to_si
             
             def from_source_to_target(self, quantity):
-                return self.nbody_to_si.to_nbody(quantity) 
+                if hasattr(quantity, 'unit'):
+                    return self.nbody_to_si.to_nbody(quantity) 
+                else:
+                    return quantity
                 
             def from_target_to_source(self, quantity):
-                return self.nbody_to_si.to_si(quantity) 
+                if hasattr(quantity, 'unit'):
+                    return self.nbody_to_si.to_si(quantity)
+                else:
+                    return quantity
+                    
                 
         return SiToNBodyConverter(self)
 

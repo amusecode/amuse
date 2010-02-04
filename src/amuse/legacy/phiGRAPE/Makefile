@@ -4,9 +4,7 @@ CC = mpicc
 
 OPTS+=-DNOMPI
 
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
-endif
+AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -27,28 +25,15 @@ G6OBJS = src/g6lib.o
 
 GLOBJECTS=src/fthread.o src/viewer.o src/libpt.a
 
-ifndef CUDA_LIBDIRS
-	CUDA_LIBDIRS = -L/data1/pelupes/programs/cuda/lib 
-endif
+CUDA_LIBDIRS ?= -L/data1/pelupes/programs/cuda/lib 
+CUDA_LIBS ?= -lcudart
 
-ifndef CUDA_LIBS
-	CUDA_LIBS = -lcudart
-endif
-
-
-ifndef SAPPORO_LIBDIRS
-	SAPPORO_LIBDIRS = -L/data1/pelupes/libraries/sapporo_v1.5
-endif
-
-ifndef GRAPE6_LIBDIRS
-	GRAPE6_LIBDIRS = -L$(GRAPE6)/lib
-endif
-
+SAPPORO_LIBDIRS ?= -L/data1/pelupes/libraries/sapporo_v1.5
+GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS) $(GRAPE6_LIBDIRS)
 GPULIBS  = $(CUDA_LIBS) -lsapporo -L/opt/local/lib -lboost_thread-mt -lpthread -L/usr/lib -lstdc++.6
-GRAPE6LIBS  = -lg6lx
-LIBS     = -lm  
+GRAPE6LIBS  ?= -lg6lx
 LIBS     =  -lm -lpthread
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
@@ -59,44 +44,41 @@ GLINCLUDE = -I/usr/include/GL \
 GLLIB = -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
 
-X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
+X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
-THREADLIB = -L. -lpthread src/libpt.a
+THREADLIB ?= -L. -lpthread src/libpt.a
 
 
-CFLAGS  = -O2 $(OPTS) -fPIC
-
-FFLAGS  = -O2 $(OPTS) -fPIC
-# gfortran: -fno-second-underscore -fPIC -Wall
-
-FFLAGS+= -I./src/
+CFLAGS += -O2 $(OPTS)
+FFLAGS += -O2 $(OPTS)
+FFLAGS += -I./src/
 
 
 all: muse_worker worker_code 
 
 muse_worker: muse_worker.f90 muse_interface.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
+	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
 
 worker_code: worker_code.f90 phiGRAPE_code.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
+	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
 	
 worker_code_gpu: worker_code.f90 phiGRAPE_code.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
+	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
 	
 worker_code_grape: worker_code.f90 phiGRAPE_code.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
+	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
 
 muse_worker_gpu: muse_worker.f90 muse_interface.o 
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
+	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
 	
 muse_worker_grape: muse_worker.f90 muse_interface.o 
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
+	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
 
 
 muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o 

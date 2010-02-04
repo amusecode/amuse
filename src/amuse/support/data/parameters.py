@@ -35,6 +35,35 @@ class Parameters(object):
         for parameter_definition in self._definitions:
             parameter_definition.set_default_value(self._instance())
             
+    def __dir__(self):
+        result = []
+        result.extend(dir(type(self)))
+        result.extend(self.names())
+        return result
+        
+
+class ParametersWithUnitsConverted(object):
+    def __init__(self, original, converter):
+        object.__setattr__(self, '_original', original)
+        object.__setattr__(self, '_converter', converter)
+        
+    
+    def __getattr__(self, name):
+        return self._converter.from_target_to_source(getattr(self._original, name))
+    
+    def __setattr__(self, name, value):
+        setattr(self._original, name, self._converter.from_source_to_target(value))
+    
+    def names(self):
+        return self._original.names()
+        
+    def set_defaults(self):
+        self._original.set_defaults()
+        
+    def __dir__(self):
+        return dir(self._original)
+    
+            
         
 class ParameterDefinition(object):
     def __init__(self, name, description, unit, default_value = None):
@@ -51,7 +80,7 @@ class ParameterDefinition(object):
         return result
         
     def set_value(self, object, quantity):
-        if self.unit.is_non_numeric():
+        if self.unit.is_non_numeric() or len(self.unit.base) == 0:
             if not isinstance(quantity, values.Quantity):
                 quantity = quantity | self.unit          
                   

@@ -1,8 +1,7 @@
 
-CFLAGS = -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
-CXXFLAGS = $(CFLAGS) 
-
-LDFLAGS = -lm $(MUSE_LD_FLAGS)
+CFLAGS   += -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
+CXXFLAGS += $(CFLAGS) 
+LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 BHTCDIR		= src
 BHTC		= $(BHTCDIR)/BHTC
@@ -16,9 +15,7 @@ A_OBJS = BHTree_code.o \
 	$(BHTCDIR)/BHtree.o $(BHTCDIR)/gravity.o \
 	$(BHTCDIR)/pgetopt.o $(BHTCDIR)/second.o $(BHTC_EXTRAS)
 
-ifndef AMUSE_DIR
-	AMUSE_DIR=../../../..
-endif
+AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -38,7 +35,7 @@ muse_worker.cc: muse_dynamics_mpi.py
 	$(CODE_GENERATOR) --type=c --mode=mpi muse_dynamics_mpi.py BHTree > $@
 
 muse_worker:	muse_worker.cc $(OBJS)
-	mpicxx $@.cc $(OBJS) -o $@
+	mpicxx $(CXXFLAGS) $@.cc $(OBJS) -o $@
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BHTree -o $@
@@ -47,9 +44,9 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py BHTree -o $@
 
 worker_code: worker_code.cc worker_code.h $(A_OBJS)
-	mpicxx $@.cc $(A_OBJS) -o $@
+	mpicxx $(CXXFLAGS) $@.cc $(A_OBJS) -o $@
 
 .cc.o: $<
-	g++ $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) -c -o $@ $< 
 .C.o: $<
-	g++ $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) -c -o $@ $<

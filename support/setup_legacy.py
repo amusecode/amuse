@@ -40,7 +40,8 @@ class LegacyCommand(Command):
         self.set_cuda_variables()
         self.set_libdir_variables()
         self.save_cfgfile_if_not_exists()
-        
+    
+    
     def set_fortran_variables(self):
         if 'FORTRAN' in self.environment:
             return
@@ -56,7 +57,25 @@ class LegacyCommand(Command):
         if 'FORT' in os.environ:
             self.environment['FORTRAN'] = os.environ['FORT']
             return
-
+            
+        if 'F90' in os.environ:
+            self.environment['FORTRAN'] = os.environ['FORT']
+            return
+            
+        process = Popen(['mpif90','-show'], stdout = PIPE, stderr = PIPE)
+        stdoutstring, stderrstring = process.communicate()
+        if process.returncode == 0:
+            parts = stdoutstring.split()
+            self.environment['FORTRAN']  = parts[0]
+            return
+            
+        process = Popen(['mpif90','--showme '], stdout = PIPE, stderr = PIPE)
+        stdoutstring, stderrstring = process.communicate()
+        if process.returncode == 0:
+            parts = stdoutstring.split()
+            self.environment['FORTRAN']  = parts[0]
+            return  
+            
         compiler = fcompiler.new_fcompiler(requiref90=True)
         fortran_executable = compiler.executables['compiler_f90'][0]
         self.environment['FORTRAN'] = fortran_executable
@@ -193,7 +212,7 @@ class BuildLegacy(LegacyCommand):
                 print '*' , x
         
     def get_special_targets(self, directory, environment):
-        process = Popen(['make','-p' , '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
+        process = Popen(['make','-qp' , '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         lines = stdoutstring.splitlines()
         result = []

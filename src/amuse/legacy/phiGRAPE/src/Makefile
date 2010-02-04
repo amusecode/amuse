@@ -1,7 +1,6 @@
 
-ifndef OPTS
-OPTS=-DNOMPI
-endif
+OPTS ?= -DNOMPI
+
 
 SOURCEF = \
 allgather_ap.F      cmcorr.F        corrector.F     cputime.F		\
@@ -18,18 +17,9 @@ SOURCEC = wtimef.c g6lib.c
 
 SAF = main.F
 
-ifndef CUDA_LIBDIRS
-	CUDA_LIBDIRS = -L/data1/pelupes/programs/cuda/lib 
-endif
-
-ifndef CUDA_LIBS
-	CUDA_LIBS = -lcudart
-endif
-
-
-ifndef SAPPORO_LIBDIRS
-	SAPPORO_LIBDIRS = -L/data1/pelupes/libraries/sapporo_v1.5
-endif
+CUDA_LIBDIRS ?= -L/data1/pelupes/programs/cuda/lib 
+CUDA_LIBS ?= -lcudart
+SAPPORO_LIBDIRS ?= -L/data1/pelupes/libraries/sapporo_v1.5
 
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
@@ -38,16 +28,16 @@ LIBS     = -lm
 
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
-GLINCLUDE = -I/usr/include/GL \
+GLINCLUDE ?= -I/usr/include/GL \
 -I/data1/pelupes/libraries/f90gl-1.2.11/include/GL/
 
-GLLIB = -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
+GLLIB ?= -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
 GLLIB = 
 
-X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
+X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
-THREAD_OPTIONS = -L. -lpthread -lpt
+THREAD_OPTIONS ?= -L. -lpthread -lpt
 
 #------------------------------------------------------------
 #---   C-definitions

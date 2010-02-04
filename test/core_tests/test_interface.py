@@ -7,6 +7,9 @@ import unittest
 
 class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
     class TestClass(interface.CodeInterface):
+        parameter_definitions = [
+        
+        ]
         
         total_mass = CodeProperty("get_mass", nbody_system.mass)
         
