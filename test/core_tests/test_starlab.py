@@ -3,7 +3,6 @@ from amuse.support.io import starlab
 from amuse.support.units import units
 
 import unittest
-import pylab as pl
 import os.path
 
 class Test(unittest.TestCase):
