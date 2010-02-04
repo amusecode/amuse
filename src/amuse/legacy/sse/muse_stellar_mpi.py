@@ -186,7 +186,7 @@ class SSEBinding(CodeInterface):
             "helium_star_mass_loss_factor",
             "Helium star mass loss factor",
             units.none,
-            0.5 | units.none
+            1.0 | units.none
         ),
         
         parameters.ModuleCachingParameterDefinition(

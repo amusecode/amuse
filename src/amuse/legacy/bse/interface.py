@@ -161,6 +161,8 @@ class BSEParticles(Particles):
         mapping_from_attribute_to_default_value = {
             "type1" : 1 | units.stellar_type,
             "type2" : 1 | units.stellar_type,
+            "radius1":  0 | units.RSun,
+            "radius2":  0 | units.RSun,
             "luminosity1":  0 | units.LSun,
             "luminosity2":  0 | units.LSun,
             "core_mass1": 0 | units.MSun,
@@ -178,7 +180,7 @@ class BSEParticles(Particles):
             "MS_lifetime1": 0 | units.Myr,
             "MS_lifetime2": 0 | units.Myr,
 #            "orbital_period": 200.0 | units.day,
-#            "eccentricity": 0.5 | units.none,
+            "eccentricity": 0.0 | units.none,
             "age": 0 | units.Myr
         }
         
@@ -243,7 +245,7 @@ class BSEBinding(CodeInterface):
             "helium_star_mass_loss_factor",
             "Helium star mass loss factor",
             units.none,
-            0.5 | units.none
+            1.0 | units.none
         ),
         
         parameters.ModuleCachingParameterDefinition(
@@ -363,7 +365,7 @@ class BSEBinding(CodeInterface):
             "wind_velocity_factor",
             "The wind velocity factor: proportional to vwind**2 (1/8).",
             units.none,
-            1.0/8.0 | units.none
+            0.125 | units.none
         ),
         
         parameters.ModuleCachingParameterDefinition(
@@ -379,7 +381,7 @@ class BSEBinding(CodeInterface):
             "wind_accretion_factor",
             "The Bondi-Hoyle wind accretion factor (3/2).",
             units.none,
-            3.0/2.0 | units.none
+            1.5 | units.none
         ),
         
         parameters.ModuleCachingParameterDefinition(

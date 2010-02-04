@@ -249,16 +249,14 @@ class TestBSE(TestWithMPI):
         print "Testing evolution of a close binary system..."
         instance = BSE()
         instance.parameters.metallicity = 0.001 | units.none
-        instance.parameters.helium_star_mass_loss_factor = 1.0 | units.none
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
         instance.initialize_module_with_current_parameters()
         stars =  core.Stars(1)
         
         binary = stars[0]
         binary.mass1 = 3.0 | units.MSun
-        binary.radius1 = 0.0 | units.RSun
         binary.mass2 = 0.3 | units.MSun
-        binary.radius2 = 0.0 | units.RSun
         binary.orbital_period = 200.0 | units.day
         binary.eccentricity = 0.5 | units.none
         
@@ -268,9 +266,7 @@ class TestBSE(TestWithMPI):
         
         previous_type1 = binary.type1
         results = []
-        t0 = 0 | units.Myr
-        current_time = t0
-        
+        current_time = 0 | units.Myr
         while current_time < (480 | units.Myr):
             instance.update_time_steps()
             # The next line appears a bit weird, but saves time for this simple test.
@@ -319,113 +315,182 @@ class TestBSE(TestWithMPI):
          
         del instance
             
-    def xtest2(self):
+    def test2(self):
+        print "Testing evolution of a wide binary system."
         instance = BSE()
-        instance.initialize_module_with_default_parameters() 
+        instance.parameters.metallicity = 0.001 | units.none
+        instance.parameters.common_envelope_efficiency = 3.0 | units.none
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.initialize_module_with_current_parameters()
         stars =  core.Stars(1)
         
-        star = stars[0]
-        star.mass = 5 | units.MSun
-        star.radius = 0.0 | units.RSun
-        
+        binary = stars[0]
+        binary.mass1 = 3.0 | units.MSun
+        binary.mass2 = 0.3 | units.MSun
+        binary.orbital_period = 2.0e5 | units.day
+        binary.eccentricity = 0.0 | units.none
+
         instance.particles.add_particles(stars)
-        instance.evolve_model(120.1 | units.Myr)
-                
-        self.assertAlmostEqual(instance.particles[0].mass.value_in(units.MSun), 4.932, 3)
-         
-        del instance
+        from_bse_to_model = instance.particles.new_channel_to(stars)
+        from_bse_to_model.copy()
         
-    
-    def xtest3(self):
-        instance = BSE()
-        instance.initialize_module_with_default_parameters() 
-        stars =  core.Stars(1)
-        
-        star = stars[0]
-        star.mass = 5 | units.MSun
-        star.radius = 0.0 | units.RSun
-        
-        stars.synchronize_to(instance.particles)
-        
-        channel = instance.particles.new_channel_to(stars)
-        channel.copy_attributes(instance.particles._get_attributes())   
-        
-        previous_type = instance.particles.type
+        previous_type1 = binary.type1
         results = []
-        
-        instance.evolve_model(121.5 | units.Myr)
-        
-        channel.copy_attributes(instance.particles._get_attributes())   
-        
-        self.assertAlmostEqual(star.mass.value_in(units.MSun), 0.997, 3)
-         
-        del instance
-        
+        current_time = 0 | units.Myr
+        while current_time < (335 | units.Myr):
+            instance.update_time_steps()
+            # The next line appears a bit weird, but saves time for this simple test.
+            current_time = current_time + max(2.0*instance.particles[0].time_step, 0.04 | units.Myr)
+            instance.evolve_model(current_time)
+            from_bse_to_model.copy()
     
-    def xtest5(self):
-        instance = BSE()
-        instance.initialize_module_with_default_parameters() 
-        stars =  core.Stars(1)
+            if not binary.type1 == previous_type1:
+                results.append((binary.age, binary.mass1, binary.type1))
+                previous_type1 = binary.type1
+            
+        print results
+        self.assertEqual(len(results), 6)
         
-        star = stars[0]
-        star.mass = 35 | units.MSun
-        star.radius = 0.0 | units.RSun
-        
-        stars.synchronize_to(instance.particles)
-        
-        channel = instance.particles.new_channel_to(stars)
-        channel.copy_attributes(instance.particles._get_attributes())   
-        
-        previous_type = star.type
-        results = []
-        
-        dt = 1 | units.Myr
-        t = 0 | units.Myr
-        while t < 30 | units.Myr:
-            t += dt
-            instance.evolve_model(t)
-                
-        self.assertTrue(instance.particles[0].mass.value_in(units.MSun) < 10.6)
-         
-        del instance
-
-
-    def xtest6(self):
-#       Test whether a set of stars evolve synchronously
-#       Create an array of stars with a range in stellar mass
-        masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
-        number_of_stars = len(masses)
-        stars = core.Stars(number_of_stars)
-        for i, star in enumerate(stars):
-            star.mass = masses[i]
-            star.radius = 0.0 | units.RSun
-
-#       Initialize stellar evolution code
-        instance = BSE()
-        instance.initialize_module_with_default_parameters() 
-        instance.setup_particles(stars)
-#       Let the code perform initialization actions after all particles have been created. 
-#       Called before the first evolve call and after the last new_particle call.
-        instance.initialize_stars()
-        
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
-        
-        instance.evolve_model(end_time = 125 | units.Myr)
-        from_code_to_model.copy()
-                
-        end_types = (
-            "deeply or fully convective low mass MS star",
-            "Main Sequence star",
-            "Main Sequence star",
-            "Carbon/Oxygen White Dwarf",
-            "Neutron Star",
-            "Black Hole",
+        times = ( 
+            284.8516 | units.Myr, 
+            287.0595 | units.Myr, 
+            287.7848 | units.Myr, 
+            331.1454 | units.Myr,
+            332.7407 | units.Myr,
+            333.4146 | units.Myr
         )
-        for i in range(number_of_stars):
-            self.assertTrue(stars[i].age.value_in(units.Myr) > 125)
-            self.assertTrue(stars[i].mass <= masses[i])
-            self.assertEquals(str(stars[i].type), end_types[i])
+        for result, expected in zip(results, times):
+            self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
+            
+        masses = ( 
+            3.000 | units.MSun, 
+            3.000 | units.MSun, 
+            2.999 | units.MSun, 
+            2.956 | units.MSun,
+            2.919 | units.MSun,
+            0.928 | units.MSun
+        )
+        for result, expected in zip(results, masses):
+            self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 2)
+         
+        types = (
+            "Hertzsprung Gap",
+            "First Giant Branch",
+            "Core Helium Burning",
+            "First Asymptotic Giant Branch",
+            "Second Asymptotic Giant Branch",
+            "Carbon/Oxygen White Dwarf",
+        )
+        
+        for result, expected in zip(results, types):
+            self.assertEquals(str(result[2]), expected)
+        
+        del instance
+            
+    def test3(self):
+        print "Testing standard BSE example 2..."
+        instance = BSE()
+        instance.parameters.metallicity = 0.02 | units.none
+        instance.parameters.common_envelope_efficiency = 3.0 | units.none
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.initialize_module_with_current_parameters()
+        stars =  core.Stars(1)
+        
+        binary = stars[0]
+        binary.mass1 = 7.816 | units.MSun
+        binary.mass2 = 4.387 | units.MSun
+        binary.orbital_period = 1964.18453 | units.day
+        binary.eccentricity = 0.0 | units.none
+
+        instance.particles.add_particles(stars)
+        from_bse_to_model = instance.particles.new_channel_to(stars)
+        from_bse_to_model.copy()
+        
+        previous_type1 = binary.type1
+        previous_type2 = binary.type2
+        results = []
+        current_time = 0 | units.Myr        
+        while current_time < (170 | units.Myr):
+            instance.update_time_steps()
+            # The next line appears a bit weird, but saves time for this simple test.
+            current_time = current_time + max(2.0*instance.particles[0].time_step, 0.04 | units.Myr)
+            instance.evolve_model(current_time)
+            from_bse_to_model.copy()
+    
+            if not (binary.type1 == previous_type1 and binary.type2 == previous_type2):
+                results.append((binary.age, str(binary.type1)+" and "+str(binary.type2)))
+                previous_type1 = binary.type1
+                previous_type2 = binary.type2
+            
+        print results
+        self.assertEqual(len(results), 13)
+        times = ( 
+            38.9708 | units.Myr, 
+            39.0897 | units.Myr, 
+            39.1213 | units.Myr, 
+            43.8025 | units.Myr,
+            43.9923 | units.Myr,
+            44.0686 | units.Myr,
+            141.7077 | units.Myr, 
+            142.3448 | units.Myr, 
+            142.7827 | units.Myr,
+            166.1043 | units.Myr,
+            166.5795 | units.Myr,
+            166.9627 | units.Myr,
+            166.9863 | units.Myr
+        )
+        for result, expected in zip(results, times):
+            self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 0)
+            
+        types = (
+            "Hertzsprung Gap and Main Sequence star",
+            "First Giant Branch and Main Sequence star",
+            "Core Helium Burning and Main Sequence star",
+            "First Asymptotic Giant Branch and Main Sequence star",
+            "Second Asymptotic Giant Branch and Main Sequence star",
+            "Oxygen/Neon White Dwarf and Main Sequence star",
+            "Oxygen/Neon White Dwarf and Hertzsprung Gap",
+            "Oxygen/Neon White Dwarf and First Giant Branch",
+            "Oxygen/Neon White Dwarf and Core Helium Burning",
+            "Oxygen/Neon White Dwarf and First Asymptotic Giant Branch",
+            "Oxygen/Neon White Dwarf and Hertzsprung Gap Naked Helium star",
+            "Neutron Star and Hertzsprung Gap Naked Helium star",
+            "Neutron Star and Carbon/Oxygen White Dwarf",
+        )
+        
+        for result, expected in zip(results, types):
+            self.assertEquals(result[1], expected)
+        
+        self.assertAlmostEqual(binary.mass1.value_in(units.MSun), 1.304, 3)
+        self.assertAlmostEqual(binary.mass2.value_in(units.MSun), 0.800, 3)
+        
+        del instance
+        
+    def test4(self):
+        print "Quick testing standard BSE example 2..."
+        instance = BSE()
+        instance.parameters.metallicity = 0.02 | units.none
+        instance.parameters.common_envelope_efficiency = 3.0 | units.none
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.initialize_module_with_current_parameters()
+        stars =  core.Stars(1)
+        
+        binary = stars[0]
+        binary.mass1 = 7.816 | units.MSun
+        binary.mass2 = 4.387 | units.MSun
+        binary.orbital_period = 1964.18453 | units.day
+        binary.eccentricity = 0.0 | units.none
+
+        instance.particles.add_particles(stars)
+        from_bse_to_model = instance.particles.new_channel_to(stars)
+        from_bse_to_model.copy()
+        
+        instance.evolve_model(170 | units.Myr)
+        from_bse_to_model.copy()
+
+        self.assertAlmostEqual(binary.mass1.value_in(units.MSun), 1.304, 3)
+        self.assertAlmostEqual(binary.mass2.value_in(units.MSun), 0.800, 3)
+        self.assertEquals(str(binary.type1), "Neutron Star")
+        self.assertEquals(str(binary.type2), "Carbon/Oxygen White Dwarf")
 
         del instance
-
