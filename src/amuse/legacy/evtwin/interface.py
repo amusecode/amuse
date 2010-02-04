@@ -317,6 +317,8 @@ class EVtwinBinding(CodeInterface):
         
         self.particles = Particles()
         self.particles._private.attribute_storage = EVtwinInCodeAttributeStorage(self)
+        self.parameters.set_defaults()
+        self.set_ev_path(self.default_path_to_ev_database)
         
     parameter_definitions = [
         parameters.ModuleMethodParameterDefinition_Next(
@@ -373,13 +375,14 @@ class EVtwinBinding(CodeInterface):
             None #Default value of (2) will be set by initialize_code later.
         ),
         
-        
-
     ]
     
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
         self.set_ev_path(self.default_path_to_ev_database)
+        self.initialize_code()
+        
+    def initialize_module_with_current_parameters(self):
         self.initialize_code()
         
     def setup_particles(self, particles):
