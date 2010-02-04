@@ -44,6 +44,10 @@ to install the packages as part of the system.
     export PATH=${PREFIX}/bin:${PATH}
     export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
+2b. It may be necessary to also set:  
+
+    export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
+
 3. Download and install python
 
     cd doc/install
