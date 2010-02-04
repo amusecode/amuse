@@ -107,8 +107,29 @@ class TestInterface(TestWithMPI):
         self.assertEquals(output_message.ints[0], 0)
         self.assertEquals(implementation.masses[1], 12.0)
         
-        
+    
     def test4(self):
+        implementation = ForTestingImplementation()
+        x = python_code.PythonImplementation(implementation, ForTestingInterface)
+        
+        input_message = python_code.Message(11, 4)
+        input_message.ints = [1,2,3,4]
+        input_message.doubles = [12.0,13.0,14.0,15.0]
+        
+        output_message = python_code.Message(10, 4)
+        
+        x.handle_message(input_message, output_message)
+        
+        self.assertEquals(len(output_message.ints), 4)
+        self.assertEquals(len(output_message.doubles), 0)
+        self.assertEquals(output_message.ints[0], 0)
+        self.assertEquals(output_message.ints[3], 0)
+        self.assertEquals(implementation.masses[1], 12.0)
+        self.assertEquals(implementation.masses[2], 13.0)
+        self.assertEquals(implementation.masses[3], 14.0)
+        self.assertEquals(implementation.masses[4], 15.0)
+        
+    def test5(self):
         x = ForTestingInterface()
         
         error = x.set_mass(1, 10.0)
@@ -118,6 +139,21 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error, 0)
         self.assertEquals(answer, 10.0)
         
+        
+        del x
+        
+        
+    def test6(self):
+        x = ForTestingInterface()
+        
+        errors = x.set_mass([1,2], [10.0,11.0])
+        self.assertEquals(errors[0], 0)
+        self.assertEquals(errors[1], 0)
+        
+        answer, errors = x.get_mass([1,2])
+        self.assertEquals(errors[0], 0)
+        self.assertEquals(answer[0], 10.0)
+        self.assertEquals(answer[1], 11.0)
         
         del x
         

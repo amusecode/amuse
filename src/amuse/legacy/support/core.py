@@ -576,7 +576,7 @@ class LegacyPythonInterface(LegacyInterface):
         
         path = inspect.getfile(implementation_factory)
         path = os.path.dirname(path)
-        path = os.path.join(path, 'worker-script.py')
+        path = os.path.join(path, 'worker-script')
         
         with open(path, 'w') as f:
             f.write(string)

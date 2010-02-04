@@ -105,7 +105,7 @@ class Message(object):
             raise Exception("Sending strings not supported!")
             
 
-def pack_array(self, length, array, dtype):
+def pack_array(array, length,  dtype):
     result = numpy.empty(length * len(array), dtype = dtype)
     for i in range(len(array)):
         offset = i * length
@@ -113,7 +113,7 @@ def pack_array(self, length, array, dtype):
     return result
     
 
-def unpack_array(self, length, array, dtype):
+def unpack_array(array, length, dtype):
     result = []
     total = len(array) / length
     for i in range(total):
@@ -167,39 +167,79 @@ class PythonImplementation(object):
     def handle_message(self, input_message, output_message):
         legacy_function = self.mapping_from_tag_to_legacy_function[input_message.tag]
         specification = legacy_function.specification
-        if input_message.length == 1:
-            keyword_arguments = OrderedDictionary()
-            for parameter in specification.parameters:
-                attribute = self.dtype_to_message_attribute[parameter.datatype]
-                argument_value = None
-                if parameter.direction == LegacyFunctionSpecification.IN:
-                    argument_value = getattr(input_message, attribute)[parameter.input_index]
-                if parameter.direction == LegacyFunctionSpecification.INOUT:
-                    argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index])
-                if parameter.direction == LegacyFunctionSpecification.OUT:
-                    argument_value = ValueHolder(None)
+        
+        
+        dtype_to_count = self.get_dtype_to_count(specification)
+        
+        for type, attribute in self.dtype_to_message_attribute.iteritems():
+            count = dtype_to_count.get(type,0)
+            for x in range(count):
+                getattr(output_message, attribute).append(numpy.empty(output_message.length, dtype=type))
+        
+        
+        method = getattr(self.implementation, specification.name)
+        
+        for type, attribute in self.dtype_to_message_attribute.iteritems():
+            array = getattr(input_message, attribute)
+            unpacked = unpack_array(array, input_message.length, type)
+            setattr(input_message,attribute, unpacked)
             
-                keyword_arguments[parameter.name] = argument_value
-                
-            method = getattr(self.implementation, specification.name)
+        for index in range(input_message.length):
+            keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification)
             
             result = method(**keyword_arguments)
             
-            if not specification.result_type is None:
-                attribute = self.dtype_to_message_attribute[specification.result_type]
-                getattr(output_message, attribute).append(result)
+            self.fill_output_message(output_message, index , result, keyword_arguments, specification)
+        
+        for type, attribute in self.dtype_to_message_attribute.iteritems():
+            array = getattr(output_message, attribute)
+            packed = pack_array(array, input_message.length, type)
+            setattr(output_message, attribute, packed)
+    
+    def new_keyword_arguments_from_message(self, input_message, index, specification):
+        keyword_arguments = OrderedDictionary()
+        for parameter in specification.parameters:
+            attribute = self.dtype_to_message_attribute[parameter.datatype]
+            argument_value = None
+            if parameter.direction == LegacyFunctionSpecification.IN:
+                argument_value = getattr(input_message, attribute)[parameter.input_index][index]
+            if parameter.direction == LegacyFunctionSpecification.INOUT:
+                argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index][index])
+            if parameter.direction == LegacyFunctionSpecification.OUT:
+                argument_value = ValueHolder(None)
+        
+            keyword_arguments[parameter.name] = argument_value
+        return keyword_arguments
+        
+    def fill_output_message(self, output_message, index, result, keyword_arguments, specification):
+        
+            
+        if not specification.result_type is None:
+            attribute = self.dtype_to_message_attribute[specification.result_type]
+            getattr(output_message, attribute)[0][index] = result
                 
-            for parameter in specification.parameters:
-                attribute = self.dtype_to_message_attribute[parameter.datatype]
-                argument_value = None
-                if parameter.direction == LegacyFunctionSpecification.INOUT:
-                    argument_value = keyword_arguments[parameter.name] 
-                    getattr(output_message, attribute).append(argument_value.value)
-                if parameter.direction == LegacyFunctionSpecification.OUT:
-                    argument_value = keyword_arguments[parameter.name]
-                    getattr(output_message, attribute).append(argument_value.value)
-        else:
-            raise Exception("not implemented yet!")
+        for parameter in specification.parameters:
+            attribute = self.dtype_to_message_attribute[parameter.datatype]
+            argument_value = None
+            if parameter.direction == LegacyFunctionSpecification.INOUT:
+                argument_value = keyword_arguments[parameter.name] 
+                getattr(output_message, attribute)[parameter.output_index][index] = argument_value.value
+            if parameter.direction == LegacyFunctionSpecification.OUT:
+                argument_value = keyword_arguments[parameter.name]
+                getattr(output_message, attribute)[parameter.output_index][index] = argument_value.value
+    
+    def get_dtype_to_count(self, specification):
+        dtype_to_count = {}
+        
+        for parameter in specification.output_parameters:
+            count = dtype_to_count.get(parameter.datatype, 0)
+            dtype_to_count[parameter.datatype] = count + 1
+                
+        if not specification.result_type is None:
+            count = dtype_to_count.get(specification.result_type, 0)
+            dtype_to_count[specification.result_type] = count + 1
+        
+        return dtype_to_count
         
     @late
     def mapping_from_tag_to_legacy_function(self):
