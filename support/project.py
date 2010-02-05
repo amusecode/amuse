@@ -1,0 +1,3 @@
+
+
+DIRECTORIES = ['doc', 'src', 'test']
