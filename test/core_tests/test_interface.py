@@ -46,7 +46,7 @@ class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
         self.assertAlmostEquals(instance.total_mass.value_in(units.kg), 100.0, 10)
         
         self.assertEquals(original.add_to_length(5|nbody_system.length), 15.0 | nbody_system.length)
-        self.assertAlmostEquals(instance.add_to_length(5|units.m).value_in(units.m), 55.0, 10.0)
+        self.assertAlmostEquals(instance.add_to_length(5|units.m).value_in(units.m), 55.0, 10)
         
         
 
