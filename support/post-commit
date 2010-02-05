@@ -20,7 +20,11 @@ if __name__ == "__main__":
     repository = sys.argv[1]
     revision = sys.argv[2]
     
-    print send_revision_to_server(revision)
+    try:
+        print send_revision_to_server(revision)
+    except:
+        print "error, tracker may be offline"
+        sys.exit(1)
     
     
     
