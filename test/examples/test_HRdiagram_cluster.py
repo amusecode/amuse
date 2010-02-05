@@ -14,7 +14,7 @@ from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
 from support import path_to_test_results
-from test.examples.test_smallcluster import SalpeterIMF
+from amuse.experiments.salpeter import SalpeterIMF
 
 def simulate_stellar_evolution(number_of_stars = 1000, end_time = 1000.0 | units.Myr, \
     name_of_the_figure = "cluster_HR_diagram.png", use_SSE=True):
@@ -35,7 +35,7 @@ def simulate_stellar_evolution(number_of_stars = 1000, end_time = 1000.0 | units
         stellar_evolution = EVtwin()
         if number_of_stars > stellar_evolution.parameters.maximum_number_of_stars.value_in(units.none):
             stellar_evolution.parameters.maximum_number_of_stars = (number_of_stars | units.none)
-            print "You're simulating a large number of stars. This may be not", \
+            print "You're simulating a large number of stars with EVtwin. This may be not", \
                 " such a good idea..."
     stellar_evolution.initialize_module_with_current_parameters()
     
