@@ -46,6 +46,14 @@ def is_mpd_running():
         return not (process.returncode == 255)
     else:
         return True
+        
+def ensure_mpd_is_running():
+    if not is_mpd_running():
+        name_of_the_vendor, version = MPI.get_vendor()
+        if name_of_the_vendor == 'MPICH2':
+            process = Popen(['nohup','mpd'])
+    
+
 
 
 def _typecode_to_datatype(typecode):
