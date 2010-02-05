@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 import urllib
 import sys
@@ -6,7 +6,7 @@ import sys
 def send_revision_to_server(revision):
     parameters = urllib.urlencode({'rev': revision})
     port = 9075
-    f = urllib.urlopen("http://biesbosch.strw.leidenuniv.nl:{0}/check_svn_commit?{1}".format(port, parameters))
+    f = urllib.urlopen("http://biesbosch.strw.leidenuniv.nl:%s/check_svn_commit?%s" % (port, parameters))
     try:
         return f.read()
     finally:
