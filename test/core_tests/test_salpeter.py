@@ -3,7 +3,7 @@ import unittest
 import os
 
 from amuse.support.units import units
-from amuse.experiments.salpeter import SalpeterIMF
+from amuse.ext.salpeter import SalpeterIMF
         
 class SalpeterIMFTests(unittest.TestCase):
     def test1(self):

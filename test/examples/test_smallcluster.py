@@ -24,8 +24,8 @@ from support import path_to_test_results
 
 from amuse.support.io import store
 
-from amuse.experiments.plummer import MakePlummerModel
-from amuse.experiments.salpeter import SalpeterIMF
+from amuse.ext.plummer import MakePlummerModel
+from amuse.ext.salpeter import SalpeterIMF
 
 def move_particles_to_center_of_mass(particles):
     print  "center of mass:" , particles.center_of_mass()

@@ -1,6 +1,6 @@
 import unittest
 
-from amuse.experiments.plummer import *
+from amuse.ext.plummer import *
 import pickle
 
 random_state =  r"""(S'MT19937'

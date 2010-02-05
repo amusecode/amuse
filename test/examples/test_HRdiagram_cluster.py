@@ -14,7 +14,7 @@ from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
 from support import path_to_test_results
-from amuse.experiments.salpeter import SalpeterIMF
+from amuse.ext.salpeter import SalpeterIMF
 
 def simulate_stellar_evolution(number_of_stars = 1000, end_time = 1000.0 | units.Myr, \
     name_of_the_figure = "cluster_HR_diagram.png", use_SSE=True):
