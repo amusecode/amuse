@@ -26,7 +26,6 @@ class TestMPIInterface(TestWithMPI):
             self.sse_age = 0.0
         
     def test1(self):
-        self.assertTrue(False)
         sse = mpi_interface.SSE()
         
         metallicity = 0.02
