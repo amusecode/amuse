@@ -1,7 +1,9 @@
 from amuse.legacy import *
 from amuse.legacy.support.core import *
 
-from amuse.legacy.interface.gd import GravitationalDynamics
+from amuse.legacy.interface.gd import GravitationalDynamics, NBodyGravitationalDynamicsBinding
+from amuse.support.data import binding
+from amuse.support.data.core import Particles,ParticlesWithUnitsConverted
 
 
 import copy,numpy
@@ -155,8 +157,7 @@ def universal_solver(mu,pos0,vel0,dt):
 
 
 class TwoBodyImplementation(object):
-  __G=6.673e-11
-#  __G=1.
+  __G = 1.0
   
   def __init__(self):
     self.particles=[]
@@ -323,8 +324,61 @@ class TwoBodyImplementation(object):
       
       return collisionflag
 
+
+class TwoBodyInCodeAttributeStorage(InCodeAttributeStorage):
+    new_particle_method = binding.NewParticleMethod(
+        "new_particle", 
+        (
+            ("mass", "mass", nbody_system.mass),
+            ("radius", "radius", nbody_system.length),
+            ("x", "x", nbody_system.length),
+            ("y", "y", nbody_system.length),
+            ("z", "z", nbody_system.length),
+            ("vx", "vx", nbody_system.speed),
+            ("vy", "vy", nbody_system.speed),
+            ("vz", "vz", nbody_system.speed),
+        )
+    )
+    
+    getters = (
+        binding.ParticleGetAttributesMethod(
+            "get_state",
+            (
+                ("mass", "mass", nbody_system.mass),
+                ("radius", "radius", nbody_system.length),
+                ("x", "x", nbody_system.length),
+                ("y", "y", nbody_system.length),
+                ("z", "z", nbody_system.length),
+                ("vx", "vx", nbody_system.speed),
+                ("vy", "vy", nbody_system.speed),
+                ("vz", "vz", nbody_system.speed),
+            )
+        ),
+    )
+    
+    
+    setters = ()
+
+
 class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamics):
     
     def __init__(self):
         LegacyPythonInterface.__init__(self, TwoBodyImplementation)
+
+
+class TwoBody(TwoBodyInterface, NBodyGravitationalDynamicsBinding):
     
+    def __init__(self, convert_nbody = None):
+        TwoBodyInterface.__init__(self)
+        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+        
+        self.nbody_particles = Particles(
+            storage = TwoBodyInCodeAttributeStorage(self)
+        )
+        
+        self.particles = ParticlesWithUnitsConverted(
+            self.nbody_particles, 
+            self.convert_nbody.as_converter_from_si_to_nbody()
+        )
+    
+        
