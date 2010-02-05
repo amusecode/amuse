@@ -2,9 +2,7 @@
 To update/replace the current version of BSE, just unpack a new
 tarball in the bse/src directory.  The AMUSE module uses the BSE
 distribution unchanged, and relies only on the calling sequences to
-
-??? Update for BSE:
-zcnsts(), evolv2(), star(), and deltat().
+zcnsts(), instar(), evolv2(), star(), and deltat().
 
 Scientific papers written using this module should reference the 
 papers (BSE and SSE paper, respectively):

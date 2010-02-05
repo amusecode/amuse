@@ -20,6 +20,7 @@
       real*8 mxns_in, pts1_in, pts2_in, pts3_in
       real*8 sigma_in, beta_in, xi_in, acc2_in
       real*8 epsnov_in, eddfac_in, gamma_in
+      CHARACTER*8 label(14)
       integer status
       include 'src/const_bse.h'
       common /SSE_init/ z, zpars
@@ -52,6 +53,26 @@ c     Input parameters are passed from MUSE, rather than being read here.
       gamma = gamma_in
       
       call zcnsts(z, zpars)
+*
+* Set the collision matrix.
+*
+      CALL instar
+*
+      label(1) = 'INITIAL '
+      label(2) = 'KW CHNGE'
+      label(3) = 'BEG RCHE'
+      label(4) = 'END RCHE'
+      label(5) = 'CONTACT '
+      label(6) = 'COELESCE'
+      label(7) = 'COMENV  '
+      label(8) = 'GNTAGE  '
+      label(9) = 'NO REMNT'
+      label(10) = 'MAX TIME'
+      label(11) = 'DISRUPT '
+      label(12) = 'BEG SYMB'
+      label(13) = 'END SYMB'
+      label(14) = 'BEG BSS'
+
       if(idum.gt.0) idum = -idum
 
       status = 0

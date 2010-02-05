@@ -390,7 +390,6 @@ class TestBSE(TestWithMPI):
     def test3(self):
         print "Testing standard BSE example 2..."
         instance = BSE()
-        instance.parameters.metallicity = 0.02 | units.none
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
         instance.initialize_module_with_current_parameters()
@@ -469,7 +468,6 @@ class TestBSE(TestWithMPI):
     def test4(self):
         print "Quick testing standard BSE example 2..."
         instance = BSE()
-        instance.parameters.metallicity = 0.02 | units.none
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
         instance.initialize_module_with_current_parameters()
@@ -492,5 +490,33 @@ class TestBSE(TestWithMPI):
         self.assertAlmostEqual(binary.mass2.value_in(units.MSun), 0.800, 3)
         self.assertEquals(str(binary.type1), "Neutron Star")
         self.assertEquals(str(binary.type2), "Carbon/Oxygen White Dwarf")
+
+        del instance
+    
+    def test5(self):
+        print "Testing stellar collision..."
+        instance = BSE()
+        instance.parameters.common_envelope_efficiency = 3.0 | units.none
+        instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
+        instance.initialize_module_with_current_parameters()
+        stars =  core.Stars(1)
+        
+        binary = stars[0]
+        binary.mass1 = 3.0 | units.MSun
+        binary.mass2 = 0.3 | units.MSun
+        binary.orbital_period = 200.0 | units.day
+        binary.eccentricity = 0.99 | units.none
+
+        instance.particles.add_particles(stars)
+        from_bse_to_model = instance.particles.new_channel_to(stars)
+        from_bse_to_model.copy()
+        
+        instance.evolve_model(170 | units.Myr)
+        from_bse_to_model.copy()
+
+        self.assertAlmostEqual(binary.mass1.value_in(units.MSun), 3.300, 3)
+        self.assertAlmostEqual(binary.mass2.value_in(units.MSun), 0.000, 3)
+        self.assertEquals(str(binary.type1), "Main Sequence star")
+        self.assertEquals(str(binary.type2), "Massless Supernova")
 
         del instance
