@@ -56,8 +56,8 @@ class TestPlummer(TestData):
         m1, p, v = m.new_model()
         self.assertEquals(m1[0,0], 0.5)
         self.assertEquals(m1[1,0], 0.5)
-        self.assertAlmostEqual(p[0,0],  -0.0015779879, 5)
-        self.assertAlmostEqual(p[1,0],  0.89936253, 5)
-        self.assertAlmostEqual(p[0,1],  0.097179498979, 5)
-        self.assertAlmostEqual(p[1,1],  -0.434732898, 5)
+        self.assertAlmostEqual(p[0,0],  -0.0596693124, 5)
+        self.assertAlmostEqual(p[1,0],  0.888673439220, 5)
+        self.assertAlmostEqual(p[0,1],  0.076719738, 5)
+        self.assertAlmostEqual(p[1,1],  0.45618546741, 5)
         

@@ -206,7 +206,7 @@ class RunAllTestsOnASvnCommit(object):
         uc.mail_contents = '\n'.join(contents)
         
         if report["number_of_errors"] > 0:
-            uc.subject = errored_email_contents.format(**report)
+            uc.subject = errored_email_subject.format(**report)
         else:
             uc.subject = success_email_subject.format(**report)
         
