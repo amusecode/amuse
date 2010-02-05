@@ -168,12 +168,13 @@ void predict_step(real dt)
     if (dt <= 0) return;
 
     int n = ident.size();
-    for (int i = 0; i < n ; i++)
+    for (int i = 0; i < n ; i++) {
         for (int k = 0; k < NDIM ; k++){
             pos[i][k] += vel[i][k]*dt + acc[i][k]*dt*dt/2
                                       + jerk[i][k]*dt*dt*dt/6;
             vel[i][k] += acc[i][k]*dt + jerk[i][k]*dt*dt/2;
         }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -369,7 +370,6 @@ void evolve_step(real dt, real & epot, real & coll_time)
     delete[] old_jerk;
 }
 
-
 real calculate_step(real coll_time)
 {
     // Determine the new system time step from coll_time.

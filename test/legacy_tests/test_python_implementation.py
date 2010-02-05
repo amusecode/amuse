@@ -33,6 +33,26 @@ class ForTestingInterface(LegacyPythonInterface):
         function.can_handle_array = True
         function.id = 11
         return function    
+        
+    @legacy_function
+    def echo_int():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('int_in', dtype='int32', direction=function.IN)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.id = 12
+        return function     
+        
+    @legacy_function
+    def echo_double():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('double_in', dtype='float64', direction=function.IN)
+        function.addParameter('double_out', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.id = 13
+        return function    
 
     
     
@@ -57,6 +77,14 @@ class ForTestingImplementation(object):
             return 0
         except:
             return -1
+            
+    def echo_int(self, int_in, int_out):
+        int_out.value = int_in
+        return 0
+            
+    def echo_double(self, double_in, double_out):
+        double_out.value = double_in
+        return 0
        
 
 class TestInterface(TestWithMPI):
@@ -156,4 +184,29 @@ class TestInterface(TestWithMPI):
         self.assertEquals(answer[1], 11.0)
         
         del x
+        
+    def test7(self):
+        x = ForTestingInterface()
+        
+        int_out, error = x.echo_int(20)
+        self.assertEquals(error, 0)
+        self.assertEquals(int_out, 20)
+        
+        del x
+        
+    
+    def test8(self):
+        implementation = ForTestingImplementation()
+        x = python_code.PythonImplementation(implementation, ForTestingInterface)
+        
+        input_message = python_code.Message(12, 1)
+        input_message.ints = [20]
+        
+        output_message = python_code.Message(10, 1)
+        
+        x.handle_message(input_message, output_message)
+        
+        self.assertEquals(len(output_message.ints), 2)
+        self.assertEquals(output_message.ints[0], 0)
+        self.assertEquals(output_message.ints[1], 20)
         

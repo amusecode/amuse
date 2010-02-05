@@ -1,3 +1,9 @@
+from amuse.legacy import *
+from amuse.legacy.support.core import *
+
+from amuse.legacy.interface.gd import GravitationalDynamics
+
+
 import copy,numpy
 import numpy as math
 
@@ -147,39 +153,71 @@ def universal_solver(mu,pos0,vel0,dt):
       vel0*smu/r*lagrange_dgdxi(xi,r0,vr0,smu,alpha)
   return pos,vel
 
-class twobody(object):
+
+class TwoBodyImplementation(object):
   __G=6.673e-11
 #  __G=1.
   
   def __init__(self):
     self.particles=[]
-    self.tnow=0.
+    self.tnow=0.0
+    
   def setup_module(self):
     pass
+    
   def initialize(self):
     pass
-  def new_particle(self,mass,radius,x,y,z,vx,vy,vz):
+    
+  def new_particle(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
+    index_of_the_particle.value = 0
     if( len(self.particles)>=2):
-      return 0,-1
-    self.particles.append( {'mass': mass, 'radius' : radius, \
-                            'x' : x , 'y' : y, 'z' : z, \
-                           'vx' : vx ,'vy' : vy,'vz' : vz })  
-    return len(self.particles)-1,0
-  def get_state(self,pid):
+      return -1
+    self.particles.append( 
+        {
+        'mass': mass , 
+        'radius' : radius , 
+        'x' : x , 
+        'y' : y , 
+        'z' : z ,
+        'vx' : vx ,
+        'vy' : vy ,
+        'vz' : vz ,
+        }
+    )
+    
+    index_of_the_particle.value = len(self.particles)-1
+    return 0
+    
+    
+  def get_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
     try:
-      return copy.deepcopy(self.particles[pid]),0
+      particle = self.particles[index_of_the_particle]
+      mass.value = particle['mass']
+      radius.value = particle['radius']
+      x.value = particle['x']
+      y.value = particle['y']
+      z.value = particle['z']
+      vx.value = particle['vx']
+      vy.value = particle['vy']
+      vz.value = particle['vz']
+      return 0
     except:        
-      return {},-1
-  def get_time(self):
-    return self.tnow,0
-  def get_kinetic_energy(self):
+      return -1
+      
+  def get_time(self, time):
+    time.value = self.tnow
+    return 0
+    
+  def get_kinetic_energy(self, kinetic_energy):
     if(len(self.particles)!=1 and len(self.particles)!=2):
-      return 0,-1
+      return -1
+      
     if(len(self.particles)==1):
       dvel=numpy.array( [self.particles[0]['vx'], \
                          self.particles[0]['vy'], \
                          self.particles[0]['vz']] )
       mass=self.particles[0]['mass']
+      
     if(len(self.particles)==2):
       vel0=numpy.array( [self.particles[0]['vx'], \
                          self.particles[0]['vy'], \
@@ -189,11 +227,16 @@ class twobody(object):
                          self.particles[1]['vz']] )
       dvel=vel0-vel1
       mass=self.particles[0]['mass']+self.particles[1]['mass']
+    
     v2=reduce(lambda x,y: x+ y**2,dvel,0)
-    return 0.5*mass*v2,0 
-  def get_potential_energy(self):
+    
+    kinetic_energy.value = 0.5*mass*v2
+    return 0 
+    
+  def get_potential_energy(self, potential_energy):
     if(len(self.particles)!=1 and len(self.particles)!=2):
-      return 0,-1
+      return -1
+      
     if(len(self.particles)==1):
       dpos=numpy.array( [self.particles[0]['x'], \
                          self.particles[0]['y'], \
@@ -209,11 +252,15 @@ class twobody(object):
       dpos=pos0-pos1
       mu=self.__G*(self.particles[0]['mass']+self.particles[1]['mass'])
     r=math.sqrt(reduce(lambda x,y: x+ y**2,dpos,0))
-    return -mu/r,0  
+    potential_energy.value = -mu/r
+    return 0  
 
-  def evolve(self,time_end):
+  def evolve(self, time):
+      time_end = time
+      
       if(len(self.particles)!=1 and len(self.particles)!=2):
         return -1
+        
       if(len(self.particles)==1):
         mu=self.__G*self.particles[0]['mass']
         radius=self.particles[0]['radius']        
@@ -230,7 +277,8 @@ class twobody(object):
         self.particles[0]['z']=dpos[2]
         self.particles[0]['vx']=dvel[0]
         self.particles[0]['vy']=dvel[1]
-        self.particles[0]['vz']=dvel[2]                         
+        self.particles[0]['vz']=dvel[2] 
+                                
       if(len(self.particles)==2):
         mu=self.__G*(self.particles[0]['mass']+self.particles[1]['mass'])
         radius=self.particles[0]['radius']+self.particles[1]['radius']        
@@ -269,13 +317,14 @@ class twobody(object):
         self.particles[1]['z']=cmpos[2]-f1*dpos[2]
         self.particles[1]['vx']=cmvel[0]-f1*dvel[0]
         self.particles[1]['vy']=cmvel[1]-f1*dvel[1]
-        self.particles[1]['vz']=cmvel[2]-f1*dvel[2]                         
+        self.particles[1]['vz']=cmvel[2]-f1*dvel[2]
+                                 
       self.tnow=self.tnow+dt
+      
       return collisionflag
 
-if __name__=='__main__':
-  nb=twobody()
-  nb.new_particle(5.9742e24,6.371e6,3.85e8,0.,0.,0.,0.,0.)
-  err=nb.evolve(3600.*24*30)
-  dt,err=nb.get_time()
-  print dt/24/3600.
+class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamics):
+    
+    def __init__(self):
+        LegacyPythonInterface.__init__(self, TwoBodyImplementation)
+    

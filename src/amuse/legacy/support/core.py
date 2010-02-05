@@ -52,9 +52,6 @@ def ensure_mpd_is_running():
         name_of_the_vendor, version = MPI.get_vendor()
         if name_of_the_vendor == 'MPICH2':
             process = Popen(['nohup','mpd'])
-    
-
-
 
 def _typecode_to_datatype(typecode):
     if typecode is None:

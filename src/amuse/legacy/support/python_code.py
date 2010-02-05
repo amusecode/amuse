@@ -92,7 +92,7 @@ class Message(object):
             
     def send_ints(self, comm, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='i')
+            buffer = numpy.array(array,  dtype='int32')
             comm.Send([buffer, MPI.INT], dest=0, tag = 999)
             
     def send_floats(self, comm, array):
@@ -157,7 +157,13 @@ class PythonImplementation(object):
             if message.tag == 0:
                 self.must_run = False
             else:
-                self.handle_message(message, result_message)
+                if message.tag in self.mapping_from_tag_to_legacy_function:
+                    try:
+                        self.handle_message(message, result_message)
+                    except:
+                        result_message.tag = -1
+                else:
+                    result_message.tag = -1
             
             if rank == 0:
                 result_message.send(parent)
@@ -168,8 +174,8 @@ class PythonImplementation(object):
         legacy_function = self.mapping_from_tag_to_legacy_function[input_message.tag]
         specification = legacy_function.specification
         
-        
         dtype_to_count = self.get_dtype_to_count(specification)
+        
         
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             count = dtype_to_count.get(type,0)
@@ -187,8 +193,11 @@ class PythonImplementation(object):
         for index in range(input_message.length):
             keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification)
             
-            result = method(**keyword_arguments)
-            
+            try:
+                result = method(**keyword_arguments)
+            except TypeError:
+                result = method(*list(keyword_arguments))
+                
             self.fill_output_message(output_message, index , result, keyword_arguments, specification)
         
         for type, attribute in self.dtype_to_message_attribute.iteritems():
@@ -220,7 +229,6 @@ class PythonImplementation(object):
                 
         for parameter in specification.parameters:
             attribute = self.dtype_to_message_attribute[parameter.datatype]
-            argument_value = None
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 argument_value = keyword_arguments[parameter.name] 
                 getattr(output_message, attribute)[parameter.output_index][index] = argument_value.value
@@ -260,5 +268,9 @@ class PythonImplementation(object):
                 legacy_functions.append(value)
         
         legacy_functions.sort(key= lambda x: x.specification.id)
+        
+        for x in legacy_functions:
+            x.specification.prepare_output_parameters()
+            
         return legacy_functions
         
