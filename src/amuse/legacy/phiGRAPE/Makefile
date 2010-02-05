@@ -102,9 +102,11 @@ interface_gl:	$(OBJECTS) $(MUSE_IF) muse_interface_gl.F
 
 clean:
 	make -C src clean
-	rm -f *.o .m* .n* *.lst *.L *~ muse_worker
-	
-	rm worker_code worker_code.f90
+	rm -f *.o .m* .n* *.lst *.L *~ muse_worker muse_worker.f90 
+	rm -f muse_worker_gl muse_worker_gl.f90
+	rm -f muse_worker_gpu muse_worker_grape 
+	rm -f worker_code_gpu worker_code_grape
+	rm -f worker_code worker_code.f90
 
 
 .f.o:
