@@ -5,6 +5,7 @@ import linecache
 import inspect
 import os.path
 import Queue as queue
+import subprocess
 
 from mpi4py import MPI
 
@@ -18,6 +19,25 @@ from multiprocessing import Process, Queue
 from StringIO import StringIO
 
 import project
+
+
+def is_mpd_running():
+    name_of_the_vendor, version = MPI.get_vendor()
+    if name_of_the_vendor == 'MPICH2':
+        process = subprocess.Popen(['mpdtrace'], stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+        (output_string, error_string) = process.communicate()
+        return not (process.returncode == 255)
+    else:
+        return True
+        
+def ensure_mpd_is_running():
+    if not is_mpd_running():
+        name_of_the_vendor, version = MPI.get_vendor()
+        if name_of_the_vendor == 'MPICH2':
+            process = subprocess.Popen(['nohup','mpd'], close_fds=True)
+    
+
+
 
 def number_str(number, singular, plural = None):
     if plural == None:
@@ -411,6 +431,8 @@ class RunTests(object):
         
     def _perform_the_testrun(self, directories, results_queue, previous_report = None):
         try:
+            ensure_mpd_is_running()
+            
             null_device = open('/dev/null')
             os.stdin = null_device
             report = MakeAReportOfATestRun(previous_report, results_queue)
