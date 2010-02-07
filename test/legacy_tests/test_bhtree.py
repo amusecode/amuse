@@ -1,6 +1,5 @@
 
 import sys
-import support
 
 from amuse.legacy.bhtree import muse_dynamics_mpi as mpi_interface
 from amuse.legacy.support import core as legacy_core
