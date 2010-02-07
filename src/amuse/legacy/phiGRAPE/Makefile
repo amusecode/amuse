@@ -23,7 +23,7 @@ OBJECTS = \
 
 G6OBJS = src/g6lib.o
 
-GLOBJECTS=src/fthread.o src/viewer.o src/libpt.a
+GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 
 CUDA_LIBDIRS ?= -L/data1/pelupes/programs/cuda/lib 
 CUDA_LIBS ?= -lcudart
@@ -39,9 +39,9 @@ LIBS     =  -lm -lpthread
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
 GLINCLUDE = -I/usr/include/GL \
--I/data1/pelupes/libraries/f90gl-1.2.11/include/GL/
+-I/home/inti/libraries/f90gl-1.2.11/include/GL/
 
-GLLIB = -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
+GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
 
 X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
@@ -53,17 +53,18 @@ CFLAGS += -O2 $(OPTS)
 FFLAGS += -O2 $(OPTS)
 FFLAGS += -I./src/
 
-
-all: muse_worker worker_code 
-
-muse_worker: muse_worker.f90 muse_interface.o
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
+all: worker_code 
 
 worker_code: worker_code.f90 phiGRAPE_code.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES)
-	
+
+glworker_code: glworker_code.f90 phiGRAPE_code.o
+	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(G6OBJS) $(LIBRARIES) \
+	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
+
 worker_code_gpu: worker_code.f90 phiGRAPE_code.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
@@ -72,42 +73,21 @@ worker_code_grape: worker_code.f90 phiGRAPE_code.o
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
 
-muse_worker_gpu: muse_worker.f90 muse_interface.o 
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
-	
-muse_worker_grape: muse_worker.f90 muse_interface.o 
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
-
-
-muse_worker_gl: muse_worker_gl.f90 muse_interface.o muse_interface_gl.o 
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $^ -o $@ $(OBJECTS) $(G6OBJS) $(GLOBJECTS) $(LIBRARIES) \
-	  $(GLLIB)  $(X11LIB) $(THREADLIB)
-        
-muse_worker.f90: muse_dynamics_mpi.py
-	$(CODE_GENERATOR) --type=f90 muse_dynamics_mpi.py PhiGRAPE -o $@
-
-worker_code.f90: interface.py
+worker_code.f90: interface.py __init__.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPE -o $@
 
-muse_worker_gl.f90: muse_dynamics_gl.py
-	$(CODE_GENERATOR) --type=f90 muse_dynamics_gl.py PhiGRAPE -o $@
-
-
-interface_gl:	$(OBJECTS) $(MUSE_IF) muse_interface_gl.F 
-
+glworker_code.f90: interface.py __init__.py
+	$(CODE_GENERATOR) --type=f90 interface.py glPhiGRAPE -o $@
 
 clean:
 	make -C src clean
-	rm -f *.o .m* .n* *.lst *.L *~ muse_worker muse_worker.f90 
-	rm -f muse_worker_gl muse_worker_gl.f90
-	rm -f muse_worker_gpu muse_worker_grape 
+	rm -f __init__.py *.pyc
 	rm -f worker_code_gpu worker_code_grape
 	rm -f worker_code worker_code.f90
+	rm -f glworker_code glworker_code.f90
 
+__init__.py:
+	touch $@
 
 .f.o:
 	$(FC) $(FFLAGS) -c $<

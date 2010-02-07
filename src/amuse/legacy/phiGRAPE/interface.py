@@ -350,4 +350,22 @@ class PhiGRAPE(PhiGRAPEInterface, PhiGRAPEBinding):
         PhiGRAPEInterface.__init__(self, mode=mode)
         PhiGRAPEBinding.__init__(self, convert_nbody)
         
+class glPhiGRAPE(PhiGRAPEInterface, PhiGRAPEBinding):
+    
+    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB):
+        PhiGRAPEInterface.__init__(self, mode=mode)
+        PhiGRAPEBinding.__init__(self, convert_nbody)
+
+    @legacy_function
+    def start_viewer():
+        function = LegacyFunctionSpecification()  
+        return function
   
+    def name_of_the_muse_worker(self, mode):
+        if mode == self.MODE_G6LIB:
+            return 'glworker_code'
+        if mode == self.MODE_GPU:
+            return 'glworker_code_gpu'
+        if mode == self.MODE_GRAPE:
+            return 'glworker_code_grape'
+

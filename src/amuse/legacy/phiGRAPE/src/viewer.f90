@@ -309,7 +309,7 @@ module snap_viewer
   integer(glint) ::framerate=5000;
   integer(glint), parameter:: FASTUPDATE=50,SLOWUPDATE=5000
   
-  real(kind=glfloat),save :: pointsize_gas=3,pointsize_stars=1.5,pointsize_halo=1.
+  real(kind=glfloat),save :: pointsize_gas=3.,pointsize_stars=1.5,pointsize_halo=1.
   
   real(kind=gldouble) :: top(3),bot(3)
     
@@ -791,7 +791,7 @@ subroutine viewbodies
  call attachmenu(i,j,k)
  call glutDisplayFunc(display)
 
- call glClearColor(0.0_glclampf, 0.0_glclampf, 0.0_glclampf, 1.0_glclampf)
+ call glClearColor(0.02_glclampf, 0.02_glclampf, 0.02_glclampf, 1.0_glclampf)
 
  call glEnable(GL_DEPTH_TEST)
  call glEnable(GL_BLEND)

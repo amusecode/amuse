@@ -29,11 +29,10 @@ LIBS     = -lm
 LIBRARIES= $(LLIBSDIR) $(LIBS)
 
 GLINCLUDE ?= -I/usr/include/GL \
--I/data1/pelupes/libraries/f90gl-1.2.11/include/GL/
+-I/home/inti/libraries/f90gl-1.2.11/include/GL/
 
-GLLIB ?= -L/data1/pelupes/libraries/f90gl-1.2.11/lib \
+GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
-GLLIB = 
 
 X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
@@ -57,7 +56,7 @@ SAO     = $(SAF:.F=.o)
 
 all: phiGRAPE
 
-gl: viewer.o libpt.a fthread.o
+gl: start_viewer.o viewer.o libpt.a fthread.o
 
 stars3d.o: stars3d.f90
 	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
@@ -76,7 +75,7 @@ phiGRAPE: $(OBJECTS) $(SAO)
 
 
 clean:
-	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE
+	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE libpt.a *.mod
 
 .f.o:
 	$(FC) $(FFLAGS) -c $<
