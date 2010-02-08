@@ -19,6 +19,7 @@ import webserver
 import background_test
 import project
 import pickle
+import textwrap
 
 import Queue
 
@@ -155,7 +156,19 @@ class RunAllTestsOnASvnCommit(object):
         path = os.path.join(path, "authors.map")
         with open(path, 'r') as f:
             return pickle.load(f)
-        
+    
+    def cleanup_compiled_python_files(self):
+        for path in find_pyc_files(self.working_directory):
+          os.remove(path)
+
+    def find_pyc_files(rootname):
+        for dirname, subdirectories, files in os.walk(rootname):
+            for filename in files:
+                if filename.endswith('.pyc'):
+                    yield os.path.join(dirname, filename)
+
+
+    
     def update_from_svn(self, revision):
         subprocess.call(['svn','update', '-r', revision], cwd = self.working_directory)
         
@@ -201,6 +214,13 @@ class RunAllTestsOnASvnCommit(object):
             contents.append(error_info.format(**report))
             
         contents.append(tests_info.format(**report))
+        
+        if report['errors']:
+            for location_line, error_string in report['errors']:
+                contents.append(location_line)
+                contents.append(textwrap.fill(error_string, 80, initial_indent = "  "))
+            contents.append('')
+                
         contents.append(footer.format(**report))
         
         uc.mail_contents = '\n'.join(contents)
@@ -220,7 +240,7 @@ class RunAllTestsOnASvnCommit(object):
         
     def check_svn_commit(self,revision):
         
-        
+        self.cleanup_compiled_python_files()
         self.update_from_svn(revision)
         self.build_code()
         
@@ -241,6 +261,26 @@ class RunAllTestsOnASvnCommit(object):
         report['number_of_tests'] = test_report.tests
         report['number_of_seconds'] = test_report.end_time - test_report.start_time
         report['revision']  = revision
+        
+         
+        testcases = list(test_report.address_to_report.values())
+        testcases.sort(key=lambda x: os.path.basename("" if x.address[0] is None else x.address[0]))
+       
+      
+        errors = []
+        for x in testcases:
+            if x.errored or x.failed:
+                if not x.address[0] is None:
+                    filename = os.path.basename(x.address[0])
+                else:
+                    filename = 'unknown-file'
+                
+                location_line = "{0}:{1} {2}".format(filename, x.lineno, x.address[2])
+                error_string = x.error_string
+                
+                errors.append((location_line,error_string,))
+                
+        report['errors'] = errors
         
         self.mapping_from_revision_to_report[int(revision)] = report
         self.dump_revision_reports()
@@ -277,7 +317,7 @@ class RunAllTestsOnASvnCommit(object):
         
     def stop(self):
         self.queue.put(None)
-        
+    
     def number_of_tested_revisions(self):
         return len(self.mapping_from_revision_to_report)
         
@@ -366,6 +406,8 @@ if __name__ == '__main__':
     server = ContinuosTestWebServer(options.serverport)
     if options.admin_email:
         server.tracker.admin_email_address = options.admin_email
+    else:
+        parser.error("Must set the admin e-mail address using -a")
     server.tracker.start()
     server.start()
 
