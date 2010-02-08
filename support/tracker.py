@@ -158,7 +158,7 @@ class RunAllTestsOnASvnCommit(object):
             return pickle.load(f)
     
     def cleanup_compiled_python_files(self):
-        for path in find_pyc_files(self.working_directory):
+        for path in self.find_pyc_files(self.working_directory):
           os.remove(path)
 
     def find_pyc_files(rootname):
