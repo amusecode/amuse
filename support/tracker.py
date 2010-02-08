@@ -218,7 +218,7 @@ class RunAllTestsOnASvnCommit(object):
         if report['errors']:
             for location_line, error_string in report['errors']:
                 contents.append(location_line)
-                contents.append(textwrap.fill(error_string, 80, initial_indent = "  "))
+                contents.append(textwrap.fill('\n'.join(error_string), 80, initial_indent = "  "))
             contents.append('')
                 
         contents.append(footer.format(**report))
