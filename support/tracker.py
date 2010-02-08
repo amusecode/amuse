@@ -161,7 +161,7 @@ class RunAllTestsOnASvnCommit(object):
         for path in self.find_pyc_files(self.working_directory):
           os.remove(path)
 
-    def find_pyc_files(rootname):
+    def find_pyc_files(self, rootname):
         for dirname, subdirectories, files in os.walk(rootname):
             for filename in files:
                 if filename.endswith('.pyc'):
