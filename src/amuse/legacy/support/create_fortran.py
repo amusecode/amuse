@@ -12,7 +12,7 @@ dtype_to_spec = DTypeToSpecDictionary({
     'float64' : DTypeSpec('doubles_in', 'doubles_out',
                     'number_of_doubles', 'double precision', 'MPI_DOUBLE_PRECISION'),
     'float32' : DTypeSpec('floats_in', 'floats_out',
-                    'number_of_floats', 'real', 'MPI_SINGLE_PRECISION'),
+                    'number_of_floats', 'real', 'MPI_REAL'),
     'string' : DTypeSpec('strings_in', 'strings_out',
                     'number_of_strings', 'integer', 'MPI_INTEGER'),
 })
@@ -312,7 +312,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.output_allocate_arrays()
         self.out.lf() 
         self.out.lf().lf() + 'call MPI_COMM_GET_PARENT(parent, ioerror)'
-        self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, mpierror)'
+        self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, ioerror)'
         self.out.lf().lf() + 'must_run_loop = 1'
         self.out.lf().lf() + 'do while (must_run_loop .eq. 1)'
         self.out.indent()
@@ -343,9 +343,9 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf()
         
         
-        self.out.lf() + 'IF (len_in .gt. max_len) THEN'
+        self.out.lf() + 'IF (len_in .gt. maxlen) THEN'
         self.out.indent()
-        self.out.lf() + 'max_len = len_in + 255;'
+        self.out.lf() + 'maxlen = len_in + 255;'
         self.output_deallocate_statements()
         self.output_allocate_arrays()
         self.out.dedent()
@@ -414,7 +414,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out + self.length_of_the_header 
         self.out + ', MPI_INTEGER,'
         self.out + ' 0, 999, &'
-        self.out.indent().lf() + 'parent, mpierror);'
+        self.out.indent().lf() + 'parent, ioerror);'
         self.out.dedent().lf()
         
         for i, dtype in enumerate(dtypes):
@@ -427,7 +427,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
             self.out + ' * len_out'
             self.out + ', &'
             self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
-            self.out.lf() + 'parent, mpierror);'
+            self.out.lf() + 'parent, ioerror);'
             self.out.dedent().dedent().lf() +'end if'
         self.out.dedent()
         self.out.lf() + 'end do'
@@ -436,7 +436,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf()
         self.output_deallocate_statements()
             
-        self.out.lf() + 'call MPI_COMM_DISCONNECT(parent, mpierror)'
+        self.out.lf() + 'call MPI_COMM_DISCONNECT(parent, ioerror)'
         self.out.lf() + 'return'
         
         self.out.dedent().lf() + 'end subroutine'
@@ -450,10 +450,10 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf().lf() + 'program muse_worker'
         self.out.indent()
         self.output_mpi_include()
-        self.out.lf() + 'integer :: provided'
-        self.out.lf() + 'call MPI_INIT_THREAD(MPI_THREAD_MULTIPLE, provided, mpierror)'
+        self.out.lf() + 'integer :: provided,ioerror'
+        self.out.lf() + 'call MPI_INIT_THREAD(MPI_THREAD_MULTIPLE, provided, ioerror)'
         self.out.lf().lf() + 'call run_loop()'
-        self.out.lf().lf() + 'call MPI_FINALIZE(mpierror)'
+        self.out.lf().lf() + 'call MPI_FINALIZE(ioerror)'
         self.out.dedent().lf()+'end program muse_worker'
         
        
