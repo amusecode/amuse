@@ -6,6 +6,8 @@
 
 #define MAX_NUMBER_OF_PARTICLES 100000
 
+typedef double v4df[3];
+ 
 struct g6_j_particle_tag {
     int    id;
     
@@ -13,24 +15,24 @@ struct g6_j_particle_tag {
     double dtj;
     double mass;
     
-    double a2by18[3]; 
-    double a1by6[3];
-    double aby2[3]; 
+    v4df a2by18; 
+    v4df a1by6;
+    v4df aby2; 
     
-    double v[3]; 
-    double x[3];
+    v4df v; 
+    v4df x;
 };
 typedef struct g6_j_particle_tag g6_j_particle;
 
 struct g6_i_particle_tag{
     int id;
-    double x[3];
-    double v[3];
+    v4df x;
+    v4df v;
     double eps2;
     double h2;  
     
-    double acc[3];
-    double jerk[3];
+    v4df acc;
+    v4df jerk;
     double pot; 
     double nearest_r_squared;
     int    nearest_j;
@@ -40,8 +42,8 @@ typedef struct g6_i_particle_tag g6_i_particle;
 
 struct g6_j_predict_tag {
     int    id;
-    double v[3]; 
-    double x[3];
+    v4df v; 
+    v4df x;
 };
 typedef struct g6_j_predict_tag g6_j_predicted_particle;
 
@@ -89,11 +91,16 @@ void predict_positions_and_velocities_for_j_particles() {
     }
 }
 
-inline double vec_squared(double v[3]){
-    return (v[0] * v[0]) + (v[1] * v[1]) + (v[2] * v[2]);
+static inline double vec_squared(v4df v){
+    int k;
+    double result = 0.0;
+    for(k = 0; k < 3; k++) {
+        result += v[k] * v[k];
+    }
+    return result;
 }
 
-inline double vec_dot(double va[3], double vb[3]){
+static inline double vec_dot(v4df va, v4df vb){
     return (va[0] * vb[0]) + (va[1] * vb[1]) + (va[2] * vb[2]);
 }
 
@@ -127,9 +134,9 @@ void calculate_acceleration_jerk_and_potential_for_i_particles() {
                 continue;
             }
             
-            double rij[3] = {0.0,0.0,0.0};
-            double vij[3] = {0.0,0.0,0.0};
-            for(k = 0; k < 3; k++) {
+            v4df rij = {0.0,0.0,0.0};
+            v4df vij = {0.0,0.0,0.0};
+            for(k = 0; k < 4; k++) {
                 rij[k] = current_jp->x[k] - current_i->x[k];
                 vij[k] = current_jp->v[k] - current_i->v[k];
             }
