@@ -372,21 +372,17 @@ class TestSSE(TestWithMPI):
 
 
     def test6(self):
-#       Test whether a set of stars evolve synchronously
+        print "Test whether a set of stars evolves synchronously..."
 #       Create an array of stars with a range in stellar mass
         masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
         number_of_stars = len(masses)
         stars = core.Stars(number_of_stars)
-        for i, star in enumerate(stars):
-            star.mass = masses[i]
-            star.radius = 0.0 | units.RSun
+        stars.mass = masses
 
 #       Initialize stellar evolution code
         instance = mpi_interface.SSE()
         instance.initialize_module_with_default_parameters() 
         instance.setup_particles(stars)
-#       Let the code perform initialization actions after all particles have been created. 
-#       Called before the first evolve call and after the last new_particle call.
         instance.initialize_stars()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
@@ -404,9 +400,29 @@ class TestSSE(TestWithMPI):
             "Black Hole",
         )
         for i in range(number_of_stars):
-            self.assertTrue(stars[i].age.value_in(units.Myr) > 125)
+            self.assertEquals(stars[i].age.value_in(units.Myr), 125.0)
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertEquals(str(stars[i].type), end_types[i])
-
         del instance
-
+    
+    def test7(self):
+        print "Test: evolve particles one at a time."
+        print "Used to be problematic, since initial_mass of idle particle is set to zero."
+        stars = core.Stars(2)
+        stars.mass = 1.0 | units.MSun
+        for star in stars:
+            print star
+            stellar_evolution = mpi_interface.SSE()
+            stellar_evolution.initialize_module_with_default_parameters()
+            stellar_evolution.setup_particles(star.as_set())
+            stellar_evolution.initialize_stars()
+            from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(star.as_set())
+            stellar_evolution.evolve_model()
+            from_stellar_evolution_to_model.copy()
+            del stellar_evolution
+        for star in stars:
+            print star
+        self.assertEquals(stars[0].initial_mass, stars[1].initial_mass)
+        self.assertEquals(stars[0].luminosity, stars[1].luminosity)
+        self.assertEquals(stars[0].age, stars[1].age)
+        print "Solved: SSE_muse_interface.f sets initial_mass to mass when necessary."

@@ -59,7 +59,8 @@ cf2py intent(inout) kw, mt, lum, mc, rc, menv, renv, ospin
 cf2py intent(inout) epoch, tm, tphys, tphysf
 cf2py intent(inout) r
 
-      dtp = tphys+1
+      dtp = tphysf+1
+      if (mass.eq.0.0) mass=mt
       call evolv1(kw, mass, mt, r, lum, mc, rc, menv, renv,
      &            ospin, epoch, tm, tphys, tphysf, dtp, z, zpars)
 

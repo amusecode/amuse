@@ -118,6 +118,7 @@ class SSEParticles(Particles):
         
         mapping_from_attribute_to_default_value = {
             "type" : 1 | units.stellar_type,
+            "radius": 0 | units.RSun,
             "luminosity":  0 | units.LSun,
             "core_mass": 0 | units.MSun,
             "core_radius": 0 | units.RSun,
