@@ -13,7 +13,7 @@ sendinpdata.F       sumforces.F	    sync.F				\
 timestep.F          update_grape.F  update_loc_p.F  writebh.F		\
 writerestartfile.F predict_potential.F
 
-SOURCEC = wtimef.c g6lib.c 
+SOURCEC = wtimef.c
 
 SAF = main.F
 
@@ -24,9 +24,13 @@ SAPPORO_LIBDIRS ?= -L/data1/pelupes/libraries/sapporo_v1.5
 
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS)
 LIBS     =  $(CUDA_LIBS) -lsapporo -lm -lboost_thread-mt -lpthread
+
+
+G6LIBS ?= -L../../../../../lib/g6 -lg6
+
 LIBS     = -lm
 
-LIBRARIES= $(LLIBSDIR) $(LIBS)
+LIBRARIES= $(LLIBSDIR) $(LIBS) $(G6LIBS)
 
 GLINCLUDE ?= -I/usr/include/GL \
 -I/home/inti/libraries/f90gl-1.2.11/include/GL/
@@ -36,19 +40,20 @@ GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
 
 X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11
 
+
 THREAD_OPTIONS ?= -L. -lpthread -lpt
 
 #------------------------------------------------------------
 #---   C-definitions
 #------------------------------------------------------------
 
-CFLAGS  = -O2 $(OPTS) -fPIC
+CFLAGS  += -O3 $(OPTS) 
 
 #------------------------------------------------------------
 #---   FORTRAN-definitions
 #------------------------------------------------------------
 
-FFLAGS  = -O2 $(OPTS) -fPIC
+FFLAGS  += -O2 $(OPTS) 
 #gfortran :-fno-second-underscore -fPIC -Wall
 
 OBJECTS = $(SOURCEF:.F=.o) $(SOURCE:.f=.o) $(SOURCEC:.c=.o)

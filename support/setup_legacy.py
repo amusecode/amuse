@@ -19,12 +19,14 @@ first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 class LegacyCommand(Command):
     user_options = [
         ('legacy-dir', 'd', "directory containing legacy codes"),
-        ]
+        ('lib-dir', 'l', "directory containing libraries to build"),
+    ]
 
     boolean_options = ['force']
 
     def initialize_options (self):
         self.legacy_dir = None
+        self.lib_dir = None
         self.amuse_src_dir =  os.path.join('src','amuse')
         self.environment = {}
         self.environment_notset = {}
@@ -35,10 +37,14 @@ class LegacyCommand(Command):
         if self.legacy_dir is None:
             self.legacy_dir = os.path.join(self.amuse_src_dir,'legacy')
         
+        if self.lib_dir is None:
+            self.lib_dir = 'lib'
+        
         #self.update_environment_from_cfgfile()
         self.set_fortran_variables()
         self.set_cuda_variables()
         self.set_libdir_variables()
+        self.set_libs_variables()
         self.save_cfgfile_if_not_exists()
     
     
@@ -108,21 +114,52 @@ class LegacyCommand(Command):
             else:
                 self.environment_notset[varname] ='-L<directory>'
      
+    def set_libs_variables(self):
+        for varname, libname in (('PGLIBS','pg5'),):
+            if varname in self.environment:
+                continue
+                
+            if varname in os.environ:
+                self.environment[varname] = os.environ[varname]
+            else:
+                self.environment_notset[varname] ='-L<directory> -l{0}'.format(libname)
+     
     
             
     def subdirs_in_legacy_dir(self):
         names = os.listdir(self.legacy_dir)
         for name in names:
+            if name.startswith('.'):
+                continue
             path = os.path.join(self.legacy_dir, name)
             if os.path.isdir(path):
                 yield path
                 
+    def subdirs_in_lib_dir(self):
+        names = os.listdir(self.lib_dir)
+        for name in names:
+            if name.startswith('.'):
+                continue
+            path = os.path.join(self.lib_dir, name)
+            if os.path.isdir(path):
+                yield path
+            
+    def makefile_libpaths(self):
+        for x in self.subdirs_in_lib_dir():
+            for name in ('makefile', 'Makefile'):
+                makefile_path = os.path.join(x, name)
+                if os.path.exists(makefile_path):
+                    yield x
+                    break
+                    
     def makefile_paths(self):
+                    
         for x in self.subdirs_in_legacy_dir():
             for name in ('makefile', 'Makefile'):
                 makefile_path = os.path.join(x, name)
                 if os.path.exists(makefile_path):
                     yield x
+                    break
 
     def update_environment_from_cfgfile(self):
         if os.path.exists('amuse.cfg'):
@@ -159,8 +196,20 @@ class BuildLegacy(LegacyCommand):
         environment = self.environment
         environment.update(os.environ)
         
+        
+        for x in self.makefile_libpaths():
+            
+            self.announce("building library " + x)
+            shortname = x[len(self.lib_dir) + 1:] + '(library)'
+            returncode = call(['make','-C', x, 'all'], env = environment)
+            if returncode == 2:
+                not_build.append(shortname)
+            else:
+                build.append(shortname)
+            
         #environment.update(self.environment)
-        makefile_paths = sorted(set(self.makefile_paths()))
+        makefile_paths = list(self.makefile_paths())
+        
         for x in makefile_paths:
             self.announce("building " + x)
             shortname = x[len(self.legacy_dir) + 1:]
@@ -181,12 +230,12 @@ class BuildLegacy(LegacyCommand):
                 
         
         print
-        print "Environment variables"
-        print "====================="
-        sorted_keys = sorted(self.environment.keys())
-        for x in sorted_keys:
-            print "%s\t%s" % (x , self.environment[x] )
-        print
+        #print "Environment variables"
+        #print "====================="
+        #sorted_keys = sorted(self.environment.keys())
+        #for x in sorted_keys:
+        #    print "%s\t%s" % (x , self.environment[x] )
+        #print
         print "Environment variables not set"
         print "============================="
         sorted_keys = sorted(self.environment_notset.keys())
@@ -241,6 +290,10 @@ class CleanLegacy(LegacyCommand):
     description = "clean build products in legacy codes"
 
     def run (self):
+        for x in self.makefile_libpaths():
+            self.announce("cleaning libary " + x)
+            call(['make','-C', x, 'clean'])
+            
         for x in self.makefile_paths():
             self.announce("cleaning " + x)
             call(['make','-C', x, 'clean'])

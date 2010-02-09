@@ -17,6 +17,7 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     MODE_G6LIB = 'g6lib'
     MODE_GPU   = 'gpu'
     MODE_GRAPE = 'grape'
+    MODE_PG    = 'pg'
     
     def __init__(self, convert_nbody = None, mode = MODE_G6LIB):
         LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode))
@@ -25,10 +26,12 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     def name_of_the_muse_worker(self, mode):
         if mode == self.MODE_G6LIB:
             return 'worker_code'
-        if mode == self.MODE_GPU:
+        elif mode == self.MODE_GPU:
             return 'worker_code_gpu'
-        if mode == self.MODE_GRAPE:
+        elif mode == self.MODE_GRAPE:
             return 'worker_code_grape'
+        elif mode == self.MODE_PG:
+            return 'worker_code_phantom_grape'
             
     @legacy_function   
     def setup_module():
