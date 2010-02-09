@@ -1197,7 +1197,7 @@ C--------------------------------------------------------------------
 C---  synchronize system if flag is set
 C--------------------------------------------------------------------
 
-C-- flag will be global ????
+C-- Only synchronize_model if the user asked for it!
 C      IF (isync.EQ.1) THEN
 C
 C         CALL selectsync(time_cur)
@@ -1229,12 +1229,21 @@ C     close grape before exiting (fip)
       IMPLICIT NONE
 #include "general.inc"
       INTEGER synchronize_model
-
+    
+      CALL initgrape
+      
       CALL selectsync(time_cur)
 
       CALL sync
 
+      CALL gatherParts
+      
+      CALL energy
+      
       synchronize_model = 0
+      
+      CALL g6_close(clusterid)
+
 
       END
 

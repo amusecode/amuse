@@ -170,7 +170,7 @@ class RunAllTestsOnASvnCommit(object):
 
     
     def update_from_svn(self, revision):
-        subprocess.call(['svn','update', '-r', revision], cwd = self.working_directory)
+        subprocess.call(['svn', '--force', 'update', '-r', revision], cwd = self.working_directory)
         
     def build_code(self):
         subprocess.call(['make','clean'], cwd = self.working_directory)

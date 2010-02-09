@@ -163,25 +163,29 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     def set_eta_s():
         function = LegacyFunctionSpecification()  
         function.addParameter('value', dtype='d', direction=function.IN)
+        function.result_type = 'int32'
         return function
 
     @legacy_function      
     def set_eta1():
         function = LegacyFunctionSpecification()  
         function.addParameter('value', dtype='d', direction=function.IN)
+        function.result_type = 'int32'
         return function
 
 
     @legacy_function      
     def get_eta():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'd'
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='d', direction=function.OUT) 
+        function.result_type = 'int32'
         return function
         
     @legacy_function      
     def get_eta_s():
         function = LegacyFunctionSpecification()  
-        function.result_type = 'd'
+        function.addParameter('value', dtype='d', direction=function.OUT)
+        function.result_type = 'int32'
         return function
 
     """cello in gd
@@ -205,13 +209,6 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         function.result_type = 'd'
         return function
 
-    """
-    def get_energies(self):
-        energy_unit = nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2
-        kinetic_energy = self.get_kinetic_energy() | energy_unit
-        potential_energy = self.get_potential_energy() | energy_unit
-        return (self.convert_nbody.to_si(kinetic_energy), self.convert_nbody.to_si(potential_energy))
-    """
     @legacy_function      
     def find_colliding_secondary():
         function = LegacyFunctionSpecification()  
@@ -319,18 +316,18 @@ class PhiGRAPENBody(PhiGRAPEInterface, NBodyGravitationalDynamicsBinding):
         parameters.ModuleMethodParameterDefinition_Next(
             "get_eta", 
             "set_eta1",
-            "time_step_parameter", 
+            "timestep_parameter", 
             "timestep parameter", 
             units.none , 
-            0.01 |  units.none
+            0.02 |  units.none
         ),
         parameters.ModuleMethodParameterDefinition_Next(
             "get_eta_s", 
             "set_eta_s",
-            "intital_time_step_parameter", 
+            "initial_timestep_parameter", 
             "parameter to determine the initial timestep", 
             units.none , 
-            0.002 |  units.none
+            0.01 |  units.none
         ),
     ]
 

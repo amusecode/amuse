@@ -27,7 +27,7 @@ class MessageChannel(object):
     
     """
     DEBUGGER = None
-    REDIRECTION = None#("/dev/null", "/dev/null", "/dev/null")
+    REDIRECTION = ("/dev/null", "/dev/null", "/dev/null")
     
     @classmethod
     def GDB(cls, full_name_of_the_worker):
@@ -139,20 +139,20 @@ class MpiChannel(MessageChannel):
             arguments = None
             command = self.full_name_of_the_worker
         
-        if not self.REDIRECTION is None:
-            input_filename, output_filename, error_filename = self.REDIRECTION
-            
-            fd_stdin = os.dup(0)
-            zero = open(input_filename,'r')
-            os.dup2(zero.fileno(), 0)
-            
-            fd_stdout = os.dup(1)
-            zero2 = open(output_filename,'a')
-            os.dup2(zero2.fileno(), 1)
-            
-            fd_stderr = os.dup(2)
-            zero2 = open(error_filename,'a')
-            os.dup2(zero2.fileno(), 2)
+            if not self.REDIRECTION is None:
+                input_filename, output_filename, error_filename = self.REDIRECTION
+                
+                fd_stdin = os.dup(0)
+                zero = open(input_filename,'r')
+                os.dup2(zero.fileno(), 0)
+                
+                fd_stdout = os.dup(1)
+                zero2 = open(output_filename,'a')
+                os.dup2(zero2.fileno(), 1)
+                
+                fd_stderr = os.dup(2)
+                zero2 = open(error_filename,'a')
+                os.dup2(zero2.fileno(), 2)
         
         try:
             self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
