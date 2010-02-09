@@ -21,10 +21,10 @@ muse_worker.cc: muse_dynamics_mpi.py
 	$(CODE_GENERATOR) --type=c muse_dynamics_mpi.py Hermite -o $@
 	
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py Hermite -o $@
+	$(CODE_GENERATOR) --type=c interface.py HermiteInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py Hermite -o $@
+	$(CODE_GENERATOR) --type=h interface.py HermiteInterface -o $@
 
 muse_worker:	muse_worker.cc $(OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(OBJS) -o $@

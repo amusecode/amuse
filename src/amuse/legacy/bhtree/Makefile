@@ -38,10 +38,10 @@ muse_worker:	muse_worker.cc $(OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(OBJS) -o $@
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py BHTree -o $@
+	$(CODE_GENERATOR) --type=c interface.py BHTreeInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py BHTree -o $@
+	$(CODE_GENERATOR) --type=h interface.py BHTreeInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(A_OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(A_OBJS) -o $@

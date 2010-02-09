@@ -7,9 +7,14 @@ from amuse.support.data.binding import InCodeAttributeStorage
 from amuse.support.data import binding
 
 class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
-    """ 
-        .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
-    """		
+    """  
+    N-body integration module with shared but variable time step
+    (the same for all particles but its size changing in time),
+    using the Hermite integration scheme.
+
+    
+    .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
+    """
     include_headers = ['hermite_code.h', 'parameters.h', 'local.h']
 
     t = legacy_global(name='t',id=20,dtype='d')
@@ -130,7 +135,7 @@ class HermiteInCodeAttributeStorage(InCodeAttributeStorage):
         
     )
             
-class HermiteBinding(NBodyGravitationalDynamicsBinding):
+class HermiteNBody(HermiteInterface, NBodyGravitationalDynamicsBinding):
     parameter_definitions = [
         parameters.ModuleAttributeParameterDefinition(
             "eps2",
@@ -143,32 +148,25 @@ class HermiteBinding(NBodyGravitationalDynamicsBinding):
     
     attribute_definitions = [ ]
 
-    def __init__(self, convert_nbody = None):
-        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+    def __init__(self):
+        HermiteInterface.__init__(self)
+        NBodyGravitationalDynamicsBinding.__init__(self)
         
-        self.nbody_particles = Particles(storage = HermiteInCodeAttributeStorage(self))
-        self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
-    
+        self.particles = Particles(storage = HermiteInCodeAttributeStorage(self))
+        
     def current_model_time(self):
-        return self.convert_nbody.to_si( self.t | nbody_system.time)
+        return self.t | nbody_system.time
             
     
     def evolve_model(self, time_end):
-        result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
+        result = self.evolve(time_end.value_in(nbody_system.time))
         return result
         
-class Hermite(HermiteInterface, HermiteBinding):
-    """  
-    N-body integration module with shared but variable time step
-    (the same for all particles but its size changing in time),
-    using the Hermite integration scheme.
-
-    
-    .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
-    """	
-    
+       
+class Hermite(CodeInterfaceWithNBodyUnitsConverted):
     def __init__(self, convert_nbody = None):
-        HermiteInterface.__init__(self)
-        HermiteBinding.__init__(self, convert_nbody)
-        
-
+        CodeInterfaceWithNBodyUnitsConverted.__init__(
+            self,
+            HermiteNBody(),
+            convert_nbody
+        )

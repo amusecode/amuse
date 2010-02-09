@@ -75,8 +75,8 @@ class ParameterDefinition(object):
     
     def get_value(self, object):
         result = self.unit.new_quantity(self.get_legacy_value(object))
-        if nbody_system.is_nbody_unit(self.unit):
-            return object.convert_nbody.to_si(result)
+        #if nbody_system.is_nbody_unit(self.unit):
+        #    return object.convert_nbody.to_si(result)
         return result
         
     def set_value(self, object, quantity):
@@ -84,8 +84,8 @@ class ParameterDefinition(object):
             if not isinstance(quantity, values.Quantity):
                 quantity = quantity | self.unit          
                   
-        if nbody_system.is_nbody_unit(self.unit):
-            quantity = object.convert_nbody.to_nbody(quantity)
+        #if nbody_system.is_nbody_unit(self.unit):
+        #    quantity = object.convert_nbody.to_nbody(quantity)
         self.set_legacy_value(object, quantity.value_in(self.unit))
         
     def set_default_value(self, object):

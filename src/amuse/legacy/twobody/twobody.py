@@ -3,7 +3,7 @@ from amuse.legacy.support.core import *
 
 from amuse.legacy.interface.gd import GravitationalDynamics, NBodyGravitationalDynamicsBinding
 from amuse.support.data import binding
-from amuse.support.data.core import Particles,ParticlesWithUnitsConverted
+from amuse.support.data.core import Particles
 
 
 import copy,numpy
@@ -366,19 +366,24 @@ class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamics):
         LegacyPythonInterface.__init__(self, TwoBodyImplementation)
 
 
-class TwoBody(TwoBodyInterface, NBodyGravitationalDynamicsBinding):
+class TwoBodyNBody(TwoBodyInterface, NBodyGravitationalDynamicsBinding):
     
-    def __init__(self, convert_nbody = None):
+    def __init__(self):
         TwoBodyInterface.__init__(self)
-        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+        NBodyGravitationalDynamicsBinding.__init__(self)
         
-        self.nbody_particles = Particles(
+        self.particles = Particles(
             storage = TwoBodyInCodeAttributeStorage(self)
         )
         
-        self.particles = ParticlesWithUnitsConverted(
-            self.nbody_particles, 
-            self.convert_nbody.as_converter_from_si_to_nbody()
+
+       
+class TwoBody(CodeInterfaceWithNBodyUnitsConverted):
+    def __init__(self, convert_nbody = None):
+        CodeInterfaceWithNBodyUnitsConverted.__init__(
+            self,
+            TwoBodyNBody(),
+            convert_nbody
         )
     
         

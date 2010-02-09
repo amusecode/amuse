@@ -302,7 +302,7 @@ class PhiGRAPEInCodeAttributeStorage(InCodeAttributeStorage):
         
     )
 
-class PhiGRAPEBinding(NBodyGravitationalDynamicsBinding):
+class PhiGRAPENBody(PhiGRAPEInterface, NBodyGravitationalDynamicsBinding):
    
     parameter_definitions = [
         parameters.ModuleMethodParameterDefinition_Next(
@@ -334,27 +334,32 @@ class PhiGRAPEBinding(NBodyGravitationalDynamicsBinding):
     attribute_definitions = []
 
 
-    def __init__(self, convert_nbody = None):
-        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+    def __init__(self, mode = PhiGRAPEInterface.MODE_G6LIB):
+        PhiGRAPEInterface.__init__(self, mode = mode)
+        NBodyGravitationalDynamicsBinding.__init__(self)
     
-        self.nbody_particles = Particles(storage = PhiGRAPEInCodeAttributeStorage(self))
-        self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
-   
+        self.particles = Particles(storage = PhiGRAPEInCodeAttributeStorage(self))
+        
     def current_model_time(self):
-        return self.convert_nbody.to_si( self.t | nbody_system.time)
+        return self.t | nbody_system.time
+            
+        
+
+       
+class PhiGRAPE(CodeInterfaceWithNBodyUnitsConverted):
+    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB):
+        CodeInterfaceWithNBodyUnitsConverted.__init__(
+            self,
+            PhiGRAPENBody(mode),
+            convert_nbody
+        )
+    
             
 
-class PhiGRAPE(PhiGRAPEInterface, PhiGRAPEBinding):
+class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
     
-    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB):
-        PhiGRAPEInterface.__init__(self, mode=mode)
-        PhiGRAPEBinding.__init__(self, convert_nbody)
-        
-class glPhiGRAPE(PhiGRAPEInterface, PhiGRAPEBinding):
-    
-    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB):
-        PhiGRAPEInterface.__init__(self, mode=mode)
-        PhiGRAPEBinding.__init__(self, convert_nbody)
+    def __init__(self, mode = PhiGRAPEInterface.MODE_G6LIB):
+        PhiGRAPEInterface.__init__(self, mode = mode)
 
     @legacy_function
     def start_viewer():

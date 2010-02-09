@@ -732,20 +732,17 @@ class GravitationalDynamics(object):
         """
         return function 
         
+
 class NBodyGravitationalDynamicsBinding(CodeInterface):
     
-    def __init__(self, convert_nbody):
+    def __init__(self):
         CodeInterface.__init__(self)
         
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-        self.convert_nbody = convert_nbody
-        
     def get_energies(self):
-        return (self.convert_nbody.to_si(self.kinetic_energy), self.convert_nbody.to_si(self.potential_energy))
+        return (self.kinetic_energy, self.potential_energy,)
 
     def evolve_model(self, time_end):
-        result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time))
+        result = self.evolve(time_end.value_in(nbody_system.time))
         return result
         
     kinetic_energy = CodeProperty("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)

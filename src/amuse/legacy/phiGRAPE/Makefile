@@ -74,10 +74,10 @@ worker_code_grape: worker_code.f90 phiGRAPE_code.o
 	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
 
 worker_code.f90: interface.py __init__.py
-	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPE -o $@
+	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@
 
 glworker_code.f90: interface.py __init__.py
-	$(CODE_GENERATOR) --type=f90 interface.py glPhiGRAPE -o $@
+	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterfaceGL -o $@
 
 clean:
 	make -C src clean

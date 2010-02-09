@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
@@ -155,7 +154,8 @@ class BHTreeInCodeAttributeStorage(InCodeAttributeStorage):
     )
 
    
-class BHTreeBinding(NBodyGravitationalDynamicsBinding):
+class BHTreeNBody(BHTreeInterface, NBodyGravitationalDynamicsBinding):
+
     parameter_definitions = [
         parameters.ModuleAttributeParameterDefinition(
             "eps2_for_gravity",
@@ -184,20 +184,22 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
     ]
     
 
-    def __init__(self, convert_nbody = None):
-        NBodyGravitationalDynamicsBinding.__init__(self, convert_nbody)
+    def __init__(self):
+        BHTreeInterface.__init__(self)
+        NBodyGravitationalDynamicsBinding.__init__(self)
         
-        self.nbody_particles = Particles(storage = BHTreeInCodeAttributeStorage(self))
-        self.particles = ParticlesWithUnitsConverted(self.nbody_particles, self.convert_nbody.as_converter_from_si_to_nbody())
+        self.particles = Particles(storage = BHTreeInCodeAttributeStorage(self))
         
     def current_model_time(self):
-        return self.convert_nbody.to_si( self.get_time()['time'] | nbody_system.time)
+        return self.model_time
     
        
-class BHTree(BHTreeInterface, BHTreeBinding):
-    """ 
-    """	
-    
+class BHTree(CodeInterfaceWithNBodyUnitsConverted):
     def __init__(self, convert_nbody = None):
-        BHTreeInterface.__init__(self)
-        BHTreeBinding.__init__(self, convert_nbody)
+        CodeInterfaceWithNBodyUnitsConverted.__init__(
+            self,
+            BHTreeNBody(),
+            convert_nbody
+        )
+    
+            

@@ -16,18 +16,29 @@ class TestAttributeParameterDefintions(unittest.TestCase):
         self.assertEqual(value.value_in(units.m), 123)
         
     def test2(self):
-        x = parameters.ModuleAttributeParameterDefinition("test", "test_name", "a test parameter", nbody_system.length, 0.1 | units.m)
+        x = parameters.ModuleAttributeParameterDefinition(
+            "test", 
+            "test_name", 
+            "a test parameter", 
+            nbody_system.length, 
+            0.1 | nbody_system.length
+        )
         self.assertEqual(x.name,'test_name')
         class TestModule(object):
-            convert_nbody = nbody_system.nbody_to_si(1.0 | units.km, 60 | units.s)
-            test = 123
+            test = 123.0
+            
         o = TestModule()
         value = x.get_value(o)
-        self.assertAlmostEqual(value.value_in(units.m), 123000, 3)
-        self.assertTrue(value.unit.has_same_base_as(units.m))
+        self.assertEquals(value.value_in(nbody_system.length), 123.0)
+        self.assertTrue(value.unit.has_same_base_as(nbody_system.length))
         
     def test3(self):
-        x = parameters.ModuleAttributeParameterDefinition("test", "test_name", "a test parameter", units.m, 0.1 | units.m)
+        x = parameters.ModuleAttributeParameterDefinition(
+            "test", 
+            "test_name", 
+            "a test parameter", 
+            units.m, 0.1 | units.m
+        )
         self.assertEqual(x.name,'test_name')
         class TestModule(object):
             test = 123
@@ -37,16 +48,27 @@ class TestAttributeParameterDefintions(unittest.TestCase):
 
         
     def test4(self):
-        x = parameters.ModuleAttributeParameterDefinition("test", "test_name", "a test parameter", nbody_system.length, 0.1 | units.m)
+        x = parameters.ModuleAttributeParameterDefinition(
+            "test", 
+            "test_name", 
+            "a test parameter", 
+            nbody_system.length, 
+            0.1 | nbody_system.length
+        )
         class TestModule(object):
-            convert_nbody = nbody_system.nbody_to_si(1.0 | units.km, 60 | units.s)
-            test = 123
+            test = 123.0
         o = TestModule()
-        value = x.set_value(o, 20 | units.km)
-        self.assertAlmostEqual(o.test, 20, 10)
+        value = x.set_value(o, 2 | (10.0 * nbody_system.length) )
+        self.assertAlmostEqual(o.test, 20.0, 10)
         
     def test5(self):
-        definition = parameters.ModuleAttributeParameterDefinition("test", "test_name", "a test parameter", units.m, 0.1 | units.m)
+        definition = parameters.ModuleAttributeParameterDefinition(
+            "test", 
+            "test_name", 
+            "a test parameter", 
+            units.m, 
+            0.1 | units.m
+        )
         
         class TestModule(object):
             test = 123
@@ -331,7 +353,60 @@ class TestMethodParameterDefintions(unittest.TestCase):
             self.assertEquals("tried to set unknown parameter 'unknown' for a 'TestModule' object", str(ex))
         
         
+class TestParameters(unittest.TestCase):
+    def test1(self):
+        definition = parameters.ModuleAttributeParameterDefinition(
+            "test", 
+            "test_name", 
+            "a test parameter", 
+            units.m, 
+            0.1 | units.m
+        )
         
         
+        class TestModule(object):
+            test = 123
+            
+        o = TestModule()
+        x = parameters.Parameters([definition], o)
+        
+        value = x.test_name
+        
+        self.assertTrue(value.unit.has_same_base_as(units.m))
+        self.assertEqual(value.value_in(units.m), 123)
+   
+    def test2(self):
+        definition = parameters.ModuleAttributeParameterDefinition(
+            "test", 
+            "test_name", 
+            "a test parameter", 
+            nbody_system.length, 
+            0.1 | nbody_system.length
+        )
+        
+        
+        class TestModule(object):
+            test = 123
+            
+        o = TestModule()
+        x = parameters.Parameters([definition], o)
+        
+        
+        self.assertEqual(x.test_name.value_in(nbody_system.length), 123)
+        
+        convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
+        
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                convert_nbody.as_converter_from_si_to_nbody()
+            )
+        
+        self.assertAlmostEquals(y.test_name.value_in(units.m), 246.0, 6)
+        y.test_name = 500 | units.m
+        
+        
+        self.assertAlmostEquals(y.test_name.value_in(units.m), 500.0, 6)
+        self.assertAlmostEquals(x.test_name.value_in(nbody_system.length), 250.0, 6)
+        self.assertAlmostEquals(o.test, 250.0, 6)
         
         

@@ -440,18 +440,19 @@ int get_state(int id, double *mass, double *radius, double *x, double *y, double
         //*id_out = np[i].get_index();
         *mass = np[i].get_mass();
         *radius = np[i].get_radius();
-	vec v = np[i].get_pos();
+        vec v = np[i].get_pos();
         *x = v[0];
         *y = v[1];
         *z = v[2];
-	v = np[i].get_vel();
+        v = np[i].get_vel();
         *vx = v[0];
         *vy = v[1];
         *vz = v[2];
+        return 0;
       } 
     else 
       {
-        //*id_out = -1;
+        return -1;
       }
 }
 
@@ -502,12 +503,12 @@ int get_radius(int id, double *radius)
 {
     int i = get_index_from_identity(id);
     if (i >= 0 && i < bhtcs.n) {
-	nbody_particle *np = bhtcs.get_particle_pointer();
-	*radius = np[i].get_radius();
-	return 0;
+        nbody_particle *np = bhtcs.get_particle_pointer();
+        *radius = np[i].get_radius();
+        return 0;
     }
 
-    //return -1;
+    return -1;
 }
 
 int set_radius(int id, double radius)
