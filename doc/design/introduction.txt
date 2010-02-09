@@ -37,7 +37,7 @@ Development
 AMUSE development is planned to take place in a 2.5 year period. AMUSE 
 is developed at the Leiden Observatory. The Leiden Observatory is
 a faculty of the Leiden University in the Netherlands. Funding is provided
-by NOVA grant number XXX.
+by a NOVA grant.
 
 .. image:: ../logos/universiteit_leiden_logo.png
    

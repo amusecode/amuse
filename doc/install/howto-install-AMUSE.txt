@@ -19,7 +19,7 @@ root directory.
 
 .. code-block:: sh
     
-    > configure
+    > ./configure
     
 The 'configure' script will check for all prerequisite software
 and report if any are missing.

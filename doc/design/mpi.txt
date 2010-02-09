@@ -24,7 +24,7 @@ There are also be some disadvantages:
 
 These disadvantages are mitigated by creating a library that handles
 most of the coupling details. This library has a Python, C++ and
-Fortran version. It implementatis the protocol and generates
+Fortran version. It implements the protocol and generates
 hooks to connect with the legacy codes.
 
 The overhead per call may be an important factor in the speed of the
