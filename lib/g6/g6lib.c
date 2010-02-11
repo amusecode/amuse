@@ -6,7 +6,7 @@
 
 #define MAX_NUMBER_OF_PARTICLES 100000
 
-typedef double v4df[3];
+typedef double vector3[3];
  
 struct g6_j_particle_tag {
     int    id;
@@ -15,24 +15,24 @@ struct g6_j_particle_tag {
     double dtj;
     double mass;
     
-    v4df a2by18; 
-    v4df a1by6;
-    v4df aby2; 
+    vector3 a2by18; 
+    vector3 a1by6;
+    vector3 aby2; 
     
-    v4df v; 
-    v4df x;
+    vector3 v; 
+    vector3 x;
 };
 typedef struct g6_j_particle_tag g6_j_particle;
 
 struct g6_i_particle_tag{
     int id;
-    v4df x;
-    v4df v;
+    vector3 x;
+    vector3 v;
     double eps2;
     double h2;  
     
-    v4df acc;
-    v4df jerk;
+    vector3 acc;
+    vector3 jerk;
     double pot; 
     double nearest_r_squared;
     int    nearest_j;
@@ -42,8 +42,8 @@ typedef struct g6_i_particle_tag g6_i_particle;
 
 struct g6_j_predict_tag {
     int    id;
-    v4df v; 
-    v4df x;
+    vector3 v; 
+    vector3 x;
 };
 typedef struct g6_j_predict_tag g6_j_predicted_particle;
 
@@ -91,7 +91,7 @@ void predict_positions_and_velocities_for_j_particles() {
     }
 }
 
-inline double vec_squared(v4df v){
+inline double vec_squared(vector3 v){
     int k;
     double result = 0.0;
     for(k = 0; k < 3; k++) {
@@ -100,7 +100,7 @@ inline double vec_squared(v4df v){
     return result;
 }
 
-inline double vec_dot(v4df va, v4df vb){
+inline double vec_dot(vector3 va, vector3 vb){
     int k;
     double result = 0.0;
     for(k = 0; k < 3; k++) {
@@ -139,9 +139,9 @@ void calculate_acceleration_jerk_and_potential_for_i_particles() {
                 continue;
             }
             
-            v4df rij = {0.0,0.0,0.0};
-            v4df vij = {0.0,0.0,0.0};
-            for(k = 0; k < 4; k++) {
+            vector3 rij = {0.0,0.0,0.0};
+            vector3 vij = {0.0,0.0,0.0};
+            for(k = 0; k < 3; k++) {
                 rij[k] = current_jp->x[k] - current_i->x[k];
                 vij[k] = current_jp->v[k] - current_i->v[k];
             }
@@ -415,9 +415,11 @@ int g6calc_lasthalf2_(int *cluster_id,
         double *eps2, double h2[],
         double acc[][3], double jerk[][3], double pot[],
         int nnbindex[]){
+    //fprintf(stderr, "g6calc_lasthalf2_ %d, %d, %d\n", *nj, *ni, index[0]);
             
     predict_positions_and_velocities_for_j_particles();
     calculate_acceleration_jerk_and_potential_for_i_particles();
+    //fprintf(stderr, "g6calc_lasthalf2_ %d, %d, %d\n", *nj, *ni, index[0]);
     
     int i = 0;
     for(i=0; i<*ni; i++) {
