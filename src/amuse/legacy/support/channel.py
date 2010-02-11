@@ -201,7 +201,7 @@ class MessageChannel(object):
     
     """
     DEBUGGER = None
-    REDIRECTION = None #("/dev/null", "/dev/null", "/dev/null")
+    REDIRECTION = ("/dev/null", "/dev/null", "/dev/null")
     
     @classmethod
     def GDB(cls, full_name_of_the_worker):

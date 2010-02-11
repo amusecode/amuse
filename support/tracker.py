@@ -130,7 +130,7 @@ less_tests = """\
 Watch out, the number of tests has decreased! There are now {0} less tests. 
 """
 same_tests = """\
-The number of tests has not increased.
+The number of tests has not increased, is your code tested?
 """
 
 errored_email_subject = """Found {number_of_errors} error(s) in revision {revision}"""
