@@ -53,7 +53,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
             self.out.lf() + 'do i = 1, len_in, 1'
             self.out.indent()
         
-        self.output_lines_before_with_clear_out_variables()
+        #self.output_lines_before_with_clear_out_variables()
         self.output_lines_before_with_inout_variables()
         self.output_function_start()
         self.output_function_parameters()
@@ -132,7 +132,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
             
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if parameter.datatype == 'string': 
-                    self.out.lf() + 'output_characters = ""'  
+                    self.out.lf() + 'output_characters = "x"'  
                     return
                     
     def output_lines_before_with_inout_variables(self):
@@ -390,6 +390,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf() + 'len_out = len_in'
         
           
+        self.out.lf() + 'output_characters = "x"'  
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
