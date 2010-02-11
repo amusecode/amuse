@@ -75,6 +75,7 @@ class Message(object):
             bytes = numpy.empty((offsets[-1] + 1), dtype=numpy.uint8)
             self.mpi_recieve(comm,[bytes,  MPI.CHARACTER])
             
+            
             strings = []
             begin = 0
             
@@ -200,7 +201,7 @@ class MessageChannel(object):
     
     """
     DEBUGGER = None
-    REDIRECTION = ("/dev/null", "/dev/null", "/dev/null")
+    REDIRECTION = None #("/dev/null", "/dev/null", "/dev/null")
     
     @classmethod
     def GDB(cls, full_name_of_the_worker):

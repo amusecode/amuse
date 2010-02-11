@@ -53,6 +53,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
             self.out.lf() + 'do i = 1, len_in, 1'
             self.out.indent()
         
+        self.output_lines_before_with_inout_variables()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
@@ -92,11 +93,23 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
                     self.out.n() + spec.input_var_name 
                     self.out + '(' + self.index_string(parameter.input_index) + ')'
             if parameter.direction == LegacyFunctionSpecification.INOUT:
-                self.out.n() + spec.input_var_name 
-                self.out + '(' + self.index_string(parameter.input_index) + ')'
+                if parameter.datatype == 'string':
+                    self.out.n() + 'output_characters('
+                    self.out  + '((' + self.index_string(parameter.output_index) + ')* 256)'
+                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * 256 - 1)'
+                    self.out  + ')'
+                else:
+                    self.out.n() + spec.input_var_name 
+                    self.out + '(' + self.index_string(parameter.input_index) + ')'
             elif parameter.direction == LegacyFunctionSpecification.OUT:
-                self.out.n() + spec.output_var_name
-                self.out + '(' + self.index_string(parameter.output_index) + ')'
+                if parameter.datatype == 'string':
+                    self.out.n() + 'output_characters('
+                    self.out  + '((' + self.index_string(parameter.output_index) + ')* 256)'
+                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * 256 - 1)'
+                    self.out  + ')'
+                else:
+                    self.out.n() + spec.output_var_name
+                    self.out + '(' + self.index_string(parameter.output_index) + ')'
                 
         self.out.dedent()
         
@@ -110,7 +123,24 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
                 self.out + '(' + self.index_string(parameter.output_index)  + ')' 
                 self.out + ' = ' 
                 self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
-    
+        
+    def output_lines_before_with_inout_variables(self):
+        
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if parameter.direction == LegacyFunctionSpecification.INOUT:
+                if parameter.datatype == 'string':
+                    self.out.n() + 'output_characters('
+                    self.out  + '( (' + self.index_string(parameter.output_index) + ')* 256)'
+                    self.out  + ':' + '(((' + self.index_string(parameter.output_index) + ')+1) * 256 - 1)'
+                    self.out  + ') = &'
+                    self.out.lf()
+                    self.out + 'characters('
+                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
+                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
+                    self.out  + ')' 
+                    
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
         
@@ -283,8 +313,9 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.output_mpi_include()
         self.out.n() + 'integer :: rank, parent, ioerror, maxlen = 255'
         self.out.n() + 'integer :: must_run_loop'
-        self.out.n() + 'integer i'
+        self.out.n() + 'integer i, str_len, offset'
         self.out.n() + 'character (len=100000) :: characters'
+        self.out.n() + 'character (len=100000) :: output_characters'
         self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
         self.out.lf().lf() + 'integer header(' 
         self.out + self.length_of_the_header + ')'
@@ -382,7 +413,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
                 self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1' 
                 self.out + ', &'
 
-                self.out.indent().n() + spec.mpi_type
+                self.out.indent().n() + 'MPI_CHARACTER'
                 self.out + ', 0, parent,&'
                 self.out.n() + 'ioError);'
             self.out.dedent().dedent().lf()
@@ -419,15 +450,43 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
+            
             self.out.lf() + 'if (' + spec.counter_name + '_out'
             self.out + ' .gt. 0) then'
             self.out.indent().lf() 
-            self.out + 'call MPI_SEND(' 
-            self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
-            self.out + ' * len_out'
-            self.out + ', &'
-            self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
-            self.out.lf() + 'parent, ioerror);'
+            if dtype == 'string':
+                self.out.lf() + 'offset = 1'
+                self.out.lf() + 'DO i = 1, '+spec.counter_name + '_out * len_out' + ',1'
+                self.out.indent().lf()
+                self.out.lf() + 'str_len = LEN_TRIM(output_characters(i*256:((i+1)*256)-1))'
+                self.out.lf() + 'output_characters(offset:offset+255) = output_characters(i*256:((i+1)*256)-1)'
+                self.out.lf() + 'offset = offset + str_len - 1'
+                self.out.lf() + spec.output_var_name + '(i) = offset'
+                self.out.lf() + 'offset = offset + 2'
+                self.out.dedent().lf() + 'END DO'
+                
+                self.out.lf() + 'call MPI_SEND(' 
+                self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
+                self.out + ' * len_out'
+                self.out + ', &'
+                self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
+                self.out.lf() + 'parent, ioerror)'
+                
+                self.out.lf() + 'call MPI_SEND(' 
+                self.out + 'output_characters' + ', ' + 'offset -1'
+                self.out + ', &'
+                self.out.indent().lf() + 'MPI_CHARACTER' + ', 0, 999, &'
+                self.out.lf() + 'parent, ioerror)'
+                
+                
+            else:
+                self.out + 'call MPI_SEND(' 
+                self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
+                self.out + ' * len_out'
+                self.out + ', &'
+                self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
+                self.out.lf() + 'parent, ioerror)'
+                
             self.out.dedent().dedent().lf() +'end if'
         self.out.dedent()
         self.out.lf() + 'end do'

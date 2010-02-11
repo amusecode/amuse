@@ -123,6 +123,16 @@ Regards,
 The AMUSE automated testing system
 """
 
+more_tests = """\
+The number of tests has increased with : {delta_tests}. Good job!
+"""
+less_tests = """\
+Watch out, the number of tests has decreased! There are now {0} less tests. 
+"""
+same_tests = """\
+The number of tests has not increased.
+"""
+
 errored_email_subject = """Found {number_of_errors} error(s) in revision {revision}"""
 success_email_subject = """For revision revision {revision}, all {number_of_tests} tests were successful!"""
 
@@ -208,12 +218,21 @@ class RunAllTestsOnASvnCommit(object):
         else:
             contents.append(success_start.format(**report))
             
+        
+        if report['delta_tests'] > 0:
+            contents.append(more_tests.format(**report))
+        elif report['delta_tests'] < 0:
+            contents.append(less_tests.format(-1 * report['delta_tests']))
+        else:
+            contents.append(same_tests.format(**report))
+            
         contents.append(commit_info.format(**report))
         
         if report["number_of_errors"] > 0:
             contents.append(error_info.format(**report))
             
         contents.append(tests_info.format(**report))
+            
         
         if report['errors']:
             for location_line, error_string in report['errors']:
@@ -262,7 +281,20 @@ class RunAllTestsOnASvnCommit(object):
         report['number_of_seconds'] = test_report.end_time - test_report.start_time
         report['revision']  = revision
         
-         
+        previous_revision = int(revision) - 1
+        while not previous_revision in self.mapping_from_revision_to_report and previous_revision > 0:
+            previous_revision -= 1
+            
+        if previous_revision in self.mapping_from_revision_to_report:
+            previous_report = self.mapping_from_revision_to_report[previous_revision]
+            previous_number_of_tests = previous_report['number_of_tests']
+            delta_in_number_of_tests = test_report.tests - previous_number_of_tests
+        else:
+            delta_in_number_of_tests = 0
+            
+        report['delta_tests'] = delta_in_number_of_tests
+        
+        
         testcases = list(test_report.address_to_report.values())
         testcases.sort(key=lambda x: os.path.basename("" if x.address[0] is None else x.address[0]))
        

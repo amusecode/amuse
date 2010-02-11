@@ -181,6 +181,7 @@ class LegacyCall(object):
             
         dtype_to_keyword = {
             'float64' : 'doubles_in',
+            'float32' : 'floats_in',
             'int32'  : 'ints_in',
             'string'  : 'chars_in',
         }       
