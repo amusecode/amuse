@@ -45,7 +45,7 @@ class TestLegacyFunction(unittest.TestCase):
                 self.in_ints = ints_in
             
             def recv_message(self, id, handle_as_array):
-                return ([1,2],[3.0,4.0])
+                return ([1,2],[3.0,4.0], [], [])
                 
         self.channel = TestChannel()
         result = self.get_time_step(1, 2.0, 3.0)
@@ -62,7 +62,7 @@ class TestLegacyFunction(unittest.TestCase):
                 self.in_ints = ints_in
             
             def recv_message(self, id, handle_as_array):
-                return ([1,2],[3.0,4.0])
+                return ([1,2],[3.0,4.0], [], [])
                 
         self.channel = TestChannel()
         result = self.interleave_ints_and_doubles(1, 2.1, 3, 4.2, 5, 6.3)
@@ -82,7 +82,7 @@ class TestLegacyFunction(unittest.TestCase):
                 self.in_ints = ints_in
             
             def recv_message(self, id, handle_as_array):
-                return ([1,2],[3.0,4.0])
+                return ([1,2],[3.0,4.0], [], [])
                 
         self.channel = TestChannel()
         result = self.interleave_ints_and_doubles(parameter2 = 2.1, parameter6 = 6.3, parameter1 = 1, parameter4 = 4.2, parameter3 = 3, parameter5 = 5)
@@ -105,7 +105,7 @@ class TestLegacyFunction(unittest.TestCase):
                 self.chars_in = chars_in
             
             def recv_message(self, id, handle_as_array):
-                return [[], []]
+                return [[], [], [], []]
                 
         self.channel = TestChannel()
         result = self.send_string('bla')

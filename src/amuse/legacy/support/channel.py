@@ -12,6 +12,179 @@ from mpi4py import MPI
 from subprocess import Popen
 
 
+
+class Message(object):
+    
+    def __init__(self, tag = -1, length= 1):
+        self.tag = tag
+        self.length = length
+        self.ints = []
+        self.doubles = []
+        self.floats = []
+        self.strings = []
+        
+    def recieve(self, comm):
+        header = numpy.zeros(6,  dtype='i')
+        
+        self.mpi_recieve(comm, [header, MPI.INT])
+        
+        self.tag = header[0]
+        self.length = header[1]
+        
+        number_of_doubles = header[2]
+        number_of_ints = header[3]
+        number_of_floats = header[4]
+        number_of_strings = header[5]
+        
+        self.doubles = self.recieve_doubles(comm, self.length, number_of_doubles)
+        self.ints = self.recieve_ints(comm, self.length, number_of_ints)
+        self.floats = self.recieve_floats(comm, self.length, number_of_floats)
+        self.strings = self.recieve_strings(comm, self.length, number_of_strings)
+    
+    def recieve_doubles(self, comm, length, total):
+        if total > 0:
+            result = numpy.empty(total * length,  dtype='d')
+            self.mpi_recieve(comm,[result, MPI.DOUBLE])
+            return result
+        else:
+            return []
+            
+    def recieve_ints(self, comm, length, total):
+        if total > 0:
+            result = numpy.empty(total * length,  dtype='i')
+            self.mpi_recieve(comm,[result, MPI.INT])
+            return result
+        else:
+            return []
+            
+    def recieve_floats(self, comm, length, total):
+        if total > 0:
+            result = numpy.empty(total * length,  dtype='f')
+            self.mpi_recieve(comm,[result, MPI.FLOAT])
+            return result
+        else:
+            return []
+    
+            
+    def recieve_strings(self, comm, length, total):
+        if total > 0:
+            offsets = numpy.empty(length * total, dtype='i')
+            
+            self.mpi_recieve(comm,[offsets, MPI.INT])
+            
+            bytes = numpy.empty((offsets[-1] + 1), dtype=numpy.uint8)
+            self.mpi_recieve(comm,[bytes,  MPI.CHARACTER])
+            
+            strings = []
+            begin = 0
+            
+            for end in offsets:
+                bytes_of_string = bytes[begin:end]
+                string = ''.join(map(chr, bytes_of_string))
+                begin = end + 1
+                strings.append(string)
+            return strings
+        else:
+            return []
+        
+    
+    def send(self, comm):
+        header = numpy.array([
+            self.tag, 
+            self.length, 
+            len(self.doubles) / self.length, 
+            len(self.ints) / self.length, 
+            len(self.floats) / self.length, 
+            len(self.strings) / self.length
+        ], dtype='i')
+        
+        self.mpi_send(comm, [header, MPI.INT])
+        
+        
+        self.send_doubles(comm, self.doubles)
+        self.send_ints(comm, self.ints)
+        self.send_floats(comm, self.floats)
+        self.send_strings(comm, self.strings)
+        
+    
+    def send_doubles(self, comm, array):
+        if len(array) > 0:
+            buffer = numpy.array(array,  dtype='d')
+            self.mpi_send(comm,[buffer, MPI.DOUBLE])
+            
+    def send_ints(self, comm, array):
+        if len(array) > 0:
+            buffer = numpy.array(array,  dtype='int32')
+            self.mpi_send(comm,[buffer, MPI.INT])
+            
+    def send_floats(self, comm, array):
+        if len(array) > 0:
+            buffer = numpy.array(array,  dtype='f')
+            self.mpi_send(comm, [buffer, MPI.FLOAT])
+            
+    def send_strings(self, comm, array):
+        if len(array) > 0:
+            
+            offsets = numpy.zeros(len(array), dtype='i')
+            offset = 0
+            index = 0
+            
+            for string in array:
+                offset += len(string)
+                offsets[index] = offset
+                offset += 1
+                index += 1
+                
+            self.mpi_send(comm, [offsets, MPI.INT])
+           
+            bytes = []
+            for string in self.strings:
+                bytes.extend([ord(ch) for ch in string])
+                bytes.append(0)
+              
+            chars = numpy.array(bytes, dtype=numpy.uint8)
+            self.mpi_send(comm, [chars, MPI.CHARACTER])
+            
+            
+    
+    def mpi_recieve(self, comm, array):
+        comm.Bcast(array, root = 0)
+        
+    def mpi_send(self, comm, array):
+        comm.Send(array, dest=0, tag = 999)
+
+class ServerSideMessage(Message):
+    
+    
+    def mpi_recieve(self, comm, array):
+        comm.Recv(array,  source=0, tag=999)
+        
+    def mpi_send(self, comm, array):
+        comm.Bcast(array, root=MPI.ROOT)
+
+
+def pack_array(array, length,  dtype):
+    if dtype == 'string':
+        result = []
+        for x in array:
+            result.extend(x)
+        return result
+    else:
+        result = numpy.empty(length * len(array), dtype = dtype)
+        for i in range(len(array)):
+            offset = i * length
+            result[offset:offset+length] = array[i]
+        return result
+    
+
+def unpack_array(array, length, dtype = None):
+    result = []
+    total = len(array) / length
+    for i in range(total):
+        offset = i * length
+        result.append(array[offset:offset+length])
+    return result
+
 class MessageChannel(object):
     """
     Abstract base class of all message channel.
@@ -126,6 +299,8 @@ class MpiChannel(MessageChannel):
         self.intercomm = None
         
     def start(self):
+        fd_stdin = None
+        
         if self.debug_with_gdb or (not self.DEBUGGER is None):
             if not 'DISPLAY' in os.environ:
                 arguments = None
@@ -157,7 +332,8 @@ class MpiChannel(MessageChannel):
         try:
             self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
         finally:
-            if not self.REDIRECTION is None:
+            
+            if not self.REDIRECTION is None and not fd_stdin is None:
                 os.dup2(fd_stdin, 0)
                 os.dup2(fd_stdout, 1)
                 os.dup2(fd_stderr, 2)
@@ -185,7 +361,7 @@ class MpiChannel(MessageChannel):
             except:
                 pass
                     
-        
+                    
         #if len(chars_in) == 1:
         #    number_of_characters = len(chars_in[0])+1
         #else:
@@ -193,7 +369,7 @@ class MpiChannel(MessageChannel):
        
         header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in), len(chars_in)], dtype='i')
         self.intercomm.Bcast([header, MPI.INT], root=MPI.ROOT)
-        
+       
         if doubles_in:
             #t0 = time.time()
             if self.cached  is None:
@@ -244,8 +420,8 @@ class MpiChannel(MessageChannel):
                         offsets[index] = offset
                         offset += 1
                         index += 1
-                
-            self.intercomm.Bcast([offsets, MPI.INT], root=MPI.ROOT)    
+            
+            self.intercomm.Bcast([offsets, MPI.INT], root=MPI.ROOT)   
             bytes = []
             for strings in chars_in:
                 if length == 1:
@@ -255,53 +431,32 @@ class MpiChannel(MessageChannel):
                     for string in strings:
                         bytes.extend([ord(ch) for ch in string])
                         bytes.append(0)
-              
             chars = numpy.array(bytes, dtype=numpy.uint8)
+            
             self.intercomm.Bcast([chars, MPI.CHARACTER], root=MPI.ROOT)
        
         
         
     def recv_message(self, tag, handle_as_array):
-        header = numpy.zeros(6,  dtype='i')
-        self.intercomm.Recv([header, MPI.INT], source=0, tag=999)
-        length = header[1]
-        n_doubles = header[2]
-        n_ints = header[3]
-        n_floats = header[4]
-        if n_doubles > 0:
-            doubles_mpi = numpy.empty(n_doubles * length,  dtype='d')
-            self.intercomm.Recv([doubles_mpi, MPI.DOUBLE], source=0, tag=999)
-            doubles_result = []
-            if length > 1 or handle_as_array:
-                for i in range(n_doubles):
-                    offset = i * length
-                    doubles_result.append(doubles_mpi[offset:offset+length])
-            else:
-                doubles_result = doubles_mpi
-        else:
-            doubles_result = []
-        if n_ints > 0:
+        
+        message = ServerSideMessage()
+        message.recieve(self.intercomm)
+        
+        if message.tag < 0:
+            raise Exception("Not a valid message, message is not understood by legacy code")
             
-            ints_mpi = numpy.empty(n_ints * length,  dtype='i')
-            self.intercomm.Recv([ints_mpi, MPI.INT], source=0, tag=999)
-            ints_result = []
-            if length > 1 or handle_as_array:
-                for i in range(n_ints):
-                    offset = i * length
-                    ints_result.append(ints_mpi[offset:offset+length])
-            else:
-                ints_result = ints_mpi
-                
+        if message.length > 1 or handle_as_array:
+            doubles_result = unpack_array(message.doubles, message.length, 'float64')
+            floats_result = unpack_array(message.floats, message.length, 'float32')
+            ints_result = unpack_array(message.ints, message.length, 'int32')
+            strings_result = unpack_array(message.strings, message.length, 'string')
         else:
-            ints_result = []
-        if n_floats > 0:
-            floats_result = numpy.empty(n_floats * length,  dtype='f')
-            self.intercomm.Recv([floats_result, MPI.FLOAT], source=0, tag=999)
-        else:
-            floats_result = []
-        if header[0] < 0:
-            raise Exception("Not a valid message!")
-        return (doubles_result, ints_result)
+            doubles_result = message.doubles
+            floats_result = message.floats
+            ints_result = message.ints
+            strings_result = message.strings
+        
+        return (doubles_result, ints_result, floats_result, strings_result)
         
     def is_active(self):
         return self.intercomm is not None
@@ -394,7 +549,7 @@ m.run_mpi_channel('{3}')"""
          
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         self._send(self.client_socket, ('send_message',(tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length),))
-        result = self._recv(self.client_socket)    
+        result = self._recv(self.client_socket) 
         return result
             
     def recv_message(self, tag, handle_as_array):

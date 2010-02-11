@@ -99,16 +99,15 @@ class LegacyCall(object):
               break
                 
         self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
-        (doubles, ints) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
+        (doubles, ints, floats, strings) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
        
             
-        return self.converted_results(doubles, ints)
+        return self.converted_results(doubles, ints, floats, strings)
         
     """
     Convert results from an MPI message to a return value.
     """
-    def converted_results(self, doubles, ints):
-        floats = []
+    def converted_results(self, doubles, ints, floats, strings):
         
         number_of_outputs = len(self.specification.output_parameters)
         
@@ -122,6 +121,8 @@ class LegacyCall(object):
                 return doubles[0] 
             if self.specification.result_type == 'float32':
                 return floats[0] 
+            if self.specification.result_type == 'string':
+                return strings[0] 
         
         if number_of_outputs == 1 \
             and self.specification.result_type is None:
@@ -131,12 +132,15 @@ class LegacyCall(object):
                 return doubles[0]
             if len(floats) == 1:
                 return floats[0]
+            if len(strings) == 1:
+                return strings[0]
         
         result = OrderedDictionary()
         dtype_to_array = {
             'float64' : list(reversed(doubles)),
             'int32' : list(reversed(ints)),
-            'float32' : list(reversed(floats))
+            'float32' : list(reversed(floats)),
+            'string' : list(reversed(strings)),
         }
         
         if not self.specification.result_type is None:

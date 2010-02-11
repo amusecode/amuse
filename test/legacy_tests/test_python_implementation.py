@@ -4,6 +4,7 @@ from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy.support import python_code
+from amuse.legacy.support import channel
 
 from legacy_support import TestWithMPI
 
@@ -52,6 +53,26 @@ class ForTestingInterface(LegacyPythonInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         function.id = 13
+        return function  
+          
+    @legacy_function
+    def echo_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.addParameter('string_out', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.id = 14
+        return function  
+          
+    @legacy_function
+    def echo_strings():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_inout1', dtype='string', direction=function.INOUT)
+        function.addParameter('string_inout2', dtype='string', direction=function.INOUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.id = 15
         return function    
 
     
@@ -84,6 +105,15 @@ class ForTestingImplementation(object):
             
     def echo_double(self, double_in, double_out):
         double_out.value = double_in
+        return 0
+        
+    def echo_string(self, string_in, string_out):
+        string_out.value = string_in
+        return 0
+        
+    def echo_strings(self, string_inout1, string_inout2):
+        string_inout1.value = string_inout1.value[::-1]
+        string_inout2.value = string_inout2.value[::-1]
         return 0
        
 
@@ -209,4 +239,56 @@ class TestInterface(TestWithMPI):
         self.assertEquals(len(output_message.ints), 2)
         self.assertEquals(output_message.ints[0], 0)
         self.assertEquals(output_message.ints[1], 20)
+        
+    
+    def test9(self):
+        x = ForTestingInterface()
+        channel.MessageChannel.DEBUGGER = None
+        string_out, error = x.echo_string("1234567")
+        self.assertEquals(error, 0)
+        self.assertEquals(string_out[0], "1234567")
+        
+        del x
+        
+    def test10(self):
+        x = ForTestingInterface()
+        string_out, error = x.echo_string(["aaaaa", "bbbb"])
+        self.assertEquals(error[0], 0)
+        self.assertEquals(len(string_out), 2)
+        self.assertEquals(string_out[0], "aaaaa")
+        self.assertEquals(string_out[1], "bbbb")
+        
+        
+        del x
+        
+    def test11(self):
+        x = ForTestingInterface()
+        string_out, error = x.echo_string(["", "bbbb"])
+        self.assertEquals(error[0], 0)
+        self.assertEquals(len(string_out), 2)
+        self.assertEquals(string_out[0], "")
+        self.assertEquals(string_out[1], "bbbb")
+        
+        
+        del x
+        
+    def test12(self):
+        x = ForTestingInterface()
+        str1_out, str2_out, error = x.echo_strings("abc", "def")
+        self.assertEquals(error, 0)
+        self.assertEquals(str1_out[0], "cba")
+        self.assertEquals(str2_out[0], "fed")
+        del x
+        
+        
+    def test13(self):
+        x = ForTestingInterface()
+        str1_out, str2_out, error = x.echo_strings(["abc", "def"], ["ghi", "jkl"])
+        self.assertEquals(error[0], 0)
+        self.assertEquals(error[1], 0)
+        self.assertEquals(str1_out[0], "cba")
+        self.assertEquals(str1_out[1], "fed")
+        self.assertEquals(str2_out[0], "ihg")
+        self.assertEquals(str2_out[1], "lkj")
+        del x
         

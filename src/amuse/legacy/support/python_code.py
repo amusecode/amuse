@@ -1,132 +1,26 @@
 from amuse.legacy.support.core import legacy_function, legacy_global, LegacyFunctionSpecification
 from amuse.support.core import late, OrderedDictionary
 
+from amuse.legacy.support.channel import Message, pack_array, unpack_array
+
 from mpi4py import MPI
+
 import numpy
+import sys
 
-class Message(object):
-    
-    def __init__(self, tag = -1, length= 1):
-        self.tag = tag
-        self.length = length
-        self.ints = []
-        self.doubles = []
-        self.floats = []
-        self.strings = []
-        
-    def recieve(self, comm):
-        header = numpy.zeros(6,  dtype='i')
-        
-        comm.Bcast([header, MPI.INT], root = 0)
-        
-        self.tag = header[0]
-        self.length = header[1]
-        
-        number_of_doubles = header[2]
-        number_of_ints = header[3]
-        number_of_floats = header[4]
-        number_of_strings = header[5]
-        
-        self.doubles = self.recieve_doubles(comm, self.length, number_of_doubles)
-        self.ints = self.recieve_ints(comm, self.length, number_of_ints)
-        self.floats = self.recieve_floats(comm, self.length, number_of_floats)
-        self.strings = self.recieve_strings(comm, self.length, number_of_strings)
-    
-    def recieve_doubles(self, comm, length, total):
-        if total > 0:
-            result = numpy.empty(total * length,  dtype='d')
-            comm.Bcast([result, MPI.DOUBLE], root = 0)
-            
-            return result
-        else:
-            return []
-            
-    def recieve_ints(self, comm, length, total):
-        if total > 0:
-            result = numpy.empty(total * length,  dtype='i')
-            comm.Bcast([result, MPI.INT], root = 0)
-            
-            return result
-        else:
-            return []
-            
-    def recieve_floats(self, comm, length, total):
-        if total > 0:
-            result = numpy.empty(total * length,  dtype='f')
-            comm.Bcast([result, MPI.FLOAT], root = 0)
-            
-            return result
-        else:
-            return []
-            
-    def recieve_strings(self, comm, length, total):
-        if total > 0:
-            raise Exception("not implemented strings yet!")
-        else:
-            return []
-        
-    
-    def send(self, comm):
-        header = numpy.array([
-            self.tag, 
-            self.length, 
-            len(self.doubles) / self.length, 
-            len(self.ints) / self.length, 
-            len(self.floats) / self.length, 
-            len(self.strings) / self.length
-        ], dtype='i')
-        
-        comm.Send([header, MPI.INT], dest=0, tag=999)
-        
-        
-        self.send_doubles(comm, self.doubles)
-        self.send_ints(comm, self.ints)
-        self.send_floats(comm, self.floats)
-        self.send_strings(comm, self.strings)
-        
-    
-    def send_doubles(self, comm, array):
-        if len(array) > 0:
-            buffer = numpy.array(array,  dtype='d')
-            comm.Send([buffer, MPI.DOUBLE], dest=0, tag = 999)
-            
-    def send_ints(self, comm, array):
-        if len(array) > 0:
-            buffer = numpy.array(array,  dtype='int32')
-            comm.Send([buffer, MPI.INT], dest=0, tag = 999)
-            
-    def send_floats(self, comm, array):
-        if len(array) > 0:
-            buffer = numpy.array(array,  dtype='f')
-            comm.Send([buffer, MPI.FLOAT], dest=0, tag = 999)
-            
-    def send_strings(self, comm, array):
-        if len(array) > 0:
-            raise Exception("Sending strings not supported!")
-            
-
-def pack_array(array, length,  dtype):
-    result = numpy.empty(length * len(array), dtype = dtype)
-    for i in range(len(array)):
-        offset = i * length
-        result[offset:offset+length] = array[i]
-    return result
-    
-
-def unpack_array(array, length, dtype):
-    result = []
-    total = len(array) / length
-    for i in range(total):
-        offset = i * length
-        result.append(array[offset:offset+length])
-    return result
 
 class ValueHolder(object):
     
     def __init__(self, value = None):
-        self.value = None
+        self.value = value
+        
+    def __repr__(self):
+        return "V({0!r})".format(self.value)
 
+    def __str__(self):
+        return "V({0!s})".format(self.value)
 
+    
 class PythonImplementation(object):
     dtype_to_message_attribute = { 
         'int32' : 'ints',
@@ -180,7 +74,10 @@ class PythonImplementation(object):
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             count = dtype_to_count.get(type,0)
             for x in range(count):
-                getattr(output_message, attribute).append(numpy.empty(output_message.length, dtype=type))
+                if type == 'string':
+                    getattr(output_message, attribute).append([""] * output_message.length)
+                else:
+                    getattr(output_message, attribute).append(numpy.empty(output_message.length, dtype=type))
         
         
         method = getattr(self.implementation, specification.name)
@@ -192,7 +89,6 @@ class PythonImplementation(object):
             
         for index in range(input_message.length):
             keyword_arguments = self.new_keyword_arguments_from_message(input_message, index,  specification)
-            
             try:
                 result = method(**keyword_arguments)
             except TypeError:
@@ -216,7 +112,6 @@ class PythonImplementation(object):
                 argument_value = ValueHolder(getattr(input_message, attribute)[parameter.input_index][index])
             if parameter.direction == LegacyFunctionSpecification.OUT:
                 argument_value = ValueHolder(None)
-        
             keyword_arguments[parameter.name] = argument_value
         return keyword_arguments
         

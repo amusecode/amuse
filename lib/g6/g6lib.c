@@ -91,7 +91,7 @@ void predict_positions_and_velocities_for_j_particles() {
     }
 }
 
-static inline double vec_squared(v4df v){
+inline double vec_squared(v4df v){
     int k;
     double result = 0.0;
     for(k = 0; k < 3; k++) {
@@ -100,8 +100,13 @@ static inline double vec_squared(v4df v){
     return result;
 }
 
-static inline double vec_dot(v4df va, v4df vb){
-    return (va[0] * vb[0]) + (va[1] * vb[1]) + (va[2] * vb[2]);
+inline double vec_dot(v4df va, v4df vb){
+    int k;
+    double result = 0.0;
+    for(k = 0; k < 3; k++) {
+        result += va[k] * vb[k];
+    }
+    return result;
 }
 
 inline clear_i_particle(g6_i_particle * particle) {
@@ -182,6 +187,9 @@ void calculate_acceleration_jerk_and_potential_for_i_particles() {
 
 
 
+int g6_open(int id) {
+    return g6_open_(&id);
+}
 
 int g6_open_(int *id) {
     int i =0;
@@ -199,6 +207,11 @@ int g6_open_(int *id) {
     return 0;
 }
 
+
+int g6_close(int id) {
+    return g6_close_(&id);
+}
+
 int g6_close_(int *id){
     if (unit) {
         free(unit);
@@ -208,18 +221,34 @@ int g6_close_(int *id){
     return 0;
 }
 
+int g6_npipes() {
+    return g6_npipes();
+}
+
 int g6_npipes_(){
     //fprintf(stderr, "npipes\n");
     return 1;
 }
 
-int g6_set_tunit_(double* p){
+int g6_set_tunit(int p){
+    return g6_set_tunit_(&p);
+}
+int g6_set_tunit_(int* p){
     //fprintf(stderr, "g6_set_tunit_\n");
     return 0;
 }
-int g6_set_xunit_(double* p){
+
+int g6_set_xunit(int p){
+    return g6_set_xunit_(&p);
+}
+
+int g6_set_xunit_(int* p){
     //fprintf(stderr, "g6_set_xunit_\n");
     return 0;
+}
+
+int g6_set_ti(int id, double ti){
+    return g6_set_ti_(&id, &ti);
 }
 
 int g6_set_ti_(int *id, double *ti){
@@ -228,6 +257,21 @@ int g6_set_ti_(int *id, double *ti){
     return 0;
 }
 
+int g6_set_j_particle(int clusterid, int address,
+         int index,
+         double tj, 
+         double dtj, 
+         double mass,
+         double a2by18[3], 
+         double a1by6[3],
+         double aby2[3], 
+         double v[3],
+         double x[3]) {
+    return g6_set_j_particle_(&clusterid, &address,
+        &index, &tj, &dtj, &mass, a2by18,
+        a1by6, aby2, v, x);
+}
+         
 int g6_set_j_particle_(int *cluster_id,
          int *address,
          int *index,
@@ -270,6 +314,23 @@ int g6_set_j_particle_(int *cluster_id,
     return 0;
 }
 
+void g6calc_firsthalf(int clusterid, 
+          int nj,  
+          int ni,  
+          int index[],  
+          double xi[][3],  
+          double vi[][3],  
+          double fold[][3],
+          double jold[][3],  
+          double phiold[],  
+          double eps2,   
+          double h2[])
+{
+    return g6calc_firsthalf_(&clusterid, &nj, &ni, index, xi,
+        vi, fold, jold, phiold, &eps2, h2);
+}
+
+
 void g6calc_firsthalf_(int *cluster_id,
          int *nj, int *ni,
          int index[], 
@@ -303,7 +364,21 @@ void g6calc_firsthalf_(int *cluster_id,
 
 
 
-
+  
+int g6calc_lasthalf(int clusterid,
+                     int nj,
+                     int ni,
+                     int index[],
+                     double xi[][3],
+                     double vi[][3],
+                     double eps2,
+                     double h2[], 
+                     double acc[][3],
+                     double jerk[][3],
+                     double pot[]){
+    return g6calc_lasthalf_(&clusterid, &nj, &ni, index,
+        xi, vi, &eps2, h2, acc, jerk, pot);
+}
 int g6calc_lasthalf_(int *cluster_id,
            int *nj, int *ni,
            int index[], 
