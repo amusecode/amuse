@@ -83,6 +83,16 @@ function hello_string(string_out)
     
     hello_string = 0
 end function
+
+function echo_string_fixed_len(string_in, string_out)
+    implicit none
+    character(len=30) :: string_in, string_out
+    integer :: echo_string_fixed_len
+    
+    string_out = string_in
+    
+    echo_string_fixed_len = 0
+end function
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -147,6 +157,15 @@ class ForTestingInterface(LegacyInterface):
     @legacy_function
     def hello_string():
         function = LegacyFunctionSpecification()  
+        function.addParameter('string_out', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+    
+    @legacy_function
+    def echo_string_fixed_len():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
         function.addParameter('string_out', dtype='string', direction=function.OUT)
         function.result_type = 'int32'
         function.can_handle_array = True
@@ -298,4 +317,12 @@ class TestInterface(TestWithMPI):
         del instance
         
         self.assertEquals(out, "hello")
+        
+    def test6(self):
+        
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_string_fixed_len("abc")
+        del instance
+        self.assertEquals(error, 0)
+        self.assertEquals(out[0], "abc")
 

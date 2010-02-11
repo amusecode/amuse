@@ -49,11 +49,13 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
         self.output_casestmt_start()
         self.out.indent()
         
+        self.output_lines_before_with_clear_out_variables()
+        self.output_lines_before_with_clear_input_variables()
+        
         if self.specification.can_handle_array:
             self.out.lf() + 'do i = 1, len_in, 1'
             self.out.indent()
         
-        #self.output_lines_before_with_clear_out_variables()
         self.output_lines_before_with_inout_variables()
         self.output_function_start()
         self.output_function_parameters()
@@ -86,9 +88,13 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
                 
             if parameter.direction == LegacyFunctionSpecification.IN:
                 if parameter.datatype == 'string':
-                    self.out.n() + 'characters('
-                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
-                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
+                    #self.out.n() + 'characters('
+                    #self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
+                    #self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
+                    #self.out  + ')'
+                    self.out.n() + 'input_characters('
+                    self.out  + '( (' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ')'
+                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
                     self.out  + ')'
                 else:
                     self.out.n() + spec.input_var_name 
@@ -130,15 +136,39 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
             
-            if parameter.direction == LegacyFunctionSpecification.INOUT:
+            if parameter.is_output():
                 if parameter.datatype == 'string': 
                     self.out.lf() + 'output_characters = "x"'  
                     return
+     
+    def output_lines_before_with_clear_input_variables(self):
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
+            
+            if parameter.is_input():
+                if parameter.datatype == 'string': 
+                    self.out.lf() + 'input_characters = "x"'  
+                    return
+     
+                
                     
     def output_lines_before_with_inout_variables(self):
         
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
+            
+            
+            if parameter.direction == LegacyFunctionSpecification.IN:
+                if parameter.datatype == 'string':
+                    self.out.n() + 'input_characters('
+                    self.out  + '( (' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ')'
+                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
+                    self.out  + ') = &'
+                    self.out.lf()
+                    self.out + 'characters('
+                    self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
+                    self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
+                    self.out  + ')' 
             
             if parameter.direction == LegacyFunctionSpecification.INOUT:
                 if parameter.datatype == 'string':
@@ -337,8 +367,11 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.n() + 'integer :: rank, parent, ioerror, maxlen = 255'
         self.out.n() + 'integer :: must_run_loop'
         self.out.n() + 'integer i, str_len, offset'
+        
         self.out.n() + 'character (len=100000) :: characters'
         self.out.n() + 'character (len=100000) :: output_characters'
+        self.out.n() + 'character (len=100000) :: input_characters'
+        
         self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
         self.out.lf().lf() + 'integer header(' 
         self.out + self.length_of_the_header + ')'
@@ -390,7 +423,6 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf() + 'len_out = len_in'
         
           
-        self.out.lf() + 'output_characters = "x"'  
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
