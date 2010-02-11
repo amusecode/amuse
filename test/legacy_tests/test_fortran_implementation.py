@@ -64,6 +64,25 @@ function echo_strings(string_inout1, string_inout2)
     
     echo_strings = 0
 end function
+
+
+function return_string(string_in)
+    implicit none
+    character(len=*) :: string_in, return_string
+    
+    return_string = string_in
+end function
+
+
+function hello_string(string_out)
+    implicit none
+    character(len=30) :: string_out
+    integer :: hello_string
+    
+    string_out = 'hello'
+    
+    hello_string = 0
+end function
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -115,6 +134,23 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function    
+    
+    @legacy_function
+    def return_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.result_type = 'string'
+        function.can_handle_array = True
+        return function  
+        
+    
+    @legacy_function
+    def hello_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_out', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
 
 
 
@@ -128,8 +164,6 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate(string)
-        print stdout
-        print stderr
         if process.returncode != 0:
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
@@ -147,10 +181,8 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        #print stdout
-        #print stderr
         if process.returncode != 0:
-            raise Exception("Could not build {0}, error = {1}".format(objectname, stderr))
+            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     
     def build_worker(self):
         
@@ -164,6 +196,7 @@ class TestInterface(TestWithMPI):
         uc = create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions()
         uc.class_with_legacy_functions = ForTestingInterface
         string =  uc.result
+        print string
         self.fortran_compile(interfacefile, string)
         self.fortran_build(self.exefile, [interfacefile, codefile] )
     
@@ -251,5 +284,18 @@ class TestInterface(TestWithMPI):
         self.assertEquals(str1_out[1], "Aef")
         self.assertEquals(str2_out[0], "Bhi")
         self.assertEquals(str2_out[1], "Bkl")
+      
+    def test10(self):
+        instance = ForTestingInterface(self.exefile)
+        out = instance.return_string("abc")
+        del instance
         
+        self.assertEquals(out[0], "abc")
+        
+    def test11(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.hello_string()
+        del instance
+        
+        self.assertEquals(out, "hello")
 
