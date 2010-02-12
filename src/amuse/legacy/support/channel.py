@@ -341,98 +341,38 @@ class MpiChannel(MessageChannel):
         if not self.intercomm is None:
             self.intercomm.Disconnect()
             self.intercomm = None
+    
+    def determine_length_from_data(self, doubles_in, ints_in, floats_in, chars_in):
+        def get_length(x):
+            if x:
+                try:
+                    if not isinstance(x[0], str):
+                        return len(x[0])
+                except:
+                    return -1
+               
+        lengths = map(get_length, (doubles_in, ints_in, floats_in, chars_in))
+        
+        return max(1, max(lengths))
+        
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
-        if doubles_in:
-            try:
-                length = len(doubles_in[0])
-            except:
-                pass
-        if ints_in:
-            try:
-                length = len(ints_in[0])
-            except:
-                pass
-        if chars_in:
-            try:
-                if not isinstance(chars_in[0], str):
-                    length = len(chars_in[0])
-            except:
-                pass
-                    
-                    
-        #if len(chars_in) == 1:
-        #    number_of_characters = len(chars_in[0])+1
-        #else:
-        #    number_of_characters = 0
-       
-        header = numpy.array([tag, length, len(doubles_in), len(ints_in), len(floats_in), len(chars_in)], dtype='i')
-        self.intercomm.Bcast([header, MPI.INT], root=MPI.ROOT)
-       
-        if doubles_in:
-            #t0 = time.time()
-            if self.cached  is None:
-                doubles = numpy.empty(length * len(doubles_in), dtype='d')
-                self.cached = doubles
-            else:
-                if self.cached.size == length * len(doubles_in):
-                    doubles = self.cached
-                else:
-                    doubles = numpy.empty(length * len(doubles_in), dtype='d')
-                    self.cached = doubles
-            
-            dst_pointer = doubles.__array_interface__['data'][0]
-            for i in range(len(doubles_in)):
-                offset = i * length
-                doubles[offset:offset+length] = doubles_in[i]
-                #print  (8.0 * length) / 1024.0 / 1024.0
-                #memcpy(ctypes.c_void_p(dst_pointer + (offset * 8)), ctypes.c_void_p( doubles_in[i].__array_interface__['data'][0]), 8 * length)
-            
-            self.intercomm.Bcast([doubles, MPI.DOUBLE], root=MPI.ROOT)
-            #t1 = time.time()
-            #print "D", t1 - t0
-        if ints_in:
-            ints = numpy.empty(length * len(ints_in), dtype='i')
-            for i in range(len(ints_in)):
-                offset = i * length
-                ints[offset:offset+length] = ints_in[i]
-            
-            self.intercomm.Bcast([ints, MPI.INT], root=MPI.ROOT)
-            
-        if floats_in:
-            floats = numpy.array(floats_in, dtype='f')
-            self.intercomm.Bcast([floats, MPI.FLOAT], root=MPI.ROOT)
+        length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in)
 
-        if chars_in:
-            offsets = numpy.zeros(length * len(chars_in), dtype='i')
-            offset = 0
-            index = 0
-            for strings in chars_in:
-                if length == 1:
-                    offset += len(strings)
-                    offsets[index] = offset
-                    offset += 1
-                    index += 1
-                else:
-                    for string in strings:
-                        offset += len(string)
-                        offsets[index] = offset
-                        offset += 1
-                        index += 1
+        message = ServerSideMessage(tag,length)
+        if message.length > 1:
+            message.doubles = pack_array( doubles_in, message.length, 'float64')
+            message.floats = pack_array(floats_in, message.length, 'float32')
+            message.ints = pack_array(ints_in, message.length, 'int32')
+            message.strings = pack_array(chars_in, message.length, 'string')
+        else:
+            message.doubles = doubles_in
+            message.floats = floats_in
+            message.ints = ints_in
+            message.strings = chars_in
             
-            self.intercomm.Bcast([offsets, MPI.INT], root=MPI.ROOT)   
-            bytes = []
-            for strings in chars_in:
-                if length == 1:
-                    bytes.extend([ord(ch) for ch in strings])
-                    bytes.append(0)
-                else:
-                    for string in strings:
-                        bytes.extend([ord(ch) for ch in string])
-                        bytes.append(0)
-            chars = numpy.array(bytes, dtype=numpy.uint8)
-            
-            self.intercomm.Bcast([chars, MPI.CHARACTER], root=MPI.ROOT)
+        message.send(self.intercomm)
+        
        
         
         
