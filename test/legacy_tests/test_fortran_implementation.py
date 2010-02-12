@@ -176,14 +176,24 @@ class ForTestingInterface(LegacyInterface):
 class TestInterface(TestWithMPI):
     
     def fortran_compile(self, objectname, string):
+        if os.path.exists(objectname):
+            os.remove(objectname)
+        
+        root, ext = os.path.splitext(objectname)
+        sourcename = root + '.f90'
+        
+        with open(sourcename, "w") as f:
+            f.write(string)
+            
         process = subprocess.Popen(
-            ["mpif90","-x","f95", "-c",  "-o", objectname, "-",],
+            ["mpif90", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate(string)
-        if process.returncode != 0:
+        
+        if not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     
