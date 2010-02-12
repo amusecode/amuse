@@ -65,7 +65,7 @@ class LegacyCommand(Command):
             return
             
         if 'F90' in os.environ:
-            self.environment['FORTRAN'] = os.environ['FORT']
+            self.environment['FORTRAN'] = os.environ['F90']
             return
             
         process = Popen(['mpif90','-show'], stdout = PIPE, stderr = PIPE)
