@@ -88,13 +88,11 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
                 
             if parameter.direction == LegacyFunctionSpecification.IN:
                 if parameter.datatype == 'string':
-                    #self.out.n() + 'characters('
-                    #self.out + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +')'
-                    #self.out  + ':' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
-                    #self.out  + ')'
                     self.out.n() + 'input_characters('
                     self.out  + '( (' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ')'
-                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')+1) * ' + self.MAX_STRING_LEN + ' - 1)'
+                    self.out  + ':' + '(((' + self.index_string(parameter.input_index) + ')* ' + self.MAX_STRING_LEN + ') +'
+                    self.out  +  '(' + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')' + '-' 
+                    self.out  + 'get_offset(' + self.index_string(parameter.input_index) + ' - 1 , '+spec.input_var_name +') ))'
                     self.out  + ')'
                 else:
                     self.out.n() + spec.input_var_name 

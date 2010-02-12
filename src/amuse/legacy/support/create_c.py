@@ -41,6 +41,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
             self.out.lf() + 'for (int i = 0 ; i < request_header.len; i++){'
             self.out.indent()
         
+        self.output_lines_before_with_inout_variables()
         self.output_function_start()
         self.output_function_parameters()
         self.output_function_end()
@@ -88,14 +89,34 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
                     self.out.n() + spec.input_var_name
                     self.out + '[' + self.index_string(parameter.input_index) + ']'
             if parameter.direction == LegacyFunctionSpecification.INOUT:
-                self.out.n() + '&' + spec.input_var_name 
-                self.out + '[' + self.index_string(parameter.input_index) + ']'
+                if parameter.datatype == 'string': 
+                    self.out.n() + '&' + 'output_strings'
+                    self.out + '[' + self.index_string(parameter.output_index) + ']'
+                else:
+                    self.out.n() + '&' + spec.input_var_name 
+                    self.out + '[' + self.index_string(parameter.input_index) + ']'
             elif parameter.direction == LegacyFunctionSpecification.OUT:
-                self.out.n() + '&' + spec.output_var_name
-                self.out + '[' + self.index_string(parameter.output_index) + ']'
+                if parameter.datatype == 'string': 
+                    self.out.n() + '&' + 'output_strings'
+                    self.out + '[' + self.index_string(parameter.output_index) + ']'
+                else:
+                    self.out.n() + '&' + spec.output_var_name
+                    self.out + '[' + self.index_string(parameter.output_index) + ']'
     
         self.out.dedent()
+    
+    def output_lines_before_with_inout_variables(self):
+        for parameter in self.specification.parameters:
+            spec = self.dtype_to_spec[parameter.datatype]
         
+            if parameter.direction == LegacyFunctionSpecification.INOUT:
+                if parameter.datatype == 'string': 
+                    self.out.n() + 'output_strings[' + self.index_string(parameter.output_index)  +'] = (characters + ' 
+                    self.out + '( ' + self.index_string(parameter.input_index) + '- 1 < 0 ? 0 :' 
+                    self.out + spec.input_var_name
+                    self.out + '[' + self.index_string(parameter.input_index ) +  ' - 1] + 1'
+                    self.out + '));'
+    
     def output_lines_with_inout_variables(self):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
@@ -347,6 +368,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
 
         self.out.n() + '#include <iostream>'
         
+        self.out.n() + '#include <string.h>'
+        
     def output_local_includes(self):
         self.out.n()
         if hasattr(self.class_with_legacy_functions, 'include_headers'):
@@ -372,7 +395,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out + 'MPI::COMM_WORLD.Get_parent();'
         self.out.n() + 'int rank = parent.Get_rank();'
         self.out.lf().lf() + 'bool must_run_loop = true;'
-        self.out.lf() + 'char * characters = 0;'
+        self.out.lf() + 'char * characters = 0, * output_characters = 0;'
         
         self.out.lf().lf() + 'int max_len = ' + 10 + ';'
         self.output_new_statements(True)
@@ -448,15 +471,43 @@ class MakeACStringOfAClassWithLegacyFunctions\
             spec = self.dtype_to_spec[dtype]    
             self.out.lf() + 'if(reply_header.' 
             self.out + spec.counter_name + ' > 0) {'
-            self.out.indent().lf() + 'parent.Send(' + spec.output_var_name 
+            self.out.indent().lf()
+            if dtype == 'string':
+                self.out.lf() + 'int offset = 0;'
+                self.out.lf() + 'for( int i = 0; i < ' +  '(reply_header.' + spec.counter_name + '*' + 'request_header.len) ; i++) {'
+                self.out.indent().lf()
+                self.out.lf() + 'int length = strlen(' + 'output_strings' + '[i]);'
+                self.out.lf() + 'offset += length;'
+                self.out.lf() + spec.output_var_name + '[i] = offset;'
+                self.out.lf() + 'offset += 1;'
+                self.out.dedent().lf() +'}'
+                self.out.lf() + 'output_characters = new char[offset + 1];'
+                
+                self.out.lf() + 'offset = 0;'
+                self.out.lf() + 'for( int i = 0; i < ' + '(reply_header.' + spec.counter_name + '*' + 'request_header.len)  ; i++) {'
+                self.out.indent().lf()
+                self.out.lf() + 'strcpy(output_characters+offset, output_strings[i]);'
+                self.out.lf() + 'offset = ' + spec.output_var_name + '[i] + 1;'
+                self.out.dedent().lf() +'}'
+                self.out.lf()
+                
+            self.out + 'parent.Send(' + spec.output_var_name 
             self.out + ', ' + 'reply_header.' + spec.counter_name 
             self.out + ' * ' + 'request_header.len'
             self.out + ', ' + spec.mpi_type+ ', 0, 999);'
+            
+            if dtype == 'string':
+                self.out.lf() + 'parent.Send(' + 'output_characters'
+                self.out + ',  offset' # + spec.output_var_name +'['+'reply_header.' + spec.counter_name +' - 1] + 1'
+                self.out + ', ' + 'MPI_BYTE' + ', 0, 999);'
+                
             self.out.dedent().lf() +'}'
+            
         self.out.dedent().lf()
         self.out.lf() + '}'
         
         self.out.lf() + 'if (characters) { delete characters; characters = 0;}'
+        self.out.lf() + 'if (output_characters) { delete output_characters; output_characters = 0;}'
         self.out.dedent()
         self.out.lf() + '}'
         
@@ -472,22 +523,43 @@ class MakeACStringOfAClassWithLegacyFunctions\
             self.out + dtype_spec.input_var_name  + ';'
             self.out.lf() + 'delete '
             self.out + dtype_spec.output_var_name  + ';'
+        
+        self.out.lf() + 'delete '
+        self.out + 'output_strings' + ';'
             
     def output_new_statements(self, must_add_type):
         maximum_number_of_inputvariables_of_a_type = 255
         for dtype_spec in self.dtype_to_spec.values():
             self.out.lf() 
-            if must_add_type:
-                self.out + dtype_spec.type + ' * ' 
-            self.out + dtype_spec.input_var_name 
-            self.out + ' = new ' + dtype_spec.type 
-            self.out + '[' + ' max_len * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
-            self.out.lf() 
-            if must_add_type:
-                self.out + dtype_spec.type + ' * ' 
-            self.out + dtype_spec.output_var_name 
-            self.out + ' = new ' + dtype_spec.type 
-            self.out + '[' + ' max_len * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+            self.output_new_statement(
+                must_add_type,
+                dtype_spec.type,
+                dtype_spec.input_var_name,
+                maximum_number_of_inputvariables_of_a_type
+            )
+            
+            self.output_new_statement(
+                must_add_type,
+                dtype_spec.type,
+                dtype_spec.output_var_name,
+                maximum_number_of_inputvariables_of_a_type
+            )
+        
+        self.output_new_statement(
+            must_add_type,
+            'char *',
+            'output_strings',
+            maximum_number_of_inputvariables_of_a_type
+        )
+            
+    def output_new_statement(self, must_add_type,  type, var_name, maximum_number_of_inputvariables_of_a_type):
+        if must_add_type:
+            self.out + type + ' * ' 
+            
+        self.out + var_name
+        self.out + ' = new ' + type
+        self.out + '[' + ' max_len * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
+        self.out.lf() 
             
     def output_main(self):
         self.out.lf().lf() + 'int main(int argc, char *argv[])'

@@ -69,12 +69,10 @@ class Message(object):
     def recieve_strings(self, comm, length, total):
         if total > 0:
             offsets = numpy.empty(length * total, dtype='i')
-            
             self.mpi_recieve(comm,[offsets, MPI.INT])
             
             bytes = numpy.empty((offsets[-1] + 1), dtype=numpy.uint8)
             self.mpi_recieve(comm,[bytes,  MPI.CHARACTER])
-            
             
             strings = []
             begin = 0
@@ -223,16 +221,16 @@ class MessageChannel(object):
 
     
     @classmethod
-    def redirect_to_devnull(self):
-        self.redirect_to("/dev/null", "/dev/null", "/dev/null")
+    def redirect_to_devnull(cls):
+        cls.redirect_to("/dev/null", "/dev/null", "/dev/null")
         
     @classmethod
-    def redirect_to(self, input_filename, output_filename, error_filename):
-        self.REDIRECTION = (input_filename, output_filename, error_filename)
+    def redirect_to(cls, input_filename, output_filename, error_filename):
+        cls.REDIRECTION = (input_filename, output_filename, error_filename)
     
     @classmethod
-    def no_redirection(self):
-        self.REDIRECTION = None
+    def no_redirection(cls):
+        cls.REDIRECTION = None
         
     
     def get_full_name_of_the_worker(self, type):
