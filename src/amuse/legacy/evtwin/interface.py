@@ -195,6 +195,42 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         return function
         
     @legacy_function
+    def get_convective_overshoot_parameter():
+        """
+        Retrieve the current value of the convective overshoot parameter.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('convective_overshoot_parameter', dtype='float64', direction=function.OUT
+            , description="The current value of the convective overshoot parameter.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_convective_overshoot_parameter():
+        """
+        Set the value of the convective overshoot parameter.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('convective_overshoot_parameter', dtype='float64', direction=function.IN
+            , description="The new value of the convective overshoot parameter.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+        
+    @legacy_function
     def get_time_step():
         """
         Retrieve the current time step (yr) to be taken for the evolution of this star.
@@ -373,6 +409,15 @@ class EVtwinBinding(CodeInterface):
             "The number of elements used for ionization in EoS solver of this instance.",
             units.none, 
             None #Default value of (2) will be set by initialize_code later.
+        ),
+        
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_convective_overshoot_parameter",
+            "set_convective_overshoot_parameter",
+            "convective_overshoot_parameter", 
+            "The convective overshoot parameter.",
+            units.none, 
+            None #Default value of 0.12 will be set by initialize_code later.
         ),
         
     ]

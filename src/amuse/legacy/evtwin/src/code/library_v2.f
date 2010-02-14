@@ -962,6 +962,28 @@ c Determine whether I and phi are computed or not, for OUTPUT
       set_number_of_ionization_elements = 0
       end function
       
+! get_convective_overshoot_parameter:
+! Retrieve the current value of the convective overshoot parameter
+      function get_convective_overshoot_parameter(value)
+      use settings
+      implicit none
+      integer :: get_convective_overshoot_parameter
+      double precision :: value
+      value = COS
+      get_convective_overshoot_parameter = 0
+      end function
+
+! set_convective_overshoot_parameter:
+! Set the current value of the convective overshoot parameter
+      function set_convective_overshoot_parameter(value)
+      use settings
+      implicit none
+      integer :: set_convective_overshoot_parameter
+      double precision :: value
+      COS = value
+      set_convective_overshoot_parameter = 0
+      end function
+      
       function initialize_stars()
       implicit none
       integer :: initialize_stars

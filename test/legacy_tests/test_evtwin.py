@@ -155,6 +155,18 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, error)
             self.assertEquals(x, value)
 
+        (value, error) = instance.get_convective_overshoot_parameter()
+        self.assertEquals(0, error)      
+        self.assertEquals(0.12, value)      
+        
+        for x in [0.0, 0.1, 0.12, 0.15]:
+            error = instance.set_convective_overshoot_parameter(x)
+            self.assertEquals(0, error)      
+            
+            (value, error) = instance.get_convective_overshoot_parameter()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+
         del instance
 
     
