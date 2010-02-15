@@ -21,10 +21,18 @@ OMPFLAGS= # -openmp -openmp_report0
 PIC=#-fPIC
 
 # gfortran flags
-#FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
 
+ifeq ($(FORTRAN), gfortran)
+FFLAGS = -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+endif
+
+ifeq  ($(FORTRAN), ifort)
 # ifort flags
 FFLAGS= -r8 -O -ip -u $(PIC)
+endif
+
+#FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
+
 
 FFLAGS+= $(OMPFLAGS) 
 
@@ -38,12 +46,12 @@ all: worker
 	$(FC) $(FFLAGS)  -c -o $@ $< 
         
 worker: worker.f90 interface.o
-	make -C src amuse_interface
+	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $^ -o $@ $(LIBS)
 
 glworker: glworker.f90 interface.o
-	make -C src amuse_interface
-	make -C src gl
+	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
+	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
 

@@ -16,8 +16,8 @@ def energy_plot(time,ek,ep,eth):
   pyplot.plot(time,ek+ep+eth)
   pyplot.savefig("test.png")
 
-def test_evrard():
-  evrard=MakeEvrardTest(4096,grid=False)
+def run_evrard(x):
+  evrard=MakeEvrardTest(x,grid=False)
   mass,x,y,z,vx,vy,vz,u=evrard.new_model()
   smooth=numpy.zeros_like(mass)
 
@@ -75,5 +75,8 @@ def test_evrard():
   Eth=numpy.array(Eth)
   energy_plot(time,Ek,Ep,Eth)
 
+def test_evrard():
+  run_evrard(64)
+    
 if __name__=="__main__":
-  test_evrard()
+  run_evrard(4096)

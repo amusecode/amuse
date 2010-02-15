@@ -12,6 +12,8 @@ OMPFLAGS= # -openmp -openmp_report0
 # FFLAGS2=-fdefault-real-8 -ffree-line-length-256  -frecord-marker=4
 
 # ifort flags
+
+
 FFLAGS2= -r8 -O -ip -u -p $(PIC)
 
 FFLAGS= $(FFLAGS2) $(OMPFLAGS)
