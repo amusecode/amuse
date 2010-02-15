@@ -67,6 +67,18 @@ ifdef OPENMP
    FFLAGS += -fopenmp
 endif
 endif
+# Compiler flags for the gfortran compiler
+
+ifeq ($(notdir $(FORT)),f95)
+   FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -J$(MODDIR)
+   #FFLAGS += -ffpe-trap=zero,invalid -fsignaling-nans
+   FFLAGS += -O2
+   FLIB = -lgfortran
+
+ifdef OPENMP
+   FFLAGS += -fopenmp
+endif
+endif
 
 # Compiler flags for the Lahey compiler
 ifeq ($(notdir $(FORT)),lf95)
