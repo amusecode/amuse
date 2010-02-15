@@ -2,6 +2,8 @@ import unittest
 
 from amuse.ext.plummer import *
 import pickle
+from amuse.support.units import nbody_system
+from amuse.support.units import units
 
 random_state =  r"""(S'MT19937'
 p0
@@ -60,4 +62,19 @@ class TestPlummer(TestData):
         self.assertAlmostEqual(p[1,0],  0.888673439220, 5)
         self.assertAlmostEqual(p[0,1],  0.076719738, 5)
         self.assertAlmostEqual(p[1,1],  0.45618546741, 5)
+        
+    def test2(self):
+        convert_nbody = nbody_system.nbody_to_si(6|units.kg, 7 | units.m) 
+        state = pickle.loads(random_state)
+        m =  MakePlummerModel(2, convert_nbody, random_state = state)
+        stars = m.result
+        self.assertEquals(stars[0].mass.value_in(units.kg), 3.0)
+        self.assertEquals(stars[1].mass.value_in(units.kg), 3.0)
+        
+    def test3(self):
+        state = pickle.loads(random_state)
+        m =  MakePlummerModel(2, None, random_state = state)
+        stars = m.result
+        self.assertEquals(stars[0].mass.value_in(nbody_system.mass), 0.5)
+        self.assertEquals(stars[1].mass.value_in(nbody_system.mass), 0.5)
         
