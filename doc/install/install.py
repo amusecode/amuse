@@ -41,7 +41,7 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.4.0' ,                  #version string
+            '1.3.0' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             'http://ignum.dl.sourceforge.net/sourceforge/numpy/', #download url, filename is appended
             self.python_build          #method to use for building

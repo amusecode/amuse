@@ -582,15 +582,26 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
+        
+    @late
+    def make_extern_c(self):
+        return True
 
     def make_legacy_function(self):
         return MakeACHeaderDefinitionStringOfALegacyFunctionSpecification()
         
     def start(self):  
-        self.out + 'extern "C" {'
-        self.out.indent().lf()
+        if self.make_extern_c:
+            self.out + 'extern "C" {'
+            self.out.indent().lf()
+            
         self.output_legacy_functions()
-        self.out.dedent().lf() + '}'
+        
+        if self.make_extern_c:
+            self.out.dedent().lf() + '}'
+        
+        self.out.lf()
+        
         self._result = self.out.string
     
         

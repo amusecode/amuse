@@ -162,6 +162,9 @@ class ServerSideMessage(Message):
         comm.Bcast(array, root=MPI.ROOT)
 
 
+
+MAPPING = {}
+
 def pack_array(array, length,  dtype):
     if dtype == 'string':
         result = []
@@ -169,7 +172,14 @@ def pack_array(array, length,  dtype):
             result.extend(x)
         return result
     else:
-        result = numpy.empty(length * len(array), dtype = dtype)
+        total_length = length * len(array)
+        
+        if dtype in MAPPING:
+            result = MAPPING.dtype
+            if len(result) != total_length:
+                result = numpy.empty(length * len(array), dtype = dtype)
+        else:        
+            result = numpy.empty(length * len(array), dtype = dtype)
         for i in range(len(array)):
             offset = i * length
             result[offset:offset+length] = array[i]
