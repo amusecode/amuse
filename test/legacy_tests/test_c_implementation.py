@@ -215,7 +215,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(out, 4.0)
         self.assertEquals(error, 0)
         
-    def xtest6(self):
+    def test6(self):
         
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string("abc")
