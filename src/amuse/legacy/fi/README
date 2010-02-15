@@ -1,0 +1,15 @@
+FI N-body/SPH code & AMUSE interface
+
+FI is a parallel TreeSPH code for galaxy simulations. Extensively 
+rewritten, extended and parallelized it is a development from code from 
+Jeroen Gerritsen and Roelof Bottema, which itself goes back to Treesph. 
+
+Note that some features are not working atm. These may be fixed in the 
+future. (and I will think of a better name)
+
+The relevant references are:
+
+Hernquist \& Katz 1989, ApJS 70, 419
+Gerritsen \& Icke 1997, A&A 325, 972
+Pelupessy, van der Werf & Icke A&A 422, 55
+Pelupessy, PhD thesis 2005, Leiden Observatory

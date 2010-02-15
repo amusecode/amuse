@@ -1,0 +1,12 @@
+1 1			number of maps, skipfactor (2=make map every other timestep)
+HI			mapmode (HI, H2, Ha, FUV of bandnr)
+HImap			id string (fileroot)
+500 500			imsize
+0 0 0			focus
+0 0 -1			view direction (or cam pos)
+0 1 0			up vector
+10			width (or view angle)
+0			projection (0=isometric,1=perspective)
+0			extinction (0=no,1=yes)
+0 			zmin (min distance for perspective) 
+(nextmap)
