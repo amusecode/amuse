@@ -23,8 +23,9 @@ OBJECTS = \
 
 GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 
-CUDA_LIBDIRS ?= -L/data1/pelupes/programs/cuda/lib 
-CUDA_LIBS ?= -lcudart
+ifndef CUDA_LIBDIRS
+	CUDA_LIBDIRS = -L/data1/pelupes/libraries/CUDA/cuda/lib 
+endif
 
 SAPPORO_LIBDIRS ?= -L/data1/pelupes/libraries/sapporo_v1.5
 GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
@@ -48,7 +49,7 @@ THREADLIB ?= -L. -lpthread src/libpt.a
 
 PGLIBS ?= -L. -lpg5
 
-G6LIBS ?= -L../../../../lib/g6 -l g6
+G6LIBS ?= -L../../../../lib/g6 -lg6
 
 CFLAGS += -O2 $(OPTS)
 FFLAGS += -O2 $(OPTS)
