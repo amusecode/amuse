@@ -490,13 +490,13 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
 !  Return value:
 !   >0: The stars ID for identifying it in the array of models
 !   =0: No star allocated, out of memory
-      function load_zams_star(mass, age)
+      function load_zams_star(mass, spin, age)
       use constants
       use settings
       IMPLICIT REAL*8 (A-H, L-Z)    ! Ugly hack, needs to be changed to none!
       type(twin_star_t), pointer :: star
       integer :: load_zams_star, new_id
-      double precision, intent(in) :: mass, age
+      double precision, intent(in) :: mass, spin, age
       COMMON H(NVAR,NM), DH(NVAR,NM), EPS, DEL, DH0, KH, KTW, ID(130), IE(130) 
       COMMON /T1 / SM1, DTY1, AGE1, PER1, BMS1, ECC1, P1, ENC1
       COMMON /QUERY / ML, QL, XL, UC(21), JMOD, JB, JNN, JTER, JOC, JKH
@@ -568,6 +568,8 @@ C Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
       star%zams_mass = mass
       star%age = age
       if (P1>0) star%p = P1
+! If the spin is supplied by the user, it will override the current value.
+      if (spin>0.0) star%p = spin
       star%jhold = 0
       star%jmod = 1
       star%jf = JF1
@@ -984,18 +986,161 @@ c Determine whether I and phi are computed or not, for OUTPUT
       set_convective_overshoot_parameter = 0
       end function
       
+! get_mixing_length_ratio:
+! Retrieve the current value of the mixing length ratio
+      function get_mixing_length_ratio(value)
+      use settings
+      implicit none
+      integer :: get_mixing_length_ratio
+      double precision :: value
+      value = CALP
+      get_mixing_length_ratio = 0
+      end function
+
+! set_mixing_length_ratio:
+! Set the current value of the mixing length ratio
+      function set_mixing_length_ratio(value)
+      use settings
+      implicit none
+      integer :: set_mixing_length_ratio
+      double precision :: value
+      CALP = value
+      set_mixing_length_ratio = 0
+      end function
+      
+! get_semi_convection_efficiency:
+! Retrieve the current value of the efficiency of semi-convection
+      function get_semi_convection_efficiency(value)
+      use settings
+      implicit none
+      integer :: get_semi_convection_efficiency
+      double precision :: value
+      value = CSMC
+      get_semi_convection_efficiency = 0
+      end function
+
+! set_semi_convection_efficiency:
+! Set the current value of the efficiency of semi-convection
+      function set_semi_convection_efficiency(value)
+      use settings
+      implicit none
+      integer :: set_semi_convection_efficiency
+      double precision :: value
+      CSMC = value
+      set_semi_convection_efficiency = 0
+      end function
+      
+! get_thermohaline_mixing_parameter:
+! Retrieve the current value of the thermohaline mixing parameter
+      function get_thermohaline_mixing_parameter(value)
+      use settings
+      implicit none
+      integer :: get_thermohaline_mixing_parameter
+      double precision :: value
+      value = CTH
+      get_thermohaline_mixing_parameter = 0
+      end function
+
+! set_thermohaline_mixing_parameter:
+! Set the current value of the thermohaline mixing parameter
+      function set_thermohaline_mixing_parameter(value)
+      use settings
+      implicit none
+      integer :: set_thermohaline_mixing_parameter
+      double precision :: value
+      CTH = value
+      set_thermohaline_mixing_parameter = 0
+      end function
+      
+! get_AGB_wind_setting:
+! Get the current setting for mass-loss (AGB)
+      function get_AGB_wind_setting(value)
+      use massloss
+      implicit none
+      integer :: get_AGB_wind_setting
+      integer, intent(out) :: value
+      double precision :: tmpVW, tmpW
+      tmpVW = multiplier_vasiliadis_wood
+      tmpW = multiplier_wachter
+      if ((tmpVW.eq.0.0).and.(tmpW.eq.1.0)) then
+        value = 1
+        get_AGB_wind_setting = 0
+      else if ((tmpVW.eq.1.0).and.(tmpW.eq.0.0)) then
+        value = 2
+        get_AGB_wind_setting = 0
+      else
+        value = 0
+        get_AGB_wind_setting = -1
+      endif
+      end function
+
+! set_AGB_wind_setting:
+! Set the current setting for mass-loss (AGB)
+      function set_AGB_wind_setting(value)
+      use massloss
+      implicit none
+      integer :: set_AGB_wind_setting
+      integer, intent(in) :: value
+      if (value.eq.1) then
+        multiplier_vasiliadis_wood = 0.0
+        multiplier_wachter = 1.0
+        set_AGB_wind_setting = 0
+      else if (value.eq.2) then
+        multiplier_vasiliadis_wood = 1.0
+        multiplier_wachter = 0.0
+        set_AGB_wind_setting = 0
+      else
+        set_AGB_wind_setting = -1
+      endif
+      end function
+      
+! get_RGB_wind_setting:
+! Get the current setting for mass-loss (RGB)
+      function get_RGB_wind_setting(value)
+      use massloss
+      implicit none
+      integer :: get_RGB_wind_setting
+      double precision, intent(out) :: value
+      if (multiplier_schroeder.gt.0.0) then
+        value = multiplier_schroeder
+      else
+        value = -multiplier_reimers
+      endif
+      get_RGB_wind_setting = 0
+      end function
+
+! set_RGB_wind_setting:
+! Set the current setting for mass-loss (RGB)
+      function set_RGB_wind_setting(value)
+      use massloss
+      implicit none
+      integer :: set_RGB_wind_setting
+      double precision, intent(in) :: value
+      if (value.ge.0.0) then
+        multiplier_schroeder = value
+        multiplier_reimers = 0.0
+      else
+        multiplier_schroeder = 0.0
+        multiplier_reimers = -value
+      endif
+      set_RGB_wind_setting = 0
+      end function
+      
+! Initialize the stars (does nothing)
       function initialize_stars()
       implicit none
       integer :: initialize_stars
       initialize_stars = 0
       end function
       
+! Create a new particle (spin period not specified - will be set by code)
       function new_particle(star_id, mass)
       implicit none
       integer :: new_particle, star_id
-      double precision :: mass, age
+      double precision :: mass, spin, age
       age = 0.0
-      star_id = load_zams_star(mass, age)
+      spin = -1.0
+      star_id = load_zams_star(mass, spin, age)
       if (star_id .EQ. 0) then
         new_particle = -1
       else
@@ -1003,7 +1148,38 @@ c Determine whether I and phi are computed or not, for OUTPUT
       end if
       end function
       
+! Create a new particle with specified spin period
+      function new_spinning_particle(star_id, mass, spin)
+      implicit none
+      integer :: new_spinning_particle, star_id
+      double precision :: mass, spin, age
+      age = 0.0
+      star_id = load_zams_star(mass, spin, age)
+      if (star_id .EQ. 0) then
+        new_spinning_particle = -1
+      else
+        new_spinning_particle = 0
+      end if
+      end function
       
+! get_spin:
+! Returns the star's spin period, in days
+      function get_spin(id, value)
+      implicit none
+      integer :: get_spin
+      double precision, intent(out) :: value
+      integer, intent(in) :: id      
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
+         get_spin = -1
+         value = 0.0
+         return
+      end if
+      value = star_list(id)%p
+      get_spin = 0
+      end function
+
+      
+! Initialize the code
       function initialize_code()
       implicit none
       integer :: initialize_code

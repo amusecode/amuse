@@ -186,7 +186,7 @@ class StellarEvolution(object):
         0 - OK
             New star was loaded and the index_of_the_star parameter set.
         -1 - ERROR
-            evolution could not complete, solution did not converge
+            New star could not be created.
         """
         return function
         

@@ -12,6 +12,7 @@ from amuse.legacy.support import channel
 class TestInterface(TestWithMPI):
     
     def test1(self):
+        print "Testing get/set for metallicity..."
         instance = EVtwinInterface()
         
         (metallicity, error) = instance.get_metallicity()
@@ -29,6 +30,7 @@ class TestInterface(TestWithMPI):
         
     
     def test2(self):
+        print "Testing get/set for maximum number of stars..."
         instance = EVtwinInterface()
         
         (value, error) = instance.get_maximum_number_of_stars()
@@ -47,6 +49,7 @@ class TestInterface(TestWithMPI):
     
     
     def test3(self):
+        print "Testing initialization..."
         instance = EVtwinInterface()
         dir = os.path.dirname(sys.modules[instance.__module__].__file__)
         path_to_ev_database = os.path.join(dir, 'src')
@@ -60,6 +63,7 @@ class TestInterface(TestWithMPI):
         
     
     def test4(self):
+        print "Testing initialization..."
         instance = EVtwinInterface()
         
         error = instance.set_ev_path(instance.default_path_to_ev_database)
@@ -71,6 +75,7 @@ class TestInterface(TestWithMPI):
         del instance     
     
     def test5(self):
+        print "Testing basic operations (new_particle, evolve etc.)..."
         #code/library_v2.f:602
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = EVtwinInterface()
@@ -98,12 +103,9 @@ class TestInterface(TestWithMPI):
             error = instance.evolve(index_of_the_star)
             self.assertEquals(0, error)      
     
-        
         (mass, error) = instance.get_mass(index_of_the_star)
         self.assertEquals(0, error)      
         self.assertTrue(mass < 1.05)  
-        
-        
     
         (age, error) = instance.get_age(index_of_the_star)
         self.assertEquals(0, error) 
@@ -120,55 +122,129 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)      
         
         (value, error) = instance.get_max_age_stop_condition()
-        self.assertEquals(0, error)      
-        self.assertEquals(2.0e12, value)      
-        
+        self.assertEquals(0, error)
+        self.assertEquals(2.0e12, value)
         for x in range(10,14):
             error = instance.set_max_age_stop_condition(10 ** x)
-            self.assertEquals(0, error)      
-            
+            self.assertEquals(0, error)
             (value, error) = instance.get_max_age_stop_condition()
             self.assertEquals(0, error)      
             self.assertEquals(10 ** x, value)
-                
+            
         (value, error) = instance.get_min_timestep_stop_condition()
-        self.assertEquals(0, error)      
-        self.assertAlmostEqual(0.031689, value, 5)      
-        
+        self.assertEquals(0, error)
+        self.assertAlmostEqual(0.031689, value, 5)
         for x in range(-3,2):
             error = instance.set_min_timestep_stop_condition(10 ** x)
-            self.assertEquals(0, error)      
-            
+            self.assertEquals(0, error)
             (value, error) = instance.get_min_timestep_stop_condition()
             self.assertEquals(0, error)
             self.assertEquals(10 ** x, value)
-
-        (value, error) = instance.get_number_of_ionization_elements()
-        self.assertEquals(0, error)      
-        self.assertEquals(2, value)      
         
+        del instance
+
+    def test7(self):
+        print "Testing EVtwin parameters..."
+        instance = EVtwinInterface()
+        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        self.assertEquals(0, error)      
+        error = instance.initialize_code()
+        self.assertEquals(0, error)      
+        
+        (value, error) = instance.get_number_of_ionization_elements()
+        self.assertEquals(0, error)
+        self.assertEquals(2, value)
         for x in range(1,10):
             error = instance.set_number_of_ionization_elements(x)
-            self.assertEquals(0, error)      
-            
+            self.assertEquals(0, error)
             (value, error) = instance.get_number_of_ionization_elements()
             self.assertEquals(0, error)
             self.assertEquals(x, value)
 
         (value, error) = instance.get_convective_overshoot_parameter()
-        self.assertEquals(0, error)      
-        self.assertEquals(0.12, value)      
-        
+        self.assertEquals(0, error)
+        self.assertEquals(0.12, value)
         for x in [0.0, 0.1, 0.12, 0.15]:
             error = instance.set_convective_overshoot_parameter(x)
-            self.assertEquals(0, error)      
-            
+            self.assertEquals(0, error)
             (value, error) = instance.get_convective_overshoot_parameter()
             self.assertEquals(0, error)
             self.assertEquals(x, value)
 
+        (value, error) = instance.get_mixing_length_ratio()
+        self.assertEquals(0, error)
+        self.assertEquals(2.0, value)
+        for x in [0.1, 1.0, 3.0]:
+            error = instance.set_mixing_length_ratio(x)
+            self.assertEquals(0, error)
+            (value, error) = instance.get_mixing_length_ratio()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+
+        (value, error) = instance.get_semi_convection_efficiency()
+        self.assertEquals(0, error)
+        self.assertEquals(0.04, value)
+        for x in [0.0, 0.1]:
+            error = instance.set_semi_convection_efficiency(x)
+            self.assertEquals(0, error)
+            (value, error) = instance.get_semi_convection_efficiency()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+        
+        (value, error) = instance.get_thermohaline_mixing_parameter()
+        self.assertEquals(0, error)
+        self.assertEquals(1.0, value)
+        for x in [0.0, 0.5, 1.5]:
+            error = instance.set_thermohaline_mixing_parameter(x)
+            self.assertEquals(0, error)
+            (value, error) = instance.get_thermohaline_mixing_parameter()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+        
+        (value, error) = instance.get_AGB_wind_setting()
+        self.assertEquals(0, error)
+        self.assertEquals(1, value)
+        error = instance.set_AGB_wind_setting(2)
+        self.assertEquals(0, error)
+        (value, error) = instance.get_AGB_wind_setting()
+        self.assertEquals(0, error)
+        self.assertEquals(2, value)
+        
+        (value, error) = instance.get_RGB_wind_setting()
+        self.assertEquals(0, error)
+        self.assertEquals(1.0, value)
+        for x in [-1.0, -0.5, 0.0, 1.0]:
+            error = instance.set_RGB_wind_setting(x)
+            self.assertEquals(0, error)
+            (value, error) = instance.get_RGB_wind_setting()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+        
         del instance
 
+    def test8(self):
+        print "Testing basic operations for spinning particle (new_spinning_particle, get_spin etc.)..."
+        instance = EVtwinInterface()
+        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        self.assertEquals(0, error)
+        error = instance.initialize_code()
+        self.assertEquals(0, error)
+        
+        (index_of_default_star, error) = instance.new_particle(1.05)
+        self.assertEquals(0, error)
+        self.assertTrue(index_of_default_star >= 0)
+        (index_of_spinning_star, error) = instance.new_spinning_particle(1.05, 300.0)
+        self.assertEquals(0, error)
+        self.assertTrue(index_of_spinning_star >= 0)
+        
+        (spin, error) = instance.get_spin(index_of_default_star)
+        self.assertEquals(0, error)
+        self.assertAlmostEqual(54450.2652, spin,3)
+        (spin, error) = instance.get_spin(index_of_spinning_star)
+        self.assertEquals(0, error)
+        self.assertEquals(300.0, spin)
+        
+        del instance   
     
     
 class TestInterfaceBinding(TestWithMPI):
@@ -176,6 +252,7 @@ class TestInterfaceBinding(TestWithMPI):
             
     
     def test1(self):
+        print "Testing assigned default parameter values..."
         instance = EVtwin()
         
         instance.parameters.set_defaults()
@@ -186,6 +263,7 @@ class TestInterfaceBinding(TestWithMPI):
         del instance
     
     def test2(self):
+        print "Testing basic operations (setup_particles, initialize_stars etc.)..."
         instance = EVtwin()
         instance.initialize_module_with_default_parameters()
         
@@ -200,9 +278,6 @@ class TestInterfaceBinding(TestWithMPI):
         
         instance.setup_particles(stars)
         instance.initialize_stars()
-        print instance.particles[0]
-        
-        #instance.evolve_particles(stars, 2 | units.Myr)
         instance.update_particles(stars)
         
         self.assertEquals(stars[0].mass, 10 | units.MSun)
@@ -280,12 +355,10 @@ class TestInterfaceBinding(TestWithMPI):
         del instance
         
     def test4(self):
-#       Test whether a set of stars evolve synchronously
-#       Create an array of stars with a range in stellar mass
-#        masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
-        # no high mass stars for now.. (problems with 2nd Asymp. Giant Branch)
-        masses = [.5, 1., 1.5] | units.MSun
-        max_age = 12 | units.Myr
+        print "Testing max age stop condition..."
+        #masses = [.5, 1.0, 1.5] | units.MSun # Test with fewer particles for speed-up.
+        masses = [.5] | units.MSun
+        max_age = 6.0 | units.Myr
 
         number_of_stars=len(masses)
         stars =  core.Stars(number_of_stars)
@@ -308,14 +381,14 @@ class TestInterfaceBinding(TestWithMPI):
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         
-        instance.evolve_model(end_time = 10 | units.Myr)
+        instance.evolve_model(end_time = 4.0 | units.Myr)
         from_code_to_model.copy()
         
         for i in range(number_of_stars):
-            self.assertTrue(stars[i].age.value_in(units.Myr) > 10)
-            self.assertTrue(stars[i].age < max_age)
-            self.assertTrue(stars[i].mass < masses[i])
-            self.assertTrue(stars[i].time_step < max_age)
+            self.assertTrue(stars[i].age.value_in(units.Myr) >= 4.0)
+            self.assertTrue(stars[i].age <= max_age)
+            self.assertTrue(stars[i].mass <= masses[i])
+            self.assertTrue(stars[i].time_step <= max_age)
                 
         try:
             instance.evolve_model(end_time = 2*max_age)
@@ -326,6 +399,7 @@ class TestInterfaceBinding(TestWithMPI):
         del instance
         
     def test5_add_and_remove(self):
+        print "Testing adding and removing particles from stellar evolution code..."
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
         stars = core.Stars(0)
@@ -352,11 +426,11 @@ class TestInterfaceBinding(TestWithMPI):
             self.assertEquals(indices_in_the_code[i], i+1)
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
-        instance.evolve_model(end_time=2.0|units.Myr)
+        instance.evolve_model(end_time=1.0|units.Myr)
         from_code_to_model.copy()
         self.assertEquals(len(instance.particles), 2) # before remove
         for i in range(len(instance.particles)):
-            self.assertTrue(stars[i].age.value_in(units.Myr) > 2.0)
+            self.assertTrue(stars[i].age.value_in(units.Myr) > 1.0)
         instance.particles.remove_particle(stars[0])
         self.assertEquals(instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())[0], 2)
         self.assertEquals(len(instance.particles), 1) # in between remove
@@ -365,10 +439,10 @@ class TestInterfaceBinding(TestWithMPI):
         self.assertEquals(stars._get_keys()[0], key2)
         self.assertEquals(len(stars), 1) # after remove
         from_code_to_model = instance.particles.new_channel_to(stars)
-        instance.evolve_model(end_time=4.0|units.Myr)
+        instance.evolve_model(end_time=2.0|units.Myr)
         from_code_to_model.copy()
         age_of_star=stars[0].age
-        self.assertTrue(age_of_star.value_in(units.Myr) > 4.0)
+        self.assertTrue(age_of_star.value_in(units.Myr) > 2.0)
 #       Create another "array" of one star
         stars3 = core.Stars(1)
         star3=stars3[0]
@@ -390,11 +464,11 @@ class TestInterfaceBinding(TestWithMPI):
         self.assertEquals(stars[1].age.value_in(units.Myr), 0.0)
         self.assertEquals(stars[2].age.value_in(units.Myr), 0.0) # ... and rejuvenated
         from_code_to_model = instance.particles.new_channel_to(stars)
-        instance.evolve_model(end_time=2.0|units.Myr)
+        instance.evolve_model(end_time=1.0|units.Myr)
         from_code_to_model.copy()
-        self.assertTrue(stars[1].age.value_in(units.Myr) > 2.0 and stars[1].age.value_in(units.Myr) < 4.0)
+        self.assertTrue(stars[1].age.value_in(units.Myr) > 1.0 and stars[1].age.value_in(units.Myr) < 2.0)
         self.assertEquals(stars[1].age, stars[2].age)
-        instance.evolve_model(end_time=4.0|units.Myr)
+        instance.evolve_model(end_time=2.0|units.Myr)
         from_code_to_model.copy()
         self.assertAlmostEqual(stars[1].age.value_in(units.Myr), age_of_star.value_in(units.Myr), 3)
         self.assertTrue(stars[0].age > age_of_star)

@@ -231,24 +231,114 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         return function
         
     @legacy_function
-    def get_time_step():
+    def get_mixing_length_ratio():
         """
-        Retrieve the current time step (yr) to be taken for the evolution of this star.
-        Note that the stellar evolution code might change the value during an 
-        evolve_model call, if it fails to converge using the current value.
+        Retrieve the current value of the mixing length ratio.
         """
         function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the stellar type of")
-        function.addParameter('time_step', dtype='float64', direction=function.OUT
-            , description="The current time step (yr) to be taken for the evolution of this star.")
+        function.addParameter('mixing_length_ratio', dtype='float64', direction=function.OUT
+            , description="The current value of the mixing length ratio.")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             Current value was retrieved
         -1 - ERROR
             The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_mixing_length_ratio():
+        """
+        Set the value of the mixing length ratio.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('mixing_length_ratio', dtype='float64', direction=function.IN
+            , description="The new value of the mixing length ratio.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+        
+    @legacy_function
+    def get_semi_convection_efficiency():
+        """
+        Retrieve the current value of the efficiency of semi-convection,
+        after Langer, Sugimoto & Fricke 1983 (A&A).
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('semi_convection_efficiency', dtype='float64', direction=function.OUT
+            , description="The current value of the efficiency of semi-convection.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_semi_convection_efficiency():
+        """
+        Set the value of the efficiency of semi-convection,
+        after Langer, Sugimoto & Fricke 1983 (A&A).
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('semi_convection_efficiency', dtype='float64', direction=function.IN
+            , description="The new value of the efficiency of semi-convection.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+        
+    @legacy_function
+    def get_thermohaline_mixing_parameter():
+        """
+        Retrieve the current value of the thermohaline mixing parameter,
+        probably only important for binaries and collision remnants.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('thermohaline_mixing_parameter', dtype='float64', direction=function.OUT
+            , description="The current value of the thermohaline mixing parameter.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_thermohaline_mixing_parameter():
+        """
+        Set the value of the thermohaline mixing parameter,
+        probably only important for binaries and collision remnants.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('thermohaline_mixing_parameter', dtype='float64', direction=function.IN
+            , description="The new value of the thermohaline mixing parameter.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
         """
         return function
         
@@ -294,6 +384,151 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
+    @legacy_function
+    def get_AGB_wind_setting():
+        """
+        Retrieve the current AGB wind setting of this instance (1 or 2).
+        (1) means use Wachter et al. (AGB) mass loss prescription.
+        (2) means use Vasiliadis & Wood (AGB) mass loss rate.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_setting', dtype='int32', direction=function.OUT
+            , description="The current AGB wind setting of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_AGB_wind_setting():
+        """
+        Set the new AGB wind setting of this instance (1 or 2).
+        (1) means use Wachter et al. (AGB) mass loss prescription.
+        (2) means use Vasiliadis & Wood (AGB) mass loss rate.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_setting', dtype='int32', direction=function.IN
+            , description="The new AGB wind setting of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+        
+    @legacy_function
+    def get_RGB_wind_setting():
+        """
+        Retrieve the current RGB wind setting of this instance.
+        (positive) means use Schroeder & Cuntz mass loss prescription.
+        (negative) means use Reimers mass loss rate. (0) means none.
+        The absolute value is used as efficiency factor.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_setting', dtype='float64', direction=function.OUT
+            , description="The current RGB wind setting of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_RGB_wind_setting():
+        """
+        Set the new RGB wind setting of this instance.
+        (positive) means use Schroeder & Cuntz mass loss prescription.
+        (negative) means use Reimers mass loss rate. (0) means none.
+        The absolute value is used as efficiency factor.
+        This needs to be set after calling :method:`initialize_code`. It will 
+        be overridden by initialize_code otherwise.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_setting', dtype='float64', direction=function.IN
+            , description="The new RGB wind setting of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+
+    @legacy_function
+    def get_time_step():
+        """
+        Retrieve the current time step (yr) to be taken for the evolution of this star.
+        Note that the stellar evolution code might change the value during an 
+        evolve_model call, if it fails to converge using the current value.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the stellar type of")
+        function.addParameter('time_step', dtype='float64', direction=function.OUT
+            , description="The current time step (yr) to be taken for the evolution of this star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+
+    @legacy_function   
+    def new_spinning_particle():
+        """
+        Define a new star in the code. The star will start with the given mass and given spin.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
+            , description="The new index for the star. This index can be used to refer to this star in other functions")
+        function.addParameter('mass', dtype='float64', direction=function.IN
+            , description="The initial mass of the star")
+        function.addParameter('spin', dtype='float64', direction=function.IN
+            , description="The initial spin of the star")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            New star was loaded and the index_of_the_star parameter set.
+        -1 - ERROR
+            New star could not be created.
+        """
+        return function
+        
+    @legacy_function
+    def get_spin():
+        """
+        Retrieve the current spin period (in days) of this star.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the stellar type of")
+        function.addParameter('spin', dtype='float64', direction=function.OUT
+            , description="The current spin period (in days) of this star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
         
 class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
     name_of_delete_particle = "delete_star"
@@ -302,6 +537,7 @@ class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
         "new_particle", 
         (
             ("mass", "mass", units.MSun),
+            ("spin", "spin", units.day),
             ("radius", "radius", units.RSun),
         )
     )
@@ -341,6 +577,12 @@ class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
             "get_time_step",
             (
                 ("time_step", "time_step", units.yr),
+            )
+        ),
+        binding.ParticleGetAttributesMethod(
+            "get_spin",
+            (
+                ("spin", "spin", units.day),
             )
         ),
         
@@ -390,7 +632,7 @@ class EVtwinBinding(CodeInterface):
             "max_age_stop_condition", 
             "The maximum age stop condition of this instance.",
             units.yr, 
-            None #Default value of 10e12 yr will be set by initialize_code later.
+            1.0e12 | units.yr
         ),
         
         parameters.ModuleMethodParameterDefinition_Next(
@@ -399,7 +641,7 @@ class EVtwinBinding(CodeInterface):
             "min_timestep_stop_condition", 
             "The minimum timestep stop condition of this instance.",
             units.yr, 
-            None #Default value of 1e6 seconds (~ 0.03 yr) will be set by initialize_code later.
+            1.0e6 | units.s
         ),
         
         parameters.ModuleMethodParameterDefinition_Next(
@@ -408,7 +650,7 @@ class EVtwinBinding(CodeInterface):
             "number_of_ionization_elements", 
             "The number of elements used for ionization in EoS solver of this instance.",
             units.none, 
-            None #Default value of (2) will be set by initialize_code later.
+            2 | units.none
         ),
         
         parameters.ModuleMethodParameterDefinition_Next(
@@ -417,9 +659,53 @@ class EVtwinBinding(CodeInterface):
             "convective_overshoot_parameter", 
             "The convective overshoot parameter.",
             units.none, 
-            None #Default value of 0.12 will be set by initialize_code later.
+            0.12 | units.none
         ),
         
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_mixing_length_ratio",
+            "set_mixing_length_ratio",
+            "mixing_length_ratio", 
+            "The mixing-length ratio (alpha).",
+            units.none, 
+            2.0 | units.none
+        ),
+        
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_semi_convection_efficiency",
+            "set_semi_convection_efficiency",
+            "semi_convection_efficiency", 
+            "The efficiency of semi-convection, after Langer, Sugimoto & Fricke 1983 (A&A).",
+            units.none, 
+            0.04 | units.none
+        ),
+        
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_thermohaline_mixing_parameter",
+            "set_thermohaline_mixing_parameter",
+            "thermohaline_mixing_parameter", 
+            "The thermohaline mixing parameter, probably only important for binaries and collision remnants.",
+            units.none, 
+            1.0 | units.none
+        ),
+        
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_AGB_wind_setting",
+            "set_AGB_wind_setting",
+            "AGB_wind_setting", 
+            "The AGB wind setting: (1, 2) for (Wachter&al, Vasiliadis&Wood) mass loss.",
+            units.none, 
+            1 | units.none
+        ),
+        
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_RGB_wind_setting",
+            "set_RGB_wind_setting",
+            "RGB_wind_setting", 
+            "The RGB wind setting: (positive, negative, 0) for (Schroeder&Cuntz, Reimers, none) mass loss.",
+            units.none, 
+            1.0 | units.none
+        ),
     ]
     
     def initialize_module_with_default_parameters(self):
