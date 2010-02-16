@@ -5,6 +5,8 @@ from matplotlib import pyplot
 
 from amuse.legacy.fi import interface as interface
 from amuse.ext.evrard_test import MakeEvrardTest
+from amuse.ext.evrard_test import regular_grid_unit_cube
+from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.legacy.support.channel import MessageChannel
 
 MessageChannel.no_redirection()
@@ -14,14 +16,14 @@ def energy_plot(time,ek,ep,eth):
   pyplot.plot(time,ep)
   pyplot.plot(time,eth)
   pyplot.plot(time,ek+ep+eth)
-  pyplot.savefig("test.png")
+  pyplot.savefig("evrard_test.png")
 
 def run_evrard(x):
-  evrard=MakeEvrardTest(x,grid=False)
+  evrard=MakeEvrardTest(x)
   mass,x,y,z,vx,vy,vz,u=evrard.new_model()
   smooth=numpy.zeros_like(mass)
 
-  nb = interface.fi()
+  nb = interface.glfi()
   nb.setup_module()
 
   nb.set_stepout(99999)
@@ -79,4 +81,4 @@ def test_evrard():
   run_evrard(64)
     
 if __name__=="__main__":
-  run_evrard(4096)
+  run_evrard(1000)
