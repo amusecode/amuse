@@ -23,7 +23,7 @@ def run_evrard(x):
   mass,x,y,z,vx,vy,vz,u=evrard.new_model()
   smooth=numpy.zeros_like(mass)
 
-  nb = interface.glfi()
+  nb = interface.fi()
   nb.setup_module()
 
   nb.set_stepout(99999)
