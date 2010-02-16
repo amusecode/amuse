@@ -345,15 +345,6 @@ class PhiGRAPENBody(PhiGRAPEInterface, NBodyGravitationalDynamicsBinding):
             
         
 
-       
-class PhiGRAPE(CodeInterfaceWithNBodyUnitsConverted):
-    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB):
-        CodeInterfaceWithNBodyUnitsConverted.__init__(
-            self,
-            PhiGRAPENBody(mode),
-            convert_nbody
-        )
-    
             
 
 class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
@@ -373,4 +364,66 @@ class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
             return 'glworker_code_gpu'
         if mode == self.MODE_GRAPE:
             return 'glworker_code_grape'
+            
+            
+
+
+class PhiGRAPENBodyGL(PhiGRAPEInterfaceGL, NBodyGravitationalDynamicsBinding):
+   
+    parameter_definitions = [
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_eps2", 
+            "set_eps2",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.0 | nbody_system.length * nbody_system.length
+        ),
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_eta", 
+            "set_eta1",
+            "timestep_parameter", 
+            "timestep parameter", 
+            units.none , 
+            0.02 |  units.none
+        ),
+        parameters.ModuleMethodParameterDefinition_Next(
+            "get_eta_s", 
+            "set_eta_s",
+            "initial_timestep_parameter", 
+            "parameter to determine the initial timestep", 
+            units.none , 
+            0.01 |  units.none
+        ),
+    ]
+
+    attribute_definitions = []
+
+
+    def __init__(self, mode = PhiGRAPEInterface.MODE_G6LIB):
+        PhiGRAPEInterfaceGL.__init__(self, mode = mode)
+        NBodyGravitationalDynamicsBinding.__init__(self)
+    
+        self.particles = Particles(storage = PhiGRAPEInCodeAttributeStorage(self))
+        
+    def current_model_time(self):
+        return self.t | nbody_system.time
+            
+        
+
+       
+class PhiGRAPE(CodeInterfaceWithNBodyUnitsConverted):
+    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False):
+        nbody_interface = None
+        if use_gl:
+            nbody_interface = PhiGRAPENBodyGL(mode)
+        else:
+            nbody_interface = PhiGRAPENBody(mode)
+            
+        CodeInterfaceWithNBodyUnitsConverted.__init__(
+            self,
+            nbody_interface,
+            convert_nbody
+        )
+    
 

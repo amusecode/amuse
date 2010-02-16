@@ -1,17 +1,21 @@
 ============
 Architecture
 ============
+For example, a simulation of the evolution
+of a cluster. This layer integrates 
+the legacy codes and provides unit handling and data input/output.
 
 Layers
 ------
-The AMUSE architecture is based on a layered design. This layerd design
-can be described with 3 layers. The highest layer is a python script, written
-for a single problem or set of problems. For example, a simulation of the evolution
-of a cluster. The next layer contains the AMUSE code. This layer integrates 
-the legacy codes and provides unit handling and data input/output. The
-lowest layer contains all the existing codes. In this layer the actual
-physical models are implemented. Each layer builds upon a lower layer, as
-is depicted in the following figure.
+The AMUSE architecture is based on layered design with 3 layers. 
+The highest layer is a python script, written for a single problem
+or set of problems. The next layer contains the AMUSE code, this layer
+provides a library of objects and function to use in the python script. 
+The last layer contains all the existing codes. In this layer the 
+physical models are implemented.
+
+Each layer builds upon a lower layer, adding functionality or ease of
+use to the previous layer:
 
 .. raw:: latex
 
@@ -20,9 +24,9 @@ is depicted in the following figure.
 .. graphviz::
     
     digraph layers0 {
-      level1 [label = "1. User Script", shape=box, style=filled,fillcolor=lightsalmon3];
-      level2 [label = "2. AMUSE Code", shape=box, style=filled,fillcolor=mediumseagreen];
-      level3 [label = "3. Legacy Codes", shape=box, style=filled,fillcolor=lightyellow];
+      level1 [label = "1. User Script", shape=box, style=filled,fillcolor=azure];
+      level2 [label = "2. AMUSE Code", shape=box, style=filled,fillcolor=azure2];
+      level3 [label = "3. Legacy Codes", shape=box, style=filled,fillcolor=azure4];
       level1 -> level2 -> level3
     }
 
@@ -36,29 +40,31 @@ is depicted in the following figure.
 
 Each layer has a different function:
 
-1. User Script. This layer contains all the user scripts. The scripts
-   are written in ``python`` and use the functionality provided by the AMUSE
-   code layer. Each script can be seen as a realisation of the AMUSE 
-   framework for one problem (or a set of problems with the same physics).
+1. **User Script layer**. This layer contains all the user scripts. The scripts
+   are written in ``python`` and use the functionality provided 
+   by the *AMUSE code* layer. Each script can be seen as a realisation 
+   of the AMUSE framework for one problem 
+   (or a set of problems with comparable physics).
 
-2. AMUSE Code. This layer interfaces to the legacy codes and provides
+2. **AMUSE Code layer**. This layer interfaces to the legacy codes and provides
    generic functionalities, such as unit handling and data conversion.This
    layer is very generic, it is not specific for one problem or for one
-   physical domain. This layer is written in ``python`` with small interfacing
-   parts written in ``C++`` or ``Fortran``.
+   physical domain. This layer provides a ``python`` library and is 
+   written mostly in ``python`` with small interfacing parts 
+   written in ``C++`` or ``Fortran``.
    
-3. Legacy Codes. This layer contains the existing codes. These codes
-   may be written in ``C++`` or ``Fortran`` or ``python``. The code in
-   this layer is generic in respect to problems, but speficic
-   for different physical domains.
+3. **Legacy Codes layer**. This layer contains the existing codes and the
+   interfaces to these codes. These codes may be written in ``C++``, 
+   ``Fortran`` or ``python``. The code in this layer is generic 
+   in respect to problems, but speficic for different physical
+   domains.
 
 
 Legacy codes
-~~~~~~~~~~~~
+************
 
 The legacy codes layer contains the source code of existing applications
 and the code to interface with these applications. 
-
 
 .. raw:: latex
 
@@ -67,18 +73,103 @@ and the code to interface with these applications.
 .. graphviz::
 
    digraph layers4 {
+        rankdir="LR";
         node [shape=box, style=filled, fillcolor=lightyellow];
-        "Python Interfaces" -> "Legacy Codes";
-        "Legacy Codes" -> "Gravitational Dynamics";
-        "Legacy Codes" -> "Stellar Evolution";
-        "Legacy Codes" -> "Hydro Dynamics";
-        "Legacy Codes" -> "Radiative Transfer";
+        subgraph cluster0 {
+            style=filled;
+            color=azure;
+            label="Application";
+            
+            "Python Interfaces";
+        }
+        "Message Passing Framework";
+        subgraph cluster1 {
+            style=filled;
+            color=azure;
+            label="Application";
+            "Legacy Code";
+        }
+        "Python Interfaces" -> "Message Passing Framework";
+        "Legacy Code" -> "Message Passing Framework";
+        
+        "Message Passing Framework" -> "Legacy Code";
+        "Message Passing Framework" -> "Python Interfaces";
     }
 
 .. raw:: latex
 
    \caption{Legacy codes are categorized in different domains}
    \end{figure} 
+
+
+
+AMUSE Code
+**********
+.. graphviz::
+
+    digraph layers_1 {
+      compound=true;
+      ranksep=.75;
+      nodesep=.5;
+      
+      subgraph cluster0 {
+        node [shape=box, style=filled, fillcolor=white];
+        style=filled;
+        color=mediumseagreen;
+        label="Support";
+        
+        "Input/Output";
+        "Units";
+       }
+       
+       subgraph cluster1 {
+        node [shape=box, style=filled, fillcolor=white];
+        style=filled;
+        color=lightyellow;
+        label="Legacy";
+        
+        "Python Interfaces" -> "Legacy Codes";
+       }
+       
+       subgraph cluster2 {
+        node [shape=box, style=filled, fillcolor=white];
+        style=filled;
+        color=lightblue;
+        label="Interface";
+        
+        "Data Model";
+        "Integration of Units";
+        "Storage"
+       }
+       
+      
+     
+      "Integration of Units" -> "Units"[lhead=cluster0, ltail=cluster2]; 
+      "Data Model" -> "Python Interfaces"[lhead=cluster1, ltail=cluster2]; 
+    }
+   
+   
+
+User Script
+***********
+
+This layer contains all the scripts written by a researcher for
+a specific problem or set of problems. These scripts are written
+in *python* and can use all the functionality provided by different
+blocks in the AMUSE code layer. 
+
+.. graphviz::
+
+   digraph layers2 {
+      "Interface" [shape=box, style=filled,fillcolor=lightblue];
+      "Support" [shape=box, style=filled,fillcolor=mediumseagreen];
+      "Legacy"[shape=box, style=filled,fillcolor=lightyellow];
+      "User Script" [shape=box, style=filled,fillcolor=lightsalmon3];
+      "User Script" -> "Interface"
+      "User Script" -> "Legacy"
+      "User Script" -> "Support"
+   }
+
 
 
 
@@ -162,73 +253,6 @@ split up in different interfaces. These sub-interfaces are categorized as:
 
    \caption{Different sub-interfaces in a domain interface}
    \end{figure} 
-
-AMUSE Code
-~~~~~~~~~~
-.. graphviz::
-
-    digraph layers_1 {
-      compound=true;
-      ranksep=.75;
-      nodesep=.5;
-      
-      subgraph cluster0 {
-        node [shape=box, style=filled, fillcolor=white];
-        style=filled;
-        color=mediumseagreen;
-        label="Support";
-        
-        "Input/Output";
-        "Units";
-       }
-       
-       subgraph cluster1 {
-        node [shape=box, style=filled, fillcolor=white];
-        style=filled;
-        color=lightyellow;
-        label="Legacy";
-        
-        "Python Interfaces" -> "Legacy Codes";
-       }
-       
-       subgraph cluster2 {
-        node [shape=box, style=filled, fillcolor=white];
-        style=filled;
-        color=lightblue;
-        label="Interface";
-        
-        "Data Model";
-        "Integration of Units";
-        "Storage"
-       }
-       
-      
-     
-      "Integration of Units" -> "Units"[lhead=cluster0, ltail=cluster2]; 
-      "Data Model" -> "Python Interfaces"[lhead=cluster1, ltail=cluster2]; 
-    }
-   
-   
-
-User Script
-~~~~~~~~~~~
-
-This layer contains all the scripts written by a researcher for
-a specific problem or set of problems. These scripts are written
-in *python* and can use all the functionality provided by different
-blocks in the AMUSE code layer. 
-
-.. graphviz::
-
-   digraph layers2 {
-      "Interface" [shape=box, style=filled,fillcolor=lightblue];
-      "Support" [shape=box, style=filled,fillcolor=mediumseagreen];
-      "Legacy"[shape=box, style=filled,fillcolor=lightyellow];
-      "User Script" [shape=box, style=filled,fillcolor=lightsalmon3];
-      "User Script" -> "Interface"
-      "User Script" -> "Legacy"
-      "User Script" -> "Support"
-   }
 
 
 
