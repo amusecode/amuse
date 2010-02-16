@@ -123,7 +123,7 @@ class testMPIInterface(TestWithMPI):
 class testEvrard(TestWithMPI):
 
   def test0(self):
-    evrard=MakeEvrardTest(1000,grid=False)
+    evrard=MakeEvrardTest(1000)
     mass,x,y,z,vx,vy,vz,u=evrard.new_model()
     smooth=numpy.zeros_like(mass)
     nb = fi()
