@@ -1,0 +1,5 @@
+uvpol* : files containing precalculated uv kernels
+*.cool: electron impact cooling functions 
+*.Hcool: H impact cooling functions
+*.starprop: stellar synthesis models
+*.halo: halo files
