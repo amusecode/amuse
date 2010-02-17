@@ -23,7 +23,7 @@ Binding
 
 .. automodule:: amuse.support.data.binding
     
-    .. autoclass:: CodeMethod
+    .. autoclass:: ParticleMappingMethod
         :members:
     
     .. autoclass:: ParticleGetAttributesMethod

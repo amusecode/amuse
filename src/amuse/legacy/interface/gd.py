@@ -4,7 +4,7 @@ Stellar Dynamics Interface Defintion
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.interface import CodeInterface
-from amuse.support.data.binding import CodeProperty
+from amuse.support.data.binding import CodeProperty, CodeMethod
 from amuse.support.data import binding
 from amuse.support.units import nbody_system
 
@@ -739,11 +739,12 @@ class NBodyGravitationalDynamicsBinding(CodeInterface):
         CodeInterface.__init__(self)
         
     def get_energies(self):
-        return (self.kinetic_energy, self.potential_energy,)
+        return (
+            self.kinetic_energy, 
+            self.potential_energy,
+        )
 
-    def evolve_model(self, time_end):
-        result = self.evolve(time_end.value_in(nbody_system.time))
-        return result
+    evolve_model = CodeMethod('evolve',(nbody_system.time,))
         
     kinetic_energy = CodeProperty("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
     potential_energy = CodeProperty("get_potential_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)

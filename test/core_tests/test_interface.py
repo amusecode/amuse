@@ -95,5 +95,20 @@ class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
         self.assertAlmostEquals(masses[1].value_in(units.kg), 30.0, 10)
         
         
+
+class CodeInterfaceWithCodeMethodsTests(unittest.TestCase):
+    class TestClass(interface.CodeInterface):
+       
+        def _add_10_to_length(self, length):
+            return length + 10
+            
+        add_10_to_length = CodeMethod('_add_10_to_length', (units.m,), units.m)
         
+    def test1(self):
+        instance = self.TestClass()
+        
+        self.assertEquals(20.0, instance._add_10_to_length(10.0))
+        
+        self.assertEquals(20.0 | units.m, instance.add_10_to_length(10.0 | units.m))
+        self.assertEquals(1010.0 | units.m, instance.add_10_to_length(1.0| units.km))
 

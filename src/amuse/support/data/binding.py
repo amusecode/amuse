@@ -4,13 +4,13 @@ from amuse.support.data.core import AttributeStorage
 import numpy
 
 from amuse.support.units import nbody_system
+from amuse.support.core import late
 
+import inspect
 
-
-
-class CodeMethod(object):
+class ParticleMappingMethod(object):
     """
-    CodeMethod objects define an interface between the codes and
+    ParticleMappingMethod objects define an interface between the codes and
     the AMUSE data model. Abstract base class, subclasses implement
     actual implementation.
     
@@ -21,7 +21,7 @@ class CodeMethod(object):
     The AMUSE data model works with objects (particles) 
     and attributes (each attribute has a value and a unit).
     
-    CodeMethod instances map the functions to the objects in the 
+    ParticleMappingMethod instances map the functions to the objects in the 
     datamodel.
     
     :argument name_of_the_function: name of the function 
@@ -59,7 +59,7 @@ class CodeMethod(object):
             result[tuple[index]] = mutable
         return result
             
-class ParticleAttributesModifier(CodeMethod):
+class ParticleAttributesModifier(ParticleMappingMethod):
     """
     Objects of this class update the values of attributes in a particle set
     using a function provided by the code.
@@ -74,7 +74,7 @@ class ParticleAttributesModifier(CodeMethod):
     the input and output parameters).
     """
     def __init__(self, name_of_the_function, attribute_specification, parameter_specification = ()):
-        CodeMethod.__init__(self, name_of_the_function, attribute_specification)
+        ParticleMappingMethod.__init__(self, name_of_the_function, attribute_specification)
         self.parameter_specification = parameter_specification
         
         self.mapping_from_input_name_to_parameter_name_and_unit = self.to_mapping(0, self.parameter_specification)
@@ -116,7 +116,7 @@ class ParticleAttributesModifier(CodeMethod):
         
         
 
-class ParticleGetAttributesMethod(CodeMethod):
+class ParticleGetAttributesMethod(ParticleMappingMethod):
     """
     Objects of this class retrieve the values of the specified attributes
     from the code.
@@ -179,7 +179,7 @@ class ParticleGetAttributesMethod(CodeMethod):
     
     """
     def __init__(self, name_of_the_function, attribute_specification):
-        CodeMethod.__init__(self, name_of_the_function, attribute_specification)
+        ParticleMappingMethod.__init__(self, name_of_the_function, attribute_specification)
         
     
     def intersection(self, attributes):
@@ -252,7 +252,7 @@ class ParticleGetAttributesMethod(CodeMethod):
         
         return mapping_from_attribute_to_result
     
-class ParticleSetAttributesMethod(CodeMethod):
+class ParticleSetAttributesMethod(ParticleMappingMethod):
     """
     Objects of this class set the values of the specified attributes
     in the code.
@@ -303,7 +303,7 @@ class ParticleSetAttributesMethod(CodeMethod):
             return function    
     """
     def __init__(self, name_of_the_function, attribute_specification):
-        CodeMethod.__init__(self, name_of_the_function, attribute_specification)
+        ParticleMappingMethod.__init__(self, name_of_the_function, attribute_specification)
             
     def intersection(self, attributes):
         """
@@ -379,10 +379,10 @@ class ParticleQueryMethod(object):
         
         
 
-class NewParticleMethod(CodeMethod):
+class NewParticleMethod(ParticleMappingMethod):
     
     def __init__(self, name_of_the_function, attribute_specification):
-        CodeMethod.__init__(self, name_of_the_function, attribute_specification)
+        ParticleMappingMethod.__init__(self, name_of_the_function, attribute_specification)
 
     def apply(self, code_interface,  attributes = [], values = []):
         
@@ -602,3 +602,102 @@ class CodeProperty(object):
             return self
             
         raise Exception("property '{0}' of a '{1}' object is read-only, you cannot change it's value".format(self._name(instance), type(instance).__name__))
+
+
+
+class BoundCodeMethod(object):
+
+    def __init__(self, code_method, instance):
+        self.code_method = code_method
+        self.instance = instance
+        
+    def __call__(self, *list_arguments, **keyword_arguments):
+        converted_keyword_arguments = self.convert_list_and_keyword_arguments(list_arguments, keyword_arguments)
+        
+        return_value = self.method(**converted_keyword_arguments)
+        
+        return self.code_method.handle_return_value(return_value, self.instance)
+        
+    @late
+    def method(self):
+        return getattr(self.instance, self.code_method.function_name)
+        
+    @late
+    def method_is_legacy(self):
+        return hasattr(self.method, 'specification')
+    
+    @late
+    def method_arguments(self):
+        if self.method_is_legacy:
+            return map(lambda x : x.name , self.method.specification.input_parameters)
+        else:
+            args = inspect.getargspec(self.method).args
+            if args:
+                if args[0] == 'self' or args[0] == 'cls':
+                    return args[1:]
+            return args
+    
+    @late
+    def units(self):
+        return self.code_method.units
+        
+    def convert_list_and_keyword_arguments(self, list_arguments, keyword_arguments):
+        result = {}
+        input_parameters = self.method_arguments
+        
+        for index, parameter in enumerate(input_parameters):
+            if parameter in keyword_arguments:
+                result[parameter] = keyword_arguments[parameter.name].value_in(self.units[index])
+        
+        for index, argument in enumerate(list_arguments):
+            parameter = input_parameters[index]
+            result[parameter] = argument.value_in(self.units[index])
+        
+        return result
+            
+        
+class CodeMethod(object):
+    
+            
+    def __init__(self, function_name, units, return_unit = None, return_value_handler = None):
+        self.function_name = function_name
+        self.units = units
+        self.return_unit = return_unit
+        if return_unit is None:
+            if return_value_handler is None:
+                self.handle_return_value = self.handle_as_errorcode
+            else:
+                self.handle_return_value = return_value_handler
+        else:
+            self.handle_return_value = self.handle_as_unit
+    
+    def _name(self, instance):
+        class_of_the_instance = type(instance)
+        attribute_names = dir(class_of_the_instance)
+        for name in attribute_names:
+            if not name.startswith('_'):
+                if getattr(class_of_the_instance, name) == self:
+                    return name
+        
+        return self.function_name
+
+    def __get__(self, instance, owner):
+        if instance is None:
+            return self
+            
+        result = BoundCodeMethod(self, instance)
+        setattr(instance, self._name(instance), result)
+        return result
+            
+    
+    def handle_as_errorcode(self, errorcode, instance):
+        if errorcode < 0:
+            raise Exception("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self._name(instance), type(instance).__name__, errorcode))
+        else:
+            return errorcode
+            
+    
+    def handle_as_unit(self, result, instance):
+        return self.return_unit.new_quantity(result)
+        
+            

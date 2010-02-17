@@ -30,9 +30,7 @@ The ``src`` directories
 
 The directories under the ``src`` directory are further split into:
 
-* ``interface`` - the API of amuse, containing interfaces for physical
-  building blocks (model evaluation), initial value calculations 
-  (pre processing) and post-processing.
+
 * ``legacy`` - contains the source code of existing astrophysical
   applications and *glue* code to the AMUSE interface classes. in other
   words this directory contains the implementation of the interfaces.
@@ -40,18 +38,6 @@ The directories under the ``src`` directory are further split into:
   representation and input/output routines and also provides the generic
   unit handling code. Code in the ``interface`` and ``legacy`` directories
   use these functions and classes to provide their functionality.
-
-::
-
- |-----------------------------------|
- | support                           |
- |-----------------------------------|
-       ^                      ^
- |------------|          |-----------|
- |  interface |  <------ | legacy    |
- |------------|          |-----------|
-
-Interface and legacy code uses the support code. The legacy code implements the interface code.
 
 
 The ``test`` directories

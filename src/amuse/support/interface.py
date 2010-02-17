@@ -1,5 +1,6 @@
 
 from amuse.support.data import parameters
+from amuse.support.data import binding
 from amuse.support.data import core
 from amuse.support.data import values
 from amuse.support.units import nbody_system
@@ -81,6 +82,8 @@ class CodeInterfaceWithConvertedUnits(OldObjectsBindingMixin):
             return result
         elif isinstance(attribute, values.Quantity):
             return self.converter.from_target_to_source(attribute)
+        elif isinstance(attribute, binding.BoundCodeMethod):
+            return self.UnitsConvertionMethod(attribute, self.converter)
         elif isinstance(attribute, parameters.Parameters):
             result = parameters.ParametersWithUnitsConverted(attribute, self.converter)
             setattr(self, name, result)
