@@ -20,8 +20,8 @@ These are the packages AMUSE needs:
 * FFTW (version >= 3.0)
 
 
-In the first two sections (:ref:`compilers` and :ref:`installation_scripts`) we explain how to use the two
-installation scripts to install AMUSE. In the last section (:ref:`manual`) 
+In the first two sections (compilers_ and installation_scripts_) we explain how to use the two
+installation scripts to install AMUSE. In the last section (manual_) 
 we have specified the required packages with the needed version for each.
 
 .. _compilers:
