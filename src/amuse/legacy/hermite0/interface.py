@@ -156,12 +156,6 @@ class HermiteNBody(HermiteInterface, NBodyGravitationalDynamicsBinding):
         
     def current_model_time(self):
         return self.t | nbody_system.time
-            
-    
-    def evolve_model(self, time_end):
-        result = self.evolve(time_end.value_in(nbody_system.time))
-        return result
-        
        
 class Hermite(CodeInterfaceWithNBodyUnitsConverted):
     def __init__(self, convert_nbody = None):

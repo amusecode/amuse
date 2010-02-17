@@ -56,25 +56,6 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
-        
-    #def evolve_model(self, time_end):
-    #    result = self.evolve(self.convert_nbody.to_nbody(time_end).value_in(nbody_system.time), 1)
-    #    return result
-            
-    def add_particles(self, particles):
-        keyword_arguments = {}
-        for attribute_definition in self.attribute_definitions:
-            values = particles.get_values_of_attribute(attribute_definition.name)
-            attribute_definition.set_keyword_arguments(self, values, keyword_arguments)
-        keyword_arguments['id'] = list(particles.ids)
-        
-        self.add_particle(**keyword_arguments)
-            
-    #def update_attributes(self, attributes):
-    #    for id, x in attributes:
-    #        if x.name == 'mass':
-    #            self.set_mass(id, self.convert_nbody.to_nbody(x.value()).value_in(nbody_system.mass))
-   
 
 
 class BHTreeInCodeAttributeStorage(InCodeAttributeStorage):

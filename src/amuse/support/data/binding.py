@@ -657,8 +657,7 @@ class BoundCodeMethod(object):
             
         
 class CodeMethod(object):
-    
-            
+
     def __init__(self, function_name, units, return_unit = None, return_value_handler = None):
         self.function_name = function_name
         self.units = units
