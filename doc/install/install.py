@@ -96,6 +96,14 @@ class InstallPrerequisites(object):
           #('openmpi', [], '1.3.3', 'openmpi-', '.tar.gz', 'http://www.open-mpi.org/software/ompi/v1.3/downloads/', self.openmpi_build) ,
           #('setuptools', [], '0.6c11', 'setuptools-', '-py2.6.egg', 'http://pypi.python.org/packages/2.6/s/setuptools/', self.setuptools_install) ,
           #http://pypi.python.org/packages/2.6/s/setuptools/setuptools-0.6c11-py2.6.egg#md5=bfa92100bd772d5a213eedd356d64086
+          (
+            'fftw3' ,                  #name to refer by
+            [],                        #names of prerequisites (unused)
+            '3.2.2' ,                  #version string
+            'fftw-', '.tar.gz',        #pre- and postfix for filename
+            'http://www.fftw.org/',    #download url, filename is appended
+            self.fftw_build            #method to use for building
+          ) ,
         ]
         
     @late
@@ -209,6 +217,21 @@ class InstallPrerequisites(object):
             self.run_application(x, path)
             
         self.check_mpich2_install(commands, path)
+        
+    def fftw_build(self, path):
+        commands = []
+        command = [
+          './configure',
+          '--prefix='+self.prefix,
+          '--enable-shared',
+          '--enable-threads'
+        ]
+        commands.append(command)
+        commands.append(['make'])
+        commands.append(['make', 'install'])
+        
+        for x in commands:
+            self.run_application(x, path)
         
     def check_mpich2_install(self, commands, path):
         bin_directory = os.path.join(self.prefix, 'bin')

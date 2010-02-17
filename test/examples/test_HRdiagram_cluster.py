@@ -92,7 +92,7 @@ def calculate_effective_temperature(luminosity,radius):
     Stefan_Boltzmann_constant = 5.670400e-8 | units.J * units.s**-1 * units.m**-2 * units.K**-4
     return ((luminosity/(4*numpy.pi*Stefan_Boltzmann_constant*radius**2))**.25).in_(units.K)
 
-def test_simulate_one_star():
+def test_simulate_short():
     assert is_mpd_running()
     test_results_path = path_to_test_results.get_path_to_test_results()
     output_file = os.path.join(test_results_path, "cluster_HR_diagram.png")

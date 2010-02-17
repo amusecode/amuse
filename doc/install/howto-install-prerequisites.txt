@@ -17,13 +17,14 @@ These are the packages AMUSE needs:
 * MPI (OpenMPI or MPICH2)
 * mpi4py (version >= 1.0)
 * nose (version >= 0.11)
+* FFTW (version >= 3.0)
 
 
-In first the section installation_ we explain how to use the two
-installation scripts to install AMUSE. In the last section manual_ 
+In the first two sections (:ref:`compilers` and :ref:`installation_scripts`) we explain how to use the two
+installation scripts to install AMUSE. In the last section (:ref:`manual`) 
 we have specified the required packages with the needed version for each.
 
-.. _installation:
+.. _compilers:
 
 Compilers
 ~~~~~~~~~
@@ -46,6 +47,7 @@ In Fedora you can setup the environment with (as root):
 
 	yum groupinstall "Development Tools" "Development Libraries"
 
+.. _installation_scripts:
 
 Installation scripts
 ~~~~~~~~~~~~~~~~~~~~
@@ -58,8 +60,8 @@ and python packages. As everything is installed in a user directory these
 packages can be installed even if a version of the software is already 
 installed on your system. 
 
-The scripts will download and install the software in a user directory. These
-user directory must be specified with an ``PREFIX`` environment variable. Before
+The scripts will download and install the software in a user directory. This
+user directory must be specified with the ``PREFIX`` environment variable. Before
 running the installation scripts you must set the ``PREFIX`` environment 
 variable and update the path and library path. For shell (bash) you need to do:
 
@@ -79,21 +81,17 @@ To start the installation do:
 .. code-block:: sh
 
 	# 1. Open a shell and go to the <doc/install> directory
-
 	>
 
 	# 2. Set the PREFIX, PATH and LD_LIBRARY_PATH environment variables:
-
   	> export PREFIX=~/amuse/prerequisites
   	> export PATH=${PREFIX}/bin:${PATH}
   	> export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
 	# 3. Start the installation script for python
-
 	> ./install-python.sh
 
 	# 4. Start the installation script for the prerequisite packages
-
 	> ./install.py download
   	> ./install.py install
 
@@ -243,6 +241,19 @@ To check if Nose is installed on your system do:
 If this fails with an error or a version before 0.11 you need to install nose.
 You can download nose from http://somethingaboutorange.com/mrl/projects/nose/. 
 
+FFTW
+-------
+FFTW is a C subroutine library for computing discrete Fourier transforms. To 
+check for the availability of fftw on your system, you can use ``fftw-wisdom``:
+
+.. code-block:: sh
+
+   > fftw-wisdom --version
+   fftw-wisdom tool for FFTW version 3.2.1.
+
+
+You can download the FFTW library from http://www.fftw.org. 
+
 
 Installing on Ubuntu 9.04
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -296,6 +307,12 @@ with HDF5 version 1.6.6. To install it, do::
 
     > sudo apt-get install libhdf5-serial-dev hdf5-tools 
 
+FFTW
+-------
+On Ubuntu, FFTW can be installed with::
+
+    > sudo apt-get install libfftw3 libfftw3-dev libfftw3-doc
+
 Python packages in Ubuntu
 -------------------------
 Ubuntu comes with python packages for nose and numpy. You also need 
@@ -342,7 +359,7 @@ python is installed by doing:
 
 If this failes with an error or a version before 2.6, please install 
 python first(the package is called ``python``). You also need 
-the ``python-devel` development package.
+the ``python-devel`` development package.
 To install it, do::
 
     > sudo yum install python-devel
@@ -373,14 +390,20 @@ To install the openmpi packages, do::
 
 HDF5
 ----
-Amuse can work with HDF5 versions 1.6.* and 1.8.3. Ubuntu 9.04 comes
-with HDF5 version 1.6.6. To install it, do::
+Amuse can work with HDF5 versions 1.6.* and 1.8.3. Fedora 11 has a package
+with HDF5 version 1.8.3. To install it, do::
 
     > sudo yum install hdf5 hdf5-devel
 
-Python packages in Ubuntu
+FFTW
+-------
+On Fedora, FFTW can be installed with::
+
+    > sudo yum install fftw3 fftw3-devel
+
+Python packages in Fedora
 -------------------------
-Ubuntu comes with python packages for nose and numpy. You also need 
+Fedora comes with python packages for nose and numpy. You also need 
 the setuptools package to be able to install the ``mpi4py`` and ``h5py`` 
 software. To install these , do::
 
