@@ -2,11 +2,19 @@ This directory contains the AMUSE software. With AMUSE you
 can write scripts to simulate astrophysical problems in
 different domains.
 
+AMUSE documentation and software can be found at:
+
+    http://castle.strw.leidenuniv.nl/trac/amuse
+
+
 Getting Started
 ===============
 
-A detailed description of the installation procedure can be
-found in the documents in the 'doc/install' directory. 
+To build amuse you need a working build environment and
+install some prerequisites. This documet contains 
+the quick install instructions, if these fail please look
+at the detailed descriptions of the installation 
+procedure in the documents in the 'doc/install' directory. 
 
 Compilers
 =========
@@ -24,17 +32,23 @@ In Ubuntu you can setup the environment with (as root):
 In Fedora you can setup the environment with (as root)::
 
     yum groupinstall "Development Tools" "Development Libraries"
+    
+In OS X you can install fink or the Apple Developer Tools. 
+The Apple Developer Tools do not include a gfortran compiler, 
+you can find one at:
+
+    http://r.research.att.com/tools/
 
 Installing Prerequisites
 ========================
 
-This document describes installation of all 
-prerequisite software in a user directory. If you have
-Ubuntu or Fedora distribution you can follow the installation
+This document describes installation of the pre-requisite 
+software packages to a user directory. If you have an
+recent Ubuntu or Fedora distribution you can follow the installation
 instructions in `doc/install/howto-install-prerequisites.txt` 
 to install the packages as part of the system.
 
-1. Make prerequisite software directory (can be set to any directory)
+1. Make a prerequisite software directory (can be set to any directory)
 
     mkdir ~/amuse/prerequsites
     
@@ -44,7 +58,7 @@ to install the packages as part of the system.
     export PATH=${PREFIX}/bin:${PATH}
     export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 
-2b. It may be necessary to also set:  
+2b. If you have ifort and/or icc, you need to also set:  
 
     export LIBRARY_PATH=${PREFIX}/lib:${LIBRARY_PATH}
 
@@ -53,12 +67,12 @@ to install the packages as part of the system.
     cd doc/install
     ./install-python.sh
 
-4. Download and install other prerequisites
+4. Download and install the other pre-requisites
    (script is also in the `doc/install` directory)
 
     ./install.py install
     
-
+    
 Set Environment
 ===============
 You can set the the PREFIX, PATH and LD_LIBRARY_PATH
@@ -74,7 +88,7 @@ export LD_LIBRARY_PATH=${PREFIX}/lib:${LD_LIBRARY_PATH}
 Building AMUSE
 ==============
 
-All modules can be build with a configure and make commands. Start make
+All modules can be build with a configure and make command. Start make
 from the main amuse directory (directory this README file lives in).
 The main task of the configure script is to check if the
 prerequisite packages have been installed.
@@ -90,10 +104,10 @@ prerequisite packages have been installed.
 
 Starting the MPI daemon process
 ===============================
-For MPICH2, you need to start the mpd daemon process. If this
-is the firt time the damon is run, it will complain about a
-.mpd.conf file. If so, please create the .mpd.conf file as
-instructed by the mpd command.
+For MPICH2, you need to start the mpd daemon process. If run for
+the firt time, the damon will complain about a .mpd.conf file. 
+If so, please create the .mpd.conf file as instructed by the 
+mpd command.
 
 1. Start the mpd daemon
 
@@ -103,12 +117,12 @@ instructed by the mpd command.
 Running the tests
 =================
 AMUSE comes with a large set of tests, most can be run automatically. 
-Start the nosetests command from the main 
+To run these tests start the nosetests command from the main 
 amuse directory (directory this README file lives in).
 
 To run these tests do:
 
-1. Run the unit tests
+1. Run the automatic tests
 
     nosetests -v
     

@@ -1,6 +1,6 @@
-============
-Architecture
-============
+=====================
+Architecture Overview
+=====================
 
 Layers
 ------
@@ -21,6 +21,7 @@ use to the previous layer:
 .. graphviz::
     
     digraph layers0 {
+      fontsize=10.0;
       node [shape=box, style=filled, fillcolor=lightyellow, width=3];
       subgraph cluster0 {
             style=filled;
@@ -39,6 +40,7 @@ use to the previous layer:
     
       subgraph cluster2 {
             style=filled;
+            
             color=azure2;
             labeljust="l";
             label="Layer 3";
@@ -51,6 +53,7 @@ use to the previous layer:
 
    \caption{The 3 layers in AMUSE}
    \end{figure} 
+
 
 Each layer has a different role in the AMUSE architecture:
 
@@ -94,6 +97,7 @@ will be send via a *message passing framework* to the codes.
 .. graphviz::
 
    digraph layers4 {
+      fontsize=10.0;
         rankdir="LR";
         node [shape=box, style=filled, fillcolor=lightyellow];
         subgraph cluster0 {
@@ -119,9 +123,12 @@ will be send via a *message passing framework* to the codes.
 
 .. raw:: latex
 
-   \caption{Legacy codes are categorized in different domains}
+   \caption{The AMUSE script and legacy codes are separate applications.}
    \end{figure} 
 
+
+Message passing
+~~~~~~~~~~~~~~~
 The amuse framework interacts with legacy codes via a message passing
 framework. Function calls in the python scripts are translated
 to messages and these messages are send to the legacy codes 
@@ -129,7 +136,6 @@ using the message passing framework . The legacy codes wait
 for message events and will decode the message upon arrival and 
 perform the requested function. The results will be send back 
 using a similar message.
-
 
 .. image:: message_passing.png
 
@@ -147,6 +153,7 @@ extra functionalities can be used indepented of the legacy codes.
 .. graphviz::
 
     digraph amcode_0{
+      fontsize=10.0;
         compound=true;
         ranksep=1;
         
@@ -187,13 +194,15 @@ The **AMUSE code layer** classes build upon the low level
 classes provided by the **legacy codes layer**. The design is based
 on adaptor and decorator patterns to provide interfaces with increasing
 functionality. First a  *Legacy interface* class is adapted to create a
-class which provides *"parameters"*, *"particle sets/gridpoints"* and 
-*"methods with units"*. Next, more functionality is added to objects of 
-this class by defining decorators. 
+class which provides *"parameters"*, *"particle sets/gridpoints"* , 
+*"methods with units"* and *"properties with units"* . Next, more 
+functionality is added to objects of this class by 
+selecting or defining decorators. 
 
 .. graphviz::
 
     digraph amcode_1{
+      fontsize=10.0;
         compound=true;
         rankdir=BT;
         ranksep=1.0;
@@ -217,6 +226,7 @@ this class by defining decorators.
             "Particles or Gridpoints"
             "Parameters"
             "Methods with Units"
+            "Properties with Units"
         }
         "Legacy Interface"
         "Legacy Interface"->"Particles or Gridpoints"
@@ -230,7 +240,15 @@ this class by defining decorators.
 User Script
 ***********
 
-This layer contains all the scripts written by a researcher for
-a specific problem or set of problems. These scripts are written
+The final layer is the **User Script Layer** this layer contains 
+all the scripts written by a researcher for a specific 
+problem or set of problems. These scripts are always written
 in *python* and can use all the functionality provided by the two
-lower layers in the AMUSE framework. 
+lower layers in the AMUSE framework. The scripts don't need to 
+follow a fixed design.
+
+.. image:: user_script_sequence.png
+
+
+
+
