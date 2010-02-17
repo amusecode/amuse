@@ -1,68 +1,36 @@
+===============
+Python Packages
+===============
 
-Source Packages
-~~~~~~~~~~~~~~~
-The AMUSE source code software is organized in three packages.
-The code in each package has a distinct role in the design.
+Like all large python projects, the AMUSE source-code is structured 
+in packages, subpackages and modules. Packages and subpackages are
+directories in the filesystem and modules are python files (A detailed
+explanation can be found in 
+`Modules <http://docs.python.org/tutorial/modules.html>`). In this
+chapter the most important packages are named. 
 
-* ``interface`` - This packages contains all code that defines the public 
-  API of amuse. It contains interfaces for physical
-  building blocks (model evaluation), initial value calculations 
-  (pre processing) and post-processing. It represents a high level interface
-  on top of the other two packages.
-* ``legacy`` - This packagae contains all code of existing astrophysical
-  applications and the *glue* code needed to interface with these 
-  applications.
-* ``support`` - This package contains the AMUSE support code. The code 
-  in the ``legacy`` and ``interface`` packages will be implemented with the
-  classes and functions defined in this package. The data
-  representation, input/output routines and the generic
-  unit handling code can be found in this package. 
-  
-Dependencies
-************
-The code in one package can depend on the code in another package. To keep the dependencies
-between the packages low and the code maintanable, the following dependencies are allowed 
-(no other dependencies are allowed):
+The sourcecode of the **AMUSE Code** and **Legacy Codes** layer is 
+combined in one package. The package name is **amuse**.
 
-* All packages can depend on code from the ``support`` package.
-* The ``legacy`` package can depend on the ``support`` package but not on the ``interface`` package.
-* The ``physics`` package can depend on the ``support`` and ``legacy`` packages
-* *External* packages (examples, test code) can depend on code from all three packages
+amuse
+    Root package of the AMUSE code, does not contain test files,
+    the build system or the test system.
 
-.. image:: packages.png
-   :width: 10cm
-   
-Support Package
-***************
-The classes and functions in this package *supports* the code in the other packages. 
-Classes in this package are not specific for any physical domain. Instead they provide
-generic functionalities. The Support package consists of at least 3 sub packages:
+The **amuse** and the package is further divided into three
+subpackages:
 
-* ``unit`` - This packages contains the generic implementation for unit handling. It contains
-  classes to define units and convert between values of different units.
-* ``data`` - This packagae contains the implementation of the data representation model. It defines the
-  basic data objects like Particles and Grid. It also contains the classes for handling the attributes.
-* ``io`` - This packages contains the implementation of the data input and output. It contains classes to
-  read data in a file of a supported format. This data will be converted to the objects defined in the ``data`` package. 
-  It also has support to write the objects to a file of any support format.
+amuse.support
+    Contains the code of the **AMUSE Code** layer. The units system,
+    data io and model and all base classes can be found in 
+    this package.
+    
+amuse.legacy
+    Contains the code the **Legacy Codes** layer. The legacy codes
+    can be found in this package as well as support code for generating
+    the script to legacy code messaging framework.
+    
+amuse.ext
+    Contains **extra** and/or **extension** code. For example, making
+    initial data models is not one of the main functionalities of AMUSE,
+    but it is very useful to include this into the codebase.
 
-
-Legacy Package
-**************
-The code in this package contains the interfaces to the legacy codes and the implementation of the codes.
-It contains a sub-package for each legacy code. The structure of a legacy code should follow specific guidelines. 
-These guidelines are described later in the <detials> section. The Legacy package also contains 
-its own ``support`` sub-package.
-
-The ``support`` sub-package in the ``legacy`` package contains the generic implementation for interfacing with a 
-legacy code over MPI. It also contains classes to generate C++ or fortran 95 interface code. The design of
-the MPI interface is described later in the <details> section.
-
-Inteface Package
-*****************
-The code in this pacakge contains high level abstractions. The functionality of the classes in this package 
-is provided by the code in the ``legacy`` and ``support`` packages. It contains code for managing the
-model evolution and flow control.
-
-Details
-~~~~~~~
