@@ -1,5 +1,4 @@
 from amuse.support.data import core
-from amuse.support.units import dataserver
 from amuse.support.units import units
 from amuse.support.units import constants
 
