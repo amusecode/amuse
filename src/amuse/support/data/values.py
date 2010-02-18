@@ -1,5 +1,6 @@
 """
 """
+from math import sqrt
 import numpy
 
 class Quantity(object):
@@ -403,6 +404,12 @@ class VectorQuantity(Quantity):
             
     def copy(self):
         return new_quantity(self.number.copy(), self.unit)
+
+    def norm_squared(self):
+        return (self.x**2 + self.y**2 + self.z**2) | (self.unit * self.unit)
+
+    def norm(self):
+        return sqrt(self.norm_squared()) | self.unit
         
     def append(self, scalar_quantity):
         """
@@ -416,8 +423,6 @@ class VectorQuantity(Quantity):
         """
         self._number = numpy.append(self._number, [scalar_quantity.value_in(self.unit)])
     
-                 
-
 class NonNumericQuantity(Quantity):
     """
     A Non Numeric Quantity object represents a quantity without
