@@ -168,7 +168,7 @@ class Constants(object):
                 i[2] = 'none'
             self.nistfile += ("{0} = {1} | {2}\n".format(i[0], i[1], i[2]))
 
-    def generate(self):
+    def generate_nist(self):
         self.list_constants()
         self.sort_units()
         self.nistfile +=  "#BASE UNITS***********************************************\n"
