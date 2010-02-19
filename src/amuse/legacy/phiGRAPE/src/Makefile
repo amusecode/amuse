@@ -33,9 +33,9 @@ LIBS     = -lm
 LIBRARIES= $(LLIBSDIR) $(LIBS) $(G6LIBS)
 
 GLINCLUDE ?= -I/usr/include/GL \
--I/home/inti/libraries/f90gl-1.2.11/include/GL/
+-I/data/pelupes/libraries/f90gl-1.2.11/include/GL/
 
-GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
+GLLIB = -L/data/pelupes/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
 
 X11LIB ?= -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11

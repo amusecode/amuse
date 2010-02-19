@@ -1,6 +1,6 @@
       FUNCTION get_index_of_first_particle(id)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_index_of_first_particle
       INTEGER id
 
@@ -10,7 +10,7 @@
 
       FUNCTION get_total_radius(id, r)
       IMPLICIT NONE
-#include "general.inc"      
+#include "src/general.inc"      
       INTEGER get_total_radius
       INTEGER id
       REAL r
@@ -20,7 +20,7 @@
 
       FUNCTION new_particle(id, mm, rad, xx, yy, zz, vx, vy, vz)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER new_particle
       INTEGER id
       DOUBLE PRECISION mm, rad, xx, yy, zz, vx, vy, vz
@@ -28,7 +28,7 @@
       N = N + 1
 
       id = N
-      ind(N)   = N
+      ind(N)   = id
       myid(N)  = N
       myind(id)= N
       m(N)     = mm
@@ -48,7 +48,7 @@
 
       FUNCTION get_total_mass(id)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_total_mass
       INTEGER id
 
@@ -57,7 +57,7 @@
 
       FUNCTION get_index_of_next_particle(id)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_index_of_next_particle
       INTEGER id
 
@@ -66,7 +66,7 @@
 
       FUNCTION set_state(id, mm, rad, xx, yy, zz, vx, vy, vz)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
    
       INTEGER          id,ip, set_state
       DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
@@ -95,7 +95,7 @@ C---  get array address
 
       FUNCTION set_acceleration(id, ax, ay, az)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER set_acceleration
       INTEGER id
       DOUBLE PRECISION ax, ay, az
@@ -106,56 +106,56 @@ C---  get array address
 
       FUNCTION get_indices_of_colliding_particles()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_indices_of_colliding_particles
       get_indices_of_colliding_particles = -2
       END
 
       FUNCTION get_center_of_mass_position()
       IMPLICIT NONE      
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_center_of_mass_position
       get_center_of_mass_position = -2
       END
 
       FUNCTION get_center_of_mass_velocity()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_center_of_mass_velocity
       get_center_of_mass_velocity = -2
       END
       
       FUNCTION initialize_code()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER initialize_code
       initialize_code = -2
       END
 
       FUNCTION get_gravity_at_point()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_gravity_at_point      
       get_gravity_at_point = -2
       END
 
       FUNCTION get_velocity()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_velocity      
       get_velocity = -2
       END
 
       FUNCTION get_position()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_position
       get_position = -2
       END
 
       FUNCTION set_velocity(id, vx, vy, vz)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          id,ip, set_velocity
@@ -184,7 +184,7 @@ C---  setting particle
 
       FUNCTION set_position(id, xx, yy, zz)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          id,ip, set_position
@@ -212,14 +212,14 @@ C---  setting particle
 
       FUNCTION get_acceleration()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER get_acceleration      
       get_acceleration = -2
       END
             
       FUNCTION add_particle(id,mm,rad,xx,yy,zz,vx,vy,vz)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 C---  local vars
       INTEGER          add_particle,id
       DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
@@ -265,7 +265,7 @@ C---  done
 
       FUNCTION get_number_of_particles(number_of_particles)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER get_number_of_particles
       INTEGER number_of_particles
@@ -277,7 +277,7 @@ C---  done
 
       FUNCTION get_eps2(ref_eps2)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER get_eps2
       DOUBLE PRECISION ref_eps2
@@ -291,7 +291,7 @@ C---  done
 
       FUNCTION get_dynamical_time_scale()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       DOUBLE PRECISION get_dynamical_time_scale
 
@@ -309,7 +309,7 @@ c         PRINT*, 'Warning: system not initialised yet'
 
       FUNCTION set_dt_max(new_dt_max)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       
       INTEGER set_dt_max
       DOUBLE PRECISION new_dt_max
@@ -322,7 +322,7 @@ c         PRINT*, 'Warning: system not initialised yet'
 
       FUNCTION set_eps2(e2)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER set_eps2
       DOUBLE PRECISION e2
@@ -335,7 +335,7 @@ c         PRINT*, 'Warning: system not initialised yet'
 
       FUNCTION set_bh_eps(e2)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER set_bh_eps
       DOUBLE PRECISION e2
@@ -349,7 +349,7 @@ c         PRINT*, 'Warning: system not initialised yet'
 
       FUNCTION set_nbh(nbbh)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER nbbh, set_nbh
 
@@ -361,7 +361,7 @@ c         PRINT*, 'Warning: system not initialised yet'
  
       FUNCTION set_eta(es,e)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER set_eta
       DOUBLE PRECISION es,e
@@ -374,7 +374,7 @@ c         PRINT*, 'Warning: system not initialised yet'
       
       FUNCTION set_eta_s(value)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER set_eta_s
       DOUBLE PRECISION value
@@ -386,7 +386,7 @@ c         PRINT*, 'Warning: system not initialised yet'
       
       FUNCTION set_eta1(value)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER set_eta1
       DOUBLE PRECISION value
@@ -399,7 +399,7 @@ c         PRINT*, 'Warning: system not initialised yet'
 
       FUNCTION get_eta_s(new_eta_s)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER get_eta_s
       DOUBLE PRECISION new_eta_s
@@ -410,7 +410,7 @@ c         PRINT*, 'Warning: system not initialised yet'
       
       FUNCTION get_eta()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       DOUBLE PRECISION get_eta
 
@@ -428,7 +428,7 @@ C===                * initialize myid array
 C====================================================================
       FUNCTION setup_module()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER i,setup_module
       
       
@@ -459,7 +459,7 @@ C--------------------------------------------------------------------
 
       FUNCTION initialize_particles(time)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       
       INTEGER initialize_particles
       DOUBLE PRECISION time
@@ -468,13 +468,14 @@ C--------------------------------------------------------------------
 C (re)start grape (fip)
 C  update local particles on grape
       CALL initgrape
-
       CALL update_grape(1) 
+
 C---  set some vars
       inrg       = 0
 
 C---  more vars to be set at creating the object
-      dt_max     = .03125d0
+!      dt_max     = .03125d0
+      dt_max     = 1.0
 
 
 C---  more parameters to set
@@ -571,7 +572,7 @@ C===  assumes all particles are at the same time time_cur
 C====================================================================
       FUNCTION reinitialize_particles()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       
       INTEGER reinitialize_particles
       INTEGER i,k
@@ -661,7 +662,7 @@ C     close grape before exiting (fip)
 
       FUNCTION cleanup_module()      
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
 
       INTEGER cleanup_module
 #ifndef NOMPI
@@ -689,7 +690,7 @@ C          ------------
 
       FUNCTION set_particle(id,mm,xx,yy,zz,vx,vy,vz,rad)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          set_particle,id,ip
@@ -723,7 +724,7 @@ C---  setting particle
 
       FUNCTION set_mass(id,mm)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          set_mass,id,ip
@@ -748,7 +749,7 @@ C---  setting particle
 
       FUNCTION get_mass(id)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          id,ip
@@ -770,7 +771,7 @@ C---  get array address
 
       FUNCTION get_potential(id)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          id,ip
@@ -792,7 +793,7 @@ C---  get array address
 
       FUNCTION set_radius(id,rad)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          set_radius,id,ip
@@ -817,7 +818,7 @@ C---  setting particle
 
       FUNCTION get_radius(id)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          id,ip
@@ -840,7 +841,7 @@ C---  get array address
 
       FUNCTION set_pos(id,xx,yy,zz)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          set_pos,id,ip
@@ -868,7 +869,7 @@ C---  setting particle
 
       FUNCTION set_vel(id,vx,vy,vz)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          set_vel,id,ip
@@ -896,7 +897,7 @@ C---  setting particle
 
       FUNCTION get_time(system_time)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER get_time
@@ -910,7 +911,7 @@ C---  local vars
 
       FUNCTION get_time_step(time_step_arg)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER  get_time_step
@@ -927,7 +928,7 @@ C          ---------
 
       FUNCTION get_kinetic_energy(kinetic_energy)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER get_kinetic_energy
@@ -945,7 +946,7 @@ C---  local vars
 
       FUNCTION get_potential_energy(potential_energy)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER get_potential_energy
@@ -963,7 +964,7 @@ C---  local vars
 
       FUNCTION get_energy_error()
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       DOUBLE PRECISION get_energy_error
@@ -979,7 +980,7 @@ C---  local vars
 
       SUBROUTINE get_state(id,mm,rad,xx,yy,zz,vx,vy,vz)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
       
       INTEGER          id,ip
       DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
@@ -1006,7 +1007,7 @@ C---  get array address
 
       FUNCTION delete_particle(id)
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER delete_particle,id,ip,i,k,init
@@ -1026,6 +1027,8 @@ C---  get array address
       ENDIF
 
       CALL initgrape
+      CALL update_grape(1) 
+
 C---  synchronize system
       CALL selectsync(time_cur)
 C          ----------
@@ -1103,7 +1106,7 @@ C            ----------------------
       FUNCTION evolve(tend)
 C---  isync removed      
       IMPLICIT NONE 
-#include "general.inc"
+#include "src/general.inc"
 
 C---  local vars
       INTEGER          evolve
@@ -1227,10 +1230,11 @@ C     close grape before exiting (fip)
 
       FUNCTION synchronize_model()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER synchronize_model
     
       CALL initgrape
+      CALL update_grape(1) 
       
       CALL selectsync(time_cur)
 
@@ -1250,7 +1254,7 @@ C     close grape before exiting (fip)
 
       FUNCTION find_colliding_primary()
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER  find_colliding_primary
 
       find_colliding_primary = idprimary
@@ -1260,7 +1264,7 @@ C     close grape before exiting (fip)
 
       FUNCTION find_colliding_secondary(id1)
       IMPLICIT NONE
-#include "general.inc"
+#include "src/general.inc"
       INTEGER  find_colliding_secondary,id1,idummy
       
       idummy = id1
@@ -1272,7 +1276,7 @@ C     close grape before exiting (fip)
 
 
        SUBROUTINE gather_collisions
-#include "general.inc"
+#include "src/general.inc"
 #ifndef NOMPI
 #include <mpif.h>
        INCLUDE "mpi.inc"       
