@@ -5,14 +5,8 @@ MESA_MAKE_DIR=./src/amuse
 INCLUDE_DIR=./src/star/make
 MESA_DIR = ./src
 
-# FC=$(FORTRAN) # Not necessary; will be set in:
-ifeq ($(wildcard ./src),)
 include ./amuse/makefile_header_v1943
 include ./amuse/makefile_include
-else
-include $(MESA_MAKE_DIR)/makefile_header_v1943
-include $(MESA_MAKE_DIR)/makefile_include
-endif
 
 WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FFLAGS) \
    -I$(MESA_INCLUDE_DIR) -c $(FCfree)

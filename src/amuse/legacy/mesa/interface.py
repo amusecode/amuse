@@ -43,10 +43,9 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         return function
         
     @legacy_function     
-    def evolve():
-        function = LegacyFunctionSpecification()  
-        function.name = 'evolve'
-        function.can_handle_array = True 
+    def evolve_to():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('end_time', dtype='d', direction=function.IN)
         return function

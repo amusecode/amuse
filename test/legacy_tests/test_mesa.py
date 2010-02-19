@@ -41,7 +41,7 @@ class TestInterface(TestWithMPI):
         del instance
     
     def test3(self):
-        print "Testing basic operations..."
+        print "Testing basic operations: new_particle..."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
@@ -55,8 +55,21 @@ class TestInterface(TestWithMPI):
             self.assertEqual(index_of_the_star,i+1)
         del instance
         
-    
     def test4(self):
+        print "Testing basic operations: evolve..."
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
+        instance = MESAInterface()
+        #channel.MessageChannel.DEBUGGER = None
+        status = instance.initialize(instance.default_path_to_inlist, 
+            instance.default_path_to_MESA_data)
+        self.assertEqual(status,0)
+        (index_of_the_star, error) = instance.new_particle(1.0)
+        self.assertEquals(0, error)
+        self.assertEqual(index_of_the_star,1)
+        instance.evolve_to(index_of_the_star, 10.0)
+        del instance
+            
+    def test5(self):
         print "Testing new ZAMS model..."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
