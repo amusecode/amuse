@@ -29,6 +29,9 @@ all:   MESA_source_files worker_code
 clean:
 	/bin/rm -f *~ *.pyc *.mod *.o $(MESA_MAKE_DIR)/*.o $(MESA_MAKE_DIR)/star $(MESA_MAKE_DIR)/*.mod worker_code worker_code.f90 inlist
 
+clean_also_mesa_checkout: clean
+	rm -fr ./src/
+
 MESA_source_files:
   ifeq ($(wildcard ./src),)
 	echo "MESA source directory not found. Will download and build MESA now..."
