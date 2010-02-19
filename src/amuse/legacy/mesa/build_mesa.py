@@ -16,6 +16,10 @@ class BuildMesa(object):
         subprocess.call(['svn', 'co', '-r', revision, mesa_url, 'src'], cwd = self.mesa_directory())
         subprocess.call(['cp','-f','./mesa_reqs/makefile_header_v'+str(revision),
             './src/utils/makefile_header'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/utils_isnan_okay.f',
+            './src/utils/private/'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/test_output',
+            './src/utils/test/'], cwd = self.mesa_directory())
         
     def build_mesa(self):
         self.get_mesa_source_from_svn()
