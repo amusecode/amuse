@@ -33,7 +33,7 @@ MESA_source_files:
   ifeq ($(wildcard ./src),)
 	echo "MESA source directory not found. Will download and build MESA now..."
 	./build_mesa.py build
-	cp ./amuse/ ./src/
+	cp -r ./amuse/ ./src/
   else
 	echo "MESA source directory was found. Continuing..."
   endif
