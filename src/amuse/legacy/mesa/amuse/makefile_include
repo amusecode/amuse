@@ -1,0 +1,53 @@
+# makefile_include
+
+
+# specify optional add-on NetCDF 4 output libraries
+
+# should we attempt to build the NetCDF 4 output routines?
+#USE_NETCDF     = TRUE
+USE_NETCDF     = FALSE
+
+# if TRUE, set NetCDF 4 & HDF5 lib and include directories
+# if FALSE, then these don't matter
+NETCDF_INC_DIR = ~/netcdf-4.0/include
+NETCDF_LIB_DIR = ~/netcdf-4.0/lib
+HDF5_LIB_DIR   = ~/hdf5-1.8.2/lib
+
+# NetCDF is a binary data file format for storing array-oriented scientific 
+# data.  The version used here is NetCDF 4, which is built on HDF5, so if you 
+# wish to enable this feature, you will need to build HDF5 1.8 or later before 
+# building NetCDF.  HDF5, in turn, requires zlib, so you'll potentially need 
+# to build all three of these if you don't have them already.  Please see 
+# instructions at their respective web sites:
+#
+# NetCDF: http://www.unidata.ucar.edu/software/netcdf/
+# HDF5:   http://www.hdfgroup.org/HDF5/
+#
+# Be sure to use the "--enable-netcdf-4" option when running ./configure on 
+# NetCDF -- the new version 4 features are not enabled by default.
+#
+# Once finished building these, it is best to "make check" to be sure that 
+# your builds worked before moving on.
+#
+# Also note that the organization of the resulting NetCDF file 
+# (star/test/LOGS/star.nc) is still tentatitive, as this is a very new 
+# feature (just added on Feb 2, 2009), so it is possible that it will change 
+# in the future.  Please bear this in mind.
+#
+# Please contact Jonathan Tomshine with questions/comments/problems regarding 
+# this feature: yahoo.com, jrtomshine (at)
+
+# (do not modify these)
+LOAD_NETCDF    = -L$(NETCDF_LIB_DIR) -lnetcdf
+LOAD_HDF5      = -L$(HDF5_LIB_DIR) -lhdf5 -lhdf5_hl
+
+ifeq ($(USE_NETCDF),TRUE)
+  NETCDF_OBJ = log_netcdf.o
+  NETCDF_INC = -I$(NETCDF_INC_DIR)
+  LOAD_EXTRAS = -L$(NETCDF_INC_DIR) $(LOAD_NETCDF) $(LOAD_HDF5)
+else
+  NETCDF_OBJ = log_netcdf_stub.o
+  NETCDF_INC = 
+  LOAD_EXTRAS =
+endif
+
