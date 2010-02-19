@@ -9,6 +9,7 @@ class BuildMesa(object):
     def mesa_directory(self):
         return os.path.dirname(__file__)
         
+        
     def get_mesa_source_from_svn(self):
         mesa_url = "https://mesa.svn.sourceforge.net/svnroot/mesa/trunk"
         revision = "1943"
