@@ -14,7 +14,7 @@ class BuildMesa(object):
         mesa_url = "https://mesa.svn.sourceforge.net/svnroot/mesa/trunk"
         revision = "1943"
         subprocess.call(['svn', 'co', '-r', revision, mesa_url, 'src'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./amuse/makefile_header_v'+str(revision),
+        subprocess.call(['cp','-f','./mesa_reqs/makefile_header_v'+str(revision),
             './src/utils/makefile_header'], cwd = self.mesa_directory())
         
     def build_mesa(self):

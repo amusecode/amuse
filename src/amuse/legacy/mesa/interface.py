@@ -24,7 +24,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     @property
     def default_path_to_inlist(self):
         dir = os.path.dirname(__file__)
-        return os.path.join(dir, 'src', 'amuse', 'AMUSE_inlist')
+        return os.path.join(dir, 'mesa_reqs', 'AMUSE_inlist')
 
     @property
     def default_path_to_MESA_data(self):

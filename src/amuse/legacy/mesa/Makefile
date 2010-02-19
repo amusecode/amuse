@@ -1,12 +1,15 @@
 
 FORTRAN ?= gfortran
+ifndef F90
+F90 = gfortran
+endif
 AMUSE_DIR ?=../../../..
-MESA_MAKE_DIR=./src/amuse
+MESA_MAKE_DIR=./mesa_reqs
 INCLUDE_DIR=./src/star/make
 MESA_DIR = ./src
 
-include ./amuse/makefile_header_v1943
-include ./amuse/makefile_include
+include $(MESA_MAKE_DIR)/makefile_header_v1943
+include $(MESA_MAKE_DIR)/makefile_include
 
 WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FFLAGS) \
    -I$(MESA_INCLUDE_DIR) -c $(FCfree)
@@ -21,7 +24,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 all:   MESA_source_files worker_code
 
 clean:
-	/bin/rm -f *~ *.pyc *.mod *.o $(MESA_MAKE_DIR)/*.o $(MESA_MAKE_DIR)/star $(MESA_MAKE_DIR)/*.mod worker_code worker_code.f90 inlist
+	/bin/rm -f *~ *.pyc *.mod *.o $(MESA_MAKE_DIR)/*.o $(MESA_MAKE_DIR)/star $(MESA_MAKE_DIR)/*.mod worker_code worker_code.f90
 
 clean_also_mesa_checkout: clean
 	rm -fr ./src/
@@ -30,7 +33,6 @@ MESA_source_files:
   ifeq ($(wildcard ./src),)
 	echo "MESA source directory not found. Will download and build MESA now..."
 	./build_mesa.py build
-	cp -r ./amuse/ ./src/
   else
 	echo "MESA source directory was found. Continuing..."
   endif
