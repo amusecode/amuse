@@ -18,8 +18,13 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
                 it under the terms of the GNU General Library Public License.
     """
     def __init__(self):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code")
-        LiteratureRefs.__init__(self)
+        try:
+            LegacyInterface.__init__(self, name_of_the_worker="worker_code")
+            LiteratureRefs.__init__(self)
+            self.MESA_exists = True
+        except Exception:
+            print "MESA was not built. Skipping initialization."
+            self.MESA_exists = False
 
     @property
     def default_path_to_inlist(self):

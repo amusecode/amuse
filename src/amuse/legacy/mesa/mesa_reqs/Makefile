@@ -1,11 +1,12 @@
+FORTRAN ?= gfortran
+FC = $(FORTRAN)
+
 MESA_DIR = ../src
 WORK_DIR = .
 WORK_SRC_DIR = $(WORK_DIR)/src
 STAR_TEST_DIR = $(MESA_DIR)/star/test
 STAR_SRC_DIR = $(STAR_TEST_DIR)/src
 
-#include $(MESA_DIR)/utils/makefile_header
-#include $(MESA_DIR)/star/test/make/makefile_include
 include $(WORK_DIR)/makefile_header_v1943
 include $(WORK_DIR)/makefile_include
 

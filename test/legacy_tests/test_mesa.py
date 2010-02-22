@@ -10,34 +10,45 @@ from amuse.legacy.support import channel
 
 class TestInterface(TestWithMPI):
     
+    def worker_found(self):
+       self.name_of_the_worker
+       
     def test1(self):
         print "Testing initialization of the interface..."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
-        inlist_path = instance.default_path_to_inlist
-        print "Path to inlist: ", inlist_path
-        MESA_data_path = instance.default_path_to_MESA_data
-        print "Path to MESA data directory: ", MESA_data_path
-        status = instance.initialize(inlist_path, MESA_data_path)
-        self.assertEqual(status,0)
+        if instance.MESA_exists:
+            inlist_path = instance.default_path_to_inlist
+            print "Path to inlist: ", inlist_path
+            MESA_data_path = instance.default_path_to_MESA_data
+            print "Path to MESA data directory: ", MESA_data_path
+            status = instance.initialize(inlist_path, MESA_data_path)
+            self.assertEqual(status,0)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
         
     def test2(self):
         print "Testing get/set of interface parameters..."
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
-        status = instance.initialize(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data)
-        self.assertEqual(status,0)
-        (metallicity, error) = instance.get_metallicity()
-        self.assertEquals(0, error)
-        self.assertEquals(0.02, metallicity)
-        for x in [0.04, 0.01, 0.001, 0.0001]:
-            error = instance.set_metallicity(x)
-            self.assertEquals(0, error)
+        #channel.MessageChannel.DEBUGGER = None
+        if instance.MESA_exists:
+            status = instance.initialize(instance.default_path_to_inlist, 
+                instance.default_path_to_MESA_data)
+            self.assertEqual(status,0)
             (metallicity, error) = instance.get_metallicity()
             self.assertEquals(0, error)
-            self.assertEquals(x, metallicity)
+            self.assertEquals(0.02, metallicity)
+            for x in [0.04, 0.01, 0.001, 0.0001]:
+                error = instance.set_metallicity(x)
+                self.assertEquals(0, error)
+                (metallicity, error) = instance.get_metallicity()
+                self.assertEquals(0, error)
+                self.assertEquals(x, metallicity)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
     
     def test3(self):
@@ -45,14 +56,17 @@ class TestInterface(TestWithMPI):
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
-        status = instance.initialize(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data)
-        self.assertEqual(status,0)
-        number_of_stars = 10 # 10 seems to be the maximum the code can handle...
-        for i in range(number_of_stars):
-            (index_of_the_star, error) = instance.new_particle(0.5+i*1.0/number_of_stars)
-            self.assertEquals(0, error)
-            self.assertEqual(index_of_the_star,i+1)
+        if instance.MESA_exists:
+            status = instance.initialize(instance.default_path_to_inlist, 
+                instance.default_path_to_MESA_data)
+            self.assertEqual(status,0)
+            number_of_stars = 10 # 10 seems to be the maximum the code can handle...
+            for i in range(number_of_stars):
+                (index_of_the_star, error) = instance.new_particle(0.5+i*1.0/number_of_stars)
+                self.assertEquals(0, error)
+                self.assertEqual(index_of_the_star,i+1)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
         
     def test4(self):
@@ -60,13 +74,16 @@ class TestInterface(TestWithMPI):
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
-        status = instance.initialize(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data)
-        self.assertEqual(status,0)
-        (index_of_the_star, error) = instance.new_particle(1.0)
-        self.assertEquals(0, error)
-        self.assertEqual(index_of_the_star,1)
-        instance.evolve_to(index_of_the_star, 10.0)
+        if instance.MESA_exists:
+            status = instance.initialize(instance.default_path_to_inlist, 
+                instance.default_path_to_MESA_data)
+            self.assertEqual(status,0)
+            (index_of_the_star, error) = instance.new_particle(1.0)
+            self.assertEquals(0, error)
+            self.assertEqual(index_of_the_star,1)
+            instance.evolve_to(index_of_the_star, 10.0)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
             
     def test5(self):
@@ -74,10 +91,13 @@ class TestInterface(TestWithMPI):
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
-        status = instance.initialize(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data)
-        self.assertEqual(status,0)
-        instance.new_zams_model()
+        if instance.MESA_exists:
+            status = instance.initialize(instance.default_path_to_inlist, 
+                instance.default_path_to_MESA_data)
+            self.assertEqual(status,0)
+            instance.new_zams_model()
+        else:
+            print "MESA was not built. Skipping test."
         del instance     
     
     def xtest5(self):

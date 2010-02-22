@@ -38,25 +38,6 @@
 # The failure mode is an infinite loop during installation of mtx.
 # So if your installation seems to be hung, try a new gfortran.
 
-ifdef F90
-  FC = $(F90)
-else
-  ifndef FC
-    ifdef FORTRAN
-      FC = $(FORTRAN)
-    else
-      ifdef F77
-        FC = $(F77)
-      else
-        ifdef FORT
-          FC = $(FORT)
-        else
-          FC = gfortran
-        endif
-      endif  
-    endif
-  endif
-endif
 
 # Portland Group Fortran 90/95 compiler
 #FC = pgf90

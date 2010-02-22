@@ -1,12 +1,11 @@
+ifdef DO_INSTALL_MESA
+    TARGS = .compile
+else
+    TARGS = .warning
+endif
 
 FORTRAN ?= gfortran
-
-ifndef F90
-F90 = $(FORTRAN)
-endif
-ifndef FC
 FC = $(FORTRAN)
-endif
 
 AMUSE_DIR ?=../../../..
 MESA_MAKE_DIR=./mesa_reqs
@@ -26,7 +25,21 @@ STAR_WORK_OBJS = \
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all:   MESA_source_files worker_code
+all:	$(TARGS)
+
+.compile:   MESA_source_files worker_code
+
+.warning:
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "DO_INSTALL_MESA is not set. MESA will not be downloaded and build."
+	@echo "If you do want MESA, set DO_INSTALL_MESA to any (not empty) value."
+	@echo "Note: MESA is quite large (800 MB downloaded, 2.3 GB built) and"
+	@echo "requires ifort or gfortran (version > 4.3.0)."
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
 
 clean:
 	/bin/rm -f *~ *.pyc *.mod *.o $(MESA_MAKE_DIR)/*.o $(MESA_MAKE_DIR)/star $(MESA_MAKE_DIR)/*.mod worker_code worker_code.f90
@@ -36,11 +49,10 @@ clean_also_mesa_checkout: clean
 
 MESA_source_files:
   ifeq ($(wildcard ./src),)
-#  ifeq ($(wildcard ./src2),) # (force mesa to be rebuild...)
-	echo "MESA source directory not found. Will download and build MESA now..."
+	@echo "MESA source directory not found. Will download and build MESA now..."
 	./build_mesa.py build
   else
-	echo "MESA source directory was found. Continuing..."
+	@echo "MESA source directory was found. Continuing..."
   endif
 
 worker_code:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
