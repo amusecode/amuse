@@ -7,13 +7,13 @@ import os.path
 
 class Test(unittest.TestCase):
     
-    def test1(self):
+    def Ntest1(self):
         I = constants.GetConstantsFromFiles()
         #I.get_table_from_url()
         I.get_table_from_file()
         I.check_current_file_with_table()
         
-    def test2(self):
+    def Ntest2(self):
         I = constants.Constants()
         I.generate_nist()
         
