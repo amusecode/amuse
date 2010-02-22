@@ -3,6 +3,8 @@ FORTRAN ?= gfortran
 
 ifndef F90
 F90 = $(FORTRAN)
+endif
+ifndef FC
 FC = $(FORTRAN)
 endif
 
@@ -33,8 +35,8 @@ clean_also_mesa_checkout: clean
 	rm -fr ./src/
 
 MESA_source_files:
-#  ifeq ($(wildcard ./src),)
-  ifeq ($(wildcard ./src2),) # (force mesa to be rebuild...)
+  ifeq ($(wildcard ./src),)
+#  ifeq ($(wildcard ./src2),) # (force mesa to be rebuild...)
 	echo "MESA source directory not found. Will download and build MESA now..."
 	./build_mesa.py build
   else
