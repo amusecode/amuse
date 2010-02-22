@@ -802,7 +802,6 @@ class AbstractParticleSet(object):
         keys = self._get_keys()
         values = self._get_values(None, attributes)
         result = self._particles_factory()()
-        print result
         result._set_particles(keys, attributes, values)
         object.__setattr__(self, "_vector_attributes", self._vector_attributes.copy())
         object.__setattr__(self, "_calculated_attributes", self._calculated_attributes.copy())
