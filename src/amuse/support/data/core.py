@@ -789,7 +789,9 @@ class AbstractParticleSet(object):
     def __len__(self):
         return len(self._get_keys())
         
-     
+    def _particles_factory(self):
+        return type(self._real_particles())
+
     def copy(self):
         """
         Creates a new in memory particle set and copies
@@ -799,11 +801,13 @@ class AbstractParticleSet(object):
         attributes = self._get_attributes()
         keys = self._get_keys()
         values = self._get_values(None, attributes)
-        result = Particles()
+        result = self._particles_factory()()
+        print result
         result._set_particles(keys, attributes, values)
-        result._private._vector_attributes = self._private._vector_attributes.copy()
+        object.__setattr__(self, "_vector_attributes", self._vector_attributes.copy())
+        object.__setattr__(self, "_calculated_attributes", self._calculated_attributes.copy())
+       
         return result
-         
     
     def copy_values_of_attribute_to(self, attribute_name, particles):
         """
@@ -981,7 +985,8 @@ class AbstractParticleSet(object):
         
         """
         keys = self._get_keys()
-        values = self._get_values(keys, attributes)
+        #values = self._get_values(keys, attributes) #fast but no vectors
+        values = map(lambda x: getattr(self, x), attributes)
         selected_keys = []
         for index in range(len(keys)):
             key = keys[index]
@@ -1109,15 +1114,6 @@ class Particles(AbstractParticleSet):
                 timeline.append((x._private.timestamp, x._get_value_of_attribute(particle_key, attribute)))
         return timeline
                     
-    def copy(self):
-         attributes = self._private.attribute_storage._state_attributes()
-         keys = self._get_keys()
-         values = self._get_values(None, attributes)
-         result = Particles()
-         result._set_particles(keys, attributes, values)
-         return result
-    
-        
     def _set_particles(self, keys, attributes = [], values = []):
         self._private.attribute_storage._set_particles(keys, attributes, values)
         
