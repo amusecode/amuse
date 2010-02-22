@@ -56,6 +56,12 @@ class RunAllTestsWhenAChangeHappens(object):
                                 print "will rerun: ", module, testcase
                         
                 
+                print "Changed files:"
+                for element in monitor_directories.updated_elements:
+                    if not element.is_file():
+                        continue
+                    print element.path
+                    
                 report = background_test.RunTests.instance.run_tests(self.server.last_report)
                 
                 self.server.set_last_report(report)

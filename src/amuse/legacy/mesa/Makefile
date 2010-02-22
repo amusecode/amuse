@@ -1,8 +1,11 @@
 
 FORTRAN ?= gfortran
+
 ifndef F90
-F90 = gfortran
+F90 = $(FORTRAN)
+FC = $(FORTRAN)
 endif
+
 AMUSE_DIR ?=../../../..
 MESA_MAKE_DIR=./mesa_reqs
 INCLUDE_DIR=./src/star/make
