@@ -42,6 +42,10 @@ class LegacyCommand(Command):
         
         #self.update_environment_from_cfgfile()
         self.set_fortran_variables()
+        
+        self.environment['F90'] = self.environment['FORTRAN']
+        self.environment['FC'] = self.environment['FORTRAN']
+        
         self.set_cuda_variables()
         self.set_libdir_variables()
         self.set_libs_variables()
