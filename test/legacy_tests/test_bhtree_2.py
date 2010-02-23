@@ -133,8 +133,9 @@ class TestAmuseInterface(TestWithMPI):
         earth.position = [149.5e6, 0.0, 0.0] | units.km
         earth.velocity = [0.0, 29800, 0.0] | units.ms
 
+        #instance.particles.add_particles(stars)
         instance.setup_particles(stars)
-
+        
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
         
@@ -248,6 +249,59 @@ class TestAmuseInterface(TestWithMPI):
             print instance.get_indices_of_colliding_particles()
             #print stars[0].position-stars[1].position
             stars.savepoint()
+            
+    
+    def test4(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = BHTree(convert_nbody)
+        instance.setup_module()
+        
+        index = instance.new_particle(
+            15.0 | units.kg,
+            10.0 | units.m,
+            10.0 | units.m, 20.0 | units.m, 30.0 | units.m,
+            #1.0 | units.m/units.s, 1.0 | units.m/units.s, 3.0 | units.m/units.s
+            0.0 | units.m/units.s, 0.0 | units.m/units.s, 0.0 | units.m/units.s
+        )
+        self.assertEquals(instance.get_mass(index), 15.0| units.kg)
+        
+    def test5(self):
+
+        instance = BHTree(BHTree.NBODY)
+        instance.setup_module()
+        
+        index = instance.new_particle(
+            15.0 | nbody_system.mass,
+            10.0 | nbody_system.length,
+            10.0 | nbody_system.length, 20.0 | nbody_system.length, 30.0 | nbody_system.length,
+            1.0 | nbody_system.speed, 1.0 | nbody_system.speed, 3.0 | nbody_system.speed
+        )
+        self.assertEquals(instance.get_mass(index), 15.0| nbody_system.mass)
+        
+    
+    def test6(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = BHTree(convert_nbody)
+        instance.setup_module()
+        
+        indices = instance.new_particle(
+            [15.0, 30.0] | units.kg,
+            [10.0, 20.0] | units.m,
+            [10.0, 20.0] | units.m, [20.0, 40.0] | units.m, [30.0, 50.0] | units.m,
+            #1.0 | units.m/units.s, 1.0 | units.m/units.s, 3.0 | units.m/units.s
+            [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s
+        )
+        self.assertEquals(instance.get_mass(indices[0]), 15.0| units.kg)
+        self.assertEquals(instance.get_mass(indices)[0], 15.0| units.kg)
+        
+        try:
+            instance.get_mass([4,5])
+            self.fail("Should raise error, invalid index")
+        except Exception, ex:
+            self.assertEquals(str(ex), "Error when calling 'get_mass' of a 'BHTree', errorcode is -1")
+        
         
          
 

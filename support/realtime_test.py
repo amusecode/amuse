@@ -57,14 +57,17 @@ class RunAllTestsWhenAChangeHappens(object):
                         
                 
                 print "Changed files:"
+                number_of_changed_files = 0
                 for element in monitor_directories.updated_elements:
                     if not element.is_file():
                         continue
                     print element.path
+                    number_of_changed_files += 1
                     
-                report = background_test.RunTests.instance.run_tests(self.server.last_report)
+                if number_of_changed_files > 0 or self.server.last_report is None:
+                    report = background_test.RunTests.instance.run_tests(self.server.last_report)
                 
-                self.server.set_last_report(report)
+                    self.server.set_last_report(report)
              
                 monitor_directories.check()
             else:

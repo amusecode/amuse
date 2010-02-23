@@ -133,7 +133,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     particles.savepoint(time)
     
     
-    total_energy_at_t0 = sum(gravity.get_energies(), 0.0 | units.J)
+    total_energy_at_t0 = gravity.kinetic_energy + gravity.potential_energy   
     
     print "evolving the model until t = " + str(end_time)
     while time < end_time:
@@ -154,7 +154,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         
         from_model_to_gravity.copy_attributes(["mass"])
         
-        total_energy_at_this_time = sum(gravity.get_energies(), 0.0 | units.J)    
+        total_energy_at_this_time = gravity.kinetic_energy + gravity.potential_energy   
         print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time)
 
     

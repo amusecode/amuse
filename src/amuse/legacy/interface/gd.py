@@ -3,7 +3,7 @@ Stellar Dynamics Interface Defintion
 """
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import CodeInterface, CodeInterface2
 from amuse.support.data.binding import CodeProperty, CodeMethod
 from amuse.support.data import binding
 from amuse.support.units import nbody_system
@@ -764,5 +764,62 @@ class NBodyGravitationalDynamicsBinding(CodeInterface):
         subset = self.colliding_particles_method._run(self, self.particles)
         return subset
     
+class GravitationalDynamicsInterface(CodeInterface2):
+    NBODY = object()
+    
+    def __init__(self, legacy_interface, convert_nbody = None):
+        self.convert_nbody = convert_nbody
+        
+        CodeInterface2.__init__(self, legacy_interface)
+        
+    def setup_properties(self, object):
+        object.add_property("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
+        object.add_property("get_potential_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
+        object.add_property("get_total_radius", nbody_system.length)
+        object.add_property("get_center_of_mass_position", nbody_system.length)
+        object.add_property("get_center_of_mass_velocity", nbody_system.length / nbody_system.time)
+        object.add_property("get_total_mass", nbody_system.mass)
+        object.add_property('get_time',nbody_system.time, "model_time")
+        
+    def setup_states(self, object):
+        pass
+        #~ self.set_initial_state('INITIAL')
+        #~ self.add_transition('INITIAL', 'EVOLVE', 'initialize_particles')
+        #~ self.add_transition('EVOLVE', 'STATE', 'synchronize_model')
+        #~ self.add_transition('EVOLVE', 'CHANGE-PARTICLES', 'delete_particle')
+        #~ self.add_transition('EVOLVE', 'CHANGE-PARTICLES', 'new_particle')
+        #~ self.add_transition('CHANGE-PARTICLES', 'EVOLVE', 'reinitialize_code')
+        #~ self.add_transition(None, 'EDIT-PARAMETERS', 'set_eps2')
+    
+    def setup_methods(self, object):
+        m = nbody_system.mass
+        l = nbody_system.length
+        v = nbody_system.length / nbody_system.time
+        t = nbody_system.time
+        object.add_method('evolve', (nbody_system.time,), public_name = 'evolve_model')
+        #self.add_method('set_state', 'set_state',(None, nbody_system.time, l , l , l , v, v, v))
+        #self.add_method('get_state', 'get_state',(None), (m,l,l,l,l,v,v,v))
+        #self.add_method('get_state', 'get_state',(None), (l,l,l,v,v,v))
+        
+    def setup_particles_handler(self, object):
+        pass
+        #~ self.define_particles('particles','index_of_the_particle')
+        #~ self.add_new('particles', 'new_particle')
+        #~ self.add_setter('particles', 'set_state', (
+            #~ ('r','radius')
+        #~ )
+        #~ )
+        #~ self.add_getter('particles', 'get_state', ('r','radius'))
+        
+    def setup_parameters(self, object):
+        pass
+        #self.add_parameter('epsilon_squared', 'set_eps2','get_eps2', nbody_sytem.length ** 2)
+        
+      
+    def setup_converter(self, object):
+        if not self.convert_nbody is self.NBODY:
+            object.set_nbody_converter(self.convert_nbody)  
+        
+        
     
     

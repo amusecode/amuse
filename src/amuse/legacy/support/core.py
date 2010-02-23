@@ -189,7 +189,6 @@ class LegacyCall(object):
         for dtype, values in dtype_to_values.iteritems():
             keyword = dtype_to_keyword[dtype]
             call_keyword_arguments[keyword] = values
-
         return call_keyword_arguments
         
     def __str__(self):
