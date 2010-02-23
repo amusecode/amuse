@@ -81,7 +81,22 @@ class TestInterface(TestWithMPI):
             (index_of_the_star, error) = instance.new_particle(1.0)
             self.assertEquals(0, error)
             self.assertEqual(index_of_the_star,1)
-            instance.evolve_to(index_of_the_star, 10.0)
+            error = instance.evolve(index_of_the_star)
+            self.assertEquals(0, error)
+            end_time = 5.0e5 # (years)
+            instance.evolve_to(index_of_the_star, end_time)
+            (age_of_the_star, error) = instance.get_age(index_of_the_star)
+            self.assertEquals(0, error)
+            self.assertAlmostEqual(age_of_the_star,end_time,3)
+            (L_of_the_star, error) = instance.get_luminosity(index_of_the_star)
+            self.assertEquals(0, error)
+            self.assertAlmostEqual(L_of_the_star,0.725,3)
+            (M_of_the_star, error) = instance.get_mass(index_of_the_star)
+            self.assertEquals(0, error)
+            self.assertAlmostEqual(M_of_the_star,1.000,3)
+            (T_of_the_star, error) = instance.get_temperature(index_of_the_star)
+            self.assertEquals(0, error)
+            self.assertAlmostEqual(T_of_the_star,5650.998,3)
         else:
             print "MESA was not built. Skipping test."
         del instance

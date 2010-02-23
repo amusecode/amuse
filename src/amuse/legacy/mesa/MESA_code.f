@@ -141,7 +141,7 @@
       implicit none
       integer, intent(in) :: AMUSE_id
       integer :: delete_star
-      delete_star = 0
+      delete_star = -1
    end function
 
 ! Does nothing...
@@ -161,7 +161,7 @@
       integer :: get_number_of_particles
       integer, intent(out) :: AMUSE_value
       AMUSE_value = 1
-      get_number_of_particles = 0
+      get_number_of_particles = -1
    end function
 
 ! Return the metallicity parameter
@@ -188,62 +188,97 @@
 
 ! Return the current mass of the star
    function get_mass(AMUSE_id, AMUSE_value)
-      use ctrls_io
-      use run_star_support
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
       implicit none
       integer, intent(in) :: AMUSE_id
-      integer :: get_mass
-      double precision :: AMUSE_value
-      AMUSE_value = initial_z
-      get_mass = 0
+      double precision, intent(out) :: AMUSE_value
+      integer :: get_mass, ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1.0
+         get_mass = -1
+      else
+         AMUSE_value = s% star_mass
+         get_mass = 0
+      endif
    end function
 
 ! Return the current temperature of the star
    function get_temperature(AMUSE_id, AMUSE_value)
-      use ctrls_io
-      use run_star_support
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
       implicit none
       integer, intent(in) :: AMUSE_id
-      integer :: get_temperature
-      double precision :: AMUSE_value
-      AMUSE_value = initial_z
-      get_temperature = 0
+      double precision, intent(out) :: AMUSE_value
+      integer :: get_temperature, ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1.0
+         get_temperature = -1
+      else
+         AMUSE_value = s% Teff
+         get_temperature = 0
+      endif
    end function
 
 ! Return the current luminosity of the star
       function get_luminosity(AMUSE_id, AMUSE_value)
-         use ctrls_io
-         use run_star_support
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id
-         integer :: get_luminosity
-         double precision :: AMUSE_value
-         AMUSE_value = initial_z
-         get_luminosity = 0
+         double precision, intent(out) :: AMUSE_value
+         integer :: get_luminosity, ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_luminosity = -1
+         else
+            AMUSE_value = 10.0**s% log_surface_luminosity
+            get_luminosity = 0
+         endif
       end function
 
 ! Return the current age of the star
       function get_age(AMUSE_id, AMUSE_value)
-         use ctrls_io
-         use run_star_support
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id
-         integer :: get_age
-         double precision :: AMUSE_value
-         AMUSE_value = initial_z
-         get_age = 0
+         double precision, intent(out) :: AMUSE_value
+         integer :: get_age, ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_age = -1
+         else
+            AMUSE_value = s% star_age
+            get_age = 0
+         endif
       end function
 
 ! Return the current radius of the star
       function get_radius(AMUSE_id, AMUSE_value)
-         use ctrls_io
-         use run_star_support
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id
-         integer :: get_radius
-         double precision :: AMUSE_value
-         AMUSE_value = initial_z
-         get_radius = 0
+         double precision, intent(out) :: AMUSE_value
+         integer :: get_radius, ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_radius = -1
+         else
+            AMUSE_value = 10.0**s% log_surface_radius
+            get_radius = 0
+         endif
       end function
 
 ! Return the current stellar type of the star
@@ -254,23 +289,100 @@
          integer, intent(in) :: AMUSE_id
          integer :: get_stellar_type
          double precision :: AMUSE_value
-         AMUSE_value = initial_z
-         get_stellar_type = 0
+         AMUSE_value = 0
+         get_stellar_type = -1
       end function
 
-! Does nothing...
+! Evolve the star for one step
    function evolve(AMUSE_id)
+      use star_lib, only: star_finish_step
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support
+      use run_star, only: check_model
+      use amuse_support, only: failed
       implicit none
       integer, intent(in) :: AMUSE_id
       integer :: evolve
+      type (star_info), pointer :: s
+      integer :: ierr, model_number, result, result_reason
+      logical :: first_try
+      evolve = -1
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) return
+      if (auto_extend_net) then
+         call extend_net(s, ierr)
+         if (failed('extend_net', ierr)) return
+      end if
+      first_try = .true.
+      model_number = get_model_number(AMUSE_id, ierr)
+      if (failed('get_model_number', ierr)) return
+      step_loop: do ! may need to repeat this loop for retry or backup
+         result = star_evolve_step(AMUSE_id, first_try)
+         if (result == keep_going) result = check_model(s, AMUSE_id, 0)
+         if (result == keep_going) result = star_pick_next_timestep(AMUSE_id)
+         if (result == keep_going) exit step_loop
+         model_number = get_model_number(AMUSE_id, ierr)
+         if (failed('get_model_number', ierr)) return
+         result_reason = get_result_reason(AMUSE_id, ierr)
+         if (result == retry) then
+            if (failed('get_result_reason', ierr)) return
+            if (report_retries) &
+               write(*,'(i6,3x,a,/)') model_number, &
+                  'retry reason ' // trim(result_reason_str(result_reason))
+         else if (result == backup) then
+            if (failed('get_result_reason', ierr)) return
+            if (report_backups) &
+               write(*,'(i6,3x,a,/)') model_number, &
+                  'backup reason ' // trim(result_reason_str(result_reason))
+         end if
+         if (result == retry) result = star_prepare_for_retry(AMUSE_id)
+         if (result == backup) result = star_do1_backup(AMUSE_id)
+         if (result == terminate) then
+            if (result_reason == result_reason_normal) then
+               write(*, '(a, i12)') 'save profile for model number ', s% model_number
+               call save_profile(AMUSE_id, 3, ierr)
+               if (failed('save_profile', ierr)) return
+               evolve = 0
+            end if
+            return
+         end if
+         first_try = .false.
+      end do step_loop
+      if (result == keep_going) then
+         result = star_finish_step(AMUSE_id, .false.)
+         if (result /= keep_going) return
+         endif
+      else if (result == terminate) then
+         if (result_reason == result_reason_normal) then
+            result = star_finish_step(AMUSE_id, save_photo_when_terminate)
+         end if
+         evolve = 0
+         return
+      end if
+      if (s% model_number == save_model_number) then
+         call star_write_model(AMUSE_id, save_model_filename, .true., ierr)
+         if (failed('star_write_model', ierr)) return
+         write(*, *) 'saved to ' // trim(save_model_filename)
+      end if
+      if (s% model_number == profile_model_number) then
+         write(*, '(a, i7)') 'save profile for model number', s% model_number
+         call save_profile(AMUSE_id, 3, ierr)
+         if (failed('save_profile', ierr)) return
+      end if
+      if (internals_num >= 0) then
+         write(*, '(a, i7)') 'write internals for model number', s% model_number
+         call std_write_internals(AMUSE_id, internals_num)
+         stop 'finished std_write_internals'
+      end if
       evolve = 0
    end function
 
 ! Evolve the star until AMUSE_end_time
       subroutine evolve_to(AMUSE_id, AMUSE_end_time)
+         use star_lib, only: star_finish_step
+         use star_private_def, only: star_info, get_star_ptr
          use run_star_support
          use run_star, only: check_model
-         use star_private_def, only: star_info, get_star_ptr
          use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id
@@ -282,8 +394,6 @@
          if (failed('get_star_ptr', ierr)) return
          s% max_age = AMUSE_end_time
          continue_evolve_loop = .true.
-         write(*,*) "Start evolving. ID:", AMUSE_id
-         write(*,*) "max_age:", s% max_age
          evolve_loop: do while(continue_evolve_loop) ! evolve one step per loop
             if (auto_extend_net) then
                call extend_net(s, ierr)
@@ -333,34 +443,22 @@
                end if
                exit evolve_loop
             end if
-            
             if (s% model_number == save_model_number) then
                call star_write_model(AMUSE_id, save_model_filename, .true., ierr)
                if (failed('star_write_model', ierr)) return
                write(*, *) 'saved to ' // trim(save_model_filename)
             end if
-            
             if (s% model_number == profile_model_number) then
                write(*, '(a, i7)') 'save profile for model number', s% model_number
                call save_profile(AMUSE_id, 3, ierr)
                if (failed('save_profile', ierr)) return
             end if
-            
             if (internals_num >= 0) then
                write(*, '(a, i7)') 'write internals for model number', s% model_number
                call std_write_internals(AMUSE_id, internals_num)
                stop 'finished std_write_internals'
             end if
-            
          end do evolve_loop
-        
-         if (result_reason == result_reason_normal) then
-         else
-            write(*, *) 
-            write(*, *) 'terminated evolution because ' // trim(result_reason_str(result_reason))
-            write(*, *)
-         end if
-
          return
       end
       

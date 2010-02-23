@@ -81,7 +81,7 @@
          ! if load_saved_model is true, then use this initial model
       
       
-      save_photo_when_terminate = .true.
+      save_photo_when_terminate = .false.
          ! if true, then save photo for last model before terminate the run
       
       
@@ -634,9 +634,9 @@
 
          photo_directory = 'photos'
       
-         do_log_files = .true. ! log files are created only if this is true
+         do_log_files = .false. ! log files are created only if this is true
       
-         do_profiles = .true. ! profiles are written only if this is true
+         do_profiles = .false. ! profiles are written only if this is true
 
          log_directory = 'LOGS'
          star_log_name = 'star.log'
