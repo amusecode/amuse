@@ -1055,6 +1055,9 @@ class AbstractParticleSet(object):
         result.extend(self._calculated_attributes.keys())
         result.extend(self._vector_attributes.keys())
         return result
+
+    def is_empty(self):
+        return self.__len__()==0
         
 class Particles(AbstractParticleSet):
     """
