@@ -27,6 +27,12 @@ class TestParticles(TestBase):
         self.assertEquals(masses[0][0], 1.0 | units.s)
         self.assertEquals(masses[1][0], 2.0 | units.s)
         self.assertEquals(masses[2][0], 3.0 | units.s)
+
+    def test2(self):
+        particles = core.Particles(2)
+        particles.mass = [1,1]|units.kg
+        heavy = particles.select(lambda m: m>1|units.kg, ["mass"])
+        self.assertTrue(heavy.is_empty())
         
 class TestStars(TestBase):
 
