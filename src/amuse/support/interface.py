@@ -108,6 +108,16 @@ class CodeMethodWrapper(CodeAttributeWrapper):
         return hasattr(self.method, 'method_input_argument_names')
     
     @late
+    def legacy_specification(self):
+        if self.method_is_code:
+            return self.method.legacy_specification
+        elif self.method_is_legacy:
+            return self.method.specification
+        else:
+            return None
+
+        
+    @late
     def method_input_argument_names(self):
         if self.method_is_code:
             return self.method.method_input_argument_names
@@ -545,6 +555,8 @@ class MethodWithUnitsDefinition(object):
         if not hasattr(self.return_units, '__iter__'):
             if self.return_units == self.NO_UNIT:
                 return return_value
+            elif self.return_units == self.ERROR_CODE:
+                self.handle_as_errorcode(return_value)
             else:
                 return self.return_units.new_quantity(return_value)
         else:
@@ -769,7 +781,8 @@ class ParticleSetDefinition(object):
             delete_particle_method, 
             number_of_particles_method, 
             setters,
-            getters
+            getters,
+            self.name_of_indexing_attribute
         )
         
 

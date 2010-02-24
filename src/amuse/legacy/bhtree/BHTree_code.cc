@@ -607,22 +607,34 @@ int setup_module()
 
 int get_position(int id, double *x, double *y, double *z)
 {
-  return -2;
+    int i = get_index_from_identity(id);
+    
+    if (i >= 0 && i < bhtcs.n) 
+    {
+        nbody_particle *np = bhtcs.get_particle_pointer();
+        vec v = np[i].get_pos();
+        *x = v[0];
+        *y = v[1];
+        *z = v[2];
+        return 0;
+    }
+
+    return -1;
 }
 
 int set_position(int id, double x, double y, double z)
 {
-  int i = get_index_from_identity(id);
-  if (i >= 0 && i < bhtcs.n) 
+    int i = get_index_from_identity(id);
+    if (i >= 0 && i < bhtcs.n) 
     {
-      nbody_particle *np = bhtcs.get_particle_pointer();
-      vec pos(x, y, z);
-      np[i].set_pos(pos);
-      return 0;
+        nbody_particle *np = bhtcs.get_particle_pointer();
+        vec pos(x, y, z);
+        np[i].set_pos(pos);
+        return 0;
     } 
-  else
+    else
     {
-      return -1;
+        return -1;
     }
 }
 

@@ -163,7 +163,7 @@ class TestAmuseInterface(TestWithMPI):
         del instance
         
     def test2(self):
-	#not completed 
+        #not completed 
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = BHTree(convert_nbody)
@@ -302,6 +302,52 @@ class TestAmuseInterface(TestWithMPI):
         except Exception, ex:
             self.assertEquals(str(ex), "Error when calling 'get_mass' of a 'BHTree', errorcode is -1")
         
+    
+    def test7(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = BHTree(convert_nbody)
+        instance.setup_module()
         
-         
+        particles = core.Particles(2)
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles.mass = [15.0, 30.0] | units.kg
+        particles.radius =  [10.0, 20.0] | units.m
+        particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+
+        
+        instance.particles.add_particles(particles)
+        
+        self.assertEquals(instance.get_mass(1), 15.0| units.kg)  
+        self.assertEquals(instance.get_position(1)[2], 30.0| units.m)   
+        
+        self.assertEquals(len(instance.particles), 2)
+        
+        
+        self.assertEquals(instance.particles.mass[1] , 30.0 | units.kg) 
+        self.assertEquals(instance.particles.position[1][2] , 60.0 | units.m)   
+        
+    def test8(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = BHTree(convert_nbody)
+        instance.setup_module()
+        
+        particles = core.Particles(2)
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles.mass = [15.0, 30.0] | units.kg
+        particles.radius =  [10.0, 20.0] | units.m
+        particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+
+        
+        instance.particles.add_particles(particles)
+        
+        instance.particles.mass =  [17.0, 33.0] | units.kg
+        
+        
+        self.assertEquals(instance.get_mass(1), 17.0| units.kg)  
 

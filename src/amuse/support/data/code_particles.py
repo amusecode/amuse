@@ -25,6 +25,11 @@ class ParticleMappingMethod(object):
             from_parameter_name_to_attribute_name[parameter_name] = attribute_name
             from_attribute_name_to_parameter_name[attribute_name] = parameter_name
             self._attribute_names.append(attribute_name)
+     
+    
+    @late
+    def name_of_the_indexing_parameter(self):
+        return 'index_of_the_particle'
         
     @late
     def method_is_legacy(self):
@@ -34,6 +39,16 @@ class ParticleMappingMethod(object):
     @late
     def method_is_code(self):
         return hasattr(self.method, 'method_input_argument_names')
+    
+    
+    @late
+    def legacy_specification(self):
+        if self.method_is_code:
+            return self.method.legacy_specification
+        elif self.method_is_legacy:
+            return self.method.specification
+        else:
+            return None
     
     @late
     def method_input_argument_names(self):
@@ -69,6 +84,8 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         
         if len(self.method_output_argument_names) > 0:
             for x in self.method_output_argument_names:
+                if x == self.name_of_the_indexing_parameter:
+                    continue
                 if x in self.from_parameter_name_to_attribute_name:
                     result.append(self.from_parameter_name_to_attribute_name[x])
                 else:
@@ -76,6 +93,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
             return result
         else:
             return self._attribute_names
+            
         
     def intersection(self, attributes):
         result = set([])
@@ -88,10 +106,16 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     def apply(self, indices, attributes_to_return):
         
         if len(indices) > 1: 
-            if self.method_is_code and not self.method.specification.can_handle_array:
+            if self.method_is_legacy and not self.method.specification.can_handle_array:
                 raise Exception(
-                    "getter method <{0}> of a '{1}' object, cannot handle arrays".format(method_name, type(self).__name__)
+                    "getter method {0} cannot handle arrays".format(self.method)
                 )
+            elif self.method_is_code:
+                if not self.method.legacy_specification is None:
+                    if not self.method.legacy_specification.can_handle_array:
+                        raise Exception(
+                            "getter method {0} cannot handle arrays".format(self.method)
+                        )
                 
         return_value = self.method(indices)
         if len(self.attribute_names) == 1:
@@ -115,6 +139,9 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
     def attribute_names(self):
         result = []
         for x in self.method_input_argument_names:
+            if x == self.name_of_the_indexing_parameter:
+                continue
+
             if x in self.from_parameter_name_to_attribute_name:
                 result.append(self.from_parameter_name_to_attribute_name[x])
             else:
@@ -182,7 +209,8 @@ class InCodeAttributeStorage(AttributeStorage):
             delete_particle_method, 
             number_of_particles_method, 
             setters,
-            getters):
+            getters,
+            name_of_the_index):
         
         self.code_interface = code_interface
         
@@ -202,7 +230,12 @@ class InCodeAttributeStorage(AttributeStorage):
         for x in self.setters:
             self.attributes |= set(x.attribute_names)
         
-        
+        for x in self.getters:
+            x.name_of_the_indexing_parameter = name_of_the_index
+
+        for x in self.setters:
+            x.name_of_the_indexing_parameter = name_of_the_index
+                    
     def __len__(self):
         return self._get_number_of_particles()
             

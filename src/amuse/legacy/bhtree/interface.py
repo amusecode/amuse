@@ -57,91 +57,6 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
-
-
-class BHTreeInCodeAttributeStorage(InCodeAttributeStorage):
-    new_particle_method = binding.NewParticleMethod(
-        "new_particle", 
-        (
-            ("mass", "mass", nbody_system.mass),
-            ("radius", "radius", nbody_system.length),
-            ("x", "x", nbody_system.length),
-            ("y", "y", nbody_system.length),
-            ("z", "z", nbody_system.length),
-            ("vx", "vx", nbody_system.speed),
-            ("vy", "vy", nbody_system.speed),
-            ("vz", "vz", nbody_system.speed),
-        )
-    )
-    
-    getters = (
-        binding.ParticleGetAttributesMethod(
-            "get_state",
-            (
-                ("mass", "mass", nbody_system.mass),
-                ("radius", "radius", nbody_system.length),
-                ("x", "x", nbody_system.length),
-                ("y", "y", nbody_system.length),
-                ("z", "z", nbody_system.length),
-                ("vx", "vx", nbody_system.speed),
-                ("vy", "vy", nbody_system.speed),
-                ("vz", "vz", nbody_system.speed),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_mass",
-            (
-                ("mass", "mass", nbody_system.mass),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_radius",
-            (
-                ("radius", "radius", nbody_system.length),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_position",
-            (
-                ("x", "x", nbody_system.length),
-                ("y", "y", nbody_system.length),
-                ("z", "z", nbody_system.length),
-            )
-        ),
-    )
-    
-    
-    setters = (
-        binding.ParticleSetAttributesMethod(
-            "set_mass",
-            (
-                ("mass", "mass", nbody_system.mass),
-            )
-        ),
-        binding.ParticleSetAttributesMethod(
-            "set_radius",
-            (
-                ("radius", "radius", nbody_system.length),
-            )
-        ),
-        binding.ParticleSetAttributesMethod(
-            "set_position",
-            (
-                ("x", "x", nbody_system.length),
-                ("y", "y", nbody_system.length),
-                ("z", "z", nbody_system.length),
-            )
-        ),
-        
-    )
-
-   
-class BHTreeNBody(BHTreeInterface):
-       
-    def __init__(self):
-        BHTreeInterface.__init__(self)
-        
-        self.particles = Particles(storage = BHTreeInCodeAttributeStorage(self))
        
 class BHTree(GravitationalDynamicsInterface):
     
@@ -152,7 +67,7 @@ class BHTree(GravitationalDynamicsInterface):
             convert_nbody = nbody_system.nbody_to_si.get_default()
        
         
-        legacy_interface = BHTreeNBody()
+        legacy_interface = BHTreeInterface()
         
         GravitationalDynamicsInterface.__init__(
             self,
@@ -310,4 +225,15 @@ class BHTree(GravitationalDynamicsInterface):
                 object.ERROR_CODE
             )
         )
+    
+    def setup_all_particles(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_state')
+        object.add_getter('particles', 'get_state')
+        object.add_setter('particles', 'set_mass')
+        object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_setter('particles', 'set_position')
+        object.add_getter('particles', 'get_position')
     
