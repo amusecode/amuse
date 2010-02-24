@@ -51,6 +51,9 @@ c     Input parameters are passed from MUSE, rather than being read here.
       epsnov = epsnov_in
       eddfac = eddfac_in
       gamma = gamma_in
+     
+      dmmax = 0.d0
+      drmax = 0.d0
       
       if(idum.gt.0) idum = -idum
       
@@ -202,6 +205,12 @@ cf2py intent(in) kw, mass, age, mt, tm, epoch
       real*8 z, zpars(20)
       common /SSE_init/ z, zpars
 
+      dtm1 =0.d0
+      dtr1 =0.d0
+      dtm2 =0.d0
+      dtr2 =0.d0
+      tn = 0.d0
+      
 !     Call star fuction to get stellar parameters
       call star(type1, initial_mass1, mass1, MS_lifetime1,
      &      tn, tscls, lums, GB, zpars)
