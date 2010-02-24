@@ -2,8 +2,12 @@ import os
 import sys
 import numpy
 
-from matplotlib import pyplot
-
+try:
+    from matplotlib import pyplot
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
+    
 from amuse.legacy.fi import interface as interface
 from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.ext.evrard_test import regular_grid_unit_cube
@@ -14,6 +18,9 @@ from support import path_to_test_results
 MessageChannel.no_redirection()
 
 def energy_plot(time,ek,ep,eth):
+  if not HAS_MATPLOTLIB:
+    return
+    
   pyplot.figure(figsize = (5, 5))
   pyplot.xlabel(r'time')
   pyplot.ylabel(r'energy')

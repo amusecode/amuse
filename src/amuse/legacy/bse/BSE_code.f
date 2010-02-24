@@ -52,6 +52,8 @@ c     Input parameters are passed from MUSE, rather than being read here.
       eddfac = eddfac_in
       gamma = gamma_in
       
+      if(idum.gt.0) idum = -idum
+      
       call zcnsts(z, zpars)
 *
 * Set the collision matrix.
@@ -73,7 +75,6 @@ c     Input parameters are passed from MUSE, rather than being read here.
       label(13) = 'END SYMB'
       label(14) = 'BEG BSS'
 
-      if(idum.gt.0) idum = -idum
 
       status = 0
       return

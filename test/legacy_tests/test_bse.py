@@ -421,7 +421,7 @@ class TestBSE(TestWithMPI):
                 previous_type1 = binary.type1
                 previous_type2 = binary.type2
             
-        print results
+        print '\n'.join(map(str, results))
         self.assertEqual(len(results), 13)
         times = ( 
             38.9708 | units.Myr, 
