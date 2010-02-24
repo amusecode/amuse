@@ -747,24 +747,25 @@ C---  setting particle
       RETURN
       END
 
-      FUNCTION get_mass(id)
+      FUNCTION get_mass(id, value)
       IMPLICIT NONE 
 #include "src/general.inc"
 
 C---  local vars
-      INTEGER          id,ip
-      DOUBLE PRECISION get_mass
+      INTEGER          id,ip, get_mass
+      DOUBLE PRECISION value
 
 
 C---  get array address
       ip = myind(id)
       IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
          PRINT*, 'get_mass: No such particle exists!'
-         get_mass = -1.d0
-         GOTO 999
+         get_mass = -1
+         value = 0.d0
+      GOTO 999
       ENDIF
-
-      get_mass = m(ip)
+      value = m(ip)
+      get_mass = 0
  999  CONTINUE
       RETURN
       END

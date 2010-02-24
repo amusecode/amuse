@@ -275,5 +275,33 @@ class TestSunAndEarthSystem(TestWithMPI):
         
         instance.cleanup_module()
         del instance
+        
+    
+    def test4(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
+        instance = PhiGRAPE(convert_nbody)
+        #channel.MessageChannel.DEBUGGER = None
+
+        instance.setup_module()
+        
+        particles = core.Particles(2)
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles.mass = [15.0, 30.0] | units.kg
+        particles.radius =  [10.0, 20.0] | units.m
+        particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+
+        
+        instance.particles.add_particles(particles)
+        self.assertEquals(len(instance.particles), 2)
+        
+        instance.particles.mass =  [17.0, 33.0] | units.kg
+        
+        self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
+        self.assertEquals(instance.get_mass(2), 33.0| units.kg)  
+
 
         

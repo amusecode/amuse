@@ -1,10 +1,8 @@
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamics
-from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
+from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.support.lit import LiteratureRefs
-from amuse.support.data.core import Particles,ParticlesWithUnitsConverted
-from amuse.support.data.binding import InCodeAttributeStorage
-from amuse.support.data import binding
+
 
 class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     """  
@@ -57,110 +55,168 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         """
         return function
         
+class Hermite(GravitationalDynamicsInterface):
+    
+    
+    def __init__(self, convert_nbody = None):
         
-
-class HermiteInCodeAttributeStorage(InCodeAttributeStorage):
-    new_particle_method = binding.NewParticleMethod(
-        "new_particle", 
-        (
-            ("mass", "mass", nbody_system.mass),
-            ("radius", "radius", nbody_system.length),
-            ("x", "x", nbody_system.length),
-            ("y", "y", nbody_system.length),
-            ("z", "z", nbody_system.length),
-            ("vx", "vx", nbody_system.speed),
-            ("vy", "vy", nbody_system.speed),
-            ("vz", "vz", nbody_system.speed),
-        )
-    )
-    
-    getters = (
-        binding.ParticleGetAttributesMethod(
-            "get_state",
-            (
-                ("mass", "mass", nbody_system.mass),
-                ("radius", "radius", nbody_system.length),
-                ("x", "x", nbody_system.length),
-                ("y", "y", nbody_system.length),
-                ("z", "z", nbody_system.length),
-                ("vx", "vx", nbody_system.speed),
-                ("vy", "vy", nbody_system.speed),
-                ("vz", "vz", nbody_system.speed),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_mass",
-            (
-                ("mass", "mass", nbody_system.mass),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_radius",
-            (
-                ("radius", "radius", nbody_system.length),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_position",
-            (
-                ("x", "x", nbody_system.length),
-                ("y", "y", nbody_system.length),
-                ("z", "z", nbody_system.length),
-            )
-        ),
-    )
-    
-    
-    setters = (
-        binding.ParticleSetAttributesMethod(
-            "set_mass",
-            (
-                ("mass", "mass", nbody_system.mass),
-            )
-        ),
-        binding.ParticleSetAttributesMethod(
-            "set_radius",
-            (
-                ("radius", "radius", nbody_system.length),
-            )
-        ),
-        binding.ParticleSetAttributesMethod(
-            "set_position",
-            (
-                ("x", "x", nbody_system.length),
-                ("y", "y", nbody_system.length),
-                ("z", "z", nbody_system.length),
-            )
-        ),
+        if convert_nbody is None:
+            convert_nbody = nbody_system.nbody_to_si.get_default()
+       
         
-    )
+        legacy_interface = HermiteInterface()
+        
+        GravitationalDynamicsInterface.__init__(
+            self,
+            legacy_interface,
+            convert_nbody,
+        )     
             
-class HermiteNBody(HermiteInterface, NBodyGravitationalDynamicsBinding):
-    parameter_definitions = [
-        parameters.ModuleAttributeParameterDefinition(
+    def setup_parameters(self, object):
+        object.add_attribute_parameter(
             "eps2",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
-            0.0 | nbody_system.length * nbody_system.length
+            0.3 | nbody_system.length * nbody_system.length
+        )     
+           
+    def setup_methods(self, object):
+        GravitationalDynamicsInterface.setup_methods(self, object)
+        
+        object.add_method(
+            "new_particle", 
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ), 
+            ( 
+                object.NO_UNIT,
+                object.ERROR_CODE
+            )
         )
-    ]
+        object.add_method(
+            "delete_particle", 
+            (
+                object.NO_UNIT,
+            ), 
+            ( 
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_state", 
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_mass", 
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_mass", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.mass,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_radius", 
+            (
+                object.NO_UNIT,
+                nbody_system.length,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_radius", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_position", 
+            (
+                object.NO_UNIT,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_position", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
     
-    attribute_definitions = [ ]
+    def setup_all_particles(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_state')
+        object.add_getter('particles', 'get_state')
+        object.add_setter('particles', 'set_mass')
+        object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_setter('particles', 'set_position')
+        object.add_getter('particles', 'get_position')
 
-    def __init__(self):
-        HermiteInterface.__init__(self)
-        NBodyGravitationalDynamicsBinding.__init__(self)
-        
-        self.particles = Particles(storage = HermiteInCodeAttributeStorage(self))
-        
-    def current_model_time(self):
-        return self.t | nbody_system.time
-       
-class Hermite(CodeInterfaceWithNBodyUnitsConverted):
-    def __init__(self, convert_nbody = None):
-        CodeInterfaceWithNBodyUnitsConverted.__init__(
-            self,
-            HermiteNBody(),
-            convert_nbody
-        )

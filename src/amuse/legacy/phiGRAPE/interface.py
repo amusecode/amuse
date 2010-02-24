@@ -5,6 +5,7 @@ from amuse.support.units import units
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
+from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data.core import Particles,ParticlesWithUnitsConverted
 from amuse.support.data import binding
@@ -367,63 +368,193 @@ class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
             
             
 
-
-class PhiGRAPENBodyGL(PhiGRAPEInterfaceGL, NBodyGravitationalDynamicsBinding):
-   
-    parameter_definitions = [
-        parameters.ModuleMethodParameterDefinition_Next(
+class PhiGRAPE(GravitationalDynamicsInterface):
+    
+    
+    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False):
+        
+        if convert_nbody is None:
+            convert_nbody = nbody_system.nbody_to_si.get_default()
+       
+        nbody_interface = None
+        if use_gl:
+            nbody_interface = PhiGRAPEInterfaceGL(mode)
+        else:
+            nbody_interface = PhiGRAPEInterface(mode)
+        
+        GravitationalDynamicsInterface.__init__(
+            self,
+            nbody_interface,
+            convert_nbody,
+        )     
+            
+    def setup_parameters(self, object):
+        object.add_method_parameter(
             "get_eps2", 
             "set_eps2",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
             0.0 | nbody_system.length * nbody_system.length
-        ),
-        parameters.ModuleMethodParameterDefinition_Next(
+        ) 
+        
+        object.add_method_parameter(
             "get_eta", 
             "set_eta1",
             "timestep_parameter", 
             "timestep parameter", 
             units.none , 
             0.02 |  units.none
-        ),
-        parameters.ModuleMethodParameterDefinition_Next(
+        )
+        
+        object.add_method_parameter(
             "get_eta_s", 
             "set_eta_s",
             "initial_timestep_parameter", 
             "parameter to determine the initial timestep", 
             units.none , 
             0.01 |  units.none
-        ),
-    ]
-
-    attribute_definitions = []
-
-
-    def __init__(self, mode = PhiGRAPEInterface.MODE_G6LIB):
-        PhiGRAPEInterfaceGL.__init__(self, mode = mode)
-        NBodyGravitationalDynamicsBinding.__init__(self)
-    
-        self.particles = Particles(storage = PhiGRAPEInCodeAttributeStorage(self))
+        )
+  
+           
+    def setup_methods(self, object):
+        GravitationalDynamicsInterface.setup_methods(self, object)
         
-    def current_model_time(self):
-        return self.t | nbody_system.time
-            
-        
-
-       
-class PhiGRAPE(CodeInterfaceWithNBodyUnitsConverted):
-    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False):
-        nbody_interface = None
-        if use_gl:
-            nbody_interface = PhiGRAPENBodyGL(mode)
-        else:
-            nbody_interface = PhiGRAPENBody(mode)
-            
-        CodeInterfaceWithNBodyUnitsConverted.__init__(
-            self,
-            nbody_interface,
-            convert_nbody
+        object.add_method(
+            "new_particle", 
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ), 
+            ( 
+                object.NO_UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "delete_particle", 
+            (
+                object.NO_UNIT,
+            ), 
+            ( 
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_state", 
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_mass", 
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_mass", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.mass,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_radius", 
+            (
+                object.NO_UNIT,
+                nbody_system.length,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_radius", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_position", 
+            (
+                object.NO_UNIT,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_position", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                object.ERROR_CODE
+            )
         )
     
+    def setup_all_particles(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_state')
+        object.add_getter('particles', 'get_state')
+        object.add_setter('particles', 'set_mass')
+        object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_setter('particles', 'set_position')
+        object.add_getter('particles', 'get_position')
+
+
 

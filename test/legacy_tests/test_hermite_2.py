@@ -223,4 +223,29 @@ class TestAmuseInterface(TestWithMPI):
             print instance.get_indices_of_colliding_particles()
             stars.savepoint()
         
+    
+    def test4(self):
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = Hermite(convert_nbody)
+        instance.setup_module()
+        
+        particles = core.Particles(2)
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles.mass = [15.0, 30.0] | units.kg
+        particles.radius =  [10.0, 20.0] | units.m
+        particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+
+        
+        instance.particles.add_particles(particles)
+        self.assertEquals(len(instance.particles), 2)
+        
+        instance.particles.mass =  [17.0, 33.0] | units.kg
+        
+        
+        self.assertEquals(instance.get_mass(0), 17.0| units.kg) 
+        self.assertEquals(instance.get_mass(1), 33.0| units.kg)  
+
          
