@@ -790,31 +790,152 @@ class GravitationalDynamicsInterface(CodeInterface2):
         #~ self.add_transition('EVOLVE', 'CHANGE-PARTICLES', 'new_particle')
         #~ self.add_transition('CHANGE-PARTICLES', 'EVOLVE', 'reinitialize_code')
         #~ self.add_transition(None, 'EDIT-PARAMETERS', 'set_eps2')
-    
+        
     def setup_methods(self, object):
-        m = nbody_system.mass
-        l = nbody_system.length
-        v = nbody_system.length / nbody_system.time
-        t = nbody_system.time
-        object.add_method('evolve', (nbody_system.time,), public_name = 'evolve_model')
-        #self.add_method('set_state', 'set_state',(None, nbody_system.time, l , l , l , v, v, v))
-        #self.add_method('get_state', 'get_state',(None), (m,l,l,l,l,v,v,v))
-        #self.add_method('get_state', 'get_state',(None), (l,l,l,v,v,v))
-        
-    def setup_particles_handler(self, object):
-        pass
-        #~ self.define_particles('particles','index_of_the_particle')
-        #~ self.add_new('particles', 'new_particle')
-        #~ self.add_setter('particles', 'set_state', (
-            #~ ('r','radius')
-        #~ )
-        #~ )
-        #~ self.add_getter('particles', 'get_state', ('r','radius'))
-        
-    def setup_parameters(self, object):
-        pass
-        #self.add_parameter('epsilon_squared', 'set_eps2','get_eps2', nbody_sytem.length ** 2)
-        
+            
+        object.add_method(
+            'evolve', 
+            (nbody_system.time,), 
+            public_name = 'evolve_model'
+        )
+
+        object.add_method(
+            "new_particle", 
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ), 
+            ( 
+                object.NO_UNIT,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "delete_particle", 
+            (
+                object.NO_UNIT,
+            ), 
+            ( 
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_state", 
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_mass", 
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_mass", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.mass,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_radius", 
+            (
+                object.NO_UNIT,
+                nbody_system.length,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_radius", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_position", 
+            (
+                object.NO_UNIT,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+            ), 
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_position", 
+            (
+                object.NO_UNIT,
+            ), 
+            (
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                object.ERROR_CODE
+            )
+        )
+    
+    def setup_all_particles(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_state')
+        object.add_getter('particles', 'get_state')
+        object.add_setter('particles', 'set_mass')
+        object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_setter('particles', 'set_position')
+        object.add_getter('particles', 'get_position')
+    
+  
       
     def setup_converter(self, object):
         if not self.convert_nbody is self.NBODY:
