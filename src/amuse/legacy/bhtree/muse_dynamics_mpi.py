@@ -126,7 +126,7 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
     attribute_definitions = [
         attributes.AttributeDefinition(
             name = "mass",
-            setup_parameters = ["mass"],
+            define_parameters = ["mass"],
             setter = ("set_mass", ["mass"]),
             description = "mass of a star",
             unit = nbody_system.mass,
@@ -134,7 +134,7 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
         ),
         attributes.AttributeDefinition(
             name = "radius",
-            setup_parameters = ["radius"],
+            define_parameters = ["radius"],
             setter = ("set_radius", ["radius"]),
             description = "radius of a star",
             unit = nbody_system.length,
@@ -142,7 +142,7 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
         ),
         attributes.AttributeDefinition(
             names = ["x","y","z"],
-            setup_parameters = ["x","y","z"],
+            define_parameters = ["x","y","z"],
             setter = ("set_position", ["x","y","z"]),
             description = "coordinate of a star",
             unit = nbody_system.length,
@@ -150,7 +150,7 @@ class BHTreeBinding(NBodyGravitationalDynamicsBinding):
         ),
         attributes.AttributeDefinition(
             names = ["vx","vy","vz"],
-            setup_parameters = ["vx","vy","vz"],
+            define_parameters = ["vx","vy","vz"],
             setter = ("set_velocity", ["vx","vy","vz"]),
             description = "coordinate of a star",
             unit = nbody_system.speed,

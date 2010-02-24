@@ -86,7 +86,7 @@ class TestParticlesWithBinding(TestBase):
         attribute_definitions = [
             attributes.AttributeDefinition(
                 name = "mass",
-                setup_parameters = ["mass"],
+                define_parameters = ["mass"],
                 setter = ("set_mass", ["mass"]),
                 getter = ("get_mass", ["mass"]),
                 description = "mass of a star",

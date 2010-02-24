@@ -253,7 +253,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess):
         return name == 'UNIT'
         
     def setup(self, object):
-        object.setup_converter(self)
+        object.define_converter(self)
     
 
 
@@ -485,7 +485,7 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         
     
     def setup(self, object):
-        object.setup_state(self)
+        object.define_state(self)
             
     
     def has_name(self, name):
@@ -632,7 +632,7 @@ class HandleMethodsWithUnits(object):
         return name == 'METHOD'
         
     def setup(self, object):
-        object.setup_methods(self)
+        object.define_methods(self)
     
 
 
@@ -695,7 +695,7 @@ class HandlePropertiesWithUnits(HandleCodeInterfaceAttributeAccess):
         return name == 'PROPERTY'
         
     def setup(self, object):
-        object.setup_properties(self)
+        object.define_properties(self)
         
 
 class HandleParameters(HandleCodeInterfaceAttributeAccess):
@@ -745,7 +745,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         return name == 'PARAMETER'
         
     def setup(self, object):
-        object.setup_parameters(self)
+        object.define_parameters(self)
     
         
 class ParticleSetDefinition(object):
@@ -810,7 +810,7 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         return name == 'PARTICLES'
         
     def setup(self, object):
-        object.setup_all_particles(self)
+        object.define_particle_sets(self)
      
     def define_set(self, name, name_of_indexing_attribute = 'index_of_the_particle'):
         definition = ParticleSetDefinition(self)
@@ -852,22 +852,22 @@ class CodeInterface2(OldObjectsBindingMixin):
         for x in self._handlers:
             x.setup(self)
 
-    def setup_state(self, handler):
+    def define_state(self, handler):
         pass
     
-    def setup_methods(self, handler):
+    def define_methods(self, handler):
         pass
         
-    def setup_properties(self, handler):
+    def define_properties(self, handler):
         pass
         
-    def setup_converter(self, handler):
+    def define_converter(self, handler):
         pass
         
-    def setup_parameters(self, handler):
+    def define_parameters(self, handler):
         pass
     
-    def setup_all_particles(self, handler):
+    def define_particle_sets(self, handler):
         pass
         
     def get_handler(self, name):

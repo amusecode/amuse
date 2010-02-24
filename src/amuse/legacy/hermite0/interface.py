@@ -72,7 +72,7 @@ class Hermite(GravitationalDynamicsInterface):
             convert_nbody,
         )     
             
-    def setup_parameters(self, object):
+    def define_parameters(self, object):
         object.add_attribute_parameter(
             "eps2",
             "epsilon_squared", 

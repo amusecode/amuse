@@ -388,7 +388,7 @@ class PhiGRAPE(GravitationalDynamicsInterface):
             convert_nbody,
         )     
             
-    def setup_parameters(self, object):
+    def define_parameters(self, object):
         object.add_method_parameter(
             "get_eps2", 
             "set_eps2",

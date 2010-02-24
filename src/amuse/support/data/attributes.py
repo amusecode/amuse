@@ -10,7 +10,7 @@ class AttributeDefinition(object):
             unit, 
             name = None,
             names = None, 
-            setup_parameters = None,
+            define_parameters = None,
             state_parameters = None,
             getter=None, 
             setter=None, 
@@ -29,24 +29,24 @@ class AttributeDefinition(object):
         self.default_value = default
         self.getter = getter
         self.setter = setter
-        self.setup_parameters = setup_parameters
+        self.define_parameters = define_parameters
         if state_parameters is None:
-            self.state_parameters = self.setup_parameters
+            self.state_parameters = self.define_parameters
         else:
             self.state_parameters = state_parameters
             
     def is_required_for_setup(self):
-        return not self.setup_parameters is None
+        return not self.define_parameters is None
 
     
     def state_mapping_from_name_to_keyword_and_unit(self):
         result = {}
-        for name, parameter_name in zip(self.names, self.setup_parameters):
+        for name, parameter_name in zip(self.names, self.define_parameters):
             result[name] = (parameter_name, self.unit)
         return result
     
     def for_setup_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
-        for name, parameter_name in zip(self.names, self.setup_parameters):
+        for name, parameter_name in zip(self.names, self.define_parameters):
             attributes.append(name)
             units.append(self.unit)
             keywords.append(parameter_name)

@@ -772,7 +772,7 @@ class GravitationalDynamicsInterface(CodeInterface2):
         
         CodeInterface2.__init__(self, legacy_interface)
         
-    def setup_properties(self, object):
+    def define_properties(self, object):
         object.add_property("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
         object.add_property("get_potential_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
         object.add_property("get_total_radius", nbody_system.length)
@@ -781,7 +781,7 @@ class GravitationalDynamicsInterface(CodeInterface2):
         object.add_property("get_total_mass", nbody_system.mass)
         object.add_property('get_time',nbody_system.time, "model_time")
         
-    def setup_states(self, object):
+    def define_state(self, object):
         pass
         #~ self.set_initial_state('INITIAL')
         #~ self.add_transition('INITIAL', 'EVOLVE', 'initialize_particles')
@@ -791,7 +791,7 @@ class GravitationalDynamicsInterface(CodeInterface2):
         #~ self.add_transition('CHANGE-PARTICLES', 'EVOLVE', 'reinitialize_code')
         #~ self.add_transition(None, 'EDIT-PARAMETERS', 'set_eps2')
         
-    def setup_methods(self, object):
+    def define_methods(self, object):
             
         object.add_method(
             'evolve', 
@@ -924,7 +924,7 @@ class GravitationalDynamicsInterface(CodeInterface2):
             )
         )
     
-    def setup_all_particles(self, object):
+    def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')
         object.set_new('particles', 'new_particle')
         object.set_delete('particles', 'delete_particle')
@@ -937,7 +937,7 @@ class GravitationalDynamicsInterface(CodeInterface2):
     
   
       
-    def setup_converter(self, object):
+    def define_converter(self, object):
         if not self.convert_nbody is self.NBODY:
             object.set_nbody_converter(self.convert_nbody)  
         
