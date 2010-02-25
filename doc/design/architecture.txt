@@ -192,49 +192,47 @@ extra functionalities can be used indepented of the legacy codes.
 
 The **AMUSE code layer** classes build upon the low level
 classes provided by the **legacy codes layer**. The design is based
-on adaptor and decorator patterns to provide interfaces with increasing
-functionality. First a  *Legacy interface* class is adapted to create a
+on the adaptor patter to provide an object oriented interface with 
+more functionality. A *Legacy interface* class is adapted to create a
 class which provides *"parameters"*, *"particle sets/gridpoints"* , 
-*"methods with units"* and *"properties with units"* . Next, more 
-functionality is added to objects of this class by 
-selecting or defining decorators. 
+*"methods with units"* , *"properties with units"* , 
+*"state control"* and *"Unit conversions for incompatible unit systems"*. 
 
+.. raw:: latex
+
+   \begin{figure}[htp] \centering
+   
 .. graphviz::
 
     digraph amcode_1{
       fontsize=10.0;
         compound=true;
-        rankdir=BT;
         ranksep=1.0;
+        rankdir="LR";
         node [shape=box, style=filled, fillcolor=lightyellow];
-        subgraph cluster0 {
-            style=filled;
-            color=azure2;
-            label="Decorators";
-            labelloc="b";
-            labeljust="r";
-            
-            "State control"
-            "Unit conversions for incompatible unit systems"
-        }
         subgraph cluster1 {
             style=filled;
             color=azure2;
-            label="Adaptors";
+            label="Adaptor";
             labelloc="b";
             labeljust="r";
             "Particles or Gridpoints"
             "Parameters"
             "Methods with Units"
             "Properties with Units"
+            "State control"
+            "Unit conversions for incompatible unit systems"
         }
         "Legacy Interface"
-        "Legacy Interface"->"Particles or Gridpoints"
-        "Legacy Interface"->"Parameters"
-        "Legacy Interface"->"Methods with Units"
-        "Parameters" -> "State control"[lhead=cluster0, ltail=cluster1];
+        "Legacy Interface"->"Particles or Gridpoints"[lhead=cluster1];
     }
 
+
+.. raw:: latex
+
+   \caption{A legacy interface is adapted to provide an object
+   oriented interface and more functionality.}
+   \end{figure} 
 
 
 User Script
