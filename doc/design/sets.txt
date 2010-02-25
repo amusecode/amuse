@@ -1,0 +1,85 @@
+Sets
+====
+
+In the datamodel of AMUSE all objects and attributes of objects 
+are stored in sets. 
+
+Like the relation database model
+--------------------------------
+For every object in a set, the set will store the values of the
+attributes of the object. This model is like a relation 
+database with Tables (sets in AMUSE), Records (an object in the set)
+and Columns (an attribute of an object). 
+
+.. graphviz::
+    
+    digraph layers0 {
+      fontsize=10.0;
+      node [fontsize=10.0,shape=box, style=filled, fillcolor=lightyellow, width=3];
+      subgraph cluster0 {
+      fontsize=10.0;
+            style=filled;
+            color=azure2;
+            labeljust="l";
+            label="AMUSE Model";
+            "Set";
+            "Object";
+            "Attribute";
+            "Set" -> "Attribute" [fontsize=10.0,label="stores"];
+            "Object" -> "Attribute" [fontsize=10.0,label="has"];
+            "Set" -> "Object" [fontsize=10.0,label="contains"];
+      } 
+      subgraph cluster1 {
+      fontsize=10.0;
+            style=filled;
+            color=azure2;
+            labeljust="l";
+            label="Relation Database Model";
+            "Table";
+            "Record";
+            "Column";
+            "Record" -> "Column" [fontsize=10.0,label="has"];
+            "Table" -> "Record" [fontsize=10.0,label="stores"];
+      }
+    
+    }
+Objects are views
+------------------
+Objects in a set do not store any values, instead they refer
+to the set to provide their attribute values. In a sense these
+objects are points to a location in the set. An object is like
+a cursor in a relation database system. It can be used to access
+the values of the attributes stored in the set.
+
+.. graphviz::
+    
+    digraph layers0 {
+      fontsize=10.0;
+      node [fontsize=10.0, shape=box, style=filled, fillcolor=lightyellow, width=3];
+      style=filled;
+      color=azure2;
+      "Set";
+      "Object";
+      "Object" -> "Set" [fontsize=10.0,label=" pointer to a location in"];
+    }
+
+When a user asks an object for its mass the object will query the
+set for the stored value and return the answer to the user.
+
+.. image:: objects_in_set.png
+
+Objects have a key
+------------------
+The objects in a set can be identified with a unique key. All objects 
+having the same key are seen as the same object by the AMUSE system.
+The same object can exist is multiple sets. In each set this object
+can have a different value of an attribute. Or, in each set a different 
+version of the object can exist. 
+
+Storage models
+--------------
+The actual storage of attribute values in a set is provided by a storage
+model.
+
+Sub-sets
+--------

@@ -8,6 +8,7 @@ Design documentation
    architecture
    packages
    model
+   sets
    mpi
    
 
