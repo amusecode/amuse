@@ -79,10 +79,10 @@ clean:
 	rm -f *.so *.o *.pyc muse_worker_starlab.cc
 
 muse_worker_starlab:        muse_dynamics_mpi.py $(OBJS)
-	$(CODE_GENERATOR) --type=c muse_dynamics_mpi.py SmallN -o $@.cc
-	mpicxx $(CXXFLAGS) $(LDLIBS) $@.cc $(OBJS) -o $@
+	$(CODE_GENERATOR) --type=c muse_dynamics_mpi.py SmallNInterface -o $@.cc
+	mpicxx $(CXXFLAGS)  $@.cc $(OBJS) $(LDLIBS) -o $@ 
 
 %.o: %.cc
 ifdef STARLAB_INSTALL_PATH
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	mpicxx $(CXXFLAGS) -c -o $@ $<
 endif

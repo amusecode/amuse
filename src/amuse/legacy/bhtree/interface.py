@@ -1,6 +1,5 @@
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamics
-from amuse.legacy.interface.gd import NBodyGravitationalDynamicsBinding
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data.core import Particles,ParticlesWithUnitsConverted

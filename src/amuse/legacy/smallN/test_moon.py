@@ -45,17 +45,17 @@ if __name__=='__main__':
 
     nb=SmallN()
     
-    earth_id = nb.add_particle(earth)
-    moon_id = nb.add_particle(moon)
+    earth = nb.particles.add_particle(earth)
+    moon = nb.particles.add_particle(moon)
 
     nb.evolve()  
-    moonstate,err=nb.get_state(moon_id)
-    # moonstate = mass, radius, x, y, z, vx, vy, vz
-    #             0,    1,      2, 3, 4, 5,  6,  7
-    print pos_moon[0].value_in(km), myunits.to_si(moonstate[2] | nbody_system.length).value_in(km)
-    print pos_moon[1].value_in(km), myunits.to_si(moonstate[3] | nbody_system.length).value_in(km)
-    print pos_moon[2].value_in(km), myunits.to_si(moonstate[4] | nbody_system.length).value_in(km)
-    earthstate,err=nb.get_state(earth_id)
-    print pos_earth[0].value_in(km), myunits.to_si(earthstate[2] | nbody_system.length).value_in(km)
-    print pos_earth[1].value_in(km), myunits.to_si(earthstate[3] | nbody_system.length).value_in(km)
-    print pos_earth[2].value_in(km), myunits.to_si(earthstate[4] | nbody_system.length).value_in(km)
+    
+    print "moon:"
+    print moon.mass
+    print moon.position
+    print moon.velocity
+    
+    print "earth:"
+    print earth.mass
+    print earth.position
+    print earth.velocity

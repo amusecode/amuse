@@ -14,6 +14,7 @@ from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.legacy.support.channel import MessageChannel
 from support import path_to_test_results
+from amuse.legacy.support.core import is_mpd_running
 
 MessageChannel.no_redirection()
 
@@ -91,6 +92,8 @@ def run_evrard(x):
   energy_plot(time,Ek,Ep,Eth)
 
 def test_evrard():
+  if not is_mpd_running():
+      return
   run_evrard(64)
     
 if __name__=="__main__":

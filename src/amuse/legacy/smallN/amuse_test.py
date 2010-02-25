@@ -24,29 +24,30 @@ if __name__ == "__main__":
         print "=== Test 1: An Earth-mass body moving past the Sun at low speed ==="
         particle = Particle(key=1)
         particle.mass = 1.0 | nbody_system.mass 
+        particle.radius = 0.0 | nbody_system.length
         particle.x = 0.0 | nbody_system.length
         particle.y = 0.0 | nbody_system.length
         particle.z = 0.0 | nbody_system.length
-        nbody_speed = nbody_system.length / nbody_system.time
-        particle.vx = 0.0 | nbody_speed 
-        particle.vy = 0.0 | nbody_speed 
-        particle.vz = 0.0 | nbody_speed 
-        mult.add_particle(particle)
+        particle.vx = 0.0 | nbody_system.speed 
+        particle.vy = 0.0 | nbody_system.speed 
+        particle.vz = 0.0 | nbody_system.speed 
+        mult.particles.add_particle(particle)
 
         particle = Particle(key=2)
         particle.mass = 1.0 * MEarth 
+        particle.radius = 0.0 | nbody_system.length
         particle.x = 1.0 | units.AU
         particle.y = 0.0 | units.AU
         particle.z = -10.0 | units.AU
         particle.vx = 0.0 | units.AU / units.yr
         particle.vy = 0.0 | units.AU / units.yr
         particle.vz = 1.0 | units.AU / units.yr
-        mult.add_particle(particle)
+        mult.particles.add_particle(particle)
 
         for k in range(0,2):
             print "==> Dump of Particle %d" % (k+1)
-            print mult.get_particle_by_index(k)
-        print "==> Total Energy is %.2f" % (mult.get_total_energy())
+            print mult.particles[k]
+        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
         mult.report_multiples(level=1)
 
         print "==> Particles set up.  Evolving until a stable regime is reached."
@@ -60,8 +61,9 @@ if __name__ == "__main__":
         sys.stdout.flush()
 
         for k in range(0,2):
-            print mult.get_particle_by_index(k)
-        print mult.get_total_energy()
+            print "==> Dump of Particle %d" % (k+1)
+            print mult.particles[k]
+        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
         mult.report_multiples(level=1)
         print "==> Interaction took %.2f years" % mult.get_time().value_in(units.yr)
         time_in_nbody = myunits.to_nbody(mult.get_time())
@@ -76,29 +78,32 @@ if __name__ == "__main__":
         print "=== Test 2: An Earth-mass body orbiting the Sun ==="
         particle = Particle(key=1)
         particle.mass = 1.0 | nbody_system.mass 
+        particle.radius = 0.0 | nbody_system.length
         particle.x = 0.0 | nbody_system.length
         particle.y = 0.0 | nbody_system.length
         particle.z = 0.0 | nbody_system.length
-        nbody_speed = nbody_system.length / nbody_system.time
-        particle.vx = 0.0 | nbody_speed 
-        particle.vy = 0.0 | nbody_speed 
-        particle.vz = 0.0 | nbody_speed 
-        mult.add_particle(particle)
+        particle.vx = 0.0 | nbody_system.speed
+        particle.vy = 0.0 | nbody_system.speed 
+        particle.vz = 0.0 | nbody_system.speed 
+        mult.particles.add_particle(particle)
 
         particle = Particle(key=2)
         particle.mass = 1.0 * MEarth 
+        particle.radius = 0.0 | nbody_system.length
         particle.x = 1.0 | units.AU
         particle.y = 0.0 | units.AU
         particle.z = 0.0 | units.AU
         particle.vx = 0.0 | units.AU / units.yr
         particle.vy = 2.0*math.pi | units.AU / units.yr
         particle.vz = 0.0 | units.AU / units.yr
-        mult.add_particle(particle)
+        mult.particles.add_particle(particle)
+    
 
         for k in range(0,2):
             print "==> Dump of Particle %d" % (k+1)
-            print mult.get_particle_by_index(k)
-        print "==> Total Energy is %.2f" % (mult.get_total_energy())
+            print mult.particles[k]
+        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
+        print "==> Total Energy is " , mult.get_total_energy()
         mult.report_multiples(level=1)
 
         print "==> Particles set up.  Evolving until a stable regime is reached."
@@ -112,8 +117,9 @@ if __name__ == "__main__":
         sys.stdout.flush()
 
         for k in range(0,2):
-            print mult.get_particle_by_index(k)
-        print mult.get_total_energy()
+            print "==> Dump of Particle %d" % (k+1)
+            print mult.particles[k]
+        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
         mult.report_multiples(level=1)
         print "==> Interaction took %.2f years" % mult.get_time().value_in(units.yr)
         time_in_nbody = myunits.to_nbody(mult.get_time())

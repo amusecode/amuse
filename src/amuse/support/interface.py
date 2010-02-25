@@ -651,11 +651,15 @@ class PropertyWithUnitsDefinition(object):
             function_or_attribute = getattr(self.handler.interface, self.function_or_attribute_name)
             
         if hasattr(function_or_attribute, '__call__'):
-            value, errorcode = function_or_attribute()
-            if errorcode < 0:
-                raise Exception("calling '{0}' to get the value for property '{1}' resulted in an error (errorcode {2})".format(self.function_or_attribute_name, self.public_name, errorcode))
+            return_value = function_or_attribute()
+            if hasattr(return_value, '__itet__'):
+                value, errorcode = return_value
+                if errorcode < 0:
+                    raise Exception("calling '{0}' to get the value for property '{1}' resulted in an error (errorcode {2})".format(self.function_or_attribute_name, self.public_name, errorcode))
+                else:
+                    return self.unit.new_quantity(value)
             else:
-                return self.unit.new_quantity(value)
+                return self.unit.new_quantity(return_value)
         else:
             return self.unit.new_quantity(function_or_attribute)
             
