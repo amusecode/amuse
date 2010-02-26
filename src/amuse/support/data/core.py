@@ -1464,74 +1464,8 @@ class Stars(Particles):
     def __init__(self, size = 0):
         Particles.__init__(self, size)
     
-    
-    def center_of_mass(self):
-        masses = self.mass
-        x_values = self.x
-        y_values = self.y
-        z_values = self.z
-        
-        total_mass = masses.sum()
-        massx = (masses * x_values).sum()
-        massy = (masses * y_values).sum()
-        massz = (masses * z_values).sum()
 
-        return values.VectorQuantity.new_from_scalar_quantities(
-            massx/total_mass,
-            massy/total_mass,
-            massz/total_mass
-        )
 
-    def center_of_mass_velocity(self):
-        masses = self.mass
-        x_values = self.vx
-        y_values = self.vy
-        z_values = self.vz
-        
-        total_mass = masses.sum()
-        massx = (masses * x_values).sum()
-        massy = (masses * y_values).sum()
-        massz = (masses * z_values).sum()
-
-        return values.VectorQuantity.new_from_scalar_quantities(
-            massx/total_mass,
-            massy/total_mass,
-            massz/total_mass
-        )
-        
-    def kinetic_energy(self):
-        mass = self.mass
-        vx = self.vx
-        vy = self.vy
-        vz = self.vz
-        v_squared = (vx * vx) + (vy * vy) + (vz * vz)
-        m_v_squared = mass * v_squared
-        return 0.5 * m_v_squared.sum()
-        
-    
-    def potential_energy(self, smoothing_length_squared = 0 | units.m * units.m):
-        mass = self.mass
-        x_vector = self.x
-        y_vector = self.y
-        z_vector = self.z
-        
-        sum_of_energies = 0 | units.J
-        
-        for i in range(len(self)):
-           x = x_vector[i]
-           y = y_vector[i]
-           z = z_vector[i]
-           dx = x - x_vector[i+1:]
-           dy = y - y_vector[i+1:]
-           dz = z - z_vector[i+1:]
-           dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
-           dr = (dr_squared+smoothing_length_squared).sqrt()
-           m_m = mass[i] * mass[i+1:]
-           
-           energy_of_this_particle = (m_m / dr).sum()
-           sum_of_energies +=  -1 * units.G * energy_of_this_particle
-            
-        return sum_of_energies
 
 class Particle(object):
     """A physical object or a physical region simulated as a 
@@ -1635,6 +1569,79 @@ class Particle(object):
         """
         return ParticlesSubset(self.particles_set, [self.key])
         
+def center_of_mass(particles):
+    masses = particles.mass
+    x_values = particles.x
+    y_values = particles.y
+    z_values = particles.z
+    
+    total_mass = masses.sum()
+    massx = (masses * x_values).sum()
+    massy = (masses * y_values).sum()
+    massz = (masses * z_values).sum()
+
+    return values.VectorQuantity.new_from_scalar_quantities(
+        massx/total_mass,
+        massy/total_mass,
+        massz/total_mass
+    )
+
+def center_of_mass_velocity(particles):
+    masses = particles.mass
+    x_values = particles.vx
+    y_values = particles.vy
+    z_values = particles.vz
+    
+    total_mass = masses.sum()
+    massx = (masses * x_values).sum()
+    massy = (masses * y_values).sum()
+    massz = (masses * z_values).sum()
+
+    return values.VectorQuantity.new_from_scalar_quantities(
+        massx/total_mass,
+        massy/total_mass,
+        massz/total_mass
+    )
+    
+def kinetic_energy(particles):
+    mass = particles.mass
+    vx = particles.vx
+    vy = particles.vy
+    vz = particles.vz
+    v_squared = (vx * vx) + (vy * vy) + (vz * vz)
+    m_v_squared = mass * v_squared
+    return 0.5 * m_v_squared.sum()
+    
+
+def potential_energy(particles, smoothing_length_squared = 0 | units.m * units.m):
+    mass = particles.mass
+    x_vector = particles.x
+    y_vector = particles.y
+    z_vector = particles.z
+    
+    sum_of_energies = 0 | units.J
+    
+    for i in range(len(self)):
+       x = x_vector[i]
+       y = y_vector[i]
+       z = z_vector[i]
+       dx = x - x_vector[i+1:]
+       dy = y - y_vector[i+1:]
+       dz = z - z_vector[i+1:]
+       dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+       dr = (dr_squared+smoothing_length_squared).sqrt()
+       m_m = mass[i] * mass[i+1:]
+       
+       energy_of_this_particle = (m_m / dr).sum()
+       sum_of_energies +=  -1 * units.G * energy_of_this_particle
+        
+    return sum_of_energies
+
+
+AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
+AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
+AbstractParticleSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
+AbstractParticleSet.add_global_function_attribute("potential_energy", potential_energy)
 
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
