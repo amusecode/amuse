@@ -731,39 +731,7 @@ class GravitationalDynamics(object):
             Particle could not be found
         """
         return function 
-        
-
-class NBodyGravitationalDynamicsBinding(CodeInterface):
-    
-    def __init__(self):
-        CodeInterface.__init__(self)
-        
-    def get_energies(self):
-        return (
-            self.kinetic_energy, 
-            self.potential_energy,
-        )
-
-    evolve_model = CodeMethod('evolve',(nbody_system.time,))
-        
-    kinetic_energy = CodeProperty("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
-    potential_energy = CodeProperty("get_potential_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
-    total_radius = CodeProperty("get_total_radius", nbody_system.length)
-    center_of_mass_position = CodeProperty("get_center_of_mass_position", nbody_system.length)
-    center_of_mass_velocity = CodeProperty("get_center_of_mass_velocity", nbody_system.length / nbody_system.time)
-    total_mass = CodeProperty("get_total_mass", nbody_system.mass)
-    model_time = CodeProperty("get_time", nbody_system.time)
-    
-    
-    colliding_particles_method =  binding.ParticleQueryMethod(
-        "get_indices_of_colliding_particles",
-        ("index_of_particle1","index_of_particle2")
-    )
-    
-    def get_colliding_particles(self):
-        subset = self.colliding_particles_method._run(self, self.particles)
-        return subset
-    
+            
 class GravitationalDynamicsInterface(CodeInterface2):
     NBODY = object()
     
@@ -780,6 +748,7 @@ class GravitationalDynamicsInterface(CodeInterface2):
         object.add_property("get_center_of_mass_velocity", nbody_system.length / nbody_system.time)
         object.add_property("get_total_mass", nbody_system.mass)
         object.add_property('get_time',nbody_system.time, "model_time")
+        
         
     def define_state(self, object):
         pass
@@ -923,6 +892,17 @@ class GravitationalDynamicsInterface(CodeInterface2):
                 object.ERROR_CODE
             )
         )
+        
+        
+        object.add_method(
+            'get_indices_of_colliding_particles',
+            (), 
+            (
+                object.NO_UNIT, 
+                object.NO_UNIT, 
+                object.ERROR_CODE,
+            )
+        )
     
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')
@@ -934,9 +914,11 @@ class GravitationalDynamicsInterface(CodeInterface2):
         object.add_getter('particles', 'get_mass', names = ('mass',))
         object.add_setter('particles', 'set_position')
         object.add_getter('particles', 'get_position')
+        object.add_query('particles', 'get_indices_of_colliding_particles', public_name = 'select_colliding_particles')
     
-  
-      
+    def get_colliding_particles(self):
+        subset = self.colliding_particles_method._run(self, self.particles)
+        return subset
     def define_converter(self, object):
         if not self.convert_nbody is self.NBODY:
             object.set_nbody_converter(self.convert_nbody)  

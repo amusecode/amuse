@@ -35,7 +35,6 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(instance.get_number(), 1)
         instance.cleanup_module()
         del instance
-
         
     def test2(self):
         instance = mpi_interface.BHTreeInterface(debug_with_gdb=False)
@@ -74,5 +73,6 @@ class TestMPIInterface(TestWithMPI):
         instance = mpi_interface.BHTreeInterface(hostname = hostname)
         instance.setup_module()
         instance.cleanup_module()
+        
         del instance
         

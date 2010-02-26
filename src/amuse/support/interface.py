@@ -761,6 +761,7 @@ class ParticleSetDefinition(object):
         self.name_of_new_particle_method = 'delete_particle'
         self.setters = []
         self.getters = []
+        self.queries = []
     
     def new_storage(self, interface):
         setters = []
@@ -772,6 +773,7 @@ class ParticleSetDefinition(object):
         for name, mapping, names in self.getters:
             x = code_particles.ParticleGetAttributesMethod(getattr(interface, name), mapping, names)
             getters.append(x)
+            
             
         name, mapping, names = self.new_particle_method
         new_particle_method = code_particles.NewParticleMethod(getattr(interface, name), mapping, names)
@@ -789,7 +791,14 @@ class ParticleSetDefinition(object):
             self.name_of_indexing_attribute
         )
         
-
+    def new_queries(self, interface):
+        queries = []
+        for name, names, public_name in self.queries:
+            x = code_particles.ParticleQueryMethod(getattr(interface, name), names, public_name)
+            queries.append(x)
+        
+        return queries
+        
         
 class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
@@ -807,6 +816,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         else:
             storage = self.sets[name].new_storage(self.interface)
             result = core.Particles(storage = storage)
+            queries = self.sets[name].new_queries(self.interface)
+            for x in queries:
+                result.add_function_attribute(x.public_name, x.apply)
+                
             self.particle_sets[name] = result
             return result
         
@@ -834,6 +847,13 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def add_setter(self, name_of_the_set, name_of_the_setter, mapping = (), names = None):
         
         self.sets[name_of_the_set].setters.append((name_of_the_setter,mapping, names))
+        
+    def add_query(self, name_of_the_set, name_of_the_query, names = (), public_name = None):
+        if not public_name:
+            public_name = name_of_the_query
+            
+        self.sets[name_of_the_set].queries.append((name_of_the_query, names, public_name))
+        
 
 class CodeInterface2(OldObjectsBindingMixin):
     

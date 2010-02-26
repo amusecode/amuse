@@ -507,6 +507,8 @@ class AbstractParticleSet(object):
     """
     GLOBAL_VECTOR_ATTRIBUTES = {}
     GLOBAL_CALCULATED_ATTRIBUTES = {}
+    GLOBAL_FUNCTION_ATTRIBUTES = {}
+    
     
     class PrivateProperties(object):
         """
@@ -591,14 +593,32 @@ class AbstractParticleSet(object):
         def get_value_for_particle(self, instance,  key):
             values = instance._get_values([key], self.attribute_names)
             return self.function(*values)[0]
-              
+            
+    
+            
+    class FunctionAttribute:
+        class BoundFunctionAttribute(object):
+            def  __init__(self, function, particles):
+                self.function = function
+                self.particles = particles
+                
+            def __call__(self, *list_arguments, **keyword_arguments):
+                return self.function(self.particles, *list_arguments, **keyword_arguments)
+        
+        def  __init__(self, function):
+            self.function = function
+            
+        def get(self, particles):
+            return self.BoundFunctionAttribute(self.function, particles)
 
         
             
     def __init__(self):
         object.__setattr__(self, "_vector_attributes", self.GLOBAL_VECTOR_ATTRIBUTES.copy())
         object.__setattr__(self, "_calculated_attributes", self.GLOBAL_CALCULATED_ATTRIBUTES.copy())
+        object.__setattr__(self, "_function_attributes", self.GLOBAL_FUNCTION_ATTRIBUTES.copy())
         object.__setattr__(self, "_private", self.PrivateProperties())
+    
     
     def __getattr__(self, name_of_the_attribute):
         if name_of_the_attribute == 'key':
@@ -607,6 +627,8 @@ class AbstractParticleSet(object):
             return self._vector_attributes[name_of_the_attribute]._get_values(self)
         elif name_of_the_attribute in self._calculated_attributes:
             return self._calculated_attributes[name_of_the_attribute]._get_values(self)
+        elif name_of_the_attribute in self._function_attributes:
+            return self._function_attributes[name_of_the_attribute].get(self)
         else:
             return self._get_values(self._get_keys(), [name_of_the_attribute])[0]
     
@@ -773,6 +795,71 @@ class AbstractParticleSet(object):
         cls.GLOBAL_CALCULATED_ATTRIBUTES[name_of_the_attribute] = cls.CalculatedAttribute(function)
     
     
+    
+    @classmethod
+    def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
+        """
+        Define a *global* vector attribute, coupling two or more scalar attributes into
+        one vector attribute. The vector will be defined for all particle sets
+        created after calling this function.
+        
+        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
+        
+        
+        >>> Particles.add_global_vector_attribute('vel', ['vx','vy'])
+        >>> particles = Particles(2)
+        >>> particles.vx = [1.0 , 2.0] | units.m / units.s
+        >>> particles.vy = [3.0 , 4.0] | units.m / units.s
+        >>> particles.vel
+        quantity<[[ 1.  3.], [ 2.  4.]] m / s>
+        
+        """
+        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = cls.VectorAttribute(name_of_the_components)
+    
+    
+    def add_function_attribute(self, name_of_the_attribute, function):
+        """
+        Define a function attribute, adding a function to the particles
+        
+        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument function: A function, first argument will be the particles.
+        
+        >>> particles = Particles(2)
+        >>> particles.x = [1.0 , 2.0] | units.m
+        >>> def sumx(p):
+        ...   return p.x.sum()
+        ...
+        >>> particles.add_function_attribute("sum_of_x", sumx)
+        >>> particles.sum_of_x()
+        quantity<3.0 m>
+
+        
+        """
+        
+        self._function_attributes[name_of_the_attribute] = self.FunctionAttribute(function)
+    
+    @classmethod
+    def add_global_function_attribute(cls, name_of_the_attribute, function):
+        """
+        Define a function attribute, adding a function to the particles
+        
+        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument function: A function, first argument will be the particles.
+        
+        >>> def sumx(p):
+        ...   return p.x.sum()
+        ...
+        >>> Particles.add_global_function_attribute("sum_of_x", sumx)
+        >>> particles = Particles(2)
+        >>> particles.x = [4.0 , 2.0] | units.m
+        >>> particles.sum_of_x()
+        quantity<6.0 m>
+
+        
+        """
+        
+        cls.GLOBAL_FUNCTION_ATTRIBUTES[name_of_the_attribute] = cls.FunctionAttribute(function)
     #
     # public API
     #

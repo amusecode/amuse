@@ -32,7 +32,7 @@ clean:
 	cd $(BHTCDIR) && $(MAKE) clean
 
 muse_worker.cc: muse_dynamics_mpi.py
-	$(CODE_GENERATOR) --type=c --mode=mpi muse_dynamics_mpi.py BHTree > $@
+	$(CODE_GENERATOR) --type=c --mode=mpi muse_dynamics_mpi.py BHTreeInterface > $@
 
 muse_worker:	muse_worker.cc $(OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(OBJS) -o $@

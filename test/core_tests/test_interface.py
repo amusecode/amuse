@@ -547,6 +547,9 @@ class TestParticlesWithBinding(unittest.TestCase):
         def get_number_of_particles(self):
             return (len(self.masses), 0)
             
+        def get_colliding_indices(self):
+            return (1,2,0)
+            
         
             
     def test1(self):
@@ -581,6 +584,41 @@ class TestParticlesWithBinding(unittest.TestCase):
         
         self.assertEquals(len(instance.particles), 4)
         self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
+        
+    def test1(self):
+        original = self.TestInterface()
+        
+        instance = interface.CodeInterface2(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
+        handler.add_method('set_mass',(handler.NO_UNIT, units.kg,), (handler.ERROR_CODE,))
+        handler.add_method('new_particle',(units.kg,), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        handler.add_method('get_colliding_indices',(), (handler.NO_UNIT, handler.NO_UNIT, handler.ERROR_CODE,))
+        handler = instance.get_handler('PARTICLES')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        
+        
+        handler.add_query('particles', 'get_colliding_indices', public_name = 'select_colliding')
+        
+        
+        local_particles = core.Particles(4)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
+        
+        remote_particles = instance.particles
+        remote_particles.add_particles(local_particles)
+        
+        colliding_particles = instance.particles.select_colliding()
+        
+        self.assertEquals(len(colliding_particles), 2)
+        self.assertEquals(colliding_particles.mass[0], 4.0 | units.kg)
+        self.assertEquals(colliding_particles.mass[1], 5.0 | units.kg)
         
         
         

@@ -197,6 +197,20 @@ class NewParticleMethod(ParticleSetAttributesMethod):
         indices = self.method(*list_arguments)
         
         return indices
+        
+class ParticleQueryMethod(object):
+    def __init__(self, method, names = (), public_name = None):
+        self.method = method
+        self.name_of_the_out_parameters = names
+        self.public_name = public_name
+
+    def apply(self, particles):
+            
+        indices = self.method()
+        
+        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
+        
+        return particles._subset(keys)
     
 
                 
