@@ -1,5 +1,6 @@
 from amuse.support.data import core
 from amuse.support.units import units
+from amuse.support.units import nbody_system
 
 import sys
 import xml.dom.minidom 
@@ -127,11 +128,11 @@ class Xml2Particles(object):
 	 if key in self.translator.keys():                                     
 	     amuse_key = self.translator[key]                                  
 	     if amuse_key == 'mass':                                           
-	         SCL.mass = float(value)|units.kg                              
+	         SCL.mass = float(value)|nbody_system.mass                              
 	     if amuse_key == "position":                                       
-	         SCL.position = self.convert2vec(value)|units.m                
+	         SCL.position = self.convert2vec(value)|nbody_system.length                
 	     if amuse_key == "velocity":                                       
-	         SCL.velocity = self.convert2vec(value)|(units.m/units.s)      
+	         SCL.velocity = self.convert2vec(value)|nbody_system.speed      
         
     def convert2vec(self, attribute):
         
@@ -243,16 +244,24 @@ class Xml2Particles(object):
 
 class ParticlesFromDyn(object):
     
-    def __init__(self, dyn_filename=None):
-        
+    def __init__(self, dyn_filename=None, convert_nbody=None):
+
         dyn2xml = Dyn2Xml()
         dyn2xml.convert_to_xml(dyn_filename)
         xml_string = dyn2xml._xmls
         
         xml2particles = Xml2Particles()
         err1 = xml2particles.parse_xml(xml_string)
+
+        if convert_nbody is None:
+            self.convert_nbody = None
+            self.Particles = xml2particles.system
+            return
+        else:
+            self.convert_nbody = convert_nbody
+            self.Particles = core.ParticlesWithUnitsConverted(xml2particles.system,
+                                                              self.convert_nbody.as_converter_from_si_to_nbody())
         
-        self.Particles = xml2particles.system
         
     def number_of_particles(self):
         return len(self.Particles)
