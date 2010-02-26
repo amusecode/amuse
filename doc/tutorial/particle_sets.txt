@@ -8,9 +8,9 @@ There are Sets, Subsets, Particles, Children and Parents...
 ===========================================================
 The fundamental data structures used in AMUSE are particle sets. Based on properties of the set elements(particles), 
 selections can be made using the selection method which return subsets. These subsets are rather views or scopes on the set
-and do not hold data of their own.
+and do not hold values of their own.
 
-It is also possible to *weave* a structure into the set by defining parent-child relationships between particles in a set. 
+It is also possible to *add* a structure to the set by defining parent-child relationships between **particles in a set**. 
 These structures exist only in the set and are a property of it and have no meaning with respect to the particles outside the set.
 
 
@@ -62,6 +62,9 @@ Another approach is, if only some properties are important like position, speed 
 
 but this method is unsafe and **NOT RECOMMENDED**. 
 
+Selection
+---------
+
 At this stage we select the subsets based on the distance of the individual stars with respect to the center of mass, being 
 1 *AU* in this example.
 
@@ -91,6 +94,9 @@ The selections are all subsets as we can verify:
 				       	   
     >>> outersphere #doctest:+ELLIPSIS 
     <amuse.support.data.core.ParticlesSubset object at ...>
+
+Set operations
+--------------
 
 The result should be the same, but we'll check:
 
@@ -151,7 +157,7 @@ code set invokes one MPI call, which is inefficient if we have many queries. Cop
 and we can query from the model set at will without the MPI overhead. Copying the data from one existing set to another set *or* subset 
 can be done via channels.
 
-First we define a simple dummy legacy code object, whith some typical gd interface methods:
+First we define a simple dummy legacy code object, with some typical gd interface methods:
 
 .. code-block:: python
 
