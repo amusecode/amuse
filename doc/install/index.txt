@@ -7,5 +7,6 @@ Installation
    
    howto-install-prerequisites
    howto-install-AMUSE
+   getting-started
    
 

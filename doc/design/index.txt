@@ -1,4 +1,4 @@
-:ref:`design-label`
+.. _design-label:
 
 Design documentation
 ====================
