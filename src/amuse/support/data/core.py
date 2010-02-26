@@ -1,6 +1,7 @@
 from amuse.support.data import values
 from amuse.support.units import si
 from amuse.support.units import units
+from amuse.support.core import CompositeDictionary
 
 import numpy
 import random
@@ -614,9 +615,9 @@ class AbstractParticleSet(object):
         
             
     def __init__(self):
-        object.__setattr__(self, "_vector_attributes", self.GLOBAL_VECTOR_ATTRIBUTES.copy())
-        object.__setattr__(self, "_calculated_attributes", self.GLOBAL_CALCULATED_ATTRIBUTES.copy())
-        object.__setattr__(self, "_function_attributes", self.GLOBAL_FUNCTION_ATTRIBUTES.copy())
+        object.__setattr__(self, "_vector_attributes", CompositeDictionary(self.GLOBAL_VECTOR_ATTRIBUTES))
+        object.__setattr__(self, "_calculated_attributes", CompositeDictionary(self.GLOBAL_CALCULATED_ATTRIBUTES))
+        object.__setattr__(self, "_function_attributes", CompositeDictionary(self.GLOBAL_FUNCTION_ATTRIBUTES))
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     
@@ -725,8 +726,8 @@ class AbstractParticleSet(object):
         :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
         
         
-        >>> Particles.add_global_vector_attribute('vel', ['vx','vy'])
         >>> particles = Particles(2)
+        >>> Particles.add_global_vector_attribute('vel', ['vx','vy'])
         >>> particles.vx = [1.0 , 2.0] | units.m / units.s
         >>> particles.vy = [3.0 , 4.0] | units.m / units.s
         >>> particles.vel

@@ -243,6 +243,84 @@ class OrderedDictionary(object):
         for x in self.orderedKeys:
             yield self.mapping[x]
             
+class CompositeDictionary(object):
+    """A dictionary that defers to other dictionaries when an item is
+    not found.
+    
+    Composite dictionaries are just like regular dictionaries but they
+    get items from their parent dictionarkies when they do not contain
+    the items.  
+    
+    >>> p = {'a':1, 'b':2}
+    >>> d = CompositeDictionary(p)
+    >>> d['a']
+    1
+    >>> p['a'] = 3
+    >>> d['a']
+    3
+    >>> d['c'] = 2
+    >>> 'c' in p
+    False
+    >>> 'b' in d
+    True
+    
+    """
+    def __init__(self, *parents):
+        self.parents = parents
+        self.mapping = {}
+        
+    def __setitem__(self, key, value):
+        self.mapping[key] = value
+        
+    def __getitem__(self, key):
+        if key in self.mapping:
+            return self.mapping[key]
+        for parent in self.parents:
+            if key in parent:
+                return parent[key]
+        raise KeyError(key)
+        
+    def  __contains__(self, key):
+        if key in self.mapping:
+            return True
+        for parent in self.parents:
+            if key in parent:
+                return True
+        return False
+        
+    def  __iter__(self):
+        return self.keys()
+        
+    def  __len__(self):
+        return len(self.keys())
+        
+    def __str__(self):
+        result = 'CompositeDictionary({'
+        elements = []
+        for x in self.keys():
+            elements.append(str(x) + ':' + str(self[x]) )
+        result += ','.join(elements)
+        result += '})'
+        return result
+
+        
+    def keys(self):
+        keys = set(self.mapping.keys())
+        
+        for parent in self.parents:
+            keys |= set(parent.keys())
+        
+        return iter(keys)
+        
+    def values(self):
+        for x in self.keys():
+            yield self[x]
+            
+    def copy(self):
+        result = type(self)(*self.parents)
+        result.mapping = self.mapping.copy()
+        return result
+            
 class OrderedSet(collections.MutableSet):
     class Node(object):
         __slots__ = ['key', 'next', 'previous']
