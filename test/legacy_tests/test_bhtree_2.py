@@ -8,7 +8,7 @@ from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from support import path_to_test_results
+import path_to_test_results
 
 import numpy
 

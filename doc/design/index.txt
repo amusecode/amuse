@@ -1,3 +1,5 @@
+:ref:`design-label`
+
 Design documentation
 ====================
 

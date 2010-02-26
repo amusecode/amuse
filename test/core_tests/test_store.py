@@ -1,7 +1,7 @@
 from amuse.support.io import store
 from amuse.support.units import units
 from amuse.support.data.core import Stars
-from support import path_to_test_results
+import path_to_test_results
 
 import unittest
 import os

@@ -6,7 +6,7 @@ from amuse.support.units import units
 from amuse.legacy.support import channel
 
 from legacy_support import TestWithMPI
-from support.path_to_test_results import get_path_to_test_results
+from path_to_test_results import get_path_to_test_results
 from amuse.legacy.support import create_fortran
 
 import subprocess

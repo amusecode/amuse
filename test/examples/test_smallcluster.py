@@ -20,7 +20,7 @@ from amuse.legacy.bhtree.interface import BHTree
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.legacy.support.core import is_mpd_running
-from support import path_to_test_results
+import path_to_test_results
 
 from amuse.support.io import store
 

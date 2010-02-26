@@ -13,7 +13,7 @@ from amuse.support.data import core
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
-from support import path_to_test_results
+import path_to_test_results
 
 def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun, \
     name_of_the_figure = "HR_evolution_tracks.png", use_SSE=True):

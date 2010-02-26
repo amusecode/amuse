@@ -9,7 +9,7 @@ from amuse.legacy.bhtree.interface import BHTree
 from amuse.support.data.core import Particles
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from support import path_to_test_results
+import path_to_test_results
 
 import numpy
 import threading

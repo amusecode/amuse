@@ -13,7 +13,7 @@ from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.legacy.support.channel import MessageChannel
-from support import path_to_test_results
+import path_to_test_results
 from amuse.legacy.support.core import is_mpd_running
 
 MessageChannel.no_redirection()

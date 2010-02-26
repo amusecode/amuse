@@ -9,7 +9,7 @@ from amuse.support.units import units
 from amuse.legacy.support import channel
 
 from legacy_support import TestWithMPI
-from support import path_to_test_results
+import path_to_test_results
 
 import numpy
 

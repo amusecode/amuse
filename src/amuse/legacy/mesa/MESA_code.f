@@ -351,10 +351,10 @@
       if (result == keep_going) then
          result = star_finish_step(AMUSE_id, .false.)
          if (result /= keep_going) return
-         endif
       else if (result == terminate) then
          if (result_reason == result_reason_normal) then
             result = star_finish_step(AMUSE_id, save_photo_when_terminate)
+            if (result /= keep_going) return
          end if
          evolve = 0
          return

@@ -13,7 +13,7 @@ from amuse.support.data import core
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
-from support import path_to_test_results
+import path_to_test_results
 
 def simulate_stellar_evolution(mass_in = 5.0 | units.MSun, end_time = 250.0 | units.Myr,
         name_of_the_figure="handover_stellar_evolution.png"):
