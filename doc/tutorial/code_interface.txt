@@ -1,0 +1,76 @@
+===========================================================
+Create an Object Oriented interface on top of a Legacy Code
+===========================================================
+
+In this tutorial we will add an object oriented interface 
+to a legacy code.
+
+The legacy code interface supports methods that tranfer values
+to and from the code. The values do not have any units and
+no apart from error codes, and no error handling is 
+provided by the interface. We can add these and more functions
+to the legacy interface by defining a CodeInterface2.
+
+The suggested procedure for creating the new interface is
+as follow:
+
+0. **Legacy Interface.** Start with creating the legacy 
+   interface (see previous tutorial).
+   The CodeInterface code depends on the legacy interface code.   
+1. **Make a Class.** Create a subclass of the CodeInterface2 class
+2. **Define methods.** In the legacy interface we have defined functions
+   with parameters. In the code interface we need to define the
+   units of the parameters and if a parameter or return value
+   is used as an errorcode.
+3. **Define properties.** Some functions in the legacy interface can
+   be better described as a property of the code.
+4. **Define parameters.** Some functions in the legacy interface provide
+   access to parameters of the code. Units and default values
+   can be defined for the parameters in this step
+5. **Define sets.** A code usually handles objects or gridpoints with
+   attributes. In this step a generic interface is defined for these
+   objects so that the interopability between codes increases.
+6. **Define a Unit Converter.** This step is only needed for codes
+   that have units which are incompatible with SI units. For example
+   if a code uses nbody units, a converter is needed to convert
+   between nbody and si units.
+
+
+Legacy Interface
+----------------
+
+
+.. code-block:: cpp
+
+  #include "code.h"
+   
+  #define MAX_PARTICLES 1000
+  
+  int new_particle(int * id, double mass, double  x, double y, double z) {
+    
+  }
+  
+  int delete_particle(int id) {
+  }
+  
+  int get_state(int * id, double * mass, double * x, double * y, double * z) {
+  }
+  
+  
+  int get_number_of_particles(int * value) {
+  }
+  
+  int divide(double x, double y, double * result) {
+    if(y == 0.0) {
+        return -1;
+    } else {
+        *result = x / y;
+        return 0;
+    }
+  }
+
+
+
+
+
+

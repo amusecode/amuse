@@ -60,6 +60,15 @@ class TestNbodyUnits(unittest.TestCase):
     def test8(self):
         self.assertTrue(is_nbody_unit(time / length))
         self.assertFalse(is_nbody_unit(units.s / units.m))
+        
+        
+    def test9(self):
+       convert_nbody = nbody_to_si(1 | units.kg , 1 | units.m / units. s )
+       y = 1.0 | units.none
+       y_in_nbody = convert_nbody.to_nbody(y) 
+       y_in_si = convert_nbody.to_si(y) 
+       self.assertEqual(y_in_nbody , 1.0 | units.none)
+       self.assertEqual(y_in_si , 1.0 | units.none)
 
 class TestNbodyUnitsDefaultSettings(unittest.TestCase):
     def assertIdentical(self, expected, actual, msg = None):

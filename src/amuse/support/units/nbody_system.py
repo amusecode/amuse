@@ -104,7 +104,12 @@ class nbody_to_si(object):
         factor = value.unit.factor
         number = value.number
         new_unit = 1
-        for n, unit in value.unit.base:
+        base = value.unit.base
+        
+        if not base:
+            return value
+        
+        for n, unit in base:
             unit_in_nbody, unit_in_si = self.find_si_unit_for(unit)
             if not unit_in_si is None:
                 factor = factor * (unit_in_si.factor ** n)
@@ -146,6 +151,10 @@ class nbody_to_si(object):
         factor = value.unit.factor
         number = value.number
         new_unit = 1
+        
+        if not base:
+            return value
+            
         for n, unit in base:
             unit_in_nbody, unit_in_si = self.find_nbody_unit_for(unit)
             if not unit_in_si is None:
