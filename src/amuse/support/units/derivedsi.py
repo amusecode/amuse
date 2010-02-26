@@ -13,6 +13,8 @@ yr =   named('year', 'yr', 365.242199 * day)
 julianyr = named('julian yr','julianyr',365.25* day)
 ms = named('meter per seconds', 'ms', m / s)
 kms = named('kilometer per seconds', 'kms', km / s)
+
+angstrom = named('angstrom', 'angstrom', 1e-10*m)
 Hz = named('Hertz', 'Hz', 1/s)
 MHz = named('MegaHertz', 'MHz', 1e6*Hz)
 
