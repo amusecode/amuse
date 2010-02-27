@@ -9,7 +9,7 @@ from amuse.support.core import OrderedDictionary
 import unittest
 
 class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
-    class TestClass(interface.CodeInterface):
+    class TestClass(interface.CodeInterfaceOld):
 
         def get_mass(self):
             return 10.0, 0
@@ -22,7 +22,7 @@ class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
         
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_mass', nbody_system.mass)
@@ -42,7 +42,7 @@ class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
         
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_mass', nbody_system.mass)
@@ -61,7 +61,7 @@ class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
         
         original = self.TestClass()
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
@@ -100,7 +100,7 @@ class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
         
 
 class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
-    class TestClass(interface.CodeInterface):
+    class TestClass(interface.CodeInterfaceOld):
        
         def add_10_to_length(self, length):
             return length + 10
@@ -118,7 +118,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
     def test1(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -133,7 +133,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
     def test2(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -145,7 +145,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
     def test3(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         
         handler = instance.get_handler('PROPERTY')
@@ -156,7 +156,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
     def test4(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         
         handler = instance.get_handler('PROPERTY')
@@ -168,7 +168,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
     def test5(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_state', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
@@ -182,7 +182,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
     def test6(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_state_error', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
@@ -202,7 +202,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
 
 
 class CodeInterface2Tests(unittest.TestCase):
-    class TestClass(interface.CodeInterface):
+    class TestClass(interface.CodeInterfaceOld):
         def __init__(self):
             self.state = 0
             
@@ -236,7 +236,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test1(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         self.assertTrue(instance.always_works())
         instance.move_to_state_1()
@@ -245,7 +245,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test2(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         handler = instance.get_handler('STATE')
         
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -263,7 +263,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test3(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('STATE')
         
@@ -279,7 +279,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test4(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -296,7 +296,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test5(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -328,7 +328,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test6(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -363,7 +363,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test7(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -386,7 +386,7 @@ class CodeInterface2Tests(unittest.TestCase):
     def test8(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -416,7 +416,7 @@ class CodeInterface2Tests(unittest.TestCase):
 
 
 class CodeInterfaceWithUnitsAndStateTests(unittest.TestCase):
-    class TestClass(interface.CodeInterface):
+    class TestClass(interface.CodeInterfaceOld):
        
         def __init__(self):
             self.value = 10.0
@@ -430,7 +430,7 @@ class CodeInterfaceWithUnitsAndStateTests(unittest.TestCase):
     def test1(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -447,7 +447,7 @@ class CodeInterfaceWithUnitsAndStateTests(unittest.TestCase):
     def test2(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -464,7 +464,7 @@ class CodeInterfaceWithUnitsAndStateTests(unittest.TestCase):
     def test3(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -480,7 +480,7 @@ class CodeInterfaceWithUnitsAndStateTests(unittest.TestCase):
         
 
 class CodeInterfaceWithParticlesTests(unittest.TestCase):
-    class TestClass(interface.CodeInterface):
+    class TestClass(interface.CodeInterfaceOld):
 
         def get_mass(self):
             return 10.0, 0
@@ -493,7 +493,7 @@ class CodeInterfaceWithParticlesTests(unittest.TestCase):
         
         original = self.TestClass()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_mass', nbody_system.mass)
@@ -503,7 +503,7 @@ class CodeInterfaceWithParticlesTests(unittest.TestCase):
         
 
 class TestParticlesWithBinding(unittest.TestCase):
-    class TestInterface(interface.CodeInterface):
+    class TestInterface(interface.CodeInterfaceOld):
 
         def __init__(self):
             self.masses = {}
@@ -555,7 +555,7 @@ class TestParticlesWithBinding(unittest.TestCase):
     def test1(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
@@ -588,7 +588,7 @@ class TestParticlesWithBinding(unittest.TestCase):
     def test1(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface2(original)
+        instance = interface.CodeInterface(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))

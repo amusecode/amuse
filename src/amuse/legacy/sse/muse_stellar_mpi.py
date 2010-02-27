@@ -6,7 +6,7 @@ from amuse.legacy import *
 from amuse.support.data.values import Quantity
 from amuse.support.data.binding import ParticleAttributesModifier
 from amuse.support.data.core import Particles, ParticlesSubset
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import CodeInterfaceOld
 
 class SSEInterface(LegacyInterface): 
     def __init__(self):
@@ -150,10 +150,10 @@ class SSEParticles(Particles):
     def _state_attributes(self):
         return ["mass", "radius"]
         
-class SSEBinding(CodeInterface):
+class SSEBinding(CodeInterfaceOld):
     
     def __init__(self):
-        CodeInterface.__init__(self)
+        CodeInterfaceOld.__init__(self)
         self.particles = SSEParticles(self)
         self.parameters.set_defaults()
    

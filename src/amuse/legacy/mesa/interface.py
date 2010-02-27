@@ -10,7 +10,7 @@ from amuse.legacy.interface.se import StellarEvolution
 from amuse.support.data.values import Quantity
 from amuse.support.data.binding import ParticleAttributesModifier
 from amuse.support.data.core import Particles, ParticlesSubset
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import CodeInterfaceOld
 
 class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution): 
     """
@@ -144,10 +144,10 @@ class MESAParticles(Particles):
     def _state_attributes(self):
         return ["mass1", "mass2", "radius1", "radius2"]
         
-class MESABinding(CodeInterface):
+class MESABinding(CodeInterfaceOld):
     
     def __init__(self):
-        CodeInterface.__init__(self)
+        CodeInterfaceOld.__init__(self)
         self.particles = MESAParticles(self)
         self.parameters.set_defaults()
    

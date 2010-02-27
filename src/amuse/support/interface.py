@@ -27,7 +27,7 @@ class OldObjectsBindingMixin(object):
         
         
         
-class CodeInterface(OldObjectsBindingMixin):
+class CodeInterfaceOld(OldObjectsBindingMixin):
     """Base class of next level interfaces to codes
     """
     
@@ -855,7 +855,7 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         self.sets[name_of_the_set].queries.append((name_of_the_query, names, public_name))
         
 
-class CodeInterface2(OldObjectsBindingMixin):
+class CodeInterface(OldObjectsBindingMixin):
     
     def __init__(self, legacy_interface):
         object.__setattr__(self, 'legacy_interface', legacy_interface)

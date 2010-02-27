@@ -4,7 +4,7 @@ from amuse.legacy.support.lit import LiteratureRefs
 
 from amuse.support.data.core import Particles
 from amuse.support.data import binding
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import CodeInterfaceOld
 
 
 
@@ -588,10 +588,10 @@ class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
         
     )
     
-class EVtwinBinding(CodeInterface):
+class EVtwinBinding(CodeInterfaceOld):
     
     def __init__(self):
-        CodeInterface.__init__(self)
+        CodeInterfaceOld.__init__(self)
         
         self.particles = Particles()
         self.particles._private.attribute_storage = EVtwinInCodeAttributeStorage(self)
