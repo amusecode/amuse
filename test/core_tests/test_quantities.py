@@ -68,5 +68,10 @@ class TestQuantities(unittest.TestCase):
         y = 1 / x
         self.assertEquals(y.value_in(1/si.kg), 0.5)
         
+    
+    def test8(self):
+        x = (1.0, 2.0, 3.0) | si.kg
+        self.assertTrue(isinstance(x, VectorQuantity))
+        
         
         

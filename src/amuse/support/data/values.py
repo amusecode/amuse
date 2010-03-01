@@ -422,6 +422,38 @@ class VectorQuantity(Quantity):
         [1.0, 2.0, 3.0, 4.0] kg
         """
         self._number = numpy.append(self._number, [scalar_quantity.value_in(self.unit)])
+        
+    
+    def min(self, other):
+        """
+        Return the minimum of self and the argument.
+        
+        >>> from amuse.support.units import si
+        >>> v1 = [1.0, 2.0, 3.0] | si.kg
+        >>> v2 = [0.0, 3.0, 4.0] | si.kg
+        >>> v1.min(v2)
+        quantity<[0.0, 2.0, 3.0] kg>
+
+        """
+        other_in_my_units = other.as_quantity_in(self.unit)
+        is_smaller_than = self.number < other_in_my_units.number
+        values = numpy.where(is_smaller_than, self.number, other_in_my_units.number)
+        return VectorQuantity(values, self.unit)
+        
+    def max(self, other):
+        """
+        Return the maximum of self and the argument.
+        
+        >>> from amuse.support.units import si
+        >>> v1 = [1.0, 2.0, 3.0] | si.kg
+        >>> v2 = [0.0, 3.0, 4.0] | si.kg
+        >>> v1.max(v2)
+        quantity<[1.0, 3.0, 4.0] kg>
+        """
+        other_in_my_units = other.as_quantity_in(self.unit)
+        is_larger_than = self.number > other_in_my_units.number
+        values = numpy.where(is_larger_than, self.number, other_in_my_units.number)
+        return VectorQuantity(values, self.unit)
     
 class NonNumericQuantity(Quantity):
     """
@@ -481,7 +513,7 @@ class NonNumericQuantity(Quantity):
     def as_vector_with_length(self, length):
         return VectorQuantity(numpy.ones(length) * self.value, self.unit)
         
-    
+        
         
     
     
@@ -495,6 +527,8 @@ def new_quantity(value, unit):
     :returns: new ScalarQuantity or VectorQuantity object
     """
     if isinstance(value, list):
+        return VectorQuantity(value, unit)
+    if isinstance(value, tuple):
         return VectorQuantity(value, unit)
     if isinstance(value, numpy.ndarray):
         return VectorQuantity(value, unit)
