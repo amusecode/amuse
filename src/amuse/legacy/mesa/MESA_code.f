@@ -43,6 +43,8 @@
          AMUSE_status = -1
          return
       end if
+      profile_columns_file = mesa_data_dir // '/star_data/profile_columns.list'
+      log_columns_file = mesa_data_dir // '/star_data/log_columns.list'
       AMUSE_status = 0
       return
    end
@@ -73,6 +75,7 @@
       call star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
       if (failed('star_setup', ierr)) return
       run_create_zams = .true.
+      write(*,*) log_columns_file, " - ", profile_columns_file
 !      call do_create_zams(s, AMUSE_ZAMS_inlist, log_columns_file, &
 !         profile_columns_file, ierr)
    end subroutine new_zams_model
