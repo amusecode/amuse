@@ -502,7 +502,7 @@ class LegacyInterface(object):
     instances = []
     channel_factory = MpiChannel
     
-    def __init__(self, name_of_the_worker = 'muse_worker', number_of_workers = 1, debug_with_gdb = False, hostname = None):
+    def __init__(self, name_of_the_worker = 'worker_code', number_of_workers = 1, debug_with_gdb = False, hostname = None):
         """
         Instantiates an object, starting the worker.
         

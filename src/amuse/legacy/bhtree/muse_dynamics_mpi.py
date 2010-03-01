@@ -17,7 +17,7 @@ class BHTreeInterface(LegacyInterface):
     
       
     def __init__(self, convert_nbody = None, **kwargs):
-        LegacyInterface.__init__(self, **kwargs)
+        LegacyInterface.__init__(self, name_of_the_worker='muse_worker', **kwargs)
         
 
     @legacy_function   

@@ -37,10 +37,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-t",
             "--type",
-            choices=["c","h","f90"],
+            choices=["c","h", "H", "f90"],
             default="c",
             dest="type",
-            help="TYPE of the code to generate. Can be one of c, h or f90. <c> will generate c code. <h> will generate c header. <f90> will generate fortran 90 code. (Defaults to c)")
+            help="TYPE of the code to generate. Can be one of c, h, H or f90. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. (Defaults to c)")
         self.parser.add_option(
             "-m",
             "--mode",
@@ -66,7 +66,7 @@ class ParseCommandLine(object):
         if len(self.arguments) != 2:
             self.parser.error("incorrect number of arguments")
         try:
-            self.options.name_of_module = module_name(self.arguments[0])
+            self.options.name_of_module_or_python_file = self.arguments[0]
             self.options.name_of_class = self.arguments[1]
         except Exception as exception:
             self.show_error_and_exit(exception)
@@ -91,13 +91,17 @@ def module_name(string):
         if not os.path.exists(string):
             raise Exception("Cannot find file with name {0}".format(string))
         if not string.startswith(amuse_src_directory):
-            raise Exception("File {0} must be placed under directory {0}.".format(string, amuse_src_directory))
+            raise Exception("File {0} must be placed under directory {1}.".format(string, amuse_src_directory))
         
         string = string[len(amuse_src_directory)+1:]
         string = string[:-len('.py')]
         string = string.replace(os.sep, '.')
     return string
     
+def make_cplusplus_header():
+    result = create_c.MakeACHeaderStringOfAClassWithLegacyFunctions()
+    result.make_extern_c = False
+    return result
     
 if __name__ == "__main__":
     setup_sys_path()
@@ -110,17 +114,23 @@ if __name__ == "__main__":
     
     settings = uc.options
     try:
-        module = __import__(settings.name_of_module,fromlist=[settings.name_of_class])
+        if settings.name_of_module_or_python_file.endswith('.py'):
+            module = {}
+            execfile(settings.name_of_module_or_python_file, module)
+            class_with_legacy_functions = module[settings.name_of_class]
+        else:
+            module = __import__(settings.name_of_module,fromlist=[settings.name_of_class])
+            class_with_legacy_functions = getattr(module, settings.name_of_class)
     except ImportError as exception:
         uc.show_error_and_exit(exception)
         
         
         
-    class_with_legacy_functions = getattr(module, settings.name_of_class)
     
     usecases = { 
         ('c','mpi'): create_c.MakeACStringOfAClassWithLegacyFunctions,
         ('h','mpi'): create_c.MakeACHeaderStringOfAClassWithLegacyFunctions,
+        ('H','mpi'): make_cplusplus_header,
         ('f90','mpi'): create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions,        
     }
     

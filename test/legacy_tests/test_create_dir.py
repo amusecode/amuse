@@ -1,6 +1,7 @@
 import unittest
 import os.path
 import shutil
+import subprocess
 
 from  path_to_test_results import get_path_to_test_results
 from amuse.legacy.support import create_dir
@@ -25,9 +26,41 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(unittest.TestCase
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForALegacyCode()
         instance.name_of_the_code_interface_class = 'TestCode'
         instance.path_of_the_root_directory = root
+        self.assertEquals(instance.reference_to_amuse_path ,'../..')
         
         instance.start()
         
-        print os.path.exists(working_dir)
+        self.assertTrue(os.path.exists(working_dir))
+        self.assertTrue(os.path.exists(os.path.join(working_dir,'interface.py')))
+        self.assertTrue(os.path.exists(os.path.join(working_dir,'Makefile')))
         
-        self.assertTrue(working_dir)
+        call = subprocess.Popen(
+            'make',
+            cwd=working_dir, 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        outputstring, errorstring = call.communicate()
+        
+        print errorstring
+    
+        self.assertEquals(call.returncode, 0)
+        
+        self.assertTrue(os.path.exists(os.path.join(working_dir,'worker_code')))
+        
+        
+        call = subprocess.Popen(
+            ['make', 'clean'],
+            cwd=working_dir, 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        outputstring, errorstring = call.communicate()
+        
+        print errorstring
+    
+        self.assertEquals(call.returncode, 0)
+        
+        
+            
+        
