@@ -43,8 +43,8 @@
          AMUSE_status = -1
          return
       end if
-      profile_columns_file = mesa_data_dir // '/star_data/profile_columns.list'
-      log_columns_file = mesa_data_dir // '/star_data/log_columns.list'
+!      profile_columns_file = mesa_data_dir // '/star_data/profile_columns.list'
+!      log_columns_file = mesa_data_dir // '/star_data/log_columns.list'
       AMUSE_status = 0
       return
    end
