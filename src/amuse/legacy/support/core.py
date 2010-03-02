@@ -16,7 +16,7 @@ from subprocess import Popen, PIPE
 from amuse.support.core import late
 from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
-from amuse.legacy.interface import LegacyDocStringProperty
+from amuse.legacy.support.create_definition import LegacyDocStringProperty
 from amuse.legacy.support.channel import MpiChannel, MultiprocessingMPIChannel
 
 
@@ -71,6 +71,8 @@ def _typecode_to_datatype(typecode):
         return typecode
     
     raise Exception("{0} is not a valid typecode".format(typecode))
+    
+
     
 class LegacyCall(object):
     

@@ -3,8 +3,9 @@ from legacy_support import TestWithMPI
 
 from amuse.legacy.interface import gd
 from amuse.legacy.interface.gd import GravitationalDynamics
-from amuse.legacy.interface import create_definition
-from amuse.legacy.interface import LegacyDocStringProperty
+from amuse.legacy.support.create_definition import LegacyDocStringProperty
+
+from amuse.legacy.support import create_definition
 from amuse.legacy.support.core import LegacyFunctionSpecification
 
 class TestGravitationalDynamics(TestWithMPI):

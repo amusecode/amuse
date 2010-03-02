@@ -5,6 +5,24 @@ from amuse.support.core import late, print_out
 def strip_indent(string_with_indents):
     return re.sub('^ *\n', '', string_with_indents.rstrip())
 
+
+class LegacyDocStringProperty(object):            
+    """
+    Return a docstring generated from a legacy
+    function specification
+    """
+    def __get__(self, instance, owner):
+        if instance is None:
+            if hasattr(owner, "__init__"):
+                return owner.__init__.__doc__
+            else:
+                return self
+        
+        usecase = CreateDescriptionOfALegacyFunctionDefinition()
+        usecase.specification = instance.specification
+        usecase.start()
+        return usecase.out.string
+
 class CreateDescriptionOfALegacyFunctionDefinition(object):
 
     @late
