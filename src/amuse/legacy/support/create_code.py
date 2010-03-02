@@ -2,7 +2,7 @@ from amuse.support.core import late, print_out
 from amuse.legacy.support.core import legacy_function, legacy_global
 
 import numpy
-
+import sys
 class DTypeSpec(object):
     def __init__(self, input_var_name, output_var_name, counter_name, 
         type, mpi_type = 'UNKNOWN'):
@@ -56,6 +56,49 @@ class MakeCodeStringOfAClassWithLegacyFunctions(MakeCodeString):
         
         result.sort(key= lambda x: x.id)
         return result
+        
+    
+    @late
+    def mapping_from_dtype_to_maximum_number_of_inputvariables(self):
+        result = None
+        for x in self.legacy_functions:
+            local = {}
+            for parameter in x.specification.input_parameters:
+                count = local.get(parameter.datatype, 0)
+                local[parameter.datatype] = count + 1
+            
+            
+            if result is None:
+                result = local
+            else:
+                for key, count in local.iteritems():
+                    previous_count = result.get(key, 0)
+                    result[key] = max(count, previous_count)
+                    
+        return result
+                
+    @late
+    def mapping_from_dtype_to_maximum_number_of_outputvariables(self):
+        result = None
+        for x in self.legacy_functions:
+            local = {}
+            for parameter in x.specification.output_parameters:
+                count = local.get(parameter.datatype, 0)
+                local[parameter.datatype] = count + 1
+                
+            if not x.specification.result_type is None:
+                count = local.get(x.specification.result_type, 0)
+                local[x.specification.result_type] = count + 1
+            
+            if result is None:
+                result = local
+            else:
+                for key, count in local.iteritems():
+                    previous_count = result.get(key, 0)
+                    result[key] = max(count, previous_count)
+                    
+        return result
+                
            
     def output_legacy_functions(self):
         for x in self.legacy_functions:
@@ -98,5 +141,8 @@ class DTypeToSpecDictionary(object):
         
     def values(self):
         return self.mapping.values()
+        
+    def keys(self):
+        return self.mapping.keys()
         
         

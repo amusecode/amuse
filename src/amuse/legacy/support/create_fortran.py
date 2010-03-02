@@ -321,16 +321,23 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         
     def output_allocate_arrays(self):
         maximum_number_of_inputvariables_of_a_type = 255
-        for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + 'ALLOCATE('
-            self.out + dtype_spec.input_var_name 
-            self.out + '( maxlen *' + maximum_number_of_inputvariables_of_a_type + ')'
-            self.out + ')'
+        for dtype in self.dtype_to_spec.keys():
+            dtype_spec = self.dtype_to_spec[dtype]
+            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
+            if max > 0:
+                self.out.lf() + 'ALLOCATE('
+                self.out + dtype_spec.input_var_name 
+                self.out + '( maxlen *' + max + ')'
+                self.out + ')'
             
-            self.out.lf() + 'ALLOCATE(' 
-            self.out + dtype_spec.output_var_name 
-            self.out + '( maxlen * ' + maximum_number_of_inputvariables_of_a_type + ')'
-            self.out + ')'
+            max =self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
+            if max > 0:
+                self.out.lf() + 'ALLOCATE(' 
+                self.out + dtype_spec.output_var_name 
+                self.out + '( maxlen * ' + max + ')'
+                self.out + ')'
+
+        
 
     def output_character_index_function(self):
         self.out.lf().lf() + 'FUNCTION get_offset(index, offsets)'
@@ -555,9 +562,16 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.dedent().lf() + 'end subroutine'
     
     def output_deallocate_statements(self):
-        for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + 'DEALLOCATE(' + dtype_spec.input_var_name  + ')'
-            self.out.lf() + 'DEALLOCATE(' + dtype_spec.output_var_name  + ')'
+        for dtype in self.dtype_to_spec.keys():
+            dtype_spec = self.dtype_to_spec[dtype]
+            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
+            if max > 0:
+                self.out.lf() + 'DEALLOCATE(' + dtype_spec.input_var_name  + ')'
+            
+            
+            max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
+            if max > 0:
+                self.out.lf() + 'DEALLOCATE(' + dtype_spec.output_var_name  + ')'
                         
     def output_main(self):
         self.out.lf().lf() + 'program muse_worker'

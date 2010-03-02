@@ -421,6 +421,9 @@ class MakeACStringOfAClassWithLegacyFunctions\
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]    
             self.out.lf() 
+            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
+            if max == 0:
+                continue
             self.out + 'if(request_header.' + spec.counter_name + ' > 0) {'
             self.out.indent().lf() + 'parent.Bcast(' 
             self.out + spec.input_var_name 
@@ -468,7 +471,12 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf() + 'if(rank == 0) {'
         self.out.indent().lf()
         for i, dtype in enumerate(dtypes):
-            spec = self.dtype_to_spec[dtype]    
+            spec = self.dtype_to_spec[dtype]  
+            
+            max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
+            if max == 0:
+                continue
+                  
             self.out.lf() + 'if(reply_header.' 
             self.out + spec.counter_name + ' > 0) {'
             self.out.indent().lf()
@@ -518,39 +526,60 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf() + '}'
     
     def output_delete_statements(self):
-        for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + 'delete ' 
-            self.out + dtype_spec.input_var_name  + ';'
-            self.out.lf() + 'delete '
-            self.out + dtype_spec.output_var_name  + ';'
+        for dtype in self.dtype_to_spec.keys():
+            dtype_spec = self.dtype_to_spec[dtype]
+            
+            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
+            if max > 0:
+                self.out.lf() + 'delete ' 
+                self.out + dtype_spec.input_var_name  + ';'
+            
+            max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
+            if max > 0:
+                self.out.lf() + 'delete '
+                self.out + dtype_spec.output_var_name  + ';'
         
-        self.out.lf() + 'delete '
-        self.out + 'output_strings' + ';'
+        max = 0
+        dtype='string'
+        max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
+        if max > 0:
+            self.out.lf() + 'delete '
+            self.out + 'output_strings' + ';'
             
     def output_new_statements(self, must_add_type):
         maximum_number_of_inputvariables_of_a_type = 255
-        for dtype_spec in self.dtype_to_spec.values():
+        for dtype in self.dtype_to_spec.keys():
+            dtype_spec = self.dtype_to_spec[dtype]
             self.out.lf() 
+            max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype,0)
+            if max > 0:
+                self.output_new_statement(
+                    must_add_type,
+                    dtype_spec.type,
+                    dtype_spec.input_var_name,
+                    max
+                )
+                
+            max = 0
+            max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
+            if max > 0:
+                self.output_new_statement(
+                    must_add_type,
+                    dtype_spec.type,
+                    dtype_spec.output_var_name,
+                    max
+                )
+                
+        max = 0
+        dtype = 'string'
+        max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype,0)
+        if max > 0:
             self.output_new_statement(
                 must_add_type,
-                dtype_spec.type,
-                dtype_spec.input_var_name,
-                maximum_number_of_inputvariables_of_a_type
+                'char *',
+                'output_strings',
+                max
             )
-            
-            self.output_new_statement(
-                must_add_type,
-                dtype_spec.type,
-                dtype_spec.output_var_name,
-                maximum_number_of_inputvariables_of_a_type
-            )
-        
-        self.output_new_statement(
-            must_add_type,
-            'char *',
-            'output_strings',
-            maximum_number_of_inputvariables_of_a_type
-        )
             
     def output_new_statement(self, must_add_type,  type, var_name, maximum_number_of_inputvariables_of_a_type):
         if must_add_type:
