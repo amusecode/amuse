@@ -58,7 +58,7 @@ class InstallPrerequisites(object):
             'hdf' ,
             [],  
             '1.8.4' , 
-            'hdf5-' , '.tar.gz' , 
+            'hdf5-' , '-patch1.tar.gz' , 
             'http://www.hdfgroup.org/ftp/HDF5/current/src/', 
             self.hdf5_build
           ) ,
@@ -344,8 +344,18 @@ class InstallPrerequisites(object):
                     app_dir = prefix
                 temp_app_dir = os.path.join(self.temp_dir , app_dir)
                 if not os.path.exists(temp_app_dir):
-                    print "Package was not correctly unpacked: ", app_file
-                    return
+                    app_file = prefix + version + suffix
+                    if app_file.endswith('.tar.gz'):
+                        app_dir = app_file[:-len('.tar.gz')]
+                    elif app_file.endswith('.tar.bz2'):
+                        app_dir = app_file[:-len('.tar.bz2')]
+                    else:
+                        app_dir, ignore = os.path.os.path.splitext(app_file)
+                        
+                    temp_app_dir = os.path.join(self.temp_dir , app_dir)
+                    if not os.path.exists(temp_app_dir):
+                        print "Package was not correctly unpacked: ", app_file
+                        return
     
             print "Building ", app_file
             function(temp_app_dir)
