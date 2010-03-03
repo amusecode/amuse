@@ -60,42 +60,30 @@ class CreateDescriptionOfALegacyFunctionDefinition(object):
         self.out.indent()
         self.out.lf().lf()
         
-        if self.specification.result_type is None:
-            self.out + 'void '
-        else:
-            self.out + self.specification.result_type
-            self.out + ' '
-        self.out + self.specification.name
-        self.out + '('
-        self.out.indent()
-        first = True
-        for parameter in self.specification.parameters:
-            if first:
-                first = False
-            else:
-                self.out + ', '
-            
-            length_of_the_argument_statement = len(parameter.datatype) + len(parameter.name) + 3
-            new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
-            if new_length_of_the_line > 74:
-                self.out.lf()
-            self.out + parameter.datatype
-            if parameter.is_output():
-                self.out + ' *'
-            self.out + ' ' + parameter.name
-        self.out + ');'
-        self.out.dedent()
+        x = CreateCStub()
+        x.convert_datatypes = False
+        x.out = self.out
+        x.specification = self.specification
+        x.start()
         
         self.out.dedent()
         self.out.lf().lf()
         
     def output_fortran_function_definition(self):
+        
+        self.out + '.. code-block:: fortran'
+        self.out.indent()
+        self.out.lf().lf()
+        
         x = CreateFortranStub()
         x.out = self.out
         x.specification = self.specification
         x.start()
         
-    
+                                   
+        self.out.dedent()
+        self.out.lf().lf()
+   
     def output_parameter_descriptions(self):
         for parameter in self.specification.parameters:
             self.out.lf()
@@ -142,16 +130,9 @@ class CreateFortranStub(object):
         return print_out()
         
     def start(self):
-        self.out + '.. code-block:: fortran'
-        self.out.indent()
-        self.out.lf().lf()
         self.output_subprogram_start()
         self.output_parameter_type_definiton_lines()
         self.output_subprogram_end()
-                           
-        self.out.dedent()
-        self.out.lf().lf()
-
     
     @late 
     def specification_is_for_function(self):
@@ -239,3 +220,106 @@ class CreateFortranStub(object):
         self.out + 'END ' + self.subprogram_string
 
         
+
+class CreateCStub(object):
+    @late
+    def out(self):
+        return print_out()
+        
+    def start(self):
+        if self.specification.result_type is None:
+            self.out + 'void '
+        else:
+            typestring = self.dtype_to_ctype[self.specification.result_type]
+            self.out + typestring
+            self.out + ' '
+            
+        self.out + self.specification.name
+        self.out + '('
+        self.out.indent()
+        first = True
+        for parameter in self.specification.parameters:
+            typestring = self.dtype_to_ctype[parameter.datatype]
+            if first:
+                first = False
+            else:
+                self.out + ', '
+            
+            length_of_the_argument_statement = len(typestring) + len(parameter.name) + 3
+            new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
+            if new_length_of_the_line > 74:
+                self.out.lf()
+            self.out + typestring
+            if parameter.is_output():
+                self.out + ' *'
+            self.out + ' ' + parameter.name
+        
+        self.out.dedent()
+        self.out + ')'
+        
+        if self.output_definition_only:
+            self.out + ';'
+        else:
+            self.output_function_content()
+
+        self._result = self.out.string
+
+    @late
+    def result(self):
+        self.start()
+        return self._result
+        
+    def output_function_content(self):
+        self.out + '{'
+        self.out.indent()
+        if not self.specification.result_type is None:
+            self.out.lf()
+            self.out + 'return ' + self.dtype_to_returnvalue[self.specification.result_type] + ';'
+        self.out.dedent().lf()
+        self.out + '}'
+            
+    @late
+    def dtype_to_parameters(self):
+        result = {}
+        for parameter in self.specification.parameters: 
+            parameters = result.get(parameter.datatype,[])
+            parameters.append(parameter)
+            result[parameter.datatype] = parameters
+        return result
+    
+    @late
+    def output_definition_only(self):
+        return (not self.convert_datatypes)
+        
+    @late
+    def convert_datatypes(self):
+        return True
+    
+    @late
+    def dtype_to_ctype(self):
+        if self.convert_datatypes:
+            return {
+                'int32':'int' , 
+                'float64':'double' , 
+                'float32':'float' ,
+                'string':'char *',
+            }
+        else:
+            return {
+                'int32':'int32' , 
+                'float64':'float64' , 
+                'float32':'float32' ,
+                'string':'char *',
+            }
+    @late
+    def dtype_to_returnvalue(self):
+        return {
+            'int32':'0' , 
+            'float64':'0.0' , 
+            'float32':'0.0' ,
+            'string':'0',
+        }
+            
+
+        
+

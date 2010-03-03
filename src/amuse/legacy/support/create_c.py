@@ -3,6 +3,7 @@ from amuse.legacy.support.core import LegacyFunctionSpecification
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
 from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
+from amuse.legacy.support import create_definition
 
 dtype_to_spec = DTypeToSpecDictionary({
     'int32' : DTypeSpec('ints_in','ints_out',
@@ -632,6 +633,47 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
         self.out.lf()
         
         self._result = self.out.string
+        
+
+class MakeACInterfaceStringOfAClassWithLegacyFunctions\
+    (MakeCodeStringOfAClassWithLegacyFunctions):
+
+    @late
+    def dtype_to_spec(self):
+        return dtype_to_spec
+        
+    @late
+    def make_extern_c(self):
+        return False
+    
+    def make_legacy_function(self):
+        return create_definition.CreateCStub()
+        
+    def start(self):  
+    
+        self.output_local_includes()
+        
+        self.out.lf()
+        
+        if self.make_extern_c:
+            self.out + 'extern "C" {'
+            self.out.indent().lf()
+            
+        self.output_legacy_functions()
+        
+        if self.make_extern_c:
+            self.out.dedent().lf() + '}'
+        
+        self.out.lf()
+        
+        self._result = self.out.string
+        
+    
+    def output_local_includes(self):
+        self.out.n()
+        if hasattr(self.class_with_legacy_functions, 'include_headers'):
+            for x in self.class_with_legacy_functions.include_headers:
+                self.out.n() + '#include "' + x + '"'
     
         
         

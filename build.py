@@ -26,9 +26,34 @@ def setup_sys_path():
 class ParseCommandLine(object):
     usage = """usage: %prog [options] name_of_module name_of_class_in_module.
     
-    Will generate code from the class with name <name_of_class_in_module>. The
+    This script will generate code from the class with name <name_of_class_in_module>. The
     class must be defined in the module <name_of_module>. The module name
     can be a python file or the python module name.
+    
+    This script handles all code generation for the AMUSE framework. It can
+    be used to create C++ or Fortran code to handle the MPI messages, 
+    create a header file or create stub code as a start for defining
+    the interface between the code and AMUSE.
+    
+    Examples
+    --------
+    To generate code for interfacing with MPI do:
+        %prog --type=c --mode=mpi test.py TestInterface
+    or (for fortran):
+        %prog --type=f90 --mode=mpi test.py TestInterface
+        
+    To generate a header file do (for C):
+        %prog --type=h test.py TestInterface
+    or (for C++):
+        %prog --type=H test.py TestInterface
+        
+    To generate a stub file do:
+        %prog --type=c --mode=stub test.py TestInterface
+    or (for fortran):
+        %prog --type=f90 --mode=stub test.py TestInterface
+    
+    To see a description of all arguments do:
+        %prog --help
     
     """
     
@@ -44,10 +69,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-m",
             "--mode",
-            choices=["mpi","interface"],
+            choices=["mpi","stub"],
             default="mpi",
             dest="mode",
-            help="MODE of the code to generate. Can be MPI or INTERFACE. Generate the MPI handling code or the INTERFACE code. Only needed when generating code. (Defaults to mpi)")
+            help="MODE of the code to generate. Can be <mpi> or <stub>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). Only needed when generating code. (Defaults to mpi)")
         self.parser.add_option(
             "-o",
             "--output",
@@ -131,10 +156,15 @@ if __name__ == "__main__":
         ('c','mpi'): create_c.MakeACStringOfAClassWithLegacyFunctions,
         ('h','mpi'): create_c.MakeACHeaderStringOfAClassWithLegacyFunctions,
         ('H','mpi'): make_cplusplus_header,
-        ('f90','mpi'): create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions,        
+        ('f90','mpi'): create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions,      
+        ('c','stub'): create_c.MakeACInterfaceStringOfAClassWithLegacyFunctions,  
     }
     
-    builder = usecases[(settings.type, settings.mode)]()
+    try:
+        builder = usecases[(settings.type, settings.mode)]()
+    except:
+        uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
+        
     builder.class_with_legacy_functions = class_with_legacy_functions
     if settings.output == '-':
         print builder.result

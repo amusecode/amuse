@@ -4,6 +4,7 @@ import sys
 from amuse.legacy.support.core import *
 from amuse.legacy.support.create_c import *
 from amuse.legacy.support.create_fortran import *
+from amuse.legacy.support.create_definition import *
         
 
 class TestLegacyFunction(unittest.TestCase):
@@ -15,6 +16,7 @@ class TestLegacyFunction(unittest.TestCase):
         function.addParameter('parameter2', dtype='d', direction=function.IN)
         function.addParameter('name', dtype='d', direction=function.IN)
         return function
+        
     @legacy_function
     def interleave_ints_and_doubles():
         function = LegacyFunctionSpecification()  
@@ -319,6 +321,37 @@ class TestMakeACHeaderDefinitionStringOfALegacyFunctionSpecification(unittest.Te
         self.assertEquals(string,  'double test_with_out(int parameter1, int * parameter2, double * doublep);')
 
 
+        
+class TestCreateCStub(unittest.TestCase):
+    _class_to_test = CreateCStub
+    
+    def test1(self):
+        function = LegacyFunctionSpecification()      
+        function.name = "test_one"     
+        function.id = 1
+        function.addParameter('parameter1', dtype='i', direction=function.IN)
+        function.addParameter('parameter2', dtype='d', direction=function.IN)
+        function.addParameter('name', dtype='d', direction=function.IN)
+        
+        x = self._class_to_test()
+        
+        x.specification = function
+        string = x.result
+        self.assertEquals(string, 'void test_one(int parameter1, double parameter2, double name){\n}')
+        
+    def test2(self):
+        function = LegacyFunctionSpecification()      
+        function.name = "test_with_out"   
+        function.id = 1
+        function.addParameter('parameter1', dtype='int32', direction=function.IN)
+        function.addParameter('parameter2', dtype='i', direction=function.OUT)
+        function.addParameter('doublep', dtype='float64', direction=function.OUT)
+        function.result_type = 'd'
+        x = self._class_to_test()
+        x.specification = function
+        string = x.result
+        self.assertEquals(string,  'double test_with_out(int parameter1, int * parameter2, double * doublep){\n  return 0.0;\n}')
+        
         
 class TestMakeACStringOfALegacyGlobalSpecification(unittest.TestCase):
     _class_to_test = MakeACStringOfALegacyGlobalSpecification
