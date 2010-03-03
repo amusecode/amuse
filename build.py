@@ -26,9 +26,14 @@ def setup_sys_path():
 class ParseCommandLine(object):
     usage = """usage: %prog [options] name_of_module name_of_class_in_module.
     
+    or: %prog --mode=dir name_of_the_code
+    
     This script will generate code from the class with name <name_of_class_in_module>. The
     class must be defined in the module <name_of_module>. The module name
     can be a python file or the python module name.
+    
+    If mode is dir the script will create a directory with all files
+    needed to start creating a code interface.
     
     This script handles all code generation for the AMUSE framework. It can
     be used to create C++ or Fortran code to handle the MPI messages, 
@@ -51,6 +56,11 @@ class ParseCommandLine(object):
         %prog --type=c --mode=stub test.py TestInterface
     or (for fortran):
         %prog --type=f90 --mode=stub test.py TestInterface
+        
+    To generate create a directory and put files in it do:
+        %prog --type=c --mode=dir MyCode
+    or (for fortran):
+        %prog --type=f90 --mode=dir MyCode
     
     To see a description of all arguments do:
         %prog --help
@@ -65,14 +75,14 @@ class ParseCommandLine(object):
             choices=["c","h", "H", "f90"],
             default="c",
             dest="type",
-            help="TYPE of the code to generate. Can be one of c, h, H or f90. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. (Defaults to c)")
+            help="TYPE of the code to generate. Can be one of c, h, H, f90. <c> will generate c code. <h/H> will generate c/c++ header. <f90> will generate fortran 90 code. (Defaults to c)")
         self.parser.add_option(
             "-m",
             "--mode",
-            choices=["mpi","stub"],
+            choices=["mpi","stub", "dir"],
             default="mpi",
             dest="mode",
-            help="MODE of the code to generate. Can be <mpi> or <stub>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). Only needed when generating code. (Defaults to mpi)")
+            help="MODE of the code to generate. Can be <mpi>, <stub> or <dir>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
         self.parser.add_option(
             "-o",
             "--output",
@@ -88,13 +98,19 @@ class ParseCommandLine(object):
         (self.options, self.arguments) = self.parser.parse_args()
         
     def parse_arguments(self):
-        if len(self.arguments) != 2:
-            self.parser.error("incorrect number of arguments")
-        try:
-            self.options.name_of_module_or_python_file = self.arguments[0]
-            self.options.name_of_class = self.arguments[1]
-        except Exception as exception:
-            self.show_error_and_exit(exception)
+        if self.options.mode == 'dir':
+            if len(self.arguments) != 1:
+                self.show_error_and_exit("incorrect number of arguments, need name of the code")
+                
+            self.options.name_of_the_code = self.arguments[0]
+        else:
+            if len(self.arguments) != 2:
+                self.show_error_and_exit("incorrect number of arguments")
+            try:
+                self.options.name_of_module_or_python_file = self.arguments[0]
+                self.options.name_of_class = self.arguments[1]
+            except Exception as exception:
+                self.show_error_and_exit(exception)
             
     
     def start(self):
@@ -127,17 +143,9 @@ def make_cplusplus_header():
     result = create_c.MakeACHeaderStringOfAClassWithLegacyFunctions()
     result.make_extern_c = False
     return result
+   
+def make_file(settings):
     
-if __name__ == "__main__":
-    setup_sys_path()
-    
-    from amuse.legacy.support import create_c
-    from amuse.legacy.support import create_fortran
-    
-    uc = ParseCommandLine()
-    uc.start()
-    
-    settings = uc.options
     try:
         if settings.name_of_module_or_python_file.endswith('.py'):
             module = {}
@@ -148,24 +156,22 @@ if __name__ == "__main__":
             class_with_legacy_functions = getattr(module, settings.name_of_class)
     except ImportError as exception:
         uc.show_error_and_exit(exception)
-        
-        
-        
     
+        
     usecases = { 
         ('c','mpi'): create_c.MakeACStringOfAClassWithLegacyFunctions,
         ('h','mpi'): create_c.MakeACHeaderStringOfAClassWithLegacyFunctions,
         ('H','mpi'): make_cplusplus_header,
         ('f90','mpi'): create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions,      
-        ('c','stub'): create_c.MakeACInterfaceStringOfAClassWithLegacyFunctions,  
+        ('c','stub'): create_c.MakeACInterfaceStringOfAClassWithLegacyFunctions,
     }
     
     try:
         builder = usecases[(settings.type, settings.mode)]()
+        builder.class_with_legacy_functions = class_with_legacy_functions
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
         
-    builder.class_with_legacy_functions = class_with_legacy_functions
     if settings.output == '-':
         print builder.result
     else:
@@ -174,7 +180,41 @@ if __name__ == "__main__":
                 f.write(builder.result)
         except Exception as exception:
             uc.show_error_and_exit(exception)
+            
+            
 
+def make_directory(settings):
+
+    usecases = {
+        ('c','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForALegacyCode,    
+        ('f90','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForALegacyCode, 
+    }
+    
+    try:
+        builder = usecases[(settings.type, settings.mode)]()
+        builder.name_of_the_code_interface_class = settings.name_of_the_code
+        builder.path_of_the_root_directory = os.getcwd()
+    except:
+        uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
+        
+    builder.start()
+        
+
+if __name__ == "__main__":
+    setup_sys_path()
+    
+    from amuse.legacy.support import create_c
+    from amuse.legacy.support import create_fortran
+    from amuse.legacy.support import create_dir
+    
+    uc = ParseCommandLine()
+    uc.start()
+    
+    settings = uc.options
+    if settings.mode == 'dir':
+        make_directory(settings)
+    else:
+        make_file(settings)
     
     
     

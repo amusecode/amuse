@@ -501,6 +501,8 @@ class CodeInterfaceWithParticlesTests(unittest.TestCase):
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
         
+        
+        
 
 class TestParticlesWithBinding(unittest.TestCase):
     class TestInterface(interface.CodeInterfaceOld):
@@ -619,6 +621,12 @@ class TestParticlesWithBinding(unittest.TestCase):
         self.assertEquals(len(colliding_particles), 2)
         self.assertEquals(colliding_particles.mass[0], 4.0 | units.kg)
         self.assertEquals(colliding_particles.mass[1], 5.0 | units.kg)
+        
+        attribute_names = dir(instance)
+        
+        self.assertTrue('particles' in attribute_names)
+        self.assertTrue('get_colliding_indices' in attribute_names)
+        
         
         
         

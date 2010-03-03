@@ -78,6 +78,7 @@ CODEOBJS = test.o
 
 AR = ar ruv
 RANLIB = ranlib
+RM = rm
 
 all: $(CODELIB) 
 
@@ -86,6 +87,7 @@ clean:
 \t$(RM) -f *.o *.a
 
 $(CODELIB): $(CODEOBJS)
+\t$(RM) -f $@
 \t$(AR) $@ $(CODEOBJS)
 \t$(RANLIB) $@
 
@@ -202,6 +204,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         self.make_python_files()
         self.make_makefile()
         self.make_example_files()
+        
         
     def make_directories(self):
         os.mkdir(self.path_of_the_legacy_code)

@@ -363,6 +363,9 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
     def get_attribute(self, name, value):
         return self._mapping_from_name_to_state_method[name].new_method(value)
         
+    
+    def attribute_names(self):
+        return set(self._mapping_from_name_to_state_method.keys())
         
     def define_state(self, name):
         if name in self.states:
@@ -613,6 +616,10 @@ class HandleMethodsWithUnits(object):
         
     def get_attribute(self, name, value):
         return self.method_definitions[name].new_method(value)
+    
+    
+    def attribute_names(self):
+        return set(self.method_definitions.keys())
         
     def add_method(self, original_name, units, return_unit = None,  public_name = None, return_value_handler = None):
         if public_name is None:
@@ -680,6 +687,9 @@ class HandlePropertiesWithUnits(HandleCodeInterfaceAttributeAccess):
     def get_attribute(self, name, value):
         return self.property_definitions[name].get_value(value)
         
+    def attribute_names(self):
+        return set(self.property_definitions.keys())
+        
     def add_property(self, function_name, unit, public_name = None):
         if public_name is None:
             if function_name.startswith('get_'):
@@ -713,6 +723,10 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         
     def get_attribute(self, name, value):
         return parameters.Parameters(self.definitions, self.interface.legacy_interface)
+        
+    
+    def attribute_names(self):
+        return set(['parameters'])
         
     def add_attribute_parameter(self, attribute_name, name, description, unit, default_value = None):
         definition = parameters.ModuleAttributeParameterDefinition(
@@ -822,6 +836,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
                 
             self.particle_sets[name] = result
             return result
+    
+    def attribute_names(self):
+        return set(self.sets.keys())
+        
         
     def has_name(self, name):
         return name == 'PARTICLES'
@@ -913,8 +931,9 @@ class CodeInterface(OldObjectsBindingMixin):
         
             
     def __dir__(self):
-        result = set(dir(self))
-        for handler in self.handlers:
+        result = set(dir(type(self)))
+        result |= set(self.__dict__.keys())
+        for handler in self._handlers:
             result |= handler.attribute_names()
-        return result
+        return list(result)
         
