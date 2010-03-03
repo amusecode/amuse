@@ -3,13 +3,17 @@ Create an Object Oriented interface on top of a Legacy Code
 ===========================================================
 
 In this tutorial we will add an object oriented interface 
-to a legacy code.
+to a legacy code. We will first define the legacy interface,
+then implement the code and finally build an object
+oriented interface on top of the code. The legacy code
+will be a very simple and naive implementation to find
+3 nearest neighbors of a particle.
 
 The legacy code interface supports methods that tranfer values
 to and from the code. The values do not have any units and
 no apart from error codes, and no error handling is 
 provided by the interface. We can add these and more functions
-to the legacy interface by defining a CodeInterface2.
+to the legacy interface by defining a CodeInterface.
 
 The suggested procedure for creating the new interface is
 as follow:
@@ -17,7 +21,7 @@ as follow:
 0. **Legacy Interface.** Start with creating the legacy 
    interface (see previous tutorial).
    The CodeInterface code depends on the legacy interface code.   
-1. **Make a Class.** Create a subclass of the CodeInterface2 class
+1. **Make a Class.** Create a subclass of the CodeInterface class
 2. **Define methods.** In the legacy interface we have defined functions
    with parameters. In the code interface we need to define the
    units of the parameters and if a parameter or return value
@@ -36,38 +40,218 @@ as follow:
    between nbody and si units.
 
 
-Legacy Interface
-----------------
+Environment variables
+---------------------
+This tutorial asumes you have a working amuse environment. Please ensure
+that amuse is setup correctly by running 'nosetests' in the amuse
+directory.
 
+To simplify the work in the coming sections, we first 
+define the environment variable 'AMUSEDIR'. This environment variable
+must point to the root directory of AMUSE (this is the directory
+containing the build.py script).
 
-.. code-block:: cpp
+.. code-block:: bash
 
-  #include "code.h"
-   
-  #define MAX_PARTICLES 1000
-  
-  int new_particle(int * id, double mass, double  x, double y, double z) {
+    > export AMUSEDIR=<path to the amuse root directory>
     
-  }
-  
-  int delete_particle(int id) {
-  }
-  
-  int get_state(int * id, double * mass, double * x, double * y, double * z) {
-  }
-  
-  
-  int get_number_of_particles(int * value) {
-  }
-  
-  int divide(double x, double y, double * result) {
-    if(y == 0.0) {
-        return -1;
-    } else {
-        *result = x / y;
-        return 0;
-    }
-  }
+or in a c shell:
+
+.. code-block:: csh
+
+    > setenv AMUSEDIR <path to the amuse root directory>
+    
+The name of our project
+-----------------------
+We will be writing a code to find the nearest neighbors of a particle, 
+so let's call our project 'NearestNeighbor'.
+
+Setting up the project
+----------------------
+First we need to create a directory for our project and put
+some files in it to help build the code. This is described in
+the *"Create an Interface to a Legacy Code"* tutorial. The fastest
+method to setup the directory is by using the build.py script.
+
+.. code-block:: bash
+
+    > $AMUSEDIR/build.py --mode=dir NearestNeighbor
+
+The script has generated a directory with all the files needed
+to start our project. It has also generated a very small legacy
+code with only one function ```echo_int```. We can build
+and test our new module::
+
+    > cd nearestneighbor/
+    > make all
+    > $AMUSEDIR/amuse.sh -c 'from interface import NearestNeighbor; print NearestNeighbor().echo_int(10)' 
+    OrderedDictionary({'int_out':10, '__result':0})
+    
+.. note::
+
+    The build.py script can be used to generate a range of files. To
+    see what this file can do you can run the script with a --help
+    parameter, like so::
+
+        > $AMUSEDIR/build.py --help
+
+Defining the legacy interface
+-----------------------------
+We define our code interface so that a user can add, update and 
+delete particles, start the nearest neighbors finding
+algorithm and retrieve the ids of the nearest neighbors.
+
+To define the interface, open interface.py with your favorite
+editor and replace the contents of this file with:
+
+.. literalinclude:: nearestneighbor/nn1.py
+
+We can generate a stub from the interface code with::
+
+    > $AMUSEDIR/build.py --type=c --mode=stub interface.py NearestNeighborInterface -o interface.cc
+
+The generated **interface.cc** replaces the original file generated in
+the previous section.
+
+The code still builds, but does not have any functionality yet::
+
+    > make all
+    > $AMUSEDIR/amuse.sh -c 'from interface import NearestNeighbor; print NearestNeighbor().find_nearest_neighbors()' 
+    0
+    
+Writing the legacy code
+-----------------------
+Normally the legacy code already exists and our task is limited to
+defining and implementing an interface so that AMUSE scripts can
+access the code. For this tutorial we will implement our legacy code.
+
+When a legacy code is integrated all interface code is put in 
+one directory and all the legacy code is put in a **src** directory
+placed under this directory. Our example legacy code also contains 
+a **src** directory and we will put the nearest neighbor algorithm
+in this directory.
+
+Go to the **src** directory and create a **code.cc** file, open this
+file in your favorite editor and:
+    
+.. literalinclude:: nearestneighbor/code.cc
+    :language: c++
+    
+
+You also need to create a header file the **src** directory. We will
+call this file **code.h** and sets its content as:
+
+.. literalinclude:: nearestneighbor/code.h
+    :language: c++
+
+.. note::
+
+    This algorithm is un-optimized and has N*N order. It is not meant
+    as very efficient code but as a readable example.
+
+Before we can continue we also need to alter the **Makefile** in the
+**src** directory, so that our **code.cc** file is included in the
+build. To do so, open an editor on the Makefile and change 
+the line::
+
+    CODEOBJS = test.o
+
+to::
+
+    CODEOBJS = code.o
+    
+
+Test if the code builds. As we have not coupled our algorithm to the 
+interface we do not have any new functionality. In the legacy interface
+directory (not the **src** directory) do::
+
+    > make all
+    > $AMUSEDIR/amuse.sh -c 'from interface import NearestNeighbor; print NearestNeighbor().find_nearest_neighbors()' 
+    0
+
+Filling the stubs
+-----------------
+The implementation of the algorithm does not match the interface
+we defined and created. We need to write some glue code to
+connect the code with the interface. To do so we fill in the
+stubs generated earlier.
+
+Open the **interface.cc** file in your favorite editor and
+change its contents to:
+
+.. literalinclude:: nearestneighbor/interface1.cc
+    :language: c++
+
+Test if the code builds and try it out. In the legacy interface
+directory do::
+    
+    > make all
+    
+We can now start playing with the interface, to start an interactive
+python session do::
+
+    > $AMUSEDIR/amuse.sh
+    
+.. note::
+
+    If you have IPython installed you can also run an interactive
+    IPython session like so::
+        
+        > $AMUSEDIR/iamuse.sh
+        
+In the python session we can load are code and do some testing
+
+.. code-block:: python
+
+    >>> from interface import NearestNeighbor
+    >>> nn = NearestNeighbor()
+    >>> value, error = nn.get_number_of_particles()
+    >>> print "number of particles:", value
+    number of particles: 0
+    >>> all_ids = []
+    >>> id, error = nn.new_particle(0.0, 0.0, 0.0)
+    >>> print "id of first particle:", id
+    id of first particle: 0
+    >>> all_ids.append(id)
+    >>> for i in range(1,6):
+    ...    id, error = nn.new_particle(i*i, 0, 0)
+    ...    all_ids.append(id)
+    ...
+    >>> value, error = nn.get_number_of_particles()
+    >>> print "number of particles:", value
+    number of particles: 6
+    >>> nn.find_nearest_neighbors()
+    0
+    >>> for i in all_ids:
+    ...    print "particle with id", i
+    ...    index, distance, error = nn.get_nearest_neighbor(i)
+    ...    print "nearest neigbor", index, "has distance", distance
+    ...    index0, index1, index2, error = nn.get_close_neighbors(i)
+    ...    print "nearest neigbors are:", index0, index1, index2 
+    ...
+    particle with id 0
+    nearest neigbor 1.0 has distance 1.0
+    nearest neigbors are: 1.0 2.0 3.0
+    particle with id 1
+    nearest neigbor 0.0 has distance 1.0
+    nearest neigbors are: 0.0 2.0 3.0
+    particle with id 2
+    nearest neigbor 1.0 has distance 3.0
+    nearest neigbors are: 1.0 0.0 3.0
+    particle with id 3
+    nearest neigbor 2.0 has distance 5.0
+    nearest neigbors are: 2.0 4.0 1.0
+    particle with id 4
+    nearest neigbor 3.0 has distance 7.0
+    nearest neigbors are: 3.0 5.0 2.0
+    particle with id 5
+    nearest neigbor 4.0 has distance 9.0
+    nearest neigbors are: 4.0 3.0 2.0
+
+
+
+
+
 
 
 

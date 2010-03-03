@@ -228,10 +228,14 @@ class OrderedDictionary(object):
         result = 'OrderedDictionary({'
         elements = []
         for x in self.keys():
-            elements.append(str(x) + ':' + str(self[x]))
-        result += ','.join(elements)
+            elements.append(repr(x) + ':' + repr(self[x]))
+        result += ', '.join(elements)
         result += '})'
         return result
+        
+    def __repr__(self):
+        return str(self)
+        
 
     def __getattr__(self, key):
         return self.mapping[key]
