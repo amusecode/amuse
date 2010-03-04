@@ -553,6 +553,10 @@ class TestParticlesWithBinding(amusetest.TestCase):
             return (1,2,0)
             
         
+        def get_next(self, id):
+            return (map(lambda x : x+1, id), map(lambda x : 0, id))
+            
+        
             
     def test1(self):
         original = self.TestInterface()
@@ -587,7 +591,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(len(instance.particles), 4)
         self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
         
-    def test1(self):
+    def test2(self):
         original = self.TestInterface()
         
         instance = interface.CodeInterface(original)
@@ -608,6 +612,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
         handler.add_query('particles', 'get_colliding_indices', public_name = 'select_colliding')
+        handler.add_select_from_particle('particles', 'get_next', public_name = 'next')
         
         
         local_particles = core.Particles(4)
@@ -626,6 +631,41 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         self.assertTrue('particles' in attribute_names)
         self.assertTrue('get_colliding_indices' in attribute_names)
+        
+    def test3(self):
+        original = self.TestInterface()
+        
+        instance = interface.CodeInterface(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
+        handler.add_method('set_mass',(handler.NO_UNIT, units.kg,), (handler.ERROR_CODE,))
+        handler.add_method('get_next',(handler.INDEX,), (handler.INDEX, handler.ERROR_CODE))
+        handler.add_method('new_particle',(units.kg,), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        handler.add_getter('particles', 'get_next', names = ('next',))
+        
+        
+        local_particles = core.Particles(4)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
+        
+        remote_particles = instance.particles
+        remote_particles.add_particles(local_particles)
+        
+        
+        self.assertEquals(len(instance.particles), 4)
+        self.assertEquals(instance.particles[0].next, instance.particles[1])
+        self.assertEquals(instance.particles[1].next, instance.particles[2])
+        self.assertEquals(instance.particles[2].next, instance.particles[3])
+        self.assertEquals(instance.particles[3].next, None)
         
         
         

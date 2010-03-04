@@ -1,4 +1,5 @@
 from amuse.support.data import values
+from amuse.support.data.values import Quantity, new_quantity
 from amuse.support.units import si
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
@@ -36,12 +37,12 @@ class RandomNumberUniqueKeyGenerator(object):
         self.number_of_bits = number_of_bits
         
     def next(self):
-        return random.getrandbits(self.number_of_bits)
+        return numpy.array([random.getrandbits(self.number_of_bits)], dtype='uint64')[0]
         
     def next_set_of_keys(self, length):
         if length == 0:
             return  []
-        return numpy.array([random.getrandbits(64) for i in range(length)], dtype='uint64')
+        return numpy.array([random.getrandbits(self.number_of_bits) for i in range(length)], dtype='uint64')
         
 UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
 
@@ -53,7 +54,7 @@ class AttributeValues(object):
         self.unit = unit
         self.model_times = model_times
         if values is None:
-            self.values = numpy.zeros(length)
+            self.values = numpy.zeros(length, dtype = self.unit.dtype)
         else:
             self.values = values
         
@@ -113,49 +114,54 @@ class InMemoryAttributeStorage(AttributeStorage):
             )
         
         if len(self.particle_keys) > 0:
-            for attribute, values_to_set in zip(attributes, values):
-                if attribute in self.mapping_from_attribute_to_values_and_unit:
-                    attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-                else:
-                    attribute_values = AttributeValues(
-                        attribute,
-                        values_to_set.unit,
-                        length = len(self.particle_keys)
-                    )
-                
-                    self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
-                values_in_the_right_units = values_to_set.value_in(attribute_values.unit)
-                attribute_values.values = numpy.concatenate((attribute_values.values, values_in_the_right_units))
-            
-            old_length = len(self.particle_keys)
-            zeros_for_concatenation = numpy.zeros(len(keys))
-            for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
-                if len(attribute_values.values) == old_length:
-                    attribute_values.values = numpy.concatenate((attribute_values.values, zeros_for_concatenation))
-            
-                    
-            index = len(self.particle_keys)
-
-            self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys))))
-  
-            for particle_key in keys:
-                self.mapping_from_particle_to_index[particle_key] = index
-                index += 1
+            self.append_to_storage(keys, attributes, values)
         else:
-            self.mapping_from_attribute_to_values_and_unit = {}
+            self.setup_storage(keys, attributes, values)
             
-            for attribute, quantity in zip(attributes, values):
-                self.mapping_from_attribute_to_values_and_unit[attribute] = AttributeValues(
-                    attribute,
-                    quantity.unit,
-                    quantity.number,
-                    None
-                )
-             
-            self.particle_keys = numpy.array(keys)
-            
-            self.reindex()
+    def setup_storage(self, keys, attributes, values):
+        self.mapping_from_attribute_to_values_and_unit = {}
+        for attribute, quantity in zip(attributes, values):
+            self.mapping_from_attribute_to_values_and_unit[attribute] = AttributeValues(
+                attribute,
+                quantity.unit,
+                quantity.number,
+                None
+            )
+         
+        self.particle_keys = numpy.array(keys, dtype='uint64')
+
+        self.reindex()
     
+    def append_to_storage(self, keys, attributes, values):
+        for attribute, values_to_set in zip(attributes, values):
+            if attribute in self.mapping_from_attribute_to_values_and_unit:
+                attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            else:
+                attribute_values = AttributeValues(
+                    attribute,
+                    values_to_set.unit,
+                    length = len(self.particle_keys)
+                )
+            
+                self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
+            values_in_the_right_units = values_to_set.value_in(attribute_values.unit)
+            attribute_values.values = numpy.concatenate((attribute_values.values, values_in_the_right_units))
+        
+        old_length = len(self.particle_keys)
+        for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
+            zeros_for_concatenation = numpy.zeros(len(keys), dtype=attribute_values.unit.dtype)
+            if len(attribute_values.values) == old_length:
+                attribute_values.values = numpy.concatenate((attribute_values.values, zeros_for_concatenation))
+        
+                
+        index = len(self.particle_keys)
+
+        self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
+
+        for particle_key in keys:
+            self.mapping_from_particle_to_index[particle_key] = index
+            index += 1
+            
     def _get_values(self, particles, attributes):
         indices = self.get_indices_of(particles)
             
@@ -183,7 +189,7 @@ class InMemoryAttributeStorage(AttributeStorage):
                 else:
                     raise Exception("unknown attribute '{0}'".format(attribute))
                      
-                selected_values = numpy.zeros(len(indices))
+                selected_values = numpy.zeros(len(indices), dtype=attribute_values.values.dtype)
                 
                 attribute_values.values.put(indices, selected_values)
             return
@@ -200,7 +206,6 @@ class InMemoryAttributeStorage(AttributeStorage):
                 self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
                  
             selected_values = values_to_set.value_in(attribute_values.unit)
-            
             attribute_values.values.put(indices, selected_values)
             if not model_times is None:
                 if not previous_model_times is attribute_values.model_times:
@@ -509,6 +514,7 @@ class AbstractParticleSet(object):
     GLOBAL_VECTOR_ATTRIBUTES = {}
     GLOBAL_CALCULATED_ATTRIBUTES = {}
     GLOBAL_FUNCTION_ATTRIBUTES = {}
+    GLOBAL_PARTICLE_FUNCTION_ATTRIBUTES = {}
     
     
     class PrivateProperties(object):
@@ -611,6 +617,21 @@ class AbstractParticleSet(object):
             
         def get(self, particles):
             return self.BoundFunctionAttribute(self.function, particles)
+            
+    class ParticleFunctionAttribute:
+        class BoundParticleFunctionAttribute(object):
+            def  __init__(self, function, particle):
+                self.function = function
+                self.particle = particle
+                
+            def __call__(self, *list_arguments, **keyword_arguments):
+                return self.function(self.particle, *list_arguments, **keyword_arguments)
+        
+        def  __init__(self, function):
+            self.function = function
+            
+        def get(self, particle):
+            return self.BoundParticleFunctionAttribute(self.function, particle)
 
         
             
@@ -618,6 +639,7 @@ class AbstractParticleSet(object):
         object.__setattr__(self, "_vector_attributes", CompositeDictionary(self.GLOBAL_VECTOR_ATTRIBUTES))
         object.__setattr__(self, "_calculated_attributes", CompositeDictionary(self.GLOBAL_CALCULATED_ATTRIBUTES))
         object.__setattr__(self, "_function_attributes", CompositeDictionary(self.GLOBAL_FUNCTION_ATTRIBUTES))
+        object.__setattr__(self, "_particle_function_attributes", CompositeDictionary(self.GLOBAL_PARTICLE_FUNCTION_ATTRIBUTES))
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     
@@ -631,13 +653,13 @@ class AbstractParticleSet(object):
         elif name_of_the_attribute in self._function_attributes:
             return self._function_attributes[name_of_the_attribute].get(self)
         else:
-            return self._get_values(self._get_keys(), [name_of_the_attribute])[0]
+            return self._convert_to_particles(self._get_values(self._get_keys(), [name_of_the_attribute])[0])
     
     def __setattr__(self, name_of_the_attribute, value):
         if name_of_the_attribute in self._vector_attributes:
             self._vector_attributes[name_of_the_attribute]._set_values(self, value)
         else:
-            self._set_values(self._get_keys(), [name_of_the_attribute], [value])
+            self._set_values(self._get_keys(), [name_of_the_attribute], [self._convert_from_particles(value)])
     
     def _get_value_of_attribute(self, key, attribute):
         if attribute in self._vector_attributes:
@@ -645,7 +667,7 @@ class AbstractParticleSet(object):
         elif attribute in self._calculated_attributes:
             return self._calculated_attributes[attribute].get_value_for_particle(self, key)
         else:
-            return self._get_values([key], [attribute])[0][0]
+            return self._convert_to_particles(self._get_values([key], [attribute])[0])[0]
             
     
     def _set_value_of_attribute(self, key, attribute, value):
@@ -653,6 +675,19 @@ class AbstractParticleSet(object):
             return self._vector_attributes[attribute].set_value_for_particle(self, key, value)
         else:
             return self._set_values([key], [attribute], value.as_vector_with_length(1))
+            
+    def _convert_to_particles(self, x):
+        if x.unit.iskey():
+            return map(lambda y : self._get_particle(y), x.number)
+        else:
+            return x
+    
+    
+    def _convert_from_particles(self, x):
+        if isinstance(x, Quantity):
+            return x 
+        else:
+            return new_quantity( map(lambda y : (-1 if y is None else y.key) , x) , units.object_key)
         
     #
     # Particle storage interface
@@ -839,6 +874,7 @@ class AbstractParticleSet(object):
         """
         
         self._function_attributes[name_of_the_attribute] = self.FunctionAttribute(function)
+        
     
     @classmethod
     def add_global_function_attribute(cls, name_of_the_attribute, function):
@@ -861,6 +897,11 @@ class AbstractParticleSet(object):
         """
         
         cls.GLOBAL_FUNCTION_ATTRIBUTES[name_of_the_attribute] = cls.FunctionAttribute(function)
+        
+    
+    def add_particle_function_attribute(self, name_of_the_attribute, function):
+        self._function_attributes[name_of_the_attribute] = self.ParticleFunctionAttribute(function)
+        
     #
     # public API
     #
@@ -880,6 +921,12 @@ class AbstractParticleSet(object):
     def _particles_factory(self):
         return type(self._real_particles())
 
+    def _get_particle(self, key):
+        if self._has_key(key):
+            return Particle(key, self._real_particles())
+        else:
+            return None
+        
     def copy(self):
         """
         Creates a new in memory particle set and copies
@@ -933,6 +980,7 @@ class AbstractParticleSet(object):
         attributes = particles._get_attributes()
         keys = particles._get_keys()
         values = particles._get_values(keys, attributes)
+        values = map(self._convert_from_particles, values)
         self._set_particles(keys, attributes, values)
         return ParticlesSubset(self._real_particles(), keys)
     
@@ -1197,23 +1245,29 @@ class Particles(AbstractParticleSet):
         return reversed(list(self.iter_history()))
         
     def get_timeline_of_attribute(self, particle_key, attribute):
-        print attribute
         timeline = []
         for x in self.history:
             if x._has_key(particle_key):
                 timeline.append((x._private.timestamp, x._get_value_of_attribute(particle_key, attribute)))
         return timeline
                     
+                    
+            
     def _set_particles(self, keys, attributes = [], values = []):
+        
         self._private.attribute_storage._set_particles(keys, attributes, values)
         
     def _remove_particles(self, keys):
         self._private.attribute_storage._remove_particles(keys)
     
     def _get_values(self, keys, attributes):
-        return self._private.attribute_storage._get_values(keys, attributes)
+        
+        result = self._private.attribute_storage._get_values(keys, attributes)
+        return result
+                
         
     def _set_values(self, keys, attributes, values):
+        
         self._private.attribute_storage._set_values(keys, attributes, values)
     
     def _get_attributes(self):
@@ -1244,7 +1298,7 @@ class ParticlesSubset(AbstractParticleSet):
         AbstractParticleSet.__init__(self)
         
         self._private.particles = particles
-        self._private.keys = numpy.array(keys)
+        self._private.keys = numpy.array(keys, dtype='uint64')
         self._private.set_of_keys = set(keys)
               
         
@@ -1253,7 +1307,7 @@ class ParticlesSubset(AbstractParticleSet):
         Adds particles from to the subset, also
         adds the particles to the superset
         """
-        self._private.keys = numpy.concatenate((self.keys,  numpy.array(keys)))
+        self._private.keys = numpy.concatenate((self.keys,  numpy.array(keys,dtype='uint64')))
         self._private.set_of_keys += set(keys)
         self._private.particles._set_particles(keys, attributes, values)
         
@@ -1499,6 +1553,12 @@ class Particle(object):
        
         if isinstance(new_value_for_the_attribute, values.Quantity):
             self.particles_set._set_value_of_attribute(self.key, name_of_the_attribute, new_value_for_the_attribute)
+        elif isinstance(new_value_for_the_attribute, Particle):
+            self.particles_set._set_value_of_attribute(
+                self.key, 
+                name_of_the_attribute, 
+                new_value_for_the_attribute.key | units.object_key
+            )
         else:
             raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")
     
@@ -1506,7 +1566,7 @@ class Particle(object):
          return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
     
     def children(self):
-        return self.particles_set.select(lambda x : x == self.key | units.none, ["parent_id"])
+        return self.particles_set.select(lambda x : x == self, ["parent"])
     
     def descendents(self):
         result = self.children()
@@ -1522,7 +1582,7 @@ class Particle(object):
         if self.particles_set != child.particles_set:
             raise Exception("The parent and child particles should be in the same set")
         
-        child.parent_id = self.key | units.none
+        child.parent = self
                 
     def __str__(self):
         output = 'Particle '
@@ -1542,6 +1602,9 @@ class Particle(object):
         result.extend(dir(type(self)))
         result.extend(self.particles_set._attributes_for_dir())
         return result
+        
+    def __eq__(self, other):
+        return isinstance(other, type(self)) and other.key == self.key
         
         
     def set_default(self, attribute, quantity):

@@ -417,7 +417,7 @@ class TestParticlesWithChildren(TestBase):
         parent.add_child(child2)
         
         
-        self.assertEquals(parent.parent_id, 0 | units.none)
+        self.assertEquals(child1.parent.key, parent.key)
         
         children = parent.children()
         
@@ -478,6 +478,11 @@ class TestParticlesWithChildren(TestBase):
         parent.add_child(child1)
         parent.add_child(child2)
         
+        self.assertEquals(parent.parent, None)
+        self.assertEquals(child1.parent, parent)
+        self.assertEquals(child2.parent, parent)
+        
+        
         all_except_children = all.difference(parent.children())
         code1.particles.add_particles(all_except_children)
         code2.particles.add_particles(parent.children())
@@ -505,6 +510,29 @@ class TestParticlesWithChildren(TestBase):
         self.assertEquals(len(child2.descendents()), 2)
         self.assertEquals(len(child3.descendents()), 1)
         
+    def test5(self):
+        all = core.Particles(5)
+        all.mass = [1.0, 2.0, 3.0, 4.0 , 5.0] | units.kg
+        parent = all[0]
+        child1 = all[1]
+        child2 = all[2]
+        child3 = all[3]
+        child4 = all[4]
+        
+        parent.add_child(child1)
+        child1.add_child(child2)
+        child2.add_child(child3)
+        child3.add_child(child4)
+        
+        copy = all.copy()
+        
+        self.assertEquals(copy[0].parent, None)
+        self.assertEquals(copy[1].parent, copy[0])
+        self.assertEquals(copy[2].parent, copy[1])
+        self.assertEquals(copy[3].parent, copy[2])
+        self.assertEquals(copy[4].parent, copy[3])
+        self.assertEquals(copy[1].parent, parent)
+        self.assertEquals(len(copy[0].descendents()), 4)
         
         
         

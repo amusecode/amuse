@@ -43,7 +43,7 @@ class Quantity(object):
     Quantities can be converted to numbers
     
     >>> from amuse.support.units import units
-    >>> x = 1000 | units.m
+    >>> x = 1000.0 | units.m
     >>> x.value_in(units.m)
     1000.0
     >>> x.value_in(units.km)
@@ -164,7 +164,10 @@ class Quantity(object):
         
         """
         value_of_unit_in_another_unit = self.unit.value_in(unit)
-        return self.number * value_of_unit_in_another_unit
+        if value_of_unit_in_another_unit == 1.0:
+            return self.number
+        else:
+            return self.number * value_of_unit_in_another_unit
 
 class ScalarQuantity(Quantity):
     """
@@ -181,7 +184,7 @@ class ScalarQuantity(Quantity):
         return True
     
     def as_vector_with_length(self, length):
-        return VectorQuantity(numpy.ones(length) * self.number, self.unit)
+        return VectorQuantity(numpy.ones(length, dtype=self.unit.dtype) * self.number, self.unit)
         
     def __str__(self):
         unit_str = str(self.unit)
@@ -236,7 +239,7 @@ class VectorQuantity(Quantity):
     
     def __init__(self, array, unit):
         Quantity.__init__(self, unit)
-        self._number = numpy.array(array)
+        self._number = numpy.array(array, dtype=unit.dtype)
     
     @classmethod
     def new_from_scalar_quantities(cls, *values):
@@ -513,9 +516,6 @@ class NonNumericQuantity(Quantity):
     def as_vector_with_length(self, length):
         return VectorQuantity(numpy.ones(length) * self.value, self.unit)
         
-        
-        
-    
     
         
 def new_quantity(value, unit):

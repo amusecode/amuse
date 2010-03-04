@@ -138,6 +138,19 @@ class CodeMethodWrapper(CodeAttributeWrapper):
             return map(lambda x : x.name , self.method.specification.output_parameters)
         else:
             return ()
+           
+    @late
+    def index_input_attributes(self):
+        if self.method_is_code:
+            return self.method.index_input_attributes
+        else:
+            return None
+    @late
+    def index_output_attributes(self):
+        if self.method_is_code:
+            return self.method.index_output_attributes
+        else:
+            return None
 
 
 class UnitsConvertionMethod(CodeMethodWrapper):
@@ -172,6 +185,8 @@ class UnitsConvertionMethod(CodeMethodWrapper):
     def convert_and_iterate(self, iterable):
         for x in iterable:
             yield self.converter.from_target_to_source(x)
+         
+        
 
         
 class HandleCodeInterfaceAttributeAccess(object):
@@ -507,7 +522,14 @@ class MethodWithUnits(CodeMethodWrapper):
         converted_keyword_arguments = self.definition.convert_list_and_keyword_arguments(self.method_input_argument_names, list_arguments, keyword_arguments)
         return_value = self.method(**converted_keyword_arguments)
         return self.definition.handle_return_value(return_value)
-      
+         
+    @late
+    def index_input_attributes(self):
+        return self.definition.index_input_attributes
+        
+    @late
+    def index_output_attributes(self):
+        return self.definition.index_output_attributes
         
             
         
@@ -515,6 +537,7 @@ class MethodWithUnitsDefinition(object):
     
     ERROR_CODE =  object()
     NO_UNIT = object()
+    INDEX = object()
 
     def __init__(self, handler, function_name, units, return_units, return_value_handler, name):
         self.function_name = function_name
@@ -556,7 +579,7 @@ class MethodWithUnitsDefinition(object):
     
     def handle_as_unit(self, return_value):
         if not hasattr(self.return_units, '__iter__'):
-            if self.return_units == self.NO_UNIT:
+            if self.return_units == self.NO_UNIT or self.return_units == self.INDEX:
                 return return_value
             elif self.return_units == self.ERROR_CODE:
                 self.handle_as_errorcode(return_value)
@@ -568,6 +591,8 @@ class MethodWithUnitsDefinition(object):
                 if unit == self.ERROR_CODE:
                     self.handle_as_errorcode(value)
                 elif unit == self.NO_UNIT:
+                    result.append(value)
+                elif unit == self.INDEX:
                     result.append(value)
                 else:
                     result.append(unit.new_quantity(value))
@@ -583,14 +608,14 @@ class MethodWithUnitsDefinition(object):
         
         for index, parameter in enumerate(input_parameters):
             if parameter in keyword_arguments:
-                if self.units[index] == self.NO_UNIT:
+                if self.units[index] == self.NO_UNIT or self.units[index] == self.INDEX:
                     result[parameter] = keyword_arguments[parameter.name]
                 else:
                     result[parameter] = keyword_arguments[parameter.name].value_in(self.units[index])
         
         for index, argument in enumerate(list_arguments):
             parameter = input_parameters[index]
-            if self.units[index] == self.NO_UNIT:
+            if self.units[index] == self.NO_UNIT or self.units[index] == self.INDEX:
                 result[parameter] = argument
             else:
                 result[parameter] = argument.value_in(self.units[index])
@@ -601,11 +626,22 @@ class MethodWithUnitsDefinition(object):
     def has_same_name_as_original(self):
         return self.function_name == self.name
     
-    
+        
+    @late
+    def index_input_attributes(self):
+        return map(lambda x : x == self.INDEX, self.units)
+        
+    @late
+    def index_output_attributes(self):
+        if not hasattr(self.return_units, '__iter__'):
+            return [self.return_units == self.INDEX]
+        else:
+            return map(lambda x : x == self.INDEX, self.return_units)
 
 class HandleMethodsWithUnits(object):
     ERROR_CODE = MethodWithUnitsDefinition.ERROR_CODE
     NO_UNIT = MethodWithUnitsDefinition.NO_UNIT
+    INDEX = MethodWithUnitsDefinition.INDEX
     
     def __init__(self, interface):
         self.method_definitions = {}
@@ -776,6 +812,7 @@ class ParticleSetDefinition(object):
         self.setters = []
         self.getters = []
         self.queries = []
+        self.selects_form_particle = []
     
     def new_storage(self, interface):
         setters = []
@@ -813,6 +850,14 @@ class ParticleSetDefinition(object):
         
         return queries
         
+    def new_selects_from_particle(self, interface):
+        results = []
+        for name, names, public_name in self.selects_form_particle:
+            x = code_particles.ParticleSpecificSelectMethod(getattr(interface, name), names, public_name)
+            results.append(x)
+        
+        return results
+        
         
 class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
@@ -833,7 +878,12 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
             queries = self.sets[name].new_queries(self.interface)
             for x in queries:
                 result.add_function_attribute(x.public_name, x.apply)
-                
+            
+            selects = self.sets[name].new_selects_from_particle(self.interface)
+            for x in selects:
+                result.add_function_attribute(x.public_name, x.apply_on_all)
+                result.add_particle_function_attribute(x.public_name, x.apply_on_one)
+            
             self.particle_sets[name] = result
             return result
     
@@ -871,6 +921,13 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
             public_name = name_of_the_query
             
         self.sets[name_of_the_set].queries.append((name_of_the_query, names, public_name))
+        
+    
+    def add_select_from_particle(self, name_of_the_set, name, names = (), public_name = None):
+        if not public_name:
+            public_name = name
+            
+        self.sets[name_of_the_set].selects_form_particle.append((name, names, public_name))
         
 
 class CodeInterface(OldObjectsBindingMixin):

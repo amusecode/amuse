@@ -3,7 +3,8 @@ from amuse.support.data.core import Particles, ParticleInformationChannel, Parti
 from amuse.support.data.core import AttributeStorage
 import numpy
 
-from amuse.support.units import nbody_system
+from amuse.support.units import nbody_system, units
+from amuse.support.data import values
 from amuse.support.core import late
 
 import inspect
@@ -72,6 +73,19 @@ class ParticleMappingMethod(object):
         else:
             return ()
             
+    @late
+    def index_input_attributes(self):
+        if self.method_is_code:
+            return self.method.index_input_attributes
+        else:
+            return None
+    @late
+    def index_output_attributes(self):
+        if self.method_is_code:
+            return self.method.index_output_attributes
+        else:
+            return None
+            
 
 class ParticleGetAttributesMethod(ParticleMappingMethod):
     
@@ -82,7 +96,9 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     def attribute_names(self):
         result = []
         
-        if len(self.method_output_argument_names) > 0:
+        if self._attribute_names:
+            return self._attribute_names
+        elif len(self.method_output_argument_names) > 0:
             for x in self.method_output_argument_names:
                 if x == self.name_of_the_indexing_parameter:
                     continue
@@ -92,8 +108,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
                     result.append(x)
             return result
         else:
-            return self._attribute_names
-            
+            return ()
         
     def intersection(self, attributes):
         result = set([])
@@ -103,7 +118,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
                 result.add(x)
         return result
     
-    def apply(self, indices, attributes_to_return):
+    def apply(self, storage, indices, attributes_to_return):
         
         if len(indices) > 1: 
             if self.method_is_legacy and not self.method.specification.can_handle_array:
@@ -123,10 +138,18 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         set_of_attributes_to_return = set(attributes_to_return)
         
         result = {}
-        for value, attribute in zip(return_value, self.attribute_names):
+        
+        index_output_attributes = [False] * len(return_value)
+        if self.index_output_attributes:
+            index_output_attributes = self.index_output_attributes
+        
+        for value, attribute, isindex in zip(return_value, self.attribute_names, index_output_attributes):
             if attribute in set_of_attributes_to_return:
-                result[attribute] = value
-                
+                if isindex:
+                    result[attribute] = values.new_quantity(storage._get_keys_for_indices_in_the_code(value), units.object_key)
+                else:
+                    result[attribute] = value
+        
         return result
     
 class ParticleSetAttributesMethod(ParticleMappingMethod):
@@ -211,6 +234,44 @@ class ParticleQueryMethod(object):
         keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
         
         return particles._subset(keys)
+        
+
+class ParticleSpecificSelectMethod(object):
+    def __init__(self, method, names = (), public_name = None):
+        self.method = method
+        self.name_of_the_out_parameters = names
+        self.public_name = public_name
+
+    def apply_on_all(self, particles):
+        
+        all_indices = particles._private.attribute_storage.mapping_from_index_in_the_code_to_particle_key.keys()
+        
+        lists_of_indices = self.method(list(all_indices))
+        
+        lists_of_keys = []
+        for indices in lists_of_indices:
+                keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)        
+                lists_of_keys.append(keys)
+        
+        result = []
+        for keys in zip(list_of_keys):
+            result.append(particles._subset(keys))
+            
+        return result
+    
+    def apply_on_one(self, particle):
+        
+        set = particle.set
+        index = set._private.attribute_storage.get_indices_of(particle.key)
+        
+        result = self.method(index)
+        
+        keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(result)  
+        
+        result = []
+        return particles._subset(keys)
+        
+    
     
 
                 
@@ -330,7 +391,7 @@ class InCodeAttributeStorage(AttributeStorage):
         mapping_from_attribute_to_result = {}
         
         for getter in self.select_getters_for(attributes):
-            result = getter.apply(indices_in_the_code, attributes)
+            result = getter.apply(self, indices_in_the_code, attributes)
             mapping_from_attribute_to_result.update(result)
             
         results = []
@@ -375,6 +436,6 @@ class InCodeAttributeStorage(AttributeStorage):
     def _get_keys_for_indices_in_the_code(self, indices):
         result = []
         for i in indices:
-            result.append(self.mapping_from_index_in_the_code_to_particle_key[i])
+            result.append(self.mapping_from_index_in_the_code_to_particle_key.get(i, -1))
         return result
     

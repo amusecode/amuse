@@ -79,6 +79,10 @@ class unit(object):
         
     def __call__(self, x):
         return self.new_quantity(x)
+    
+    @property
+    def dtype(self):
+        return None
 
     @property
     def number(self):
@@ -88,6 +92,9 @@ class unit(object):
     def unit(self):
         return self
     
+    def iskey(self):
+        return False
+        
     def new_quantity(self, value):
         """Create a new Quantity object.
     
@@ -303,6 +310,17 @@ class none_unit(unit):
     @late
     def base(self):
         return ()
+        
+class key_unit(none_unit):
+    
+    def iskey(self):
+        return True
+    
+    @property
+    def dtype(self):
+        return 'uint64'
+        
+        
         
 
 class nonnumeric_unit(unit):

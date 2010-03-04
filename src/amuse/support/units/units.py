@@ -62,3 +62,7 @@ stellar_type = core.enumeration_unit(
         "Massless Supernova"
     ]
 )
+
+#special unit for keys of particles
+object_key = core.key_unit('object_key','key')
+
