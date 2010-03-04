@@ -2,6 +2,7 @@ import numpy
 from amuse.support.units.si import *
 from amuse.support.units.derivedsi import *
 
+
 # physical constants
 G = 6.673e-11 | m**3/kg/s**2
 kboltz = 1.3806503 * 10**-23 | m**2 * kg / s**2 / K
@@ -33,6 +34,10 @@ tesla = named('tesla', 'T', weber / (m ** 2))
 
 percentage = core.none_unit('percentage', '%')
 string = core.string_unit('string', 'string')
+#machine constants
+eps =numpy.finfo(numpy.double).eps
+precision = int(round(numpy.log10(2/eps)))
+
 
 stellar_type = core.enumeration_unit(
     'stellar_type',
