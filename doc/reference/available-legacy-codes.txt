@@ -1,0 +1,204 @@
+.. _supported-codes-label:
+
+=================================
+Currently supported Legacy Codes
+=================================
+
+Introduction
+~~~~~~~~~~~~
+
+Here we provide an overview of all currently supported legacy codes in AMUSE, along with a concise explanation of how each code works. This document serves as an initial guide in finding the code with the highest applicability to a specific astrophysical problem. The supported legacy codes have been sorted according to their astrophysical domain:
+
+* :ref:`Dynamics`
+* :ref:`Evolution`
+* :ref:`Hydrodynamics`
+* :ref:`Radiative-Transfer`
+
+
+
+.. _Dynamics:
+
+Stellar Dynamics
+~~~~~~~~~~~~~~~~
+
+* bhtree_
+* hermite0_
+* phiGRAPE_
+* twobody_
+* smallN_
+
+
+.. _bhtree:
+
+bhtree
+------
+
+An implementation of the Barnes & Hut tree code by Jun Makino. suitable for more than ... particles
+
+.. _hermite0:
+
+hermite0
+--------
+
+N-body integration module with shared but variable time step
+(the same for all particles but its size changing in time),
+using the Hermite integration scheme.
+
+* Hut, P., Makino, J. & McMillan, S., 1995, ApJL 443, L93
+
+
+
+.. _phiGRAPE:
+
+phiGRAPE
+--------
+
+
+.. _twobody:
+
+twobody
+-------
+
+
+.. _smallN:
+
+smallN
+------
+
+
+.. _Evolution:
+
+Stellar Evolution
+~~~~~~~~~~~~~~~~~
+
+* sse_
+* bse_
+* evtwin_
+* mesa_
+
+
+.. _sse:
+
+sse
+---
+
+Stellar evolution is performed by the **rapid** single-star evolution (SSE) algorithm. This is a package of **analytical formulae** fitted to the detailed models of Pols et al. (1998)  that covers all phases of evolution from the zero-age main-sequence up to and including remnant phases. It is valid for masses in the range 0.1-100 Msun and metallicity can be varied. The SSE package contains a prescription for mass loss by stellar winds. It also follows the evolution of rotational angular momentum for the star. Full details can be found in the SSE paper:
+
+* "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
+    Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543
+
+=========== ====== ==== =========================
+  \          min    max  unit
+=========== ====== ==== =========================
+Mass        0.1    100  Msun 
+Metallicity 0.0001 0.03 fraction (0.02 is solar) 
+=========== ====== ==== =========================
+
+
+.. _bse:
+
+bse
+---
+
+Binary evolution is performed by the **rapid** binary-star evolution (BSE) algorithm. Circularization of eccentric orbits and synchronization of stellar rotation with the orbital motion owing to tidal interaction is modelled in detail. Angular momentum loss mechanisms, such as gravitational radiation and magnetic braking, are also modelled. Wind accretion, where the secondary may accrete some of the material lost from the primary in a wind, is allowed with the necessary adjustments made to the orbital parameters in the event of any mass variations. Mass transfer also occurs if either star fills its Roche lobe and may proceed on a nuclear, thermal or dynamical time-scale. In the latter regime, the radius of the primary increases in response to mass-loss at a faster rate than the Roche-lobe of the star. Stars with deep surface convection zones and degenerate stars are unstable to such dynamical time-scale mass loss unless the mass ratio of the system is less than some critical value. The outcome is a common-envelope event if the primary is a giant star. This results in merging or formation of a close binary, or a direct merging if the primary is a white dwarf or low-mass main-sequence star. On the other hand, mass transfer on a nuclear or thermal time-scale is assumed to be a steady process. Prescriptions to determine the type and rate of mass transfer, the response of the secondary to accretion and the outcome of any merger events are in place in BSE and the details can be found in the BSE paper:
+
+* "Evolution of binary stars and the effect of tides on binary populations"
+    Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897
+* "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
+    Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543
+
+============ ====== ==== =========================
+  \           min    max  unit
+============ ====== ==== =========================
+Mass         0.1    100  Msun 
+Metallicity  0.0001 0.03 fraction (0.02 is solar) 
+Period       all    all
+Eccentricity 0.0    1.0
+============ ====== ==== =========================
+
+
+.. _evtwin:
+
+evtwin
+------
+
+Evtwin is based on Peter Eggleton's stellar evolution code, and actually solves the differential equations that apply to the interior of a star. Therefore it is more accurate, but also much slower than the analytic fits-based sse_ algorithm explained above.
+Binaries are not yet supported in the AMUSE interface to evtwin, neither is the work-around for the helium flash. Currently only solar metallicity.
+
+Relevant papers:
+
+* "The evolution of low mass stars"
+   Eggleton, P.P. 1971, MNRAS, 151, 351
+* "Composition changes during stellar evolution" 
+   Eggleton, P.P. 1972, MNRAS, 156, 361
+* "A numerical treatment of double shell source stars" 
+   Eggleton, P.P. 1973, MNRAS, 163, 279
+* "An Approximate Equation of State for Stellar Material" 
+   Eggleton, P.P., Faulkner, J., & Flannery, B.P. 1973, A&A, 23, 325
+* "A Possible Criterion for Envelope Ejection in Asymptotic Giant Branch or First Giant Branch Stars"
+   Han, Z., Podsiadlowski, P., & Eggleton, P.P. 1994, MNRAS, 270, 121
+* "Approximate input physics for stellar modelling" 
+   Pols, O.R., Tout, C.A., Eggleton, P.P., & Han, Z. 1995, MNRAS, 274, 964
+* "The Braking of Wind"
+   Eggleton, P.P. 2001, Evolution of Binary and Multiple Star Systems, 229, 157
+* "A Complete Survey of Case A Binary Evolution with Comparison to Observed Algol-type Systems" 
+   Nelson, C.A., & Eggleton, P.P. 2001, ApJ, 552, 664 
+* "The Evolution of Cool Algols" 
+   Eggleton, P.P., & Kiseleva-Eggleton, L. 2002, ApJ, 575, 461 
+* For thermohaline mixing:
+   Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A
+* For the OPAL 1996 opacity tables:
+   Eldridge & Tout, 2004 MNRAS 348
+* For enhancements to the solver:
+   Glebbeek, Pols & Hurley, 2008 A&A 
+
+
+.. _mesa:
+
+mesa
+----
+
+The software project MESA (Modules for Experiments in Stellar Astrophysics, `<http://mesa.sourceforge.net/>`_), aims to provide state-of-the-art, robust, and efficient open source modules, usable singly or in combination for a wide range of applications in stellar astrophysics. Since the package is rather big (about 800 MB download, >2 GB built), this legacy code is optional and does not install automatically. Set the environment variable DO_INSTALL_MESA and run `make` to download and install it. The AMUSE interface to MESA can create and evolve stars using the MESA/STAR module. If you order a metallicity you haven't used before, starting models will be computed automatically and saved in the `mesa/src/data/star_data/starting_models` directory. All metallicities are supported, even the interesting case of Z=0.
+
+
+.. _Hydrodynamics:
+
+Hydrodynamics
+~~~~~~~~~~~~~
+
+* fi_ (N-body/SPH code)
+* capreole_ (grid code)
+
+
+.. _fi:
+
+fi
+--
+
+FI is a parallel TreeSPH code for galaxy simulations. Extensively 
+rewritten, extended and parallelized, it is a development from code from 
+Jeroen Gerritsen and Roelof Bottema, which itself goes back to Treesph. 
+
+The relevant references are:
+
+* Hernquist \& Katz 1989, ApJS 70, 419
+* Gerritsen \& Icke 1997, A&A 325, 972
+* Pelupessy, van der Werf & Icke A&A 422, 55
+* Pelupessy, PhD thesis 2005, Leiden Observatory
+
+
+.. _capreole:
+
+capreole
+--------
+
+Capreole is a grid hydrocode based on Roe's Riemann solver made by Garrelt 
+Mellema.
+
+
+.. _Radiative-Transfer:
+
+Radiative Transfer
+~~~~~~~~~~~~~~~~~~
+
+Alas, no radiative transfer legacy codes yet!

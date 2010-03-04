@@ -11,6 +11,7 @@ Reference documentation
    routines
    core_support
    legacy_support
+   available-legacy-codes
    quantities_and_units
    particles
    interface_binding
