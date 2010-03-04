@@ -9,7 +9,7 @@ from amuse.support.core import OrderedDictionary
 from amuse.test import amusetest
 
 class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
-    class TestClass(interface.CodeInterfaceOld):
+    class TestClass(object):
 
         def get_mass(self):
             return 10.0, 0
@@ -80,27 +80,10 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         self.assertAlmostEquals(original.eps,  4.0, 6)
         
         
-    
-    def test4(self):
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
-        
-        original = self.TestClass()
-        instance = interface.CodeInterfaceWithNBodyUnitsConverted(
-                original,  
-                convert_nbody
-        )
-        
-        original.masses = [2.0, 3.0] | nbody_system.mass
-        
-        masses = list(instance.masses)
-        
-        self.assertAlmostEquals(masses[0].value_in(units.kg), 20.0, 10)
-        self.assertAlmostEquals(masses[1].value_in(units.kg), 30.0, 10)
-        
         
 
 class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
-    class TestClass(interface.CodeInterfaceOld):
+    class TestClass(object):
        
         def add_10_to_length(self, length):
             return length + 10
@@ -202,7 +185,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
 
 
 class CodeInterface2Tests(amusetest.TestCase):
-    class TestClass(interface.CodeInterfaceOld):
+    class TestClass(object):
         def __init__(self):
             self.state = 0
             
@@ -416,7 +399,7 @@ class CodeInterface2Tests(amusetest.TestCase):
 
 
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
-    class TestClass(interface.CodeInterfaceOld):
+    class TestClass(object):
        
         def __init__(self):
             self.value = 10.0
@@ -479,8 +462,48 @@ class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
         self.assertEquals(40.0 | units.m, instance.add(20.0 | units.m))
         
 
+class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
+    class TestClass(object):
+        errorcode = 0
+        
+        def get_mass(self):
+            print "EC:", self.errorcode
+            return 10.0, self.errorcode
+            
+    
+    def test1(self):
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        
+        original = self.TestClass()
+        
+        instance = interface.CodeInterface(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass', (), (units.m, handler.ERROR_CODE,))
+        handler = instance.get_handler('ERRORCODE')
+        handler.add_errorcode(-2, "no such method")
+        handler.add_errorcode(-3, "not available")
+        
+        self.assertEquals(instance.get_mass(), 10.0 | units.m)
+        try:
+            original.errorcode = -2
+            instance.get_mass()
+        except Exception, ex:
+            self.assertEquals("Error when calling 'get_mass' of a 'CodeInterface', errorcode is -2, error is 'no such method'",str(ex))
+        else:
+            self.fail("should raise an exception")
+            
+        try:
+            original.errorcode = -1
+            instance.get_mass()
+        except Exception, ex:
+            self.assertEquals("Error when calling 'get_mass' of a 'CodeInterface', errorcode is -1", str(ex))
+        else:
+            self.fail("should raise an exception")
+            
+
 class CodeInterfaceWithParticlesTests(amusetest.TestCase):
-    class TestClass(interface.CodeInterfaceOld):
+    class TestClass(object):
 
         def get_mass(self):
             return 10.0, 0
@@ -502,10 +525,9 @@ class CodeInterfaceWithParticlesTests(amusetest.TestCase):
         handler.set_nbody_converter(convert_nbody)
         
         
-        
 
 class TestParticlesWithBinding(amusetest.TestCase):
-    class TestInterface(interface.CodeInterfaceOld):
+    class TestInterface(object):
 
         def __init__(self):
             self.masses = {}
@@ -555,6 +577,14 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         def get_next(self, id):
             return (map(lambda x : x+1, id), map(lambda x : 0, id))
+            
+        def add_1_to_mass(self, id):
+            if isinstance(id, int):
+                self.masses[id] += 1.0
+                return [0]
+            for i in id:
+                self.masses[i] += 1.0
+            return map(lambda x : 0, id)
             
         
             
@@ -666,6 +696,45 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(instance.particles[1].next, instance.particles[2])
         self.assertEquals(instance.particles[2].next, instance.particles[3])
         self.assertEquals(instance.particles[3].next, None)
+        
+        
+    def test4(self):
+        original = self.TestInterface()
+        
+        instance = interface.CodeInterface(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
+        handler.add_method('set_mass',(handler.NO_UNIT, units.kg,), (handler.ERROR_CODE,))
+        handler.add_method('new_particle',(units.kg,), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        
+        handler.add_method('add_1_to_mass',(handler.INDEX,), (handler.ERROR_CODE,))
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        handler.add_method('particles', 'add_1_to_mass', 'add_one')
+        
+        
+        local_particles = core.Particles(4)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
+        
+        remote_particles = instance.particles
+        remote_particles.add_particles(local_particles)
+        
+        self.assertEquals(len(instance.particles), 4)
+        self.assertEquals(instance.particles.mass, units.kg.new_quantity([3.0, 4.0, 5.0, 6.0]))
+        instance.particles[0].add_one()
+        self.assertEquals(instance.particles.mass, units.kg.new_quantity([4.0, 4.0, 5.0, 6.0]))
+        instance.particles.add_one()
+        self.assertEquals(instance.particles.mass, units.kg.new_quantity([5.0, 5.0, 6.0, 7.0]))
+        
         
         
         

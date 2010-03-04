@@ -620,26 +620,33 @@ class AbstractParticleSet(object):
             
     class ParticleFunctionAttribute:
         class BoundParticleFunctionAttribute(object):
-            def  __init__(self, function, particle):
+            def  __init__(self, function, particles, key):
                 self.function = function
-                self.particle = particle
+                self.particles = particles
+                self.key = key
                 
             def __call__(self, *list_arguments, **keyword_arguments):
-                return self.function(self.particle, *list_arguments, **keyword_arguments)
+                return self.function(self.particles._get_particle(self.key), *list_arguments, **keyword_arguments)
         
         def  __init__(self, function):
             self.function = function
             
-        def get(self, particle):
-            return self.BoundParticleFunctionAttribute(self.function, particle)
+        def get(self, particles, key):
+            return self.BoundParticleFunctionAttribute(self.function, particles, key)
 
         
             
-    def __init__(self):
-        object.__setattr__(self, "_vector_attributes", CompositeDictionary(self.GLOBAL_VECTOR_ATTRIBUTES))
-        object.__setattr__(self, "_calculated_attributes", CompositeDictionary(self.GLOBAL_CALCULATED_ATTRIBUTES))
-        object.__setattr__(self, "_function_attributes", CompositeDictionary(self.GLOBAL_FUNCTION_ATTRIBUTES))
-        object.__setattr__(self, "_particle_function_attributes", CompositeDictionary(self.GLOBAL_PARTICLE_FUNCTION_ATTRIBUTES))
+    def __init__(self, original = None):
+        if original is None:
+            object.__setattr__(self, "_vector_attributes", CompositeDictionary(self.GLOBAL_VECTOR_ATTRIBUTES))
+            object.__setattr__(self, "_calculated_attributes", CompositeDictionary(self.GLOBAL_CALCULATED_ATTRIBUTES))
+            object.__setattr__(self, "_function_attributes", CompositeDictionary(self.GLOBAL_FUNCTION_ATTRIBUTES))
+            object.__setattr__(self, "_particle_function_attributes", CompositeDictionary(self.GLOBAL_PARTICLE_FUNCTION_ATTRIBUTES))
+        else:
+            object.__setattr__(self, "_vector_attributes", original._vector_attributes)
+            object.__setattr__(self, "_calculated_attributes", original._calculated_attributes)
+            object.__setattr__(self, "_function_attributes", original._function_attributes)
+            object.__setattr__(self, "_particle_function_attributes", original._particle_function_attributes)
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     
@@ -666,6 +673,8 @@ class AbstractParticleSet(object):
             return self._vector_attributes[attribute].get_value_for_particle(self, key)
         elif attribute in self._calculated_attributes:
             return self._calculated_attributes[attribute].get_value_for_particle(self, key)
+        elif attribute in self._particle_function_attributes:
+            return self._particle_function_attributes[attribute].get(self, key)
         else:
             return self._convert_to_particles(self._get_values([key], [attribute])[0])[0]
             
@@ -881,7 +890,7 @@ class AbstractParticleSet(object):
         """
         Define a function attribute, adding a function to the particles
         
-        :argument name_of_the_attribute: Name to reference the vector attribute by. 
+        :argument name_of_the_attribute: Name to reference the attribute by. 
         :argument function: A function, first argument will be the particles.
         
         >>> def sumx(p):
@@ -900,7 +909,22 @@ class AbstractParticleSet(object):
         
     
     def add_particle_function_attribute(self, name_of_the_attribute, function):
-        self._function_attributes[name_of_the_attribute] = self.ParticleFunctionAttribute(function)
+        """
+        Define a function working on one particle
+        
+        :argument name_of_the_attribute: Name to reference the attribute by. 
+        :argument function: A function, first argument will be the particle.
+        
+        >>> def xsquared(p):
+        ...   return p.x * p.x
+        ...
+        >>> particles = Particles(2)
+        >>> particles.add_particle_function_attribute("xsquared", xsquared)
+        >>> particles.x = [4.0 , 2.0] | units.m
+        >>> particles[0].xsquared()
+        quantity<16.0 m**2>
+        """
+        self._particle_function_attributes[name_of_the_attribute] = self.ParticleFunctionAttribute(function)
         
     #
     # public API
@@ -1295,7 +1319,7 @@ class ParticlesSubset(AbstractParticleSet):
     directly. Instead use the ``to_set`` or ``select`` methods.
     """
     def __init__(self, particles, keys):
-        AbstractParticleSet.__init__(self)
+        AbstractParticleSet.__init__(self, particles)
         
         self._private.particles = particles
         self._private.keys = numpy.array(keys, dtype='uint64')
@@ -1437,7 +1461,7 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
             
         
     def __init__(self, particles, converter):
-        AbstractParticleSet.__init__(self)
+        AbstractParticleSet.__init__(self, particles)
         
         self._private.particles = particles
         self._private.converter = converter

@@ -39,11 +39,10 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     
     def __init__(self, method, mapping=(), attribute_names = None):
         ParticleMappingMethod.__init__(self, method, mapping, attribute_names)
-
+    
     @late
     def attribute_names(self):
         result = []
-        
         if self._attribute_names:
             return self._attribute_names
         elif len(self.method_output_argument_names) > 0:
@@ -219,10 +218,30 @@ class ParticleSpecificSelectMethod(object):
         result = []
         return particles._subset(keys)
         
+        
+class ParticleMethod(AbstractCodeMethodWrapper):
     
-    
+    def __init__(self, method, public_name = None):
+        AbstractCodeMethodWrapper.__init__(self, method)
+        
+        self.public_name = public_name
 
-                
+    def apply_on_all(self, particles, *list_arguments, **keyword_arguments):
+        
+        storage = particles._private.attribute_storage
+        
+        all_indices = storage.mapping_from_index_in_the_code_to_particle_key.keys()
+        
+        return self.method(list(all_indices), *list_arguments, **keyword_arguments)
+    
+    def apply_on_one(self, particle):
+        
+        storage = particle.particles_set._private.attribute_storage
+        
+        index = storage.get_indices_of([particle.key])
+        
+        return self.method(index[0])
+        
 
 class InCodeAttributeStorage(AttributeStorage):
        
@@ -242,22 +261,23 @@ class InCodeAttributeStorage(AttributeStorage):
         self.particle_keys = []
         
         self._get_number_of_particles = number_of_particles_method
-        self._delete_particle = delete_particle_method
+        self.delete_particle_method = delete_particle_method
         self.new_particle_method = new_particle_method
         self.getters = getters
         self.setters = setters
         
+        for x in self.getters:
+            x.name_of_the_indexing_parameter = name_of_the_index
+            
+        for x in self.setters:
+            x.name_of_the_indexing_parameter = name_of_the_index
+            
         self.attributes = set([])
         for x in self.getters:
             self.attributes |= set(x.attribute_names)
         for x in self.setters:
             self.attributes |= set(x.attribute_names)
         
-        for x in self.getters:
-            x.name_of_the_indexing_parameter = name_of_the_index
-
-        for x in self.setters:
-            x.name_of_the_indexing_parameter = name_of_the_index
                     
     def __len__(self):
         return self._get_number_of_particles()

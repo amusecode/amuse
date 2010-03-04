@@ -1,12 +1,7 @@
 from amuse.legacy import *
 from amuse.legacy.interface.se import StellarEvolution
 from amuse.legacy.support.lit import LiteratureRefs
-
-from amuse.support.data.core import Particles
-from amuse.support.data import binding
-from amuse.support.interface import CodeInterfaceOld
-
-
+from amuse.support.interface import CodeInterface
 
 import os
 
@@ -25,7 +20,26 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         dir = os.path.dirname(__file__)
         return os.path.join(dir, 'src')
         
-    
+    @legacy_function   
+    def new_particle():
+        """
+        Define a new star in the code. The star will start with the given mass.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.OUT
+            , description="The new index for the star. This index can be used to refer to this star in other functions")
+        function.addParameter('mass', dtype='float64', direction=function.IN
+            , description="The initial mass of the star")
+        
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            New star was loaded and the index_of_the_star parameter set.
+        -1 - ERROR
+            New star could not be created.
+        """
+        return function
 
     @legacy_function
     def get_maximum_number_of_stars():
@@ -530,183 +544,217 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
-class EVtwinInCodeAttributeStorage(InCodeAttributeStorage):
-    name_of_delete_particle = "delete_star"
-    
-    new_particle_method = binding.NewParticleMethod(
-        "new_particle", 
-        (
-            ("mass", "mass", units.MSun),
-            ("spin", "spin", units.day),
-            ("radius", "radius", units.RSun),
-        )
-    )
-    
-    getters = (
-        binding.ParticleGetAttributesMethod(
-            "get_mass",
-            (
-                ("mass", "mass", units.MSun),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_radius",
-            (
-                ("radius", "radius", units.RSun),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_stellar_type",
-            (
-                ("type", "stellar_type", units.stellar_type),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_age",
-            (
-                ("age", "age", units.yr),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_luminosity",
-            (
-                ("luminosity", "luminosity", units.LSun),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_time_step",
-            (
-                ("time_step", "time_step", units.yr),
-            )
-        ),
-        binding.ParticleGetAttributesMethod(
-            "get_spin",
-            (
-                ("spin", "spin", units.day),
-            )
-        ),
-        
-    )
-    
-class EVtwinBinding(CodeInterfaceOld):
+class EVtwin(CodeInterface):
     
     def __init__(self):
-        CodeInterfaceOld.__init__(self)
+        CodeInterface.__init__(self, EVtwinInterface())
         
-        self.particles = Particles()
-        self.particles._private.attribute_storage = EVtwinInCodeAttributeStorage(self)
-        self.parameters.set_defaults()
-        self.set_ev_path(self.default_path_to_ev_database)
-        
-    parameter_definitions = [
-        parameters.ModuleMethodParameterDefinition_Next(
+    
+    def define_parameters(self, object):
+              
+        object.add_method_parameter(
             "get_maximum_number_of_stars",
             "set_maximum_number_of_stars",
             "maximum_number_of_stars", 
             "Maximum number of stars that can be allocated", 
             units.none, 
             10 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_metallicity",
             "set_metallicity",
             "metallicity", 
             "Metallicity of all stats", 
             units.none, 
             0.02 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             None,
             "set_ev_path",
             "path_to_data", 
             "Path to the data directory", 
             units.string, 
             None
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_max_age_stop_condition",
             "set_max_age_stop_condition",
             "max_age_stop_condition", 
             "The maximum age stop condition of this instance.",
             units.yr, 
             1.0e12 | units.yr
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_min_timestep_stop_condition",
             "set_min_timestep_stop_condition",
             "min_timestep_stop_condition", 
             "The minimum timestep stop condition of this instance.",
             units.yr, 
             1.0e6 | units.s
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_number_of_ionization_elements",
             "set_number_of_ionization_elements",
             "number_of_ionization_elements", 
             "The number of elements used for ionization in EoS solver of this instance.",
             units.none, 
             2 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_convective_overshoot_parameter",
             "set_convective_overshoot_parameter",
             "convective_overshoot_parameter", 
             "The convective overshoot parameter.",
             units.none, 
             0.12 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_mixing_length_ratio",
             "set_mixing_length_ratio",
             "mixing_length_ratio", 
             "The mixing-length ratio (alpha).",
             units.none, 
             2.0 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_semi_convection_efficiency",
             "set_semi_convection_efficiency",
             "semi_convection_efficiency", 
             "The efficiency of semi-convection, after Langer, Sugimoto & Fricke 1983 (A&A).",
             units.none, 
             0.04 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_thermohaline_mixing_parameter",
             "set_thermohaline_mixing_parameter",
             "thermohaline_mixing_parameter", 
             "The thermohaline mixing parameter, probably only important for binaries and collision remnants.",
             units.none, 
             1.0 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_AGB_wind_setting",
             "set_AGB_wind_setting",
             "AGB_wind_setting", 
             "The AGB wind setting: (1, 2) for (Wachter&al, Vasiliadis&Wood) mass loss.",
             units.none, 
             1 | units.none
-        ),
+        )
         
-        parameters.ModuleMethodParameterDefinition_Next(
+        object.add_method_parameter(
             "get_RGB_wind_setting",
             "set_RGB_wind_setting",
             "RGB_wind_setting", 
             "The RGB wind setting: (positive, negative, 0) for (Schroeder&Cuntz, Reimers, none) mass loss.",
             units.none, 
             1.0 | units.none
-        ),
-    ]
+        )
+        
+        
+        
+    def define_particle_sets(self, object):
+        object.define_set('particles', 'index_of_the_star')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_star')
+        
+        object.add_getter('particles', 'get_radius', names = ('radius',))
+        object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
+        object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_getter('particles', 'get_age', names = ('age',))
+        object.add_getter('particles', 'get_time_step', names = ('time_step',))
+        object.add_getter('particles', 'get_spin', names = ('spin',))
+        object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
+        
+        object.add_method('particles', 'evolve', 'evolve_one_step')
+    
+    def define_errorcodes(self, object):
+        object.add_errorcode(-2, 'BEGINN -- requested mesh too large')
+        object.add_errorcode(-1, 'STAR12 -- no timesteps required')
+        object.add_errorcode(2, 'BACKUP -- tstep reduced below limit; quit')
+        object.add_errorcode(3, 'NEXTDT -- *2 evolving beyond last *1 model')
+        object.add_errorcode(4, 'PRINTB -- *1 rstar exceeds rlobe by limit')
+        object.add_errorcode(5, 'PRINTB -- age greater than limit')
+        object.add_errorcode(6, 'PRINTB -- C-burning exceeds limit')
+        object.add_errorcode(7, 'PRINTB -- *2 radius exceeds rlobe by limit')
+        object.add_errorcode(8, 'PRINTB -- close to He flash')
+        object.add_errorcode(9, 'PRINTB -- massive (>1.2 msun) deg. C/O core')
+        object.add_errorcode(10, 'PRINTB -- |M1dot| exceeds limit')
+        object.add_errorcode(11, 'NEXTDT -- impermissible FDT for *2')
+        object.add_errorcode(14, 'PRINTB -- funny compos. distribution')
+        object.add_errorcode(15, 'STAR12 -- terminated by hand')
+        object.add_errorcode(16, 'MAIN   -- ZAHB didnt converge')
+        object.add_errorcode(17, 'BEGINN -- Nucleosynthesis did not converge')
+        object.add_errorcode(51, 'PRINTB -- end of MS (core H below limit)')
+        object.add_errorcode(52, 'PRINTB -- Radius exceeds limit')
+        object.add_errorcode(53, 'PRINTB -- Convergence to target model reached minimum')
+        object.add_errorcode(12, 'BACKUP -- tstep reduced below limit; quit -- core H non-zero')
+        object.add_errorcode(22, 'BACKUP -- tstep reduced below limit; quit -- core He non-zero')
+        object.add_errorcode(32, 'BACKUP -- tstep reduced below limit; quit -- core C non-zero')
+        
+    
+    def define_methods(self, object):
+            
+        object.add_method(
+            'evolve', 
+            (object.INDEX,), 
+            (object.ERROR_CODE,), 
+        )
+        object.add_method(
+            "new_particle", 
+            (units.MSun), #, units.day, units.RSun),
+            (object.NO_UNIT, object.ERROR_CODE)
+        )
+        object.add_method(
+            "delete_star", 
+            (object.NO_UNIT,), 
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_mass", 
+            (object.NO_UNIT,), 
+            (units.MSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_radius", 
+            (object.INDEX,), 
+            (units.RSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_stellar_type", 
+            (object.NO_UNIT,), 
+            (units.stellar_type, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_age", 
+            (object.NO_UNIT,), 
+            (units.yr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_luminosity", 
+            (object.NO_UNIT,), 
+            (units.LSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_time_step", 
+            (object.NO_UNIT,), 
+            (units.yr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_spin", 
+            (object.NO_UNIT,), 
+            (units.day, object.ERROR_CODE,)
+        )
+        
     
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
@@ -721,92 +769,11 @@ class EVtwinBinding(CodeInterfaceOld):
         
     def evolve_model(self, end_time = None):
         if end_time is None:
-            result = self._evolve_particles(self.particles)
+            result = self.particles.evolve_one_step()
             return result
-            
-        end_times = end_time.as_vector_with_length(len(self.particles))
-        
-        particles_set = self.particles.to_set()
-        while len(particles_set) > 0:
-            result = self._evolve_particles(particles_set)
-            if result != 0:
-                # Abort evolving because of error (result!=0)
-                return result
-            particles_set = particles_set.select(lambda x : x < end_time, ["age"])
-        # All particles have been succesfully evolved (result==0)
-        return result
+                   
+        for particle in self.particles:
+            while particle.age < end_time:
+                particle.evolve_one_step()
                 
-    def _evolve_particles(self, particles):
-        for particle in particles:
-            index = self.particles._private.attribute_storage.mapping_from_particle_key_to_index_in_the_code[particle.key]
-            
-            errorcode = self.evolve(index)
-            if errorcode != 0:
-                print 'Retreived error while evolving particle: ', index, particle
-                if errorcode == -2:
-                    error_string = ' -2 -- BEGINN -- requested mesh too large'
-                elif errorcode == -1:
-                    error_string = ' -1 -- STAR12 -- no timesteps required'
-                elif errorcode == 2:
-                    error_string = '  2 -- BACKUP -- tstep reduced below limit; quit'
-                elif errorcode == 3:
-                    error_string = '  3 -- NEXTDT -- *2 evolving beyond last *1 model' 
-                elif errorcode == 4:
-                    error_string = '  4 -- PRINTB -- *1 rstar exceeds rlobe by limit'
-                elif errorcode == 5:
-                    error_string = '  5 -- PRINTB -- age greater than limit'
-                elif errorcode == 6:
-                    error_string = '  6 -- PRINTB -- C-burning exceeds limit'
-                elif errorcode == 7:
-                    error_string = '  7 -- PRINTB -- *2 radius exceeds rlobe by limit'
-                elif errorcode == 8:
-                    error_string = '  8 -- PRINTB -- close to He flash'
-                elif errorcode == 9:
-                    error_string = '  9 -- PRINTB -- massive (>1.2 msun) deg. C/O core'
-                elif errorcode == 10:
-                    error_string = ' 10 -- PRINTB -- |M1dot| exceeds limit' 
-                elif errorcode == 11:
-                    error_string = ' 11 -- NEXTDT -- impermissible FDT for *2' 
-                elif errorcode == 14:
-                    error_string = ' 14 -- PRINTB -- funny compos. distribution'
-                elif errorcode == 15:
-                    error_string = ' 15 -- STAR12 -- terminated by hand'
-                elif errorcode == 16:
-                    error_string = ' 16 -- MAIN   -- ZAHB didnt converge'
-                elif errorcode == 17:
-                    error_string = ' 17 -- BEGINN -- Nucleosynthesis did not converge'
-                elif errorcode == 51:
-                    error_string = ' 51 -- PRINTB -- end of MS (core H below limit)'
-                elif errorcode == 52:
-                    error_string = ' 52 -- PRINTB -- Radius exceeds limit'
-                elif errorcode == 53:
-                    error_string = ' 53 -- PRINTB -- Convergence to target model reached minimum'
-                elif errorcode == 12:
-                    error_string = '  12 -- BACKUP -- tstep reduced below limit; quit -- core H non-zero'
-                elif errorcode == 22:
-                    error_string = '  22 -- BACKUP -- tstep reduced below limit; quit -- core He non-zero'
-                elif errorcode == 32:
-                    error_string = '  32 -- BACKUP -- tstep reduced below limit; quit -- core C non-zero'
-                else:
-                    error_string = 'Unknown errorcode: ' + str(errorcode)
-                    
-                # Just print the error message or raise an exception: (have to sort out what would be more convenient later)
-                raise Exception(error_string)
-                print error_string
-                
-                # Abort evolving because of error (errorcode!=0)
-                return errorcode
-        # All particles have been succesfully evolved (errorcode==0)
-        return errorcode
-        
-    def current_model_time(self):
-        return self._current_model_time
-        
-class EVtwin(EVtwinInterface, EVtwinBinding):
-    """  
-    """
-    
-    def __init__(self):
-        EVtwinInterface.__init__(self)
-        EVtwinBinding.__init__(self)
         

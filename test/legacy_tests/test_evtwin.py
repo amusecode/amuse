@@ -402,7 +402,7 @@ class TestInterfaceBinding(TestWithMPI):
             instance.evolve_model(end_time = 2*max_age)
             self.fail("Should not be able to evolve beyond maximum age.")
         except Exception as ex:
-            self.assertEquals("  2 -- BACKUP -- tstep reduced below limit; quit", str(ex))
+            self.assertEquals("Error when calling 'evolve' of a 'EVtwin', errorcode is 2, error is 'BACKUP -- tstep reduced below limit; quit'", str(ex))
 
         del instance
         
@@ -479,6 +479,7 @@ class TestInterfaceBinding(TestWithMPI):
         instance.evolve_model(end_time=2.0|units.Myr)
         from_code_to_model.copy()
         self.assertAlmostEqual(stars[1].age.value_in(units.Myr), age_of_star.value_in(units.Myr), 3)
-        self.assertTrue(stars[0].age > age_of_star)
+        self.assertTrue(stars[0].age >= age_of_star)
+        
         del instance
 

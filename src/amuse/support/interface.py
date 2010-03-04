@@ -36,66 +36,11 @@ class CodeInterfaceOld(OldObjectsBindingMixin):
     
     def __init__(self):
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
-        
-class CodeInterfaceWithConvertedUnits(OldObjectsBindingMixin):
-    
-            
-    def __init__(self, interface, converter):
-        self.converter = converter
-        self.interface = interface
-        
-    def __getattr__(self, name):
-        attribute = getattr(self.interface, name)
-        if inspect.ismethod(attribute):
-            result = UnitsConvertionMethod(attribute, self.converter)
-            setattr(self, name, result)
-            return result
-        elif isinstance(attribute, core.AbstractParticleSet):
-            result = core.ParticlesWithUnitsConverted(attribute, self.converter)
-            setattr(self, name, result)
-            return result
-        elif isinstance(attribute, values.Quantity):
-            return self.converter.from_target_to_source(attribute)
-        elif isinstance(attribute, binding.BoundCodeMethod):
-            result = UnitsConvertionMethod(attribute, self.converter)
-            setattr(self, name, result)
-            return result
-        elif isinstance(attribute, parameters.Parameters):
-            result = parameters.ParametersWithUnitsConverted(attribute, self.converter)
-            setattr(self, name, result)
-            return result
-        elif hasattr(attribute, '__iter__'):
-            return self.convert_and_iterate(attribute)
-        else:
-            return attribute
-            
-    def convert_and_iterate(self, iterable):
-        for x in iterable:
-            yield self.converter.from_target_to_source(x)
-            
-    def __dir__(self):
-        return dir(self.interface)
-        
-class CodeInterfaceWithNBodyUnitsConverted(CodeInterfaceWithConvertedUnits):
-    
-    def __init__(self, interface, convert_nbody):
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-        
-        CodeInterfaceWithConvertedUnits.__init__(
-            self,
-            interface,
-            convert_nbody.as_converter_from_si_to_nbody()
-        )
-        
-
+ 
 class CodeAttributeWrapper(object):
     
     def __init__(self):
         pass
-        
-        
-
         
 class HandleCodeInterfaceAttributeAccess(object):
     
@@ -467,7 +412,9 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             return MethodWithUnits(getattr(self.handler.interface, self.function_name), self)
 
     def handle_errorcode(self, errorcode):
-        if errorcode < 0:
+        if errorcode in self.handler.interface.errorcodes:
+            raise Exception("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.handler.interface).__name__, errorcode,  self.handler.interface.errorcodes[errorcode]))
+        elif errorcode < 0:
             raise Exception("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.handler.interface).__name__, errorcode))
         else:
             return errorcode 
@@ -488,6 +435,8 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             else:
                 return self.return_units.new_quantity(return_value)
         else:
+            if not hasattr(return_value, '__iter__'):
+                return_value = [return_value]
             result = []
             for value, unit in zip(return_value, self.return_units):
                 if unit == self.ERROR_CODE:
@@ -705,6 +654,30 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         
     def setup(self, object):
         object.define_parameters(self)
+        
+
+class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
+    def __init__(self, interface):
+        self.error_codes = {}
+        self.interface = interface
+
+    def supports(self, name, was_found):
+        return name == 'errorcodes'
+        
+    def get_attribute(self, name, value):
+        return self.error_codes
+        
+    def attribute_names(self):
+        return set(['errorcodes'])
+        
+    def add_errorcode(self, number, string):
+        self.error_codes[number] = string 
+    
+    def has_name(self, name):
+        return name == 'ERRORCODE'
+        
+    def setup(self, object):
+        object.define_errorcodes(self)
     
         
 class ParticleSetDefinition(object):
@@ -713,11 +686,13 @@ class ParticleSetDefinition(object):
         self.handler = handler
         self.name_of_indexing_attribute = 'index_of_the_particle'
         self.new_particle_method = ('new_particle',(), None)
-        self.name_of_new_particle_method = 'delete_particle'
+        self.name_of_delete_particle_method = 'delete_particle'
+        self.name_of_number_of_particles_method = 'get_number_of_particles'
         self.setters = []
         self.getters = []
         self.queries = []
         self.selects_form_particle = []
+        self.methods = []
     
     def new_storage(self, interface):
         setters = []
@@ -734,8 +709,8 @@ class ParticleSetDefinition(object):
         name, mapping, names = self.new_particle_method
         new_particle_method = code_particles.NewParticleMethod(getattr(interface, name), mapping, names)
         
-        delete_particle_method = getattr(interface, self.name_of_new_particle_method)
-        number_of_particles_method = getattr(interface, self.name_of_new_particle_method)
+        delete_particle_method = getattr(interface, self.name_of_delete_particle_method)
+        number_of_particles_method = None #getattr(interface, self.name_of_number_of_particles_method)
         
         return code_particles.InCodeAttributeStorage(
             interface,
@@ -763,6 +738,15 @@ class ParticleSetDefinition(object):
         
         return results
         
+    def new_particle_methods(self, interface):
+        results = []
+        for name, public_name in self.methods:
+            x = code_particles.ParticleMethod(getattr(interface, name), public_name)
+            results.append(x)
+        
+        return results
+        
+        
         
 class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
@@ -785,6 +769,12 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
                 result.add_function_attribute(x.public_name, x.apply)
             
             selects = self.sets[name].new_selects_from_particle(self.interface)
+            for x in selects:
+                result.add_function_attribute(x.public_name, x.apply_on_all)
+                result.add_particle_function_attribute(x.public_name, x.apply_on_one)
+            
+            
+            selects = self.sets[name].new_particle_methods(self.interface)
             for x in selects:
                 result.add_function_attribute(x.public_name, x.apply_on_all)
                 result.add_particle_function_attribute(x.public_name, x.apply_on_one)
@@ -828,6 +818,13 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         self.sets[name_of_the_set].queries.append((name_of_the_query, names, public_name))
         
     
+    def add_method(self, name_of_the_set, name_of_the_method, public_name = None):
+        if not public_name:
+            public_name = name_of_the_method
+            
+        self.sets[name_of_the_set].methods.append((name_of_the_method, public_name))
+        
+    
     def add_select_from_particle(self, name_of_the_set, name, names = (), public_name = None):
         if not public_name:
             public_name = name
@@ -849,6 +846,7 @@ class CodeInterface(OldObjectsBindingMixin):
         self._handlers.append(HandleParticles(self))
         self._handlers.append(HandleState(self))
         self._handlers.append(HandleConvertUnits(self))
+        self._handlers.append(HandleErrorCodes(self))
         
         self.setup()
         
@@ -872,6 +870,9 @@ class CodeInterface(OldObjectsBindingMixin):
         pass
     
     def define_particle_sets(self, handler):
+        pass
+        
+    def define_errorcodes(self, handler):
         pass
         
     def get_handler(self, name):

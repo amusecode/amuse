@@ -48,7 +48,7 @@ worker_code: mpi_code.f90
 	mpif90 $< -o $@ $(EVTWINLIB)
 
 mpi_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py EVtwin -o $@
+	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
 	
 .f.o: $<
 	$(FORTRAN) $(FFLAGS) -c -o $@ $< 
