@@ -1,12 +1,13 @@
 from amuse.support.io import store
 from amuse.support.units import units
 from amuse.support.data.core import Stars
+from amuse.test import amusetest
+
 import path_to_test_results
 
-import unittest
 import os
 
-class TestStoreHDF(unittest.TestCase):
+class TestStoreHDF(amusetest.TestCase):
     
     def test1(self):
         test_results_path = path_to_test_results.get_path_to_test_results()

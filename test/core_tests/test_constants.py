@@ -2,10 +2,10 @@ from amuse.support.data import core
 from amuse.support.units import units
 from amuse.support.units import constants
 
-import unittest
+from amuse.test import amusetest
 import os.path
 
-class Test(unittest.TestCase):
+class Test(amusetest.TestCase):
     
     def Ntest1(self):
         I = constants.GetConstantsFromFiles()

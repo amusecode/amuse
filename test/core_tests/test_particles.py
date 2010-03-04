@@ -1,4 +1,4 @@
-import unittest
+from amuse.test import amusetest
 
 from amuse.support.units import units
 from amuse.support.units import nbody_system
@@ -8,7 +8,7 @@ from amuse.support.data import attributes
 
 import numpy
 
-class TestBase(unittest.TestCase):
+class TestBase(amusetest.TestCase):
     pass
     
 class TestParticles(TestBase):

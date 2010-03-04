@@ -1,4 +1,4 @@
-import unittest
+from amuse.test import amusetest
 
 from amuse.ext.plummer import *
 import pickle
@@ -48,7 +48,7 @@ F7.0414221137944499e-09
 tp16
 ."""
 
-class TestData(unittest.TestCase):
+class TestData(amusetest.TestCase):
    pass
    
 class TestPlummer(TestData):

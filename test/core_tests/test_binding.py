@@ -1,5 +1,4 @@
-import unittest
-
+from amuse.test import amusetest
 from amuse.support.units import units
 from amuse.support.data import binding
 from amuse.support.data import core
@@ -7,7 +6,7 @@ from amuse.support.data import attributes
 
 import numpy
 
-class TestBase(unittest.TestCase):
+class TestBase(amusetest.TestCase):
     
     class Test(object):
         

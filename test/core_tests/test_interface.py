@@ -6,9 +6,9 @@ from amuse.support.data.parameters import *
 from amuse.support.data import core
 from amuse.support.core import OrderedDictionary
 
-import unittest
+from amuse.test import amusetest
 
-class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
+class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
     class TestClass(interface.CodeInterfaceOld):
 
         def get_mass(self):
@@ -99,7 +99,7 @@ class CodeInterfaceWithConvertedUnitsTests(unittest.TestCase):
         
         
 
-class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
+class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     class TestClass(interface.CodeInterfaceOld):
        
         def add_10_to_length(self, length):
@@ -201,7 +201,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(unittest.TestCase):
 
 
 
-class CodeInterface2Tests(unittest.TestCase):
+class CodeInterface2Tests(amusetest.TestCase):
     class TestClass(interface.CodeInterfaceOld):
         def __init__(self):
             self.state = 0
@@ -415,7 +415,7 @@ class CodeInterface2Tests(unittest.TestCase):
         
 
 
-class CodeInterfaceWithUnitsAndStateTests(unittest.TestCase):
+class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     class TestClass(interface.CodeInterfaceOld):
        
         def __init__(self):
@@ -479,7 +479,7 @@ class CodeInterfaceWithUnitsAndStateTests(unittest.TestCase):
         self.assertEquals(40.0 | units.m, instance.add(20.0 | units.m))
         
 
-class CodeInterfaceWithParticlesTests(unittest.TestCase):
+class CodeInterfaceWithParticlesTests(amusetest.TestCase):
     class TestClass(interface.CodeInterfaceOld):
 
         def get_mass(self):
@@ -504,7 +504,7 @@ class CodeInterfaceWithParticlesTests(unittest.TestCase):
         
         
 
-class TestParticlesWithBinding(unittest.TestCase):
+class TestParticlesWithBinding(amusetest.TestCase):
     class TestInterface(interface.CodeInterfaceOld):
 
         def __init__(self):

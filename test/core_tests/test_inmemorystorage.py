@@ -1,10 +1,10 @@
-import unittest
+from amuse.test import amusetest
 import numpy
 
 from amuse.support.data.core import InMemoryAttributeStorage
 from amuse.support.units  import units
 
-class TestInMemoryAttributeStorage(unittest.TestCase):
+class TestInMemoryAttributeStorage(amusetest.TestCase):
     
     def test1(self):
         particles = [0,1,2]

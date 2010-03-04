@@ -3,10 +3,10 @@ from amuse.support.io import starlab
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 
-import unittest
+from amuse.test import amusetest
 import os.path
 
-class Test(unittest.TestCase):
+class Test(amusetest.TestCase):
 
     def test1(self):
         """

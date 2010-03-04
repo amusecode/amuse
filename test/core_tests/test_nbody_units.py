@@ -1,8 +1,7 @@
-import unittest
-
+from amuse.test import amusetest
 from amuse.support.units.nbody_system import *
 
-class TestNbodyUnits(unittest.TestCase):
+class TestNbodyUnits(amusetest.TestCase):
     def test1(self):
        convert_nbody = nbody_to_si(1 | units.parsec, 20 |units.MSun)
        y = 1 | mass
@@ -70,7 +69,7 @@ class TestNbodyUnits(unittest.TestCase):
        self.assertEqual(y_in_nbody , 1.0 | units.none)
        self.assertEqual(y_in_si , 1.0 | units.none)
 
-class TestNbodyUnitsDefaultSettings(unittest.TestCase):
+class TestNbodyUnitsDefaultSettings(amusetest.TestCase):
     def assertIdentical(self, expected, actual, msg = None):
         if not actual is expected:
             raise self.failureException, \

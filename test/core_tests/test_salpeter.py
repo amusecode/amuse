@@ -1,11 +1,11 @@
 import sys
-import unittest
 import os
 
+from amuse.test import amusetest
 from amuse.support.units import units
 from amuse.ext.salpeter import SalpeterIMF
         
-class SalpeterIMFTests(unittest.TestCase):
+class SalpeterIMFTests(amusetest.TestCase):
     def test1(self):
         instance = SalpeterIMF(0.1 | units.MSun, 100 | units.MSun, alpha = -2.35)
         self.assertAlmostEqual(instance.mass_mean().value_in(units.MSun), 0.351, 3)

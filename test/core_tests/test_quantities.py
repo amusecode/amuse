@@ -1,4 +1,4 @@
-import unittest
+from amuse.test import amusetest
 
 import numpy
 import sys
@@ -7,7 +7,7 @@ from amuse.support.units import si, units
 from amuse.support.data import core
 from amuse.support.data.values import *
 
-class TestQuantities(unittest.TestCase):
+class TestQuantities(amusetest.TestCase):
 
     def test1(self):
         x = 1.0 | si.kg

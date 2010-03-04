@@ -1,9 +1,9 @@
-import unittest
+from amuse.test import amusetest
 import numpy
 
 from amuse.support.units.units import *
 
-class TestUnitConversions(unittest.TestCase):
+class TestUnitConversions(amusetest.TestCase):
     def test1(self):
         km = 1000 * m
         self.assertEqual(1000, km.value_in(m))
@@ -77,7 +77,7 @@ class TestUnitConversions(unittest.TestCase):
         self.assertAlmostEquals(fine_structure_constant_calculated.number, fine_structure_constant.number, 5)
         
     
-class TestNonNumericUnits(unittest.TestCase):
+class TestNonNumericUnits(amusetest.TestCase):
     def test1(self):
         try:
             x = units.string.as_quantity_in(m)

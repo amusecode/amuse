@@ -1,10 +1,10 @@
 from amuse.support.io import text
 from amuse.support.units import units
-import unittest
+from amuse.test import amusetest
 import StringIO
 import textwrap
 
-class CursorTests(unittest.TestCase):
+class CursorTests(amusetest.TestCase):
     
     def test1(self):
         contents = "1\n2\n3"
@@ -32,7 +32,7 @@ class CursorTests(unittest.TestCase):
         instance.forward()
         self.assertTrue(instance.is_at_end())
         
-class TableFormattedTextTests(unittest.TestCase):
+class TableFormattedTextTests(amusetest.TestCase):
     
     def test1(self):
         contents = "#header\n1 2 3\n4 5 6"
@@ -45,7 +45,7 @@ class TableFormattedTextTests(unittest.TestCase):
         self.assertEquals(particles[0].a, 1|units.none)
         
         
-class Athena3DTextTests(unittest.TestCase):
+class Athena3DTextTests(amusetest.TestCase):
     
     def test1(self):
         contents = """\

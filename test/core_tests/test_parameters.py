@@ -1,10 +1,9 @@
-import unittest
-
+from amuse.test import amusetest
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data import parameters
 
-class TestAttributeParameterDefintions(unittest.TestCase):
+class TestAttributeParameterDefintions(amusetest.TestCase):
     def test1(self):
         x = parameters.ModuleAttributeParameterDefinition("test", "test_name", "a test parameter", units.m, 0.1 | units.m)
         self.assertEqual(x.name,'test_name')
@@ -80,7 +79,7 @@ class TestAttributeParameterDefintions(unittest.TestCase):
         self.assertEqual(o.test, 1000)
         
 
-class TestMethodParameterDefintions(unittest.TestCase):
+class TestMethodParameterDefintions(amusetest.TestCase):
     def test1(self):
         x = parameters.ModuleMethodParameterDefinition(
             "get_test",
@@ -353,7 +352,7 @@ class TestMethodParameterDefintions(unittest.TestCase):
             self.assertEquals("tried to set unknown parameter 'unknown' for a 'TestModule' object", str(ex))
         
         
-class TestParameters(unittest.TestCase):
+class TestParameters(amusetest.TestCase):
     def test1(self):
         definition = parameters.ModuleAttributeParameterDefinition(
             "test", 
