@@ -14,20 +14,28 @@ class TestInterface(TestWithMPI):
     def test1(self):
         print "Testing get/set for metallicity..."
         instance = EVtwinInterface()
-        
         (metallicity, error) = instance.get_metallicity()
         self.assertEquals(0, error)
-        
-        for x in [0.1, 0.01, 0.001, 0.0001]:
-            error = instance.set_metallicity(x)
-            self.assertEquals(0, error)      
-            
-            (metallicity, error) = instance.get_metallicity()
-            self.assertEquals(0, error)      
-            self.assertEquals(x, metallicity)      
-        
+        self.assertEquals(0.02, metallicity)
+        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        self.assertEquals(0, error)      
+        error = instance.initialize_code()
+        self.assertEquals(0, error)      
         del instance
-        
+
+        for x in [0.1, 0.01, 0.001, 0.0001]:
+            instance = EVtwinInterface()
+            error = instance.set_metallicity(x)
+            self.assertEquals(0, error)
+            (metallicity, error) = instance.get_metallicity()
+            self.assertEquals(0, error)
+            self.assertEquals(x, metallicity)
+            error = instance.set_ev_path(instance.default_path_to_ev_database)
+            self.assertEquals(0, error)      
+            error = instance.initialize_code()
+            self.assertEquals(-1, error)
+            print "Metallicities other than solar need additional starting models!"
+            del instance
     
     def test2(self):
         print "Testing get/set for maximum number of stars..."
