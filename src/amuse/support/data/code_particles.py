@@ -1,6 +1,7 @@
 from amuse.support.data import parameters
 from amuse.support.data.core import Particles, ParticleInformationChannel, Particle
 from amuse.support.data.core import AttributeStorage
+from amuse.support.methods import AbstractCodeMethodWrapper
 import numpy
 
 from amuse.support.units import nbody_system, units
@@ -9,9 +10,10 @@ from amuse.support.core import late
 
 import inspect
 
-class ParticleMappingMethod(object):
+class ParticleMappingMethod(AbstractCodeMethodWrapper):
     def __init__(self, method, mapping = (), attribute_names = None):
-        self.method = method
+        AbstractCodeMethodWrapper.__init__(self, method)
+        
         self.mapping = mapping
         
         if attribute_names is None:
@@ -32,60 +34,6 @@ class ParticleMappingMethod(object):
     def name_of_the_indexing_parameter(self):
         return 'index_of_the_particle'
         
-    @late
-    def method_is_legacy(self):
-        return hasattr(self.method, 'specification')
-        
-        
-    @late
-    def method_is_code(self):
-        return hasattr(self.method, 'method_input_argument_names')
-    
-    
-    @late
-    def legacy_specification(self):
-        if self.method_is_code:
-            return self.method.legacy_specification
-        elif self.method_is_legacy:
-            return self.method.specification
-        else:
-            return None
-    
-    @late
-    def method_input_argument_names(self):
-        if self.method_is_code:
-            return self.method.method_input_argument_names
-        elif self.method_is_legacy:
-            return map(lambda x : x.name , self.method.specification.input_parameters)
-        else:
-            args = inspect.getargspec(self.method).args
-            if args:
-                if args[0] == 'self' or args[0] == 'cls':
-                    return args[1:]
-            return args
-            
-    @late
-    def method_output_argument_names(self):
-        if self.method_is_code:
-            return self.method.method_output_argument_names
-        elif self.method_is_legacy:
-            return map(lambda x : x.name , self.method.specification.output_parameters)
-        else:
-            return ()
-            
-    @late
-    def index_input_attributes(self):
-        if self.method_is_code:
-            return self.method.index_input_attributes
-        else:
-            return None
-    @late
-    def index_output_attributes(self):
-        if self.method_is_code:
-            return self.method.index_output_attributes
-        else:
-            return None
-            
 
 class ParticleGetAttributesMethod(ParticleMappingMethod):
     

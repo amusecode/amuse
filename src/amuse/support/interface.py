@@ -6,6 +6,7 @@ from amuse.support.data import values
 from amuse.support.data import code_particles
 from amuse.support.units import nbody_system
 
+from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition
 
 from amuse.support.core import late
 
@@ -93,99 +94,6 @@ class CodeAttributeWrapper(object):
     def __init__(self):
         pass
         
-class CodeMethodWrapper(CodeAttributeWrapper):
-    
-    def __init__(self, method):
-        CodeAttributeWrapper.__init__(self)
-        self.method = method
-      
-    @late
-    def method_is_legacy(self):
-        return hasattr(self.method, 'specification')
-        
-    @late
-    def method_is_code(self):
-        return hasattr(self.method, 'method_input_argument_names')
-    
-    @late
-    def legacy_specification(self):
-        if self.method_is_code:
-            return self.method.legacy_specification
-        elif self.method_is_legacy:
-            return self.method.specification
-        else:
-            return None
-
-        
-    @late
-    def method_input_argument_names(self):
-        if self.method_is_code:
-            return self.method.method_input_argument_names
-        elif self.method_is_legacy:
-            return map(lambda x : x.name , self.method.specification.input_parameters)
-        else:
-            args = inspect.getargspec(self.method).args
-            if args:
-                if args[0] == 'self' or args[0] == 'cls':
-                    return args[1:]
-            return args
-      
-    @late
-    def method_output_argument_names(self):
-        if self.method_is_code:
-            return self.method.method_output_argument_names
-        elif self.method_is_legacy:
-            return map(lambda x : x.name , self.method.specification.output_parameters)
-        else:
-            return ()
-           
-    @late
-    def index_input_attributes(self):
-        if self.method_is_code:
-            return self.method.index_input_attributes
-        else:
-            return None
-    @late
-    def index_output_attributes(self):
-        if self.method_is_code:
-            return self.method.index_output_attributes
-        else:
-            return None
-
-
-class UnitsConvertionMethod(CodeMethodWrapper):
-    def __init__(self, real_method, converter):
-        CodeMethodWrapper.__init__(self, real_method)
-        self.converter = converter
-        
-    def __call__(self, *list_arguments, **keyword_arguments):
-        converted_list_arguments = [self.from_source_to_target(x) for x in list_arguments]
-        converted_keyword_arguments = {}
-        for key, value in keyword_arguments:
-            converted_keyword_arguments[key] = self.from_source_to_target(value)
-            
-        result = self.method(*converted_list_arguments, **converted_keyword_arguments)
-        
-        return self.from_target_to_source(result)
-        
-    def from_source_to_target(self, x):
-        if isinstance(x, values.Quantity):
-            return self.converter.from_source_to_target(x)
-        else:
-            return x
-            
-    def from_target_to_source(self, x):
-        if isinstance(x, values.Quantity):
-            return self.converter.from_target_to_source(x)
-        elif hasattr(x, '__iter__'):
-            return list(self.convert_and_iterate(x))
-        else:
-            return x
-    
-    def convert_and_iterate(self, iterable):
-        for x in iterable:
-            yield self.converter.from_target_to_source(x)
-         
         
 
         
@@ -226,8 +134,8 @@ class LegacyInterfaceHandler(HandleCodeInterfaceAttributeAccess):
         return name == 'LEGACY'
     
     
-        
-class HandleConvertUnits(HandleCodeInterfaceAttributeAccess):
+
+class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDefinition):
     
     def __init__(self, handler):
         self.handler = handler
@@ -244,7 +152,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess):
         elif isinstance(attribute, values.Quantity):
             result = self.converter.from_target_to_source(attribute)
         elif isinstance(attribute, CodeMethodWrapper):
-            result = UnitsConvertionMethod(attribute, self.converter)
+            result = CodeMethodWrapper(attribute, self)
         elif isinstance(attribute, parameters.Parameters):
             result = parameters.ParametersWithUnitsConverted(attribute, self.converter)
         elif hasattr(attribute, '__iter__'):
@@ -269,26 +177,33 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess):
         
     def setup(self, object):
         object.define_converter(self)
-    
-
-
-class StateMethod(CodeMethodWrapper):
-    def __init__(self, definition, method):
-        CodeMethodWrapper.__init__(self, method)
-        self.definition = definition
-    
-    
-    def __call__(self, *list_arguments, **keyword_arguments):
-        to_state = self.definition.precall()
         
-        result = self.method(*list_arguments, **keyword_arguments)
-        self.definition.postcall(to_state)
-        return result
+    def convert_arguments(self, method,  list_arguments, keyword_arguments):
+        converted_list_arguments = [self.from_source_to_target(x) for x in list_arguments]
+        converted_keyword_arguments = {}
+        for key, value in keyword_arguments:
+            converted_keyword_arguments[key] = self.from_source_to_target(value)
+            
+        return converted_list_arguments, converted_keyword_arguments
+        
+    def convert_result(self, method, result):
+        return self.from_target_to_source(result)
+        
+    def from_source_to_target(self, x):
+        if isinstance(x, values.Quantity):
+            return self.converter.from_source_to_target(x)
+        else:
+            return x
+            
+    def from_target_to_source(self, x):
+        if isinstance(x, values.Quantity):
+            return self.converter.from_target_to_source(x)
+        elif hasattr(x, '__iter__'):
+            return list(self.convert_and_iterate(x))
+        else:
+            return x
     
-        
-        
-
-class StateMethodDefinition(object):
+class StateMethodDefinition(CodeMethodWrapperDefinition):
     def __init__(self, handler, from_state, to_state, function_name):
         self.handler = handler
         self.transitions = []
@@ -301,9 +216,9 @@ class StateMethodDefinition(object):
     def new_method(self, method = None):
         if method == None:
             method = getattr(self.handler.interface, self.function_name)
-        return StateMethod(self, method)
+        return CodeMethodWrapper(method, self)
         
-    def precall(self):
+    def precall(self, method):
         stored_transitions = []
         
         for from_state, to_state in self.transitions:
@@ -324,7 +239,7 @@ class StateMethodDefinition(object):
         # do again to get an exception.
         self.handler._do_state_transition_to(stored_transitions[0][0])
     
-    def postcall(self, to_state):
+    def postcall(self, method, to_state):
         if to_state is None:
             return
         elif to_state == self.handler._current_state:
@@ -360,9 +275,6 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
                 self.handler.current_state = self.to_state
             else:
                 self.method.new_method()() 
-                
-    
-        
             
     def __init__(self, interface):
         self._mapping_from_name_to_state_method = {}
@@ -440,9 +352,6 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
                 paths.extend(new_paths)
                 
         return None
-                
-        
-        
         
     def _add_state_method(self, from_state, to_state, function_name):
         if not function_name in self._mapping_from_name_to_state_method:
@@ -513,15 +422,8 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
 
 class MethodWithUnits(CodeMethodWrapper):
 
-    def __init__(self, definition, original_method):
-        CodeMethodWrapper.__init__(self, original_method)
-        self.definition = definition
-        
-    def __call__(self, *list_arguments, **keyword_arguments):
-        
-        converted_keyword_arguments = self.definition.convert_list_and_keyword_arguments(self.method_input_argument_names, list_arguments, keyword_arguments)
-        return_value = self.method(**converted_keyword_arguments)
-        return self.definition.handle_return_value(return_value)
+    def __init__(self, original_method, definition):
+        CodeMethodWrapper.__init__(self, original_method, definition)
          
     @late
     def index_input_attributes(self):
@@ -533,7 +435,7 @@ class MethodWithUnits(CodeMethodWrapper):
         
             
         
-class MethodWithUnitsDefinition(object):
+class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
     
     ERROR_CODE =  object()
     NO_UNIT = object()
@@ -560,9 +462,9 @@ class MethodWithUnitsDefinition(object):
     
     def new_method(self, original_method):
         if self.has_same_name_as_original:
-            return MethodWithUnits(self, original_method)
+            return MethodWithUnits(original_method, self)
         else:
-            return MethodWithUnits(self, getattr(self.handler.interface, self.function_name))
+            return MethodWithUnits(getattr(self.handler.interface, self.function_name), self)
 
     def handle_errorcode(self, errorcode):
         if errorcode < 0:
@@ -602,9 +504,9 @@ class MethodWithUnitsDefinition(object):
                 return result
     
     
-    def convert_list_and_keyword_arguments(self, input_parameters, list_arguments, keyword_arguments):
+    def convert_arguments(self, method , list_arguments, keyword_arguments):
         result = {}
-        
+        input_parameters = method.method_input_argument_names
         
         for index, parameter in enumerate(input_parameters):
             if parameter in keyword_arguments:
@@ -620,7 +522,10 @@ class MethodWithUnitsDefinition(object):
             else:
                 result[parameter] = argument.value_in(self.units[index])
         
-        return result
+        return (), result
+        
+    def convert_result(self, method, result):
+        return self.handle_return_value(result)
     
     @late
     def has_same_name_as_original(self):
