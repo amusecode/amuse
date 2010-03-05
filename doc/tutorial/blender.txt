@@ -1,6 +1,6 @@
 
 ===========================================
-Using Blender for visualizing Amuse results
+Using Blender for visualising Amuse results
 ===========================================
 
 .. image:: blender.jpeg
@@ -9,14 +9,14 @@ Using Blender for visualizing Amuse results
 Blender
 =======
 
-Blender is a free open source 3D content creation suite, *GPL-ed*. As it is specialized in visualization of 3D content *and* 
-scriptable in python it provides handy a tool for visualization of Amuse data.
+Blender is a free open source 3D content creation suite, *GPL-ed*. As it is specialised in visualisation of 3D content *and* 
+scriptable in python it provides handy a tool for visualisation of Amuse data.
 
 More information on Blender can be found on http://www.blender.org/
 
 Starting Blender
 ================
-We start blender from the command line, assuming all environement variables are set for amuse, and make sure mpd is running.
+We start blender from the command line, assuming all environment variables are set for amuse, and make sure mpd is running.
 
 .. code-block:: bash
 
@@ -29,12 +29,12 @@ menu item to open a text file:
    :width: 800
    :align: center
 
-This way we can retrieve scripts we had written before. Now, we are going to write a new script, but use our favorite editor, and once finished 
+This way we can retrieve scripts we had written before. Now, we are going to write a new script, but use our favourite editor, and once finished 
 we will load the script using the method described above.
 
-**Note:** By default, blender places a cube in the scene. You can delete it else it will obsucre the sun in our example. 
+**Note:** By default, blender places a cube in the scene. You can delete it else it will obscure the sun in our example. 
 
-The script is based on the sun-earth test in hermite. We start with that amuse script and add a couple of lines to communicate with blender, which 
+The script is based on the sun-earth test in Hermite. We start with that amuse script and add a couple of lines to communicate with blender, which 
 are marked by comments in the example below.
 
 Amuse blender API
@@ -51,7 +51,7 @@ To create a sphere, e.g. the sun,  with 32 segments, 32 rings and a radius of 1.
 
 .. code-block:: python
 
-    sun = blender.Primitives.sphere(segements = 32, rings = 32, radius = 1.0)
+    sun = blender.Primitives.sphere(segments = 32, rings = 32, radius = 1.0)
 
 We can move and rotate our object using:
 
@@ -63,7 +63,7 @@ We can move and rotate our object using:
     sun.rotZ = alpha
 
 
-The hermite Sun-Earth model with blender visualization will become like this:
+The Hermite Sun-Earth model with blender visualisation will become like this:
 
 .. code-block:: python
     :linenos:
