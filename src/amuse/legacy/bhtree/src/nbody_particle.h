@@ -168,6 +168,9 @@ class nbody_system
 
 	// routine added by SPZ (Nov 2006)
 	void set_particle_pointer(nbody_particle * np){pb = np;}
+    
+    // routine added by AVE (Mar 2010)
+    vec calculate_gravity_at_point(vec pos, real eps2, real theta2);
 };
 
 #endif

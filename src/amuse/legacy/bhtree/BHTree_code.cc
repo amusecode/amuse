@@ -581,9 +581,27 @@ int get_potential_energy(double *potential_energy)
     return 0;
 }
 
-int get_gravity_at_point(double x, double y, double z,  double *forcex, double *forcey, double *forcez)
+int get_gravity_at_point(double eps, double x, double y, double z,  double *forcex, double *forcey, double *forcez)
 {
-  return -2;
+    vec p = 0;
+    p[0] = x;
+    p[1] = y;
+    p[2] = z;
+    
+    bhtcs.setup_tree();
+    
+    vec acc = bhtcs.calculate_gravity_at_point(p, bhtcs.eps2_for_gravity, bhtcs.theta_for_tree * bhtcs.theta_for_tree);
+    
+    *forcex = acc[0];
+    *forcey = acc[1];
+    *forcez = acc[2];
+    
+    return 0;
+}
+
+int get_potential_at_point(double eps, double x, double y, double z, double * phi)
+{
+    return -2;
 }
 
 int get_velocity(int id, double *vx, double *vy, double *vz)

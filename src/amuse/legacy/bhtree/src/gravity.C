@@ -67,7 +67,7 @@ void real_system::calculate_uncorrected_gravity()
 //    cerr << "Call setup tree, cpu = " <<cpusec() << endl;
     setup_tree();
 //    cerr << "Call set cm, cpu = " <<cpusec() << endl;
-    set_cm_quantities_for_default_tree();
+//    set_cm_quantities_for_default_tree(); // moved to setup_tee AvE Mar 2010
 //    cerr << "Call evaluate_gravity, cpu = " <<cpusec() << endl;
     clear_tree_counters();
     apply_vf(&real_particle::clear_acc_phi_gravity);
@@ -85,6 +85,8 @@ void real_system::calculate_uncorrected_gravity()
 //    cerr << "Exit evaluate_gravity, cpu = " <<cpusec() << endl;
     
 }
+
+
 
 void real_system::calculate_uncorrected_gravity_direct()
 {

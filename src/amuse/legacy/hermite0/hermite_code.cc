@@ -965,7 +965,7 @@ int get_total_radius(double *radius)
   return -1;
 }
 
-int get_gravity_at_point(double x,double y, double z, double *Fx, double *Fy, double *Fz)
+int get_gravity_at_point(double eps, double x,double y, double z, double *Fx, double *Fy, double *Fz)
 //
 {
   return -2;
@@ -1063,3 +1063,8 @@ int initialize_time_step() {return 0;}
 int finalize_time_step() {return 0;}
 
 int get_escaper(){return -1;}	// not implemented yet
+
+int get_potential_at_point(double eps, double x, double y, double z, double * phi)
+{
+    return -2;
+}

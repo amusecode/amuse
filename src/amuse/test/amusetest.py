@@ -15,9 +15,7 @@ class TestCase(unittest.TestCase):
            The AmuseTestcase differs from the defaulat unittest.Testcase in that                     
            it implements an abs function that can handle quantities.                                 
         """                                                                                          
-        delta = second-first                                                                         
-        print first
-        print second
+        delta = second-first  
         
         if isinstance(delta, values.Quantity): 
             absdif = abs(delta.value_in(delta.unit))

@@ -244,7 +244,7 @@ void get_state(int id, int * id_out,  double * mass, double * radius, double * x
 int get_potential_energy(double *potential_energy);
 //-------------------------------------------------------------------------
 //
-int get_gravity_at_point(double x, double y, double z,  double *forcex, double *forcey, double *forcez);
+int get_gravity_at_point(double eps, double x, double y, double z,  double *forcex, double *forcey, double *forcez);
 //-------------------------------------------------------------------------
 int get_velocity(int id, double *vx, double *vy, double *vz);
 //-------------------------------------------------------------------------
@@ -296,3 +296,5 @@ typedef real_system BHTC_SYSTEM;
 int get_identity_from_index(int i);
 
 int get_index_from_identity(int id);
+
+int get_potential_at_point(double eps, double x, double y, double z, double * phi);

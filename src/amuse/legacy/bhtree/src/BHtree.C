@@ -506,6 +506,9 @@ void real_system::setup_tree()
     BHlong key = 0;
     bn->create_tree_recursive(btmp,heap_remainder,key,
 			      default_key_length, 12 );
+                  
+    
+    set_cm_quantities_for_default_tree();
 //    PR(bnsize);    PRL(heap_remainder);
     //    PRL(bn->sanity_check());
 }
@@ -810,6 +813,22 @@ void real_particle::calculate_gravity_using_tree(real eps2, real theta2)
 	    // PRC(rad1); PRL(rad2);
 	}
     }
+}
+
+
+//AVE Mar 2010
+vec real_system::calculate_gravity_at_point(vec pos, real eps2, real theta2)
+{
+    vec acc_gravity = 0;
+    real phi_gravity = mass/sqrt(eps2);
+
+    nn_index = -1;
+    r_nn_2 = 0.0; // turn-off collision detection
+
+    bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity);
+    //cerr << acc_gravity;
+    
+    return acc_gravity;
 }
 
 

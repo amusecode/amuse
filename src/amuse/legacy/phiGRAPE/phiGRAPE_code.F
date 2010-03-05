@@ -138,6 +138,14 @@ C---  get array address
       INTEGER get_gravity_at_point      
       get_gravity_at_point = -2
       END
+      
+      FUNCTION get_potential_at_point()
+      IMPLICIT NONE
+#include "src/general.inc"
+      INTEGER get_potential_at_point      
+      get_potential_at_point = -2
+      END
+
 
       FUNCTION get_velocity()
       IMPLICIT NONE

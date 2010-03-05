@@ -645,7 +645,9 @@ class GravitationalDynamics(object):
         """
         Determine the gravitational force on a given point
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+            description = "The smoothing parameter")
         function.addParameter('x', dtype='float64', direction=function.IN,
             description = "The position vector of the point")
         function.addParameter('y', dtype='float64', direction=function.IN,
@@ -666,6 +668,22 @@ class GravitationalDynamics(object):
             No force calculation supported
         """
         return function  
+    
+
+    @legacy_function    
+    def get_potential_at_point():
+        """
+        Determine the potential on a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+         description = "The smoothing factor, may be ignored by the code")
+        function.addParameter('x', dtype='float64', direction=function.IN)
+        function.addParameter('y', dtype='float64', direction=function.IN)
+        function.addParameter('z', dtype='float64', direction=function.IN)
+        function.addParameter('phi', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
 
     @legacy_function
     def get_number_of_particles():

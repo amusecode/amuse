@@ -181,7 +181,7 @@ int get_total_mass(double *_mass);
 int get_center_of_mass_position(double *x, double *y, double *z);
 int get_center_of_mass_velocity(double *vx, double *vy,double *vz);
 int get_total_radius(double *radius);
-int get_gravity_at_point(double x,double y, double z, double *Fx, double *Fy, double *Fz);
+int get_gravity_at_point(double eps, double x, double y, double z,  double *forcex, double *forcey, double *forcez);
 /// Return the number of particles in the dynamical system.
 int get_number_of_particles(int *no_parts);
 //int get_number();
@@ -261,4 +261,6 @@ int get_indices_of_colliding_particles(int *id1, int *id2);
 /// Return the id of the next escaper found, -1 if none exists.
 
 int get_escaper();
+
+int get_potential_at_point(double eps, double x, double y, double z, double * phi);
 
