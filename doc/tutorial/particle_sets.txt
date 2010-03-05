@@ -9,7 +9,7 @@ There are Sets, Subsets, Particles, Children and Parents...
 The fundamental data structures used in AMUSE are particle sets. Based 
 on attributes of the elements in the sets (particles), selections can
 be made using the selection method which return subsets. These subsets
-views or scopes on the set and do not hold values of their own.
+are views or scopes on the set and do not hold values of their own.
 
 It is also possible to *add* structure to the set by defining 
 parent-child relationships between **particles in a set**. 
@@ -107,7 +107,7 @@ and the selection of the sets:
     To look at the stars in gnuplot do::
     
         >>> plotter = Gnuplot.Gnuplot()
-        >>> potter.splot(outersphere.position.value_in(units.parsec), innersphere.position.value_in(units.parsec),)
+        >>> plotter.splot(outersphere.position.value_in(units.parsec), innersphere.position.value_in(units.parsec),)
     
     .. image:: sets/plummer2.png
     
