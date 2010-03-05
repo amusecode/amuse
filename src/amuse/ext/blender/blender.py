@@ -21,3 +21,5 @@ class Primitives(object):
         ob = scn.objects.new(me, 'cube')
         return ob
 
+def Redraw():
+    Blender.Redraw()
