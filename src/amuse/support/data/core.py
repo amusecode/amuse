@@ -1210,6 +1210,17 @@ class AbstractParticleSet(object):
         result.extend(self._get_attributes())
         result.extend(self._derived_attributes.keys())
         return result
+        
+    
+    def all_attributes(self):
+        result = []
+        result.append('key')
+        result.extend(self._attributes_for_dir())
+        return result
+        
+    def stored_attributes(self):
+        return list(self._get_attributes())
+        
 
     def is_empty(self):
         return self.__len__()==0
@@ -1625,6 +1636,7 @@ class Particle(object):
             output += str(value)
         output += ')'
         return output
+        
     
     def __dir__(self):
         result = []

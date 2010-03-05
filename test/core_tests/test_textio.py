@@ -1,5 +1,6 @@
 from amuse.support.io import text
 from amuse.support.units import units
+from amuse.support.data import core
 from amuse.test import amusetest
 import StringIO
 import textwrap
@@ -44,6 +45,20 @@ class TableFormattedTextTests(amusetest.TestCase):
         self.assertEquals(len(particles), 2)
         self.assertEquals(particles[0].a, 1|units.none)
         
+    def test2(self):
+        p = core.Particles(2)
+        p.a = [1, 4] | units.m
+        p.b = [2, 5] | units.m
+        p.c = [3, 6] | units.m
+        
+        data_file = StringIO.StringIO()
+        instance = text.TableFormattedText("test.txt", data_file, p)
+        instance.attribute_types = [units.m, units.m, units.m]
+        instance.store()
+        
+        contents = data_file.getvalue()
+        print contents       
+        self.assertEquals("#a b c\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
         
 class Athena3DTextTests(amusetest.TestCase):
     

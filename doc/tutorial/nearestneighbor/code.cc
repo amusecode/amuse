@@ -47,12 +47,12 @@ int find_nearest_neighbors(int npoints,
             }
             
             double x0 = x[i];
-            double y0 = x[i];
-            double z0 = x[i];
+            double y0 = y[i];
+            double z0 = z[i];
             
             double x1 = x[j];
-            double y1 = x[j];
-            double z1 = x[j];
+            double y1 = y[j];
+            double z1 = z[j];
             
             double r = distance_between_points(x0, y0, z0, x1, y1 , z1);
             

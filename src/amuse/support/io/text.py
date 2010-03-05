@@ -31,9 +31,10 @@ class LineBasedFileCursor(object):
         
 class TableFormattedText(object):
     
-    def __init__(self, filename, stream = None):
+    def __init__(self, filename, stream = None, set = None):
         self.filename = filename
         self.stream = stream
+        self.set = set
     
     def forward(self):
         line = selfdata_file.readline()
@@ -46,31 +47,62 @@ class TableFormattedText(object):
         
         if self.stream is None:
             self.stream = open(self.filename, "r")
-            close_function = lambda : None
+            close_function = self.stream.close  
         else:
-            close_function = self.stream.close 
+            close_function = lambda : None
         
-        self.cursor = LineBasedFileCursor(self.stream)
         try:
-            self.read_header()
-            self.read_rows()
-            self.read_footer()
+            return self.load_from_stream()
+        finally:
+            close_function()
+        
+    def load_from_stream(self):
+        self.cursor = LineBasedFileCursor(self.stream)
+        self.read_header()
+        self.read_rows()
+        self.read_footer()
+        return self.set
+        
+    def store(self):
+        
+        if self.stream is None:
+            self.stream = open(self.filename, "w")
+            close_function = self.stream.close 
+        else:
+            close_function = lambda : None
+            
+        try:
+            return self.store_on_stream()
         finally:
             close_function()
             
-        return self.set
+    def store_on_stream(self):
+        self.write_header()
+        self.write_rows()
+        self.write_footer()
         
     @late
     def attribute_names(self):
-        return []
+        if self.set is None:
+            return []
+        else:
+            return self.set.stored_attributes()
         
     @late
     def attribute_types(self):
-        return map(lambda x : units.none , self.attribute_names)
+        if self.set is None:
+            return map(lambda x : units.none , self.attribute_names)
+        else:
+            return map(lambda x : units.none , self.attribute_names)
     
     @late
     def header_prefix_string(self):
         return '#'
+        
+    
+    @late
+    def column_separator(self):
+        return ' '
         
     @late
     def footer_prefix_string(self):
@@ -119,6 +151,50 @@ class TableFormattedText(object):
     
     def read_footer_line(self, line):
         pass
+        
+    def write_header(self):
+        for x in self.header_lines():
+            self.stream.write(self.header_prefix_string)
+            self.stream.write(x)
+            self.stream.write('\n')
+        
+    def write_rows(self):
+        keys = self.set.key
+        quantities = map(lambda x:getattr(self.set, x),self.attribute_names)
+        units = self.attribute_types
+        numbers = map(lambda quantity, unit : quantity.value_in(unit), quantities, units)
+        
+        columns = []
+        
+            
+        for x in numbers:
+            columns.append(map(str, x))
+        
+        rows = []
+        for i in range(len(columns[0])):
+            row = [x[i] for x in columns]
+            rows.append(row)
+            
+        lines = map(lambda  x : self.column_separator.join(x), rows)
+        
+        for x in lines:
+            self.stream.write(x)
+            self.stream.write('\n')
+            
+        
+    def write_footer(self):
+        for x in self.footer_lines():
+            self.stream.write(self.footer_prefix_string)
+            self.stream.write(x)
+            self.stream.write('\n')
+        
+    def header_lines(self):
+        result = []
+        result.append(' '.join(self.attribute_names))
+        return result
+        
+    def footer_lines(self):
+        return []
         
     def convert_string_to_number(self, string):
         return float(string)

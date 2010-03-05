@@ -115,6 +115,7 @@ the previous section.
 
 The code still builds, but does not have any functionality yet::
 
+    > make clean
     > make all
     > $AMUSEDIR/amuse.sh -c 'from interface import NearestNeighbor; print NearestNeighbor().find_nearest_neighbors()' 
     0
@@ -185,6 +186,7 @@ change its contents to:
 Test if the code builds and try it out. In the legacy interface
 directory do::
     
+    > make clean
     > make all
     
 We can now start playing with the interface, to start an interactive
@@ -355,8 +357,13 @@ builder.INDEX      the value is interpreted as an index for
                    object identifiers
 ================== ===================================
 
-We do not have to recompile to use our newly defined methods, we can
-simply start an interactive python session and play with the code::
+Test if the code builds and try it out. In the legacy interface
+directory do::
+    
+    > make clean
+    > make all
+
+Let's start an interactive python session and play with the code::
 
     >>> from interface import NearestNeighbor
     >>> from amuse.support.units import units
@@ -443,7 +450,7 @@ function on our **NearestNeighbor** class like so::
             builder.set_delete('particles', 'delete_particle')
             builder.add_setter('particles', 'set_position')
             builder.add_getter('particles', 'get_position')
-            builder.add_getter('particles', 'get_close_neighbors')
+            builder.add_getter('particles', 'get_close_neighbors', names=('neighbor1', 'neighbor2', 'neighbor3') )
 
 
 That's all, we now have defined a set called **particles**. Again, we 
@@ -452,7 +459,19 @@ the name of the set as their first argument, this name can be any
 name you want, but in AMUSE most codes provide a set called 
 **particles**. For the **add_setter**, **add_getter**, **set_new** 
 and **set_delete** functions, the second argument is the name of
-the method we defined in the previous step.
+the method we defined in the previous step. Finally you can set
+the name of the attribute in the particles set with the **names**
+argument. This is optional for legacy functions, if not given the names 
+of the attributes will be derived from the names of the arguments in
+the orginal calls. For example, the **get_position** call we specified
+earlier has parameter name **x**, **y** and **z**, these names are 
+also used in the particles set.
+
+Test if the code builds and try it out. In the legacy interface
+directory do::
+    
+    > make clean
+    > make all
 
 We start an interactive python session and play with the code again:
 
@@ -474,19 +493,48 @@ We start an interactive python session and play with the code again:
     number of particles: 6
     >>> nn.find_nearest_neighbors()
     >>> for particle in nn.particles:
-    ...     print particle.position
-    ...     print particle.
-    [0.0, 0.0, 0.0] m
-    [1000.0, 0.0, 0.0] m
-    [4000.0, 0.0, 0.0] m
-    [9000.0, 0.0, 0.0] m
-    [16000.0, 0.0, 0.0] m
-    [25000.0, 0.0, 0.0] m
+    ...     print particle
+    ...     print particle.x, particle.neighbor.x
+    Particle(...)
+    0.0 m 1000.0 m
     
-We now have a problem we cannot get the nearest neigbors as we do not
-know the ids in the code. Luckily, we can define selection methods on 
-particle sets, these methods use a function from the code to select
-certain particles in the set.
+The support for a particle set means we can now also interact
+with other parts of AMUSE. Let's make a plummer model and 
+find the nearest neighbors in this model.
+
+First make a file with the following contents, let's call this file
+**plummer1.py**:
+
+.. literalinclude:: nearestneighbor/plummer1.py
+    :language: python
+
+We can run this file with python::
+
+    $AMUSEDIR/amuse.sh plummer1.py
+    
+It will create an **output.txt** file and we can show this file
+with gnuplot.
+
+.. code-block:: gnuplot
+
+    gnuplot> splot 'output.txt' using 1:2:3:4:5:6 with vectors nohead, 'output.txt' using 1:2:3
+    gnuplot> #we can zoom into the center
+    gnuplot> set xr[-0.5:0.5]
+    gnuplot> set yr[-0.5:0.5]
+    gnuplot> set zr[-0.5:0.5]
+    gnuplot> splot 'output.txt' using 1:2:3:4:5:6 with vectors nohead, 'output.txt' using 1:2:3
+    
+
+.. image:: nearestneighbor/plummer1.png
+
+You can extend this example by showing the second or third nearest neighbors, or
+simply increase the number of particles in the plummer model.
+
+    
+
+    
+    
+
 
 
 
