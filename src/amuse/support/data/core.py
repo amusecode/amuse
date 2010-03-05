@@ -386,52 +386,6 @@ class InMemoryAttributeStorage(AttributeStorage):
     def _state_attributes(self):
         return self.attributes()
         
-    def __str__(self):
-        attributes = sorted(self.attributes())
-        
-        columns = map(lambda x : [x], attributes)
-        columns.insert(0,['id'])
-        
-        for index, attribute in enumerate(attributes):
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            column = columns[index + 1]
-            column.append(str(attribute_values.unit))
-            column.append('========')
-            if len(attribute_values.values) > 40:
-                values_to_show = list(attribute_values.values[:20])
-                values_to_show.append(attribute_values.values[-20:])
-            else:
-                values_to_show = attribute_values.values
-            
-            for value in values_to_show:
-                column.append(str(value))
-            column.append('========')
-            
-        column = columns[0]
-        column.append("-")
-        column.append('========')
-        if len(self.particle_keys) > 40:
-            values_to_show = list(self.particle_keys[:20])
-            values_to_show.append(self.particle_keys[-20:])
-        else:
-            values_to_show = self.particle_keys
-                    
-        for value in values_to_show:
-            column.append(str(value))
-            
-        column.append('========')
-            
-        rows = []
-        for i in range(len(columns[0])):
-            row = [x[i] for x in columns]
-            rows.append(row)
-            
-        lines = map(lambda  x : '\t'.join(x), rows)
-        return '\n'.join(lines)        
-        
-        
-        
-        
     def set_model_time(self, value): 
         model_times = self._convert_model_times(value, len(self.particle_keys))
         for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
@@ -914,6 +868,77 @@ class AbstractParticleSet(object):
     def __len__(self):
         return len(self._get_keys())
         
+    def __str__(self):
+        """
+        Display string of a particle set.
+        
+        >>> p0 = Particle(10)
+        >>> p1 = Particle(11)
+        >>> particles = Particles()
+        >>> particles.add_particle(p0) # doctest:+ELLIPSIS
+        <amuse.support.data.core.Particle object at ...>
+        >>> particles.add_particle(p1) # doctest:+ELLIPSIS
+        <amuse.support.data.core.Particle object at ...>
+        >>> particles.x = [4.0 , 3.0] | units.m
+        >>> particles.y = [5.0 , 2.0] | units.km
+        >>> print particles 
+                         key            x            y
+                           -            m           km
+        ====================  ===========  ===========
+                          10    4.000e+00    5.000e+00
+                          11    3.000e+00    2.000e+00
+        ====================  ===========  ===========
+
+        """
+        attributes = sorted(self._get_attributes())
+                
+        format_float = '{0: >11.3e}'.format
+        format_str20 = '{0: >20s}'.format
+        format_str11 = '{0: >11s}'.format
+
+        columns = map(lambda x : [format_str11(x)], attributes)
+        columns.insert(0,[format_str20('key')])
+        
+        all_values = self._get_values(self._get_keys(), attributes)
+        for index, quantity in enumerate(all_values):
+            column = columns[index + 1]
+            column.append(format_str11(str(quantity.unit)))
+            column.append('=' * 11)
+            if len(quantity) > 40:
+                values_to_show = list(map(format_float,quantity.number[:20]))
+                values_to_show.append('...')
+                values_to_show.append(map(format_float,quantity.number[-20:]))
+            else:
+                values_to_show = map(format_float,quantity.number)
+            
+            column.extend(values_to_show)
+            column.append('=' * 11)
+            
+        column = columns[0]
+        column.append(format_str20("-"))
+        column.append('=' * 20)
+        particle_keys = self._get_keys()
+        if len(particle_keys) > 40:
+            values_to_show = list(particle_keys)
+            values_to_show.append('...')
+            values_to_show.append(particle_keys)
+        else:
+            values_to_show = map(format_str20,particle_keys)
+                    
+        column.extend(values_to_show)
+            
+        column.append('=' * 20)
+            
+        rows = []
+        for i in range(len(columns[0])):
+            row = [x[i] for x in columns]
+            rows.append(row)
+            
+        lines = map(lambda  x : '  '.join(x), rows)
+        return '\n'.join(lines)        
+        
+    
+        
     def _particles_factory(self):
         return type(self._real_particles())
 
@@ -1200,7 +1225,7 @@ class Particles(AbstractParticleSet):
     
     
     """
-    def __init__(self, size = 0, storage = None):
+    def __init__(self, size = 0, storage = None, keys = None):
         AbstractParticleSet.__init__(self)
         
         if storage is None:
@@ -1209,7 +1234,10 @@ class Particles(AbstractParticleSet):
             self._private.attribute_storage = storage
     
         if size > 0:
-            particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
+            if keys is None:
+                particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
+            else:
+                particle_keys = keys
             self._set_particles(particle_keys)
             
         self._private.previous = None
@@ -1511,9 +1539,6 @@ class Stars(Particles):
 
     def __init__(self, size = 0):
         Particles.__init__(self, size)
-    
-
-
 
 class Particle(object):
     """A physical object or a physical region simulated as a 
@@ -1533,9 +1558,12 @@ class Particle(object):
     
     def __init__(self, key = None, particles_set = None, **keyword_arguments):
         if particles_set is None:
-            particles_set = Particles(1)
-            key = particles_set._get_keys()[0]
-        
+            if key == None:
+                particles_set = Particles(1)
+                key = particles_set._get_keys()[0]
+            else:
+                particles_set = Particles(1, keys = [key])
+                
         object.__setattr__(self, "key", key)
         object.__setattr__(self, "particles_set", particles_set)
         
@@ -1579,16 +1607,23 @@ class Particle(object):
         child.parent = self
                 
     def __str__(self):
-        output = 'Particle '
+        """
+        Display string for a particle
+        
+        >>> p = Particle(10)
+        >>> p.x = 10.2 | units.m
+        >>> p.mass = 5 | units.kg
+        >>> print p
+        Particle(10, mass=5.0 kg, x=10.2 m)
+        """
+        output = 'Particle('
         output += str(self.key)
-        output += ''
-        output += '\n'
         for name, value in self.particles_set._values_of_particle(self.key):
+            output += ', '
             output += name
-            output += ': {'
+            output += '='
             output += str(value)
-            output += '}, '
-            output += '\n'
+        output += ')'
         return output
     
     def __dir__(self):
