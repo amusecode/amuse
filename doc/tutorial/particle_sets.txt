@@ -6,92 +6,124 @@ Working with Particle Sets
 
 There are Sets, Subsets, Particles, Children and Parents...
 ===========================================================
-The fundamental data structures used in AMUSE are particle sets. Based on properties of the set elements(particles), 
-selections can be made using the selection method which return subsets. These subsets are rather views or scopes on the set
-and do not hold values of their own.
+The fundamental data structures used in AMUSE are particle sets. Based 
+on attributes of the elements in the sets (particles), selections can
+be made using the selection method which return subsets. These subsets
+views or scopes on the set and do not hold values of their own.
 
-It is also possible to *add* a structure to the set by defining parent-child relationships between **particles in a set**. 
-These structures exist only in the set and are a property of it and have no meaning with respect to the particles outside the set.
+It is also possible to *add* structure to the set by defining 
+parent-child relationships between **particles in a set**. 
+These structures exist only in the set and are a property
+of it and have no meaning with respect to the particles
+outside the set.
 
 
 Selecting stars in a plummer model
 ==================================
-
-In this tutorial we generate a set of stars, a plummer model, and two subsets of stars. 
-The first subset contains the stars within a certain radius from the center of mass of the plummer system and
+In this tutorial we generate a set of stars, a plummer model, and 
+two subsets of stars. The first subset contains the stars within
+a certain radius from the center of mass of the plummer system and
 the second subset contains all the other stars.
 
 The plummer module generates a particle set of the form core.Stars(*N*).
 
 Imports
 -------
- 
 We start with some AMUSE imports in a python shell:
-The core module contains the set objects, and the units and nbody_system are needed for the correct assignment
-of properties to the particles, which **need to be quantities**. 
+The core module contains the set objects, and the units and nbody_system
+are needed for the correct assignment of properties to
+the particles, which **need to be quantities**. 
 
 .. code-block:: python
 
-    >>> from amuse.support.data import core										       	  
-    >>> from amuse.support.units import nbody_system									       	  
-    >>> from amuse.support.units import units										       	 
-    >>> from amuse.ext import plummer											       	 
+    >>> from amuse.support.data import core
+    >>> from amuse.support.units import nbody_system
+    >>> from amuse.support.units import units
+    >>> from amuse.ext.plummer import MakePlummerModel
     >>> import numpy as np
 
-Now we generate the plummer model consisting of 1000 stars, 
+
+Model
+-----
+.. note ::
+
+    A quick way to look at the sets we are going to make
+    is by using gnuplot. If you have gnuplot, you can install
+    the **gnuplot-py** package to control gnuplot directly
+    from your script.
+    
+    To install **gnuplot-py**, open a shell and do::
+        
+        easy_install gnuplot-py
+        
+        
+Let's generate a plummer model consisting of 1000 stars, 
 
 .. code-block:: python
 
-    >>> convert_nbody = nbody_system.nbody_to_si(1|units.MSun, 1|units.AU)						       	
-    >>> plummer = plummer.MakePlummerModel(1000, convert_nbody).result							       	  
-											       	
-and copy it to a working set:
+    >>> convert_nbody = nbody_system.nbody_to_si(100.0 | units.MSun, 1 | units.parsec)
+    >>> plummer = MakePlummerModel(1000, convert_nbody).result
 
-.. code-block:: python	       	     
-				       	   
-    >>> stars = plummer.copy()			       	   
+We can work on the new **plummer** particle set, but we want to keep this
+set unchanged for now. So, we copy all data to a working set:
 
-Another approach is, if only some properties are important like position, speed and mass:
+.. code-block:: python
+   
+    >>> stars = plummer.copy()
+    
+.. note ::
 
-.. code-block:: python	       	     
-				       	   
-    >>> stars = core.Stars(1000)    
-    >>> stars.mass = plummer.mass
-    >>> stars.position = plummer.position
-    >>> stars.velocity = plummer.velocity
-
-but this method is unsafe and **NOT RECOMMENDED**. 
-
+    To look at the stars in gnuplot do::
+    
+        >>> plotter = Gnuplot.Gnuplot()
+        >>> plotter.splot(plummer.position.value_in(units.parsec))
+    
+    .. image:: sets/plummer1.png
+    
+    
+    
+    
 Selection
 ---------
-
-At this stage we select the subsets based on the distance of the individual stars with respect to the center of mass, being 
-1 *AU* in this example.
+At this stage we select the subsets based on the distance of the
+individual stars with respect to the center of mass, being 
+**1 parsec** in this example.
 
 We need the center of mass, of course:
 
-.. code-block:: python	       	     
-				       	   
+.. code-block:: python
+
     >>> center_of_mass = stars.center_of_mass()   
 
 and the selection of the sets:
  
-.. code-block:: python	       	     
-				       	   
-    >>> innersphere = stars.select(lambda r: (center_of_mass-r).length()<1.0|units.AU,["position"])  
-    >>> outersphere = stars.select(lambda r: (center_of_mass-r).length()>=1.0|units.AU,["position"])  
+.. code-block:: python
+ 
+    >>> innersphere = stars.select(lambda r: (center_of_mass-r).length()<1.0 | units.parsec,["position"])  
+    >>> outersphere = stars.select(lambda r: (center_of_mass-r).length()>=1.0 | units.parsec,["position"])  
+
+.. note ::
+
+    To look at the stars in gnuplot do::
+    
+        >>> plotter = Gnuplot.Gnuplot()
+        >>> potter.splot(outersphere.position.value_in(units.parsec), innersphere.position.value_in(units.parsec),)
+    
+    .. image:: sets/plummer2.png
+    
+    
 
 We can achieve the same result in another way by using the fact that the outersphere is the difference of the innersphere set 
 and the stars set:
 
-.. code-block:: python	       	     
-				       	   
+.. code-block:: python
+
     >>> outersphere_alt = stars.difference(innersphere)  
 
 The selections are all subsets as we can verify:
 
-.. code-block:: python	       	     
-				       	   
+.. code-block:: python
+
     >>> outersphere #doctest:+ELLIPSIS 
     <amuse.support.data.core.ParticlesSubset object at ...>
 

@@ -287,6 +287,18 @@ class VectorQuantity(Quantity):
         dot_product = squared.sum()
         return (dot_product ** 0.5).as_quantity_in(self.unit)
         
+    def lengths(self):
+        """Calculate the length of the vectors in this vector
+        
+        >>> from amuse.support.units import units
+        >>> v1 = [[0.0, 3.0, 4.0],[4.0, 4.0, 4.0]] | units.m
+        >>> v1.lengths() # doctest:+ELLIPSIS
+        quantity<[5.0, 6.9282...] m>
+        """
+        squared = self * self
+        dot_product = squared.unit.new_quantity(numpy.sum(squared.number, axis = 1))
+        return (dot_product ** 0.5).as_quantity_in(self.unit)
+        
     def __getitem__(self, index):
         """Return the "index" component as a quantity.
         

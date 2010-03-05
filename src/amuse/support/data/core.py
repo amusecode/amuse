@@ -582,7 +582,7 @@ class AbstractParticleSet(object):
     class PrivateProperties(object):
         """
         Defined for superclasses to store private properties.
-        A particle set has ```__setattr__``` defined.
+        A particle-set has ```__setattr__``` defined.
         The ```__setattr__``` function will set all attributes
         of the particles in the set to the specified value(s).
         To be able to define attributes on the set itself we
@@ -626,8 +626,7 @@ class AbstractParticleSet(object):
             return self._derived_attributes[attribute].get_value_for_particle(self, key)
         else:
             return self._convert_to_particles(self._get_values([key], [attribute])[0])[0]
-            
-    
+        
     def _set_value_of_attribute(self, key, attribute, value):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].set_value_for_particle(self, key, value)
@@ -636,11 +635,10 @@ class AbstractParticleSet(object):
             
     def _convert_to_particles(self, x):
         if x.unit.iskey():
-            return map(lambda y : self._get_particle(y), x.number)
+            return self._subset(x.number)
         else:
             return x
-    
-    
+        
     def _convert_from_particles(self, x):
         if isinstance(x, Quantity):
             return x 
@@ -677,6 +675,7 @@ class AbstractParticleSet(object):
     
     def _real_particles(self):
         return self
+        
     #
     #
     #
@@ -906,8 +905,8 @@ class AbstractParticleSet(object):
             column.append('=' * 11)
             if len(quantity) > 40:
                 values_to_show = list(map(format_float,quantity.number[:20]))
-                values_to_show.append('...')
-                values_to_show.append(map(format_float,quantity.number[-20:]))
+                values_to_show.append(format_str11('...'))
+                values_to_show.extend(map(format_float,quantity.number[-20:]))
             else:
                 values_to_show = map(format_float,quantity.number)
             
@@ -919,18 +918,19 @@ class AbstractParticleSet(object):
         column.append('=' * 20)
         particle_keys = self._get_keys()
         if len(particle_keys) > 40:
-            values_to_show = list(particle_keys)
-            values_to_show.append('...')
-            values_to_show.append(particle_keys)
+            values_to_show = list(map(format_str20, particle_keys[:20]))
+            values_to_show.append(format_str20('...'))
+            values_to_show.extend(map(format_str20, particle_keys[-20:]))
         else:
             values_to_show = map(format_str20,particle_keys)
                     
         column.extend(values_to_show)
             
         column.append('=' * 20)
-            
+        
         rows = []
         for i in range(len(columns[0])):
+        
             row = [x[i] for x in columns]
             rows.append(row)
             
@@ -965,9 +965,24 @@ class AbstractParticleSet(object):
     
     def copy_values_of_attribute_to(self, attribute_name, particles):
         """
-        Copy values of the attributes from this set to the 
+        Copy values of one attribute from this set to the 
         other set. Will only copy values for the particles
-        in both sets
+        in both sets. See also :meth:`synchronize_to`.
+        
+        If you need to do this a lot, setup a dedicated
+        channel.
+        
+        >>> particles1 = Particles(2)
+        >>> particles1.x = [1.0, 2.0] | units.m
+        >>> particles2 = particles1.copy()
+        >>> print particles2.x
+        [1.0, 2.0] m
+        >>> p3 = particles1.add_particle(Particle())
+        >>> particles1.x = [3.0, 4.0, 5.0] | units.m
+        >>> particles1.copy_values_of_attribute_to("x", particles2)
+        >>> print particles2.x
+        [3.0, 4.0] m
+        
         """
         channel = self.new_channel_to(particles)
         channel.copy_attributes([attribute_name])
@@ -980,9 +995,10 @@ class AbstractParticleSet(object):
         Adds particles from the supplied set to this set. Attributes
         and values are copied over. 
         
-        **Note** For performance reasons the particles
-        are not checked for duplicates. When the same particle 
-        is part of both sets errors may occur.
+        .. note::
+            For performance reasons the particles
+            are not checked for duplicates. When the same particle 
+            is part of both sets errors may occur.
         
         :parameter particles: set of particles to copy values from
         
@@ -1117,8 +1133,16 @@ class AbstractParticleSet(object):
         """
         Returns a subset view on this set. The subset
         will contain all particles of this set.
+        
+        >>> particles = Particles(3)
+        >>> particles.x = [1.0, 2.0, 3.0] | units.m
+        >>> subset = particles.to_set()
+        >>> print subset.x
+        [1.0, 2.0, 3.0] m
+        >>> print particles.x
+        [1.0, 2.0, 3.0] m
         """
-        return ParticlesSubset(self._real_particles(), self._get_keys())
+        return self._subset(self._get_keys())
     
     
     def select(self, selection_function, attributes):
@@ -1150,7 +1174,44 @@ class AbstractParticleSet(object):
                 arguments[attr_index] = values[attr_index][index]
             if selection_function(*arguments):
                 selected_keys.append(key)
-        return ParticlesSubset(self._real_particles(), selected_keys)
+        return self._subset(selected_keys)
+        
+    def select_array(self, selection_function, attributes = ()):
+        """
+        Returns a subset view on this set. The subset
+        will contain all particles for which the selection
+        function returned True. The selection function 
+        is called with a vector quantities containing all
+        the values for the attributes parameter.
+        
+        This function can be faster than the select function
+        as it works on entire arrays. The selection_function
+        is called once.
+        
+        >>> particles = Particles(3)
+        >>> particles.mass = [10.0, 20.0, 30.0] | units.kg
+        >>> particles.x = [1.0, 2.0, 3.0] | units.m
+        >>> subset = particles.select_array(lambda x : x > 15.0 | units.kg, ["mass"])
+        >>> print subset.mass
+        [20.0, 30.0] kg
+        >>> print subset.x
+        [2.0, 3.0] m
+        
+        
+        >>> particles = Particles(1000)
+        >>> particles.x = units.m.new_quantity(numpy.arange(1,1000))
+        >>> subset = particles.select_array(lambda x : x > (500 | units.m), ("x",) )
+        >>> print len(subset)
+        499
+        """
+        keys = self._get_keys()
+        #values = self._get_values(keys, attributes) #fast but no vectors
+        values = map(lambda x: getattr(self, x), attributes)
+        
+        selections = selection_function(*values)
+        selected_keys =  numpy.compress(selections, keys)
+        
+        return self._subset(selected_keys)
     
     def difference(self, other):
         """
@@ -1172,8 +1233,20 @@ class AbstractParticleSet(object):
         
     def has_duplicates(self):
         """
-        Returns two when a set contains a particle with the
-        same key more than once.
+        Returns True when a set contains a particle with the
+        same key more than once. Particles with the same
+        key are interpreted as the same particles.
+        
+        >>> particles = Particles()
+        >>> p1 = particles.add_particle(Particle(1))
+        >>> p2 = particles.add_particle(Particle(2))
+        >>> particles.has_duplicates()
+        False
+        >>> p3 = particles.add_particle(Particle(1))
+        >>> particles.has_duplicates()
+        True
+        >>> p3 == p1
+        True
         """
         return len(self) != len(set(self._get_keys()))
     
@@ -1335,6 +1408,13 @@ class ParticlesSubset(AbstractParticleSet):
         self._private.set_of_keys = set(keys)
               
         
+    def __getitem__(self, index):
+        key = self._get_keys()[index]
+        if key == 0 or key >= (2**64 - 1):
+            return None
+        else:
+            return Particle(self._get_keys()[index], self._real_particles())
+            
     def _set_particles(self, keys, attributes = [], values = []):
         """
         Adds particles from to the subset, also
