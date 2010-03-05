@@ -1,6 +1,6 @@
 from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity
-from amuse.support.units import si
+from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
 
@@ -1817,7 +1817,7 @@ def potential_energy(particles, smoothing_length_squared = 0 | units.m * units.m
        m_m = mass[i] * mass[i+1:]
        
        energy_of_this_particle = (m_m / dr).sum()
-       sum_of_energies +=  -1 * units.G * energy_of_this_particle
+       sum_of_energies +=  -1 * constants.G * energy_of_this_particle
         
     return sum_of_energies
 

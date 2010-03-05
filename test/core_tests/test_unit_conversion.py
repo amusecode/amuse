@@ -2,6 +2,7 @@ from amuse.test import amusetest
 import numpy
 
 from amuse.support.units.units import *
+from amuse.support.units.constants import *
 
 class TestUnitConversions(amusetest.TestCase):
     def test1(self):

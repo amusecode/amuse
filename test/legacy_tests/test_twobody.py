@@ -61,11 +61,11 @@ class TwoBodyInterfaceTests(TestWithMPI):
         velocity = instance.particles[0].velocity
         
         self.assertAlmostEqual(position.x.value_in(units.m),0.,7)
-        self.assertAlmostEqual(position.y.value_in(units.m)/(-3.30153815385e6),1.,7)
-        self.assertAlmostEqual(position.z.value_in(units.m)/7.41119830598e6,1.,7)
+        self.assertAlmostEqual(position.y.value_in(units.m)/(-3.30647600568e6),1.,7)
+        self.assertAlmostEqual(position.z.value_in(units.m)/7.40831575351e6,1.,7)
         self.assertAlmostEqual(velocity.x.value_in(units.m / units.s),0.,7)
-        self.assertAlmostEqual(velocity.y.value_in(units.m / units.s)/(-8.29786882484e3),1.,7)
-        self.assertAlmostEqual(velocity.z.value_in(units.m / units.s)/(-0.967872571269e3),1.,7)
+        self.assertAlmostEqual(velocity.y.value_in(units.m / units.s)/(-8.29821376206e3),1.,7)
+        self.assertAlmostEqual(velocity.z.value_in(units.m / units.s)/(-0.972888312209e3),1.,7)
 
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
@@ -82,7 +82,7 @@ class TwoBodyInterfaceTests(TestWithMPI):
         instance.evolve_model(3600.0 | units.s)
         
         dt = convert_nbody.to_si(instance.model_time)
-        self.assertAlmostEqual(dt.value_in(units.s)/2584.9554627,1.,7)
+        self.assertAlmostEqual(dt.value_in(units.s)/2583.44780926,1.,7)
         
         position = instance.particles[0].position
         self.assertAlmostEqual(((position.x**2+position.y**2+position.z**2)/(7.1e6)**2).value_in(units.m**2),1.,7)

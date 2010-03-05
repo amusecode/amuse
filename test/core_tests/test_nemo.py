@@ -1,6 +1,7 @@
 from amuse.support.data import core
 from amuse.support.io import nemotsf
 from amuse.support.units import units
+from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.data import values
 
@@ -35,14 +36,14 @@ class Test(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(1|units.g, 1|units.m)
         I = nemotsf.Tsf2Particles()
         I.convert_to_particles(os.path.join(directory, 'p10.txt'), convert_nbody)
-        self.assertAlmostEqual(I.Particles.mass, values.new_quantity(0.1*numpy.ones(10), units.g), units.precision)
+        self.assertAlmostEqual(I.Particles.mass, values.new_quantity(0.1*numpy.ones(10), units.g), constants.precision)
 
     def test4(self):
 
         directory = os.path.dirname(__file__)
         I = nemotsf.Tsf2Particles()
         I.convert_to_particles(os.path.join(directory, 'p10.txt'))
-        self.assertAlmostEqual(I.Particles.mass[0].value_in(nbody_system.mass), 0.1,  units.precision)
+        self.assertAlmostEqual(I.Particles.mass[0].value_in(nbody_system.mass), 0.1,  constants.precision)
 
     def test5(self):
         pass

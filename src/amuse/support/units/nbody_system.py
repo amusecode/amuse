@@ -2,6 +2,7 @@
 """
 from amuse.support.units import units
 from amuse.support.units import core
+from amuse.support.units import constants
 
 from amuse.support.data.values import new_quantity
 
@@ -47,7 +48,7 @@ class nbody_to_si(object):
         #    raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
         #if len(self.unit2.base) > 1:
         #    raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
-        self.Gis1 = units.one / units.G
+        self.Gis1 = units.one / constants.G
         
         base = self.Gis1.unit.base
         for i, x in enumerate(base):

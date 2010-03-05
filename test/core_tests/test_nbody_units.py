@@ -1,5 +1,6 @@
 from amuse.test import amusetest
 from amuse.support.units.nbody_system import *
+from amuse.support.units import constants
 
 class TestNbodyUnits(amusetest.TestCase):
     def test1(self):
@@ -24,11 +25,11 @@ class TestNbodyUnits(amusetest.TestCase):
        y = 1 | length * (time**-1)
        y_in_si = convert_nbody.to_si(y) 
        #self.assertEqual(str(y_in_nbody.unit), 'nbody length * nbody time**-1')
-       self.assertAlmostEqual(y_in_si.number, 29795.4, 1)
+       self.assertAlmostEqual(y_in_si.number, 29795.4, -1)
        
     def test4(self):
        convert_nbody = nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-       y_in_nbody = convert_nbody.to_nbody(units.G) 
+       y_in_nbody = convert_nbody.to_nbody(constants.G) 
        self.assertEqual(str(y_in_nbody.unit), 'nbody length**3 * nbody mass**-1 * nbody time**-2' )
        self.assertAlmostEqual(y_in_nbody.number, 1.0, 9)
        
