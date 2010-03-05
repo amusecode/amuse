@@ -438,6 +438,84 @@ class InMemoryAttributeStorage(AttributeStorage):
             attribute_values.model_times = model_times
 
 
+class DerivedAttribute(object):
+
+    def get_value_for_particles(self, particles):
+        return None
+    
+    def set_value_for_particles(self, particles, value):
+        raise Exception("cannot set value of attribute '{0}'")
+
+    def get_value_for_particle(self, particles, key):
+        return None
+
+    def set_value_for_particle(self, particles, key, value):
+        raise Exception("cannot set value of attribute '{0}'")
+
+class VectorAttribute(DerivedAttribute):
+    
+    def  __init__(self, attribute_names):
+        self.attribute_names = attribute_names
+    
+    def get_values_for_particles(self, instance):
+        values = instance._get_values(instance._get_keys(), self.attribute_names)
+          
+        unit_of_the_values = None
+        results = []
+        for quantity in values:
+            if unit_of_the_values is None:
+                unit_of_the_values = quantity.unit
+            results.append(quantity.value_in(unit_of_the_values))
+            
+        results = numpy.dstack(results)[0]
+        return unit_of_the_values.new_quantity(results)
+
+    def set_values_for_particles(self, instance, value):
+        vectors = value.number
+        split = numpy.hsplit(vectors,len(self.attribute_names))
+        list_of_values = []
+        for i in range(len(self.attribute_names)):
+            values = value.unit.new_quantity(split[i].reshape(len(split[i])))
+            list_of_values.append(values)
+            
+        instance._set_values(instance._get_keys(), self.attribute_names, list_of_values)
+    
+    def get_value_for_particle(self, instance,  key):
+        values = instance._get_values([key], self.attribute_names)
+          
+        unit_of_the_values = None
+        results = []
+        for quantity in values:
+            if unit_of_the_values is None:
+                unit_of_the_values = quantity.unit
+            results.append(quantity.value_in(unit_of_the_values))
+            
+        results = numpy.dstack(results)[0]
+        return unit_of_the_values.new_quantity(results[0])
+
+    def set_value_for_particle(self, instance, key, vector):
+        list_of_values = []
+        for quantity in vector:
+            list_of_values.append(quantity.as_vector_with_length(1))
+        instance._set_values([key], self.attribute_names, list_of_values)
+
+
+    
+class CalculatedAttribute(DerivedAttribute):
+    
+    def  __init__(self, function):
+        self.function = function
+        arguments, varargs, kwargs, defaults = inspect.getargspec(function)
+        self.attribute_names = arguments 
+    
+    def get_values_for_particles(self, instance):
+        values = instance._get_values(instance._get_keys(), self.attribute_names)
+        return self.function(*values)
+    
+    def get_value_for_particle(self, instance,  key):
+        values = instance._get_values([key], self.attribute_names)
+        return self.function(*values)[0]
+            
 
 
 class AbstractParticleSet(object):
@@ -537,71 +615,8 @@ class AbstractParticleSet(object):
         """
         pass
     
-    class VectorAttribute:
-        
-        def  __init__(self, attribute_names):
-            self.attribute_names = attribute_names
-        
-        def _get_values(self, instance):
-            values = instance._get_values(instance._get_keys(), self.attribute_names)
-              
-            unit_of_the_values = None
-            results = []
-            for quantity in values:
-                if unit_of_the_values is None:
-                    unit_of_the_values = quantity.unit
-                results.append(quantity.value_in(unit_of_the_values))
-                
-            results = numpy.dstack(results)[0]
-            return unit_of_the_values.new_quantity(results)
-
-        def _set_values(self, instance, value):
-            vectors = value.number
-            split = numpy.hsplit(vectors,len(self.attribute_names))
-            list_of_values = []
-            for i in range(len(self.attribute_names)):
-                values = value.unit.new_quantity(split[i].reshape(len(split[i])))
-                list_of_values.append(values)
-                
-            instance._set_values(instance._get_keys(), self.attribute_names, list_of_values)
-        
-        def get_value_for_particle(self, instance,  key):
-            values = instance._get_values([key], self.attribute_names)
-              
-            unit_of_the_values = None
-            results = []
-            for quantity in values:
-                if unit_of_the_values is None:
-                    unit_of_the_values = quantity.unit
-                results.append(quantity.value_in(unit_of_the_values))
-                
-            results = numpy.dstack(results)[0]
-            return unit_of_the_values.new_quantity(results[0])
-    
-        def set_value_for_particle(self, instance, key, vector):
-            list_of_values = []
-            for quantity in vector:
-                list_of_values.append(quantity.as_vector_with_length(1))
-            instance._set_values([key], self.attribute_names, list_of_values)
             
-    
-    
-    class CalculatedAttribute:
         
-        def  __init__(self, function):
-            self.function = function
-            arguments, varargs, kwargs, defaults = inspect.getargspec(function)
-            self.attribute_names = arguments 
-        
-        def _get_values(self, instance):
-            values = instance._get_values(instance._get_keys(), self.attribute_names)
-            return self.function(*values)
-        
-        def get_value_for_particle(self, instance,  key):
-            values = instance._get_values([key], self.attribute_names)
-            return self.function(*values)[0]
-            
-    
             
     class FunctionAttribute:
         class BoundFunctionAttribute(object):
@@ -654,9 +669,9 @@ class AbstractParticleSet(object):
         if name_of_the_attribute == 'key':
             return self._get_keys()
         elif name_of_the_attribute in self._vector_attributes:
-            return self._vector_attributes[name_of_the_attribute]._get_values(self)
+            return self._vector_attributes[name_of_the_attribute].get_values_for_particles(self)
         elif name_of_the_attribute in self._calculated_attributes:
-            return self._calculated_attributes[name_of_the_attribute]._get_values(self)
+            return self._calculated_attributes[name_of_the_attribute].get_values_for_particles(self)
         elif name_of_the_attribute in self._function_attributes:
             return self._function_attributes[name_of_the_attribute].get(self)
         else:
@@ -664,7 +679,7 @@ class AbstractParticleSet(object):
     
     def __setattr__(self, name_of_the_attribute, value):
         if name_of_the_attribute in self._vector_attributes:
-            self._vector_attributes[name_of_the_attribute]._set_values(self, value)
+            self._vector_attributes[name_of_the_attribute].set_values_for_particles(self, value)
         else:
             self._set_values(self._get_keys(), [name_of_the_attribute], [self._convert_from_particles(value)])
     
@@ -757,7 +772,7 @@ class AbstractParticleSet(object):
         
         """
         
-        self._vector_attributes[name_of_the_attribute] = self.VectorAttribute(name_of_the_components)
+        self._vector_attributes[name_of_the_attribute] = VectorAttribute(name_of_the_components)
     
     @classmethod
     def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
@@ -778,7 +793,7 @@ class AbstractParticleSet(object):
         quantity<[[ 1.  3.], [ 2.  4.]] m / s>
         
         """
-        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = cls.VectorAttribute(name_of_the_components)
+        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = VectorAttribute(name_of_the_components)
     
     
     def add_calculated_attribute(self, name_of_the_attribute, function):
@@ -815,7 +830,7 @@ class AbstractParticleSet(object):
         
         """
         
-        self._calculated_attributes[name_of_the_attribute] = self.CalculatedAttribute(function)
+        self._vector_attributes[name_of_the_attribute] = CalculatedAttribute(function)
     
     
     @classmethod
@@ -837,30 +852,7 @@ class AbstractParticleSet(object):
         [3.0, 8.0] m**2
         
         """
-        cls.GLOBAL_CALCULATED_ATTRIBUTES[name_of_the_attribute] = cls.CalculatedAttribute(function)
-    
-    
-    
-    @classmethod
-    def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
-        """
-        Define a *global* vector attribute, coupling two or more scalar attributes into
-        one vector attribute. The vector will be defined for all particle sets
-        created after calling this function.
-        
-        :argument name_of_the_attribute: Name to reference the vector attribute by. 
-        :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
-        
-        
-        >>> Particles.add_global_vector_attribute('vel', ['vx','vy'])
-        >>> particles = Particles(2)
-        >>> particles.vx = [1.0 , 2.0] | units.m / units.s
-        >>> particles.vy = [3.0 , 4.0] | units.m / units.s
-        >>> particles.vel
-        quantity<[[ 1.  3.], [ 2.  4.]] m / s>
-        
-        """
-        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = cls.VectorAttribute(name_of_the_components)
+        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = CalculatedAttribute(function)
     
     
     def add_function_attribute(self, name_of_the_attribute, function):
