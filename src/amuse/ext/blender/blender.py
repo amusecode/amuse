@@ -1,7 +1,13 @@
-import Blender
-import bpy
-import pylab as pl
-from Blender import Mesh
+
+try:
+    import Blender
+    import bpy
+    import pylab as pl
+    from Blender import Mesh
+    BLENDER_AVAILABLE = True
+except ImportError, ex:
+    Mesh = None
+    BLENDER_AVAILABLE = False
 
 class Primitives(object):
     def __init__(self):
