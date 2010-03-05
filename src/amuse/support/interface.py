@@ -776,8 +776,7 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
             
             selects = self.sets[name].new_particle_methods(self.interface)
             for x in selects:
-                result.add_function_attribute(x.public_name, x.apply_on_all)
-                result.add_particle_function_attribute(x.public_name, x.apply_on_one)
+                result.add_function_attribute(x.public_name, x.apply_on_all, x.apply_on_one)
             
             self.particle_sets[name] = result
             return result

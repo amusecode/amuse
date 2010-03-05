@@ -515,6 +515,39 @@ class CalculatedAttribute(DerivedAttribute):
     def get_value_for_particle(self, instance,  key):
         values = instance._get_values([key], self.attribute_names)
         return self.function(*values)[0]
+        
+
+class FunctionAttribute(DerivedAttribute):
+    class BoundParticlesFunctionAttribute(object):
+        def  __init__(self, function, particles):
+            self.function = function
+            self.particles = particles
+            
+        def __call__(self, *list_arguments, **keyword_arguments):
+            return self.function(self.particles, *list_arguments, **keyword_arguments)
+    
+    class BoundParticleFunctionAttribute(object):
+        def  __init__(self, function, particles, key):
+            self.function = function
+            self.particles = particles
+            self.key = key
+            
+        def __call__(self, *list_arguments, **keyword_arguments):
+            return self.function(self.particles._get_particle(self.key), *list_arguments, **keyword_arguments)
+        
+    
+    def  __init__(self, particles_function = None, particle_function = None):
+        self.particles_function = particles_function
+        self.particle_function = particle_function
+        
+    def get_values_for_particles(self, particles):
+        return self.BoundParticlesFunctionAttribute(self.particles_function, particles)
+            
+   
+    def get_value_for_particle(self, particles, key):
+        return self.BoundParticleFunctionAttribute(self.particle_function, particles, key)
+
+        
             
 
 
@@ -589,10 +622,7 @@ class AbstractParticleSet(object):
 
 
     """
-    GLOBAL_VECTOR_ATTRIBUTES = {}
-    GLOBAL_CALCULATED_ATTRIBUTES = {}
-    GLOBAL_FUNCTION_ATTRIBUTES = {}
-    GLOBAL_PARTICLE_FUNCTION_ATTRIBUTES = {}
+    GLOBAL_DERIVED_ATTRIBUTES = {}
     
     
     class PrivateProperties(object):
@@ -614,89 +644,39 @@ class AbstractParticleSet(object):
         website.
         """
         pass
-    
-            
         
-            
-    class FunctionAttribute:
-        class BoundFunctionAttribute(object):
-            def  __init__(self, function, particles):
-                self.function = function
-                self.particles = particles
-                
-            def __call__(self, *list_arguments, **keyword_arguments):
-                return self.function(self.particles, *list_arguments, **keyword_arguments)
-        
-        def  __init__(self, function):
-            self.function = function
-            
-        def get(self, particles):
-            return self.BoundFunctionAttribute(self.function, particles)
-            
-    class ParticleFunctionAttribute:
-        class BoundParticleFunctionAttribute(object):
-            def  __init__(self, function, particles, key):
-                self.function = function
-                self.particles = particles
-                self.key = key
-                
-            def __call__(self, *list_arguments, **keyword_arguments):
-                return self.function(self.particles._get_particle(self.key), *list_arguments, **keyword_arguments)
-        
-        def  __init__(self, function):
-            self.function = function
-            
-        def get(self, particles, key):
-            return self.BoundParticleFunctionAttribute(self.function, particles, key)
-
-        
-            
     def __init__(self, original = None):
         if original is None:
-            object.__setattr__(self, "_vector_attributes", CompositeDictionary(self.GLOBAL_VECTOR_ATTRIBUTES))
-            object.__setattr__(self, "_calculated_attributes", CompositeDictionary(self.GLOBAL_CALCULATED_ATTRIBUTES))
-            object.__setattr__(self, "_function_attributes", CompositeDictionary(self.GLOBAL_FUNCTION_ATTRIBUTES))
-            object.__setattr__(self, "_particle_function_attributes", CompositeDictionary(self.GLOBAL_PARTICLE_FUNCTION_ATTRIBUTES))
+            object.__setattr__(self, "_derived_attributes", CompositeDictionary(self.GLOBAL_DERIVED_ATTRIBUTES))
         else:
-            object.__setattr__(self, "_vector_attributes", original._vector_attributes)
-            object.__setattr__(self, "_calculated_attributes", original._calculated_attributes)
-            object.__setattr__(self, "_function_attributes", original._function_attributes)
-            object.__setattr__(self, "_particle_function_attributes", original._particle_function_attributes)
+            object.__setattr__(self, "_derived_attributes", original._derived_attributes)
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     
     def __getattr__(self, name_of_the_attribute):
         if name_of_the_attribute == 'key':
             return self._get_keys()
-        elif name_of_the_attribute in self._vector_attributes:
-            return self._vector_attributes[name_of_the_attribute].get_values_for_particles(self)
-        elif name_of_the_attribute in self._calculated_attributes:
-            return self._calculated_attributes[name_of_the_attribute].get_values_for_particles(self)
-        elif name_of_the_attribute in self._function_attributes:
-            return self._function_attributes[name_of_the_attribute].get(self)
+        elif name_of_the_attribute in self._derived_attributes:
+            return self._derived_attributes[name_of_the_attribute].get_values_for_particles(self)
         else:
             return self._convert_to_particles(self._get_values(self._get_keys(), [name_of_the_attribute])[0])
     
     def __setattr__(self, name_of_the_attribute, value):
-        if name_of_the_attribute in self._vector_attributes:
-            self._vector_attributes[name_of_the_attribute].set_values_for_particles(self, value)
+        if name_of_the_attribute in self._derived_attributes:
+            self._derived_attributes[name_of_the_attribute].set_values_for_particles(self, value)
         else:
             self._set_values(self._get_keys(), [name_of_the_attribute], [self._convert_from_particles(value)])
     
     def _get_value_of_attribute(self, key, attribute):
-        if attribute in self._vector_attributes:
-            return self._vector_attributes[attribute].get_value_for_particle(self, key)
-        elif attribute in self._calculated_attributes:
-            return self._calculated_attributes[attribute].get_value_for_particle(self, key)
-        elif attribute in self._particle_function_attributes:
-            return self._particle_function_attributes[attribute].get(self, key)
+        if attribute in self._derived_attributes:
+            return self._derived_attributes[attribute].get_value_for_particle(self, key)
         else:
             return self._convert_to_particles(self._get_values([key], [attribute])[0])[0]
             
     
     def _set_value_of_attribute(self, key, attribute, value):
-        if attribute in self._vector_attributes:
-            return self._vector_attributes[attribute].set_value_for_particle(self, key, value)
+        if attribute in self._derived_attributes:
+            return self._derived_attributes[attribute].set_value_for_particle(self, key, value)
         else:
             return self._set_values([key], [attribute], value.as_vector_with_length(1))
             
@@ -772,7 +752,7 @@ class AbstractParticleSet(object):
         
         """
         
-        self._vector_attributes[name_of_the_attribute] = VectorAttribute(name_of_the_components)
+        self._derived_attributes[name_of_the_attribute] = VectorAttribute(name_of_the_components)
     
     @classmethod
     def add_global_vector_attribute(cls, name_of_the_attribute, name_of_the_components):
@@ -793,7 +773,7 @@ class AbstractParticleSet(object):
         quantity<[[ 1.  3.], [ 2.  4.]] m / s>
         
         """
-        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = VectorAttribute(name_of_the_components)
+        cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = VectorAttribute(name_of_the_components)
     
     
     def add_calculated_attribute(self, name_of_the_attribute, function):
@@ -830,7 +810,7 @@ class AbstractParticleSet(object):
         
         """
         
-        self._vector_attributes[name_of_the_attribute] = CalculatedAttribute(function)
+        self._derived_attributes[name_of_the_attribute] = CalculatedAttribute(function)
     
     
     @classmethod
@@ -852,10 +832,10 @@ class AbstractParticleSet(object):
         [3.0, 8.0] m**2
         
         """
-        cls.GLOBAL_VECTOR_ATTRIBUTES[name_of_the_attribute] = CalculatedAttribute(function)
+        cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = CalculatedAttribute(function)
     
     
-    def add_function_attribute(self, name_of_the_attribute, function):
+    def add_function_attribute(self, name_of_the_attribute, function, function_for_particle = None):
         """
         Define a function attribute, adding a function to the particles
         
@@ -874,11 +854,11 @@ class AbstractParticleSet(object):
         
         """
         
-        self._function_attributes[name_of_the_attribute] = self.FunctionAttribute(function)
+        self._derived_attributes[name_of_the_attribute] = FunctionAttribute(function, function_for_particle)
         
     
     @classmethod
-    def add_global_function_attribute(cls, name_of_the_attribute, function):
+    def add_global_function_attribute(cls, name_of_the_attribute, function, function_for_particle = None):
         """
         Define a function attribute, adding a function to the particles
         
@@ -897,7 +877,7 @@ class AbstractParticleSet(object):
         
         """
         
-        cls.GLOBAL_FUNCTION_ATTRIBUTES[name_of_the_attribute] = cls.FunctionAttribute(function)
+        cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = FunctionAttribute(function, function_for_particle)
         
     
     def add_particle_function_attribute(self, name_of_the_attribute, function):
@@ -916,7 +896,7 @@ class AbstractParticleSet(object):
         >>> particles[0].xsquared()
         quantity<16.0 m**2>
         """
-        self._particle_function_attributes[name_of_the_attribute] = self.ParticleFunctionAttribute(function)
+        self._derived_attributes[name_of_the_attribute] = FunctionAttribute(None, function)
         
     #
     # public API
@@ -954,8 +934,7 @@ class AbstractParticleSet(object):
         values = self._get_values(None, attributes)
         result = self._particles_factory()()
         result._set_particles(keys, attributes, values)
-        object.__setattr__(self, "_vector_attributes", self._vector_attributes.copy())
-        object.__setattr__(self, "_calculated_attributes", self._calculated_attributes.copy())
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
     
@@ -1204,8 +1183,7 @@ class AbstractParticleSet(object):
     def _attributes_for_dir(self):
         result = []
         result.extend(self._get_attributes())
-        result.extend(self._calculated_attributes.keys())
-        result.extend(self._vector_attributes.keys())
+        result.extend(self._derived_attributes.keys())
         return result
 
     def is_empty(self):
