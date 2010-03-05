@@ -40,6 +40,9 @@ run.o: $(WORK_SRC_DIR)/run.f
 run_star_extras.o: $(WORK_SRC_DIR)/run_star_extras.f
 	$(WORK_COMPILE) $<
 
+create_zams.o: $(WORK_SRC_DIR)/create_zams.f
+	$(WORK_COMPILE) $<
+
 %.o: $(STAR_SRC_DIR)/%.f
 	$(WORK_COMPILE) $<
 

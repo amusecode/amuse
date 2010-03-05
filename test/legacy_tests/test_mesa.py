@@ -20,9 +20,9 @@ class TestInterface(TestWithMPI):
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
             inlist_path = instance.default_path_to_inlist
-            print "Path to inlist: ", inlist_path
+            #print "Path to inlist: ", inlist_path
             MESA_data_path = instance.default_path_to_MESA_data
-            print "Path to MESA data directory: ", MESA_data_path
+            #print "Path to MESA data directory: ", MESA_data_path
             status = instance.initialize(inlist_path, MESA_data_path)
             self.assertEqual(status,0)
         else:
@@ -31,6 +31,8 @@ class TestInterface(TestWithMPI):
         
     def test2(self):
         print "Testing get/set of interface parameters..."
+        print "The first time this test will take quite some time"
+        print "to generate new starting models."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
@@ -41,7 +43,7 @@ class TestInterface(TestWithMPI):
             (metallicity, error) = instance.get_metallicity()
             self.assertEquals(0, error)
             self.assertEquals(0.02, metallicity)
-            for x in [0.04, 0.01, 0.001, 0.0001]:
+            for x in [0.04, 0.02, 0.01, 0.00]:
                 error = instance.set_metallicity(x)
                 self.assertEquals(0, error)
                 (metallicity, error) = instance.get_metallicity()
@@ -101,8 +103,8 @@ class TestInterface(TestWithMPI):
             print "MESA was not built. Skipping test."
         del instance
             
-    def test5(self):
-        print "Testing new ZAMS model..."
+    def xtest5(self):
+        print "Testing new ZAMS model explicitly..."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
@@ -110,7 +112,33 @@ class TestInterface(TestWithMPI):
             status = instance.initialize(instance.default_path_to_inlist, 
                 instance.default_path_to_MESA_data)
             self.assertEqual(status,0)
-            instance.new_zams_model()
+            status = instance.new_zams_model()
+            self.assertEqual(status,0)
+        else:
+            print "MESA was not built. Skipping test."
+        del instance     
+    
+    def test6(self):
+        print "Testing new ZAMS model implicitly..."
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
+        instance = MESAInterface()
+        #channel.MessageChannel.DEBUGGER = None
+        if instance.MESA_exists:
+            status = instance.initialize(instance.default_path_to_inlist, 
+                instance.default_path_to_MESA_data)
+            self.assertEqual(status,0)
+            metallicities = [0.00, 0.01, 0.02, 0.04]
+            luminosities = [1.717, 0.930, 0.725, 0.592]
+            for (i,(Z,L)) in enumerate(zip(metallicities, luminosities)):
+                status = instance.set_metallicity(Z)
+                self.assertEquals(0, status)
+                (index_of_the_star, status) = instance.new_particle(1.0)
+                self.assertEquals(0, status)
+                self.assertEqual(index_of_the_star,i+1)
+                instance.evolve_to(index_of_the_star, 5.0e5)
+                (L_of_the_star, status) = instance.get_luminosity(index_of_the_star)
+                self.assertEquals(0, status)
+                self.assertAlmostEqual(L_of_the_star,L,3)
         else:
             print "MESA was not built. Skipping test."
         del instance     

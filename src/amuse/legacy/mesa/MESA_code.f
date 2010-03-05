@@ -2,6 +2,7 @@
       implicit none
       character (len=256) :: AMUSE_inlist_path
       character (len=256) :: AMUSE_ZAMS_inlist
+      character (len=256) :: AMUSE_zams_filename
       double precision :: AMUSE_metallicity
       contains
       logical function failed(str, ierr)
@@ -10,41 +11,53 @@
          failed = (ierr /= 0)
          if (failed) write(*, *) trim(str) // ' ierr', ierr
       end function failed
+      subroutine get_zams_filename(str, ierr)
+         use run_star_support, only: mesa_data_dir
+         character (len=256), intent(out) :: str
+         integer, intent(out) :: ierr
+         character (len=256) :: metallicity_str
+         integer :: metallicity_exp, metallicity_factor
+         if (AMUSE_metallicity.eq.0.0d0) then
+            str = trim(mesa_data_dir) // '/star_data/starting_models/zams_z0m0'
+         else
+            metallicity_exp = floor(log10(AMUSE_metallicity))-1
+            metallicity_factor = floor(0.5 + AMUSE_metallicity/(1.0d1**metallicity_exp))
+            write(metallicity_str,'(I0, A, I0)') metallicity_factor, "m", &
+               -metallicity_exp
+            str = trim(mesa_data_dir) // '/star_data/starting_models/zams_z' &
+               // trim(metallicity_str)
+!            write(*,*) AMUSE_metallicity, str
+         endif
+         ierr = 0
+      end subroutine get_zams_filename
    end module amuse_support
 
 ! Initialize the stellar evolution code
    subroutine initialize(AMUSE_inlist_path_in, AMUSE_mesa_data_dir, &
          AMUSE_status)
-      use amuse_support, only: AMUSE_inlist_path, AMUSE_metallicity, &
-         AMUSE_ZAMS_inlist
+      use amuse_support
       use run_star_support
       use ctrls_io, only: set_default_controls
       implicit none
       character(*), intent(in) :: AMUSE_inlist_path_in, AMUSE_mesa_data_dir
       integer :: ierr, AMUSE_status
-      ierr = 0
-      AMUSE_metallicity = 2.0d-2
+      AMUSE_status = -1
       AMUSE_inlist_path = AMUSE_inlist_path_in
       AMUSE_ZAMS_inlist = AMUSE_inlist_path_in // '_zams'
       call set_default_controls
       call do_read_star_job(AMUSE_inlist_path, ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error while reading inlist:"
-         write(*,*) AMUSE_inlist_path
-         AMUSE_status = -1
-         return
-      end if
+      if (failed('do_read_star_job', ierr)) return
       ! Replace value of mesa_data_dir just read, with supplied path.
       mesa_data_dir = AMUSE_mesa_data_dir
       call star_init(mesa_data_dir, kappa_file_prefix, &
          net_reaction_filename, net_rate_list_fname, ppn_rate_numbers_fname, ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error while initializing (in star_init)."
-         AMUSE_status = -1
-         return
-      end if
-!      profile_columns_file = mesa_data_dir // '/star_data/profile_columns.list'
-!      log_columns_file = mesa_data_dir // '/star_data/log_columns.list'
+      if (failed('star_init', ierr)) return
+      profile_columns_file = trim(mesa_data_dir) // '/star_data/profile_columns.list'
+      log_columns_file = trim(mesa_data_dir) // '/star_data/log_columns.list'
+      AMUSE_metallicity = 2.d-2         ! Use the standard solar metallicity model from
+      AMUSE_zams_filename = 'zams_z2m2' ! the MESA starting_models folder
+!      call get_zams_filename(AMUSE_zams_filename, ierr)
+!      if (failed('get_zams_filename', ierr)) return
       AMUSE_status = 0
       return
    end
@@ -56,16 +69,16 @@
       initialize_code = 0
    end function
 
-! Create new ZAMS model
-   subroutine new_zams_model()
-      use create_zams, only: do_create_zams
+! Create new ZAMS model for a different metallicity
+   subroutine new_zams_model(ierr)
+      use create_zams, only: AMUSE_do_create_zams
       use amuse_support, only: AMUSE_inlist_path, AMUSE_metallicity, &
-         AMUSE_ZAMS_inlist, failed
+         AMUSE_zams_filename, failed, get_zams_filename
       use star_lib, only: alloc_star, star_setup
       use star_private_def, only: star_info, get_star_ptr
-      use run_star_support, only: log_columns_file, profile_columns_file, &
-         run_create_zams
+      use run_star_support, only: run_create_zams, zams_inlist
       implicit none
+!      character(*), intent(in) :: zams_outfile
       integer :: ierr, AMUSE_id
       type (star_info), pointer :: s
       AMUSE_id = alloc_star(ierr)
@@ -73,16 +86,19 @@
       call get_star_ptr(AMUSE_id, s, ierr)
       if (failed('get_star_ptr', ierr)) return
       call star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
-      if (failed('star_setup', ierr)) return
-      run_create_zams = .true.
-      write(*,*) log_columns_file, " - ", profile_columns_file
-!      call do_create_zams(s, AMUSE_ZAMS_inlist, log_columns_file, &
-!         profile_columns_file, ierr)
+      if (failed('star_setup', ierr)) return      
+      call get_zams_filename(AMUSE_zams_filename, ierr)
+      if (failed('get_zams_filename', ierr)) return
+      run_create_zams = .true. ! is this necessary?
+      call AMUSE_do_create_zams(s, AMUSE_metallicity, AMUSE_zams_filename, ierr)
+      if (failed('AMUSE_do_create_zams', ierr)) return      
+      ierr = 0
    end subroutine new_zams_model
 
 ! Create a new particle
    function new_particle(AMUSE_id, AMUSE_mass)
-      use amuse_support, only: AMUSE_inlist_path, AMUSE_metallicity
+      use amuse_support, only: AMUSE_inlist_path, AMUSE_metallicity, &
+         failed, AMUSE_zams_filename
       use star_lib, only: alloc_star, star_setup, star_load_zams, show_log_header
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support, only: setup_for_run_star, before_evolve
@@ -91,51 +107,25 @@
       integer :: new_particle, ierr
       double precision, intent(in) :: AMUSE_mass
       type (star_info), pointer :: s
+      new_particle = -1
       AMUSE_id = alloc_star(ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error: could not allocate star."
-         new_particle = -1
-         return
-      end if
+      if (failed('alloc_star', ierr)) return
       call get_star_ptr(AMUSE_id, s, ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error: could not get star-pointer for star with ID:", AMUSE_id
-         new_particle = -1
-         return
-      end if
+      if (failed('get_star_ptr', ierr)) return
       call star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error while setting up new star."
-         new_particle = -1
-         return
-      end if
+      if (failed('star_setup', ierr)) return
       ! Replace value of mass and metallicity just read, with supplied values.
       s% initial_mass = AMUSE_mass
       s% initial_z = AMUSE_metallicity
+      s% zams_filename = trim(AMUSE_zams_filename) // '.data'
       call star_load_zams(AMUSE_id, ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error: could not load ZAMS model."
-         new_particle = -1
-         return
-      end if
+      if (failed('star_load_zams', ierr)) return
       call setup_for_run_star(AMUSE_id, s, .false., ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error: could not setup star."
-         new_particle = -1
-         return
-      end if
+      if (failed('setup_for_run_star', ierr)) return
       call before_evolve(AMUSE_id, ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error in before_evolve."
-         new_particle = -1
-         return
-      end if
+      if (failed('before_evolve', ierr)) return
       call show_log_header(AMUSE_id, ierr)
-      if (ierr /= 0) then
-         write(*,*) "Error in show_log_header."
-         new_particle = -1
-         return
-      end if
+      if (failed('show_log_header', ierr)) return
       new_particle = 0
    end function
 
@@ -168,24 +158,41 @@
    end function
 
 ! Return the metallicity parameter
-   function get_metallicity(AMUSE_value)
-      use ctrls_io
-      use run_star_support
+   integer function get_metallicity(AMUSE_value)
+      use amuse_support, only: AMUSE_metallicity
       implicit none
-      integer :: get_metallicity
-      double precision :: AMUSE_value
-      AMUSE_value = initial_z
+      double precision, intent(out) :: AMUSE_value
+      AMUSE_value = AMUSE_metallicity
       get_metallicity = 0
    end function
 
 ! Set the metallicity parameter
-   function set_metallicity(AMUSE_value)
-      use ctrls_io
-      use run_star_support
+   integer function set_metallicity(AMUSE_value)
+      use amuse_support, only: AMUSE_metallicity, &
+         AMUSE_zams_filename, failed, get_zams_filename
+      use utils_lib, only: alloc_iounit, free_iounit
       implicit none
-      integer :: set_metallicity
-      double precision :: AMUSE_value
-      initial_z = AMUSE_value
+      double precision, intent(in) :: AMUSE_value
+      integer :: ierr, iounit
+      character (len=256) :: file
+      set_metallicity = -1
+      AMUSE_metallicity = AMUSE_value
+      call get_zams_filename(AMUSE_zams_filename, ierr)
+      write(*,*) AMUSE_zams_filename, AMUSE_metallicity
+      if (failed('get_zams_filename', ierr)) return
+      ! Check if the ZAMS model file exists
+      iounit = alloc_iounit(ierr)
+      if (failed('alloc_iounit', ierr)) return
+      file = trim(AMUSE_zams_filename) // '.data'
+      open(iounit, file=trim(file), action='read', status='old', iostat=ierr)
+      if (ierr == 0) then
+         close(iounit)
+         call free_iounit(iounit)
+      else
+         call free_iounit(iounit)
+         call new_zams_model(ierr) ! Have to create a new model otherwise.
+         if (failed('new_zams_model', ierr)) return
+      endif
       set_metallicity = 0
    end function
 

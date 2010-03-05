@@ -58,6 +58,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     @legacy_function     
     def new_zams_model():
         function = LegacyFunctionSpecification()  
+        function.addParameter('status', dtype='i', direction=function.OUT)
         return function
         
 #~     @legacy_function      
