@@ -87,8 +87,9 @@ Stellar evolution is performed by the **rapid** single-star evolution (SSE) algo
 * "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
     Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543
 
+
 =========== ====== ==== =========================
-  \          min    max  unit
+..           min    max  unit
 =========== ====== ==== =========================
 Mass        0.1    100  Msun 
 Metallicity 0.0001 0.03 fraction (0.02 is solar) 
@@ -107,8 +108,9 @@ Binary evolution is performed by the **rapid** binary-star evolution (BSE) algor
 * "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
     Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543
 
+
 ============ ====== ==== =========================
-  \           min    max  unit
+..           min    max  unit
 ============ ====== ==== =========================
 Mass         0.1    100  Msun 
 Metallicity  0.0001 0.03 fraction (0.02 is solar) 
