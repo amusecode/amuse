@@ -1,10 +1,17 @@
 
+CODELIB = libnearestneighbor.a
 
 CXXFLAGS += -Wall -DTREE -DNOGRAPHICS 
 
 OBJ = BHTC.o nbody.o BHtree.o gravity.o pgetopt.o second.o
 
-all: BHTC
+CODEOBJS = BHtree.o gravity.o pgetopt.o second.o nbody.o
+
+AR = ar ruv
+RANLIB = ranlib
+RM = rm
+
+all: BHTC $(CODELIB)
 
 clean:
 	rm -f *.o BHTC *~
@@ -21,3 +28,9 @@ BHTC: $(OBJ)
 test: compile
 
 compile: BHTC
+
+$(CODELIB): $(CODEOBJS)
+	$(RM) -f $@
+	$(AR) $@ $(CODEOBJS)
+	$(RANLIB) $@
+
