@@ -3,7 +3,7 @@
 Using Blender for visualising Amuse results
 ===========================================
 
-.. image:: blender.png
+.. image:: blender.jpeg
    :width: 50
 
 Blender
