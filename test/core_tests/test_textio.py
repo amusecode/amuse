@@ -60,6 +60,8 @@ class TableFormattedTextTests(amusetest.TestCase):
         print contents       
         self.assertEquals("#a b c\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
         
+    
+        
 class Athena3DTextTests(amusetest.TestCase):
     
     def test1(self):

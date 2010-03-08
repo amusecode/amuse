@@ -427,6 +427,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             self.handle_errorcode(errorcode)     
     
     def handle_as_unit(self, return_value):
+        print return_value
         if not hasattr(self.return_units, '__iter__'):
             if self.return_units == self.NO_UNIT or self.return_units == self.INDEX:
                 return return_value

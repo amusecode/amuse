@@ -3,6 +3,7 @@ from amuse.legacy.support.core import LegacyFunctionSpecification
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
 from amuse.legacy.support.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
+from amuse.legacy.support import create_definition
 
 import numpy
 
@@ -582,6 +583,42 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf().lf() + 'call run_loop()'
         self.out.lf().lf() + 'call MPI_FINALIZE(ioerror)'
         self.out.dedent().lf()+'end program muse_worker'
+        
+        
+
+class MakeAFortranInterfaceStringOfAClassWithLegacyFunctions\
+    (MakeCodeStringOfAClassWithLegacyFunctions):
+
+    @late
+    def dtype_to_spec(self):
+        return dtype_to_spec
+  
+    def make_legacy_function(self):
+        return create_definition.CreateFortranStub()
+        
+    def start(self):  
+    
+        self.output_modules()
+        
+        self.out.lf()
+        
+        self.output_legacy_functions()
+        
+        self.out.lf()
+        
+        self._result = self.out.string
+        
+    
+    def output_modules(self):
+        self.out.n()
+        if hasattr(self.class_with_legacy_functions, 'use_modules'):
+            for x in self.class_with_legacy_functions.use_modules:
+                self.out.n() + 'use ' + x 
+        
+    
+        
+        
+
         
        
     

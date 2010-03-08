@@ -533,7 +533,7 @@ class LegacyInterface(object):
     
     def _stop(self):
         if hasattr(self, 'channel'):
-            if self.channel.is_active():
+            if not self.channel is None and self.channel.is_active():
                 self._stop_worker()
                 self.channel.stop()
             del self.channel
@@ -557,7 +557,10 @@ Please do a 'make clean; make' in the root directory.
     def _stop_worker():
         function = LegacyFunctionSpecification()  
         function.id = 0
-        return function   
+        return function 
+        
+    def stop():
+        self._stop()
         
 
 class LegacyPythonInterface(LegacyInterface):

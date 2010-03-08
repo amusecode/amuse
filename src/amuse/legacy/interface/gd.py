@@ -661,6 +661,7 @@ class GravitationalDynamics(object):
         function.addParameter('forcez', dtype='float64', direction=function.OUT,
             description = "Force created by the particles in the code at the given position")
         function.result_type = 'int32'
+        function.can_handle_array = True
         function.result_doc = """
          0 - OK
             Force could be calculated
@@ -682,6 +683,7 @@ class GravitationalDynamics(object):
         function.addParameter('y', dtype='float64', direction=function.IN)
         function.addParameter('z', dtype='float64', direction=function.IN)
         function.addParameter('phi', dtype='float64', direction=function.OUT)
+        function.can_handle_array = True
         function.result_type = 'int32'
         return function
 
@@ -799,8 +801,8 @@ class GravitationalDynamicsInterface(CodeInterface):
                 nbody_system.speed,
             ), 
             ( 
-                object.NO_UNIT,
-                object.ERROR_CODE
+                object.INDEX,
+                object.ERROR_CODE,
             )
         )
         object.add_method(
@@ -937,6 +939,7 @@ class GravitationalDynamicsInterface(CodeInterface):
     def get_colliding_particles(self):
         subset = self.colliding_particles_method._run(self, self.particles)
         return subset
+        
     def define_converter(self, object):
         if not self.convert_nbody is self.NBODY:
             object.set_nbody_converter(self.convert_nbody)  

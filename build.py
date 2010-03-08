@@ -163,7 +163,8 @@ def make_file(settings):
         ('h','mpi'): create_c.MakeACHeaderStringOfAClassWithLegacyFunctions,
         ('H','mpi'): make_cplusplus_header,
         ('f90','mpi'): create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions,      
-        ('c','stub'): create_c.MakeACInterfaceStringOfAClassWithLegacyFunctions,
+        ('c','stub'): create_c.MakeACInterfaceStringOfAClassWithLegacyFunctions,    
+        ('f90','stub'): create_fortran.MakeAFortranInterfaceStringOfAClassWithLegacyFunctions,
     }
     
     try:
