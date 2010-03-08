@@ -59,10 +59,10 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
         
         stopped_evolving = False
 #       Evolve this star until it changes into a compact stellar remnant (white dwarf, neutron star, or black hole)
-        while star.type.value_in(units.stellar_type) < 10 and not stopped_evolving:
+        while star.stellar_type.value_in(units.stellar_type) < 10 and not stopped_evolving:
             luminosity_at_time.append(star.luminosity)
             temperature_at_time.append(star.temperature)
-            stellar_type_at_time.append(star.type)
+            stellar_type_at_time.append(star.stellar_type)
             previous_age = star.age
                         
             stellar_evolution.evolve_model()
@@ -72,7 +72,7 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
 
         if stopped_evolving: print "Age did not increase during timestep. Aborted evolving..."
         print " ... evolved model to t = " + str(star.age)
-        print "Star has now become a: ", star.type, "(stellar_type: "+str(star.type.value_in(units.stellar_type))+")"
+        print "Star has now become a: ", star.stellar_type, "(stellar_type: "+str(star.stellar_type.value_in(units.stellar_type))+")"
         print
         all_tracks_luminosity.append(luminosity_at_time)
         all_tracks_temperature.append(temperature_at_time)

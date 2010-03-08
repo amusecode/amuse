@@ -11,7 +11,7 @@ class TestMPIInterface(TestWithMPI):
     
     class state(object):
         def __init__(self):
-            self.type = 0.0
+            self.stellar_type = 0.0
             self.zams_mass = 0.0
             self.mass = 0.0
             self.radius = 0.0
@@ -81,21 +81,21 @@ class TestMPIInterface(TestWithMPI):
         new_state = self.state()
         new_state.mass = 1.0
         new_state.zams_mass = 1.0
-        new_state.type = 1.0
+        new_state.stellar_type = 1.0
         new_state.age = 1e-06
         result = sse.evolve(
-            new_state.type, 
+            new_state.stellar_type, 
             new_state.zams_mass, new_state.mass, new_state.radius, 
             new_state.luminosity, new_state.core_mass, new_state.core_radius,
             new_state.envelope_mass, new_state.envelope_radius, new_state.spin,
             new_state.epoch, new_state.t_ms, new_state.sse_age, new_state.age
         )
         updated_state = self.state()
-        (updated_state.type,updated_state.zams_mass, updated_state.mass, updated_state.radius, 
+        (updated_state.stellar_type,updated_state.zams_mass, updated_state.mass, updated_state.radius, 
             updated_state.luminosity, updated_state.core_mass, updated_state.core_radius,
             updated_state.envelope_mass, updated_state.envelope_radius, updated_state.spin,
             updated_state.epoch, updated_state.t_ms, updated_state.sse_age, updated_state.age) = result
-        attributes = ('type', 'zams_mass', 'mass', 'radius', 'luminosity', 'core_mass', 'core_radius',
+        attributes = ('stellar_type', 'zams_mass', 'mass', 'radius', 'luminosity', 'core_mass', 'core_radius',
             'envelope_mass', 'envelope_radius', 'spin', 'epoch', 't_ms', 'sse_age', 'age')
         
          
@@ -142,7 +142,7 @@ class TestMPIInterface(TestWithMPI):
                 self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
         self.assertEquals(updated_state.age, 1e-06)
-        dt = sse.get_time_step(updated_state.type,
+        dt = sse.get_time_step(updated_state.stellar_type,
             updated_state.zams_mass, 
             updated_state.age, 
             updated_state.mass, 
@@ -244,7 +244,7 @@ class TestSSE(TestWithMPI):
         from_sse_to_model = sse.particles.new_channel_to(stars)
         from_sse_to_model.copy()
         
-        previous_type = star.type
+        previous_type = star.stellar_type
         results = []
         t0 = 0 | units.Myr
         current_time = t0
@@ -258,9 +258,9 @@ class TestSSE(TestWithMPI):
 
             from_sse_to_model.copy()
             
-            if not star.type == previous_type:
-                results.append((star.age, star.mass, star.type))
-                previous_type = star.type
+            if not star.stellar_type == previous_type:
+                results.append((star.age, star.mass, star.stellar_type))
+                previous_type = star.stellar_type
                 
         self.assertEqual(len(results), 6)
         
@@ -331,7 +331,7 @@ class TestSSE(TestWithMPI):
         channel = sse.particles.new_channel_to(stars)
         channel.copy_attributes(sse.particles._get_attributes())   
         
-        previous_type = sse.particles.type
+        previous_type = sse.particles.stellar_type
         results = []
         
         sse.evolve_model(121.5 | units.Myr)
@@ -357,7 +357,7 @@ class TestSSE(TestWithMPI):
         channel = sse.particles.new_channel_to(stars)
         channel.copy_attributes(sse.particles._get_attributes())   
         
-        previous_type = star.type
+        previous_type = star.stellar_type
         results = []
         
         dt = 1 | units.Myr
@@ -402,7 +402,7 @@ class TestSSE(TestWithMPI):
         for i in range(number_of_stars):
             self.assertEquals(stars[i].age.value_in(units.Myr), 125.0)
             self.assertTrue(stars[i].mass <= masses[i])
-            self.assertEquals(str(stars[i].type), end_types[i])
+            self.assertEquals(str(stars[i].stellar_type), end_types[i])
         del instance
     
     def test7(self):

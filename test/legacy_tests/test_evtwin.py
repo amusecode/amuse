@@ -292,9 +292,9 @@ class TestInterfaceBinding(TestWithMPI):
         self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302 , 6)
     
     def xtest3(self):
-        channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
         instance = EVtwin()
-        channel.MessageChannel.DEBUGGER = None
+        #channel.MessageChannel.DEBUGGER = None
         instance.initialize_module_with_default_parameters() 
         stars =  core.Stars(1)
         
@@ -308,7 +308,7 @@ class TestInterfaceBinding(TestWithMPI):
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         
-        previous_type = star.type
+        previous_type = star.stellar_type
         results = []
         t0 = 0 | units.Myr
         current_time = t0
@@ -318,10 +318,10 @@ class TestInterfaceBinding(TestWithMPI):
             from_code_to_model.copy()
             
             current_time = star.age
-            print (star.age, star.mass, star.type)
-            if not star.type == previous_type:
-                results.append((star.age, star.mass, star.type))
-                previous_type = star.type
+            print (star.age, star.mass, star.stellar_type)
+            if not star.stellar_type == previous_type:
+                results.append((star.age, star.mass, star.stellar_type))
+                previous_type = star.stellar_type
         
         print results
         self.assertEqual(len(results), 6)
