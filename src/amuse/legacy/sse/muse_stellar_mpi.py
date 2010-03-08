@@ -69,7 +69,7 @@ class SSEInterface(LegacyInterface):
     def get_time_step_for_star(self, star):
         
         current_values = {}
-        current_values['kw'] = star.type.value_in(units.stellar_type)
+        current_values['kw'] = star.stellar_type.value_in(units.stellar_type)
         current_values['mass'] = star.initial_mass.value_in(units.MSun)
         current_values['mt'] = star.mass.value_in(units.MSun)
         current_values['tm'] = star.main_sequence_lifetime.value_in(units.Myr)
@@ -83,7 +83,7 @@ class SSEInterface(LegacyInterface):
         
     def evolve_particle(self, particle, time_end):
         t = particle.current_time
-        if particle.type.value_in(units.none) == 15:
+        if particle.stellar_type.value_in(units.none) == 15:
             return
         while t < time_end:
             t0 = t
@@ -97,7 +97,7 @@ class SSEInterface(LegacyInterface):
             if dt.value_in(units.Myr) == 0.0:
                 print t, t0, t1, dt, "BREAK BREAK BREAK!"
                 return
-            if particle.type.value_in(units.none) == 15:
+            if particle.stellar_type.value_in(units.none) == 15:
                 return
     
         
@@ -117,7 +117,7 @@ class SSEParticles(Particles):
         all_values.extend(values)
         
         mapping_from_attribute_to_default_value = {
-            "type" : 1 | units.stellar_type,
+            "stellar_type" : 1 | units.stellar_type,
             "radius": 0 | units.RSun,
             "luminosity":  0 | units.LSun,
             "core_mass": 0 | units.MSun,
@@ -267,7 +267,7 @@ class SSEBinding(CodeInterfaceOld):
     update_time_step_method = ParticleAttributesModifier(
         "get_time_step",
         (
-            ("type", "kw", units.stellar_type),
+            ("stellar_type", "kw", units.stellar_type),
             ("initial_mass", "mass", units.MSun),
             ("mass", "mt", units.MSun),
             ("main_sequence_lifetime", "tm", units.Myr),
@@ -281,7 +281,7 @@ class SSEBinding(CodeInterfaceOld):
     evolve_particles_method = ParticleAttributesModifier(
         "evolve",
         (
-            ("type", "kw", units.stellar_type),
+            ("stellar_type", "kw", units.stellar_type),
             ("initial_mass", "mass", units.MSun),
             ("mass", "mt", units.MSun),
             ("radius", "r", units.RSun),
