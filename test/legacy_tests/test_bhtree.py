@@ -429,4 +429,7 @@ class TestAmuseInterface(TestWithMPI):
                         self.assertAlmostEqual(f1[j], 0.0 | nbody_system.acceleration, 3)
                     else:
                         self.assertAlmostEqual(f0[j], -1.0 * f1[j], 5)
+        
+        instance.stop()
+        del instance
 

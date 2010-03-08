@@ -536,6 +536,7 @@ class LegacyInterface(object):
             if not self.channel is None and self.channel.is_active():
                 self._stop_worker()
                 self.channel.stop()
+                self.channel = None
             del self.channel
         
     def _check_if_worker_is_up_to_date(self):
@@ -559,7 +560,7 @@ Please do a 'make clean; make' in the root directory.
         function.id = 0
         return function 
         
-    def stop():
+    def stop(self):
         self._stop()
         
 
