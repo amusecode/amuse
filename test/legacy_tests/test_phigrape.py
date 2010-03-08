@@ -177,7 +177,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
 
-class TestSunAndEarthSystem(TestWithMPI):
+class TestCodeInterface(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = core.Stars(2)
         sun = stars[0]
@@ -249,7 +249,7 @@ class TestSunAndEarthSystem(TestWithMPI):
         instance.setup_particles(stars)
         instance.initialize_particles(0.0)
 
-        for x in range(1,365,1):
+        for x in range(1,365,30):
             instance.evolve_model(x | units.day)
             instance.update_particles(stars)
             stars.savepoint()
@@ -302,6 +302,49 @@ class TestSunAndEarthSystem(TestWithMPI):
         
         self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
         self.assertEquals(instance.get_mass(2), 33.0| units.kg)  
-
+    
+    
+    def test5(self):
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
+        instance = PhiGRAPE(PhiGRAPE.NBODY)
+        #channel.MessageChannel.DEBUGGER = None
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.set_eta(0.01,0.02)
+        instance.setup_module()
+        
+        
+        particles = core.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius =  [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+        
+        
+        instance.initialize_particles(0.0 )
+        
+        zero = 0.0 | nbody_system.length
+        fx, fy, fz = instance.get_gravity_at_point(zero, 1.0 | nbody_system.length, zero, zero)
+        self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 3)
+    
+        for x in (0.25, 0.5, 0.75):
+            x0 = x | nbody_system.length
+            x1 = (2.0 - x) | nbody_system.length
+            potential0 = instance.get_potential_at_point(zero, x0, zero, zero)
+            potential1 = instance.get_potential_at_point(zero, x1, zero, zero)
+            fx0, fy0, fz0 = instance.get_gravity_at_point(zero, x0, zero, zero)
+            fx1, fy1, fz1 = instance.get_gravity_at_point(zero, x1, zero, zero)
+            
+            self.assertAlmostEqual(fy0, 0.0 | nbody_system.acceleration, 3)
+            self.assertAlmostEqual(fz0, 0.0 | nbody_system.acceleration, 3)
+            self.assertAlmostEqual(fy1, 0.0 | nbody_system.acceleration, 3)
+            self.assertAlmostEqual(fz1, 0.0 | nbody_system.acceleration, 3)
+            
+            self.assertAlmostEqual(fx0, -1.0 * fx1, 5)
+            fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
+            self.assertAlmostEqual(fx, fx0, 2)
+            self.assertAlmostEqual(potential0, potential1, 5)
 
         

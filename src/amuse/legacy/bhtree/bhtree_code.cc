@@ -603,7 +603,7 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
     
     
     *phi  = bhtcs.calculate_potential_at_point(p, bhtcs.eps2_for_gravity, bhtcs.theta_for_tree * bhtcs.theta_for_tree);
-    cerr << "phi : "<< *phi << endl;
+    //cerr << "phi : "<< *phi << endl;
     return 0;
 }
 

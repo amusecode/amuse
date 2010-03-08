@@ -132,16 +132,16 @@ C---  get array address
       initialize_code = -2
       END
 
-      FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz)   
+      FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz)
       IMPLICIT NONE
-      DOUBLE PRECISION :: eps1, x1, y1, z1, fx, fy, fz
-      INTEGER get_gravity_at_point 
+      DOUBLE PRECISION :: eps1, x1, y1, z1, fx, fy, fz, p
+      INTEGER get_gravity_at_point
 #include "src/general.inc"
       
       CALL initgrape
       CALL update_grape(1) 
       
-      
+      CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p)
       
       CALL g6_close(clusterid)
         
@@ -149,9 +149,10 @@ C---  get array address
       END
       
 
-      FUNCTION get_potential_at_point(eps1, x1, y1, z1, resultvalue) 
+      FUNCTION get_potential_at_point(eps1, x1, y1, z1, p) 
       IMPLICIT NONE
-      DOUBLE PRECISION :: eps1, x1, y1, z1, resultvalue
+      DOUBLE PRECISION :: eps1, x1, y1, z1, p
+      DOUBLE PRECISION :: fx, fy, fz
       INTEGER get_potential_at_point   
 #include "src/general.inc"  
       
@@ -159,6 +160,7 @@ C---  get array address
       CALL update_grape(1) 
       
       
+      CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p)
       
       CALL g6_close(clusterid)
 

@@ -264,3 +264,71 @@ C---  and can be accessed by the global particle index
 
       RETURN
       END
+      
+      
+      SUBROUTINE gravity_at_point(tnow, pointx, pointy, pointz,
+     $   fx, fy, fz, p)
+C===  calc the gravity at a point, cannot use data on the point 
+C===  for previous timesteps, so is less acurate
+      IMPLICIT NONE
+#include "general.inc"
+
+C---  input vars
+      DOUBLE PRECISION tnow, pointx, pointy, pointz
+      DOUBLE PRECISION :: fx, fy, fz, p
+
+C---  GRAPE vars
+      INTEGER    NGP
+      PARAMETER (NGP=16384)
+
+      INTEGER g6err, g6calc_lasthalf, g6calc_lasthalf2
+
+C---  local vars 
+      INTEGER k, index_i(NGP)
+      DOUBLE PRECISION x_i(NDIM,NGP),v_i(NDIM,NGP),a_i(NDIM,NGP),
+     $                 jerk_i(NDIM,NGP),p_i(NGP),h2_i(NGP)
+      
+
+C---  set actual time on GRAPE
+      CALL g6_set_ti(clusterid, tnow)
+        
+      
+C---  define the local phi, a, adot for these active particles 
+      index_i(1) = -1
+      x_i(1,1) = pointx
+      x_i(2,1) = pointy
+      x_i(3,1) = pointz
+      h2_i(1)  = eps2
+      p_i(1) = -1.d0
+      DO k=1,NDIM
+        a_i(k,1) = 1.d0
+        v_i(k,1) = 0.d0
+        jerk_i(k,1) = 10.d0
+      ENDDO
+
+C---  get forces etc. based on bad initial guess
+      CALL g6calc_firsthalf(clusterid, n_loc-nbh, 1, 
+     $           index_i,x_i,v_i,
+     $           a_i, jerk_i, p_i, eps2, h2_i)
+      g6err = g6calc_lasthalf(clusterid, n_loc-nbh, 1,
+     $          index_i,x_i,v_i,
+     $          eps2, h2_i, a_i, jerk_i, p_i)
+
+
+        
+   
+C---  now get forces based on a (hopefully) good guess from a previous force calculation
+      CALL g6calc_firsthalf(clusterid, n_loc-nbh, 1,
+     $       index_i, x_i, v_i,
+     $       a_i, jerk_i, p_i, eps2, h2_i)
+      g6err = g6calc_lasthalf(clusterid, n_loc-nbh, 1,
+     $          index_i,x_i,v_i,
+     $          eps2, h2_i, a_i, jerk_i, p_i)
+
+      fx = a_i(1,1)
+      fy = a_i(2,1)
+      fz = a_i(3,1)
+      p = p_i(1)
+      
+      RETURN
+      END
