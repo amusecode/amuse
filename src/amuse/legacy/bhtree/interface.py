@@ -9,7 +9,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
-    include_headers = ['BHTree_code.h', 'parameters.h', 'local.h']
+    include_headers = [ 'bhtree_code.h', 'parameters.h', 'worker_code.h', 'local.h']
     
     timestep = legacy_global(name='timestep',id=21,dtype='d')
     eps2_for_gravity = legacy_global(name='eps2_for_gravity',id=22,dtype='d')
@@ -43,18 +43,12 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         function.result_type = 'i'
         return function
     
-    @legacy_function    
-    def initialize_particles():
-        function = LegacyFunctionSpecification() 
-        function.addParameter('time', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function;
-       
     @legacy_function  
     def reinitialize_particles():
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
+        
        
 class BHTree(GravitationalDynamicsInterface):
     

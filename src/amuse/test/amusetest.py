@@ -34,4 +34,5 @@ class TestCase(unittest.TestCase):
             err = '\n'.join(err_list)
             raise self.failureException,(msg or err)                     
                                                                                                      
-    assertAlmostEqual =  failUnlessAlmostEqual
+    assertAlmostEqual =  failUnlessAlmostEqual                                                    
+    assertAlmostEquals =  failUnlessAlmostEqual

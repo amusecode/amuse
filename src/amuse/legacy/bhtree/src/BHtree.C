@@ -826,9 +826,22 @@ vec real_system::calculate_gravity_at_point(vec pos, real eps2, real theta2)
     r_nn_2 = 0.0; // turn-off collision detection
 
     bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity);
-    //cerr << acc_gravity;
     
     return acc_gravity;
+}
+
+//AVE Mar 2010
+real real_system::calculate_potential_at_point(vec pos, real eps2, real theta2)
+{
+    vec acc_gravity = 0;
+    real phi_gravity = 0.0;
+
+    nn_index = -1;
+    r_nn_2 = 0.0; // turn-off collision detection
+
+    bn->accumulate_force_from_tree(pos, eps2, theta2, acc_gravity, phi_gravity);
+      
+    return phi_gravity;
 }
 
 
