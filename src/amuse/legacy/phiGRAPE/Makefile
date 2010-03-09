@@ -10,16 +10,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 SRCDIR = src
 
-OBJECTS = \
- src/allgather_ap.o src/cmcorr.o src/corrector.o src/cputime.o \
- src/energy.o src/get_min_t.o src/gravity.o src/initgrape.o \
- src/initmpi.o src/initpars.o src/output.o \
- src/predictor.o src/readbodydata.o src/readpars.o src/readrestartfile.o \
- src/selectactive.o src/selectsync.o src/sendbodies2grape.o \
- src/sendbodydata.o \
- src/sendinpdata.o src/sumforces.o src/sync.o \
- src/timestep.o src/update_grape.o src/update_loc_p.o src/writebh.o \
- src/writerestartfile.o src/predict_potential.o src/wtimef.o 
+CODELIB=$(SRCDIR)/libphigrape.a
 
 GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 
@@ -58,34 +49,32 @@ FFLAGS += -I./src/
 
 all: worker_code 
 
-worker_code: worker_code.f90 phiGRAPE_code.o
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES)
 
-glworker_code: glworker_code.f90 phiGRAPE_code.o
+$(CODELIB):
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+	
+worker_code: worker_code.f90 phiGRAPE_code.o $(CODELIB)
+	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES)
+
+glworker_code: glworker_code.f90 phiGRAPE_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
+	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
 
-worker_code_gpu: worker_code.f90 phiGRAPE_code.o
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
+worker_code_gpu: worker_code.f90 phiGRAPE_code.o $(CODELIB)
+	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS)
 
-glworker_code_gpu: glworker_code.f90 phiGRAPE_code.o
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
+glworker_code_gpu: glworker_code.f90 phiGRAPE_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) \
+	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS)
 
 	
-worker_code_grape: worker_code.f90 phiGRAPE_code.o
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
+worker_code_grape: worker_code.f90 phiGRAPE_code.o $(CODELIB)
+	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
 	
-worker_code_phantom_grape: worker_code.f90 phiGRAPE_code.o
-	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	mpif90 $(FFLAGS) $^ -o $@ $(OBJECTS) $(LIBRARIES) $(PGLIBS)
+worker_code_phantom_grape: worker_code.f90 phiGRAPE_code.o $(CODELIB)
+	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(PGLIBS)
 
 worker_code.f90: interface.py __init__.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@

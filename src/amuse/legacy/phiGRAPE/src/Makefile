@@ -1,6 +1,11 @@
 
 OPTS ?= -DNOMPI
 
+CODELIB = libphigrape.a
+
+AR = ar ruv
+RANLIB = ranlib
+RM = rm
 
 SOURCEF = \
 allgather_ap.F      cmcorr.F        corrector.F     cputime.F		\
@@ -12,6 +17,7 @@ sendbodydata.F      							\
 sendinpdata.F       sumforces.F	    sync.F				\
 timestep.F          update_grape.F  update_loc_p.F  writebh.F		\
 writerestartfile.F predict_potential.F
+
 
 SOURCEC = wtimef.c
 
@@ -57,11 +63,18 @@ FFLAGS  += -O2 $(OPTS)
 #gfortran :-fno-second-underscore -fPIC -Wall
 
 OBJECTS = $(SOURCEF:.F=.o) $(SOURCE:.f=.o) $(SOURCEC:.c=.o)
+CODEOBJS = $(OBJECTS)
 SAO     = $(SAF:.F=.o)
 
-all: phiGRAPE
+all: phiGRAPE $(CODELIB)
 
 gl: start_viewer.o viewer.o libpt.a fthread.o
+
+
+$(CODELIB): $(CODEOBJS)
+	$(RM) -f $@
+	$(AR) $@ $(CODEOBJS)
+	$(RANLIB) $@
 
 stars3d.o: stars3d.f90
 	$(FC) -fpp $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
@@ -80,7 +93,7 @@ phiGRAPE: $(OBJECTS) $(SAO)
 
 
 clean:
-	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE libpt.a *.mod
+	rm -f *.o .m* .n* *.lst *.L *~ phiGRAPE libpt.a *.mod $(CODELIB)
 
 .f.o:
 	$(FC) $(FFLAGS) -c $<

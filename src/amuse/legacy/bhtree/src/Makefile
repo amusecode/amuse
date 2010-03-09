@@ -14,7 +14,7 @@ RM = rm
 all: BHTC $(CODELIB)
 
 clean:
-	rm -f *.o BHTC *~
+	rm -f *.o BHTC *~ $(CODELIB)
 
 BHTC: $(OBJ)
 	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC
