@@ -79,8 +79,8 @@ class testMPIInterface(TestWithMPI):
   def test5(self):
     instance=capreole()
     instance.setup_module()
-    instance.setup_mesh(50,50,50,1.,1.,1.)
-    x,y,z=numpy.indices( (50,50,50) )
+    instance.setup_mesh(40,40,40,1.,1.,1.)
+    x,y,z=numpy.indices( (40,40,40) )
     x=x.flatten()+1
     y=y.flatten()+1
     z=z.flatten()+1
@@ -92,6 +92,23 @@ class testMPIInterface(TestWithMPI):
     instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
     instance.initialize_grid(0.0)
     instance.evolve(0.01)
+    tnow,err=instance.get_time()
+    self.assertAlmostEqual(tnow,0.01,15)
+    instance.evolve(0.025)
+    tnow,err=instance.get_time()
+    self.assertAlmostEqual(tnow,0.025,15)
+    instance.evolve(0.025001)
+    tnow,err=instance.get_time()
+    self.assertAlmostEqual(tnow,0.025001,15)
+    instance.evolve(0.0321)
+    tnow,err=instance.get_time()
+    self.assertAlmostEqual(tnow,0.0321,15)
+    instance.evolve(0.0321)
+    tnow,err=instance.get_time()
+    self.assertAlmostEqual(tnow,0.0321,15)
+    instance.evolve(0.07)
+    tnow,err=instance.get_time()
+    self.assertAlmostEqual(tnow,0.07,15)
     del instance
 
   def test6(self):
