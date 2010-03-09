@@ -75,6 +75,14 @@ class capreole(LegacyInterface):
         return function
 
     @legacy_function    
+    def get_time():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+
+    @legacy_function    
     def get_position_of_index():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True

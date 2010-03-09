@@ -45,11 +45,16 @@ module amuse_helpers
   end function
 
   function amuse_evolve(tend) result(ret)
-    integer :: ret
+    integer :: ret,n
     real*8 :: tend
-    frametime=tend-time
-    if(frametime.GT.0) then
-      lastframe=ceiling(tend/frametime)
+    if(tend-time.GT.0) then
+      lastframe=0
+      nf=1
+      do while(nf.GE.lastframe)
+        lastframe=lastframe+1
+        frametime=tend/lastframe
+        nf=nint(time/frametime)
+      enddo
       call evolve()
     endif
     ret=0
@@ -271,6 +276,13 @@ module amuse_helpers
     deallocate(state1,state2,pressr,gforce)
     deallocate(x,y,z)
     
+    ret=0
+  end function
+
+  function amuse_get_time(tnow) result(ret)
+    integer :: ret
+    real*8 tnow
+    tnow=time
     ret=0
   end function
   

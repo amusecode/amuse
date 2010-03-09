@@ -135,3 +135,11 @@ function evolve(tend) result(ret)
   state=>stold
 end function
 
+function get_time(tnow) result(ret)
+  use amuse_helpers
+  integer :: ret
+  real*8 :: tnow
+
+  ret=amuse_get_time(tnow)
+end function
+
