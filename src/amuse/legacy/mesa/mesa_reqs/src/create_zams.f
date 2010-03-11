@@ -46,7 +46,8 @@
 
       
       subroutine AMUSE_do_create_zams( &
-            s, metallicity_in, zams_outfile_in, ierr)
+            s, metallicity_in, zams_outfile_in, &
+            dmass_in, mlo_in, mhi_in, ierr)
          use mtx_lib, only: lapack_decsol
          use num_def, only: square_matrix_type
          use num_lib
@@ -54,6 +55,7 @@
          type (star_info), pointer :: s
          character (len=*) :: zams_outfile_in
          double precision, intent(in) :: metallicity_in
+         double precision, intent(in) :: dmass_in, mlo_in, mhi_in
          integer, intent(out) :: ierr
          
          integer :: io_ms_mod, io_ms_index      
@@ -70,6 +72,7 @@
          
          ierr = 0
          id = s% id
+         s% log_cnt = 100
 
 ! Don't read the ZAMS controls from file...
 !         call read_zams_controls(s, zams_inlist, ierr)
@@ -77,16 +80,11 @@
 ! ... but set them here:
          create_z = metallicity_in ! 2d-2
          zams_name = zams_outfile_in ! 'z2m2'
-         dmass = 0.2d0
-!         mlo = -1.0d0
-!         mhi = 1.75d0
-         mlo = -0.2d0 ! for testing...
-         mhi = 0.6d0 ! for testing...
-!         mlo = 0.6d0 ! for testing...
-!         mhi = 0.72d0 ! for testing...
+         dmass = dmass_in
+         mlo = mlo_in
+         mhi = mhi_in
          
          okay = .true.
-
          ierr = 0
          io_ms_mod = alloc_iounit(ierr)
          if (failed('alloc_iounit')) return

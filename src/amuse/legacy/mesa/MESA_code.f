@@ -2,8 +2,17 @@
       implicit none
       character (len=256) :: AMUSE_inlist_path
       character (len=256) :: AMUSE_ZAMS_inlist
-      character (len=256) :: AMUSE_zams_filename
-      double precision :: AMUSE_metallicity
+      character (len=256) :: AMUSE_zams_filename = 'zams_z2m2'
+      ! (use the solar metallicity model from the MESA starting_models folder)
+      double precision :: AMUSE_metallicity = 0.02d0
+      double precision :: AMUSE_dmass = 0.1d0
+      double precision :: AMUSE_mlo = -1.0d0
+      double precision :: AMUSE_mhi = 1.7d0
+      double precision :: AMUSE_max_age_stop_condition = 1.0d12
+      double precision :: AMUSE_min_timestep_stop_condition = 1.0d-6
+      double precision :: AMUSE_mixing_length_ratio = 2.0d0
+      double precision :: AMUSE_semi_convection_efficiency = 0.0d0
+      logical :: debugging = .true.
       contains
       logical function failed(str, ierr)
          character (len=*), intent(in) :: str
@@ -54,8 +63,6 @@
       if (failed('star_init', ierr)) return
       profile_columns_file = trim(mesa_data_dir) // '/star_data/profile_columns.list'
       log_columns_file = trim(mesa_data_dir) // '/star_data/log_columns.list'
-      AMUSE_metallicity = 2.d-2         ! Use the standard solar metallicity model from
-      AMUSE_zams_filename = 'zams_z2m2' ! the MESA starting_models folder
 !      call get_zams_filename(AMUSE_zams_filename, ierr)
 !      if (failed('get_zams_filename', ierr)) return
       AMUSE_status = 0
@@ -72,13 +79,11 @@
 ! Create new ZAMS model for a different metallicity
    subroutine new_zams_model(ierr)
       use create_zams, only: AMUSE_do_create_zams
-      use amuse_support, only: AMUSE_inlist_path, AMUSE_metallicity, &
-         AMUSE_zams_filename, failed, get_zams_filename
+      use amuse_support
       use star_lib, only: alloc_star, star_setup
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support, only: run_create_zams, zams_inlist
       implicit none
-!      character(*), intent(in) :: zams_outfile
       integer :: ierr, AMUSE_id
       type (star_info), pointer :: s
       AMUSE_id = alloc_star(ierr)
@@ -90,15 +95,15 @@
       call get_zams_filename(AMUSE_zams_filename, ierr)
       if (failed('get_zams_filename', ierr)) return
       run_create_zams = .true. ! is this necessary?
-      call AMUSE_do_create_zams(s, AMUSE_metallicity, AMUSE_zams_filename, ierr)
+      call AMUSE_do_create_zams(s, AMUSE_metallicity, AMUSE_zams_filename, &
+         AMUSE_dmass, AMUSE_mlo, AMUSE_mhi, ierr)
       if (failed('AMUSE_do_create_zams', ierr)) return      
       ierr = 0
    end subroutine new_zams_model
 
 ! Create a new particle
    function new_particle(AMUSE_id, AMUSE_mass)
-      use amuse_support, only: AMUSE_inlist_path, AMUSE_metallicity, &
-         failed, AMUSE_zams_filename
+      use amuse_support
       use star_lib, only: alloc_star, star_setup, star_load_zams, show_log_header
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support, only: setup_for_run_star, before_evolve
@@ -118,6 +123,14 @@
       s% initial_mass = AMUSE_mass
       s% initial_z = AMUSE_metallicity
       s% zams_filename = trim(AMUSE_zams_filename) // '.data'
+      s% max_age = AMUSE_max_age_stop_condition
+      s% min_timestep_limit = AMUSE_min_timestep_stop_condition
+      s% mixing_length_alpha = AMUSE_mixing_length_ratio
+      s% alpha_semiconvection = AMUSE_semi_convection_efficiency
+      if (debugging) then
+         write (*,*) "Creating new particles with mass: ", s% initial_mass
+         write (*,*) "Loading starting model from: ", s% zams_filename
+      endif
       call star_load_zams(AMUSE_id, ierr)
       if (failed('star_load_zams', ierr)) return
       call setup_for_run_star(AMUSE_id, s, .false., ierr)
@@ -129,12 +142,12 @@
       new_particle = 0
    end function
 
-! Remove a particle
+! Remove a particle (doesn't do anything yet)
    function delete_star(AMUSE_id)
       implicit none
       integer, intent(in) :: AMUSE_id
       integer :: delete_star
-      delete_star = -1
+      delete_star = 0
    end function
 
 ! Does nothing...
@@ -178,7 +191,6 @@
       set_metallicity = -1
       AMUSE_metallicity = AMUSE_value
       call get_zams_filename(AMUSE_zams_filename, ierr)
-      write(*,*) AMUSE_zams_filename, AMUSE_metallicity
       if (failed('get_zams_filename', ierr)) return
       ! Check if the ZAMS model file exists
       iounit = alloc_iounit(ierr)
@@ -248,7 +260,7 @@
             AMUSE_value = -1.0
             get_luminosity = -1
          else
-            AMUSE_value = 10.0**s% log_surface_luminosity
+            AMUSE_value = 10.0d0**s% log_surface_luminosity
             get_luminosity = 0
          endif
       end function
@@ -272,6 +284,31 @@
          endif
       end function
 
+! Return the next timestep for the star
+      function get_time_step(AMUSE_id, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use star_lib, only: star_pick_next_timestep
+         use const_def, only: secyer
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         double precision, intent(out) :: AMUSE_value
+         integer :: get_time_step, ierr
+         type (star_info), pointer :: s
+         AMUSE_value = -1.0
+         get_time_step = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+!         write (*,*) s% star_age, s% dt_next/secyer, s% dt/secyer, s% time_step
+         if (s% star_age > 0.001) then
+            ierr = star_pick_next_timestep(AMUSE_id)
+            if (failed('star_pick_next_timestep', ierr)) return
+         endif
+!         write (*,*) s% star_age, s% dt_next/secyer, s% dt/secyer, s% time_step
+         AMUSE_value = s% dt_next/secyer
+         get_time_step = 0
+      end function
+
 ! Return the current radius of the star
       function get_radius(AMUSE_id, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
@@ -286,21 +323,36 @@
             AMUSE_value = -1.0
             get_radius = -1
          else
-            AMUSE_value = 10.0**s% log_surface_radius
+            AMUSE_value = 10.0d0**s% log_surface_radius
             get_radius = 0
          endif
       end function
 
 ! Return the current stellar type of the star
       function get_stellar_type(AMUSE_id, AMUSE_value)
-         use ctrls_io
-         use run_star_support
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id
-         integer :: get_stellar_type
-         double precision :: AMUSE_value
-         AMUSE_value = 0
-         get_stellar_type = -1
+         integer, intent(out) :: AMUSE_value
+         integer :: get_stellar_type, ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_stellar_type = -1
+         else
+            AMUSE_value = s% phase_of_evolution
+            get_stellar_type = 0
+         endif
+!      integer, parameter :: phase_starting = 0
+!      integer, parameter :: phase_early_main_seq = 1
+!      integer, parameter :: phase_mid_main_seq = 2
+!      integer, parameter :: phase_wait_for_he = 3
+!      integer, parameter :: phase_he_ignition_over = 4
+!      integer, parameter :: phase_he_igniting = 5
+!      integer, parameter :: phase_helium_burning = 6
+!      integer, parameter :: phase_carbon_burning = 7
       end function
 
 ! Evolve the star for one step
@@ -399,9 +451,11 @@
          double precision, intent(in) :: AMUSE_end_time
          type (star_info), pointer :: s
          integer :: ierr, model_number, result, result_reason
+         double precision :: old_max_age
          logical :: first_try, continue_evolve_loop
          call get_star_ptr(AMUSE_id, s, ierr)
          if (failed('get_star_ptr', ierr)) return
+         old_max_age = s% max_age
          s% max_age = AMUSE_end_time
          continue_evolve_loop = .true.
          evolve_loop: do while(continue_evolve_loop) ! evolve one step per loop
@@ -469,6 +523,88 @@
                stop 'finished std_write_internals'
             end if
          end do evolve_loop
+         s% max_age = old_max_age
          return
       end
       
+! Return the maximum age stop condition
+      integer function get_max_age_stop_condition(AMUSE_value)
+         use amuse_support, only: AMUSE_max_age_stop_condition
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_max_age_stop_condition
+         get_max_age_stop_condition = 0
+      end function get_max_age_stop_condition
+
+! Set the maximum age stop condition
+      integer function set_max_age_stop_condition(AMUSE_value)
+         use amuse_support, only: AMUSE_max_age_stop_condition
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_max_age_stop_condition = AMUSE_value
+         set_max_age_stop_condition = 0
+      end function set_max_age_stop_condition
+
+! Return the minimum timestep stop condition
+      integer function get_min_timestep_stop_condition(AMUSE_value)
+         use amuse_support, only: AMUSE_min_timestep_stop_condition
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_min_timestep_stop_condition
+         get_min_timestep_stop_condition = 0
+      end function get_min_timestep_stop_condition
+
+! Set the minimum timestep stop condition
+      integer function set_min_timestep_stop_condition(AMUSE_value)
+         use amuse_support, only: AMUSE_min_timestep_stop_condition
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_min_timestep_stop_condition = AMUSE_value
+         set_min_timestep_stop_condition = 0
+      end function set_min_timestep_stop_condition
+
+! Retrieve the current value of the mixing length ratio
+      integer function get_mixing_length_ratio(AMUSE_value)
+         use amuse_support, only: AMUSE_mixing_length_ratio
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_mixing_length_ratio
+         get_mixing_length_ratio = 0
+      end function get_mixing_length_ratio
+
+! Set the current value of the mixing length ratio
+      integer function set_mixing_length_ratio(AMUSE_value)
+         use amuse_support, only: AMUSE_mixing_length_ratio
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_mixing_length_ratio = AMUSE_value
+         set_mixing_length_ratio = 0
+      end function set_mixing_length_ratio
+
+! Retrieve the current value of the semi convection efficiency
+      integer function get_semi_convection_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_semi_convection_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_semi_convection_efficiency
+         get_semi_convection_efficiency = 0
+      end function get_semi_convection_efficiency
+
+! Set the current value of the semi convection efficiency
+      integer function set_semi_convection_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_semi_convection_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_semi_convection_efficiency = AMUSE_value
+         set_semi_convection_efficiency = 0
+      end function set_semi_convection_efficiency
+
+! Retrieve the maximum number of stars that can be allocated in the code
+      integer function get_maximum_number_of_stars(AMUSE_value)
+         use star_def, only: max_star_handles
+         implicit none
+         integer, intent(out) :: AMUSE_value
+         AMUSE_value = max_star_handles
+         get_maximum_number_of_stars = 0
+      end function get_maximum_number_of_stars
+

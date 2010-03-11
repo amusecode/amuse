@@ -24,17 +24,15 @@ src/makefile.dep: src/Makefile
 	
 
 src/makefile.sys: src/Makefile
-	@echo running confiure
-	@cd src && perl configure.pl
+	@echo running configure
+	@cd src && perl configure.pl > configure.out
 	@echo done	
 	
 	
 clean:
-	make -C src clean
-	/bin/rm -f *~ *.so *.o src/*.o src/sse 
-	/bin/rm -f muse_worker muse_worker.f90 twin_library.mod
-	/bin/rm -f muse_worker.cc  muse_worker_c muse_worker.h
-	/bin/rm -f mpi_code.f90 worker_code twin_library_v2.mod
+	make -s -C src clean
+	/bin/rm -f *.pyc make.log
+	/bin/rm -f mpi_code.f90 worker_code twin_library_v2.mod mesh.mod
 	/bin/rm -f src/makefile.dep src/makefile.sys
 
 distclean:
@@ -42,13 +40,13 @@ distclean:
 	/bin/rm -f *.pyc
 
 worker_code: mpi_code.f90
-	make -C src lib/libtwin.a FORT=$(FORTRAN)
-	cp $(MODDIR)/twin_library_v2.mod .
-	cp $(MODDIR)/mesh.mod .
-	mpif90 $< -o $@ $(EVTWINLIB)
+	@make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN) >& make.log
+	@cp $(MODDIR)/twin_library_v2.mod .
+	@cp $(MODDIR)/mesh.mod .
+	@mpif90 $< -o $@ $(EVTWINLIB)
 
 mpi_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
+	@$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
 	
 .f.o: $<
 	$(FORTRAN) $(FFLAGS) -c -o $@ $< 

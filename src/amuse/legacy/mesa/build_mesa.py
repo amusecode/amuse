@@ -7,7 +7,7 @@ import sys
 class BuildMesa(object):
     
     def mesa_directory(self):
-        return os.path.dirname(__file__)
+        return os.path.abspath(os.path.dirname(__file__))
         
         
     def get_mesa_source_from_svn(self):
@@ -16,6 +16,14 @@ class BuildMesa(object):
         subprocess.call(['svn', 'co', '-r', revision, mesa_url, 'src'], cwd = self.mesa_directory())
         subprocess.call(['cp','-f','./mesa_reqs/makefile_header_v'+str(revision),
             './src/utils/makefile_header'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/eos_def.f',
+            './src/eos/public/eos_def.f'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/kap_def.f',
+            './src/kap/public/kap_def.f'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/net_def.f',
+            './src/net/public/net_def.f'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/star_def.f',
+            './src/star/public/star_def.f'], cwd = self.mesa_directory())
         
     def build_mesa(self):
         self.get_mesa_source_from_svn()

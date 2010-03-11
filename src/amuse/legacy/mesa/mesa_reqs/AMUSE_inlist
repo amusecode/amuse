@@ -423,10 +423,10 @@
          
       ! controls for output
       
-         photostep = 50
+         photostep = -1
             ! save a snapshot for restarting when mod(model_number, photostep) = 0.
             
-         profile_interval = 50
+         profile_interval = -1
             ! save the model profile info when mod(model_number, profile_interval) = 0.
          priority_profile_frequency = 10
             ! give saved profile a higher priority for retention when
@@ -434,7 +434,7 @@
          
          logfile_interval = -1 ! write info to log file when mod(model_number, logfile_interval) = 0.
             ! value <= 0 means use log_cnt for logfile_interval
-         log_cnt = 5 ! write info to terminal when mod(model_number, log_cnt) = 0.
+         log_cnt = 10 ! write info to terminal when mod(model_number, log_cnt) = 0.
          write_header_frequency = 10
             ! output the log header info to the terminal
             ! when mod(model_number, write_header_frequency*log_cnt) = 0.
@@ -632,13 +632,13 @@
 
       ! output of photos, logs, and profiles
 
-         photo_directory = 'photos'
+         photo_directory = '' ! 'photos'
       
          do_log_files = .false. ! log files are created only if this is true
       
          do_profiles = .false. ! profiles are written only if this is true
 
-         log_directory = 'LOGS'
+         log_directory = '' ! 'LOGS'
          star_log_name = 'star.log'
          star_log_header_name = '' 
             ! if not empty, then put star log header info in this file
