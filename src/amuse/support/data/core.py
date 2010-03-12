@@ -1414,7 +1414,11 @@ class ParticlesSuperset(AbstractParticleSet):
     [10.0, 20.0, 30.0, 40.0, 70.0, 60.0] kg
     >>> p2[1].mass
     quantity<70.0 kg>
-    
+    >>> cp = p.copy()
+    >>> print len(cp)
+    6
+    >>> print cp.mass
+    [10.0, 20.0, 30.0, 40.0, 70.0, 60.0] kg
     """
     
     def __init__(self, particle_sets):
@@ -1442,11 +1446,21 @@ class ParticlesSuperset(AbstractParticleSet):
         split_sets = [ [] for x in self._private.particle_sets ]
         split_indices = [ [] for x in self._private.particle_sets ]
         
-        for index, key in enumerate(keys):
+        
+        if keys is None:
+            offset = 0
+            
             for setindex, set in enumerate(self._private.particle_sets):
-                if set._has_key(key):
-                    split_sets[setindex].append(key)
-                    split_indices[setindex].append(index)
+                split_sets[setindex].extend(set._get_keys())
+                split_indices[setindex].extend(range(offset, offset + len(set)))
+                offset = offset + len(set)
+                
+        else:
+            for index, key in enumerate(keys):
+                for setindex, set in enumerate(self._private.particle_sets):
+                    if set._has_key(key):
+                        split_sets[setindex].append(key)
+                        split_indices[setindex].append(index)
         
         return split_sets, split_indices
                     
