@@ -2,7 +2,7 @@ import time
 import sys
 import numpy
 
-from amuse.legacy.hermite0 import muse_dynamics_mpi as mpi_interface
+from amuse.legacy.hermite0.interface import HermiteInterface
 
 try:
     from matplotlib import pyplot
@@ -13,40 +13,38 @@ except ImportError:
 def calculate_speed(range_of_number_of_particles):
     result = []
     for n in range_of_number_of_particles: #range(8000,20000, 1000):
-        hermite1 = mpi_interface.Hermite()
+        hermite1 = HermiteInterface()
         hermite1.setup_module()
         
-        hermite2 = mpi_interface.Hermite()
+        hermite2 = HermiteInterface()
         hermite2.setup_module()
         
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
     
         t0 = time.time()        
-        hermite1.add_particle(ids
-            , values
-            , values
-            , values
-            , values
-            , values
-            , values
-            , values
-            , values)
+        hermite1.new_particle(values
+                              , values
+                              , values
+                              , values
+                              , values
+                              , values
+                              , values
+                              , values)
         t1 = time.time()
         d1 = t1 - t0
         #print d1, t1, t0
         
         t0 = time.time() 
         for i in range(n-1):
-                hermite2.add_particle(ids[i]
-                    , values[i]
-                    , values[i]
-                    , values[i]
-                    , values[i]
-                    , values[i]
-                    , values[i]
-                    , values[i]
-                    , values[i])
+            hermite2.new_particle(values[i]
+                                  , values[i]
+                                  , values[i]
+                                  , values[i]
+                                  , values[i]
+                                  , values[i]
+                                  , values[i]
+                                  , values[i])
         t1 = time.time()
         d2 = t1 - t0
         result.append((n, d1, d2, d2/d1))
