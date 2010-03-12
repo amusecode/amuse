@@ -1433,6 +1433,10 @@ class ParticlesSuperset(AbstractParticleSet):
             result += len(set)
             
         return result
+    
+    
+    def _particles_factory(self):
+        return Particles
         
     def __getitem__(self, index):
         offset = 0
@@ -1482,13 +1486,18 @@ class ParticlesSuperset(AbstractParticleSet):
             values_for_set = set._get_values(keys_for_set, attributes)
             indices_and_values.append( (indices_for_set,values_for_set) )
         
+        if keys is None:
+            resultlength = len(self)
+        else:
+            resultlength = len(keys)
+            
         values = [None] * len(attributes)
         units = [None] * len(attributes)
         for indices, values_for_set in indices_and_values:
             for valueindex, quantity in enumerate(values_for_set):
                 resultvalue = values[valueindex]
                 if resultvalue is None:
-                    resultvalue = numpy.zeros(len(keys) ,dtype=quantity.number.dtype)
+                    resultvalue = numpy.zeros(resultlength ,dtype=quantity.number.dtype)
                     values[valueindex] = resultvalue
                     
                     units[valueindex] = quantity.unit
