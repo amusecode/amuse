@@ -80,6 +80,28 @@ class Hermite(GravitationalDynamicsInterface):
             nbody_system.length * nbody_system.length, 
             0.3 | nbody_system.length * nbody_system.length
         )     
-           
 
+        object.add_attribute_parameter(
+            "timestep",
+            "timestep", 
+            "constant timestep for iteration", 
+            nbody_system.time, 
+            0.7 | nbody_system.time
+        )
+       
 
+    def define_methods(self, object):
+        GravitationalDynamicsInterface.define_methods(self, object)
+
+        object.add_method(
+            'get_potential_at_point',
+            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
+            (nbody_system.potential, object.ERROR_CODE)
+        )
+
+        object.add_method(
+            'get_gravity_at_point',
+            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
+            (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
+        )
+        
