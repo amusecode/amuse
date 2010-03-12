@@ -400,8 +400,9 @@
          if (result == backup) result = star_do1_backup(AMUSE_id)
          if (result == terminate) then
             if (result_reason == result_reason_normal) then
+               if (s% max_model_number > 0 .and. s% model_number >= &
+                  s% max_model_number) evolve = -3 ! max iterations reached
                if (s% star_age >= s% max_age) evolve = -2 ! max_age reached
-               if (s% model_number >= s% max_model_number) evolve = -3 ! max iterations reached
             end if
             return
          end if

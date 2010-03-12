@@ -69,7 +69,7 @@ class TestMESAInterface(TestWithMPI):
                instance.default_path_to_MESA_data)
             status = instance.initialize_code()
             self.assertEqual(status,0)
-            number_of_stars = 10
+            number_of_stars = 1
             for i in range(number_of_stars):
                 #print i
                 (index_of_the_star, error) = instance.new_particle(0.5+i*1.0/number_of_stars)
@@ -227,9 +227,10 @@ class TestMESA(TestWithMPI):
             status = instance.initialize_code()
             self.assertEqual(status,0)
             instance.parameters.set_defaults()
-            self.assertEquals(0.02 | units.no_unit , instance.parameters.metallicity)
-            instance.parameters.metallicity = 0.01 | units.no_unit
-            self.assertEquals(0.01| units.no_unit , instance.parameters.metallicity)
+            self.assertEquals(0.02 | units.no_unit, instance.parameters.metallicity)
+            self.assertEquals(1.0e12 | units.yr, instance.parameters.max_age_stop_condition)
+            instance.parameters.max_age_stop_condition = 1.0e2 | units.Myr
+            self.assertEquals(1.0e2 | units.Myr, instance.parameters.max_age_stop_condition)
         else:
             print "MESA was not built. Skipping test."
         del instance
@@ -277,7 +278,8 @@ class TestMESA(TestWithMPI):
             from_code_to_model = instance.particles.new_channel_to(stars)
             from_code_to_model.copy()
             #print stars
-            instance.evolve_model(end_time = 0.03 | units.Myr)
+            #instance.evolve_model(end_time = 0.03 | units.Myr) # speeding test up:
+            instance.evolve_model()
             self.assertEquals(stars[0].mass, mass)
             self.assertAlmostEquals(stars[0].luminosity, 5841. | units.LSun, 0)
         else:
@@ -358,7 +360,7 @@ class TestMESA(TestWithMPI):
         instance = MESA()
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
-            masses = [.5, 1., 1.5] | units.MSun
+            masses = [0.5, 1.0] | units.MSun
             max_age = 0.6 | units.Myr
             number_of_stars=len(masses)
             stars =  core.Stars(number_of_stars)
