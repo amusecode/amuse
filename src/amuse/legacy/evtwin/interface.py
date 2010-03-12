@@ -548,6 +548,8 @@ class EVtwin(CodeInterface):
     
     def __init__(self):
         CodeInterface.__init__(self, EVtwinInterface())
+        self.set_ev_path(self.default_path_to_ev_database)
+        self.parameters.set_defaults()
         
     
     def define_parameters(self, object):

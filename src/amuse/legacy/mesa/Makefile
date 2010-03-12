@@ -5,7 +5,8 @@ else
 endif
 
 FORTRAN ?= gfortran
-FC = $(FORTRAN)
+export FC = $(FORTRAN)
+
 
 AMUSE_DIR ?=../../../..
 MESA_MAKE_DIR=./mesa_reqs

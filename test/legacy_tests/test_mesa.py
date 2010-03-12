@@ -23,7 +23,9 @@ class TestMESAInterface(TestWithMPI):
             #print "Path to inlist: ", inlist_path
             MESA_data_path = instance.default_path_to_MESA_data
             #print "Path to MESA data directory: ", MESA_data_path
-            status = instance.initialize(inlist_path, MESA_data_path)
+            instance.set_MESA_paths(instance.default_path_to_inlist, 
+               instance.default_path_to_MESA_data)
+            status = instance.initialize_code()
             self.assertEqual(status,0)
         else:
             print "MESA was not built. Skipping test."
@@ -37,8 +39,9 @@ class TestMESAInterface(TestWithMPI):
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
-            status = instance.initialize(instance.default_path_to_inlist, 
-                instance.default_path_to_MESA_data)
+            instance.set_MESA_paths(instance.default_path_to_inlist, 
+               instance.default_path_to_MESA_data)
+            status = instance.initialize_code()
             self.assertEqual(status,0)
             (metallicity, error) = instance.get_metallicity()
             self.assertEquals(0, error)
@@ -62,8 +65,9 @@ class TestMESAInterface(TestWithMPI):
             (maximum_number_of_stars, error) = instance.get_maximum_number_of_stars()
             self.assertEquals(0, error)
             self.assertEqual(maximum_number_of_stars,1000)
-            status = instance.initialize(instance.default_path_to_inlist, 
-                instance.default_path_to_MESA_data)
+            instance.set_MESA_paths(instance.default_path_to_inlist, 
+               instance.default_path_to_MESA_data)
+            status = instance.initialize_code()
             self.assertEqual(status,0)
             number_of_stars = 10
             for i in range(number_of_stars):
@@ -83,9 +87,9 @@ class TestMESAInterface(TestWithMPI):
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
-            status = instance.initialize(instance.default_path_to_inlist, 
-                instance.default_path_to_MESA_data)
-            self.assertEqual(status,0)
+            instance.set_MESA_paths(instance.default_path_to_inlist, 
+               instance.default_path_to_MESA_data)
+            status = instance.initialize_code()
             (index_of_the_star, error) = instance.new_particle(1.0)
             self.assertEquals(0, error)
             self.assertEqual(index_of_the_star,1)
@@ -121,8 +125,9 @@ class TestMESAInterface(TestWithMPI):
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
-            status = instance.initialize(instance.default_path_to_inlist, 
-                instance.default_path_to_MESA_data)
+            instance.set_MESA_paths(instance.default_path_to_inlist, 
+               instance.default_path_to_MESA_data)
+            status = instance.initialize_code()
             self.assertEqual(status,0)
             status = instance.new_zams_model()
             self.assertEqual(status,0)
@@ -136,8 +141,9 @@ class TestMESAInterface(TestWithMPI):
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
-            status = instance.initialize(instance.default_path_to_inlist, 
-                instance.default_path_to_MESA_data)
+            instance.set_MESA_paths(instance.default_path_to_inlist, 
+               instance.default_path_to_MESA_data)
+            status = instance.initialize_code()
             self.assertEqual(status,0)
             metallicities = [0.00, 0.01, 0.02, 0.04]
             luminosities = [1.717, 0.938, 0.725, 0.592]
@@ -211,12 +217,14 @@ class TestMESAInterface(TestWithMPI):
 class TestMESA(TestWithMPI):
     
     def test1(self):
+        print "Testing initialization and default MESA parameters..."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESA()
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
-            status = instance.initialize(instance.default_path_to_inlist, 
-                instance.default_path_to_MESA_data)
+            instance.set_MESA_paths(instance.default_path_to_inlist, 
+               instance.default_path_to_MESA_data)
+            status = instance.initialize_code()
             self.assertEqual(status,0)
             instance.parameters.set_defaults()
             self.assertEquals(0.02 | units.no_unit , instance.parameters.metallicity)
@@ -227,31 +235,57 @@ class TestMESA(TestWithMPI):
         del instance
     
     def test2(self):
+        print "Testing basic operations: evolve and get_..."
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
+        instance = MESA()
+        #channel.MessageChannel.DEBUGGER = None
+        if instance.MESA_exists:
+            instance.initialize_module_with_default_parameters()
+            index_of_the_star = instance.new_particle(1.0 | units.MSun)
+            self.assertEqual(index_of_the_star,1)
+            time_step = instance.get_time_step(index_of_the_star)
+            self.assertAlmostEqual(time_step, 1.0e5 | units.yr,1)
+            instance.evolve(index_of_the_star)
+            end_time = 5.0e5
+            instance.evolve_to(index_of_the_star, end_time)
+            age_of_the_star = instance.get_age(index_of_the_star)
+            self.assertAlmostEqual(age_of_the_star,end_time | units.yr,3)
+            L_of_the_star = instance.get_luminosity(index_of_the_star)
+            self.assertAlmostEqual(L_of_the_star,0.725 | units.LSun,3)
+            M_of_the_star = instance.get_mass(index_of_the_star)
+            self.assertAlmostEqual(M_of_the_star,1.000 | units.MSun,3)
+            T_of_the_star = instance.get_temperature(index_of_the_star)
+            self.assertAlmostEqual(T_of_the_star,5650.998 | units.K,3)
+            time_step = instance.get_time_step(index_of_the_star)
+            self.assertAlmostEqual(time_step,163200.0 | units.yr,1)
+        else:
+            print "MESA was not built. Skipping test."
+        del instance
+    
+    def test3(self):
+        print "Testing basic operations: evolve_model and channels..."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESA()
         #channel.MessageChannel.DEBUGGER = None
         if instance.MESA_exists:
             instance.initialize_module_with_default_parameters()
             stars = core.Stars(1)
-            mass = 1.0 | units.MSun # Getting weird errors only (?) if mass == 10
-            stars[0].mass = mass
+            mass = 10. | units.MSun
+            stars.mass = mass
             instance.setup_particles(stars)
             instance.initialize_stars()
             from_code_to_model = instance.particles.new_channel_to(stars)
             from_code_to_model.copy()
-            print instance.particles._get_attributes()
-#        instance.evolve_model(end_time = 0.003 | units.Myr)
-            print instance.particles.time_step
-            print instance.get_luminosity(1)
-            print instance.particles.stellar_type
-            print stars
+            #print stars
+            instance.evolve_model(end_time = 0.03 | units.Myr)
             self.assertEquals(stars[0].mass, mass)
-            #self.assertAlmostEquals(stars[0].luminosity, 5751. | units.LSun, 0)
+            self.assertAlmostEquals(stars[0].luminosity, 5841. | units.LSun, 0)
         else:
             print "MESA was not built. Skipping test."
         del instance
     
-    def xtest3(self):
+    def xtest4(self):
+        print "Testing stellar type... (WIP)"
         instance = MESA()
         instance.initialize_module_with_default_parameters() 
         stars =  core.Stars(1)
@@ -260,7 +294,7 @@ class TestMESA(TestWithMPI):
         star.mass = 5.0 | units.MSun
         star.radius = 0.0 | units.RSun
         
-        instance.particles.add_particles(stars)
+        instance.setup_particles(stars)
         instance.initialize_stars()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
@@ -317,51 +351,43 @@ class TestMESA(TestWithMPI):
             self.assertEquals(str(result[2]), expected)
         
         del instance
-        
-    def xtest4(self):
-#       Test whether a set of stars evolve synchronously
-#       Create an array of stars with a range in stellar mass
-#        masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
-        # no high mass stars for now.. (problems with 2nd Asymp. Giant Branch)
-        masses = [.5, 1., 1.5] | units.MSun
-        max_age = 12 | units.Myr
-
-        number_of_stars=len(masses)
-        stars =  core.Stars(number_of_stars)
-        for i, star in enumerate(stars):
-            star.mass = masses[i]
-            star.radius = 0.0 | units.RSun
-
-#       Initialize stellar evolution code
-        instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
-        if instance.get_maximum_number_of_stars() < number_of_stars:
-            instance.set_maximum_number_of_stars(number_of_stars)
-        self.assertEqual(instance.parameters.max_age_stop_condition, 2e6 | units.Myr)
-        instance.parameters.max_age_stop_condition = max_age
-        self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
-        instance.setup_particles(stars)
-#       Let the code perform initialization actions after all particles have been created. 
-        instance.initialize_stars()
-        
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
-        
-        instance.evolve_model(end_time = 10 | units.Myr)
-        from_code_to_model.copy()
-        
-        for i in range(number_of_stars):
-            self.assertTrue(stars[i].age.value_in(units.Myr) > 10)
-            self.assertTrue(stars[i].age < max_age)
-            self.assertTrue(stars[i].mass < masses[i])
-            self.assertTrue(stars[i].time_step < max_age)
-                
-        try:
-            instance.evolve_model(end_time = 2*max_age)
-            self.fail("Should not be able to evolve beyond maximum age.")
-        except Exception as ex:
-            self.assertEquals("  2 -- BACKUP -- tstep reduced below limit; quit", str(ex))
-
+    
+    def test5(self):
+        print "Testing evolve_model for particle set..."
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
+        instance = MESA()
+        #channel.MessageChannel.DEBUGGER = None
+        if instance.MESA_exists:
+            masses = [.5, 1., 1.5] | units.MSun
+            max_age = 0.6 | units.Myr
+            number_of_stars=len(masses)
+            stars =  core.Stars(number_of_stars)
+            for i, star in enumerate(stars):
+                star.mass = masses[i]
+            instance.initialize_module_with_default_parameters() 
+            self.assertEqual(instance.parameters.max_age_stop_condition, 1e6 | units.Myr)
+            instance.parameters.max_age_stop_condition = max_age
+            self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
+            instance.setup_particles(stars)
+            instance.initialize_stars()
+            from_code_to_model = instance.particles.new_channel_to(stars)
+            from_code_to_model.copy()
+            instance.evolve_model(end_time = 0.5 | units.Myr)
+            from_code_to_model.copy()
+            #print stars
+            for i in range(number_of_stars):
+                self.assertTrue(stars[i].age.value_in(units.Myr) >= 0.5)
+                self.assertTrue(stars[i].age <= max_age)
+                self.assertTrue(stars[i].mass <= masses[i])
+                self.assertTrue(stars[i].age+stars[i].time_step <= max_age)
+            try:
+                instance.evolve_model(end_time = 2*max_age)
+                print 2*max_age
+                print stars
+                self.fail("Should not be able to evolve beyond maximum age.")
+            except Exception as ex:
+                self.assertEquals("Error when calling 'evolve' of a 'MESA', "
+                    "errorcode is -2, error is 'Maximum age reached.'", str(ex))
+        else:
+            print "MESA was not built. Skipping test."
         del instance
-        
-

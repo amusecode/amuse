@@ -29,6 +29,25 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         return os.path.join(dir, 'src', 'data')
 
     @legacy_function
+    def set_MESA_paths():
+        """
+        Set the paths to the MESA inlist and data directory.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('inlist_path', dtype='string', direction=function.IN,
+            description = "Path to the inlist file.")
+        function.addParameter('data_path', dtype='string', direction=function.IN,
+            description = "Path to the data directory.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was set
+        -1 - ERROR
+            Directory does not exist
+        """
+        return function
+    
+    @legacy_function
     def get_maximum_number_of_stars():
         """
         Retrieve the maximum number of stars that can be
@@ -44,17 +63,6 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function   
-    def initialize():
-        function = LegacyFunctionSpecification()  
-        #function.addParameter('gamma_in', dtype='d', direction=function.IN)
-        function.addParameter('inlist_path', dtype='string', direction=function.IN,
-            description = "Path to the inlist file.")
-        function.addParameter('MESA_data_path', dtype='string', direction=function.IN,
-            description = "Path to the MESA data directory.")
-        function.addParameter('status', dtype='i', direction=function.OUT)
-        return function
-        
     @legacy_function     
     def evolve_to():
         function = LegacyFunctionSpecification()
@@ -237,6 +245,9 @@ class MESA(CodeInterface):
     
     def __init__(self):
         CodeInterface.__init__(self, MESAInterface())
+        self.set_MESA_paths(self.default_path_to_inlist, 
+            self.default_path_to_MESA_data)
+        self.parameters.set_defaults()
         
     
     def define_parameters(self, object):
@@ -283,7 +294,7 @@ class MESA(CodeInterface):
             "semi_convection_efficiency", 
             "The efficiency of semi-convection, after Heger, Langer, & Woosley 2000 (ApJ), which goes back to Langer, Sugimoto & Fricke 1983 (A&A).",
             units.none, 
-            0.04 | units.none
+            0.0 | units.none
         )
         
         
@@ -299,11 +310,13 @@ class MESA(CodeInterface):
         object.add_getter('particles', 'get_age', names = ('age',))
         object.add_getter('particles', 'get_time_step', names = ('time_step',))
         object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
+        object.add_getter('particles', 'get_temperature',names = ('temperature',))
         
         object.add_method('particles', 'evolve', 'evolve_one_step')
     
     def define_errorcodes(self, object):
         object.add_errorcode(-1, 'Something went wrong...')
+        object.add_errorcode(-2, 'Maximum age reached.')
     
     def define_methods(self, object):
         
@@ -348,6 +361,11 @@ class MESA(CodeInterface):
             (units.LSun, object.ERROR_CODE,)
         )
         object.add_method(
+            "get_temperature", 
+            (object.INDEX,), 
+            (units.K, object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_time_step", 
             (object.INDEX,), 
             (units.yr, object.ERROR_CODE,)
@@ -355,10 +373,6 @@ class MESA(CodeInterface):
         
     
     def initialize_module_with_default_parameters(self):
-        status = self.initialize(self.default_path_to_inlist, 
-            self.default_path_to_MESA_data)
-        if status:
-            raise Exception("Failed to initialize.")
         self.parameters.set_defaults()
         self.initialize_code()
         

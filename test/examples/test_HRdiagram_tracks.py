@@ -12,11 +12,12 @@ from amuse.support.units import units
 from amuse.support.data import core
 from amuse.legacy.sse.muse_stellar_mpi import SSE
 from amuse.legacy.evtwin.interface import EVtwin
+from amuse.legacy.mesa.interface import MESA
 from amuse.legacy.support.core import is_mpd_running
 import path_to_test_results
 
 def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun, \
-    name_of_the_figure = "HR_evolution_tracks.png", use_SSE=True):
+    name_of_the_figure = "HR_evolution_tracks.png", stellar_evolution_code=1):
     """
     For every mass in the `masses' array, a stellar evolution track across the Hertzsprung-Russell
     diagram will be calculated and plotted. Each star will be created, evolved and removed one by 
@@ -31,15 +32,22 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
     all_tracks_temperature = []
     all_tracks_stellar_type = []
     
+    if stellar_evolution_code == 1:
+        stellar_evolution = SSE()
+    elif stellar_evolution_code == 2:
+        stellar_evolution = EVtwin()
+    elif stellar_evolution_code == 3:
+        stellar_evolution = MESA()
+        stellar_evolution.parameters.max_age_stop_condition = 50 | units.Myr
+        number_of_stars = number_of_stars - 2
+    else:
+        print "Unknown stellar_evolution_code: ", stellar_evolution_code
+        return
+    stellar_evolution.initialize_module_with_current_parameters() 
+    
     print "The evolution across the Hertzsprung-Russell diagram of ", str(number_of_stars), \
         " stars with\nvarying masses will be simulated..."
-        
-    if use_SSE:
-        stellar_evolution = SSE()
-    else:
-        stellar_evolution = EVtwin()
-    stellar_evolution.initialize_module_with_default_parameters() 
-
+    
     for j in range(number_of_stars):
         stars = core.Stars(1)
         star=stars[0]
@@ -64,12 +72,13 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
             temperature_at_time.append(star.temperature)
             stellar_type_at_time.append(star.stellar_type)
             previous_age = star.age
-                        
-            stellar_evolution.evolve_model()
-            from_code_to_model.copy()
-
-            stopped_evolving = (star.age == previous_age) # Check whether the age has stopped increasing
-
+            try:
+                stellar_evolution.evolve_model()
+                from_code_to_model.copy()
+                stopped_evolving = (star.age == previous_age) # Check whether the age has stopped increasing
+            except Exception as ex:
+                print str(ex)
+                stopped_evolving = True
         if stopped_evolving: print "Age did not increase during timestep. Aborted evolving..."
         print " ... evolved model to t = " + str(star.age)
         print "Star has now become a: ", star.stellar_type, "(stellar_type: "+str(star.stellar_type.value_in(units.stellar_type))+")"
@@ -83,21 +92,27 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
 
     del stellar_evolution
     
-    plot_HR_diagram(masses, all_tracks_luminosity, all_tracks_temperature, all_tracks_stellar_type, name_of_the_figure, use_SSE)
+    plot_HR_diagram(number_of_stars, masses, all_tracks_luminosity, all_tracks_temperature, 
+        all_tracks_stellar_type, name_of_the_figure, stellar_evolution_code)
     
     
 
-def plot_HR_diagram(masses, all_tracks_luminosity, all_tracks_temperature, all_tracks_stellar_type, name_of_the_figure, use_SSE):
-    number_of_stars=len(masses)
+def plot_HR_diagram(number_of_stars, masses, all_tracks_luminosity, all_tracks_temperature, 
+        all_tracks_stellar_type, name_of_the_figure, stellar_evolution_code):
     if HAS_MATPLOTLIB:
         print "Plotting the data..."
         pyplot.figure(figsize = (7, 8))
         pyplot.suptitle('Hertzsprung-Russell diagram', fontsize=16)
-        if use_SSE:
-            pyplot.title('Evolutionary tracks were simulated using the SSE package\n(Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543)', \
+        if stellar_evolution_code == 1:
+            pyplot.title('Evolutionary tracks were simulated using the SSE package\n'
+                '(Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543)', 
                 fontsize=12)
-        else:
-            pyplot.title('Evolutionary tracks were simulated using the EVtwin package', fontsize=12)
+        elif stellar_evolution_code == 2:
+            pyplot.title('Evolutionary tracks were simulated using the EVtwin package', 
+                fontsize=12)
+        elif stellar_evolution_code == 3:
+            pyplot.title('Evolutionary tracks were simulated using the MESA package', 
+                fontsize=12)
         pyplot.xlabel('Effective Temperature (K)')
         pyplot.ylabel('Luminosity (solar luminosity)')
 
@@ -158,7 +173,8 @@ def test_simulate_one_star():
     assert is_mpd_running()
     test_results_path = path_to_test_results.get_path_to_test_results()
     output_file = os.path.join(test_results_path, "HR_evolution_tracks.png")
-    simulate_evolution_tracks([20.0] | units.MSun, name_of_the_figure=output_file, use_SSE=True)
+    simulate_evolution_tracks([20.0] | units.MSun, name_of_the_figure=output_file, 
+        stellar_evolution_code = 1)
     
 if __name__ == '__main__':
     if len(sys.argv) == 1:
@@ -167,8 +183,14 @@ if __name__ == '__main__':
         simulate_evolution_tracks(name_of_the_figure = sys.argv[1])
     else:
         if sys.argv[2] == "evtwin":
-            simulate_evolution_tracks(name_of_the_figure = sys.argv[1], use_SSE = False)
+            simulate_evolution_tracks(name_of_the_figure = sys.argv[1], 
+                stellar_evolution_code = 2)
+        elif sys.argv[2] == "mesa":
+            simulate_evolution_tracks(name_of_the_figure = sys.argv[1], 
+                stellar_evolution_code = 3)
         else:
             print "Unknown option:", sys.argv[2]
-            print "For EVtwin use option ' evtwin'. Now using SSE..."
-            simulate_evolution_tracks(name_of_the_figure = sys.argv[1], use_SSE = True)
+            print "For EVtwin use option ' evtwin'."
+            print "For MESA use option ' mesa'. Now using SSE..."
+            simulate_evolution_tracks(name_of_the_figure = sys.argv[1], 
+                stellar_evolution_code = 1)
