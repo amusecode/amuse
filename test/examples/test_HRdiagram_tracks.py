@@ -137,9 +137,9 @@ def plot_HR_diagram(masses, all_tracks_luminosity, all_tracks_temperature, all_t
                 xytext=(x_values[0]*text_offset_factor_x,y_values[0]*text_offset_factor_y), \
                 color='g', horizontalalignment='right')
                 
-        pyplot.axis([300000., 2500., 1.e-2, 1.e6])
+#        pyplot.axis([300000., 2500., 1.e-2, 1.e6])
 #       Or use these axes to also view neutron stars and black holes:
-#        pyplot.axis([1.e7, 2500., 1.e-11, 1.e6])
+        pyplot.axis([1.e7, 2500., 1.e-11, 1.e6])
         pyplot.savefig(name_of_the_figure)
         
         print

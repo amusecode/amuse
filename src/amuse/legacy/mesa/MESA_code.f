@@ -28,6 +28,8 @@
          integer :: metallicity_exp, metallicity_factor
          if (AMUSE_metallicity.eq.0.0d0) then
             str = trim(mesa_data_dir) // '/star_data/starting_models/zams_z0m0'
+         elseif (AMUSE_metallicity.eq.0.02d0) then
+            str = trim(mesa_data_dir) // '/star_data/starting_models/zams_z2m2'
          else
             metallicity_exp = floor(log10(AMUSE_metallicity))-1
             metallicity_factor = floor(0.5 + AMUSE_metallicity/(1.0d1**metallicity_exp))
