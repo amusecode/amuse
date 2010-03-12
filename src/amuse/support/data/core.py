@@ -1392,6 +1392,139 @@ class Particles(AbstractParticleSet):
     
     
 
+class ParticlesSuperset(AbstractParticleSet):
+    """A superset of particles. Attribute values are not
+    stored by the superset. The superset provides a view
+    on two or more sets of particles. 
+    
+    Superset objects are not supposed to be created
+    directly. Instead use the ``union`` methods.
+    
+    >>> p1 = Particles(3)
+    >>> p1.mass = [10.0, 20.0, 30.0] | units.kg
+    >>> p2 = Particles(3)
+    >>> p2.mass = [40.0, 50.0, 60.0] | units.kg
+    >>> p = ParticlesSuperset([p1, p2])
+    >>> print len(p)
+    6
+    >>> print p.mass
+    [10.0, 20.0, 30.0, 40.0, 50.0, 60.0] kg
+    >>> p[4].mass = 70 | units.kg
+    >>> print p.mass
+    [10.0, 20.0, 30.0, 40.0, 70.0, 60.0] kg
+    >>> p2[1].mass
+    quantity<70.0 kg>
+    
+    """
+    
+    def __init__(self, particle_sets):
+        AbstractParticleSet.__init__(self)
+        
+        self._private.particle_sets = particle_sets
+              
+    
+    def __len__(self):
+        result = 0
+        for set in self._private.particle_sets:
+            result += len(set)
+            
+        return result
+        
+    def __getitem__(self, index):
+        offset = 0
+        for set in self._private.particle_sets:
+            length = len(set)
+            if index < (offset+length):
+                return set[index - offset]
+            offset += length
+    
+    def _split_keys_over_sets(self, keys):
+        split_sets = [ [] for x in self._private.particle_sets ]
+        split_indices = [ [] for x in self._private.particle_sets ]
+        
+        for index, key in enumerate(keys):
+            for setindex, set in enumerate(self._private.particle_sets):
+                if set._has_key(key):
+                    split_sets[setindex].append(key)
+                    split_indices[setindex].append(index)
+        
+        return split_sets, split_indices
+                    
+        
+    def _set_particles(self, keys, attributes = [], values = []):
+        raise Exception("Cannot add particles to a superset")
+        
+    def _remove_particles(self, keys):
+        split_sets, split_indices = self._split_keys_over_sets(keys)
+        for split_keys, set in zip(split_sets, self._private.particle_sets):
+            set._remove_particles(split_keys)
+    
+    def _get_values(self, keys, attributes):
+        split_sets, split_indices = self._split_keys_over_sets(keys)
+        
+        indices_and_values = []
+        
+        for keys_for_set, indices_for_set, set in zip(split_sets, split_indices, self._private.particle_sets):
+            values_for_set = set._get_values(keys_for_set, attributes)
+            indices_and_values.append( (indices_for_set,values_for_set) )
+        
+        values = [None] * len(attributes)
+        units = [None] * len(attributes)
+        for indices, values_for_set in indices_and_values:
+            for valueindex, quantity in enumerate(values_for_set):
+                resultvalue = values[valueindex]
+                if resultvalue is None:
+                    resultvalue = numpy.zeros(len(keys) ,dtype=quantity.number.dtype)
+                    values[valueindex] = resultvalue
+                    
+                    units[valueindex] = quantity.unit
+                    
+                resultunit = units[valueindex]
+                
+                numpy.put(resultvalue, indices, quantity.value_in(resultunit))
+                
+            
+        return map(lambda u,v : u.new_quantity(v), units, values)
+        
+    def _set_values(self, keys, attributes, values):
+        split_sets, split_indices = self._split_keys_over_sets(keys)
+        
+        for keys_for_set, indices_for_set, set in zip(split_sets, split_indices, self._private.particle_sets):
+            quantities = [None] * len(attributes)
+            for valueindex, quantity in enumerate(values_for_set):
+                numbers = numpy.take(quantity.number, indices_for_set)
+                quantities[valueindex] = quantity.unit.new_quantity(numbers)
+            
+            set._set_values(keys_for_set, attributes, quantities)
+    
+    def _get_attributes(self):
+        for set in self._private.particle_sets:
+            return set._get_attributes()
+        
+    def _get_keys(self):
+        result = []
+        
+        for set in self._private.particle_sets:
+            result.extend(set._get_keys())
+            
+        return result
+        
+    def _has_key(self, key):
+        for set in self._private.particle_sets:
+            if set._has_key(key):
+                return True
+        return False
+    
+    def _get_state_attributes(self):
+        for set in self._private.particle_sets:
+            return set._get_state_attributes()
+        
+        
+    def _real_particles(self):
+        return self
+
+
+
 class ParticlesSubset(AbstractParticleSet):
     """A subset of particles. Attribute values are not
     stored by the subset. The subset provides a limited view
@@ -1399,7 +1532,9 @@ class ParticlesSubset(AbstractParticleSet):
     
     Particle subset objects are not supposed to be created
     directly. Instead use the ``to_set`` or ``select`` methods.
+
     """
+    
     def __init__(self, particles, keys):
         AbstractParticleSet.__init__(self, particles)
         
