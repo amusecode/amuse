@@ -170,6 +170,42 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         return function
         
     @legacy_function
+    def get_max_iter_stop_condition():
+        """
+        Retrieve the current maximum number of iterations of this instance. (Negative means no maximum)
+        Evolution will stop after this number of iterations.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('max_iter_stop_condition', dtype='int32', direction=function.OUT
+            , description="The current maximum number of iterations of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_max_iter_stop_condition():
+        """
+        Set the new maximum number of iterations of this instance. (Negative means no maximum)
+        Evolution will stop after this number of iterations.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('max_iter_stop_condition', dtype='int32', direction=function.IN
+            , description="The new maximum number of iterations of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+        
+    @legacy_function
     def get_mixing_length_ratio():
         """
         Retrieve the current value of the mixing length ratio.
@@ -280,6 +316,15 @@ class MESA(CodeInterface):
         )
         
         object.add_method_parameter(
+            "get_max_iter_stop_condition",
+            "set_max_iter_stop_condition",
+            "max_iter_stop_condition", 
+            "The maximum number of iterations of this instance. (Negative means no maximum)",
+            units.none, 
+            -1111 | units.none
+        )
+        
+        object.add_method_parameter(
             "get_mixing_length_ratio",
             "set_mixing_length_ratio",
             "mixing_length_ratio", 
@@ -317,6 +362,7 @@ class MESA(CodeInterface):
     def define_errorcodes(self, object):
         object.add_errorcode(-1, 'Something went wrong...')
         object.add_errorcode(-2, 'Maximum age reached.')
+        object.add_errorcode(-3, 'Maximum number of iterations reached.')
     
     def define_methods(self, object):
         

@@ -10,6 +10,7 @@
          double precision :: AMUSE_mhi = 1.7d0
          double precision :: AMUSE_max_age_stop_condition = 1.0d12
          double precision :: AMUSE_min_timestep_stop_condition = 1.0d-6
+         integer :: AMUSE_max_iter_stop_condition = -1111
          double precision :: AMUSE_mixing_length_ratio = 2.0d0
          double precision :: AMUSE_semi_convection_efficiency = 0.0d0
          logical :: debugging = .true.
@@ -122,6 +123,7 @@
       s% zams_filename = trim(AMUSE_zams_filename) // '.data'
       s% max_age = AMUSE_max_age_stop_condition
       s% min_timestep_limit = AMUSE_min_timestep_stop_condition
+      s% max_model_number = AMUSE_max_iter_stop_condition
       s% mixing_length_alpha = AMUSE_mixing_length_ratio
       s% alpha_semiconvection = AMUSE_semi_convection_efficiency
       if (debugging) then
@@ -399,6 +401,7 @@
          if (result == terminate) then
             if (result_reason == result_reason_normal) then
                if (s% star_age >= s% max_age) evolve = -2 ! max_age reached
+               if (s% model_number >= s% max_model_number) evolve = -3 ! max iterations reached
             end if
             return
          end if
@@ -538,6 +541,24 @@
          AMUSE_max_age_stop_condition = AMUSE_value
          set_max_age_stop_condition = 0
       end function set_max_age_stop_condition
+
+! Return the maximum age stop condition
+      integer function get_max_iter_stop_condition(AMUSE_value)
+         use amuse_support, only: AMUSE_max_iter_stop_condition
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_max_iter_stop_condition
+         get_max_iter_stop_condition = 0
+      end function get_max_iter_stop_condition
+
+! Set the maximum age stop condition
+      integer function set_max_iter_stop_condition(AMUSE_value)
+         use amuse_support, only: AMUSE_max_iter_stop_condition
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_max_iter_stop_condition = AMUSE_value
+         set_max_iter_stop_condition = 0
+      end function set_max_iter_stop_condition
 
 ! Return the minimum timestep stop condition
       integer function get_min_timestep_stop_condition(AMUSE_value)
