@@ -158,53 +158,53 @@ class TestMESAInterface(TestWithMPI):
     def test7(self):
         print "Testing MESA stop conditions..."
         instance = MESAInterface()
-        
-        (value, error) = instance.get_max_age_stop_condition()
-        self.assertEquals(0, error) 
-        self.assertEquals(1.0e12, value)
-        for x in range(10,14):
-            error = instance.set_max_age_stop_condition(10 ** x)
-            self.assertEquals(0, error)
+        if instance.MESA_exists:
             (value, error) = instance.get_max_age_stop_condition()
-            self.assertEquals(0, error)
-            self.assertEquals(10 ** x, value)
-        
-        (value, error) = instance.get_min_timestep_stop_condition()
-        self.assertEquals(0, error)
-        self.assertEquals(1.0e-6, value)
-        for x in range(-9,-2):
-            error = instance.set_min_timestep_stop_condition(10.0 ** x)
-            self.assertEquals(0, error)
+            self.assertEquals(0, error) 
+            self.assertEquals(1.0e12, value)
+            for x in range(10,14):
+                error = instance.set_max_age_stop_condition(10 ** x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_max_age_stop_condition()
+                self.assertEquals(0, error)
+                self.assertEquals(10 ** x, value)
             (value, error) = instance.get_min_timestep_stop_condition()
             self.assertEquals(0, error)
-            self.assertEquals(10.0 ** x, value)
-        
+            self.assertEquals(1.0e-6, value)
+            for x in range(-9,-2):
+                error = instance.set_min_timestep_stop_condition(10.0 ** x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_min_timestep_stop_condition()
+                self.assertEquals(0, error)
+                self.assertEquals(10.0 ** x, value)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
     
     def test8(self):
         print "Testing MESA parameters..."
         instance = MESAInterface()
-        
-        (value, error) = instance.get_mixing_length_ratio()
-        self.assertEquals(0, error) 
-        self.assertEquals(2.0, value)
-        for x in [1.0, 1.5, 3.0]:
-            error = instance.set_mixing_length_ratio(x)
-            self.assertEquals(0, error)
+        if instance.MESA_exists:
             (value, error) = instance.get_mixing_length_ratio()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
-        
-        (value, error) = instance.get_semi_convection_efficiency()
-        self.assertEquals(0, error)
-        self.assertEquals(0.0, value)
-        for x in [0.1, 0.04, 0.001]:
-            error = instance.set_semi_convection_efficiency(x)
-            self.assertEquals(0, error)
+            self.assertEquals(0, error) 
+            self.assertEquals(2.0, value)
+            for x in [1.0, 1.5, 3.0]:
+                error = instance.set_mixing_length_ratio(x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_mixing_length_ratio()
+                self.assertEquals(0, error)
+                self.assertEquals(x, value)
             (value, error) = instance.get_semi_convection_efficiency()
             self.assertEquals(0, error)
-            self.assertEquals(x, value)
-        
+            self.assertEquals(0.0, value)
+            for x in [0.1, 0.04, 0.001]:
+                error = instance.set_semi_convection_efficiency(x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_semi_convection_efficiency()
+                self.assertEquals(0, error)
+                self.assertEquals(x, value)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
 
 
@@ -214,35 +214,41 @@ class TestMESA(TestWithMPI):
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESA()
         #channel.MessageChannel.DEBUGGER = None
-        status = instance.initialize(instance.default_path_to_inlist, 
-            instance.default_path_to_MESA_data)
-        self.assertEqual(status,0)
-        instance.parameters.set_defaults()
-        self.assertEquals(0.02 | units.no_unit , instance.parameters.metallicity)
-        instance.parameters.metallicity = 0.01 | units.no_unit
-        self.assertEquals(0.01| units.no_unit , instance.parameters.metallicity)
+        if instance.MESA_exists:
+            status = instance.initialize(instance.default_path_to_inlist, 
+                instance.default_path_to_MESA_data)
+            self.assertEqual(status,0)
+            instance.parameters.set_defaults()
+            self.assertEquals(0.02 | units.no_unit , instance.parameters.metallicity)
+            instance.parameters.metallicity = 0.01 | units.no_unit
+            self.assertEquals(0.01| units.no_unit , instance.parameters.metallicity)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
     
     def test2(self):
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESA()
         #channel.MessageChannel.DEBUGGER = None
-        instance.initialize_module_with_default_parameters()
-        stars = core.Stars(1)
-        mass = 1.0 | units.MSun # Getting weird errors only (?) if mass == 10
-        stars[0].mass = mass
-        instance.setup_particles(stars)
-        instance.initialize_stars()
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
-        print instance.particles._get_attributes()
+        if instance.MESA_exists:
+            instance.initialize_module_with_default_parameters()
+            stars = core.Stars(1)
+            mass = 1.0 | units.MSun # Getting weird errors only (?) if mass == 10
+            stars[0].mass = mass
+            instance.setup_particles(stars)
+            instance.initialize_stars()
+            from_code_to_model = instance.particles.new_channel_to(stars)
+            from_code_to_model.copy()
+            print instance.particles._get_attributes()
 #        instance.evolve_model(end_time = 0.003 | units.Myr)
-        print instance.particles.time_step
-        print instance.get_luminosity(1)
-        print instance.particles.stellar_type
-        print stars
-        self.assertEquals(stars[0].mass, mass)
-#        self.assertAlmostEquals(stars[0].luminosity, 5751. | units.LSun, 0)
+            print instance.particles.time_step
+            print instance.get_luminosity(1)
+            print instance.particles.stellar_type
+            print stars
+            self.assertEquals(stars[0].mass, mass)
+            #self.assertAlmostEquals(stars[0].luminosity, 5751. | units.LSun, 0)
+        else:
+            print "MESA was not built. Skipping test."
         del instance
     
     def xtest3(self):
