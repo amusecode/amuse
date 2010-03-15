@@ -1,6 +1,6 @@
 import platform
 
-from amuse.legacy.sse import muse_stellar_mpi as mpi_interface
+from amuse.legacy.sse import interface as mpi_interface
 
 from amuse.support.data import core
 from amuse.support.units import units
@@ -25,8 +25,32 @@ class TestMPIInterface(TestWithMPI):
             self.t_ms = 0.0
             self.sse_age = 0.0
         
+    def initialize_module_with_default_parameters(self, sse):
+        metallicity = 0.02
+        
+        neta = 0.5
+        bwind =  0.0
+        hewind =  0.5
+        sigma =  190.0
+        
+        ifflag = 0
+        wdflag =  1
+        bhflag =  0 
+        nsflag =  1
+        mxns =  3.0
+        
+        pts1 = 0.05
+        pts2 = 0.01
+        pts3 = 0.02
+    
+    
+        status = sse.initialize(metallicity,
+            neta, bwind, hewind, sigma,
+            ifflag, wdflag, bhflag, nsflag, mxns,
+            pts1, pts2, pts3)
+        
     def test1(self):
-        sse = mpi_interface.SSE()
+        sse = mpi_interface.SSEInterface()
         
         metallicity = 0.02
         
@@ -50,10 +74,13 @@ class TestMPIInterface(TestWithMPI):
             neta, bwind, hewind, sigma,
             ifflag, wdflag, bhflag, nsflag, mxns,
             pts1, pts2, pts3)
+            
         self.assertEqual(status,0)
+        
         del sse
+        
     def test2(self):
-        sse = mpi_interface.SSE()
+        sse = mpi_interface.SSEInterface()
         
         metallicity = 0.02
         
@@ -152,8 +179,8 @@ class TestMPIInterface(TestWithMPI):
         del sse
      
     def test3(self):
-        sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters()  
+        sse = mpi_interface.SSEInterface()
+        self.initialize_module_with_default_parameters(sse)  
         types = [1,1,1]
         masses = [10,5,4]
         radii = [5.0, 2.0, 1.0]
@@ -182,8 +209,8 @@ class TestMPIInterface(TestWithMPI):
         del sse
         
     def test4(self):
-        sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters()  
+        sse = mpi_interface.SSEInterface()
+        self.initialize_module_with_default_parameters(sse) 
         types = [1 for x in range(1,4000)]
         masses = [1.0 + ((x / 4000.0) * 10.0) for x in range(1,4000)]
         radii = [1.0 for x in range(1,4000)]
@@ -211,23 +238,6 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(len(result['mass']), 3999)
         del sse
 
-    def test5(self):
-        instance = mpi_interface.SSE()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
-        instance.parameters.reimers_mass_loss_coefficient = myvalue
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
-        instance.initialize_module_with_current_parameters()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
-        del instance
-        
-        instance = mpi_interface.SSE()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
-        instance.parameters.reimers_mass_loss_coefficient = myvalue
-        instance.initialize_module_with_default_parameters()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        del instance
         
 class TestSSE(TestWithMPI):
     
@@ -235,7 +245,6 @@ class TestSSE(TestWithMPI):
         sse = mpi_interface.SSE()
         sse.initialize_module_with_default_parameters() 
         stars =  core.Stars(1)
-        
         star = stars[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
@@ -426,3 +435,22 @@ class TestSSE(TestWithMPI):
         self.assertEquals(stars[0].luminosity, stars[1].luminosity)
         self.assertEquals(stars[0].age, stars[1].age)
         print "Solved: SSE_muse_interface.f sets initial_mass to mass when necessary."
+    
+    
+    def test8(self):
+        instance = mpi_interface.SSE()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        myvalue = 0.7 | units.none
+        instance.parameters.reimers_mass_loss_coefficient = myvalue
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
+        instance.initialize_module_with_current_parameters()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
+        del instance
+        
+        instance = mpi_interface.SSE()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        myvalue = 0.7 | units.none
+        instance.parameters.reimers_mass_loss_coefficient = myvalue
+        instance.initialize_module_with_default_parameters()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        del instance

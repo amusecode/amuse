@@ -457,10 +457,13 @@ class VectorAttribute(DerivedAttribute):
     
 class CalculatedAttribute(DerivedAttribute):
     
-    def  __init__(self, function):
+    def  __init__(self, function, attribute_names = None):
         self.function = function
-        arguments, varargs, kwargs, defaults = inspect.getargspec(function)
-        self.attribute_names = arguments 
+        if attribute_names is None:
+            arguments, varargs, kwargs, defaults = inspect.getargspec(function)
+            self.attribute_names = arguments 
+        else:
+            self.attribute_names = attribute_names
     
     def get_values_for_particles(self, instance):
         values = instance._get_values(instance._get_keys(), self.attribute_names)
@@ -729,7 +732,7 @@ class AbstractParticleSet(object):
         cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = VectorAttribute(name_of_the_components)
     
     
-    def add_calculated_attribute(self, name_of_the_attribute, function):
+    def add_calculated_attribute(self, name_of_the_attribute, function, attributes_names = None):
         """
         Define a read-only calculated attribute, values for the attribute are
         calculated using the given function. The functions argument 
@@ -763,18 +766,19 @@ class AbstractParticleSet(object):
         
         """
         
-        self._derived_attributes[name_of_the_attribute] = CalculatedAttribute(function)
+        self._derived_attributes[name_of_the_attribute] = CalculatedAttribute(function, attributes_names)
     
     
     @classmethod
-    def add_global_calculated_attribute(cls, name_of_the_attribute, function):
+    def add_global_calculated_attribute(cls, name_of_the_attribute, function, attributes_names = None):
         """
         Define a *global* vector attribute, coupling two or more scalar attributes into
         one vector attribute. The vector will be defined for all particle sets
         created after calling this function.
         
         :argument name_of_the_attribute: Name to reference the vector attribute by. 
-        :argument name_of_the_components: List of strings, each string a name of a scalar attribute.
+        :argument function: Name of the function to call. 
+        :argument attributes_names: List of strings, each string a name of a scalar attribute, if None uses argument names.
         
         
         >>> Particles.add_global_calculated_attribute("xy", lambda x, y : x * y)
@@ -785,7 +789,7 @@ class AbstractParticleSet(object):
         [3.0, 8.0] m**2
         
         """
-        cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = CalculatedAttribute(function)
+        cls.GLOBAL_DERIVED_ATTRIBUTES[name_of_the_attribute] = CalculatedAttribute(function, attributes_names)
     
     
     def add_function_attribute(self, name_of_the_attribute, function, function_for_particle = None):

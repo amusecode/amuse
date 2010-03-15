@@ -639,13 +639,14 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions.append(definition) 
         
+        
     def add_caching_parameter(self, parameter_name, name, description, unit, default_value = None):
-        definition = ModuleCachingParameterDefinition(
+        definition = parameters.ModuleCachingParameterDefinition(
             parameter_name, 
             name, 
             description, 
             unit, 
-            default_value = None
+            default_value
         )
         self.definitions.append(definition) 
     
@@ -691,10 +692,18 @@ class ParticleSetDefinition(object):
         self.setters = []
         self.getters = []
         self.queries = []
+        self.attributes = []
+        
         self.selects_form_particle = []
         self.methods = []
+        self.is_inmemory = False
+        self.particles_factory = core.Particles
     
     def new_storage(self, interface):
+        
+        if self.is_inmemory:
+            return core.InMemoryAttributeStorage()
+            
         setters = []
         for name, mapping, names in self.setters:
             x = code_particles.ParticleSetAttributesMethod(getattr(interface, name), mapping, names)
@@ -763,7 +772,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
             return self.particle_sets[name]
         else:
             storage = self.sets[name].new_storage(self.interface)
-            result = core.Particles(storage = storage)
+            if self.sets[name].is_inmemory:
+                result = self.sets[name].particles_factory(self.interface, storage = storage)
+            else:
+                result = self.sets[name].particles_factory(storage = storage)
             queries = self.sets[name].new_queries(self.interface)
             for x in queries:
                 result.add_function_attribute(x.public_name, x.apply)
@@ -778,6 +790,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
             for x in selects:
                 result.add_function_attribute(x.public_name, x.apply_on_all, x.apply_on_one)
             
+            attributes = self.sets[name].attributes
+            for name_of_the_attribute, name_of_the_method, names in attributes:
+                result.add_calculated_attribute(name_of_the_attribute, getattr(self.interface, name_of_the_method), names)
+                
             self.particle_sets[name] = result
             return result
     
@@ -795,6 +811,12 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         definition = ParticleSetDefinition(self)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
         self.sets[name] = definition
+        
+    def define_inmemory_set(self, name, particles_factory = core.Particles):
+        definition = ParticleSetDefinition(self)
+        definition.is_inmemory = True
+        definition.particles_factory = particles_factory
+        self.sets[name] = definition
 
     def set_new(self, name_of_the_set, name_of_new_particle_method, mapping = (), names = None):
         self.sets[name_of_the_set].new_particle_method = (name_of_new_particle_method, mapping, names)
@@ -809,6 +831,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def add_setter(self, name_of_the_set, name_of_the_setter, mapping = (), names = None):
         
         self.sets[name_of_the_set].setters.append((name_of_the_setter,mapping, names))
+        
+    def add_attribute(self, name_of_the_set, name_of_the_attribute, name_of_the_method, names = None):
+        
+        self.sets[name_of_the_set].attributes.append((name_of_the_attribute,name_of_the_method, names))
         
     def add_query(self, name_of_the_set, name_of_the_query, names = (), public_name = None):
         if not public_name:

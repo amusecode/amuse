@@ -10,7 +10,7 @@ except ImportError:
 
 from amuse.support.units import units
 from amuse.support.data import core
-from amuse.legacy.sse.muse_stellar_mpi import SSE
+from amuse.legacy.sse.interface import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
 import path_to_test_results

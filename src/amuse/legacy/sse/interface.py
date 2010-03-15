@@ -1,12 +1,8 @@
-from amuse.support.units import units
-from amuse.support.data.core import Particles
-
 from amuse.legacy import *
 
-from amuse.support.data.values import Quantity
-from amuse.support.data.binding import ParticleAttributesModifier
+from amuse.support.units import units
 from amuse.support.data.core import Particles, ParticlesSubset
-from amuse.support.interface import CodeInterfaceOld
+from amuse.support.interface import CodeInterface
 
 class SSEInterface(LegacyInterface): 
     def __init__(self):
@@ -66,45 +62,12 @@ class SSEInterface(LegacyInterface):
         function.addParameter('dt', dtype='d', direction=function.OUT)
         return function
         
-    def get_time_step_for_star(self, star):
-        
-        current_values = {}
-        current_values['kw'] = star.stellar_type.value_in(units.stellar_type)
-        current_values['mass'] = star.initial_mass.value_in(units.MSun)
-        current_values['mt'] = star.mass.value_in(units.MSun)
-        current_values['tm'] = star.main_sequence_lifetime.value_in(units.Myr)
-        current_values['age'] = star.age.value_in(units.Myr)
-        current_values['epoch'] = star.epoch.value_in(units.Myr)
-        
-        result = self.get_time_step(**current_values)
-        
-        return result | units.Myr
-        
-        
-    def evolve_particle(self, particle, time_end):
-        t = particle.current_time
-        if particle.stellar_type.value_in(units.none) == 15:
-            return
-        while t < time_end:
-            t0 = t
-            t  = t0 + self.get_time_step_for_star(particle)
-            if t > time_end:
-                t = time_end
-            self.evolve_star(particle, t)
-            t1 = particle.current_time
-            dt = t1 - t0
-            t0 = t1
-            if dt.value_in(units.Myr) == 0.0:
-                print t, t0, t1, dt, "BREAK BREAK BREAK!"
-                return
-            if particle.stellar_type.value_in(units.none) == 15:
-                return
     
         
 class SSEParticles(Particles):
     
-    def __init__(self, code_interface):
-        Particles.__init__(self)
+    def __init__(self, code_interface, storage = None):
+        Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface 
         
     def _set_particles(self, keys, attributes = [], values = []):
@@ -145,188 +108,261 @@ class SSEParticles(Particles):
         super(SSEParticles, self)._set_particles(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
-        self._private.code_interface.evolve_particles_method._run(self._private.code_interface, added_particles, 1e-06 | units.Myr)
+        self._private.code_interface._evolve_particles(added_particles, 1e-06 | units.Myr)
     
     def _state_attributes(self):
         return ["mass", "radius"]
         
-class SSEBinding(CodeInterfaceOld):
+        
+    
+
+    
+
+    
+        
+        
+
+class SSE(CodeInterface):
     
     def __init__(self):
-        CodeInterfaceOld.__init__(self)
-        self.particles = SSEParticles(self)
+        CodeInterface.__init__(self, SSEInterface())
+        
+        
         self.parameters.set_defaults()
-   
-    parameter_definitions = [
-        parameters.ModuleCachingParameterDefinition(
+        
+    
+    def define_parameters(self, object):
+    
+        object.add_caching_parameter(
             "metallicity",
             "metallicity",
             "Metallicity of all stars",
             units.none,
             0.02 | units.none
-        ),
+        )
                 
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "neta",
             "reimers_mass_loss_coefficient",
             "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
             units.none,
             0.5 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "bwind",
             "binary_enhanced_mass_loss_parameter",
             "The binary enhanced mass loss parameter (inactive for single).",
             units.none,
             0.0 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "hewind",
             "helium_star_mass_loss_factor",
             "Helium star mass loss factor",
             units.none,
             1.0 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "sigma",
             "SN_kick_speed_dispersion",
             "The dispersion in the Maxwellian for the SN kick speed (190 km/s).",
             units.km / units.s,
             190.0 | units.km / units.s
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "ifflag",
             "white_dwarf_IFMR_flag", 
             "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
             units.none, 
             0 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "wdflag",
             "white_dwarf_cooling_flag", 
             "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
             units.none, 
             1 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "bhflag",
             "black_hole_kick_flag",
             "bhflag > 0 allows velocity kick at BH formation (0).",
             units.none,
             0 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "nsflag",
             "neutron_star_mass_flag",
             "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
             units.none,
             1 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "mxns",
             "maximum_neutron_star_mass",
             "The maximum neutron star mass (1.8, nsflag=0; 3.0, nsflag=1).",
             units.MSun,
             3.0 | units.MSun
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "pts1",
             "fractional_time_step_1", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
             units.none, 
             0.05 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "pts2",
             "fractional_time_step_2", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
             units.none, 
             0.01 | units.none
-        ),
+        )
         
-        parameters.ModuleCachingParameterDefinition(
+        object.add_caching_parameter(
             "pts3",
             "fractional_time_step_3", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
             units.none, 
             0.02 | units.none
-        ),
-        
-    ]
-    
-    update_time_step_method = ParticleAttributesModifier(
-        "get_time_step",
-        (
-            ("stellar_type", "kw", units.stellar_type),
-            ("initial_mass", "mass", units.MSun),
-            ("mass", "mt", units.MSun),
-            ("main_sequence_lifetime", "tm", units.Myr),
-            ("age", "age", units.Myr),
-            ("epoch", "epoch", units.Myr),
-            ("time_step", "dt", units.Myr),
         )
-    )
         
+    def define_methods(self, object):
+        
+        object.add_method( 
+            "get_time_step", 
+            (
+                units.stellar_type, 
+                units.MSun, 
+                units.Myr, 
+                units.MSun,  
+                units.Myr, 
+                units.Myr
+            ),
+            (units.Myr,)
+        )
+        
+        object.add_method( 
+            "evolve", 
+            (
+                units.stellar_type, 
+                units.MSun, 
+                units.MSun, 
+                units.RSun, 
+                units.LSun,
+                units.MSun, 
+                units.RSun, 
+                units.MSun, 
+                units.RSun, 
+                units.none,
+                units.Myr,
+                units.Myr,
+                units.Myr,
+                units.Myr,
+            ),
+            (
+                units.stellar_type, 
+                units.MSun, 
+                units.MSun, 
+                units.RSun, 
+                units.LSun,
+                units.MSun, 
+                units.RSun, 
+                units.MSun, 
+                units.RSun,
+                units.none, 
+                units.Myr,
+                units.Myr,
+                units.Myr,
+                units.Myr,
+            )
+        )
+        
+        object.add_method(
+            "initialize",
+            (
+                units.none,
+                units.none, 
+                units.none, 
+                units.none, 
+                units.km / units.s,
+                units.none, 
+                units.none, 
+                units.none, 
+                units.none, 
+                units.MSun,
+                units.none, 
+                units.none, 
+                units.none
+            ),
+            public_name = "initialize_"
+        )
          
-    evolve_particles_method = ParticleAttributesModifier(
-        "evolve",
-        (
-            ("stellar_type", "kw", units.stellar_type),
-            ("initial_mass", "mass", units.MSun),
-            ("mass", "mt", units.MSun),
-            ("radius", "r", units.RSun),
-            ("luminosity", "lum", units.LSun),
-            ("core_mass", "mc", units.MSun),
-            ("core_radius", "rc", units.RSun),
-            ("envelope_mass", "menv", units.MSun),
-            ("envelope_radius", "renv", units.RSun),
-            ("epoch", "epoch", units.Myr),
-            ("spin", "ospin", units.none),
-            ("main_sequence_lifetime", "tm", units.Myr),
-            ("age", "tphys", units.Myr),
-        ),
-        (
-            ("end_time", 'tphysf', units.Myr),
+    def define_particle_sets(self, object):
+        object.define_inmemory_set('particles', SSEParticles)
+        
+        object.add_attribute(
+            'particles',
+            'time_step', 
+            'get_time_step', 
+            ('stellar_type', 'initial_mass', 'age', 
+             'mass', 'main_sequence_lifetime', 'epoch')
         )
-    )
-    
-    def setup_particles(self, particles):
-        self.particles.add_particles(particles)
+        
+    def _evolve_particles(self, particles, end_time):
+        attributes = (
+            "stellar_type",
+            "initial_mass", 
+            "mass", 
+            "radius",  
+            "luminosity", 
+            "core_mass", 
+            "core_radius",
+            "envelope_mass", 
+            "envelope_radius", 
+            "spin", 
+            "epoch",
+            "main_sequence_lifetime",
+            "age", 
+            "end_time"
+        )
+        
+        result = self.evolve(
+            particles.stellar_type,
+            particles.initial_mass,
+            particles.mass,
+            particles.radius,
+            particles.luminosity,
+            particles.core_mass,
+            particles.core_radius,
+            particles.envelope_mass,
+            particles.envelope_radius,
+            particles.spin,
+            particles.epoch,
+            particles.main_sequence_lifetime,
+            particles.age,
+            end_time.as_vector_with_length(len(particles)))
+        
+        particles._set_values(particles._get_keys(), attributes, result)
+        
         
     def evolve_model(self, end_time = None):
         if end_time is None:
-            self.update_time_steps()
             end_time = self.particles.time_step + self.particles.age
-        self.evolve_particles_method._run(self, self.particles, end_time)
-        
-    def update_time_steps(self):
-        self.update_time_step_method._run(self, self.particles)
-    
-    # Currently unused:
-    def evolve_model_using_timesteps(self, end_time = None):
-        
-        particles_set = particles.to_set()
-        while len(particles_set) > 0:
-            self._evolve_particles(particles_set)
-            particles_set = particles_set.select(lambda x : x < end_time, ["age"])
-            print len(particles_set)
-            print particles_set.age
             
-                
-    def _evolve_particles(self, particles):
-        self.update_time_step_method._run(self, particles)
-        end_times = particles.time_step + particles.age
-        self.evolve_particles_method._run(self, particles, end_times)
+        self._evolve_particles(self.particles, end_time)
+        
+
     
     def initialize_stars(self):
         pass
@@ -347,41 +383,8 @@ class SSEBinding(CodeInterfaceOld):
             self.parameters.fractional_time_step_3.value_in(units.none))
         
     def initialize_module_with_default_parameters(self):
-        """
-        * neta is the Reimers mass-loss coefficent (neta*4x10^-13; 0.5 normally).
-        * bwind is the binary enhanced mass loss parameter (inactive for single).
-        * hewind is a helium star mass loss factor (1.0 normally). 
-        * sigma is the dispersion in the Maxwellian for the SN kick speed (190 km/s). 
-        *
-        * ifflag > 0 uses WD IFMR of HPE, 1995, MNRAS, 272, 800 (0). 
-        * wdflag > 0 uses modified-Mestel cooling for WDs (0). 
-        * bhflag > 0 allows velocity kick at BH formation (0). 
-        * nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1). 
-        * mxns is the maximum NS mass (1.8, nsflag=0; 3.0, nsflag=1). 
-        * idum is the random number seed used in the kick routine. 
-        *
-        * Next come the parameters that determine the timesteps chosen in each
-        * evolution phase:
-        *                 pts1 - MS                  (0.05)
-        *                 pts2 - GB, CHeB, AGB, HeGB (0.01)
-        *                 pts3 - HG, HeMS            (0.02)
-        * as decimal fractions of the time taken in that phase.
-        """
         self.parameters.set_defaults()
         self.initialize_module_with_current_parameters()
-    
-    
-class SSE(SSEInterface, SSEBinding):
-    
-        
-    def __init__(self):
-        SSEInterface.__init__(self)
-        SSEBinding.__init__(self)
-    
-    
-        
-        
-        
-         
-        
-        
+
+    def update_time_steps(self):
+        pass

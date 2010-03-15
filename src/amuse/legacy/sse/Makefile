@@ -19,8 +19,8 @@ worker_code:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
 	mpif90 $^ -o $@ 
 
 
-worker_code.f90: muse_stellar_mpi.py
-	$(CODE_GENERATOR) --type=f90 muse_stellar_mpi.py SSE -o $@
+worker_code.f90: interface.py
+	$(CODE_GENERATOR) --type=f90 interface.py SSEInterface -o $@
 
 .f.o: $<                                                                 
 	$(FORTRAN) -c $(FFLAGS) -o $@ $< 
