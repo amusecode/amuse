@@ -547,7 +547,7 @@
       integer function get_max_iter_stop_condition(AMUSE_value)
          use amuse_support, only: AMUSE_max_iter_stop_condition
          implicit none
-         double precision, intent(out) :: AMUSE_value
+         integer, intent(out) :: AMUSE_value
          AMUSE_value = AMUSE_max_iter_stop_condition
          get_max_iter_stop_condition = 0
       end function get_max_iter_stop_condition
@@ -556,7 +556,7 @@
       integer function set_max_iter_stop_condition(AMUSE_value)
          use amuse_support, only: AMUSE_max_iter_stop_condition
          implicit none
-         double precision, intent(in) :: AMUSE_value
+         integer, intent(in) :: AMUSE_value
          AMUSE_max_iter_stop_condition = AMUSE_value
          set_max_iter_stop_condition = 0
       end function set_max_iter_stop_condition
