@@ -38,8 +38,8 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
         stellar_evolution = EVtwin()
     elif stellar_evolution_code == 3:
         stellar_evolution = MESA()
-        stellar_evolution.parameters.max_age_stop_condition = 50 | units.Myr
-        number_of_stars = number_of_stars - 2
+#        stellar_evolution.parameters.metallicity = 0.0 | units.none
+        stellar_evolution.parameters.max_iter_stop_condition = 10000 | units.none
     else:
         print "Unknown stellar_evolution_code: ", stellar_evolution_code
         return

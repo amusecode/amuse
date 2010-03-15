@@ -331,19 +331,58 @@
       function get_stellar_type(AMUSE_id, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
          use amuse_support, only: failed
+         use do_one_utils, only: do_show_log_header, do_write_log_state
+         use utils, only:eval_current_y, eval_current_z
          implicit none
          integer, intent(in) :: AMUSE_id
          integer, intent(out) :: AMUSE_value
          integer :: get_stellar_type, ierr
+         double precision :: x_avg, y_avg, z_avg
          type (star_info), pointer :: s
+         AMUSE_value = -99
+         get_stellar_type = -1
          call get_star_ptr(AMUSE_id, s, ierr)
-         if (failed('get_star_ptr', ierr)) then
-            AMUSE_value = -1.0
-            get_stellar_type = -1
-         else
-            AMUSE_value = s% phase_of_evolution
-            get_stellar_type = 0
-         endif
+         if (failed('get_star_ptr', ierr)) return
+         select case(s% phase_of_evolution)
+            case(0,1,2)
+               if (s% initial_mass < 0.75) then
+                  AMUSE_value = 0
+               else
+                  AMUSE_value = 1
+               endif
+            case(3)
+               AMUSE_value = 3
+            case(4:)
+               y_avg = eval_current_y(s, 1, s% nz, ierr)
+               if (failed('eval_current_y', ierr)) return
+               z_avg = eval_current_z(s, 1, s% nz, ierr)
+               if (failed('eval_current_z', ierr)) return
+               x_avg = max(0d0, min(1d0, 1 - (y_avg + z_avg)))
+               if (x_avg > 1.0d-5) then
+                  if (s% center_he3 + s% center_he4 > 1.0d-5) then
+                     AMUSE_value = 4 ! Core He burning
+                  else
+                     if (y_avg < 0.75 * x_avg) then
+                        AMUSE_value = 5 ! Early AGB (inert C/O core)
+                     else
+                        AMUSE_value = 6 ! Late (thermally pulsing) AGB (inert C/O core)
+                     endif
+                  endif
+               else
+                  if (s% center_he3 + s% center_he4 > 1.0d-5) then
+                     AMUSE_value = 7 ! Helium MS star
+                  else
+                     AMUSE_value = 9 ! Helium giant
+                  endif
+               endif
+            case default
+               write(*,*) "Unable to determine the stellar type."
+               write(*,*) "The following information might help:"
+               call do_show_log_header
+               call do_write_log_state(s)
+               return
+         end select
+         get_stellar_type = 0
 !      integer, parameter :: phase_starting = 0
 !      integer, parameter :: phase_early_main_seq = 1
 !      integer, parameter :: phase_mid_main_seq = 2
