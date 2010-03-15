@@ -6,7 +6,7 @@ from distutils.extension import Extension
 
 from support.generate_main import generate_main
 from support.build_latex import build_latex
-from support.setup_legacy import BuildLegacy, CleanLegacy
+from support.setup_legacy import BuildLegacy, CleanLegacy, BuildOneLegacyCode
 from support.run_tests import run_tests
 from support.config import config
 
@@ -23,6 +23,7 @@ class Clean(clean):
 mapping_from_command_name_to_command_class = {
     'build_latex':build_latex, 
     'build_legacy':BuildLegacy,
+    'code':BuildOneLegacyCode,
     'clean_legacy':CleanLegacy,
     'clean_python':clean,
     'clean': Clean,

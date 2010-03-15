@@ -29,3 +29,5 @@ ctags:
 	find src -name "*.cc" | xargs ctags -a
 	find src -name "*.[cCfFhH]" | xargs ctags -a
 
+%.code:
+	$(PYTHON) setup.py code --code-name=$*

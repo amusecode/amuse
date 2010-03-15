@@ -18,8 +18,8 @@ first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
 class LegacyCommand(Command):
     user_options = [
-        ('legacy-dir', 'd', "directory containing legacy codes"),
-        ('lib-dir', 'l', "directory containing libraries to build"),
+        ('legacy-dir=', 'd', "directory containing legacy codes"),
+        ('lib-dir=', 'l', "directory containing libraries to build"),
     ]
 
     boolean_options = ['force']
@@ -189,6 +189,31 @@ class LegacyCommand(Command):
             with open('amuse.cfg', 'wb') as f:
                 config.write(f)
 
+    
+    def get_special_targets(self, directory, environment):
+        process = Popen(['make','-qp' , '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
+        stdoutstring, stderrstring = process.communicate()
+        lines = stdoutstring.splitlines()
+        result = []
+        for line in lines:
+            if line.startswith('muse_worker_gpu:'):
+                result.append(('muse_worker_gpu', 'GPU',))
+            elif line.startswith('muse_worker_grape:'):
+                result.append(('muse_worker_grape', 'GRAPE6',))
+            elif line.startswith('muse_worker_'):
+                index_of_the_colon = line.index(':')
+                if(index_of_the_colon > 0):
+                    name = line[len('muse_worker_'):index_of_the_colon]
+                    print name
+                    result.append((line[:index_of_the_colon], name,))
+            elif line.startswith('worker_code_'):
+                index_of_the_colon = line.index(':')
+                if(index_of_the_colon > 0):
+                    name = line[len('worker_code_'):index_of_the_colon]
+                    print name
+                    result.append((line[:index_of_the_colon], name,))
+        return result
+        
 class BuildLegacy(LegacyCommand):
 
     description = "build interfaces to legacy codes"
@@ -264,29 +289,6 @@ class BuildLegacy(LegacyCommand):
             for x in build:
                 print '*' , x
         
-    def get_special_targets(self, directory, environment):
-        process = Popen(['make','-qp' , '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
-        stdoutstring, stderrstring = process.communicate()
-        lines = stdoutstring.splitlines()
-        result = []
-        for line in lines:
-            if line.startswith('muse_worker_gpu:'):
-                result.append(('muse_worker_gpu', 'GPU',))
-            elif line.startswith('muse_worker_grape:'):
-                result.append(('muse_worker_grape', 'GRAPE6',))
-            elif line.startswith('muse_worker_'):
-                index_of_the_colon = line.index(':')
-                if(index_of_the_colon > 0):
-                    name = line[len('muse_worker_'):index_of_the_colon]
-                    print name
-                    result.append((line[:index_of_the_colon], name,))
-            elif line.startswith('worker_code_'):
-                index_of_the_colon = line.index(':')
-                if(index_of_the_colon > 0):
-                    name = line[len('worker_code_'):index_of_the_colon]
-                    print name
-                    result.append((line[:index_of_the_colon], name,))
-        return result
         
  
 class CleanLegacy(LegacyCommand):
@@ -301,7 +303,50 @@ class CleanLegacy(LegacyCommand):
         for x in self.makefile_paths():
             self.announce("cleaning " + x)
             call(['make','-C', x, 'clean'])
+        
+class BuildOneLegacyCode(LegacyCommand):  
+    description = "build one code"
+    user_options = list(LegacyCommand.user_options)
+    user_options.append( ('code-name=', 'n', "name of the legacy code",), )
+    
+    
+    def initialize_options(self):
+        LegacyCommand.initialize_options(self)
+        self.code_name = None
+        
+    
+    def finalize_options (self):
+        LegacyCommand.finalize_options(self)
+        if self.code_name is None:
+            raise Exception("no legacy code was specified")
+    
+    
+    def subdirs_in_legacy_dir(self):
+        names = os.listdir(self.legacy_dir)
+        for name in names:
+            if name.startswith('.'):
+                continue
+            if not name.lower().startswith(self.code_name.lower()):
+                continue
+            path = os.path.join(self.legacy_dir, name)
+            if os.path.isdir(path):
+                yield path
+                
+                
+    def run (self):
+        environment = self.environment
+        environment.update(os.environ)
+        
+        for x in self.makefile_paths():
+            self.announce("cleaning " + x)
+            call(['make','-C', x, 'clean'])
+            returncode = call(['make','-C', x, 'all'], env = environment)
             
+            special_targets = self.get_special_targets(x, environment)
+            for target,target_name in special_targets:
+                self.announce("building " + x + " version: " + target_name)
+                returncode = call(['make','-C', x, target], env = environment)
+                
             
             
             
