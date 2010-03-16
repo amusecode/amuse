@@ -736,6 +736,44 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(instance.particles.mass, units.kg.new_quantity([5.0, 5.0, 6.0, 7.0]))
         
         
+    def test5(self):
+        original = self.TestInterface()
+        
+        instance = interface.CodeInterface(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (nbody_system.mass, handler.ERROR_CODE))
+        handler.add_method('set_mass',(handler.NO_UNIT, nbody_system.mass,), (handler.ERROR_CODE,))
+        handler.add_method('new_particle',(nbody_system.mass,), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        
+        
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        
+        handler = instance.get_handler('UNIT')
+        handler.set_nbody_converter(convert_nbody)
+
+        local_particles = core.Particles(4)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0, 5.0, 6.0])
+        
+        remote_particles = instance.particles
+        remote_particles.add_particles(local_particles)
+        
+        self.assertEquals(len(original.masses), 4)
+        self.assertAlmostEquals(original.masses[0], 0.3, 5)
+        self.assertAlmostEquals(original.masses[3], 0.6 , 5)
+        
+        self.assertEquals(len(instance.particles), 4)
+        self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
+        
         
         
         

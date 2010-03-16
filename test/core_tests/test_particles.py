@@ -383,22 +383,20 @@ class TestParticlesWithUnitsConverted(TestBase):
             convert_nbody.as_converter_from_si_to_nbody())
         
         self.assertEquals(stars[0].mass, 10 | nbody_system.mass)
-        print converted_stars[0].mass.number 
-        print (100.0 | units.kg).number 
-        self.assertAlmostEqual(converted_stars[0].mass.value_in(units.kg), 100.0, 5)
+        self.assertAlmostEqual(converted_stars[0].mass, 100.0 | units.kg, 5)
         
         converted_star = converted_stars[0]
         
-        expected = [50.0, 100.0, 150.0]
+        expected = units.m.new_quantity([50.0, 100.0, 150.0])
         for i in range(3):
-            self.assertAlmostEqual(converted_star.position[i].value_in(units.m), expected[i], 6)
+            self.assertAlmostEqual(converted_star.position[i], expected[i], 6)
             
         converted_star.position = [100.0, 200.0, 300.0] | units.m
         star = stars[0]
         
-        expected = [20.0, 40.0, 60.0]
+        expected = nbody_system.length([20.0, 40.0, 60.0])
         for i in range(3):
-            self.assertAlmostEqual(star.position[i].value_in(nbody_system.length), expected[i], 6)
+            self.assertAlmostEqual(star.position[i], expected[i], 6)
             
         
         

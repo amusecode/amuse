@@ -93,7 +93,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         if inspect.ismethod(attribute):
             result = attribute #UnitsConvertionMethod(attribute, self.converter)
         elif isinstance(attribute, core.AbstractParticleSet):
-            result = core.ParticlesWithUnitsConverted(attribute, self.converter)
+            result = attribute #core.ParticlesWithUnitsConverted(attribute, self.converter)
         elif isinstance(attribute, values.Quantity):
             result = self.converter.from_target_to_source(attribute)
         elif isinstance(attribute, CodeMethodWrapper):
