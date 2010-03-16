@@ -3,12 +3,12 @@ import numpy
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy import *
-from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
+from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data import binding
 
-class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
+class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
     """
         .. [#] Refs not included yet
     """    
@@ -247,7 +247,7 @@ class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
             
             
 
-class PhiGRAPE(GravitationalDynamicsInterface):
+class PhiGRAPE(GravitationalDynamics):
     
     
     def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False):
@@ -261,7 +261,7 @@ class PhiGRAPE(GravitationalDynamicsInterface):
         else:
             nbody_interface = PhiGRAPEInterface(mode)
         
-        GravitationalDynamicsInterface.__init__(
+        GravitationalDynamics.__init__(
             self,
             nbody_interface,
             convert_nbody,
@@ -298,7 +298,7 @@ class PhiGRAPE(GravitationalDynamicsInterface):
   
     
     def define_methods(self, object):
-        GravitationalDynamicsInterface.define_methods(self, object)
+        GravitationalDynamics.define_methods(self, object)
         
         object.add_method(
             'get_gravity_at_point',

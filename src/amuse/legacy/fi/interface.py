@@ -1,10 +1,10 @@
 import numpy
-from amuse.legacy.interface.gd import GravitationalDynamics
+from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 #from amuse.support.units import nbody_system
 #from amuse.support.units import units
 from amuse.legacy import *
 
-class fi(LegacyInterface,GravitationalDynamics):   
+class fi(LegacyInterface,GravitationalDynamicsInterface):   
     get_density_at_point=None
     get_temperature_at_point=None
     get_internalenergy_at_point=None

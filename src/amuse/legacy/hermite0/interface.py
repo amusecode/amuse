@@ -1,10 +1,10 @@
 from amuse.legacy import *
-from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
+from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.support.lit import LiteratureRefs
 
 
-class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
+class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
     """  
     N-body integration module with shared but variable time step
     (the same for all particles but its size changing in time),
@@ -55,7 +55,7 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         """
         return function
         
-class Hermite(GravitationalDynamicsInterface):
+class Hermite(GravitationalDynamics):
     
     
     def __init__(self, convert_nbody = None):
@@ -66,7 +66,7 @@ class Hermite(GravitationalDynamicsInterface):
         
         legacy_interface = HermiteInterface()
         
-        GravitationalDynamicsInterface.__init__(
+        GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
@@ -91,7 +91,7 @@ class Hermite(GravitationalDynamicsInterface):
        
 
     def define_methods(self, object):
-        GravitationalDynamicsInterface.define_methods(self, object)
+        GravitationalDynamics.define_methods(self, object)
 
         object.add_method(
             'get_potential_at_point',

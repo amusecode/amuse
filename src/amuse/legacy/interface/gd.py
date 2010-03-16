@@ -8,7 +8,7 @@ from amuse.support.data.binding import CodeProperty, CodeMethod
 from amuse.support.data import binding
 from amuse.support.units import nbody_system
 
-class GravitationalDynamics(object):
+class GravitationalDynamicsInterface(object):
 
     @legacy_function
     def new_particle():
@@ -752,7 +752,7 @@ class GravitationalDynamics(object):
         """
         return function 
             
-class GravitationalDynamicsInterface(CodeInterface):
+class GravitationalDynamics(CodeInterface):
     NBODY = object()
     
     def __init__(self, legacy_interface, convert_nbody = None):

@@ -3,7 +3,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data import binding
 
-from amuse.legacy.interface.gd import GravitationalDynamicsInterface
+from amuse.legacy.interface.gd import GravitationalDynamics
 
 class SmallNInterface(LegacyInterface):
     """
@@ -147,7 +147,7 @@ class SmallNInterface(LegacyInterface):
 
         
         
-class SmallN(GravitationalDynamicsInterface):
+class SmallN(GravitationalDynamics):
     
     
     def __init__(self, convert_nbody = None):
@@ -158,7 +158,7 @@ class SmallN(GravitationalDynamicsInterface):
         
         legacy_interface = SmallNInterface()
         
-        GravitationalDynamicsInterface.__init__(
+        GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,

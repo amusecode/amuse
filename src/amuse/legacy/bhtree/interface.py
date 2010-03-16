@@ -1,11 +1,11 @@
 from amuse.legacy import *
-from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
+from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data import binding
 
 
-class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
+class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
@@ -50,7 +50,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamics):
         return function
         
        
-class BHTree(GravitationalDynamicsInterface):
+class BHTree(GravitationalDynamics):
     
     
     def __init__(self, convert_nbody = None):
@@ -61,7 +61,7 @@ class BHTree(GravitationalDynamicsInterface):
         
         legacy_interface = BHTreeInterface()
         
-        GravitationalDynamicsInterface.__init__(
+        GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
@@ -91,7 +91,7 @@ class BHTree(GravitationalDynamicsInterface):
         )
         
     def define_methods(self, object):
-        GravitationalDynamicsInterface.define_methods(self, object)
+        GravitationalDynamics.define_methods(self, object)
         
         object.add_method(
             'get_gravity_at_point',

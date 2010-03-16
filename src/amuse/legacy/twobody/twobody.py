@@ -1,7 +1,7 @@
 from amuse.legacy import *
 from amuse.legacy.support.core import *
 
-from amuse.legacy.interface.gd import GravitationalDynamics, GravitationalDynamicsInterface
+from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 from amuse.support.data import binding
 from amuse.support.data.core import Particles
 
@@ -360,14 +360,14 @@ class TwoBodyInCodeAttributeStorage(InCodeAttributeStorage):
     setters = ()
 
 
-class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamics):
+class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamicsInterface):
     
     def __init__(self):
         LegacyPythonInterface.__init__(self, TwoBodyImplementation)
 
 
        
-class TwoBody(GravitationalDynamicsInterface):
+class TwoBody(GravitationalDynamics):
     
     
     def __init__(self, convert_nbody = None):
@@ -377,7 +377,7 @@ class TwoBody(GravitationalDynamicsInterface):
        
         nbody_interface = TwoBodyInterface()
         
-        GravitationalDynamicsInterface.__init__(
+        GravitationalDynamics.__init__(
             self,
             nbody_interface,
             convert_nbody,

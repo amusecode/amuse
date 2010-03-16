@@ -2,7 +2,7 @@
 from legacy_support import TestWithMPI
 
 from amuse.legacy.interface import gd
-from amuse.legacy.interface.gd import GravitationalDynamics
+from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.support.create_definition import LegacyDocStringProperty
 
 from amuse.legacy.support import create_definition
@@ -10,9 +10,9 @@ from amuse.legacy.support.core import LegacyFunctionSpecification
 
 class TestGravitationalDynamics(TestWithMPI):
     def test1(self):
-        x = GravitationalDynamics()
+        x = GravitationalDynamicsInterface()
         
-        function = GravitationalDynamics.new_particle
+        function = GravitationalDynamicsInterface.new_particle
         specification = function.specification
         self.assertTrue(specification.description.startswith("Define a new particle"))
         
