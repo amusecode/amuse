@@ -1717,6 +1717,10 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         self._private.particles = particles
         self._private.converter = converter
               
+    
+    def copy(self):
+        copiedParticles =  self._private.particles.copy()
+        return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
         
     def _set_particles(self, keys, attributes = [], values = []):
         converted_values = []

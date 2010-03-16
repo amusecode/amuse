@@ -434,17 +434,24 @@ class TestAmuseInterface(TestWithMPI):
         del instance
         
     def test11(self):
-        instance = BHTree(BHTree.NBODY)
-        instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
+       
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = BHTree(convert_nbody)
         instance.setup_module()
         
-        particles = core.Particles(6)
-        particles.mass = nbody_system.mass.new_quantity(range(1,7))
-        particles.radius =   0.00001 | nbody_system.length
-        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0] ,[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
-        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
+        particles = core.Particles(2)
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles.mass = [15.0, 30.0] | units.kg
+        particles.radius =  [10.0, 20.0] | units.m
+        particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+
+        
         instance.particles.add_particles(particles)
+        
         copyof =  instance.particles.copy()
         
-        self.assertEquals(2 | nbody_system.mass, copyof[1].mass)
+        self.assertAlmostEqual(30 | units.kg, copyof[1].mass, 6)
 
