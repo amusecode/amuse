@@ -1,11 +1,11 @@
-function setup_module() result(ret)
+function initialize_code() result(ret)
   integer :: ret
   call muse_start
   call muse_reset
   ret=0
 end function
 
-function cleanup_module() result(ret)
+function cleanup_code() result(ret)
   integer :: ret
   call muse_end
   call muse_start
@@ -13,7 +13,7 @@ function cleanup_module() result(ret)
   ret=0
 end function
 
-function initialize_particles(time) result(ret)
+function commit_particles(time) result(ret)
   integer :: ret
   real*8 :: time
   call muse_init
@@ -22,9 +22,20 @@ function initialize_particles(time) result(ret)
   ret=0
 end function
 
-function reinitialize_particles() result(ret)
+function recommit_particles() result(ret)
   integer :: ret,muse_reinitialize
   ret=muse_reinitialize()
+end function
+
+
+function commit_parameters(time) result(ret)
+  integer :: ret
+  ret=0
+end function
+
+function recommit_parameters(time) result(ret)
+  integer :: ret
+  ret=0
 end function
 
 function get_number_of_particles(n) result(ret)

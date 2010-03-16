@@ -69,8 +69,9 @@ int _new_particle(int *id, dynamics_state d)
     if (!initialized) 
       {
         // Defer reinitialization; save in ds.
+        d.id =  ds.size() + 1;
         ds.push_back(d);
-        *id = ds.size();
+        *id = d.id;
         //return ds.size();
         return 0;
       } 
@@ -163,7 +164,7 @@ static void create_treecode_system()
         bhtcs.n++;
         bhtcs.mass += ds[i].mass;
     }
-    // cerr << "create_treecode_system: "; PRC(bhtcs.n); PRL(bhtcs.mass);
+    //cerr << "create_treecode_system: "; PRC(bhtcs.n); PRL(bhtcs.mass);
 
     bhtcs.set_nsize(bhtcs.n);
     bhtcs.set_particle_pointer(np);
@@ -435,8 +436,20 @@ int set_state(int index_of_the_particle, double mass, double radius, double x, d
 int get_state(int id, double *mass, double *radius, double *x, double *y, double *z, double *vx, double *vy, double *vz) 
 {
     int i = get_index_from_identity(id);
-    if (i >= 0 && i < bhtcs.n) 
-      {
+
+    if (!initialized && i >= 0 && i < (int) ds.size()) {
+       dynamics_state state = ds[i];
+       *mass = state.mass;
+       *radius = state.radius;
+       *x = state.x;
+       *y = state.y;
+       *z = state.z;
+       *vx = state.vx;
+       *vy = state.vy;
+       *vz = state.vz;
+        return 0;
+    }
+    else if (i >= 0 && i < bhtcs.n) {
         nbody_particle *np = bhtcs.get_particle_pointer();
         //*id_out = np[i].get_index();
         *mass = np[i].get_mass();
@@ -450,11 +463,9 @@ int get_state(int id, double *mass, double *radius, double *x, double *y, double
         *vy = v[1];
         *vz = v[2];
         return 0;
-      } 
-    else 
-      {
+    } else {
         return -1;
-      }
+    }
 }
 
 int get_kinetic_energy(double *kinetic_energy)
@@ -529,7 +540,12 @@ int set_radius(int id, double radius)
 
 int initialize_code()
 {
-  return -2;
+    return 0;
+}
+
+int cleanup_code()
+{
+    return 0;
 }
 
 int get_identity_from_index(int i)
@@ -614,16 +630,7 @@ int get_velocity(int id, double *vx, double *vy, double *vz)
 
 int setup_module()
 {
-  bhtcs.timestep = timestep;
-  bhtcs.eps2_for_gravity = eps2_for_gravity;
-  bhtcs.use_self_gravity = use_self_gravity;
-  bhtcs.theta_for_tree = theta_for_tree;
-  bhtcs.ncrit_for_tree = ncrit_for_tree;
-
-  create_treecode_system();        // note that ds is never used again after this
-  initialized = true;
-
-  return 0;
+    return -2;
 }
 
 int get_position(int id, double *x, double *y, double *z)
@@ -772,3 +779,40 @@ int get_escaper()
     return -1;                                // not implemented yet
 }
 
+
+int recommit_particles(){
+    bhtcs.setup_tree();
+    
+    return 0;
+}
+
+int recommit_parameters(){
+    return commit_parameters();
+}
+
+int commit_particles(){
+    if(!initialized) {
+        create_treecode_system();        // note that ds is never used again after this
+        initialized = true;
+    }
+
+    
+    bhtcs.time = 0.0;
+    bhtcs.setup_tree();
+    return 0;
+}
+
+int commit_parameters(){
+    
+    bhtcs.timestep = timestep;
+    bhtcs.eps2_for_gravity = eps2_for_gravity;
+    bhtcs.use_self_gravity = use_self_gravity;
+    bhtcs.theta_for_tree = theta_for_tree;
+    bhtcs.ncrit_for_tree = ncrit_for_tree;
+
+    return 0;
+}
+
+int synchronize_model() {
+    return 0;
+}

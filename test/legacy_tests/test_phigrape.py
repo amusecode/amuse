@@ -111,11 +111,14 @@ class TestMPIInterface(TestWithMPI):
         instance.cleanup_module()
 
     def test7(self):
+        channel.MessageChannel.DEBUGGER = None #channel.MessageChannel.DDD
         instance = PhiGRAPEInterface()
-        instance.setup_module()
+        channel.MessageChannel.DEBUGGER = None
+        instance.initialize_code()
         instance.set_eps2(0.0**2)
         instance.set_eta(0.01,0.02)
-
+        instance.commit_parameters()
+        
         instance.new_particle( 
             [1.0,1.0,1.0],
             [0.0,0.0,0.0],
@@ -125,14 +128,13 @@ class TestMPIInterface(TestWithMPI):
             [0.0,1.0,0.0],
             [0.0,0.0,0.0],
             [0.0,0.0,0.0] )
-        instance.initialize_particles(0.0) 
+        instance.commit_particles()
         Ep=instance.get_potential_energy()['potential_energy']
         Ek=instance.get_kinetic_energy()['kinetic_energy']
-
         self.assertEqual( Ek, 0.5)
         self.assertEqual( Ep, -2.5)        
         instance.delete_particle(2)
-        instance.reinitialize_particles() 
+        instance.recommit_particles() 
         n=instance.get_number_of_particles()['number_of_particles']
         Ep=instance.get_potential_energy()['potential_energy']
         Ek=instance.get_kinetic_energy()['kinetic_energy']

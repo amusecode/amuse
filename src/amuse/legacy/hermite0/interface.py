@@ -13,7 +13,7 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     
     .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
     """
-    include_headers = ['hermite_code.h', 'parameters.h', 'local.h']
+    include_headers = ['worker_code.h', 'parameters.h', 'local.h']
 
     t = legacy_global(name='t',id=20,dtype='d')
     dt_param = legacy_global(name='dt_param',id=21,dtype='d')
@@ -25,23 +25,16 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         LegacyInterface.__init__(self, name_of_the_worker="worker_code")       
         LiteratureRefs.__init__(self)
 
-    @legacy_function
-    def setup_module():
-        function = LegacyFunctionSpecification() 
-        function.result_type = 'i'
-        return function
+    def setup_module(self):
+        self.commit_parameters()
+        self.commit_particles()
 
-    @legacy_function
-    def cleanup_module():
-        function = LegacyFunctionSpecification() 
-        function.result_type = 'i'
-        return function
-
-    @legacy_function  
-    def reinitialize_particles():
-        function = LegacyFunctionSpecification() 
-        function.result_type = 'i'
-        return function
+    
+    def cleanup_module(self):
+        self.cleanup_code
+ 
+    def reinitialize_particles(self):
+        self.recommit_particles()
 
     @legacy_function
     def delete_particle():

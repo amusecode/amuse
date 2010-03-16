@@ -31,17 +31,15 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         """
         LiteratureRefs.__init__(self)
 
-    @legacy_function   
-    def setup_module():
-        function = LegacyFunctionSpecification() 
-        function.result_type = 'i'
-        return function
+    def setup_module(self):
+        print "BLA"
+        self.initialize_code()
+        self.commit_parameters()
+        self.commit_particles()
+        
    
-    @legacy_function      
-    def cleanup_module():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+    def cleanup_module(self):
+        self.cleanup_code()
     
     @legacy_function  
     def reinitialize_particles():

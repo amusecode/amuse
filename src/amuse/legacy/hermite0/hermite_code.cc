@@ -23,7 +23,7 @@
 #include <cstring>
 #include <fstream>
 
-#include "hermite_code.h"
+#include "worker_code.h"
 
 #include <vector>
 #include <algorithm>
@@ -50,6 +50,7 @@ real t_evolve = t;		// Time requested by evolve.  Control returns
 				// when t <= t_evolve and t + dt > t_evolve,
 				// and this is assumed when the state of the
 				// system is computed by extrapolation.
+real t_wanted = 0;
 
 vector<int>  ident;
 vector<real> mass, radius;
@@ -505,7 +506,7 @@ int evolve_system(real t_end)
     real epot;			// potential energy of the n-body system
     real coll_time;		// collision (close encounter) time scale
     int nest_err;               // error of subprocedure
-              
+    int sync = 0;
     // May be overkill to compute acc and jerk at start and end of
     // this routine, as usually the stars won't have changed on
     // return.  This way, however, we can guarantee that the particles
@@ -514,7 +515,7 @@ int evolve_system(real t_end)
 
     get_acc_jerk_pot_coll(&epot, &coll_time);
     real dt = calculate_step(coll_time);
-
+    t_wanted = t_end;
     if (!init_flag)
       {
 	write_diagnostics(epot, *sout);
@@ -608,31 +609,9 @@ int get_n_steps()
   return nsteps;
 }
 
-
-
-// Interface functions (headers, in order, in hermite.h):
-
-int setup_module(bool in_reeval, bool in_test_mode)	// defaults = false
+int cleanup_code()
 {
-  reeval = in_reeval;
-  test_mode = in_test_mode;
-  if (test_mode) sout = &cerr;
-  return 1;
-}
-
-int cleanup_module()
-{
-  return 1;
-}
-
-int reinitialize_particles()
-{
-  real epot, coll_time, dt;
-  
-  get_acc_jerk_pot_coll(&epot, &coll_time);
-  dt = calculate_step(coll_time);
-  
-  return 0;
+    return 0;
 }
 
 int new_particle(int *id, double _mass, double _radius, 
@@ -713,7 +692,7 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
   //unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
   int i;
   i = id;
-  if (i < ident.size()) 
+  if (i < (int) ident.size()) 
     {
       real del = t_evolve - t;
       
@@ -896,28 +875,12 @@ int set_acceleration(int id, double ax, double ay, double az)
   return -3;
 }
 
-int evolve(double t_end)	// default sync = 0
-// no idea what to do with this ome!!!!!!!!!!!!!!
-// got lost if the second argument, sync
-// what to do with the sync in evolve_system?????!!!!!!!!!
+int evolve(double t_end)
 {
   evolve_system(t_end);
   return 0;
 }
 
-int initialize_particles(double t0)
-// cello, proj1, 
-// TODO we have to decide what t0 is!! NOT an argument
-{
-    real epot, coll_time, dt;
-
-    t = t0;
-    t_evolve = t0;
-    get_acc_jerk_pot_coll(&epot, &coll_time);
-    dt = calculate_step(coll_time);
-
-    return 0;
-}
 
 int initialize_code()
 // cello, proj1 NYI!
@@ -1267,3 +1230,72 @@ int finalize_time_step() {return -2;}
 
 int get_escaper(){return -2;}	// not implemented yet
 
+
+
+int set_reeval(int value) {
+    reeval = value;
+    return 0;
+}
+
+int get_reeval(int * value) {
+    *value = reeval;
+    return 0;
+}
+
+int set_testmode(int value) {
+    test_mode = value;
+    return 0;
+}
+
+int get_testmode(int * value) {
+    *value = test_mode;
+    return 0;
+}
+
+int recommit_particles(){
+    return 0;
+}
+
+int recommit_parameters(){
+    real epot, coll_time;
+
+    get_acc_jerk_pot_coll(&epot, &coll_time);
+
+    return 0;
+}
+  
+
+int commit_particles()
+{
+    real epot, coll_time;
+
+    t = 0;
+    t_evolve = 0;
+    t_wanted = 0;
+    
+    get_acc_jerk_pot_coll(&epot, &coll_time);
+
+    return 0;
+}
+
+int commit_parameters(){
+    if(test_mode) {
+        sout = &cerr;  
+    }
+    return 0;
+}
+
+int synchronize_model() {
+    real epot;			// potential energy of the n-body system
+    real coll_time;		// collision (close encounter) time scale
+    
+    if (t_evolve < t_wanted) 
+    {
+        evolve_step(t_wanted-t_evolve, &epot, &coll_time);
+        nsteps++;
+        
+        get_acc_jerk_pot_coll(&epot, &coll_time);
+        t_evolve = t_wanted;
+    }
+    return 0;
+}

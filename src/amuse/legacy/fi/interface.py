@@ -34,35 +34,21 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     set_position=None
     get_position=None
 
-    initialize_code=None
         
     def __init__(self, convert_nbody = None):
         LegacyInterface.__init__(self, name_of_the_worker = 'worker')
                      
-    @legacy_function   
-    def setup_module():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+    def setup_module(self):
+        return self.initialize_code()
         
-    @legacy_function      
-    def cleanup_module():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
-    
-    @legacy_function    
-    def initialize_particles():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('time', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
-
-    @legacy_function  
-    def reinitialize_particles():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+    def cleanup_module(self):
+        return self.cleanup_code()
+       
+    def initialize_particles(self, ignore):
+        return self.commit_particles()
+        
+    def reinitialize_particles(self):
+        return self.recommit_particles()
                 
     @legacy_function    
     def new_particle():

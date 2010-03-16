@@ -408,12 +408,46 @@ class GravitationalDynamicsInterface(object):
         return function  
     
     @legacy_function
-    def initialize_particles():
+    def commit_particles():
         """
         Let the code perform initialization actions
-        after all particles have loaded in the model. 
-        Called before the first evolve call and 
+        after all particles have been loaded in the model. 
+        Should be called before the first evolve call and 
         after the last new_particle call.
+        """
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Model is initialized and evolution can start
+         -1 - ERROR
+            Error happened during initialization, this error needs to be further specified by every code implemention 
+        """
+        return function  
+    
+    
+    @legacy_function
+    def synchronize_model():
+        """
+        After an evolve the particles may be at different simulation
+        times. Synchronize the particles to a consistent stat
+        at the current simulation time
+        """
+        function = LegacyFunctionSpecification() 
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            
+        """
+        return function  
+    
+    @legacy_function
+    def recommit_particles():
+        """
+        Let the code perform initialization actions
+        after the number of particles have been updated
+        or particle attributes have been updated from
+        the script.
         """
         function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
@@ -428,7 +462,9 @@ class GravitationalDynamicsInterface(object):
     @legacy_function
     def initialize_code():
         """
-        Let the code perform initialization actions after all parameters have been set.
+        Run the initialization for the code, called before
+        any other call on the code (so before any parameters
+        are set or particles are defined in the code).
         """
         function = LegacyFunctionSpecification()  
         function.result_type = 'int32'
@@ -439,6 +475,63 @@ class GravitationalDynamicsInterface(object):
             Error happened during initialization, this error needs to be further specified by every code implemention 
         -2 - ERROR
             not yet implemented
+        """
+        return function  
+    
+    
+    @legacy_function
+    def cleanup_code():
+        """
+        Run the cleanup for the code, called
+        just before stopping the code. No functions
+        should be called after this code.
+        """
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Code is initialized
+        -1 - ERROR
+            Error happened during cleanup, this error needs to be further specified by every code implemention 
+        -2 - ERROR
+            not yet implemented
+        """
+        return function  
+    
+    
+    @legacy_function
+    def commit_parameters():
+        """
+        Perform initialization in the code dependent on the
+        values of the parameters.
+        Called after the parameters have been set or updated.
+        """
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Code is initialized
+        -1 - ERROR
+            Error happened during initialization, this error needs to be further specified by every code implemention 
+        -2 - ERROR
+            not yet implemented
+        """
+        return function  
+    
+    @legacy_function
+    def recommit_parameters():
+        """
+        Perform initialization actions after parameters
+        have been updated (after commit_parameters and
+        particles have been loaded).
+        """
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Model is initialized and evolution can start
+         -1 - ERROR
+            Error happened during initialization, this error needs to be further specified by every code implemention 
         """
         return function  
         

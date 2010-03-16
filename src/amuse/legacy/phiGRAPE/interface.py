@@ -32,125 +32,28 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         elif mode == self.MODE_PG:
             return 'worker_code_phantom_grape'
             
-    @legacy_function   
-    def setup_module():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
-        
-    @legacy_function      
-    def cleanup_module():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+    def setup_module(self):
+        return self.initialize_code()
+          
+    def cleanup_module(self):
+        return self.cleanup_code()
     
-    @legacy_function    
-    def initialize_particles():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('time', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function;
-
-    @legacy_function  
+    
+    def initialize_particles(self, time):
+        return self.commit_particles()
+  
     def reinitialize_particles():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+        return self.recommit_particles()
 
-    """                
-    OBSOLETE
-    @legacy_function    
-    def add_particle():
-        function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
-
-    cello in gd 
-    @legacy_function    
-    def evolve():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('time_end', dtype='d', direction=function.IN)
-        function.addParameter('synchronize', dtype='i', direction=function.IN)
-        function.result_type = 'i'
-        return function
-    """    
-    """
-    @legacy_function   
-    def get_number():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function;
-    """    
-    """cello in gd
-    @legacy_function   
-    def get_eps2():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'd'
-        return function;
-           
-
-    @legacy_function    
-    def get_state():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        return function
-
-    cello in gd
-    @legacy_function      
-    def get_potential():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('id', dtype='i', direction=function.IN)
-        function.result_type = 'd'
-        return function
     
-        
-    @legacy_function
-    def set_mass():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('mass', dtype='d', direction=function.IN)
-        return function;
-
-    @legacy_function      
-    def get_time():
-        function = LegacyFunctionSpecification()
-        function.result_type = 'd'
-        return function
-
-    """
     
-    @legacy_function
-    def synchronize_model():
-        """
-        evolve all particles up to current sys time
-        """
-        function = LegacyFunctionSpecification() 
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            
-        """
-        return function  
 
     @legacy_function      
     def get_time_step():
         function = LegacyFunctionSpecification()  
         function.result_type = 'd'
         return function
-    """
-    @legacy_function      
-    def set_eps():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('eps2', dtype='d', direction=function.IN)
-        return function
-    """
+    
     @legacy_function      
     def set_eta():
         function = LegacyFunctionSpecification()  
@@ -187,20 +90,7 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         function.result_type = 'int32'
         return function
 
-    """cello in gd
-    @legacy_function      
-    def get_kinetic_energy():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'd'
-        return function
-    """
-    """cello in gd
-    @legacy_function      
-    def get_potential_energy():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'd'
-        return function
-    """
+   
 
     @legacy_function      
     def get_energy_error():
@@ -215,14 +105,7 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         function.result_type = 'i'
         return function
 
-    """
-    @legacy_function          
-    def remove_particle():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('id', dtype='i', direction=function.IN)
-        function.result_type = 'i'
-        return function    
-    """    
+    
 
 
             

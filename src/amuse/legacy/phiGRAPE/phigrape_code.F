@@ -125,12 +125,6 @@ C---  get array address
       get_center_of_mass_velocity = -2
       END
       
-      FUNCTION initialize_code()
-      IMPLICIT NONE
-#include "src/general.inc"
-      INTEGER initialize_code
-      initialize_code = -2
-      END
 
       FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz)
       IMPLICIT NONE
@@ -455,10 +449,10 @@ C===                * initialize MPI
 C===                * initialize GRAPE
 C===                * initialize myid array
 C====================================================================
-      FUNCTION setup_module()
+      FUNCTION initialize_code()
       IMPLICIT NONE
 #include "src/general.inc"
-      INTEGER i,setup_module
+      INTEGER i,initialize_code
       
       
       eta_s   = 0.01
@@ -482,23 +476,26 @@ C--------------------------------------------------------------------
          myind(i) = -1
       ENDDO
 
-      setup_module=0
+      initialize_code=0
       RETURN
       END
 
-      FUNCTION initialize_particles(time)
+      FUNCTION commit_particles()
       IMPLICIT NONE
 #include "src/general.inc"
       
-      INTEGER initialize_particles
+      INTEGER commit_particles
       DOUBLE PRECISION time
       INTEGER i
 
+      
 C (re)start grape (fip)
 C  update local particles on grape
       CALL initgrape
       CALL update_grape(1) 
 
+      time = 0.0d0
+      
 C---  set some vars
       inrg       = 0
 
@@ -585,7 +582,7 @@ C--------------------------------------------------------------------
 C          ------
       E_totini = E_tot          ! set initial value for total energy
 
-      initialize_particles = 0
+      commit_particles = 0
 
 C     close grape before exiting (fip)
       CALL g6_close(clusterid)
@@ -595,15 +592,14 @@ C     close grape before exiting (fip)
 
 C====================================================================
 C===  
-C===  reinitialize_particles
 C===  
 C===  assumes all particles are at the same time time_cur
 C====================================================================
-      FUNCTION reinitialize_particles()
+      FUNCTION recommit_particles()
       IMPLICIT NONE
 #include "src/general.inc"
       
-      INTEGER reinitialize_particles
+      INTEGER recommit_particles
       INTEGER i,k
 
 C (re)start grape (fip)
@@ -680,7 +676,7 @@ C--------------------------------------------------------------------
       CALL energy
 C          ------
 
-      reinitialize_particles = 0
+      recommit_particles = 0
 
 C     close grape before exiting (fip)
       CALL g6_close(clusterid)
@@ -689,11 +685,11 @@ C     close grape before exiting (fip)
       END
 
 
-      FUNCTION cleanup_module()      
+      FUNCTION cleanup_code()      
       IMPLICIT NONE
 #include "src/general.inc"
 
-      INTEGER cleanup_module
+      INTEGER cleanup_code
 #ifndef NOMPI
       INTEGER ierr
 #endif
@@ -712,7 +708,7 @@ C--------------------------------------------------------------------
 C          ------------
 #endif
 
-      cleanup_module = 0
+      cleanup_code = 0
       RETURN
       END
 
@@ -1044,8 +1040,6 @@ C---  local vars
       INTEGER delete_particle,id,ip,i,k,init
       DOUBLE PRECISION a2by18(NDIM),a1by6(NDIM),aby2(NDIM)
 
-C---  functions
-      INTEGER reinitialize_particles
 
       delete_particle = -1
 
@@ -1334,3 +1328,17 @@ C     close grape before exiting (fip)
 #endif              
        END
        
+      FUNCTION commit_parameters()
+      IMPLICIT NONE
+#include "src/general.inc"
+      INTEGER  commit_parameters
+      commit_parameters = 0
+      END
+      
+      FUNCTION recommit_parameters()
+      IMPLICIT NONE
+#include "src/general.inc"
+      INTEGER  recommit_parameters
+      recommit_parameters = 0
+      END
+      

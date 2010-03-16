@@ -4,7 +4,7 @@ import os
 import sys
 
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
-
+from amuse.legacy.support import channel
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
@@ -27,6 +27,7 @@ class TestMPIInterface(TestWithMPI):
         
     def test1(self):
         instance = BHTreeInterface()
+        channel.MessageChannel.DEBUGGER = None
         instance.setup_module()
 
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
@@ -115,9 +116,11 @@ class TestAmuseInterface(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
+        channel.MessageChannel.DEBUGGER = None #channel.MessageChannel.XTERM
         instance = BHTree(convert_nbody)
+        channel.MessageChannel.DEBUGGER = None
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
-        instance.setup_module()
+        instance.commit_parameters()
         
         stars = core.Stars(2)
         
@@ -134,7 +137,8 @@ class TestAmuseInterface(TestWithMPI):
         earth.velocity = [0.0, 29800, 0.0] | units.ms
 
         #instance.particles.add_particles(stars)
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
         
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
@@ -171,7 +175,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         #instance.timestep = 0.0001
         #instance.use_self_gravity = 0
-        instance.setup_module()
+        instance.commit_parameters()
         
         stars = core.Stars(2)
         sun = stars[0]
@@ -186,7 +190,8 @@ class TestAmuseInterface(TestWithMPI):
         earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
         earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
 
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
@@ -224,7 +229,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         #instance.timestep = 0.0001
         #instance.use_self_gravity = 0
-        instance.setup_module()
+        instance.commit_parameters()
         
         
         stars = core.Stars(2)
@@ -241,7 +246,8 @@ class TestAmuseInterface(TestWithMPI):
         star2.velocity = units.AUd(numpy.array((0.0,0.0,0.0)))
         star2.radius = units.RSun(100.0)
         
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
     
         for x in range(1,200,1):
             instance.evolve_model(x | units.day)
@@ -255,7 +261,7 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = BHTree(convert_nbody)
-        instance.setup_module()
+        instance.commit_parameters()
         
         index = instance.new_particle(
             15.0 | units.kg,
@@ -264,12 +270,13 @@ class TestAmuseInterface(TestWithMPI):
             #1.0 | units.m/units.s, 1.0 | units.m/units.s, 3.0 | units.m/units.s
             0.0 | units.m/units.s, 0.0 | units.m/units.s, 0.0 | units.m/units.s
         )
+        instance.commit_particles()
         self.assertEquals(instance.get_mass(index), 15.0| units.kg)
         
     def test5(self):
 
         instance = BHTree(BHTree.NBODY)
-        instance.setup_module()
+        instance.commit_parameters()
         
         index = instance.new_particle(
             15.0 | nbody_system.mass,
@@ -277,6 +284,7 @@ class TestAmuseInterface(TestWithMPI):
             10.0 | nbody_system.length, 20.0 | nbody_system.length, 30.0 | nbody_system.length,
             1.0 | nbody_system.speed, 1.0 | nbody_system.speed, 3.0 | nbody_system.speed
         )
+        instance.commit_particles()
         self.assertEquals(instance.get_mass(index), 15.0| nbody_system.mass)
         
     
@@ -284,7 +292,7 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = BHTree(convert_nbody)
-        instance.setup_module()
+        instance.commit_parameters()
         
         indices = instance.new_particle(
             [15.0, 30.0] | units.kg,
@@ -293,6 +301,7 @@ class TestAmuseInterface(TestWithMPI):
             #1.0 | units.m/units.s, 1.0 | units.m/units.s, 3.0 | units.m/units.s
             [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s
         )
+        instance.commit_particles()
         self.assertEquals(instance.get_mass(indices[0]), 15.0| units.kg)
         self.assertEquals(instance.get_mass(indices)[0], 15.0| units.kg)
         
@@ -307,7 +316,7 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = BHTree(convert_nbody)
-        instance.setup_module()
+        instance.commit_parameters()
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)
@@ -319,6 +328,7 @@ class TestAmuseInterface(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
+        instance.commit_particles()
         
         self.assertEquals(instance.get_mass(1), 15.0| units.kg)  
         self.assertEquals(instance.get_position(1)[2], 30.0| units.m)   
@@ -333,7 +343,7 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = BHTree(convert_nbody)
-        instance.setup_module()
+        instance.commit_parameters()
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)
@@ -345,6 +355,7 @@ class TestAmuseInterface(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
+        instance.commit_particles()
         
         instance.particles.mass =  [17.0, 33.0] | units.kg
         
@@ -353,8 +364,9 @@ class TestAmuseInterface(TestWithMPI):
         
     def test9(self):
         instance = BHTree(BHTree.NBODY)
+        instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
-        instance.setup_module()
+        instance.commit_parameters()
         
         
         particles = core.Particles(2)
@@ -363,8 +375,9 @@ class TestAmuseInterface(TestWithMPI):
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
+        instance.commit_particles()
         
-        instance.initialize_particles()
+        
         zero = 0.0 | nbody_system.length
         fx, fy, fz = instance.get_gravity_at_point(zero, 1.0 | nbody_system.length, zero, zero)
         self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 3)
@@ -392,8 +405,9 @@ class TestAmuseInterface(TestWithMPI):
             
     def test10(self):
         instance = BHTree(BHTree.NBODY)
+        instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
-        instance.setup_module()
+        instance.commit_parameters()
         
         
         particles = core.Particles(6)
@@ -402,8 +416,7 @@ class TestAmuseInterface(TestWithMPI):
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0] ,[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
-        
-        instance.initialize_particles()
+        instance.commit_particles()
         
         zero = 0.0 | nbody_system.length
         fx, fy, fz = instance.get_gravity_at_point(zero, zero, zero, zero)
@@ -438,7 +451,7 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = BHTree(convert_nbody)
-        instance.setup_module()
+        instance.commit_parameters()
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)
@@ -450,6 +463,7 @@ class TestAmuseInterface(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
+        instance.commit_particles()
         
         copyof =  instance.particles.copy()
         
