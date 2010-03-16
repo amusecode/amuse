@@ -432,4 +432,19 @@ class TestAmuseInterface(TestWithMPI):
         
         instance.stop()
         del instance
+        
+    def test11(self):
+        instance = BHTree(BHTree.NBODY)
+        instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
+        instance.setup_module()
+        
+        particles = core.Particles(6)
+        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles.radius =   0.00001 | nbody_system.length
+        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0] ,[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
+        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+        copyof =  instance.particles.copy()
+        
+        self.assertEquals(2 | nbody_system.mass, copyof[1].mass)
 

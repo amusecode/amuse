@@ -1008,17 +1008,18 @@ C---  local vars
       RETURN
       END
 
-      SUBROUTINE get_state(id,mm,rad,xx,yy,zz,vx,vy,vz)
+      FUNCTION get_state(id,mm,rad,xx,yy,zz,vx,vy,vz)
       IMPLICIT NONE 
 #include "src/general.inc"
       
-      INTEGER          id,ip
+      INTEGER          id,ip, get_state
       DOUBLE PRECISION mm,xx,yy,zz,vx,vy,vz,rad
 
 C---  get array address
       ip = myind(id)
       IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
          PRINT*, 'get_state: No such particle exists!'
+         get_state = -1
          GOTO 999
       ENDIF
 
@@ -1030,7 +1031,7 @@ C---  get array address
       vy = v(2,ip)
       vz = v(3,ip)
       rad= h(ip)
-
+      get_state = 0
  999  CONTINUE
       RETURN
       END
