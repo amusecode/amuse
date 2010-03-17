@@ -252,7 +252,7 @@ class TestAmuseInterface(TestWithMPI):
         for x in range(1,200,1):
             instance.evolve_model(x | units.day)
             instance.update_particles(stars)
-            print instance.get_indices_of_colliding_particles()
+            #instance.get_indices_of_colliding_particles()
             #print stars[0].position-stars[1].position
             stars.savepoint()
             
@@ -469,3 +469,30 @@ class TestAmuseInterface(TestWithMPI):
         
         self.assertAlmostEqual(30 | units.kg, copyof[1].mass, 6)
 
+    def test12(self):
+       
+        convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
+
+        instance = BHTree(convert_nbody)
+        instance.commit_parameters()
+        
+        particles = core.Particles(2)
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles.mass = [15.0, 30.0] | units.kg
+        particles.radius =  [10.0, 20.0] | units.m
+        particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+
+        
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+        
+        copyof =  instance.particles.copy()
+        
+        instance.set_state(1, 16|units.kg, 20.0|units.m, 20.0|units.m, 40.0|units.m, 60.0|units.m, 
+                                 1.0|units.ms, 1.0|units.ms, 1.0|units.ms)
+        
+        curr_state =  instance.get_state(1)
+        
+        self.assertEquals(curr_state[0], 16|units.kg, 8)
