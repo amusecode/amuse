@@ -223,10 +223,7 @@ int evolve(real t_end)                // default sync = 0
   // Advance from the current time to t_end.
 
     real dt = bhtcs.timestep;
-    real delta_t = t_end - bhtcs.time;
-    int nsteps = (int)(delta_t/dt+0.1);
     //    dt = t_end/nsteps;  //<--- bug, should be the following line
-    dt = delta_t/nsteps;
 
     //     PRC(nsteps); PRL(dt);
     //     PRL(bhtcs.n);
@@ -239,6 +236,7 @@ int evolve(real t_end)                // default sync = 0
     //     for (int j = 0; j < bhtcs.n; j++)
     //         (bhtcs.get_particle_pointer()+j)->dump();
 
+    if(bhtcs.time >= t_end) return 0;
     bhtcs.calculate_gravity();
     real E0 = bhtcs.energy();
     real KE0 = bhtcs.kinetic_energy();
@@ -249,15 +247,17 @@ int evolve(real t_end)                // default sync = 0
         PRC(KE0); PRC(PE0); PRC(E0); PRL(Q0);
       }
 
-    for (int i = 0; i < nsteps; i++)
+    while( bhtcs.time<t_end)
       {
 
-        // bhtcs.time = (i+1)*dt;        // <--- bug part 2
-        bhtcs.time += dt;                // this is how it should be
-
+        dt=bhtcs.timestep;
+        if( bhtcs.time+dt >= t_end) dt=t_end-bhtcs.time;
+                
         id_collision_1 = id_collision_2 = id_primary = id_secondary = -1;
 
         bhtcs.integrate(dt);                // advance the entire system by time dt
+
+        bhtcs.time += dt;                
 
         if (id_collision_1 >= 0) 
           {
