@@ -126,7 +126,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
     def convert_arguments(self, method,  list_arguments, keyword_arguments):
         converted_list_arguments = [self.from_source_to_target(x) for x in list_arguments]
         converted_keyword_arguments = {}
-        for key, value in keyword_arguments:
+        for key, value in keyword_arguments.iteritems():
             converted_keyword_arguments[key] = self.from_source_to_target(value)
             
         return converted_list_arguments, converted_keyword_arguments
@@ -165,7 +165,6 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
         
     def precall(self, method):
         stored_transitions = []
-        
         for from_state, to_state in self.transitions:
             if from_state is None:
                 return to_state
@@ -203,13 +202,13 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
             
         def __str__(self):
             return "state '{0}'".format(self.name)
-            
+                        
     class StateTransition(object):
-        def __init__(self, handler, from_state, to_state, method = None, is_default = False):
+        def __init__(self, handler, from_state, to_state, method = None, is_auto = True):
             self.method = method
             self.to_state = to_state
             self.from_state = from_state
-            self.is_default = is_default
+            self.is_auto = is_auto
             self.handler = handler
             
         def __str__(self):
@@ -267,7 +266,7 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         
     
     def _get_transitions_path_from_to(self, from_state, to_state):
-        transitions = to_state.to_transitions
+        transitions = filter(lambda x : x.is_auto, to_state.to_transitions)
         
         paths = map(lambda x : [x], transitions)
         
@@ -285,8 +284,10 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
             first = current[0]
             if first.from_state == from_state:
                 return current
+            elif first.from_state is None:
+                return current
             else:
-                transitions = first.from_state.to_transitions
+                transitions = filter(lambda x : x.is_auto, first.from_state.to_transitions)
                 new_paths = map(lambda x : [x], transitions)
 
                 for new_path in new_paths:
@@ -295,6 +296,7 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
                 new_paths = filter(has_no_circle, new_paths)
             
                 paths.extend(new_paths)
+            
                 
         return None
         
@@ -320,7 +322,7 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         self._add_state_method( state, None, function_name)
             
     
-    def add_transition(self, from_name, to_name, function_name):
+    def add_transition(self, from_name, to_name, function_name, is_auto = True):
         self.define_state(from_name)
         self.define_state(to_name)
         
@@ -328,7 +330,7 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         to_state   = self.states[to_name]
         definition = StateMethodDefinition(self, from_state, to_state, function_name)
         
-        transition = self.StateTransition(self, from_state, to_state, definition)
+        transition = self.StateTransition(self, from_state, to_state, definition, is_auto)
         
         from_state.from_transitions.append(transition)
         to_state.to_transitions.append(transition)
@@ -336,7 +338,7 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         self._add_state_method(from_state, to_state, function_name)
         
         
-    def add_transition_to_method(self, state_name, function_name):
+    def add_transition_to_method(self, state_name, function_name, is_auto = True):
         """
         Define a method that can run in any state and will transition the interface
         to the provided state.
@@ -344,6 +346,11 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         self.define_state(state_name)
         
         state = self.states[state_name]
+        
+        definition = StateMethodDefinition(self, None, state, function_name)
+        transition = self.StateTransition(self, None, state, definition, is_auto)
+        
+        state.to_transitions.append(transition)
         
         self._add_state_method(None, state, function_name)
 

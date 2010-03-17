@@ -166,6 +166,21 @@ class TwoBodyImplementation(object):
   def setup_module(self):
     pass
     
+  def initialize_code(self):
+    return 0
+        
+  def cleanup_code(self):
+    return 0
+    
+  def commit_parameters(self):
+    return 0
+    
+  def commit_particles(self):
+    return 0
+    
+  def synchronize_model(self):
+    return 0
+    
   def initialize(self):
     pass
     
@@ -325,48 +340,12 @@ class TwoBodyImplementation(object):
       return collisionflag
 
 
-class TwoBodyInCodeAttributeStorage(InCodeAttributeStorage):
-    new_particle_method = binding.NewParticleMethod(
-        "new_particle", 
-        (
-            ("mass", "mass", nbody_system.mass),
-            ("radius", "radius", nbody_system.length),
-            ("x", "x", nbody_system.length),
-            ("y", "y", nbody_system.length),
-            ("z", "z", nbody_system.length),
-            ("vx", "vx", nbody_system.speed),
-            ("vy", "vy", nbody_system.speed),
-            ("vz", "vz", nbody_system.speed),
-        )
-    )
-    
-    getters = (
-        binding.ParticleGetAttributesMethod(
-            "get_state",
-            (
-                ("mass", "mass", nbody_system.mass),
-                ("radius", "radius", nbody_system.length),
-                ("x", "x", nbody_system.length),
-                ("y", "y", nbody_system.length),
-                ("z", "z", nbody_system.length),
-                ("vx", "vx", nbody_system.speed),
-                ("vy", "vy", nbody_system.speed),
-                ("vz", "vz", nbody_system.speed),
-            )
-        ),
-    )
-    
-    
-    setters = ()
-
 
 class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamicsInterface):
     
     def __init__(self):
         LegacyPythonInterface.__init__(self, TwoBodyImplementation)
 
-
-       
 class TwoBody(GravitationalDynamics):
     
     

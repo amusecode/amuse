@@ -366,8 +366,6 @@ class TestAmuseInterface(TestWithMPI):
         instance = BHTree(BHTree.NBODY)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
-        instance.commit_parameters()
-        
         
         particles = core.Particles(2)
         particles.mass = [1.0, 1.0] | nbody_system.mass
@@ -375,16 +373,13 @@ class TestAmuseInterface(TestWithMPI):
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
-        instance.commit_particles()
-        
         
         zero = 0.0 | nbody_system.length
         fx, fy, fz = instance.get_gravity_at_point(zero, 1.0 | nbody_system.length, zero, zero)
         self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 3)
-        
-        
+
         for x in (0.25, 0.5, 0.75):
             x0 = x | nbody_system.length
             x1 = (2.0 - x) | nbody_system.length
@@ -451,7 +446,6 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = BHTree(convert_nbody)
-        instance.commit_parameters()
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)
@@ -463,11 +457,16 @@ class TestAmuseInterface(TestWithMPI):
 
         
         instance.particles.add_particles(particles)
-        instance.commit_particles()
         
         copyof =  instance.particles.copy()
         
         self.assertAlmostEqual(30 | units.kg, copyof[1].mass, 6)
+        
+        copyof[1].mass = 35 | units.kg
+        
+        copyof.copy_values_of_state_attributes_to(instance.particles)
+        
+        self.assertAlmostEqual(35 | units.kg, instance.particles[1].mass, 6)
 
     def test12(self):
        
@@ -496,3 +495,4 @@ class TestAmuseInterface(TestWithMPI):
         curr_state =  instance.get_state(1)
         
         self.assertEquals(curr_state[0], 16|units.kg, 8)
+

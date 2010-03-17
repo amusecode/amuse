@@ -4,11 +4,10 @@ Stellar Dynamics Interface Defintion
 
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.interface import CodeInterface
-from amuse.support.data.binding import CodeProperty, CodeMethod
-from amuse.support.data import binding
 from amuse.support.units import nbody_system
+from amuse.legacy.interface import common
 
-class GravitationalDynamicsInterface(object):
+class GravitationalDynamicsInterface(common.CommonCodeInterface):
 
     @legacy_function
     def new_particle():
@@ -460,83 +459,6 @@ class GravitationalDynamicsInterface(object):
         return function  
     
     @legacy_function
-    def initialize_code():
-        """
-        Run the initialization for the code, called before
-        any other call on the code (so before any parameters
-        are set or particles are defined in the code).
-        """
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Code is initialized
-        -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention 
-        -2 - ERROR
-            not yet implemented
-        """
-        return function  
-    
-    
-    @legacy_function
-    def cleanup_code():
-        """
-        Run the cleanup for the code, called
-        just before stopping the code. No functions
-        should be called after this code.
-        """
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Code is initialized
-        -1 - ERROR
-            Error happened during cleanup, this error needs to be further specified by every code implemention 
-        -2 - ERROR
-            not yet implemented
-        """
-        return function  
-    
-    
-    @legacy_function
-    def commit_parameters():
-        """
-        Perform initialization in the code dependent on the
-        values of the parameters.
-        Called after the parameters have been set or updated.
-        """
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Code is initialized
-        -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention 
-        -2 - ERROR
-            not yet implemented
-        """
-        return function  
-    
-    @legacy_function
-    def recommit_parameters():
-        """
-        Perform initialization actions after parameters
-        have been updated (after commit_parameters and
-        particles have been loaded).
-        """
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Model is initialized and evolution can start
-         -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention 
-        """
-        return function  
-        
-    
-    @legacy_function
     def get_eps2():
         """
         Retrieve the current value of the squared smoothing parameter.
@@ -845,7 +767,7 @@ class GravitationalDynamicsInterface(object):
         """
         return function 
             
-class GravitationalDynamics(CodeInterface):
+class GravitationalDynamics(common.CommonCode):
     NBODY = object()
     
     def __init__(self, legacy_interface, convert_nbody = None):
@@ -864,14 +786,28 @@ class GravitationalDynamics(CodeInterface):
         
         
     def define_state(self, object):
-        pass
-        #~ self.set_initial_state('INITIAL')
-        #~ self.add_transition('INITIAL', 'EVOLVE', 'initialize_particles')
-        #~ self.add_transition('EVOLVE', 'STATE', 'synchronize_model')
-        #~ self.add_transition('EVOLVE', 'CHANGE-PARTICLES', 'delete_particle')
-        #~ self.add_transition('EVOLVE', 'CHANGE-PARTICLES', 'new_particle')
-        #~ self.add_transition('CHANGE-PARTICLES', 'EVOLVE', 'reinitialize_code')
-        #~ self.add_transition(None, 'EDIT-PARAMETERS', 'set_eps2')
+        common.CommonCode.define_state(self, object)
+        
+        
+        
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_method('EDIT', 'new_particle')
+        object.add_method('EDIT', 'delete_particle')
+        object.add_transition('EDIT', 'RUN', 'commit_particles')
+        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
+        object.add_method('EVOLVED', 'evolve_model')
+        object.add_transition('EVOLVED','RUN', 'synchronize_model')
+        object.add_method('RUN', 'get_state')
+        object.add_method('RUN', 'get_mass')
+        object.add_method('RUN', 'get_position')
+
+        object.add_method('RUN', 'get_gravity_at_point')
+        object.add_method('RUN', 'get_potential_at_point')
+        
+        
         
     def define_methods(self, object):
             

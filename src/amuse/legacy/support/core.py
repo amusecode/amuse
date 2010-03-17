@@ -101,8 +101,11 @@ class LegacyCall(object):
               break
               
         self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
-        (doubles, ints, floats, strings) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
-       
+        
+        try:
+            (doubles, ints, floats, strings) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
+        except Exception, ex:
+            raise Exception("Exception when calling legacy code '{0}', exeption was '{1}'".format(self.specification.name, ex))
         return self.converted_results(doubles, ints, floats, strings, handle_as_array)
         
     """
