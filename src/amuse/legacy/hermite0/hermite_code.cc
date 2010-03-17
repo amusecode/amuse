@@ -719,9 +719,22 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
 int set_state(int id, double _mass, double _radius, double x, double y, double z, 
 	      double vx, double vy, double vz)
 //cello, proj1, 
-// NOT YET IMPLEMENTED
 {
-  return -3;
+  unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
+  
+  if (i < ident.size())
+    {
+      mass[i] = _mass;
+      radius[i] = _radius;
+      pos[i] = vec(x,y,z);
+      vel[i] = vec(vx, vy, vz);
+      return 0;
+    }
+  else
+    {
+      return -1;
+    }
+  
 }
 
 int get_mass(int id, double *_mass)
