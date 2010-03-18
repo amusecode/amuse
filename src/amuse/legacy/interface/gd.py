@@ -800,6 +800,7 @@ class GravitationalDynamics(common.CommonCode):
         object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
         object.add_method('EVOLVED', 'evolve_model')
         object.add_transition('EVOLVED','RUN', 'synchronize_model')
+        object.add_method('RUN', 'synchronize_model')
         object.add_method('RUN', 'get_state')
         object.add_method('RUN', 'get_mass')
         object.add_method('RUN', 'get_position')
