@@ -77,6 +77,8 @@ class TestMPIInterface(TestWithMPI):
         instance.cleanup_code()
         del instance
         
+    
+        
     def test3(self):
         interface = BHTreeInterface()
         interface.eps2 = 0.101
@@ -110,6 +112,28 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(interface.get_number_of_particles()['number_of_particles'], 2)
         interface.cleanup_code()
         del interface
+    
+    
+    def test6(self):
+        instance = BHTreeInterface()
+        instance.initialize_code()
+        instance.commit_parameters()
+        
+        ids = []
+        for i in [1, 2, 3]:
+            id, error = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+            ids.append(id)
+        print ids
+        
+        instance.commit_particles()
+        
+            
+        instance.delete_particle(ids[0])
+        id, error = instance.new_particle(mass = 4, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        self.failIfEqual(id, ids[-1])
+        
+        instance.cleanup_code()
+        del instance
 
 
 class TestAmuseInterface(TestWithMPI):
@@ -288,7 +312,6 @@ class TestAmuseInterface(TestWithMPI):
     
     def test6(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
-
         instance = BHTree(convert_nbody)
         instance.commit_parameters()
         
@@ -300,6 +323,7 @@ class TestAmuseInterface(TestWithMPI):
             [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s, [0.0, 0.01] | units.m/units.s
         )
         instance.commit_particles()
+        
         self.assertEquals(instance.get_mass(indices[0]), 15.0| units.kg)
         self.assertEquals(instance.get_mass(indices)[0], 15.0| units.kg)
         
@@ -308,6 +332,7 @@ class TestAmuseInterface(TestWithMPI):
             self.fail("Should raise error, invalid index")
         except Exception, ex:
             self.assertEquals(str(ex), "Error when calling 'get_mass' of a 'BHTree', errorcode is -1")
+
         
     
     def test7(self):
