@@ -123,17 +123,19 @@ class TableFormattedText(object):
         
         while not self.cursor.is_at_end() and not self.cursor.line().startswith(self.footer_prefix_string):
             columns = self.split_into_columns(self.cursor.line())
-            if len(columns) != len(self.attribute_names):
-                raise Exception(
-                    "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
+            if len(columns)>0:
+                if len(columns) != len(self.attribute_names):
+                    raise Exception(
+                        "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
             
             
-            for value_string, list_of_values in zip(columns, values):
-                list_of_values.append(self.convert_string_to_number(value_string))
+                for value_string, list_of_values in zip(columns, values):
+                    list_of_values.append(self.convert_string_to_number(value_string))
                 
+                
+                number_of_particles += 1
             self.cursor.forward()
-            number_of_particles += 1
-        
+
         quantities = map(
             lambda value, unit : unit.new_quantity(value), 
             values, 
