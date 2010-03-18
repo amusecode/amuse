@@ -28,7 +28,7 @@ class TestMPIInterface(TestWithMPI):
 
     def test1(self):
         instance = PhiGRAPEInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
@@ -52,7 +52,7 @@ class TestMPIInterface(TestWithMPI):
     
     def test3(self):
         instance = PhiGRAPEInterface()
-        instance.setup_module()
+        instance.initialize_code()
         
         instance.new_particle([11.0,12.0,13.0,14.0]
             , [2.0,3.0,4.0,5.0]
@@ -72,7 +72,7 @@ class TestMPIInterface(TestWithMPI):
     
     def test5(self):
         instance = PhiGRAPEInterface()
-        instance.setup_module()
+        instance.initialize_code()
         n = 4000
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
@@ -91,7 +91,7 @@ class TestMPIInterface(TestWithMPI):
         
     def xtest6(self):
         instance = mpi_interface.PhiGRAPE()
-        instance.setup_module()
+        instance.initialize_code()
         n = 4000
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
@@ -148,7 +148,7 @@ class TestMPIInterface(TestWithMPI):
 
     def test8(self):
         instance = PhiGRAPEInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.set_eps2(0.0**2)
         instance.set_eta(0.01,0.02)
         instance.new_particle( 
@@ -203,7 +203,7 @@ class TestCodeInterface(TestWithMPI):
         instance = PhiGRAPE(convert_nbody)
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.set_eta(0.01,0.02)
-        instance.setup_module()
+        instance.initialize_code()
         instance.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -243,7 +243,7 @@ class TestCodeInterface(TestWithMPI):
         instance = PhiGRAPE(convert_nbody)
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.set_eta(0.01,0.02)
-        instance.setup_module()
+        instance.initialize_code()
         instance.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -286,7 +286,7 @@ class TestCodeInterface(TestWithMPI):
         instance = PhiGRAPE(convert_nbody)
         #channel.MessageChannel.DEBUGGER = None
 
-        instance.setup_module()
+        instance.initialize_code()
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)
@@ -312,7 +312,7 @@ class TestCodeInterface(TestWithMPI):
         #channel.MessageChannel.DEBUGGER = None
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         instance.set_eta(0.01,0.02)
-        instance.setup_module()
+        instance.initialize_code()
         
         
         particles = core.Particles(2)
@@ -352,7 +352,7 @@ class TestCodeInterface(TestWithMPI):
       
     def test6(self):
         instance = PhiGRAPE(PhiGRAPE.NBODY)
-        instance.setup_module()
+        instance.initialize_code()
         
         particles = core.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))

@@ -26,7 +26,7 @@ class TestMPIInterface(TestWithMPI):
     
     def test1(self):
         instance = HermiteInterface()
-        instance.setup_module()
+        instance.initialize_code()
 
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
@@ -47,7 +47,7 @@ class TestMPIInterface(TestWithMPI):
 
     def test2(self):
         instance = HermiteInterface()
-        instance.setup_module()
+        instance.initialize_code()
 
         for i in [0, 1, 2]:
             temp_particle = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
@@ -82,7 +82,7 @@ class TestMPIInterface(TestWithMPI):
 
     def test5(self):
         hermite = HermiteInterface()
-        hermite.setup_module()
+        hermite.initialize_code()
         
         hermite.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
         retrieved_state = hermite.get_state(0)
@@ -97,7 +97,7 @@ class TestMPIInterface(TestWithMPI):
 
     def test6(self):
         hermite = HermiteInterface()
-        hermite.setup_module()
+        hermite.initialize_code()
         
         hermite.new_particle([10,10],[1,1],[-1,1],[0,0], [0,0], [0,0], [0,0], [0,0])
         retrieved_state = hermite.get_state(0)
@@ -130,7 +130,7 @@ class TestAmuseInterface(TestWithMPI):
 
         hermite = Hermite(convert_nbody)
         hermite.parameters.epsilon_squared = 0.0 | units.AU**2
-        hermite.setup_module()
+        hermite.initialize_code()
         hermite.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -168,7 +168,7 @@ class TestAmuseInterface(TestWithMPI):
 
         instance = Hermite(convert_nbody)
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.setup_module()
+        instance.initialize_code()
         instance.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -210,7 +210,7 @@ class TestAmuseInterface(TestWithMPI):
 
         instance = Hermite(convert_nbody)
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.setup_module()
+        instance.initialize_code()
         instance.dt_dia = 5000
         
         stars = core.Stars(2)
@@ -239,7 +239,7 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = Hermite(convert_nbody)
-        instance.setup_module()
+        instance.initialize_code()
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)
@@ -263,7 +263,7 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
         instance = Hermite(convert_nbody)
-        instance.setup_module()
+        instance.initialize_code()
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)

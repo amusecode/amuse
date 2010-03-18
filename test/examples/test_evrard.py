@@ -38,7 +38,7 @@ def run_evrard(x):
   smooth=numpy.zeros_like(mass)
 
   nb = interface.fi()
-  nb.setup_module()
+  nb.initialize_code()
 
   nb.set_stepout(99999)
   nb.set_steplog(99999)
@@ -81,8 +81,9 @@ def run_evrard(x):
     e,ret=nb.get_thermal_energy()
     Eth.append(e)
 
-  nb.cleanup_module()
-
+  nb.cleanup_code()
+  nb.stop()
+  
   del nb
  
   time=numpy.array(time)

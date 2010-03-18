@@ -105,7 +105,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
    
     gravity = BHTree()
-    gravity.setup_module()
     gravity.parameters.epsilon_squared = 0.15 | units.parsec ** 2
         
     stellar_evolution = SSE()
@@ -165,8 +164,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     storage = store.StoreHDF(output_file)
     storage.store(particles)
    
-    del gravity
-    del stellar_evolution
+    gravity.stop()
+    stellar_evolution.stop()
     
     plot_particles(particles, name_of_the_figure)
     

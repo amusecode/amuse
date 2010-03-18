@@ -34,20 +34,20 @@ class SunEarth(object):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)        
         
         hermite = Hermite(convert_nbody)      
-        hermite.parameters.epsilon_squared = 0.0 | units.AU**2        
-        hermite.setup_module()        
-        hermite.dt_dia = 5000         
+        hermite.initialize_code()
+        
+        hermite.parameters.epsilon_squared = 0.0 | units.AU**2 
         
         stars = self.new_system_of_sun_and_earth()      
         earth = stars[1]      
         sun = stars[0]        
         Earth = blender.Primitives.sphere(10,10,0.1)# Make the earth avatar          
         Sun = blender.Primitives.sphere(32,32,1)# Make the sun avatar     
-        hermite.setup_particles(stars)        
+        hermite.particles.add_particles(stars)
         
         for i in range(1*365):        
-            hermite.evolve_model(i | units.day)       
-            hermite.update_particles(stars)           
+            hermite.evolve_model(i | units.day)
+            hermite.update_particles(stars)
     #update avatar positions: 
             Earth.loc = (1*earth.position.value_in(units.AU)[0],1*earth.position.value_in(units.AU)[1],earth.position.value_in(units.AU)[2])
             Sun.loc = (1*sun.position.value_in(units.AU)[0],1*sun.position.value_in(units.AU)[1],sun.position.value_in(units.AU)[2])

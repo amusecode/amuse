@@ -47,18 +47,18 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         bhtree = BHTree(convert_nbody)
+        bhtree.initialize_code()
         bhtree.eps2_for_gravity = 0.001
-        bhtree.setup_module()
             
         bhtree_particles = self.new_system_sun_and_earth()
-        bhtree.setup_particles(bhtree_particles)
+        bhtree.particles.add_particles(bhtree_particles)
         
         hermite = Hermite(convert_nbody)
         hermite.dt_dia = 5000
-        hermite.setup_module()
+        hermite.commit_parameters()
             
         hermite_particles = self.new_system_sun_and_earth()
-        hermite.setup_particles(hermite_particles)
+        hermite.particles.add_particles(hermite_particles)
         
         thread1 = threading.Thread(target = self.evolve_model_unit_day, args = (bhtree, bhtree_particles, 10))
         thread2 = threading.Thread(target = self.evolve_model_unit_day, args = (hermite, hermite_particles, 10))
@@ -98,8 +98,8 @@ class TestAmuseInterface(TestWithMPI):
             output_file = os.path.join(test_results_path, "parallel-earth-sun.svg")
             figure.savefig(output_file)
                     
-        bhtree.cleanup_module()
-        hermite.cleanup_module()
+        bhtree.stop()
+        hermite.stop()
         del bhtree
         del hermite
 

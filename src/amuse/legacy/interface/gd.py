@@ -782,7 +782,7 @@ class GravitationalDynamics(common.CommonCode):
         object.add_property("get_center_of_mass_position", nbody_system.length)
         object.add_property("get_center_of_mass_velocity", nbody_system.length / nbody_system.time)
         object.add_property("get_total_mass", nbody_system.mass)
-        object.add_property('get_time',nbody_system.time, "model_time")
+        object.add_property('get_time', nbody_system.time, "model_time")
         
         
     def define_state(self, object):

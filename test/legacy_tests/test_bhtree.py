@@ -28,11 +28,12 @@ class TestMPIInterface(TestWithMPI):
     def test1(self):
         instance = BHTreeInterface()
         channel.MessageChannel.DEBUGGER = None
-        instance.setup_module()
-
+        instance.initialize_code()
+        instance.commit_parameters()
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
         
+        instance.commit_particles()
         self.assertEquals(1, res1['index_of_the_particle'])
         self.assertEquals(2, res2['index_of_the_particle'])
 
@@ -47,17 +48,19 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(1, instance.get_index_of_first_particle()['index_of_the_particle'])
         self.assertEquals(2, instance.get_index_of_next_particle(1)['index_of_the_next_particle']) 
         
-        instance.cleanup_module()
+        instance.cleanup_code()
         del instance
 
     def test2(self):
         instance = BHTreeInterface()
-        instance.setup_module()
+        instance.initialize_code()
 
+        instance.commit_parameters()
         for i in [1, 2, 3]:
             temp_particle = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
             self.assertEquals(i, temp_particle['index_of_the_particle'])
-
+        
+        instance.commit_particles()
         self.assertEquals(1, instance.get_index_of_first_particle()['index_of_the_particle'])
         self.assertEquals(2, instance.get_index_of_next_particle(1)['index_of_the_next_particle']) 
         self.assertEquals(3, instance.get_index_of_next_particle(2)['index_of_the_next_particle'])
@@ -71,7 +74,7 @@ class TestMPIInterface(TestWithMPI):
         
         self.assertEquals(1, instance.get_index_of_next_particle(2)['__result'])
 
-        instance.cleanup_module()
+        instance.cleanup_code()
         del instance
         
     def test3(self):
@@ -92,9 +95,11 @@ class TestMPIInterface(TestWithMPI):
 
     def test5(self):
         interface = BHTreeInterface()
-        interface.setup_module()
+        interface.initialize_code()
         
+        interface.commit_parameters()
         interface.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
+        interface.commit_particles()
         retrieved_state = interface.get_state(1)
         
         self.assertEquals(10.0,  retrieved_state['mass'])
@@ -103,14 +108,9 @@ class TestMPIInterface(TestWithMPI):
         retrieved_state = interface.get_state([1,2])
         self.assertEquals(20.0,  retrieved_state['mass'][1])
         self.assertEquals(interface.get_number_of_particles()['number_of_particles'], 2)
-        interface.cleanup_module()
+        interface.cleanup_code()
         del interface
 
-    def test6(self):
-        interface = BHTreeInterface()
-        interface.setup_module()
-        interface.cleanup_module()
-        del interface
 
 class TestAmuseInterface(TestWithMPI):
     def test1(self):
@@ -120,7 +120,6 @@ class TestAmuseInterface(TestWithMPI):
         instance = BHTree(convert_nbody)
         channel.MessageChannel.DEBUGGER = None
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
-        instance.commit_parameters()
         
         stars = core.Stars(2)
         
@@ -138,7 +137,6 @@ class TestAmuseInterface(TestWithMPI):
 
         #instance.particles.add_particles(stars)
         instance.particles.add_particles(stars)
-        instance.commit_particles()
         
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
@@ -163,7 +161,7 @@ class TestAmuseInterface(TestWithMPI):
         postion_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 1)
-        instance.cleanup_module()
+        instance.cleanup_code()
         del instance
         
     def test2(self):
@@ -218,7 +216,7 @@ class TestAmuseInterface(TestWithMPI):
             output_file = os.path.join(test_results_path, "bhtree-earth-sun.svg")
             figure.savefig(output_file)    
         
-        instance.cleanup_module()
+        instance.cleanup_code()
         del instance
 
     def test3(self):
