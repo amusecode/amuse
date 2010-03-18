@@ -6,10 +6,10 @@ Tutorials
 .. toctree::
    :maxdepth: 2
    
-   blender
    particle_sets
    legacy_code
    code_interface
+   blender
    
    
    
