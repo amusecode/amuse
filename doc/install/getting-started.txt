@@ -7,7 +7,7 @@ Introduction
 
 At this point you should have built and tested AMUSE, as described in the previous sections, and are probably wondering "What can AMUSE do for me?". This section will get you started with AMUSE.
 
-AMUSE is based on python, so if you're new to Python, you'll find the official `Python documentation <http://docs.python.org/>`_ a valuable resource. Like with Python, there are basically two ways to use AMUSE. Firstly, directly via the interactive (Python-like) command line:
+AMUSE is based on python, so if you're new to Python, you'll find the official `Python documentation <http://docs.python.org/>`_ a valuable resource. Like with Python, there are basically two ways to use AMUSE. Firstly, directly via the interactive (Python) command line:
 
 .. code-block:: sh
 
@@ -18,7 +18,7 @@ AMUSE is based on python, so if you're new to Python, you'll find the official `
     >>> 
     >>> quit()    
 
-Secondly, by writing (Python-like) scripts. Suppose you wrote the following script `myscript.py`, and saved it in the current working directory:
+Secondly, by writing (Python) scripts. Suppose you wrote the following script `myscript.py`, and saved it in the current working directory:
 
 .. code-block:: python
    :linenos:
@@ -182,7 +182,18 @@ If instead of "Plotting the data..." the script printed "Unable to produce plot:
 Matplotlib
 ----------
 
-Matplotlib is a python plotting library which produces publication quality figures. Many of the AMUSE example scripts use this library to produce graphical output. If you would like to take advantage of this library, get it from http://matplotlib.sourceforge.net/ and install it in the Python site-packages directory. For your own work, it is of course also possible to print the required output to the terminal and use your favourite plotting tool to make the figures.
+Matplotlib is a python plotting library which produces publication quality figures. Many of the AMUSE example scripts use this library to produce graphical output. If you would like to take advantage of this library, get it from http://matplotlib.sourceforge.net/ and install it in the Python site-packages directory. For your own work, it is of course also possible to print the required output to the terminal and use your favourite plotting tool to make the figures, or use gnuplot_, as described in the next section.
+
+.. _gnuplot:
+
+Gnuplot
+-------
+
+Another plotting utility that can be used from Python and AMUSE scripts is gnuplot. Gnuplot can be downloaded from http://www.gnuplot.info/. If you have gnuplot, you can install the **gnuplot-py** package to control gnuplot directly from your script.
+
+To install **gnuplot-py**, open a shell and do::
+        
+    easy_install gnuplot-py
 
 
 Further documentation
