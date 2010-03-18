@@ -36,13 +36,13 @@ class CursorTests(amusetest.TestCase):
 class TableFormattedTextTests(amusetest.TestCase):
     
     def test1(self):
-        contents = "#header\n1 2 3\n4 5 6"
+        contents = "#header\n1 2 3\n4 5 6\n       \n7 8 9\n     "
         data_file = StringIO.StringIO(contents)
         instance = text.TableFormattedText("test.txt", data_file)
         instance.attribute_names = ['a', 'b', 'c']
         particles = instance.load()
         
-        self.assertEquals(len(particles), 2)
+        self.assertEquals(len(particles), 3)
         self.assertEquals(particles[0].a, 1|units.none)
         
     def test2(self):
@@ -57,7 +57,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         instance.store()
         
         contents = data_file.getvalue()
-        print contents       
+        #print contents       
         self.assertEquals("#a b c\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
         
     
