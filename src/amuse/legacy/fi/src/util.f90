@@ -204,27 +204,37 @@ End Subroutine mrgrnk
 subroutine terror(message)
   character(len=*) message
   print*, message
-  print*, " aborting"
-  stop
+  stop "aborting"
 end subroutine
 
 function rtime()
- real :: rtime
- real,save :: ttot=-1.
- integer, save :: c1
- integer :: c2,c,cr,cmax
+  real :: rtime
+  real, save :: ttot=-1.
+  integer, save :: c1
+  integer :: c2,c,cr,cmax,threads
+!$ integer :: omp_get_num_threads
 
- call system_clock(count=c2,count_rate=cr,count_max=cmax)
- c=(c2-c1)
- if(c.lt.0) c=c+cmax
- c1=c2
- if(ttot.lt.0) then
-  write(*,'("  max. timestep (hrs):", f8.2)') float(cmax)/float(cr)/3600.
-  ttot=0.
- else
-  ttot=ttot+float(c)/float(cr)
- endif
- rtime=ttot/3600.
+  threads=1
+!$ threads=omp_get_num_threads()
+  
+  if(ttot.lt.0) then
+    if(threads.NE.1) then
+      call terror("error: call rtime first outside openmp region") 
+    endif
+    call system_clock(count=c1,count_rate=cr,count_max=cmax)
+!    write(*,'("  max. timestep (hrs):", f8.2)') float(cmax)/float(cr)/3600.
+    ttot=0.
+  endif 
+
+  call system_clock(count=c2,count_rate=cr,count_max=cmax)
+  c=(c2-c1)
+  if(c.lt.0) c=c+cmax
+ 
+  if(threads.EQ.1) then
+    c1=c2
+    ttot=ttot+float(c)/float(cr)
+  endif
+  rtime=(ttot+float(c)/float(cr))/3600.
 end function
 
 
