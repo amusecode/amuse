@@ -1,8 +1,10 @@
 subroutine muse_start
   include 'globals.h'
-  real*8 rtime
+  real*8 rtime, dum
   logical, save :: firstcall=.TRUE.
 
+  dum = rtime()
+  
   if(firstcall) then
     firstcall=.FALSE.
 

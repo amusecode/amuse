@@ -440,13 +440,17 @@ class RunTests(object):
             doctest.enabled = True
             plugins = [doctest, report , Skip(), Capture()] 
             argv = ['nose']
+            old_working_directory = os.getcwd()
             if not self.WORKING_DIRECTORY is None:
                 argv.extend(['-w', self.WORKING_DIRECTORY])
+                os.chdir(self.WORKING_DIRECTORY)
                 
             argv.extend( directories)
             argv.extend(['--with-doctest', '--doctest-extension=txt'])
-           
+            
             result = TestProgram(exit = False, argv=argv, plugins=plugins);
+            
+            os.chdir(old_working_directory)
             results_queue.put(('test-report', report,) )
         except :
             results_queue.put(('test-error', 'Exception happened: ' + str(sys.exc_info()[0]) + " - " + str(sys.exc_info()[1]), ))

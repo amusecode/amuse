@@ -229,12 +229,13 @@ function rtime()
   call system_clock(count=c2,count_rate=cr,count_max=cmax)
   c=(c2-c1)
   if(c.lt.0) c=c+cmax
- 
   if(threads.EQ.1) then
     c1=c2
     ttot=ttot+float(c)/float(cr)
+    rtime=ttot/3600.0
+    return
   endif
-  rtime=(ttot+float(c)/float(cr))/3600.
+  rtime=(ttot+float(c)/float(cr))/3600.0
 end function
 
 
