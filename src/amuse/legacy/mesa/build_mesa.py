@@ -12,12 +12,16 @@ class BuildMesa(object):
         
     def get_mesa_source_from_svn(self):
         mesa_url = "https://mesa.svn.sourceforge.net/svnroot/mesa/trunk"
-        revision = "1943"
+        revision = "2208"
         subprocess.call(['svn', 'co', '-r', revision, mesa_url, 'src'], cwd = self.mesa_directory())
-        subprocess.call(['cp','-f','./mesa_reqs/makefile_header_v'+str(revision),
+        subprocess.call(['cp','-f','./mesa_reqs/makefile_header',
             './src/utils/makefile_header'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/create_zams.f',
+            './src/star/test/src/create_zams.f'], cwd = self.mesa_directory())
         subprocess.call(['cp','-f','./mesa_reqs/eos_def.f',
             './src/eos/public/eos_def.f'], cwd = self.mesa_directory())
+        subprocess.call(['cp','-f','./mesa_reqs/jina_def.f',
+            './src/jina/public/jina_def.f'], cwd = self.mesa_directory())
         subprocess.call(['cp','-f','./mesa_reqs/kap_def.f',
             './src/kap/public/kap_def.f'], cwd = self.mesa_directory())
         subprocess.call(['cp','-f','./mesa_reqs/net_def.f',
@@ -39,21 +43,20 @@ class BuildMesa(object):
         subprocess.call(['./empty_caches'], cwd = os.path.join(self.mesa_directory(), 'src'))
 
 if __name__ == '__main__':
+    instance = BuildMesa()
     if len(sys.argv) == 1:
-        instance = BuildMesa()
         instance.build_mesa()
     elif sys.argv[1] == "download":
-        instance = BuildMesa()
         instance.get_mesa_source_from_svn()
     elif sys.argv[1] == "build":
-        instance = BuildMesa()
+        instance.build_mesa()
+    elif sys.argv[1] == "rebuild":
+        instance.clean_mesa()
         instance.build_mesa()
     elif sys.argv[1] == "clean":
-        instance = BuildMesa()
         instance.clean_mesa()
     elif sys.argv[1] == "veryclean":
-        instance = BuildMesa()
         instance.very_clean_mesa()
     else:
         print "I'm confused: unknown argument: ", sys.argv[1]
-        print "Known arguments: 'download', 'build', 'clean', 'veryclean'"
+        print "Known arguments: 'download', 'build', 'rebuild', 'clean', 'veryclean'"

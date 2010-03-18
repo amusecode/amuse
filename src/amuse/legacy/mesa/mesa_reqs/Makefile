@@ -3,19 +3,18 @@ FC = $(FORTRAN)
 
 MESA_DIR = ../src
 WORK_DIR = .
-WORK_SRC_DIR = $(WORK_DIR)/src
 STAR_TEST_DIR = $(MESA_DIR)/star/test
 STAR_LIB_DIR = $(MESA_DIR)/star/make
 STAR_RUN_LIB_DIR = $(MESA_DIR)/star/test/make
 STAR_SRC_DIR = $(STAR_TEST_DIR)/src
 
-include $(WORK_DIR)/makefile_header_v1943
+include $(WORK_DIR)/makefile_header
 include $(WORK_DIR)/makefile_include
 
 LOAD_MESA = -L$(MESA_LIB_DIR) $(LOAD_MESA_STAR)
 STAR_WORK_OBJS = \
    run_star_support.o run_star_extras.o \
-   calibrate.o isochrone.o $(NETCDF_OBJ) \
+   calibrate.o isochrone.o $(PGSTAR_OBJS) \
    create_zams.o sample_zams.o \
    run_star.o 
 
@@ -42,15 +41,6 @@ lib_mesa_star:
 	cp $(STAR_LIB_DIR)/star_def.mod $(MESA_DIR)/include
 	cp $(STAR_LIB_DIR)/libstar.a $(MESA_DIR)/lib
 	ranlib $(MESA_DIR)/lib/libstar.a
-
-run.o: $(WORK_SRC_DIR)/run.f
-	$(WORK_COMPILE) $<
-
-run_star_extras.o: $(WORK_SRC_DIR)/run_star_extras.f
-	$(WORK_COMPILE) $<
-
-create_zams.o: $(WORK_SRC_DIR)/create_zams.f
-	$(WORK_COMPILE) $<
 
 %.o: $(STAR_SRC_DIR)/%.f
 	$(WORK_COMPILE) $<

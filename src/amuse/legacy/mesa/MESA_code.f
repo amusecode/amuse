@@ -7,7 +7,9 @@
          double precision :: AMUSE_metallicity = 0.02d0
          double precision :: AMUSE_dmass = 0.1d0
          double precision :: AMUSE_mlo = -1.0d0
-         double precision :: AMUSE_mhi = 1.7d0
+!         double precision :: AMUSE_mhi = 1.7d0
+!         double precision :: AMUSE_mlo = 1.4d0
+         double precision :: AMUSE_mhi = 2.0d0
          double precision :: AMUSE_max_age_stop_condition = 1.0d12
          double precision :: AMUSE_min_timestep_stop_condition = 1.0d-6
          integer :: AMUSE_max_iter_stop_condition = -1111
@@ -21,6 +23,16 @@
             failed = (ierr /= 0)
             if (failed) write(*, *) trim(str) // ' ierr', ierr
          end function failed
+         logical function evolve_failed(str, ierr, return_var, errorcode)
+            character (len=*), intent(in) :: str
+            integer, intent(in) :: ierr, errorcode
+            integer, intent(out) :: return_var
+            evolve_failed = (ierr /= 0)
+            if (evolve_failed) then
+               write(*, *) trim(str) // ' ierr', ierr
+               return_var = errorcode
+            endif
+         end function evolve_failed
          subroutine get_zams_filename(str, ierr)
             character (len=256), intent(out) :: str
             integer, intent(out) :: ierr
@@ -67,7 +79,7 @@
          ! Replace value of mesa_data_dir just read, with supplied path.
          mesa_data_dir = AMUSE_mesa_data_dir
          call star_init(mesa_data_dir, kappa_file_prefix, &
-            net_reaction_filename, net_rate_list_fname, ppn_rate_numbers_fname, ierr)
+            net_reaction_filename, rates_dir, ppn_rate_numbers_fname, ierr)
          if (failed('star_init', ierr)) return
          profile_columns_file = trim(mesa_data_dir) // '/star_data/profile_columns.list'
          log_columns_file = trim(mesa_data_dir) // '/star_data/log_columns.list'
@@ -78,22 +90,14 @@
    subroutine new_zams_model(ierr)
       use create_zams, only: AMUSE_do_create_zams
       use amuse_support
-      use star_lib, only: alloc_star, star_setup
-      use star_private_def, only: star_info, get_star_ptr
       use run_star_support, only: run_create_zams, zams_inlist
       implicit none
-      integer :: ierr, AMUSE_id
-      type (star_info), pointer :: s
-      AMUSE_id = alloc_star(ierr)
-      if (failed('alloc_star', ierr)) return
-      call get_star_ptr(AMUSE_id, s, ierr)
-      if (failed('get_star_ptr', ierr)) return
-      call star_setup(AMUSE_id, AMUSE_inlist_path, ierr)
-      if (failed('star_setup', ierr)) return      
+      integer :: ierr
       call get_zams_filename(AMUSE_zams_filename, ierr)
       if (failed('get_zams_filename', ierr)) return
       run_create_zams = .true. ! is this necessary?
-      call AMUSE_do_create_zams(s, AMUSE_metallicity, AMUSE_zams_filename, &
+      call AMUSE_do_create_zams(AMUSE_metallicity, AMUSE_zams_filename, &
+         AMUSE_inlist_path, &
          AMUSE_dmass, AMUSE_mlo, AMUSE_mhi, ierr)
       if (failed('AMUSE_do_create_zams', ierr)) return      
       ierr = 0
@@ -102,7 +106,7 @@
 ! Create a new particle
    function new_particle(AMUSE_id, AMUSE_mass)
       use amuse_support
-      use star_lib, only: alloc_star, star_setup, star_load_zams, show_log_header
+      use star_lib, only: alloc_star, star_setup, star_load_zams, show_terminal_header
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support, only: setup_for_run_star, before_evolve
       implicit none
@@ -136,8 +140,8 @@
       if (failed('setup_for_run_star', ierr)) return
       call before_evolve(AMUSE_id, ierr)
       if (failed('before_evolve', ierr)) return
-      call show_log_header(AMUSE_id, ierr)
-      if (failed('show_log_header', ierr)) return
+      call show_terminal_header(AMUSE_id, ierr)
+      if (failed('show_terminal_header', ierr)) return
       new_particle = 0
    end function
 
@@ -331,8 +335,8 @@
       function get_stellar_type(AMUSE_id, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
          use amuse_support, only: failed
-         use do_one_utils, only: do_show_log_header, do_write_log_state
-         use utils, only:eval_current_y, eval_current_z
+         use do_one_utils, only: do_show_terminal_header, do_terminal_summary
+         use star_utils, only:eval_current_y, eval_current_z
          implicit none
          integer, intent(in) :: AMUSE_id
          integer, intent(out) :: AMUSE_value
@@ -343,45 +347,66 @@
          get_stellar_type = -1
          call get_star_ptr(AMUSE_id, s, ierr)
          if (failed('get_star_ptr', ierr)) return
-         select case(s% phase_of_evolution)
-            case(0,1,2)
-               if (s% initial_mass < 0.75) then
-                  AMUSE_value = 0
-               else
-                  AMUSE_value = 1
-               endif
-            case(3)
-               AMUSE_value = 3
-            case(4:)
-               y_avg = eval_current_y(s, 1, s% nz, ierr)
-               if (failed('eval_current_y', ierr)) return
-               z_avg = eval_current_z(s, 1, s% nz, ierr)
-               if (failed('eval_current_z', ierr)) return
-               x_avg = max(0d0, min(1d0, 1 - (y_avg + z_avg)))
-               if (x_avg > 1.0d-5) then
-                  if (s% center_he3 + s% center_he4 > 1.0d-5) then
-                     AMUSE_value = 4 ! Core He burning
+         ! if the star is not a stellar remnant...
+         if (s% log_surface_radius > -1.0) then
+            ! Use the MESA phase_of_evolution marker (explained below)
+            select case(s% phase_of_evolution)
+               case(0,1,2)
+                  if (s% initial_mass < 0.75) then
+                     AMUSE_value = 0 ! Convective low mass star
                   else
-                     if (y_avg < 0.75 * x_avg) then
-                        AMUSE_value = 5 ! Early AGB (inert C/O core)
+                     AMUSE_value = 1 ! Main sequence star
+                  endif
+               case(3)
+                  AMUSE_value = 3 ! Red giant branch
+               case(4:)
+                  y_avg = eval_current_y(s, 1, s% nz, ierr)
+                  if (failed('eval_current_y', ierr)) return
+                  z_avg = eval_current_z(s, 1, s% nz, ierr)
+                  if (failed('eval_current_z', ierr)) return
+                  x_avg = max(0d0, min(1d0, 1 - (y_avg + z_avg)))
+                  if (x_avg > 1.0d-5) then
+                     if (s% center_he3 + s% center_he4 > 1.0d-5) then
+                        AMUSE_value = 4 ! Core He burning
                      else
-                        AMUSE_value = 6 ! Late (thermally pulsing) AGB (inert C/O core)
+                        if (y_avg < 0.75 * x_avg) then
+                           AMUSE_value = 5 ! Early AGB (inert C/O core)
+                        else
+                           AMUSE_value = 6 ! Late (thermally pulsing) AGB (inert C/O core)
+                        endif
+                     endif
+                  else
+                     if (s% center_he3 + s% center_he4 > 1.0d-5) then
+                        AMUSE_value = 7 ! Helium MS star
+                     else
+                        AMUSE_value = 9 ! Helium giant
                      endif
                   endif
+               case default
+                  write(*,*) "Unable to determine the stellar type."
+                  write(*,*) "The following information might help:"
+                  call do_show_terminal_header(s)
+                  call do_terminal_summary(s)
+                  return
+            end select
+         else ! stellar remnant
+            if (s% star_mass < 1.44) then ! white dwarf
+               ! Helium White Dwarf:
+               if (s% center_he3 + s% center_he4 > 0.1) AMUSE_value = 10
+               ! Carbon/Oxygen White Dwarf:
+               if (s% center_c12 > 0.1) AMUSE_value = 11
+               ! Oxygen/Neon White Dwarf:
+               if (s% center_ne20 > 0.01) AMUSE_value = 12
+                ! Else? Unknown kind of white dwarf... hopefully never reached.
+               if (AMUSE_value == -99) AMUSE_value = -10
+            else
+               if (s% star_mass < 3.2) then
+                  AMUSE_value = 13 ! Neutron Star
                else
-                  if (s% center_he3 + s% center_he4 > 1.0d-5) then
-                     AMUSE_value = 7 ! Helium MS star
-                  else
-                     AMUSE_value = 9 ! Helium giant
-                  endif
+                  AMUSE_value = 14 ! Black Hole
                endif
-            case default
-               write(*,*) "Unable to determine the stellar type."
-               write(*,*) "The following information might help:"
-               call do_show_log_header
-               call do_write_log_state(s)
-               return
-         end select
+            endif
+         endif
          get_stellar_type = 0
 !      integer, parameter :: phase_starting = 0
 !      integer, parameter :: phase_early_main_seq = 1
@@ -395,11 +420,10 @@
 
 ! Evolve the star for one step
    function evolve(AMUSE_id)
-      use star_lib, only: star_finish_step
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support
       use run_star, only: check_model
-      use amuse_support, only: failed
+      use amuse_support, only: evolve_failed
       implicit none
       integer, intent(in) :: AMUSE_id
       integer :: evolve
@@ -408,29 +432,29 @@
       logical :: first_try
       evolve = -1
       call get_star_ptr(AMUSE_id, s, ierr)
-      if (failed('get_star_ptr', ierr)) return
+      if (evolve_failed('get_star_ptr', ierr, evolve, -1)) return
       if (auto_extend_net) then
          call extend_net(s, ierr)
-         if (failed('extend_net', ierr)) return
+         if (evolve_failed('extend_net', ierr, evolve, -2)) return
       end if
       first_try = .true.
       model_number = get_model_number(AMUSE_id, ierr)
-      if (failed('get_model_number', ierr)) return
+      if (evolve_failed('get_model_number', ierr, evolve, -3)) return
       step_loop: do ! may need to repeat this loop for retry or backup
          result = star_evolve_step(AMUSE_id, first_try)
          if (result == keep_going) result = check_model(s, AMUSE_id, 0)
          if (result == keep_going) result = star_pick_next_timestep(AMUSE_id)
          if (result == keep_going) exit step_loop
          model_number = get_model_number(AMUSE_id, ierr)
-         if (failed('get_model_number', ierr)) return
+         if (evolve_failed('get_model_number', ierr, evolve, -3)) return
          result_reason = get_result_reason(AMUSE_id, ierr)
          if (result == retry) then
-            if (failed('get_result_reason', ierr)) return
+            if (evolve_failed('get_result_reason', ierr, evolve, -4)) return
             if (report_retries) &
                write(*,'(i6,3x,a,/)') model_number, &
                   'retry reason ' // trim(result_reason_str(result_reason))
          else if (result == backup) then
-            if (failed('get_result_reason', ierr)) return
+            if (evolve_failed('get_result_reason', ierr, evolve, -4)) return
             if (report_backups) &
                write(*,'(i6,3x,a,/)') model_number, &
                   'backup reason ' // trim(result_reason_str(result_reason))
@@ -438,47 +462,26 @@
          if (result == retry) result = star_prepare_for_retry(AMUSE_id)
          if (result == backup) result = star_do1_backup(AMUSE_id)
          if (result == terminate) then
+            evolve = -11 ! Unspecified stop condition reached, or:
             if (result_reason == result_reason_normal) then
                if (s% max_model_number > 0 .and. s% model_number >= &
-                  s% max_model_number) evolve = -3 ! max iterations reached
-               if (s% star_age >= s% max_age) evolve = -2 ! max_age reached
+                  s% max_model_number) evolve = -13 ! max iterations reached
+               if (s% star_age >= s% max_age) evolve = -12 ! max_age reached
             end if
             return
          end if
          first_try = .false.
       end do step_loop
-      if (result == keep_going) then
-         result = star_finish_step(AMUSE_id, .false.)
-         if (result /= keep_going) return
-      else if (result == terminate) then
-         if (result_reason == result_reason_normal) then
-            result = star_finish_step(AMUSE_id, save_photo_when_terminate)
-            if (result /= keep_going) return
-         end if
-         evolve = 0
-         return
-      end if
       if (s% model_number == save_model_number) then
          call star_write_model(AMUSE_id, save_model_filename, .true., ierr)
-         if (failed('star_write_model', ierr)) return
+         if (evolve_failed('star_write_model', ierr, evolve, -6)) return
          write(*, *) 'saved to ' // trim(save_model_filename)
-      end if
-      if (s% model_number == profile_model_number) then
-         write(*, '(a, i7)') 'save profile for model number', s% model_number
-         call save_profile(AMUSE_id, 3, ierr)
-         if (failed('save_profile', ierr)) return
-      end if
-      if (internals_num >= 0) then
-         write(*, '(a, i7)') 'write internals for model number', s% model_number
-         call std_write_internals(AMUSE_id, internals_num)
-         stop 'finished std_write_internals'
       end if
       evolve = 0
    end function
 
 ! Evolve the star until AMUSE_end_time
       subroutine evolve_to(AMUSE_id, AMUSE_end_time)
-         use star_lib, only: star_finish_step
          use star_private_def, only: star_info, get_star_ptr
          use run_star_support
          use run_star, only: check_model
@@ -525,39 +528,16 @@
                if (result == retry) result = star_prepare_for_retry(AMUSE_id)
                if (result == backup) result = star_do1_backup(AMUSE_id)
                if (result == terminate) then
-                  if (result_reason == result_reason_normal) then
-                     write(*, '(a, i12)') 'save profile for model number ', s% model_number
-                     call save_profile(AMUSE_id, 3, ierr)
-                     if (failed('save_profile', ierr)) return
-                  end if
                   continue_evolve_loop = .false.
                   exit step_loop
                end if
                first_try = .false.
             end do step_loop
-            if (result == keep_going) then
-               result = star_finish_step(AMUSE_id, .false.)
-               if (result /= keep_going) exit evolve_loop
-            else if (result == terminate) then
-               if (result_reason == result_reason_normal) then
-                  result = star_finish_step(AMUSE_id, save_photo_when_terminate)
-               end if
-               exit evolve_loop
-            end if
+            if (result == terminate) exit evolve_loop
             if (s% model_number == save_model_number) then
                call star_write_model(AMUSE_id, save_model_filename, .true., ierr)
                if (failed('star_write_model', ierr)) return
                write(*, *) 'saved to ' // trim(save_model_filename)
-            end if
-            if (s% model_number == profile_model_number) then
-               write(*, '(a, i7)') 'save profile for model number', s% model_number
-               call save_profile(AMUSE_id, 3, ierr)
-               if (failed('save_profile', ierr)) return
-            end if
-            if (internals_num >= 0) then
-               write(*, '(a, i7)') 'write internals for model number', s% model_number
-               call std_write_internals(AMUSE_id, internals_num)
-               stop 'finished std_write_internals'
             end if
          end do evolve_loop
          s% max_age = old_max_age

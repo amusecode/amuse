@@ -63,14 +63,6 @@
       
 
 
-   ! rate results
-      
-         integer, parameter :: i_rate = 1        
-         integer, parameter :: id_rate_dT = 2  
-         integer, parameter :: id_rate_dRho = 3 
-         integer, parameter :: num_rvs = 3   ! number of result variables per rate
-
-
    ! reactions
    
          integer, parameter :: maxlen_reaction_Info = 72
@@ -110,9 +102,7 @@
             ! up to 5 pairs of coefficients and chem id's, terminated by 0's.
             ! e.g.,  o16(p,g)f17 would be (/ 1, if17, 0 /)
             ! c12(a, p)n15 would be (/ 1, in15, 1, ih1, 0 /)
-
-
-
+         
 
 
       
@@ -159,55 +149,18 @@
          integer, parameter :: num_18_to_Mg24 = 2**bit_for_specific_nets+1 ! 1073741825
 
 
-
-      ! reaction categories
-
-         integer, parameter :: ipp = 1 ! pp chains
-         integer, parameter :: icno = 2 ! cno cycles
-         integer, parameter :: i3alf = 3 ! triple alpha  
-         
-         ! "burn" in the following means decays or captures of protons, alphas, or neutrons
-         integer, parameter :: i_burn_c = 4
-         integer, parameter :: i_burn_n = 5
-         integer, parameter :: i_burn_o = 6
-         integer, parameter :: i_burn_ne = 7
-         integer, parameter :: i_burn_na = 8
-         integer, parameter :: i_burn_mg = 9
-         integer, parameter :: i_burn_si = 10
-         integer, parameter :: i_burn_s = 11
-         integer, parameter :: i_burn_ar = 12
-         integer, parameter :: i_burn_ca = 13
-         integer, parameter :: i_burn_ti = 14
-         integer, parameter :: i_burn_cr = 15
-         integer, parameter :: i_burn_fe = 16
-         
-         integer, parameter :: icc = 17 ! c12 + c12
-         integer, parameter :: ico = 18 ! c12 + o16
-         integer, parameter :: ioo = 19 ! o16 + o16
-         
-         integer, parameter :: ipnhe4 = 20 ! 2prot + 2neut -> he4
-         
-         integer, parameter :: iphoto = 21 ! photodisintegration
-            ! note: for photodisintegrations, eps_nuc will be negative.
-            
-         integer, parameter :: iother = 22 ! misc.
-      
-         integer, parameter :: num_categories = 22
-
-         integer, parameter :: maxlen_category_name = 16
-         character (len=maxlen_category_name) :: category_name(num_categories)      
-         
-         integer :: reaction_categories(rates_reaction_id_max) ! set at initialization; read-only afterwards.
-
       
    ! internal parameters for the implementation
       
       ! for tabular evaluation of the raw reaction rates
-         double precision, parameter :: rattab_thi = 10d0 ! log10(highest temp)
-         double precision, parameter :: rattab_tlo = 6d0 ! log10(lowest temp)
+         double precision, parameter :: rattab_thi = 10.301029995664d0 ! log10(highest temp = 2e10)
+         double precision, parameter :: rattab_tlo = 6d0 ! log10(lowest temp = 1e6)
          ! all reaction rates are set to zero for temperatures lower than 10**rattab_tlo
-         integer, parameter :: nrattab = 481 ! number of reaction rate table temperatures
-         ! allow storage for 120/points per decade of temperature times 4 decades
+         
+         integer, parameter :: nrattab = 8603 ! number of reaction rate table temperatures
+            ! nrattab = 2000*(rattab_thi - rattab_tlo) + 1
+            ! approx 2000 pts per decade of T
+                  
          double precision, parameter :: rattab_tstp = (rattab_thi-rattab_tlo)/(nrattab-1)! step size
          
          
@@ -229,9 +182,11 @@
 
          ! reactions
 
-         integer :: which_rate_3a ! use_rate_3a_NACRE or use_rate_3a_Ogata
-         integer :: which_rate_c12ag ! use_rate_c12ag_NACRE or use_rate_c12ag_Kunz
-         integer :: which_rate_n14pg ! use_rate_n14pg_NACRE or use_rate_n14pg_Imbriani
+         integer :: which_rate_3a
+         integer :: which_rate_c12ag
+         integer :: which_rate_n14pg
+         
+         logical :: use_rates_fxt
                   
          integer, pointer :: net_reaction(:) ! maps reaction id to net reaction number
          ! index from 1 to num_net_reactions
@@ -324,9 +279,10 @@
          double precision, pointer :: eps_nuc_categories(:, :) ! (num_rvs, num_categories)
          ! eps_nuc subtotals for each reaction category
 
+         double precision :: eps_neu_total
+
       end type Net_Info
-
-
+      
 
    ! private to the implementation
       integer, parameter :: max_net_handles = 1000
@@ -334,14 +290,12 @@
       
       character (len=256) :: net_dir
 
-      type (integer_dict), pointer :: category_names_dict
-
       
       contains
 
 
       subroutine net_def_init(data_dir)
-         use utils_lib, only: integer_dict_define
+         use utils_lib, only: integer_dict_define, integer_dict_create_hash
          character (*), intent(in) :: data_dir
          integer :: i, ierr
          net_dir = trim(data_dir) // '/net_data'
@@ -351,15 +305,6 @@
             net_handles(i)% net_has_been_defined = .false.
             net_handles(i)% num_isos = 0
             net_handles(i)% num_reactions = 0
-         end do
-         call set_category_names
-         nullify(category_names_dict)
-         do i=1,num_categories
-            call integer_dict_define(category_names_dict, category_name(i), i, ierr)
-            if (ierr /= 0) then
-               write(*,*) 'FATAL ERROR: net_def_init failed in integer_dict_define'
-               stop 1
-            end if
          end do
       end subroutine net_def_init
 
@@ -402,6 +347,7 @@
          g% which_rate_3a = use_rate_3a_NACRE
          g% which_rate_c12ag = use_rate_c12ag_NACRE
          g% which_rate_n14pg = use_rate_n14pg_NACRE
+         g% use_rates_fxt = .false.
          g% alpha_ap_mode = 1 ! on without pa vs. pg factor
          g% alpha_gp_mode = 0 ! off -- no (g,p)+(p,a) alpha emission links
       end function do_alloc_net
@@ -455,71 +401,6 @@
          g => net_handles(handle)
          ierr = 0
       end subroutine get_net_ptr
-      
-      
-		integer function category_id(cname)
-			character (len=*), intent(in)  :: cname 
-			! returns id for the category if there is a matching name
-			! returns 0 otherwise.
-			integer :: i, len
-			character (len=maxlen_category_name) :: nam
-			len = len_trim(cname)
-			do i = 1, maxlen_category_name
-			   if (i <= len) then
-			      nam(i:i) = cname(i:i)
-			   else
-			      nam(i:i) = ' '
-			   end if
-			end do
-			do i = 1, num_categories
-			   if (category_name(i)==nam) then
-			      category_id = i
-			      return
-			   end if
-			end do
-			category_id = 0
-		end function category_id
-      
-      
-      subroutine set_category_names
-         integer :: i
-         category_name(:) = ''
-
-         category_name(ipp) = 'pp'
-         category_name(icno) = 'cno'
-         category_name(i3alf) = 'tri_alfa'
-
-         category_name(i_burn_c) = 'burn_c'
-         category_name(i_burn_n) = 'burn_n'
-         category_name(i_burn_o) = 'burn_o'
-         category_name(i_burn_ne) = 'burn_ne'
-         category_name(i_burn_na) = 'burn_na'
-         category_name(i_burn_mg) = 'burn_mg'
-         category_name(i_burn_si) = 'burn_si'
-         category_name(i_burn_s) = 'burn_s'
-         category_name(i_burn_ar) = 'burn_ar'
-         category_name(i_burn_ca) = 'burn_ca'
-         category_name(i_burn_ti) = 'burn_ti'
-         category_name(i_burn_cr) = 'burn_cr'
-         category_name(i_burn_fe) = 'burn_fe'
-
-         category_name(icc) = 'c12_c12'
-         category_name(ico) = 'c12_o16'
-         category_name(ioo) = 'o16_o16'
-
-         category_name(iphoto) = 'photo'
-         category_name(ipnhe4) = 'pnhe4'
-         category_name(iother) = 'other'
-         
-         do i=1,num_categories
-            if (len_trim(category_name(i)) == 0) then
-               write(*,*) 'missing name for category', i
-               if (i > 1) write(*,*) 'following ' // trim(category_name(i-1))
-               stop 'set_category_names'
-            end if
-         end do
-         
-      end subroutine set_category_names
       
 
       end module net_def

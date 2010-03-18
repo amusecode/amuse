@@ -338,7 +338,8 @@ class MESA(CodeInterface):
             "get_semi_convection_efficiency",
             "set_semi_convection_efficiency",
             "semi_convection_efficiency", 
-            "The efficiency of semi-convection, after Heger, Langer, & Woosley 2000 (ApJ), which goes back to Langer, Sugimoto & Fricke 1983 (A&A).",
+            "The efficiency of semi-convection, after Heger, Langer, & Woosley 2000 (ApJ), "
+               "which goes back to Langer, Sugimoto & Fricke 1983 (A&A).",
             units.none, 
             0.0 | units.none
         )
@@ -362,8 +363,9 @@ class MESA(CodeInterface):
     
     def define_errorcodes(self, object):
         object.add_errorcode(-1, 'Something went wrong...')
-        object.add_errorcode(-2, 'Maximum age reached.')
-        object.add_errorcode(-3, 'Maximum number of iterations reached.')
+        object.add_errorcode(-11, 'Evolve terminated: Unspecified stop condition reached.')
+        object.add_errorcode(-12, 'Evolve terminated: Maximum age reached.')
+        object.add_errorcode(-13, 'Evolve terminated: Maximum number of iterations reached.')
     
     def define_methods(self, object):
         

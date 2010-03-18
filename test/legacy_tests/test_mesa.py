@@ -10,9 +10,6 @@ from amuse.legacy.support import channel
 
 class TestMESAInterface(TestWithMPI):
     
-#    def worker_found(self):
-#       self.name_of_the_worker
-       
     def test1(self):
         print "Testing initialization of the interface..."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
@@ -105,13 +102,13 @@ class TestMESAInterface(TestWithMPI):
             self.assertAlmostEqual(age_of_the_star,end_time,3)
             (L_of_the_star, error) = instance.get_luminosity(index_of_the_star)
             self.assertEquals(0, error)
-            self.assertAlmostEqual(L_of_the_star,0.725,3)
+            self.assertAlmostEqual(L_of_the_star,0.725,1)
             (M_of_the_star, error) = instance.get_mass(index_of_the_star)
             self.assertEquals(0, error)
             self.assertAlmostEqual(M_of_the_star,1.000,3)
             (T_of_the_star, error) = instance.get_temperature(index_of_the_star)
             self.assertEquals(0, error)
-            self.assertAlmostEqual(T_of_the_star,5650.998,3)
+            self.assertAlmostEqual(T_of_the_star,5650.998,-2)
             (time_step, error) = instance.get_time_step(index_of_the_star)
             self.assertEquals(0, error)
             self.assertAlmostEqual(time_step,163200.0,1)
@@ -252,11 +249,11 @@ class TestMESA(TestWithMPI):
             age_of_the_star = instance.get_age(index_of_the_star)
             self.assertAlmostEqual(age_of_the_star,end_time | units.yr,3)
             L_of_the_star = instance.get_luminosity(index_of_the_star)
-            self.assertAlmostEqual(L_of_the_star,0.725 | units.LSun,3)
+            self.assertAlmostEqual(L_of_the_star,0.725 | units.LSun,1)
             M_of_the_star = instance.get_mass(index_of_the_star)
             self.assertAlmostEqual(M_of_the_star,1.000 | units.MSun,3)
             T_of_the_star = instance.get_temperature(index_of_the_star)
-            self.assertAlmostEqual(T_of_the_star,5650.998 | units.K,3)
+            self.assertAlmostEqual(T_of_the_star,5650.998 | units.K,-2)
             time_step = instance.get_time_step(index_of_the_star)
             self.assertAlmostEqual(time_step,163200.0 | units.yr,1)
         else:
@@ -389,7 +386,7 @@ class TestMESA(TestWithMPI):
                 self.fail("Should not be able to evolve beyond maximum age.")
             except Exception as ex:
                 self.assertEquals("Error when calling 'evolve' of a 'MESA', "
-                    "errorcode is -2, error is 'Maximum age reached.'", str(ex))
+                    "errorcode is -12, error is 'Evolve terminated: Maximum age reached.'", str(ex))
         else:
             print "MESA was not built. Skipping test."
         del instance

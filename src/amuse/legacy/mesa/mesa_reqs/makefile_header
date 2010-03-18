@@ -13,6 +13,11 @@
 # If you are just getting started, you should use this file as is,
 # except for possibly changing the compiler (step 1 below).
 
+# You'll need either ifort (version 11.1 or later), or
+# gfortran (I suggest getting the current version from
+#           http://gcc.gnu.org/wiki/GFortranBinaries)
+ 
+
 # If you discover that your system doesn't support isnan,
 # then you'll also need to do step 2.
 
@@ -28,8 +33,14 @@
 
 # pick one of the following options:
 
+# BTW: ifort should be your first choice,
+# followd by gfortran is you don't have ifort.
+# other compilers might work, but aren't supported.
+
+
 # Intel
 #FC = ifort
+# NOTE: mesa needs version 11.1 or later of ifort.
 
 # GNU
 #FC = gfortran
@@ -37,27 +48,6 @@
 # I believe that gcc 4.3.0 or 4.4.0 or newer will work okay.
 # The failure mode is an infinite loop during installation of mtx.
 # So if your installation seems to be hung, try a new gfortran.
-
-
-# Portland Group Fortran 90/95 compiler
-#FC = pgf90
-# NOTE: pgf90 is not (yet) supported. 
-# If you can get it to work with mesa, please let me know.
-
-
-# NAG
-#FC = f95
-# NOTE: NAG f95 is not (yet) supported. 
-# If you can get it to work with mesa, please let me know.
-
-
-# g95 isn't on the list because it doesn't support OpenMP,
-# and until it does, it won't be a supported option for mesa.
-
-# otherwise, if your compiler isn't listed, you can add it by
-# supplying a block of definitions in the list of conditionals
-# at the end of this file.  (BTW: please send us the settings!)
-
 
 
 # if you need special flags for the compiler, define them here:
@@ -171,7 +161,7 @@ LOAD_BLAS = -lmesablas
 # just comment out the following lines.
 
 #USE_SUPERLU = YES
-#SUPERLU_DIR = /Users/billpaxton/SuperLU_3.0
+#SUPERLU_DIR = /Users/bpaxton/Programming/SuperLU_3.0
 #LOAD_SUPERLU = -L$(SUPERLU_DIR) -lsuperlu_3.0
 #COMPILE_SUPERLU_C = gcc -O2 -DAdd_ -I$(SUPERLU_DIR)/SRC -c
 
@@ -209,19 +199,45 @@ LOAD_BLAS = -lmesablas
 # thread safe.  However, the new HSL packages are, and if you
 # are in the UK, you can get them without charge.
 
-# Finally, note that at this time, the solvers don't know
-# anything about sparse matrices as an option.  As far as
-# the solvers are concerned all matrices are either square
-# or banded.  So when working with sparse matrices, mesa
-# currently builds a full n-by-n jacobian, and then converts
-# it to the format required by the sparse matrix package when
-# the time comes to use it.   For moderate sized matrices
-# such as we expect for even the largest nuclear reaction networks
-# (up to 1000 elements or so), this shouldn't be a significant
-# overhead.
+
+#################################################################
+
+
+# step 5) do you want to use PGPLOT for onscreen plotting with mesa/star?
+# you'll need a pgplot built with the same compiler as used for mesa
+# and you'll need X windows and png.
+# set USE_PGSTAR = YES and set LOAD_PGPLOT to load the libraries.
+# in mesa/star, set the control parameter pgplot_flag = .true.
+# when you run star it will open a window using X and draw plots using PGSTAR
+# the plots will be updated each time a log entry is made.
+
+ifeq ($(FC),ifort)
+
+USE_PGSTAR = NO
+LOAD_PGPLOT = 
+#USE_PGSTAR = YES
+#LOAD_PGPLOT = -L/Users/bpaxton/pgplot/lib -lpgplot -L/usr/X11R6/lib -lX11 -lpng
+
+else
+ifeq ($(FC),gfortran)
+
+USE_PGSTAR = NO
+LOAD_PGPLOT = 
+#USE_PGSTAR = YES
+#LOAD_PGPLOT = -L/Users/bpaxton/pgplot/lib -lpgplot -L/usr/X11R6/lib -lX11 -lpng
+#LOAD_PGPLOT = -L/usr/local/lib -lpgplot -L/usr/X11R6/lib -lX11 -lpng
+
+else
+
+USE_PGSTAR = NO
+LOAD_PGPLOT = 
+
+endif
+endif
 
 
 #################################################################
+
 
 
 # programs that use the mesa/mtx lib should use $(LOAD_MATRIX)
@@ -266,7 +282,7 @@ FCstatic = -Bstatic -static-intel
 else
 ifeq ($(FC),gfortran)
 
-FCbasic = $(SPECIAL_FC_FLAGS)
+FCbasic = -fno-range-check $(SPECIAL_FC_FLAGS)
 FCimpno = -fimplicit-none  
 FCchecks = -fbounds-check
 FCwarn = -Wunused-value -Werror -W
@@ -284,19 +300,6 @@ FC_free_preprocess = -x f95-cpp-input
 
 
 else
-ifeq ($(FC),pgf90)
-
-FCbasic = $(SPECIAL_FC_FLAGS) -Mrecursive
-FCchecks = -Mbounds -Mchkptr
-FCwarn = 
-FCfixed = -Mfixed -Mextend
-FCfree = -Mfree
-FCopt = -Mipa
-FCdebug = -g
-FCopenmp = -mp
-
-
-else
 
 FCbasic = UNKNOWN COMPILER
 FCchecks =
@@ -307,7 +310,6 @@ FCopt =
 FCdebug = 
 FCopenmp = 
 
-endif
 endif
 endif
 
@@ -344,11 +346,10 @@ TEST_INCLUDES = -I$(LOCAL_LIB_DIR) -I$(PACKAGE_DIR)/public -I$(MESA_INCLUDE_DIR)
 TEST_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(TEST_INCLUDES) $(FCchecks) $(FCdebug) -c
 
 
-# numerics uses matrix
-LOAD_MESA_NUMERICS = -lnum -linterp_2d -linterp_1d -lutils -lalert $(LOAD_MATRIX)
+LOAD_MESA_NUMERICS = -lnum -linterp_2d -linterp_1d -lutils -lalert -lconst $(LOAD_MATRIX)
 
 # micro uses numerics
-LOAD_MESA_MICRO = -leos -lkap -lnet -lrates -lneu -lchem $(LOAD_MESA_NUMERICS)
+LOAD_MESA_MICRO = -leos -lkap -ljina -lweak -lnet -lscreen -lrates -lneu -lchem $(LOAD_MESA_NUMERICS)
 
 # macro uses micro
 LOAD_MESA_MACRO = \
@@ -360,10 +361,25 @@ LOAD_MESA_STAR_SUPPORT = $(LOAD_MESA_MACRO)
 # star uses star_support
 LOAD_STAR_MODS = -lstar $(LOAD_MESA_STAR_SUPPORT)
 
-# as a convenience for clients, this does the -L for the mesa lib dir
-LOAD_MESA_STAR = -L$(MESA_LIB_DIR) $(LOAD_STAR_MODS)
+# this does the -L for the mesa lib dir
+LOAD_MESA_STAR = -L$(MESA_LIB_DIR) $(LOAD_STAR_MODS) $(LOAD_PGPLOT)
 
 # LIB_TOOL is the program that creates libraries
 LIB_TOOL = ar crs
 
+# define the PGSTAR files
+ifeq ($(USE_PGSTAR),YES)
+PGSTAR_OBJS = pgstar_support.o pgstar_trho_profile.o \
+   pgstar_conv.o pgstar_hr.o pgstar_trho.o \
+   pgstar_summary.o pgstar.o
+else
+PGSTAR_OBJS = pgstar_stub.o
+endif
+
+# define the STAR work files
+STAR_WORK_OBJS = \
+   run_star_support.o $(PGSTAR_OBJS) run_star_extras.o \
+   calibrate.o isochrone.o \
+   create_zams.o sample_zams.o \
+   run_star.o 
 

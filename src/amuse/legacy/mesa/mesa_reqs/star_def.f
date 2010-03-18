@@ -22,12 +22,18 @@
 
       module star_def
 
-      use const_def, only: ln10
-      use chem_def, only: num_chem_elements
-      use net_def, only: num_categories
+      use rates_def, only: num_categories
       use utils_def, only: integer_dict
       
+      
       implicit none
+
+
+      ! result codes for various evolution routines
+      integer, parameter :: keep_going = 0
+      integer, parameter :: retry = 1
+      integer, parameter :: backup = 2
+      integer, parameter :: terminate = 3
       
             
       ! wind schemes
@@ -82,13 +88,14 @@
          integer :: eos_handle
          integer :: kap_handle
          integer :: net_handle
-         integer :: burn_and_mix_handle
-         integer :: hydro_handle
+         integer :: jina_handle
          
          ! private         
          include "private_controls.dek"
          integer :: retry_cnt
          integer :: dbg_control
+         logical :: chem_only
+         logical :: use_jina_for_net
 
          ! bookkeeping
          integer :: id
@@ -105,22 +112,18 @@
          ! indicates that t+dt == t, perhaps because of round-off with tiny dt.
       integer, parameter :: nonzero_ierr = 3 ! some routine returned with ierr /= 0
       integer, parameter :: hydro_failed_to_converge = 4
-      integer, parameter :: hydro_err_too_large = 5
-      integer, parameter :: burn_and_mix_failed = 6
-      integer, parameter :: diffusion_failed = 7
-      integer, parameter :: too_many_steps_for_burn = 8
-      integer, parameter :: too_many_steps_for_diffusion = 9
-      integer, parameter :: too_many_steps_for_hydro = 10
-      integer, parameter :: adjust_mesh_failed = 11
-      integer, parameter :: adjust_mass_failed = 12
-      integer, parameter :: core_dump_model_number = 13
-      integer, parameter :: timestep_limits = 14
-      integer, parameter :: variable_change_limits = 15
-      integer, parameter :: bad_lnd_prediction = 16
-      integer, parameter :: bad_lnT_prediction = 17
-      integer, parameter :: op_split_failed_to_converge = 18
+      integer, parameter :: do_burn_failed = 5
+      integer, parameter :: diffusion_failed = 6
+      integer, parameter :: too_many_steps_for_burn = 7
+      integer, parameter :: too_many_steps_for_diffusion = 8
+      integer, parameter :: too_many_steps_for_hydro = 9
+      integer, parameter :: adjust_mesh_failed = 10
+      integer, parameter :: adjust_mass_failed = 11
+      integer, parameter :: core_dump_model_number = 12
+      integer, parameter :: timestep_limits = 13
+      integer, parameter :: variable_change_limits = 14
       
-      integer, parameter :: num_reasons = 18
+      integer, parameter :: num_reasons = 14
       
       character (len=32) :: result_reason_str(num_reasons)
 
@@ -135,9 +138,6 @@
          
       ! debugging storage
       integer, parameter :: max_ndbg = 9
-
-      
-      integer, parameter :: max_nvar = 200      
 
 
       ! phases of evolution for logs and profiles
@@ -172,7 +172,7 @@
       integer, parameter :: Tlim_dlgL_z = 19
       integer, parameter :: Tlim_dlgL_nuc = 20
       integer, parameter :: Tlim_dlgTeff = 21
-      integer, parameter :: Tlim_dxdt_nuc = 22
+      integer, parameter :: Tlim_dX_nuc = 22
       integer, parameter :: Tlim_dlgRho_cntr = 23
       integer, parameter :: Tlim_dlgT_cntr = 24
       integer, parameter :: Tlim_lg_XH_cntr = 25
@@ -184,8 +184,9 @@
       integer, parameter :: Tlim_h_bdy = 31
       integer, parameter :: Tlim_he_bdy = 32
       integer, parameter :: Tlim_h1_czb = 33
+      integer, parameter :: Tlim_num_burn_solver_steps = 34
       
-      integer, parameter :: numTlim = 33
+      integer, parameter :: numTlim = 34
       
       character (len=14) :: dt_why_str(numTlim) ! indicates the reson for the timestep choice
       character (len=100) :: dt_why_long_str(numTlim)
@@ -201,6 +202,7 @@
       integer, parameter :: l_log_abs_mdot = l_star_mdot + 1
       integer, parameter :: l_time_step = l_log_abs_mdot + 1
       integer, parameter :: l_num_zones = l_time_step + 1
+      
       integer, parameter :: l_conv_mx1_top = l_num_zones + 1
       integer, parameter :: l_conv_mx1_bot = l_conv_mx1_top + 1
       integer, parameter :: l_conv_mx2_top = l_conv_mx1_bot + 1
@@ -209,7 +211,17 @@
       integer, parameter :: l_mx1_bot = l_mx1_top + 1
       integer, parameter :: l_mx2_top = l_mx1_bot + 1
       integer, parameter :: l_mx2_bot = l_mx2_top + 1
-      integer, parameter :: l_mixing_regions = l_mx2_bot + 1
+      
+      integer, parameter :: l_conv_mx1_top_r = l_mx2_bot + 1
+      integer, parameter :: l_conv_mx1_bot_r = l_conv_mx1_top_r + 1
+      integer, parameter :: l_conv_mx2_top_r = l_conv_mx1_bot_r + 1
+      integer, parameter :: l_conv_mx2_bot_r = l_conv_mx2_top_r + 1
+      integer, parameter :: l_mx1_top_r = l_conv_mx2_bot_r + 1
+      integer, parameter :: l_mx1_bot_r = l_mx1_top_r + 1
+      integer, parameter :: l_mx2_top_r = l_mx1_bot_r + 1
+      integer, parameter :: l_mx2_bot_r = l_mx2_top_r + 1
+      
+      integer, parameter :: l_mixing_regions = l_mx2_bot_r + 1
       integer, parameter :: l_epsnuc_M_1 = l_mixing_regions + 1
       integer, parameter :: l_epsnuc_M_2 = l_epsnuc_M_1 + 1
       integer, parameter :: l_epsnuc_M_3 = l_epsnuc_M_2 + 1
@@ -218,28 +230,36 @@
       integer, parameter :: l_epsnuc_M_6 = l_epsnuc_M_5 + 1
       integer, parameter :: l_epsnuc_M_7 = l_epsnuc_M_6 + 1
       integer, parameter :: l_epsnuc_M_8 = l_epsnuc_M_7 + 1
-      integer, parameter :: l_h1_boundary_mass = l_epsnuc_M_8 + 1
+      integer, parameter :: l_burning_regions = l_epsnuc_M_8 + 1
+      integer, parameter :: l_h1_boundary_mass = l_burning_regions + 1
       integer, parameter :: l_he4_boundary_mass = l_h1_boundary_mass + 1
       integer, parameter :: l_power_h_burn = l_he4_boundary_mass + 1
       integer, parameter :: l_power_he_burn = l_power_h_burn + 1
       integer, parameter :: l_log_center_T = l_power_he_burn + 1
       integer, parameter :: l_log_center_Rho = l_log_center_T + 1
-      integer, parameter :: l_v_div_csound_surf = l_log_center_Rho + 1
+      integer, parameter :: l_center_ye = l_log_center_Rho + 1
+      integer, parameter :: l_center_entropy = l_center_ye + 1
+      integer, parameter :: l_v_div_csound_surf = l_center_entropy + 1
       integer, parameter :: l_surface_accel_div_grav = l_v_div_csound_surf + 1
       integer, parameter :: l_log_dt = l_surface_accel_div_grav + 1
       integer, parameter :: l_log_LH = l_log_dt + 1
       integer, parameter :: l_log_LHe = l_log_LH + 1
       integer, parameter :: l_log_L = l_log_LHe + 1
-      integer, parameter :: l_log_R = l_log_L + 1
+      integer, parameter :: l_log_Lneu = l_log_L + 1
+      integer, parameter :: l_log_R = l_log_Lneu + 1
       integer, parameter :: l_log_Teff = l_log_R + 1
       integer, parameter :: l_log_g = l_log_Teff + 1
       integer, parameter :: l_log_L_div_Ledd = l_log_g + 1
       integer, parameter :: l_num_retries = l_log_L_div_Ledd + 1
       integer, parameter :: l_num_backups = l_num_retries + 1
-      integer, parameter :: l_h1_czb_mass = l_num_backups + 1
+      integer, parameter :: l_burn_nstep_max = l_num_backups + 1
+      integer, parameter :: l_burn_nfcn_total = l_burn_nstep_max + 1
+      integer, parameter :: l_lg_nfcn_per_sec = l_burn_nfcn_total + 1
+      integer, parameter :: l_h1_czb_mass = l_lg_nfcn_per_sec + 1
       integer, parameter :: l_surf_c12_minus_o16 = l_h1_czb_mass + 1
+      integer, parameter :: l_surf_num_c12_div_num_o16 = l_surf_c12_minus_o16 + 1
 
-      integer, parameter :: l_log_center_P = l_surf_c12_minus_o16 + 1
+      integer, parameter :: l_log_center_P = l_surf_num_c12_div_num_o16 + 1
       integer, parameter :: l_center_degeneracy = l_log_center_P + 1
       integer, parameter :: l_center_gamma = l_center_degeneracy + 1
       integer, parameter :: l_h1_boundary_radius = l_center_gamma + 1
@@ -300,10 +320,10 @@
       integer, parameter :: l_eps_z_max_lgR = l_eps_z_max_m + 1
       integer, parameter :: l_eps_z_max_lgP = l_eps_z_max_lgR + 1
       integer, parameter :: l_eps_z_max_opacity = l_eps_z_max_lgP + 1
+      integer, parameter :: l_max_conv_vel_div_csound = l_eps_z_max_opacity + 1
+      integer, parameter :: l_iron_core_infall = l_max_conv_vel_div_csound + 1
       
-      
-      
-      integer, parameter :: l_col_id_max = l_eps_z_max_opacity
+      integer, parameter :: l_col_id_max = l_iron_core_infall
       
       integer, parameter :: maxlen_log_column_name = 32
       character (len=maxlen_log_column_name) :: log_column_name(l_col_id_max)
@@ -321,8 +341,12 @@
 
       integer, parameter :: p_zone = 1
       integer, parameter :: p_luminosity = p_zone + 1
-      integer, parameter :: p_logL = p_luminosity + 1
-      integer, parameter :: p_velocity = p_logL + 1
+      integer, parameter :: p_net_nuclear_energy = p_luminosity + 1
+      integer, parameter :: p_net_energy = p_net_nuclear_energy + 1
+      integer, parameter :: p_logL = p_net_energy + 1
+      integer, parameter :: p_signed_log_power = p_logL + 1
+      integer, parameter :: p_signed_log_energy_balance = p_signed_log_power + 1
+      integer, parameter :: p_velocity = p_signed_log_energy_balance + 1
       integer, parameter :: p_radius = p_velocity + 1
       integer, parameter :: p_logR = p_radius + 1
       integer, parameter :: p_q = p_logR + 1
@@ -355,7 +379,8 @@
       integer, parameter :: p_cv = p_dE_dRho + 1
       integer, parameter :: p_cp = p_cv + 1
       integer, parameter :: p_logS = p_cp + 1
-      integer, parameter :: p_gamma1 = p_logS + 1
+      integer, parameter :: p_logS_per_baryon = p_logS + 1
+      integer, parameter :: p_gamma1 = p_logS_per_baryon + 1
       integer, parameter :: p_gamma3 = p_gamma1 + 1
       integer, parameter :: p_eta = p_gamma3 + 1
       integer, parameter :: p_theta_e = p_eta + 1
@@ -377,15 +402,20 @@
       integer, parameter :: p_ye = p_z2bar + 1
       integer, parameter :: p_opacity = p_ye + 1
       integer, parameter :: p_eps_nuc = p_opacity + 1
-      integer, parameter :: p_non_nuc_neu = p_eps_nuc + 1
+      integer, parameter :: p_eps_binding = p_eps_nuc + 1
+      integer, parameter :: p_eps_nuc_neu_total = p_eps_binding + 1
+      integer, parameter :: p_eps_nuc_from_bindings = p_eps_nuc_neu_total + 1
+      integer, parameter :: p_non_nuc_neu = p_eps_nuc_from_bindings + 1
       integer, parameter :: p_nonnucneu_plas = p_non_nuc_neu + 1
       integer, parameter :: p_nonnucneu_brem = p_nonnucneu_plas + 1
       integer, parameter :: p_nonnucneu_phot = p_nonnucneu_brem + 1
       integer, parameter :: p_nonnucneu_pair = p_nonnucneu_phot + 1
-      integer, parameter :: p_extra_heat = p_nonnucneu_pair + 1
+      integer, parameter :: p_nonnucneu_reco = p_nonnucneu_pair + 1
+      integer, parameter :: p_extra_heat = p_nonnucneu_reco + 1
       integer, parameter :: p_logPvisc = p_extra_heat + 1
       integer, parameter :: p_eps_grav = p_logPvisc + 1
-      integer, parameter :: p_mlt_mixing_length = p_eps_grav + 1
+      integer, parameter :: p_signed_log_eps_grav = p_eps_grav + 1
+      integer, parameter :: p_mlt_mixing_length = p_signed_log_eps_grav + 1
       integer, parameter :: p_log_cdc = p_mlt_mixing_length + 1
       integer, parameter :: p_log_cdc_Eulerian = p_log_cdc + 1
       integer, parameter :: p_log_conv_vel = p_log_cdc_Eulerian + 1
@@ -402,7 +432,11 @@
       integer, parameter :: p_dlnR_dm = p_gradr + 1
       integer, parameter :: p_dlnP_dm = p_dlnR_dm + 1
       integer, parameter :: p_dlnT_dm = p_dlnP_dm + 1
-      integer, parameter :: p_dL_dm = p_dlnT_dm + 1
+
+      integer, parameter :: p_dlnP_dlnm = p_dlnT_dm + 1
+      integer, parameter :: p_dlnT_dlnm = p_dlnP_dlnm + 1
+
+      integer, parameter :: p_dL_dm = p_dlnT_dlnm + 1
       integer, parameter :: p_dqdot = p_dL_dm + 1
       integer, parameter :: p_qdot = p_dqdot + 1
       integer, parameter :: p_qdot_times_dt = p_qdot + 1
@@ -411,10 +445,18 @@
       integer, parameter :: p_dlnd_dt = p_accel_div_grav + 1
       integer, parameter :: p_dlnT_dt = p_dlnd_dt + 1
       integer, parameter :: p_dlnR_dt = p_dlnT_dt + 1
-      integer, parameter :: p_dv_dt = p_dlnR_dt + 1
+      
+      integer, parameter :: p_signed_dlnd = p_dlnR_dt + 1
+      integer, parameter :: p_signed_dlnT = p_signed_dlnd + 1
+      
+      integer, parameter :: p_dv_dt = p_signed_dlnT + 1
       integer, parameter :: p_cno_div_z = p_dv_dt + 1
 
-      integer, parameter :: p_delta_r = p_cno_div_z + 1
+      integer, parameter :: p_eps_nuc_avg = p_cno_div_z + 1
+      integer, parameter :: p_eps_nuc_shift = p_eps_nuc_avg + 1
+      integer, parameter :: p_eps_nuc_vs_binding = p_eps_nuc_shift + 1
+
+      integer, parameter :: p_delta_r = p_eps_nuc_vs_binding + 1
       integer, parameter :: p_delta_v = p_delta_r + 1
       integer, parameter :: p_dt_dv_div_dr = p_delta_v + 1
 
@@ -459,15 +501,17 @@
 
       integer, parameter :: p_binding_energy = p_dlog_other_dlogP + 1
 
-      integer, parameter :: p_brunt_N2 = p_binding_energy + 1
-      integer, parameter :: p_brunt_Astar = p_brunt_N2 + 1
-      integer, parameter :: p_brunt_B = p_brunt_Astar + 1
-      integer, parameter :: p_chiY = p_brunt_B + 1
-      integer, parameter :: p_dlnY_dlnP = p_chiY + 1
-      integer, parameter :: p_logQ = p_dlnY_dlnP + 1
+      integer, parameter :: p_logQ = p_binding_energy + 1
       integer, parameter :: p_cs_at_cell_bdy = p_logQ + 1
+      
+      integer, parameter :: p_dlnmu_dr = p_cs_at_cell_bdy + 1
+      integer, parameter :: p_gradB = p_dlnmu_dr + 1
+      integer, parameter :: p_sign_brunt_N2 = p_gradB + 1
+      integer, parameter :: p_brunt_N2 = p_sign_brunt_N2 + 1
+      integer, parameter :: p_brunt_N = p_brunt_N2 + 1
+      integer, parameter :: p_log_brunt_N = p_brunt_N + 1
 
-      integer, parameter :: p_col_id_max = p_cs_at_cell_bdy
+      integer, parameter :: p_col_id_max = p_log_brunt_N
       
       integer, parameter :: maxlen_profile_column_name = 32
       character (len=maxlen_profile_column_name) :: profile_column_name(p_col_id_max)
@@ -482,8 +526,7 @@
          result_reason_str(dt_is_zero) = 'dt_is_zero'
          result_reason_str(nonzero_ierr) = 'nonzero_ierr'
          result_reason_str(hydro_failed_to_converge) = 'hydro_failed_to_converge'
-         result_reason_str(hydro_err_too_large) = 'hydro_err_too_large'
-         result_reason_str(burn_and_mix_failed) = 'burn_and_mix_failed'
+         result_reason_str(do_burn_failed) = 'do_burn_failed'
          result_reason_str(diffusion_failed) = 'element_diffusion_failed'
          result_reason_str(too_many_steps_for_burn) = 'too_many_steps_for_burn'
          result_reason_str(too_many_steps_for_diffusion) = 'too_many_steps_for_diffusion'
@@ -493,9 +536,6 @@
          result_reason_str(core_dump_model_number) = 'core_dump_model_number'
          result_reason_str(timestep_limits) = 'timestep_limits'
          result_reason_str(variable_change_limits) = 'variable_change_limits'
-         result_reason_str(bad_lnd_prediction) = 'bad_lnd_prediction'
-         result_reason_str(bad_lnT_prediction) = 'bad_lnT_prediction'
-         result_reason_str(op_split_failed_to_converge) = 'op_split_failed_to_converge'
       end subroutine result_reason_init
       
       
@@ -513,6 +553,7 @@
          log_column_name(l_log_abs_mdot) = 'log_abs_mdot'
          log_column_name(l_time_step) = 'time_step'
          log_column_name(l_num_zones) = 'num_zones'
+         
          log_column_name(l_conv_mx1_top) = 'conv_mx1_top'
          log_column_name(l_conv_mx1_bot) = 'conv_mx1_bot'
          log_column_name(l_conv_mx2_top) = 'conv_mx2_top'
@@ -521,6 +562,16 @@
          log_column_name(l_mx1_bot) = 'mx1_bot'
          log_column_name(l_mx2_top) = 'mx2_top'
          log_column_name(l_mx2_bot) = 'mx2_bot'
+         
+         log_column_name(l_conv_mx1_top_r) = 'conv_mx1_top_r'
+         log_column_name(l_conv_mx1_bot_r) = 'conv_mx1_bot_r'
+         log_column_name(l_conv_mx2_top_r) = 'conv_mx2_top_r'
+         log_column_name(l_conv_mx2_bot_r) = 'conv_mx2_bot_r'
+         log_column_name(l_mx1_top_r) = 'mx1_top_r'
+         log_column_name(l_mx1_bot_r) = 'mx1_bot_r'
+         log_column_name(l_mx2_top_r) = 'mx2_top_r'
+         log_column_name(l_mx2_bot_r) = 'mx2_bot_r'
+         
          log_column_name(l_mixing_regions) = 'mixing_regions'
          log_column_name(l_epsnuc_M_1) = 'epsnuc_M_1'
          log_column_name(l_epsnuc_M_2) = 'epsnuc_M_2'
@@ -530,26 +581,35 @@
          log_column_name(l_epsnuc_M_6) = 'epsnuc_M_6'
          log_column_name(l_epsnuc_M_7) = 'epsnuc_M_7'
          log_column_name(l_epsnuc_M_8) = 'epsnuc_M_8'
+         log_column_name(l_burning_regions) = 'burning_regions'
          log_column_name(l_h1_boundary_mass) = 'h1_boundary_mass'
          log_column_name(l_he4_boundary_mass) = 'he4_boundary_mass'
          log_column_name(l_power_h_burn) = 'power_h_burn'
          log_column_name(l_power_he_burn) = 'power_he_burn'
          log_column_name(l_log_center_T) = 'log_center_T'
          log_column_name(l_log_center_Rho) = 'log_center_Rho'
+         log_column_name(l_center_ye) = 'center_ye'
+         log_column_name(l_center_entropy) = 'center_entropy'
+         log_column_name(l_iron_core_infall) = 'iron_core_infall'
          log_column_name(l_v_div_csound_surf) = 'v_div_csound_surf'
          log_column_name(l_surface_accel_div_grav) = 'surface_accel_div_grav'
          log_column_name(l_log_dt) = 'log_dt'
          log_column_name(l_log_LH) = 'log_LH'
          log_column_name(l_log_LHe) = 'log_LHe'
          log_column_name(l_log_L) = 'log_L'
+         log_column_name(l_log_Lneu) = 'log_Lneu'
          log_column_name(l_log_R) = 'log_R'
          log_column_name(l_log_Teff) = 'log_Teff'
          log_column_name(l_log_g) = 'log_g'
          log_column_name(l_log_L_div_Ledd) = 'log_L_div_Ledd'
          log_column_name(l_num_retries) = 'num_retries'
          log_column_name(l_num_backups) = 'num_backups'
+         log_column_name(l_burn_nstep_max) = 'burn_nstep_max'
+         log_column_name(l_burn_nfcn_total) = 'burn_nfcn_total'
+         log_column_name(l_lg_nfcn_per_sec) = 'lg_nfcn_per_sec'
          log_column_name(l_h1_czb_mass) = 'h1_czb_mass'
          log_column_name(l_surf_c12_minus_o16) = 'surf_c12_minus_o16'
+         log_column_name(l_surf_num_c12_div_num_o16) = 'surf_num_c12_div_num_o16'
 
          log_column_name(l_log_center_P) = 'log_center_P' ! log10(center pressure in dynes/cm^2)
          log_column_name(l_center_degeneracy) = 'center_degeneracy' ! the electron chemical potential in units of k*T
@@ -612,6 +672,7 @@
          log_column_name(l_eps_z_max_lgR) = 'eps_z_max_lgR'
          log_column_name(l_eps_z_max_lgP) = 'eps_z_max_lgP'
          log_column_name(l_eps_z_max_opacity) = 'eps_z_max_opacity'
+         log_column_name(l_max_conv_vel_div_csound) = 'max_conv_vel_div_csound'
                   
          cnt = 0
          do i=1,l_col_id_max
@@ -638,7 +699,6 @@
             
       
 		integer function do_get_log_id(cname)
-         use net_def
          use utils_lib
 			character (len=*), intent(in)  :: cname 
 			! returns id for the log column if there is a matching name
@@ -661,7 +721,11 @@
 
          profile_column_name(p_zone) = 'zone'
          profile_column_name(p_luminosity) = 'luminosity'
+         profile_column_name(p_net_nuclear_energy) = 'net_nuclear_energy'
+         profile_column_name(p_net_energy) = 'net_energy'
          profile_column_name(p_logL) = 'logL'
+         profile_column_name(p_signed_log_power) = 'signed_log_power'
+         profile_column_name(p_signed_log_energy_balance) = 'signed_log_energy_balance'
          profile_column_name(p_velocity) = 'velocity'
          profile_column_name(p_radius) = 'radius'
          profile_column_name(p_logR) = 'logR'
@@ -694,6 +758,7 @@
          profile_column_name(p_cv) = 'cv'
          profile_column_name(p_cp) = 'cp'
          profile_column_name(p_logS) = 'logS'
+         profile_column_name(p_logS_per_baryon) = 'logS_per_baryon'
          profile_column_name(p_gamma1) = 'gamma1'
          profile_column_name(p_gamma3) = 'gamma3'
          profile_column_name(p_eta) = 'eta'
@@ -716,14 +781,19 @@
          profile_column_name(p_ye) = 'ye'
          profile_column_name(p_opacity) = 'opacity'
          profile_column_name(p_eps_nuc) = 'eps_nuc'
+         profile_column_name(p_eps_binding) = 'eps_binding'
+         profile_column_name(p_eps_nuc_neu_total) = 'eps_nuc_neu_total'
+         profile_column_name(p_eps_nuc_from_bindings) = 'eps_nuc_from_bindings'
          profile_column_name(p_non_nuc_neu) = 'non_nuc_neu'
          profile_column_name(p_nonnucneu_plas) = 'nonnucneu_plas'
          profile_column_name(p_nonnucneu_brem) = 'nonnucneu_brem'
          profile_column_name(p_nonnucneu_phot) = 'nonnucneu_phot'
          profile_column_name(p_nonnucneu_pair) = 'nonnucneu_pair'
+         profile_column_name(p_nonnucneu_reco) = 'nonnucneu_reco'
          profile_column_name(p_extra_heat) = 'extra_heat'
          profile_column_name(p_logPvisc) = 'logPvisc'
          profile_column_name(p_eps_grav) = 'eps_grav'
+         profile_column_name(p_signed_log_eps_grav) = 'signed_log_eps_grav'
          profile_column_name(p_mlt_mixing_length) = 'mlt_mixing_length'
          profile_column_name(p_log_cdc) = 'log_cdc'
          profile_column_name(p_log_cdc_Eulerian) = 'log_cdc_Eulerian'
@@ -740,6 +810,10 @@
          profile_column_name(p_dlnP_dm) = 'dlnP_dm'
          profile_column_name(p_dlnT_dm) = 'dlnT_dm'
          profile_column_name(p_dL_dm) = 'dL_dm'
+
+         profile_column_name(p_dlnP_dlnm) = 'dlnP_dlnm'
+         profile_column_name(p_dlnT_dlnm) = 'dlnT_dlnm'
+         
          profile_column_name(p_dqdot) = 'dqdot'
          profile_column_name(p_qdot) = 'qdot'
          profile_column_name(p_qdot_times_dt) = 'qdot_times_dt'
@@ -747,8 +821,16 @@
          profile_column_name(p_dlnd_dt) = 'dlnd_dt'
          profile_column_name(p_dlnT_dt) = 'dlnT_dt'
          profile_column_name(p_dlnR_dt) = 'dlnR_dt'
+         
          profile_column_name(p_dv_dt) = 'dv_dt'
          profile_column_name(p_cno_div_z) = 'cno_div_z'
+         
+         profile_column_name(p_signed_dlnd) = 'signed_dlnd'
+         profile_column_name(p_signed_dlnT) = 'signed_dlnT'
+
+         profile_column_name(p_eps_nuc_avg) = 'eps_nuc_avg'
+         profile_column_name(p_eps_nuc_shift) = 'eps_nuc_shift'
+         profile_column_name(p_eps_nuc_vs_binding) = 'eps_nuc_vs_binding'
 
          profile_column_name(p_delta_r) = 'delta_r'
          profile_column_name(p_delta_v) = 'delta_v'
@@ -795,12 +877,14 @@
 
          profile_column_name(p_binding_energy) = 'binding_energy'
 
-         profile_column_name(p_brunt_N2) = 'brunt_N2'
-         profile_column_name(p_brunt_Astar) = 'brunt_Astar'
-         profile_column_name(p_brunt_B) = 'brunt_B'
-         profile_column_name(p_chiY) = 'chiY'
-         profile_column_name(p_dlnY_dlnP) = 'dlnY_dlnP'
          profile_column_name(p_cs_at_cell_bdy) = 'cs_at_cell_bdy'
+         profile_column_name(p_dlnmu_dr) = 'dlnmu_dr'
+         profile_column_name(p_gradB) = 'gradB'
+         profile_column_name(p_brunt_N2) = 'brunt_N2'
+         profile_column_name(p_brunt_N) = 'brunt_N'
+         profile_column_name(p_log_brunt_N) = 'log_brunt_N'
+         profile_column_name(p_sign_brunt_N2) = 'sign_brunt_N2'
+
          profile_column_name(p_logQ) = 'logQ'
          
          cnt = 0
@@ -828,7 +912,6 @@
             
       
 		integer function do_get_profile_id(cname)
-         use net_def
          use utils_lib
 			character (len=*), intent(in)  :: cname 
 			! returns id for the profile column if there is a matching name

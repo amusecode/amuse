@@ -46,14 +46,16 @@
 
       
       subroutine AMUSE_do_create_zams( &
-            s, metallicity_in, zams_outfile_in, &
+            metallicity_in, zams_outfile_in, AMUSE_inlist_path, &
             dmass_in, mlo_in, mhi_in, ierr)
          use mtx_lib, only: lapack_decsol
          use num_def, only: square_matrix_type
          use num_lib
          use utils_lib, only:alloc_iounit, free_iounit
+!         use star_lib, only: alloc_star, star_setup
+!         use star_private_def, only: star_info, get_star_ptr
          type (star_info), pointer :: s
-         character (len=*) :: zams_outfile_in
+         character (len=*) :: zams_outfile_in, AMUSE_inlist_path
          double precision, intent(in) :: metallicity_in
          double precision, intent(in) :: dmass_in, mlo_in, mhi_in
          integer, intent(out) :: ierr
@@ -61,6 +63,7 @@
          integer :: io_ms_mod, io_ms_index      
          double precision :: init_m
          integer :: i, j, k, n, id, result, result_reason
+!         integer :: id
          character (len=256) :: ms_file
          character (len=1024) :: line
          logical :: first_try, okay
@@ -71,8 +74,6 @@
          14 format(a40, e24.14)
          
          ierr = 0
-         id = s% id
-         s% log_cnt = 100
 
 ! Don't read the ZAMS controls from file...
 !         call read_zams_controls(s, zams_inlist, ierr)
@@ -83,9 +84,9 @@
          dmass = dmass_in
          mlo = mlo_in
          mhi = mhi_in
-         
+
          okay = .true.
-         ierr = 0
+
          io_ms_mod = alloc_iounit(ierr)
          if (failed('alloc_iounit')) return
          
@@ -109,6 +110,14 @@
          
          mass_loop: do i=1, n
          
+            id = alloc_star(ierr)
+            if (failed('alloc_star')) return
+            s => star_handles(id)
+!            call get_star_ptr(id, s, ierr)
+!            if (failed('get_star_ptr')) return
+            call star_setup(id, AMUSE_inlist_path, ierr)
+            if (failed('star_setup')) return
+      
             init_m = 10**(mlo+(i-1)*dmass)
             
             if (init_m > 1) s% mesh_delta_coeff = 0.3
@@ -205,7 +214,7 @@
             if (failed) then
                write(*, *)
                write(*, *) trim(str) // ' ierr', ierr
-               write(*, '(a)') trim(alert_message)
+!               write(*, '(a)') trim(alert_message)
                okay = .false.
                !stop 1
             end if
@@ -222,7 +231,8 @@
          end subroutine dump_initial_model
 
       end subroutine AMUSE_do_create_zams
-
+      
+      
       
       subroutine do_create_zams( &
             s, zams_inlist, log_columns_file_in, profile_columns_file_in, ierr)
@@ -415,7 +425,7 @@
 
       end subroutine do_create_zams
 
-
+      
       subroutine write_model(id, create_z, io_ms_mod, io_ms_index, ierr)
          use chem_def
          double precision, intent(in) :: create_z
@@ -447,7 +457,7 @@
          write(io_ms_mod, fmt='(7x, a9, 1x, 99(a24, 1x))', advance='no') &
             'lnd', 'lnT', 'lnR', 'L', 'dq'
          do j=1, species
-            write(io_ms_mod, fmt='(a24, 1x)', advance='no') trim(chem_Name(s% chem_id(j)))
+            write(io_ms_mod, fmt='(a24, 1x)', advance='no') trim(chem_isos% name(s% chem_id(j)))
          end do
          write(io_ms_mod, *)
          do k=1, nz
@@ -499,6 +509,7 @@
          if (s% L_nuc_burn_total >= s% L(1)/Lsun) evolve_to_zams_check_model = terminate
          s% matrix_type = 2
       end function evolve_to_zams_check_model
+
 
       subroutine read_zams_controls(s, zams_inlist, ierr)
          use utils_lib

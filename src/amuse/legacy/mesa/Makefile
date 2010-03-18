@@ -13,14 +13,14 @@ MESA_MAKE_DIR=./mesa_reqs
 INCLUDE_DIR=./src/star/make
 MESA_DIR = ./src
 
-include $(MESA_MAKE_DIR)/makefile_header_v1943
+include $(MESA_MAKE_DIR)/makefile_header
 include $(MESA_MAKE_DIR)/makefile_include
 
 WORK_COMPILE = $(FC) $(FCbasic) $(FCopenmp) $(FCchecks) $(FCdebug) $(FFLAGS) \
    -I$(MESA_INCLUDE_DIR) -c $(FCfree)
 STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/run_star_support.o $(MESA_MAKE_DIR)/run_star_extras.o \
-   $(MESA_MAKE_DIR)/calibrate.o $(MESA_MAKE_DIR)/isochrone.o $(MESA_MAKE_DIR)/$(NETCDF_OBJ) \
+   $(MESA_MAKE_DIR)/calibrate.o $(MESA_MAKE_DIR)/isochrone.o $(MESA_MAKE_DIR)/$(PGSTAR_OBJS) \
    $(MESA_MAKE_DIR)/create_zams.o $(MESA_MAKE_DIR)/sample_zams.o \
    $(MESA_MAKE_DIR)/run_star.o 
 
@@ -61,6 +61,10 @@ MESA_source_files:
   else
 	@echo "MESA source directory was found. Continuing..."
   endif
+
+MESA_rebuild:
+	@echo "Forced rebuild of MESA. Will clean, svn-update, and re-install MESA now..."
+	./build_mesa.py rebuild
 
 worker_code:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
 	@mpif90 $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
