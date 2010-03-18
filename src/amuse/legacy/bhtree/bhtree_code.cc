@@ -20,6 +20,11 @@ const real DT_DIA = 1;
 real dt_dia = DT_DIA;                // time interval between diagnostics output
 void set_dt_dia(real d)                        {dt_dia = d;}
 
+
+typedef std::map<int, int> IndexMap;
+
+
+IndexMap indexMap;
 //bool x_flag = false;
 
 //int nsteps = 0;                // number of integration time steps completed
@@ -30,6 +35,8 @@ void set_dt_dia(real d)                        {dt_dia = d;}
 // Module data:
 
 bool initialized = false;
+
+int counter = 0;
 
 BHTC_SYSTEM bhtcs;
 vector<dynamics_state> ds;        // for initialization only
@@ -69,7 +76,7 @@ int _new_particle(int *id, dynamics_state d)
     if (!initialized) 
       {
         // Defer reinitialization; save in ds.
-        d.id =  ds.size() + 1;
+        d.id =  ++counter;
         ds.push_back(d);
         *id = d.id;
         //return ds.size();
@@ -77,30 +84,12 @@ int _new_particle(int *id, dynamics_state d)
       } 
     else 
       {
-        //cello, I think this is obsolete...the code is responsible for
-        //new particle id, 
-
-        
-        //int i = get_index_from_identity(d.id);
-        //if (i >= 0 && i < bhtcs.n) 
-        //  {
-        //    // Particle already exists.  Do nothing.
-        //    /*
-        //    cerr << "add_particle: " << d.id
-        //         << " already exists.  Use set_particle." << endl;
-        //    */
-        //    return -1;
-        //  } 
-        //else 
-        //  { 
-        
 
         // Add the new particle and reinitialize immediately.
-        // cerr << "Adding particle " << d.id << endl;
         
-        int n1 = bhtcs.n + 1;
+        int newId = ++counter;
         nbody_particle *np = bhtcs.get_particle_pointer();
-        nbody_particle *np1 = new nbody_particle[n1];
+        nbody_particle *np1 = new nbody_particle[bhtcs.n + 1];
         // Copy the system.
         for (int i = 0; i < bhtcs.n; i++) 
           {
@@ -110,20 +99,22 @@ int _new_particle(int *id, dynamics_state d)
         vec v;
         //cello
         //np1[n1-1].set_index(d.id);
-        np1[n1-1].set_index(n1);
-        np1[n1-1].set_mass(d.mass);
-        np1[n1-1].set_radius(d.radius);
+        np1[bhtcs.n].set_index(newId);
+        np1[bhtcs.n].set_mass(d.mass);
+        np1[bhtcs.n].set_radius(d.radius);
         v[0] = d.x;
         v[1] = d.y;
         v[2] = d.z;
-        np1[n1-1].set_pos(v);
+        np1[bhtcs.n].set_pos(v);
         v[0] = d.vx;
         v[1] = d.vy;
         v[2] = d.vz;
-        np1[n1-1].set_vel(v);
+        np1[bhtcs.n].set_vel(v);
+        
+        indexMap[newId] = bhtcs.n;
         
         bhtcs.mass += d.mass;
-        bhtcs.n = n1;
+        bhtcs.n = bhtcs.n + 1;
         bhtcs.set_nsize(bhtcs.n);
         bhtcs.set_particle_pointer(np1);
         delete [] np;
@@ -133,7 +124,7 @@ int _new_particle(int *id, dynamics_state d)
         bhtcs.apply_vf(&real_particle::scale_pos, pos_scale);
         bhtcs.apply_vf(&real_particle::scale_vel, vel_scale);
         //return bhtcs.n;
-        *id = bhtcs.n;
+        *id = newId;
         return 0;
         // PRC(pos_scale); PRL(vel_scale);
       }
@@ -147,7 +138,7 @@ static void create_treecode_system()
     nbody_particle *np = new nbody_particle[ds.size()];
     bhtcs.n = 0;
     bhtcs.mass = 0;
-
+    
     for (unsigned int i=0; i<ds.size(); i++) {
         vec v;
         np[i].set_index(ds[i].id);
@@ -163,6 +154,8 @@ static void create_treecode_system()
         np[i].set_vel(v);
         bhtcs.n++;
         bhtcs.mass += ds[i].mass;
+        
+        indexMap[ds[i].id] = i;
     }
     //cerr << "create_treecode_system: "; PRC(bhtcs.n); PRL(bhtcs.mass);
 
@@ -391,12 +384,13 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
 
 int delete_particle(int id)
 {
-  //used to be "remove_particle"
     if (!initialized) return -1;
 
     //cerr << "Deleting particle " << id << endl;
 
     int i = get_index_from_identity(id);
+    
+    indexMap[id] = -1;
     if (i >= 0 && i < bhtcs.n) 
       {
 
@@ -408,6 +402,7 @@ int delete_particle(int id)
         if (i < bhtcs.n-1)
           {
             np[i] = np[bhtcs.n-1];
+            indexMap[np[i].get_index()] = i;
           }
         bhtcs.n--;
 
@@ -417,6 +412,7 @@ int delete_particle(int id)
         real vel_scale = 1;
         bhtcs.apply_vf(&real_particle::scale_pos, pos_scale);
         bhtcs.apply_vf(&real_particle::scale_vel, vel_scale);
+        
       }
 
     //return bhtcs.n;
@@ -578,13 +574,18 @@ int get_identity_from_index(int i)
 int get_index_from_identity(int id)
 {
   //CHECK IF IN RANGE TO GIVE CORRECT ERROR
-  nbody_particle *np = bhtcs.get_particle_pointer();
+  IndexMap::iterator i = indexMap.find(id);
+  if(i == indexMap.end()) {
+    return -1;
+  }
+  return (*i).second;
+  /*nbody_particle *np = bhtcs.get_particle_pointer();
   for (int i = 0; i < bhtcs.n; i++) 
     {
       if (id == np[i].get_index())
         return i;
     }
-  return -1;
+  return -1;*/
 }
 
 int initialize_particles()
