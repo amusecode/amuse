@@ -46,13 +46,20 @@
       new_particle = 0
       END
 
-      FUNCTION get_total_mass(id)
+      FUNCTION get_total_mass(total_mass)
       IMPLICIT NONE
 #include "src/general.inc"
       INTEGER get_total_mass
-      INTEGER id
+      INTEGER counter
+      DOUBLE PRECISION total_mass
 
-      get_total_mass = -2
+      total_mass = 0
+
+      DO counter = 1, N, 1
+          total_mass = total_mass + m(counter)
+      ENDDO
+      
+      get_total_mass = 0
       END
 
       FUNCTION get_index_of_next_particle(id)
@@ -111,18 +118,52 @@ C---  get array address
       get_indices_of_colliding_particles = -2
       END
 
-      FUNCTION get_center_of_mass_position()
+      FUNCTION get_center_of_mass_position(Cx, Cy, Cz)
       IMPLICIT NONE      
 #include "src/general.inc"
       INTEGER get_center_of_mass_position
-      get_center_of_mass_position = -2
+      INTEGER get_total_mass
+      INTEGER counter, ret
+      DOUBLE PRECISION Cx, Cy, Cz
+      DOUBLE PRECISION total_mass
+
+      ret = get_total_mass(total_mass)
+      
+      DO counter = 1, N, 1
+          Cx = Cx +m(counter)*x(1,counter)
+          Cy = Cy +m(counter)*x(2,counter)
+          Cz = Cz +m(counter)*x(3,counter)
+      ENDDO
+
+      Cx = Cx/total_mass
+      Cy = Cy/total_mass
+      Cz = Cz/total_mass
+
+      get_center_of_mass_position = 0
       END
 
-      FUNCTION get_center_of_mass_velocity()
+      FUNCTION get_center_of_mass_velocity(Cvx, Cvy, Cvz)
       IMPLICIT NONE
 #include "src/general.inc"
       INTEGER get_center_of_mass_velocity
-      get_center_of_mass_velocity = -2
+      INTEGER get_total_mass
+      INTEGER counter, ret
+      DOUBLE PRECISION Cvx, Cvy, Cvz
+      DOUBLE PRECISION total_mass
+
+      ret = get_total_mass(total_mass)
+      
+      DO counter = 1, N, 1
+          Cvx = Cvx +m(counter)*v(1,counter)
+          Cvy = Cvy +m(counter)*v(2,counter)
+          Cvz = Cvz +m(counter)*v(3,counter)
+      ENDDO
+
+      Cvx = Cvx/total_mass
+      Cvy = Cvy/total_mass
+      Cvz = Cvz/total_mass
+
+      get_center_of_mass_velocity = 0
       END
       
 

@@ -978,6 +978,31 @@ class GravitationalDynamics(common.CommonCode):
                 object.ERROR_CODE,
             )
         )
+        
+        object.add_method(
+            'get_center_of_mass_position',
+            (),
+            (nbody_system.length, nbody_system.length, nbody_system.length, object.ERROR_CODE)
+        )
+
+        object.add_method(
+            'get_center_of_mass_velocity',
+            (),
+            (nbody_system.speed, nbody_system.speed, nbody_system.speed, object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'get_gravity_at_point',
+            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
+            (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'get_potential_at_point',
+            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
+            (nbody_system.potential, object.ERROR_CODE)
+        )
+        
     
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')

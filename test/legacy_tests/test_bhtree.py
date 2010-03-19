@@ -6,6 +6,8 @@ import sys
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
 from amuse.legacy.support import channel
 from amuse.support.data import core
+from amuse.support.data import values
+from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 import path_to_test_results
@@ -518,4 +520,31 @@ class TestAmuseInterface(TestWithMPI):
         curr_state =  instance.get_state(1)
         
         self.assertEquals(curr_state[0], 16|units.kg, 8)
+
+    def test13(self):
+       
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.kg, 1.0 | units.m)
+        
+        instance = BHTree(convert_nbody)
+        instance.commit_parameters()
+        
+        particles = core.Particles(2)
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles.mass = [30.0, 30.0] | units.kg
+        particles.radius =  [1.0, 1.0] | units.m
+        particles.position = [[-10.0, 0.0, 0.0], [10.0, 0.0, 0.0]] | units.m
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
+        
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+        
+        copyof =  instance.particles.copy()
+        
+        com = instance.get_center_of_mass_position()
+        self.assertAlmostEqual(com[0], values.new_quantity(0.0, units.m), constants.precision)
+
+        
+        
+        
 

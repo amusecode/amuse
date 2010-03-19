@@ -332,7 +332,16 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
 
 int get_total_mass(double *mass)
 {
-  return -2;
+  nbody_particle *np = bhtcs.get_particle_pointer();
+  double M;
+
+  *mass = 0;
+
+  for(int i = 0; i<bhtcs.n; i++)
+    {
+      *mass += np[i].get_mass();
+    }
+  return 0;
 }
 
 int reinitialize_particles()
@@ -514,12 +523,54 @@ int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_pa
 
 int get_center_of_mass_position(double *x, double *y, double *z)
 {
-  return -2;
+  nbody_particle *np = bhtcs.get_particle_pointer();
+  double M;
+  double mass;
+
+  *x = 0; *y=0; *z=0;
+
+  get_total_mass(&M);
+
+  for(int i = 0; i<bhtcs.n; i++)
+    {
+      mass = np[i].get_mass();
+      vec r = np[i].get_pos();
+      *x += mass*r[0];
+      *y += mass*r[1];
+      *z += mass*r[2];
+    }
+
+  *x /= M;
+  *y /= M;
+  *y /= M;
+
+  return 0;
 }
 
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz)
 {
-  return -2;
+  nbody_particle *np = bhtcs.get_particle_pointer();
+  double M;
+  double mass;
+
+  *vx = 0; *vy=0; *vz=0;
+
+  get_total_mass(&M);
+
+  for(int i = 0; i<bhtcs.n; i++)
+    {
+      mass = np[i].get_mass();
+      vec v = np[i].get_vel();
+      *vx += mass*v[0];
+      *vy += mass*v[1];
+      *vz += mass*v[2];
+    }
+
+  *vx /= M;
+  *vy /= M;
+  *vy /= M;
+
+  return 0;
 }
 
 int get_radius(int id, double *radius)
