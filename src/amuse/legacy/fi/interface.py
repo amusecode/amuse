@@ -23,8 +23,6 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     get_potential=None
     get_mass=None
     set_mass=None
-    set_eps2=None
-    get_eps2=None
     set_acceleration=None
     get_acceleration=None
     get_radius=None
@@ -1269,7 +1267,15 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         """
         return function
         
-
+class glfi(fi):
+    def __init__(self):
+        LegacyInterface.__init__(self,name_of_the_worker = 'glworker')
+    
+    @legacy_function
+    def viewer():
+        function = LegacyFunctionSpecification()  
+        return function
+        
 class Fi(GravitationalDynamics):
     
     def __init__(self, convert_nbody = None, use_gl = False):
@@ -1299,14 +1305,36 @@ class Fi(GravitationalDynamics):
             0.0 | nbody_system.length * nbody_system.length
         ) 
 
+        object.add_method_parameter(
+            "get_dtime", 
+            "set_dtime",
+            "timestep", 
+            "timestep for system", 
+            nbody_system.time, 
+            1.0 | nbody_system.time
+        ) 
+
+    def define_particle_sets(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_state')
+        object.add_getter('particles', 'get_state')
+
+    def define_methods(self, object):
+        GravitationalDynamics.define_methods(self, object)
+        
+        object.add_method(
+            'get_gravity_at_point',
+            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
+            (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'get_potential_at_point',
+            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
+            (nbody_system.potential, object.ERROR_CODE)
+        )
+        
             
 
-class glfi(fi):
-    def __init__(self):
-        LegacyInterface.__init__(self,name_of_the_worker = 'glworker')
-    
-    @legacy_function
-    def viewer():
-        function = LegacyFunctionSpecification()  
-        return function
-        
