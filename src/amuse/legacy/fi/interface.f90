@@ -13,11 +13,10 @@ function cleanup_code() result(ret)
   ret=0
 end function
 
-function commit_particles(time) result(ret)
+function commit_particles() result(ret)
   integer :: ret
-  real*8 :: time
   call muse_init
-  call muse_set_time(time)
+  call muse_set_time(0.0)
   call muse_finalize_init 
   ret=0
 end function
