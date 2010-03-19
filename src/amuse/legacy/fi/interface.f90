@@ -645,18 +645,30 @@ function get_unitl_in_kpc(x) result(ret)
   ret=0
 end function
 
-
 function set_dtime(x) result(ret)
   integer :: ret
   real*8 :: x
   call amuse_set_dtime(x)
   ret=0
 end function
+
+function set_time_step(time_step) result(ret)
+  integer :: ret
+  real*8 :: time_step
+  ret=set_dtime(time_step)
+end function
+
 function get_dtime(x) result(ret)
   integer :: ret
   real*8 :: x
   call amuse_get_dtime(x) 
   ret=0
+end function
+
+function get_time_step(time_step) result(ret)
+  integer :: ret
+  real*8 :: time_step
+  ret=get_dtime(time_step) 
 end function
 
 function set_tstepcrit(x) result(ret)
@@ -665,6 +677,7 @@ function set_tstepcrit(x) result(ret)
   call amuse_set_tstepcrit(x)
   ret=0
 end function
+
 function get_tstepcrit(x) result(ret)
   integer :: ret
   real*8 :: x
@@ -691,6 +704,7 @@ function set_freev(x) result(ret)
   call amuse_set_freev(x)
   ret=0
 end function
+
 function get_freev(x) result(ret)
   integer :: ret
   real*8 :: x
@@ -730,6 +744,7 @@ function set_freeaexp(x) result(ret)
   call amuse_set_freeaexp(x)
   ret=0
 end function
+
 function get_freeaexp(x) result(ret)
   integer :: ret
   real*8 :: x
@@ -743,6 +758,7 @@ function set_bh_tol(x) result(ret)
   call amuse_set_bh_tol(x)
   ret=0
 end function
+
 function get_bh_tol(x) result(ret)
   integer :: ret
   real*8 :: x
@@ -756,6 +772,7 @@ function set_eps(x) result(ret)
   call amuse_set_eps(x)
   ret=0
 end function
+
 function get_eps(x) result(ret)
   integer :: ret
   real*8 :: x
@@ -782,6 +799,7 @@ function set_nn_tol(x) result(ret)
   call amuse_set_nn_tol(x)
   ret=0
 end function
+
 function get_nn_tol(x) result(ret)
   integer :: ret
   real*8 :: x
@@ -821,6 +839,7 @@ function set_alpha(x) result(ret)
   call amuse_set_alpha(x)
   ret=0
 end function
+
 function get_alpha(x) result(ret)
   integer :: ret
   real*8 :: x

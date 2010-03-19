@@ -86,6 +86,16 @@ class testMPIInterface(TestWithMPI):
     instance.cleanup_module()
     del instance
 
+  def test2_1(self):
+    instance=fi()  
+    instance.setup_module()
+    instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+    instance.set_time_step(2.0)
+    retrieved_state = instance.get_time_step()
+    self.assertEquals(2.0, retrieved_state['time_step'])
+    instance.cleanup_module()
+    del instance
+
   def test3(self):
     instance=fi()
     instance.setup_module()

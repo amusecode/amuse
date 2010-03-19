@@ -426,21 +426,22 @@ int get_potential(double x, double y, double z, double *V)
 
 int set_state(int index_of_the_particle, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
 {
-    int i = get_index_from_identity(index_of_the_particle);
-
-    if (i >= 0 && i < bhtcs.n) 
-      {
-        nbody_particle *np = bhtcs.get_particle_pointer();
-        np[i].set_mass(mass);
-        np[i].set_radius(radius);
-        np[i].set_pos(vec(x, y, z));
-        np[i].set_vel(vec(vx, vy, vz));
-        return 0;
-      } 
-    else
-      {
-        return -1;
-      }
+  //Assumes initialization (initialized TRUE)
+  int i = get_index_from_identity(index_of_the_particle);
+  
+  if (i >= 0 && i < bhtcs.n) 
+    {
+      nbody_particle *np = bhtcs.get_particle_pointer();
+      np[i].set_mass(mass);
+      np[i].set_radius(radius);
+      np[i].set_pos(vec(x, y, z));
+      np[i].set_vel(vec(vx, vy, vz));
+      return 0;
+    } 
+  else
+    {
+      return -1;
+    }
 }
 
 int get_state(int id, double *mass, double *radius, double *x, double *y, double *z, double *vx, double *vy, double *vz) 
@@ -717,10 +718,17 @@ double get_dynamical_time_scale()
     return tdyn;
 }
 
-double get_time_step()
+int get_time_step(double *_timestep)
 {
-    //return bhtcs.time + bhtcs.timestep;
-    return bhtcs.timestep;
+  //return bhtcs.time + bhtcs.timestep;
+  *_timestep = bhtcs.timestep;
+  return 0;
+}
+
+int set_time_step(double _timestep)
+{
+  bhtcs.timestep = _timestep;
+  return 0;
 }
 
 int initialize_time_step()

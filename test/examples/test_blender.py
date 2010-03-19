@@ -48,7 +48,7 @@ class SunEarth(object):
         for i in range(1*365):        
             hermite.evolve_model(i | units.day)
             hermite.update_particles(stars)
-    #update avatar positions: 
+            #update avatar positions: 
             Earth.loc = (1*earth.position.value_in(units.AU)[0],1*earth.position.value_in(units.AU)[1],earth.position.value_in(units.AU)[2])
             Sun.loc = (1*sun.position.value_in(units.AU)[0],1*sun.position.value_in(units.AU)[1],sun.position.value_in(units.AU)[2])
             blender.Redraw()           

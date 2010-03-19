@@ -425,7 +425,7 @@ class VectorQuantity(Quantity):
 
     def norm(self):
         return sqrt(self.norm_squared()) | self.unit
-        
+
     def append(self, scalar_quantity):
         """
         Append a scalar quantity to this vector.

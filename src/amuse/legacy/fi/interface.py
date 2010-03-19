@@ -1,5 +1,5 @@
 import numpy
-from amuse.legacy.interface.gd import GravitationalDynamicsInterface
+from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 #from amuse.support.units import nbody_system
 #from amuse.support.units import units
 from amuse.legacy import *
@@ -1245,6 +1245,41 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         function.addParameter('sph_visc', dtype='string', direction=function.OUT)
         function.result_type = 'i'
         return function;
+
+    @legacy_function
+    def set_time_step():
+        """
+        Set the model timestep.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time_step', dtype='float64', direction=function.IN,
+            description = "The current model timestep")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the time step was retrieved
+        -1 - ERROR
+            The code does not have support for querying the time
+        """
+        return function
+        
+
+class Fi(GravitationalDynamics):
+    
+    def __init__(self, convert_nbody = None):
+        
+        if convert_nbody is None:
+            convert_nbody = nbody_system.nbody_to_si.get_default()
+       
+        
+        legacy_interface = BHTreeInterface()
+        
+        GravitationalDynamics.__init__(
+            self,
+            legacy_interface,
+            convert_nbody,
+        )     
+            
 
 class glfi(fi):
     def __init__(self):

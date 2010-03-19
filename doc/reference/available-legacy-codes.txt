@@ -33,7 +33,7 @@ Stellar Dynamics
 bhtree
 ------
 
-An implementation of the Barnes & Hut tree code by Jun Makino. suitable for more than ... particles
+An implementation of the Barnes & Hut tree code by Jun Makino. Suitable for more than 100 particles, does work.
 
 .. _hermite0:
 
@@ -46,8 +46,6 @@ using the Hermite integration scheme.
 
 * Hut, P., Makino, J. & McMillan, S., 1995, ApJL 443, L93
 
-
-
 .. _phiGRAPE:
 
 phiGRAPE
@@ -59,6 +57,8 @@ phiGRAPE
 twobody
 -------
 
+Semi analytical code based on Kepler. The particle set provided has lenght one or two. If one particle is given, the mass is assigned to 
+a particle in the origin, the phase-coordinates to the other particle. This is usefull when... . 
 
 .. _smallN:
 

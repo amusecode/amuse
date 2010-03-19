@@ -83,6 +83,7 @@ class Tsf2Particles(object):
         f = open(inputfile,'r')
 
         lines = f.readlines()
+
         start_masses = [i for i, oneline in enumerate(lines) if 'double Mass' in oneline][0]
         start_phasespace = [i for i, oneline in enumerate(lines) if 'double PhaseSpace' in oneline][0]
         massline_numbers = self.return_numbers_in_brackets(lines[start_masses])

@@ -101,3 +101,8 @@ class BHTree(GravitationalDynamics):
             (nbody_system.potential, object.ERROR_CODE)
         )
         
+        object.add_method(
+            'set_time_step',
+            (nbody_system.time),
+            (object.ERROR_CODE)
+            )

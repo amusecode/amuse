@@ -316,6 +316,7 @@ class TestCodeInterface(TestWithMPI):
         
         
         particles = core.Particles(2)
+        print particles
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length

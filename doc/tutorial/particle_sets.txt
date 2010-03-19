@@ -3,6 +3,7 @@ Working with Particle Sets
 ==========================
 
 .. image:: sets.png
+   :width: 2cm
 
 There are Sets, Subsets, Particles, Children and Parents...
 ===========================================================
@@ -182,6 +183,7 @@ Channels
 --------
 
 .. image:: channels.png
+   :width: 2cm
    :align: center
 
 Imagine we evaluate stars in some MPI bound legacy code, and want to know what happened to the stars in our subsets. Each query for attributes in de 
@@ -245,7 +247,7 @@ Particle Hierarchies
 ====================
 
 .. image:: children.png
-   :width: 100px
+   :width: 2cm
 
 Let us suppose that the zero-th star, stars[0] has a child and a grandchild star who do not belong to the plummer model:
 

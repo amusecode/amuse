@@ -569,8 +569,23 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
             The code does not have support for querying the time
         """
         return function
-    
-    
+
+    @legacy_function
+    def get_time_step():
+        """
+        Retrieve the model timestep.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time_step', dtype='float64', direction=function.OUT,
+            description = "The current model timestep")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value of the time step was retrieved
+        -1 - ERROR
+            The code does not have support for querying the time
+        """
+        return function
     
     @legacy_function
     def get_total_mass():
@@ -942,7 +957,17 @@ class GravitationalDynamics(common.CommonCode):
                 object.ERROR_CODE
             )
         )
-        
+
+        object.add_method(
+            "get_time_step",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                nbody_system.time,
+                object.ERROR_CODE
+            )
+        ) 
         
         object.add_method(
             'get_indices_of_colliding_particles',
