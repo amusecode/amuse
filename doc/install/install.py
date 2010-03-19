@@ -72,9 +72,9 @@ class InstallPrerequisites(object):
           (
             'docutils', 
             [], 
-            'snapshot', 
-            'docutils-','.tgz', 
-            'http://docutils.sf.net/', 
+            '0.6', 
+            'docutils-','.tar.gz', 
+            'http://downloads.sourceforge.net/project/docutils/docutils/0.6/', 
             self.python_build
           ) ,
           (
