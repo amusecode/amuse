@@ -251,6 +251,9 @@ class unit(object):
                 
     def is_non_numeric(self):
         return False
+    
+    def isnone(self):
+        return False
         
 class base_unit(unit):
     """
@@ -310,6 +313,9 @@ class none_unit(unit):
     @late
     def base(self):
         return ()
+        
+    def isnone(self):
+        return True
         
 class key_unit(none_unit):
     

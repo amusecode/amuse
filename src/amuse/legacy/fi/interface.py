@@ -80,7 +80,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
              
     @legacy_function    
     def get_state():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
@@ -88,7 +89,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
     @legacy_function    
     def get_state_sph():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='d', direction=function.OUT)
@@ -96,7 +98,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
     @legacy_function    
     def get_state_star():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz','tform']:
             function.addParameter(x, dtype='d', direction=function.OUT)
@@ -104,7 +107,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
     @legacy_function    
     def set_state():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -112,7 +116,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
     @legacy_function    
     def set_state_star():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -121,7 +126,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
     @legacy_function    
     def set_state_sph():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -184,7 +190,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['ax','ay','az']:
             function.addParameter(x, dtype='d', direction=function.OUT)
-        function.result_type = 'i'
+        function.result_type = 'i' 
+        function.can_handle_array = True
         return function
 
     @legacy_function    
@@ -193,7 +200,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         for x in ['eps','x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.addParameter('phi', dtype='d', direction=function.OUT)
-        function.result_type = 'i'
+        function.result_type = 'i' 
+        function.can_handle_array = True
         return function
 
     @legacy_function    
@@ -1289,7 +1297,7 @@ class Fi(GravitationalDynamics):
           legacy_interface = fi()            
         
         if convert_nbody is None:
-            convert_nbody=nbody_system.nbody_to_si(10**9 | units.MSun, 1 | units.kpc)
+            convert_nbody=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         
         GravitationalDynamics.__init__(
             self,
@@ -1297,12 +1305,15 @@ class Fi(GravitationalDynamics):
             convert_nbody,
         )     
     
-    def initialize_code(self):
-        self.legacy_interface.initialize_code()
+    def _initialize_code(self):
+        self.overridden().initialize_code()
+        
         value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
-        self.legacy_interface.set_unitl_in_kpc(value)
+        print value
+        #self.legacy_interface.set_unitl_in_kpc(value)
         value=self.convert_nbody.to_si(nbody_system.mass).in_(units.MSun).number 
-        self.legacy_interface.set_unitm_in_msun(value)
+        print value
+        #self.legacy_interface.set_unitm_in_msun(value)
 
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -1324,7 +1335,7 @@ class Fi(GravitationalDynamics):
         ) 
 
     def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_particle')
+        object.define_set('particles', 'id')
         object.set_new('particles', 'new_particle')
         object.set_delete('particles', 'delete_particle')
         object.add_setter('particles', 'set_state')

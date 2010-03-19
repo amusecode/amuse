@@ -243,7 +243,33 @@ class CodeInterface2Tests(amusetest.TestCase):
         self.assertEquals(handler._current_state.name, 'ONE')
         self.assertEquals(instance.returns_1(), 1)
         
+    
     def test3(self):
+        class TestCodeInterface(interface.CodeInterface):
+            
+            def move_to_state_1(self):
+                self.overridden().move_to_state_1()
+                self.traced = True
+                
+        original = self.TestClass()
+        
+        instance = TestCodeInterface(original)
+        instance.traced = False
+        
+        handler = instance.get_handler('STATE')
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+        handler.add_method('ONE', 'returns_1')
+        handler.set_initial_state('ZERO')
+            
+        
+        
+        self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
+        self.assertEquals(instance.returns_1(), 1)
+        self.assertEquals(instance.get_name_of_current_state(), 'ONE')
+        self.assertTrue(instance.traced)
+        
+        
+    def test4(self):
         original = self.TestClass()
         
         instance = interface.CodeInterface(original)
@@ -259,7 +285,7 @@ class CodeInterface2Tests(amusetest.TestCase):
         self.assertEquals(instance.returns_1(), 1)        
         self.assertEquals(handler._current_state.name, 'ONE')
         
-    def test4(self):
+    def test5(self):
         original = self.TestClass()
         
         instance = interface.CodeInterface(original)
@@ -276,7 +302,7 @@ class CodeInterface2Tests(amusetest.TestCase):
         self.assertEquals(instance.returns_2(), 2)        
         self.assertEquals(handler._current_state.name, 'TWO')
         
-    def test5(self):
+    def test6(self):
         original = self.TestClass()
         
         instance = interface.CodeInterface(original)
@@ -308,7 +334,7 @@ class CodeInterface2Tests(amusetest.TestCase):
         self.assertEquals(handler._current_state.name, 'FOUR')
         
     
-    def test6(self):
+    def test7(self):
         original = self.TestClass()
         
         instance = interface.CodeInterface(original)
@@ -343,7 +369,7 @@ class CodeInterface2Tests(amusetest.TestCase):
             self.assertEquals(instance.returns_4(), 4)
             
     
-    def test7(self):
+    def test8(self):
         original = self.TestClass()
         
         instance = interface.CodeInterface(original)

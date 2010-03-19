@@ -168,6 +168,28 @@ class Quantity(object):
             return self.number
         else:
             return self.number * value_of_unit_in_another_unit
+            
+    def __abs__(self):
+        """
+        Return the absolute value of this quantity
+        
+        >>> from amuse.support.units import units
+        >>> x = -10 | units.km
+        >>> print abs(x)
+        10 km
+        """
+        return new_quantity(abs(self.number), self.unit)
+        
+    def __neg__(self):
+        """
+        Unary minus.
+        
+        >>> from amuse.support.units import units
+        >>> x = -10 | units.km
+        >>> print -x
+        10 km
+        """
+        return new_quantity(-self.number, self.unit)
 
 class ScalarQuantity(Quantity):
     """

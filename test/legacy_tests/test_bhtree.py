@@ -164,10 +164,11 @@ class TestAmuseInterface(TestWithMPI):
         #instance.particles.add_particles(stars)
         instance.particles.add_particles(stars)
         
+        postion_at_start = earth.position.value_in(units.AU)[0]
+        
         instance.evolve_model(365.0 | units.day)
         instance.update_particles(stars)
         
-        postion_at_start = earth.position.value_in(units.AU)[0]
         postion_after_full_rotation = earth.position.value_in(units.AU)[0]
        
         self.assertAlmostEqual(postion_at_start, postion_after_full_rotation, 3)

@@ -27,15 +27,13 @@ function recommit_particles() result(ret)
 end function
 
 
-function commit_parameters(time) result(ret)
+function commit_parameters() result(ret)
   integer :: ret
-  real*8 :: time
   ret=0
 end function
 
-function recommit_parameters(time) result(ret)
+function recommit_parameters() result(ret)
   integer :: ret
-  real*8 :: time
   ret=0
 end function
 

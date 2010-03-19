@@ -863,6 +863,14 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         self.sets[name_of_the_set].selects_form_particle.append((name, names, public_name))
         
 
+class OverriddenCodeInterface(object):
+    
+    def __init__(self, code_interface):
+        self.code_interface = code_interface
+    
+    def __getattr__(self, name):
+        return self.code_interface.__getattr__(name)
+        
 class CodeInterface(OldObjectsBindingMixin):
     
     def __init__(self, legacy_interface):
@@ -923,11 +931,17 @@ class CodeInterface(OldObjectsBindingMixin):
             raise AttributeError(name)
         return result
         
-            
+    
     def __dir__(self):
         result = set(dir(type(self)))
         result |= set(self.__dict__.keys())
         for handler in self._handlers:
             result |= handler.attribute_names()
         return list(result)
+        
+    def overridden(self):
+        return OverriddenCodeInterface(self)
+        
+    def get_name_of_current_state(self):
+        return self.get_handler('STATE')._current_state.name
         

@@ -36,3 +36,23 @@ class TestCase(unittest.TestCase):
                                                                                                      
     assertAlmostEqual =  failUnlessAlmostEqual                                                    
     assertAlmostEquals =  failUnlessAlmostEqual
+    
+    
+    def failUnlessAlmostRelativeEqual(self, first, second, places=7, msg=None):
+        
+        if abs(first) > abs(second):
+            relativeError = abs((second-first) / first)
+        else:
+            relativeError = abs((first-second) / second)
+
+        maxRelativeError = (relativeError/relativeError) * (0.1 ** places)
+        
+        if relativeError >= maxRelativeError:
+            raise self.failureException,(msg or "{0!r} != {1!r} within {2!r} places".format(first, second, places))        
+
+           
+    assertAlmostRelativeEqual = failUnlessAlmostRelativeEqual
+    assertAlmostRelativeEquals = failUnlessAlmostRelativeEqual
+         
+         
+        

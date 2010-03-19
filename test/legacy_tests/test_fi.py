@@ -1,8 +1,12 @@
 import os
 import sys
 
-from amuse.legacy.fi.interface import fi
+from amuse.legacy.fi.interface import fi, Fi
 from amuse.ext.evrard_test import MakeEvrardTest
+
+from amuse.support.units import nbody_system
+from amuse.support.units import units
+from amuse.support.data import core
 
 from legacy_support import TestWithMPI
 
@@ -13,7 +17,7 @@ from amuse.legacy.support.channel import MessageChannel
 MessageChannel.no_redirection()
 
 
-class testMPIInterface(TestWithMPI):
+class TestMPIInterface(TestWithMPI):
 
   def test0(self):
     instance=fi()  
@@ -130,7 +134,7 @@ class testMPIInterface(TestWithMPI):
     instance.cleanup_module()
     del instance
 
-class testEvrard(TestWithMPI):
+class TestEvrard(TestWithMPI):
 
   def test0(self):
     evrard=MakeEvrardTest(1000)
@@ -174,3 +178,76 @@ class testEvrard(TestWithMPI):
 
     del evrard
     del nb
+    
+
+class TestFiInterface(TestWithMPI):
+
+    def test0(self):
+        instance=Fi()
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.parameters.timestep = 0.5 | units.day
+        self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
+        instance.commit_particles()
+        self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
+    
+    def test1(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+
+        instance = Fi()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00000001 | units.AU**2
+        instance.parameters.timestep = 0.5 | units.day
+        self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
+        
+        stars = core.Particles(2)
+        
+        sun = stars[0]
+        sun.mass = units.MSun(1.0)
+        sun.position = [0.0,0.0,0.0] | units.m
+        sun.velocity = [0.0,0.0,0.0] | units.ms
+        sun.radius = units.RSun(1.0)
+
+        earth = stars[1]
+        earth.mass = units.kg(5.9736e24)
+        earth.radius = units.km(6371) 
+        earth.position = [149.5e6, 0.0, 0.0] | units.km
+        earth.velocity = [0.0, 29800, 0.0] | units.ms
+
+        instance.particles.add_particles(stars)
+        self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
+        
+        
+        postion_at_start = earth.position.x
+        
+        instance.evolve_model(365.0 | units.day)
+        
+        instance.update_particles(stars)
+        
+        postion_after_full_rotation = earth.position.x
+        
+        self.assertAlmostRelativeEqual(postion_at_start, postion_after_full_rotation, 5)
+        instance.evolve_model(365.0 + (365.0 / 2) | units.day)
+       
+        instance.update_particles(stars)
+        
+        postion_after_half_a_rotation = earth.position.x
+        
+        instance.evolve_model(365.0 + (365.0 / 2) | units.day)
+        
+        instance.update_particles(stars)
+        
+        postion_after_half_a_rotation = earth.position.x
+        self.assertAlmostRelativeEqual(-postion_at_start, postion_after_half_a_rotation, 3)
+        
+        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
+         
+        instance.update_particles(stars)
+        
+        postion_after_half_a_rotation = earth.position.y
+        
+        self.assertAlmostRelativeEqual(-postion_at_start, postion_after_half_a_rotation, 4)
+        
+        instance.cleanup_code()
+        instance.stop()
