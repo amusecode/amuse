@@ -32,7 +32,7 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     set_position=None
     get_position=None
 
-        
+                
     def __init__(self, convert_nbody = None):
         LegacyInterface.__init__(self, name_of_the_worker = 'worker')
                      
@@ -1275,6 +1275,9 @@ class glfi(fi):
     def viewer():
         function = LegacyFunctionSpecification()  
         return function
+    
+    def start_viewer(self):
+        self.viewer()
         
 class Fi(GravitationalDynamics):
     
