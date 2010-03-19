@@ -210,10 +210,12 @@ class ScalarQuantity(Quantity):
         return self.number != other_in_my_units.number
 
     def __le__(self, other):
-        return self.__eq__(other) or self.__lt__(other)
+        other_in_my_units = other.as_quantity_in(self.unit)
+        return self.number <= other_in_my_units.number
 
     def __ge__(self, other):
-        return self.__eq__(other) or self.__gt__(other)
+        other_in_my_units = other.as_quantity_in(self.unit)
+        return self.number >= other_in_my_units.number
             
     def copy(self):
         return new_quantity(self.number, self.unit)
@@ -391,10 +393,19 @@ class VectorQuantity(Quantity):
     def __lt__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
         return self.number < other_in_my_units.number
+
+    def __le__(self, other):
+        other_in_my_units = other.as_quantity_in(self.unit)
+        return self.number <= other_in_my_units.number
         
     def __gt__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
         return self.number > other_in_my_units.number
+        
+        
+    def __ge__(self, other):
+        other_in_my_units = other.as_quantity_in(self.unit)
+        return self.number >= other_in_my_units.number
         
     def __eq__(self, other):
         other_in_my_units = other.as_quantity_in(self.unit)
