@@ -1309,11 +1309,9 @@ class Fi(GravitationalDynamics):
         self.overridden().initialize_code()
         
         value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
-        print value
-        #self.legacy_interface.set_unitl_in_kpc(value)
+        self.legacy_interface.set_unitl_in_kpc(value)
         value=self.convert_nbody.to_si(nbody_system.mass).in_(units.MSun).number 
-        print value
-        #self.legacy_interface.set_unitm_in_msun(value)
+        self.legacy_interface.set_unitm_in_msun(value)
 
     def define_parameters(self, object):
         object.add_method_parameter(
