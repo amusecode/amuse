@@ -1305,7 +1305,7 @@ class Fi(GravitationalDynamics):
             convert_nbody,
         )     
     
-    def _initialize_code(self):
+    def initialize_code(self):
         self.overridden().initialize_code()
         
         value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
