@@ -24,7 +24,8 @@ class TestMPIInterface(TestWithMPI):
     
     def test0(self):
         instance = PhiGRAPEInterface()
-        self.assertTrue("Refs not included yet" in instance.all_literature_references_string())
+        self.assertTrue("Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P." 
+            in instance.all_literature_references_string())
 
     def test1(self):
         instance = PhiGRAPEInterface()
