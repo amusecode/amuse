@@ -1279,15 +1279,19 @@ class glfi(fi):
 class Fi(GravitationalDynamics):
     
     def __init__(self, convert_nbody = None, use_gl = False):
-        
-        if convert_nbody is not None:
-            print "warning: nbody_convert overridden"
-        convert_nbody = nbody_system.nbody_to_si(10**9 | units.MSun, 1 | units.kpc)
-        
+                
         if(use_gl):
           legacy_interface = glfi()
         else:
           legacy_interface = fi()            
+        
+        if convert_nbody is not None:
+            value=convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
+            legacy_interface.set_unitl_in_kpc(value)
+            value=convert_nbody.to_si(nbody_system.mass).in_(units.MSun).number 
+            legacy_interface.set_unitm_in_msun(value)
+        else:
+            convert_nbody=nbody_system.nbody_to_si(10**9 | units.MSun, 1 | units.kpc)
         
         GravitationalDynamics.__init__(
             self,
