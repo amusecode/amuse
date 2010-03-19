@@ -80,7 +80,7 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
                 print str(ex)
                 stopped_evolving = True
         if stopped_evolving: print "Age did not increase during timestep. Aborted evolving..."
-        print " ... evolved model to t = " + str(star.age)
+        print " ... evolved model to t = " + str(star.age.as_quantity_in(units.Myr))
         print "Star has now become a: ", star.stellar_type, "(stellar_type: "+str(star.stellar_type.value_in(units.stellar_type))+")"
         print
         all_tracks_luminosity.append(luminosity_at_time)
@@ -90,6 +90,7 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
 #       Remove the star before creating the next one. See comments at the top.
         stellar_evolution.particles.remove_particles(stars)
 
+    stellar_evolution.print_refs()
     del stellar_evolution
     
     plot_HR_diagram(number_of_stars, masses, all_tracks_luminosity, all_tracks_temperature, 
@@ -177,6 +178,9 @@ def test_simulate_one_star():
         stellar_evolution_code = 1)
     
 if __name__ == '__main__':
+    if not is_mpd_running():
+        print "There is no mpd server running. Please do 'mpd &' first."
+        sys.exit()
     if len(sys.argv) == 1:
         simulate_evolution_tracks()
     elif len(sys.argv) == 2:

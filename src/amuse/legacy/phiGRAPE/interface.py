@@ -9,7 +9,7 @@ from amuse.legacy.support.lit import LiteratureRefs
 
 class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
     """
-        .. [#] Refs not included yet
+        .. [#] Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2007, New Astronomy, 12, 357
     """    
     
     MODE_G6LIB = 'g6lib'

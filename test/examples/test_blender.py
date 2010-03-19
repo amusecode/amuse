@@ -53,6 +53,7 @@ class SunEarth(object):
             Sun.loc = (1*sun.position.value_in(units.AU)[0],1*sun.position.value_in(units.AU)[1],sun.position.value_in(units.AU)[2])
             blender.Redraw()           
             
+        hermite.print_refs()
         del hermite           
 
 if __name__ == '__main__':

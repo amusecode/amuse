@@ -101,6 +101,7 @@ def simulate_stellar_evolution(mass_in = 5.0 | units.MSun, end_time = 250.0 | un
             star2.temperature, star2.luminosity))
     
     print "Reference run (SSE only) finished."
+    stellar_evolution.print_refs()
     del stellar_evolution
 
     create_plots(memory, age_at_code_switch, end_time, name_of_the_figure, refmemory)

@@ -168,6 +168,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     stellar_evolution.stop()
     
     plot_particles(particles, name_of_the_figure)
+    gravity.print_refs()
     
         
 

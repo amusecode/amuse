@@ -8,10 +8,30 @@ from amuse.support.data.core import Particles, ParticlesSubset
 
 class BSEInterface(LegacyInterface, LiteratureRefs): 
     """
-        .. [#]  Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897:
-                Evolution of binary stars and the effect of tides on binary populations
-        .. [#]  Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
-                Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
+    Binary evolution is performed by the **rapid** binary-star evolution (BSE) 
+    algorithm. Circularization of eccentric orbits and synchronization of stellar 
+    rotation with the orbital motion owing to tidal interaction is modelled in detail. 
+    Angular momentum loss mechanisms, such as gravitational radiation and magnetic 
+    braking, are also modelled. Wind accretion, where the secondary may accrete some 
+    of the material lost from the primary in a wind, is allowed with the necessary 
+    adjustments made to the orbital parameters in the event of any mass variations. 
+    Mass transfer also occurs if either star fills its Roche lobe and may proceed on a 
+    nuclear, thermal or dynamical time-scale. In the latter regime, the radius of the 
+    primary increases in response to mass-loss at a faster rate than the Roche-lobe of 
+    the star. Stars with deep surface convection zones and degenerate stars are 
+    unstable to such dynamical time-scale mass loss unless the mass ratio of the system 
+    is less than some critical value. The outcome is a common-envelope event if the 
+    primary is a giant star. This results in merging or formation of a close binary, or 
+    a direct merging if the primary is a white dwarf or low-mass main-sequence star. On 
+    the other hand, mass transfer on a nuclear or thermal time-scale is assumed to be a 
+    steady process. Prescriptions to determine the type and rate of mass transfer, the 
+    response of the secondary to accretion and the outcome of any merger events are in 
+    place in BSE and the details can be found in the BSE paper:
+    
+        .. [#] Hurley J.R., Tout C.A., & Pols O.R., 2002, MNRAS, 329, 897:
+        .. [#] ... Evolution of binary stars and the effect of tides on binary populations
+        .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
+        .. [#] ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
     """
     def __init__(self):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code")

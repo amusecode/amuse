@@ -1,13 +1,27 @@
 from amuse.legacy import *
 
 from amuse.support.units import units
+from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.support.interface import CodeInterface
 
-class SSEInterface(LegacyInterface): 
+class SSEInterface(LegacyInterface, LiteratureRefs): 
+    """
+    Stellar evolution is performed by the rapid single-star evolution (SSE)
+    algorithm. This is a package of analytical formulae fitted to the detailed 
+    models of Pols et al. (1998)  that covers all phases of evolution from the 
+    zero-age main-sequence up to and including remnant phases. It is valid for 
+    masses in the range 0.1-100 Msun and metallicity can be varied. The SSE 
+    package contains a prescription for mass loss by stellar winds. It also 
+    follows the evolution of rotational angular momentum for the star. Full 
+    details can be found in the SSE paper:
+    
+        .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
+        .. [#] ... "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
+    """
     def __init__(self):
         LegacyInterface.__init__(self)
-
+        LiteratureRefs.__init__(self)
     
     @legacy_function   
     def initialize():

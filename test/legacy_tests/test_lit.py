@@ -1,5 +1,14 @@
 import unittest
 from amuse.legacy.support import lit
+from amuse.support.units import nbody_system
+from amuse.support.units import units
+from amuse.legacy.bhtree.interface import BHTree
+from amuse.legacy.hermite0.interface import Hermite
+from amuse.legacy.phiGRAPE.interface import PhiGRAPE
+from amuse.legacy.sse.interface import SSE
+from amuse.legacy.bse.interface import BSE
+from amuse.legacy.mesa.interface import MESA
+from amuse.legacy.evtwin.interface import EVtwin
 
 class TestLiteratureRefs(unittest.TestCase):
     def setUp(self):
@@ -68,3 +77,34 @@ class TestLiteratureRefs(unittest.TestCase):
         #from docutils import core
         #print core.publish_string(source = string)
         
+    def test4(self):
+        print "This test shows how the references to currently used legacy codes can be obtained."
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        convert_nbody.set_as_default()
+        gravity = BHTree()
+        gravity2 = Hermite()
+        gravity3 = PhiGRAPE()
+        stellar_evolution1 = SSE()
+        stellar_evolution2 = BSE()
+        stellar_evolution3 = EVtwin()
+        stellar_evolution4 = MESA()
+        print "Each legacy code instance collects all references."
+        print "They can be retrieved with the print_refs method:"
+        print ">>> gravity.print_refs()"
+        gravity.print_refs()
+        all_refs_as_returned_by_code1 = gravity.all_literature_references_string()
+        all_refs_as_returned_by_code2 = stellar_evolution2.all_literature_references_string()
+        print "Checking whether each of them returns the same set of references... ",
+        self.assertEquals(all_refs_as_returned_by_code1, all_refs_as_returned_by_code2)
+        print "ok."
+        self.assertTrue('Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)' 
+            in all_refs_as_returned_by_code1)
+        self.assertTrue('Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543' 
+            in all_refs_as_returned_by_code1)
+        self.assertTrue('Eggleton, P.P. 1971, MNRAS, 151, 351: "The evolution of low mass stars"' 
+            in all_refs_as_returned_by_code1)
+        gravity.stop()
+        stellar_evolution1.stop()
+        stellar_evolution2.stop()
+        stellar_evolution3.stop()
+        stellar_evolution4.stop()

@@ -6,8 +6,19 @@ import os
 
 class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution): 
     """
-        .. [#]  MESA is free software; you can redistribute it and/or modify
-                it under the terms of the GNU General Library Public License.
+    The software project MESA (Modules for Experiments in Stellar Astrophysics, 
+    http://mesa.sourceforge.net/), aims to provide state-of-the-art, robust, 
+    and efficient open source modules, usable singly or in combination for a 
+    wide range of applications in stellar astrophysics. The AMUSE interface to 
+    MESA can create and evolve stars using the MESA/STAR module. If you order a 
+    metallicity you haven't used before, starting models will be computed 
+    automatically and saved in the `mesa/src/data/star_data/starting_models` 
+    directory (please be patient...). All metallicities are supported, even the 
+    interesting case of Z=0. The supported stellar mass range is from 
+    about 0.1 to 100 Msun.
+    
+        .. [#] MESA is free software; you can redistribute it and/or modify
+        .. [#] ... it under the terms of the GNU General Library Public License.
     """
     def __init__(self):
         try:
