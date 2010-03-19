@@ -30,11 +30,13 @@ end function
 
 function commit_parameters(time) result(ret)
   integer :: ret
+  real*8 :: time
   ret=0
 end function
 
 function recommit_parameters(time) result(ret)
   integer :: ret
+  real*8 :: time
   ret=0
 end function
 
@@ -653,7 +655,7 @@ function set_dtime(x) result(ret)
 end function
 
 function set_time_step(time_step) result(ret)
-  integer :: ret
+  integer :: ret,set_dtime
   real*8 :: time_step
   ret=set_dtime(time_step)
 end function
@@ -666,7 +668,7 @@ function get_dtime(x) result(ret)
 end function
 
 function get_time_step(time_step) result(ret)
-  integer :: ret
+  integer :: ret,get_dtime
   real*8 :: time_step
   ret=get_dtime(time_step) 
 end function

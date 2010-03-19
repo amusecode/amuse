@@ -807,6 +807,12 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         function.result_type = 'i'
         return function;
 
+    def set_eps2(self,eps2):
+      return self.set_eps(eps2**0.5)
+    def get_eps2(self):
+      eps,err=self.get_eps()
+      return eps**2
+
     @legacy_function
     def set_gdgtol():
         """ Gadget cell openings criterion parameter  (unitless, .01) """    
@@ -1266,19 +1272,33 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
 class Fi(GravitationalDynamics):
     
-    def __init__(self, convert_nbody = None):
+    def __init__(self, convert_nbody = None, use_gl = False):
         
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-       
+        if convert_nbody is not None:
+            print "warning: nbody_convert overridden"
+        convert_nbody = nbody_system.nbody_to_si(10**9 | units.MSun, 1 | units.kpc)
         
-        legacy_interface = BHTreeInterface()
+        if(use_gl):
+          legacy_interface = glfi()
+        else:
+          legacy_interface = fi()            
         
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
         )     
+
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_eps2", 
+            "set_eps2",
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.0 | nbody_system.length * nbody_system.length
+        ) 
+
             
 
 class glfi(fi):
