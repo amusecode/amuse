@@ -1,7 +1,6 @@
 from amuse.legacy import *
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.data import binding
 
 from amuse.legacy.interface.gd import GravitationalDynamics
 

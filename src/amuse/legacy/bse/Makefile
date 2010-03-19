@@ -25,7 +25,7 @@ worker_code:	worker_code.f90  BSE_code.o  $(BSEOBJ)
 	mpif90 $(FFLAGS) $^ -o $@ 
 
 worker_code.f90: interface.py
-	$(CODE_GENERATOR) --type=f90 interface.py BSE -o $@
+	$(CODE_GENERATOR) --type=f90 interface.py BSEInterface -o $@
 
 .f.o: $<
 	$(FORTRAN) -c $(FFLAGS) -o $@ $< 

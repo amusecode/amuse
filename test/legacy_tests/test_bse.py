@@ -80,6 +80,7 @@ class TestMPIInterface(TestWithMPI):
         print "Test basic operations (legacy functions evolve & get_time_step)..."
         instance = BSE()
         instance.initialize_module_with_default_parameters()
+        
         new_state = self.state()
         new_state.mass1 = 3.0
         new_state.mass2 = 1.0
@@ -90,7 +91,8 @@ class TestMPIInterface(TestWithMPI):
         new_state.end_time = 1e-06
         new_state.orbital_period = 200.0
         new_state.eccentricity = 0.5
-        result = instance.evolve(
+        
+        result = instance.legacy_interface.evolve(
             new_state.type1,new_state.type2,new_state.initial_mass1,new_state.initial_mass2,
             new_state.mass1, new_state.mass2, new_state.radius1, new_state.radius2, 
             new_state.luminosity1, new_state.luminosity2, new_state.core_mass1, 
@@ -100,6 +102,7 @@ class TestMPIInterface(TestWithMPI):
             new_state.epoch2, new_state.t_ms1, new_state.t_ms2, new_state.bse_age,
             new_state.orbital_period, new_state.eccentricity, new_state.end_time
         )
+        
         updated_state = self.state()
         (updated_state.type1,updated_state.type2,updated_state.initial_mass1,updated_state.initial_mass2,
             updated_state.mass1, updated_state.mass2, updated_state.radius1, updated_state.radius2, 
@@ -154,7 +157,7 @@ class TestMPIInterface(TestWithMPI):
                 self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
         self.assertEquals(updated_state.end_time, 1e-06)
-        dt = instance.get_time_step(updated_state.type1, updated_state.type2,
+        dt = instance.legacy_interface.get_time_step(updated_state.type1, updated_state.type2,
             updated_state.initial_mass1, updated_state.initial_mass2, updated_state.mass1,
             updated_state.mass2, updated_state.t_ms1, updated_state.t_ms2,
             updated_state.epoch1, updated_state.epoch2, updated_state.bse_age)
@@ -179,7 +182,7 @@ class TestMPIInterface(TestWithMPI):
         init_mass2 = masses2
         bse_age = [0.0,0.0,0.0]
         end_time = [10.0, 10.0, 10.0]
-        result = instance.evolve(
+        result = instance.legacy_interface.evolve(
             types1, types2, init_mass1, init_mass2,
             masses1, masses2, radii1, radii2,
             luminosity1, luminosity2, core_mass1, core_mass2,
@@ -213,7 +216,7 @@ class TestMPIInterface(TestWithMPI):
         init_mass1 = masses1
         init_mass2 = masses2
         
-        result = instance.evolve(
+        result = instance.legacy_interface.evolve(
             types1, types2, init_mass1, init_mass2,
             masses1, masses2, radii1, radii2,
             luminosity1, luminosity2, core_mass1, core_mass2,
@@ -225,24 +228,6 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(len(result['mass1']), number_of_particles)
         del instance
 
-    def test5(self):
-        print "Testing additional parameters for initialization..."
-        instance = BSE()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
-        instance.parameters.reimers_mass_loss_coefficient = myvalue
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
-        instance.initialize_module_with_current_parameters()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
-        del instance
-        
-        instance = BSE()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        myvalue = 0.7 | units.none
-        instance.parameters.reimers_mass_loss_coefficient = myvalue
-        instance.initialize_module_with_default_parameters()
-        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        del instance
         
 class TestBSE(TestWithMPI):
     
@@ -268,6 +253,7 @@ class TestBSE(TestWithMPI):
         previous_type1 = binary.type1
         results = []
         current_time = 0 | units.Myr
+        
         while current_time < (480 | units.Myr):
             instance.update_time_steps()
             # The next line appears a bit weird, but saves time for this simple test.
@@ -522,4 +508,24 @@ class TestBSE(TestWithMPI):
         self.assertEquals(str(binary.type1), "Main Sequence star")
         self.assertEquals(str(binary.type2), "Massless Supernova")
 
+        del instance
+        
+    
+    def test6(self):
+        print "Testing additional parameters for initialization..."
+        instance = BSE()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        myvalue = 0.7 | units.none
+        instance.parameters.reimers_mass_loss_coefficient = myvalue
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
+        instance.initialize_module_with_current_parameters()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
+        del instance
+        
+        instance = BSE()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
+        myvalue = 0.7 | units.none
+        instance.parameters.reimers_mass_loss_coefficient = myvalue
+        instance.initialize_module_with_default_parameters()
+        self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         del instance

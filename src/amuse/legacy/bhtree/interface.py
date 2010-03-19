@@ -2,7 +2,6 @@ from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.support.lit import LiteratureRefs
-from amuse.support.data import binding
 
 
 class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):

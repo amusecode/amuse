@@ -3,8 +3,7 @@ from amuse.test import amusetest
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 from amuse.support.data import core
-from amuse.support.data import binding
-from amuse.support.data import attributes
+from amuse.support.interface import CodeInterface
 
 import numpy
 
@@ -82,49 +81,12 @@ class TestStars(TestBase):
 
 
 class TestParticlesWithBinding(TestBase):
-    class TestInterface(object):
-        attribute_definitions = [
-            attributes.AttributeDefinition(
-                name = "mass",
-                define_parameters = ["mass"],
-                setter = ("set_mass", ["mass"]),
-                getter = ("get_mass", ["mass"]),
-                description = "mass of a star",
-                unit = units.g,
-                default = 1 | units.g         
-            ),
-        ]
-        class InCodeAttributeStorage(binding.InCodeAttributeStorage):
-            new_particle_method = binding.NewParticleMethod(
-                "new_particle", 
-                (
-                    ("mass", "mass", units.g),
-                )
-            )
-            
-            getters = (
-                binding.ParticleGetAttributesMethod(
-                    "get_mass",
-                    (
-                        ("mass", "mass", units.g),
-                    )
-                ),
-            )
-            
-            
-            setters = (
-                binding.ParticleGetAttributesMethod(
-                    "set_mass",
-                    (
-                        ("mass", "mass", units.g),
-                    )
-                ),
-            )
+    class TestLegacyCode(object):
             
         def __init__(self):
-            self.particles = core.Particles()
-            self.particles._private.attribute_storage = self.InCodeAttributeStorage(self)
             self.masses = {}
+            
+        
             
         def get_mass(self, id):
             masses = []
@@ -132,18 +94,13 @@ class TestParticlesWithBinding(TestBase):
             for x in id:
                 masses.append(self.masses[x])
                 errors.append(0)
-            return {
-                "mass": masses,
-                "__result": errors,
-            }
+            return ( masses, errors, )
         
         def set_mass(self, id, mass):
             for i,m in zip(id,mass):
                 self.masses[i] = m
                 
-            return {
-                "__result": [0] * len(id),
-            }
+            return ( [0] * len(id),)
             
         def new_particle(self, mass):
             ids = []
@@ -170,6 +127,24 @@ class TestParticlesWithBinding(TestBase):
         set_state = set_mass
         get_state = get_mass
         
+    class TestInterface(CodeInterface):
+        
+        def __init__(self):
+            CodeInterface.__init__(self, TestParticlesWithBinding.TestLegacyCode())
+        
+        def define_methods(self, handler):
+            handler.add_method('get_mass',(handler.NO_UNIT,), (units.g, handler.ERROR_CODE))
+            handler.add_method('set_mass',(handler.NO_UNIT, units.g,), (handler.ERROR_CODE,))
+            handler.add_method('new_particle',(units.g,), (handler.INDEX, handler.ERROR_CODE))
+            handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+            handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        def define_particle_sets(self, handler):
+            handler.define_set('particles', 'id')
+            handler.set_new('particles', 'new_particle')
+            handler.set_delete('particles', 'delete_particle')
+            handler.add_setter('particles', 'set_mass')
+            handler.add_getter('particles', 'get_mass', names = ('mass',))
         
     
     def test1(self):
@@ -442,8 +417,8 @@ class TestParticlesWithChildren(TestBase):
         self.assertEquals(len(code1.particles), 1)
         self.assertEquals(len(code2.particles), 2)
         
-        code1.set_mass([0], [10000.0])
-        code2.set_mass([0], [9000.0])
+        code1.legacy_interface.set_mass([0], [10000.0])
+        code2.legacy_interface.set_mass([0], [9000.0])
         
         self.assertEquals(parent.mass , 4.0 | units.kg)
         self.assertEquals(child1.mass , 3.0 | units.kg)

@@ -1,6 +1,5 @@
 
 from amuse.support.data import parameters
-from amuse.support.data import binding
 from amuse.support.data import core
 from amuse.support.data import values
 from amuse.support.data import code_particles

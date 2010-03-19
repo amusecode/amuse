@@ -13,7 +13,6 @@ Reference documentation
    available-legacy-codes
    quantities_and_units
    particles
-   interface_binding
    directory-structure
    style_guide
    code_management

@@ -11,5 +11,4 @@ from amuse.support.data import attributes
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 
-from amuse.support.data.binding import *
 from amuse.support.interface import *

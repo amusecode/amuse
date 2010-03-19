@@ -2,7 +2,6 @@ from amuse.legacy import *
 from amuse.legacy.support.core import *
 
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
-from amuse.support.data import binding
 from amuse.support.data.core import Particles
 
 
