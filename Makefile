@@ -30,5 +30,9 @@ ctags:
 	find src -name "*.cc" | xargs ctags -a
 	find src -name "*.[cCfFhH]" | xargs ctags -a
 
+release:
+	make -C doc release
+	python setup.py sdist
+
 %.code:
 	$(PYTHON) setup.py code --code-name=$*
