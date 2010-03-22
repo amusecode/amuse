@@ -7,14 +7,16 @@
          double precision :: AMUSE_metallicity = 0.02d0
          double precision :: AMUSE_dmass = 0.1d0
          double precision :: AMUSE_mlo = -1.0d0
-!         double precision :: AMUSE_mhi = 1.7d0
-!         double precision :: AMUSE_mlo = 1.4d0
          double precision :: AMUSE_mhi = 2.0d0
          double precision :: AMUSE_max_age_stop_condition = 1.0d12
          double precision :: AMUSE_min_timestep_stop_condition = 1.0d-6
          integer :: AMUSE_max_iter_stop_condition = -1111
          double precision :: AMUSE_mixing_length_ratio = 2.0d0
          double precision :: AMUSE_semi_convection_efficiency = 0.0d0
+         integer :: AMUSE_RGB_wind_scheme = 0
+         integer :: AMUSE_AGB_wind_scheme = 0
+         double precision :: AMUSE_RGB_wind_efficiency = 0.0
+         double precision :: AMUSE_AGB_wind_efficiency = 0.0
          logical :: debugging = .true.
          contains
          logical function failed(str, ierr)
@@ -597,6 +599,78 @@
          AMUSE_min_timestep_stop_condition = AMUSE_value
          set_min_timestep_stop_condition = 0
       end function set_min_timestep_stop_condition
+
+! Return the wind (mass loss) scheme for RGB stars
+      integer function get_RGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_RGB_wind_scheme
+         implicit none
+         integer, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_RGB_wind_scheme
+         get_RGB_wind_scheme = 0
+      end function get_RGB_wind_scheme
+
+! Set the wind (mass loss) scheme for RGB stars
+      integer function set_RGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_RGB_wind_scheme
+         implicit none
+         integer, intent(in) :: AMUSE_value
+         AMUSE_RGB_wind_scheme = AMUSE_value
+         set_RGB_wind_scheme = 0
+      end function set_RGB_wind_scheme
+
+! Retrieve the current value of the wind (mass loss) efficiency for RGB stars
+      integer function get_RGB_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_RGB_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_RGB_wind_efficiency
+         get_RGB_wind_efficiency = 0
+      end function get_RGB_wind_efficiency
+
+! Set the current value of the wind (mass loss) efficiency for RGB stars
+      integer function set_RGB_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_RGB_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_RGB_wind_efficiency = AMUSE_value
+         set_RGB_wind_efficiency = 0
+      end function set_RGB_wind_efficiency
+
+! Return the wind (mass loss) scheme for AGB stars
+      integer function get_AGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_AGB_wind_scheme
+         implicit none
+         integer, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_AGB_wind_scheme
+         get_AGB_wind_scheme = 0
+      end function get_AGB_wind_scheme
+
+! Set the wind (mass loss) scheme for AGB stars
+      integer function set_AGB_wind_scheme(AMUSE_value)
+         use amuse_support, only: AMUSE_AGB_wind_scheme
+         implicit none
+         integer, intent(in) :: AMUSE_value
+         AMUSE_AGB_wind_scheme = AMUSE_value
+         set_AGB_wind_scheme = 0
+      end function set_AGB_wind_scheme
+
+! Retrieve the current value of the wind (mass loss) efficiency for AGB stars
+      integer function get_AGB_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_AGB_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_AGB_wind_efficiency
+         get_AGB_wind_efficiency = 0
+      end function get_AGB_wind_efficiency
+
+! Set the current value of the wind (mass loss) efficiency for AGB stars
+      integer function set_AGB_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_AGB_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_AGB_wind_efficiency = AMUSE_value
+         set_AGB_wind_efficiency = 0
+      end function set_AGB_wind_efficiency
 
 ! Retrieve the current value of the mixing length ratio
       integer function get_mixing_length_ratio(AMUSE_value)

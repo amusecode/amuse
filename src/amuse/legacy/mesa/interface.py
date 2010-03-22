@@ -17,8 +17,8 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     interesting case of Z=0. The supported stellar mass range is from 
     about 0.1 to 100 Msun.
     
-        .. [#] MESA is free software; you can redistribute it and/or modify
-        .. [#] ... it under the terms of the GNU General Library Public License.
+        .. [#] Please acknowledge the use of MESA in your papers. More details
+        .. [#] ... on MESA can be found at: http://mesa.sourceforge.net/.
     """
     def __init__(self):
         try:
@@ -287,6 +287,170 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             The code could not set the value.
         """
         return function
+    
+    @legacy_function
+    def get_RGB_wind_scheme():
+        """
+        Retrieve the current wind (mass loss) scheme for RGB stars:
+        No automatic wind (0)
+        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
+        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
+        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
+        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
+        Mattsson (5)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_scheme', dtype='int32', direction=function.OUT
+            , description="The current wind (mass loss) scheme for RGB stars of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_RGB_wind_scheme():
+        """
+        Set the new wind (mass loss) scheme for RGB stars:
+        No automatic wind (0)
+        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
+        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
+        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
+        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
+        Mattsson (5)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_scheme', dtype='int32', direction=function.IN
+            , description="The new wind (mass loss) scheme for RGB stars of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+    
+    @legacy_function
+    def get_RGB_wind_efficiency():
+        """
+        Retrieve the current mass loss efficiency for RGB stars.
+        Exact implementation depends on RGB_wind_scheme.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_efficiency', dtype='float64', direction=function.OUT
+            , description="The current value of the mass loss efficiency for RGB stars.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_RGB_wind_efficiency():
+        """
+        Set the value of the mass loss efficiency for RGB stars.
+        Exact implementation depends on RGB_wind_scheme.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('RGB_wind_efficiency', dtype='float64', direction=function.IN
+            , description="The new value of the mass loss efficiency for RGB stars.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+    
+    @legacy_function
+    def get_AGB_wind_scheme():
+        """
+        Retrieve the current wind (mass loss) scheme for AGB stars:
+        No automatic wind (0)
+        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
+        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
+        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
+        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
+        Mattsson (5)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_scheme', dtype='int32', direction=function.OUT
+            , description="The current wind (mass loss) scheme for AGB stars of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_AGB_wind_scheme():
+        """
+        Set the new wind (mass loss) scheme for AGB stars:
+        No automatic wind (0)
+        Reimers (1): e.g. see: Baschek, Kegel, Traving (eds), Springer, Berlin, 1975, p. 229.
+        Blocker (2): T. Blocker, A&A 297, 727-738 (1995)
+        de Jager (3): de Jager, C., Nieuwenhuijzen, H., & van der Hucht, K. A. 1988, A&AS, 72, 259
+        Dutch (4): Glebbeek et al 2009, Vink et al 2001, Nugis & Lamers 2000, de Jager 1990
+        Mattsson (5)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_scheme', dtype='int32', direction=function.IN
+            , description="The new wind (mass loss) scheme for AGB stars of this instance.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
+    
+    @legacy_function
+    def get_AGB_wind_efficiency():
+        """
+        Retrieve the current mass loss efficiency for AGB stars.
+        Exact implementation depends on AGB_wind_scheme.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_efficiency', dtype='float64', direction=function.OUT
+            , description="The current value of the mass loss efficiency for AGB stars.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was retrieved
+        -1 - ERROR
+            The code could not retrieve the value.
+        """
+        return function
+    
+    @legacy_function
+    def set_AGB_wind_efficiency():
+        """
+        Set the value of the mass loss efficiency for AGB stars.
+        Exact implementation depends on AGB_wind_scheme.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('AGB_wind_efficiency', dtype='float64', direction=function.IN
+            , description="The new value of the mass loss efficiency for AGB stars.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            The code could not set the value.
+        """
+        return function
 
 class MESA(CodeInterface):
     
@@ -351,6 +515,44 @@ class MESA(CodeInterface):
             "semi_convection_efficiency", 
             "The efficiency of semi-convection, after Heger, Langer, & Woosley 2000 (ApJ), "
                "which goes back to Langer, Sugimoto & Fricke 1983 (A&A).",
+            units.none, 
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_RGB_wind_scheme",
+            "set_RGB_wind_scheme",
+            "RGB_wind_scheme", 
+            "The mass loss scheme for RGB stars: none (0), Reimers (1), "
+                "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
+            units.none, 
+            0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_AGB_wind_scheme",
+            "set_AGB_wind_scheme",
+            "AGB_wind_scheme", 
+            "The mass loss scheme for AGB stars: none (0), Reimers (1), "
+                "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
+            units.none, 
+            0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_RGB_wind_efficiency",
+            "set_RGB_wind_efficiency",
+            "RGB_wind_efficiency", 
+            "The mass loss efficiency for RGB stars. Exact implementation depends on RGB_wind_scheme.",
+            units.none, 
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_AGB_wind_efficiency",
+            "set_AGB_wind_efficiency",
+            "AGB_wind_efficiency", 
+            "The mass loss efficiency for AGB stars. Exact implementation depends on AGB_wind_scheme.",
             units.none, 
             0.0 | units.none
         )

@@ -209,6 +209,53 @@ class TestMESAInterface(TestWithMPI):
         else:
             print "MESA was not built. Skipping test."
         del instance
+    
+    def test9(self):
+        print "Testing MESA wind parameters..."
+        instance = MESAInterface()
+        if instance.MESA_exists:
+            (value, error) = instance.get_RGB_wind_scheme()
+            self.assertEquals(0, error) 
+            self.assertEquals(0, value)
+            for x in range(6):
+                error = instance.set_RGB_wind_scheme(x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_RGB_wind_scheme()
+                self.assertEquals(0, error)
+                self.assertEquals(x, value)
+                
+            (value, error) = instance.get_RGB_wind_efficiency()
+            self.assertEquals(0, error)
+            self.assertEquals(0.0, value)
+            for x in [0.0, 0.1, 0.5, 1.0]:
+                error = instance.set_RGB_wind_efficiency(x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_RGB_wind_efficiency()
+                self.assertEquals(0, error)
+                self.assertEquals(x, value)
+                
+            (value, error) = instance.get_AGB_wind_scheme()
+            self.assertEquals(0, error) 
+            self.assertEquals(0, value)
+            for x in range(6):
+                error = instance.set_AGB_wind_scheme(x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_AGB_wind_scheme()
+                self.assertEquals(0, error)
+                self.assertEquals(x, value)
+                
+            (value, error) = instance.get_AGB_wind_efficiency()
+            self.assertEquals(0, error)
+            self.assertEquals(0.0, value)
+            for x in [0.0, 0.1, 0.5, 1.0]:
+                error = instance.set_AGB_wind_efficiency(x)
+                self.assertEquals(0, error)
+                (value, error) = instance.get_AGB_wind_efficiency()
+                self.assertEquals(0, error)
+                self.assertEquals(x, value)
+        else:
+            print "MESA was not built. Skipping test."
+        del instance
 
 
 class TestMESA(TestWithMPI):
