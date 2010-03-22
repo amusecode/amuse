@@ -129,6 +129,10 @@ C---  get array address
 
       ret = get_total_mass(total_mass)
       
+      Cx = 0.0
+      Cy = 0.0
+      Cz = 0.0
+
       DO counter = 1, N, 1
           Cx = Cx +m(counter)*x(1,counter)
           Cy = Cy +m(counter)*x(2,counter)
@@ -153,6 +157,10 @@ C---  get array address
 
       ret = get_total_mass(total_mass)
       
+      Cvx = 0.0
+      Cvy = 0.0
+      Cvz = 0.0
+
       DO counter = 1, N, 1
           Cvx = Cvx +m(counter)*v(1,counter)
           Cvy = Cvy +m(counter)*v(2,counter)
@@ -165,6 +173,7 @@ C---  get array address
 
       get_center_of_mass_velocity = 0
       END
+      
       
 
       FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz)
