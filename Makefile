@@ -9,7 +9,7 @@ all:
 docclean:
 	make -C doc clean
 	
-clean: docclean
+clean:
 	$(PYTHON) setup.py clean
 	
 tests:

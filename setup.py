@@ -39,8 +39,25 @@ Clean.sub_commands.append(('clean_python',None))
  
 setup(
     name = 'amuse',
-    version = '1.0',
+    version = '2.0',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
+    classifiers = [
+        'Development Status :: 4 - Beta',
+        'Environment :: Console',
+        'Intended Audience :: End Users/Desktop',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: MacOS :: MacOS X',
+        'Operating System :: POSIX',
+        'Programming Language :: Python :: 2.6',
+        'Programming Language :: C',
+        'Programming Language :: Fortran',
+        'Topic :: Scientific/Engineering :: Astronomy',
+    ],
+    url = 'http://www.amusecode.org/',
+    author_email = 'info@amusecode.org',
+    author = 'The Amuse Team',
 )
-	
+

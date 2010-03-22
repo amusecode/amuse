@@ -2,6 +2,9 @@ FC = mpif90
 
 SRC=src
 
+AMUSE_DIR?=../../../..
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 NOMPILIBS=$(SRC)/libcapreole.a
 MPILIBS=$(SRC)/libcapreole_mpi.a
 
@@ -58,15 +61,16 @@ glworker: glworker.f90 interface.o
 
 worker.f90: interface.py __init__.py
 	make -C src amuse_interface F90FLAGS1="$(FFLAGS)" FC="$(FC)"
-	../../../../bin/create_f90_worker.py $< $(CLASSNAME) > $@
+	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+
 
 worker_mpi.f90: interface.py __init__.py
 	make -C src amuse_interface_mpi F90FLAGS1="$(FFLAGS)" FC="$(FC)"
-	../../../../bin/create_f90_worker.py $< $(CLASSNAME) > $@
+	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
 glworker.f90: interface.py __init__.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	../../../../bin/create_f90_worker.py $< gl$(CLASSNAME) > $@
+	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
 __init__.py:
 	touch $@

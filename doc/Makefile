@@ -31,11 +31,21 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+	-rm -rf html
+	-rm -rf pdf
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+release: latexpdf
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
+	make -C _build/latex tar FMT=pdf
+	rm -Rf pdf
+	tar -xvf _build/latex/docs-pdf.tar 
+	mv docs-pdf pdf
+
 
 web:
 	$(SPHINXBUILD) -b web $(ALLSPHINXOPTS) $(BUILDDIR)/web

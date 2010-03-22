@@ -39,14 +39,17 @@ distclean:
 	make -C src distclean
 	/bin/rm -f *.pyc
 
-worker_code: mpi_code.f90
-	@make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN) >& make.log
+worker_code: mpi_code.f90 src/makefile.sys src/makefile.dep
+	@-mkdir src/modules
+	@-mkdir src/obj
+	@-mkdir src/lib
+	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN) >& make.log
 	@cp $(MODDIR)/twin_library_v2.mod .
 	@cp $(MODDIR)/mesh.mod .
-	@mpif90 $< -o $@ $(EVTWINLIB)
+	mpif90 $< -o $@ $(EVTWINLIB)
 
 mpi_code.f90: interface.py
-	@$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
+	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
 	
 .f.o: $<
 	$(FORTRAN) $(FFLAGS) -c -o $@ $< 

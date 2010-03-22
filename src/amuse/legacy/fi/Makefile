@@ -2,6 +2,9 @@ FC = mpif90
 
 SRC=src
 
+AMUSE_DIR?=../../../..
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
 LIBS=$(SRC)/libfi.a
 
 GLOBJECTS=$(SRC)/fthread.o $(SRC)/stars3d.o $(SRC)/libpt.a
@@ -56,10 +59,11 @@ glworker: glworker.f90 interface.o
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
 
 worker.f90: interface.py __init__.py
-	../../../../bin/create_f90_worker.py $< fi > $@
+	$(CODE_GENERATOR) --type=f90 $< fi -o $@
 
 glworker.f90: interface.py __init__.py
-	../../../../bin/create_f90_worker.py $< glfi > $@
+	$(CODE_GENERATOR) --type=f90 $< glfi -o $@
+
 
 __init__.py:
 	touch $@
