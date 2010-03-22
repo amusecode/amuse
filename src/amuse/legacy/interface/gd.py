@@ -611,7 +611,8 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         """
         Retrieve the center of mass (a point in space) of all particles.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True  
         function.addParameter('x', dtype='float64', direction=function.OUT,
             description = "The center of mass of the model")
         function.addParameter('y', dtype='float64', direction=function.OUT,
@@ -635,7 +636,8 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         Retrieve the velocity of the center of mass of all particles. This 
         velocity is mass weighted mean of the velocity of all particles.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True   
         function.addParameter('vx', dtype='float64', direction=function.OUT,
             description = "The mean velocity of the model")
         function.addParameter('vy', dtype='float64', direction=function.OUT,
