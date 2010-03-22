@@ -1,0 +1,20 @@
+include build.py
+include Makefile
+include README.txt
+
+include src/amuse/legacy/evtwin/src/modules
+
+recursive-include src *
+recursive-include test *
+recursive-include lib *
+recursive-include support *.py
+
+recursive-include doc/install *.* 
+recursive-include doc/tutorial *.*
+recursive-include doc/html *.*
+recursive-include doc/pdf *.pdf
+
+recursive-exclude src *.pyc *.o *~
+recursive-exclude test *.pyc *.o *~ ccache
+recursive-exclude lib *.pyc *.o *~ ccache *.a
+recursive-exclude src/amuse/legacy/mesa/src *
