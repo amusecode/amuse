@@ -73,6 +73,7 @@ def _typecode_to_datatype(typecode):
     raise Exception("{0} is not a valid typecode".format(typecode))
     
 
+
     
 class LegacyCall(object):
     
@@ -94,11 +95,7 @@ class LegacyCall(object):
     def __call__(self, *arguments_list, **keyword_arguments):
         keyword_arguments_for_the_mpi_channel = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
-        handle_as_array = False
-        for x in keyword_arguments_for_the_mpi_channel.values():
-           if x and hasattr(x[0],"__len__"):
-              handle_as_array = len(x[0]) > 0
-              break
+        handle_as_array = self.must_handle_as_array(keyword_arguments_for_the_mpi_channel)
               
         self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
         
@@ -107,6 +104,35 @@ class LegacyCall(object):
         except Exception, ex:
             raise Exception("Exception when calling legacy code '{0}', exeption was '{1}'".format(self.specification.name, ex))
         return self.converted_results(doubles, ints, floats, strings, handle_as_array)
+    
+    def async(self, *arguments_list, **keyword_arguments):
+        keyword_arguments_for_the_mpi_channel = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
+        
+        handle_as_array = self.must_handle_as_array(keyword_arguments_for_the_mpi_channel)
+              
+        self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
+        
+        request = self.interface.channel.nonblocking_recv_message(self.specification.id, handle_as_array)
+        
+        def handle_result(function):
+            try:
+                (doubles, ints, floats, strings) = function()
+            except Exception, ex:
+                raise Exception("Exception when calling legacy code '{0}', exeption was '{1}'".format(self.specification.name, ex))
+            return self.converted_results(doubles, ints, floats, strings, handle_as_array)
+            
+        request.add_result_handler(handle_result)
+        return request
+        
+        
+    
+    def must_handle_as_array(self, keyword_arguments):
+        result = False
+        for x in keyword_arguments.values():
+           if x and hasattr(x[0],"__len__"):
+              result = len(x[0]) > 0
+              break
+        return result
         
     """
     Convert results from an MPI message to a return value.
@@ -272,7 +298,7 @@ class legacy_function(object):
         name_of_defining_file = self.specification_function.func_code.co_filename
         if os.path.exists(name_of_defining_file):
             time_of_defining_file = os.stat(name_of_defining_file).st_mtime
-            return time_of_defining_file <= time_of_the_compiled_file
+            return True or time_of_defining_file <= time_of_the_compiled_file
         return True
         
 

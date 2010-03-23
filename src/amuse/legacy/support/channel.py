@@ -11,8 +11,67 @@ import struct
 from mpi4py import MPI
 from subprocess import Popen
 
+class ASyncRequest(object):
+        
+    def __init__(self, request, message,  comm, header):
+        self.request = request
+        self.message = message
+        self.header = header
+        self.comm = comm
+        self.is_finished = False
+        self.is_set = False
+        self._result = None
+        self.result_handlers = []
 
-
+    def wait(self):
+        if self.is_finished:
+            return
+            
+        self.request.Wait()
+        self.is_finished = True
+    
+    def is_result_available(self):
+        if self.is_finished:
+            return True
+            
+        self.is_finished = self.request.Test()
+        
+        return self.is_finished
+        
+    def add_result_handler(self, function):
+        self.result_handlers.append(function)
+    
+    def get_message(self):
+        return self.message
+        
+    def _set_result(self):
+        class CallingChain(object):
+            def __init__(self, outer, inner):
+                self.outer = outer
+                self.inner = inner
+                
+            def __call__(self):
+                return self.outer(self.inner)
+                
+        self.message.recieve_content(self.comm, self.header)
+        
+        current = self.get_message
+        for x in self.result_handlers:
+            current = CallingChain(x, current)
+        
+        self._result = current()
+        
+        self.is_set = True
+        
+    def result(self):
+        self.wait()
+        
+        if not self.is_set:
+            self._set_result()
+        
+        return self._result
+        
+        
 class Message(object):
     
     def __init__(self, tag = -1, length= 1):
@@ -27,7 +86,10 @@ class Message(object):
         header = numpy.zeros(6,  dtype='i')
         
         self.mpi_recieve(comm, [header, MPI.INT])
+    
+        self.recieve_content(comm, header)
         
+    def recieve_content(self, comm, header):
         self.tag = header[0]
         self.length = header[1]
         
@@ -40,7 +102,16 @@ class Message(object):
         self.ints = self.recieve_ints(comm, self.length, number_of_ints)
         self.floats = self.recieve_floats(comm, self.length, number_of_floats)
         self.strings = self.recieve_strings(comm, self.length, number_of_strings)
+        
+    def nonblocking_recieve(self, comm):
+        header = numpy.zeros(6,  dtype='i')
+        
+        request = self.mpi_nonblocking_recieve(comm, [header, MPI.INT])
+        
+        return ASyncRequest(request, self, comm,  header)
+        
     
+        
     def recieve_doubles(self, comm, length, total):
         if total > 0:
             result = numpy.empty(total * length,  dtype='d')
@@ -160,7 +231,9 @@ class ServerSideMessage(Message):
         
     def mpi_send(self, comm, array):
         comm.Bcast(array, root=MPI.ROOT)
-
+    
+    def mpi_nonblocking_recieve(self, comm, array):
+        return comm.Irecv(array,  source=0, tag=999)
 
 
 MAPPING = {}
@@ -266,8 +339,7 @@ class MessageChannel(object):
 
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         pass
-
-    
+        
     def recv_message(self, tag, handle_as_array = False):
         pass
         
@@ -306,6 +378,7 @@ class MpiChannel(MessageChannel):
             
         self.cached = None
         self.intercomm = None
+        self._is_inuse = False
         
     def start(self):
         fd_stdin = None
@@ -367,6 +440,9 @@ class MpiChannel(MessageChannel):
         
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+        if self.is_inuse():
+            raise Exception("You've tried to send a message to a code that is already handling a message, this is not correct")
+            
         length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in)
 
         message = ServerSideMessage(tag,length)
@@ -381,12 +457,13 @@ class MpiChannel(MessageChannel):
             message.ints = ints_in
             message.strings = chars_in
             
+        
         message.send(self.intercomm)
-        
-       
-        
+        self._is_inuse = True
         
     def recv_message(self, tag, handle_as_array):
+        
+        self._is_inuse = False
         
         message = ServerSideMessage()
         message.recieve(self.intercomm)
@@ -407,8 +484,39 @@ class MpiChannel(MessageChannel):
         
         return (doubles_result, ints_result, floats_result, strings_result)
         
+    def nonblocking_recv_message(self, tag, handle_as_array):
+        request = ServerSideMessage().nonblocking_recieve(self.intercomm)
+        
+        def handle_result(function):
+            self._is_inuse = False
+        
+            message = function()
+            
+            if message.tag < 0:
+                raise Exception("Not a valid message, message is not understood by legacy code")
+                
+            if message.length > 1 or handle_as_array:
+                doubles_result = unpack_array(message.doubles, message.length, 'float64')
+                floats_result = unpack_array(message.floats, message.length, 'float32')
+                ints_result = unpack_array(message.ints, message.length, 'int32')
+                strings_result = unpack_array(message.strings, message.length, 'string')
+            else:
+                doubles_result = message.doubles
+                floats_result = message.floats
+                ints_result = message.ints
+                strings_result = message.strings
+            
+            return (doubles_result, ints_result, floats_result, strings_result)
+
+        request.add_result_handler(handle_result)
+        
+        return request
+        
     def is_active(self):
         return self.intercomm is not None
+        
+    def is_inuse(self):
+        return self._is_inuse
         
 
 

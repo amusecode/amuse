@@ -83,6 +83,12 @@ class SSEParticles(Particles):
     def __init__(self, code_interface, storage = None):
         Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface 
+        self.add_calculated_attribute("temperature", calculate_effective_temperature)
+    
+    
+    def calculate_effective_temperature(self, luminosity, radius):
+        Stefan_Boltzmann_constant = 5.670400e-8 | units.J * units.s**-1 * units.m**-2 * units.K**-4
+        return ((luminosity/(4*numpy.pi*Stefan_Boltzmann_constant*radius**2))**.25).in_(units.K)
         
     def _set_particles(self, keys, attributes = [], values = []):
         if len(keys) == 0:

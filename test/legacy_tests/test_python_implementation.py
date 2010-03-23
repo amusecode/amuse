@@ -74,6 +74,15 @@ class ForTestingInterface(LegacyPythonInterface):
         function.can_handle_array = True
         function.id = 15
         return function    
+        
+    @legacy_function
+    def sleep():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('number_of_seconds', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = False
+        return function    
+
 
     
     
@@ -115,7 +124,11 @@ class ForTestingImplementation(object):
         string_inout1.value = string_inout1.value[::-1]
         string_inout2.value = string_inout2.value[::-1]
         return 0
-       
+        
+    def sleep(self, number_of_seconds):
+        import time
+        time.sleep(number_of_seconds)
+        return 0
 
 class TestInterface(TestWithMPI):
     
@@ -196,6 +209,7 @@ class TestInterface(TestWithMPI):
         answer, error = x.get_mass(1)
         self.assertEquals(error, 0)
         self.assertEquals(answer, 10.0)
+        x.stop()
         
         
         del x
@@ -212,6 +226,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(errors[0], 0)
         self.assertEquals(answer[0], 10.0)
         self.assertEquals(answer[1], 11.0)
+        x.stop()
         
         del x
         
@@ -221,6 +236,7 @@ class TestInterface(TestWithMPI):
         int_out, error = x.echo_int(20)
         self.assertEquals(error, 0)
         self.assertEquals(int_out, 20)
+        x.stop()
         
         del x
         
@@ -247,8 +263,7 @@ class TestInterface(TestWithMPI):
         string_out, error = x.echo_string("1234567")
         self.assertEquals(error, 0)
         self.assertEquals(string_out[0], "1234567")
-        
-        del x
+        x.stop()
         
     def test10(self):
         x = ForTestingInterface()
@@ -257,9 +272,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(len(string_out), 2)
         self.assertEquals(string_out[0], "aaaaa")
         self.assertEquals(string_out[1], "bbbb")
-        
-        
-        del x
+        x.stop()
         
     def test11(self):
         x = ForTestingInterface()
@@ -268,9 +281,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(len(string_out), 2)
         self.assertEquals(string_out[0], "")
         self.assertEquals(string_out[1], "bbbb")
-        
-        
-        del x
+        x.stop()
         
     def test12(self):
         x = ForTestingInterface()
@@ -278,7 +289,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error, 0)
         self.assertEquals(str1_out[0], "cba")
         self.assertEquals(str2_out[0], "fed")
-        del x
+        x.stop()
         
         
     def test13(self):
@@ -290,5 +301,42 @@ class TestInterface(TestWithMPI):
         self.assertEquals(str1_out[1], "fed")
         self.assertEquals(str2_out[0], "ihg")
         self.assertEquals(str2_out[1], "lkj")
-        del x
+        x.stop()
         
+    def test14(self):
+        x = ForTestingInterface()
+        result = x.sleep(0.01)
+        self.assertEquals(result, 0)
+        request = x.sleep.async(0.01)
+        request.wait()
+        result = request.result()
+        self.assertEquals(result, 0)
+        x.stop()
+        
+    def test15(self):
+        x = ForTestingInterface()
+        y = ForTestingInterface()
+        request1 = x.sleep.async(0.2)
+        request2 = y.sleep.async(0.4)
+        self.assertFalse(request1.is_result_available())
+        self.assertFalse(request2.is_result_available())
+        request2.wait()
+        self.assertTrue(request1.is_result_available())
+        self.assertTrue(request2.is_result_available())
+        
+        self.assertEquals(request1.result(), 0)
+        self.assertEquals(request2.result(), 0)
+    
+        x.stop()
+    
+    def test16(self):
+        x = ForTestingInterface()
+        request1 = x.sleep.async(0.4)
+        self.assertRaises(Exception, lambda : x.sleep(0.01))
+        request1.wait()
+        self.assertRaises(Exception, lambda : x.sleep(0.01))
+        request1.result()
+        x.sleep(0.01)
+        self.assertTrue(request1.is_result_available())
+    
+        x.stop()
