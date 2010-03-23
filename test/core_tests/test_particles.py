@@ -1,6 +1,7 @@
 from amuse.test import amusetest
 
 from amuse.support.units import units
+from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.data import core
 from amuse.support.interface import CodeInterface
@@ -32,6 +33,40 @@ class TestParticles(TestBase):
         particles.mass = [1,1]|units.kg
         heavy = particles.select(lambda m: m>1|units.kg, ["mass"])
         self.assertTrue(heavy.is_empty())
+        
+    def test3(self):
+        particles = core.Particles(2)
+        for i in range(3):
+            particles.mass = (i * 2.0) | units.kg
+            particles.savepoint((i + 1) * 1.0 | units.s)
+        
+        state0 = particles.get_state_at_timestamp(2.0 | units.s)
+        self.assertEquals(state0[0].mass , 2.0 | units.kg)
+        state0 = particles.get_state_at_timestamp(2.4 | units.s)
+        self.assertEquals(state0[0].mass , 2.0 | units.kg)
+        state0 = particles.get_state_at_timestamp(2.6 | units.s)
+        self.assertEquals(state0[0].mass , 4.0 | units.kg)
+        
+    
+    def test4(self):
+        
+        particles = core.Particles(2)
+        particles.mass = 1.0 | units.kg
+        particles.vy = 1.0 | units.m / units.s
+        particles.vx = 0.0 | units.m / units.s
+        particles.vz = 0.0 | units.m / units.s
+        particles.x = [0.0, 1.0] | units.m
+        particles.y = 0.0 | units.m
+        particles.z = 0.0 | units.m
+        self.assertEquals(particles.kinetic_energy(), 1.0 | units.J)
+        self.assertEquals(particles.potential_energy(), -1.0 * constants.G * (1.0 | units.kg ** 2 / units.m))
+        self.assertEquals(particles.center_of_mass().x , 0.5 | units.m)
+        self.assertEquals(particles.center_of_mass().y , 0.0 | units.m)
+        self.assertEquals(particles.center_of_mass().z , 0.0 | units.m)
+        self.assertEquals(particles.center_of_mass_velocity().x , 0.0 | units.m / units.s)
+        self.assertEquals(particles.center_of_mass_velocity().y , 1.0 | units.m / units.s)
+        self.assertEquals(particles.center_of_mass_velocity().z , 0.0 | units.m / units.s)
+
         
 class TestStars(TestBase):
 
@@ -85,8 +120,6 @@ class TestParticlesWithBinding(TestBase):
             
         def __init__(self):
             self.masses = {}
-            
-        
             
         def get_mass(self, id):
             masses = []

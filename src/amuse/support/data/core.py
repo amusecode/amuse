@@ -1337,6 +1337,7 @@ class Particles(AbstractParticleSet):
         instance._private.timestamp = timestamp
         instance._private.previous = self._private.previous
         self._private.previous = instance
+        return instance
     
     def get_timestamp(self):
         return self._private.timestamp
@@ -1346,7 +1347,30 @@ class Particles(AbstractParticleSet):
         while not current is None:
             yield current
             current = current._private.previous
+            
     
+    def get_state_at_timestamp(self, timestamp):
+        previous_timestamp = None
+        states_and_distances = []
+        for state in self.iter_history():
+            timestamp_of_state = state.get_timestamp()
+            if timestamp_of_state is None:
+                continue
+            distance = abs(timestamp_of_state - timestamp)
+            states_and_distances.append((state, distance,))
+        
+        if len(states_and_distances) == 0:
+            raise Exception("You asked for a state at timestamp '{0}', but the set does not have any saved states so this state cannot be returned")
+            
+        accompanying_state, min_distance = states_and_distances[0]
+        for state, distance  in states_and_distances:
+            print distance, min_distance, state.get_timestamp()
+            if distance < min_distance:
+                min_distance = distance
+                accompanying_state = state
+        
+        return accompanying_state
+            
     def previous_state(self):
         return self._private.previous
         
@@ -1971,7 +1995,7 @@ def potential_energy(particles, smoothing_length_squared = 0 | units.m * units.m
     
     sum_of_energies = 0 | units.J
     
-    for i in range(len(self)):
+    for i in range(len(particles)):
        x = x_vector[i]
        y = y_vector[i]
        z = z_vector[i]
