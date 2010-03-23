@@ -7,7 +7,11 @@ Currently supported Legacy Codes
 Introduction
 ~~~~~~~~~~~~
 
-Here we provide an overview of all currently supported legacy codes in AMUSE, along with a concise explanation of how each code works. This document serves as an initial guide in finding the code with the highest applicability to a specific astrophysical problem. The supported legacy codes have been sorted according to their astrophysical domain:
+Here we provide an overview of all currently supported legacy codes in AMUSE, 
+along with a concise explanation of how each code works. 
+This document serves as an initial guide in finding the code with the highest 
+applicability to a specific astrophysical problem. The supported legacy codes 
+have been sorted according to their astrophysical domain:
 
 * :ref:`Dynamics`
 * :ref:`Evolution`
@@ -28,43 +32,218 @@ Stellar Dynamics
 * smallN_
 
 
+General
+-------
+The general parameters and methods for the gravitational dynamics are described in 
+:doc:`../tutorial/code_interface`. 
+Here we describe the exceptions for the specific codes under "Specifics".
+
 .. _bhtree:
 
 bhtree
 ------
 
-An implementation of the Barnes & Hut tree code by Jun Makino. Suitable for more than 100 particles, does work.
+N-body integration module. An implementation of the Barnes & Hut tree code [#]_ 
+by Jun Makino  `BHTree <http://www.artcompsci.org/~makino/softwares/C++tree/index.html>`_. 
+
+Specifics
+#########
+
+Parameters
+^^^^^^^^^^
+
+* Openings angle for building the tree, between 0 and 1::
+    
+      openings_angle
+
+* Smoothing parameter, must be > 0
+      
+      attribute::
+        
+          epsilon_squared, e.g.
+    
+      example
+
+      .. code-block:: python							       	    
+
+        >>> from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree	       
+        >>> from amuse.support.units import nbody_system			       	      
+        >>> instance = BHTree(BHTree.NBODY)					       
+        >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2     	    
+
+* constant timestep for iteration::
+ 
+      timestep
+
+Methods
+^^^^^^^
+
+* set_time_step. 
+    Note that all codes have get_time_step.::
+
+      set_time_step()
+
+.. [#] Barnes, J. & Hut, P. 1986. *Nature* **324**, 446.
 
 .. _hermite0:
 
 hermite0
 --------
 
-N-body integration module with shared but variable time step
+Time-symmetric N-body integration module with shared but variable time step
 (the same for all particles but its size changing in time),
-using the Hermite integration scheme.
+using the Hermite integration scheme [#]_. See also : `ACS <http://www.artcompsci.org/>`_
 
-* Hut, P., Makino, J. & McMillan, S., 1995, ApJL 443, L93
+Specifics
+#########
+
+Parameters
+^^^^^^^^^^
+
+* smoothing parameter for gravity calculations, can be 0.::
+
+      epsilon_squared
+
+* constant timestep for iteration.::
+
+      timestep
+
+Methods
+^^^^^^^
+
+* set_time_step. 
+    Note that all codes have get_time_step.
+
+.. [#] Hut, P., Makino, J. & McMillan, S., 1995, *ApJL* **443**, L93.
 
 .. _phiGRAPE:
 
 phiGRAPE
 --------
 
+phiGRAPE is a direct N-body code optimized for running on a parallel
+GRAPE cluster. See Harfst et al. [#]_ for more details.  The
+Amusean version is capable of working on other platforms as well by
+using interfaces that mimic GRAPE hardware.
+
+* Sapporo
+    Sapporo is a library that mimics the behaviour of
+    GRAPE hardware and uses the GPU to execute the force calculations [#]_. 
+
+* g6
+    Library which mimics the behavior of GRAPE and uses the
+    CPU. Lowest on hw requirements. 
+
+* phantom GRAPE
+    Library which mimicks the behavior of GRAPE and uses the
+    CPU. Fine tuned for x86_64 [#]_. `phantom Grape <http://grape.mtk.nao.ac.jp/~nitadori/phantom/>`_
+    
+
+Specifics
+#########
+
+Hardware modes
+^^^^^^^^^^^^^^
+
+Parameters
+^^^^^^^^^^
+
+Amuse tries to build all implementations at compile time. In the phiGRAPE interface
+module the preferred mode can be selected whith the mode parameter:
+
+* MODE_G6LIB = 'g6lib'
+    Just make it work, no optimizations, no special hw requirements
+* MODE_GPU   = 'gpu'
+    Using sapporo, CUDA needed.
+* MODE_GRAPE = 'grape'
+    Using GRAPE hw.
+* MODE_PG    = 'pg'
+    Phantom grape, optimized for x86_64 processors
+
+.. code-block:: python
+
+   >>> from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
+   >>> instance = PhiGRAPE(PhiGRAPE.NBODY, PhiGRAPEInterface.MODE_GPU)
+
+The default is **MODE_G6LIB**.
+
+* timestep parameter::
+       
+      timestep_parameter
+
+  .. code-block:: python
+         
+      >>> instance.timestep_parameter = 0.1 |nbody_system.time
+
+  etc...	 	 
+
+* parameter to determine the initial timestep::
+   
+      initial_timestep_parameter      
+
+ 
+Methods
+^^^^^^^
+
+.. [#]  Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2006, *NewAstron.* **12**, 357-377. 
+.. [#]  Gaburov, E., Harfst, S., Portegies Zwart, S. 2009, *NewAstron.* **14** 630-637.
+.. [#]  Nitadori, K, Makino, J., Hut, P. 2006, *NewAstron.* **12** 169-181.
 
 .. _twobody:
 
 twobody
 -------
 
-Semi analytical code based on Kepler. The particle set provided has lenght one or two. If one particle is given, the mass is assigned to 
-a particle in the origin, the phase-coordinates to the other particle. This is usefull when... . 
+Semi analytical code based on Kepler [#]_. The particle set provided has length one or two. If one particle is given, the mass is assigned to 
+a particle in the origin and the phase-coordinates are assigned to the other particle. This is usefull when *m1* >> *m2*. 
+
+Specifics
+#########
+
+Parameters
+^^^^^^^^^^
+
+Methods
+^^^^^^^
+
+.. [#]  Bate, R.R, Mueller, D.D., White, J.E. "FUNDAMENTALS OF ASTRODYNAMICS" *Dover* 0-486-60061-0
 
 .. _smallN:
 
 smallN
 ------
 
+Interface to the Kira Small-N Integrator and Kepler modules from
+Starlab.  http://www.ids.ias.edu/~starlab/
+
+You will need to download Starlab from the above site, make it, install      	     
+it, and then set the STARLAB_INSTALL_PATH variable to be equal to the	       
+installation directory (typically something like ~/starlab/usr).	       	    
+        
+Starlab is available under the GNU General Public Licence (version 2),    	  
+and is developed by:						       	     
+    * Piet Hut							       	   
+    * Steve McMillan						       	     
+    * Jun Makino							       	 
+    * Simon Portegies Zwart					       	      
+Other Starlab Contributors:					       	      
+    * Douglas Heggie						       	     
+    * Kimberly Engle						       	     
+    * Peter Teuben 						       	      
+
+Specifics
+#########
+
+Parameters
+^^^^^^^^^^
+
+* The number of particles being managed by the SmallN module::
+  
+    number_of_particles
+
+
+Methods
+^^^^^^^
 
 .. _Evolution:
 
