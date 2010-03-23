@@ -5,6 +5,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy.support import python_code
 from amuse.legacy.support import channel
+from amuse.support.interface import CodeInterface
 
 from legacy_support import TestWithMPI
 
@@ -129,6 +130,14 @@ class ForTestingImplementation(object):
         import time
         time.sleep(number_of_seconds)
         return 0
+        
+class ForTesting(CodeInterface):
+    
+    def __init__(self):
+        CodeInterface.__init__(self, ForTestingInterface())
+    
+    def define_methods(self, object):
+        object.add_method("sleep", (units.s,), (object.ERROR_CODE,))
 
 class TestInterface(TestWithMPI):
     
@@ -338,5 +347,14 @@ class TestInterface(TestWithMPI):
         request1.result()
         x.sleep(0.01)
         self.assertTrue(request1.is_result_available())
+        x.stop()
     
+    def test17(self):
+        x = ForTesting()
+        self.assertTrue(x.sleep.is_async_supported)
+        
+        request= x.sleep.async(0.2 | units.s)
+        request.wait()
+        result = request.result()
+        self.assertEquals(result, [])
         x.stop()

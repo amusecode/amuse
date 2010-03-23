@@ -17,6 +17,15 @@ class AbstractCodeMethodWrapper(object):
         return hasattr(self.method, 'method_input_argument_names')
     
     @late
+    def is_async_supported(self):
+        if hasattr(self.method, 'is_async_supported'):
+            return self.method.is_async_supported
+        elif self.method_is_legacy:
+            return True
+        else:
+            return False
+            
+    @late
     def legacy_specification(self):
         if self.method_is_code:
             return self.method.legacy_specification
@@ -80,6 +89,32 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         self.postcall(object)
         
         return result
+    
+    def async(self, *list_arguments, **keyword_arguments):
+        if not self.is_async_supported:
+            raise Exception("async call is not supported for this method")
+        
+        
+        object = self.precall()
+        
+        list_arguments, keyword_arguments = self.convert_arguments(list_arguments, keyword_arguments)
+        
+        request = self.method.async(*list_arguments, **keyword_arguments)
+        
+        def handle_result(function):
+            
+            result = function()
+            
+            result = self.convert_result(result)
+        
+            self.postcall(object)
+            
+            return result
+        
+        request.add_result_handler(handle_result)
+        
+        return request
+        
         
     def convert_arguments(self, list_arguments, keyword_arguments):
         return self.definition.convert_arguments(self, list_arguments, keyword_arguments)

@@ -78,17 +78,22 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         instance.parameters.epsilon_squared = 100.0 | units.m ** 2
         self.assertAlmostEquals(instance.parameters.epsilon_squared.value_in(units.m**2),  100.0, 6)
         self.assertAlmostEquals(original.eps,  4.0, 6)
-        
-        
-        
+
+    def test4(self):
+        original = self.TestClass()
+        instance = interface.CodeInterface(original)
+
+        handler = instance.get_handler('METHOD')
+        handler.add_method('add_to_length', (units.m,), units.m, public_name = 'add_10')
+           
+        self.assertFalse(instance.add_10.is_async_supported)
 
 class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     class TestClass(object):
        
         def add_10_to_length(self, length):
             return length + 10
-            
-       
+
         def get_one(self):
             return 1.0, 0.0
             
@@ -102,8 +107,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         original = self.TestClass()
         
         instance = interface.CodeInterface(original)
-        
-        
+
         handler = instance.get_handler('METHOD')
         handler.add_method('add_10_to_length', (units.m,), units.m)
         
@@ -176,7 +180,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         except:
             
             pass
-        
+            
         
         
         
