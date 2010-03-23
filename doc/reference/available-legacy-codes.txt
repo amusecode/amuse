@@ -64,12 +64,12 @@ Parameters
     
       example
 
-      .. code-block:: python							       	    
+      .. code-block:: python
 
-        >>> from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree	       
-        >>> from amuse.support.units import nbody_system			       	      
-        >>> instance = BHTree(BHTree.NBODY)					       
-        >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2     	    
+        >>> from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
+        >>> from amuse.support.units import nbody_system
+        >>> instance = BHTree(BHTree.NBODY)
+        >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
 
 * constant timestep for iteration::
  
@@ -175,7 +175,7 @@ The default is **MODE_G6LIB**.
          
       >>> instance.timestep_parameter = 0.1 |nbody_system.time
 
-  etc...	 	 
+  etc...
 
 * parameter to determine the initial timestep::
    
@@ -216,20 +216,20 @@ smallN
 Interface to the Kira Small-N Integrator and Kepler modules from
 Starlab.  http://www.ids.ias.edu/~starlab/
 
-You will need to download Starlab from the above site, make it, install      	     
-it, and then set the STARLAB_INSTALL_PATH variable to be equal to the	       
-installation directory (typically something like ~/starlab/usr).	       	    
+You will need to download Starlab from the above site, make it, install
+it, and then set the STARLAB_INSTALL_PATH variable to be equal to the
+installation directory (typically something like ~/starlab/usr). 
         
-Starlab is available under the GNU General Public Licence (version 2),    	  
-and is developed by:						       	     
-    * Piet Hut							       	   
-    * Steve McMillan						       	     
-    * Jun Makino							       	 
-    * Simon Portegies Zwart					       	      
-Other Starlab Contributors:					       	      
-    * Douglas Heggie						       	     
-    * Kimberly Engle						       	     
-    * Peter Teuben 						       	      
+Starlab is available under the GNU General Public Licence (version 2),
+and is developed by:
+    * Piet Hut
+    * Steve McMillan
+    * Jun Makino
+    * Simon Portegies Zwart
+Other Starlab Contributors:
+    * Douglas Heggie
+    * Kimberly Engle
+    * Peter Teuben
 
 Specifics
 #########
