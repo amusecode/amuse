@@ -166,7 +166,7 @@ class TestMPIInterface(TestWithMPI):
                 self.assertEqual(float.fromhex(expected_32bit[x]),getattr(updated_state, x))
         else:
             for x in expected:
-                self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
+                self.assertAlmostRelativeEqual(float.fromhex(expected[x]),getattr(updated_state, x),15)
             
         self.assertEquals(updated_state.age, 1e-06)
         dt = sse.get_time_step(updated_state.stellar_type,

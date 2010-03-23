@@ -154,7 +154,7 @@ class TestMPIInterface(TestWithMPI):
         else:
             for x in expected:
                 #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
-                self.assertEqual(float.fromhex(expected[x]),getattr(updated_state, x))
+                self.assertAlmostRelativeEqual(float.fromhex(expected[x]),getattr(updated_state, x),15)
             
         self.assertEquals(updated_state.end_time, 1e-06)
         dt = instance.legacy_interface.get_time_step(updated_state.type1, updated_state.type2,
