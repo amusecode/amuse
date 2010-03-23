@@ -38,8 +38,6 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
         stellar_evolution = EVtwin()
     elif stellar_evolution_code == 3:
         stellar_evolution = MESA()
-#        stellar_evolution.parameters.metallicity = 0.0 | units.none
-        stellar_evolution.parameters.max_iter_stop_condition = 10000 | units.none
     else:
         print "Unknown stellar_evolution_code: ", stellar_evolution_code
         return
@@ -49,17 +47,13 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
         " stars with\nvarying masses will be simulated..."
     
     for j in range(number_of_stars):
-        stars = core.Stars(1)
-        star=stars[0]
+        star=core.Particle()
         star.mass = masses[j]
         star.radius = 0.0 | units.RSun
-        stars.add_calculated_attribute("temperature",calculate_effective_temperature)
         print "Created new star with mass: ", star.mass
 
-        stellar_evolution.setup_particles(stars)
+        star = stellar_evolution.particles.add_particle(star)
         stellar_evolution.initialize_stars()
-        from_code_to_model = stellar_evolution.particles.new_channel_to(stars)
-        from_code_to_model.copy()
     
         luminosity_at_time   = [] | units.LSun
         temperature_at_time  = [] | units.K
@@ -74,12 +68,18 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
             previous_age = star.age
             try:
                 stellar_evolution.evolve_model()
-                from_code_to_model.copy()
                 stopped_evolving = (star.age == previous_age) # Check whether the age has stopped increasing
             except Exception as ex:
                 print str(ex)
                 stopped_evolving = True
-        if stopped_evolving: print "Age did not increase during timestep. Aborted evolving..."
+        if stopped_evolving:
+            print "Age did not increase during timestep. Aborted evolving..."
+        else:
+            stellar_type_at_time.append(star.stellar_type)
+            # Fudged: final stellar type annotation at previous (Teff, L);
+            # BHs and neutron stars would otherwise fall off the chart.
+            luminosity_at_time.append(luminosity_at_time[len(luminosity_at_time)-1])
+            temperature_at_time.append(temperature_at_time[len(temperature_at_time)-1])
         print " ... evolved model to t = " + str(star.age.as_quantity_in(units.Myr))
         print "Star has now become a: ", star.stellar_type, "(stellar_type: "+str(star.stellar_type.value_in(units.stellar_type))+")"
         print
@@ -88,7 +88,7 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
         all_tracks_stellar_type.append(stellar_type_at_time)
         
 #       Remove the star before creating the next one. See comments at the top.
-        stellar_evolution.particles.remove_particles(stars)
+        stellar_evolution.particles.remove_particle(star)
 
     stellar_evolution.print_refs()
     del stellar_evolution
@@ -165,10 +165,6 @@ def plot_HR_diagram(number_of_stars, masses, all_tracks_luminosity, all_tracks_t
         
     print
     print "All done!"        
-
-def calculate_effective_temperature(luminosity,radius):
-    Stefan_Boltzmann_constant = 5.670400e-8 | units.J * units.s**-1 * units.m**-2 * units.K**-4
-    return ((luminosity/(4*numpy.pi*Stefan_Boltzmann_constant*radius**2))**.25).in_(units.K)
 
 def test_simulate_one_star():
     assert is_mpd_running()

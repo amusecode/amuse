@@ -102,7 +102,6 @@ class SSEParticles(Particles):
             "stellar_type" : 1 | units.stellar_type,
             "radius": 0 | units.RSun,
             "luminosity":  0 | units.LSun,
-#            "temperature": 0 | units.K,
             "core_mass": 0 | units.MSun,
             "core_radius": 0 | units.RSun,
             "envelope_mass": 0 | units.MSun,

@@ -58,16 +58,11 @@ def simulate_stellar_evolution(number_of_stars = 1000, end_time = 1000.0 | units
     stars = core.Stars(number_of_stars)
     stars.mass = salpeter_masses
     print stars
-    if not stellar_evolution_code == 3:
-        stars.add_calculated_attribute("temperature",calculate_effective_temperature)
-    stellar_evolution.setup_particles(stars)
+    stars = stellar_evolution.particles.add_particles(stars)
     stellar_evolution.initialize_stars()
-    from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(stars)
-    from_stellar_evolution_to_model.copy()
 
     print "Start evolving..."
     stellar_evolution.evolve_model(end_time)
-    from_stellar_evolution_to_model.copy()
 
     print "Evolved model successfully."
     temperatures = stars.temperature
@@ -105,10 +100,6 @@ def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time,
     else:
         print "Unable to produce plot: couldn't find matplotlib."
         
-def calculate_effective_temperature(luminosity,radius):
-    Stefan_Boltzmann_constant = 5.670400e-8 | units.J * units.s**-1 * units.m**-2 * units.K**-4
-    return ((luminosity/(4*numpy.pi*Stefan_Boltzmann_constant*radius**2))**.25).in_(units.K)
-
 def test_simulate_short():
     assert is_mpd_running()
     test_results_path = path_to_test_results.get_path_to_test_results()
