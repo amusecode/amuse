@@ -698,6 +698,7 @@ class EVtwin(CodeInterface):
         object.add_getter('particles', 'get_time_step', names = ('time_step',))
         object.add_getter('particles', 'get_spin', names = ('spin',))
         object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
+        object.add_getter('particles', 'get_temperature',names = ('temperature',))
         
         object.add_method('particles', 'evolve', 'evolve_one_step')
     
@@ -736,16 +737,16 @@ class EVtwin(CodeInterface):
         object.add_method(
             "new_particle", 
             (units.MSun), #, units.day, units.RSun),
-            (object.NO_UNIT, object.ERROR_CODE)
+            (object.INDEX, object.ERROR_CODE)
         )
         object.add_method(
             "delete_star", 
-            (object.NO_UNIT,), 
+            (object.INDEX,), 
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_mass", 
-            (object.NO_UNIT,), 
+            (object.INDEX,), 
             (units.MSun, object.ERROR_CODE,)
         )
         object.add_method(
@@ -755,27 +756,32 @@ class EVtwin(CodeInterface):
         )
         object.add_method(
             "get_stellar_type", 
-            (object.NO_UNIT,), 
+            (object.INDEX,), 
             (units.stellar_type, object.ERROR_CODE,)
         )
         object.add_method(
             "get_age", 
-            (object.NO_UNIT,), 
+            (object.INDEX,), 
             (units.yr, object.ERROR_CODE,)
         )
         object.add_method(
             "get_luminosity", 
-            (object.NO_UNIT,), 
+            (object.INDEX,), 
             (units.LSun, object.ERROR_CODE,)
         )
         object.add_method(
+            "get_temperature", 
+            (object.INDEX,), 
+            (units.K, object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_time_step", 
-            (object.NO_UNIT,), 
+            (object.INDEX,), 
             (units.yr, object.ERROR_CODE,)
         )
         object.add_method(
             "get_spin", 
-            (object.NO_UNIT,), 
+            (object.INDEX,), 
             (units.day, object.ERROR_CODE,)
         )
         

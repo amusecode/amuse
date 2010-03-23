@@ -20,6 +20,7 @@ from amuse.support.units.units import *
 ADDITIONAL_DERIVED_CONSTANTS = \
 """
 hbar=h/(2.0*numpy.pi)
+four_pi_stefan_boltzmann = 4.0*numpy.pi*Stefan_hyphen_Boltzmann_constant
 mu0=4*numpy.pi*1.e-7 | N/A**2
 eps0=mu0**-1*c**-2
 #machine constants

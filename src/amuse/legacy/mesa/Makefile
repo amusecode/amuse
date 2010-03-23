@@ -67,12 +67,12 @@ MESA_rebuild:
 	./build_mesa.py rebuild
 
 worker_code:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
-	@mpif90 $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
+	mpif90 $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
 
 worker_code.f90: interface.py
 #	@$(CODE_GENERATOR) --type=f90 interface.py MESA -o $@
-	@$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@
+	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@
 
 MESA_code.o: MESA_code.f
-	@make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FFLAGS)"
-	@$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<
+	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FFLAGS)"
+	$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<

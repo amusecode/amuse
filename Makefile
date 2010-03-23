@@ -4,7 +4,7 @@ PYTHON=python
 export PYTHONPATH := $(PWD)/src:$(PWD)/test	
 
 all:
-	@-mkdir test_results
+	@-mkdir -p test_results
 	$(PYTHON) setup.py build
 
 docclean:

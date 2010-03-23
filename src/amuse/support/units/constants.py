@@ -316,6 +316,7 @@ triton_hyphen_proton_mass_ratio = 2.9937170309 | none
 weak_mixing_angle = 0.22255 | none
 #DERIVED CONSTANTS***********************************************
 hbar=h/(2.0*numpy.pi)
+four_pi_stefan_boltzmann = 4.0*numpy.pi*Stefan_hyphen_Boltzmann_constant
 mu0=4*numpy.pi*1.e-7 | N/A**2
 eps0=mu0**-1*c**-2
 #machine constants

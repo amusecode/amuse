@@ -579,6 +579,7 @@ class MESA(CodeInterface):
         object.add_errorcode(-11, 'Evolve terminated: Unspecified stop condition reached.')
         object.add_errorcode(-12, 'Evolve terminated: Maximum age reached.')
         object.add_errorcode(-13, 'Evolve terminated: Maximum number of iterations reached.')
+        object.add_errorcode(-14, 'Evolve terminated: Maximum number of backups reached.')
     
     def define_methods(self, object):
         

@@ -465,11 +465,12 @@
          if (result == backup) result = star_do1_backup(AMUSE_id)
          if (result == terminate) then
             evolve = -11 ! Unspecified stop condition reached, or:
-            if (result_reason == result_reason_normal) then
-               if (s% max_model_number > 0 .and. s% model_number >= &
-                  s% max_model_number) evolve = -13 ! max iterations reached
-               if (s% star_age >= s% max_age) evolve = -12 ! max_age reached
-            end if
+            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+               evolve = -14 ! max backups reached
+            endif
+            if (s% max_model_number > 0 .and. s% model_number >= &
+               s% max_model_number) evolve = -13 ! max iterations reached
+            if (s% star_age >= s% max_age) evolve = -12 ! max_age reached
             return
          end if
          first_try = .false.

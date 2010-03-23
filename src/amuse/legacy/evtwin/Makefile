@@ -40,9 +40,9 @@ distclean:
 	/bin/rm -f *.pyc
 
 worker_code: mpi_code.f90 src/makefile.sys src/makefile.dep
-	@-mkdir src/modules
-	@-mkdir src/obj
-	@-mkdir src/lib
+	@-mkdir -p src/modules
+	@-mkdir -p src/obj
+	@-mkdir -p src/lib
 	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN) >& make.log
 	@cp $(MODDIR)/twin_library_v2.mod .
 	@cp $(MODDIR)/mesh.mod .

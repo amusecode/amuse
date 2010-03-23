@@ -322,6 +322,7 @@ class TestSSE(TestWithMPI):
         sse.evolve_model(120.1 | units.Myr)
                 
         self.assertAlmostEqual(sse.particles[0].mass.value_in(units.MSun), 4.932, 3)
+        self.assertAlmostEqual(sse.particles[0].temperature.value_in(units.K), 4221., 0)
          
         del sse
         
@@ -436,7 +437,6 @@ class TestSSE(TestWithMPI):
         self.assertEquals(stars[0].age, stars[1].age)
         print "Solved: SSE_muse_interface.f sets initial_mass to mass when necessary."
     
-    
     def test8(self):
         instance = mpi_interface.SSE()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
@@ -454,3 +454,17 @@ class TestSSE(TestWithMPI):
         instance.initialize_module_with_default_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         del instance
+        
+    def test9(self):
+        print "Test: large number of particles"
+        stellar_evolution = mpi_interface.SSE()
+        stellar_evolution.initialize_module_with_default_parameters()
+        number_of_particles = 10000
+        print "Has been tested with up to a million particles!"
+        print "Now using ", number_of_particles, "particles only, for speed."
+        stars = core.Stars(number_of_particles)
+        stars.mass = 1.0 | units.MSun
+        stellar_evolution.particles.add_particles(stars)
+        self.assertEqual(len(stellar_evolution.particles), number_of_particles)
+        del stellar_evolution
+    

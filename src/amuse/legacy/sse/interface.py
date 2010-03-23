@@ -1,6 +1,7 @@
 from amuse.legacy import *
 
 from amuse.support.units import units
+from amuse.support.units import constants
 from amuse.legacy.support.lit import LiteratureRefs
 from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.support.interface import CodeInterface
@@ -83,12 +84,10 @@ class SSEParticles(Particles):
     def __init__(self, code_interface, storage = None):
         Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface 
-        self.add_calculated_attribute("temperature", calculate_effective_temperature)
-    
+        self.add_calculated_attribute("temperature", self.calculate_effective_temperature, ["luminosity", "radius"])
     
     def calculate_effective_temperature(self, luminosity, radius):
-        Stefan_Boltzmann_constant = 5.670400e-8 | units.J * units.s**-1 * units.m**-2 * units.K**-4
-        return ((luminosity/(4*numpy.pi*Stefan_Boltzmann_constant*radius**2))**.25).in_(units.K)
+        return ((luminosity/(constants.four_pi_stefan_boltzmann*radius**2))**.25).in_(units.K)
         
     def _set_particles(self, keys, attributes = [], values = []):
         if len(keys) == 0:
@@ -103,6 +102,7 @@ class SSEParticles(Particles):
             "stellar_type" : 1 | units.stellar_type,
             "radius": 0 | units.RSun,
             "luminosity":  0 | units.LSun,
+#            "temperature": 0 | units.K,
             "core_mass": 0 | units.MSun,
             "core_radius": 0 | units.RSun,
             "envelope_mass": 0 | units.MSun,
