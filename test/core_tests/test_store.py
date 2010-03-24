@@ -45,13 +45,11 @@ class TestStoreHDF(amusetest.TestCase):
         p.mass = [x * 4.0 for x in range(number_of_particles)] | units.kg
         p.savepoint(2 | units.Myr)
         instance.store(p.previous_state())
+        instance.close()
         
-        
+        instance = store.StoreHDF(output_file)
         loaded_particles = instance.load()
-        print loaded_particles[1].mass
-        print loaded_particles.previous_state()[1].mass
         masses = loaded_particles[1].get_timeline_of_attribute("mass")
-        print masses
         self.assertEquals(len(masses), 2)
         
         

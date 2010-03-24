@@ -128,6 +128,8 @@ class StoreHDF(object):
             #if not attribute_values.model_times is None:
             #    dataset.attrs["model-times-ref"] = all_stored_model_time_references[id(attribute_values.model_times)]
     
+        self.hdf5file.flush()
+        
     def load(self):
         particles_group = self.particles_group()
         number_of_saved_particle_sets = len(particles_group)
@@ -162,5 +164,7 @@ class StoreHDF(object):
     
     def particles_group(self):
         return self.hdf5file.require_group(self.PARTICLES_GROUP_NAME)
-            
+        
+    def close(self):
+        self.hdf5file.close()
 
