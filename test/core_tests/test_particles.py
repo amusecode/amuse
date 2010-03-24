@@ -77,6 +77,26 @@ class TestParticles(TestBase):
         copyof_subset = subset.copy()
         self.assertEquals(len(copyof_subset), 1)
         
+
+    def test6(self):
+        
+        particles = core.Particles(2)
+        particles.mass = 1.0 | units.kg
+        particles.vy = 1.0 | units.m / units.s
+        particles.vx = 0.0 | units.m / units.s
+        particles.vz = 0.0 | units.m / units.s
+        particles.x = [0.0, 1.0] | units.m
+        particles.y = 0.0 | units.m
+        particles.z = 0.0 | units.m
+        
+        Ek=0. | units.J
+        Ep=0. | units.J
+        for x in particles:
+          Ek+=x.mass*x.specific_kinetic_energy()
+          Ep+=x.mass*x.potential()/2
+        self.assertEquals(particles.kinetic_energy(), Ek)
+        self.assertEquals(particles.potential_energy(), Ep)
+
         
         
 class TestStars(TestBase):
