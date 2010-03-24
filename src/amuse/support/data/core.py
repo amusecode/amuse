@@ -1364,7 +1364,6 @@ class Particles(AbstractParticleSet):
             
         accompanying_state, min_distance = states_and_distances[0]
         for state, distance  in states_and_distances:
-            print distance, min_distance, state.get_timestamp()
             if distance < min_distance:
                 min_distance = distance
                 accompanying_state = state
