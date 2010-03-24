@@ -66,7 +66,18 @@ class TestParticles(TestBase):
         self.assertEquals(particles.center_of_mass_velocity().x , 0.0 | units.m / units.s)
         self.assertEquals(particles.center_of_mass_velocity().y , 1.0 | units.m / units.s)
         self.assertEquals(particles.center_of_mass_velocity().z , 0.0 | units.m / units.s)
-
+        
+    def test5(self):
+        
+        particles = core.Particles(4)
+        particles.mass = 1.0 | units.kg
+        particles[2].mass = 2.0 | units.kg
+        subset = particles.select_array(lambda mass: mass > 1.0 | units.kg, ["mass"])
+        self.assertEquals(len(subset), 1)
+        copyof_subset = subset.copy()
+        self.assertEquals(len(copyof_subset), 1)
+        
+        
         
 class TestStars(TestBase):
 

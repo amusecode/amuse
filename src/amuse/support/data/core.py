@@ -960,7 +960,7 @@ class AbstractParticleSet(object):
         """
         attributes = self._get_attributes()
         keys = self._get_keys()
-        values = self._get_values(None, attributes)
+        values = self._get_values(keys, attributes)
         result = self._particles_factory()()
         result._set_particles(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
