@@ -1060,9 +1060,9 @@ class AbstractParticleSet(object):
     def __iadd__(self, particles):
         """
         Does the same as __add__, with in-place syntax:
-        >>> particles1 += particles2
+        particles1 += particles2
         instead of:
-        >>> particles1 = particles1 + particles2
+        particles1 = particles1 + particles2
         """
         return self.__add__(particles)
     
@@ -1101,18 +1101,18 @@ class AbstractParticleSet(object):
     def sub(self, particles):
         """
         Does the same as __sub__, with syntax:
-        >>> set = particles.sub(junk)
+        set = particles.sub(junk)
         instead of:
-        >>> set = particles - junk
+        set = particles - junk
         """
         return self.__sub__(particles)
     
     def __isub__(self, particles):
         """
         Does the same as __sub__, with in-place syntax:
-        >>> particles -= junk
+        particles -= junk
         instead of:
-        >>> particles = particles - junk
+        particles = particles - junk
         """
         return self.__sub__(particles)
     
@@ -2035,9 +2035,9 @@ class Particle(object):
     def __add__(self, particles):
         """
         Does the same as add, with syntax:
-        >>> set = particle1 + particle2
+        set = particle1 + particle2
         instead of:
-        >>> set = particle1.add(particle2)
+        set = particle1.add(particle2)
         """
         return self.add(particles)
     
@@ -2051,9 +2051,9 @@ class Particle(object):
     def __sub__(self, particles):
         """
         Does the same as sub, with syntax:
-        >>> set = particle1 - particle2
+        set = particle1 - particle2
         instead of:
-        >>> set = particle1.sub(particle2)
+        set = particle1.sub(particle2)
         """
         return self.sub(particles)
     
