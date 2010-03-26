@@ -866,8 +866,11 @@ class AbstractParticleSet(object):
             index += 1
 
     def __getitem__(self, index):
-        return Particle(self._get_keys()[index], self._real_particles())
-        
+        if isinstance(index, slice):
+            return ParticlesSubset(self, self._get_keys()[index])
+        else:
+            return Particle(self._get_keys()[index], self._real_particles())
+    
     def __len__(self):
         return len(self._get_keys())
         
