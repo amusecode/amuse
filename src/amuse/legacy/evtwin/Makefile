@@ -43,7 +43,7 @@ worker_code: mpi_code.f90 src/makefile.sys src/makefile.dep
 	@-mkdir -p src/modules
 	@-mkdir -p src/obj
 	@-mkdir -p src/lib
-	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN) >& make.log
+	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
 	@cp $(MODDIR)/twin_library_v2.mod .
 	@cp $(MODDIR)/mesh.mod .
 	mpif90 $< -o $@ $(EVTWINLIB)

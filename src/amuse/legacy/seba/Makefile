@@ -14,14 +14,28 @@ DOWNLOAD_FROM_SVN = ./downloadsvn.py
 all: worker_code 
 
 src:
-	$(DOWNLOAD_FROM_SVN)
+ifdef DO_INSTALL_SEBA
+		$(DOWNLOAD_FROM_SVN)
+else
+		@echo ""
+		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		@echo ""
+		@echo "DO_INSTALL_SEBA is not set. SeBa will not be downloaded and build."
+		@echo "If you do want SeBa, set DO_INSTALL_SEBA to 1."
+		@echo "bash> export DO_INSTALL_SEBA=1"
+		@echo "csh> setenv DO_INSTALL_SEBA 1"
+		@echo ""
+		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		@echo ""
+		@make -s --no-print-directory -C . raise_error
+endif
 
-clean: src
+clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code
-	cd src; make clean
+	@-make -C src clean
 	
-distclean: src
+distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code
 	$(RM) -Rf src
@@ -31,13 +45,15 @@ $(CODELIB): src
 	cd src; make all
 
 worker_code.cc: interface.py
-	$(CODE_GENERATOR) --type=c interface.py sebaInterface -o $@
+	$(CODE_GENERATOR) --type=c interface.py SebaInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py sebaInterface -o $@
+	$(CODE_GENERATOR) --type=H interface.py SebaInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	
+	
