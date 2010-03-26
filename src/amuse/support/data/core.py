@@ -1012,6 +1012,7 @@ class AbstractParticleSet(object):
         >>> particles2 = particles[2:]
         >>> particles2.x = [3.0, 4.0] | units.m
         >>> set = particles1 + particles2  # doctest:+ELLIPSIS
+        >>> set
         <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(set)
         4
@@ -1036,6 +1037,7 @@ class AbstractParticleSet(object):
         >>> particles2 = Particles(2)
         >>> particles2.x = [3.0, 4.0] | units.m
         >>> superset = particles1.add(particles2, creat_super=True)  # doctest:+ELLIPSIS
+        >>> superset
         <amuse.support.data.core.ParticlesSuperset object at 0x...>
         >>> print len(superset)
         4
@@ -2017,15 +2019,17 @@ class Particle(object):
         
         :parameter particles: particle(s) to be added to self.
         
-        >>> particle1 = Particle()
+        >>> particles = Particles(2)
+        >>> particle1 = particles[0]
         >>> particle1.x = 1.0 | units.m
-        >>> particle2 = Particle()
+        >>> particle2 = particles[1]
         >>> particle2.x = 2.0 | units.m
         >>> set = particle1.add(particle2)  # doctest:+ELLIPSIS
+        >>> set
         <amuse.support.data.core.ParticlesSubset object at 0x...>
-        >>> print len(subset)
+        >>> print len(set)
         2
-        >>> print subset.x
+        >>> print set.x
         [1.0, 2.0] m
         """
         if isinstance(particles, Particle):
