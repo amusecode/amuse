@@ -1011,8 +1011,8 @@ class AbstractParticleSet(object):
         >>> particles1.x = [1.0, 2.0] | units.m
         >>> particles2 = particles[2:]
         >>> particles2.x = [3.0, 4.0] | units.m
-        >>> set = particles1 + particles2  # doctest:+ELLIPSIS
-        >>> set
+        >>> set = particles1 + particles2
+        >>> set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(set)
         4
@@ -1036,8 +1036,8 @@ class AbstractParticleSet(object):
         >>> particles1.x = [1.0, 2.0] | units.m
         >>> particles2 = Particles(2)
         >>> particles2.x = [3.0, 4.0] | units.m
-        >>> superset = particles1.add(particles2, creat_super=True)  # doctest:+ELLIPSIS
-        >>> superset
+        >>> superset = particles1.add(particles2, creat_super=True)
+        >>> superset  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSuperset object at 0x...>
         >>> print len(superset)
         4
@@ -1079,7 +1079,8 @@ class AbstractParticleSet(object):
         >>> particles = Particles(4)
         >>> particles.x = [1.0, 2.0, 3.0, 4.0] | units.m
         >>> junk = particles[2:]
-        >>> set = particles - junk  # doctest:+ELLIPSIS
+        >>> set = particles - junk
+        >>> set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(set)
         2
@@ -2024,8 +2025,8 @@ class Particle(object):
         >>> particle1.x = 1.0 | units.m
         >>> particle2 = particles[1]
         >>> particle2.x = 2.0 | units.m
-        >>> set = particle1.add(particle2)  # doctest:+ELLIPSIS
-        >>> set
+        >>> set = particle1.add(particle2)
+        >>> set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(set)
         2
