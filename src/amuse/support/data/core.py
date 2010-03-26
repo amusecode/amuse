@@ -2025,7 +2025,7 @@ class Particle(object):
         >>> particle1.x = 1.0 | units.m
         >>> particle2 = particles[1]
         >>> particle2.x = 2.0 | units.m
-        >>> set = particle1.add(particle2)
+        >>> set = particle2.add(particle1)
         >>> set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(set)
