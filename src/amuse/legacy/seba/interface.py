@@ -39,6 +39,7 @@ class Seba(CodeInterface):
         
     def _evolve_particles(self, particles, end_time):
         attributes = (
+            "age",
             "mass",
             "radius",
         )

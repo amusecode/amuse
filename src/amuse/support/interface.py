@@ -761,7 +761,12 @@ class ParticleSetDefinition(object):
         
         return results
         
-        
+
+class CodeInMemoryParticles(core.Particles):
+    
+    def __init__(self, code_interface = None, storage = None):
+        core.Particles.__init__(self, storage = storage)
+        self._private.code_interface = code_interface 
         
 class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
@@ -818,7 +823,7 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         definition.name_of_indexing_attribute = name_of_indexing_attribute
         self.sets[name] = definition
         
-    def define_inmemory_set(self, name, particles_factory = core.Particles):
+    def define_inmemory_set(self, name, particles_factory = CodeInMemoryParticles):
         definition = ParticleSetDefinition(self)
         definition.is_inmemory = True
         definition.particles_factory = particles_factory
