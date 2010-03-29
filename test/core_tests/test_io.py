@@ -1,5 +1,8 @@
+from amuse.support import io
 from amuse.support.io import base
 from amuse.test import amusetest
+from amuse.support.units import nbody_system
+from amuse.support.data import core
 
 
 class TestFileFormatProcessor(base.FileFormatProcessor):
@@ -64,5 +67,21 @@ class FrameworkTests(amusetest.TestCase):
         self.assertEquals(name, 'save_fast')
         self.assertEquals(description, 'if True will save faster but less accurate')
         self.assertEquals(default, False)
+        
+
+class FormatTests(amusetest.TestCase):
+    
+    def test1(self):
+        x = core.Particles(2)
+        x.mass = [1.0, 2.0] | nbody_system.mass
+        x.radius = [3.0, 4.0] | nbody_system.length
+        x.position = [[1,2,3], [3,5,6]] | nbody_system.length
+        x.velocity = [[1,2,3], [3,5,6]] | nbody_system.speed
+        io.write_set_to_file(x, "test.tsf","tsf")
+        y = io.read_set_from_file("test.tsf","tsf")
+        
+        self.assertEquals(x[0].mass, y[0].mass)
+
+        #os.remove("test.tsf")
         
         

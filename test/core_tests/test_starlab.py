@@ -9,7 +9,7 @@ import os.path
 class Test(amusetest.TestCase):
 
     def test1(self):
-        """
+        """test_starlab.test1
                                                                                           
                 +---------------------------------------------------------------------+   
                 |                      Particle tree of test_subub.dyn                |   

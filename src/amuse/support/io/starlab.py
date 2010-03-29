@@ -98,9 +98,9 @@ class Xml2Particles(object):
         self.translator = {'N':'number','m':'mass','r':'position','v':'velocity'}
 
     def add_particle_with_parameters(self, subnode, Parent):
-        new_particle = core.Stars(1)                                  
-        self.system.add_particles(new_particle)                       
-        added_particle = self.system[-1]                              
+        #new_particle = core.Stars(1)                                  
+        added_particle = self.system.add_particle(core.Particle())                       
+        #added_particle = self.system[-1]                              
         self._find_nodes(subnode.childNodes,                           
     	                added_particle, Parent = added_particle)      
     	if Parent == None:                                            

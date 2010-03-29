@@ -209,6 +209,12 @@ class FileFormatProcessor(object):
                 
     def load(self):
         raise CannotLoadException(self.format)
+        
+    def store_string(self):
+        raise CannotSaveException(self.format)
+                
+    def load_string(self, string):
+        raise CannotLoadException(self.format)
     
     def get_description_of_options(self):
         """Yields tuples, each tuple contains the
@@ -219,3 +225,30 @@ class FileFormatProcessor(object):
             default_value = getattr(self, option)
             description = textwrap.dedent(method.__doc__)
             yield (option, description, default_value)
+            
+class FullTextFileFormatProcessor(FileFormatProcessor):
+    """
+    Abstract base class of all fileformat processors that process
+    their data by first reading the complete text string
+    
+    Subclasses need to implement the
+    :func:`store_string` and :func:`load_string` methods.
+    
+    """
+
+    def store(self):
+        with open(self.filename, 'w') as f:
+            f.write(self.store_string())
+                
+    def load(self):
+        with open(self.filename, 'r') as f:
+            return self.load_string(f.read())
+        
+    def store_string(self):
+        """Return a string representation of the particle set"""
+        raise CannotSaveException(self.format)
+                
+    def load_string(self, string):
+        """Return a particle set, read from the strint"""
+        raise CannotLoadException(self.format)
+    

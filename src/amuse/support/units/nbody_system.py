@@ -227,6 +227,27 @@ class nbody_to_si(object):
                     
                 
         return SiToNBodyConverter(self)
+        
+    def as_converter_from_nbody_to_si(self):
+        
+        class NBodyToSiConverter(object):
+            def __init__(self, nbody_to_si):
+                self.nbody_to_si = nbody_to_si
+            
+            def from_source_to_target(self, quantity):
+                if hasattr(quantity, 'unit'):
+                    return self.nbody_to_si.to_si(quantity) 
+                else:
+                    return quantity
+                
+            def from_target_to_source(self, quantity):
+                if hasattr(quantity, 'unit'):
+                    return self.nbody_to_si.to_nbody(quantity)
+                else:
+                    return quantity
+                    
+                
+        return NBodyToSiConverter(self)
 
 class noconvert_nbody_to_si(object): 
     

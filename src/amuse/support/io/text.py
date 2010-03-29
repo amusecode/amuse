@@ -105,7 +105,8 @@ class TableFormattedText(base.FileFormatProcessor):
         if self.set is None:
             return map(lambda x : units.none , self.attribute_names)
         else:
-            return map(lambda x : units.none , self.attribute_names)
+            quantities = self.quantities
+            return map(lambda x : x.unit, quantities)
     
     @base.format_option
     def header_prefix_string(self):
@@ -177,7 +178,7 @@ class TableFormattedText(base.FileFormatProcessor):
         
     def write_rows(self):
         keys = self.set.key
-        quantities = map(lambda x:getattr(self.set, x),self.attribute_names)
+        quantities = self.quantities
         units = self.attribute_types
         numbers = map(lambda quantity, unit : quantity.value_in(unit), quantities, units)
         
@@ -219,6 +220,9 @@ class TableFormattedText(base.FileFormatProcessor):
     def new_set(self, number_of_items):
         return core.Particles(number_of_items)
         
+    @late
+    def quantities(self):
+        return map(lambda x:getattr(self.set, x),self.attribute_names)
 
 
 
