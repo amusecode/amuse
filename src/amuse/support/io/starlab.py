@@ -91,48 +91,47 @@ class Dyn2Xml(object):
 class Xml2Particles(object):
 
     def __init__(self):
-
         self.xmls = ""
-        self.reclim = sys.getrecursionlimit()
-        self.system = core.Stars(0)
+        self.system = core.Particles()
         self.translator = {'N':'number','m':'mass','r':'position','v':'velocity'}
 
-    def add_particle_with_parameters(self, subnode, Parent):
-        #new_particle = core.Stars(1)                                  
-        added_particle = self.system.add_particle(core.Particle())                       
-        #added_particle = self.system[-1]                              
-        self._find_nodes(subnode.childNodes,                           
-    	                added_particle, Parent = added_particle)      
-    	if Parent == None:                                            
-    	    pass
-    	else:                                                         
-    	    Parent.add_child(added_particle)                          
+    def add_particle_with_parameters(self, subnode, parent):
+        added_particle = self.system.add_particle(core.Particle())  
+           
+        self._recursive_parse_node_into_particles(
+            subnode,
+            added_particle, 
+            parent = added_particle
+        )
+        
+        if not parent is None:
+            parent.add_child(added_particle)
 
-    def _find_nodes(self, nodeList, SCL, Parent = None):
-
-        for subnode in nodeList:
+    def _recursive_parse_node_into_particles(self, xml_node, particle_or_particleset, parent = None):
+        node_list = xml_node.childNodes
+        for subnode in node_list:
             if subnode.nodeType == subnode.ELEMENT_NODE:
-                if subnode.tagName == "System":
-                    self._find_nodes(subnode.childNodes, SCL)
-                if subnode.tagName == "Particle":
-                    self.add_particle_with_parameters(subnode, Parent)
+                if subnode.tagName == "System": #overslaan
+                    self._recursive_parse_node_into_particles(subnode, particle_or_particleset)
+                elif subnode.tagName in ["Log", "Dynamics", "Star", "Hydro"]:  #overslaan
+                    self._recursive_parse_node_into_particles(subnode, particle_or_particleset) 
+                elif subnode.tagName == "Particle":
+                    self.add_particle_with_parameters(subnode, parent)
                 elif subnode.tagName == u"pm":                                
                     key = subnode.attributes.keys()[0]
                     value = subnode.getAttribute(key)
-                    self.copy_starlab_parameter_to_star(key, value, SCL)
-                elif subnode.tagName in ["Log", "Dynamics", "Star", "Hydro"]:  
-                    self._find_nodes(subnode.childNodes,SCL)  
-
-    def copy_starlab_parameter_to_star(self, key, value, SCL):
-
-	 if key in self.translator.keys():                                     
-	     amuse_key = self.translator[key]                                  
-	     if amuse_key == 'mass':                                           
-	         SCL.mass = float(value)|nbody_system.mass                              
-	     if amuse_key == "position":                                       
-	         SCL.position = self.convert2vec(value)|nbody_system.length                
-	     if amuse_key == "velocity":                                       
-	         SCL.velocity = self.convert2vec(value)|nbody_system.speed      
+                    self.copy_starlab_parameter_to_star(key, value, particle_or_particleset)
+                
+    
+    def copy_starlab_parameter_to_star(self, key, value, particle):
+        if key in self.translator.keys():                                     
+            amuse_key = self.translator[key]                                  
+            if amuse_key == 'mass':                                           
+                particle.mass = float(value)|nbody_system.mass                              
+            if amuse_key == "position":                                       
+                particle.position = self.convert2vec(value)|nbody_system.length                
+            if amuse_key == "velocity":                                       
+                particle.velocity = self.convert2vec(value)|nbody_system.speed      
         
     def convert2vec(self, attribute):
         
@@ -233,14 +232,14 @@ class Xml2Particles(object):
         f.close()
 
         #copy the doc to a system object
-        self._find_nodes(nodeList=doc.childNodes, SCL = self.system)
+        self._recursive_parse_node_into_particles(doc, self.system)
 
     def parse_xml(self, xmlstring):
         """
             Parse xml string into dom doc and then create particles accordingly 
         """
         doc = xml.dom.minidom.parseString(xmlstring)
-        self._find_nodes(nodeList=doc.childNodes, SCL = self.system)
+        self._recursive_parse_node_into_particles(doc, self.system)
 
 class ParticlesFromDyn(object):
     
@@ -259,8 +258,10 @@ class ParticlesFromDyn(object):
             return
         else:
             self.convert_nbody = convert_nbody
-            self.Particles = core.ParticlesWithUnitsConverted(xml2particles.system,
-                                                              self.convert_nbody.as_converter_from_si_to_nbody())
+            self.Particles = core.ParticlesWithUnitsConverted(
+                xml2particles.system,
+                self.convert_nbody.as_converter_from_si_to_nbody()
+            )
         
         
     def number_of_particles(self):
