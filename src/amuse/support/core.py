@@ -35,9 +35,8 @@ class late(object):
     :returns: a descriptor to determine and set the value on first access
     """ 
     def __init__(self, initializer):
-        
         self.initializer = initializer
-        self.__doc__ = self.initializer.__doc__
+        self.__doc__ == self.initializer.__doc__
         
     def __get__(self, instance, owner):
         if instance is None:
@@ -45,6 +44,7 @@ class late(object):
         value = self.initializer(instance)
         setattr(instance,self.initializer.__name__, value)
         return value
+    
         
         
 class print_out(object):

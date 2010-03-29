@@ -1,0 +1,221 @@
+
+
+from amuse.support.core import late
+from amuse.support import exception
+
+import textwrap
+
+registered_fileformat_processors = {}
+
+class IoException(exception.CoreException):
+    errorcode = exception.ErrorCode(exception.CoreException.majorcode, 100, "io exception")
+    
+class UnsupportedFormatException(IoException):
+    """Raised when the given format is not supported by AMUSE.
+    """
+    errorcode = exception.ErrorCode(
+        IoException.majorcode, 
+        101, 
+        "a format is not supported",
+        "You tried to load or save a file with fileformat '{0}', but this format is not in the supported formats list"
+    )
+
+class CannotSaveException(IoException):
+    """Raised when the given format cannot save data (only read)
+    """
+    errorcode = exception.ErrorCode(
+        IoException.majorcode, 
+        102, 
+        "a format is read-only",
+        "You tried to save a file with fileformat '{0}', but this format is not supported for writing files"
+    )
+
+class CannotLoadException(IoException):
+    """Raised when the given format cannot read data (only save)
+    """
+    errorcode = exception.ErrorCode(
+        IoException.majorcode, 
+        103, 
+        "a format is write-only",
+        "You tried to load a file with fileformat '{0}', but this format is not supported for reading files"
+    )
+
+    
+class format_option(late):
+    
+    def __init__(self, initializer):
+        late.__init__(self, initializer)
+        self.__doc__ = initializer.__doc__
+        
+    def get_name(self):
+        return self.initializer.__name__
+       
+
+def write_set_to_file(
+    set,
+    filename,
+    format = 'csv', 
+    **format_specific_keyword_arguments):
+    """
+    Write a set to the given file in the given format.
+    
+    :argument filename: name of the file to write the data to
+    :argument format: name of a registered format or
+        a :class:`FileFormatProcessor` subclass (must be a 
+        class and not an instance)
+    
+    All other keywords are set of the fileformat processor. To
+    determine the supported options for a processor call 
+    :func:`get_options_for_format`
+    """
+        
+    if not format in registered_fileformat_processors:
+        raise UnsupportedFormatException(format)
+    
+    processor_factory = registered_fileformat_processors[format]
+    processor = processor_factory(filename, set=set, format = format)
+    processor.set_options(format_specific_keyword_arguments)
+    processor.store()
+    
+
+def read_set_from_file(
+    filename,
+    format = 'csv', 
+    **format_specific_keyword_arguments):
+    """
+    Read a set from the given file in the given format.
+    
+    :argument filename: name of the file to read the data from
+    :argument format: name of a registered format or
+        a :class:`FileFormatProcessor` subclass (must be a 
+        class and not an instance)
+    
+    All other keywords are set of the fileformat processor. To
+    determine the supported options for a processor call 
+    :func:`get_options_for_format`
+    """
+    if isinstance(format, basestring):
+        if not format in registered_fileformat_processors:
+            raise UnsupportedFormatException(format)
+        processor_factory = registered_fileformat_processors[format]
+    else:
+        processor_factory = format
+    
+   
+    processor = processor_factory(filename, format = format)
+    processor.set_options(format_specific_keyword_arguments)
+    return processor.load()
+
+def get_options_for_format(
+        format = 'csv', 
+    ):
+    """Retuns a list of tuples, each tuple contains the
+    name of the option, a description of the option and
+    the default values.
+    
+    :argument format: name of a registered format or
+        a :class:`FileFormatProcessor` subclass (must be a 
+        class and not an instance)
+    """
+    if isinstance(format, basestring):
+        if not format in registered_fileformat_processors:
+            raise UnsupportedFormatException(format)
+        processor_factory = registered_fileformat_processors[format]
+    else:
+        processor_factory = format
+    
+    processor = processor_factory(format = format)
+    
+    return list(processor.get_description_of_options())
+
+
+
+def add_fileformat_processor(class_of_the_format):
+    for x in class_of_the_format.provided_formats:
+        registered_fileformat_processors[x] = class_of_the_format
+    _update_documentation_strings()
+    
+
+    
+def _update_documentation_strings():
+    for methodname in ['write_set_to_file', 'read_set_from_file']:
+        method = globals()[methodname]
+        if not hasattr(method, '_original_doc'):
+            method._original_doc = method.__doc__
+        
+        new_doc = method._original_doc
+        
+        new_doc += "\n    Registered file formats:\n\n"
+        sorted_formatnames = sorted(registered_fileformat_processors.keys())
+        for x in sorted_formatnames:
+            processor = registered_fileformat_processors[x]
+            processor_doc = processor.__doc__
+            if processor_doc is None or len(processor_doc) == 0:
+                continue
+            processor_doc = processor_doc.strip()
+            line = processor_doc.splitlines()[0]
+            line = '    **' + x + '**,\n      ' + line + '\n'
+            new_doc += line
+        method.__doc__ = new_doc
+    
+class FileFormatProcessor(object):
+    """
+    Abstract base class of all fileformat processors
+    
+    All classes providing loading or storing of files should be
+    subclasses of this base class.
+    
+    Every subclass must support the *filename*, *set* and
+    *format* arguments. The arguments must all be optional.
+    
+    :argument filename: name of the file the read the data from
+    :argument set: set (of particles or entities) to store in the file
+    :argument format: format of the file, will be a string or class
+    """
+    
+    provided_formats = []
+    
+    
+    def __init__(self, filename = None, set = None, format = None):
+        self.filename = filename
+        self.set = set
+        self.format = format
+        
+    @classmethod
+    def get_options(cls):
+        attribute_names = dir(cls)
+        result = {}
+        for x in attribute_names:
+            if x.startswith('_'):
+                continue
+                
+            attribute_value = getattr(cls, x)
+            if isinstance(attribute_value, format_option):
+                result[x] = attribute_value
+        return result
+        
+    @classmethod
+    def register(cls):
+        add_fileformat_processor(cls)
+        
+    def set_options(self, dictionary):
+        supported_options = self.get_options()
+        for key, value in dictionary.iteritems():
+            if key in supported_options:
+                setattr(self, key, value)
+                
+    def store(self):
+        raise CannotSaveException(self.format)
+                
+    def load(self):
+        raise CannotLoadException(self.format)
+    
+    def get_description_of_options(self):
+        """Yields tuples, each tuple contains the
+        name of the option, a description of the option and
+        the default values
+        """
+        for option, method in self.get_options().iteritems():
+            default_value = getattr(self, option)
+            description = textwrap.dedent(method.__doc__)
+            yield (option, description, default_value)

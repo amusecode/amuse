@@ -1,6 +1,7 @@
 from amuse.support.data import core
 from amuse.support.core import late
 from amuse.support.units import units
+from amuse.support.io import base
 
 import re
 
@@ -29,9 +30,16 @@ class LineBasedFileCursor(object):
         return self._line is None
         
         
-class TableFormattedText(object):
+class TableFormattedText(base.FileFormatProcessor):
+    """
+    Process a text file containing a table of values separated by a predefined character
+    """
     
-    def __init__(self, filename, stream = None, set = None):
+    provided_formats = ['txt']
+    
+    def __init__(self, filename, stream = None, set = None, format = None):
+        base.FileFormatProcessor.__init__(self, filename, set, format)
+        
         self.filename = filename
         self.stream = stream
         self.set = set
@@ -41,16 +49,18 @@ class TableFormattedText(object):
         return line.rstrip('\r\n')
         
     def split_into_columns(self, line):
-        return line.split()
+        if self.column_separator == ' ':
+            return line.split()
+        else:
+            return line.split(self.column_separator)
     
     def load(self):
-        
         if self.stream is None:
             self.stream = open(self.filename, "r")
             close_function = self.stream.close  
         else:
             close_function = lambda : None
-        
+            
         try:
             return self.load_from_stream()
         finally:
@@ -81,31 +91,36 @@ class TableFormattedText(object):
         self.write_rows()
         self.write_footer()
         
-    @late
+    @base.format_option
     def attribute_names(self):
+        "list of the names of the attributes to load or store"
         if self.set is None:
             return []
         else:
             return self.set.stored_attributes()
         
-    @late
+    @base.format_option
     def attribute_types(self):
+        "list of the types of the attributes to store"
         if self.set is None:
             return map(lambda x : units.none , self.attribute_names)
         else:
             return map(lambda x : units.none , self.attribute_names)
     
-    @late
+    @base.format_option
     def header_prefix_string(self):
+        "lines starting with this character will be handled as part of the header"
         return '#'
         
     
-    @late
+    @base.format_option
     def column_separator(self):
+        "separator between the columns"
         return ' '
         
-    @late
+    @base.format_option
     def footer_prefix_string(self):
+        "lines starting with this character will be handled as part of the footer"
         return self.header_prefix_string
         
     def read_header(self):
@@ -205,7 +220,17 @@ class TableFormattedText(object):
         return core.Particles(number_of_items)
         
 
+
+
         
+class CsvFileText(TableFormattedText):
+    """Process comma separated files
+    
+    Can process test files with comma separated fields.
+    """
+    
+    provided_formats = ['csv']
+    
 class Athena3DText(TableFormattedText):
     
     
