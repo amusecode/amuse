@@ -255,9 +255,20 @@ class TestInterface(TestWithMPI):
         self.assertEquals(str2_out[1], "def")
       
     def xtest10(self):
-        instance = ForTestingInterface(self.exefile)
-        out = instance.return_string("abc")
-        del instance
+        """test for ticket #74, 'running out of os file descriptors'
         
-        self.assertEquals(out[0], "abc")
+        
+        Note: this test takes a very long time, to enable it
+        remove the 'X' infront of the test name, to disable it
+        add an 'X'.
+        Also note: to test this, you best set the ulimit
+        to a low number (but not too low), for example
+        ulimit -n 400
+        """
+        for x in range(400):
+            instance = ForTestingInterface(self.exefile)
+            out, error = instance.echo_float(4.0)
+            if x % 100 == 0:
+                print "x:", x
+            instance.stop()
 

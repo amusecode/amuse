@@ -419,6 +419,9 @@ class MpiChannel(MessageChannel):
                 os.dup2(fd_stdin, 0)
                 os.dup2(fd_stdout, 1)
                 os.dup2(fd_stderr, 2)
+                os.close(fd_stdin)
+                os.close(fd_stdout)
+                os.close(fd_stderr)
             
     def stop(self):
         if not self.intercomm is None:
