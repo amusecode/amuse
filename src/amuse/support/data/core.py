@@ -1019,9 +1019,9 @@ class AbstractParticleSet(object):
         >>> print set.x
         [1.0, 2.0, 3.0, 4.0] m
         """
-        return self.add(particles, creat_super=False)
+        return self.add(particles, create_super=False)
     
-    def add(self, particles, creat_super=False):
+    def add(self, particles, create_super=False):
         """
         Returns a particle subset, composed of the given
         particle(s) and this particle set. Attribute values are
@@ -1036,7 +1036,7 @@ class AbstractParticleSet(object):
         >>> particles1.x = [1.0, 2.0] | units.m
         >>> particles2 = Particles(2)
         >>> particles2.x = [3.0, 4.0] | units.m
-        >>> superset = particles1.add(particles2, creat_super=True)
+        >>> superset = particles1.add(particles2, create_super=True)
         >>> superset  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSuperset object at 0x...>
         >>> print len(superset)
@@ -1046,7 +1046,7 @@ class AbstractParticleSet(object):
         """
         if isinstance(particles, Particle):
             particles = particles.as_set()
-        if creat_super:
+        if create_super:
             new_set = ParticlesSuperset([self, particles])
         else:
             original_particles_set = self._real_particles()
@@ -1666,8 +1666,11 @@ class ParticlesSuperset(AbstractParticleSet):
         
         for keys_for_set, indices_for_set, set in zip(split_sets, split_indices, self._private.particle_sets):
             quantities = [None] * len(attributes)
-            for valueindex, quantity in enumerate(values_for_set):
-                numbers = numpy.take(quantity.number, indices_for_set)
+            for valueindex, quantity in enumerate(values):
+                if numpy.size(quantity) < len(keys):
+                    numbers = numpy.take([quantity.number]*len(keys), indices_for_set)
+                else:
+                    numbers = numpy.take(quantity.number, indices_for_set)
                 quantities[valueindex] = quantity.unit.new_quantity(numbers)
             
             set._set_values(keys_for_set, attributes, quantities)
@@ -1990,7 +1993,7 @@ class Particle(object):
             raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")
     
     def __getattr__(self, name_of_the_attribute):
-         return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
+        return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
     
     def children(self):
         return self.particles_set.select(lambda x : x == self, ["parent"])
@@ -2025,7 +2028,7 @@ class Particle(object):
         >>> particle1.x = 1.0 | units.m
         >>> particle2 = particles[1]
         >>> particle2.x = 2.0 | units.m
-        >>> set = particle2.add(particle1)
+        >>> set = particle1.add(particle2)
         >>> set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(set)
@@ -2033,9 +2036,7 @@ class Particle(object):
         >>> print set.x
         [1.0, 2.0] m
         """
-        if isinstance(particles, Particle):
-            particles = particles.as_set()
-        return particles.add(self)
+        return self.as_set().add(particles)
     
     def __add__(self, particles):
         """

@@ -70,16 +70,16 @@ class TestAddParticles(amusetest.TestCase):
         particle = core.Particle()
         particle.x = 3.0 | units.m
         print "You can add a particle to a set by using 'add':"
-        print "superset = set.add(particle, creat_super=True)"
-        superset = set.add(particle, creat_super=True)
+        print "superset = set.add(particle, create_super=True)"
+        superset = set.add(particle, create_super=True)
         self.assertTrue(isinstance(superset, core.ParticlesSuperset))
         self.assertEqual(len(superset),len(set)+1)
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0]|units.m))
         print "You can add a set to a set by using 'add':"
-        print "superset = set.add(set2, creat_super=True)"
+        print "superset = set.add(set2, create_super=True)"
         set2 = core.Particles(2)
         set2.x = [3.0, 4.0] | units.m
-        superset = set.add(set2, creat_super=True)
+        superset = set.add(set2, create_super=True)
         self.assertTrue(isinstance(superset, core.ParticlesSuperset))
         self.assertEqual(len(superset),len(set)+len(set2))
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
@@ -89,10 +89,10 @@ class TestAddParticles(amusetest.TestCase):
         print "Test4: check if the particle is already part of the set."
         set = core.Particles(2)
         particle = core.Particle()
-        set = set.add(particle, creat_super=True)
+        set = set.add(particle, create_super=True)
         print "Should not be able to add the same particle twice... ",
         try:
-            incorrect_set = set.add(particle, creat_super=True)
+            incorrect_set = set.add(particle, create_super=True)
             print "oops!"
             self.fail("Should not be able to add the same particle twice.")
         except Exception as ex:
@@ -101,11 +101,11 @@ class TestAddParticles(amusetest.TestCase):
             print "ok!"
         self.assertEqual(len(set),3)
         other_set = core.Particles(2)
-        other_set = other_set.add(particle, creat_super=True)
+        other_set = other_set.add(particle, create_super=True)
         print "The particle is now a member of both sets, and thus the sets "
         print "can't be combined anymore... ",
         try:
-            incorrect_set = set.add(other_set, creat_super=True)
+            incorrect_set = set.add(other_set, create_super=True)
             print "oops!"
             self.fail("Should not be able to add the same particle twice.")
         except Exception as ex:
@@ -121,10 +121,10 @@ class TestAddParticles(amusetest.TestCase):
         set2 = core.Particles(2)
         set3 = core.Particles(2)
         set4 = core.Particles(2)
-        superset1 = set1.add(set2, creat_super=True)
-        superset2 = set3.add(set4, creat_super=True)
+        superset1 = set1.add(set2, create_super=True)
+        superset2 = set3.add(set4, create_super=True)
         for x in [particle, set3, superset2]:
-            supersuperset = superset1.add(x, creat_super=True)
+            supersuperset = superset1.add(x, create_super=True)
             self.assertTrue(isinstance(supersuperset, core.ParticlesSuperset))
             self.assertEqual(len(supersuperset),len(superset1)+numpy.size(x.key))
     
@@ -137,7 +137,7 @@ class TestAddParticles(amusetest.TestCase):
         print "Should not be able to create a subset from particles " \
             "belonging to separate particle sets.. ",
         try:
-            incorrect_set = set1.add(set2, creat_super=False)
+            incorrect_set = set1.add(set2, create_super=False)
             print "oops!"
             self.fail("Should not be able to create this subset.")
         except Exception as ex:
@@ -145,7 +145,7 @@ class TestAddParticles(amusetest.TestCase):
                 "separate particle sets. Try creating a superset instead.", str(ex))
             print "ok!"
         try:
-            incorrect_set = set1.add(particle, creat_super=False)
+            incorrect_set = set1.add(particle, create_super=False)
             self.fail("Should not be able to create this subset.")
         except Exception as ex:
             self.assertEquals("Can't create new subset from particles belonging to "

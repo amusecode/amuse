@@ -571,10 +571,52 @@ class TestParticlesWithChildren(TestBase):
         self.assertEquals(copy[1].parent, parent)
         self.assertEquals(len(copy[0].descendents()), 4)
         
-        
-        
-        
-        
-        
-        
-        
+class TestParticlesSuperset(TestBase):
+    
+    def test1(self):
+        print "Test1: getting attributes of a particle superset."
+        superset = core.Particles(2)
+        superset.x = [1.0, 2.0] | units.m
+        set2 = core.Particles(2)
+        set2.x = [4.0, 5.0] | units.m
+        particle1 = core.Particle()
+        particle1.x = 3.0 | units.m
+        particle2 = core.Particle()
+        particle2.x = 6.0 | units.m
+        for x in [particle1, set2, particle2]:
+            superset = superset.add(x, create_super=True)
+        self.assertTrue(isinstance(superset, core.ParticlesSuperset))
+        self.assertEqual(len(superset),6)
+        self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]|units.m))
+        # Check whether it returns the right value for the right key when the key order is 'random'
+        dictionary = dict(zip(superset.key, superset.x))
+        sorted_keys = sorted(superset._get_keys())
+        sorted_values = superset._get_values(sorted_keys,['x'])[0]
+        for key, value in zip(sorted_keys, sorted_values):
+            self.assertEqual(dictionary[key],value)
+    
+    def test2(self):
+        print "Test2: setting attributes of a particle superset."
+        superset = core.Particles(2)
+        set2 = core.Particles(2)
+        particle1 = core.Particle()
+        particle2 = core.Particle()
+        for x in [particle1, set2, particle2]:
+            superset = superset.add(x, create_super=True)
+        self.assertTrue(isinstance(superset, core.ParticlesSuperset))
+        self.assertEqual(len(superset),6)
+        superset.x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0] | units.m
+        self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]|units.m))
+        superset.y = 9.0 | units.m
+        self.assertEqual(superset.y, ([9.0, 9.0, 9.0, 9.0, 9.0, 9.0]|units.m))
+        superset.z = [-1.0, 1.0] | units.m
+        self.assertEqual(superset.z, ([-1.0, 1.0, -1.0, 1.0, -1.0, 1.0]|units.m))
+        # Check whether it sets the value of the right particle when the key order is 'random'
+        sorted_keys = sorted(superset._get_keys())
+        sorted_values = superset._get_values(sorted_keys,['x'])[0]
+        superset._set_values(sorted_keys,['zz'],[sorted_values])
+        dictionary = dict(zip(superset.key, superset.zz))
+        for key, value in zip(sorted_keys, sorted_values):
+            print dictionary[key],value
+            self.assertEqual(dictionary[key],value)
+    
