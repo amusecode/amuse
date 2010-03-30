@@ -124,7 +124,7 @@ class NemoFileFormatProcessor(base.FullTextFileFormatProcessor):
     
     provided_formats = ['tsf']
     
-    def __init__(self, filename, stream = None, set = None, format = None):
+    def __init__(self, filename = None, stream = None, set = None, format = None):
         base.FileFormatProcessor.__init__(self, filename, set, format)
         
     
@@ -138,6 +138,6 @@ class NemoFileFormatProcessor(base.FullTextFileFormatProcessor):
 
     @base.format_option
     def nbody_to_si_converter(self):
-        "tsf datafiles store nbody data, provide a converter to store si date (None means no converter)"
+        "tsf datafiles store nbody data, provide a converter to store si data (None means no converter)"
         return None
         

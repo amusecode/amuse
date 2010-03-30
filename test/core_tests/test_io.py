@@ -138,6 +138,17 @@ class FormatTests(amusetest.TestCase):
         
         
         os.remove("test_unit.tsf")
+        
+    
+    def test5(self):
+        options = base.get_options_for_format('tsf')
+        name, description, default = options[0]
+        self.assertEquals(name, 'nbody_to_si_converter')
+        self.assertEquals(description, 'tsf datafiles store nbody data, provide a converter to store si data (None means no converter)')
+        self.assertEquals(default, None)
+        options = base.get_options_for_format('dyn')
+        name, description, default = options[0]
+        self.assertEquals(name, 'nbody_to_si_converter')
 
         
         
