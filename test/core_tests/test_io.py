@@ -1,9 +1,10 @@
 from amuse.support import io
 from amuse.support.io import base
 from amuse.test import amusetest
-from amuse.support.units import nbody_system
+from amuse.support.units import nbody_system, units
 from amuse.support.data import core
 
+import os
 
 class TestFileFormatProcessor(base.FileFormatProcessor):
     """
@@ -82,6 +83,61 @@ class FormatTests(amusetest.TestCase):
         
         self.assertEquals(x[0].mass, y[0].mass)
 
-        #os.remove("test.tsf")
+        os.remove("test.tsf")
+        
+    
+    def test2(self):
+        x = core.Particles(2)
+        x.mass = [1.0, 2.0] | nbody_system.mass
+        x.radius = [3.0, 4.0] | nbody_system.length
+        x.position = [[1,2,3], [3,5,6]] | nbody_system.length
+        x.velocity = [[1,2,3], [3,5,6]] | nbody_system.speed
+        io.write_set_to_file(x, "test.dyn","dyn")
+        y = io.read_set_from_file("test.dyn","dyn")
+        
+        self.assertEquals(x[0].mass, y[0].mass)
+        
+        os.remove("test.dyn")
+        
+    def test3(self):
+        x = core.Particles(2)
+        convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
+        x.mass = [1.0, 2.0] | units.kg
+        x.radius = [3.0, 4.0] | units.m
+        x.position = [[1,2,3], [3,5,6]] | units.m
+        x.velocity = [[1,2,3], [3,5,6]] | units.m / units.s
+        io.write_set_to_file(x, "test_unit.dyn","dyn", nbody_to_si_converter = convert)
+        y = io.read_set_from_file("test_unit.dyn","dyn", nbody_to_si_converter = convert)
+        
+        self.assertAlmostEquals(x[0].mass, y[0].mass, 8)
+        self.assertAlmostEquals(x[1].position.x, y[1].position.x,8)
+        self.assertAlmostEquals(x[1].position.y, y[1].position.y,8)
+        self.assertAlmostEquals(x[1].position.z, y[1].position.z,8)
+        self.assertAlmostEquals(x[0].velocity.y, y[0].velocity.y,8)
+        
+        
+        os.remove("test_unit.dyn")
+        
+    
+    def test4(self):
+        
+        x = core.Particles(2)
+        convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
+        x.mass = [1.0, 2.0] | units.kg
+        x.radius = [3.0, 4.0] | units.m
+        x.position = [[1,2,3], [3,5,6]] | units.m
+        x.velocity = [[1,2,3], [3,5,6]] | units.m / units.s
+        io.write_set_to_file(x, "test_unit.tsf","tsf", nbody_to_si_converter = convert)
+        y = io.read_set_from_file("test_unit.tsf","tsf", nbody_to_si_converter = convert)
+        
+        self.assertAlmostEquals(x[0].mass, y[0].mass, 8)
+        self.assertAlmostEquals(x[1].position.x, y[1].position.x,8)
+        self.assertAlmostEquals(x[1].position.y, y[1].position.y,8)
+        self.assertAlmostEquals(x[1].position.z, y[1].position.z,8)
+        self.assertAlmostEquals(x[0].velocity.y, y[0].velocity.y,8)
+        
+        
+        os.remove("test_unit.tsf")
+
         
         

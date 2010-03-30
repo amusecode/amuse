@@ -1,6 +1,7 @@
 from amuse.support.data import core
 from amuse.support.units import units
 from amuse.support.units import nbody_system
+from amuse.support.io import base
 
 import sys
 import xml.dom.minidom 
@@ -9,84 +10,48 @@ import re
 
 class Dyn2Xml(object):
     
-    def __init__(self):
-
-        self._xml = ""
-    
-    def convert_to_xml(self,inputfile):
-        """
-            Converts legacy starlab fileformat .dyn to xml string
-       
-        """
-
-        f = open(inputfile,'r')
-
-        fooline = f.readline()
-            
-        #lines either start with (,) followed by name of stories or Particle
-        #Log, Dynamics, Hydro, Star
-        #or with parameters
-        #m = 0.5 etc...
-        #Here we do not care about structure, whether the particle is a sister
-        #or daughter etc...
-        #..Thinking about reimplementing this using regularexpressions...
-
-        #The xml string, init and add the root        
-        #We need the root, an xml file with only sisters is not well fromed as it is
-        #interpreted as multiple roots then. xml.dom yields an error
-        xmls = '<?xml version="1.0"?>\n<System>\n'
-        
-        #counting opening and closing of parenthesis to check match at the end.
-        #we do not want bad xml files.
+    def convert_startlab_string_to_xml_string(self, string):
+        xml_lines = ['<?xml version="1.0"?>\n<System>']
         
         openpar  = 0
         closepar = 0
         
-        while fooline:
-
-            #State machine...
-            
-            fooline = fooline.rstrip()
+        for line in string.splitlines():
+            line = line.rstrip()
                    
-            if fooline.startswith("("):
-                #Either Particle or stories
-                #don't care about structure but do count parenthesis though
+            if line.startswith("("):
                 openpar += 1
-                #strip the (
-                fooline = fooline.lstrip("(")
-                newline = "<"+fooline+">"
-                
-            elif fooline.startswith(")"):
+                line = line.lstrip("(")
+                newline = "<"+line+">"
+            elif line.startswith(")"):
                 closepar +=1
-                #strip the )
-                fooline = fooline.lstrip(")")
-                newline = "</"+fooline+">"
+                line = line.lstrip(")")
+                newline = "</"+line+">"
             else:
-                newline = self.convert_storyline(fooline)
+                newline = self.convert_storyline(line)
           
-            
-            xmls += newline + "\n"                
-            #Get next line from file...                
-            fooline = f.readline()
+            xml_lines.append(newline)
 
-        xmls += "</System>\n"    
+        xml_lines.append("</System>")    
 
-        f.close()
-
+       
         if closepar!=openpar:
-            raise("\nConversion failure, parenthesis mismatch. Return: no output string written\n")
+            raise Exception("\nConversion failure, parenthesis mismatch. Return: no output string written\n")
 
-        self._xmls = xmls
+        return '\n'.join(xml_lines)
+        
+    def convert_to_xml(self,inputfile):
+        with open(inputfile,'r') as f:
+            string = f.read()
+        
+        return self.convert_startlab_string_to_xml_string(string)
             
-    def convert_storyline(self, fooline):
+    def convert_storyline(self, line):
+        if "===>" in line or line.startswith("       "):
+            return line 
         
-        if "===>" in fooline or fooline.startswith("       "):
-            newline = fooline 
-        else:
-            splithere = fooline.find("=")
-            newline = "  <pm "+fooline[:splithere].lstrip()+'= "'+fooline[splithere+1:].lstrip()+'" />'
-        
-        return newline
+        parts = line.split("=",1)
+        return "<pm "+ parts[0].lstrip()+'= "'+parts[1].lstrip()+'" />'
     
 class Xml2Particles(object):
 
@@ -246,8 +211,7 @@ class ParticlesFromDyn(object):
     def __init__(self, dyn_filename=None, convert_nbody=None):
 
         dyn2xml = Dyn2Xml()
-        dyn2xml.convert_to_xml(dyn_filename)
-        xml_string = dyn2xml._xmls
+        xml_string = dyn2xml.convert_to_xml(dyn_filename)
         
         xml2particles = Xml2Particles()
         err1 = xml2particles.parse_xml(xml_string)
@@ -266,3 +230,80 @@ class ParticlesFromDyn(object):
         
     def number_of_particles(self):
         return len(self.Particles)
+
+class Particles2Dyn(object):
+    
+    def convert_to_string(self, particles):
+        lines = []
+        prefix = "  "
+        lines.append("(Particle")
+        lines.append(prefix + "N = " + str(len(particles)))
+        lines.append("(Log")
+        lines.append(")Log")
+        for index, x in enumerate(particles):
+            lines.append("(Particle")
+            lines.append(prefix + "i = " + str(index))
+            lines.append(prefix + "N = " + str(1))
+            
+            float_format = '{0}'.format
+            lines.append("(Dynamics")
+            lines.append(prefix + "m = " + float_format(x.mass.value_in(nbody_system.mass)))
+            r = x.position.value_in(nbody_system.length)
+            lines.append(prefix + "r = " + " ".join(map(float_format, r)))
+            v = x.velocity.value_in(nbody_system.speed)
+            lines.append(prefix + "v = " + " ".join(map(float_format, v)))
+            
+            lines.append(")Dynamics")
+            
+            lines.append(")Particle")
+            
+        
+        lines.append(")Particle")
+        return '\n'.join(lines)
+
+class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
+    """
+    Process a text file containing a table of values separated by a predefined character
+    """
+    
+    provided_formats = ['dyn']
+    
+    def __init__(self, filename, stream = None, set = None, format = None):
+        base.FileFormatProcessor.__init__(self, filename, set, format)
+        
+    
+    def load_string(self, string):
+        x = Dyn2Xml()
+        xml_string = x.convert_startlab_string_to_xml_string(string)
+        print xml_string
+        xml2particles = Xml2Particles()
+        xml2particles.parse_xml(xml_string)
+        if not self.nbody_to_si_converter is None:
+            result = core.ParticlesWithUnitsConverted(
+                xml2particles.system,
+                self.nbody_to_si_converter.as_converter_from_si_to_nbody()
+            )
+        else:
+            result = xml2particles.system
+        
+        return result[0].children()
+        
+    def store_string(self):
+        if not self.nbody_to_si_converter is None:
+            particles = core.ParticlesWithUnitsConverted(
+                self.set,
+                self.nbody_to_si_converter.as_converter_from_nbody_to_si()
+            )
+        else:
+            particles = self.set
+        
+        x = Particles2Dyn()
+        return x.convert_to_string(particles)
+       
+        
+
+    @base.format_option
+    def nbody_to_si_converter(self):
+        "tsf datafiles store nbody data, provide a converter to store si date (None means no converter)"
+        return None
+        

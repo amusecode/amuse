@@ -60,7 +60,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         
         contents = data_file.getvalue()
         #print contents       
-        self.assertEquals("#a b c\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
+        self.assertEquals("#a b c\n#m m m\n1.0 2.0 3.0\n4.0 5.0 6.0\n", contents)
     
     def test3(self):
         x = core.Particles(2)
@@ -69,7 +69,7 @@ class TableFormattedTextTests(amusetest.TestCase):
         io.write_set_to_file(x, "test.csv","txt")
         with open("test.csv", "r") as f:
             contents = f.read()
-        self.assertEquals("#mass radius\n1.0 3.0\n2.0 4.0\n", contents)
+        self.assertEquals("#mass radius\n#MSun RSun\n1.0 3.0\n2.0 4.0\n", contents)
 
         os.remove("test.csv")
         

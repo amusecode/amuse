@@ -14,7 +14,7 @@ class AmuseException(Exception):
     errorcode = ErrorCode(-1,-1, "unknown error")
     
     def __init__(self, *args):
-        Exception.__init__(*args)
+        Exception.__init__(self, *args)
 
 class CoreException(AmuseException):
     majorcode = 0

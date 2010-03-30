@@ -209,6 +209,7 @@ class TableFormattedText(base.FileFormatProcessor):
     def header_lines(self):
         result = []
         result.append(' '.join(self.attribute_names))
+        result.append(' '.join(map(str, self.attribute_types)))
         return result
         
     def footer_lines(self):
