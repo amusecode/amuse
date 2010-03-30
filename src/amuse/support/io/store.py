@@ -98,7 +98,7 @@ class StoreHDF(object):
         
         
         group.attrs["number_of_particles"] = len(particles)
-        group.attrs["class_of_the_particles"] = pickle.dumps(type(particles))
+        group.attrs["class_of_the_particles"] = pickle.dumps(particles._particles_factory())
         
         quantity = particles.get_timestamp()
         if not quantity is None:

@@ -616,9 +616,15 @@ class AbstractParticleSet(object):
         elif name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[name_of_the_attribute].get_values_for_particles(self)
         else:
-            return self._convert_to_particles(self._get_values(self._get_keys(), [name_of_the_attribute])[0])
+            if name_of_the_attribute in self._get_attributes():
+                return self._convert_to_particles(self._get_values(self._get_keys(), [name_of_the_attribute])[0])
+            else:
+                raise AttributeError("You tried to access attribute '{0}'"
+                    " but this attribute is not defined for this set.".format(name_of_the_attribute))
     
     def __setattr__(self, name_of_the_attribute, value):
+        if not (isinstance(value, Quantity) or isinstance(value, Particle) or isinstance(value, AbstractParticleSet)):
+            raise AttributeError("Can only assign quantities or other particles to an attribute.")
         if name_of_the_attribute in self._derived_attributes:
             self._derived_attributes[name_of_the_attribute].set_values_for_particles(self, value)
         else:
@@ -1775,6 +1781,9 @@ class ParticlesSubset(AbstractParticleSet):
     def _real_particles(self):
         return self._private.particles
         
+    def get_timestamp(self):
+        return self._real_particles().get_timestamp()
+        
     def difference(self, other):
         new_set_of_keys = self._private.set_of_keys.difference(other.to_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
@@ -1979,6 +1988,9 @@ class Particle(object):
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
             
+    def __len__(self):
+        return 1
+    
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
        
         if isinstance(new_value_for_the_attribute, values.Quantity):
@@ -1990,10 +2002,15 @@ class Particle(object):
                 new_value_for_the_attribute.key | units.object_key
             )
         else:
-            raise Exception("attribute "+name_of_the_attribute+" does not have a valid value, values must have a unit")
+            raise AttributeError("Can only assign quantities or other particles to an attribute.")
     
     def __getattr__(self, name_of_the_attribute):
-        return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
+        if ((name_of_the_attribute in self.particles_set._get_attributes()) or 
+            (name_of_the_attribute in self.particles_set._derived_attributes)):
+            return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
+        else:
+            raise AttributeError("You tried to access attribute '{0}'"
+                " but this attribute is not defined for this set.".format(name_of_the_attribute))
     
     def children(self):
         return self.particles_set.select(lambda x : x == self, ["parent"])
