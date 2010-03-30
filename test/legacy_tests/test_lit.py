@@ -43,7 +43,8 @@ class TestLiteratureRefs(unittest.TestCase):
             """
             def __init__(self):
                 lit.LiteratureRefs.__init__(self)
-
+        
+        lit.TracLiteratureReferences.default().registered_classes = set([])
         string = lit.LiteratureRefs.all_literature_references_string()
         self.assertEquals("", string)
 
