@@ -2,8 +2,9 @@ import weakref
 
 from amuse.support.units import nbody_system
 from amuse.support.data import values
+from amuse.support import exception
 
-
+import warnings
 
 class Parameters(object):
     def __init__(self, definitions, instance):
@@ -16,15 +17,17 @@ class Parameters(object):
     
     def __getattr__(self, name):
         if not name in self._mapping_from_name_to_definition:
-            raise AttributeError("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
-        
+            raise exception.CoreException("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+
+            
         definition = self._mapping_from_name_to_definition[name]
         return definition.get_value(self._instance())
     
     def __setattr__(self, name, value):
         if not name in self._mapping_from_name_to_definition:
-            raise AttributeError("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
-        
+            warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exception.AmuseWarning)
+            return
+            
         definition = self._mapping_from_name_to_definition[name]
         definition.set_value(self._instance(), value)
         
@@ -40,6 +43,8 @@ class Parameters(object):
         result.extend(dir(type(self)))
         result.extend(self.names())
         return result
+        
+        
         
 
 class ParametersWithUnitsConverted(object):
@@ -89,10 +94,16 @@ class ParameterDefinition(object):
         self.set_legacy_value(object, quantity.value_in(self.unit))
         
     def set_default_value(self, object):
-        if self.default_value is None:
-            pass
-        else:
-            self.set_value(object, self.default_value)
+        if self.default_value is None :
+            return None
+        
+        if self.is_readonly():
+            return None
+        
+        self.set_value(object, self.default_value)
+    
+    def is_readonly(self):
+        return False
         
 class ModuleAttributeParameterDefinition(ParameterDefinition):
     def __init__(self, attribute_name, name, description, unit, default_value = None):
@@ -104,25 +115,6 @@ class ModuleAttributeParameterDefinition(ParameterDefinition):
         
     def set_legacy_value(self, object, number):
         setattr(object, self.attribute_name, number)
-        
-class ModuleMethodParameterDefinition(ParameterDefinition):
-    def __init__(self, get_method, set_method, name, description, unit, default_value = None):
-        ParameterDefinition.__init__(self, name, description, unit, default_value)
-        self.get_method = get_method
-        self.set_method = set_method
-        self.stored_value = None
-        
-        
-    def get_legacy_value(self, object):
-        if self.get_method is None:
-            return self.stored_value
-        else:
-            return getattr(object, self.get_method)()
-        
-    def set_legacy_value(self, object, number):
-        getattr(object, self.set_method)(number)
-        if self.get_method is None:
-            self.stored_value = number
             
 class ParameterException(AttributeError):
     template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")
@@ -158,12 +150,21 @@ class ModuleMethodParameterDefinition_Next(ParameterDefinition):
                 return result
         
     def set_legacy_value(self, object, number):
+        if self.set_method is None:
+            raise exception.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+        
         error = getattr(object, self.set_method)(number)
         if error < 0:
             raise ParameterException(object, self.name, error, False)
         else:
             if self.get_method is None:
                 self.stored_value = number
+                
+    
+    
+    def is_readonly(self):
+        return self.set_method is None
+            
                 
                 
         
