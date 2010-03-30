@@ -23,3 +23,6 @@ class CoreException(AmuseException):
 class LegacyException(AmuseException):
     majorcode = 1
     errorcode = ErrorCode(majorcode,-1, "legacy code error")
+    
+class AmuseWarning(Warning):
+    pass
