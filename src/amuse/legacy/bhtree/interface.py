@@ -10,7 +10,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
     """
     include_headers = [ 'bhtree_code.h', 'parameters.h', 'worker_code.h', 'local.h']
     
-    timestep = legacy_global(name='timestep',id=21,dtype='d')
+    #timestep = legacy_global(name='timestep',id=21,dtype='d')
     eps2_for_gravity = legacy_global(name='eps2_for_gravity',id=22,dtype='d')
     theta_for_tree = legacy_global(name='theta_for_tree',id=23,dtype='d')
     
@@ -43,6 +43,23 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
+    
+    @legacy_function
+    def set_time_step():
+        """
+        Update timestep.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time_step', dtype='float64', direction=function.IN,
+            description = "timestep")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function    
         
        
 class BHTree(GravitationalDynamics):
@@ -70,9 +87,10 @@ class BHTree(GravitationalDynamics):
             nbody_system.length * nbody_system.length, 
             0.3 | nbody_system.length * nbody_system.length
         )
-        object.add_attribute_parameter(
+        object.add_method_parameter(
+            "get_time_step",
+            "set_time_step",
             "timestep",
-            "timestep", 
             "constant timestep for iteration", 
             nbody_system.time, 
             0.7 | nbody_system.time

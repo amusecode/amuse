@@ -100,6 +100,11 @@ Specifics
 Parameters
 ^^^^^^^^^^
 
+.. automodule:: amuse.legacy.hermite0.interface
+
+    .. autoclass:: Hermite
+        .. automethod:: parameters
+
 * smoothing parameter for gravity calculations, can be 0.::
 
       epsilon_squared

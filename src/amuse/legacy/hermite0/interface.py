@@ -5,12 +5,12 @@ from amuse.legacy.support.lit import LiteratureRefs
 
 
 class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
-    """  
+    """
     N-body integration module with shared but variable time step
     (the same for all particles but its size changing in time),
     using the Hermite integration scheme.
 
-    
+
     .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
     """
     include_headers = ['worker_code.h', 'parameters.h', 'local.h']
@@ -22,17 +22,17 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
 
     def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code")       
+        LegacyInterface.__init__(self, name_of_the_worker="worker_code")
         LiteratureRefs.__init__(self)
 
     def setup_module(self):
         self.commit_parameters()
         self.commit_particles()
 
-    
+
     def cleanup_module(self):
         self.cleanup_code
- 
+
     def reinitialize_particles(self):
         self.recommit_particles()
 
@@ -47,41 +47,39 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
            The particle was deleted
         """
         return function
-        
+
+class HermiteDoc(object):
+
+    def __get__(self, instance, owner):
+        return instance.parameters.__doc__
+
 class Hermite(GravitationalDynamics):
-    
-    
+
+    __doc__ = HermiteDoc()
+
     def __init__(self, convert_nbody = None):
-        
+
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
-       
-        
+
+
         legacy_interface = HermiteInterface()
-        
+
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
-        )     
-            
+        )
+
     def define_parameters(self, object):
         object.add_attribute_parameter(
             "eps2",
-            "epsilon_squared", 
-            "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
+            "epsilon_squared",
+            "smoothing parameter for gravity calculations",
+            nbody_system.length * nbody_system.length,
             0.3 | nbody_system.length * nbody_system.length
-        )     
-
-        object.add_attribute_parameter(
-            "timestep",
-            "timestep", 
-            "constant timestep for iteration", 
-            nbody_system.time, 
-            0.7 | nbody_system.time
         )
-       
+
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
@@ -97,4 +95,3 @@ class Hermite(GravitationalDynamics):
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
         )
-        

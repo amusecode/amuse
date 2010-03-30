@@ -1,13 +1,12 @@
-
 //=============================================================================
 //
 //       N-body integration module with shared but variable time step
 //       (the same for all particles but its size changing in time),
 //       using the Hermite integration scheme.
-//                        
+//
 //       ref.: Hut, P., Makino, J. & McMillan, S., 1995,
 //             Astrophysical Journal Letters 443, L93-L96.
-//                
+//
 //  All module functions are included in this file.
 //_____________________________________________________________________________
 //
@@ -106,68 +105,68 @@ void write_diagnostics(real epot, ostream& s = cout)
     int n = ident.size();
     real ekin = 0;			// kinetic energy
     for (int i = 0; i < n ; i++)
-        for (int k = 0; k < NDIM ; k++)
-            ekin += 0.5 * mass[i] * vel[i][k] * vel[i][k];
+	for (int k = 0; k < NDIM ; k++)
+	    ekin += 0.5 * mass[i] * vel[i][k] * vel[i][k];
 
     real etot = ekin + epot;		// total energy
 
-    if (!init_flag)                     // on first pass, set 
-      {                 
-        einit = etot;                   // the initial energy
-        init_flag = true;
-        return;                         // suppress initial output
+    if (!init_flag)                     // on first pass, set
+      {
+	einit = etot;                   // the initial energy
+	init_flag = true;
+	return;                         // suppress initial output
       }
 
     s << "    internal diagnostics at time t = " << t
-         << " after " << nsteps << " steps"
-         << endl
-         << "        E_kin = " << ekin
-         << "  E_pot = " << epot
-         << "  E_tot = " << etot << endl;
+	 << " after " << nsteps << " steps"
+	 << endl
+	 << "        E_kin = " << ekin
+	 << "  E_pot = " << epot
+	 << "  E_tot = " << etot << endl;
     s << "        "
-         << "absolute energy error  E_tot - E_init = "
-         << etot - einit << endl;
+	 << "absolute energy error  E_tot - E_init = "
+	 << etot - einit << endl;
     s << "        "
-         << "relative energy error  (E_tot - E_init) / E_init = "
-         << (etot - einit) / einit << endl;
+	 << "relative energy error  (E_tot - E_init) / E_init = "
+	 << (etot - einit) / einit << endl;
 
-    if (x_flag) 
+    if (x_flag)
       {
-        s << "        system dump, n = " << n << endl;
-        for (int i = 0; i < n ; i++)
-          {
-            s << "        data for particle " << ident[i]
-                 << ": " << endl;
-            s << "            "; s << mass[i] << endl;
-            s << "            "; s << radius[i] << endl;
-            s << "           "; 
-            for (int k = 0; k < NDIM; k++)
-              {
-                s << ' ' << pos[i][k];
-              }
-            s << endl;
-            s << "           "; 
-            for (int k = 0; k < NDIM; k++)
-              {
-                s << ' ' << vel[i][k];
-              }
-            s << endl;
-            s << "           "; 
-            for (int k = 0; k < NDIM; k++)
-              {
-                s << ' ' << acc[i][k];
-              }
-            s << endl;
-            s << "           "; 
-            for (int k = 0; k < NDIM; k++)
-              {
-                s << ' ' << jerk[i][k];
-              }
-            s << endl;
-          }
+	s << "        system dump, n = " << n << endl;
+	for (int i = 0; i < n ; i++)
+	  {
+	    s << "        data for particle " << ident[i]
+		 << ": " << endl;
+	    s << "            "; s << mass[i] << endl;
+	    s << "            "; s << radius[i] << endl;
+	    s << "           ";
+	    for (int k = 0; k < NDIM; k++)
+	      {
+		s << ' ' << pos[i][k];
+	      }
+	    s << endl;
+	    s << "           ";
+	    for (int k = 0; k < NDIM; k++)
+	      {
+		s << ' ' << vel[i][k];
+	      }
+	    s << endl;
+	    s << "           ";
+	    for (int k = 0; k < NDIM; k++)
+	      {
+		s << ' ' << acc[i][k];
+	      }
+	    s << endl;
+	    s << "           ";
+	    for (int k = 0; k < NDIM; k++)
+	      {
+		s << ' ' << jerk[i][k];
+	      }
+	    s << endl;
+	  }
       }
 }
-    
+
 //-----------------------------------------------------------------------------
 //  predict_step  --  take the first approximation of one Hermite integration
 //                    step, advancing the positions and velocities through a
@@ -182,11 +181,11 @@ void predict_step(real dt)
     int n = ident.size();
     for (int i = 0; i < n ; i++)
       {
-        for (int k = 0; k < NDIM ; k++)
+	for (int k = 0; k < NDIM ; k++)
 	  {
-            pos[i][k] += vel[i][k]*dt + acc[i][k]*dt*dt/2
-                                      + jerk[i][k]*dt*dt*dt/6;
-            vel[i][k] += acc[i][k]*dt + jerk[i][k]*dt*dt/2;
+	    pos[i][k] += vel[i][k]*dt + acc[i][k]*dt*dt/2
+				      + jerk[i][k]*dt*dt*dt/6;
+	    vel[i][k] += acc[i][k]*dt + jerk[i][k]*dt*dt/2;
 	  }
       }
 }
@@ -241,9 +240,9 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     int n = ident.size();
     for (int i = 0; i < n ; i++)
       {
-        for (int k = 0; k < NDIM ; k++)
+	for (int k = 0; k < NDIM ; k++)
 	  {
-            acc[i][k] = jerk[i][k] = 0;
+	    acc[i][k] = jerk[i][k] = 0;
 	  }
       }
 
@@ -251,42 +250,42 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     const real VERY_LARGE_NUMBER = 1e300;
     real coll_time_q = VERY_LARGE_NUMBER;      // collision time to 4th power
     real coll_est_q;                           // collision time scale estimate
-                                               // to 4th power (quartic)
+					       // to 4th power (quartic)
     id_coll_primary = id_coll_secondary = -1;
 
     for (int i = 0; i < n ; i++)
       {
-        for (int j = i+1; j < n ; j++)             // rji[] is the vector from
-	  {            
-            real rji[NDIM];                        // particle i to particle j
-            real vji[NDIM];                        // vji[] = d rji[] / d t
-            for (int k = 0; k < NDIM ; k++)
+	for (int j = i+1; j < n ; j++)             // rji[] is the vector from
+	  {
+	    real rji[NDIM];                        // particle i to particle j
+	    real vji[NDIM];                        // vji[] = d rji[] / d t
+	    for (int k = 0; k < NDIM ; k++)
 	      {
-                rji[k] = pos[j][k] - pos[i][k];
-                vji[k] = vel[j][k] - vel[i][k];
+		rji[k] = pos[j][k] - pos[i][k];
+		vji[k] = vel[j][k] - vel[i][k];
 	      }
-            real r2 = 0;                           // | rji |^2
-            real v2 = 0;                           // | vji |^2
-            real rv_r2 = 0;                        // ( rij . vij ) / | rji |^2
-            for (int k = 0; k < NDIM ; k++)
+	    real r2 = 0;                           // | rji |^2
+	    real v2 = 0;                           // | vji |^2
+	    real rv_r2 = 0;                        // ( rij . vij ) / | rji |^2
+	    for (int k = 0; k < NDIM ; k++)
 	      {
-                r2 += rji[k] * rji[k];
-                v2 += vji[k] * vji[k];
-                rv_r2 += rji[k] * vji[k];
+		r2 += rji[k] * rji[k];
+		v2 += vji[k] * vji[k];
+		rv_r2 += rji[k] * vji[k];
 	      }
-            rv_r2 /= r2;
+	    rv_r2 /= r2;
 
-	    if (id_coll_primary < 0) 
+	    if (id_coll_primary < 0)
 	      {
 		real rsum = radius[i] + radius[j];
-		if (r2 <= rsum*rsum) 
+		if (r2 <= rsum*rsum)
 		  {
-		    if (mass[i] >= mass[j]) 
+		    if (mass[i] >= mass[j])
 		      {
 			id_coll_primary = ident[i];
 			id_coll_secondary = ident[j];
-		      } 
-		    else 
+		      }
+		    else
 		      {
 			id_coll_primary = ident[j];
 			id_coll_secondary = ident[i];
@@ -295,57 +294,57 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
 	      }
 
 	    r2 += eps2;				   // | rji |^2 + eps^2
-            real r = sqrt(r2);                     // | rji |
-            real r3 = r * r2;                      // | rji |^3
+	    real r = sqrt(r2);                     // | rji |
+	    real r3 = r * r2;                      // | rji |^3
 
 	    // Add the {i,j} contribution to the total potential energy.
 
-            *epot -= mass[i] * mass[j] / r;
+	    *epot -= mass[i] * mass[j] / r;
 
 	    // Add the {j (i)} contribution to the {i (j)} acc and jerk.
 
-            real da[NDIM];                         // main terms in pairwise
-            real dj[NDIM];                         // acceleration and jerk
-            for (int k = 0; k < NDIM ; k++)
+	    real da[NDIM];                         // main terms in pairwise
+	    real dj[NDIM];                         // acceleration and jerk
+	    for (int k = 0; k < NDIM ; k++)
 	      {
-                da[k] = rji[k] / r3;                          // see equations
-                dj[k] = (vji[k] - 3 * rv_r2 * rji[k]) / r3;   // in the header
+		da[k] = rji[k] / r3;                          // see equations
+		dj[k] = (vji[k] - 3 * rv_r2 * rji[k]) / r3;   // in the header
 	      }
-            for (int k = 0; k < NDIM ; k++)
+	    for (int k = 0; k < NDIM ; k++)
 	      {
-                acc[i][k]  += mass[j] * da[k];                // using symmetry
-                acc[j][k]  -= mass[i] * da[k];                // find pairwise
-                jerk[i][k] += mass[j] * dj[k];                // acceleration
-                jerk[j][k] -= mass[i] * dj[k];                // and jerk
+		acc[i][k]  += mass[j] * da[k];                // using symmetry
+		acc[j][k]  -= mass[i] * da[k];                // find pairwise
+		jerk[i][k] += mass[j] * dj[k];                // acceleration
+		jerk[j][k] -= mass[i] * dj[k];                // and jerk
 	      }
 
 	    // First collision time estimate is based on unaccelerated
 	    // linear motion.
 
-            coll_est_q = (r2*r2) / (v2*v2);
-            if (coll_time_q > coll_est_q)
+	    coll_est_q = (r2*r2) / (v2*v2);
+	    if (coll_time_q > coll_est_q)
 	      {
-                coll_time_q = coll_est_q;
+		coll_time_q = coll_est_q;
 	      }
 	    // Second collision time estimate is based on free fall.
 
-            real da2 = 0;                                  // da2 becomes the 
-            for (int k = 0; k < NDIM ; k++)                // square of the  
+	    real da2 = 0;                                  // da2 becomes the
+	    for (int k = 0; k < NDIM ; k++)                // square of the
 	      {
-                da2 += da[k] * da[k];                      // pairwise accel- 
+		da2 += da[k] * da[k];                      // pairwise accel-
 	      }
-            real mij = mass[i] + mass[j];                  // eration between
-            da2 *= mij * mij;                              // particles i and j
+	    real mij = mass[i] + mass[j];                  // eration between
+	    da2 *= mij * mij;                              // particles i and j
 
-            coll_est_q = r2/da2;
-            if (coll_time_q > coll_est_q)
+	    coll_est_q = r2/da2;
+	    if (coll_time_q > coll_est_q)
 	      {
-                coll_time_q = coll_est_q;
+		coll_time_q = coll_est_q;
 	      }
-	  }                                     
+	  }
       }                                               // from q for quartic back
     *coll_time = sqrt(sqrt(coll_time_q));            // to linear collision time
-}                                             
+}
 
 //-----------------------------------------------------------------------------
 //  correct_step  --  take one iteration to improve the new values of
@@ -356,19 +355,19 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
 //		      Aarseth; it comes from ACS (Hut & Makino).
 //-----------------------------------------------------------------------------
 
-void correct_step(const real old_pos[][NDIM], const real old_vel[][NDIM], 
-                  const real old_acc[][NDIM], const real old_jerk[][NDIM],
-                  real dt)
+void correct_step(const real old_pos[][NDIM], const real old_vel[][NDIM],
+		  const real old_acc[][NDIM], const real old_jerk[][NDIM],
+		  real dt)
 {
     int n = ident.size();
     for (int i = 0; i < n ; i++)
       {
-        for (int k = 0; k < NDIM ; k++)
+	for (int k = 0; k < NDIM ; k++)
 	  {
-            vel[i][k] = old_vel[i][k] + (old_acc[i][k] + acc[i][k])*dt/2
-                                      + (old_jerk[i][k] - jerk[i][k])*dt*dt/12;
-            pos[i][k] = old_pos[i][k] + (old_vel[i][k] + vel[i][k])*dt/2
-                                      + (old_acc[i][k] - acc[i][k])*dt*dt/12;
+	    vel[i][k] = old_vel[i][k] + (old_acc[i][k] + acc[i][k])*dt/2
+				      + (old_jerk[i][k] - jerk[i][k])*dt*dt/12;
+	    pos[i][k] = old_pos[i][k] + (old_vel[i][k] + vel[i][k])*dt/2
+				      + (old_acc[i][k] - acc[i][k])*dt*dt/12;
 	  }
       }
 }
@@ -388,7 +387,7 @@ void evolve_step(real dt, real *epot, real *coll_time)
 
     for (int i = 0; i < n ; i++)
       {
-        for (int k = 0; k < NDIM ; k++)
+	for (int k = 0; k < NDIM ; k++)
 	  {
 	    old_pos[i][k] = pos[i][k];
 	    old_vel[i][k] = vel[i][k];
@@ -400,7 +399,7 @@ void evolve_step(real dt, real *epot, real *coll_time)
     predict_step(dt);
     get_acc_jerk_pot_coll(epot, coll_time);
     correct_step(old_pos, old_vel, old_acc, old_jerk, dt);
-    if (reeval) 
+    if (reeval)
       {
 	get_acc_jerk_pot_coll(epot, coll_time);
       }
@@ -419,7 +418,7 @@ real calculate_step(real coll_time)
     // Determine the new system time step from coll_time.
 
     real step = dt_param;
-    if (!test_mode) 
+    if (!test_mode)
       {
 
 	step *= coll_time;
@@ -443,9 +442,9 @@ void compute_nn()
     int imin = -1, jmin = -1;
     int n = ident.size();
 
-    for (int i = 0; i < n-1; i++) 
+    for (int i = 0; i < n-1; i++)
       {
-	for (int j = i+1; j < n; j++) 
+	for (int j = i+1; j < n; j++)
 	  {
 	    real rij2 = 0;
 	    for (int k = 0; k < NDIM; k++)
@@ -453,18 +452,18 @@ void compute_nn()
 		real dx = pos[i][k]-pos[j][k];
 		rij2+=dx*dx;
 	      }
-	    if (rij2 <= rijmin2) 
+	    if (rij2 <= rijmin2)
 	      {
-	        rijmin2 = rij2;
+		rijmin2 = rij2;
 		imin = i;
 		jmin = j;
 	      }
 	  }
       }
-    
+
     real rsum = radius[imin]+radius[jmin];
 
-    if (rsum <= 0) 
+    if (rsum <= 0)
       {
 	rsum = 1;
       }
@@ -527,19 +526,19 @@ int evolve_system(real t_end)
 
     if (t + dt > t_end) return -1;
 
-    while (true) 
+    while (true)
       {
 
 	while (t < t_dia && t+dt <= t_end)
 	  {
 	    dt = calculate_step(coll_time);
-            evolve_step(dt, &epot, &coll_time);	// sets t, t_evolve
-	    if (test_mode) 
+	    evolve_step(dt, &epot, &coll_time);	// sets t, t_evolve
+	    if (test_mode)
 	      {
-	        real E;
-	        nest_err = get_kinetic_energy(&E); 
+		real E;
+		nest_err = get_kinetic_energy(&E);
 		E += epot;
-		if (!init_flag) 
+		if (!init_flag)
 		  {
 		    einit = E;
 		    init_flag = true;
@@ -547,38 +546,38 @@ int evolve_system(real t_end)
 		cout << t << " " << pos[0][0] << " " << pos[0][1]
 		     << " " << E - einit << endl;
 	      }
-            nsteps++;
+	    nsteps++;
 
 	    // compute_nn();
 
-	    if (flag_collision && id_coll_primary >= 0) 
+	    if (flag_collision && id_coll_primary >= 0)
 	      {
 		break;
 	      }
 	  }
-	
-        if (t >= t_dia)
+
+	if (t >= t_dia)
 	  {
-            write_diagnostics(epot, *sout);
-            t_dia += dt_dia;
+	    write_diagnostics(epot, *sout);
+	    t_dia += dt_dia;
 	  }
 
-	if (flag_collision && id_coll_primary >= 0) 
+	if (flag_collision && id_coll_primary >= 0)
 	  {
 	    break;
 	  }
-        if (t+dt > t_end) 
+	if (t+dt > t_end)
 	  {
 	    break;
 	  }
       }
 
-    if (!flag_collision || id_coll_primary  < 0) 
+    if (!flag_collision || id_coll_primary  < 0)
       {
-	if (sync && t < t_end) 
+	if (sync && t < t_end)
 	  {
 	    evolve_step(t_end-t, &epot, &coll_time);
-            nsteps++;
+	    nsteps++;
 	  }
 	get_acc_jerk_pot_coll(&epot, &coll_time);
 	dt = calculate_step(coll_time);
@@ -600,7 +599,7 @@ int evolve_system(real t_end)
       {
 	nest_err = -2;
       }
-    
+
     return nest_err;
 }
 
@@ -614,20 +613,20 @@ int cleanup_code()
     return 0;
 }
 
-int new_particle(int *id, double _mass, double _radius, 
-		 double x, double y, double z, 
+int new_particle(int *id, double _mass, double _radius,
+		 double x, double y, double z,
 		 double vx, double vy, double vz)
 // add d to the dynamical system
-// cello, proj 1 
+// cello, proj 1
 // make test, not done yet
 {
   int new_element;
 
   // Always add to the end of the list.
   // Allways at the end anyway
-  
+
   new_element = ident.size();
-  
+
   ident.push_back(new_element);		// generally want to specify id
   mass.push_back(_mass);
   radius.push_back(_radius);
@@ -635,20 +634,20 @@ int new_particle(int *id, double _mass, double _radius,
   vel.push_back(vec(vx, vy, vz));
   acc.push_back(vec(0,0,0));
   jerk.push_back(vec(0,0,0));
-  
+
   *id = new_element;
-  
+
   //return ident.size();
   return 0;
 }
 
 int delete_particle(int id)
-//cello, proj 1 
+//cello, proj 1
 // assuming same as remove particle??
 {
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-  
-  if (i < ident.size()) 
+
+  if (i < ident.size())
     {
       ident.erase(ident.begin()+i);
       mass.erase(mass.begin()+i);
@@ -682,23 +681,23 @@ int remove_particle(int id)		// remove id from the dynamical system
 }
 */
 
-int get_state(int id, double *_mass, double *_radius, double *x, double *y, double *z, 
-	      double *vx, double *vy, double *vz) 
+int get_state(int id, double *_mass, double *_radius, double *x, double *y, double *z,
+	      double *vx, double *vy, double *vz)
 // cello, proj1 changed return type void-->int, only OK no errors yet?
 // todo: replace find fction.
 {
   //*id_out = -1;
-  
+
   //unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
   int i;
   i = id;
-  if (i < (int) ident.size()) 
+  if (i < (int) ident.size())
     {
       real del = t_evolve - t;
-      
+
       vec position = pos[i] + vel[i]*del + acc[i]*del*del/2 + jerk[i]*del*del*del/6;
       vec velocity = vel[i] + acc[i]*del + jerk[i]*del*del/2;
-      
+
       //*id_out = id;
       *_mass = mass[i];
       *_radius = radius[i];
@@ -711,17 +710,17 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
       return 0;
     }
   else
-    { 
+    {
       return -1;
     }
 }
 
-int set_state(int id, double _mass, double _radius, double x, double y, double z, 
+int set_state(int id, double _mass, double _radius, double x, double y, double z,
 	      double vx, double vy, double vz)
-//cello, proj1, 
+//cello, proj1,
 {
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-  
+
   if (i < ident.size())
     {
       mass[i] = _mass;
@@ -734,7 +733,7 @@ int set_state(int id, double _mass, double _radius, double x, double y, double z
     {
       return -1;
     }
-  
+
 }
 
 int get_mass(int id, double *_mass)
@@ -755,11 +754,11 @@ int get_mass(int id, double *_mass)
 int set_mass(int id, double _mass)
 {
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-    if (i < ident.size()) 
+    if (i < ident.size())
       {
 	mass[i] = _mass;
 	return 0;
-      } else 
+      } else
       return -1;
 }
 
@@ -781,13 +780,13 @@ int get_radius(int id, double *_radius)
 int set_radius(int id, double _radius)
 {
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-  if (i < ident.size()) 
+  if (i < ident.size())
     {
       radius[i] = _radius;;
       return 0;
-    } 
+    }
   else
-    { 
+    {
       return -1;
     }
 }
@@ -802,7 +801,7 @@ int get_position(int id, double *x, double *y, double *z)
       *z = pos[i][2];
       return 0;
     }
-  else 
+  else
     {
       return -2;
     }
@@ -815,8 +814,8 @@ int set_position(int id, double x, double y, double z)
     {
       pos[i] = vec(x, y, z);
       return 0;
-    } 
-  else 
+    }
+  else
     {
       return -1;
     }
@@ -832,7 +831,7 @@ int get_velocity(int id, double *vx, double *vy, double *vz)
       *vz = vel[i][2];
       return 0;
     }
-  else 
+  else
     {
       return -2;
     }
@@ -841,14 +840,14 @@ int get_velocity(int id, double *vx, double *vy, double *vz)
 int set_velocity(int id, double vx, double vy, double vz)
 {
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-  
-  if (i < ident.size()) 
+
+  if (i < ident.size())
     {
       vel[i] = vec(vx,vy,vz);
       return 0;
-    } 
+    }
   else
-    { 
+    {
       return -1;
     }
   return 0;
@@ -864,7 +863,7 @@ int get_acceleration(int id, double *ax, double *ay, double *az)
       *az = acc[i][2];
       return 0;
     }
-  else 
+  else
     {
       return -2;
     }
@@ -880,11 +879,11 @@ int set_acceleration(int id, double ax, double ay, double az)
       acc[i][2] = az;
       return 0;
     }
-  else 
+  else
     {
       return -2;
     }
-  
+
   return -3;
 }
 
@@ -922,11 +921,11 @@ int get_kinetic_energy(double *kinetic_energy)
   real dt = t_evolve-t;
   for (int i = 0; i < n ; i++)
     {
-      for (int k = 0; k < NDIM ; k++) 
-	{
-	  real v = vel[i][k] + acc[i][k]*dt + jerk[i][k]*dt*dt/2;
-	  ekin += mass[i] * v * v;
-	}
+      for (int k = 0; k < NDIM ; k++)
+        {
+          real v = vel[i][k] + acc[i][k]*dt + jerk[i][k]*dt*dt/2;
+          ekin += mass[i] * v * v;
+        }
     }
   *kinetic_energy = 0.5*ekin;
   return 0;
@@ -937,37 +936,37 @@ int get_potential_energy(double *potential_energy)
   int n = ident.size();
   real (* save_pos)[NDIM] = new real[n][NDIM];
   real (* save_vel)[NDIM] = new real[n][NDIM];
-  
+
   real dt = t_evolve-t;
-  
-  if (dt > 0) 
+
+  if (dt > 0)
     {
       for (int i = 0; i < n ; i++)
-	{
-	  for (int k = 0; k < NDIM ; k++)
-	    {
-	      save_pos[i][k] = pos[i][k];
-	      save_vel[i][k] = vel[i][k];
-	    }
-	}
+        {
+          for (int k = 0; k < NDIM ; k++)
+            {
+              save_pos[i][k] = pos[i][k];
+              save_vel[i][k] = vel[i][k];
+            }
+        }
       predict_step(t_evolve-t);
     }
-  
+
   real epot, coll_time;
   get_acc_jerk_pot_coll(&epot, &coll_time);
-  
-  if (dt > 0) 
+
+  if (dt > 0)
     {
-	for (int i = 0; i < n ; i++)
-	  {
-	    for (int k = 0; k < NDIM ; k++)
-	      {
-		pos[i][k] = save_pos[i][k];
-		vel[i][k] = save_vel[i][k];
-	      }
-	  }
+        for (int i = 0; i < n ; i++)
+          {
+            for (int k = 0; k < NDIM ; k++)
+              {
+                pos[i][k] = save_pos[i][k];
+                vel[i][k] = save_vel[i][k];
+              }
+          }
     }
-  
+
   *potential_energy = epot;
   return 0;
 }
@@ -992,18 +991,18 @@ int get_potential_at_point(double eps, double x, double y, double z, double *phi
       r = sqrt(rx*rx+ry*ry+rz*rz + eps2);
       *phi -= mass[i]/r;
     }
-  
+
   return 0;
 }
 
-int get_gravity_at_point(double eps, double x,double y, double z, 
-			 double *Fx, double *Fy, double *Fz)
+int get_gravity_at_point(double eps, double x,double y, double z,
+                         double *Fx, double *Fy, double *Fz)
 {
   int n = ident.size();
   double rx, ry, rz, r3, r2, r, F;
-  
+
   *Fx = 0;*Fy = 0;*Fz = 0;
-  
+
   for (int i = 0; i<n; i++)
     {
       rx = pos[i][0]-x;
@@ -1017,42 +1016,42 @@ int get_gravity_at_point(double eps, double x,double y, double z,
       *Fy += F * ry;
       *Fz += F * rz;
     }
-  
+
   return 0;
 }
 
 int get_colliding_primary()
 {
   id_coll_primary = id_coll_secondary = -1;
-  
+
   int n = ident.size();
   for (int i = 0; i < n-1; i++)         // inefficient; better to flag
-    {	
-                                        
+    {
+
       for (int j = i+1; j < n; j++)     // collisions during the force loop
-	{
-	  real r2 = 0;
-	  for(int k = 0; k < NDIM; k++)
-	    {
-	      real dx = pos[i][k]-pos[j][k];
-	      r2+=dx*dx;
-	    }
-	  real rsum = radius[i] + radius[j];
-	  if (r2 <= rsum*rsum) 
-	    {
-	      if (mass[i] >= mass[j]) 
-		{
-		  id_coll_primary = ident[i];
-		  id_coll_secondary = ident[j];
-		} 
-	      else 
-		{
-		  id_coll_primary = ident[j];
-		  id_coll_secondary = ident[i];
-		}
-	      return id_coll_primary;
-	    }
-	}
+        {
+          real r2 = 0;
+          for(int k = 0; k < NDIM; k++)
+            {
+              real dx = pos[i][k]-pos[j][k];
+              r2+=dx*dx;
+            }
+          real rsum = radius[i] + radius[j];
+          if (r2 <= rsum*rsum)
+            {
+              if (mass[i] >= mass[j])
+                {
+                  id_coll_primary = ident[i];
+                  id_coll_secondary = ident[j];
+                }
+              else
+                {
+                  id_coll_primary = ident[j];
+                  id_coll_secondary = ident[i];
+                }
+              return id_coll_primary;
+            }
+        }
     }
   return -1;
 }
@@ -1061,7 +1060,7 @@ int get_colliding_secondary(int id1)
 {
   if (id1 >= 0 && id1 == id_coll_primary && id_coll_secondary >= 0)
     {
-      return id_coll_secondary;  
+      return id_coll_secondary;
     }
   else
     {
@@ -1088,12 +1087,12 @@ int get_total_mass(double *_mass)
 {
   int n = ident.size();
   *_mass = 0.0;
-  
+
   for (int i = 0; i< n; i++)
     {
       *_mass += mass[i];
     }
-  
+
   return 0;
 }
 
@@ -1124,22 +1123,22 @@ int get_center_of_mass_velocity(double *vx, double *vy,double *vz)
 {
   int n = ident.size();
   double M;
-  
+
   *vx=0; *vy=0; *vz=0;
 
   get_total_mass(&M);
-  
+
   for (int i = 0; i<n; i++)
     {
       *vx += mass[i]*vel[i][0];
       *vy += mass[i]*vel[i][1];
       *vz += mass[i]*vel[i][2];
     }
-  
+
   *vx /= M;
   *vy /= M;
   *vz /= M;
-  
+
   return 0;
 }
 
@@ -1174,16 +1173,16 @@ int get_index_of_next_particle(int id, int *index_of_the_next_particle)
       *index_of_the_next_particle = ident.at(i+1);
       return 0;
     }
-  else 
+  else
     {
       if (i == (ident.size()-1))
-	{
-	  return 1;
-	}
+        {
+          return 1;
+        }
       else
-	{
-	  return -1;
-	}
+        {
+          return -1;
+        }
     }
 
 }
@@ -1192,7 +1191,7 @@ int set_particle(int id, double _mass, double _radius, double x, double y, doubl
 {
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
 
-    if (i < ident.size()) 
+    if (i < ident.size())
       {
         // Particle already exists.  Change it.
         mass[i] = _mass;
@@ -1201,10 +1200,10 @@ int set_particle(int id, double _mass, double _radius, double x, double y, doubl
         vel[i] = vec(vx, vy, vz);
         acc[i] = vec(0.0);
         jerk[i] = vec(0.9);
-	
+
         return 0;
-      } 
-    else 
+      }
+    else
       {
         *sout << "set_particle: " << id
               << " doesn't exist.  Use add_particle." << endl << flush;
@@ -1215,16 +1214,16 @@ int set_particle(int id, double _mass, double _radius, double x, double y, doubl
 int get_dynamical_time_scale(double *ts)
 {
     real mtot = 0, ekin = 0, epot, coll_time;
-    for (unsigned int i = 0; i < ident.size(); i++) 
+    for (unsigned int i = 0; i < ident.size(); i++)
       {
-	mtot += mass[i];
-	real dekin = 0;
-	for (int k = 0; k < NDIM; k++) dekin += pow(vel[i][k],2);
-	ekin += 0.5*mass[i]*dekin;
+        mtot += mass[i];
+        real dekin = 0;
+        for (int k = 0; k < NDIM; k++) dekin += pow(vel[i][k],2);
+        ekin += 0.5*mass[i]*dekin;
       }
 
     get_acc_jerk_pot_coll(&epot, &coll_time);
-    
+
     real tdyn = (-0.5*mtot*mtot/epot) / sqrt(2*ekin/mtot);
     return tdyn;
 }
@@ -1241,7 +1240,7 @@ int initialize_time_step() {return -2;}
 
 int finalize_time_step() {return -2;}
 
-int get_escaper(){return -2;}	// not implemented yet
+int get_escaper(){return -2;}   // not implemented yet
 
 
 
@@ -1276,7 +1275,7 @@ int recommit_parameters(){
 
     return 0;
 }
-  
+
 
 int commit_particles()
 {
@@ -1285,7 +1284,7 @@ int commit_particles()
     t = 0;
     t_evolve = 0;
     t_wanted = 0;
-    
+
     get_acc_jerk_pot_coll(&epot, &coll_time);
 
     return 0;
@@ -1293,20 +1292,20 @@ int commit_particles()
 
 int commit_parameters(){
     if(test_mode) {
-        sout = &cerr;  
+        sout = &cerr;
     }
     return 0;
 }
 
 int synchronize_model() {
-    real epot;			// potential energy of the n-body system
-    real coll_time;		// collision (close encounter) time scale
-    
-    if (t_evolve < t_wanted) 
+    real epot;                  // potential energy of the n-body system
+    real coll_time;             // collision (close encounter) time scale
+
+    if (t_evolve < t_wanted)
     {
         evolve_step(t_wanted-t_evolve, &epot, &coll_time);
         nsteps++;
-        
+
         get_acc_jerk_pot_coll(&epot, &coll_time);
         t_evolve = t_wanted;
     }
