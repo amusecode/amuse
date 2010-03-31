@@ -119,7 +119,13 @@ and the stars set:
 
 .. code-block:: python
 
-    >>> outersphere_alt = stars.difference(innersphere)  
+    >>> outersphere_alt = stars.difference(innersphere)
+
+or using the particle subtraction '-' operator:
+
+.. code-block:: python
+
+    >>> outersphere_alt2 = stars - innersphere
 
 The selections are all subsets as we can verify:
 
@@ -138,6 +144,8 @@ The result should be the same, but we'll check:
     >>> hopefuly_empty = outersphere.difference(outersphere_alt)
     >>> hopefuly_empty.is_empty()
     True
+    >>> len(outersphere - outersphere_alt2)==0
+    True
 
 From our selection criteria we would expect to have selected all stars, to check this we could do something like this:
 
@@ -147,6 +155,8 @@ From our selection criteria we would expect to have selected all stars, to check
     True
     >>> len(innersphere)+len(outersphere_alt) == 1000
     True
+    >>> len(innersphere)+len(outersphere_alt2) == 1000
+    True
 
 The union of the innersphere and outersphere set should give the stars set, we can check:
 
@@ -154,6 +164,8 @@ The union of the innersphere and outersphere set should give the stars set, we c
 
     >>> like_stars = innersphere.union(outersphere)
     >>> stars.difference(like_stars).is_empty()
+    True
+    >>> (innersphere + outersphere_alt2 -stars).is_empty()
     True
 
 Iteration
@@ -165,7 +177,7 @@ We can iterate over sets and we will put that to use here to check whether we re
 
     >>> should_not_be_there_stars = 0
     >>> for star in outersphere:
-    ...     if (center_of_mass-star.position).length()<1.0|units.AU:
+    ...     if (center_of_mass-star.position).length()<1.0|units.parsec:
     ...         should_not_be_there_stars += 1
     >>> should_not_be_there_stars
     0

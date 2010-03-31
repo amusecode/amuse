@@ -545,6 +545,14 @@ class AbstractParticleSet(object):
     quantity<20.0 m>
     
     
+    Particle sets can be sliced.
+    
+    >>> particles = Particles(3)
+    >>> particles.x = [10.0, 20.0, 30.0] | units.m
+    >>> particles[1:].x
+    quantity<[20.0, 30.0] m>
+    
+    
     Particle sets can be copied.
     
     >>> particles = Particles(3)
@@ -555,6 +563,41 @@ class AbstractParticleSet(object):
     quantity<[2.0, 2.0, 2.0] m>
     >>> copy.x
     quantity<[10.0, 20.0, 30.0] m>
+    
+    
+    Particle sets can be added together. 
+    Attribute values are not stored by the resulting subset. The subset
+    provides a view on two or more sets of particles. Changing attributes
+    of the sum of sets will also change the attributes of each original
+    set, contrary to copy().
+    
+    >>> particles = Particles(4)
+    >>> particles1 = particles[:2]
+    >>> particles1.x = [1.0, 2.0] | units.m
+    >>> particles2 = particles[2:]
+    >>> particles2.x = [3.0, 4.0] | units.m
+    >>> new_set = particles1 + particles2
+    >>> print len(new_set)
+    4
+    >>> print new_set.x
+    [1.0, 2.0, 3.0, 4.0] m
+    
+    
+    Particle sets can be subtracted from each other. 
+    Like with addition, attribute values are not stored by the resulting
+    subset.
+    
+    >>> particles = Particles(4)
+    >>> particles.x = [1.0, 2.0, 3.0, 4.0] | units.m
+    >>> junk = particles[2:]
+    >>> new_set = particles - junk
+    >>> print len(new_set)
+    2
+    >>> print new_set.x
+    [1.0, 2.0] m
+    >>> print particles.x
+    [1.0, 2.0, 3.0, 4.0] m
+    
     
     Particle sets can have instance based or global vector attributes.
     A particle set stores a list of scalar values for each attribute.
@@ -1017,12 +1060,12 @@ class AbstractParticleSet(object):
         >>> particles1.x = [1.0, 2.0] | units.m
         >>> particles2 = particles[2:]
         >>> particles2.x = [3.0, 4.0] | units.m
-        >>> set = particles1 + particles2
-        >>> set  # doctest:+ELLIPSIS
+        >>> new_set = particles1 + particles2
+        >>> new_set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
-        >>> print len(set)
+        >>> print len(new_set)
         4
-        >>> print set.x
+        >>> print new_set.x
         [1.0, 2.0, 3.0, 4.0] m
         """
         if isinstance(particles, Particle):
@@ -1048,12 +1091,12 @@ class AbstractParticleSet(object):
         >>> particles = Particles(4)
         >>> particles.x = [1.0, 2.0, 3.0, 4.0] | units.m
         >>> junk = particles[2:]
-        >>> set = particles - junk
-        >>> set  # doctest:+ELLIPSIS
+        >>> new_set = particles - junk
+        >>> new_set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
-        >>> print len(set)
+        >>> print len(new_set)
         2
-        >>> print set.x
+        >>> print new_set.x
         [1.0, 2.0] m
         >>> print particles.x
         [1.0, 2.0, 3.0, 4.0] m
@@ -1990,12 +2033,12 @@ class Particle(object):
         >>> particle1.x = 1.0 | units.m
         >>> particle2 = particles[1]
         >>> particle2.x = 2.0 | units.m
-        >>> set = particle1 + particle2
-        >>> set  # doctest:+ELLIPSIS
+        >>> new_set = particle1 + particle2
+        >>> new_set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
-        >>> print len(set)
+        >>> print len(new_set)
         2
-        >>> print set.x
+        >>> print new_set.x
         [1.0, 2.0] m
         """
         return self.as_set().__add__(particles)

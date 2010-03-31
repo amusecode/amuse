@@ -63,6 +63,9 @@ data of a particle is stored in the set.
     .. autoclass:: AbstractParticleSet
         :members:
         
+        .. automethod:: __add__
+        .. automethod:: __sub__
+        
     .. autoclass:: Particles
         :members:
         
@@ -78,4 +81,7 @@ data of a particle is stored in the set.
 
     .. autoclass:: Particle
         :members:
+        
+        .. automethod:: __add__
+        .. automethod:: __sub__
     
