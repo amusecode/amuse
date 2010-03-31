@@ -181,14 +181,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
             
             pass
             
-        
-        
-        
-        
-
-
-
-class CodeInterface2Tests(amusetest.TestCase):
+class CodeInterfaceTests(amusetest.TestCase):
     class TestClass(object):
         def __init__(self):
             self.state = 0
