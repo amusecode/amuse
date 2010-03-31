@@ -24,7 +24,7 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2, 5]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x), lengths[i])
+            self.assertEquals(len(x.as_set()), lengths[i])
             try:
                 print x.bogus
             except AttributeError as ex:
@@ -48,7 +48,7 @@ class TestAttributeError(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x), lengths[i])
+            self.assertEquals(len(x.as_set()), lengths[i])
             gravity = Hermite(convert_nbody)
             gravity.initialize_code()
             if isinstance(x, Particle): x = x.as_set()
@@ -75,7 +75,7 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x), lengths[i])
+            self.assertEquals(len(x.as_set()), lengths[i])
             if os.path.exists(output_file):
                 os.remove(output_file)
             HDFstorage = store.StoreHDF(output_file)
@@ -103,7 +103,7 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2, 5]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x), lengths[i])
+            self.assertEquals(len(x.as_set()), lengths[i])
             try:
                 x.mass = 1.0
             except AttributeError as ex:
@@ -127,7 +127,7 @@ class TestAttributeError(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x), lengths[i])
+            self.assertEquals(len(x.as_set()), lengths[i])
             gravity = Hermite(convert_nbody)
             gravity.initialize_code()
             if isinstance(x, Particle): x = x.as_set()
@@ -153,7 +153,7 @@ class TestAttributeError(amusetest.TestCase):
         lengths = [4, 1, 2]
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
-            self.assertEquals(len(x), lengths[i])
+            self.assertEquals(len(x.as_set()), lengths[i])
             if os.path.exists(output_file):
                 os.remove(output_file)
             HDFstorage = store.StoreHDF(output_file)

@@ -102,7 +102,7 @@ class LegacyCall(object):
         try:
             (doubles, ints, floats, strings) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
         except Exception, ex:
-            raise Exception("Exception when calling legacy code '{0}', exeption was '{1}'".format(self.specification.name, ex))
+            raise Exception("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
         return self.converted_results(doubles, ints, floats, strings, handle_as_array)
     
     def async(self, *arguments_list, **keyword_arguments):
@@ -118,7 +118,7 @@ class LegacyCall(object):
             try:
                 (doubles, ints, floats, strings) = function()
             except Exception, ex:
-                raise Exception("Exception when calling legacy code '{0}', exeption was '{1}'".format(self.specification.name, ex))
+                raise Exception("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
             return self.converted_results(doubles, ints, floats, strings, handle_as_array)
             
         request.add_result_handler(handle_result)

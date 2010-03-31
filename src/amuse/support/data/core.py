@@ -1988,9 +1988,6 @@ class Particle(object):
             attribute_value = keyword_arguments[attribute_name]
             setattr(self, attribute_name, attribute_value)
             
-    def __len__(self):
-        return 1
-    
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
        
         if isinstance(new_value_for_the_attribute, values.Quantity):

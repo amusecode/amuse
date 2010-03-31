@@ -18,7 +18,7 @@ FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
 all:    src/makefile.dep src/makefile.sys worker_code
 
 src/makefile.dep: src/Makefile
-	@echo building makefile.deb
+	@echo -building makefile.dep
 	@cd src && perl depend.pl code/*.f > makefile.dep
 	@echo done
 	
