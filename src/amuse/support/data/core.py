@@ -490,7 +490,7 @@ class FunctionAttribute(DerivedAttribute):
             self.key = key
             
         def __call__(self, *list_arguments, **keyword_arguments):
-            return self.function(self.particles._get_particle(self.key), *list_arguments, **keyword_arguments)
+            return self.function(self.particles, self.particles._get_particle(self.key), *list_arguments, **keyword_arguments)
         
     
     def  __init__(self, particles_function = None, particle_function = None):
@@ -850,7 +850,7 @@ class AbstractParticleSet(object):
         :argument name_of_the_attribute: Name to reference the attribute by. 
         :argument function: A function, first argument will be the particle.
         
-        >>> def xsquared(p):
+        >>> def xsquared(set, p):
         ...   return p.x * p.x
         ...
         >>> particles = Particles(2)
@@ -2213,20 +2213,17 @@ AbstractParticleSet.add_global_function_attribute("potential_energy", potential_
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 
-def particle_specific_kinetic_energy(part):
-  return 0.5*(part.velocity**2).sum()
+def particle_specific_kinetic_energy(set, particle):
+    return 0.5*(particle.velocity**2).sum()
 
-def particle_potential(part, smoothing_length_squared=0. | units.m**2):
-  particles=part.particles_set.to_set()
-  particles.remove_particle(part)
-  dx = part.x - particles.x
-  dy = part.y - particles.y
-  dz = part.z - particles.z 
-  dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
-  dr = (dr_squared+smoothing_length_squared).sqrt()
-  return - constants.G * (particles.mass / dr).sum()
+def particle_potential(set, particle, smoothing_length_squared=0. | units.m**2):
+    particles = set - particle
+    dx = particle.x - particles.x
+    dy = particle.y - particles.y
+    dz = particle.z - particles.z 
+    dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+    dr = (dr_squared+smoothing_length_squared).sqrt()
+    return - constants.G * (particles.mass / dr).sum()
 
-AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", \
- None, particle_specific_kinetic_energy)
-AbstractParticleSet.add_global_function_attribute("potential", \
- None, particle_potential)
+AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
+AbstractParticleSet.add_global_function_attribute("potential", None, particle_potential)

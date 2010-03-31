@@ -206,9 +206,8 @@ class ParticleSpecificSelectMethod(object):
             
         return result
     
-    def apply_on_one(self, particle):
+    def apply_on_one(self, set,  particle):
         
-        set = particle.set
         index = set._private.attribute_storage.get_indices_of(particle.key)
         
         result = self.method(index)
@@ -234,7 +233,7 @@ class ParticleMethod(AbstractCodeMethodWrapper):
         
         return self.method(list(all_indices), *list_arguments, **keyword_arguments)
     
-    def apply_on_one(self, particle):
+    def apply_on_one(self, set,  particle):
         
         storage = particle.particles_set._private.attribute_storage
         
