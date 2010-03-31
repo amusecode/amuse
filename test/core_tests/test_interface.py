@@ -587,7 +587,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         def delete_particle(self, id):
             errors = []
             for x in id:
-                del self.masses[x]
+                self.masses[x].stop()
                 errors.append(0)
             return errors
             

@@ -91,7 +91,7 @@ def simulate_evolution_tracks(masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | 
         stellar_evolution.particles.remove_particle(star)
 
     stellar_evolution.print_refs()
-    del stellar_evolution
+    stellar_evolution.stop()
     
     plot_HR_diagram(number_of_stars, masses, all_tracks_luminosity, all_tracks_temperature, 
         all_tracks_stellar_type, name_of_the_figure, stellar_evolution_code)

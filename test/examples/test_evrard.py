@@ -84,7 +84,7 @@ def run_evrard(x):
   nb.cleanup_code()
   nb.stop()
   
-  del nb
+  nb.stop()
  
   time=numpy.array(time)
   Ek=numpy.array(Ek)

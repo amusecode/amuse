@@ -54,7 +54,7 @@ class SunEarth(object):
             blender.Redraw()           
             
         hermite.print_refs()
-        del hermite           
+        hermite.stop()           
 
 if __name__ == '__main__':
     I = SunEarth()        

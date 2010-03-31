@@ -177,7 +177,7 @@ class TestEvrard(TestWithMPI):
     self.assertAlmostEqual( Eth,0.08567999 ,4)        
 
     del evrard
-    del nb
+    nb.stop()
     
 
 class TestFiInterface(TestWithMPI):

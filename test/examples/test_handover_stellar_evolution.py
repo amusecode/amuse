@@ -59,7 +59,7 @@ def simulate_stellar_evolution(mass_in = 5.0 | units.MSun, end_time = 250.0 | un
     if no_exception:
         print "The simulation has been performed using EVtwin only - no exceptions occured."
     else:
-        del stellar_evolution
+        stellar_evolution.stop()
         age_at_code_switch = current_time
         print "Exception in EVtwin interface, continue using SSE from t=", \
             str(age_at_code_switch)
@@ -77,7 +77,7 @@ def simulate_stellar_evolution(mass_in = 5.0 | units.MSun, end_time = 250.0 | un
             current_time = star.age
         
     print "Evolved model successfully."
-    del stellar_evolution
+    stellar_evolution.stop()
     
     print "Starting the reference run (SSE only) for comparison..."
     stellar_evolution = SSE()
@@ -102,7 +102,7 @@ def simulate_stellar_evolution(mass_in = 5.0 | units.MSun, end_time = 250.0 | un
     
     print "Reference run (SSE only) finished."
     stellar_evolution.print_refs()
-    del stellar_evolution
+    stellar_evolution.stop()
 
     create_plots(memory, age_at_code_switch, end_time, name_of_the_figure, refmemory)
     print

@@ -221,7 +221,7 @@ class TestInterface(TestWithMPI):
         x.stop()
         
         
-        del x
+        x.stop()
         
         
     def test6(self):
@@ -237,7 +237,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(answer[1], 11.0)
         x.stop()
         
-        del x
+        x.stop()
         
     def test7(self):
         x = ForTestingInterface()
@@ -247,7 +247,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(int_out, 20)
         x.stop()
         
-        del x
+        x.stop()
         
     
     def test8(self):

@@ -77,7 +77,7 @@ class TestMPIInterface(TestWithMPI):
             
         self.assertEqual(status,0)
         
-        del sse
+        sse.stop()
         
     def test2(self):
         sse = mpi_interface.SSEInterface()
@@ -176,7 +176,7 @@ class TestMPIInterface(TestWithMPI):
             updated_state.t_ms, 
             updated_state.epoch)
         self.assertAlmostEqual(dt, 550.1565, 2)
-        del sse
+        sse.stop()
      
     def test3(self):
         sse = mpi_interface.SSEInterface()
@@ -206,7 +206,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(result['mass'][0], 10)
         self.assertEquals(result['mass'][1], 5)
         self.assertAlmostEqual(result['mass'][2], 4.0, 2)
-        del sse
+        sse.stop()
         
     def test4(self):
         sse = mpi_interface.SSEInterface()
@@ -236,7 +236,7 @@ class TestMPIInterface(TestWithMPI):
             age
         )
         self.assertEquals(len(result['mass']), 3999)
-        del sse
+        sse.stop()
 
         
 class TestSSE(TestWithMPI):
@@ -307,7 +307,7 @@ class TestSSE(TestWithMPI):
         for result, expected in zip(results, types):
             self.assertEquals(str(result[2]), expected)
         
-        del sse
+        sse.stop()
             
     def test2(self):
         sse = mpi_interface.SSE()
@@ -324,7 +324,7 @@ class TestSSE(TestWithMPI):
         self.assertAlmostEqual(sse.particles[0].mass.value_in(units.MSun), 4.932, 3)
         self.assertAlmostEqual(sse.particles[0].temperature.value_in(units.K), 4221., 0)
          
-        del sse
+        sse.stop()
         
     
     def test3(self):
@@ -350,7 +350,7 @@ class TestSSE(TestWithMPI):
         
         self.assertAlmostEqual(star.mass.value_in(units.MSun), 0.997, 3)
          
-        del sse
+        sse.stop()
         
     
     def test5(self):
@@ -378,7 +378,7 @@ class TestSSE(TestWithMPI):
                 
         self.assertTrue(sse.particles[0].mass.value_in(units.MSun) < 10.6)
          
-        del sse
+        sse.stop()
 
 
     def test6(self):
@@ -429,7 +429,7 @@ class TestSSE(TestWithMPI):
             from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(star.as_set())
             stellar_evolution.evolve_model()
             from_stellar_evolution_to_model.copy()
-            del stellar_evolution
+            stellar_evolution.stop()
         for star in stars:
             print star
         self.assertEquals(stars[0].initial_mass, stars[1].initial_mass)
@@ -466,5 +466,5 @@ class TestSSE(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.particles.add_particles(stars)
         self.assertEqual(len(stellar_evolution.particles), number_of_particles)
-        del stellar_evolution
+        stellar_evolution.stop()
     

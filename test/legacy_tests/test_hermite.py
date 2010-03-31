@@ -70,7 +70,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(0.101, hermite.eps2)
         hermite.eps2 = 0.110
         self.assertEquals(0.110, hermite.eps2)
-        del hermite
+        hermite.stop()
 
     def test4(self):
         hermite = HermiteInterface()
@@ -78,7 +78,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(1, hermite.flag_collision)
         hermite.flag_collision = 0
         self.assertEquals(0, hermite.flag_collision)
-        del hermite
+        hermite.stop()
 
     def test5(self):
         hermite = HermiteInterface()
@@ -160,7 +160,7 @@ class TestAmuseInterface(TestWithMPI):
         
         hermite.cleanup_module()
         
-        del hermite
+        hermite.stop()
         
 
     def test2(self):

@@ -68,7 +68,7 @@ def simulate_stellar_evolution(number_of_stars = 1000, end_time = 1000.0 | units
     temperatures = stars.temperature
     luminosities = stars.luminosity
     stellar_evolution.print_refs()
-    del stellar_evolution
+    stellar_evolution.stop()
     
     plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time, 
         stellar_evolution_code)
