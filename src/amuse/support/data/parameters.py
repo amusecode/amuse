@@ -6,7 +6,21 @@ from amuse.support import exception
 
 import warnings
 
+class ParameterDocumentation(object):
+
+    def __get__(self, instance, owner):
+        output = "Parameters: \n"
+
+        for parameter_definition in instance._definitions:
+            output += parameter_definition.name + "\n\n"
+            output += "    " + parameter_definition.description
+            output += " (default value:" + str(instance.get_default_value_for(parameter_definition.name)) + ")\n\n"
+
+        return output
+        
 class Parameters(object):
+    __doc__ = ParameterDocumentation()
+    
     def __init__(self, definitions, instance):
         object.__setattr__(self, '_instance', weakref.ref(instance))
         object.__setattr__(self, '_definitions', definitions)
@@ -44,17 +58,23 @@ class Parameters(object):
         result.extend(self.names())
         return result
 
-class ParameterDocumentation(object):
+    
+    def get_default_value_for(self, name):
+        if not name in self._mapping_from_name_to_definition:
+            raise exception.CoreException("tried to get default value of unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
 
-    def __get__(self, instance, owner):
-        output = "Parameters: \n"
+        definition = self._mapping_from_name_to_definition[name]
+        return definition.default_value
+    
+    def __str__(self):
+        output = ""
 
-        for parameter_definition in instance._definitions:
-            output += parameter_definition.name + "\n\n"
-            output += "    " + parameter_definition.description
-            output += " (default value:" + str(parameter_definition.default_value) + ")\n\n"
+        for name in self.names():
+            output += name + ": "
+            output += str(getattr(self, name))+"\n"
 
         return output
+
 
 class ParametersWithUnitsConverted(object):
 
@@ -79,16 +99,16 @@ class ParametersWithUnitsConverted(object):
 
     def __dir__(self):
         return dir(self._original)
+        
+    def get_default_value_for(self, name):
+        return self._converter.from_target_to_source(self._original.get_default_value_for(name)) 
 
     def __str__(self):
-        """
-        Display string for parameters
-        """
         output = ""
 
-        for parameter_definition in self._definitions:
-            output += parameter_definition.name + ": "
-            output += str(self._converter.from_target_to_source(getattr(self._original, parameter_definition.name)))+"\n"
+        for name in self.names():
+            output += name + ": "
+            output += str(getattr(self, name))+"\n"
 
         return output
 
@@ -150,7 +170,6 @@ class ParameterException(AttributeError):
         ))
         self.errorcode = errorcode
         self.parameter_name = parameter_name
-
 
 
 class ModuleMethodParameterDefinition_Next(ParameterDefinition):

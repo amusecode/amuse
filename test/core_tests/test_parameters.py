@@ -395,20 +395,27 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         
 class TestParameters(amusetest.TestCase):
     def test1(self):
-        definition = parameters.ModuleAttributeParameterDefinition(
-            "test", 
-            "test_name", 
+        parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            "set_test",
+            "test_name",
             "a test parameter", 
             units.m, 
-            0.1 | units.m
+            11.0 | units.m
         )
         
-        
         class TestModule(object):
-            test = 123
+            x = 123
+            
+            def get_test(self):
+                return (self.x,0)
+            def set_test(self, value):
+                self.x = value
+                return 0
+        
             
         o = TestModule()
-        x = parameters.Parameters([definition], o)
+        x = parameters.Parameters([parameter_definition], o)
         
         value = x.test_name
         
@@ -416,20 +423,26 @@ class TestParameters(amusetest.TestCase):
         self.assertEqual(value.value_in(units.m), 123)
    
     def test2(self):
-        definition = parameters.ModuleAttributeParameterDefinition(
-            "test", 
-            "test_name", 
+        parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            "set_test",
+            "test_name",
             "a test parameter", 
             nbody_system.length, 
-            0.1 | nbody_system.length
+            11.0 | nbody_system.length
         )
         
-        
         class TestModule(object):
-            test = 123
+            x = 123
+            
+            def get_test(self):
+                return (self.x,0)
+            def set_test(self, value):
+                self.x = value
+                return 0
             
         o = TestModule()
-        x = parameters.Parameters([definition], o)
+        x = parameters.Parameters([parameter_definition], o)
         
         
         self.assertEqual(x.test_name.value_in(nbody_system.length), 123)
@@ -447,6 +460,83 @@ class TestParameters(amusetest.TestCase):
         
         self.assertAlmostEquals(y.test_name.value_in(units.m), 500.0, 6)
         self.assertAlmostEquals(x.test_name.value_in(nbody_system.length), 250.0, 6)
-        self.assertAlmostEquals(o.test, 250.0, 6)
+        self.assertAlmostEquals(o.x, 250.0, 6)
+        
+    
+    def test3(self):
+        parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            None,
+            "test_name",
+            "a test parameter", 
+            nbody_system.length, 
+            11.0 | nbody_system.length
+        )
+        
+        class TestModule(object):
+            x = 123
+            
+            def get_test(self):
+                return (self.x,0)
+            def set_test(self, value):
+                self.x = value
+                return 0
+            
+        o = TestModule()
+        x = parameters.Parameters([parameter_definition], o)
+        
+        
+        self.assertTrue("test_name" in x.__doc__)
+        self.assertTrue("a test parameter" in x.__doc__)
+        self.assertTrue("default" in x.__doc__)
+        self.assertTrue("11.0 nbody length" in x.__doc__)
+        
+        convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                convert_nbody.as_converter_from_si_to_nbody()
+            )
+        
+        self.assertTrue("test_name" in y.__doc__)
+        self.assertTrue("a test parameter" in y.__doc__)
+        self.assertTrue("default" in y.__doc__)
+        self.assertTrue("22.0 m" in y.__doc__)
+        
+    def test4(self):
+        parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            None,
+            "test_name",
+            "a test parameter", 
+            nbody_system.length, 
+            11.0 | nbody_system.length
+        )
+        
+        class TestModule(object):
+            x = 123.0
+            
+            def get_test(self):
+                return (self.x,0)
+            def set_test(self, value):
+                self.x = value
+                return 0
+            
+        o = TestModule()
+        x = parameters.Parameters([parameter_definition], o)
+
+        
+        self.assertTrue("test_name" in str(x))
+        self.assertTrue("123.0 nbody length" in str(x))
+        
+        convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                convert_nbody.as_converter_from_si_to_nbody()
+            )
+        self.assertTrue("test_name" in str(y))
+        self.assertTrue("246.0 m" in str(y))
+        
+        
+        
         
         
