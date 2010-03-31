@@ -1025,54 +1025,17 @@ class AbstractParticleSet(object):
         >>> print set.x
         [1.0, 2.0, 3.0, 4.0] m
         """
-        return self.add(particles, create_super=False)
-    
-    def add(self, particles, create_super=False):
-        """
-        Returns a particle subset, composed of the given
-        particle(s) and this particle set. Attribute values are
-        not stored by the subset. The subset provides a view
-        on two or more sets of particles.
-        Optionally returns a superset (useful when particles come 
-        from separate particles sets).
-        
-        :parameter particles: (set of) particle(s) to be added to self.
-        
-        >>> particles1 = Particles(2)
-        >>> particles1.x = [1.0, 2.0] | units.m
-        >>> particles2 = Particles(2)
-        >>> particles2.x = [3.0, 4.0] | units.m
-        >>> superset = particles1.add(particles2, create_super=True)
-        >>> superset  # doctest:+ELLIPSIS
-        <amuse.support.data.core.ParticlesSuperset object at 0x...>
-        >>> print len(superset)
-        4
-        >>> print superset.x
-        [1.0, 2.0, 3.0, 4.0] m
-        """
         if isinstance(particles, Particle):
             particles = particles.as_set()
-        if create_super:
-            new_set = ParticlesSuperset([self, particles])
-        else:
-            original_particles_set = self._real_particles()
-            if set(original_particles_set.key)!=set(particles._real_particles().key):
-                raise Exception("Can't create new subset from particles belonging to "
-                    "separate particle sets. Try creating a superset instead.")
-            keys = [] ; keys.extend(self.key) ; keys.extend(particles.key)
-            new_set = ParticlesSubset(original_particles_set, keys)
+        original_particles_set = self._real_particles()
+        if set(original_particles_set.key)!=set(particles._real_particles().key):
+            raise Exception("Can't create new subset from particles belonging to "
+                "separate particle sets. Try creating a superset instead.")
+        keys = list(self.key) + list(particles.key)
+        new_set = ParticlesSubset(original_particles_set, keys)
         if new_set.has_duplicates():
             raise Exception("Unable to add a particle, because it was already part of this set.")
         return new_set
-
-    def __iadd__(self, particles):
-        """
-        Does the same as __add__, with in-place syntax:
-        particles1 += particles2
-        instead of:
-        particles1 = particles1 + particles2
-        """
-        return self.__add__(particles)
     
     def __sub__(self, particles):
         """
@@ -1106,24 +1069,6 @@ class AbstractParticleSet(object):
                 raise Exception("Unable to subtract a particle, because "
                     "it is not part of this set.")
         return self._subset(new_keys)
-    
-    def sub(self, particles):
-        """
-        Does the same as __sub__, with syntax:
-        set = particles.sub(junk)
-        instead of:
-        set = particles - junk
-        """
-        return self.__sub__(particles)
-    
-    def __isub__(self, particles):
-        """
-        Does the same as __sub__, with in-place syntax:
-        particles -= junk
-        instead of:
-        particles = particles - junk
-        """
-        return self.__sub__(particles)
     
     def add_particles(self, particles):
         """
@@ -1583,7 +1528,10 @@ class ParticlesSuperset(AbstractParticleSet):
         AbstractParticleSet.__init__(self)
         
         self._private.particle_sets = particle_sets
-              
+        
+        if self.has_duplicates():
+            raise Exception("Unable to add a particle, because it was already part of this set.")
+        
     
     def __len__(self):
         result = 0
@@ -2028,7 +1976,7 @@ class Particle(object):
         
         child.parent = self
                 
-    def add(self, particles):
+    def __add__(self, particles):
         """
         Returns a particle subset, composed of the given
         particle(s) and this particle. Attribute values are
@@ -2042,7 +1990,7 @@ class Particle(object):
         >>> particle1.x = 1.0 | units.m
         >>> particle2 = particles[1]
         >>> particle2.x = 2.0 | units.m
-        >>> set = particle1.add(particle2)
+        >>> set = particle1 + particle2
         >>> set  # doctest:+ELLIPSIS
         <amuse.support.data.core.ParticlesSubset object at 0x...>
         >>> print len(set)
@@ -2050,32 +1998,14 @@ class Particle(object):
         >>> print set.x
         [1.0, 2.0] m
         """
-        return self.as_set().add(particles)
+        return self.as_set().__add__(particles)
     
-    def __add__(self, particles):
-        """
-        Does the same as add, with syntax:
-        set = particle1 + particle2
-        instead of:
-        set = particle1.add(particle2)
-        """
-        return self.add(particles)
-    
-    def sub(self, particles):
+    def __sub__(self, particles):
         """
         Raises an exception: cannot subtract particle(s) 
         from a particle.
         """
         raise Exception("Cannot subtract particle(s) from a particle.")
-    
-    def __sub__(self, particles):
-        """
-        Does the same as sub, with syntax:
-        set = particle1 - particle2
-        instead of:
-        set = particle1.sub(particle2)
-        """
-        return self.sub(particles)
     
     def __str__(self):
         """

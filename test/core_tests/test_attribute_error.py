@@ -17,7 +17,7 @@ class TestAttributeError(amusetest.TestCase):
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
-        superset  = particles.add(particle, create_super=True)
+        superset  = ParticlesSuperset([particles, particle.as_set()])
 
         instances = [particles, particle, subset, superset]
         classes = [Particles, Particle, ParticlesSubset, ParticlesSuperset]
@@ -36,7 +36,7 @@ class TestAttributeError(amusetest.TestCase):
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
-        superset  = particles.add(particle, create_super=True)
+        superset  = ParticlesSuperset([particles, particle.as_set()])
         superset.mass = 1.0 | units.MSun
         superset.radius = 1.0 | units.RSun
         for i, x in enumerate(superset):
@@ -65,7 +65,7 @@ class TestAttributeError(amusetest.TestCase):
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
-        superset  = particles.add(particle, create_super=True)
+        superset  = ParticlesSuperset([particles, particle.as_set()])
         superset.mass = 1.0 | units.MSun
         test_results_path = path_to_test_results.get_path_to_test_results()
         output_file = os.path.join(test_results_path, "attr_test.hdf5")
@@ -96,7 +96,7 @@ class TestAttributeError(amusetest.TestCase):
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
-        superset  = particles.add(particle, create_super=True)
+        superset  = ParticlesSuperset([particles, particle.as_set()])
 
         instances = [particles, particle, subset, superset]
         classes = [Particles, Particle, ParticlesSubset, ParticlesSuperset]
@@ -115,7 +115,7 @@ class TestAttributeError(amusetest.TestCase):
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
-        superset  = particles.add(particle, create_super=True)
+        superset  = ParticlesSuperset([particles, particle.as_set()])
         superset.mass = 1.0 | units.MSun
         superset.radius = 1.0 | units.RSun
         for i, x in enumerate(superset):
@@ -144,7 +144,7 @@ class TestAttributeError(amusetest.TestCase):
         particles = Particles(4)
         particle  = Particle()
         subset    = particles[:2]
-        superset  = particles.add(particle, create_super=True)
+        superset  = ParticlesSuperset([particles, particle.as_set()])
         superset.mass = 1.0 | units.MSun
         test_results_path = path_to_test_results.get_path_to_test_results()
         output_file = os.path.join(test_results_path, "attr_test.hdf5")

@@ -584,7 +584,7 @@ class TestParticlesSuperset(TestBase):
         particle2 = core.Particle()
         particle2.x = 6.0 | units.m
         for x in [particle1, set2, particle2]:
-            superset = superset.add(x, create_super=True)
+            superset = core.ParticlesSuperset([superset, x.as_set()])
         self.assertTrue(isinstance(superset, core.ParticlesSuperset))
         self.assertEqual(len(superset),6)
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]|units.m))
@@ -602,7 +602,7 @@ class TestParticlesSuperset(TestBase):
         particle1 = core.Particle()
         particle2 = core.Particle()
         for x in [particle1, set2, particle2]:
-            superset = superset.add(x, create_super=True)
+            superset = core.ParticlesSuperset([superset, x.as_set()])
         self.assertTrue(isinstance(superset, core.ParticlesSuperset))
         self.assertEqual(len(superset),6)
         superset.x = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0] | units.m
@@ -664,7 +664,6 @@ class TestSliceParticles(TestBase):
 class TestAddParticles(TestBase):
     
     def test1(self):
-        print
         print "Test1: create a particle subset by adding a particle to a set."
         original_set = core.Particles(4)
         original_set.x = [1.0, 2.0, -789.0, 3.0] | units.m
@@ -672,27 +671,18 @@ class TestAddParticles(TestBase):
         particle = original_set[3]
         self.assertTrue(isinstance(set, core.ParticlesSubset))
         self.assertTrue(isinstance(particle, core.Particle))
-        print "You can add a particle to a set by using 'add':"
-        print "new_set = set.add(particle)"
-        new_set = set.add(particle)
-        self.assertTrue(isinstance(new_set, core.ParticlesSubset))
-        self.assertEqual(len(new_set),len(set)+1)
-        self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
-        print "You can also add a particle to a set by using '+':"
-        print "new_set = set + particle"
+        
         new_set = set + particle
         self.assertTrue(isinstance(new_set, core.ParticlesSubset))
         self.assertEqual(len(new_set),len(set)+1)
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
-        print "You can also add a particle to a set by using '+=':"
-        print "set += particle"
+        
         set += particle
         self.assertTrue(isinstance(set, core.ParticlesSubset))
         self.assertEqual(len(set),3)
         self.assertEqual(set.x, ([1.0, 2.0, 3.0]|units.m))
     
     def test2(self):
-        print
         print "Test2: create a particle subset by adding a set to a set."
         original_set = core.Particles(5)
         original_set.x = [1.0, 2.0, -789.0, 3.0, 4.0] | units.m
@@ -700,56 +690,44 @@ class TestAddParticles(TestBase):
         set2 = original_set[3:]
         self.assertTrue(isinstance(set1, core.ParticlesSubset))
         self.assertTrue(isinstance(set2, core.ParticlesSubset))
-        print "You can add a set to a set by using 'add':"
-        print "new_set = set1.add(set2)"
-        new_set = set1.add(set2)
-        self.assertTrue(isinstance(new_set, core.ParticlesSubset))
-        self.assertEqual(len(new_set),len(set1)+len(set2))
-        self.assertEqual(new_set.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
-        print "You can also add a set to a set by using '+':"
-        print "new_set = set1 + set2"
+        
         new_set = set1 + set2
         self.assertTrue(isinstance(new_set, core.ParticlesSubset))
         self.assertEqual(len(new_set),len(set1)+len(set2))
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
-        print "You can also add a set to a set by using '+=':"
-        print "set1 += set2"
+        
         set1 += set2
         self.assertTrue(isinstance(set1, core.ParticlesSubset))
         self.assertEqual(len(set1),4)
         self.assertEqual(set1.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
     
     def test3(self):
-        print
         print "Test3: create a particle superset by adding a particle to a set."
         set = core.Particles(2)
         set.x = [1.0, 2.0] | units.m
         particle = core.Particle()
         particle.x = 3.0 | units.m
-        print "You can add a particle to a set by using 'add':"
-        print "superset = set.add(particle, create_super=True)"
-        superset = set.add(particle, create_super=True)
+        
+        superset = core.ParticlesSuperset([set, particle.as_set()])
         self.assertTrue(isinstance(superset, core.ParticlesSuperset))
         self.assertEqual(len(superset),len(set)+1)
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0]|units.m))
-        print "You can add a set to a set by using 'add':"
-        print "superset = set.add(set2, create_super=True)"
+        
         set2 = core.Particles(2)
         set2.x = [3.0, 4.0] | units.m
-        superset = set.add(set2, create_super=True)
+        superset = core.ParticlesSuperset([set, set2])
         self.assertTrue(isinstance(superset, core.ParticlesSuperset))
         self.assertEqual(len(superset),len(set)+len(set2))
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
     
     def test4(self):
-        print
         print "Test4: check if the particle is already part of the set."
         set = core.Particles(2)
         particle = core.Particle()
-        set = set.add(particle, create_super=True)
+        set = core.ParticlesSuperset([set, particle.as_set()])
         print "Should not be able to add the same particle twice... ",
         try:
-            incorrect_set = set.add(particle, create_super=True)
+            incorrect_set = core.ParticlesSuperset([set, particle.as_set()])
             print "oops!"
             self.fail("Should not be able to add the same particle twice.")
         except Exception as ex:
@@ -758,11 +736,11 @@ class TestAddParticles(TestBase):
             print "ok!"
         self.assertEqual(len(set),3)
         other_set = core.Particles(2)
-        other_set = other_set.add(particle, create_super=True)
+        other_set = core.ParticlesSuperset([other_set, particle.as_set()])
         print "The particle is now a member of both sets, and thus the sets "
         print "can't be combined anymore... ",
         try:
-            incorrect_set = set.add(other_set, create_super=True)
+            incorrect_set = core.ParticlesSuperset([set, other_set])
             print "oops!"
             self.fail("Should not be able to add the same particle twice.")
         except Exception as ex:
@@ -778,10 +756,10 @@ class TestAddParticles(TestBase):
         set2 = core.Particles(2)
         set3 = core.Particles(2)
         set4 = core.Particles(2)
-        superset1 = set1.add(set2, create_super=True)
-        superset2 = set3.add(set4, create_super=True)
+        superset1 = core.ParticlesSuperset([set1, set2])
+        superset2 = core.ParticlesSuperset([set3, set4])
         for x in [particle, set3, superset2]:
-            supersuperset = superset1.add(x, create_super=True)
+            supersuperset = core.ParticlesSuperset([superset1, x.as_set()])
             self.assertTrue(isinstance(supersuperset, core.ParticlesSuperset))
             self.assertEqual(len(supersuperset),len(superset1)+numpy.size(x.key))
     
@@ -794,7 +772,7 @@ class TestAddParticles(TestBase):
         print "Should not be able to create a subset from particles " \
             "belonging to separate particle sets.. ",
         try:
-            incorrect_set = set1.add(set2, create_super=False)
+            incorrect_set = set1 + set2
             print "oops!"
             self.fail("Should not be able to create this subset.")
         except Exception as ex:
@@ -802,7 +780,7 @@ class TestAddParticles(TestBase):
                 "separate particle sets. Try creating a superset instead.", str(ex))
             print "ok!"
         try:
-            incorrect_set = set1.add(particle, create_super=False)
+            incorrect_set = set1 + particle
             self.fail("Should not be able to create this subset.")
         except Exception as ex:
             self.assertEquals("Can't create new subset from particles belonging to "
@@ -818,12 +796,6 @@ class TestAddParticles(TestBase):
         self.assertTrue(isinstance(particle1, core.Particle))
         self.assertTrue(isinstance(particle2, core.Particle))
         self.assertTrue(isinstance(set, core.ParticlesSubset))
-        new_set = particle1.add(particle2)
-        self.assertTrue(isinstance(new_set, core.ParticlesSubset))
-        self.assertEqual(len(new_set),2)
-        new_set = particle1.add(set)
-        self.assertTrue(isinstance(new_set, core.ParticlesSubset))
-        self.assertEqual(len(new_set),3)
         new_set = particle1 + particle2
         self.assertTrue(isinstance(new_set, core.ParticlesSubset))
         self.assertEqual(len(new_set),2)
@@ -834,53 +806,35 @@ class TestAddParticles(TestBase):
 class TestSubtractParticles(TestBase):
     
     def test1(self):
-        print
         print "Test1: create a particle subset by removing a particle from a set."
         set = core.Particles(4)
         set.x = [1.0, 2.0, -789.0, 3.0] | units.m
         particle = set[2]
         self.assertTrue(isinstance(particle, core.Particle))
-        print "You can remove a particle from a set by using 'sub':"
-        print "new_set = set.sub(particle)"
-        new_set = set.sub(particle)
-        self.assertTrue(isinstance(new_set, core.ParticlesSubset))
-        self.assertEqual(len(new_set),len(set)-1)
-        self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
-        print "You can also remove a particle from a set by using '-':"
-        print "new_set = set - particle"
+        
         new_set = set - particle
         self.assertTrue(isinstance(new_set, core.ParticlesSubset))
         self.assertEqual(len(new_set),len(set)-1)
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0]|units.m))
-        print "You can also remove a particle from a set by using '-=':"
-        print "set -= particle"
+        
         set -= particle
         self.assertTrue(isinstance(set, core.ParticlesSubset))
         self.assertEqual(len(set),3)
         self.assertEqual(set.x, ([1.0, 2.0, 3.0]|units.m))
     
     def test2(self):
-        print
         print "Test2: create a particle subset by removing a set from a set."
         set1 = core.Particles(5)
         set1.x = [1.0, 2.0, -789.0, 3.0, 4.0, -456.0] | units.m
         set2 = set1[2::3]
         self.assertTrue(isinstance(set1, core.Particles))
         self.assertTrue(isinstance(set2, core.ParticlesSubset))
-        print "You can remove a set to a set by using 'sub':"
-        print "new_set = set1.sub(set2)"
-        new_set = set1.sub(set2)
-        self.assertTrue(isinstance(new_set, core.ParticlesSubset))
-        self.assertEqual(len(new_set),len(set1)-len(set2))
-        self.assertEqual(new_set.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
-        print "You can also remove a set to a set by using '-':"
-        print "new_set = set1 - set2"
+        
         new_set = set1 - set2
         self.assertTrue(isinstance(new_set, core.ParticlesSubset))
         self.assertEqual(len(new_set),len(set1)-len(set2))
         self.assertEqual(new_set.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
-        print "You can also remove a set to a set by using '-=':"
-        print "set1 -= set2"
+        
         set1 -= set2
         self.assertTrue(isinstance(set1, core.ParticlesSubset))
         self.assertEqual(len(set1),4)
