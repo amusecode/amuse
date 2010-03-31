@@ -1,4 +1,3 @@
-
 FC = mpif90
 CC = mpicc
 
@@ -52,7 +51,7 @@ all: worker_code
 
 $(CODELIB):
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
-	
+
 worker_code: worker_code.f90 phigrape_code.o $(CODELIB)
 	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES)
 
@@ -69,10 +68,10 @@ glworker_code_gpu: glworker_code.f90 phigrape_code.o $(CODELIB)
 	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS)
 
-	
+
 worker_code_grape: worker_code.f90 phigrape_code.o $(CODELIB)
 	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS)
-	
+
 worker_code_phantom_grape: worker_code.f90 phigrape_code.o $(CODELIB)
 	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(PGLIBS)
 
@@ -104,4 +103,3 @@ __init__.py:
 
 .F.o:
 	$(FC) $(FFLAGS) -c $<
-

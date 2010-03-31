@@ -1,4 +1,3 @@
-
 CFLAGS   += -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -43,6 +42,6 @@ worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 
-	
+
 .C.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
