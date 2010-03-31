@@ -873,7 +873,7 @@ class AbstractParticleSet(object):
 
     def __getitem__(self, index):
         if isinstance(index, slice):
-            return ParticlesSubset(self, self._get_keys()[index])
+            return self._subset(self._get_keys()[index])
         else:
             return Particle(self._get_keys()[index], self._real_particles())
         
@@ -1264,14 +1264,14 @@ class AbstractParticleSet(object):
         channel = self.new_channel_to(particles)
         channel.copy_attributes(self._get_state_attributes())   
     
-    def to_set(self):
+    def as_set(self):
         """
         Returns a subset view on this set. The subset
         will contain all particles of this set.
         
         >>> particles = Particles(3)
         >>> particles.x = [1.0, 2.0, 3.0] | units.m
-        >>> subset = particles.to_set()
+        >>> subset = particles.as_set()
         >>> print subset.x
         [1.0, 2.0, 3.0] m
         >>> print particles.x
@@ -1364,7 +1364,7 @@ class AbstractParticleSet(object):
         1
         
         """
-        return self.to_set().difference(other)
+        return self.as_set().difference(other)
         
     def has_duplicates(self):
         """
@@ -1785,7 +1785,7 @@ class ParticlesSubset(AbstractParticleSet):
         return self._real_particles().get_timestamp()
         
     def difference(self, other):
-        new_set_of_keys = self._private.set_of_keys.difference(other.to_set()._private.set_of_keys)
+        new_set_of_keys = self._private.set_of_keys.difference(other.as_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
         
     def union(self, other):
@@ -1804,10 +1804,10 @@ class ParticlesSubset(AbstractParticleSet):
         [10.0, 30.0]
         """
         
-        new_set_of_keys = self._private.set_of_keys.union(other.to_set()._private.set_of_keys)
+        new_set_of_keys = self._private.set_of_keys.union(other.as_set()._private.set_of_keys)
         return ParticlesSubset(self._private.particles, list(new_set_of_keys))
     
-    def to_set(self):
+    def as_set(self):
         return self
 
 
@@ -1919,7 +1919,7 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     def _has_key(self, key):
         return self._private.particles._has_key(key)
         
-    def to_set(self):
+    def as_set(self):
         return ParticlesSubset(self, self._get_keys())
     
             
