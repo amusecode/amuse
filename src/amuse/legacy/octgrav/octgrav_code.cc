@@ -25,10 +25,12 @@ double timestep = 0.01;
 double total_mass = 0.0;
 bool initialized = false;
 int verbose_mode = 0;
+// for each new particle is being incremented to give unique id for new particle.
+int id_counter = 0; 
 
-int get_index_from_identity(int id) 
+int get_index_from_identity(int id)
 {
-  for (int i = 0; i < n_bodies; i++) 
+  for (int i = 0; i < n_bodies; i++)
     {
       if (id == starids[i])
 	{
@@ -41,42 +43,33 @@ int get_index_from_identity(int id)
 // Interface functions:
 int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
 {
-  int i = get_index_from_identity(*id);
+  // Add the new particle and reinitialize immediately.
+  
+  bodies_pos.resize(n_bodies+1);
+  bodies_pos[n_bodies].x = x;
+  bodies_pos[n_bodies].y = y;
+  bodies_pos[n_bodies].z = z;
+  bodies_pos[n_bodies].w = mass;
+  
+  bodies_vel.resize(n_bodies+1);
+  bodies_vel[n_bodies].x = vx;
+  bodies_vel[n_bodies].y = vy;
+  bodies_vel[n_bodies].z = vz;
+  bodies_vel[n_bodies].w = 0;
+  
+  bodies_grav.resize(n_bodies+1);
+  
+  n_bodies++;
+  id_counter++;
 
-  if (i >= 0 && i < n_bodies)
-    {
-      //cerr << "octgrav module->add_particle: " << *id
-      //     << " already exists.  Use set_particle." << endl;
-      return -1;
-    }
-  else
-    {
-      // Add the new particle and reinitialize immediately.
-
-      bodies_pos.resize(n_bodies+1);
-      bodies_pos[n_bodies].x = x;
-      bodies_pos[n_bodies].y = y;
-      bodies_pos[n_bodies].z = z;
-      bodies_pos[n_bodies].w = mass;
-
-      bodies_vel.resize(n_bodies+1);
-      bodies_vel[n_bodies].x = vx;
-      bodies_vel[n_bodies].y = vy;
-      bodies_vel[n_bodies].z = vz;
-      bodies_vel[n_bodies].w = 0;
-
-      bodies_grav.resize(n_bodies+1);
-
-      n_bodies++;
-      //not sure, just check...
-      starids.push_back(n_bodies);
-      radii.push_back(radius);
-
-      total_mass += mass;
-
-      *id = n_bodies;
-      return 0;
-    }
+  starids.push_back(id_counter);
+  radii.push_back(radius);
+  
+  total_mass += mass;
+  
+  *id = id_counter;
+  
+  return 0;
 }
 
 int delete_particle(int id)
@@ -241,8 +234,12 @@ int get_state(int id, double *mass, double *radius, double *x, double *y, double
       *vx = bodies_vel[i].x;;
       *vy = bodies_vel[i].y;
       *vz = bodies_vel[i].z;
+      return 0;
     }
-  return 0;
+  else
+    {
+      return -1;
+    }
 }
 
 int get_time_step(double *_timestep)
@@ -460,7 +457,7 @@ int set_pos(int id, double x[])
 int set_position(int id, double x, double y, double z)
 {
   int i = get_index_from_identity(id);
-  if (i >= 0 && i < n_bodies) 
+  if (i >= 0 && i < n_bodies)
     {
       bodies_pos[i].x = x;
       bodies_pos[i].y = y;
@@ -485,7 +482,7 @@ int set_vel(int id, double v[])
 int set_velocity(int id, double vx, double vy, double vz)
 {
   int i = get_index_from_identity(id);
-  if (i >= 0 && i < n_bodies) 
+  if (i >= 0 && i < n_bodies)
     {
       bodies_vel[i].x = vx;
       bodies_vel[i].y = vy;
@@ -652,7 +649,7 @@ int get_theta_for_tree(double *theta_for_tree)
 
 int commit_parameters()
 {
-  
+
   return -2;
 }
 
@@ -676,4 +673,3 @@ int initialize_code()
 {
   return 0;
 }
-
