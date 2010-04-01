@@ -88,7 +88,7 @@ class TestLiteratureRefs(unittest.TestCase):
         stellar_evolution1 = SSE()
         stellar_evolution2 = BSE()
         stellar_evolution3 = EVtwin()
-        stellar_evolution4 = MESA()
+        #stellar_evolution4 = MESA()
         print "Each legacy code instance collects all references."
         print "They can be retrieved with the print_refs method:"
         print ">>> gravity.print_refs()"
@@ -108,4 +108,4 @@ class TestLiteratureRefs(unittest.TestCase):
         stellar_evolution1.stop()
         stellar_evolution2.stop()
         stellar_evolution3.stop()
-        stellar_evolution4.stop()
+        #stellar_evolution4.stop()

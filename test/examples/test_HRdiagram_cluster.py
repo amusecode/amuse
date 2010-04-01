@@ -1,62 +1,60 @@
 import sys
 import numpy 
 import os
+import warnings
 
-try:
-    from matplotlib import pyplot
-    HAS_MATPLOTLIB = True
-except ImportError:
-    HAS_MATPLOTLIB = False
+from optparse import OptionParser
+
 
 from amuse.support.units import units
 from amuse.support.data import core
+
+from amuse.ext.salpeter import SalpeterIMF
+
 from amuse.legacy.sse.interface import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.mesa.interface import MESA
-from amuse.legacy.support.core import is_mpd_running
-import path_to_test_results
-from amuse.ext.salpeter import SalpeterIMF
 
-def simulate_stellar_evolution(number_of_stars = 1000, end_time = 1000.0 | units.Myr, \
-    name_of_the_figure = "cluster_HR_diagram.png", stellar_evolution_code=1):
+from amuse.legacy.support.core import is_mpd_running
+
+import path_to_test_results
+
+usage = """\
+usage: %prog [options]
+    
+This script will generate HR diagram for an 
+evolved cluster of stars with a Salpeter mass 
+distribution.
+"""
+
+
+def simulate_stellar_evolution(
+    stellar_evolution,
+    number_of_stars = 1000, 
+    end_time = 1000.0 | units.Myr, 
+    name_of_the_figure = "cluster_HR_diagram.png", 
+    ):
     """
     A cluster of stars will be created, with masses following a Salpeter IMF. The stellar
     evolution will be simulated using any of the legacy codes (SSE, EVtwin, or MESA).
     Finally, a Hertzsprung-Russell diagram will be produced for the final state of the 
     simulation.
     """
-    print "The evolution of ", str(number_of_stars), " stars will be ", \
-        "simulated until t=", str(end_time), "..."
+    print "The evolution of", str(number_of_stars), "stars will be ", \
+        "simulated until t =", str(end_time), "..."
     
-    if stellar_evolution_code == 1:
-        print "Using SSE legacy code for stellar evolution."
-        stellar_evolution = SSE()
-    elif stellar_evolution_code == 2:
-        print "Using EVtwin legacy code for stellar evolution."
-        stellar_evolution = EVtwin()
-        if number_of_stars > stellar_evolution.parameters.maximum_number_of_stars.value_in(units.none):
-            stellar_evolution.parameters.maximum_number_of_stars = (number_of_stars | units.none)
-            print "You're simulating a large number of stars with EVtwin. This may be not", \
-                "such a good idea..."
-    elif stellar_evolution_code == 3:
-        print "Using MESA legacy code for stellar evolution."
-        stellar_evolution = MESA()
-        if number_of_stars > 10:
-            print "You're simulating a large number of stars with MESA. This may be not", \
-                "such a good idea..."
-    else:
-        print "Unknown stellar_evolution_code: ", stellar_evolution_code
-        return
     stellar_evolution.initialize_module_with_current_parameters()
     
-    print "Deriving a set of ", str(number_of_stars), " random masses", \
+    print "Deriving a set of", str(number_of_stars), "random masses", \
         "following a Salpeter IMF between 0.1 and 125 MSun (alpha = -2.35)."
+        
     initial_mass_function = SalpeterIMF()
     total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
     
     print "Initializing the particles"
-    stars = core.Stars(number_of_stars)
+    stars = core.Particles(number_of_stars)
     stars.mass = salpeter_masses
+    print "Stars to evolve:"
     print stars
     stars = stellar_evolution.particles.add_particles(stars)
     stellar_evolution.initialize_stars()
@@ -67,27 +65,20 @@ def simulate_stellar_evolution(number_of_stars = 1000, end_time = 1000.0 | units
     print "Evolved model successfully."
     temperatures = stars.temperature
     luminosities = stars.luminosity
-    stellar_evolution.print_refs()
+    
     stellar_evolution.stop()
     
-    plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time, 
-        stellar_evolution_code)
+    plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time)
+        
     print "All done!"
 
-def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time, 
-        stellar_evolution_code):
-    if HAS_MATPLOTLIB:
+def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time):
+    try:
+        from matplotlib import pyplot
         print "Plotting the data..."
         number_of_stars=len(temperatures)
         pyplot.figure(figsize = (7, 8))
-        pyplot.suptitle('Hertzsprung-Russell diagram', fontsize=16)
-        if stellar_evolution_code == 1:
-            pyplot.title('Stellar evolution was simulated using the SSE package\n'+
-                '(Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543)', fontsize=12)
-        elif stellar_evolution_code == 2:
-            pyplot.title('Stellar evolution was simulated using the EVtwin package', fontsize=12)
-        elif stellar_evolution_code == 3:
-            pyplot.title('Stellar evolution was simulated using the MESA package', fontsize=12)
+        pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
         pyplot.xlabel(r'T$_{\rm eff}$ (K)')
         pyplot.ylabel(r'Luminosity (L$_\odot$)')
         pyplot.loglog(temperatures.value_in(units.K), luminosities.value_in(units.LSun), "ro")
@@ -97,39 +88,106 @@ def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time,
         pyplot.text(xmin*.75,ymax*0.1,str(number_of_stars)+" stars\nt="+str(end_time))
         pyplot.axis([xmin, xmax, ymin, ymax])
         pyplot.savefig(name_of_the_figure)
-    else:
+    except ImportError:
         print "Unable to produce plot: couldn't find matplotlib."
+    
+
+
+class InstantiateCode(object):
+    
+    def sse(self, number_of_stars):
+        return SSE()
+    
+    def evtwin(self, number_of_stars):
+        result = EVtwin()
+        if number_of_stars > result.parameters.maximum_number_of_stars:
+            result.parameters.maximum_number_of_stars = number_of_stars
+            warnings.warn("You're simulating a large number of stars with EVtwin. This may not be such a good idea...")
+        return result
         
+    def mesa(self, number_of_stars):
+        result = MESA()
+        if number_of_stars > (10 | units.none):
+            warnings.warn("You're simulating a large number of stars with MESA. This may not be such a good idea...")
+        if number_of_stars > (1000| units.none):
+            raise Exception("You want to simulate with more than 1000 stars using MESA, this is not supported")
+        return result
+    
+    def new_code(self, name_of_the_code, number_of_stars):
+        if hasattr(self, name_of_the_code):
+            return getattr(self, name_of_the_code)(number_of_stars)
+        else:
+            raise Exception("Cannot instantiate code with name '{0}'".format(name_of_the_code))
+
+def new_code(name_of_the_code, number_of_stars):
+    return InstantiateCode().new_code(name_of_the_code, number_of_stars)
+    
 def test_simulate_short():
     assert is_mpd_running()
+    code = new_code("sse", 100 | units.none)
+    
     test_results_path = path_to_test_results.get_path_to_test_results()
     output_file = os.path.join(test_results_path, "cluster_HR_diagram.png")
-    simulate_stellar_evolution(100, end_time = 2.0 | units.Myr,
-        name_of_the_figure=output_file, stellar_evolution_code=1)
+    
+    simulate_stellar_evolution(
+        code,
+        number_of_stars=100, 
+        end_time = 2.0 | units.Myr,
+        name_of_the_figure=output_file
+    )
+    
+    
+def new_commandline_option_parser():
+    result = OptionParser(usage)
+    result.add_option(
+        "-c",
+        "--code",
+        choices=["sse", "evtwin","mesa"],
+        default="sse",
+        dest="code",
+        metavar="CODE",
+        help="CODE to use for stellar evolution"
+    )
+    result.add_option(
+        "-n",
+        "--number_of_stars",
+        type="int",
+        default=10,
+        dest="number_of_stars",
+        help="Number of stars in the cluster"
+    )
+    result.add_option(
+        "-t",
+        "--end_time",
+        type="float",
+        default=1000.0,
+        dest="end_time",
+        help="Time to evolve to in Myr"
+    )
+    
+    result.add_option(
+        "-p",
+        "--plot_file",
+        type="string",
+        default="cluster_HR_diagram.png",
+        dest="plot_filename",
+        help="Name of the file to plot to"
+    )
+    
+    return result
     
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        simulate_stellar_evolution()
-    elif len(sys.argv) == 2:
-        simulate_stellar_evolution(name_of_the_figure = sys.argv[1])
-    elif len(sys.argv) == 3:
-        simulate_stellar_evolution(number_of_stars=int(sys.argv[1]),
-            end_time=(float(sys.argv[2]) | units.Myr))
-    elif len(sys.argv) == 4:
-        simulate_stellar_evolution(name_of_the_figure = sys.argv[1],
-            number_of_stars=int(sys.argv[2]),end_time=(float(sys.argv[3]) | units.Myr))
-    else:
-        if sys.argv[4] == "evtwin":
-            simulate_stellar_evolution(name_of_the_figure = sys.argv[1],
-                number_of_stars=int(sys.argv[2]),end_time=(float(sys.argv[3]) | units.Myr), 
-                stellar_evolution_code=2)
-        elif sys.argv[4] == "mesa":
-            simulate_stellar_evolution(name_of_the_figure = sys.argv[1],
-                number_of_stars=int(sys.argv[2]),end_time=(float(sys.argv[3]) | units.Myr), 
-                stellar_evolution_code=3)
-        else:
-            print "Unknown option:", sys.argv[4]
-            print "For EVtwin use option ' evtwin'."
-            print "For MESA use option ' mesa'. Now using SSE..."
-            simulate_stellar_evolution(name_of_the_figure = sys.argv[1], \
-                number_of_stars=int(sys.argv[2]),end_time=(float(sys.argv[3]) | units.Myr))
+    
+    parser = new_commandline_option_parser()
+    (options, arguments) = parser.parse_args()
+    if arguments:
+        parser.error("unknown arguments '{0}'".format(arguments))
+    
+    code = new_code(options.code, options.number_of_stars | units.none)
+    
+    simulate_stellar_evolution(
+        code,
+        number_of_stars=options.number_of_stars, 
+        end_time = options.end_time | units.Myr,
+        name_of_the_figure=options.plot_filename
+    )
