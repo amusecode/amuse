@@ -18,3 +18,4 @@ recursive-exclude src *.pyc *.o *~
 recursive-exclude test *.pyc *.o *~ ccache
 recursive-exclude lib *.pyc *.o *~ ccache *.a
 recursive-exclude src/amuse/legacy/mesa/src *
+recursive-exclude src/amuse/legacy/seba/src *
