@@ -90,15 +90,15 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(3999.0,  retrieved_state['mass'])
         instance.cleanup_module()
         
-    def xtest6(self):
-        instance = mpi_interface.PhiGRAPE()
+    def test6(self):
+        instance = PhiGRAPEInterface()
         instance.initialize_code()
         n = 4000
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
         for i in range(n-1):
-            instance.add_particle(ids[i]
-                , values[i]
+            instance.new_particle(
+                  values[i]
                 , values[i]
                 , values[i]
                 , values[i]
