@@ -26,12 +26,13 @@ class TestMESAInterface(TestWithMPI):
             self.assertEqual(status,0)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
         
-    def xtest2(self):
-        print "Testing get/set of interface parameters..."
-        print "The first time this test will take quite some time"
-        print "to generate new starting models."
+    def slowtest2(self):
+        print "Testing get/set of metallicity (tests new ZAMS model implicitly)..."
+        print "The first time this test will take quite some time" \
+            " to generate new starting models."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
@@ -51,6 +52,7 @@ class TestMESAInterface(TestWithMPI):
                 self.assertEquals(x, metallicity)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
     
     def test3(self):
@@ -76,6 +78,7 @@ class TestMESAInterface(TestWithMPI):
             #time.sleep(10) # when a large number of stars is created.
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
         
     def test4(self):
@@ -114,26 +117,13 @@ class TestMESAInterface(TestWithMPI):
             self.assertAlmostEqual(time_step,163200.0,1)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
             
-    def xtest5(self):
-        print "Testing new ZAMS model explicitly..."
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
-        instance = MESAInterface()
-        #channel.MessageChannel.DEBUGGER = None
-        if instance.MESA_exists:
-            instance.set_MESA_paths(instance.default_path_to_inlist, 
-               instance.default_path_to_MESA_data)
-            status = instance.initialize_code()
-            self.assertEqual(status,0)
-            status = instance.new_zams_model()
-            self.assertEqual(status,0)
-        else:
-            print "MESA was not built. Skipping test."
-        del instance     
-    
-    def xtest6(self):
-        print "Testing new ZAMS model implicitly..."
+    def slowtest5(self):
+        print "Testing evolve with varying Z (tests new ZAMS model implicitly)..."
+        print "If the required starting models do not exist, this test will " \
+            "take quite some time to generate them."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = MESAInterface()
         #channel.MessageChannel.DEBUGGER = None
@@ -156,9 +146,10 @@ class TestMESAInterface(TestWithMPI):
                 self.assertAlmostEqual(L_of_the_star,L,2)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance     
     
-    def test7(self):
+    def test6(self):
         print "Testing MESA stop conditions..."
         instance = MESAInterface()
         if instance.MESA_exists:
@@ -182,9 +173,10 @@ class TestMESAInterface(TestWithMPI):
                 self.assertEquals(10.0 ** x, value)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
     
-    def test8(self):
+    def test7(self):
         print "Testing MESA parameters..."
         instance = MESAInterface()
         if instance.MESA_exists:
@@ -208,9 +200,10 @@ class TestMESAInterface(TestWithMPI):
                 self.assertEquals(x, value)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
     
-    def test9(self):
+    def test8(self):
         print "Testing MESA wind parameters..."
         instance = MESAInterface()
         if instance.MESA_exists:
@@ -255,6 +248,7 @@ class TestMESAInterface(TestWithMPI):
                 self.assertEquals(x, value)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
 
 
@@ -277,6 +271,7 @@ class TestMESA(TestWithMPI):
             self.assertEquals(1.0e2 | units.Myr, instance.parameters.max_age_stop_condition)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
     
     def test2(self):
@@ -305,6 +300,7 @@ class TestMESA(TestWithMPI):
             self.assertAlmostEqual(time_step,163200.0 | units.yr,1)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
     
     def test3(self):
@@ -328,47 +324,44 @@ class TestMESA(TestWithMPI):
             self.assertAlmostEquals(stars[0].luminosity, 5841. | units.LSun, 0)
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
     
-    def xtest4(self):
-        print "Testing stellar type... (WIP)"
+    def slowtest4(self):
+        print "Testing stellar type..."
         instance = MESA()
         instance.initialize_module_with_default_parameters() 
         stars =  core.Stars(1)
         
         star = stars[0]
         star.mass = 5.0 | units.MSun
-        star.radius = 0.0 | units.RSun
         
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         
-        previous_type = star.stellar_type
+        previous_type = 15 | units.stellar_type
         results = []
         current_time = 0 | units.Myr
         
-        while current_time < (115 | units.Myr):
+        while current_time < (101 | units.Myr):
+            if not star.stellar_type == previous_type:
+                print (star.age, star.mass, star.stellar_type)
+                results.append((star.age, star.mass, star.stellar_type))
+                previous_type = star.stellar_type
             instance.evolve_model()
             from_code_to_model.copy()
             current_time = star.age
-            print (star.age, star.mass, star.stellar_type)
-            if not star.stellar_type == previous_type:
-                results.append((star.age, star.mass, star.stellar_type))
-                previous_type = star.stellar_type
         
-        print results
-        self.assertEqual(len(results), 6)
+        self.assertEqual(len(results), 4)
         
         times = ( 
-            104.0 | units.Myr, 
-            104.4 | units.Myr, 
-            104.7 | units.Myr, 
-            120.1 | units.Myr,
-            120.9 | units.Myr,
-            121.5 | units.Myr
+            0.0 | units.Myr, 
+            81.6 | units.Myr, 
+            99.9 | units.Myr, 
+            100.3 | units.Myr
         )
         for result, expected in zip(results, times):
             self.assertAlmostEqual(result[0].value_in(units.Myr), expected.value_in(units.Myr), 1)
@@ -376,26 +369,23 @@ class TestMESA(TestWithMPI):
         masses = ( 
             5.000 | units.MSun, 
             5.000 | units.MSun, 
-            4.998 | units.MSun, 
-            4.932 | units.MSun,
-            4.895 | units.MSun,
-            0.997 | units.MSun
+            5.000 | units.MSun, 
+            5.000 | units.MSun
         )
         for result, expected in zip(results, masses):
             self.assertAlmostEqual(result[1].value_in(units.MSun), expected.value_in(units.MSun), 3)
          
         types = (
-            "Hertzsprung Gap",
+            "Main Sequence star",
             "First Giant Branch",
             "Core Helium Burning",
-            "First Asymptotic Giant Branch",
-            "Second Asymptotic Giant Branch",
-            "Carbon/Oxygen White Dwarf",
+            "First Asymptotic Giant Branch"
         )
         
         for result, expected in zip(results, types):
             self.assertEquals(str(result[2]), expected)
         
+        instance.stop()
         del instance
     
     def test5(self):
@@ -436,4 +426,5 @@ class TestMESA(TestWithMPI):
                     "errorcode is -12, error is 'Evolve terminated: Maximum age reached.'", str(ex))
         else:
             print "MESA was not built. Skipping test."
+        instance.stop()
         del instance
