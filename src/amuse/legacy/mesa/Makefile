@@ -34,7 +34,7 @@ else
 		@echo "bash> export DO_INSTALL_MESA=1"
 		@echo "csh> setenv DO_INSTALL_MESA 1"
 		@echo "Note: MESA is quite large (800 MB downloaded, 2.3 GB built) and"
-		@echo "requires ifort or gfortran (version > 4.3.0)."
+		@echo "requires ifort (version >= 11.1) or gfortran (version >= 4.3.0)."
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""

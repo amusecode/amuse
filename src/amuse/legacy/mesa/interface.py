@@ -21,13 +21,8 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         .. [#] ... on MESA can be found at: http://mesa.sourceforge.net/.
     """
     def __init__(self):
-        try:
-            LegacyInterface.__init__(self, name_of_the_worker="worker_code")
-            LiteratureRefs.__init__(self)
-            self.MESA_exists = True
-        except Exception:
-            print "MESA was not built. Skipping initialization."
-            self.MESA_exists = False
+        LegacyInterface.__init__(self, name_of_the_worker="worker_code")
+        LiteratureRefs.__init__(self)
 
     @property
     def default_path_to_inlist(self):
@@ -456,10 +451,9 @@ class MESA(CodeInterface):
     
     def __init__(self):
         CodeInterface.__init__(self, MESAInterface())
-        if self.MESA_exists:
-            self.set_MESA_paths(self.default_path_to_inlist, 
-                self.default_path_to_MESA_data)
-            self.parameters.set_defaults()
+        self.set_MESA_paths(self.default_path_to_inlist, 
+            self.default_path_to_MESA_data)
+        self.parameters.set_defaults()
         
     
     def define_parameters(self, object):
