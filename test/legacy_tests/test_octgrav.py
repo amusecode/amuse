@@ -52,12 +52,31 @@ class TestMPIInterface(TestWithMPI):
 
         particle1_state = instance.get_state(1)
         self.assertEquals(1,   particle1_state['mass'])
+    
         particle2_state = instance.get_state(2)
         self.assertEquals(10,  particle2_state['mass'])
+
         instance.delete_particle(1)
+
         size_result = instance.get_number_of_particles()
         self.assertEquals(2, size_result['number_of_particles'])
+
         new_particle1_state = instance.get_state(1)
         self.assertEquals(10,  new_particle1_state['mass'])
+        
+        new_particle_result = instance.new_particle(
+                                  1000,
+                                  1001,
+                                  1002,
+                                  1003,
+                                  1004,
+                                  1005,
+                                  1006,
+                                  1007)
+        self.assertEquals(4, new_particle_result['index_of_the_particle'],4)
+
+        new_particle4_state = instance.get_state(4)
+        self.assertEquals(1000,  new_particle4_state['mass'])
+
         instance.cleanup_module()
         del instance
