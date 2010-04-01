@@ -1,0 +1,30 @@
+octgrav module for MUSE
+
+octgrav is a gravitational tree code (analgous to BHTree) which uses a
+GPU to calculate gravitational accelerations & potentials.
+
+Problem: python is very slow in loading large data files. For N >
+32768, it takes very long time to get data file loaded :)
+
+Basic requirement is to have CUDA Toolkit & SDK ver >= 1.1. The
+CUDA-enabled GPU is not required for test, but a must for production
+runs. 
+
+By default, the code is compiled in --device-emulation mode.  To
+enable use of CUDA device, "--device-emulation" has to be removed from
+$CODEPATH/Makefile.
+
+The actual tree-code can easily be replaced by a newever version: it
+is enough to untar a new distribution in src/ folder, and to change
+CODEPATH variable in Makefile.
+
+For further questions contact:
+  Evghenii Gaburov, egaburov@strw.leidenuniv.nl
+
+If you use this code for your research, plase make sure you cite the
+following papers: Gaburov, Nitadori, Harfst, Portegies Zwart & Makino,
+"A gravitational tree code on graphics processing units:
+Implementation in CUDA", in preparetion; and main MUSE paper,
+arXiv/0807.1996
+
+

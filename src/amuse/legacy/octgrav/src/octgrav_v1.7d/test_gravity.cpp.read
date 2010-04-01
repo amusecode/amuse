@@ -1,0 +1,197 @@
+#include "octgrav.h"
+
+int main(int argc, char* argv[]) {
+ 
+  if (argc < 2) {
+    cerr << "please pass file name \n";
+    exit(-1);
+  }
+  
+  FILE *fin;
+  if (!(fin = fopen(argv[1], "rb"))) {
+    fprintf(stderr, "cannot open file %s\n", argv[1]);
+    exit(-1);
+  } else {
+    fprintf(stderr, "file %s is found\n", argv[1]);
+  }
+
+  /* legacy variables */
+  int nnopt, nav, ngr, nrelax;
+  double hmin, hmax, sep0, alpha, beta, eta2, trelax, omega2; 
+  double dt, global_time, t_end;
+  double dt_out;
+  int n_bodies;
+  int iteration_number;
+  int snapshot_number;
+  /* legacy variables */
+
+  fread(&n_bodies, sizeof(int), 1, fin);
+  fread(&nnopt, sizeof(int), 1, fin);
+  fread(&hmin,  sizeof(double), 1, fin);
+  fread(&hmax,  sizeof(double), 1, fin);
+  fread(&sep0,  sizeof(double), 1, fin);
+  fread(&t_end,    sizeof(double), 1, fin);
+  fread(&dt_out,  sizeof(double), 1, fin);
+  fread(&snapshot_number,   sizeof(int), 1, fin);
+  fread(&iteration_number,    sizeof(int), 1, fin);
+  fread(&global_time,   sizeof(double), 1, fin); 
+  fread(&nav,    sizeof(int), 1, fin);
+  fread(&alpha,   sizeof(double), 1, fin); 
+  fread(&beta,   sizeof(double), 1, fin); 
+  fread(&eta2,   sizeof(double), 1, fin); 
+  fread(&ngr,    sizeof(int), 1, fin);
+  fread(&nrelax,    sizeof(int), 1, fin);
+  fread(&trelax,   sizeof(double), 1, fin); 
+  fread(&dt,   sizeof(double), 1, fin); 
+  fread(&omega2,   sizeof(double), 1, fin); 
+
+  vector<float4> bodies_pos(n_bodies);
+  vector<float4> bodies_grav(n_bodies);
+
+  for (int i = 0; i < n_bodies; i++) {
+    double val;
+    
+    fread(&val, sizeof(double), 1, fin);    bodies_pos[i].x = val;
+    fread(&val, sizeof(double), 1, fin);    bodies_pos[i].y = val;
+    fread(&val, sizeof(double), 1, fin);    bodies_pos[i].z = val;
+
+    fread(&val, sizeof(double), 1, fin);    bodies_pos[i].w = val;  //mass
+    fread(&val, sizeof(double), 1, fin);  //  hst.bodies_pos[i].w = 2*val;  //range
+    fread(&val, sizeof(double), 1, fin);  //  hst.hydro_data[i].x = val;  // density
+
+    fread(&val, sizeof(double), 1, fin);  //  hst.bodies_vel[i].x = val;
+    fread(&val, sizeof(double), 1, fin);  //  hst.bodies_vel[i].y = val;
+    fread(&val, sizeof(double), 1, fin);  //  hst.bodies_vel[i].z = val;
+
+    fread(&val, sizeof(double), 1, fin);     // hst.bodies_dots[i].x = val;
+    fread(&val, sizeof(double), 1, fin);     // hst.bodies_dots[i].y = val;
+    fread(&val, sizeof(double), 1, fin);     // hst.bodies_dots[i].z = val;
+
+    fread(&val, sizeof(double), 1, fin);     // hst.hydro_data[i].z  = val;  // ethermal
+    fread(&val, sizeof(double), 1, fin);     // hst.bodies_dots[i].w = val;  // udot
+    
+    fread(&val, sizeof(double), 1, fin);     // hst.grav_data[i].x = val; // gx
+    fread(&val, sizeof(double), 1, fin);     // hst.grav_data[i].y = val; // gy
+    fread(&val, sizeof(double), 1, fin);     // hst.grav_data[i].z = val; // gz
+    fread(&val, sizeof(double), 1, fin);     // hst.grav_data[i].w = val; // gpot
+    
+    fread(&val, sizeof(double), 1, fin);     // hst.hydro_data[i].w = val/1.66054e-24; //mean_mu
+    
+    fread(&val, sizeof(double), 1, fin);  // aa
+    fread(&val, sizeof(double), 1, fin);  // bb
+    fread(&val, sizeof(double), 1, fin);  // cc
+    fread(&val, sizeof(double), 1, fin);     // hst.dots_data[i].x = val; // divv;
+  }  
+  
+  fclose(fin);
+  
+  octgrav system;
+
+  float theta = 0.8;
+  if (argc > 2)
+    theta = atof(argv[2]);
+  fprintf(stderr, "theta= %g\n", theta);
+  
+  float eps   = 0.01;
+
+// #define EXACT
+
+#ifdef EXACT
+  vector<double4> acc(n_bodies);
+  for (int i = 0; i < n_bodies; i++) 
+    acc[i] = (double4){0,0,0,0};
+  
+  double t1 = get_time();
+  for (int i = 0; i < n_bodies; i++) {
+    if (i%100 == 0) {
+      fprintf(stderr, "i= %d\n", i);
+      fflush(stderr);
+    }
+    float4 pos_i = bodies_pos[i];
+    register double4 acc_i = {0,0,0,0};
+    for (int j = 0; j < n_bodies; j++) {
+      register float4 pos_j = bodies_pos[j];
+      register float3 dr = {pos_i.x - pos_j.x,
+			    pos_i.y - pos_j.y,
+			    pos_i.z - pos_j.z};
+      register float s2 = dr.x*dr.x + dr.y*dr.y + dr.z*dr.z + eps*eps;
+      if (s2 > 0) {
+	register float inv_s  = 1.0/sqrt(s2);
+	register float inv_s3 = inv_s*inv_s*inv_s;
+	acc_i.x -= pos_j.w * inv_s3 * dr.x;
+	acc_i.y -= pos_j.w * inv_s3 * dr.y;
+	acc_i.z -= pos_j.w * inv_s3 * dr.z;
+	acc_i.w -= pos_j.w * inv_s;
+      }
+    }
+    acc[i] = acc_i;
+  }
+  fprintf(stderr, "done in %lg sec\n", get_time() - t1);
+
+#else
+
+  system.set_opening_angle(theta);
+  system.set_softening(eps);
+  system.evaluate_gravity(bodies_pos, bodies_grav);
+
+#endif
+
+  double4 tot_force  = {0,0,0,0};
+  double4 tot_torque = {0,0,0,0};
+
+  double tot_mass = 0;
+  for (int i = 0; i < n_bodies; i++) {
+    float4 pos  = bodies_pos[i];
+    float4 acc = bodies_grav[i];
+
+    tot_mass += pos.w;
+    
+    tot_force.x += pos.w * acc.x;
+    tot_force.y += pos.w * acc.y;
+    tot_force.z += pos.w * acc.z;
+    
+    tot_torque.x += pos.w * (acc.y*pos.z - acc.z*pos.y);
+    tot_torque.y += pos.w * (acc.z*pos.x - acc.x*pos.z);
+    tot_torque.z += pos.w * (acc.x*pos.y - acc.y*pos.x);
+  }
+  float tm = tot_mass;
+  tot_mass = 1;
+  fprintf(stderr, "tot_force=  [ %lg %lg %lg ]\n",
+	  tot_force.x/tot_mass, tot_force.y/tot_mass, tot_force.z/tot_mass);
+  fprintf(stderr, "tot_torque= [ %lg %lg %lg ]\n",
+	  tot_torque.x/tot_mass, tot_torque.y/tot_mass, tot_torque.z/tot_mass);
+
+  double4 tot_force0 = tot_force;
+  tot_force  = (double4){0,0,0,0}; 
+  tot_torque = (double4){0,0,0,0};
+  for (int i = 0; i < n_bodies; i++) {
+    float4 pos = bodies_pos[i];
+    float4 acc = bodies_grav[i];
+
+    acc.x -= tot_force0.x/tm;
+    acc.y -= tot_force0.y/tm;
+    acc.z -= tot_force0.z/tm;
+
+    fprintf(stdout, "%g %g\n",
+ 	    (float)bodies_grav[i].w,
+ 	    (float)sqrt(bodies_grav[i].x*bodies_grav[i].x + 
+ 			bodies_grav[i].y*bodies_grav[i].y + 
+ 			bodies_grav[i].z*bodies_grav[i].z));
+
+    tot_force.x += pos.w * acc.x;
+    tot_force.y += pos.w * acc.y;
+    tot_force.z += pos.w * acc.z;
+    
+    tot_torque.x += pos.w * (acc.y*pos.z - acc.z*pos.y);
+    tot_torque.y += pos.w * (acc.z*pos.x - acc.x*pos.z);
+    tot_torque.z += pos.w * (acc.x*pos.y - acc.y*pos.x);
+  }
+
+  fprintf(stderr, "tot_force=  [ %lg %lg %lg ]\n",
+	  tot_force.x/tot_mass, tot_force.y/tot_mass, tot_force.z/tot_mass);
+  fprintf(stderr, "tot_torque= [ %lg %lg %lg ]\n",
+	  tot_torque.x/tot_mass, tot_torque.y/tot_mass, tot_torque.z/tot_mass);
+
+  fprintf(stderr, "end-of-program\n");
+  return 0;
+}
