@@ -23,7 +23,10 @@ except ImportError:
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):
-        instance = OctgravInterface()
+        instance = self.new_instance_of_an_optional_code(OctgravInterface)
+        if instance is None:
+            return
+            
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
@@ -33,7 +36,9 @@ class TestMPIInterface(TestWithMPI):
         del instance
 
     def test2(self):
-        instance = OctgravInterface()
+        instance = self.new_instance_of_an_optional_code(OctgravInterface)
+        if instance is None:
+            return
         instance.initialize_code()
         instance.new_particle(
             [1,10,100],

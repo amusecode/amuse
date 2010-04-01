@@ -1,12 +1,13 @@
-$(warning debugging this makefile)
+
 CODEPATH = src/octgrav_v1.7d
 CODELIB = $(CODEPATH)/liboctgrav.a 
 
-CUDASDK = /data1/cuda_sdk
-CUDATK  = /data1/cuda
 
-MUSE_INCLUDE_DIR = -I$(CODEPATH) -I$(CUDASDK)/common/inc -I$(CUDATK)/include 
-$(warning $(MAKE))
+CUDA_SDK ?= /data1/cuda_sdk
+CUDA_TK  ?= /data1/cuda
+
+MUSE_INCLUDE_DIR = -I$(CODEPATH) -I$(CUDA_SDK)/common/inc -I$(CUDA_TK)/include 
+
 CXXFLAGS+= $(MUSE_INCLUDE_DIR) 
 
 
@@ -15,11 +16,43 @@ OBJS = integrator.o octgrav_code.o
 AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-LIBS += -L$(CUDATK)/lib -lcudart
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib 
+CUDA_LIBS ?= -lcudart
 
-all: compile worker_code
+LIBS += $(CUDA_LIBDIRS) $(CUDA_LIBS)
 
-compile: octgrav 
+all:  compile worker_code
+
+$(CUDA_TK):
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "octgrav code"
+	@echo "------------"
+	@echo "CUDA_TK variable is not set to a valid path,"
+	@echo "please set the CUDA_TK variable to the directory"
+	@echo "where you installed CUDA"
+	@echo "the CUDA_TK directory must contain a bin directory with the <nvcc> executable"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+
+$(CUDA_SDK):
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "octgrav code"
+	@echo "------------"
+	@echo "CUDA_SDK variable is not set to a valid path,"
+	@echo "please set the CUDA_SDK variable to the directory"
+	@echo "where you installed the CUDA SDK"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+
+compile: $(CUDA_TK) $(CUDA_SDK) octgrav 
 
 octgrav: 
 	$(MAKE) -C $(CODEPATH)

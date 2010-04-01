@@ -18,4 +18,10 @@ class TestWithMPI(amusetest.TestCase):
             if os.path.exists(os.path.join(os.path.dirname(inspect.getfile(factory)),'src')):
                 raise
             return None
+            
+    def new_instance_of_an_optional_code(self, factory):
+        try:
+            return factory()
+        except Exception as message:
+            return None
     

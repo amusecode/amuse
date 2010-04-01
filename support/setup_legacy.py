@@ -92,19 +92,31 @@ class LegacyCommand(Command):
     
     
     def set_cuda_variables(self):
-        if ('CUDA_LIBDIRS' in self.environment 
-                and 'CUDA_LIBS' in self.environment):
+        all_found = True
+        for x in ['CUDA_TK', 'CUDA_SDK']:
+            if not x in self.environment:
+                all_found = False
+                break
+        
+        if all_found:
+            cuda_dir = self.environment['CUDA_TK']
+            self.environment['CUDA_LIBDIRS'] = '-L'+cuda_dir+'/lib' +  ' -L'+cuda_dir+'/lib64'
+            self.environment['CUDA_LIBS'] = '-lcudart'
             return
             
         dir = spawn.find_executable('nvcc')
         if dir is None:
             self.found_cuda = False
-            self.environment_notset['CUDA_LIBDIRS'] = '-L<directory>'
-            self.environment_notset['CUDA_LIBS'] = '-lcudart'
+            self.environment_notset['CUDA_SDK'] = '<directory>'
+            self.environment_notset['CUDA_TK'] = '<directory>'
             return
         cuda_dir = os.path.dirname(os.path.dirname(dir))
-        self.environment['CUDA_LIBDIRS'] = '-L'+cuda_dir+'/lib'
+        self.environment['CUDA_LIBDIRS'] = '-L'+cuda_dir+'/lib' + ' -L'+cuda_dir+'/lib64'
         self.environment['CUDA_LIBS'] = '-lcudart'
+        self.environment['CUDA_TK'] = cuda_dir
+        if not 'CUDA_SDK' in self.environment:
+            self.environment_notset['CUDA_SDK'] = '<directory>'
+        
         self.found_cuda = True
 
     

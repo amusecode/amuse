@@ -538,6 +538,7 @@ class RunTests(object):
                 if message is None:
                     break;
                 if message[0] == 'unit-report':
+                    print message[1]["id"]
                     self.report_queue.put(message[1])
                 if message[0] == 'start-report':
                     print message[1]
