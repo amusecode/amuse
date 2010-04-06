@@ -1354,6 +1354,9 @@ class AbstractParticleSet(object):
         """
         return self.as_set().difference(other)
         
+    def get_timestamp(self):
+        return None
+    
     def has_duplicates(self):
         """
         Returns True when a set contains a particle with the
