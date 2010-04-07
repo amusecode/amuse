@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import re
 
 class CheckPythonSystem(object):
     NormalColor = '\033[0m'
@@ -39,7 +40,7 @@ class CheckPythonSystem(object):
         
     def get_version_as_number(self, version_string, separator):
         parts = version_string.split(separator)
-        int_parts = map(lambda x : int(x), parts)
+        int_parts = map(lambda x : int(x.strip()), parts)
         multipliers = list(reversed(map(lambda x : 255 ** x, range(4))))
         result = 0
         for index, value in enumerate(int_parts):
@@ -56,9 +57,11 @@ class CheckPythonSystem(object):
         )
         
     def check_python_version(self):
+        actual_version_string = sys.version[:5]
+        actual_version_string = actual_version_string.rstrip('( ')
         self.check_version_of(
             name = 'python',
-            actual_version_string = sys.version[:5],
+            actual_version_string = actual_version_string,
             minimal_version_string = '2.6'
         )
         

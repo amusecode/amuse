@@ -1,5 +1,6 @@
 include build.py
 include Makefile
+include configure
 include README.txt
 
 include src/amuse/legacy/evtwin/src/modules
