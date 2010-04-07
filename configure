@@ -59,6 +59,7 @@ class CheckPythonSystem(object):
     def check_python_version(self):
         actual_version_string = sys.version[:5]
         actual_version_string = actual_version_string.rstrip('( ')
+
         self.check_version_of(
             name = 'python',
             actual_version_string = actual_version_string,
