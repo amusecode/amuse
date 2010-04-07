@@ -319,7 +319,7 @@ Ubuntu comes with python packages for nose and numpy. You also need
 the setuptools package to be able to install the ``mpi4py`` and ``h5py`` 
 software. To install these , do::
 
-    > sudo apt-get install python-nose python-numpy python-setuptools
+    > sudo apt-get install python-nose python-numpy python-setuptools python-docutils
 
 Python packages with easy_install
 ---------------------------------
@@ -339,6 +339,12 @@ previous section.
 The development packages of python are needed, to install these do::
 
     > sudo apt-get install python-dev 
+
+FFTW
+-------
+For 9.10 the FFTW package name is fftw3 and not libfftw3, FFTW can be installed with::
+
+    > sudo apt-get install fftw3 fftw3-dev fftw3-doc
 
  
 
