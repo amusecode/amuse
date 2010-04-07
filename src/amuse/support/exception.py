@@ -15,6 +15,11 @@ class AmuseException(Exception):
     
     def __init__(self, *args):
         Exception.__init__(self, *args)
+    
+    def __str__(self):
+        if self.errorcode.formatstring:
+            return self.errorcode.formatstring.format(*self.args)
+        return repr(self.args[0])
 
 class CoreException(AmuseException):
     majorcode = 0

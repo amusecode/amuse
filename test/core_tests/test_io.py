@@ -68,7 +68,29 @@ class FrameworkTests(amusetest.TestCase):
         self.assertEquals(name, 'save_fast')
         self.assertEquals(description, 'if True will save faster but less accurate')
         self.assertEquals(default, False)
+    
+    def test5(self):
+        try:
+            y = io.read_set_from_file("non_existent","test")
+            self.fail("Should never get here.")
+        except Exception as ex:
+            self.assertEqual("Error: file 'non_existent' does not exist.", str(ex))
         
+        processor = base.FileFormatProcessor(format="test")
+        try:
+            processor.store()
+            self.fail("Should never get here.")
+        except base.CannotSaveException as ex:
+            self.assertEqual("You tried to save a file with fileformat 'test', but"
+                " this format is not supported for writing files", str(ex))
+        
+        try:
+            processor.load()
+            self.fail("Should never get here.")
+        except base.CannotLoadException as ex:
+            self.assertEqual("You tried to load a file with fileformat 'test', but"
+                " this format is not supported for reading files", str(ex))
+    
 
 class FormatTests(amusetest.TestCase):
     
@@ -222,6 +244,14 @@ class FormatTests(amusetest.TestCase):
         self.assertEquals(description, 'By default new data is appended to HDF5 files. '
             'Set this to False to overwrite existing files.')
         self.assertEquals(default, True)
-
-        
-        
+    
+    def test9(self):
+        x = core.Particles(2)
+        x.mass = [1.0, 2.0] | units.kg
+        try:
+            io.write_set_to_file(x, "test_unit.bogus","bogus")
+            self.fail("Should never get here.")
+        except Exception as ex:
+            self.assertEqual("You tried to load or save a file with fileformat 'bogus'"
+                ", but this format is not in the supported formats list", str(ex))
+    

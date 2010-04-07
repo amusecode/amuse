@@ -2,6 +2,7 @@
 
 from amuse.support.core import late
 from amuse.support import exception
+import os.path
 
 import textwrap
 
@@ -94,6 +95,8 @@ def read_set_from_file(
     determine the supported options for a processor call 
     :func:`get_options_for_format`
     """
+    if not os.path.exists(filename):
+        raise Exception("Error: file '{0}' does not exist.".format(filename))
     if isinstance(format, basestring):
         if not format in registered_fileformat_processors:
             raise UnsupportedFormatException(format)
