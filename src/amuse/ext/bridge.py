@@ -30,8 +30,8 @@
   from amuse.ext.bridge import bridge
    
   bridgesys=bridge(verbose=False)
-  bridgesys.add_system(galaxy, False, (cluster,))
-  bridgesys.add_system(cluster, True, (galaxy,) )
+  bridgesys.add_system(galaxy, (cluster,), False)
+  bridgesys.add_system(cluster, (galaxy,), True )
 
   bridge builds on the full gravity interface, so unit handling etc is 
   guaranteed. Bridge itself is a (somewhat incomplete) gravity interface,
@@ -113,7 +113,7 @@ class bridge(object):
     self.do_sync=dict()
     self.verbose=verbose
   
-  def add_system(self, interface, do_sync=True, partners=set()):
+  def add_system(self, interface,  partners=set(),do_sync=True):
     """
     add a system to bridge integrator  
     """
