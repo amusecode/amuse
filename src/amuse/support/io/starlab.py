@@ -263,10 +263,10 @@ class Particles2Dyn(object):
 
 class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
     """
-    Process a text file containing a table of values separated by a predefined character
+    Process a Starlab binary structured file
     """
     
-    provided_formats = ['dyn']
+    provided_formats = ['starlab', 'dyn']
     
     def __init__(self, filename = None, stream = None, set = None, format = None):
         base.FileFormatProcessor.__init__(self, filename, set, format)
@@ -275,7 +275,6 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
     def load_string(self, string):
         x = Dyn2Xml()
         xml_string = x.convert_startlab_string_to_xml_string(string)
-        print xml_string
         xml2particles = Xml2Particles()
         xml2particles.parse_xml(xml_string)
         if not self.nbody_to_si_converter is None:

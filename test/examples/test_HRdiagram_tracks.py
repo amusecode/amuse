@@ -206,7 +206,7 @@ def new_commandline_option_parser():
         "-p",
         "--plot_file",
         type="string",
-        default="cluster_HR_diagram.png",
+        default="HR_evolution_tracks.png",
         dest="plot_filename",
         help="Name of the file to plot to"
     )

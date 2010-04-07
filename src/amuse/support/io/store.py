@@ -5,6 +5,7 @@ import os.path
 
 from amuse.support.data.core import Particles, AttributeStorage
 from amuse.support.units import si, units
+from amuse.support.io import base
 
 
 class HDF5AttributeStorage(AttributeStorage):
@@ -81,11 +82,16 @@ class HDF5AttributeStorage(AttributeStorage):
 class StoreHDF(object):
     PARTICLES_GROUP_NAME = "particles"
     
-    def __init__(self, filename):
-        if os.path.exists(filename):
-            self.hdf5file = h5py.File(filename ,'r+')
-        else:
+    def __init__(self, filename, append_to_file=True):
+#        if os.path.exists(filename):
+#            self.hdf5file = h5py.File(filename ,'r+')
+#        else:
+#            self.hdf5file = h5py.File(filename ,'w')
+        if not append_to_file and os.path.exists(filename):
+            os.remove(filename)
             self.hdf5file = h5py.File(filename ,'w')
+        else:
+            self.hdf5file = h5py.File(filename ,'a')
         
     def store(self, particles):
         particles_group = self.particles_group()
@@ -168,3 +174,27 @@ class StoreHDF(object):
     def close(self):
         self.hdf5file.close()
 
+class HDF5FileFormatProcessor(base.FileFormatProcessor):
+    """
+    Process an HDF5 file
+    """
+    
+    provided_formats = ['hdf5', 'amuse']
+    
+    def __init__(self, filename = None, set = None, format = None, append_to_file=True):
+        base.FileFormatProcessor.__init__(self, filename, set, format)
+        self.append_to_file = append_to_file
+    
+    def load(self):
+        processor = StoreHDF(self.filename, self.append_to_file)
+        return processor.load()
+        
+    def store(self):
+        processor = StoreHDF(self.filename, self.append_to_file)
+        return processor.store(self.set)
+    
+    @base.format_option
+    def append_to_file(self):
+        "By default new data is appended to HDF5 files. Set this to False to overwrite existing files."
+        return True
+    

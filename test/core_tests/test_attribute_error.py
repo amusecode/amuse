@@ -27,6 +27,7 @@ class TestAttributeError(amusetest.TestCase):
             self.assertEquals(len(x.as_set()), lengths[i])
             try:
                 print x.bogus
+                self.fail("Should never get here!")
             except AttributeError as ex:
                 self.assertEquals("You tried to access attribute 'bogus'"
                     " but this attribute is not defined for this set.", str(ex))
@@ -55,6 +56,7 @@ class TestAttributeError(amusetest.TestCase):
             gravity.particles.add_particles(x)
             try:
                 print gravity.particles.bogus
+                self.fail("Should never get here!")
             except AttributeError as ex:
                 self.assertEquals("You tried to access attribute 'bogus'"
                     " but this attribute is not defined for this set.", str(ex))
@@ -85,6 +87,7 @@ class TestAttributeError(amusetest.TestCase):
             loaded_particles = HDFstorage.load()
             try:
                 print loaded_particles.bogus
+                self.fail("Should never get here!")
             except AttributeError as ex:
                 self.assertEquals("You tried to access attribute 'bogus'"
                     " but this attribute is not defined for this set.", str(ex))
@@ -106,6 +109,7 @@ class TestAttributeError(amusetest.TestCase):
             self.assertEquals(len(x.as_set()), lengths[i])
             try:
                 x.mass = 1.0
+                self.fail("Should never get here!")
             except AttributeError as ex:
                 self.assertEquals("Can only assign quantities or other particles"
                     " to an attribute.", str(ex))
@@ -134,6 +138,7 @@ class TestAttributeError(amusetest.TestCase):
             gravity.particles.add_particles(x)
             try:
                 gravity.particles.mass = 1.0
+                self.fail("Should never get here!")
             except AttributeError as ex:
                 self.assertEquals("Can only assign quantities or other particles"
                     " to an attribute.", str(ex))
@@ -163,6 +168,7 @@ class TestAttributeError(amusetest.TestCase):
             loaded_particles = HDFstorage.load()
             try:
                 loaded_particles.mass = 1.0
+                self.fail("Should never get here!")
             except AttributeError as ex:
                 self.assertEquals("Can only assign quantities or other particles"
                     " to an attribute.", str(ex))

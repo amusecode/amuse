@@ -119,10 +119,10 @@ class Tsf2Particles(object):
                                                             
 class NemoFileFormatProcessor(base.FullTextFileFormatProcessor):
     """
-    Process a text file containing a table of values separated by a predefined character
+    Process a NEMO binary structured file
     """
     
-    provided_formats = ['tsf']
+    provided_formats = ['nemo', 'tsf']
     
     def __init__(self, filename = None, stream = None, set = None, format = None):
         base.FileFormatProcessor.__init__(self, filename, set, format)
@@ -138,6 +138,6 @@ class NemoFileFormatProcessor(base.FullTextFileFormatProcessor):
 
     @base.format_option
     def nbody_to_si_converter(self):
-        "tsf datafiles store nbody data, provide a converter to store si data (None means no converter)"
+        "NEMO datafiles store nbody data, provide a converter to store si data (None means no converter)"
         return None
         

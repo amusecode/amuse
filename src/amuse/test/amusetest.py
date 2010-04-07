@@ -24,10 +24,10 @@ class TestCase(unittest.TestCase):
         else:             
             absdif = abs(delta) 
                
-        tmp = numpy.round(absdif, places) != 0
+        tmp = numpy.array(numpy.round(absdif, places) != 0).flatten()
 
-        if numpy.isscalar(tmp):
-            if tmp:
+        if len(tmp) == 1:
+            if tmp[0]:
                 raise self.failureException,(msg or '%r != %r within %r places' % (first, second, places))                     
         elif any(tmp):
             err_list = ["@%i, %f != %f within %r places" % (i,first_nu[i], second_nu[i], places) for (i,b) in enumerate(tmp) if b]

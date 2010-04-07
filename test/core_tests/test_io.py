@@ -81,7 +81,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test.tsf","tsf")
         y = io.read_set_from_file("test.tsf","tsf")
         
-        self.assertEquals(x[0].mass, y[0].mass)
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+#        self.assertAlmostEquals(x.radius, y.radius, 8)
+        self.assertAlmostEquals(x.position, y.position,8)
+        self.assertAlmostEquals(x.velocity, y.velocity,8)
 
         os.remove("test.tsf")
         
@@ -95,7 +98,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test.dyn","dyn")
         y = io.read_set_from_file("test.dyn","dyn")
         
-        self.assertEquals(x[0].mass, y[0].mass)
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+#        self.assertAlmostEquals(x.radius, y.radius, 8)
+        self.assertAlmostEquals(x.position, y.position,8)
+        self.assertAlmostEquals(x.velocity, y.velocity,8)
         
         os.remove("test.dyn")
         
@@ -109,12 +115,10 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test_unit.dyn","dyn", nbody_to_si_converter = convert)
         y = io.read_set_from_file("test_unit.dyn","dyn", nbody_to_si_converter = convert)
         
-        self.assertAlmostEquals(x[0].mass, y[0].mass, 8)
-        self.assertAlmostEquals(x[1].position.x, y[1].position.x,8)
-        self.assertAlmostEquals(x[1].position.y, y[1].position.y,8)
-        self.assertAlmostEquals(x[1].position.z, y[1].position.z,8)
-        self.assertAlmostEquals(x[0].velocity.y, y[0].velocity.y,8)
-        
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+#        self.assertAlmostEquals(x.radius, y.radius, 8)
+        self.assertAlmostEquals(x.position, y.position,8)
+        self.assertAlmostEquals(x.velocity, y.velocity,8)
         
         os.remove("test_unit.dyn")
         
@@ -130,25 +134,94 @@ class FormatTests(amusetest.TestCase):
         io.write_set_to_file(x, "test_unit.tsf","tsf", nbody_to_si_converter = convert)
         y = io.read_set_from_file("test_unit.tsf","tsf", nbody_to_si_converter = convert)
         
-        self.assertAlmostEquals(x[0].mass, y[0].mass, 8)
-        self.assertAlmostEquals(x[1].position.x, y[1].position.x,8)
-        self.assertAlmostEquals(x[1].position.y, y[1].position.y,8)
-        self.assertAlmostEquals(x[1].position.z, y[1].position.z,8)
-        self.assertAlmostEquals(x[0].velocity.y, y[0].velocity.y,8)
-        
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEquals(x.position, y.position,8)
+        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        try:
+            print y.radius
+            self.fail("Should never get here: NEMO file format does not support storage of radii.")
+        except Exception as ex:
+            self.assertEqual("You tried to access attribute 'radius' but this "
+                "attribute is not defined for this set.", str(ex))
         
         os.remove("test_unit.tsf")
-        
     
     def test5(self):
+        print "Testing HDF5 io"
+        x = core.Particles(2)
+        x.mass = [1.0, 2.0] | units.kg
+        x.radius = [3.0, 4.0] | units.m
+        x.position = [[1,2,3], [3,5,6]] | units.m
+        x.velocity = [[1,2,3], [3,5,6]] | units.m / units.s
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEquals(x.radius, y.radius, 8)
+        self.assertAlmostEquals(x.position, y.position,8)
+        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        
+        os.remove("test_unit.hdf5")
+        
+    def test6(self):
+        print "Testing HDF5 io, with options"
+        x = core.Particles(2)
+        x.mass = [1.0, 2.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5")
+        x.mass = [10.0, 20.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=True)
+        x.mass = [100.0, 200.0] | units.kg
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEquals([10.0, 20.0] | units.kg, y._private.previous.mass, 8)
+        self.assertAlmostEquals([1.0, 2.0] | units.kg, y._private.previous._private.previous.mass, 8)
+        self.assertEqual(y._private.previous._private.previous._private.previous, None)
+        
+        io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False)
+        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertEqual(y._private.previous, None)
+        
+        os.remove("test_unit.hdf5")
+        
+    def test7(self):
+        print "Testing HDF5 io with a ParticlesSuperset"
+        set1 = core.Particles(2)
+        set2 = core.Particles(2)
+        superset = core.ParticlesSuperset([set1, set2])
+        superset.mass = [1.0, 2.0, 3.0, 4.0] | units.kg
+        superset.radius = [3.0, 4.0, 5.0, 6.0] | units.m
+        superset.position = [[1,2,3], [3,5,6], [3,2,1], [-3,-5,-6]] | units.m
+        superset.velocity = [[1,2,3], [3,5,6], [3,2,1], [-3,-5,-6]] | units.m / units.s
+        io.write_set_to_file(superset, "test_unit.hdf5","hdf5")
+        y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        
+        self.assertAlmostEquals(superset.mass, y.mass, 8)
+        self.assertAlmostEquals(superset.radius, y.radius, 8)
+        self.assertAlmostEquals(superset.position, y.position,8)
+        self.assertAlmostEquals(superset.velocity, y.velocity,8)
+        
+        os.remove("test_unit.hdf5")
+    
+    def test8(self):
         options = base.get_options_for_format('tsf')
         name, description, default = options[0]
         self.assertEquals(name, 'nbody_to_si_converter')
-        self.assertEquals(description, 'tsf datafiles store nbody data, provide a converter to store si data (None means no converter)')
+        self.assertEquals(description, 'NEMO datafiles store nbody data, provide a '
+            'converter to store si data (None means no converter)')
         self.assertEquals(default, None)
+        
         options = base.get_options_for_format('dyn')
         name, description, default = options[0]
         self.assertEquals(name, 'nbody_to_si_converter')
+        
+        options = base.get_options_for_format('hdf5')
+        name, description, default = options[0]
+        self.assertEquals(name, 'append_to_file')
+        self.assertEquals(description, 'By default new data is appended to HDF5 files. '
+            'Set this to False to overwrite existing files.')
+        self.assertEquals(default, True)
 
         
         
