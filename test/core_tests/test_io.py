@@ -121,9 +121,14 @@ class FormatTests(amusetest.TestCase):
         y = io.read_set_from_file("test.dyn","dyn")
         
         self.assertAlmostEquals(x.mass, y.mass, 8)
-#        self.assertAlmostEquals(x.radius, y.radius, 8)
         self.assertAlmostEquals(x.position, y.position,8)
         self.assertAlmostEquals(x.velocity, y.velocity,8)
+        try:
+            print y.radius
+            self.fail("Should never get here: starlab file format does not support storage of radii.")
+        except Exception as ex:
+            self.assertEqual("You tried to access attribute 'radius' but this "
+                "attribute is not defined for this set.", str(ex))
         
         os.remove("test.dyn")
         
@@ -138,9 +143,14 @@ class FormatTests(amusetest.TestCase):
         y = io.read_set_from_file("test_unit.dyn","dyn", nbody_to_si_converter = convert)
         
         self.assertAlmostEquals(x.mass, y.mass, 8)
-#        self.assertAlmostEquals(x.radius, y.radius, 8)
         self.assertAlmostEquals(x.position, y.position,8)
         self.assertAlmostEquals(x.velocity, y.velocity,8)
+        try:
+            print y.radius
+            self.fail("Should never get here: starlab file format does not support storage of radii.")
+        except Exception as ex:
+            self.assertEqual("You tried to access attribute 'radius' but this "
+                "attribute is not defined for this set.", str(ex))
         
         os.remove("test_unit.dyn")
         
