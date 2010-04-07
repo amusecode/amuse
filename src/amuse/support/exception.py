@@ -19,7 +19,7 @@ class AmuseException(Exception):
     def __str__(self):
         if self.errorcode.formatstring:
             return self.errorcode.formatstring.format(*self.args)
-        return repr(self.args[0])
+        return self.args[0]
 
 class CoreException(AmuseException):
     majorcode = 0
