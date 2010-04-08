@@ -38,10 +38,36 @@ class Octgrav(GravitationalDynamics):
             convert_nbody = nbody_system.nbody_to_si.get_default()
 
 
-        legacy_interface = BHTreeInterface()
+        legacy_interface = OctgravInterface()
 
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
+        )
+
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_eps2",
+            "set_eps2",
+            "epsilon_squared",
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.3 | nbody_system.length * nbody_system.length
+        )
+        object.add_method_parameter(
+            "get_time_step",
+            None,
+            "timestep",
+            "constant timestep for iteration", 
+            nbody_system.time, 
+            0.7 | nbody_system.time
+        )
+        object.add_method_parameter(
+            "get_theta_for_tree",
+            "set_theta_for_tree",
+            "openings_angle",
+            "openings angle for building the tree between 0 and 1", 
+            units.none,
+            0.5 | units.none
         )

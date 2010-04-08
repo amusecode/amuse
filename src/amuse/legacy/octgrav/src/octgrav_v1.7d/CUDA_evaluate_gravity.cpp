@@ -1,6 +1,8 @@
 #include "octgrav.h"
 
-double octgrav::CUDA_evaluate_gravity() {
+double octgrav::CUDA_evaluate_gravity() 
+{
+  
   return host_evaluate_gravity(1.0/opening_angle,
 			       softening*softening,
 			       
@@ -29,4 +31,6 @@ double octgrav::CUDA_evaluate_gravity() {
 			       dev.cell_com,
 			       dev.n_in_cell,
 			       dev.cell_bodies_offset);
+ 
 }
+

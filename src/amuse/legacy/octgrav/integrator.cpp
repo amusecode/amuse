@@ -141,13 +141,14 @@ void goodfrog(float dtime, vector<float4> &bodies_pos, vector<float4> &bodies_ve
 /* Performs one integration step using leapfrog scheme. */
 void leapfrog(double dtime, vector<float4> &bodies_pos, vector<float4> &bodies_vel, vector<float4> &bodies_grav, octgrav &system)
 {
+ 
   MASS_F4XYZ_ADDMUL(bodies_vel, bodies_grav, 0.5 * dtime);         /* advance vel by 1/2 step  */
 
   MASS_F4XYZ_ADDMUL(bodies_pos, bodies_vel, 0.5 * dtime);          /* advance pos by 1/2 step  */
 
   // loop over all bodies (MASS prefix implies a looping function)
   //fprintf(stderr,"particle 0: xvel = %f xpos = %f\n", bodies_vel[0].x, bodies_pos[0].x);
-
+  
   MASS_F4XYZ_ADDMUL(bodies_pos, bodies_vel, 0.5 * dtime);          /* advance pos by 1/2 step  */
 
   //fprintf(stderr,"xvel = %f, xpos = %f, dtime = %f\n", bodies_vel[0].x, bodies_pos[0].x, dtime);
@@ -163,9 +164,10 @@ void leapfrog(double dtime, vector<float4> &bodies_pos, vector<float4> &bodies_v
 
   MASS_F4XYZ_ADDMUL(bodies_vel, bodies_grav, 0.5 * dtime);         /* advance vel by 1/2 step  */
   t_now = t_now + dtime;                                           /* advance time             */
-  write_output(bodies_pos,bodies_vel,bodies_grav);                 /* write diagnostics        */
+  //cello write_output(bodies_pos,bodies_vel,bodies_grav);                 /* write diagnostics        */
 
   nstep++;                                    /* count another time step  */
+ 
 }
 
 

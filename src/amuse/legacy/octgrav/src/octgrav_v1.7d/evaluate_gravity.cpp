@@ -10,16 +10,19 @@ double get_time() {
 }
 
 void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
-			       vector<float4> &bodies_grav) {
+			       vector<float4> &bodies_grav) 
+{
   
-  if (first_run) {
-    initCUDA();
-    first_run = false;
-  }
+  if (first_run) 
+    {
+      initCUDA();
+      first_run = false;
+    }
   
   double t1   = get_time();
   fprintf(stderr, "Load data ... ");
   float4 com = load_data(bodies_pos_in);
+  
   fprintf(stderr, "done in %lf sec \n", get_time() - t1);
   fprintf(stderr, "system_com= [%g %g %g %g] \n\n",
 	  com.x, com.y, com.z, com.w);
@@ -62,7 +65,7 @@ void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
     }
 
   }    
-
+  
   float4 root_com = tree.get_com();
   fprintf(stderr, "root_com= [%g %g %g %g] \n",
 	  root_com.x, root_com.y, root_com.z, root_com.w);
@@ -110,21 +113,21 @@ void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
 
   for (int i = 0; i < 8; i++)
     node_list[i] = node_list[node_list.size() - 8 + i];
-
+  
   t1 = get_time();
   fprintf(stderr, "Preparing & sending data to the device ... ");
   prepare_data_for_device();
   copy_data_to_device();
   fprintf(stderr, "done in %lf sec \n", get_time() - t1);
-
-  double dt_cuda = CUDA_evaluate_gravity();
-  fprintf(stderr, "dt_cuda= %lf\n", dt_cuda);
+  
+  //double dt_cuda = CUDA_evaluate_gravity();
+  //fprintf(stderr, "dt_cuda= %lf\n", dt_cuda);
   
   t1 = get_time();
   fprintf(stderr, "Copying data form the device ... ");
   copy_data_from_device();
   fprintf(stderr, "done in %lf sec \n", get_time() - t1);
-
+  
   for (int i = 0; i < n_bodies; i++) {
     int j = bodies_id_orig[i];
 //     fprintf(stderr, "i= %d, j= %d: %f %f \n", i, j, hst.bodies_grav[i].x, hst.bodies_grav[i].w);
@@ -138,5 +141,5 @@ void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
   free_cuda_memory();
   free_host_memory();
   fprintf(stderr, "done in %lf sec \n", get_time() - t1);
-
+  
 }

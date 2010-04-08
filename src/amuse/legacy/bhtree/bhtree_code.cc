@@ -860,8 +860,9 @@ int recommit_particles(){
     return 0;
 }
 
-int recommit_parameters(){
-    return commit_parameters();
+int recommit_parameters()
+{
+  return commit_parameters();
 }
 
 int commit_particles(){

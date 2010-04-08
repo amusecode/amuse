@@ -3,23 +3,24 @@ CODEPATH = src/octgrav_v1.7d
 CODELIB = $(CODEPATH)/liboctgrav.a 
 
 
-CUDA_SDK ?= /data1/cuda_sdk
-CUDA_TK  ?= /data1/cuda
+CUDA_SDK ?= /disks/koppoel1/cuda_sdk
+CUDA_TK  ?= /disks/koppoel1/cuda
 
 MUSE_INCLUDE_DIR = -I$(CODEPATH) -I$(CUDA_SDK)/common/inc -I$(CUDA_TK)/include 
 
 CXXFLAGS+= $(MUSE_INCLUDE_DIR) 
-
 
 OBJS = integrator.o octgrav_code.o 
 
 AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib 
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= -lcudart
 
-LIBS += $(CUDA_LIBDIRS) $(CUDA_LIBS)
+LIBS += $(CUDA_LIBDIRS) $(CUDA_LIBS) 
+
+$(warning make does: : $(MAKE))
 
 all:  compile worker_code
 
@@ -67,8 +68,9 @@ worker_code: worker_code.cc worker_code.h $(OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(OBJS) $(LIBS) $(CODELIB) -o $@
 
 clean:
-	rm -f *.so *.o *.pyc worker_code.cc worker_code.h 
+	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) worker_code *~
+	$(MAKE) -C $(CODEPATH) clean	
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 

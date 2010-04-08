@@ -25,17 +25,18 @@ double timestep = 0.01;
 double total_mass = 0.0;
 bool initialized = false;
 int verbose_mode = 0;
-// for each new particle is being incremented to give unique id for new particle.
-int id_counter = 0; 
+
+int id_counter = 0; // for each new particle is this is
+                    // being incremented to give unique id for new particle.
 
 int get_index_from_identity(int id)
 {
   for (int i = 0; i < n_bodies; i++)
     {
       if (id == starids[i])
-	{
-	  return i;
-	}
+        {
+          return i;
+        }
     }
   return -1;
 }
@@ -44,31 +45,31 @@ int get_index_from_identity(int id)
 int new_particle(int *id, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
 {
   // Add the new particle and reinitialize immediately.
-  
+
   bodies_pos.resize(n_bodies+1);
   bodies_pos[n_bodies].x = x;
   bodies_pos[n_bodies].y = y;
   bodies_pos[n_bodies].z = z;
   bodies_pos[n_bodies].w = mass;
-  
+
   bodies_vel.resize(n_bodies+1);
   bodies_vel[n_bodies].x = vx;
   bodies_vel[n_bodies].y = vy;
   bodies_vel[n_bodies].z = vz;
   bodies_vel[n_bodies].w = 0;
-  
+
   bodies_grav.resize(n_bodies+1);
-  
+
   n_bodies++;
   id_counter++;
 
   starids.push_back(id_counter);
   radii.push_back(radius);
-  
+
   total_mass += mass;
-  
+
   *id = id_counter;
-  
+
   return 0;
 }
 
@@ -78,18 +79,18 @@ int delete_particle(int id)
 
     if (i >= 0 && i < n_bodies)
       {
-	bodies_pos.erase(bodies_pos.begin()+i);
-	bodies_vel.erase(bodies_vel.begin()+i);
-	bodies_grav.erase(bodies_grav.begin()+i);
-	starids.erase(starids.begin()+i);
-	radii.erase(radii.begin()+i);
-	n_bodies--;
+        bodies_pos.erase(bodies_pos.begin()+i);
+        bodies_vel.erase(bodies_vel.begin()+i);
+        bodies_grav.erase(bodies_grav.begin()+i);
+        starids.erase(starids.begin()+i);
+        radii.erase(radii.begin()+i);
+        n_bodies--;
+        return 0;
       }
     else
       {
-	return -1;
+        return -1;
       }
-    return 0;
 }
 
 static void create_treecode_system();
@@ -102,7 +103,7 @@ void print_tree_counters();
 ///TODO: implement at some point?
 ///static int id_primary = -1, id_secondary = -1;
 
-///extern int id_collision_1, id_collision_2;	// determined in BHTC/BHtree.C
+///extern int id_collision_1, id_collision_2;   // determined in BHTC/BHtree.C
 ///extern double r_collision_12;
 
 
@@ -127,10 +128,15 @@ int evolve(double t_end)
   system.set_softening(eps);
   system.set_opening_angle(theta);
 
+  fprintf(stdout, "eps:%f theta:%f ", eps, theta);
+  fflush(stdout);
+
+
   for (int i = 0; i < nsteps; i++)
     {
       leapfrog(dtime, bodies_pos, bodies_vel, bodies_grav, system);
     }
+  
   return 0;
 }
 
@@ -148,11 +154,11 @@ int remove_particle(int id)
 
     if (i >= 0 && i < n_bodies)
       {
-	bodies_pos.erase(bodies_pos.begin()+i);
-	bodies_vel.erase(bodies_vel.begin()+i);
-	bodies_grav.erase(bodies_grav.begin()+i);
-	starids.erase(starids.begin()+i);
-	radii.erase(radii.begin()+i);
+        bodies_pos.erase(bodies_pos.begin()+i);
+        bodies_vel.erase(bodies_vel.begin()+i);
+        bodies_grav.erase(bodies_grav.begin()+i);
+        starids.erase(starids.begin()+i);
+        radii.erase(radii.begin()+i);
       }
 
     return n_bodies;
@@ -172,12 +178,12 @@ int get_potential_energy(double *potential_energy)
 {
     if (!initialized)
       {
-	return -1;
+        return -1;
       }
     else
       {
-	*potential_energy = calcEpot(bodies_pos,bodies_grav);
-	return 0;
+        *potential_energy = calcEpot(bodies_pos,bodies_grav);
+        return 0;
       }
 }
 
@@ -185,12 +191,12 @@ int get_kinetic_energy(double *kinetic_energy)
 {
     if (!initialized)
       {
-	return -1;
+        return -1;
       }
     else
       {
-	*kinetic_energy = calcEkin(bodies_pos,bodies_vel);
-	return 0;
+        *kinetic_energy = calcEkin(bodies_pos,bodies_vel);
+        return 0;
       }
 }
 
@@ -333,7 +339,7 @@ void clear_all()
 int get_eps2(double *epsilon_squared)
 {
   *epsilon_squared = eps*eps;
-  return -2;
+  return 0;
 }
 
 int get_time(double *time)
@@ -616,7 +622,7 @@ int set_state(int id, double mass, double radius, double x, double y, double z, 
 int set_eps2(double epsilon_squared)
 {
   eps = sqrt(epsilon_squared);
-  return -2;
+  return 0;
 }
 
 int set_acceleration(int index_of_the_particle, double ax, double ay, double az)

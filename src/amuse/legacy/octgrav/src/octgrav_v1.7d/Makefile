@@ -4,8 +4,8 @@ LD  = g++
 
 .SUFFIXES: .o .f90 .cpp .cu
 
-CUDA_SDK ?= /data1/cuda_sdk
-CUDA_TK  ?= /data1/cuda
+CUDA_SDK ?= /disks/koppoel1/cuda_sdk
+CUDA_TK  ?= /disks/koppoel1/cuda
 
 OFLAGS = -O0 -g -Wall 
 OFLAGS = -O3 -g -mpreferred-stack-boundary=4 -funroll-loops -fforce-addr
@@ -13,7 +13,11 @@ CFLAGS = $(OFLAGS)  -I$(CUDA_TK)/include
 CXXFLAGS = $(CFLAGS)
 
 NVCC      = $(CUDA_TK)/bin/nvcc
-NVCCFLAGS = -D_DEBUG --maxrregcount=32 -O0 -g -I$(CUDA_SDK)/common/inc
+NVCCFLAGS = -D_DEBUG --device-emulation --maxrregcount=32 -O0 -g -I$(CUDA_SDK)/common/inc
+
+#NVCC      = $(CUDA_TK)/bin/nvcc
+#NVCCFLAGS = -D_DEBUG --device-emulation \
+	 -Xcompiler "-fPIC" --maxrregcount=32  -O3 -I$(CUDA_SDK)/common/inc
 
 PROG = nbint
 OCTLIB = octgrav
@@ -29,7 +33,7 @@ OBJS = $(PROG).o
 
 CUOBJS = host_evaluate_gravity.cu_o
 
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib 
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 
 CUDA_LIBS ?= -lcudart
 
 LIBS = $(CUDA_LIBDIRS) $(CUDA_LIBS)

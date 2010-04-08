@@ -12,7 +12,9 @@ using namespace std;
 
 #include <sys/time.h>
 #include <builtin_types.h>
-struct double4 {
+
+struct double4 
+{
   double x, y, z, w;
 };
 
