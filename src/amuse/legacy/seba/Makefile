@@ -33,6 +33,8 @@ endif
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code
+	
+SEBAclean: clean
 	@-make -C src clean
 	
 distclean:
