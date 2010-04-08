@@ -76,7 +76,7 @@ After starting `mpd` we can start the tests.
     you can start the mpd daemon on the localhost ip. To do so,
     you need to set the ``--ifhn`` option::
     
-        >> mpd --ifhn localhost &
+        >> mpd --ifhn=localhost &
         
     
     
