@@ -25,7 +25,7 @@ class TestKingModel(amusetest.TestCase):
         stars.radius = 0.0 | units.RSun
         gravity = Hermite(convert_nbody)
         gravity.particles.add_particles(stars)
-        self.assertAlmostEqual(gravity.particles[0].mass, (1.0|units.MSun)/number_of_particles, 3)
+        self.assertAlmostEqual(gravity.particles[0].mass, (1.0|units.MSun)/number_of_particles, 3, in_units=units.MSun)
         print convert_nbody.to_nbody(gravity.kinetic_energy), convert_nbody.to_nbody(gravity.potential_energy)
         self.assertAlmostEqual(convert_nbody.to_nbody(gravity.kinetic_energy), 0.25 | nbody_system.energy, 1)
         self.assertAlmostEqual(convert_nbody.to_nbody(gravity.potential_energy), -0.5 | nbody_system.energy, 1)
