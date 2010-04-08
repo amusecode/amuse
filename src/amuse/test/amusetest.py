@@ -4,7 +4,7 @@ import numpy
 
 class TestCase(unittest.TestCase):
     
-    def failUnlessAlmostEqual(self, first, second, places=7, msg=None):                             
+    def failUnlessAlmostEqual(self, first, second, places=7, msg=None, in_units=None):                             
         """Fail if the two objects are unequal as determined by their                                
            difference rounded to the given number of decimal places                                  
            (default 7) and comparing to zero.                                                        
@@ -13,12 +13,18 @@ class TestCase(unittest.TestCase):
            as significant digits (measured from the most signficant digit).                          
                                                                                                      
            The AmuseTestcase differs from the defaulat unittest.Testcase in that                     
-           it implements an abs function that can handle quantities.                                 
+           it implements an abs function that can handle quantities. 
+           
+           If the base unit for the test (in_units) is not supplied, the
+           difference of the two objects is evaluated in units of [second.unit].
         """                                                                                          
+        if in_units:
+            first = first.as_quantity_in(in_units)
+            second = second.as_quantity_in(in_units)
         delta = second-first  
         
-        if isinstance(delta, values.Quantity): 
-            absdif = abs(delta.value_in(first.unit))
+        if isinstance(delta, values.Quantity):
+            absdif = abs(delta.value_in(delta.unit))
         else:             
             absdif = abs(delta) 
                
