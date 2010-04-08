@@ -18,9 +18,7 @@ class TestCase(unittest.TestCase):
         delta = second-first  
         
         if isinstance(delta, values.Quantity): 
-            absdif = abs(delta.value_in(delta.unit))
-            first_nu = first.value_in(first.unit)
-            second_nu = second.value_in(first.unit)
+            absdif = abs(delta.value_in(first.unit))
         else:             
             absdif = abs(delta) 
                
@@ -30,7 +28,7 @@ class TestCase(unittest.TestCase):
             if tmp[0]:
                 raise self.failureException,(msg or '%r != %r within %r places' % (first, second, places))                     
         elif any(tmp):
-            err_list = ["@%i, %f != %f within %r places" % (i,first_nu[i], second_nu[i], places) for (i,b) in enumerate(tmp) if b]
+            err_list = ["@%i, %r != %r within %r places" % (i,first[i], second[i], places) for (i,b) in enumerate(tmp) if b]
             err = '\n'.join(err_list)
             raise self.failureException,(msg or err)                     
                                                                                                      
