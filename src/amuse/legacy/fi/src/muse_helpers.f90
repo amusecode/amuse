@@ -108,7 +108,8 @@ end subroutine
 
 function amuse_synchronize_model() result(ret)
   include 'globals.h'
-  integer ret,dum1,dum2,dum3
+  integer ret
+  real*8 dum1,dum2,dum3
 ! muse_energies does coorpos if called (1,..)
   call muse_energies(1,dum1,dum2,dum3)
   ret=0
