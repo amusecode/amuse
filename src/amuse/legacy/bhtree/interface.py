@@ -8,17 +8,8 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
-    include_headers = [ 'bhtree_code.h', 'parameters.h', 'worker_code.h', 'local.h']
+    include_headers = ['bhtree_code.h', 'worker_code.h']
     
-    #timestep = legacy_global(name='timestep',id=21,dtype='d')
-    eps2_for_gravity = legacy_global(name='eps2_for_gravity',id=22,dtype='d')
-    theta_for_tree = legacy_global(name='theta_for_tree',id=23,dtype='d')
-    
-    use_self_gravity = legacy_global(name='use_self_gravity',id=24,dtype='i')
-    ncrit_for_tree = legacy_global(name='ncrit_for_tree',id=25,dtype='i')
-    
-    dt_dia = legacy_global(name='dt_dia',id=246,dtype='d')
-
     def __init__(self, convert_nbody = None, **kwargs):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **kwargs)
         """
@@ -49,7 +40,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         """
         Update timestep.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('time_step', dtype='float64', direction=function.IN,
             description = "timestep")
         function.result_type = 'int32'
@@ -59,9 +50,178 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         -1 - ERROR
             particle could not be found
         """
-        return function    
+        return function
+    
+    @legacy_function
+    def get_epsilon_squared():
+        """
+        Get epsilon^2, a softening parameter for gravitational potentials with point particles.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('epsilon_squared', dtype='float64', direction=function.OUT,
+            description = "epsilon^2, a softening parameter for gravitational potentials with point particles")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
         
-       
+    @legacy_function
+    def set_epsilon_squared():
+        """
+        Set epsilon^2, a softening parameter for gravitational potentials with point particles.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('epsilon_squared', dtype='float64', direction=function.IN,
+            description = "epsilon^2, a softening parameter for gravitational potentials with point particles")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
+    @legacy_function
+    def get_theta_for_tree():
+        """
+        Get theta, the opening angle for building the tree: between 0 and 1.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('theta_for_tree', dtype='float64', direction=function.OUT,
+            description = "theta, the opening angle for building the tree: between 0 and 1")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_theta_for_tree():
+        """
+        Set theta, the opening angle for building the tree: between 0 and 1.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('theta_for_tree', dtype='float64', direction=function.IN,
+            description = "theta, the opening angle for building the tree: between 0 and 1")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
+    @legacy_function
+    def get_use_self_gravity():
+        """
+        Get use_self_gravity flag, the flag for usage of self gravity, 1 or 0 (true or false).
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('use_self_gravity', dtype='float64', direction=function.OUT,
+            description = "flag for usage of self gravity, 1 or 0 (true or false)")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_use_self_gravity():
+        """
+        Set use_self_gravity flag, the flag for usage of self gravity, 1 or 0 (true or false).
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('use_self_gravity', dtype='float64', direction=function.IN,
+            description = "flag for usage of self gravity, 1 or 0 (true or false)")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
+    @legacy_function
+    def get_ncrit_for_tree():
+        """
+        Get Ncrit, the maximum number of particles sharing an interaction list.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('ncrit_for_tree', dtype='float64', direction=function.OUT,
+            description = "Ncrit, the maximum number of particles sharing an interaction list")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_ncrit_for_tree():
+        """
+        Set Ncrit, the maximum number of particles sharing an interaction list.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('ncrit_for_tree', dtype='float64', direction=function.IN,
+            description = "Ncrit, the maximum number of particles sharing an interaction list")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
+    @legacy_function
+    def get_dt_dia():
+        """
+        Get the time interval between diagnostics output.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_dia', dtype='float64', direction=function.OUT,
+            description = "the time interval between diagnostics output")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_dt_dia():
+        """
+        Set the time interval between diagnostics output.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_dia', dtype='float64', direction=function.IN,
+            description = "the time interval between diagnostics output")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
 class BHTree(GravitationalDynamics):
     
     
@@ -80,12 +240,13 @@ class BHTree(GravitationalDynamics):
         )     
             
     def define_parameters(self, object):
-        object.add_attribute_parameter(
-            "eps2_for_gravity",
+        object.add_method_parameter(
+            "get_epsilon_squared",
+            "set_epsilon_squared", 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
-            0.3 | nbody_system.length * nbody_system.length
+            0.125 | nbody_system.length * nbody_system.length
         )
         object.add_method_parameter(
             "get_time_step",
@@ -93,14 +254,39 @@ class BHTree(GravitationalDynamics):
             "timestep",
             "constant timestep for iteration", 
             nbody_system.time, 
-            0.7 | nbody_system.time
+            0.015625 | nbody_system.time
         )
-        object.add_attribute_parameter(
-            "theta_for_tree",
-            "openings_angle", 
-            "openings angle for building the tree between 0 and 1", 
+        object.add_method_parameter(
+            "get_theta_for_tree",
+            "set_theta_for_tree",
+            "opening_angle", 
+            "opening angle, theta, for building the tree: between 0 and 1", 
             units.none,
-            0.5 | units.none
+            0.75 | units.none
+        )
+        object.add_method_parameter(
+            "get_use_self_gravity",
+            "set_use_self_gravity",
+            "use_self_gravity", 
+            "flag for usage of self gravity, 1 or 0 (true or false)", 
+            units.none,
+            1 | units.none
+        )
+        object.add_method_parameter(
+            "get_ncrit_for_tree",
+            "set_ncrit_for_tree",
+            "ncrit_for_tree", 
+            "Ncrit, the maximum number of particles sharing an interaction list", 
+            units.none,
+            1024 | units.none
+        )
+        object.add_method_parameter(
+            "get_dt_dia",
+            "set_dt_dia",
+            "dt_dia", 
+            "time interval between diagnostics output", 
+            nbody_system.time,
+            1.0 | nbody_system.time
         )
         
     def define_methods(self, object):

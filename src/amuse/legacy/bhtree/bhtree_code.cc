@@ -1,7 +1,7 @@
 #include <iostream>
 #include "bhtree_code.h"
 #include "worker_code.h"
-#include "local.h"
+//#include "local.h"
 #include <vector>
 #include <algorithm>
 #include <string>
@@ -18,7 +18,7 @@ const bool debug = false;
 
 const real DT_DIA = 1;
 real dt_dia = DT_DIA;                // time interval between diagnostics output
-void set_dt_dia(real d)                        {dt_dia = d;}
+//void set_dt_dia(real d)                        {dt_dia = d;}
 
 
 typedef std::map<int, int> IndexMap;
@@ -47,23 +47,23 @@ vector<dynamics_state> ds;        // for initialization only
 
 const real TIMESTEP = 0.015625;
 real timestep =        TIMESTEP;
-void set_timestep(real dt)                {timestep = dt;}
+//void set_timestep(real dt)                {timestep = dt;}
 
 const real EPS2_FOR_GRAVITY = 0.125;
 real eps2_for_gravity = EPS2_FOR_GRAVITY;
-void set_eps2_for_gravity(real eps2)        {eps2_for_gravity = eps2;}
+//void set_eps2_for_gravity(real eps2)        {eps2_for_gravity = eps2;}
 
 const real THETA_FOR_TREE = 0.75;
 real theta_for_tree = THETA_FOR_TREE;
-void set_theta_for_tree(real theta)        {theta_for_tree = theta;}
+//void set_theta_for_tree(real theta)        {theta_for_tree = theta;}
 
 const int USE_SELF_GRAVITY = 1;
 int use_self_gravity = USE_SELF_GRAVITY;
-void set_use_self_gravity(int use)        {use_self_gravity = use;}
+//void set_use_self_gravity(int use)        {use_self_gravity = use;}
 
 const int NCRIT_FOR_TREE = 1024;
 int ncrit_for_tree = NCRIT_FOR_TREE;
-void set_ncrit_for_tree(int ncrit)        {ncrit_for_tree = ncrit;}
+//void set_ncrit_for_tree(int ncrit)        {ncrit_for_tree = ncrit;}
 
 // Interface functions:
 
@@ -333,7 +333,6 @@ int new_particle(int *id, double mass, double radius, double x, double y, double
 int get_total_mass(double *mass)
 {
   nbody_particle *np = bhtcs.get_particle_pointer();
-  double M;
 
   *mass = 0;
 
@@ -789,6 +788,51 @@ int initialize_time_step()
 
 int finalize_time_step()
 {
+    return 0;
+}
+
+int get_epsilon_squared(double *_epsilon_squared){
+    *_epsilon_squared = eps2_for_gravity;
+    return 0;
+}
+int set_epsilon_squared(double _epsilon_squared){
+    eps2_for_gravity = _epsilon_squared;
+    return 0;
+}
+
+int get_theta_for_tree(double *_theta_for_tree){
+    *_theta_for_tree = theta_for_tree;
+    return 0;
+}
+int set_theta_for_tree(double _theta_for_tree){
+    theta_for_tree = _theta_for_tree;
+    return 0;
+}
+
+int get_use_self_gravity(double *_use_self_gravity){
+    *_use_self_gravity = use_self_gravity;
+    return 0;
+}
+int set_use_self_gravity(double _use_self_gravity){
+    use_self_gravity = _use_self_gravity;
+    return 0;
+}
+
+int get_ncrit_for_tree(double *_ncrit_for_tree){
+    *_ncrit_for_tree = ncrit_for_tree;
+    return 0;
+}
+int set_ncrit_for_tree(double _ncrit_for_tree){
+    ncrit_for_tree = _ncrit_for_tree;
+    return 0;
+}
+
+int get_dt_dia(double *_dt_dia){
+    *_dt_dia = dt_dia;
+    return 0;
+}
+int set_dt_dia(double _dt_dia){
+    dt_dia = _dt_dia;
     return 0;
 }
 

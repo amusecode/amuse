@@ -19,17 +19,17 @@ class TestParameterDoc(amusetest.TestCase):
 
         bhtree.parameters.epsilon_squared = 10 | units.km**2
         bhtree.parameters.timestep = 1.0 | units.s
-        bhtree.parameters.openings_angle = 0.1
+        bhtree.parameters.opening_angle = 0.1
 
         docstring =  bhtree.parameters.__doc__
 
-        self.assertTrue("smoothing parameter for gravity calculations (default value:300000.0 m**2)" in docstring)
+        self.assertTrue("smoothing parameter for gravity calculations (default value:125000.0 m**2)" in docstring)
 
         parameter_str_method_output = str(bhtree.parameters)
 
         self.assertTrue("epsilon_squared: 10000000.0 m**2" in parameter_str_method_output)
         self.assertTrue("timestep: 1.0 s" in parameter_str_method_output)
-        self.assertTrue("openings_angle: 0.1" in parameter_str_method_output)
+        self.assertTrue("opening_angle: 0.1" in parameter_str_method_output)
 
     def test_hermite(self):
 

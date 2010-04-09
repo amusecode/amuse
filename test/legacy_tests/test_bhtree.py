@@ -2,6 +2,8 @@
 from legacy_support import TestWithMPI
 import os
 import sys
+import numpy
+import math
 
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
 from amuse.legacy.support import channel
@@ -11,8 +13,6 @@ from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 import path_to_test_results
-
-import numpy
 
 try:
     from matplotlib import pyplot
@@ -544,8 +544,103 @@ class TestAmuseInterface(TestWithMPI):
         
         com = instance.get_center_of_mass_position()
         self.assertAlmostEqual(com[0], values.new_quantity(0.0, units.m), constants.precision)
+    
+    def test14(self):
+        print "Test14: Testing BHTree parameters (I)"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
+        instance = BHTree(convert_nbody)
+        
+        (value, error) = instance.get_epsilon_squared()
+        self.assertEquals(0, error)
+        self.assertEquals(0.125, value)
+        self.assertAlmostEquals(0.125 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+        for x in [0.01, 0.1, 0.2]:
+            instance.parameters.epsilon_squared = x | units.AU**2
+            self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+        
+        instance.commit_parameters()
+        (value, error) = instance.get_time_step()
+        self.assertEquals(0, error)
+        self.assertEquals(0.015625, value)
+        self.assertAlmostEquals(0.015625 | units.yr, instance.parameters.timestep, in_units=units.yr)
+        for x in [0.001, 0.01, 0.1]:
+            instance.parameters.timestep = x | units.yr
+            self.assertAlmostEquals(x | units.yr, instance.parameters.timestep, in_units=units.yr)
+        
+        (value, error) = instance.get_theta_for_tree()
+        self.assertEquals(0, error)
+        self.assertEquals(0.75, value)
+        self.assertEquals(0.75 | units.none, instance.parameters.opening_angle)
+        for x in [0.2, 0.5, 0.7]:
+            instance.parameters.opening_angle = x | units.none
+            self.assertEquals(x | units.none, instance.parameters.opening_angle)
+        
+        (value, error) = instance.get_use_self_gravity()
+        self.assertEquals(0, error)
+        self.assertEquals(1, value)
+        self.assertEquals(1 | units.none, instance.parameters.use_self_gravity)
+        for x in [0, 1]:
+            instance.parameters.use_self_gravity = x | units.none
+            self.assertEquals(x | units.none, instance.parameters.use_self_gravity)
+        
+        (value, error) = instance.get_ncrit_for_tree()
+        self.assertEquals(0, error)
+        self.assertEquals(1024, value)
+        self.assertEquals(1024 | units.none, instance.parameters.ncrit_for_tree)
+        for x in [512, 2048, 4096]:
+            instance.parameters.ncrit_for_tree = x | units.none
+            self.assertEquals(x | units.none, instance.parameters.ncrit_for_tree)
+        
+        (value, error) = instance.get_dt_dia()
+        self.assertEquals(0, error)
+        self.assertEquals(1.0, value)
+        self.assertAlmostEquals(1.0 | units.yr, instance.parameters.dt_dia, in_units=units.yr)
+        for x in [0.1, 10.0, 100.0]:
+            instance.parameters.dt_dia = x | units.yr
+            self.assertAlmostEquals(x | units.yr, instance.parameters.dt_dia, in_units=units.yr)
+    
+    def test15(self):
+        print "Test15: Testing effect of BHTree parameter epsilon_squared"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        
+        particles = core.Particles(2)
+        sun = particles[0]
+        sun.mass = 1.0 | units.MSun
+        sun.position = [0.0, 0.0, 0.0] | units.AU
+        sun.velocity = [0.0, 0.0, 0.0] | units.AU / units.yr
+        sun.radius = 1.0 | units.RSun
 
+        earth = particles[1]
+        earth.mass = 5.9736e24 | units.kg
+        earth.radius = 6371.0 | units.km
+        earth.position = [0.0, 1.0, 0.0] | units.AU
+        earth.velocity = [2.0*numpy.pi, -0.0001, 0.0] | units.AU / units.yr
         
+        initial_direction = math.atan((earth.velocity[0]/earth.velocity[1]).value_in(units.none))
+        final_direction = []
+        for log_eps2 in range(-9,10,2):
+            instance = BHTree(convert_nbody)
+            instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            instance.evolve_model(0.25 | units.yr)
+            final_direction.append(math.atan((instance.particles[1].velocity[0]/
+                instance.particles[1].velocity[1]).value_in(units.none)))
+            instance.stop()
+        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
+        self.assertAlmostEquals(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)
+        # Large values of epsilon_squared should result in ~ no interaction
+        self.assertAlmostEquals(final_direction[-1], initial_direction, 2)
+        # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
+        delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
+        self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
         
-        
+    
+
+
+
+
+
+
+
 
