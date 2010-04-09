@@ -38,6 +38,7 @@ FFLAGS+= $(OMPFLAGS)
 FFLAGS2= -I./src/
 
 CLASSNAME=capreole
+CLASSNAME=glcapreole
 
 all: worker
 
@@ -70,7 +71,7 @@ worker_mpi.f90: interface.py __init__.py
 
 glworker.f90: interface.py __init__.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
+	$(CODE_GENERATOR) --type=f90 $< $(GLCLASSNAME) -o $@
 
 __init__.py:
 	touch $@
