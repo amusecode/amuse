@@ -132,5 +132,8 @@ cf2py intent(in) kw, mass, age, mt, tm, epoch
       call deltat(kw, age-epoch, tm, tn, tscls, dtm, dtr)
       dt = min(dtr, dtm)
 
+! fix for the very small timestep problem (where dt ~ 1.e-16 * age )
+! this line mirrors the corresponding lne in evolve1.f      
+      dt = MAX(dt,1.0d-07*age)
       return
       end
