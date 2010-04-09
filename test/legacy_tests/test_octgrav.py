@@ -85,10 +85,13 @@ class TestAmuseInterface(TestWithMPI):
 
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        convert_nbody.set_as_default()
 
         channel.MessageChannel.DEBUGGER = None #channel.MessageChannel.XTERM
-        instance = Octgrav(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(Octgrav)
         channel.MessageChannel.DEBUGGER = None
+        if instance is None:
+            return
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         #instance.parameters.openings_angle = 0.1 |units.none
         stars = core.Stars(2)
