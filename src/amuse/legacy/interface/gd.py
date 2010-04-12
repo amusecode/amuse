@@ -351,8 +351,8 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
     @legacy_function
     def get_potential():
         """
-        Retrieve the potential at a position (vector).
-
+        Retrieve the potential at a (particle) position (vector).
+        
         *Need better description of use and relation to get_acceleration and get_gravity*
         """
         function = LegacyFunctionSpecification()

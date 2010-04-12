@@ -335,6 +335,12 @@ extern "C"
 //     int *dev_interaction_node_list, *dev_interaction_leaf_list;
 //     allocateCUDAarray((void**)&dev_interaction_node_list,  n_interacting_nodes_max  * sizeof(int));
 //     allocateCUDAarray((void**)&dev_interaction_leaf_list,  n_interacting_leaves_max * sizeof(int));
+
+    if(n_interacting_nodes_max <= 0)
+      n_interacting_nodes_max = 10;
+    if(n_interacting_leaves_max <= 0)
+      n_interacting_leaves_max = 10;
+
     SAFE_ALLOC(dev_interaction_node_list, cuda_interaction_node_list, n_interacting_nodes_max  * sizeof(int));
     SAFE_ALLOC(dev_interaction_leaf_list, cuda_interaction_leaf_list, n_interacting_leaves_max * sizeof(int));
     

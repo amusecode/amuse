@@ -12,7 +12,7 @@ double get_time() {
 void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
 			       vector<float4> &bodies_grav) 
 {
-  
+    
   if (first_run) 
     {
       initCUDA();
@@ -41,7 +41,7 @@ void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
   }
   
   bool repeat = true;
-
+  
   while(repeat) {
     
     t1 = get_time();
@@ -104,6 +104,7 @@ void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
   fprintf(stderr, "done in %lf sec \n", get_time() - t1);
   t1 = get_time();
   fprintf(stderr, "Allocating device memory ... ");
+  
   allocate_cuda_memory();
   fprintf(stderr, "done in %lf sec \n", get_time() - t1);
   
@@ -111,6 +112,7 @@ void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
   children_list[0] = children_list[children_list.size() - 2];
   children_list[1] = children_list[children_list.size() - 1];
 
+  
   for (int i = 0; i < 8; i++)
     node_list[i] = node_list[node_list.size() - 8 + i];
   
@@ -118,9 +120,10 @@ void octgrav::evaluate_gravity(vector<float4> &bodies_pos_in,
   fprintf(stderr, "Preparing & sending data to the device ... ");
   prepare_data_for_device();
   copy_data_to_device();
+  
   fprintf(stderr, "done in %lf sec \n", get_time() - t1);
   
-  //double dt_cuda = CUDA_evaluate_gravity();
+  double dt_cuda = CUDA_evaluate_gravity();
   //fprintf(stderr, "dt_cuda= %lf\n", dt_cuda);
   
   t1 = get_time();

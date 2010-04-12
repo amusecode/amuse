@@ -3,8 +3,8 @@ CODEPATH = src/octgrav_v1.7d
 CODELIB = $(CODEPATH)/liboctgrav.a 
 
 
-CUDA_SDK ?= /disks/koppoel1/cuda_sdk
-CUDA_TK  ?= /disks/koppoel1/cuda
+CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
+CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
 MUSE_INCLUDE_DIR = -I$(CODEPATH) -I$(CUDA_SDK)/common/inc -I$(CUDA_TK)/include 
 
@@ -77,6 +77,5 @@ clean:
 
 .C.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
-
 
 .PHONY: octgrav

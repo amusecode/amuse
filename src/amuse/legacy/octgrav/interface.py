@@ -30,13 +30,46 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     def cleanup_module(self):
         self.cleanup_code()
 
+    @legacy_function
+    def get_theta_for_tree():
+        """
+        
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('openings_angle', dtype='float64', direction=function.OUT,
+            description = "openings_angle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            xx
+        -1 - ERROR
+            xx
+        """
+        return function    
+
+    @legacy_function
+    def set_theta_for_tree():
+        """
+        
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('openings_angle', dtype='float64', direction=function.IN,
+            description = "openings_angle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            xx
+        -1 - ERROR
+            xx
+        """
+        return function    
+
 class Octgrav(GravitationalDynamics):
 
     def __init__(self, convert_nbody = None):
 
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
-
 
         legacy_interface = OctgravInterface()
 
@@ -53,7 +86,7 @@ class Octgrav(GravitationalDynamics):
             "epsilon_squared",
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
-            0.3 | nbody_system.length * nbody_system.length
+            0.01 | nbody_system.length * nbody_system.length
         )
         object.add_method_parameter(
             "get_time_step",
@@ -61,7 +94,7 @@ class Octgrav(GravitationalDynamics):
             "timestep",
             "constant timestep for iteration", 
             nbody_system.time, 
-            0.7 | nbody_system.time
+            0.01 | nbody_system.time
         )
         object.add_method_parameter(
             "get_theta_for_tree",
@@ -69,5 +102,5 @@ class Octgrav(GravitationalDynamics):
             "openings_angle",
             "openings angle for building the tree between 0 and 1", 
             units.none,
-            0.5 | units.none
+            0.8 | units.none
         )

@@ -166,6 +166,8 @@ int remove_particle(int id)
 
 int get_potential(double x, double y, double z, double *V)
 {
+  //should get id instead of position vector...
+  //*V = calcEpot(bodies_pos, bodies_grav);
   return -2;
 }
 
@@ -176,28 +178,14 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
 
 int get_potential_energy(double *potential_energy)
 {
-    if (!initialized)
-      {
-        return -1;
-      }
-    else
-      {
-        *potential_energy = calcEpot(bodies_pos,bodies_grav);
-        return 0;
-      }
+  *potential_energy = calcEpot(bodies_pos,bodies_grav);
+  return 0;
 }
 
 int get_kinetic_energy(double *kinetic_energy)
 {
-    if (!initialized)
-      {
-        return -1;
-      }
-    else
-      {
-        *kinetic_energy = calcEkin(bodies_pos,bodies_vel);
-        return 0;
-      }
+  *kinetic_energy = calcEkin(bodies_pos,bodies_vel);
+  return 0;
 }
 
 int get_gravity_at_point(double eps, double x, double y, double z,  double *forcex, double *forcey, double *forcez)

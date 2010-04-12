@@ -3,6 +3,6 @@
 
 void set_timestep(double dt);
 void set_eps2_for_gravity(double eps2);
-void set_theta_for_tree(double theta);
+//int set_theta_for_tree(double theta);
 
 
