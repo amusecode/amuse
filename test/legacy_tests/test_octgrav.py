@@ -100,7 +100,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.parameters.openings_angle = 0.5
         self.assertAlmostEqual(0.5|units.none, instance.parameters.openings_angle, 6)
         instance.parameters.timestep = 1.0 |units.s
-        self.assertAlmostEqual(1.0|units.s, instance.parameters.timestep, 6)
+        self.assertEqual(1.0|units.s, instance.parameters.timestep)
         instance.stop()
 
     def test1(self):
@@ -119,6 +119,7 @@ class TestAmuseInterface(TestWithMPI):
         energy_total_init = instance.potential_energy + instance.kinetic_energy
         instance.evolve_model(100 | units.day)
         energy_total_final = instance.potential_energy + instance.kinetic_energy
-        rel_err = abs((energy_total_init - energy_total_final) /  energy_total_init)
-        self.assertTrue(rel_err<1e-4|units.none)
+
+        self.assertAlmostRelativeEqual(energy_total_init, energy_total_final, 2)
+
 
