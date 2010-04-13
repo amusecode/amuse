@@ -119,7 +119,6 @@ class TestAmuseInterface(TestWithMPI):
         energy_total_init = instance.potential_energy + instance.kinetic_energy
         instance.evolve_model(100 | units.day)
         energy_total_final = instance.potential_energy + instance.kinetic_energy
-        rel_err = (energy_total_init - energy_total_final) /  energy_total_init  
-
-        self.assertTrue(rel_err<1e-5|units.none)
+        rel_err = abs((energy_total_init - energy_total_final) /  energy_total_init)
+        self.assertTrue(rel_err<1e-4|units.none)
 

@@ -338,7 +338,8 @@ int get_eps2(double *epsilon_squared)
 
 int get_time(double *time)
 {
-  return -2;
+  *time = t_now;
+  return 0;
 }
 
 int initialize_particles(double t)
