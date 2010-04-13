@@ -12,7 +12,6 @@ from amuse.support.data import values
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-import path_to_test_results
 
 try:
     from matplotlib import pyplot
@@ -239,7 +238,7 @@ class TestAmuseInterface(TestWithMPI):
             plot.set_ylim(-1.5, 1.5)
                
             
-            test_results_path = path_to_test_results.get_path_to_test_results()
+            test_results_path = self.get_path_to_results()
             output_file = os.path.join(test_results_path, "bhtree-earth-sun.svg")
             figure.savefig(output_file)    
         

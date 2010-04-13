@@ -20,7 +20,7 @@ from amuse.legacy.bhtree.interface import BHTree
 from amuse.legacy.sse.interface import SSE
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.legacy.support.core import is_mpd_running
-import path_to_test_results
+from amuse.test.amusetest import get_path_to_results
 
 from amuse.support.io import store
 
@@ -157,7 +157,7 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
         print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time)
 
     
-    test_results_path = path_to_test_results.get_path_to_test_results()
+    test_results_path = get_path_to_results()
     output_file = os.path.join(test_results_path, "small.hdf5")
     if os.path.exists(output_file):
         os.remove(output_file)
@@ -176,7 +176,7 @@ def test_simulate_small_cluster():
     a too small cluster, this is done to limit the testing time.
     """
     assert is_mpd_running()
-    test_results_path = path_to_test_results.get_path_to_test_results()
+    test_results_path = get_path_to_results()
     output_file = os.path.join(test_results_path, "test-2.svg")
     simulate_small_cluster(4, 4 | units.Myr, name_of_the_figure = output_file)
     

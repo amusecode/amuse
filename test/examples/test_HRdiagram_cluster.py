@@ -16,8 +16,7 @@ from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.mesa.interface import MESA
 
 from amuse.legacy.support.core import is_mpd_running
-
-import path_to_test_results
+from amuse.test.amusetest import get_path_to_results
 
 usage = """\
 usage: %prog [options]
@@ -126,7 +125,7 @@ def test_simulate_short():
     assert is_mpd_running()
     code = new_code("sse", 100 | units.none)
     
-    test_results_path = path_to_test_results.get_path_to_test_results()
+    test_results_path = get_path_to_results()
     output_file = os.path.join(test_results_path, "cluster_HR_diagram.png")
     
     simulate_stellar_evolution(

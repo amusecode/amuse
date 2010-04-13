@@ -9,7 +9,6 @@ from amuse.legacy.bhtree.interface import BHTree
 from amuse.support.data.core import Particles
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-import path_to_test_results
 
 import numpy
 import threading
@@ -94,7 +93,7 @@ class TestAmuseInterface(TestWithMPI):
             plot.set_xlim(-1.5, 1.5)
             plot.set_ylim(-1.5, 1.5)
             
-            test_results_path = path_to_test_results.get_path_to_test_results()
+            test_results_path = self.get_path_to_results()
             output_file = os.path.join(test_results_path, "parallel-earth-sun.svg")
             figure.savefig(output_file)
                     

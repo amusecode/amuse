@@ -7,7 +7,6 @@ from amuse.legacy.hermite0.interface import HermiteInterface, Hermite
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-import path_to_test_results
 
 import numpy
 
@@ -196,7 +195,7 @@ class TestAmuseInterface(TestWithMPI):
             plot.set_ylim(-1.5, 1.5)
                
             
-            test_results_path = path_to_test_results.get_path_to_test_results()
+            test_results_path = self.get_path_to_results()
             output_file = os.path.join(test_results_path, "hermite-earth-sun2.svg")
             figure.savefig(output_file)
         

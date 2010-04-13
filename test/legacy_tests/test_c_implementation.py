@@ -6,7 +6,6 @@ from amuse.support.units import units
 from amuse.legacy.support import channel
 
 from amuse.test.amusetest import TestWithMPI
-from path_to_test_results import get_path_to_test_results
 from amuse.legacy.support import create_c
 
 import subprocess
@@ -146,7 +145,7 @@ class TestInterface(TestWithMPI):
     
     def build_worker(self):
         
-        path = os.path.abspath(get_path_to_test_results())
+        path = os.path.abspath(self.get_path_to_results())
         codefile = os.path.join(path,"code.o")
         interfacefile = os.path.join(path,"interface.o")
         self.exefile = os.path.join(path,"c_worker")

@@ -1,12 +1,11 @@
-import unittest
+from amuse.test import amusetest
 import os.path
 import shutil
 import subprocess
 
-from  path_to_test_results import get_path_to_test_results
 from amuse.legacy.support import create_dir
 
-class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(unittest.TestCase):
+class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCase):
     
     def test1(self):
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForALegacyCode()
@@ -15,7 +14,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(unittest.TestCase
         self.assertTrue(instance.path_of_the_legacy_code.endswith('testcode'))
     
     def test2(self):
-        root = get_path_to_test_results()
+        root = self.get_path_to_results()
         working_dir = os.path.join(root, 'testcode')
         
         print working_dir

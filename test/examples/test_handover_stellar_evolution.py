@@ -13,7 +13,7 @@ from amuse.support.data import core
 from amuse.legacy.sse.interface import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.support.core import is_mpd_running
-import path_to_test_results
+from amuse.test.amusetest import get_path_to_results
 
 def simulate_stellar_evolution(mass_in = 5.0 | units.MSun, end_time = 250.0 | units.Myr,
         name_of_the_figure="handover_stellar_evolution.png"):
@@ -157,7 +157,7 @@ def calculate_effective_temperature(luminosity,radius):
 
 def test_simulate_short():
     assert is_mpd_running()
-    test_results_path = path_to_test_results.get_path_to_test_results()
+    test_results_path = get_path_to_results()
     output_file = os.path.join(test_results_path, "handover_stellar_evolution.png")
     simulate_stellar_evolution(end_time = 2.0 | units.Myr, \
         name_of_the_figure=output_file)

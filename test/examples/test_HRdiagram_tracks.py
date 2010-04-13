@@ -13,7 +13,7 @@ from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.mesa.interface import MESA
 
 from amuse.legacy.support.core import is_mpd_running
-import path_to_test_results
+from amuse.test.amusetest import get_path_to_results
 
 usage = """\
 usage: %prog [options]
@@ -183,7 +183,7 @@ def new_code(name_of_the_code, number_of_stars):
 def test_simulate_one_star():
     assert is_mpd_running()
     code = new_code("sse", 1 | units.none)
-    test_results_path = path_to_test_results.get_path_to_test_results()
+    test_results_path = get_path_to_results()
     output_file = os.path.join(test_results_path, "HR_evolution_tracks.png")
     simulate_evolution_tracks(
         code,

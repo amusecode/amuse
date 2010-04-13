@@ -13,7 +13,7 @@ from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.legacy.support.channel import MessageChannel
-import path_to_test_results
+from amuse.test.amusetest import get_path_to_results
 from amuse.legacy.support.core import is_mpd_running
 
 MessageChannel.no_redirection()
@@ -29,7 +29,7 @@ def energy_plot(time,ek,ep,eth):
   pyplot.plot(time,ep)
   pyplot.plot(time,eth)
   pyplot.plot(time,ek+ep+eth)
-  test_results_path = path_to_test_results.get_path_to_test_results()
+  test_results_path = get_path_to_results()
   pyplot.savefig(os.path.join(test_results_path, "evrard_test.png"))
 
 def run_evrard(x):

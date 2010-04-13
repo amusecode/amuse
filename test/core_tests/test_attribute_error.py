@@ -5,7 +5,6 @@ from amuse.support.units import units
 from amuse.legacy.hermite0.interface import Hermite
 from amuse.support.units import nbody_system
 from amuse.support.io import store
-import path_to_test_results
 import numpy
 import math
 import os
@@ -69,7 +68,7 @@ class TestAttributeError(amusetest.TestCase):
         subset    = particles[:2]
         superset  = ParticlesSuperset([particles, particle.as_set()])
         superset.mass = 1.0 | units.MSun
-        test_results_path = path_to_test_results.get_path_to_test_results()
+        test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "attr_test.hdf5")
         
         instances = [particles, particle, subset]
@@ -151,7 +150,7 @@ class TestAttributeError(amusetest.TestCase):
         subset    = particles[:2]
         superset  = ParticlesSuperset([particles, particle.as_set()])
         superset.mass = 1.0 | units.MSun
-        test_results_path = path_to_test_results.get_path_to_test_results()
+        test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "attr_test.hdf5")
         instances = [particles, particle, subset]
         classes = [Particles, Particle, ParticlesSubset]

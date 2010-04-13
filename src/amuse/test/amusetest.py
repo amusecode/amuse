@@ -116,15 +116,7 @@ class TestCase(unittest.TestCase):
             raise SkipTest(reason)
             
     def get_path_to_results(self):
-        dir = os.path.abspath(__file__)
-        
-        dir = os.path.dirname(__file__)
-        amuse_root_dir = os.path.dirname(dir)
-        test_results_dir = os.path.join(amuse_root_dir, 'test_results')
-        if os.path.exists(test_results_dir):
-            return test_results_dir
-        else:
-            return './'
+        return get_path_to_results()
 
             
     
@@ -155,4 +147,14 @@ class TestWithMPI(TestCase):
             self.skip("Tried to make a new instance of the optional code with type '{0}', but this code is not available".format(factory))
          
          
-        
+      
+def get_path_to_results():
+    dir = os.path.abspath(__file__)
+    while not os.path.exists(os.path.join(dir,'build.py')):
+        dir = os.path.dirname(dir)
+    amuse_root_dir = dir
+    test_results_dir = os.path.join(amuse_root_dir, 'test_results')
+    if os.path.exists(test_results_dir):
+        return test_results_dir
+    else:
+        return './'

@@ -10,8 +10,6 @@ from amuse.legacy.support import channel
 from amuse.ext.plummer import *
 
 from amuse.test.amusetest import TestWithMPI
-import path_to_test_results
-
 import numpy
 import pylab as pl
 

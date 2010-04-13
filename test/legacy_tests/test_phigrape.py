@@ -9,7 +9,6 @@ from amuse.support.units import units
 from amuse.legacy.support import channel
 
 from amuse.test.amusetest import TestWithMPI
-import path_to_test_results
 
 import numpy
 
@@ -272,7 +271,7 @@ class TestCodeInterface(TestWithMPI):
             plot.set_xlim(-1.5, 1.5)
             plot.set_ylim(-1.5, 1.5)
             
-            test_results_path = path_to_test_results.get_path_to_test_results()
+            test_results_path = self.get_path_to_results()
             output_file = os.path.join(test_results_path, "phiGRAPE-earth-sun2.svg")
             figure.savefig(output_file)
         

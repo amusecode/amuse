@@ -3,14 +3,12 @@ from amuse.support.units import units
 from amuse.support.data.core import Stars
 from amuse.test import amusetest
 
-import path_to_test_results
-
 import os
 
 class TestStoreHDF(amusetest.TestCase):
     
     def test1(self):
-        test_results_path = path_to_test_results.get_path_to_test_results()
+        test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
@@ -31,7 +29,7 @@ class TestStoreHDF(amusetest.TestCase):
             self.assertEquals(expected, actual)
         
     def test2(self):
-        test_results_path = path_to_test_results.get_path_to_test_results()
+        test_results_path = self.get_path_to_results()
         output_file = os.path.join(test_results_path, "test.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
