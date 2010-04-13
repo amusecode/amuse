@@ -36,7 +36,7 @@ class late(object):
     """ 
     def __init__(self, initializer):
         self.initializer = initializer
-        self.__doc__ == self.initializer.__doc__
+        self.__doc__ = self.initializer.__doc__
         
     def __get__(self, instance, owner):
         if instance is None:
