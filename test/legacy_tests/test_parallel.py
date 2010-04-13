@@ -1,5 +1,5 @@
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 import os
 import sys
 

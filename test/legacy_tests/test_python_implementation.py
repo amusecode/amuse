@@ -7,7 +7,7 @@ from amuse.legacy.support import python_code
 from amuse.legacy.support import channel
 from amuse.support.interface import CodeInterface
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 
 import parser
 

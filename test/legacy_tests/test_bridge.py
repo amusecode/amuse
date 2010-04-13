@@ -1,5 +1,5 @@
 import numpy 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 
 from amuse.support.units import nbody_system
 from amuse.support.units import units

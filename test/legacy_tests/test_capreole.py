@@ -2,7 +2,7 @@ import os
 import sys
 import numpy
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.capreole.interface import capreole
 from amuse.legacy.support.channel import MessageChannel
 

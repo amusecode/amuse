@@ -1,7 +1,15 @@
 import unittest
-from amuse.support.data import values
-import numpy
 
+import numpy
+import os
+import inspect
+
+from amuse.support.data import values
+
+
+class SkipTest(Exception):
+    pass
+    
 class TestCase(unittest.TestCase):
     
     def failUnlessAlmostEqual(self, first, second, places=7, msg=None, in_units=None):                             
@@ -57,6 +65,82 @@ class TestCase(unittest.TestCase):
            
     assertAlmostRelativeEqual = failUnlessAlmostRelativeEqual
     assertAlmostRelativeEquals = failUnlessAlmostRelativeEqual
+    
+    def run(self, result=None):
+        if result is None:
+            result = self.defaultTestResult()
+        result.startTest(self)
+        testMethod = getattr(self, self._testMethodName)
+        try:
+            try:
+                self.setUp()
+            except KeyboardInterrupt:
+                raise
+            except:
+                result.addError(self, self._exc_info())
+                return
+
+            ok = False
+            try:
+                testMethod()
+                ok = True
+            except self.failureException:
+                result.addFailure(self, self._exc_info())
+            except SkipTest, ex:
+                ok = True
+                pass
+            except KeyboardInterrupt:
+                raise
+            except:
+                result.addError(self, self._exc_info())
+
+            try:
+                self.tearDown()
+            except KeyboardInterrupt:
+                raise
+            except:
+                result.addError(self, self._exc_info())
+                ok = False
+                
+            if ok:
+                result.addSuccess(self)
+        finally:
+            result.stopTest(self)
+            
+    
+    def skip(self, reason):
+        try:
+            from nose.plugins import skip
+            raise skip.SkipTest(reason)
+        except ImportError:
+            raise SkipTest(reason)
+            
+    
+
+
+class TestWithMPI(TestCase):
+    def setUp(self):
+        from amuse.legacy.support.core import is_mpd_running
+        self.assertTrue(is_mpd_running(), "MPICH2 mpd deamon process not running, cannot run this test as it requires MPI")
+            
+    def tearDown(self):
+        from amuse.legacy.support.core import stop_interfaces
+        stop_interfaces()
+    
+    def new_instance(self, factory, *arguments, **kwarguments):
+        try:
+            return factory(*arguments)
+        except Exception as message:
+            if os.path.exists(os.path.join(os.path.dirname(inspect.getfile(factory)),'src')):
+                raise            
+            self.skip("Tried to make a new instance of the code with type '{0}', but this code is not available".format(factory))
+         
+            
+    def new_instance_of_an_optional_code(self, factory, *arguments, **kwarguments):
+        try:
+            return factory(*arguments, **kwarguments)
+        except Exception as message:
+            self.skip("Tried to make a new instance of the optional code with type '{0}', but this code is not available".format(factory))
          
          
         

@@ -326,6 +326,7 @@ void clear_all()
 
 int get_eps2(double *epsilon_squared)
 {
+  cerr << eps*eps << endl;
   *epsilon_squared = eps*eps;
   return 0;
 }

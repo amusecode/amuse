@@ -5,7 +5,7 @@ from amuse.legacy.sse import interface as mpi_interface
 from amuse.support.data import core
 from amuse.support.units import units
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 
 class TestMPIInterface(TestWithMPI):
     

@@ -1,7 +1,7 @@
 import os
 import sys
 import numpy
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 
 from amuse.legacy.fi.interface import fi, Fi
 from amuse.ext.evrard_test import MakeEvrardTest

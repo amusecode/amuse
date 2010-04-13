@@ -5,7 +5,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy.support import channel
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 from path_to_test_results import get_path_to_test_results
 from amuse.legacy.support import create_fortran
 

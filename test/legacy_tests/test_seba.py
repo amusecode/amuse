@@ -1,5 +1,4 @@
-from legacy_support import TestWithMPI
-
+from amuse.test.amusetest import TestWithMPI
 
 from amuse.legacy.seba.interface import SebaInterface, Seba
 from amuse.support.units import units

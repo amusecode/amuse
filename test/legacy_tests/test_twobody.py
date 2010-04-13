@@ -8,7 +8,7 @@ import numpy
 
 from amuse.legacy.twobody import twobody
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 
 
 class TwoBodyCodeTests(TestWithMPI):

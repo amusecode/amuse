@@ -1,5 +1,5 @@
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 
 from amuse.legacy.interface import gd
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface

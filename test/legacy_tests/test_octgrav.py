@@ -9,7 +9,7 @@ from amuse.support.units import units
 from amuse.legacy.support import channel
 from amuse.ext.plummer import *
 
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 import path_to_test_results
 
 import numpy
@@ -25,7 +25,6 @@ class TestMPIInterface(TestWithMPI):
 
     def test1(self):
 
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = self.new_instance_of_an_optional_code(OctgravInterface)
         if instance is None:
             return
@@ -88,9 +87,11 @@ class TestMPIInterface(TestWithMPI):
 class TestAmuseInterface(TestWithMPI):
 
     def test0(self):
-        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = self.new_instance_of_an_optional_code(Octgrav)
-
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, units.AU)
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
+        instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
+        #channel.MessageChannel.DEBUGGER = None
+        instance.initialize_code()
         self.assertAlmostRelativeEqual(0.01, instance.parameters.epsilon_squared.value_in(units.AU**2), 2)#default
         instance.parameters.epsilon_squared = 0.05 | units.AU**2
         self.assertAlmostRelativeEqual(0.05, instance.parameters.epsilon_squared.value_in(units.AU**2), 6)
@@ -104,11 +105,12 @@ class TestAmuseInterface(TestWithMPI):
         plummer_size = 500
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        #channel.MessageChannel.DEBUGGER = None
         plummer =  MakePlummerModel(plummer_size, convert_nbody)
         stars = plummer.result
         stars.radius = range(1, plummer_size+1)|units.km
 
-        instance = Octgrav(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
         instance.particles.add_particles(stars)
 
         instance.evolve_model(1 | units.day)

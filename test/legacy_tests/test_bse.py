@@ -5,8 +5,7 @@ from amuse.legacy.bse.interface import BSE
 from amuse.support.data import core
 from amuse.support.units import units
 from amuse.legacy.support import channel
-
-from legacy_support import TestWithMPI
+from amuse.test.amusetest import TestWithMPI
 
 class TestMPIInterface(TestWithMPI):
     
