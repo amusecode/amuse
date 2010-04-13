@@ -17,7 +17,7 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
     MODE_GRAPE = 'grape'
     MODE_PG    = 'pg'
 
-    def __init__(self, convert_nbody = None, mode = MODE_G6LIB):
+    def __init__(self, mode = MODE_G6LIB):
         LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode))
         LiteratureRefs.__init__(self)
 
