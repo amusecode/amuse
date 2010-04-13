@@ -64,6 +64,24 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         """
         return function    
 
+    @legacy_function
+    def set_time_step():
+        """
+        Update timestep.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_step', dtype='float64', direction=function.IN,
+            description = "timestep")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+        
+
 class Octgrav(GravitationalDynamics):
 
     def __init__(self, convert_nbody = None):
@@ -90,7 +108,7 @@ class Octgrav(GravitationalDynamics):
         )
         object.add_method_parameter(
             "get_time_step",
-            None,
+            "set_time_step",
             "timestep",
             "constant timestep for iteration", 
             nbody_system.time, 

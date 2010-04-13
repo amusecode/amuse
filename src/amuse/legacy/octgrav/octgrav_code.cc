@@ -238,7 +238,13 @@ int get_state(int id, double *mass, double *radius, double *x, double *y, double
 
 int get_time_step(double *_timestep)
 {
-  *_timestep = t_now + timestep;
+  *_timestep = timestep;
+  return 0;
+}
+
+int set_time_step(double _timestep)
+{
+  timestep = _timestep;
   return 0;
 }
 
