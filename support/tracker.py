@@ -110,12 +110,16 @@ MESSAGE  : {msg}
 """
 
 error_info = """\
-NUMBER OF ERRORS    : {number_of_errors:>5d}
+NUMBER OF ERRORS        : {number_of_errors:>5d}
+"""
+
+skip_info = """\
+NUMBER OF SKIPPED TESTS : {number_of_skips:>5d}
 """
 
 tests_info = """\
-NUMBER OF TESTS     : {number_of_tests:>5d}
-TIME TAKEN(seconds) : {number_of_seconds:>6.1f}
+NUMBER OF TESTS         : {number_of_tests:>5d}
+TIME TAKEN(seconds)     : {number_of_seconds:>6.1f}
 """
 footer = """\
 Regards,
@@ -231,6 +235,10 @@ class RunAllTestsOnASvnCommit(object):
         if report["number_of_errors"] > 0:
             contents.append(error_info.format(**report))
             
+        if report["number_of_skips"] > 0:
+            contents.append(skip_info.format(**report))
+            
+            
         contents.append(tests_info.format(**report))
             
         
@@ -277,6 +285,7 @@ class RunAllTestsOnASvnCommit(object):
         report['msg'] = msg
         report['name'] = name
         report['number_of_errors'] = test_report.errors + test_report.failures
+        report['number_of_skips'] = test_report.skipped
         report['number_of_tests'] = test_report.tests
         report['number_of_seconds'] = test_report.end_time - test_report.start_time
         report['revision']  = revision
