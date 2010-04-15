@@ -4,7 +4,7 @@ import numpy
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import uniform_unit_sphere
 
-def make_ifft_real(vi):
+def make_ifft_real(nf,vi):
   if vi.ndim==3:
 # body of cube
     vi[1:nf,1:2*nf,1:2*nf]=numpy.conj(vi[2*nf-1:nf:-1,2*nf-1:0:-1,2*nf-1:0:-1])
@@ -49,8 +49,8 @@ def random_field(nf=32, power=-3., seed=None):
   fi=fi.flatten()
   fj=fj.flatten()
   fk=fk.flatten()
-
-  norm=-numpy.log(numpy.random.uniform(0.,1.,len(fi)))*(fi**2+fj**2+fk**2+1.e-30)**(power/2)
+  
+  norm=-numpy.log(numpy.random.uniform(0.,1.,len(fi)))*(fi**2+fj**2+fk**2+1.e-30)**(power/4)
   phase=numpy.random.uniform(0.,1.,len(fi))*2*numpy.pi
   vi=norm*numpy.exp(phase*1j)
 
@@ -58,7 +58,7 @@ def random_field(nf=32, power=-3., seed=None):
 
   vi[nf,nf,nf]=0.
   
-  vi=make_ifft_real(vi)
+  vi=make_ifft_real(nf,vi)
 
   vi=numpy.fft.ifftshift( vi)
 
@@ -143,8 +143,8 @@ def interpolate_trilinear(x,y,z,farray):
   zint=zint.astype('i')
 
   xint1=numpy.mod(xint+1,nx)
-  yint1=numpy.mod(xint+1,nx)
-  zint1=numpy.mod(xint+1,nx)
+  yint1=numpy.mod(yint+1,nx)
+  zint1=numpy.mod(zint+1,nx)
 
   q111 = farray[xint, yint, zint]
   q211 = farray[xint1, yint, zint]
@@ -165,41 +165,46 @@ def interpolate_trilinear(x,y,z,farray):
     q111* (1-fx)*(1-fy)*(1-fz)
 
 class molecular_cloud(object):
-  def __init__(self,nf=32,power=-3.,targetN=10000,internalE=0.05,ethek_ratio=1.,seed=None,base_grid=None):
+  def __init__(self,nf=32,power=-3.,targetN=10000, ethep_ratio=0.01,
+                 ekep_ratio=1.,seed=None,base_grid=None):
     self.nf=nf
     self.power=power
     self.targetN=targetN
     self.seed=seed
     self.base_grid=base_grid
-    self.internalE=internalE
-    self.ethek_ratio=ethek_ratio
+    self.ethep_ratio=ethep_ratio
+    self.ekep_ratio=ekep_ratio
     
   def new_model(self):
     if self.seed is not None:
-      numpy.random.seed(seed)
-    vx_field=random_field(nf,power)
-    vy_field=random_field(nf,power)
-    vz_field=random_field(nf,power)
+      numpy.random.seed(self.seed)
+    vx_field=random_field(self.nf,self.power)
+    vy_field=random_field(self.nf,self.power)
+    vz_field=random_field(self.nf,self.power)
 
-    vx_field,vy_field,vz_field=make_div_free(nf,vx_field,vy_field,vz_field)
+    vx_field,vy_field,vz_field=make_div_free(self.nf,vx_field,vy_field,vz_field)
 
-    base_sphere=uniform_unit_sphere(1000,base_grid=self.base_grid)
+    base_sphere=uniform_unit_sphere(self.targetN,base_grid=self.base_grid)
     x,y,z=base_sphere.make_xyz()
     self.actualN=len(x)
     vx=interpolate_trilinear(x,y,z,vx_field)
     vy=interpolate_trilinear(x,y,z,vy_field)
     vz=interpolate_trilinear(x,y,z,vz_field)
     mass=numpy.ones_like(x)/self.actualN
-    internal_energy=numpy.ones_like(x)*self.internalE
 
-    Eth=self.internalE
+
+    Ep=3./5
+    self.internalE=Ep*self.ethep_ratio
     Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
-    vfac=sqrt(1/self.ethek_ratio*Eth/Ek)
+    vfac=sqrt(1/self.ekep_ratio*Ep/Ek)
     vx=vx*vfac
     vy=vy*vfac
     vz=vz*vfac
     Ek=0.5*mass[0]*(vx**2+vy**2+vz**2).sum()
-    print Eth/Ek
+    print self.internalE/Ep
+    print Ek/Ep
+
+    internal_energy=numpy.ones_like(x)*self.internalE
   
     return (mass,x,y,z,vx,vy,vz,internal_energy)
 
