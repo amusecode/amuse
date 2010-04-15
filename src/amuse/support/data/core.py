@@ -1777,6 +1777,9 @@ class ParticlesSubset(AbstractParticleSet):
         
     def get_timestamp(self):
         return self._real_particles().get_timestamp()
+    
+    def previous_state(self):
+        return self._real_particles().previous_state()
         
     def difference(self, other):
         new_set_of_keys = self._private.set_of_keys.difference(other.as_set()._private.set_of_keys)
@@ -1916,7 +1919,26 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     def as_set(self):
         return ParticlesSubset(self, self._get_keys())
     
-            
+    def get_timestamp(self):
+        timestamp = self._private.particles.get_timestamp()
+        if not timestamp is None:
+            timestamp = self._private.converter.from_target_to_source(timestamp)
+        return timestamp
+    
+    def savepoint(self, timestamp=None):
+        if not timestamp is None:
+            timestamp = self._private.converter.from_target_to_source(timestamp)
+        return ParticlesWithUnitsConverted(
+            self._private.particles.savepoint(timestamp),
+            self._private.converter
+        )
+    
+    def previous_state(self):
+        return ParticlesWithUnitsConverted(
+            self._private.particles.previous_state(),
+            self._private.converter
+        )
+    
 
 class ParticleInformationChannel(object):
     

@@ -58,7 +58,8 @@ class Xml2Particles(object):
     def __init__(self):
         self.xmls = ""
         self.system = core.Particles()
-        self.translator = {'N':'number','m':'mass','r':'position','v':'velocity'}
+        self.translator = {'N':'number','m':'mass','r':'position','v':'velocity','system_time':'timestamp'}
+        self.timestamp = None
 
     def add_particle_with_parameters(self, subnode, parent):
         added_particle = self.system.add_particle(core.Particle())  
@@ -96,7 +97,9 @@ class Xml2Particles(object):
             if amuse_key == "position":                                       
                 particle.position = self.convert2vec(value)|nbody_system.length                
             if amuse_key == "velocity":                                       
-                particle.velocity = self.convert2vec(value)|nbody_system.speed      
+                particle.velocity = self.convert2vec(value)|nbody_system.speed
+            if amuse_key == 'timestamp':
+                self.timestamp = float(value)|nbody_system.time
         
     def convert2vec(self, attribute):
         
@@ -205,6 +208,8 @@ class Xml2Particles(object):
         """
         doc = xml.dom.minidom.parseString(xmlstring)
         self._recursive_parse_node_into_particles(doc, self.system)
+        if not self.timestamp is None:
+            self.system.savepoint(self.timestamp)
 
 class ParticlesFromDyn(object):
     
@@ -240,6 +245,11 @@ class Particles2Dyn(object):
         lines.append(prefix + "N = " + str(len(particles)))
         lines.append("(Log")
         lines.append(")Log")
+        timestamp = particles.get_timestamp()
+        if not timestamp is None:
+            lines.append("(Dynamics")
+            lines.append(prefix + "system_time  =  " + str(timestamp.value_in(nbody_system.time)))
+            lines.append(")Dynamics")
         for index, x in enumerate(particles):
             lines.append("(Particle")
             lines.append(prefix + "i = " + str(index))
