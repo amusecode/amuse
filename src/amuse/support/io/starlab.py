@@ -245,7 +245,8 @@ class Particles2Dyn(object):
         lines.append(prefix + "N = " + str(len(particles)))
         lines.append("(Log")
         lines.append(")Log")
-        timestamp = particles.get_timestamp()
+        #timestamp = particles.get_timestamp() # Timestamp is only saved if not None
+        timestamp = particles.get_timestamp() or (0|nbody_system.time) # Timestamp is always saved
         if not timestamp is None:
             lines.append("(Dynamics")
             lines.append(prefix + "system_time  =  " + str(timestamp.value_in(nbody_system.time)))

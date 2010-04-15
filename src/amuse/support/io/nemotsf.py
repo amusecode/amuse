@@ -37,7 +37,7 @@ class Particles2Tsf(object):
                 converter.as_converter_from_nbody_to_si()
             )
             
-        self.time = 0.0
+        self.time = (particles.get_timestamp() or (0.0|nbody_system.time)).value_in(nbody_system.time)
         self.particles = particles
         self.number_of_particles = len(particles)
         
@@ -62,6 +62,7 @@ class Tsf2Particles(object):
         self.number_of_particles = 0
         self.masses = []
         self.phases = []
+        self.timestamp = None
 
     def return_numbers_in_brackets(self, line):
         numbers = []
@@ -86,7 +87,10 @@ class Tsf2Particles(object):
 
     def read_to_ram(self, string):
         lines = string.splitlines()
-
+        
+        timestamp_index = [i for i, oneline in enumerate(lines) if 'double Time' in oneline][0]
+        self.timestamp = float(lines[timestamp_index].strip().split(' ')[2]) | nbody_system.time
+        
         start_masses = [i for i, oneline in enumerate(lines) if 'double Mass' in oneline][0]
         start_phasespace = [i for i, oneline in enumerate(lines) if 'double PhaseSpace' in oneline][0]
         massline_numbers = self.return_numbers_in_brackets(lines[start_masses])
@@ -108,6 +112,9 @@ class Tsf2Particles(object):
         result.mass = self.masses|nbody_system.mass
         result.position = [i[0] for i in self.phases]|nbody_system.length
         result.velocity = [i[1] for i in self.phases]|nbody_system.speed
+        
+        if not self.timestamp is None:
+            result.savepoint(self.timestamp)
         
         if not converter is None:
             result=core.ParticlesWithUnitsConverted(

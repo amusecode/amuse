@@ -295,4 +295,35 @@ class FormatTests(amusetest.TestCase):
         self.assertAlmostEquals(x.velocity, y.velocity,8)
         
         os.remove("time_test_unit.dyn")
+    
+    def test11(self):
+        print "Testing saving/loading timestamp in NEMO"
+        x = core.Particles(2)
+        convert = nbody_system.nbody_to_si(1 | units.kg, 2 | units.m)
+        x.mass = [1.0, 2.0] | units.kg
+        x.position = [[1,2,3], [3,5,6]] | units.m
+        x.velocity = [[1,2,3], [3,5,6]] | units.m / units.s
+        current_time = 1.0 | units.Myr
+        io.write_set_to_file(x.savepoint(current_time), "time_test_unit.tsf","tsf", nbody_to_si_converter = convert)
+        y = io.read_set_from_file("time_test_unit.tsf","tsf", nbody_to_si_converter = convert)
+        
+        self.assertAlmostEquals(current_time, y.previous_state().get_timestamp(), 8, in_units=units.Myr)
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEquals(x.position, y.position,8)
+        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        
+        x = core.Particles(2)
+        x.mass = [1.0, 2.0] | nbody_system.mass
+        x.position = [[1,2,3], [3,5,6]] | nbody_system.length
+        x.velocity = [[1,2,3], [3,5,6]] | nbody_system.speed
+        current_time = 1.0 | nbody_system.time
+        io.write_set_to_file(x.savepoint(current_time), "time_test_unit.tsf","tsf")
+        y = io.read_set_from_file("time_test_unit.tsf","tsf")
+
+        self.assertAlmostEquals(current_time, y.previous_state().get_timestamp(), 8, in_units=nbody_system.time)
+        self.assertAlmostEquals(x.mass, y.mass, 8)
+        self.assertAlmostEquals(x.position, y.position,8)
+        self.assertAlmostEquals(x.velocity, y.velocity,8)
+        
+        os.remove("time_test_unit.tsf")
         
