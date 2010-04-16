@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy
 
 from amuse.legacy.octgrav.interface import OctgravInterface, Octgrav
 
@@ -10,23 +11,12 @@ from amuse.legacy.support import channel
 from amuse.ext.plummer import *
 
 from amuse.test.amusetest import TestWithMPI
-import numpy
-import pylab as pl
-
-try:
-    from matplotlib import pyplot
-    HAS_MATPLOTLIB = True
-except ImportError:
-    HAS_MATPLOTLIB = False
 
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):
 
         instance = self.new_instance_of_an_optional_code(OctgravInterface)
-        if instance is None:
-            return
-
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
@@ -38,8 +28,6 @@ class TestMPIInterface(TestWithMPI):
     def test2(self):
 
         instance = self.new_instance_of_an_optional_code(OctgravInterface)
-        if instance is None:
-            return
         instance.initialize_code()
         instance.new_particle(
             [1,10,100],
@@ -119,5 +107,6 @@ class TestAmuseInterface(TestWithMPI):
         energy_total_final = instance.potential_energy + instance.kinetic_energy
 
         self.assertAlmostRelativeEqual(energy_total_init, energy_total_final, 2)
+        instance.stop()
 
 
