@@ -128,7 +128,10 @@ C---  get array address
       DOUBLE PRECISION total_mass
 
       ret = get_total_mass(total_mass)
-      
+
+      Cx=0.
+      Cy=0.
+      Cz=0.
       Cx = 0.0
       Cy = 0.0
       Cz = 0.0
@@ -481,13 +484,15 @@ c         PRINT*, 'Warning: system not initialised yet'
       get_eta_s   = 0
       END
       
-      FUNCTION get_eta()
+      FUNCTION get_eta(eta_out)
       IMPLICIT NONE
 #include "src/general.inc"
 
-      DOUBLE PRECISION get_eta
+      INTEGER get_eta
+      DOUBLE PRECISION eta_out
 
-      get_eta   = eta
+      eta_out = eta
+      get_eta = 0
       RETURN
       END
 C====================================================================
