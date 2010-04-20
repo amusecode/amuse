@@ -22,7 +22,7 @@ class TestMPIInterface(TestWithMPI):
         instance.setup_mesh(50,50,50,1.,1.,1.)
         instance.stop()
     
-    def xtest2(self):
+    def test2(self):
         instance=capreole()
         instance.setup_module()
         instance.setup_mesh(50,50,50,1.,1.,1.)
@@ -132,6 +132,19 @@ class TestMPIInterface(TestWithMPI):
         i,j,k,err=instance.get_index_of_position(x,y,z)
         self.assertEqual([i,j,k],[15,5,20])
         instance.stop()
+
+    def test7(self):
+        instance=capreole()
+        instance.setup_module()
+        instance.setup_mesh(50,50,50,1.,1.,1.)
+        err=instance.set_gravity_field(1,2,3,1.,0.5,0.25)
+        self.assertEqual(err,0)
+        fx,fy,fz,err=instance.get_gravity_field(1,2,3)
+        self.assertEqual(fx,1.)
+        self.assertEqual(fy,0.5)
+        self.assertEqual(fz,0.25)
+        instance.stop()
+
 
 class TestSodShocktube(TestWithMPI):
     
