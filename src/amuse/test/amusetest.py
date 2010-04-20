@@ -11,6 +11,7 @@ class SkipTest(Exception):
     pass
     
 class TestCase(unittest.TestCase):
+    PRECISION = int(round(numpy.log10(2.0/(numpy.finfo(numpy.double).eps))))
     
     def failUnlessAlmostEqual(self, first, second, places=7, msg=None, in_units=None):                             
         """Fail if the two objects are unequal as determined by their                                
@@ -50,7 +51,7 @@ class TestCase(unittest.TestCase):
     assertAlmostEquals =  failUnlessAlmostEqual
     
     
-    def failUnlessAlmostRelativeEqual(self, first, second, places=7, msg=None):
+    def failUnlessAlmostRelativeEqual(self, first, second, places=PRECISION, msg=None):
         
         if abs(first) > abs(second):
             relativeError = abs((second-first) / first)

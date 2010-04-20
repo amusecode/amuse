@@ -1,5 +1,3 @@
-import platform
-
 from amuse.legacy.bse.interface import BSE
 
 from amuse.support.data import core
@@ -129,31 +127,9 @@ class TestMPIInterface(TestWithMPI):
             'spin2' : '0x1.07413b0522aebp+10',
         };    
 
-        expected_32bit = {
-            'core_radius2' : '0x0.0p+0',
-            'initial_mass2' : '0x1.0000000000000p+0',
-            'envelope_mass2' : '0x1.0d6fc100ab50fp-5',
-            'radius2' : '0x1.c6c8a1c793bd0p-1',
-            't_ms2' : '0x1.57d90abe54642p+13',
-            'spin2' : '0x1.07413b0522d61p+10',
-            'luminosity2' : '0x1.653b1b2d0333ap-1',
-            'end_time' : '0x1.0c6f7a0b5ed8dp-20',
-            'envelope_radius2' : '0x1.db27631ba0e5cp-3',
-            'bse_age' : '0x1.0c6f7a0b5ed8dp-20',
-            'epoch2' : '0x0.0p+0',
-            'mass2' : '0x1.0000000000000p+0',
-            'core_mass2' : '0x0.0p+0',
-        };
-
-        architecture, linkage_format = platform.architecture()
-        if architecture == '32bit' and platform.system() != 'Darwin':
-            for x in expected:
-                #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
-                self.assertEqual(float.fromhex(expected_32bit[x]),getattr(updated_state, x))
-        else:
-            for x in expected:
-                #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
-                self.assertAlmostRelativeEqual(float.fromhex(expected[x]),getattr(updated_state, x),15)
+        for x in expected:
+            #print "'%s' : '%s'," % (x, getattr(updated_state, x).hex())
+            self.assertAlmostRelativeEqual(float.fromhex(expected[x]),getattr(updated_state, x))
             
         self.assertEquals(updated_state.end_time, 1e-06)
         dt = instance.legacy_interface.get_time_step(updated_state.type1, updated_state.type2,

@@ -299,6 +299,16 @@ class VectorQuantity(Quantity):
         return new_quantity(numpy.sum(self.number, axis = axis), self.unit)
         
     
+    def sort(self, axis = None):
+        """Calculate the sum of the vector components
+
+        >>> from amuse.support.units import units
+        >>> v1 = [0.0, 1.0, 2.0] | units.kg
+        >>> v1.sum()
+        quantity<3.0 kg>
+        """
+        return new_quantity(numpy.sum(self.number, axis = axis), self.unit)
+    
     def length(self):
         """Calculate the length of the vector.
         
