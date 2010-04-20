@@ -68,6 +68,29 @@ class capreole(LegacyInterface):
         return function
 
     @legacy_function    
+    def set_gravity_field():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['f_x','f_y','f_z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_gravity_field():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['f_x','f_y','f_z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+
+    @legacy_function    
     def evolve():
         function = LegacyFunctionSpecification()  
         function.addParameter('time', dtype='d', direction=function.IN)

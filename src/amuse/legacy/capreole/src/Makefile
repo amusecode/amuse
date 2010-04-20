@@ -200,13 +200,13 @@ amuse_interface_mpi: libcapreole_mpi.a
 libcapreole.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o \
  no_mpi.o clocks.o  amuse_mesh.o amuse_cart-coords.o \
  hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o \
- cart-amuse.o integrate-strang.o ah3out.o evolve.o amuse_helpers.o 
+ amuse_problem.o integrate-strang.o ah3out.o evolve.o amuse_helpers.o
 	ar crs $@ $^
 
 libcapreole_mpi.a: precision.o file_admin.o string.o sizes.o noscaling.o $(CONSTANTS) abundances.o atomic.o \
  amuse_mpi.o clocks.o  amuse_mesh.o amuse_cart-coords.o \
  hydro.o time.o cart-routines.o $(PROT) boundary.o $(LOF) $(ROESOL) no_ionic.o \
- cart-amuse.o integrate-strang.o ah3out.o evolve.o amuse_helpers.o 
+ amuse_problem.o integrate-strang.o ah3out.o evolve.o amuse_helpers.o
 	ar crs $@ $^
 
 

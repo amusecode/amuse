@@ -103,6 +103,61 @@ function get_grid_state(i,j,k,rho_out,rhvx_out,rhvy_out,rhvz_out,en_out) result(
   ret=0
 end function
 
+function set_gravity_field(i,j,k,fx,fy,fz) result(ret)
+  use amuse_helpers
+  integer :: ret,i,j,k
+  real*8 :: fx,fy,fz
+  real*8 :: force(3)
+#ifdef MPI
+  integer retsum,ierr
+#endif
+ 
+  force(1)=fx
+  force(2)=fy
+  force(3)=fz
+  ret=fill_gforce(i,j,k,force)
+#ifdef MPI
+  call MPI_REDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  if(retsum.NE.1) ret=-1
+#endif
+  if(ret.NE.1) then
+    ret=-1
+    return
+  endif  
+  ret=0 
+end function
+
+function get_gravity_field(i,j,k,fx,fy,fz) result(ret)
+  use amuse_helpers
+  integer :: ret,i,j,k
+  real*8 :: fx,fy,fz
+  real*8 :: force(3)
+#ifdef MPI
+  integer retsum,ierr
+  real*8 :: tmp(3)
+#endif
+  
+  ret=retrieve_gforce(i,j,k,force)
+#ifdef MPI
+  call MPI_REDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)
+  if(retsum.NE.1) ret=-1
+#endif
+  if(ret.NE.1) then
+    return
+  endif  
+#ifdef MPI
+  tmp=force
+  call MPI_REDUCE(tmp,force,3,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
+#endif
+  fx=force(1)
+  fy=force(2)
+  fz=force(3)
+  ret=0
+end function
+
+
+
+
 function get_position_of_index(i,j,k,xout,yout,zout) result(ret)
   use amuse_helpers
   integer :: ret,i,j,k

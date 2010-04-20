@@ -1,28 +1,3 @@
-module problem
-  use sizes, only: nrOfDim
-  use precision, only: dp
-
-  integer, dimension(nrofDim,2) :: domainboundaryconditions
-
-  contains
-
-  subroutine problemboundary(boundary_id,newold)
-    integer,intent(in) :: boundary_id
-    integer,intent(in) :: newold
-! dummy
-  end subroutine
-
-  subroutine apply_grav_force(dt,newold)
-                
-    ! Dummy routine
-             
-    real(kind=dp),intent(in) :: dt
-    integer,intent(in) :: newold
-    
-  end subroutine apply_grav_force
-
-end module
-
 module amuse_helpers
   use my_mpi
   use evolution
@@ -45,7 +20,7 @@ module amuse_helpers
   end function
 
   function amuse_evolve(tend) result(ret)
-    integer :: ret,n
+    integer :: ret,nf
     real*8 :: tend
     if(tend-time.GT.0) then
       lastframe=0
@@ -199,6 +174,28 @@ module amuse_helpers
       ret=ret+1
     endif
   end function
+
+  function fill_gforce(ix,iy,iz,force) result(ret)
+    integer :: ret,ix,iy,iz
+    real*8 :: force(nrOfDim)
+    ret=0
+    if( in_grid(ix,iy,iz) )then
+      gforce(ix,iy,iz,1:nrOfDim)=force(1:nrOfDim)
+      ret=ret+1
+    endif
+  end function
+
+  function retrieve_gforce(ix,iy,iz,force) result(ret)
+    integer :: ret,ix,iy,iz
+    real*8 :: force(nrOfDim)
+    ret=0
+    force(1:neq)=0.
+    if( in_grid(ix,iy,iz) ) then
+      force(1:nrOfDim)=gforce(ix,iy,iz,1:nrOfDim)
+      ret=ret+1
+    endif
+  end function
+
 
   function amuse_initialize_grid(t0) result(ret)
     integer :: ret

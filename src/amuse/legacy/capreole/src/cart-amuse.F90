@@ -29,7 +29,7 @@ module problem
   use abundances, only: mu
   use mesh, only: sx,ex,sy,ey,sz,ez,meshx,meshy,meshz
   use grid, only: xlength,ylength,zlength,x,y,z
-  use hydro, only: state,pressr,set_state_pointer,NEW,OLD,restart_state
+  use hydro, only:  state,pressr,set_state_pointer,NEW,OLD,restart_state,gforce
   use boundary, only: boundaries,REFLECTIVE,OUTFLOW,PROBLEM_DEF,X_IN,X_OUT,Y_IN, &
        Y_OUT,Z_IN,Z_OUT
   use ionic, only: init_ionic
@@ -220,13 +220,15 @@ contains
   
   !==========================================================================
 
+
   subroutine apply_grav_force(dt,newold)
-
+                
     ! Dummy routine
-
+             
     real(kind=dp),intent(in) :: dt
     integer,intent(in) :: newold
-
+    
   end subroutine apply_grav_force
+    
 
 end module problem
