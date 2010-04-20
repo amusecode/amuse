@@ -11,7 +11,7 @@ class SkipTest(Exception):
     pass
     
 class TestCase(unittest.TestCase):
-    PRECISION = int(round(numpy.log10(2.0/(numpy.finfo(numpy.double).eps))))
+    PRECISION = int(round(numpy.log10(2.0/(numpy.finfo(numpy.double).eps))))-1
     
     def failUnlessAlmostEqual(self, first, second, places=7, msg=None, in_units=None):                             
         """Fail if the two objects are unequal as determined by their                                
