@@ -190,7 +190,7 @@ class TestInterface(TestWithMPI):
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
-        stdout, stderr = process.communicate(string)
+        stdout, stderr = process.communicate()
         
         if not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
