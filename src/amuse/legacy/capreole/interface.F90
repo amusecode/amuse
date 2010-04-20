@@ -136,7 +136,6 @@ function get_gravity_field(i,j,k,fx,fy,fz) result(ret)
   integer retsum,ierr
   real*8 :: tmp(3)
 #endif
-  
   ret=retrieve_gforce(i,j,k,force)
 #ifdef MPI
   call MPI_REDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,0,MPI_COMM_NEW,ierr)

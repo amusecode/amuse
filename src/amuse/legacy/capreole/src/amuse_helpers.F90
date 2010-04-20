@@ -189,7 +189,7 @@ module amuse_helpers
     integer :: ret,ix,iy,iz
     real*8 :: force(nrOfDim)
     ret=0
-    force(1:neq)=0.
+    force(1:nrOfDim)=0.
     if( in_grid(ix,iy,iz) ) then
       force(1:nrOfDim)=gforce(ix,iy,iz,1:nrOfDim)
       ret=ret+1
