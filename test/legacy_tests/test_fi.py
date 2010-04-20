@@ -168,9 +168,9 @@ class TestEvrard(TestWithMPI):
         Ep,ret=nb.get_potential_energy()
         Eth,ret=nb.get_thermal_energy()
 
-        self.assertAlmostEqual( Ek, 0.129577,4)
-        self.assertAlmostEqual( Ep, -0.831976,4)        
-        self.assertAlmostEqual( Eth,0.08567999 ,4)        
+        self.assertAlmostEqual( Ek, 0.129577,3)
+        self.assertAlmostEqual( Ep, -0.831976,3)
+        self.assertAlmostEqual( Eth,0.08567999,3)
 
         del evrard
         nb.stop()
