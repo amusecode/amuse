@@ -39,7 +39,7 @@ Clean.sub_commands.append(('clean_python',None))
  
 setup(
     name = 'amuse',
-    version = '2.1',
+    version = '2.3',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
     classifiers = [
