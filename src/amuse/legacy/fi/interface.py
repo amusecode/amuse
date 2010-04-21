@@ -33,8 +33,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     get_position=None
 
                 
-    def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self, name_of_the_worker = 'worker')
+    def __init__(self, **options):
+        LegacyInterface.__init__(self, name_of_the_worker = 'worker', **options)
                      
     def setup_module(self):
         return self.initialize_code()
@@ -1276,8 +1276,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         return function
         
 class glfi(fi):
-    def __init__(self):
-        LegacyInterface.__init__(self,name_of_the_worker = 'glworker')
+    def __init__(self, **options):
+        LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
     
     @legacy_function
     def viewer():
@@ -1289,12 +1289,12 @@ class glfi(fi):
         
 class Fi(GravitationalDynamics):
     
-    def __init__(self, convert_nbody = None, use_gl = False):
+    def __init__(self, convert_nbody = None, use_gl = False, **options):
                 
         if(use_gl):
-          legacy_interface = glfi()
+          legacy_interface = glfi(**options)
         else:
-          legacy_interface = fi()            
+          legacy_interface = fi(**options)            
         
         if convert_nbody is None:
             convert_nbody=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
@@ -1303,6 +1303,7 @@ class Fi(GravitationalDynamics):
             self,
             legacy_interface,
             convert_nbody,
+            **options
         )     
     
     def initialize_code(self):

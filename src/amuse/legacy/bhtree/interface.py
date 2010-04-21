@@ -225,18 +225,19 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
 class BHTree(GravitationalDynamics):
     
     
-    def __init__(self, convert_nbody = None):
+    def __init__(self, convert_nbody = None, **options):
         
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
        
         
-        legacy_interface = BHTreeInterface()
+        legacy_interface = BHTreeInterface(**options)
         
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
+            **options
         )     
             
     def define_parameters(self, object):

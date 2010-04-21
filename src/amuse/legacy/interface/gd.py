@@ -798,10 +798,10 @@ class GravitationalDynamics(common.CommonCode):
 
     __doc__ = GdAutoDoc()
 
-    def __init__(self, legacy_interface, convert_nbody = None):
+    def __init__(self, legacy_interface, convert_nbody = None,  **options):
         self.convert_nbody = convert_nbody
 
-        CodeInterface.__init__(self, legacy_interface)
+        CodeInterface.__init__(self, legacy_interface, **options)
 
     def define_properties(self, object):
         object.add_property("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)

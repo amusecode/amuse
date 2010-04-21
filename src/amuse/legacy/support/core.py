@@ -298,7 +298,7 @@ class legacy_function(object):
         name_of_defining_file = self.specification_function.func_code.co_filename
         if os.path.exists(name_of_defining_file):
             time_of_defining_file = os.stat(name_of_defining_file).st_mtime
-            return True or time_of_defining_file <= time_of_the_compiled_file
+            return time_of_defining_file <= time_of_the_compiled_file
         return True
         
 
@@ -324,9 +324,7 @@ class legacy_global(object):
         
     def __set__(self, instance, value):
         return LegacyCall(instance, None, self.set_specification)(value)
-        
-        
-    
+
     def to_c_string(self):
         uc = MakeACStringOfALegacyGlobalSpecification()
         uc.specification = self
@@ -543,7 +541,7 @@ class LegacyInterface(object):
     instances = []
     channel_factory = MpiChannel
     
-    def __init__(self, name_of_the_worker = 'worker_code', number_of_workers = 1, debug_with_gdb = False, hostname = None):
+    def __init__(self, name_of_the_worker = 'worker_code', **options):
         """
         Instantiates an object, starting the worker.
         
@@ -560,7 +558,7 @@ class LegacyInterface(object):
         :argument debug_with_gdb: Start the worker(s) in a gdb session in a separate xterm
         :argument hostname: Start the worker on the node with this name
         """
-        self.channel = self.channel_factory(name_of_the_worker, number_of_workers, type(self), debug_with_gdb, hostname)
+        self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
         self._check_if_worker_is_up_to_date()
         self.channel.start()
         self.instances.append(weakref.ref(self))
@@ -610,13 +608,13 @@ class LegacyPythonInterface(LegacyInterface):
     :argument implementation_factory: Class of the python implementation
     """
     
-    def __init__(self, implementation_factory = None, name_of_the_worker = None , number_of_workers = 1, debug_with_gdb = False, hostname = None):
+    def __init__(self, implementation_factory = None, name_of_the_worker = None , **options):
         if name_of_the_worker is None:
             if implementation_factory is None:
                 raise Exception("Must provide the name of a worker script or the implementation_factory class")
             name_of_the_worker = self.make_executable_script_for(implementation_factory)
         
-        LegacyInterface.__init__(self, name_of_the_worker, number_of_workers, False, hostname)
+        LegacyInterface.__init__(self, name_of_the_worker, **options)
         
     def _check_if_worker_is_up_to_date(self):
         pass

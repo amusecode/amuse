@@ -228,8 +228,8 @@ class BSEParticles(Particles):
     
 class BSE(CodeInterface):
     
-    def __init__(self):
-        CodeInterface.__init__(self, BSEInterface())
+    def __init__(self, **options):
+        CodeInterface.__init__(self, BSEInterface(**options), **options)
 
         self.parameters.set_defaults()
         

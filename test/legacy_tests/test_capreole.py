@@ -4,10 +4,7 @@ import numpy
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.capreole.interface import capreole
-from amuse.legacy.support.channel import MessageChannel
 
-
-#MessageChannel.no_redirection()
 
 class TestMPIInterface(TestWithMPI):
     

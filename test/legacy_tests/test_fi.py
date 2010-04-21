@@ -9,9 +9,6 @@ from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data import core
-from amuse.legacy.support.channel import MessageChannel
-
-#MessageChannel.no_redirection()
 
 class TestMPIInterface(TestWithMPI):
 

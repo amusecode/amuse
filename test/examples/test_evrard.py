@@ -12,11 +12,8 @@ from amuse.legacy.fi import interface as interface
 from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
-from amuse.legacy.support.channel import MessageChannel
 from amuse.test.amusetest import get_path_to_results
 from amuse.legacy.support.core import is_mpd_running
-
-MessageChannel.no_redirection()
 
 def energy_plot(time,ek,ep,eth):
   if not HAS_MATPLOTLIB:
@@ -37,7 +34,7 @@ def run_evrard(x):
   mass,x,y,z,vx,vy,vz,u=evrard.new_model()
   smooth=numpy.zeros_like(mass)
 
-  nb = interface.fi()
+  nb = interface.fi(redirection="none")
   nb.initialize_code()
 
   nb.set_stepout(99999)

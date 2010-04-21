@@ -3,6 +3,7 @@ from amuse.support.data import core
 from amuse.support.data import values
 from amuse.support.data import code_particles
 from amuse.support.units import nbody_system
+from amuse.support.options import OptionalAttributes
 
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition
 
@@ -875,11 +876,12 @@ class OverriddenCodeInterface(object):
     def __getattr__(self, name):
         return self.code_interface.__getattr__(name)
 
-class CodeInterface(OldObjectsBindingMixin):
+class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
 
-    def __init__(self, legacy_interface):
-        object.__setattr__(self, 'legacy_interface', legacy_interface)
-        object.__setattr__(self, '_handlers', [])
+    def __init__(self, legacy_interface, **options):
+        OptionalAttributes.__init__(self, **options)
+        self.legacy_interface = legacy_interface
+        self._handlers = [] 
 
 
         self._handlers.append(LegacyInterfaceHandler(legacy_interface))

@@ -2,7 +2,6 @@ from amuse.legacy.bse.interface import BSE
 
 from amuse.support.data import core
 from amuse.support.units import units
-from amuse.legacy.support import channel
 from amuse.test.amusetest import TestWithMPI
 
 class TestMPIInterface(TestWithMPI):
@@ -351,9 +350,7 @@ class TestBSE(TestWithMPI):
             
     def test3(self):
         print "Testing standard BSE example 2..."
-        channel.MessageChannel.DEBUGGER = None #channel.MessageChannel.XTERM
         instance = BSE()
-        channel.MessageChannel.DEBUGGER = None
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
         instance.initialize_module_with_current_parameters()

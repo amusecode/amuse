@@ -21,8 +21,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     eps2 = legacy_global(name='eps2',id=23,dtype='d')
     flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
 
-    def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code")
+    def __init__(self, **options):
+        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
 
     def setup_module(self):
@@ -57,18 +57,19 @@ class Hermite(GravitationalDynamics):
 
     __doc__ = HermiteDoc()
 
-    def __init__(self, convert_nbody = None):
+    def __init__(self, convert_nbody = None, **options):
 
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
 
 
-        legacy_interface = HermiteInterface()
+        legacy_interface = HermiteInterface(**options)
 
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
+            **options
         )
 
     def define_parameters(self, object):

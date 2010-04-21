@@ -11,8 +11,8 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
 
     include_headers = ['octgrav_code.h', 'parameters.h', 'worker_code.h', 'local.h']
 
-    def __init__(self, convert_nbody = None, **kwargs):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **kwargs)
+    def __init__(self, convert_nbody = None, **options):
+        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         """
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         if convert_nbody is None:
@@ -84,17 +84,18 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
 
 class Octgrav(GravitationalDynamics):
 
-    def __init__(self, convert_nbody = None):
+    def __init__(self, convert_nbody = None, **options):
 
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
 
-        legacy_interface = OctgravInterface()
+        legacy_interface = OctgravInterface(**options)
 
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
             convert_nbody,
+            **options
         )
 
     def define_parameters(self, object):

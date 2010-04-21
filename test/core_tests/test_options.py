@@ -30,7 +30,6 @@ class OptionsTests(amusetest.TestCase):
     [bhtree]
     mode=gpu
     int_option=3
-    
     """)
     
     
@@ -81,7 +80,11 @@ class OptionsTests(amusetest.TestCase):
         instance = OptionsTestsClass()
         
         option = options.option(OptionsTestsClass.int_option, type="int", sections=("bhtree",), global_options=global_options)
+        self.assertEquals(option.__get__(instance, type(instance)), 1)
+        
+        instance.option_sections =('unknown')
         self.assertEquals(option.__get__(instance, type(instance)), 3)
+        
         
     
     def test5(self):
@@ -216,3 +219,21 @@ class OptionsTests(amusetest.TestCase):
         self.assertEquals(option.__get__(instance, type(instance)), 1)
         
         os.remove(global_options.rcfilepath)
+        
+    
+    def test11(self):
+        global_options = options.GlobalOptions()
+        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        class DecoratedMethods(options.OptionalAttributes):
+            option_sections =('amuse',)
+           
+            def __init__(self, **optional_arguments):
+                options.OptionalAttributes.__init__(self, **optional_arguments)
+                
+            @options.option(choices=("1","2"), global_options=global_options)
+            def int_option(self):
+                return 2
+            
+                
+        instance = DecoratedMethods()
+        self.assertEquals(instance.int_option, "1")

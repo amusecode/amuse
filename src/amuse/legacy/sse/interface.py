@@ -20,8 +20,8 @@ class SSEInterface(LegacyInterface, LiteratureRefs):
         .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
         .. [#] ... "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
     """
-    def __init__(self):
-        LegacyInterface.__init__(self)
+    def __init__(self, **options):
+        LegacyInterface.__init__(self, **options)
         LiteratureRefs.__init__(self)
     
     @legacy_function   
@@ -143,8 +143,8 @@ class SSEParticles(Particles):
 
 class SSE(CodeInterface):
     
-    def __init__(self):
-        CodeInterface.__init__(self, SSEInterface())
+    def __init__(self, **options):
+        CodeInterface.__init__(self, SSEInterface(**options), **options)
         
         
         self.parameters.set_defaults()

@@ -6,7 +6,6 @@ from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.legacy.support import channel
 
 from amuse.test.amusetest import TestWithMPI
 
@@ -38,9 +37,7 @@ class TestMPIInterface(TestWithMPI):
         del instance
         
     def test2(self):
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
         instance = PhiGRAPEInterface()
-        #channel.MessageChannel.DEBUGGER = None
         for x in [0.101, 4.0]:
             error = instance.set_eps2(x)
             self.assertEquals(error, 0)            
@@ -111,9 +108,7 @@ class TestMPIInterface(TestWithMPI):
         instance.cleanup_module()
 
     def test7(self):
-        channel.MessageChannel.DEBUGGER = None #channel.MessageChannel.DDD
-        instance = PhiGRAPEInterface()
-        channel.MessageChannel.DEBUGGER = None
+        instance = PhiGRAPEInterface() #(debugger="xterm")
         instance.initialize_code()
         instance.set_eps2(0.0**2)
         instance.set_eta(0.01,0.02)
@@ -282,9 +277,7 @@ class TestCodeInterface(TestWithMPI):
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = PhiGRAPE(convert_nbody)
-        #channel.MessageChannel.DEBUGGER = None
 
         instance.initialize_code()
         
@@ -307,9 +300,7 @@ class TestCodeInterface(TestWithMPI):
     
     
     def test5(self):
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = PhiGRAPE(PhiGRAPE.NBODY)
-        #channel.MessageChannel.DEBUGGER = None
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         instance.set_eta(0.01,0.02)
         instance.initialize_code()

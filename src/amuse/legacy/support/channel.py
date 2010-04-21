@@ -11,6 +11,9 @@ import struct
 from mpi4py import MPI
 from subprocess import Popen
 
+from amuse.support.options import OptionalAttributes, option
+from amuse.support.core import late
+
 class ASyncRequest(object):
         
     def __init__(self, request, message,  comm, header):
@@ -267,7 +270,7 @@ def unpack_array(array, length, dtype = None):
         result.append(array[offset:offset+length])
     return result
 
-class MessageChannel(object):
+class MessageChannel(OptionalAttributes):
     """
     Abstract base class of all message channel.
     
@@ -281,8 +284,9 @@ class MessageChannel(object):
     integers, floats and/or strings.
     
     """
-    DEBUGGER = None
-    REDIRECTION = ("/dev/null", "/dev/null", "/dev/null")
+    
+    def __init__(self,   **options):
+        OptionalAttributes.__init__(self, **options)
     
     @classmethod
     def GDB(cls, full_name_of_the_worker):
@@ -301,21 +305,7 @@ class MessageChannel(object):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
-
-    
-    @classmethod
-    def redirect_to_devnull(cls):
-        cls.redirect_to("/dev/null", "/dev/null", "/dev/null")
         
-    @classmethod
-    def redirect_to(cls, input_filename, output_filename, error_filename):
-        cls.REDIRECTION = (input_filename, output_filename, error_filename)
-    
-    @classmethod
-    def no_redirection(cls):
-        cls.REDIRECTION = None
-        
-    
     def get_full_name_of_the_worker(self, type):
         if os.path.isabs(self.name_of_the_worker):
             if os.path.exists(self.name_of_the_worker):
@@ -342,7 +332,15 @@ class MessageChannel(object):
         
     def recv_message(self, tag, handle_as_array = False):
         pass
-        
+
+ 
+MessageChannel.DEBUGGERS = {
+    "none":None,
+    "gdb":MessageChannel.GDB, 
+    "ddd":MessageChannel.DDD, 
+    "xterm":MessageChannel.XTERM
+}
+
 #import time
 #import ctypes
 #clib_library = ctypes.CDLL("libc.so.6")
@@ -359,45 +357,82 @@ class MpiChannel(MessageChannel):
     :argument debug_with_gdb: If True opens an xterm with a gdb to debug the remote process
     :argument hostname: Name of the node to run the application on
     """
-    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type = None, debug_with_gdb = False, hostname = None):
-        self.name_of_the_worker = name_of_the_worker
-        self.number_of_workers = number_of_workers
+    def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
+        MessageChannel.__init__(self, **options)
         
+        self.name_of_the_worker = name_of_the_worker
+                
         if not legacy_interface_type is None:
             self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
             
-        self.debug_with_gdb = debug_with_gdb
             
-        if not hostname is None:
+        if not self.hostname is None:
             self.info = MPI.Info.Create()
-            self.info['host'] = hostname
+            self.info['host'] = self.hostname
         else:
             self.info = MPI.INFO_NULL
             
         self.cached = None
         self.intercomm = None
         self._is_inuse = False
+    
+    @option(type="boolean")
+    def debug_with_gdb(self):
+        return False
         
+    @option(sections=("channel",))
+    def hostname(self):
+        return None
+    
+    @option(type="int", sections=("channel",))
+    def number_of_workers(self):
+        return 1
+        
+    @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    def debugger(self):
+        return "none"
+        
+    @option(choices=("none","null","file"), sections=("channel",))
+    def redirection(self):
+        return "null"
+        
+    
+    @option(sections=("channel",))
+    def redirect_file(self):
+        return "code.out"
+        
+    @late
+    def redirection_filenames(self):
+        return {
+            "none":None,
+            "null":("/dev/null", "/dev/null", "/dev/null"), 
+            "file":("/dev/null", self.redirect_file, self.redirect_file),
+        }[self.redirection]
+        
+    @late
+    def debugger_method(self):
+        return self.DEBUGGERS[self.debugger]
+    
     def start(self):
         fd_stdin = None
         
-        if self.debug_with_gdb or (not self.DEBUGGER is None):
+        if self.debug_with_gdb or (not self.debugger_method is None):
             if not 'DISPLAY' in os.environ:
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
-                if self.DEBUGGER is None:
+                if self.debugger is None:
                     command, arguments = self.GDB(self.full_name_of_the_worker)
                 else:
-                    command, arguments = self.DEBUGGER(self.full_name_of_the_worker)
+                    command, arguments = self.debugger_method(self.full_name_of_the_worker)
         else:
             arguments = None
             command = self.full_name_of_the_worker
         
-            if not self.REDIRECTION is None:
-                input_filename, output_filename, error_filename = self.REDIRECTION
+            if not self.redirection_filenames is None:
+                input_filename, output_filename, error_filename = self.redirection_filenames
                 
                 fd_stdin = os.dup(0)
                 zero = open(input_filename,'r')
@@ -415,7 +450,7 @@ class MpiChannel(MessageChannel):
             self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
         finally:
             
-            if not self.REDIRECTION is None and not fd_stdin is None:
+            if not self.redirection_filenames is None and not fd_stdin is None:
                 os.dup2(fd_stdin, 0)
                 os.dup2(fd_stdout, 1)
                 os.dup2(fd_stderr, 2)
@@ -543,16 +578,30 @@ class MultiprocessingMPIChannel(MessageChannel):
     as MPI sees it) and this part can be stopped after each
     sub-test, thus removing unneeded applications. 
     """
-    def __init__(self, name_of_the_worker, number_of_workers, legacy_interface_type, debug_with_gdb = False, hostname = None):
+    def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
+        MessageChannel.__init__(self, **options)
+        
         self.name_of_the_worker = name_of_the_worker
-        self.number_of_workers = number_of_workers
+        
         if not legacy_interface_type is None:
-            self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
+            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
-        self.debug_with_gdb = debug_with_gdb
+            
         self.process = None
     
+    @option(type="boolean")
+    def debug_with_gdb(self):
+        return False
+        
+    @option
+    def hostname(self):
+        return None
+    
+    @option(type="int")
+    def number_of_workers(self):
+        return 1
+        
     def start(self):
         name_of_dir = "/tmp/amuse_"+os.getenv('USER')
         self.name_of_the_socket, self.server_socket = self._createAServerUNIXSocket(name_of_dir)

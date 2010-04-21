@@ -20,8 +20,8 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         .. [#] Please acknowledge the use of MESA in your papers. More details
         .. [#] ... on MESA can be found at: http://mesa.sourceforge.net/.
     """
-    def __init__(self):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code")
+    def __init__(self, **options):
+        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
 
     @property
@@ -449,8 +449,8 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
 
 class MESA(CodeInterface):
     
-    def __init__(self):
-        CodeInterface.__init__(self, MESAInterface())
+    def __init__(self, **options):
+        CodeInterface.__init__(self, MESAInterface(), **options)
         self.set_MESA_paths(self.default_path_to_inlist, 
             self.default_path_to_MESA_data)
         self.parameters.set_defaults()

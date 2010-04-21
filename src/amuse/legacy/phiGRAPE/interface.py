@@ -17,8 +17,8 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
     MODE_GRAPE = 'grape'
     MODE_PG    = 'pg'
 
-    def __init__(self, mode = MODE_G6LIB):
-        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode))
+    def __init__(self, mode = MODE_G6LIB, **options):
+        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode), **options)
         LiteratureRefs.__init__(self)
 
     def name_of_the_muse_worker(self, mode):
@@ -132,21 +132,22 @@ class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
 class PhiGRAPE(GravitationalDynamics):
 
 
-    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False):
+    def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False, **options):
 
         if convert_nbody is None:
             convert_nbody = nbody_system.nbody_to_si.get_default()
 
         nbody_interface = None
         if use_gl:
-            nbody_interface = PhiGRAPEInterfaceGL(mode)
+            nbody_interface = PhiGRAPEInterfaceGL(mode, **options)
         else:
-            nbody_interface = PhiGRAPEInterface(mode)
+            nbody_interface = PhiGRAPEInterface(mode, **options)
 
         GravitationalDynamics.__init__(
             self,
             nbody_interface,
             convert_nbody,
+            **options
         )
 
     def define_parameters(self, object):

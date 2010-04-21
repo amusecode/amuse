@@ -77,12 +77,15 @@ class GlobalOptions(object):
         
 class option(object):
     
-    def __init__(self, function = None, type = "string", name = None, sections = (), global_options = None):
+    def __init__(self, function = None, type = "string", name = None, sections = (), choices = (), global_options = None):
         self.specification_method = function
             
         if not name is None:
             self.name = name
         
+        if not self.specification_method is None:
+            self.__doc__ = self.specification_method.__doc__
+            
         self.sections = sections
         
         if hasattr(self, type.upper()):
@@ -91,7 +94,9 @@ class option(object):
             raise CoreException("'{0}' is not a valid type for option".format(type))
             
         self.validator = self.default_validator
-        self.choices = ()
+        self.choices = set(choices)
+        if self.choices:
+            self.validator = self.choice_validator
         
         if global_options is None:
             self.global_options = GlobalOptions.instance()
@@ -104,7 +109,7 @@ class option(object):
         
     def __call__(self, function):
         self.specification_method = function
-        self.name = self.specification_method.__name__
+        self.__doc__ = self.specification_method.__doc__
         return self
         
     def __get__(self, instance, owner):
@@ -117,7 +122,7 @@ class option(object):
             return self.global_options.get_value_for_option(self, instance)
             
     def __set__(self, instance, value):
-        instance._local_options[self.name] = value
+        instance._local_options[self.name] = self.validator(value)
         
     def get_value(self, instance, section, options):
         return self.validator(self.valuetype(section, options))
@@ -139,11 +144,16 @@ class option(object):
         
     def default_validator(self, value):
         return value
+        
+    def choice_validator(self, value):
+        if not value in self.choices:
+            raise CoreException("{0} is not a valid choice for option '{1}', valid values are: {2}".format(value, self.name, sorted(self.choices)))
+        return value
     
     def get_sections(self, instance):
         result = []
-        result.extend(self.sections)
         result.extend(instance.option_sections)
+        result.extend(self.sections)
         return result
         
     

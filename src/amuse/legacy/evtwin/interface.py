@@ -33,8 +33,8 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     """
     use_modules = ['twin_library_v2']
     
-    def __init__(self):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code")
+    def __init__(self, **options):
+        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
          
     @property
@@ -568,8 +568,8 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         
 class EVtwin(CodeInterface):
     
-    def __init__(self):
-        CodeInterface.__init__(self, EVtwinInterface())
+    def __init__(self, **options):
+        CodeInterface.__init__(self, EVtwinInterface(**options), **options)
         self.set_ev_path(self.default_path_to_ev_database)
         self.parameters.set_defaults()
         

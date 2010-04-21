@@ -4,8 +4,8 @@ class SebaInterface(LegacyInterface):
     
     include_headers = ['worker_code.h']
     
-    def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self, **keyword_arguments)
+    def __init__(self, **options):
+        LegacyInterface.__init__(self, **options)
     
     @legacy_function
     def evolve_star():
@@ -22,8 +22,8 @@ class SebaInterface(LegacyInterface):
     
 class Seba(CodeInterface):
 
-    def __init__(self):
-        CodeInterface.__init__(self,  SebaInterface())
+    def __init__(self, **options):
+        CodeInterface.__init__(self,  SebaInterface(**options), **options)
     
     def define_methods(self, object):
         object.add_method(

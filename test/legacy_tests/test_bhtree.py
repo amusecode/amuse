@@ -6,7 +6,6 @@ import numpy
 import math
 
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
-from amuse.legacy.support import channel
 from amuse.support.data import core
 from amuse.support.data import values
 from amuse.support.units import constants
@@ -28,7 +27,6 @@ class TestMPIInterface(TestWithMPI):
         
     def test1(self):
         instance = BHTreeInterface()
-        channel.MessageChannel.DEBUGGER = None
         instance.initialize_code()
         instance.commit_parameters()
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
@@ -141,9 +139,7 @@ class TestAmuseInterface(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        channel.MessageChannel.DEBUGGER = None #channel.MessageChannel.XTERM
         instance = BHTree(convert_nbody)
-        channel.MessageChannel.DEBUGGER = None
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         
         stars = core.Stars(2)

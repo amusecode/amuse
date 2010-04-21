@@ -4,7 +4,6 @@ from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy.support import python_code
-from amuse.legacy.support import channel
 from amuse.support.interface import CodeInterface
 
 from amuse.test.amusetest import TestWithMPI
@@ -268,7 +267,6 @@ class TestInterface(TestWithMPI):
     
     def test9(self):
         x = ForTestingInterface()
-        channel.MessageChannel.DEBUGGER = None
         string_out, error = x.echo_string("1234567")
         self.assertEquals(error, 0)
         self.assertEquals(string_out[0], "1234567")

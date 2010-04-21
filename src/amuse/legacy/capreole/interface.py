@@ -129,8 +129,8 @@ class capreole(LegacyInterface):
 
 
 class glcapreole(capreole):
-    def __init__(self):
-        LegacyInterface.__init__(self,name_of_the_worker = 'glworker')
+    def __init__(self, **options):
+        LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
         
     @legacy_function
     def viewer():
