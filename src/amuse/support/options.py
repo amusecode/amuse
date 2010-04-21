@@ -12,31 +12,39 @@ class GlobalOptions(object):
         self.config=ConfigParser.RawConfigParser()
     
     def load(self):
-        self.config.read(self.get_rcfile())   
+        if not self.rcfilepath is None:
+            self.config.read(self.rcfilepath)   
         
         
+    @late
     def amuse_rootdirectory(self):
         result = os.path.abspath(__file__)
         while not os.path.exists(os.path.join(result,'build.py')):
             result = os.path.dirname(result)
         return result
     
-    def get_rcfile(self):
-        result = os.path.join(os.getcwd(), 'amuserc')
+    @late
+    def rcfilepath(self):
+        result = os.path.join(os.getcwd(), self.rcfilename)
         if os.path.exists(result): 
             return result
         
-        result = os.path.join(self.get_homedirectory(), '.amuserc')
+        result = os.path.join(self.homedirectory, '.' + self.rcfilename)
         if os.path.exists(result): 
             return result
         
-        result = os.path.join(self.amuse_rootdirectory(), 'amuserc')
+        result = os.path.join(self.amuse_rootdirectory, self.rcfilename)
         if os.path.exists(result): 
             return result
         else:
             return None
-            
-    def get_homedirectory():
+    
+    @late
+    def rcfilename(self):
+        return 'amuserc'
+        
+    @late
+    def homedirectory(self):
         path=''
         try:
             path=os.path.expanduser("~")
@@ -97,6 +105,7 @@ class option(object):
     def __call__(self, function):
         self.specification_method = function
         self.name = self.specification_method.__name__
+        return self
         
     def __get__(self, instance, owner):
         if instance is None:
@@ -108,7 +117,7 @@ class option(object):
             return self.global_options.get_value_for_option(self, instance)
             
     def __set__(self, instance, value):
-        intance._local_options[self.name] = value
+        instance._local_options[self.name] = value
         
     def get_value(self, instance, section, options):
         return self.validator(self.valuetype(section, options))
@@ -143,14 +152,15 @@ class option(object):
 class OptionalAttributes(object):
     option_sections = ()
     
-    def set_options(self, **keyword_arguments):
-        for key, value in keyword_arguments.iteritems():
+    def __init__(self, **optional_keyword_arguments):
+        for key, value in optional_keyword_arguments.iteritems():
             if self.hasoption(key):
                 setattr(self, key, value)
         
         
     def hasoption(self, name):
-        return hasattr(self, name)
+        the_type = type(self)
+        return hasattr(the_type, name)
         
     @late
     def _local_options(self):
