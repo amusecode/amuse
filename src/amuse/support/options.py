@@ -76,7 +76,23 @@ class GlobalOptions(object):
         return option.get_defaultvalue(instance)
         
 class option(object):
+    """Decorator to define an option
     
+    :argument type: Type of the value, used when reading from the configuration file. 
+       Can be "string", "int", "float" or "boolean". Defaults to "string"
+    :argument sections: Sections in the configuration file to search for
+        the option value, must be an array of strings
+    :argument choices: When given will check if the value of the option
+        is in the array (must be a list or set of objects)
+    :argument name: By default the name of the option in the configuration file
+        is the same as the name of the function, use this argument to 
+        use a different name (not recommended)
+    
+    Options can only be defined on subclasses of :class:`OptionalAttributes`
+    
+    
+    
+    """
     def __init__(self, function = None, type = "string", name = None, sections = (), choices = (), global_options = None):
         self.specification_method = function
             
@@ -160,6 +176,57 @@ class option(object):
         
         
 class OptionalAttributes(object):
+    """
+    Abstract superclass for all classes supporting optional
+    attributes.
+    
+    To support optional attributes a class must inherit (directly
+    or indirectly) from this class.
+    
+    To support setting the attributes when an object is created
+    the class must define a *catch-all* keyword argument
+    in the **__init__** function and send this argument to the
+    __init__ of the superclass.
+    
+    The values of options are first searched for in the sections
+    given in the **option_sections** attribute of the class (empty
+    by default). Next the sections of the option are searched.
+    
+    For example::
+        
+        class MyInterface(OptionalAttributes):
+            option_sections = ('mysection',)
+            
+            def __init__(self, **options):
+                OptionalAttributes.__init__(self, **options)
+            
+            @option(type="int", choices=(5,10,15), sections=('try',))
+            def number_of_tries(self):
+                "number of times to try to connect"
+                return 5
+    
+    To code will first search for the value of the option in the 
+    *mysection*, if no value is found the *try* section is searched. 
+    For the following configuration file the **number_of_tries** 
+    attribute will be 10 as the *mysection* section is searched first.
+    
+    .. code-block:: ini
+    
+        [mysection]
+        number_of_tries = 10
+        [try]
+        number_of_tries = 5
+        
+    The value of the option can be overriden by specifying it when
+    creating an object of the class.
+    
+    .. code-block:: python
+        
+        x = MyInterface(number_of_tries = 15)
+        print x.number_of_tries
+        15
+    
+    """
     option_sections = ()
     
     def __init__(self, **optional_keyword_arguments):
