@@ -392,10 +392,12 @@ class MpiChannel(MessageChannel):
         
     @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
     def debugger(self):
+        """Name of the debugger to use when starting the code"""
         return "none"
         
     @option(choices=("none","null","file"), sections=("channel",))
     def redirection(self):
+        """Redirect the output of the code to null, standard streams or file"""
         return "null"
         
     

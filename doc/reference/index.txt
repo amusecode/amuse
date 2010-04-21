@@ -14,6 +14,7 @@ Reference documentation
    quantities_and_units
    particles
    fileformat
+   options
    directory-structure
    style_guide
    code_management

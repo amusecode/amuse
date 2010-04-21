@@ -2,29 +2,34 @@
 Input / Output Framework
 ==========================
 
-Introduction
-------------
-The AMUSE framework provides a generic way of reading and writing
-sets of entities (these entities can be particles, gasclouds or
-gridpoints). AMUSE provides one function to write a set to a file,
-the user must specify the name of the file and the
-format of date in the file.
-
-To write a data set to a file do:: 
-    
-    >>> from amuse.support.io import write_set_to_file
-    >>> from amuse.support.data.core import Particles
-    >>> from amuse.support.units import units
-    >>> x = Particles(100)
-    >>> x.mass = 10.0 | units.MSun
-    >>> x.radius = range(1.0,101.0) | units.RSun
-    >>> write_set_to_file(x, "test.csv","txt", attribute_types = [units.MSun, units.RSun])
-
-
 .. automodule:: amuse.support.io
 
+    Introduction
+    ------------
+    The AMUSE framework provides a generic way of reading and writing
+    sets of entities (these entities can be particles, gasclouds or
+    gridpoints). AMUSE provides a function to write a set to a file
+    and a function to read a set from a file. These functions need
+    the name of the file and the format of the data in the file. We
+    will describe these functions first in this chapter. The functions
+    can throw 3 kinds of exceptions, these are described next. Finally,
+    the actual reading and writing of the files is done by subclasses
+    of the :class:`FileFormatProcessor` class. This class is described
+    last.
+    
     Use
     ---
+    
+    To write a data set to a space separated text file do:: 
+        
+        >>> from amuse.support.io import write_set_to_file
+        >>> from amuse.support.data.core import Particles
+        >>> from amuse.support.units import units
+        >>> x = Particles(100)
+        >>> x.mass = 10.0 | units.MSun
+        >>> x.radius = range(1.0,101.0) | units.RSun
+        >>> write_set_to_file(x, "test.csv","txt", attribute_types = [units.MSun, units.RSun])
+        
     .. autofunction:: write_set_to_file
     .. autofunction:: read_set_from_file
     .. autofunction:: get_options_for_format
@@ -38,5 +43,11 @@ To write a data set to a file do::
     
     Extending
     ---------
+    
     .. autoclass:: FileFormatProcessor
         :members:
+        
+    .. autoclass:: FullTextFileFormatProcessor
+        :members:
+        
+        

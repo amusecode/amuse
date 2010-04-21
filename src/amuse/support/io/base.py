@@ -22,7 +22,7 @@ class UnsupportedFormatException(IoException):
     )
 
 class CannotSaveException(IoException):
-    """Raised when the given format cannot save data (only read)
+    """Raised when the given format cannot save data (only reading of data is supported for the format)
     """
     errorcode = exception.ErrorCode(
         IoException.majorcode, 
@@ -32,7 +32,7 @@ class CannotSaveException(IoException):
     )
 
 class CannotLoadException(IoException):
-    """Raised when the given format cannot read data (only save)
+    """Raised when the given format cannot read data (only saving of data is supported for the format)
     """
     errorcode = exception.ErrorCode(
         IoException.majorcode, 
@@ -52,6 +52,16 @@ class format_option(late):
         return self.initializer.__name__
        
 
+def _get_processor_factor(format):
+    if isinstance(format, basestring):
+        if not format in registered_fileformat_processors:
+            raise UnsupportedFormatException(format)
+        processor_factory = registered_fileformat_processors[format]
+    else:
+        processor_factory = format
+    
+    return processor_factory
+    
 def write_set_to_file(
     set,
     filename,
@@ -65,15 +75,13 @@ def write_set_to_file(
         a :class:`FileFormatProcessor` subclass (must be a 
         class and not an instance)
     
-    All other keywords are set of the fileformat processor. To
+    All other keywords are set as attributes on the fileformat processor. To
     determine the supported options for a processor call 
     :func:`get_options_for_format`
     """
         
-    if not format in registered_fileformat_processors:
-        raise UnsupportedFormatException(format)
+    processor_factory = _get_processor_factor(format)
     
-    processor_factory = registered_fileformat_processors[format]
     processor = processor_factory(filename, set=set, format = format)
     processor.set_options(format_specific_keyword_arguments)
     processor.store()
@@ -91,20 +99,16 @@ def read_set_from_file(
         a :class:`FileFormatProcessor` subclass (must be a 
         class and not an instance)
     
-    All other keywords are set of the fileformat processor. To
+    All other keywords are set as attributes on the fileformat processor. To
     determine the supported options for a processor call 
     :func:`get_options_for_format`
     """
     if not os.path.exists(filename):
         raise Exception("Error: file '{0}' does not exist.".format(filename))
-    if isinstance(format, basestring):
-        if not format in registered_fileformat_processors:
-            raise UnsupportedFormatException(format)
-        processor_factory = registered_fileformat_processors[format]
-    else:
-        processor_factory = format
+        
     
-   
+    processor_factory = _get_processor_factor(format)
+    
     processor = processor_factory(filename, format = format)
     processor.set_options(format_specific_keyword_arguments)
     return processor.load()
@@ -120,12 +124,8 @@ def get_options_for_format(
         a :class:`FileFormatProcessor` subclass (must be a 
         class and not an instance)
     """
-    if isinstance(format, basestring):
-        if not format in registered_fileformat_processors:
-            raise UnsupportedFormatException(format)
-        processor_factory = registered_fileformat_processors[format]
-    else:
-        processor_factory = format
+    
+    processor_factory = _get_processor_factor(format)
     
     processor = processor_factory(format = format)
     
@@ -134,6 +134,13 @@ def get_options_for_format(
 
 
 def add_fileformat_processor(class_of_the_format):
+    """
+    Register the specified class, so that it can be used
+    by the :func:`write_set_to_file` and :func:`read_set_from_file`
+    functions.
+    
+    Do not call this method directly, instead use :func:`FileFormatProcessor.register`
+    """
     for x in class_of_the_format.provided_formats:
         registered_fileformat_processors[x] = class_of_the_format
     _update_documentation_strings()
@@ -174,6 +181,9 @@ class FileFormatProcessor(object):
     :argument filename: name of the file the read the data from
     :argument set: set (of particles or entities) to store in the file
     :argument format: format of the file, will be a string or class
+    
+    :attribute provided_formats: list of strings of the formats provided
+        by the processor
     """
     
     provided_formats = []
@@ -199,6 +209,11 @@ class FileFormatProcessor(object):
         
     @classmethod
     def register(cls):
+        """
+        Register this class, so that it can be found by name
+        int the :func:`write_set_to_file` and :func:`read_set_from_file`
+        functions.
+        """
         add_fileformat_processor(cls)
         
     def set_options(self, dictionary):
@@ -208,9 +223,18 @@ class FileFormatProcessor(object):
                 setattr(self, key, value)
                 
     def store(self):
+        """
+        Stores the set in the file.
+        The set and the file are both properties
+        of the processor.
+        """
         raise CannotSaveException(self.format)
                 
     def load(self):
+        """
+        Loads the set from the file and returns
+        the set.
+        """
         raise CannotLoadException(self.format)
         
     def store_string(self):
@@ -252,6 +276,6 @@ class FullTextFileFormatProcessor(FileFormatProcessor):
         raise CannotSaveException(self.format)
                 
     def load_string(self, string):
-        """Return a particle set, read from the strint"""
+        """Return a particle set, read from the string"""
         raise CannotLoadException(self.format)
     
