@@ -1,7 +1,7 @@
 """
 experiment with HDF data format
 """
-#import h5py
+
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 
@@ -10,7 +10,7 @@ import numpy, numpy.random
 import random
 
 class MakePlummerModel(object):
-    def __init__(self, number_of_particles, convert_nbody, radius_cutoff = 22.8042468, mass_cutoff = 0.999, random_state = None):
+    def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999, random_state = None):
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
         self.mass_cutoff = min(mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff))
@@ -89,7 +89,7 @@ class MakePlummerModel(object):
     @property
     def result(self):
         masses, positions, velocities = self.new_model()
-        result = core.Stars(self.number_of_particles)
+        result = core.Particles(self.number_of_particles)
         if self.convert_nbody is None:
             result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
             result.position = nbody_system.length.new_quantity(positions)

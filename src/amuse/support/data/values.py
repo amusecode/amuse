@@ -512,6 +512,84 @@ class VectorQuantity(Quantity):
         is_larger_than = self.number > other_in_my_units.number
         values = numpy.where(is_larger_than, self.number, other_in_my_units.number)
         return VectorQuantity(values, self.unit)
+        
+
+class ZeroQuantity(Quantity):
+    """
+    A ZeroQuantity object represents zero in all units and
+    can be used as the start for summing up purposes.
+    
+    >>> from amuse.support.units import si
+    >>> x = zero
+    >>> x += 2.0 | si.kg
+    >>> x
+    quantity<2.0 kg>
+    
+    """
+    __slots__ = ['unit']
+    
+    def __init__(self):
+        Quantity.__init__(self, None)
+                
+    def is_scalar(self):
+        """
+        True for scalar quantities.
+        """
+        return False
+        
+    def is_vector(self):
+        """
+        True for vector quantities.
+        """
+        return False
+        
+    def __str__(self):
+        return "zero"
+
+    def __add__(self, other):
+        return other
+                
+    def __sub__(self, other):
+        return -other
+        
+
+    def __mul__(self, other):
+        return self
+        
+    
+    def __pow__(self, other):
+        return self
+        
+    def __rmul__(self, other):
+        return self
+        
+      
+    def __div__(self, other):
+        return self
+    
+    def __rdiv__(self, other):
+        return other/0.0
+    
+    def in_base(self):
+        return self
+    
+    
+    def sqrt(self):
+        return self
+        
+    def as_quantity_in(self, another_unit): 
+        return new_quantity(0.0, another_unit)
+
+    def value_in(self, unit):
+        return 0.0
+            
+    def __abs__(self):
+        return self
+        
+    def __neg__(self):
+        return self
+
+zero = ZeroQuantity()
     
 class NonNumericQuantity(Quantity):
     """

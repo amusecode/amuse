@@ -1,5 +1,5 @@
 from amuse.support.data import values
-from amuse.support.data.values import Quantity, new_quantity
+from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
@@ -2175,13 +2175,13 @@ def kinetic_energy(particles):
     return 0.5 * m_v_squared.sum()
     
 
-def potential_energy(particles, smoothing_length_squared = 0 | units.m * units.m):
+def potential_energy(particles, smoothing_length_squared = zero, gravitationalConstant = constants.G):
     mass = particles.mass
     x_vector = particles.x
     y_vector = particles.y
     z_vector = particles.z
-    
-    sum_of_energies = 0 | units.J
+           
+    sum_of_energies = zero
     
     for i in range(len(particles)):
        x = x_vector[i]
@@ -2195,9 +2195,9 @@ def potential_energy(particles, smoothing_length_squared = 0 | units.m * units.m
        m_m = mass[i] * mass[i+1:]
        
        energy_of_this_particle = (m_m / dr).sum()
-       sum_of_energies +=  -1 * constants.G * energy_of_this_particle
+       sum_of_energies -= energy_of_this_particle
         
-    return sum_of_energies
+    return gravitationalConstant * sum_of_energies 
 
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
@@ -2211,14 +2211,14 @@ AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 def particle_specific_kinetic_energy(set, particle):
     return 0.5*(particle.velocity**2).sum()
 
-def particle_potential(set, particle, smoothing_length_squared=0. | units.m**2):
+def particle_potential(set, particle, smoothing_length_squared = zero, gravitationalConstant = constants.G):
     particles = set - particle
     dx = particle.x - particles.x
     dy = particle.y - particles.y
     dz = particle.z - particles.z 
     dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
     dr = (dr_squared+smoothing_length_squared).sqrt()
-    return - constants.G * (particles.mass / dr).sum()
+    return - gravitationalConstant * (particles.mass / dr).sum()
 
 AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
 AbstractParticleSet.add_global_function_attribute("potential", None, particle_potential)
