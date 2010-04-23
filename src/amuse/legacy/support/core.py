@@ -8,6 +8,7 @@ import weakref
 import atexit
 import os.path
 
+import logging
 
 from zlib import crc32
 from mpi4py import MPI
@@ -96,8 +97,13 @@ class LegacyCall(object):
         keyword_arguments_for_the_mpi_channel = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
         
         handle_as_array = self.must_handle_as_array(keyword_arguments_for_the_mpi_channel)
-              
+        
+        if not self.owner is None:
+            logging.getLogger("legacy").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
         self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
+        
+        if not self.owner is None:
+            logging.getLogger("legacy").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
         
         try:
             (doubles, ints, floats, strings) = self.interface.channel.recv_message(self.specification.id, handle_as_array)

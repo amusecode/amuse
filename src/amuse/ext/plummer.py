@@ -16,6 +16,7 @@ class MakePlummerModel(object):
         self.mass_cutoff = min(mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff))
         self.random_state = random_state
         
+        
     def calculate_mass_cuttof_from_radius_cutoff(self, radius_cutoff):
         if radius_cutoff > 99999:
             return 0.999
@@ -28,7 +29,7 @@ class MakePlummerModel(object):
     def calculate_radius(self, index):
         mass_min = (index * self.mass_cutoff) / self.number_of_particles
         mass_max = ((index+1) * self.mass_cutoff) / self.number_of_particles
-        random_mass_fraction = self.random.uniform(mass_min, mass_max)
+        random_mass_fraction = numpy.random.uniform(mass_min, mass_max)
         radius = 1.0 / sqrt( pow (random_mass_fraction, -2.0/3.0) - 1.0)
         return radius
         
@@ -90,14 +91,17 @@ class MakePlummerModel(object):
     def result(self):
         masses, positions, velocities = self.new_model()
         result = core.Particles(self.number_of_particles)
-        if self.convert_nbody is None:
-            result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
-            result.position = nbody_system.length.new_quantity(positions)
-            result.velocity = nbody_system.speed.new_quantity( velocities)
-        else:
-            result.mass = self.convert_nbody.to_si(nbody_system.mass.new_quantity(numpy.hstack(masses)))
-            result.position = self.convert_nbody.to_si( nbody_system.length.new_quantity(positions))
-            result.velocity = self.convert_nbody.to_si(nbody_system.speed.new_quantity( velocities))
+        result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
+        result.position = nbody_system.length.new_quantity(positions)
+        result.velocity = nbody_system.speed.new_quantity( velocities)
+
+        result.position -= result.center_of_mass()
+        result.velocity -= result.center_of_mass_velocity()
+        
+        if not self.convert_nbody is None:
+            result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = result.copy_to_memory()
+            
         return result
         
         

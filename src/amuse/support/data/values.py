@@ -297,18 +297,17 @@ class VectorQuantity(Quantity):
         quantity<3.0 kg>
         """
         return new_quantity(numpy.sum(self.number, axis = axis), self.unit)
+    
+    def length_squared(self):
+        """Calculate the squared length of the vector.
         
-    
-    def sort(self, axis = None):
-        """Calculate the sum of the vector components
-
         >>> from amuse.support.units import units
-        >>> v1 = [0.0, 1.0, 2.0] | units.kg
-        >>> v1.sum()
-        quantity<3.0 kg>
+        >>> v1 = [2.0, 3.0, 4.0] | units.m
+        >>> v1.length_squared()
+        quantity<29.0 m**2>
         """
-        return new_quantity(numpy.sum(self.number, axis = axis), self.unit)
-    
+        return (self * self).sum()
+        
     def length(self):
         """Calculate the length of the vector.
         
@@ -317,21 +316,27 @@ class VectorQuantity(Quantity):
         >>> v1.length()
         quantity<5.0 m>
         """
-        squared = self * self
-        dot_product = squared.sum()
-        return (dot_product ** 0.5).as_quantity_in(self.unit)
+        return self.length_squared().sqrt()
         
     def lengths(self):
+        """Calculate the length of the vectors in this vector.
+        
+        >>> from amuse.support.units import units
+        >>> v1 = [[0.0, 3.0, 4.0],[2.0 , 2.0 , 1.0]] | units.m
+        >>> v1.lengths()
+        quantity<[5.0, 3.0] m>
+        """
+        return self.lengths_squared().sqrt()
+    
+    def lengths_squared(self):
         """Calculate the length of the vectors in this vector
         
         >>> from amuse.support.units import units
-        >>> v1 = [[0.0, 3.0, 4.0],[4.0, 4.0, 4.0]] | units.m
-        >>> v1.lengths() # doctest:+ELLIPSIS
-        quantity<[5.0, 6.9282...] m>
+        >>> v1 = [[0.0, 3.0, 4.0],[4.0, 2.0, 1.0]] | units.m
+        >>> v1.lengths_squared()
+        quantity<[25.0, 21.0] m**2>
         """
-        squared = self * self
-        dot_product = squared.unit.new_quantity(numpy.sum(squared.number, axis = 1))
-        return (dot_product ** 0.5).as_quantity_in(self.unit)
+        return (self * self).sum(1)
         
     def __getitem__(self, index):
         """Return the "index" component as a quantity.
@@ -464,10 +469,10 @@ class VectorQuantity(Quantity):
         return new_quantity(self.number.copy(), self.unit)
 
     def norm_squared(self):
-        return (self.x**2 + self.y**2 + self.z**2) | (self.unit * self.unit)
+        return self.length_squared()
 
     def norm(self):
-        return sqrt(self.norm_squared()) | self.unit
+        return self.length()
 
     def append(self, scalar_quantity):
         """
@@ -526,10 +531,13 @@ class ZeroQuantity(Quantity):
     quantity<2.0 kg>
     
     """
-    __slots__ = ['unit']
     
     def __init__(self):
-        Quantity.__init__(self, None)
+        Quantity.__init__(self, self)
+        
+        self.base = ()
+        self.factor = 1
+        self.number = 0.0
                 
     def is_scalar(self):
         """

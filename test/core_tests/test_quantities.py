@@ -3,7 +3,7 @@ from amuse.test import amusetest
 import numpy
 import sys
 
-from amuse.support.units import si, units
+from amuse.support.units import si, units, nbody_system
 from amuse.support.data import core
 from amuse.support.data.values import *
 
@@ -72,6 +72,11 @@ class TestQuantities(amusetest.TestCase):
     def test8(self):
         x = (1.0, 2.0, 3.0) | si.kg
         self.assertTrue(isinstance(x, VectorQuantity))
+        
+    def test9(self):
+        converter = nbody_system.nbody_to_si(1 | si.kg, 2 | si.s)
+        self.assertEquals(converter.to_nbody(zero), 0.0 | units.none)
+        
         
         
         

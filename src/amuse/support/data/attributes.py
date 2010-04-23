@@ -3,122 +3,8 @@ from amuse.support.units import units
 from amuse.support.units import nbody_system
 
 import numpy
-
-
+        
 class AttributeDefinition(object):
-    def __init__(self, 
-            unit, 
-            name = None,
-            names = None, 
-            define_parameters = None,
-            state_parameters = None,
-            getter=None, 
-            setter=None, 
-            description="",  
-            default=None,
-        ):
-        
-        self.name = name
-        if not name is None and names is None:
-            self.names = [name]
-        else:
-            self.names = names
-            
-        self.description = description
-        self.unit = unit
-        self.default_value = default
-        self.getter = getter
-        self.setter = setter
-        self.define_parameters = define_parameters
-        if state_parameters is None:
-            self.state_parameters = self.define_parameters
-        else:
-            self.state_parameters = state_parameters
-            
-    def is_required_for_setup(self):
-        return not self.define_parameters is None
-
-    
-    def state_mapping_from_name_to_keyword_and_unit(self):
-        result = {}
-        for name, parameter_name in zip(self.names, self.define_parameters):
-            result[name] = (parameter_name, self.unit)
-        return result
-    
-    def for_setup_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
-        for name, parameter_name in zip(self.names, self.define_parameters):
-            attributes.append(name)
-            units.append(self.unit)
-            keywords.append(parameter_name)
-        
-    
-    def for_state_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
-        for name, parameter_name in zip(self.names, self.state_parameters):
-            attributes.append(self.name)
-            units.append(self.unit)
-            keywords.append(parameter_name)
-            
-    
-    def for_state_fill_arguments_for_attributelist_set(self, states,  attributes, units, values):
-        for name, parameter_name in zip(self.names, self.state_parameters):
-            units.append(self.unit)
-            attributes.append(name)
-            values.append(states[parameter_name])
-            
-    
-    def for_setter_fill_arguments_for_attributelist_get(self, attributes, units, keywords):
-        for name, parameter_name in zip(self.names, self.setter[1]):
-            attributes.append(self.name)
-            units.append(self.unit)
-            keywords.append(parameter_name)
-            
-    
-    def for_getter_fill_arguments_for_attributelist_set(self, states,  attributes, units, values):
-        for name, parameter_name in zip(self.names, self.getter[1]):
-            units.append(self.unit)
-            attributes.append(name)
-            values.append(states[parameter_name])
-            
-    
-    def for_default_fill_arguments_for_attributelist_set(self, attributes, units, values, length):
-        for name in self.names:
-            attributes.append(self.name)
-            units.append(self.unit)
-            values.append([self.default_value.value_in(self.unit)] * length)
-            
-    def attributes_in_getter(self, set_of_attributes):
-        if self.getter is None:
-            return None
-            
-        result = {}
-        for name, parameter_name in zip(self.names, self.getter[1]):
-            if name in set_of_attributes:
-                result[name] = (parameter_name, self.unit)
-                set_of_attributes.remove(name)
-        if result:
-            return (self.getter[0], result)
-        else:
-            return None
-    
-    def attributes_in_setter(self, set_of_attributes):
-        if self.setter is None:
-            return {}
-            
-        result = {}
-        for name, parameter_name in zip(self.names, self.setter[1]):
-            if name in set_of_attributes:
-                result[name] = (parameter_name, self.unit)
-                set_of_attributes.remove(name)
-            else:
-                if result:
-                    raise Exception("{0} must be set together", self.names)
-        if result:
-            return (self.setter[0], result)
-        else:
-            return None
-        
-        
-class AttributeDefinition_Old(object):
     def __init__(self, name, description, unit, default_value):
         self.name = name
         self.description = description
@@ -132,7 +18,7 @@ class DomainMetaclass(type):
         for key, value in dict.iteritems():
             if isinstance(value, tuple):
                 default_value, description = value
-                replacement_dictionary[key] = AttributeDefinition_Old(
+                replacement_dictionary[key] = AttributeDefinition(
                         key, description, 
                         default_value.unit, default_value)
             else:

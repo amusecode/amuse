@@ -1,6 +1,5 @@
 import sys
 import numpy
-import random
 import os
 
 from amuse.support.units import units
@@ -10,8 +9,7 @@ class SalpeterIMF(object):
         self.mass_min = mass_min
         self.mass_max = mass_max
         self.alpha = alpha
-        self.random = random.Random()
-        self.random.seed()
+        self.random = numpy.random
     
     def mass_mean(self):
         alpha1 = self.alpha + 1

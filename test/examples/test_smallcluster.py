@@ -14,6 +14,7 @@ except ImportError:
 
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.support.data import particle_attributes
 
 from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.interface import BHTree
@@ -27,20 +28,7 @@ from amuse.support.io import store
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import SalpeterIMF
 
-def move_particles_to_center_of_mass(particles):
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
-    
-    center_of_mass = particles.center_of_mass()
-    center_of_mass_velocity = particles.center_of_mass_velocity()
-    
-    particles.position = particles.position - center_of_mass
-    particles.velocity = particles.velocity - center_of_mass_velocity     
-    
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
-   
-     
+        
 def plot_particles(particles, name_of_the_figure):
     
     if HAS_MATPLOTLIB:
@@ -87,14 +75,14 @@ def plot_particles(particles, name_of_the_figure):
 
 def print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this_time):
     print "Evolved model to t = " + str(time)
-    print total_energy_at_t0, total_energy_at_this_time, (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
+    print total_energy_at_t0.as_quantity_in(units.J), total_energy_at_this_time.as_quantity_in(units.J), (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
     #print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
     #print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
     print  "center of mass:" , particles.center_of_mass()
     print  "center of mass velocity:" , particles.center_of_mass_velocity()
     
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
-    random.seed()
+    #numpy.random.seed(1)
     
     initial_mass_function = SalpeterIMF()
     total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
@@ -104,8 +92,8 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
    
-    gravity = BHTree()
-    gravity.parameters.epsilon_squared = 0.15 | units.parsec ** 2
+    gravity = Hermite(convert_nbody)
+    gravity.parameters.epsilon_squared = ((1.0 / number_of_stars**3) | units.parsec) ** 2
         
     stellar_evolution = SSE()
     stellar_evolution.initialize_module_with_default_parameters() 
@@ -117,16 +105,18 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     print "initializing the particles"
     stellar_evolution.particles.add_particles(particles)
     from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(particles)
-    
     from_stellar_evolution_to_model.copy_attributes(["mass"])
     
     print "centering the particles"
-    move_particles_to_center_of_mass(particles)
+    particles.move_to_center()
+    print "scaling particles to viridial equilibrium"
+    particles.scale_to_standard(convert_nbody)
     
     gravity.particles.add_particles(particles)
     from_model_to_gravity = particles.new_channel_to(gravity.particles)
     from_gravity_to_model = gravity.particles.new_channel_to(particles)
     
+    gravity.commit_particles()
         
     time = 0.0 | units.Myr    
     particles.savepoint(time)

@@ -1018,6 +1018,16 @@ class AbstractParticleSet(object):
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
+        
+    def copy_to_memory(self):
+        attributes = self._get_attributes()
+        keys = self._get_keys()
+        values = self._get_values(keys, attributes)
+        result = Particles()
+        result._set_particles(keys, attributes, values)
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+       
+        return result
     
     def copy_values_of_attribute_to(self, attribute_name, particles):
         """
@@ -1874,7 +1884,6 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         self._private.particles = particles
         self._private.converter = converter
               
-    
     def copy(self):
         copiedParticles =  self._private.particles.copy()
         return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
@@ -2175,7 +2184,7 @@ def kinetic_energy(particles):
     return 0.5 * m_v_squared.sum()
     
 
-def potential_energy(particles, smoothing_length_squared = zero, gravitationalConstant = constants.G):
+def potential_energy(particles, smoothing_length_squared = zero, G = constants.G):
     mass = particles.mass
     x_vector = particles.x
     y_vector = particles.y
@@ -2197,7 +2206,7 @@ def potential_energy(particles, smoothing_length_squared = zero, gravitationalCo
        energy_of_this_particle = (m_m / dr).sum()
        sum_of_energies -= energy_of_this_particle
         
-    return gravitationalConstant * sum_of_energies 
+    return G * sum_of_energies 
 
 
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
@@ -2222,3 +2231,4 @@ def particle_potential(set, particle, smoothing_length_squared = zero, gravitati
 
 AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
 AbstractParticleSet.add_global_function_attribute("potential", None, particle_potential)
+

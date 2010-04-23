@@ -27,6 +27,7 @@ acceleration = length / (time ** 2)
 potential = (length ** 2) / (time ** 2)
 energy = mass * potential
 speed = length / time
+G = 1 | (length**3) / (mass * (time**2))
 
 def is_nbody_unit(unit):
     for factor, x in unit.base:
