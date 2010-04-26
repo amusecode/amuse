@@ -643,17 +643,14 @@ class TestAmuseInterface(TestWithMPI):
         
         instance = BHTree(BHTree.NBODY)
         instance.initialize_code()
-        instance.parameters.epsilon_squared = (1.0 / (number_of_stars**3) | nbody_system.length)**2
+        instance.parameters.epsilon_squared = (1.0 / 20.0 / (number_of_stars**0.33333) | nbody_system.length)**2
+        instance.parameters.timestep = 0.004 | nbody_system.time
         instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
         energy_total_t0 = instance.potential_energy + instance.kinetic_energy
-        instance.evolve_model(0.5 | nbody_system.time)
-        instance.synchronize_model()
-        instance.evolve_model(4.0 | nbody_system.time)
+        instance.evolve_model(1.0 | nbody_system.time)
         energy_total_t1 = instance.potential_energy + instance.kinetic_energy
-        
-        print energy_total_t0, energy_total_t1
         
         self.assertAlmostRelativeEqual(energy_total_t0, energy_total_t1, 3)
         instance.stop()
