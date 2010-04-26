@@ -29,44 +29,56 @@
 #include <string>
 #include <map>
 
+#include <mpi.h>
+
+
 using namespace std;
 typedef double  real;
 
-#include "vec3.h"		// borrowed from starlab
+#include "vec3.h"                // borrowed from starlab
 
 #define PR(x)  *sout << #x << " = " << x << " " << flush
 #define PRC(x) *sout << #x << " = " << x << ",  " << flush
 #define PRL(x) *sout << #x << " = " << x << endl << flush
 
+
+
 // (Global!) static data:
 
-const int NDIM = 3;		// number of spatial dimensions
+const int NDIM = 3;                // number of spatial dimensions
+
+/*------------- MPI data ---------------------*/
+int mpi_rank = 0;
+int mpi_size = 1;
+/*------------- MPI data ---------------------*/
 
 // N-body data:
 
+
 real  t = 0;
-real t_evolve = t;		// Time requested by evolve.  Control returns
-				// when t <= t_evolve and t + dt > t_evolve,
-				// and this is assumed when the state of the
-				// system is computed by extrapolation.
+real t_evolve = t;                // Time requested by evolve.  Control returns
+                                // when t <= t_evolve and t + dt > t_evolve,
+                                // and this is assumed when the state of the
+                                // system is computed by extrapolation.
 real t_wanted = 0;
 
 vector<int>  ident;
 vector<real> mass, radius;
 vector<vec>  pos, vel, acc, jerk;
+vector<vec>  acc_reduced, jerk_reduced;
 
 // Control parameters:
 
 const real DT_PARAM = 0.03;
 const real DT_DIA = 1;
 
-real dt_param = DT_PARAM;	// control parameter to determine time step size
-real dt_dia = DT_DIA;		// time interval between diagnostic output
+real dt_param = DT_PARAM;        // control parameter to determine time step size
+real dt_dia = DT_DIA;                // time interval between diagnostic output
 
-bool x_flag = false;		// set true for serious debugging only!
+bool x_flag = false;                // set true for serious debugging only!
 
-int nsteps = 0;			// number of integration time steps completed
-real einit = 0;			// initial total energy of the system
+int nsteps = 0;                        // number of integration time steps completed
+real einit = 0;                        // initial total energy of the system
 bool init_flag = false;
 real t_dia = 0;
 real eps2 = 0;
@@ -78,10 +90,10 @@ ostream* sout = &cout;
 
 // Accessors for use by the C++ main driver only:
 
-void set_t(real tt)		{t = tt;}
-void set_dt_param(real dt)	{dt_param = dt;}
-void set_dt_dia(real dt)	{dt_dia = dt;}
-void set_eps(real eps) 		{eps2 = eps*eps;}
+void set_t(real tt)                {t = tt;}
+void set_dt_param(real dt)        {dt_param = dt;}
+void set_dt_dia(real dt)        {dt_dia = dt;}
+void set_eps(real eps)                 {eps2 = eps*eps;}
 
 
 
@@ -103,67 +115,67 @@ void set_eps(real eps) 		{eps2 = eps*eps;}
 void write_diagnostics(real epot, ostream& s = cout)
 {
     int n = ident.size();
-    real ekin = 0;			// kinetic energy
+    real ekin = 0;                        // kinetic energy
     for (int i = 0; i < n ; i++)
-	for (int k = 0; k < NDIM ; k++)
-	    ekin += 0.5 * mass[i] * vel[i][k] * vel[i][k];
+        for (int k = 0; k < NDIM ; k++)
+            ekin += 0.5 * mass[i] * vel[i][k] * vel[i][k];
 
-    real etot = ekin + epot;		// total energy
+    real etot = ekin + epot;                // total energy
 
     if (!init_flag)                     // on first pass, set
       {
-	einit = etot;                   // the initial energy
-	init_flag = true;
-	return;                         // suppress initial output
+        einit = etot;                   // the initial energy
+        init_flag = true;
+        return;                         // suppress initial output
       }
 
     s << "    internal diagnostics at time t = " << t
-	 << " after " << nsteps << " steps"
-	 << endl
-	 << "        E_kin = " << ekin
-	 << "  E_pot = " << epot
-	 << "  E_tot = " << etot << endl;
+         << " after " << nsteps << " steps"
+         << endl
+         << "        E_kin = " << ekin
+         << "  E_pot = " << epot
+         << "  E_tot = " << etot << endl;
     s << "        "
-	 << "absolute energy error  E_tot - E_init = "
-	 << etot - einit << endl;
+         << "absolute energy error  E_tot - E_init = "
+         << etot - einit << endl;
     s << "        "
-	 << "relative energy error  (E_tot - E_init) / E_init = "
-	 << (etot - einit) / einit << endl;
+         << "relative energy error  (E_tot - E_init) / E_init = "
+         << (etot - einit) / einit << endl;
 
     if (x_flag)
       {
-	s << "        system dump, n = " << n << endl;
-	for (int i = 0; i < n ; i++)
-	  {
-	    s << "        data for particle " << ident[i]
-		 << ": " << endl;
-	    s << "            "; s << mass[i] << endl;
-	    s << "            "; s << radius[i] << endl;
-	    s << "           ";
-	    for (int k = 0; k < NDIM; k++)
-	      {
-		s << ' ' << pos[i][k];
-	      }
-	    s << endl;
-	    s << "           ";
-	    for (int k = 0; k < NDIM; k++)
-	      {
-		s << ' ' << vel[i][k];
-	      }
-	    s << endl;
-	    s << "           ";
-	    for (int k = 0; k < NDIM; k++)
-	      {
-		s << ' ' << acc[i][k];
-	      }
-	    s << endl;
-	    s << "           ";
-	    for (int k = 0; k < NDIM; k++)
-	      {
-		s << ' ' << jerk[i][k];
-	      }
-	    s << endl;
-	  }
+        s << "        system dump, n = " << n << endl;
+        for (int i = 0; i < n ; i++)
+          {
+            s << "        data for particle " << ident[i]
+                 << ": " << endl;
+            s << "            "; s << mass[i] << endl;
+            s << "            "; s << radius[i] << endl;
+            s << "           ";
+            for (int k = 0; k < NDIM; k++)
+              {
+                s << ' ' << pos[i][k];
+              }
+            s << endl;
+            s << "           ";
+            for (int k = 0; k < NDIM; k++)
+              {
+                s << ' ' << vel[i][k];
+              }
+            s << endl;
+            s << "           ";
+            for (int k = 0; k < NDIM; k++)
+              {
+                s << ' ' << acc[i][k];
+              }
+            s << endl;
+            s << "           ";
+            for (int k = 0; k < NDIM; k++)
+              {
+                s << ' ' << jerk[i][k];
+              }
+            s << endl;
+          }
       }
 }
 
@@ -181,12 +193,12 @@ void predict_step(real dt)
     int n = ident.size();
     for (int i = 0; i < n ; i++)
       {
-	for (int k = 0; k < NDIM ; k++)
-	  {
-	    pos[i][k] += vel[i][k]*dt + acc[i][k]*dt*dt/2
-				      + jerk[i][k]*dt*dt*dt/6;
-	    vel[i][k] += acc[i][k]*dt + jerk[i][k]*dt*dt/2;
-	  }
+        for (int k = 0; k < NDIM ; k++)
+          {
+            pos[i][k] += vel[i][k]*dt + acc[i][k]*dt*dt/2
+                                      + jerk[i][k]*dt*dt*dt/6;
+            vel[i][k] += acc[i][k]*dt + jerk[i][k]*dt*dt/2;
+          }
       }
 }
 
@@ -205,12 +217,12 @@ void predict_step(real dt)
 //            |  ji |                     |  ji |  |__         |  ji |     __|
 
 //  Note: it would be cleaner to calculate potential energy and
-//	  collision time in a separate function.  However, the current
-//	  function is by far the most time consuming part of the whole
-//	  program, with a double loop over all particles that is executed
-//	  every time step.  Splitting off some of the work to another
-//	  function would significantly increase the total computer time
-//	  (by an amount close to a factor two).
+//          collision time in a separate function.  However, the current
+//          function is by far the most time consuming part of the whole
+//          program, with a double loop over all particles that is executed
+//          every time step.  Splitting off some of the work to another
+//          function would significantly increase the total computer time
+//          (by an amount close to a factor two).
 //
 //  With softening, the r^3 in the denominator becomes (r^2 + e^2)^{1.5}.
 //
@@ -237,113 +249,172 @@ static int id_coll_primary = -1, id_coll_secondary = -1;
 
 void get_acc_jerk_pot_coll(real *epot, real *coll_time)
 {
-    int n = ident.size();
+    int n = 0;
+    if(mpi_rank == 0){
+        n = ident.size();
+    }
+    MPI_Bcast(&n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    /* do not use datatype as it will not work in the reduce op
+    MPI_Datatype new_type;
+    MPI_Type_contiguous(3, MPI_DOUBLE, &new_type);
+    MPI_Type_commit(&new_type);
+    */
+    cerr << n << endl;
+
+    
+    if(mpi_rank) {
+        vel.resize(n+1);
+        pos.resize(n+1);
+        mass.resize(n+1, 0.0);
+        acc.resize(n+1);
+        jerk.resize(n+1);
+        radius.resize(n+1, 0.0);
+    }
+    
+    
+    MPI_Bcast(&vel[0], n * 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&pos[0], n * 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&mass[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&radius[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    
+    
     for (int i = 0; i < n ; i++)
       {
-	for (int k = 0; k < NDIM ; k++)
-	  {
-	    acc[i][k] = jerk[i][k] = 0;
-	  }
+        for (int k = 0; k < NDIM ; k++)
+          {
+            acc[i][k] = jerk[i][k] = 0;
+          }
       }
 
     *epot = 0;
     const real VERY_LARGE_NUMBER = 1e300;
     real coll_time_q = VERY_LARGE_NUMBER;      // collision time to 4th power
     real coll_est_q;                           // collision time scale estimate
-					       // to 4th power (quartic)
+                                               // to 4th power (quartic)
     id_coll_primary = id_coll_secondary = -1;
 
-    for (int i = 0; i < n ; i++)
+    //int npart = n / mpi_size;
+    //int nleft = n % mpi_size;
+    //if(mpi_rank == mpi_size - 1) {iend = n;}
+    //cerr << istart <<", "<<iend<<" , "<<nleft<<endl;
+    
+    // divide the work over every process, division of work should be somewhat equal
+    int istart = 0 + mpi_rank;
+    int iend = n ; //(mpi_rank + 1) * npart;
+    
+    for (int i = istart; i < iend ; i+= mpi_size)
       {
-	for (int j = i+1; j < n ; j++)             // rji[] is the vector from
-	  {
-	    real rji[NDIM];                        // particle i to particle j
-	    real vji[NDIM];                        // vji[] = d rji[] / d t
-	    for (int k = 0; k < NDIM ; k++)
-	      {
-		rji[k] = pos[j][k] - pos[i][k];
-		vji[k] = vel[j][k] - vel[i][k];
-	      }
-	    real r2 = 0;                           // | rji |^2
-	    real v2 = 0;                           // | vji |^2
-	    real rv_r2 = 0;                        // ( rij . vij ) / | rji |^2
-	    for (int k = 0; k < NDIM ; k++)
-	      {
-		r2 += rji[k] * rji[k];
-		v2 += vji[k] * vji[k];
-		rv_r2 += rji[k] * vji[k];
-	      }
-	    rv_r2 /= r2;
+        for (int j = i+1; j < n ; j++)             // rji[] is the vector from
+          {
+            real rji[NDIM];                        // particle i to particle j
+            real vji[NDIM];                        // vji[] = d rji[] / d t
+            for (int k = 0; k < NDIM ; k++)
+              {
+                rji[k] = pos[j][k] - pos[i][k];
+                vji[k] = vel[j][k] - vel[i][k];
+              }
+            real r2 = 0;                           // | rji |^2
+            real v2 = 0;                           // | vji |^2
+            real rv_r2 = 0;                        // ( rij . vij ) / | rji |^2
+            for (int k = 0; k < NDIM ; k++)
+              {
+                r2 += rji[k] * rji[k];
+                v2 += vji[k] * vji[k];
+                rv_r2 += rji[k] * vji[k];
+              }
+            rv_r2 /= r2;
 
-	    if (id_coll_primary < 0)
-	      {
-		real rsum = radius[i] + radius[j];
-		if (r2 <= rsum*rsum)
-		  {
-		    if (mass[i] >= mass[j])
-		      {
-			id_coll_primary = ident[i];
-			id_coll_secondary = ident[j];
-		      }
-		    else
-		      {
-			id_coll_primary = ident[j];
-			id_coll_secondary = ident[i];
-		      }
-		  }
-	      }
+            if (id_coll_primary < 0)
+              {
+                real rsum = radius[i] + radius[j];
+                if (r2 <= rsum*rsum)
+                  {
+                    if (mass[i] >= mass[j])
+                      {
+                        id_coll_primary = ident[i];
+                        id_coll_secondary = ident[j];
+                      }
+                    else
+                      {
+                        id_coll_primary = ident[j];
+                        id_coll_secondary = ident[i];
+                      }
+                  }
+              }
 
-	    r2 += eps2;				   // | rji |^2 + eps^2
-	    real r = sqrt(r2);                     // | rji |
-	    real r3 = r * r2;                      // | rji |^3
+            r2 += eps2;                                   // | rji |^2 + eps^2
+            real r = sqrt(r2);                     // | rji |
+            real r3 = r * r2;                      // | rji |^3
 
-	    // Add the {i,j} contribution to the total potential energy.
+            // Add the {i,j} contribution to the total potential energy.
 
-	    *epot -= mass[i] * mass[j] / r;
+            *epot -= mass[i] * mass[j] / r;
 
-	    // Add the {j (i)} contribution to the {i (j)} acc and jerk.
+            // Add the {j (i)} contribution to the {i (j)} acc and jerk.
 
-	    real da[NDIM];                         // main terms in pairwise
-	    real dj[NDIM];                         // acceleration and jerk
-	    for (int k = 0; k < NDIM ; k++)
-	      {
-		da[k] = rji[k] / r3;                          // see equations
-		dj[k] = (vji[k] - 3 * rv_r2 * rji[k]) / r3;   // in the header
-	      }
-	    for (int k = 0; k < NDIM ; k++)
-	      {
-		acc[i][k]  += mass[j] * da[k];                // using symmetry
-		acc[j][k]  -= mass[i] * da[k];                // find pairwise
-		jerk[i][k] += mass[j] * dj[k];                // acceleration
-		jerk[j][k] -= mass[i] * dj[k];                // and jerk
-	      }
+            real da[NDIM];                         // main terms in pairwise
+            real dj[NDIM];                         // acceleration and jerk
+            for (int k = 0; k < NDIM ; k++)
+              {
+                da[k] = rji[k] / r3;                          // see equations
+                dj[k] = (vji[k] - 3 * rv_r2 * rji[k]) / r3;   // in the header
+              }
+            for (int k = 0; k < NDIM ; k++)
+              {
+                acc[i][k]  += mass[j] * da[k];                // using symmetry
+                acc[j][k]  -= mass[i] * da[k];                // find pairwise
+                jerk[i][k] += mass[j] * dj[k];                // acceleration
+                jerk[j][k] -= mass[i] * dj[k];                // and jerk
+              }
 
-	    // First collision time estimate is based on unaccelerated
-	    // linear motion.
+            // First collision time estimate is based on unaccelerated
+            // linear motion.
 
-	    coll_est_q = (r2*r2) / (v2*v2);
-	    if (coll_time_q > coll_est_q)
-	      {
-		coll_time_q = coll_est_q;
-	      }
-	    // Second collision time estimate is based on free fall.
+            coll_est_q = (r2*r2) / (v2*v2);
+            if (coll_time_q > coll_est_q)
+              {
+                coll_time_q = coll_est_q;
+              }
+            // Second collision time estimate is based on free fall.
 
-	    real da2 = 0;                                  // da2 becomes the
-	    for (int k = 0; k < NDIM ; k++)                // square of the
-	      {
-		da2 += da[k] * da[k];                      // pairwise accel-
-	      }
-	    real mij = mass[i] + mass[j];                  // eration between
-	    da2 *= mij * mij;                              // particles i and j
+            real da2 = 0;                                  // da2 becomes the
+            for (int k = 0; k < NDIM ; k++)                // square of the
+              {
+                da2 += da[k] * da[k];                      // pairwise accel-
+              }
+            real mij = mass[i] + mass[j];                  // eration between
+            da2 *= mij * mij;                              // particles i and j
 
-	    coll_est_q = r2/da2;
-	    if (coll_time_q > coll_est_q)
-	      {
-		coll_time_q = coll_est_q;
-	      }
-	  }
-      }                                               // from q for quartic back
-    *coll_time = sqrt(sqrt(coll_time_q));            // to linear collision time
+            coll_est_q = r2/da2;
+            if (coll_time_q > coll_est_q)
+              {
+                coll_time_q = coll_est_q;
+              }
+          }
+      }
+    real output = 0.0;
+    MPI_Reduce(&coll_time_q, &output, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+                                                 // from q for quartic back
+    *coll_time = sqrt(sqrt(output));            // to linear collision time
+    
+    output = 0.0;
+    MPI_Reduce(epot, &output, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    *epot = output;
+    
+    if(!mpi_rank) {
+        acc_reduced.resize(n+1);
+        jerk_reduced.resize(n+1);
+    }
+    
+    MPI_Reduce(&acc[0], &acc_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&jerk[0], &jerk_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    if(!mpi_rank) {
+        acc = acc_reduced;
+        jerk = jerk_reduced;
+    }
+    
+    
+    
 }
 
 //-----------------------------------------------------------------------------
@@ -351,24 +422,24 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
 //                    position and velocities, constructing a higher-order
 //                    Taylor series from the terms up to jerk at the
 //                    beginning and the end of the time step.  This symmetric
-//		      formulation is not the original one from Makino and
-//		      Aarseth; it comes from ACS (Hut & Makino).
+//                      formulation is not the original one from Makino and
+//                      Aarseth; it comes from ACS (Hut & Makino).
 //-----------------------------------------------------------------------------
 
 void correct_step(const real old_pos[][NDIM], const real old_vel[][NDIM],
-		  const real old_acc[][NDIM], const real old_jerk[][NDIM],
-		  real dt)
+                  const real old_acc[][NDIM], const real old_jerk[][NDIM],
+                  real dt)
 {
     int n = ident.size();
     for (int i = 0; i < n ; i++)
       {
-	for (int k = 0; k < NDIM ; k++)
-	  {
-	    vel[i][k] = old_vel[i][k] + (old_acc[i][k] + acc[i][k])*dt/2
-				      + (old_jerk[i][k] - jerk[i][k])*dt*dt/12;
-	    pos[i][k] = old_pos[i][k] + (old_vel[i][k] + vel[i][k])*dt/2
-				      + (old_acc[i][k] - acc[i][k])*dt*dt/12;
-	  }
+        for (int k = 0; k < NDIM ; k++)
+          {
+            vel[i][k] = old_vel[i][k] + (old_acc[i][k] + acc[i][k])*dt/2
+                                      + (old_jerk[i][k] - jerk[i][k])*dt*dt/12;
+            pos[i][k] = old_pos[i][k] + (old_vel[i][k] + vel[i][k])*dt/2
+                                      + (old_acc[i][k] - acc[i][k])*dt*dt/12;
+          }
       }
 }
 
@@ -387,13 +458,13 @@ void evolve_step(real dt, real *epot, real *coll_time)
 
     for (int i = 0; i < n ; i++)
       {
-	for (int k = 0; k < NDIM ; k++)
-	  {
-	    old_pos[i][k] = pos[i][k];
-	    old_vel[i][k] = vel[i][k];
-	    old_acc[i][k] = acc[i][k];
-	    old_jerk[i][k] = jerk[i][k];
-	  }
+        for (int k = 0; k < NDIM ; k++)
+          {
+            old_pos[i][k] = pos[i][k];
+            old_vel[i][k] = vel[i][k];
+            old_acc[i][k] = acc[i][k];
+            old_jerk[i][k] = jerk[i][k];
+          }
       }
 
     predict_step(dt);
@@ -401,7 +472,7 @@ void evolve_step(real dt, real *epot, real *coll_time)
     correct_step(old_pos, old_vel, old_acc, old_jerk, dt);
     if (reeval)
       {
-	get_acc_jerk_pot_coll(epot, coll_time);
+        get_acc_jerk_pot_coll(epot, coll_time);
       }
     t += dt;
     t_evolve = t;
@@ -421,13 +492,13 @@ real calculate_step(real coll_time)
     if (!test_mode)
       {
 
-	step *= coll_time;
+        step *= coll_time;
 #if 0
-	// Round down to the next power of 2.
+        // Round down to the next power of 2.
 
-	real step2 = 1;
-	while (step2 > step) step2 /= 2;
-	step = step2;
+        real step2 = 1;
+        while (step2 > step) step2 /= 2;
+        step = step2;
 #endif
       }
 
@@ -444,32 +515,32 @@ void compute_nn()
 
     for (int i = 0; i < n-1; i++)
       {
-	for (int j = i+1; j < n; j++)
-	  {
-	    real rij2 = 0;
-	    for (int k = 0; k < NDIM; k++)
-	      {
-		real dx = pos[i][k]-pos[j][k];
-		rij2+=dx*dx;
-	      }
-	    if (rij2 <= rijmin2)
-	      {
-		rijmin2 = rij2;
-		imin = i;
-		jmin = j;
-	      }
-	  }
+        for (int j = i+1; j < n; j++)
+          {
+            real rij2 = 0;
+            for (int k = 0; k < NDIM; k++)
+              {
+                real dx = pos[i][k]-pos[j][k];
+                rij2+=dx*dx;
+              }
+            if (rij2 <= rijmin2)
+              {
+                rijmin2 = rij2;
+                imin = i;
+                jmin = j;
+              }
+          }
       }
 
     real rsum = radius[imin]+radius[jmin];
 
     if (rsum <= 0)
       {
-	rsum = 1;
+        rsum = 1;
       }
     real rijmin = sqrt(rijmin2);
     *sout << "closest: " << ident[imin] << " " << ident[jmin]
-	  << " " << rijmin << " " << rijmin/rsum << endl << flush;
+          << " " << rijmin << " " << rijmin/rsum << endl << flush;
 }
 
 // New/modified integrator code:
@@ -502,23 +573,23 @@ void compute_nn()
 
 int evolve_system(real t_end)
 {
-    real epot;			// potential energy of the n-body system
-    real coll_time;		// collision (close encounter) time scale
+    real epot;                        // potential energy of the n-body system
+    real coll_time;                // collision (close encounter) time scale
     int nest_err;               // error of subprocedure
-    int sync = 0;
+    int must_run = 1;
     // May be overkill to compute acc and jerk at start and end of
     // this routine, as usually the stars won't have changed on
     // return.  This way, however, we can guarantee that the particles
     // can be extrapolated when the interface calls for positions and
     // velocities.
-
+    MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
     get_acc_jerk_pot_coll(&epot, &coll_time);
     real dt = calculate_step(coll_time);
     t_wanted = t_end;
     if (!init_flag)
       {
-	write_diagnostics(epot, *sout);
-	t_dia = t + dt_dia;	// next time for diagnostics output
+        write_diagnostics(epot, *sout);
+        t_dia = t + dt_dia;        // next time for diagnostics output
       }
 
     // Don't flag a collision if no step is to be taken (presumably
@@ -529,75 +600,72 @@ int evolve_system(real t_end)
     while (true)
       {
 
-	while (t < t_dia && t+dt <= t_end)
-	  {
-	    dt = calculate_step(coll_time);
-	    evolve_step(dt, &epot, &coll_time);	// sets t, t_evolve
-	    if (test_mode)
-	      {
-		real E;
-		nest_err = get_kinetic_energy(&E);
-		E += epot;
-		if (!init_flag)
-		  {
-		    einit = E;
-		    init_flag = true;
-		  }
-		cout << t << " " << pos[0][0] << " " << pos[0][1]
-		     << " " << E - einit << endl;
-	      }
-	    nsteps++;
+        while (t < t_dia && t+dt <= t_end)
+          {
+            dt = calculate_step(coll_time);
+            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+            evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
+            if (test_mode)
+              {
+                real E;
+                nest_err = get_kinetic_energy(&E);
+                E += epot;
+                if (!init_flag)
+                  {
+                    einit = E;
+                    init_flag = true;
+                  }
+                cout << t << " " << pos[0][0] << " " << pos[0][1]
+                     << " " << E - einit << endl;
+              }
+            nsteps++;
 
-	    // compute_nn();
+            // compute_nn();
 
-	    if (flag_collision && id_coll_primary >= 0)
-	      {
-		break;
-	      }
-	  }
+            if (flag_collision && id_coll_primary >= 0)
+              {
+                break;
+              }
+          }
 
-	if (t >= t_dia)
-	  {
-	    write_diagnostics(epot, *sout);
-	    t_dia += dt_dia;
-	  }
+        if (t >= t_dia)
+          {
+            write_diagnostics(epot, *sout);
+            t_dia += dt_dia;
+          }
 
-	if (flag_collision && id_coll_primary >= 0)
-	  {
-	    break;
-	  }
-	if (t+dt > t_end)
-	  {
-	    break;
-	  }
+        if (flag_collision && id_coll_primary >= 0)
+          {
+            break;
+          }
+        if (t+dt > t_end)
+          {
+            break;
+          }
       }
 
     if (!flag_collision || id_coll_primary  < 0)
       {
-	if (sync && t < t_end)
-	  {
-	    evolve_step(t_end-t, &epot, &coll_time);
-	    nsteps++;
-	  }
-	get_acc_jerk_pot_coll(&epot, &coll_time);
-	dt = calculate_step(coll_time);
-	t_evolve = t_end;
+        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+        get_acc_jerk_pot_coll(&epot, &coll_time);
+        dt = calculate_step(coll_time);
+        t_evolve = t_end;
       }
 
     // Note: On exit, under all circumstances, the system is
     // synchronized at time t, with t <= t_evolve < t + dt.  If a
     // collision has been detected, we return with t_evolve = t;
-    // otherwise, we set t_evolve = t_end.  If sync is set, we will
-    // have t = t_end.
-
+    // otherwise, we set t_evolve = t_end. 
+    must_run = 0;
+    MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
     //return id_coll_primary;
     if (!nest_err)
       {
-	nest_err = id_coll_primary;
+        nest_err = id_coll_primary;
       }
     else
       {
-	nest_err = -2;
+        nest_err = -2;
       }
 
     return nest_err;
@@ -610,16 +678,27 @@ int get_n_steps()
 
 int cleanup_code()
 {
+    vel.clear();
+    pos.clear();
+    mass.clear();
+    acc.clear();
+    jerk.clear();
+    radius.clear();
     return 0;
 }
 
 int new_particle(int *id, double _mass, double _radius,
-		 double x, double y, double z,
-		 double vx, double vy, double vz)
+                 double x, double y, double z,
+                 double vx, double vy, double vz)
 // add d to the dynamical system
 // cello, proj 1
 // make test, not done yet
 {
+    
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    
   int new_element;
 
   // Always add to the end of the list.
@@ -627,7 +706,7 @@ int new_particle(int *id, double _mass, double _radius,
 
   new_element = ident.size();
 
-  ident.push_back(new_element);		// generally want to specify id
+  ident.push_back(new_element);                // generally want to specify id
   mass.push_back(_mass);
   radius.push_back(_radius);
   pos.push_back(vec(x, y, z));
@@ -645,6 +724,11 @@ int delete_particle(int id)
 //cello, proj 1
 // assuming same as remove particle??
 {
+    
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
 
   if (i < ident.size())
@@ -665,27 +749,28 @@ int delete_particle(int id)
 }
 
 /*
-int remove_particle(int id)		// remove id from the dynamical system
+int remove_particle(int id)                // remove id from the dynamical system
 {
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
     if (i < ident.size()) {
-	ident.erase(ident.begin()+i);
-	mass.erase(mass.begin()+i);
-	radius.erase(radius.begin()+i);
-	pos.erase(pos.begin()+i);
-	vel.erase(vel.begin()+i);
-	acc.erase(acc.begin()+i);
-	jerk.erase(jerk.begin()+i);
+        ident.erase(ident.begin()+i);
+        mass.erase(mass.begin()+i);
+        radius.erase(radius.begin()+i);
+        pos.erase(pos.begin()+i);
+        vel.erase(vel.begin()+i);
+        acc.erase(acc.begin()+i);
+        jerk.erase(jerk.begin()+i);
     }
-    return ident.size();		// deletion never leaves empty space
+    return ident.size();                // deletion never leaves empty space
 }
 */
 
 int get_state(int id, double *_mass, double *_radius, double *x, double *y, double *z,
-	      double *vx, double *vy, double *vz)
+              double *vx, double *vy, double *vz)
 // cello, proj1 changed return type void-->int, only OK no errors yet?
 // todo: replace find fction.
 {
+    if(mpi_rank) {return 0;}
   //*id_out = -1;
 
   //unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
@@ -716,9 +801,10 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
 }
 
 int set_state(int id, double _mass, double _radius, double x, double y, double z,
-	      double vx, double vy, double vz)
+              double vx, double vy, double vz)
 //cello, proj1,
 {
+    if(mpi_rank) {return 0;}
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
 
   if (i < ident.size())
@@ -739,46 +825,50 @@ int set_state(int id, double _mass, double _radius, double x, double y, double z
 int get_mass(int id, double *_mass)
 //cello, proj1,
 {
+    if(mpi_rank) {return 0;}
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
     if (i < ident.size())
       {
-	*_mass = mass[i];
-	return 0;
+        *_mass = mass[i];
+        return 0;
       }
     else
       {
-	return -1;
+        return -1;
       }
 }
 
 int set_mass(int id, double _mass)
 {
+    if(mpi_rank) {return 0;}
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
     if (i < ident.size())
       {
-	mass[i] = _mass;
-	return 0;
+        mass[i] = _mass;
+        return 0;
       } else
       return -1;
 }
 
 int get_radius(int id, double *_radius)
 {
+    if(mpi_rank) {return 0;}
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
     //cerr << "hermite0: get_radius: "; PRC(id); PRL(i); cerr << flush;
     if (i < ident.size())
       {
-	*_radius = radius[i];
-	return 0;
+        *_radius = radius[i];
+        return 0;
       }
     else
       {
-	return -1;
+        return -1;
       }
 }
 
 int set_radius(int id, double _radius)
 {
+    if(mpi_rank) {return 0;}
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
   if (i < ident.size())
     {
@@ -793,6 +883,7 @@ int set_radius(int id, double _radius)
 
 int get_position(int id, double *x, double *y, double *z)
 {
+    if(mpi_rank) {return 0;}
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
   if (i < ident.size())
     {
@@ -809,6 +900,7 @@ int get_position(int id, double *x, double *y, double *z)
 
 int set_position(int id, double x, double y, double z)
 {
+    if(mpi_rank) {return 0;}
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
   if (i < ident.size())
     {
@@ -887,59 +979,97 @@ int set_acceleration(int id, double ax, double ay, double az)
   return -3;
 }
 
+int evolve_not_on_root() {
+    int must_run = 1;
+    int mpi_error = MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    if(mpi_error) {
+        return -1;
+    }
+    while(must_run) {
+        real epot, coll_time;
+        get_acc_jerk_pot_coll(&epot, &coll_time);
+        int mpi_error = MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+        if(mpi_error) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
 int evolve(double t_end)
 {
-  evolve_system(t_end);
-  return 0;
+    if(mpi_rank)     {
+        evolve_not_on_root();
+    } else {
+        evolve_system(t_end);
+    }
+    return 0;
 }
 
 
 int initialize_code()
-// cello, proj1 NYI!
 {
-  return -2;
+    int error = 0;
+    error = MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+    if(error) {
+        cerr << error << endl;
+        return -1;
+    }
+    error = MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
+    if(error) {
+        cerr << error << endl;
+        return -1;
+    }
+    cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
+    return 0;
 }
 
 int get_eps2(double *_eps2)
 // cello, proj1 NYI?!
 {
-  *_eps2 = eps2;
-  return 0;
+    *_eps2 = eps2;
+    return 0;
 }
 
 int set_eps2(double _eps2)
 // cello, test implementation!
 {
-  eps2 = _eps2;
-  return 0;
+    eps2 = _eps2;
+    return 0;
 }
 
 int get_kinetic_energy(double *kinetic_energy)
 {
-  int n = ident.size();
-  real ekin = 0;
-  real dt = t_evolve-t;
-  for (int i = 0; i < n ; i++)
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    int n = ident.size();
+    real ekin = 0;
+    real dt = t_evolve-t;
+    for (int i = 0; i < n ; i++)
     {
-      for (int k = 0; k < NDIM ; k++)
+        for (int k = 0; k < NDIM ; k++)
         {
-          real v = vel[i][k] + acc[i][k]*dt + jerk[i][k]*dt*dt/2;
-          ekin += mass[i] * v * v;
+            real v = vel[i][k] + acc[i][k]*dt + jerk[i][k]*dt*dt/2;
+            ekin += mass[i] * v * v;
         }
     }
-  *kinetic_energy = 0.5*ekin;
-  return 0;
+    *kinetic_energy = 0.5*ekin;
+    return 0;
 }
 
 int get_potential_energy(double *potential_energy)
 {
-  int n = ident.size();
-  real (* save_pos)[NDIM] = new real[n][NDIM];
-  real (* save_vel)[NDIM] = new real[n][NDIM];
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others, should be changed as this is order N**2
+        return 0;
+    }
+    int n = ident.size();
+    real (* save_pos)[NDIM] = new real[n][NDIM];
+    real (* save_vel)[NDIM] = new real[n][NDIM];
 
-  real dt = t_evolve-t;
+    real dt = t_evolve-t;
 
-  if (dt > 0)
+    if (dt > 0)
     {
       for (int i = 0; i < n ; i++)
         {
@@ -952,10 +1082,10 @@ int get_potential_energy(double *potential_energy)
       predict_step(t_evolve-t);
     }
 
-  real epot, coll_time;
-  get_acc_jerk_pot_coll(&epot, &coll_time);
+    real epot, coll_time;
+    get_acc_jerk_pot_coll(&epot, &coll_time);
 
-  if (dt > 0)
+    if (dt > 0)
     {
         for (int i = 0; i < n ; i++)
           {
@@ -967,8 +1097,8 @@ int get_potential_energy(double *potential_energy)
           }
     }
 
-  *potential_energy = epot;
-  return 0;
+    *potential_energy = epot;
+    return 0;
 }
 
 int get_potential(double x, double y, double z,  double *V)
@@ -979,53 +1109,62 @@ int get_potential(double x, double y, double z,  double *V)
 
 int get_potential_at_point(double eps, double x, double y, double z, double *phi)
 {
-  int n = ident.size();
-  double rx,ry,rz,r;
-  *phi = 0.0;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    int n = ident.size();
+    double rx,ry,rz,r;
+    *phi = 0.0;
 
-  for (int i = 0; i< n; i++)
+    for (int i = 0; i< n; i++)
     {
-      rx = pos[i][0]-x;
-      ry = pos[i][1]-y;
-      rz = pos[i][2]-z;
-      r = sqrt(rx*rx+ry*ry+rz*rz + eps2);
-      *phi -= mass[i]/r;
+        rx = pos[i][0]-x;
+        ry = pos[i][1]-y;
+        rz = pos[i][2]-z;
+        r = sqrt(rx*rx+ry*ry+rz*rz + eps2);
+        *phi -= mass[i]/r;
     }
 
-  return 0;
+    return 0;
 }
 
 int get_gravity_at_point(double eps, double x,double y, double z,
                          double *Fx, double *Fy, double *Fz)
 {
-  int n = ident.size();
-  double rx, ry, rz, r3, r2, r, F;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    int n = ident.size();
+    double rx, ry, rz, r3, r2, r, F;
 
-  *Fx = 0;*Fy = 0;*Fz = 0;
+    *Fx = 0;*Fy = 0;*Fz = 0;
 
-  for (int i = 0; i<n; i++)
+    for (int i = 0; i<n; i++)
     {
-      rx = pos[i][0]-x;
-      ry = pos[i][1]-y;
-      rz = pos[i][2]-z;
-      r2 = (rx*rx+ry*ry+rz*rz + eps*eps);
-      r = sqrt(r2);
-      r3 = r2*r;
-      F = mass[i]/r3;
-      *Fx += F * rx;
-      *Fy += F * ry;
-      *Fz += F * rz;
+        rx = pos[i][0]-x;
+        ry = pos[i][1]-y;
+        rz = pos[i][2]-z;
+        r2 = (rx*rx+ry*ry+rz*rz + eps*eps);
+        r = sqrt(r2);
+        r3 = r2*r;
+        F = mass[i]/r3;
+        *Fx += F * rx;
+        *Fy += F * ry;
+        *Fz += F * rz;
     }
 
-  return 0;
+    return 0;
 }
 
 int get_colliding_primary()
 {
-  id_coll_primary = id_coll_secondary = -1;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    id_coll_primary = id_coll_secondary = -1;
 
-  int n = ident.size();
-  for (int i = 0; i < n-1; i++)         // inefficient; better to flag
+    int n = ident.size();
+    for (int i = 0; i < n-1; i++)         // inefficient; better to flag
     {
 
       for (int j = i+1; j < n; j++)     // collisions during the force loop
@@ -1053,26 +1192,32 @@ int get_colliding_primary()
             }
         }
     }
-  return -1;
+    return -1;
 }
 
 int get_colliding_secondary(int id1)
-{
-  if (id1 >= 0 && id1 == id_coll_primary && id_coll_secondary >= 0)
-    {
-      return id_coll_secondary;
+{   
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
     }
-  else
+    if (id1 >= 0 && id1 == id_coll_primary && id_coll_secondary >= 0)
     {
-      return -1;
+        return id_coll_secondary;
+    }
+    else
+    {
+        return -1;
     }
 }
 
 int get_indices_of_colliding_particles(int *new_id1, int *new_id2)
 {
-  *new_id1 = get_colliding_primary();
-  *new_id2 = get_colliding_secondary(*new_id1);
-  return 0;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    *new_id1 = get_colliding_primary();
+    *new_id2 = get_colliding_secondary(*new_id1);
+    return 0;
 }
 
 int get_time(double *_t)
@@ -1085,61 +1230,70 @@ int get_time(double *_t)
 int get_total_mass(double *_mass)
 // cello, proj1
 {
-  int n = ident.size();
-  *_mass = 0.0;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    int n = ident.size();
+    *_mass = 0.0;
 
-  for (int i = 0; i< n; i++)
+    for (int i = 0; i< n; i++)
     {
-      *_mass += mass[i];
+        *_mass += mass[i];
     }
 
-  return 0;
+    return 0;
 }
 
 int get_center_of_mass_position(double *x, double *y, double *z)
 {
-  int n = ident.size();
-  double M;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    int n = ident.size();
+    double M;
 
-  *x=0; *y=0; *z=0;
+    *x=0; *y=0; *z=0;
 
-  get_total_mass(&M);
+    get_total_mass(&M);
 
-  for (int i = 0; i<n; i++)
+    for (int i = 0; i<n; i++)
     {
-      *x += mass[i]*pos[i][0];
-      *y += mass[i]*pos[i][1];
-      *z += mass[i]*pos[i][2];
+        *x += mass[i]*pos[i][0];
+        *y += mass[i]*pos[i][1];
+        *z += mass[i]*pos[i][2];
     }
 
-  *x /= M;
-  *y /= M;
-  *z /= M;
+    *x /= M;
+    *y /= M;
+    *z /= M;
 
-  return 0;
+    return 0;
 }
 
 int get_center_of_mass_velocity(double *vx, double *vy,double *vz)
 {
-  int n = ident.size();
-  double M;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    int n = ident.size();
+    double M;
 
-  *vx=0; *vy=0; *vz=0;
+    *vx=0; *vy=0; *vz=0;
 
-  get_total_mass(&M);
+    get_total_mass(&M);
 
-  for (int i = 0; i<n; i++)
+    for (int i = 0; i<n; i++)
     {
-      *vx += mass[i]*vel[i][0];
-      *vy += mass[i]*vel[i][1];
-      *vz += mass[i]*vel[i][2];
+        *vx += mass[i]*vel[i][0];
+        *vy += mass[i]*vel[i][1];
+        *vz += mass[i]*vel[i][2];
     }
 
-  *vx /= M;
-  *vy /= M;
-  *vz /= M;
+    *vx /= M;
+    *vy /= M;
+    *vz /= M;
 
-  return 0;
+    return 0;
 }
 
 
@@ -1189,6 +1343,9 @@ int get_index_of_next_particle(int id, int *index_of_the_next_particle)
 
 int set_particle(int id, double _mass, double _radius, double x, double y, double z, double vx, double vy, double vz)
 {
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
     unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
 
     if (i < ident.size())
@@ -1213,6 +1370,9 @@ int set_particle(int id, double _mass, double _radius, double x, double y, doubl
 
 int get_dynamical_time_scale(double *ts)
 {
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
     real mtot = 0, ekin = 0, epot, coll_time;
     for (unsigned int i = 0; i < ident.size(); i++)
       {
@@ -1230,10 +1390,13 @@ int get_dynamical_time_scale(double *ts)
 
 int get_time_step(double *time_step)
 {
-  real epot, coll_time;
-  get_acc_jerk_pot_coll(&epot, &coll_time);
-  *time_step = calculate_step(coll_time);
-  return 0;
+    if(mpi_rank)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    real epot, coll_time;
+    get_acc_jerk_pot_coll(&epot, &coll_time);
+    *time_step = calculate_step(coll_time);
+    return 0;
 }
 
 int initialize_time_step() {return -2;}

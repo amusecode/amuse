@@ -1,3 +1,5 @@
+CC = mpic
+CXX = mpicxx
 
 CFLAGS ?= -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 CXXFLAGS ?= $(CFLAGS) 
