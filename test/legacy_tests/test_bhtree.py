@@ -8,9 +8,11 @@ import math
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.data import core
 from amuse.support.data import values
+from amuse.support.data import particle_attributes
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.ext import plummer
 
 try:
     from matplotlib import pyplot
@@ -615,6 +617,7 @@ class TestAmuseInterface(TestWithMPI):
         final_direction = []
         for log_eps2 in range(-9,10,2):
             instance = BHTree(convert_nbody)
+            instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
             instance.particles.add_particles(particles)
             instance.commit_particles()
@@ -629,6 +632,31 @@ class TestAmuseInterface(TestWithMPI):
         # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
         delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
         self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
+        
+    
+    def test16(self):
+        numpy.random.seed(0)
+        number_of_stars = 256
+        stars = plummer.MakePlummerModel(number_of_stars).result
+        stars.radius = 0.00001 | nbody_system.length
+        stars.scale_to_standard()
+        
+        instance = BHTree(BHTree.NBODY)
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = (1.0 / (number_of_stars**3) | nbody_system.length)**2
+        instance.particles.add_particles(stars)
+        instance.commit_particles()
+        energy_total_t0 = instance.potential_energy + instance.kinetic_energy
+        instance.evolve_model(0.5 | nbody_system.time)
+        instance.synchronize_model()
+        instance.evolve_model(4.0 | nbody_system.time)
+        energy_total_t1 = instance.potential_energy + instance.kinetic_energy
+        
+        print energy_total_t0, energy_total_t1
+        
+        self.assertAlmostRelativeEqual(energy_total_t0, energy_total_t1, 3)
+        instance.stop()
+        numpy.random.seed()
         
     
 
