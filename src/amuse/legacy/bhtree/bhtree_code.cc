@@ -770,14 +770,13 @@ double get_dynamical_time_scale()
 
 int get_time_step(double *_timestep)
 {
-  //return bhtcs.time + bhtcs.timestep;
-  *_timestep = bhtcs.timestep;
+  *_timestep = timestep;
   return 0;
 }
 
 int set_time_step(double _timestep)
 {
-  bhtcs.timestep = _timestep;
+  timestep = _timestep;
   return 0;
 }
 
@@ -809,20 +808,20 @@ int set_theta_for_tree(double _theta_for_tree){
     return 0;
 }
 
-int get_use_self_gravity(double *_use_self_gravity){
+int get_use_self_gravity(int *_use_self_gravity){
     *_use_self_gravity = use_self_gravity;
     return 0;
 }
-int set_use_self_gravity(double _use_self_gravity){
+int set_use_self_gravity(int _use_self_gravity){
     use_self_gravity = _use_self_gravity;
     return 0;
 }
 
-int get_ncrit_for_tree(double *_ncrit_for_tree){
+int get_ncrit_for_tree(int *_ncrit_for_tree){
     *_ncrit_for_tree = ncrit_for_tree;
     return 0;
 }
-int set_ncrit_for_tree(double _ncrit_for_tree){
+int set_ncrit_for_tree(int _ncrit_for_tree){
     ncrit_for_tree = _ncrit_for_tree;
     return 0;
 }

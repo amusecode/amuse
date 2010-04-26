@@ -126,7 +126,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         Get use_self_gravity flag, the flag for usage of self gravity, 1 or 0 (true or false).
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('use_self_gravity', dtype='float64', direction=function.OUT,
+        function.addParameter('use_self_gravity', dtype='int32', direction=function.OUT,
             description = "flag for usage of self gravity, 1 or 0 (true or false)")
         function.result_type = 'int32'
         function.result_doc = """
@@ -143,7 +143,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         Set use_self_gravity flag, the flag for usage of self gravity, 1 or 0 (true or false).
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('use_self_gravity', dtype='float64', direction=function.IN,
+        function.addParameter('use_self_gravity', dtype='int32', direction=function.IN,
             description = "flag for usage of self gravity, 1 or 0 (true or false)")
         function.result_type = 'int32'
         function.result_doc = """
@@ -160,7 +160,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         Get Ncrit, the maximum number of particles sharing an interaction list.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('ncrit_for_tree', dtype='float64', direction=function.OUT,
+        function.addParameter('ncrit_for_tree', dtype='int32', direction=function.OUT,
             description = "Ncrit, the maximum number of particles sharing an interaction list")
         function.result_type = 'int32'
         function.result_doc = """
@@ -177,7 +177,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         Set Ncrit, the maximum number of particles sharing an interaction list.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('ncrit_for_tree', dtype='float64', direction=function.IN,
+        function.addParameter('ncrit_for_tree', dtype='int32', direction=function.IN,
             description = "Ncrit, the maximum number of particles sharing an interaction list")
         function.result_type = 'int32'
         function.result_doc = """
