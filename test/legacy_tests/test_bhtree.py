@@ -644,6 +644,7 @@ class TestAmuseInterface(TestWithMPI):
         instance = BHTree(BHTree.NBODY)
         instance.initialize_code()
         instance.parameters.epsilon_squared = (1.0 / (number_of_stars**3) | nbody_system.length)**2
+        instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
         energy_total_t0 = instance.potential_energy + instance.kinetic_energy
