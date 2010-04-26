@@ -36,7 +36,21 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
-         
+    
+    def get_data_directory(self):
+        """
+        Returns the root name of the directory for the EVTwin
+        application data files.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'input')
+    
+    def get_output_directory(self):
+        """
+        Returns the root name of the directory to use by the 
+        application to store it's output / temporary files in.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'output')
+    
     @property
     def default_path_to_ev_database(self):
         dir = os.path.dirname(__file__)
@@ -570,7 +584,7 @@ class EVtwin(CodeInterface):
     
     def __init__(self, **options):
         CodeInterface.__init__(self, EVtwinInterface(**options), **options)
-        self.set_ev_path(self.default_path_to_ev_database)
+        self.set_ev_path(self.get_data_directory())
         self.parameters.set_defaults()
         
     
@@ -788,7 +802,7 @@ class EVtwin(CodeInterface):
     
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
-        self.set_ev_path(self.default_path_to_ev_database)
+        self.set_ev_path(self.get_data_directory())
         self.initialize_code()
         
     def initialize_module_with_current_parameters(self):

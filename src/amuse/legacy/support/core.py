@@ -605,6 +605,20 @@ Please do a 'make clean; make' in the root directory.
         
     def stop(self):
         self._stop()
+    
+    def get_data_directory(self):
+        """
+        Returns the root name of the directory for the 
+        application data files
+        """
+        pass
+    
+    def get_output_directory(self):
+        """
+        Returns the root name of the directory to use by the 
+        application to store it's output / temporary files in.
+        """
+        pass
         
 
 class LegacyPythonInterface(LegacyInterface):

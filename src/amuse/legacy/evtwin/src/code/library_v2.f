@@ -140,7 +140,7 @@
       character(len=*), intent(in) :: new_ev_path;
 
       IF (.NOT. FILE_EXISTS(new_ev_path) ) THEN
-         IF (.NOT. FILE_EXISTS(TRIM(new_ev_path)//"/input/lt2ubv.dat") ) THEN
+         IF (.NOT. FILE_EXISTS(TRIM(new_ev_path)//"/lt2ubv.dat") ) THEN
             IF (VERBOSE) PRINT *, "Warning: file ",TRIM(new_ev_path)," for ", TRIM(ev_path), " does not exist!"
             set_ev_path = -1
          ELSE
@@ -305,21 +305,21 @@
       END IF
 
       ! Setup input file names
-      INPUTFILENAMES(1)=TRIM(EVPATH)//"/input/zahb"//TRIM(ZSTR)//".mod"
-      INPUTFILENAMES(2)=TRIM(EVPATH)//"/input/zahb"//".dat"
-      INPUTFILENAMES(3)=TRIM(EVPATH)//"/input/zams/zams"//TRIM(ZSTR)//".mod"
-      INPUTFILENAMES(4)=TRIM(EVPATH)//"/input/zams/zams"//TRIM(ZSTR)//".out"
-      INPUTFILENAMES(5)=TRIM(EVPATH)//"/input/zams/zams"//TRIM(ZSTR)//".mas"
-      INPUTFILENAMES(6)=TRIM(EVPATH)//"/input/metals/z"//TRIM(ZSTR)//"/phys.z"//TRIM(ZSTR)
-      INPUTFILENAMES(7)=TRIM(EVPATH)//"/input/lt2ubv.dat"
-      INPUTFILENAMES(8)=TRIM(EVPATH)//"/input/nucdata.dat"
-      !INPUTFILENAMES(9)=TRIM(EVPATH)//"/input/mutate.dat"
+      INPUTFILENAMES(1)=TRIM(EVPATH)//"/zahb"//TRIM(ZSTR)//".mod"
+      INPUTFILENAMES(2)=TRIM(EVPATH)//"/zahb"//".dat"
+      INPUTFILENAMES(3)=TRIM(EVPATH)//"/zams/zams"//TRIM(ZSTR)//".mod"
+      INPUTFILENAMES(4)=TRIM(EVPATH)//"/zams/zams"//TRIM(ZSTR)//".out"
+      INPUTFILENAMES(5)=TRIM(EVPATH)//"/zams/zams"//TRIM(ZSTR)//".mas"
+      INPUTFILENAMES(6)=TRIM(EVPATH)//"/metals/z"//TRIM(ZSTR)//"/phys.z"//TRIM(ZSTR)
+      INPUTFILENAMES(7)=TRIM(EVPATH)//"/lt2ubv.dat"
+      INPUTFILENAMES(8)=TRIM(EVPATH)//"/nucdata.dat"
+      !INPUTFILENAMES(9)=TRIM(EVPATH)//"/mutate.dat"
       INPUTFILENAMES(10)=TRIM(init_dat_name)
       INPUTFILENAMES(11)=TRIM(init_run_name)
-      INPUTFILENAMES(12)=TRIM(EVPATH)//"/input/COtables/COtables_z"//TRIM(ZSTR)
-      INPUTFILENAMES(13)=TRIM(EVPATH)//"/input/physinfo.dat"
-      INPUTFILENAMES(14)=TRIM(EVPATH)//"/run/muse/init.dat" ! Sensible defaults
-      INPUTFILENAMES(15)=TRIM(EVPATH)//"/run/muse/init.run" ! Sensible defaults
+      INPUTFILENAMES(12)=TRIM(EVPATH)//"/COtables/COtables_z"//TRIM(ZSTR)
+      INPUTFILENAMES(13)=TRIM(EVPATH)//"/physinfo.dat"
+      INPUTFILENAMES(14)=TRIM(EVPATH)//"/init/init.dat" ! Sensible defaults
+      INPUTFILENAMES(15)=TRIM(EVPATH)//"/init/init.run" ! Sensible defaults
       !INPUTFILENAMES(14)=TRIM(EVPATH)//"/xxx/init.dat" ! Sensible defaults
       !INPUTFILENAMES(15)=TRIM(EVPATH)//"/xxx/init.run" ! Sensible defaults
 

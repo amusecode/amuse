@@ -13,15 +13,17 @@ class TestInterface(TestWithMPI):
     
     def test1(self):
         print "Testing get/set for metallicity..."
+        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = EVtwinInterface()
+        #channel.MessageChannel.DEBUGGER = None
         (metallicity, error) = instance.get_metallicity()
         self.assertEquals(0, error)
         self.assertEquals(0.02, metallicity)
-        error = instance.set_ev_path(instance.default_path_to_ev_database)
-        self.assertEquals(0, error)      
+        error = instance.set_ev_path(instance.get_data_directory())
+        self.assertEquals(0, error)
         error = instance.initialize_code()
-        self.assertEquals(0, error)      
-        del instance
+        self.assertEquals(0, error)
+        instance.stop()
 
         for x in [0.1, 0.01, 0.001, 0.0001]:
             instance = EVtwinInterface()
@@ -30,12 +32,12 @@ class TestInterface(TestWithMPI):
             (metallicity, error) = instance.get_metallicity()
             self.assertEquals(0, error)
             self.assertEquals(x, metallicity)
-            error = instance.set_ev_path(instance.default_path_to_ev_database)
+            error = instance.set_ev_path(instance.get_data_directory())
             self.assertEquals(0, error)      
             error = instance.initialize_code()
             self.assertEquals(-1, error)
             print "Metallicities other than solar need additional starting models!"
-            del instance
+            instance.stop()
     
     def test2(self):
         print "Testing get/set for maximum number of stars..."
@@ -52,35 +54,19 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, error)      
             self.assertEquals(x, value)      
         
-        del instance
-
-    
-    
-    def test3(self):
-        print "Testing initialization..."
-        instance = EVtwinInterface()
-        dir = os.path.dirname(sys.modules[instance.__module__].__file__)
-        path_to_ev_database = os.path.join(dir, 'src')
-        error = instance.set_ev_path(path_to_ev_database)
-        self.assertEquals(0, error)      
-        
-        error = instance.initialize_code()
-        self.assertEquals(0, error)      
-        
-        del instance     
-        
+        instance.stop()
     
     def test4(self):
         print "Testing initialization..."
         instance = EVtwinInterface()
         
-        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        error = instance.set_ev_path(instance.get_data_directory())
         self.assertEquals(0, error)      
         
         error = instance.initialize_code()
         self.assertEquals(0, error)      
         
-        del instance     
+        instance.stop()
     
     def test5(self):
         print "Testing basic operations (new_particle, evolve etc.)..."
@@ -89,7 +75,7 @@ class TestInterface(TestWithMPI):
         instance = EVtwinInterface()
         #channel.MessageChannel.DEBUGGER = None
         
-        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        error = instance.set_ev_path(instance.get_data_directory())
         self.assertEquals(0, error)      
         
         error = instance.initialize_code()
@@ -119,12 +105,12 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error) 
         self.assertTrue(age > 0)      
         
-        del instance   
+        instance.stop()
         
     def test6(self):
         print "Testing EVtwin stop conditions..."
         instance = EVtwinInterface()
-        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        error = instance.set_ev_path(instance.get_data_directory())
         self.assertEquals(0, error)      
         error = instance.initialize_code()
         self.assertEquals(0, error)      
@@ -149,12 +135,12 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, error)
             self.assertEquals(10 ** x, value)
         
-        del instance
+        instance.stop()
 
     def test7(self):
         print "Testing EVtwin parameters..."
         instance = EVtwinInterface()
-        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        error = instance.set_ev_path(instance.get_data_directory())
         self.assertEquals(0, error)      
         error = instance.initialize_code()
         self.assertEquals(0, error)      
@@ -228,12 +214,12 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, error)
             self.assertEquals(x, value)
         
-        del instance
+        instance.stop()
 
     def test8(self):
         print "Testing basic operations for spinning particle (new_spinning_particle, get_spin etc.)..."
         instance = EVtwinInterface()
-        error = instance.set_ev_path(instance.default_path_to_ev_database)
+        error = instance.set_ev_path(instance.get_data_directory())
         self.assertEquals(0, error)
         error = instance.initialize_code()
         self.assertEquals(0, error)
@@ -252,7 +238,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         self.assertEquals(300.0, spin)
         
-        del instance   
+        instance.stop()
     
     
 class TestInterfaceBinding(TestWithMPI):
@@ -268,7 +254,7 @@ class TestInterfaceBinding(TestWithMPI):
         self.assertEquals(10.0 | units.no_unit , instance.parameters.maximum_number_of_stars)
         instance.parameters.maximum_number_of_stars = 12 | units.no_unit
         self.assertEquals(12.0 | units.no_unit , instance.parameters.maximum_number_of_stars)
-        del instance
+        instance.stop()
     
     def test2(self):
         print "Testing basic operations (setup_particles, initialize_stars etc.)..."
@@ -290,6 +276,7 @@ class TestInterfaceBinding(TestWithMPI):
         
         self.assertEquals(stars[0].mass, 10 | units.MSun)
         self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302 , 6)
+        instance.stop()
     
     def xtest3(self):
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
@@ -360,7 +347,7 @@ class TestInterfaceBinding(TestWithMPI):
         for result, expected in zip(results, types):
             self.assertEquals(str(result[2]), expected)
         
-        del instance
+        instance.stop()
         
     def test4(self):
         print "Testing max age stop condition..."
@@ -405,7 +392,7 @@ class TestInterfaceBinding(TestWithMPI):
             self.assertEquals("Error when calling 'evolve' of a 'EVtwin', errorcode "
                 "is 2, error is 'BACKUP -- tstep reduced below limit; quit'", str(ex))
 
-        del instance
+        instance.stop()
         
     def test5_add_and_remove(self):
         print "Testing adding and removing particles from stellar evolution code..."
@@ -482,5 +469,5 @@ class TestInterfaceBinding(TestWithMPI):
         self.assertAlmostEqual(stars[1].age.value_in(units.Myr), age_of_star.value_in(units.Myr), 3)
         self.assertTrue(stars[0].age >= age_of_star)
         
-        del instance
+        instance.stop()
 
