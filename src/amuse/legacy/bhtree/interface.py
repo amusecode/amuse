@@ -41,7 +41,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         Update timestep.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('time_step', dtype='float64', direction=function.IN,
+        function.addParameter('timestep', dtype='float64', direction=function.IN,
             description = "timestep")
         function.result_type = 'int32'
         function.result_doc = """
@@ -305,8 +305,5 @@ class BHTree(GravitationalDynamics):
             (nbody_system.potential, object.ERROR_CODE)
         )
         
-        object.add_method(
-            'set_time_step',
-            (nbody_system.time),
-            (object.ERROR_CODE)
-            )
+
+        

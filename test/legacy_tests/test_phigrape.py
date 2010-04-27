@@ -305,7 +305,6 @@ class TestCodeInterface(TestWithMPI):
         instance.set_eta(0.01,0.02)
         instance.initialize_code()
         
-        
         particles = core.Particles(2)
         print particles
         particles.mass = [1.0, 1.0] | nbody_system.mass
@@ -313,7 +312,6 @@ class TestCodeInterface(TestWithMPI):
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
-        
         
         instance.initialize_particles(0.0 )
         
@@ -340,7 +338,6 @@ class TestCodeInterface(TestWithMPI):
             fx = (-1.0 / (x0**2) + 1.0 / (x1**2)) * (1.0 | nbody_system.length ** 3 / nbody_system.time ** 2)
             self.assertAlmostEqual(fx, fx0, 2)
             self.assertAlmostEqual(potential0, potential1, 5)
-
       
     def test6(self):
         instance = PhiGRAPE(PhiGRAPE.NBODY)

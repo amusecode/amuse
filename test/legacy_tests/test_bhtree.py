@@ -636,7 +636,7 @@ class TestAmuseInterface(TestWithMPI):
     
     def test16(self):
         numpy.random.seed(0)
-        number_of_stars = 256
+        number_of_stars = 2
         stars = plummer.MakePlummerModel(number_of_stars).result
         stars.radius = 0.00001 | nbody_system.length
         stars.scale_to_standard()
@@ -645,7 +645,9 @@ class TestAmuseInterface(TestWithMPI):
         instance.initialize_code()
         instance.parameters.epsilon_squared = (1.0 / 20.0 / (number_of_stars**0.33333) | nbody_system.length)**2
         instance.parameters.timestep = 0.004 | nbody_system.time
+        instance.parameters.timestep = 0.00001 | nbody_system.time
         instance.commit_parameters()
+        print instance.parameters.timestep
         instance.particles.add_particles(stars)
         instance.commit_particles()
         energy_total_t0 = instance.potential_energy + instance.kinetic_energy

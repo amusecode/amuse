@@ -82,6 +82,8 @@ class nbody_to_si(object):
             factors_of_the_bases[row] = value.number * value.unit.factor  
             
         log_factors_of_the_bases = numpy.log(factors_of_the_bases)
+        numpy.exp(numpy.linalg.solve(exponents_of_the_bases, log_factors_of_the_bases))
+
         return numpy.exp(numpy.linalg.solve(exponents_of_the_bases, log_factors_of_the_bases))
         
     @property    

@@ -118,7 +118,7 @@ int evolve(double t_end)
   double dtime = delta_t/nsteps;
 
   /* 2. Calculate energies */
-  ///calculate the initial energies
+  ///calculate the inital energies
 
   double E_kin = calcEkin(bodies_pos, bodies_vel);
   double E_pot = calcEpot(bodies_pos, bodies_grav);
@@ -342,11 +342,11 @@ int get_time(double *time)
   return 0;
 }
 
-int initialize_particles(double t)
+int initialize_particles()
 {
   //clear_all();
 
-  t_now = t;
+  //t_now = t;
 
   /* Do an initial gravity calculation */
 
@@ -650,7 +650,6 @@ int get_theta_for_tree(double *theta_for_tree)
 
 int commit_parameters()
 {
-
   return -2;
 }
 
