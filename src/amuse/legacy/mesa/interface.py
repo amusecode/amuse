@@ -24,6 +24,20 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
 
+    def get_data_directory(self):
+        """
+        Returns the root name of the directory for the MESA
+        application data files.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'mesa', 'input')
+    
+    def get_output_directory(self):
+        """
+        Returns the root name of the directory to use by the 
+        application to store it's output / temporary files in.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'mesa', 'output')
+    
     @property
     def default_path_to_inlist(self):
         dir = os.path.dirname(__file__)

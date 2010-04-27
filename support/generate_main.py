@@ -56,6 +56,9 @@ class generate_main(Command):
             script_file.write('import sys\n')
             for x in [test_directory, src_directory]:
                 script_file.write("sys.path.append('{0}')\n".format(x))
+            script_file.write('amuse_root_dir = "')
+            script_file.write(self.amuse_dir)
+            script_file.write('"\n')
             script_file.write('IPython.Shell.start().mainloop()\n')
         os.chmod('iamuse.sh', stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)  
 

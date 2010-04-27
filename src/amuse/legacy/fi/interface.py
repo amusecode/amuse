@@ -36,6 +36,20 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker = 'worker', **options)
                      
+    def get_data_directory(self):
+        """
+        Returns the root name of the directory for the Fi
+        application data files.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'fi', 'input')
+    
+    def get_output_directory(self):
+        """
+        Returns the root name of the directory to use by the 
+        application to store it's output / temporary files in.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'fi', 'output')
+    
     def setup_module(self):
         return self.initialize_code()
         
