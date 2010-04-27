@@ -301,10 +301,20 @@ class MessageChannel(OptionalAttributes):
         return command, arguments
         
     @classmethod
+    def VALGRIND(cls, full_name_of_the_worker):
+        #arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', 'valgrind',  full_name_of_the_worker]
+        arguments = [full_name_of_the_worker]
+        command = 'valgrind'
+        return command, arguments
+        
+        
+    @classmethod
     def XTERM(cls, full_name_of_the_worker):
         arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', full_name_of_the_worker]
         command = 'xterm'
         return command, arguments
+        
+    
         
     def get_full_name_of_the_worker(self, type):
         if os.path.isabs(self.name_of_the_worker):
@@ -338,7 +348,8 @@ MessageChannel.DEBUGGERS = {
     "none":None,
     "gdb":MessageChannel.GDB, 
     "ddd":MessageChannel.DDD, 
-    "xterm":MessageChannel.XTERM
+    "xterm":MessageChannel.XTERM,
+    "valgrind":MessageChannel.VALGRIND,
 }
 
 #import time

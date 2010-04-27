@@ -92,7 +92,11 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
    
-    gravity = Hermite(convert_nbody)
+    gravity = BHTree(convert_nbody)
+    gravity.initialize_code()
+    #gravity.parameters.set_defaults()
+    #print gravity.parameters.timestep.as_quantity_in(units.Myr)
+    gravity.parameters.timestep = 0.0001 | units.Myr
     gravity.parameters.epsilon_squared = ((1.0 / number_of_stars**3) | units.parsec) ** 2
         
     stellar_evolution = SSE()

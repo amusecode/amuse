@@ -247,27 +247,16 @@ void predict_step(real dt)
 
 static int id_coll_primary = -1, id_coll_secondary = -1;
 
-void get_acc_jerk_pot_coll(real *epot, real *coll_time)
-{
-    int n = 0;
-    if(mpi_rank == 0){
-        n = ident.size();
-    }
+inline int mpi_distribute_data(int n) {
     MPI_Bcast(&n, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
-    /* do not use datatype as it will not work in the reduce op
-    MPI_Datatype new_type;
-    MPI_Type_contiguous(3, MPI_DOUBLE, &new_type);
-    MPI_Type_commit(&new_type);
-    */
-    cerr << n << endl;
-
     
     if(mpi_rank) {
         vel.resize(n+1);
         pos.resize(n+1);
-        mass.resize(n+1, 0.0);
         acc.resize(n+1);
         jerk.resize(n+1);
+        
+        mass.resize(n+1, 0.0);
         radius.resize(n+1, 0.0);
     }
     
@@ -277,6 +266,40 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     MPI_Bcast(&mass[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(&radius[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     
+    return n;
+}
+
+inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll_time_q_in) {
+    real summed = 0.0;
+    MPI_Reduce(&coll_time_q_in, &summed, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+    *coll_time_q_out = summed;
+    
+    summed = 0.0;
+    MPI_Reduce(epot, &summed, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    *epot = summed;
+    
+    if(!mpi_rank) {
+        acc_reduced.resize(n+1);
+        jerk_reduced.resize(n+1);
+    }
+    
+    MPI_Reduce(&acc[0], &acc_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&jerk[0], &jerk_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    
+    if(!mpi_rank) {
+        acc = acc_reduced;
+        jerk = jerk_reduced;
+    }
+}
+
+void get_acc_jerk_pot_coll(real *epot, real *coll_time)
+{
+    int n = 0;
+    if(mpi_rank == 0){
+        n = ident.size();
+    }
+    
+    n = mpi_distribute_data(n);
     
     for (int i = 0; i < n ; i++)
       {
@@ -392,29 +415,11 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
               }
           }
       }
-    real output = 0.0;
-    MPI_Reduce(&coll_time_q, &output, 1, MPI_DOUBLE, MPI_MIN, 0, MPI_COMM_WORLD);
+    
+    mpi_collect_data(n, epot, &coll_time_q, coll_time_q);
+    
                                                  // from q for quartic back
-    *coll_time = sqrt(sqrt(output));            // to linear collision time
-    
-    output = 0.0;
-    MPI_Reduce(epot, &output, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    *epot = output;
-    
-    if(!mpi_rank) {
-        acc_reduced.resize(n+1);
-        jerk_reduced.resize(n+1);
-    }
-    
-    MPI_Reduce(&acc[0], &acc_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&jerk[0], &jerk_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-    if(!mpi_rank) {
-        acc = acc_reduced;
-        jerk = jerk_reduced;
-    }
-    
-    
-    
+     *coll_time = sqrt(sqrt(coll_time_q));            // to linear collision time
 }
 
 //-----------------------------------------------------------------------------
@@ -582,8 +587,10 @@ int evolve_system(real t_end)
     // return.  This way, however, we can guarantee that the particles
     // can be extrapolated when the interface calls for positions and
     // velocities.
+    
     MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
     get_acc_jerk_pot_coll(&epot, &coll_time);
+    
     real dt = calculate_step(coll_time);
     t_wanted = t_end;
     if (!init_flag)
@@ -607,7 +614,7 @@ int evolve_system(real t_end)
             evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
             if (test_mode)
               {
-                real E;
+                real E = 0.0;
                 nest_err = get_kinetic_energy(&E);
                 E += epot;
                 if (!init_flag)
@@ -1060,43 +1067,47 @@ int get_kinetic_energy(double *kinetic_energy)
 
 int get_potential_energy(double *potential_energy)
 {
-    if(mpi_rank)     { // calculate only on the root mpi process, not on others, should be changed as this is order N**2
-        return 0;
-    }
-    int n = ident.size();
-    real (* save_pos)[NDIM] = new real[n][NDIM];
-    real (* save_vel)[NDIM] = new real[n][NDIM];
+    int n = 0;
+    real (* save_pos)[NDIM] = 0;
+    real (* save_vel)[NDIM] = 0;
 
     real dt = t_evolve-t;
+    if(mpi_rank == 0) {
+        n = ident.size();
+        save_pos = new real[n][NDIM];
+        save_vel = new real[n][NDIM];
+        dt = t_evolve-t;
 
-    if (dt > 0)
-    {
-      for (int i = 0; i < n ; i++)
+        if (dt > 0)
         {
-          for (int k = 0; k < NDIM ; k++)
+          for (int i = 0; i < n ; i++)
             {
-              save_pos[i][k] = pos[i][k];
-              save_vel[i][k] = vel[i][k];
+              for (int k = 0; k < NDIM ; k++)
+                {
+                  save_pos[i][k] = pos[i][k];
+                  save_vel[i][k] = vel[i][k];
+                }
             }
+          predict_step(t_evolve-t);
         }
-      predict_step(t_evolve-t);
     }
-
     real epot, coll_time;
     get_acc_jerk_pot_coll(&epot, &coll_time);
-
-    if (dt > 0)
-    {
-        for (int i = 0; i < n ; i++)
-          {
-            for (int k = 0; k < NDIM ; k++)
+    if(mpi_rank == 0) {
+        if (dt > 0)
+        {
+            for (int i = 0; i < n ; i++)
               {
-                pos[i][k] = save_pos[i][k];
-                vel[i][k] = save_vel[i][k];
+                for (int k = 0; k < NDIM ; k++)
+                  {
+                    pos[i][k] = save_pos[i][k];
+                    vel[i][k] = save_vel[i][k];
+                  }
               }
-          }
+        }
+        delete[] save_pos;
+        delete[] save_vel;
     }
-
     *potential_energy = epot;
     return 0;
 }

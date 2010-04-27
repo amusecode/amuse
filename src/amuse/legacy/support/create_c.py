@@ -515,8 +515,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.dedent().lf()
         self.out.lf() + '}'
         
-        self.out.lf() + 'if (characters) { delete characters; characters = 0;}'
-        self.out.lf() + 'if (output_characters) { delete output_characters; output_characters = 0;}'
+        self.out.lf() + 'if (characters) { delete[] characters; characters = 0;}'
+        self.out.lf() + 'if (output_characters) { delete[] output_characters; output_characters = 0;}'
         self.out.dedent()
         self.out.lf() + '}'
         
@@ -532,19 +532,19 @@ class MakeACStringOfAClassWithLegacyFunctions\
             
             max = self.mapping_from_dtype_to_maximum_number_of_inputvariables.get(dtype, 0)
             if max > 0:
-                self.out.lf() + 'delete ' 
+                self.out.lf() + 'delete[] ' 
                 self.out + dtype_spec.input_var_name  + ';'
             
             max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
             if max > 0:
-                self.out.lf() + 'delete '
+                self.out.lf() + 'delete[] '
                 self.out + dtype_spec.output_var_name  + ';'
         
         max = 0
         dtype='string'
         max = self.mapping_from_dtype_to_maximum_number_of_outputvariables.get(dtype, 0)
         if max > 0:
-            self.out.lf() + 'delete '
+            self.out.lf() + 'delete[] '
             self.out + 'output_strings' + ';'
             
     def output_new_statements(self, must_add_type):
