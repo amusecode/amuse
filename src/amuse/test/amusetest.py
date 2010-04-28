@@ -57,9 +57,12 @@ class TestCase(unittest.TestCase):
             relativeError = abs((second-first) / first)
         else:
             relativeError = abs((first-second) / second)
-
-        maxRelativeError = (relativeError/relativeError) * (0.1 ** places)
         
+        try:   
+            maxRelativeError = (relativeError/relativeError) * (0.1 ** places)
+        except ZeroDivisionError:
+            return
+            
         if relativeError >= maxRelativeError:
             raise self.failureException,(msg or "{0!r} != {1!r} within {2!r} places".format(first, second, places))        
 

@@ -278,4 +278,31 @@ class FullTextFileFormatProcessor(FileFormatProcessor):
     def load_string(self, string):
         """Return a particle set, read from the string"""
         raise CannotLoadException(self.format)
+        
+
+class BinaryFileFormatProcessor(FileFormatProcessor):
+    """
+    Abstract base class of all fileformat processors that process
+    their data by first reading the complete text string
+    
+    Subclasses need to implement the
+    :func:`store_string` and :func:`load_string` methods.
+    
+    """
+
+    def store(self):
+        with open(self.filename, 'wb') as f:
+            self.write_file(f)
+                
+    def load(self):
+        with open(self.filename, 'rb') as f:
+            return self.load_file(f)
+        
+    def store_file(self, file):
+        """Store the data on the opened file"""
+        raise CannotSaveException(self.format)
+                
+    def load_file(self, string):
+        """Return a particle set, read from the binary file"""
+        raise CannotLoadException(self.format)
     

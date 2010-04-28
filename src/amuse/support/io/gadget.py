@@ -1,0 +1,256 @@
+from amuse.support.data import core
+from amuse.support.core import late
+from amuse.support.units import units
+from amuse.support.units import nbody_system
+from amuse.support.io import base
+
+from collections import namedtuple
+
+import struct
+import numpy
+
+class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
+    provided_formats = ['gadget']
+    GAS = 0
+    HALO = 1
+    DISK = 2
+    BULGE = 3
+    STARS = 4
+    BNDRY = 5
+    
+    @late
+    def header_format(self):
+        collate = []
+        collate.append(self.endianness)        
+        for name, times, formatchar in self.header_struct_format:
+            for t in range(times):
+                collate.append(formatchar)
+        return ''.join(collate)
+        
+    @base.format_option
+    def header_struct_format(self):
+        return (
+            ('Npart', 6, 'I'),
+            ('Massarr', 6, 'd'),
+            ('Time', 1, 'd'),
+            ('Redshift', 1, 'd'),
+            ('FlagSfr', 1, 'i'),
+            ('FlagFeedback', 1, 'i'),
+            ('Nall', 6, 'i'),
+            ('FlagCooling', 1, 'i'),
+            ('NumFiles', 1, 'i'),
+            ('BoxSize', 1, 'd'),
+            ('Omega0', 1, 'd'),
+            ('OmegaLambda', 1, 'd'),
+            ('HubbleParam', 1, 'd'),
+            ('FlagAge', 1, 'd'),
+            ('FlagMetals', 1, 'd'),
+            ('NallHW', 6, 'd'),
+            ('flag_entr_ics', 1, 'i'),
+        )
+        
+    @base.format_option
+    def endianness(self):
+        return '@' #native
+        
+    @base.format_option
+    def has_potential_energy(self):
+        """Set to true if the file has a potential energy block"""
+        return False
+        
+    @base.format_option
+    def has_acceleration(self):
+        """Set to true if the file has a acceleration block"""
+        return False
+    
+    @base.format_option
+    def has_rate_of_entropy_production(self):
+        """Set to true if the file has a block with the
+        rate of change of the entropic function of each gas particle
+        """
+        return False
+        
+    @base.format_option
+    def has_timestep(self):
+        """Set to true if the file has a block with the
+        individual timestep for each particle.
+        """
+        return False
+    
+    @late
+    def header_size(self):
+        return struct.calcsize(self.header_format)
+    
+    @late
+    def struct_class_name(self):
+        return 'GadgetHeader'
+        
+    @late
+    def struct_class(self):
+        collate = []       
+        for name, times, formatchar in self.header_struct_format:
+            collate.append(name)
+        attribute_names = ' '.join(collate)
+        return namedtuple(self.struct_class_name, attribute_names)
+    
+    @late
+    def float_type(self):
+        result = numpy.dtype(numpy.float32)
+        if self.endianness == '@':
+            return result
+        else:
+            return result.newbyteorder(self.endianness)
+    
+    @late
+    def uint_type(self):
+        result = numpy.dtype(numpy.uint32)
+        if self.endianness == '@':
+            return result
+        else:
+            return result.newbyteorder(self.endianness)
+    
+    @late
+    def total_number_of_particles(self):
+        return sum(self.header_struct.Npart)
+        
+    @late
+    def total_number_of_particles_with_vairable_masses(self):
+        result = 0
+        for x, n in zip(self.header_struct.Massarr, self.header_struct.Npart):
+            if x == 0.0:
+                result += n
+        return result
+    @late
+    def number_of_gas_particles(self):
+        return self.header_struct.NPart[self.GAS]
+        
+    def collect_values(self, values):
+        offset = 0
+        result = []
+        for name, times, formatchar in self.header_struct_format:
+            if times > 1:
+                result.append(values[offset: offset+times])
+            else:
+                result.append(values[offset])
+            offset += times
+        return result
+        
+    def load_header(self, file):
+        header_bytes = self.read_fortran_block(file)
+        values = struct.unpack(self.header_format, header_bytes[0:self.header_size])
+        values = self.collect_values(values)
+        self.header_struct = self.struct_class(*values)
+    
+    def load_body(self, file):
+        self.positions = self.read_fortran_block_float_vectors(file)
+        self.velocities = self.read_fortran_block_float_vectors(file)
+        self.ids = self.read_fortran_block_ints(file)
+        
+        if self.total_number_of_particles_with_vairable_masses > 0:
+            self.masses = self.read_fortran_block_floats(file)
+        else:
+            self.masses = None
+            
+        if self.number_of_gas_particles > 0:
+            self.u = self.read_fortran_block_floats(file)
+            self.density = self.read_fortran_block_floats(file)
+            self.hsml = self.read_fortran_block_floats(file)
+        else:
+            self.u = None
+            self.density  = None
+            self.hsml = None
+            
+        if self.has_potential_energy:
+            self.pot = self.read_fortran_block_floats(file)
+        else:
+            self.pot = None
+            
+        if self.has_acceleration:
+            self.acc = self.read_fortran_block_floats(file)
+        else:
+            self.acc = None
+            
+        if self.has_rate_of_entropy_production:
+            self.da_dt = self.read_fortran_block_floats(file)
+        else:
+            self.da_dt = None
+            
+        if self.has_timestep:
+            self.dt = self.read_fortran_block_floats(file)
+        else:
+            self.dt = None
+    
+    def new_sets_from_arrays(self):
+        offset = 0
+        ids_per_set = []
+        for x in self.header_struct.Npart:
+            ids_per_set.append(self.ids[offset:offset+x])
+            offset += x
+            
+        sets = [core.Particles(len(x), keys=x) for x in ids_per_set]
+        
+        for x in sets:
+            length = len(x)
+            x.position = nbody_system.length.new_quatity(self.positions[offset:offset+length])
+            x.velocity = nbody_system.speed.new_quatity(self.velocities[offset:offset+length])
+            offset += length
+        
+        offset = 0
+        for x, mass in zip(sets, self.header_struct.Massarr):
+            if mass == 0.0:
+                length = len(x)
+                x.mass = nbody_system.mass.new_quantity(self.masses[offset:offset+length])
+                offset += length
+            else:
+                x.mass = nbody_system.mass.new_quantity(mass)
+        
+        if self.number_of_gas_particles > 0:
+            gas_set = sets[self.GAS]
+            unit = nbody_system.length / nbody_system.time ** 2
+            gas_set.internal_energy = unit.new_quantity(self.u)
+            unit = units.none
+            gas_set.rho = unit.new_quantity(self.u)
+            gas_set.smoothing_length = nbody_system.length.new_quantity(self.hsml)
+            
+        
+        return sets
+        
+            
+        
+    def load_file(self, file):
+        self.load_header(file)
+        self.load_body()
+        return self.new_sets_from_arrays()
+        
+    def read_fortran_block(self, file):
+        format = self.endianness+'I'
+        bytes = file.read(4)
+        length_of_block = struct.unpack(format, bytes)[0]
+        result = file.read(length_of_block)
+        bytes = file.read(4)
+        length_of_block_after = struct.unpack(format, bytes)[0]
+        if(length_of_block_after != length_of_block):
+            raise Exception("Block is mangled sizes don't match before: {0}, after: {1}".format(length_of_block, length_of_block_after))
+        return result
+        
+    def read_fortran_block_floats(self, file):
+        bytes = self.read_fortran_block(file)
+        return numpy.frombuffer(bytes, dtype=self.float_type)
+        
+    def read_fortran_block_ints(self, file):
+        bytes = self.read_fortran_block(file)
+        return numpy.frombuffer(bytes, dtype=self.uint_type)
+        
+    def read_fortran_block_float_vectors(self, file):
+        result = self.read_fortran_block_floats(file)
+        return result.reshape(len(result)/3,3)
+        
+    def write_fortran_block(self, file, bytes):
+        format = self.endianness+'I'
+        length_of_block = len(bytes)
+        file.write(struct.pack(format, length_of_block))
+        file.write(bytes)
+        file.write(struct.pack(format, length_of_block))
+        
+        
+        
