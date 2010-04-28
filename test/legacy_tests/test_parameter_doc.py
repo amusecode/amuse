@@ -40,7 +40,7 @@ class TestParameterDoc(amusetest.TestCase):
         hermite.parameters.epsilon_squared = 10 | units.km**2
 
         docstring =  hermite.parameters.__doc__
-        self.assertTrue("smoothing parameter for gravity calculations (default value:300000.0 m**2)" in docstring)
+        self.assertTrue("smoothing parameter for gravity calculations (default value:0.0 m**2)" in docstring)
 
         parameter_str_method_output = str(hermite.parameters)
         self.assertTrue("epsilon_squared: 10000000.0 m**2" in parameter_str_method_output)
