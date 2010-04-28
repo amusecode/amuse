@@ -193,6 +193,12 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
             length = len(x)
             x.position = nbody_system.length.new_quatity(self.positions[offset:offset+length])
             x.velocity = nbody_system.speed.new_quatity(self.velocities[offset:offset+length])
+            if not self.pot is None:
+                x.potential_energy = nbody_system.energy.new_quatity(self.pot[offset:offset+length])
+            if not self.acc is None:
+                x.acceleration = nbody_system.acceleration.new_quatity(self.acc[offset:offset+length])
+            if not self.dt is None:
+                x.timestep = nbody_system.time.new_quatity(self.dt[offset:offset+length])
             offset += length
         
         offset = 0
@@ -208,8 +214,8 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
             gas_set = sets[self.GAS]
             unit = nbody_system.length / nbody_system.time ** 2
             gas_set.internal_energy = unit.new_quantity(self.u)
-            unit = units.none
-            gas_set.rho = unit.new_quantity(self.u)
+            unit = self.nbody_system.mass / self.nbody_system.length ** 3
+            gas_set.rho = unit.new_quantity(self.density)
             gas_set.smoothing_length = nbody_system.length.new_quantity(self.hsml)
             
         
