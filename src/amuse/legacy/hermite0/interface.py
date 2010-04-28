@@ -13,13 +13,7 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
 
     .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
     """
-    include_headers = ['worker_code.h', 'parameters.h', 'local.h']
-
-    t = legacy_global(name='t',id=20,dtype='d')
-    dt_param = legacy_global(name='dt_param',id=21,dtype='d')
-    dt_dia = legacy_global(name='dt_dia',id=22,dtype='d')
-    eps2 = legacy_global(name='eps2',id=23,dtype='d')
-    flag_collision = legacy_global(name='flag_collision',id=24,dtype='i')
+    include_headers = ['worker_code.h']
 
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
@@ -45,6 +39,108 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         function.resutl_doc = """
         0 - OK
            The particle was deleted
+        """
+        return function
+    
+    @legacy_function
+    def get_dt_dia():
+        """
+        Get the time interval between diagnostics output.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_dia', dtype='float64', direction=function.OUT,
+            description = "the time interval between diagnostics output")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_dt_dia():
+        """
+        Set the time interval between diagnostics output.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_dia', dtype='float64', direction=function.IN,
+            description = "the time interval between diagnostics output")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
+    @legacy_function
+    def get_dt_param():
+        """
+        Get the timestep scaling factor.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_dia', dtype='float64', direction=function.OUT,
+            description = "the timestep scaling factor")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_dt_param():
+        """
+        Set the timestep scaling factor.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt_dia', dtype='float64', direction=function.IN,
+            description = "the timestep scaling factor")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
+        """
+        return function
+    
+    @legacy_function
+    def get_time():
+        """
+        Get the current simulation time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.OUT,
+            description = "the current simulation time")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was retrieved
+        -1 - ERROR
+            could not retrieve parameter
+        """
+        return function
+        
+    @legacy_function
+    def set_time():
+        """
+        Set the current simulation time.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('time', dtype='float64', direction=function.IN,
+            description = "the current simulation time")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            the parameter was set
+        -1 - ERROR
+            could not set parameter
         """
         return function
 
@@ -73,12 +169,37 @@ class Hermite(GravitationalDynamics):
         )
 
     def define_parameters(self, object):
-        object.add_attribute_parameter(
-            "eps2",
-            "epsilon_squared",
-            "smoothing parameter for gravity calculations",
-            nbody_system.length * nbody_system.length,
-            0.3 | nbody_system.length * nbody_system.length
+        object.add_method_parameter(
+            "get_eps2",
+            "set_eps2", 
+            "epsilon_squared", 
+            "smoothing parameter for gravity calculations", 
+            nbody_system.length * nbody_system.length, 
+            0.0 | nbody_system.length * nbody_system.length
+        )
+        object.add_method_parameter(
+            "get_dt_param",
+            "set_dt_param",
+            "dt_param",
+            "timestep scaling factor", 
+            units.none, 
+            0.03 | units.none
+        )
+        object.add_method_parameter(
+            "get_dt_dia",
+            "set_dt_dia",
+            "dt_dia", 
+            "time interval between diagnostics output", 
+            nbody_system.time,
+            1.0 | nbody_system.time
+        )
+        object.add_method_parameter(
+            "get_time",
+            "set_time",
+            "time",
+            "current simulation time", 
+            nbody_system.time, 
+            0.0 | nbody_system.time
         )
 
 

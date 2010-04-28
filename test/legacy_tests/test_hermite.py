@@ -1,14 +1,14 @@
 from amuse.test.amusetest import TestWithMPI
 import os
 import sys
+import numpy
+import math
 
 from amuse.legacy.hermite0.interface import HermiteInterface, Hermite
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-
-import numpy
 
 try:
     from matplotlib import pyplot
@@ -139,7 +139,6 @@ class TestAmuseInterface(TestWithMPI):
         
         hermite.evolve_model(365.0 | units.day)
         hermite.update_particles(stars)
-        print stars[0].x
         
         position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
@@ -281,7 +280,80 @@ class TestAmuseInterface(TestWithMPI):
         
         curr_state =  instance.get_state(1)
         
-        self.assertEquals(curr_state[0], 16|units.kg, 8)        
+        self.assertEquals(curr_state[0], 16|units.kg, 8)
+    
+    def test6(self):
+        print "Test6: Testing Hermite parameters"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
+        instance = Hermite(convert_nbody)
+        
+        (value, error) = instance.get_eps2()
+        self.assertEquals(0, error)
+        self.assertEquals(0.0, value)
+        self.assertAlmostEquals(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+        for x in [0.01, 0.1, 0.2]:
+            instance.parameters.epsilon_squared = x | units.AU**2
+            self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
+        
+        (value, error) = instance.get_dt_param()
+        self.assertEquals(0, error)
+        self.assertEquals(0.03, value)
+        self.assertAlmostEquals(0.03 | units.none, instance.parameters.dt_param, in_units=units.none)
+        for x in [0.001, 0.01, 0.1]:
+            instance.parameters.dt_param = x | units.none
+            self.assertAlmostEquals(x | units.none, instance.parameters.dt_param, in_units=units.none)
+        
+        (value, error) = instance.get_dt_dia()
+        self.assertEquals(0, error)
+        self.assertEquals(1.0, value)
+        self.assertAlmostEquals(1.0 | units.yr, instance.parameters.dt_dia, in_units=units.yr)
+        for x in [0.1, 10.0, 100.0]:
+            instance.parameters.dt_dia = x | units.yr
+            self.assertAlmostEquals(x | units.yr, instance.parameters.dt_dia, in_units=units.yr)
+        
+        (value, error) = instance.get_time()
+        self.assertEquals(0, error)
+        self.assertEquals(0.0, value)
+        self.assertAlmostEquals(0.0 | units.yr, instance.parameters.time, in_units=units.yr)
+        for x in [1.0, 10.0, 100.0]:
+            instance.parameters.time = x | units.yr
+            self.assertAlmostEquals(x | units.yr, instance.parameters.time, in_units=units.yr)
+        instance.stop()
+    
+    def test7(self):
+        print "Test7: Testing effect of Hermite parameter epsilon_squared"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        
+        particles = core.Particles(2)
+        sun = particles[0]
+        sun.mass = 1.0 | units.MSun
+        sun.position = [0.0, 0.0, 0.0] | units.AU
+        sun.velocity = [0.0, 0.0, 0.0] | units.AU / units.yr
+        sun.radius = 1.0 | units.RSun
 
-
-         
+        earth = particles[1]
+        earth.mass = 5.9736e24 | units.kg
+        earth.radius = 6371.0 | units.km
+        earth.position = [0.0, 1.0, 0.0] | units.AU
+        earth.velocity = [2.0*numpy.pi, -0.0001, 0.0] | units.AU / units.yr
+        
+        initial_direction = math.atan((earth.velocity[0]/earth.velocity[1]).value_in(units.none))
+        final_direction = []
+        for log_eps2 in range(-9,10,2):
+            instance = Hermite(convert_nbody)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            instance.evolve_model(0.25 | units.yr)
+            final_direction.append(math.atan((instance.particles[1].velocity[0]/
+                instance.particles[1].velocity[1]).value_in(units.none)))
+            instance.stop()
+        # Small values of epsilon_squared should result in normal earth-sun dynamics: rotation of 90 degrees
+        self.assertAlmostEquals(abs(final_direction[0]), abs(initial_direction+math.pi/2.0), 2)
+        # Large values of epsilon_squared should result in ~ no interaction
+        self.assertAlmostEquals(final_direction[-1], initial_direction, 2)
+        # Outcome is most sensitive to epsilon_squared when epsilon_squared = d(earth, sun)^2
+        delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
+        self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
+        

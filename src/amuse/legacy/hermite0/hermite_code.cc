@@ -90,10 +90,49 @@ ostream* sout = &cout;
 
 // Accessors for use by the C++ main driver only:
 
-void set_t(real tt)                {t = tt;}
-void set_dt_param(real dt)        {dt_param = dt;}
-void set_dt_dia(real dt)        {dt_dia = dt;}
-void set_eps(real eps)                 {eps2 = eps*eps;}
+//void set_t(real tt)                {t = tt;}
+//void set_dt_param(real dt)        {dt_param = dt;}
+//void set_dt_dia(real dt)        {dt_dia = dt;}
+//void set_eps(real eps)                 {eps2 = eps*eps;}
+
+int get_eps2(double *_epsilon_squared){
+    *_epsilon_squared = eps2;
+    return 0;
+}
+int set_eps2(double _epsilon_squared){
+    eps2 = _epsilon_squared;
+    return 0;
+}
+int get_dt_dia(double *_dt_dia){
+    *_dt_dia = dt_dia;
+    return 0;
+}
+int set_dt_dia(double _dt_dia){
+    dt_dia = _dt_dia;
+    return 0;
+}
+int get_dt_param(double *_dt_param)
+{
+  *_dt_param = dt_param;
+  return 0;
+}
+int set_dt_param(double _dt_param)
+{
+  dt_param = _dt_param;
+  return 0;
+}
+int get_time(double *_t)
+{
+  *_t = t;
+  return 0;
+}
+int set_time(double _t)
+{
+  t = _t;
+  return 0;
+}
+
+
 
 
 
@@ -1031,19 +1070,6 @@ int initialize_code()
     return 0;
 }
 
-int get_eps2(double *_eps2)
-// cello, proj1 NYI?!
-{
-    *_eps2 = eps2;
-    return 0;
-}
-
-int set_eps2(double _eps2)
-// cello, test implementation!
-{
-    eps2 = _eps2;
-    return 0;
-}
 
 int get_kinetic_energy(double *kinetic_energy)
 {
@@ -1229,13 +1255,6 @@ int get_indices_of_colliding_particles(int *new_id1, int *new_id2)
     *new_id1 = get_colliding_primary();
     *new_id2 = get_colliding_secondary(*new_id1);
     return 0;
-}
-
-int get_time(double *_t)
-//cello, proj1
-{
-  *_t = t;
-  return 0;
 }
 
 int get_total_mass(double *_mass)

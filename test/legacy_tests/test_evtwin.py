@@ -25,7 +25,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         instance.stop()
 
-        for x in [0.1, 0.01, 0.001, 0.0001]:
+        for x in [0.03, 0.02, 0.01, 0.004, 0.001, 0.0003, 0.0001]:
             instance = EVtwinInterface()
             error = instance.set_metallicity(x)
             self.assertEquals(0, error)
