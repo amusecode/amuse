@@ -245,7 +245,7 @@ class TestFiInterface(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def test2(self):
+    def xtest2(self):
         instance = Fi()
         
         
