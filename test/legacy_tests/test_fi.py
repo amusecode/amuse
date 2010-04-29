@@ -248,24 +248,31 @@ class TestFiInterface(TestWithMPI):
     def test2(self):
         instance = Fi()
         
+        
+        error = instance.initialize_code()
+        self.assertEquals(0, error)
+        print 1
         self.assertEquals(False, instance.get_radiation_flag())
+        print 2
         instance.set_radiation_flag(True)
+        print 3
         self.assertEquals(True, instance.get_radiation_flag())
         
         self.assertEquals(False, instance.get_star_formation_flag())
         instance.set_star_formation_flag(True)
         self.assertEquals(True, instance.get_star_formation_flag())
         
-        error = instance.initialize_code()
-        self.assertEquals(0, error)
-        
         stars = core.Particles(2)
         stars.mass = [1.0, 3.0e-6] | units.MSun
         stars.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
         stars.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
         stars.radius = [1.0, 0.01] | units.RSun
+        print 1
+        instance.commit_parameters()
+        print 2
         instance.particles.add_particles(stars)
         instance.commit_particles()
+        print 3
         instance.evolve_model(365.0 | units.day)
         
         instance.cleanup_code()
