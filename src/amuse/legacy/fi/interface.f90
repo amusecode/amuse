@@ -15,8 +15,6 @@ end function
 
 function commit_particles() result(ret)
   integer :: ret
-  call muse_init
-  call muse_set_time(0.0)
   call muse_finalize_init 
   ret=0
 end function
@@ -29,6 +27,8 @@ end function
 
 function commit_parameters() result(ret)
   integer :: ret
+  call muse_init
+  call muse_set_time(0.0)
   ret=0
 end function
 
@@ -1161,8 +1161,19 @@ function get_sph_visc(x) result(ret)
   ret=0
 end function
 
+function set_fi_data_directory(x) result(ret)
+  integer :: ret
+  character(len=200) :: x
+  call amuse_set_fi_data_directory(x)
+  ret=0
+end function
+function get_fi_data_directory(x) result(ret)
+  integer :: ret
+  character(len=200) :: x
+  call amuse_get_fi_data_directory(x)
+  ret=0
+end function
 
- 
 ! dummies:
 ! (only necessary to be able to compile using old muse style interface files)
 

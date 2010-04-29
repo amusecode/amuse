@@ -9,6 +9,7 @@ from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data import core
+from amuse.legacy.support import channel
 
 class TestMPIInterface(TestWithMPI):
 
@@ -98,6 +99,7 @@ class TestMPIInterface(TestWithMPI):
         instance.setup_module()
         instance.set_eps(0.001)
         instance.set_directsum(0)
+        instance.commit_parameters()
         instance.new_particle( 
            [1.0,1.0,1.0],
            [0.0,0.0,0.0],
@@ -107,7 +109,8 @@ class TestMPIInterface(TestWithMPI):
            [0.0,1.0,0.0],
            [0.0,0.0,0.0],
            [0.0,0.0,0.0] )
-        instance.initialize_particles(0.0) 
+        instance.initialize_particles(0.0)
+        self.assertEqual(instance.get_number_of_particles().number_of_particles, 3)
         instance.synchronize_model()        
         Ep=instance.get_potential_energy()['potential_energy']
         Ek=instance.get_kinetic_energy()['kinetic_energy']
@@ -144,6 +147,7 @@ class TestEvrard(TestWithMPI):
         nb.set_gdgop(0)
         nb.set_uentropy(0)
         nb.set_verbosity(0)
+        nb.commit_parameters()
         
         ids,error = nb.new_sph_particle(mass,smooth,x,y,z,vx,vy,vz,u)
         if filter(lambda x: x != 0, error) != []: raise Exception
@@ -182,18 +186,19 @@ class TestFiInterface(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.parameters.timestep = 0.5 | units.day
         self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
+        instance.commit_parameters()
         instance.commit_particles()
         self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
         instance.stop()
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
-        instance = Fi()
+        instance = Fi(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00000001 | units.AU**2
         instance.parameters.timestep = 0.5 | units.day
         self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
+        instance.commit_parameters()
         
         stars = core.Particles(2)
         
@@ -220,7 +225,7 @@ class TestFiInterface(TestWithMPI):
         
         postion_after_full_rotation = earth.position.x
         
-        self.assertAlmostRelativeEqual(postion_at_start, postion_after_full_rotation, 5)
+        self.assertAlmostRelativeEqual(postion_at_start, postion_after_full_rotation, 4)
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
        
         instance.update_particles(stars)
@@ -245,34 +250,31 @@ class TestFiInterface(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def xtest2(self):
-        instance = Fi()
-        
-        
+    def test2(self):
+        print "Test 2: testing fi data directory"
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        instance = Fi(convert_nbody, redirection='none')
         error = instance.initialize_code()
         self.assertEquals(0, error)
-        print 1
+        self.assertTrue('data/fi/input/' in instance.get_fi_data_directory().fi_data_directory)
+        
         self.assertEquals(False, instance.get_radiation_flag())
-        print 2
         instance.set_radiation_flag(True)
-        print 3
         self.assertEquals(True, instance.get_radiation_flag())
         
         self.assertEquals(False, instance.get_star_formation_flag())
         instance.set_star_formation_flag(True)
         self.assertEquals(True, instance.get_star_formation_flag())
+        instance.commit_parameters()
         
         stars = core.Particles(2)
         stars.mass = [1.0, 3.0e-6] | units.MSun
         stars.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
         stars.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
         stars.radius = [1.0, 0.01] | units.RSun
-        print 1
-        instance.commit_parameters()
-        print 2
+        
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        print 3
         instance.evolve_model(365.0 | units.day)
         
         instance.cleanup_code()

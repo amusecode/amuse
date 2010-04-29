@@ -1485,3 +1485,14 @@ subroutine amuse_get_sph_visc(x)
   character(len=4), intent(out) :: x
   x=sph_visc
 end subroutine
+
+subroutine amuse_set_fi_data_directory(x)
+  include 'globals.h'
+  character(len=200), intent(in) :: x
+  datadir=x
+end subroutine
+subroutine amuse_get_fi_data_directory(x)
+  include 'globals.h'
+  character(len=200), intent(out) :: x
+  x=datadir
+end subroutine

@@ -1,3 +1,4 @@
+import os
 import numpy
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 #from amuse.support.units import nbody_system
@@ -1338,7 +1339,41 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
             The code does not have support for querying the time
         """
         return function
-        
+    
+    @legacy_function
+    def set_fi_data_directory():
+        """
+        Update the path to the Fi database.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('fi_data_directory', dtype='string', direction=function.IN,
+            description = "Name of the Fi data directory")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was set
+        -1 - ERROR
+            Directory does not exist
+        """
+        return function
+    
+    @legacy_function
+    def get_fi_data_directory():
+        """
+        Retrieve the path to the Fi database currently used.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('fi_data_directory', dtype='string', direction=function.OUT,
+            description = "Name of the Fi data directory")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Value was retrieved
+        -1 - ERROR
+            Could not retrieve value
+        """
+        return function
+    
 class glfi(fi):
     def __init__(self, **options):
         LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
@@ -1372,6 +1407,8 @@ class Fi(GravitationalDynamics):
     
     def initialize_code(self):
         result = self.overridden().initialize_code()
+        
+        self.legacy_interface.set_fi_data_directory(self.legacy_interface.get_data_directory()+'/')
         
         value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
         self.legacy_interface.set_unitl_in_kpc(value)
