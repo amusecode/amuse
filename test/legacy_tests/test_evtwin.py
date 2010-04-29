@@ -35,8 +35,11 @@ class TestInterface(TestWithMPI):
             error = instance.set_ev_path(instance.get_data_directory())
             self.assertEquals(0, error)      
             error = instance.initialize_code()
-            self.assertEquals(-1, error)
-            print "Metallicities other than solar need additional starting models!"
+            if os.path.exists(os.path.join(instance.get_data_directory(),'zams','zams'+str(x)[2:]+'.mod')):
+                self.assertEquals(0, error)
+            else:
+                self.assertEquals(-1, error)
+                print "Metallicities other than solar need additional starting models!"
             instance.stop()
     
     def test2(self):

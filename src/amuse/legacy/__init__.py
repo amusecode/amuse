@@ -21,5 +21,7 @@ def get_amuse_root_dir():
         except KeyError:
             amuse_root_dir = os.path.abspath(__file__)
             while not os.path.exists(os.path.join(amuse_root_dir, 'build.py')):
-                amuse_root_dir = os.path.dirname(amuse_root_dir)
+                (amuse_root_dir, subdir) = os.path.split(amuse_root_dir)
+                if not subdir:
+                    raise Exception("Could not locate AMUSE root directory!")
     return amuse_root_dir

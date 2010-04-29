@@ -61,7 +61,57 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         
     def reinitialize_particles(self):
         return self.recommit_particles()
-                
+    
+    def set_radiation_flag(self, radiation_flag):
+        """
+        True means: radiation (i.e. radiative cooling/heating) is included
+        False means: no radiation, and implies no star formation
+        """
+        if radiation_flag:
+            error = self.set_radiate(zeroiftrue=0)
+        else:
+            error = self.set_radiate(zeroiftrue=1)
+        if error:
+            raise Exception("Could not set radiation_flag. Retrieved error_code: {0}".format(error))
+    
+    def get_radiation_flag(self):
+        """
+        True means: radiation (i.e. radiative cooling/heating) is included
+        False means: no radiation, and implies no star formation
+        """
+        (radiation_flag, error) = self.get_radiate()
+        if error:
+            raise Exception("Could not get radiation_flag. Retrieved error_code: {0}".format(error))
+        if radiation_flag:
+            return False
+        else:
+            return True
+    
+    def set_star_formation_flag(self, star_formation_flag):
+        """
+        True means: star formation is included
+        False means: no star formation included
+        """
+        if star_formation_flag:
+            error = self.set_starform(zeroiftrue=0)
+        else:
+            error = self.set_starform(zeroiftrue=1)
+        if error:
+            raise Exception("Could not set star_formation_flag. Retrieved error_code: {0}".format(error))
+    
+    def get_star_formation_flag(self):
+        """
+        True means: star formation is included
+        False means: no star formation included
+        """
+        (star_formation_flag, error) = self.get_starform()
+        if error:
+            raise Exception("Could not get star_formation_flag. Retrieved error_code: {0}".format(error))
+        if star_formation_flag:
+            return False
+        else:
+            return True
+    
     @legacy_function    
     def new_particle():
         function = LegacyFunctionSpecification()  
@@ -1321,12 +1371,13 @@ class Fi(GravitationalDynamics):
         )     
     
     def initialize_code(self):
-        self.overridden().initialize_code()
+        result = self.overridden().initialize_code()
         
         value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
         self.legacy_interface.set_unitl_in_kpc(value)
         value=self.convert_nbody.to_si(nbody_system.mass).in_(units.MSun).number 
         self.legacy_interface.set_unitm_in_msun(value)
+        return result
 
     def define_parameters(self, object):
         object.add_method_parameter(

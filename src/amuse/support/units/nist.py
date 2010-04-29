@@ -25,7 +25,7 @@ mu0=4*numpy.pi*1.e-7 | N/A**2
 eps0=mu0**-1*c**-2
 #machine constants
 eps =numpy.finfo(numpy.double).eps
-precision = int(round(numpy.log10(2/eps)))
+precision = int(numpy.log10(2/eps))
 """
 class GetConstantsFromFiles(object):
     
