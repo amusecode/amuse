@@ -80,8 +80,7 @@ class TestLiteratureRefs(unittest.TestCase):
         
     def test4(self):
         print "This test shows how the references to currently used legacy codes can be obtained."
-        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        convert_nbody.set_as_default()
+       
         gravity = BHTree()
         gravity2 = Hermite()
         gravity3 = PhiGRAPE()

@@ -88,7 +88,6 @@ def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_t
     total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)
     
     convert_nbody = nbody_system.nbody_to_si(total_mass, 1.0 | units.parsec)
-    convert_nbody.set_as_default()
     
     particles = MakePlummerModel(number_of_stars, convert_nbody).result;
    

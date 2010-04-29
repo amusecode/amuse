@@ -133,10 +133,6 @@ class PhiGRAPE(GravitationalDynamics):
 
 
     def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False, **options):
-
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-
         nbody_interface = None
         if use_gl:
             nbody_interface = PhiGRAPEInterfaceGL(mode, **options)

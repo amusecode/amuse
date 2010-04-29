@@ -150,11 +150,6 @@ class SmallN(GravitationalDynamics):
     
     
     def __init__(self, convert_nbody = None):
-        
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-       
-        
         legacy_interface = SmallNInterface()
         
         GravitationalDynamics.__init__(

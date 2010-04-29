@@ -297,7 +297,7 @@ class TestAmuseInterface(TestWithMPI):
         
     def test5(self):
 
-        instance = BHTree(BHTree.NBODY)
+        instance = BHTree()
         instance.commit_parameters()
         
         index = instance.new_particle(
@@ -386,7 +386,7 @@ class TestAmuseInterface(TestWithMPI):
         self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
         
     def test9(self):
-        instance = BHTree(BHTree.NBODY)
+        instance = BHTree()
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         
@@ -422,7 +422,7 @@ class TestAmuseInterface(TestWithMPI):
             self.assertAlmostEqual(potential0, potential1, 5)
             
     def test10(self):
-        instance = BHTree(BHTree.NBODY)
+        instance = BHTree()
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         instance.commit_parameters()
@@ -641,7 +641,7 @@ class TestAmuseInterface(TestWithMPI):
         stars.radius = 0.00001 | nbody_system.length
         stars.scale_to_standard()
         
-        instance = BHTree(BHTree.NBODY)
+        instance = BHTree()
         instance.initialize_code()
         instance.parameters.epsilon_squared = (1.0 / 20.0 / (number_of_stars**0.33333) | nbody_system.length)**2
         instance.parameters.timestep = 0.004 | nbody_system.time

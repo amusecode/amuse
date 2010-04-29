@@ -6,7 +6,6 @@ from amuse.support.data.core import Particle
 
 if __name__=='__main__':
     myunits = nbody_system.nbody_to_si(1 | MSun, 1 | AU)
-    myunits.set_as_default()
 
     # Orbital data
     pos_earth=numpy.array([ 8.418982185410142E-01,\
@@ -43,7 +42,7 @@ if __name__=='__main__':
     pos_moon=pos_moon-cmpos
     vel_moon=vel_moon-cmvel
 
-    nb=SmallN()
+    nb=SmallN(myunits)
     
     earth = nb.particles.add_particle(earth)
     moon = nb.particles.add_particle(moon)

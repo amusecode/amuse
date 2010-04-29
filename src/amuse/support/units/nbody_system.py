@@ -46,10 +46,6 @@ class nbody_to_si(object):
             raise Exception("Must provide two orthogonal units for example mass and length or time and length")
         unit_was_found = [False, False, False]
         
-        #if len(self.unit1.base) > 1:
-        #    raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
-        #if len(self.unit2.base) > 1:
-        #    raise Exception("Currently cannot handle unit with more than one base, only meters or seconds or kg")
         self.Gis1 = units.one / constants.G
         
         base = self.Gis1.unit.base
@@ -62,7 +58,6 @@ class nbody_to_si(object):
                     unit_was_found[i] = True
         if len(filter(None, unit_was_found)) < 2:
             raise Exception("Must provide more units")
-        self.set_default_converter_if_uninitialised(self)
             
         
     @property
@@ -186,30 +181,9 @@ class nbody_to_si(object):
         return factor * new_unit
         
     def set_as_default(self):
-        """Install this converter as the default converter for the
-        modules. When a native nbody module is created it will choose
-        this converter (if no other converter is given during creation)
-        """
-        self.set_default_converter(self)
-    
-    @classmethod
-    def get_default(cls):
-        if cls.DEFAULT_CONVERTER is None:
-            raise Exception("Asked for the default nbody to SI converter,"
-            " but no converter has been set!.\n"
-            "Please create a nbody_to_si converter first,"
-            " and use the 'set_as_default' method.")
-        else:
-            return cls.DEFAULT_CONVERTER
-            
-    @classmethod
-    def set_default_converter(cls, object):
-        cls.DEFAULT_CONVERTER = object
-        
-    @classmethod
-    def set_default_converter_if_uninitialised(cls, object):
-        if cls.DEFAULT_CONVERTER is None:
-            cls.set_default_converter(object)
+        """Depreacated, no converter can be set as default"""
+        import warnings
+        warnings.warn("""This call is no longer supported, you cannot set a convert as default to be used by all codes. If you want a converted you need to specify it when instantiating the code.""")
             
     def as_converter_from_si_to_nbody(self):
         class SiToNBodyConverter(object):

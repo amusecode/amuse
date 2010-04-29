@@ -342,23 +342,20 @@ class TwoBodyImplementation(object):
 
 class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamicsInterface):
     
-    def __init__(self):
-        LegacyPythonInterface.__init__(self, TwoBodyImplementation)
+    def __init__(self, **options):
+        LegacyPythonInterface.__init__(self, TwoBodyImplementation, **options)
 
 class TwoBody(GravitationalDynamics):
     
     
-    def __init__(self, convert_nbody = None):
-        
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-       
-        nbody_interface = TwoBodyInterface()
+    def __init__(self, convert_nbody = None, **options):
+        nbody_interface = TwoBodyInterface(**options)
         
         GravitationalDynamics.__init__(
             self,
             nbody_interface,
             convert_nbody,
+            **options
         )     
             
   

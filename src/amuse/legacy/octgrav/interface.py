@@ -85,10 +85,6 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
 class Octgrav(GravitationalDynamics):
 
     def __init__(self, convert_nbody = None, **options):
-
-        if convert_nbody is None:
-            convert_nbody = nbody_system.nbody_to_si.get_default()
-
         legacy_interface = OctgravInterface(**options)
 
         GravitationalDynamics.__init__(

@@ -43,6 +43,7 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(x.header_struct.FlagSfr, 0)
         self.assertEquals(x.header_struct.FlagFeedback, 0)
         self.assertEquals(x.header_struct.FlagAge, 0)
+        self.assertEquals(x.header_struct.HubbleParam, 0)
         
     def xtest2(self):
         # turned of as it needs a large file, will make a 

@@ -300,7 +300,7 @@ class TestCodeInterface(TestWithMPI):
     
     
     def test5(self):
-        instance = PhiGRAPE(PhiGRAPE.NBODY)
+        instance = PhiGRAPE()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         instance.set_eta(0.01,0.02)
         instance.initialize_code()
@@ -340,7 +340,7 @@ class TestCodeInterface(TestWithMPI):
             self.assertAlmostEqual(potential0, potential1, 5)
       
     def test6(self):
-        instance = PhiGRAPE(PhiGRAPE.NBODY)
+        instance = PhiGRAPE()
         instance.initialize_code()
         
         particles = core.Particles(6)

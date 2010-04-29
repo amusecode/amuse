@@ -1038,5 +1038,6 @@ class GravitationalDynamics(common.CommonCode):
         return subset
 
     def define_converter(self, object):
-        if not self.convert_nbody is self.NBODY:
-            object.set_nbody_converter(self.convert_nbody)
+        if not self.convert_nbody is None:
+            if not self.convert_nbody is self.NBODY:
+                object.set_nbody_converter(self.convert_nbody)

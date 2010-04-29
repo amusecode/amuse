@@ -8,6 +8,7 @@ from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy.support import channel
+
 from amuse.ext.plummer import *
 
 from amuse.test.amusetest import TestWithMPI
@@ -74,9 +75,7 @@ class TestAmuseInterface(TestWithMPI):
 
     def test0(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, units.AU)
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
-        #channel.MessageChannel.DEBUGGER = None
         instance.initialize_code()
         self.assertAlmostRelativeEqual(0.01, instance.parameters.epsilon_squared.value_in(units.AU**2), 2)#default
         instance.parameters.epsilon_squared = 0.05 | units.AU**2
@@ -91,9 +90,7 @@ class TestAmuseInterface(TestWithMPI):
 
     def test1(self):
         plummer_size = 500
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        #channel.MessageChannel.DEBUGGER = None
         plummer =  MakePlummerModel(plummer_size, convert_nbody)
         stars = plummer.result
         stars.radius = range(1, plummer_size+1)|units.km

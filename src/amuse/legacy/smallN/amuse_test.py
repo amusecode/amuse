@@ -15,7 +15,6 @@ if __name__ == "__main__":
     test_list = [1, 2]
 
     myunits = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.AU)
-    myunits.set_as_default()
     MEarth = 5.9742e24 | units.kg
 
     mult = SmallN(myunits)
