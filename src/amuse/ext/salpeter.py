@@ -3,6 +3,7 @@ import numpy
 import os
 
 from amuse.support.units import units
+from amuse.support.units import nbody_system
 
 class SalpeterIMF(object):
     def __init__(self, mass_min = 0.1 | units.MSun, mass_max = 125 | units.MSun, alpha = -2.35):
@@ -38,3 +39,14 @@ class SalpeterIMF(object):
            total_mass += mass
         return (total_mass, set_of_masses)
         
+
+def new_salpeter_mass_distribution(number_of_particles, *list_arguments, **keyword_arguments):
+    uc = SalpeterIMF(*list_arguments, **keyword_arguments)
+    return uc.next_set(number_of_particles)[1]
+    
+def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_arguments):
+    uc = SalpeterIMF(mass_min = 0.1 | nbody_system.mass, mass_max = 125 | nbody_system.mass, **keyword_arguments)
+    total_mass, result = uc.next_set(number_of_particles)
+    result *=  (1.0 | total_mass.units) / total_mass
+    return result
+    

@@ -518,7 +518,43 @@ class VectorQuantity(Quantity):
         values = numpy.where(is_larger_than, self.number, other_in_my_units.number)
         return VectorQuantity(values, self.unit)
         
-
+    def sorted(self):
+        """
+        Return a new vector with all items sorted.
+        
+        >>> from amuse.support.units import si
+        >>> v1 = [3.0, 1.0, 2.0] | si.kg
+        >>> v1.sorted()
+        quantity<[1.0, 2.0, 3.0] kg>
+        """
+        sorted_values = numpy.sort(self.number)
+        return VectorQuantity(sorted_values, self.unit)
+    
+    
+    def sorted_with(self, *others):
+        """
+        Return a new vector with all items sorted. Perform
+        all the same move operations on the other vectors.
+        
+        :argument: kind, the sort method for supported kinds see
+            the numpy.sort documentation
+                
+        >>> from amuse.support.units import si
+        >>> v1 = [3.0, 1.0, 2.0] | si.kg
+        >>> v2 = [2.0, 3.0, 2.0] | si.m
+        >>> v3 = [1.0, 4.0, 5.0] | si.s
+        >>> list(v1.sorted_with(v2, v3))
+        [quantity<[1.0, 2.0, 3.0] kg>, quantity<[3.0, 2.0, 2.0] m>, quantity<[4.0, 5.0, 1.0] s>]
+        """
+        indices = numpy.lexsort([self.number])
+        vectors = []
+        vectors.append(self)
+        for x in others:
+            vectors.append(x)
+            
+        for x in vectors:
+            yield VectorQuantity(numpy.take(x.number, indices), x.unit)
+    
 class ZeroQuantity(Quantity):
     """
     A ZeroQuantity object represents zero in all units and

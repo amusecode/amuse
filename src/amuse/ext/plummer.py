@@ -107,3 +107,17 @@ class MakePlummerModel(object):
         
         
     
+"""
+Create a plummer sphere with the given number of particles. Returns
+a set of stars with equal mass and positions and velocities distributed
+to fit a plummer star distribution model. The stars are centered around
+their center of mass (the center of mass position is zero)
+
+:argument number_of_particles: Number of particles to include in the plummer sphere
+:argument convert_nbody:  When given will convert the resulting set to SI units
+:argument radius_cutoff: Cutoff value for the radius (defaults to 22.8042468)
+:argument mass_cutoff: Mass percentage inside radius of 1
+"""
+def new_plummer_sphere(number_of_particles, *list_arguments, **keyword_arguments):
+    uc = MakePlummerModel(number_of_particles, *list_arguments, **keyword_arguments)
+    return uc.result
