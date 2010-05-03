@@ -554,6 +554,10 @@ class VectorQuantity(Quantity):
             
         for x in vectors:
             yield VectorQuantity(numpy.take(x.number, indices), x.unit)
+            
+    def accumulate(self): 
+        return VectorQuantity(numpy.add.accumulate(self.number), self.unit)
+        
     
 class ZeroQuantity(Quantity):
     """

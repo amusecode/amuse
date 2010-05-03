@@ -13,6 +13,8 @@ from amuse.support.units import nbody_system as nbody
 
 from amuse.support.data import particle_attributes
 
+from amuse.support.io import *
+
 from amuse.ext.plummer import new_plummer_sphere
 from amuse.ext.salpeter import new_salpeter_mass_distribution, new_salpeter_mass_distribution_nbody
 
