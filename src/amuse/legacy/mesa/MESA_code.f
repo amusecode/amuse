@@ -2,6 +2,7 @@
          implicit none
          character (len=256) :: AMUSE_inlist_path
          character (len=256) :: AMUSE_mesa_data_dir
+         character (len=256) :: AMUSE_local_data_dir ! Used for output starting_models
          character (len=256) :: AMUSE_zams_filename = 'zams_z2m2'
          ! (use the solar metallicity model from the MESA starting_models folder)
          double precision :: AMUSE_metallicity = 0.02d0
@@ -41,7 +42,7 @@
             character (len=256) :: metallicity_str
             integer :: metallicity_exp, metallicity_factor
             if (AMUSE_metallicity.eq.0.0d0) then
-               str = trim(AMUSE_mesa_data_dir) // '/star_data/starting_models/zams_z0m0'
+               str = trim(AMUSE_local_data_dir) // '/star_data/starting_models/zams_z0m0'
             elseif (AMUSE_metallicity.eq.0.02d0) then
                str = trim(AMUSE_mesa_data_dir) // '/star_data/starting_models/zams_z2m2'
             else
@@ -49,7 +50,7 @@
                metallicity_factor = floor(0.5 + AMUSE_metallicity/(1.0d1**metallicity_exp))
                write(metallicity_str,'(I0, A, I0)') metallicity_factor, "m", &
                   -metallicity_exp
-               str = trim(AMUSE_mesa_data_dir) // '/star_data/starting_models/zams_z' &
+               str = trim(AMUSE_local_data_dir) // '/star_data/starting_models/zams_z' &
                   // trim(metallicity_str)
             endif
             ierr = 0
@@ -57,12 +58,16 @@
       end module amuse_support
 
 ! Set the paths to the inlist and the data directory
-      integer function set_MESA_paths(AMUSE_inlist_path_in, AMUSE_mesa_data_dir_in)
-         use amuse_support, only: AMUSE_inlist_path, AMUSE_mesa_data_dir
+      integer function set_MESA_paths(AMUSE_inlist_path_in, &
+            AMUSE_mesa_data_dir_in, AMUSE_local_data_dir_in)
+         use amuse_support, only: AMUSE_inlist_path, &
+            AMUSE_mesa_data_dir, AMUSE_local_data_dir
          implicit none
-         character(*), intent(in) :: AMUSE_inlist_path_in, AMUSE_mesa_data_dir_in
+         character(*), intent(in) :: AMUSE_inlist_path_in, &
+            AMUSE_mesa_data_dir_in, AMUSE_local_data_dir_in
          AMUSE_inlist_path = AMUSE_inlist_path_in
          AMUSE_mesa_data_dir = AMUSE_mesa_data_dir_in
+         AMUSE_local_data_dir = AMUSE_local_data_dir_in
          set_MESA_paths = 0
       end function set_MESA_paths
     

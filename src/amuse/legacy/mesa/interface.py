@@ -50,12 +50,14 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     @legacy_function
     def set_MESA_paths():
         """
-        Set the paths to the MESA inlist and data directory.
+        Set the paths to the MESA inlist and data directories.
         """
         function = LegacyFunctionSpecification()  
         function.addParameter('inlist_path', dtype='string', direction=function.IN,
             description = "Path to the inlist file.")
-        function.addParameter('data_path', dtype='string', direction=function.IN,
+        function.addParameter('MESA_data_path', dtype='string', direction=function.IN,
+            description = "Path to the data directory.")
+        function.addParameter('local_data_path', dtype='string', direction=function.IN,
             description = "Path to the data directory.")
         function.result_type = 'int32'
         function.result_doc = """
@@ -465,7 +467,7 @@ class MESA(CodeInterface):
     def __init__(self, **options):
         CodeInterface.__init__(self, MESAInterface(), **options)
         self.set_MESA_paths(self.default_path_to_inlist, 
-            self.default_path_to_MESA_data)
+            self.default_path_to_MESA_data, self.get_data_directory())
         self.parameters.set_defaults()
         
     
