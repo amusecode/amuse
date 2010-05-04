@@ -123,7 +123,8 @@ class TestMPIInterface(TestWithMPI):
         ids = []
         for i in [1, 2, 3]:
             id, error = instance.new_particle(mass = i, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
-            ids.append(id)interface.stop()
+            ids.append(id)
+            interface.stop()
         print ids
         
         instance.commit_particles()
