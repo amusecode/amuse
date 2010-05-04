@@ -1,5 +1,5 @@
 
-CODELIB = libnearestneighbor.a
+CODELIB = libbhtree.a
 
 CXXFLAGS += -Wall -DTREE -DNOGRAPHICS 
 
@@ -11,19 +11,22 @@ AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
+SCLIBS ?= -L../../../../../lib/stopcond -lstopcond
+SCINC ?= -I../../../../../lib/stopcond
+
 all: BHTC $(CODELIB)
 
 clean:
 	rm -f *.o BHTC *~ $(CODELIB)
 
 BHTC: $(OBJ)
-	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC
+	$(CXX) $(CXXFLAGS) $(OBJ) -lm -o BHTC $(SCLIBS)
 
 .c.o:
-	$(CC) $(CFLAGS) -c $?
+	$(CC) $(CFLAGS) $(SCINC) -c $?
 
 .C.o:
-	$(CXX) $(CXXFLAGS) -c $?
+	$(CXX) $(CXXFLAGS) $(SCINC) -c $?
 
 test: compile
 

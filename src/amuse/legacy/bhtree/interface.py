@@ -2,9 +2,10 @@ from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.support.lit import LiteratureRefs
+from amuse.legacy.support.stopping_conditions import StoppingConditionInterface, StoppingConditions
 
 
-class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
+class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
@@ -226,6 +227,8 @@ class BHTree(GravitationalDynamics):
     
     
     def __init__(self, convert_nbody = None, **options):
+        self.stopping_conditions = StoppingConditions(self)
+        
         legacy_interface = BHTreeInterface(**options)
         
         GravitationalDynamics.__init__(
@@ -299,6 +302,11 @@ class BHTree(GravitationalDynamics):
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.potential, object.ERROR_CODE)
         )
-        
 
+        self.stopping_conditions.define_methods(object)
         
+    
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object, 'particles')
+

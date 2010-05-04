@@ -34,6 +34,12 @@ extern "C" double cpusec();
 #include  <iostream>
 #include  <cstdio>
 
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+
+long supported_conditions = COLLISION_DETECTION_BITMAP;
+// AMUSE STOPPING CONDITIONS SUPPORT
+
 void dump_octal(BHlong x)
 {
     char st[256];
@@ -802,17 +808,22 @@ void real_particle::calculate_gravity_using_tree(real eps2, real theta2)
 				   acc_gravity, phi_gravity);
     nisum += 1;
 
-    if (nn_index >= 0 && id_collision_1 < 0) {
-	real rad1 = radius;
-	real rad2 = nn_ptr->get_radius();
-	if (r_nn_2 <= pow(rad1+rad2, 2)) {
-	    id_collision_1 = my_index;
-	    id_collision_2 = nn_index;
-	    r_collision_12 = sqrt(r_nn_2);
-	    // cerr << "collision: "; PRC(id_collision_1); PRL(r_collision_12);
-	    // PRC(rad1); PRL(rad2);
-	}
+
+    
+// AMUSE STOPPING CONDITIONS SUPPORT (AVE May 2010)
+    if(nn_index >= 0 && (COLLISION_DETECTION_BITMAP & enabled_conditions) ) {
+        real rad1 = radius;
+        real rad2 = nn_ptr->get_radius();
+        if (r_nn_2 <= pow(rad1+rad2, 2))
+        {
+            int stopping_index  = next_index_for_stopping_condition();
+            set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+            set_stopping_condition_particle_index(stopping_index, 0, my_index);
+            set_stopping_condition_particle_index(stopping_index, 1, nn_index);
+        }
     }
+// AMUSE STOPPING CONDITIONS SUPPORT
+
 }
 
 

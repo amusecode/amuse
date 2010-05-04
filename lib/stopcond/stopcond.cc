@@ -1,5 +1,4 @@
 #include "stopcond.h"
-#include <mpi.h>
 #include <iostream>
 #include <string.h>
 
@@ -119,6 +118,12 @@ int set_stopping_condition_particle_index(int index, int index_in_the_condition,
     return 0;
 }
 
+
+
+
+#ifdef MPILIB
+
+#include <mpi.h>
 int sc_mpi_rank;
 int sc_mpi_size;
 
@@ -202,4 +207,11 @@ int mpi_collect_stopping_conditions() {
     }
 }
 
+#else
+
+int mpi_setup_stopping_conditions() {return 0;}
+int mpi_collect_stopping_conditions() {return 0;}
+int mpi_distribute_stopping_conditions() {return 0;}
+
+#endif
 

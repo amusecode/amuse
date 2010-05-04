@@ -659,6 +659,43 @@ class TestAmuseInterface(TestWithMPI):
         numpy.random.seed()
         
     
+    def test17(self):
+        particles = core.Particles(2)
+        particles.x = [
+            0.0,1.0, 
+            #5,7,
+            #10,12,
+            #15,17,
+            #20,22
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.75 | nbody_system.length
+        particles.vx =  0.1 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 0 | nbody_system.mass
+       
+        instance = BHTree()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.collision_detection.enable()
+        instance.evolve_model(0.1 | nbody_system.time)
+        print instance.model_time
+        self.assertTrue(instance.stopping_conditions.collision_detection.is_set())
+        print instance.stopping_conditions.collision_detection.particles(0).key
+        print instance.stopping_conditions.collision_detection.particles(1).key
+        self.assertEquals(len(instance.stopping_conditions.collision_detection.particles(0)), 2 )
+        p0 =  instance.stopping_conditions.collision_detection.particles(0)[0]
+        p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
+        self.assertNotEquals(p0, p1)
+        print p0.x, p1.x
+        self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+       
+
+        
+    
 
 
 

@@ -13,8 +13,10 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
+SCLIBS ?= -L../../../../lib/stopcond -lstopcond
+SCINC ?= -I../../../../lib/stopcond
 
-CODELIB = $(BHTCDIR)/libnearestneighbor.a
+CODELIB = $(BHTCDIR)/libbhtree.a
 
 all:	compile worker_code
 
@@ -38,10 +40,10 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py BHTreeInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	mpicxx $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@
+	mpicxx $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
 
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
+	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
 
 .C.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $<

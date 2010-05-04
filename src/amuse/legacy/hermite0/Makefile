@@ -1,7 +1,7 @@
 CC = mpic
 CXX = mpicxx
 
-CFLAGS ?= -g -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR) 
+CFLAGS ?= -O3 -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR) 
 CXXFLAGS ?= $(CFLAGS) 
 
 LDFLAGS = -lm $(MUSE_LD_FLAGS)
@@ -12,7 +12,7 @@ AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SCLIBS ?= -L../../../../lib/stopcond -lstopcond
+SCLIBS ?= -L../../../../lib/stopcond -lstopcondmpi
 SCINC ?= -I../../../../lib/stopcond
 
 all: worker_code

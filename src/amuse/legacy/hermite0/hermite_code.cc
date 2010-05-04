@@ -30,10 +30,12 @@
 #include <map>
 
 #include <mpi.h>
+
+
+
+// AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
 
-
-// stopping conditions
 long supported_conditions = COLLISION_DETECTION_BITMAP;
 // -----------------------
 

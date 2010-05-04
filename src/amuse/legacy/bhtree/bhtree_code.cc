@@ -7,6 +7,11 @@
 #include <string>
 #include <map>
 
+
+// AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+// AMUSE STOPPING CONDITIONS SUPPORT
+
 using namespace std;
 
 const bool debug = false;
@@ -245,24 +250,18 @@ int evolve(real t_end)                // default sync = 0
 
         dt=bhtcs.timestep;
         if( bhtcs.time+dt >= t_end) dt=t_end-bhtcs.time;
-                
-        id_collision_1 = id_collision_2 = id_primary = id_secondary = -1;
+        
+        
+        reset_stopping_conditions();
 
         bhtcs.integrate(dt);                // advance the entire system by time dt
 
         bhtcs.time += dt;                
 
-        if (id_collision_1 >= 0) 
-          {
-            id_primary = id_collision_1;
-            id_secondary = id_collision_2;        // for pick-up below
-            if (debug) 
-              {
-                cerr << "collision: ";
-                PRC(id_primary); PRC(id_secondary); PRL(r_collision_12);
-              }
+        if (set_conditions & enabled_conditions)
+        {
             break;
-          }
+        }
 #if 0
         real KE = bhtcs.kinetic_energy();
         real E = bhtcs.energy();
