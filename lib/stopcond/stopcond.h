@@ -28,6 +28,10 @@ extern long supported_conditions;
 extern long set_conditions;
 
 int reset_stopping_conditions();
-int next_index();
+int next_index_for_stopping_condition();
 int set_stopping_condition_info(int index, int type);
 int set_stopping_condition_particle_index(int index, int index_in_the_condition, int index_of_particle);
+
+int mpi_setup_stopping_conditions();
+int mpi_distribute_stopping_conditions();
+int mpi_collect_stopping_conditions();

@@ -20,7 +20,7 @@ codestring = """
 long supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP;
 /*
 int reset_stopping_conditions();
-int next_index();
+int next_index_for_stopping_condition();
 int set_stopping_condition_info(int index, int index_of_the_condition);
 int set_stopping_condition_particle_index(int index, int index_in_the_condition, int index_of_particle);
 */
@@ -39,7 +39,7 @@ class ForTestingInterface(LegacyInterface, stopping_conditions.StoppingCondition
         return function     
         
     @legacy_function
-    def next_index():
+    def next_index_for_stopping_condition():
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         function.can_handle_array = False
@@ -146,8 +146,8 @@ class TestInterface(TestWithMPI):
     def test1(self):
         instance = ForTestingInterface(self.exefile)
         instance.reset_stopping_conditions()
-        next = instance.next_index()
-        next = instance.next_index()
+        next = instance.next_index_for_stopping_condition()
+        next = instance.next_index_for_stopping_condition()
         instance.stop()
         self.assertEquals(next, 1)
         
@@ -170,7 +170,7 @@ class TestInterface(TestWithMPI):
     def test4(self):
         instance = ForTesting(self.exefile)
         instance.reset_stopping_conditions()
-        next = instance.next_index()
+        next = instance.next_index_for_stopping_condition()
         self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
 
         instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
@@ -181,11 +181,13 @@ class TestInterface(TestWithMPI):
     def test5(self):
         instance = ForTesting(self.exefile)
         instance.reset_stopping_conditions()
-        next = instance.next_index()
+        next = instance.next_index_for_stopping_condition()
         self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
 
         instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
         instance.set_stopping_condition_particle_index(next, 0, 11)
+        instance.set_stopping_condition_particle_index(next, 1, 12)
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
         self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
+        self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
         instance.stop()

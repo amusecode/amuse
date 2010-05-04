@@ -171,15 +171,14 @@ class StoppingCondition(object):
     def is_set(self):
         return self.conditions.code.is_stopping_condition_set(self.type) == 1
         
-    def particles(self, index):
-        indices = list(range(self.code.get_number_of_stopping_conditions_set()))
+    def particles(self, index_in_the_contition):
+        indices = list(range(self.conditions.code.get_number_of_stopping_conditions_set()))
         types = self.conditions.code.get_stopping_condition_info(indices)
         selected = []
         for index, type in zip(indices, types):
             if type == self.type:
                 selected.append(index)
-                
-        return self.code.particles.get_stopping_condition_particle_index(selected)
+        return self.conditions.code.particles.get_stopping_condition_particle_index(selected, [index_in_the_contition]*len(selected))
         
         
 class StoppingConditions():

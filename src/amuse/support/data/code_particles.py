@@ -175,7 +175,6 @@ class ParticleQueryMethod(object):
         self.public_name = public_name
 
     def apply(self, particles, *args, **kwargs):
-            
         indices = self.method(*args, **kwargs)
         
         keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)

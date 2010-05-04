@@ -1,9 +1,10 @@
 #include "stopcond.h"
-
+#include <mpi.h>
 #include <iostream>
+#include <string.h>
 
 int type_of_stopping_condition_set[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET];
-int index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET][MAX_NUMBER_OF_PARTICLES_PER_INDEX];
+int index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET * MAX_NUMBER_OF_PARTICLES_PER_INDEX];
 
 long enabled_conditions = 0;
 long set_conditions = 0;
@@ -78,7 +79,7 @@ int get_stopping_condition_particle_index(
     if(index_in_the_condition >= MAX_NUMBER_OF_PARTICLES_PER_INDEX) {
         return -1;
     }
-    *index_of_particle = index_of_particle_in_stopping_condition[index][index_in_the_condition];
+    *index_of_particle = index_of_particle_in_stopping_condition[index * MAX_NUMBER_OF_PARTICLES_PER_INDEX + index_in_the_condition];
 
     return 0;
 }
@@ -89,7 +90,7 @@ int reset_stopping_conditions() {
     set_conditions = 0;
 }
 
-int next_index() {
+int next_index_for_stopping_condition() {
     number_of_stopping_conditions_set++;
     return number_of_stopping_conditions_set - 1;
 }
@@ -113,8 +114,90 @@ int set_stopping_condition_particle_index(int index, int index_in_the_condition,
     if(index_in_the_condition >= MAX_NUMBER_OF_PARTICLES_PER_INDEX -1 ) {
         return -1;
     }
-    index_of_particle_in_stopping_condition[index][index_in_the_condition] = index_of_the_particle;
-    index_of_particle_in_stopping_condition[index][index_in_the_condition + 1] = -1;
+    index_of_particle_in_stopping_condition[index * MAX_NUMBER_OF_PARTICLES_PER_INDEX + index_in_the_condition] = index_of_the_particle;
+    index_of_particle_in_stopping_condition[index * MAX_NUMBER_OF_PARTICLES_PER_INDEX + index_in_the_condition + 1] = -1;
     return 0;
 }
+
+int sc_mpi_rank;
+int sc_mpi_size;
+
+int mpi_setup_stopping_conditions() {
+    int error;
+    error = MPI_Comm_rank(MPI_COMM_WORLD, &sc_mpi_rank);
+    if(error) {
+        std::cerr << error << std::endl;
+        return -1;
+    }
+    error = MPI_Comm_size(MPI_COMM_WORLD, &sc_mpi_size);
+    if(error) {
+        std::cerr << error << std::endl;
+        return -1;
+    }
+    return 0;
+}
+int mpi_distribute_stopping_conditions() {
+    if(sc_mpi_size <= 1) {
+        return 0;
+    }
+    
+}
+
+int local_type_of_stopping_condition_set[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET];
+int local_index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS_SET*MAX_NUMBER_OF_PARTICLES_PER_INDEX];
+
+
+int mpi_collect_stopping_conditions() {
+    if(sc_mpi_size <= 1) {
+        return 0;
+    }
+    int counts[sc_mpi_size];
+    int displs[sc_mpi_size];
+    long set = 0;
+    MPI_Reduce(&set_conditions, &set, 1, MPI_LONG,  MPI_BOR, 0, MPI_COMM_WORLD);
+    set_conditions = set;
+    MPI_Gather(&number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    number_of_stopping_conditions_set = 0;
+    for(int i = 0; i < sc_mpi_size; i++) {
+        number_of_stopping_conditions_set += counts[i];
+    } 
+    std::cerr<<number_of_stopping_conditions_set<<std::endl;
+    if(sc_mpi_rank == 0) {
+        int x = 0;
+        for(int i = 0; i < sc_mpi_size; i++) {
+            displs[i] = x;
+            x += counts[i];
+        }
+    }
+    MPI_Gatherv(
+        type_of_stopping_condition_set, number_of_stopping_conditions_set, MPI_INTEGER, 
+        local_type_of_stopping_condition_set, counts, displs, MPI_INTEGER, 
+        0, MPI_COMM_WORLD);
+    
+    if(sc_mpi_rank == 0) {
+        int x = 0;
+        for(int i = 0; i < sc_mpi_size; i++) {
+            displs[i] = x;
+            counts[i] *= MAX_NUMBER_OF_PARTICLES_PER_INDEX;
+            x += counts[i];
+            std::cerr << displs[i]  << " - " << counts[i] << std::endl;
+        }
+    }
+    
+    MPI_Gatherv(
+        index_of_particle_in_stopping_condition, 
+        number_of_stopping_conditions_set*MAX_NUMBER_OF_PARTICLES_PER_INDEX, 
+        MPI_INTEGER, 
+        local_index_of_particle_in_stopping_condition, 
+        counts, displs, 
+        MPI_INTEGER, 
+        0, MPI_COMM_WORLD);
+    
+    if(sc_mpi_rank == 0) {
+        memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, sizeof(index_of_particle_in_stopping_condition));
+        memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, sizeof(type_of_stopping_condition_set));
+    }
+    
+}
+
 

@@ -1,3 +1,4 @@
+CXX = mpicxx -g
 
 LIBNAME = libstopcond.a
 OBJS = stopcond.o

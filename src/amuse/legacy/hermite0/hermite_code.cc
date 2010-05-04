@@ -30,7 +30,12 @@
 #include <map>
 
 #include <mpi.h>
+#include <stopcond.h>
 
+
+// stopping conditions
+long supported_conditions = COLLISION_DETECTION_BITMAP;
+// -----------------------
 
 using namespace std;
 typedef double  real;
@@ -294,7 +299,7 @@ inline int mpi_distribute_data(int n) {
         pos.resize(n+1);
         acc.resize(n+1);
         jerk.resize(n+1);
-        
+        ident.resize(n+1);
         mass.resize(n+1, 0.0);
         radius.resize(n+1, 0.0);
     }
@@ -304,6 +309,9 @@ inline int mpi_distribute_data(int n) {
     MPI_Bcast(&pos[0], n * 3, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(&mass[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     MPI_Bcast(&radius[0], n, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&ident[0], n, MPI_INTEGER, 0, MPI_COMM_WORLD);
+    
+    mpi_distribute_stopping_conditions();
     
     return n;
 }
@@ -329,6 +337,8 @@ inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll
         acc = acc_reduced;
         jerk = jerk_reduced;
     }
+    
+    mpi_collect_stopping_conditions();
 }
 
 void get_acc_jerk_pot_coll(real *epot, real *coll_time)
@@ -355,6 +365,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                                                // to 4th power (quartic)
     id_coll_primary = id_coll_secondary = -1;
 
+    reset_stopping_conditions();
     //int npart = n / mpi_size;
     //int nleft = n % mpi_size;
     //if(mpi_rank == mpi_size - 1) {iend = n;}
@@ -386,23 +397,17 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
               }
             rv_r2 /= r2;
 
-            if (id_coll_primary < 0)
-              {
+            if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
                 real rsum = radius[i] + radius[j];
                 if (r2 <= rsum*rsum)
-                  {
-                    if (mass[i] >= mass[j])
-                      {
-                        id_coll_primary = ident[i];
-                        id_coll_secondary = ident[j];
-                      }
-                    else
-                      {
-                        id_coll_primary = ident[j];
-                        id_coll_secondary = ident[i];
-                      }
-                  }
-              }
+                {
+                    int stopping_index  = next_index_for_stopping_condition();
+                    set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                    set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+                    set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+                }
+            }
+           
 
             r2 += eps2;                                   // | rji |^2 + eps^2
             real r = sqrt(r2);                     // | rji |
@@ -514,6 +519,7 @@ void evolve_step(real dt, real *epot, real *coll_time)
     predict_step(dt);
     get_acc_jerk_pot_coll(epot, coll_time);
     correct_step(old_pos, old_vel, old_acc, old_jerk, dt);
+    
     if (reeval)
       {
         get_acc_jerk_pot_coll(epot, coll_time);
@@ -642,7 +648,7 @@ int evolve_system(real t_end)
     // just handled?).
 
     if (t + dt > t_end) return -1;
-
+    
     while (true)
       {
 
@@ -651,6 +657,7 @@ int evolve_system(real t_end)
             dt = calculate_step(coll_time);
             MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
             evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
+            
             if (test_mode)
               {
                 real E = 0.0;
@@ -667,11 +674,10 @@ int evolve_system(real t_end)
             nsteps++;
 
             // compute_nn();
-
-            if (flag_collision && id_coll_primary >= 0)
-              {
+        
+            if(set_conditions & enabled_conditions) {
                 break;
-              }
+            }
           }
 
         if (t >= t_dia)
@@ -680,7 +686,7 @@ int evolve_system(real t_end)
             t_dia += dt_dia;
           }
 
-        if (flag_collision && id_coll_primary >= 0)
+        if (set_conditions & enabled_conditions)
           {
             break;
           }
@@ -690,12 +696,13 @@ int evolve_system(real t_end)
           }
       }
 
-    if (!flag_collision || id_coll_primary  < 0)
+    if (!(set_conditions & enabled_conditions))
       {
         MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
         get_acc_jerk_pot_coll(&epot, &coll_time);
         dt = calculate_step(coll_time);
         t_evolve = t_end;
+      } else {
       }
 
     // Note: On exit, under all circumstances, the system is
@@ -704,15 +711,10 @@ int evolve_system(real t_end)
     // otherwise, we set t_evolve = t_end. 
     must_run = 0;
     MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
-    //return id_coll_primary;
-    if (!nest_err)
-      {
-        nest_err = id_coll_primary;
-      }
-    else
-      {
-        nest_err = -2;
-      }
+    
+    if(set_conditions & enabled_conditions) {
+        return 1; // stop condition met
+    }
 
     return nest_err;
 }
@@ -1067,6 +1069,7 @@ int initialize_code()
         return -1;
     }
     cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
+    mpi_setup_stopping_conditions();
     return 0;
 }
 
@@ -1479,7 +1482,6 @@ int commit_particles()
     t_wanted = 0;
 
     get_acc_jerk_pot_coll(&epot, &coll_time);
-
     return 0;
 }
 
@@ -1493,7 +1495,9 @@ int commit_parameters(){
 int synchronize_model() {
     real epot;                  // potential energy of the n-body system
     real coll_time;             // collision (close encounter) time scale
-
+    if (set_conditions & enabled_conditions) {
+        return 0;
+    }
     if (t_evolve < t_wanted)
     {
         evolve_step(t_wanted-t_evolve, &epot, &coll_time);

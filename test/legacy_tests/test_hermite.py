@@ -206,9 +206,9 @@ class TestAmuseInterface(TestWithMPI):
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = Hermite(convert_nbody)
-        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance = Hermite(convert_nbody, redirection="none")
         instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.00001 | units.AU**2
         instance.dt_dia = 5000
         
         stars = core.Stars(2)
@@ -236,7 +236,7 @@ class TestAmuseInterface(TestWithMPI):
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = Hermite(convert_nbody)
+        instance = Hermite(convert_nbody, redirection="none")
         instance.initialize_code()
         
         particles = core.Particles(2)
@@ -357,3 +357,36 @@ class TestAmuseInterface(TestWithMPI):
         delta = [abs(final_direction[i+1]-final_direction[i]) for i in range(len(final_direction)-1)]
         self.assertEquals(delta[len(final_direction)/2 -1], max(delta))
         
+    def test8(self):
+        particles = core.Particles(2)
+        particles.x = [
+            0.0,1.0, 
+            #5,7,
+            #10,12,
+            #15,17,
+            #20,22
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.75 | nbody_system.length
+        particles.vx =  0.1 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 0 | nbody_system.mass
+       
+        instance = Hermite(debugger="xterm")
+        instance.initialize_code()
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.collision_detection.enable()
+        instance.evolve_model(0.1 | nbody_system.time)
+        print instance.model_time
+        self.assertTrue(instance.stopping_conditions.collision_detection.is_set())
+        print instance.stopping_conditions.collision_detection.particles(0).key
+        print instance.stopping_conditions.collision_detection.particles(1).key
+        self.assertEquals(len(instance.stopping_conditions.collision_detection.particles(0)), 1 )
+        p0 =  instance.stopping_conditions.collision_detection.particles(0)[0]
+        p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
+        self.assertNotEquals(p0, p1)
+        print p0.x, p1.x
+        self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+       

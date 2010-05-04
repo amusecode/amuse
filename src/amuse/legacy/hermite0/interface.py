@@ -3,8 +3,9 @@ from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
 from amuse.legacy.support.lit import LiteratureRefs
 
+from amuse.legacy.support.stopping_conditions import StoppingConditionInterface, StoppingConditions
 
-class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
+class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
     N-body integration module with shared but variable time step
     (the same for all particles but its size changing in time),
@@ -154,6 +155,8 @@ class Hermite(GravitationalDynamics):
     __doc__ = HermiteDoc()
 
     def __init__(self, convert_nbody = None, **options):
+        self.stopping_conditions = StoppingConditions(self)
+
         legacy_interface = HermiteInterface(**options)
 
         GravitationalDynamics.__init__(
@@ -212,3 +215,10 @@ class Hermite(GravitationalDynamics):
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
         )
+        
+        self.stopping_conditions.define_methods(object)
+        
+    
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object, 'particles')
