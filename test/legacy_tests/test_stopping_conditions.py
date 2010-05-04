@@ -1,0 +1,191 @@
+from amuse.legacy.support.core import *
+
+from amuse.support.data import core
+from amuse.support.units import nbody_system
+from amuse.support.units import units
+from amuse.legacy.support import channel
+
+from amuse.test.amusetest import TestWithMPI
+from amuse.legacy.support import create_c
+from amuse.legacy.support import stopping_conditions
+from amuse.support.interface import CodeInterface
+from amuse.legacy import get_amuse_root_dir
+
+import subprocess
+import os
+
+codestring = """
+#include <stopcond.h>
+
+long supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP;
+/*
+int reset_stopping_conditions();
+int next_index();
+int set_stopping_condition_info(int index, int index_of_the_condition);
+int set_stopping_condition_particle_index(int index, int index_in_the_condition, int index_of_particle);
+*/
+"""
+
+class ForTestingInterface(LegacyInterface, stopping_conditions.StoppingConditionInterface):
+    
+    def __init__(self, exefile, **options):
+        LegacyInterface.__init__(self, exefile, **options)
+
+    @legacy_function
+    def reset_stopping_conditions():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        function.can_handle_array = False
+        return function     
+        
+    @legacy_function
+    def next_index():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
+        function.can_handle_array = False
+        return function  
+        
+    @legacy_function
+    def set_stopping_condition_info():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index', dtype='int32', direction=function.IN)
+        function.addParameter('index_of_the_condition', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+    
+    @legacy_function
+    def set_stopping_condition_particle_index():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index', dtype='int32', direction=function.IN)
+        function.addParameter('index_of_the_condition', dtype='int32', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+          
+
+class ForTesting(CodeInterface):
+    
+    def __init__(self, exefile, **options):
+        self.stopping_conditions = stopping_conditions.StoppingConditions(self)
+        CodeInterface.__init__(self, ForTestingInterface(exefile, **options), **options)
+    
+    def define_methods(self, object):
+        self.stopping_conditions.define_methods(object)
+        
+class TestInterface(TestWithMPI):
+    def cxx_compile(self, objectname, string):
+        root, ext = os.path.splitext(objectname)
+        sourcename = root + '.cc'
+        
+        with open(sourcename, "w") as f:
+            f.write(string)
+            
+        process = subprocess.Popen(
+            ["mpicxx", "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
+            stdin = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+        
+        if not os.path.exists(objectname):
+            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+            
+    
+    def c_build(self, exename, objectnames):
+        dir = get_amuse_root_dir()
+        arguments = ["mpicxx"]
+        arguments.extend(objectnames)
+        arguments.append("-o")
+        arguments.append(exename)
+        arguments.extend(["-L"+dir+"/lib/stopcond","-lstopcond"])
+        print ' '.join(arguments)
+        process = subprocess.Popen(
+            arguments,
+            stdin = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+        if process.returncode != 0:
+            raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
+    
+    def build_worker(self):
+        
+        path = os.path.abspath(self.get_path_to_results())
+        codefile = os.path.join(path,"code.o")
+        interfacefile = os.path.join(path,"interface.o")
+        self.exefile = os.path.join(path,"c_worker")
+        
+        self.cxx_compile(codefile, codestring)
+        
+        uc = create_c.MakeACHeaderStringOfAClassWithLegacyFunctions()
+        uc.class_with_legacy_functions = ForTestingInterface
+        uc.make_extern_c = False
+        header =  uc.result
+        
+        
+        uc = create_c.MakeACStringOfAClassWithLegacyFunctions()
+        uc.class_with_legacy_functions = ForTestingInterface
+        code =  uc.result
+        
+        string = '\n\n'.join([header, code])
+        
+        #print string
+        
+        self.cxx_compile(interfacefile, string)
+        self.c_build(self.exefile, [interfacefile, codefile] )
+    
+    def setUp(self):
+        super(TestInterface, self).setUp()
+        print "building"
+        self.build_worker()
+        
+    def test1(self):
+        instance = ForTestingInterface(self.exefile)
+        instance.reset_stopping_conditions()
+        next = instance.next_index()
+        next = instance.next_index()
+        instance.stop()
+        self.assertEquals(next, 1)
+        
+    def test2(self):
+        instance = ForTesting(self.exefile, redirection = "none") #, debugger = "xterm")
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_supported())
+        self.assertTrue(instance.stopping_conditions.collision_detection.is_supported())
+        self.assertFalse(instance.stopping_conditions.escaper_detection.is_supported())
+        instance.stop()
+        
+    def test3(self):
+        instance = ForTesting(self.exefile, redirection = "none") #, debugger = "xterm")
+        self.assertFalse(instance.stopping_conditions.pair_detection.is_enabled())
+        instance.stopping_conditions.pair_detection.enable()
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_enabled())
+        instance.stopping_conditions.pair_detection.disable()
+        self.assertFalse(instance.stopping_conditions.pair_detection.is_enabled())
+        instance.stop()
+        
+    def test4(self):
+        instance = ForTesting(self.exefile)
+        instance.reset_stopping_conditions()
+        next = instance.next_index()
+        self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
+
+        instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
+         
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
+        instance.stop()
+        
+    def test5(self):
+        instance = ForTesting(self.exefile)
+        instance.reset_stopping_conditions()
+        next = instance.next_index()
+        self.assertFalse(instance.stopping_conditions.pair_detection.is_set())
+
+        instance.set_stopping_condition_info(next,instance.stopping_conditions.pair_detection.type)
+        instance.set_stopping_condition_particle_index(next, 0, 11)
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
+        self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
+        instance.stop()

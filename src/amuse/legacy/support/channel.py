@@ -377,7 +377,8 @@ class MpiChannel(MessageChannel):
             self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
-            
+        
+        print self.full_name_of_the_worker
             
         if not self.hostname is None:
             self.info = MPI.Info.Create()
