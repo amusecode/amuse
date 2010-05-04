@@ -12,6 +12,7 @@ from amuse.support.units import constants
 from amuse.support.units import nbody_system as nbody
 
 from amuse.support.data import particle_attributes
+from amuse.support.data.core import *
 
 from amuse.support.io import *
 
@@ -28,3 +29,4 @@ from amuse.legacy.fi.interface import Fi, fi
 from amuse.legacy.sse.interface import SSE, SSEInterface
 from amuse.legacy.bse.interface import BSE, BSEInterface
 from amuse.legacy.evtwin.interface import EVtwin, EVtwinInterface
+from amuse.legacy.mesa.interface import MESA, MESAInterface
