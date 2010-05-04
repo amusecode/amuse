@@ -374,7 +374,7 @@ class TestAmuseInterface(TestWithMPI):
         particles.vz =  0 | nbody_system.speed
         particles.mass = 0 | nbody_system.mass
        
-        instance = Hermite(debugger="xterm")
+        instance = Hermite()
         instance.initialize_code()
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.collision_detection.enable()
