@@ -405,6 +405,9 @@ class LegacyFunctionSpecification(object):
     INOUT = object()
     """Used to specify that a parameter is used as an input and an outpur parameter, passed by reference"""
     
+    LENGTH = object()
+    """Used to specify that a parameter is used as the length parameter for the other parameters"""
+    
     def __init__(self):
         self.parameters = []
         self.name = None
@@ -416,6 +419,7 @@ class LegacyFunctionSpecification(object):
         self.dtype_to_input_parameters = {}
         self.dtype_to_output_parameters = {}
         self.can_handle_array = False
+        self.must_handle_array = False
         self.result_doc = ''
         
     def addParameter(self, name, dtype = 'i', direction = IN, description = ""):

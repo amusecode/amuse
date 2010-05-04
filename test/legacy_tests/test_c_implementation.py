@@ -40,6 +40,21 @@ int echo_strings(char ** inout1, char ** inout2) {
     
     return 0;
 }
+
+void echo_array(int * in, int * out, int len) {
+    int i = 0;
+    for(i = 0; i < len; i++) {
+        out[i] = in[i];
+    }
+}
+
+int echo_array_with_result(int * in, int *out, int len) {
+    int i = 0;
+    for(i = 0; i < len; i++) {
+        out[i] = in[i];
+    }
+    return 0;
+}
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -90,6 +105,26 @@ class ForTestingInterface(LegacyInterface):
         function.addParameter('string_inout2', dtype='string', direction=function.INOUT)
         function.result_type = 'int32'
         function.can_handle_array = True
+        return function  
+        
+    @legacy_function
+    def echo_array():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('int_in', dtype='int32', direction=function.IN)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = None
+        function.must_handle_array = True
+        return function
+        
+    @legacy_function
+    def echo_array_with_result():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('int_in', dtype='int32', direction=function.IN)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
         return function    
     
     #@legacy_function
@@ -103,30 +138,43 @@ class ForTestingInterface(LegacyInterface):
 
 
 class TestInterface(TestWithMPI):
-    
+      
     def c_compile(self, objectname, string):
+        root, ext = os.path.splitext(objectname)
+        sourcename = root + '.c'
+        
+        with open(sourcename, "w") as f:
+            f.write(string)
+            
         process = subprocess.Popen(
-            ["mpicc", "-x", "c", "-c",  "-o", objectname, "-",],
+            ["mpicc", "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
-        stdout, stderr = process.communicate(string)
-        if process.returncode != 0:
+        stdout, stderr = process.communicate()
+        
+        if not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-            
-    def cxx_compile(self, objectname, string):
-        process = subprocess.Popen(
-            ["mpicxx","-x","c++", "-c",  "-o", objectname, "-",],
-            stdin = subprocess.PIPE,
-            stdout = subprocess.PIPE,
-            stderr = subprocess.PIPE
-        )
-        stdout, stderr = process.communicate(string)
-        if process.returncode != 0:
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
-            
     
+    def cxx_compile(self, objectname, string):
+        root, ext = os.path.splitext(objectname)
+        sourcename = root + '.cc'
+        
+        with open(sourcename, "w") as f:
+            f.write(string)
+            
+        process = subprocess.Popen(
+            ["mpicxx", "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
+            stdin = subprocess.PIPE,
+            stdout = subprocess.PIPE,
+            stderr = subprocess.PIPE
+        )
+        stdout, stderr = process.communicate()
+        
+        if not os.path.exists(objectname):
+            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+            
     def c_build(self, exename, objectnames):
         arguments = ["mpicxx"]
         arguments.extend(objectnames)
@@ -201,7 +249,7 @@ class TestInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         input = [1.0,2.1,3.3,4.2]
         output, errors = instance.echo_double(input)
-        del instance
+        instance.stop()
         self.assertEquals(len(errors),4)
         for actual, expected in zip(output, input):
             self.assertEquals(actual, expected)
@@ -271,3 +319,21 @@ class TestInterface(TestWithMPI):
                 print "x:", x
             instance.stop()
 
+    
+    def test11(self):
+        instance = ForTestingInterface(self.exefile)
+        (output_ints,) = instance.echo_array([4,5,6])
+        instance.stop()
+        print output_ints
+        self.assertEquals(output_ints[0], 4)
+        self.assertEquals(output_ints[1], 5)
+        self.assertEquals(output_ints[2], 6)
+        
+    def test12(self):
+        instance = ForTestingInterface(self.exefile)
+        (output_ints, error) = instance.echo_array_with_result([4,5,6])
+        instance.stop()
+        print output_ints, error
+        self.assertEquals(output_ints[0], 4)
+        self.assertEquals(output_ints[1], 5)
+        self.assertEquals(output_ints[2], 6)

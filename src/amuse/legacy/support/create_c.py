@@ -38,9 +38,12 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
         self.output_casestmt_start()
         self.out.indent()
         
-        if self.specification.can_handle_array:
+        if self.specification.must_handle_array:
+            pass
+        elif self.specification.can_handle_array:
             self.out.lf() + 'for (int i = 0 ; i < request_header.len; i++){'
             self.out.indent()
+ 
         
         self.output_lines_before_with_inout_variables()
         self.output_function_start()
@@ -48,7 +51,9 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
         self.output_function_end()
         self.output_lines_with_inout_variables()
         
-        if self.specification.can_handle_array:
+        if self.specification.must_handle_array:
+            pass
+        elif self.specification.can_handle_array:
             self.out.dedent()
             self.out.lf() + '}'
         
@@ -58,14 +63,31 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
         self._result = self.out.string
     
     def index_string(self, index):
-        if self.specification.can_handle_array:
+        if self.specification.must_handle_array:
+            if index == 0:
+                return '0'
+            else:
+                return '( %d * request_header.len)' % index
+        elif self.specification.can_handle_array:
             if index == 0:
                 return 'i'
             else:
                 return '( %d * request_header.len) + i' % index
         else:
             return index
-            
+    
+    
+    def input_var(self, name, index):
+        if self.specification.must_handle_array:
+            self.output_var(name, index)
+        else:
+            self.out.n() + name
+            self.out + '[' + self.index_string(index) + ']'
+        
+    def output_var(self, name, index):
+        self.out.n() + '&' + name
+        self.out + '[' + self.index_string(index) + ']'
+    
     def output_function_parameters(self):
         self.out.indent()
         
@@ -87,22 +109,19 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
                     self.out + '[' + self.index_string(parameter.input_index ) +  ' - 1] + 1'
                     self.out + ')'
                 else:    
-                    self.out.n() + spec.input_var_name
-                    self.out + '[' + self.index_string(parameter.input_index) + ']'
+                    self.input_var(spec.input_var_name, parameter.input_index)
             if parameter.direction == LegacyFunctionSpecification.INOUT:
-                if parameter.datatype == 'string': 
-                    self.out.n() + '&' + 'output_strings'
-                    self.out + '[' + self.index_string(parameter.output_index) + ']'
+                if parameter.datatype == 'string':
+                    self.output_var('output_strings', parameter.output_index)
                 else:
-                    self.out.n() + '&' + spec.input_var_name 
-                    self.out + '[' + self.index_string(parameter.input_index) + ']'
+                    self.input_var(spec.input_var_name, parameter.input_index)
             elif parameter.direction == LegacyFunctionSpecification.OUT:
                 if parameter.datatype == 'string': 
-                    self.out.n() + '&' + 'output_strings'
-                    self.out + '[' + self.index_string(parameter.output_index) + ']'
+                    self.output_var('output_strings', parameter.output_index)
                 else:
-                    self.out.n() + '&' + spec.output_var_name
-                    self.out + '[' + self.index_string(parameter.output_index) + ']'
+                    self.output_var(spec.output_var_name, parameter.output_index)
+            elif parameter.direction == LegacyFunctionSpecification.LENGTH:
+                self.out.n() + 'request_header.len'
     
         self.out.dedent()
     
@@ -194,7 +213,7 @@ class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCStringFrom
             else:
                 self.out + spec.type
             self.out + ' '
-            if parameter.is_output():
+            if parameter.is_output() or (parameter.is_input() and self.specification.must_handle_array):
                 self.out + '*' + ' '
             if parameter.datatype == 'string':
                 self.out + '*' + ' '
