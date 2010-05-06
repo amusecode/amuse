@@ -1516,6 +1516,23 @@ class Particles(AbstractParticleSet):
                 timeline.append((x._private.timestamp, x._get_value_of_attribute(particle_key, attribute)))
         return timeline
                     
+    
+    def get_timeline_of_attributes(self, particle_key, attributes):
+        result = map(lambda x: [], range(len(attributes)+1))
+        units = map(lambda x: None, range(len(attributes)+1))
+        
+        for x in self.history:
+            if x._has_key(particle_key):
+                if  units[0] is None:
+                    units[0] = x._private.timestamp.unit
+                for i, attribute in enumerate(attributes):
+                    quantity = x._get_value_of_attribute(particle_key, attribute)
+                    if  units[i+1] is None:
+                        units[i+1] = quantity.unit
+                    result[i+1].append(quantity.value_in(units[i+1]))
+                    
+        return list(map(lambda value,unit : unit.new_quantity(value), result, units))
+
                     
             
     def _set_particles(self, keys, attributes = [], values = []):
@@ -2121,6 +2138,9 @@ class Particle(object):
             
     def get_timeline_of_attribute(self, attribute):
         return self.particles_set.get_timeline_of_attribute(self.key, attribute)
+        
+    def get_timeline_of_attributes(self, attributes):
+        return self.particles_set.get_timeline_of_attributes(self.key, attribute)
         
     def as_set(self):
         """
