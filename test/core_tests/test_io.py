@@ -327,3 +327,8 @@ class FormatTests(amusetest.TestCase):
         
         os.remove("time_test_unit.tsf")
         
+    def test12(self):
+        all_formats = sorted(base.registered_fileformat_processors.keys())
+        for x in all_formats:
+            options = base.get_options_for_format('txt')
+            self.assertTrue(len(options) >= 0)

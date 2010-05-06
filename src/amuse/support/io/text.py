@@ -37,7 +37,7 @@ class TableFormattedText(base.FileFormatProcessor):
     
     provided_formats = ['txt']
     
-    def __init__(self, filename, stream = None, set = None, format = None):
+    def __init__(self, filename = None, stream = None, set = None, format = None):
         base.FileFormatProcessor.__init__(self, filename, set, format)
         
         self.filename = filename
