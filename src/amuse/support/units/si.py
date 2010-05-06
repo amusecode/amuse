@@ -12,8 +12,8 @@ K = core.base_unit('thermodynamic temperature ', 'kelvin', 'K', system)
 mol = core.base_unit('amount of substance', 'mole', 'mol', system)
 cd = core.base_unit('luminous intensity', 'candela', 'cd', system)
 
-no_unit = core.none_unit('no unit','')
-none = core.none_unit('no unit','')
+no_unit = core.none_unit('no_unit','none')
+none = core.none_unit('none','none')
 
 named = core.named_unit
 

@@ -4,14 +4,29 @@ from amuse.support.core import late
 import numpy
 
 class system(object):
+    ALL = {}
+    
     def __init__(self, name):
         self.name = name
         self.bases = []
+        self.mapping_from_base_name_to_base = {}
+        self.ALL[self.name] = self
     
+    def reference_string(self):
+        return "{0}.get({1!r})".format('system', self.name)
+            
     def add_base(self, unit):
         unit.system = self
         unit.index = len(self.bases)
         self.bases.append(unit)
+        self.mapping_from_base_name_to_base[unit.quantity] = unit
+    
+    def base(self, name):
+        return self.mapping_from_base_name_to_base[name]
+        
+    @classmethod
+    def get(cls, name):
+        return cls.ALL[name]
         
 class unit(object):
     """
@@ -276,6 +291,7 @@ class base_unit(unit):
         self.quantity = quantiy
         self.name = name
         self.symbol = symbol
+        self.system = system
         system.add_base(self)
         
     def __str__(self):
@@ -297,15 +313,34 @@ class base_unit(unit):
         """
         return ((1,self),)
         
+    
+    def reference_string(self):
+        return '{0}.base({1!r})'.format(self.system.reference_string(), self.quantity)
+
+class no_system(object):
+    ALL = {}
+    
+    @classmethod
+    def set(cls, unit):
+        cls.ALL[unit.name] = unit
+        
+    @classmethod
+    def get(cls, name):
+        return cls.ALL[name]
+        
 class none_unit(unit):
     def __init__(self, name,  symbol):
         self.name = name
         self.symbol = symbol
+        no_system.set(self)
         
     def __str__(self):
         return self.symbol
         
     
+    def reference_string(self):
+        return 'no_system.get({0!r})'.format(self.name)
+        
     @late
     def factor(self):
         return 1
@@ -332,7 +367,7 @@ class key_unit(none_unit):
 class nonnumeric_unit(unit):
     """
     nonnumeric_unit objects are  indivisable units 
-    not connected to any system of unists.
+    not connected to any system of units.
     
     nonnumeric_units cannot be used to
     derive new units from.
@@ -342,9 +377,13 @@ class nonnumeric_unit(unit):
     def __init__(self, name, symbol):
         self.name = name
         self.symbol = symbol
+        no_system.set(self)
         
     def __str__(self):
         return self.symbol
+        
+    def reference_string(self):
+        return 'no_system.get({0!r})'.format(self.name)
         
     def __mul__(self, other):
         raise Exception("Cannot derive other units from a non numeric unit")
@@ -506,6 +545,10 @@ class named_unit(unit):
         
     def __str__(self):
         return self.symbol
+        
+    
+    def reference_string(self):
+        return self.to_simple_form().reference_string()
     
     @late
     def factor(self):
@@ -555,6 +598,10 @@ class factor_unit(derived_unit):
         if self.symbol is None:
             return str(self.local_factor) + ' * ' + str(self.local_unit)
         return self.symbol + str(self.local_unit) 
+        
+    
+    def reference_string(self):
+        return '(' + str(self.local_factor) + ' * ' +  self.local_unit.reference_string() + ')'
     
     @late
     def factor(self):
@@ -589,6 +636,9 @@ class mul_unit(derived_unit):
         
     def __str__(self):
         return str(self.left_hand) + ' * ' + str(self.right_hand) 
+        
+    def reference_string(self):
+        return '(' +  self.left_hand.reference_string() + ' * ' +  self.right_hand.reference_string() + ')'
         
     @late
     def factor(self):
@@ -629,6 +679,10 @@ class pow_unit(derived_unit):
         
     def __str__(self):
         return str(self.local_unit) + '**' + str(self.power)
+    
+    
+    def reference_string(self):
+        return '(' +  self.local_unit.reference_string() + '**' + str(self.power) + ')'
         
     @late
     def base(self):
@@ -665,6 +719,9 @@ class div_unit(derived_unit):
         
     def __str__(self):
         return str(self.left_hand) + ' / ' + str(self.right_hand)+''
+        
+    def reference_string(self):
+        return '(' +  self.left_hand.reference_string() + '/' +  self.right_hand.reference_string() + ')'
         
     @late
     def factor(self):

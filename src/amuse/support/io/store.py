@@ -4,7 +4,7 @@ import pickle
 import os.path
 
 from amuse.support.data.core import Particles, AttributeStorage
-from amuse.support.units import si, units
+from amuse.support.units import si, units, core
 from amuse.support.io import base
 
 
@@ -43,7 +43,7 @@ class HDF5AttributeStorage(AttributeStorage):
     
     def get_unit_of(self, attribute):
         dataset = self.attributesgroup[attribute]
-        return eval(dataset.attrs["units"], units.__dict__) 
+        return eval(dataset.attrs["units"], core.__dict__) 
         
     def _get_attributes(self):
         return self.attributesgroup.keys()
@@ -75,7 +75,7 @@ class HDF5AttributeStorage(AttributeStorage):
                 dataset = self.attributesgroup[attribute]
             else:
                 dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
-                dataset["unit"] =  str(quantity.unit.to_simple_form())
+                dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
             dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
         
         
@@ -103,7 +103,7 @@ class StoreHDF(object):
         quantity = particles.get_timestamp()
         if not quantity is None:
             group.attrs["timestamp"] = quantity.value_in(quantity.unit)
-            group.attrs["timestamp_unit"] = str(quantity.unit.to_simple_form())
+            group.attrs["timestamp_unit"] = quantity.unit.reference_string()
         
         #times_group = group.create_group("times")
         #previous_model_times = None
@@ -124,7 +124,7 @@ class StoreHDF(object):
         for attribute, quantity in zip(particles._get_attributes(), all_values):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
-            dataset.attrs["units"] = str(quantity.unit.to_simple_form())
+            dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
             #if not attribute_values.model_times is None:
             #    dataset.attrs["model-times-ref"] = all_stored_model_time_references[id(attribute_values.model_times)]
     
@@ -142,7 +142,7 @@ class StoreHDF(object):
             dataset.read_direct(keys)
             
             if "timestamp" in group.attrs:
-                unit = eval(group.attrs["timestamp_unit"], units.__dict__) 
+                unit = eval(group.attrs["timestamp_unit"], core.__dict__) 
                 timestamp = unit.new_quantity(group.attrs["timestamp"])
             else:
                 timestamp = None

@@ -1,5 +1,6 @@
 from amuse.support.io import store
 from amuse.support.units import units
+from amuse.support.units import nbody_system
 from amuse.support.data.core import Stars
 from amuse.test import amusetest
 
@@ -49,6 +50,24 @@ class TestStoreHDF(amusetest.TestCase):
         loaded_particles = instance.load()
         masses = loaded_particles[1].get_timeline_of_attribute("mass")
         self.assertEquals(len(masses), 2)
+        
+    
+    def test3(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "test.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+            
+        instance = store.StoreHDF(output_file)
+        number_of_particles = 10
+        p = Stars(number_of_particles)
+        p.mass = [x * 2.0 for x in range(number_of_particles)] | nbody_system.mass
+        
+        instance.store(p.savepoint(1 | nbody_system.time))
+        
+        instance = store.StoreHDF(output_file)
+        loaded_particles = instance.load()
+        self.assertAlmostRelativeEquals(p.mass[1], 2.0 | nbody_system.mass) 
         
         
         
