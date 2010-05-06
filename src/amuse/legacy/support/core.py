@@ -19,34 +19,7 @@ from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
 from amuse.legacy.support.create_definition import LegacyDocStringProperty
 from amuse.legacy.support.channel import MpiChannel, MultiprocessingMPIChannel
-
-
-def is_mpd_running():
-    """
-    Determine if the MPD daemon process is running.
-    
-    
-    Needed for installations of AMUSE in a MPICH2 environment using
-    the default MPD daemon. The MPD deamon must be
-    running before the first MPI_COMN_SPAWN call is made.
-    Returns True for other MPI vendors (OpenMPI)
-    
-    :returns: Boolean result of check whether MPD daemon is running.
-    :rtype: bool
-    
-    
-    >>> is_mpd_running()
-    True
-    
-        
-    """
-    name_of_the_vendor, version = MPI.get_vendor()
-    if name_of_the_vendor == 'MPICH2':
-        process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
-        (output_string, error_string) = process.communicate()
-        return not (process.returncode == 255)
-    else:
-        return True
+from amuse.legacy.support.channel import is_mpd_running
         
 def ensure_mpd_is_running():
     if not is_mpd_running():

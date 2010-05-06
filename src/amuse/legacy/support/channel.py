@@ -9,7 +9,7 @@ import sys
 import struct
 
 from mpi4py import MPI
-from subprocess import Popen
+from subprocess import Popen, PIPE
 
 from amuse.support.options import OptionalAttributes, option
 from amuse.support.core import late
@@ -358,6 +358,35 @@ MessageChannel.DEBUGGERS = {
 #memcpy = clib_library.memcpy
 #memcpy.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_size_t]
 
+
+def is_mpd_running():
+    """
+    Determine if the MPD daemon process is running.
+    
+    
+    Needed for installations of AMUSE in a MPICH2 environment using
+    the default MPD daemon. The MPD deamon must be
+    running before the first MPI_COMN_SPAWN call is made.
+    Returns True for other MPI vendors (OpenMPI)
+    
+    :returns: Boolean result of check whether MPD daemon is running.
+    :rtype: bool
+    
+    
+    >>> is_mpd_running()
+    True
+    
+        
+    """
+    name_of_the_vendor, version = MPI.get_vendor()
+    if name_of_the_vendor == 'MPICH2':
+        process = Popen(['mpdtrace'], stdout = PIPE, stderr = PIPE)
+        (output_string, error_string) = process.communicate()
+        return not (process.returncode == 255)
+    else:
+        return True
+
+
 class MpiChannel(MessageChannel):
     """
     Message channel based on MPI calls to send and recv the messages
@@ -377,8 +406,10 @@ class MpiChannel(MessageChannel):
             self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
-        
-        print self.full_name_of_the_worker
+           
+        if self.check_mpi:
+            if not is_mpd_running():
+                raise Exception("The mpd daemon is not running, please make sure it is started before starting this code")
             
         if not self.hostname is None:
             self.info = MPI.Info.Create()
@@ -390,6 +421,10 @@ class MpiChannel(MessageChannel):
         self.intercomm = None
         self._is_inuse = False
     
+    @option(type="boolean")
+    def check_mpi(self):
+        return True
+        
     @option(type="boolean")
     def debug_with_gdb(self):
         return False
