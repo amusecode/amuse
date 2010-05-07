@@ -180,7 +180,7 @@ class TestEvrard(TestWithMPI):
 class TestFiInterface(TestWithMPI):
 
     def test0(self):
-        instance=Fi()
+        instance=Fi(nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
