@@ -1395,8 +1395,8 @@ class Fi(GravitationalDynamics):
         else:
           legacy_interface = fi(**options)            
         
-        if convert_nbody is None:
-            convert_nbody=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        #if convert_nbody is None:
+        #    convert_nbody=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         
         GravitationalDynamics.__init__(
             self,
@@ -1410,10 +1410,12 @@ class Fi(GravitationalDynamics):
         
         self.legacy_interface.set_fi_data_directory(self.legacy_interface.get_data_directory()+'/')
         
-        value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
-        self.legacy_interface.set_unitl_in_kpc(value)
-        value=self.convert_nbody.to_si(nbody_system.mass).in_(units.MSun).number 
-        self.legacy_interface.set_unitm_in_msun(value)
+        if not self.convert_nbody is None:
+            value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
+            self.legacy_interface.set_unitl_in_kpc(value)
+            value=self.convert_nbody.to_si(nbody_system.mass).in_(units.MSun).number 
+            self.legacy_interface.set_unitm_in_msun(value)
+        
         return result
 
     def define_parameters(self, object):
