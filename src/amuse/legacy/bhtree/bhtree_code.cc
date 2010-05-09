@@ -10,6 +10,7 @@
 
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
+#include <time.h>
 // AMUSE STOPPING CONDITIONS SUPPORT
 
 using namespace std;
@@ -245,6 +246,11 @@ int evolve(real t_end)                // default sync = 0
         PRC(KE0); PRC(PE0); PRC(E0); PRL(Q0);
       }
 
+     // AMUSE STOPPING CONDITIONS
+    time_t starttime, currenttime;
+    time(&starttime);
+    // AMUSE STOPPING CONDITIONS
+    
     while( bhtcs.time<t_end)
       {
 
@@ -257,6 +263,17 @@ int evolve(real t_end)                // default sync = 0
         bhtcs.integrate(dt);                // advance the entire system by time dt
 
         bhtcs.time += dt;                
+
+        // AMUSE STOPPING CONDITIONS
+        if(TIMEOUT_DETECTION_BITMAP & enabled_conditions) {
+            time(&currenttime);
+            cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
+            if((currenttime - starttime) > timeout_parameter) {
+                int stopping_index  = next_index_for_stopping_condition();
+                set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
+            }
+        }
+        // AMUSE STOPPING CONDITIONS
 
         if (set_conditions & enabled_conditions)
         {

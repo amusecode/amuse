@@ -36,8 +36,7 @@ extern "C" double cpusec();
 
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
-
-long supported_conditions = COLLISION_DETECTION_BITMAP;
+long supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
 // AMUSE STOPPING CONDITIONS SUPPORT
 
 void dump_octal(BHlong x)

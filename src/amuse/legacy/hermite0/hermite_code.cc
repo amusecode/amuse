@@ -37,7 +37,6 @@
 #include <stopcond.h>
 #include <time.h>
 
-long supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
 // AMUSE STOPPING CONDITIONS SUPPORT
 
 using namespace std;
