@@ -9,6 +9,8 @@ long enabled_conditions = 0;
 long set_conditions = 0;
 long number_of_stopping_conditions_set = 0;
 
+double timeout_parameter = 4.0;
+
 int enable_stopping_condition(int type)
 {
     if(type > 32) {
@@ -119,6 +121,18 @@ int set_stopping_condition_particle_index(int index, int index_in_the_condition,
 }
 
 
+int set_stopping_condition_timeout_parameter(double value) {
+    if(timeout_parameter < 0.0) {
+        return -1;
+    }
+    timeout_parameter = value;
+    return 0;
+}
+
+int get_stopping_condition_timeout_parameter(double * value){
+    *value = timeout_parameter;
+    return 0;
+}
 
 
 #ifdef MPILIB

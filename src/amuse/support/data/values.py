@@ -2,6 +2,7 @@
 """
 from math import sqrt
 import numpy
+from amuse.support.core import late
 
 class Quantity(object):
     """
@@ -263,7 +264,10 @@ class VectorQuantity(Quantity):
     
     def __init__(self, array, unit):
         Quantity.__init__(self, unit)
-        self._number = numpy.array(array, dtype=unit.dtype)
+        if unit is None:
+            self._number = numpy.array((), dtype='float64')
+        else:
+            self._number = numpy.array(array, dtype=unit.dtype)
     
     @classmethod
     def new_from_scalar_quantities(cls, *values):
@@ -369,8 +373,7 @@ class VectorQuantity(Quantity):
         >>> print vector
         [0.0, 3.5, 2.0] kg
         """
-        quantity_in_my_units = quantity.as_quantity_in(self.unit)
-        self._number[index] = quantity_in_my_units.number
+        self._number[index] = quantity.value_in(self.unit)
         
     @property
     def number(self):
@@ -697,7 +700,55 @@ class NonNumericQuantity(Quantity):
     def as_vector_with_length(self, length):
         return VectorQuantity(numpy.ones(length) * self.value, self.unit)
         
+
+class AdaptingVectorQuantity(VectorQuantity):
+    """
+    Adapting vector quanity objects will adapt their units to the
+    first object added to the vector
+    """
     
+    def __init__(self, value = [], unit = None):
+        VectorQuantity.__init__(self, value, unit)
+        self._number = list(value)
+        if unit is None:
+            self.append = self.append_start
+        else:
+            self.append = self.append_normal
+        
+        
+    def append_start(self, quantity):
+        self.unit = quantity.unit
+        self._number.append(quantity.value_in(self.unit))
+        self.append = self.append_normal
+        
+    def append_normal(self, quantity):
+        self._number.append(quantity.value_in(self.unit))
+    
+    def append_when_cached(self, quantity):
+        self._remove_cached_number(self)
+        self._number.append(quantity.value_in(self.unit))
+        
+    
+    def extend(self, quantity):
+        for x in quantity:
+            self.append(self, x)
+            
+    def __setitem__(self, index, quantity):
+        quantity_in_my_units = quantity.as_quantity_in(self.unit)
+        self._number[index] = quantity_in_my_units.number
+        self._remove_cached_number()
+
+    def _remove_cached_number(self):
+        try:
+            delattr(self, "number")
+        except AttributeError:
+            pass
+        self.append = self.append_normal
+                        
+    @late
+    def number(self):
+        self.append = self.append_when_cached
+        return numpy.array(self._number, dtype=self.unit.dtype)
         
 def new_quantity(value, unit):
     """Create a new Quantity object.
@@ -720,3 +771,4 @@ def new_quantity(value, unit):
     return ScalarQuantity(value, unit)
     
     
+

@@ -200,6 +200,7 @@ class Hermite(GravitationalDynamics):
             0.0 | nbody_system.time
         )
 
+        self.stopping_conditions.define_parameters(object)
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)

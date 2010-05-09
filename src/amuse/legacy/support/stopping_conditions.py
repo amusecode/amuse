@@ -1,7 +1,5 @@
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
-
-
-    
+from amuse.support.units import units
     
 class StoppingConditionInterface(object):
 
@@ -146,6 +144,36 @@ class StoppingConditionInterface(object):
         -1 - ERROR
         """
         return function
+    
+    @legacy_function
+    def set_stopping_condition_timeout_parameter():
+        """
+        Set max computer time available (in seconds).
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = False 
+        function.addParameter('value', dtype='float64', direction=function.IN, description = "Avaible wallclock time in seconds")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+        
+    @legacy_function
+    def get_stopping_condition_timeout_parameter():
+        """
+        Retrieve max computer time available (in seconds).
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = False 
+        function.addParameter('value', dtype='float64', direction=function.OUT, description = "Current value of avaible wallclock time in seconds")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
 
     
 class StoppingCondition(object):
@@ -199,6 +227,21 @@ class StoppingConditions():
             self, 
             2, 
             "If enabled, the code will stop at the end of the inner loop when a star escapes"
+        )
+        self.timeout_detection = StoppingCondition(
+            self, 
+            3, 
+            "If enabled, the code will stop at the end of the inner loop when the computer time is abouve a set timeout"
+        )
+        
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_stopping_condition_timeout_parameter",
+            "set_stopping_condition_timeout_parameter", 
+            "stopping_conditions_timeout", 
+            "max wallclock time available for the evolve step", 
+            units.s, 
+            4.0 |  units.s
         )
         
     def define_methods(self, object):

@@ -35,9 +35,10 @@
 
 // AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
+#include <time.h>
 
-long supported_conditions = COLLISION_DETECTION_BITMAP;
-// -----------------------
+long supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
+// AMUSE STOPPING CONDITIONS SUPPORT
 
 using namespace std;
 typedef double  real;
@@ -651,6 +652,12 @@ int evolve_system(real t_end)
 
     if (t + dt > t_end) return -1;
     
+    
+    // AMUSE STOPPING CONDITIONS
+    time_t starttime, currenttime;
+    time(&starttime);
+    // AMUSE STOPPING CONDITIONS
+    
     while (true)
       {
 
@@ -677,6 +684,17 @@ int evolve_system(real t_end)
 
             // compute_nn();
         
+            // AMUSE STOPPING CONDITIONS
+            if(TIMEOUT_DETECTION_BITMAP & enabled_conditions) {
+                time(&currenttime);
+                cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
+                if((currenttime - starttime) > timeout_parameter) {
+                    int stopping_index  = next_index_for_stopping_condition();
+                    set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
+                }
+            }
+            // AMUSE STOPPING CONDITIONS
+        
             if(set_conditions & enabled_conditions) {
                 break;
             }
@@ -687,7 +705,8 @@ int evolve_system(real t_end)
             write_diagnostics(epot, *sout);
             t_dia += dt_dia;
           }
-
+          
+        
         if (set_conditions & enabled_conditions)
           {
             break;
