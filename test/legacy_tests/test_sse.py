@@ -389,7 +389,7 @@ class TestSSE(TestWithMPI):
             self.assertEquals(stars[i].age.value_in(units.Myr), 125.0)
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertEquals(str(stars[i].stellar_type), end_types[i])
-        del instance
+        instance.stop()
     
     def test7(self):
         print "Test: evolve particles one at a time."
@@ -421,7 +421,7 @@ class TestSSE(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         instance.initialize_module_with_current_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
-        del instance
+        instance.stop()
         
         instance = mpi_interface.SSE()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
@@ -429,7 +429,7 @@ class TestSSE(TestWithMPI):
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         instance.initialize_module_with_default_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
-        del instance
+        instance.stop()
         
     def test9(self):
         print "Test: large number of particles"

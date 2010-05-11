@@ -36,7 +36,7 @@ class SSEInterface(LegacyInterface, LiteratureRefs):
         function.addParameter('wdflag_in', dtype='i', direction=function.IN)
         function.addParameter('bhflag_in', dtype='i', direction=function.IN)
         function.addParameter('nsflag_in', dtype='i', direction=function.IN)
-        function.addParameter('mxns_in', dtype='i', direction=function.IN)
+        function.addParameter('mxns_in', dtype='d', direction=function.IN)
         function.addParameter('pts1_in', dtype='d', direction=function.IN)
         function.addParameter('pts2_in', dtype='d', direction=function.IN)
         function.addParameter('pts3_in', dtype='d', direction=function.IN)

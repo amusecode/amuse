@@ -145,7 +145,7 @@ class TestMESAInterface(TestWithMPI):
             instance.evolve_to(index_of_the_star, 5.0e5)
             (L_of_the_star, status) = instance.get_luminosity(index_of_the_star)
             self.assertEquals(0, status)
-            self.assertAlmostEqual(L_of_the_star,L,2)
+            self.assertAlmostEqual(L_of_the_star,L,1)
         instance.stop()
         del instance     
     

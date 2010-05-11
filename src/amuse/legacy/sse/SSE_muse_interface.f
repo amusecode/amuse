@@ -13,8 +13,8 @@ cf2py intent(out) status
       implicit none
       real*8 z_in, z, zpars(20)
       real*8 neta_in, bwind_in, hewind_in, sigma_in
-      integer ifflag_in, wdflag_in, bhflag_in, nsflag_in, mxns_in
-      real*8 pts1_in, pts2_in, pts3_in
+      integer ifflag_in, wdflag_in, bhflag_in, nsflag_in
+      real*8 mxns_in, pts1_in, pts2_in, pts3_in
       integer status
       include 'src/const_bse.h'
       common /SSE_init/ z, zpars

@@ -420,6 +420,8 @@ class MpiChannel(MessageChannel):
         self.cached = None
         self.intercomm = None
         self._is_inuse = False
+        self.MAX_MESSAGE_LENGTH = 1000
+        self._communicated_splitted_message = False
     
     @option(type="boolean")
     def check_mpi(self):
@@ -529,9 +531,12 @@ class MpiChannel(MessageChannel):
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         if self.is_inuse():
             raise Exception("You've tried to send a message to a code that is already handling a message, this is not correct")
-            
+        
         length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in)
-
+        
+        if length > self.MAX_MESSAGE_LENGTH:
+            self.split_message(tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length)
+            return
         message = ServerSideMessage(tag,length)
         if message.length > 1:
             message.doubles = pack_array( doubles_in, message.length, 'float64')
@@ -544,13 +549,44 @@ class MpiChannel(MessageChannel):
             message.ints = ints_in
             message.strings = chars_in
             
-        
         message.send(self.intercomm)
         self._is_inuse = True
         
+    def split_message(self, tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length):
+        doubles_result=[]
+        ints_result=[]
+        floats_result=[]
+        strings_result=[]
+        
+        def append_results(arr, values, datatype):
+            for j, subarr in enumerate(values):
+                if not i:
+                    arr.append(numpy.empty([length], dtype=datatype))
+                arr[j][i*self.MAX_MESSAGE_LENGTH:(i+1)*self.MAX_MESSAGE_LENGTH]=subarr
+        
+        def split_input_array(arr_in):
+            return [tmp[i*self.MAX_MESSAGE_LENGTH:(i+1)*self.MAX_MESSAGE_LENGTH] for tmp in arr_in]
+        
+        for i in range(1+(length-1)/self.MAX_MESSAGE_LENGTH):
+            (doubles, ints, floats, chars) = map(split_input_array,[doubles_in, ints_in, floats_in, chars_in])
+            self.send_message(tag, id, int_arg1, int_arg2, doubles, ints, floats, chars, min(length,self.MAX_MESSAGE_LENGTH))
+            next_part = self.recv_message(id, True)
+            map(append_results,(doubles_result,ints_result,floats_result,strings_result),next_part,
+                ('float64','int32','float32','string'))
+            length -= self.MAX_MESSAGE_LENGTH
+        
+        self._communicated_splitted_message = True
+        self._merged_results_splitted_message = (doubles_result,ints_result,floats_result,strings_result)
+    
     def recv_message(self, tag, handle_as_array):
         
         self._is_inuse = False
+        
+        if self._communicated_splitted_message:
+            x = self._merged_results_splitted_message
+            self._communicated_splitted_message = False
+            del self._merged_results_splitted_message
+            return x
         
         message = ServerSideMessage()
         message.recieve(self.intercomm)
