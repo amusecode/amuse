@@ -1,5 +1,6 @@
 from amuse.support.io import gadget
 from amuse.support.io import nemobin
+from amuse.support.units import nbody_system
 from amuse.test import amusetest
 from StringIO import StringIO
 
@@ -82,7 +83,7 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         filename = os.path.join(directory_name, 'plummer128.nemo')
         file = open(filename, 'rb')
         nemofile = nemobin.NemoBinaryFile(file)
-        item = nemofile.get_item()
+        item = nemofile.read_item()
         
         self.assertEquals(item.data, "init_xrandom: seed used 123")
         file.close()
@@ -93,12 +94,32 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         filename = os.path.join(directory_name, 'plummer128.nemo')
         file = open(filename, 'rb')
         nemofile = nemobin.NemoBinaryFile(file)
-        item = nemofile.get_item()
-        while item:
-            print item.typecharacter, item.tagstring, item.number_of_values
-            print item.data
-
-            item = nemofile.get_item()
+        data = nemofile.read()
         file.close()
+        print data
+        self.assertEquals(len(data), 3)
+        tags = list(data.keys())
+        self.assertEquals(tags[0] , 'Headline')
+        self.assertEquals(tags[1] , 'History')
+        self.assertEquals(tags[2] , 'SnapShot')
+        self.assertEquals(data['History'][0].data, 'mkplummer out=plummer128.nemo nbody=128 seed=123 VERSION=2.8b')
         
+        self.assertEquals(len(data['SnapShot'][0].data), 2)
+        tags = list(data['SnapShot'][0].data.keys())
+        self.assertEquals(tags[0] , 'Parameters')
+        self.assertEquals(tags[1] , 'Particles')
+        
+    
+    
+    def test4(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'plummer128.nemo')
+        file = open(filename, 'rb')
+        x = nemobin.NemoBinaryFileFormatProcessor()
+
+        set = x.load_file(file)
+        file.close()
+        self.assertEquals(len(set), 128)
+        self.assertAlmostRelativeEquals(set.kinetic_energy(), 0.230214395174 | nbody_system.energy, 8)
+        self.assertAlmostRelativeEquals(set.potential_energy(G=nbody_system.G), -0.473503040144  | nbody_system.energy, 8)        
 

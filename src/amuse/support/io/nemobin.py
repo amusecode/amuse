@@ -1,10 +1,11 @@
 from amuse.support.data import core
-from amuse.support.core import late
+from amuse.support.core import late, OrderedMultiDictionary
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 from amuse.support.io import base
 
 from collections import namedtuple
+
 
 import struct
 import array
@@ -39,16 +40,29 @@ class NemoItem(object):
     def number_of_values(self):
         return numpy.prod(self.dimensions)
         
-    def read(self, file):
+    def read(self, nemofile):
         if self.datatype is None:
             pass
         else:
-            self.data = numpy.fromfile(file, dtype=self.datatype, count=self.number_of_values)
+            self.data = nemofile.read_fixed_array(self.datatype, self.number_of_values)
         self.postprocess()
     
     def postprocess(self):
         if self.mustswap:
             self.data.byteswap()
+    
+    
+    def isEndOfSet(self):
+        return False
+        
+    def isEndOfHistory(self):
+        return False
+        
+    def __str__(self):
+        return 'nemoitem({0},{1})'.format(self.tagstring, self.dimensions)
+        
+    def __repr__(self):
+        return '<{0!s} {1},{2}>'.format(type(self), self.tagstring, self.dimensions)
         
 class AnyItem(NemoItem):
     """anything at all"""
@@ -99,7 +113,7 @@ class LongItem(NemoItem):
 class HalfpItem(NemoItem):
     """  half precision floating """
     typecharacter = "h"
-    datatype = None
+    datatype = numpy.int16
     
 class FloatItem(NemoItem):
     """  short floating """
@@ -123,14 +137,21 @@ class SetItem(NemoItem):
     datatype = None
     
     
-    def read(self, file):
-        pass
+    def read(self, nemofile):
+        self.data = OrderedMultiDictionary()
+        subitem = nemofile.read_item()
+        while not subitem.isEndOfSet():
+            self.data[subitem.tagstring] = subitem
+            subitem = nemofile.read_item()
     
 class TesItem(NemoItem):
     """  end of compound item """
     typecharacter = ")"
     datatype = None
     
+    def isEndOfSet(self):
+        return True
+        
     def read(self, file):
         pass
     
@@ -141,10 +162,21 @@ class StoryItem(NemoItem):
     typecharacter = "["
     datatype = None
     
+    def read(self, nemofile):
+        self.data = OrderedMultiDictionary()
+        subitem = nemofile.read_item()
+        while not subitem.isEndOfHistory():
+            self.data[subitem.tagstring] = subitem
+            subitem = nemofile.read_item()
+    
 class YrotsItem(NemoItem):
     """  end of a story item (see starlab) """
     typecharacter = "]"
     datatype = None
+        
+    def isEndOfHistory(self):
+        return True
+
  
         
 class NemoBinaryFile(object):
@@ -190,6 +222,10 @@ class NemoBinaryFile(object):
     def read_string(self):
         return self.read_array('b').tostring()
 
+    def read_fixed_array(self, datatype, count):
+        return numpy.fromfile(self.file, dtype=datatype, count=count)
+
+
     def get_item_header(self):
         
         magic_number = self.read_magic_number()
@@ -221,19 +257,61 @@ class NemoBinaryFile(object):
             
         return (typecharacter, tagstring, dim, mustswap)
         
-    def get_item(self):
+    def read_item(self):
         typecharacter, tagstring, dim, mustswap = self.get_item_header()
         if typecharacter is None:
             return None
         result = NemoItemType.new_item(typecharacter, tagstring, dim, mustswap)
-        result.read(self.file)
+        result.read(self)
         return result
+    
+    def read(self):
+        result = OrderedMultiDictionary()
         
-
+        item = self.read_item()
+        while not item is None:
+            result[item.tagstring] = item
+            item = self.read_item()
         
-
+        return result
+    
     
 class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
     provided_formats = ['nemobin']
     
     
+        
+    def load_file(self, file):
+        nemofile = NemoBinaryFile(file)
+        data = nemofile.read()
+        result = None
+        for snapshot in data['SnapShot']:
+            if not 'Particles' in snapshot.data:
+                continue
+            
+            parameters = snapshot.data['Parameters'][0].data
+            nparticles = parameters['Nobj'][0].data[0]
+            time = parameters['Time'][0].data[0]
+            
+            if result is None:
+                result = core.Particles(nparticles)
+                
+            particlesitem = snapshot.data['Particles'][0]
+            print particlesitem.data.keys()
+            if 'PhaseSpace' in particlesitem.data:
+                positions_and_velocities = particlesitem.data['PhaseSpace'][0].data
+                positions = positions_and_velocities[...,0,...]
+                velocities = positions_and_velocities[...,1,...]
+            else:
+                positions =  particlesitem.data['Position'][0].data
+                velocities = particlesitem.data['Vecolity'][0].data
+            
+            result.position = nbody_system.length.new_quantity(positions)
+            result.velocity = nbody_system.speed.new_quantity(velocities)
+            
+            if 'Mass' in particlesitem.data:
+                result.mass = nbody_system.mass.new_quantity(particlesitem.data['Mass'][0].data)
+                
+                
+            result.savepoint(time | nbody_system.time)
+        return result

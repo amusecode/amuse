@@ -247,6 +247,70 @@ class OrderedDictionary(object):
         for x in self.orderedKeys:
             yield self.mapping[x]
             
+
+        
+class OrderedMultiDictionary(object):
+    """A dictionary that keeps the keys in the dictionary in order and can store
+    multiple items per key
+    
+    Ordered multi dictionaries remember the order that items were inserted
+    and can store multple values per key.  When iterating over an ordered dictionary,
+    the values are returned in the order their keys were first added.
+
+    >>> d = OrderedMultiDictionary()
+    >>> d["first"] = 0
+    >>> d["second"] = 1
+    >>> d["first"] = 2
+    >>> [x for x in d]
+    [0, 1, 2]
+    >>> print d["first"]
+    [0,2]
+    """
+    
+    def __init__(self):
+        self.mapping = {}
+        self.orderedKeys = []
+        
+    def __setitem__(self, key, value):
+        if not key in self.mapping:
+            self.mapping[key] = []
+        self.mapping[key].append(value)
+        self.orderedKeys.append((key, len(self.mapping[key]) - 1,))
+        
+    def __getitem__(self, key):
+        return self.mapping[key]
+        
+    def  __contains__(self, key):
+        return key in self.mapping
+        
+    def  __iter__(self):
+        return self.values()
+        
+    def  __len__(self):
+        return len(self.orderedKeys)
+        
+    def __str__(self):
+        result = 'OrderedDictionary({'
+        elements = []
+        for x, index in self.orderedKeys:
+            elements.append(repr(x) + ':' + repr(self[x][index]))
+        result += ', '.join(elements)
+        result += '})'
+        return result
+        
+    def __repr__(self):
+        return str(self)
+        
+    def __getattr__(self, key):
+        return self.mapping[key]
+        
+    def keys(self):
+        return [x for x,index in self.orderedKeys ]
+                
+    def values(self):
+        for x, index in self.orderedKeys:
+            yield self.mapping[x][index]
+            
 class CompositeDictionary(object):
     """A dictionary that defers to other dictionaries when an item is
     not found.
