@@ -1,6 +1,9 @@
 from amuse.support.io import gadget
+from amuse.support.io import nemobin
 from amuse.test import amusetest
 from StringIO import StringIO
+
+import os.path
 
 class GadgetFileFormatProcessorTests(amusetest.TestCase):
     header_parts = ( 
@@ -57,4 +60,45 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         print x.total_number_of_particles 
         print positions
         self.assertEquals(x.total_number_of_particles, len(positions))
+        
+
+class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
     
+    
+    def test1(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'plummer128.nemo')
+        file = open(filename, 'rb')
+        nemofile = nemobin.NemoBinaryFile(file)
+        tagcharacter, tagstring, dim, mustswap = nemofile.get_item_header()
+        self.assertEquals(tagcharacter, 'c')
+        self.assertEquals(tagstring, 'Headline')
+        self.assertEquals(len(dim), 1)
+        self.assertEquals(dim[0], 28)
+        file.close()
+        
+    def test2(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'plummer128.nemo')
+        file = open(filename, 'rb')
+        nemofile = nemobin.NemoBinaryFile(file)
+        item = nemofile.get_item()
+        
+        self.assertEquals(item.data, "init_xrandom: seed used 123")
+        file.close()
+        
+    
+    def test3(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'plummer128.nemo')
+        file = open(filename, 'rb')
+        nemofile = nemobin.NemoBinaryFile(file)
+        item = nemofile.get_item()
+        while item:
+            print item.typecharacter, item.tagstring, item.number_of_values
+            print item.data
+
+            item = nemofile.get_item()
+        file.close()
+        
+
