@@ -25,17 +25,23 @@ class NemoItemType(type):
     
     @classmethod
     def new_item(metaclass, typecharacter, tagstring, dimensions, mustswap = False):
-        return metaclass.mapping[typecharacter](tagstring, dimensions, mustswap)
+        return metaclass.mapping[typecharacter](tagstring, dimensions, mustswap = mustswap)
         
 class NemoItem(object):
     __metaclass__ = NemoItemType
     
-    def __init__(self, tagstring, dimensions, mustswap = False):
+    def __init__(self, tagstring, dimensions = [1], data = None, mustswap = False):
         self.tagstring = tagstring
         self.dimensions = dimensions 
         self.mustswap = mustswap
-        self.data = None
-        
+        self.data = data
+    
+    def is_plural(self):
+        if len(self.dimensions) == 1 and self.dimensions[0] <= 1:
+            return False
+        else:
+            return True
+            
     @late
     def number_of_values(self):
         return numpy.prod(self.dimensions)
@@ -47,10 +53,18 @@ class NemoItem(object):
             self.data = nemofile.read_fixed_array(self.datatype, self.number_of_values)
         self.postprocess()
     
+    def write(self, nemofile):
+        if self.datatype is None:
+            pass
+        else:
+            nemofile.write_fixed_array(self.preprocess(), self.datatype)
+        
     def postprocess(self):
         if self.mustswap:
             self.data.byteswap()
     
+    def preprocess(self):
+        return self.data
     
     def isEndOfSet(self):
         return False
@@ -77,12 +91,17 @@ class CharItem(NemoItem):
     def postprocess(self):
         self.data = ''.join(self.data[:-1])
         
+    def preprocess(self):
+        result = numpy.array(list(self.data), numpy.character)
+        result = numpy.append(result, '\x00')
+        return result
+        
 class ByteItem(NemoItem):
     """unprintable chars"""
     typecharacter = "b"
     datatype = numpy.character
     
-    
+        
     def postprocess(self):
         self.data = self.data.reshape(self.dimensions)
     
@@ -144,6 +163,12 @@ class SetItem(NemoItem):
             self.data[subitem.tagstring] = subitem
             subitem = nemofile.read_item()
     
+    def write(self, nemofile):
+        for x in self.data.values():
+            nemofile.write_item(x)
+        nemofile.write_item(TesItem(self.tagstring, [1]))
+        
+    
 class TesItem(NemoItem):
     """  end of compound item """
     typecharacter = ")"
@@ -168,6 +193,11 @@ class StoryItem(NemoItem):
         while not subitem.isEndOfHistory():
             self.data[subitem.tagstring] = subitem
             subitem = nemofile.read_item()
+            
+    def write(self, nemofile):
+        for x in self.data.values():
+            nemofile.write_item(x)
+        nemofile.write_item(YrotsItem(self.tagstring, [1]))
     
 class YrotsItem(NemoItem):
     """  end of a story item (see starlab) """
@@ -275,6 +305,46 @@ class NemoBinaryFile(object):
         
         return result
     
+    def write_magic_number(self, is_plural):
+        if is_plural:
+            magic_number = self.PlurMagic
+        else:
+            magic_number = self.SingMagic
+            
+        x = array.array('h', [magic_number])
+        self.file.write(x.tostring())
+        
+    
+    def write_array(self, typetag, data):
+        x = array.array(typetag, data)
+        x.append(0)
+        self.file.write(x.tostring())
+        
+    def write_string(self, string):
+        return self.write_array('b', string)
+        
+    def write_item_header(self, item):
+        self.write_magic_number(item.is_plural())
+        self.write_string(item.typecharacter)
+        if not item.typecharacter == TesItem.typecharacter:
+            self.write_string(item.tagstring)
+        if item.is_plural():
+            self.write_array('i', item.dimensions)
+        
+    def write_item(self, item):
+        self.write_item_header(item)
+        item.write(self)
+        
+    def write_fixed_array(self, data, datatype):
+        temp  = numpy.array(data, dtype=datatype)
+        self.file.write(temp.tostring())
+    
+    
+    def write(self, data):
+        for x in data.values():
+            self.write_item(x)
+    
+    
     
 class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
     provided_formats = ['nemobin']
@@ -297,7 +367,6 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
                 result = core.Particles(nparticles)
                 
             particlesitem = snapshot.data['Particles'][0]
-            print particlesitem.data.keys()
             if 'PhaseSpace' in particlesitem.data:
                 positions_and_velocities = particlesitem.data['PhaseSpace'][0].data
                 positions = positions_and_velocities[...,0,...]

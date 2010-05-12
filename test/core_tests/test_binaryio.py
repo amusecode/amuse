@@ -123,3 +123,54 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         self.assertAlmostRelativeEquals(set.kinetic_energy(), 0.230214395174 | nbody_system.energy, 8)
         self.assertAlmostRelativeEquals(set.potential_energy(G=nbody_system.G), -0.473503040144  | nbody_system.energy, 8)        
 
+    def test5(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'plummer128.nemo')
+        file = open(filename, 'rb')
+        nemofile = nemobin.NemoBinaryFile(file)
+        data = nemofile.read()
+        file.close()
+        
+        outputfile =  StringIO()
+        nemooutputfile = nemobin.NemoBinaryFile(outputfile)
+        nemooutputfile.write(data)
+        string = outputfile.getvalue()
+        outputfile.close()
+        inputfile =  StringIO(string)
+        nemoinputfile = nemobin.NemoBinaryFile(inputfile)
+        tagcharacter, tagstring, dim, mustswap = nemoinputfile.get_item_header()
+        self.assertEquals(tagcharacter, 'c')
+        self.assertEquals(tagstring, 'Headline')
+        self.assertEquals(len(dim), 1)
+        self.assertEquals(dim[0], 28)
+        inputfile.close()
+        
+    
+    def test6(self):        
+        inputfile =  StringIO()
+        nemoinputfile = nemobin.NemoBinaryFile(inputfile)
+        data = nemoinputfile.read()
+        self.assertEquals(len(data), 0)
+        
+    
+    def test7(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'plummer128.nemo')
+        file = open(filename, 'rb')
+        nemofile = nemobin.NemoBinaryFile(file)
+        data = nemofile.read()
+        file.close()
+        
+        outputfile =  StringIO()
+        nemooutputfile = nemobin.NemoBinaryFile(outputfile)
+        nemooutputfile.write(data)
+        string = outputfile.getvalue()
+        outputfile.close()
+        
+        file = open(filename, 'rb')
+        original = file.read()
+        file.close()
+        
+        self.assertEquals(len(original), len(string))
+        self.assertEquals(original, string)
+        

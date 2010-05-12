@@ -264,7 +264,9 @@ class OrderedMultiDictionary(object):
     >>> [x for x in d]
     [0, 1, 2]
     >>> print d["first"]
-    [0,2]
+    [0, 2]
+    >>> print d["second"]
+    [1]
     """
     
     def __init__(self):
