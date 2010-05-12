@@ -174,3 +174,32 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(len(original), len(string))
         self.assertEquals(original, string)
         
+    
+    def test8(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'plummer128.nemo')
+        file = open(filename, 'rb')
+        x = nemobin.NemoBinaryFileFormatProcessor()
+
+        set = x.load_file(file)
+        file.close()
+        
+        outputfile =  StringIO()
+
+        y = nemobin.NemoBinaryFileFormatProcessor()
+        y.set = set
+        y.store_file(outputfile)
+        string = outputfile.getvalue()
+        outputfile.close()
+        
+        inputfile = StringIO(string)
+        x = nemobin.NemoBinaryFileFormatProcessor()
+        set = x.load_file(inputfile)
+        inputfile.close()
+        self.assertEquals(len(set), 128)
+        self.assertAlmostRelativeEquals(set.kinetic_energy(), 0.230214395174 | nbody_system.energy, 8)
+        self.assertAlmostRelativeEquals(set.potential_energy(G=nbody_system.G), -0.473503040144  | nbody_system.energy, 8)        
+
+
+
+        

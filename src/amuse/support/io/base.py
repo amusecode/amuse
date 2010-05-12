@@ -292,7 +292,7 @@ class BinaryFileFormatProcessor(FileFormatProcessor):
 
     def store(self):
         with open(self.filename, 'wb') as f:
-            self.write_file(f)
+            self.store_file(f)
                 
     def load(self):
         with open(self.filename, 'rb') as f:
