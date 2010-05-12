@@ -433,7 +433,7 @@ class TestSSE(TestWithMPI):
         
     def test9(self):
         print "Test: large number of particles"
-        stellar_evolution = mpi_interface.SSE()
+        stellar_evolution = mpi_interface.SSE(max_message_length=500)
         stellar_evolution.initialize_module_with_default_parameters()
         number_of_particles = 10000
         print "Has been tested with up to a million particles!"

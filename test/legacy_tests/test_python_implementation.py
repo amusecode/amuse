@@ -12,8 +12,8 @@ import parser
 
 class ForTestingInterface(LegacyPythonInterface):
     
-    def __init__(self):
-        LegacyPythonInterface.__init__(self, implementation_factory = ForTestingImplementation)
+    def __init__(self, **options):
+        LegacyPythonInterface.__init__(self, implementation_factory = ForTestingImplementation, **options)
         
     @legacy_function
     def get_mass():
@@ -82,8 +82,26 @@ class ForTestingInterface(LegacyPythonInterface):
         function.result_type = 'int32'
         function.can_handle_array = False
         return function    
-
-
+    
+    @legacy_function
+    def sum_doubles():
+        function = LegacyFunctionSpecification()
+        function.addParameter('double_in1', dtype='float64', direction=function.IN)
+        function.addParameter('double_in2', dtype='float64', direction=function.IN)
+        function.addParameter('double_out', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+    
+    @legacy_function
+    def multiply_ints():
+        function = LegacyFunctionSpecification()
+        function.addParameter('int_in1', dtype='int32', direction=function.IN)
+        function.addParameter('int_in2', dtype='int32', direction=function.IN)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
     
     
     
@@ -129,11 +147,19 @@ class ForTestingImplementation(object):
         import time
         time.sleep(number_of_seconds)
         return 0
+    
+    def sum_doubles(self, double_in1, double_in2, double_out):
+        double_out.value = double_in1 + double_in2
+        return 0
+    
+    def multiply_ints(self, int_in1, int_in2, int_out):
+        int_out.value = int_in1 * int_in2
+        return 0
         
 class ForTesting(CodeInterface):
     
-    def __init__(self):
-        CodeInterface.__init__(self, ForTestingInterface())
+    def __init__(self, **options):
+        CodeInterface.__init__(self, ForTestingInterface(**options), **options)
     
     def define_methods(self, object):
         object.add_method("sleep", (units.s,), (object.ERROR_CODE,))
@@ -356,3 +382,48 @@ class TestInterface(TestWithMPI):
         result = request.result()
         self.assertEquals(result, [])
         x.stop()
+    
+    def test18(self):
+        print "Testing the splitting of very long MPI messages into blocks"
+        x = ForTesting(max_message_length=10)
+        N = 100
+        doubles, errors = x.echo_double([1.0*i for i in range(N)])
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
+        sums, errors = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(sums) == [2.0*i for i in range(N)])
+        products, errors = x.multiply_ints(range(N),range(N))
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(products) == [i*i for i in range(N)])
+        N = 101
+        doubles, errors = x.echo_double([1.0*i for i in range(N)])
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(doubles) == [1.0*i for i in range(N)])
+        sums, errors = x.sum_doubles([1.0*i for i in range(N)],[1.0*i for i in range(N)])
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(sums) == [2.0*i for i in range(N)])
+        products, errors = x.multiply_ints(range(N),range(N))
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(products) == [i*i for i in range(N)])
+        x.stop()
+    
+    def test19(self):
+        print "Testing the splitting of very long MPI messages into blocks II: strings"
+        x = ForTesting(max_message_length=10)
+        N = 100
+        strings1, strings2, errors = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(strings1) == ['MURDER' for i in range(N)])
+        self.assertTrue(list(strings2) == ['desserts' for i in range(N)])
+        N = 101
+        strings1, strings2, errors = x.echo_strings(['REDRUM' for i in range(N)],['stressed' for i in range(N)])
+        self.assertTrue(list(errors) == [0 for i in range(N)])
+        self.assertTrue(list(strings1) == ['MURDER' for i in range(N)])
+        self.assertTrue(list(strings2) == ['desserts' for i in range(N)])
+        x.stop()
+
+
+
+
+
