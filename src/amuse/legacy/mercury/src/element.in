@@ -1,0 +1,18 @@
+)O+_06 element  (WARNING: Do not delete this line!!)
+) Lines beginning with `)' are ignored.
+)---------------------------------------------------------------------
+ number of input files = 1
+)---------------------------------------------------------------------
+) List the input files, one per line
+ xv.out
+)---------------------------------------------------------------------
+ type of elements (central body, barycentric, Jacobi) = Cen
+ minimum interval between outputs (days) = 365.2d1
+ express time in days or years = years
+ express time relative to integration start time = yes
+)---------------------------------------------------------------------
+) Output format? (e.g. a8.4 => semi-major axis with 8 digits & 4 dec. places)
+ a8.5 e8.6 i8.4 g8.4 n8.4 l8.4 m13e 
+)---------------------------------------------------------------------
+) Which bodies do you want? (List one per line or leave blank for all bodies)
+)

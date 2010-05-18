@@ -1,0 +1,13 @@
+)O+_06 close  (WARNING: Do not delete this line!!)
+) Lines beginning with `)' are ignored.
+)---------------------------------------------------------------------
+ number of input files = 1
+)---------------------------------------------------------------------
+) List the input files, one per line
+ ce.out
+)---------------------------------------------------------------------
+ express time in days or years = years
+ express time relative to integration start time = yes
+)---------------------------------------------------------------------
+) Which bodies do you want? (List one per line or leave blank for all bodies)
+)

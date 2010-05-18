@@ -1,0 +1,200 @@
+  1  6  days 
+  2  6  years
+  3 13  solar masses
+  4  3  AU
+  5  3 no 
+  6  3 yes
+  7  3 low
+  8  6 medium
+  9  4 high
+ 10  0 
+ 11 33            Integration parameters
+ 12 33            ----------------------
+ 13 14    Algorithm:
+ 14 38 Second-order mixed-variable symplectic
+ 15 24 Bulirsch-Stoer (general)
+ 16 37 Bulirsch-Stoer (conservative systems)
+ 17 16 15th-order RADAU
+ 18  0 
+ 19  0
+ 20  0 
+ 21  0 
+ 22  5 Test
+ 23 48 Hybrid symplectic integrator (mixed coordinates)
+ 24 44 Hybrid symplectic (close binary coordinates)
+ 25 43 Hybrid symplectic (wide binary coordinates)
+ 26 32    Integration start epoch:
+ 27 32    Integration stop  epoch:
+ 28 32    Output interval:
+ 29 32    Element origin:
+ 30 31    Initial timestep:
+ 31 36    Accuracy parameter:
+ 32 36    Central mass:
+ 33 36    J_2:
+ 34 36    J_4:
+ 35 36    J_6:
+ 36 36    Ejection distance:
+ 37 36    Radius of central body:
+ 38 29    Number of Big bodies:
+ 39 29    Number of Small bodies:
+ 40 37    Output precision: 
+ 41 40    Includes collisions:
+ 42 40    Includes fragmentation: 
+ 43  0 
+ 44  0 
+ 45 40    Includes relativity: 
+ 46 40    Includes user-defined force routine: 
+ 47 10 barycentre 
+ 48 12 central body
+ 49  0 
+ 50  0 
+ 51 30            Integration details
+ 52 30            -------------------
+ 53 29    Initial energy:
+ 54 29    Initial angular momentum:
+ 55 65    Integrating massive bodies and particles up to the same epoch.
+ 56 34    Beginning the main integration.
+ 57 24    Integration complete.
+ 58 48    Fractional energy change due to integrator: 
+ 59 48    Fractional angular momentum change:
+ 60 57    Fractional energy change due to collisions/ejections: 
+ 61 57    Fractional angular momentum change:
+ 62 47    Continuing integration from dump files at 
+ 63  6 Time: 
+ 64  6 Date: 
+ 65  9    dE/E: 
+ 66  9    dL/L: 
+ 67 35  collided with the central body at 
+ 68 12  ejected at 
+ 69 12  was hit by 
+ 70 34  removed due to an encounter with 
+ 71  4  at 
+ 72 26  solar masses AU^2 day^-2
+ 73 26  solar masses AU^2 day^-1
+ 74 36  lost mass due to rotational breakup
+ 75 24  removed due to small a
+ 76  0 
+ 77  0 
+ 78  0 
+ 79  0 
+ 80  0 
+ 81  8  ERROR:
+ 82 49        Modify mercury.inc and recompile Mercury.
+ 83 62        Check the file containing initial data for Big bodies.
+ 84 64        Check the file containing initial data for Small bodies.
+ 85 57        Check the file containing integration parameters.
+ 86 22        Check files.in
+ 87 27 This file already exists:  
+ 88 34 This file is needed to continue:  
+ 89 30 This filename is duplicated: 
+ 90 40 The total number of bodies exceeds NMAX.
+ 91 68 Data style on first line must be Cartesian, Asteroidal or Cometary
+ 92 68 You cannot integrate non-gravitational forces using this algorithm.
+ 93 64 You cannot integrate a user-defined force using this algorithm.
+ 94 64 You cannot integrate massive Small bodies using this algorithm.
+ 95 66 Massive Small bodies must have the same epoch as the Big bodies.
+ 96 49 Check character implies input file is corrupted.
+ 97 62 Mass, density, encounter limit must be >= 0 for this object:
+ 98 46 This integration algorithm is not available: 
+ 99 50 A problem occurred reading the parameter on line
+100 50 A problem occurred reading data for this object: 
+101 56 A problem occured reading the epoch for the Big bodies.
+102 67 You cannot use non-zero J2,J4,J6 using the close-binary algorithm.
+103 34 Two objects both have this name: 
+104 36         is corrupted at line number: 
+105 42 Central-body radius exceeds maximum radius. 
+106 68 Maximum/Central radius is large. Output precision will be degraded. 
+107 58 Coordinate origin must be Central, Barycentric or Jacobi.
+108  0 
+109  0 
+110  0 
+111  0 
+112  0 
+113  0 
+114  0 
+115  0 
+116  0 
+117  0 
+118  0 
+119  0 
+120  0 
+121 10  WARNING:
+122 53 Truncating the name of this object to 8 characters: 
+123 30 Main integration is backwards.
+124 26 No Big bodies are present.
+125 28 No Small bodies are present.
+126 50 Stopping integration due to an encounter between 
+127 45 Throwing this object into the central body: 
+128 42 Setting output threshhold DA to infinity.
+129 42 Setting output threshhold DE to infinity.
+130 42 Setting output threshhold DI to infinity.
+131 43 Increasing the radius of the central body.
+132 56 Total number of current close encounters exceeds CMAX.
+133  0 
+134  0 
+135  0 
+136  0 
+137  0 
+138  0 
+139  0 
+140  0 
+141  0 
+142  0 
+143  0 
+144  0 
+145  0 
+146  0 
+147  0 
+148  0 
+149  0 
+150  0 
+151 67 )O+_05 Integration parameters  (WARNING: Do not delete this line!!)
+152 66 )O+_05 Big-body initial data  (WARNING: Do not delete this line!!)
+153 68 )O+_05 Small-body initial data  (WARNING: Do not delete this line!!)
+154 39 ) Lines beginning with `)' are ignored.
+155 70 )---------------------------------------------------------------------
+156 43  style (Cartesian, Asteroidal, Cometary) = 
+157 20  epoch (in days) = 
+158 35 ) Important integration parameters:
+159 48  algorithm (MVS, BS, BS2, RADAU, HYBRID etc) = 
+160 21  start time (days) = 
+161 20  stop time (days) = 
+162 26  output interval (days) = 
+163 19  timestep (days) = 
+164 22  accuracy parameter = 
+165 22 ) Integration options:
+166 44  stop integration after a close encounter = 
+167 29  allow collisions to occur = 
+168 37  include collisional fragmentation = 
+169 33  express time in days or years = 
+170 51  express time relative to integration start time = 
+171 20  output precision = 
+172 24  < Not used at present > 
+173 37  include relativity in integration = 
+174 30  include user-defined force = 
+175 52 ) These parameters do not need to be adjusted often:
+176 26  ejection distance (AU) = 
+177 31  radius of central body (AU) = 
+178 31  central mass (solar masses) = 
+179 14  central J2 = 
+180 14  central J4 = 
+181 14  central J6 = 
+182 24  < Not used at present > 
+183 24  < Not used at present > 
+184 45  Hybrid integrator changeover (Hill radii) = 
+185 42  number of timesteps between data dumps = 
+186 48  number of timesteps between periodic effects = 
+187 41  origin (Central, Barycentric, Jacobi) = 
+188  0 
+189  0 
+190  0 
+191  0 
+192  0 
+193  0 
+194  0 
+195  0 
+196  0 
+197  0 
+198  0 
+199  0 
+200  0 
