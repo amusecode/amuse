@@ -8,7 +8,7 @@ LIBS=$(SRC)/libmercury.a
 
 PIC=#-fPIC
 
-FFLAGS= -O -ip -u -g -traceback $(PIC)
+FFLAGSOLD = -O -ip -u -g -traceback $(PIC)
 
 FFLAGS2= -I./src/
 

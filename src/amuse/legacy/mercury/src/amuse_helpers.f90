@@ -311,7 +311,7 @@ function find_particle(id_) result(index)
   use hashMod
   integer id_,index
   
-  if(id_searcheable.EQ..FALSE.) then
+  if(.NOT.id_searcheable) then
     call initHash(nbod/2+1,nbod, iid)
   endif
   

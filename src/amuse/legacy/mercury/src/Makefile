@@ -1,6 +1,6 @@
 #IGNORE:
 CMPLR ?= $(FC)
-FFLAGS += -O -fPIC
+FFLAGS += -O 
 
 SRCE = mercury6_2.for mercury_main.for 
 DFLE = big.in  message.in  small.in element.in param.in swift.inc \

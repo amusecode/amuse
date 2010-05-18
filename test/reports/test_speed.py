@@ -121,6 +121,13 @@ int set_number_of_points_in_one_dimension(int value)
     
 }
 
+int set_data_to_same(int n, double vx, double vy, double vz) {
+    for(int i = 0; i < n; i++) {
+        set_data(i, vx, vy, vz);
+    }
+    return 0;
+}
+
 int reset()
 {
     if(model) {
@@ -178,6 +185,36 @@ class TestCode(LegacyInterface):
         """
         function = LegacyFunctionSpecification()  
         function.addParameter('index',
+            dtype='int32',
+            direction=function.IN,
+            description =  
+                "index in the array in range 0 <= index < (N*3)")
+        function.addParameter('vx',
+            dtype='float64',
+            direction=function.IN,
+            description =  
+                "x component of the vector")
+        function.addParameter('vy',
+            dtype='float64',
+            direction=function.IN,
+            description =  
+                "y component of the vector")
+        function.addParameter('vz',
+            dtype='float64',
+            direction=function.IN,
+            description =  
+                "z component of the vector")
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function 
+        
+    @legacy_function
+    def set_data_to_same():
+        """
+        set all vector data to same value
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('max',
             dtype='int32',
             direction=function.IN,
             description =  
@@ -309,14 +346,9 @@ class RunSpeedTests(object):
         
         
         for number_of_points_in_one_dimension in self.number_of_gridpoints:
-            number_of_seconds, total_number_of_points, number_of_mb_per_second = self.run(number_of_points_in_one_dimension)
+            result = self.run(number_of_points_in_one_dimension)
     
-            print ', '.join([
-                str(number_of_points_in_one_dimension),
-                str(total_number_of_points),
-                str(number_of_seconds),
-                str(number_of_mb_per_second),
-            ])
+            print ', '.join(map(lambda x: str(x), result))
                 
     def run(self, number_of_points_in_one_dimension):
     
@@ -340,11 +372,15 @@ class RunSpeedTests(object):
         t1 = time.time()
         dt = t1 - t0
         mbytes_per_second = total_number_of_bytes / dt / (1000.0 * 1000.0)
-        instance.reset()
 
-        del instance
+        t2 = time.time()
+        instance.set_data_to_same(total_number_of_points, 0.0, 1.0, 2.0)
+        t3 = time.time()
         
-        return dt, total_number_of_points, mbytes_per_second        
+        instance.reset()
+        instance.stop()
+        
+        return dt, total_number_of_points, mbytes_per_second, t3-t2, (dt - (t3-t2)) / (t3-t2)     
         
         
 def test_speed():
@@ -355,5 +391,5 @@ def test_speed():
 if __name__ == '__main__':
     #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
     x = RunSpeedTests()
-    x.number_of_gridpoints = [8, 16, 32, 64, 128, 192]
+    x.number_of_gridpoints = [64, 128, 192]
     x.start()
