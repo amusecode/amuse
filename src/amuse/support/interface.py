@@ -656,6 +656,16 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions.append(definition)
 
+    def add_boolean_parameter(self, get_method, set_method, name, description, default_value = None):
+        definition = parameters.ModuleBooleanParameterDefinition(
+            get_method,
+            set_method,
+            name,
+            description,
+            default_value
+        )
+        self.definitions.append(definition)
+    
     def has_name(self, name):
         return name == 'PARAMETER'
 

@@ -207,6 +207,42 @@ class ModuleMethodParameterDefinition_Next(ParameterDefinition):
         return self.set_method is None
 
 
+class ModuleBooleanParameterDefinition(ParameterDefinition):
+    def __init__(self, get_method, set_method, name, description, default_value = None):
+        ParameterDefinition.__init__(self, name, description, None, default_value)
+        self.get_method = get_method
+        self.set_method = set_method
+        self.stored_value = None
+    
+    def get_value(self, object):
+        return True if self.get_legacy_value(object) else False
+    
+    def set_value(self, object, bool):
+        self.set_legacy_value(object, 1 if bool else 0)
+    
+    def get_legacy_value(self, object):
+        if self.get_method is None:
+            return self.stored_value
+        else:
+            (result, error) = getattr(object, self.get_method)()
+            if error < 0:
+                raise ParameterException(object, self.name, error, True)
+            else:
+                return result
+    
+    def set_legacy_value(self, object, number):
+        if self.set_method is None:
+            raise exception.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+
+        error = getattr(object, self.set_method)(number)
+        if error < 0:
+            raise ParameterException(object, self.name, error, False)
+        else:
+            if self.get_method is None:
+                self.stored_value = number
+    
+    def is_readonly(self):
+        return self.set_method is None
 
 
 class ModuleCachingParameterDefinition(ParameterDefinition):
