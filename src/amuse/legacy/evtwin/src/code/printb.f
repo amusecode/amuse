@@ -445,7 +445,7 @@ C     Meshpoint were maximum temperature is reached
 
       ! We should probably ever get here... what ever this is, call it a
       ! Hertzsprung gap star? Presumably it's out of thermal equilibrium...
-      FIND_STELLAR_TYPE = 2
+      FIND_STELLAR_TYPE = 16
       END FUNCTION
 
 

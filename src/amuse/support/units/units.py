@@ -56,7 +56,8 @@ stellar_type = core.enumeration_unit(
         "Oxygen/Neon White Dwarf",
         "Neutron Star",
         "Black Hole",
-        "Massless Supernova"
+        "Massless Supernova",
+        "Unknown stellar type",
     ]
 )
 
