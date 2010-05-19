@@ -368,7 +368,7 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
                 continue
             
             parameters = snapshot.data['Parameters'][0].data
-            nparticles = parameters['Nobj'][0].data[0]
+            nparticles = int(parameters['Nobj'][0].data[0])
             time = parameters['Time'][0].data[0]
             
             if result is None:
