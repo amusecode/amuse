@@ -89,7 +89,11 @@ class ParametersWithUnitsConverted(object):
         return self._converter.from_target_to_source(getattr(self._original, name))
 
     def __setattr__(self, name, value):
-        setattr(self._original, name, self._converter.from_source_to_target(value))
+        original_value = self._original.get_default_value_for(name)
+        if not isinstance(original_value,bool) and nbody_system.is_nbody_unit(original_value.unit):
+            setattr(self._original, name, self._converter.from_source_to_target(value))
+        else:
+            setattr(self._original, name, value)
 
     def names(self):
         return self._original.names()
