@@ -227,48 +227,48 @@ end function
 
 ! setting/ getting parameters
 
-function set_usesph(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_usesph(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_usesph(.FALSE.)
+function set_gravity_only(flag) result(ret)
+  integer :: flag,ret
+  if(flag.EQ.0) call amuse_set_usesph(.TRUE.)
+  if(flag.NE.0) call amuse_set_usesph(.FALSE.)
   ret=0
 end function
-function get_usesph(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_gravity_only(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=1
   call amuse_get_usesph(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=0
   ret=0
 end function
 
-function set_radiate(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_radiate(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_radiate(.FALSE.)
+function set_radiate(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_radiate(.TRUE.)
+  if(flag.EQ.0) call amuse_set_radiate(.FALSE.)
   ret=0
 end function
-function get_radiate(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_radiate(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_radiate(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_starform(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_starform(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_starform(.FALSE.)
+function set_starform(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_starform(.TRUE.)
+  if(flag.EQ.0) call amuse_set_starform(.FALSE.)
   ret=0
 end function
-function get_starform(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_starform(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_starform(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
@@ -287,228 +287,228 @@ function get_cosmo(zeroiftrue) result(ret)
   ret=0
 end function
 
-function set_sqrttstp(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_sqrttstp(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_sqrttstp(.FALSE.)
+function set_sqrttstp(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_sqrttstp(.TRUE.)
+  if(flag.EQ.0) call amuse_set_sqrttstp(.FALSE.)
   ret=0
 end function
-function get_sqrttstp(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_sqrttstp(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_sqrttstp(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_acc_tstp(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_acc_tstp(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_acc_tstp(.FALSE.)
+function set_acc_tstp(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_acc_tstp(.TRUE.)
+  if(flag.EQ.0) call amuse_set_acc_tstp(.FALSE.)
   ret=0
 end function
-function get_acc_tstp(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_acc_tstp(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_acc_tstp(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_freetstp(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_freetstp(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_freetstp(.FALSE.)
+function set_freetstp(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_freetstp(.TRUE.)
+  if(flag.EQ.0) call amuse_set_freetstp(.FALSE.)
   ret=0
 end function
-function get_freetstp(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_freetstp(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_freetstp(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_usequad(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_usequad(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_usequad(.FALSE.)
+function set_usequad(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_usequad(.TRUE.)
+  if(flag.EQ.0) call amuse_set_usequad(.FALSE.)
   ret=0
 end function
-function get_usequad(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_usequad(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_usequad(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_directsum(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_directsum(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_directsum(.FALSE.)
+function set_directsum(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_directsum(.TRUE.)
+  if(flag.EQ.0) call amuse_set_directsum(.FALSE.)
   ret=0
 end function
-function get_directsum(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_directsum(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_directsum(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_selfgrav(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_selfgrav(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_selfgrav(.FALSE.)
+function set_selfgrav(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_selfgrav(.TRUE.)
+  if(flag.EQ.0) call amuse_set_selfgrav(.FALSE.)
   ret=0
 end function
-function get_selfgrav(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_selfgrav(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_selfgrav(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_fixthalo(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_fixthalo(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_fixthalo(.FALSE.)
+function set_fixthalo(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_fixthalo(.TRUE.)
+  if(flag.EQ.0) call amuse_set_fixthalo(.FALSE.)
   ret=0
 end function
-function get_fixthalo(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_fixthalo(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_fixthalo(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_adaptive_eps(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_adaptive_eps(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_adaptive_eps(.FALSE.)
+function set_adaptive_eps(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_adaptive_eps(.TRUE.)
+  if(flag.EQ.0) call amuse_set_adaptive_eps(.FALSE.)
   ret=0
 end function
-function get_adaptive_eps(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_adaptive_eps(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_adaptive_eps(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_gdgop(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_gdgop(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_gdgop(.FALSE.)
+function set_gdgop(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_gdgop(.TRUE.)
+  if(flag.EQ.0) call amuse_set_gdgop(.FALSE.)
   ret=0
 end function
-function get_gdgop(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_gdgop(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_gdgop(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_smoothinput(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_smoothinput(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_smoothinput(.FALSE.)
+function set_smoothinput(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_smoothinput(.TRUE.)
+  if(flag.EQ.0) call amuse_set_smoothinput(.FALSE.)
   ret=0
 end function
-function get_smoothinput(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_smoothinput(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_smoothinput(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_consph(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_consph(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_consph(.FALSE.)
+function set_consph(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_consph(.TRUE.)
+  if(flag.EQ.0) call amuse_set_consph(.FALSE.)
   ret=0
 end function
-function get_consph(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_consph(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_consph(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_sphinit(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_sphinit(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_sphinit(.FALSE.)
+function set_sphinit(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_sphinit(.TRUE.)
+  if(flag.EQ.0) call amuse_set_sphinit(.FALSE.)
   ret=0
 end function
-function get_sphinit(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_sphinit(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_sphinit(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_uentropy(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_uentropy(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_uentropy(.FALSE.)
+function set_uentropy(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_uentropy(.TRUE.)
+  if(flag.EQ.0) call amuse_set_uentropy(.FALSE.)
   ret=0
 end function
-function get_uentropy(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_uentropy(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_uentropy(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_isotherm(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_isotherm(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_isotherm(.FALSE.)
+function set_isotherm(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_isotherm(.TRUE.)
+  if(flag.EQ.0) call amuse_set_isotherm(.FALSE.)
   ret=0
 end function
-function get_isotherm(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_isotherm(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_isotherm(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 
-function set_eps_is_h(zeroiftrue) result(ret)
-  integer :: zeroiftrue,ret
-  if(zeroiftrue.EQ.0) call amuse_set_eps_is_h(.TRUE.)
-  if(zeroiftrue.NE.0) call amuse_set_eps_is_h(.FALSE.)
+function set_eps_is_h(flag) result(ret)
+  integer :: flag,ret
+  if(flag.NE.0) call amuse_set_eps_is_h(.TRUE.)
+  if(flag.EQ.0) call amuse_set_eps_is_h(.FALSE.)
   ret=0
 end function
-function get_eps_is_h(zeroiftrue) result(ret)
-  integer :: ret,zeroiftrue
+function get_eps_is_h(flag) result(ret)
+  integer :: ret,flag
   logical :: x
-  zeroiftrue=1
+  flag=0
   call amuse_get_eps_is_h(x) 
-  if(x) zeroiftrue=0
+  if(x) flag=1
   ret=0
 end function
 

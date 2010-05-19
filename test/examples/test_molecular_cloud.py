@@ -42,12 +42,12 @@ def run_cloud(x):
 
   nb.set_stepout(99999)
   nb.set_steplog(99999)
-  nb.set_usesph(0)
-  nb.set_radiate(1)
+  nb.set_gravity_only(0)
+  nb.set_radiate(0)
   nb.set_dtime(0.05)
-  nb.set_gdgop(0)
-  nb.set_uentropy(1)
-  nb.set_isotherm(0)
+  nb.set_gdgop(1)
+  nb.set_uentropy(0)
+  nb.set_isotherm(1)
   nb.set_gamma(1.0)
   nb.set_verbosity(0)
     

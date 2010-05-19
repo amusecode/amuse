@@ -63,56 +63,6 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def reinitialize_particles(self):
         return self.recommit_particles()
     
-    def set_radiation_flag(self, radiation_flag):
-        """
-        True means: radiation (i.e. radiative cooling/heating) is included
-        False means: no radiation, and implies no star formation
-        """
-        if radiation_flag:
-            error = self.set_radiate(zeroiftrue=0)
-        else:
-            error = self.set_radiate(zeroiftrue=1)
-        if error:
-            raise Exception("Could not set radiation_flag. Retrieved error_code: {0}".format(error))
-    
-    def get_radiation_flag(self):
-        """
-        True means: radiation (i.e. radiative cooling/heating) is included
-        False means: no radiation, and implies no star formation
-        """
-        (radiation_flag, error) = self.get_radiate()
-        if error:
-            raise Exception("Could not get radiation_flag. Retrieved error_code: {0}".format(error))
-        if radiation_flag:
-            return False
-        else:
-            return True
-    
-    def set_star_formation_flag(self, star_formation_flag):
-        """
-        True means: star formation is included
-        False means: no star formation included
-        """
-        if star_formation_flag:
-            error = self.set_starform(zeroiftrue=0)
-        else:
-            error = self.set_starform(zeroiftrue=1)
-        if error:
-            raise Exception("Could not set star_formation_flag. Retrieved error_code: {0}".format(error))
-    
-    def get_star_formation_flag(self):
-        """
-        True means: star formation is included
-        False means: no star formation included
-        """
-        (star_formation_flag, error) = self.get_starform()
-        if error:
-            raise Exception("Could not get star_formation_flag. Retrieved error_code: {0}".format(error))
-        if star_formation_flag:
-            return False
-        else:
-            return True
-    
     @legacy_function    
     def new_particle():
         function = LegacyFunctionSpecification()  
@@ -279,49 +229,49 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 # setting/ getting parameters
 # logicals
     @legacy_function   
-    def set_usesph():
-        """ set_usesph([0,1]): SPH hydro if 0, grav only if 1 """
+    def set_gravity_only():#usesph():
+        """ set_gravity_only([0,1]): SPH hydro if 0, gravity only if 1 """
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('gravity_only_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
-    def get_usesph():
-        """ get_usesph(): SPH hydro if 0, grav only if 1 """
+    def get_gravity_only():
+        """ get_gravity_only(): SPH hydro if 0, gravity only if 1 """
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('gravity_only_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_radiate():
-        """ set_radiate([0,1]): rad cooling/heating if 0, not if 1
+        """ set_radiate([0,1]): rad cooling/heating if 1, not if 0
              radiate false implies starform false """    
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('radiation_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_radiate():
-        """ get_radiate(): rad cooling/heating if 0, not if 1
+        """ get_radiate(): rad cooling/heating if 1, not if 0
              radiate false implies starform false """        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('radiation_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_starform():
-        """ set_starform([0,1]): star formation if 0, not if 1 """        
+        """ set_starform([0,1]): star formation if 1, not if 0 """        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('star_formation_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_starform():
-        """ get_starform(): star formation if 0, not if 1 """        
+        """ get_starform(): star formation if 1, not if 0 """        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('star_formation_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -342,235 +292,235 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
     @legacy_function   
     def set_sqrttstp():
-        """ set_sqrttstp([0,1]): use sqrt(eps/acc) timestep crit if 0"""        
+        """ set_sqrttstp([0,1]): use sqrt(eps/acc) timestep crit if 1"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('square_root_timestep_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_sqrttstp():
-        """ get_sqrttstp(): use sqrt(eps/acc) timestep crit if 0"""        
+        """ get_sqrttstp(): use sqrt(eps/acc) timestep crit if 1"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('square_root_timestep_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_acc_tstp():
-        """ set_acc_tstp([0,1]): use vref/acc timestep crit if 0"""            
+        """ set_acc_tstp([0,1]): use vref/acc timestep crit if 1"""            
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('acc_timestep_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_acc_tstp():
-        """ get_acc_tstp(): use vref/acc timestep crit if 0"""            
+        """ get_acc_tstp(): use vref/acc timestep crit if 1"""            
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('acc_timestep_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_freetstp():
-        """ set_freetstp([0,1]): use freeform (v/freev)**freevexp * (a/freea)**freeaexp timestep crit if 0"""            
+        """ set_freetstp([0,1]): use freeform (v/freev)**freevexp * (a/freea)**freeaexp timestep crit if 1"""            
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('freeform_timestep_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_freetstp():
-        """ get_freetstp(): use freeform timestep crit if 0"""            
+        """ get_freetstp(): use freeform timestep crit if 1"""            
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('freeform_timestep_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_usequad():
-        """ set_usequad([0,1]): calc. and use quadrupole cell moments if 0"""                
+        """ set_usequad([0,1]): calc. and use quadrupole cell moments if 1"""                
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('quadrupole_moments_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_usequad():
-        """ get_usequad(): calc. and use quadrupole cell moments if 0"""                
+        """ get_usequad(): calc. and use quadrupole cell moments if 1"""                
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('quadrupole_moments_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_directsum():
-        """ set_directsum([0,1]): direct N**2 grav sum if 0"""                
+        """ set_directsum([0,1]): direct N**2 grav sum if 1"""                
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('direct_sum_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_directsum():
-        """ get_directsum(): direct N**2 grav sum if 0"""                
+        """ get_directsum(): direct N**2 grav sum if 1"""                
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('direct_sum_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_selfgrav():
-        """ set_selfgrav([0,1]): calculate self-gravity if 0
-          if set to 1, self gravity is not used, only external potentials"""                
+        """ set_selfgrav([0,1]): calculate self-gravity if 1
+          if set to 0, self gravity is not used, only external potentials"""                
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('self_gravity_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_selfgrav():
-        """ get_selfgrav(): calculate self-gravity if 0 """
+        """ get_selfgrav(): calculate self-gravity if 1 """
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('self_gravity_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_fixthalo():
-        """ set_fixthalo([0,1]): use fixed (spherical) potential if 0 """    
+        """ set_fixthalo([0,1]): use fixed (spherical) potential if 1 """    
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('fixed_halo_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_fixthalo():
-        """ get_fixthalo(): use fixed (spherical) potential if 0 """    
+        """ get_fixthalo(): use fixed (spherical) potential if 1 """    
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('fixed_halo_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_adaptive_eps():
-        """ set_adaptive_eps([0,1]): use of adaptive grav smoothing for all part if 0 """    
+        """ set_adaptive_eps([0,1]): use of adaptive grav smoothing for all part if 1 """    
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('adaptive_smoothing_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_adaptive_eps():
-        """ get_adaptive_eps(): use of adaptive grav smoothing for all part if 0 """    
+        """ get_adaptive_eps(): use of adaptive grav smoothing for all part if 1 """    
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('adaptive_smoothing_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_gdgop():
-        """ set_gdgop([0,1]): use of gadget cell opening criterion if 0 """        
+        """ set_gdgop([0,1]): use of gadget cell opening criterion if 1 """        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('gadget_cell_opening_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_gdgop():
-        """ get_gdgop(): use of gadget cell opening criterion if 0 """        
+        """ get_gdgop(): use of gadget cell opening criterion if 1 """        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('gadget_cell_opening_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_smoothinput():
-        """ set_smoothinput([0,1]): smooth input SPH prop. if 0 
+        """ set_smoothinput([0,1]): smooth input SPH prop. if 1 
          (not working) """        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('smooth_input_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_smoothinput():
-        """ get_smoothinput(): smooth input SPH prop. if 0 
+        """ get_smoothinput(): smooth input SPH prop. if 1 
          (not working) """        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('smooth_input_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_consph():
-        """ set_consph([0,1]): use springel&Hernquist conservative SPH form. if 0 
+        """ set_consph([0,1]): use springel&Hernquist conservative SPH form. if 1 
           at the moment this is only option"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('conservative_sph_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_consph():
-        """ get_consph(): use springel&Hernquist conservative SPH form. if 0 
+        """ get_consph(): use springel&Hernquist conservative SPH form. if 1 
           at the moment this is only option"""                
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('conservative_sph_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_sphinit():
-        """ set_sphinit([0,1]): initialize sph dens and hsmooth if 0 
+        """ set_sphinit([0,1]): initialize sph dens and hsmooth if 1 
          most probably useless for AMUSE interface"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('sph_dens_init_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_sphinit():
-        """ set_sphinit([0,1]): initialize sph dens and hsmooth if 0 
+        """ set_sphinit([0,1]): initialize sph dens and hsmooth if 1 
          most probably useless for AMUSE interface"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('sph_dens_init_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_uentropy():
-        """ set_uentropy([0,1]): integrate entropy if 0, internal energy if 1"""        
+        """ set_uentropy([0,1]): integrate entropy if 1, internal energy if 0"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('integrate_entropy_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_uentropy():
-        """ get_uentropy(): integrate entropy if 0, internal energy if 1"""        
+        """ get_uentropy(): integrate entropy if 1, internal energy if 0"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('integrate_entropy_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_isotherm():
-        """ set_isotherm([0,1]): isothermal gas if 0
-          note that isotherm needs set_uentropy(1) (false)"""        
+        """ set_isotherm([0,1]): isothermal gas if 1
+          note that isotherm needs set_uentropy(0) (false)"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('isothermal_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_isotherm():
-        """ get_isotherm(): isothermal gas if 0
-          note that isotherm needs set_uentropy(1) (false)"""        
+        """ get_isotherm(): isothermal gas if 1
+          note that isotherm needs set_uentropy(0) (false)"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('isothermal_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
     @legacy_function   
     def set_eps_is_h():
-        """ set_eps_is_h([0,1]): gas particles grav. eps to SPH h if 0"""        
+        """ set_eps_is_h([0,1]): gas particles grav. eps to SPH h if 1"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.IN)
+        function.addParameter('eps_is_h_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_eps_is_h():
-        """ get_eps_is_h(): gas particles grav. eps to SPH h if 0"""        
+        """ get_eps_is_h(): gas particles grav. eps to SPH h if 1"""        
         function = LegacyFunctionSpecification()  
-        function.addParameter('zeroiftrue', dtype='i', direction=function.OUT)
+        function.addParameter('eps_is_h_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -580,14 +530,14 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def set_firstsnap():
         """ no. of first snapshot """
         function = LegacyFunctionSpecification()  
-        function.addParameter('firstsnap', dtype='i', direction=function.IN)
+        function.addParameter('first_snapshot', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_firstsnap():
         """ no. of first snapshot """
         function = LegacyFunctionSpecification()  
-        function.addParameter('firstsnap', dtype='i', direction=function.OUT)
+        function.addParameter('first_snapshot', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -595,14 +545,14 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def set_stepout():
         """ no. of steps between output """
         function = LegacyFunctionSpecification()  
-        function.addParameter('stepout', dtype='i', direction=function.IN)
+        function.addParameter('output_interval', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_stepout():
         """ no. of steps between output """
         function = LegacyFunctionSpecification()  
-        function.addParameter('stepout', dtype='i', direction=function.OUT)
+        function.addParameter('output_interval', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -610,14 +560,14 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def set_steplog():
         """ no. of steps between logs """
         function = LegacyFunctionSpecification()  
-        function.addParameter('steplog', dtype='i', direction=function.IN)
+        function.addParameter('log_interval', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_steplog():
         """ no. of steps between logs """
         function = LegacyFunctionSpecification()  
-        function.addParameter('steplog', dtype='i', direction=function.OUT)
+        function.addParameter('log_interval', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -625,14 +575,14 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def set_max_tbin():
         """ maximum time bin (dtime*2**-max_tbin=minimum time step)"""
         function = LegacyFunctionSpecification()  
-        function.addParameter('max_tbin', dtype='i', direction=function.IN)
+        function.addParameter('maximum_time_bin', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_max_tbin():
         """ maximum time bin (dtime*2**-max_tbin=minimum time step)"""
         function = LegacyFunctionSpecification()  
-        function.addParameter('max_tbin', dtype='i', direction=function.OUT)
+        function.addParameter('maximum_time_bin', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -640,14 +590,14 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def set_minppbin():
         """ target no. of particles per time bin"""
         function = LegacyFunctionSpecification()  
-        function.addParameter('minppbin', dtype='i', direction=function.IN)
+        function.addParameter('minimum_part_per_bin', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_minppbin():
         """ target no. of particles per time bin"""
         function = LegacyFunctionSpecification()  
-        function.addParameter('minppbin', dtype='i', direction=function.OUT)
+        function.addParameter('minimum_part_per_bin', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -683,14 +633,14 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 
     @legacy_function
     def set_nsmooth():
-        """ target number of SPH nieghbours"""
+        """ target number of SPH neighbours"""
         function = LegacyFunctionSpecification()  
         function.addParameter('nsmooth', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_nsmooth():
-        """ target number of SPH nieghbours"""
+        """ target number of SPH neighbours"""
         function = LegacyFunctionSpecification()  
         function.addParameter('nsmooth', dtype='i', direction=function.OUT)
         function.result_type = 'i'
@@ -882,7 +832,7 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
       return self.set_eps(eps2**0.5)
     def get_eps2(self):
       eps,err=self.get_eps()
-      return eps**2
+      return eps**2, err
 
     @legacy_function
     def set_gdgtol():
@@ -1426,8 +1376,8 @@ class Fi(GravitationalDynamics):
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
             0.0 | nbody_system.length * nbody_system.length
-        ) 
-
+        )
+        
         object.add_method_parameter(
             "get_dtime", 
             "set_dtime",
@@ -1436,7 +1386,589 @@ class Fi(GravitationalDynamics):
             nbody_system.time, 
             1.0 | nbody_system.time
         ) 
-
+        
+        
+        object.add_boolean_parameter(
+            "get_radiate",
+            "set_radiate",
+            "radiation_flag",
+            "Radiation flag. True means: radiation (i.e. radiative cooling/heating) is included. "
+                "False means: no radiation, and implies no star formation.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_starform",
+            "set_starform",
+            "star_formation_flag",
+            "Star-formation flag. True means: star formation is included. "
+                "False means: no star formation included.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_gravity_only",
+            "set_gravity_only",
+            "gravity_only_flag",
+            "Gravity-only flag. False means: SPH hydro included, True means: gravity only.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_sqrttstp",
+            "set_sqrttstp",
+            "square_root_timestep_flag",
+            "Square-root-timestep flag. True means: use sqrt(eps/acc) timestep criterion.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_acc_tstp",
+            "set_acc_tstp",
+            "acc_timestep_flag",
+            "Acceleration-timestep flag. True means: use vref/acc timestep criterion.",
+            True
+        )
+        
+        object.add_boolean_parameter(
+            "get_freetstp",
+            "set_freetstp",
+            "freeform_timestep_flag",
+            "Freeform-timestep flag. True means: use freeform (v/freev)**freevexp * (a/freea)**freeaexp timestep criterion.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_usequad",
+            "set_usequad",
+            "quadrupole_moments_flag",
+            "Quadrupole-moments flag. True means: calculate and use quadrupole cell moments.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_directsum",
+            "set_directsum",
+            "direct_sum_flag",
+            "Direct-summation flag. True means: direct N**2 gravity summation.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_selfgrav",
+            "set_selfgrav",
+            "self_gravity_flag",
+            "Self-gravity flag. False means: self-gravity is not used, only external potentials.",
+            True
+        )
+        
+        object.add_boolean_parameter(
+            "get_fixthalo",
+            "set_fixthalo",
+            "fixed_halo_flag",
+            "Fixed-halo flag. True means: use fixed (spherical) potential.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_adaptive_eps",
+            "set_adaptive_eps",
+            "adaptive_smoothing_flag",
+            "Adaptive-smoothing flag. True means: use of adaptive gravity smoothing for all particles.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_gdgop",
+            "set_gdgop",
+            "gadget_cell_opening_flag",
+            "Gadget-cell-opening flag. True means: use of Gadget cell opening criterion.",
+            True
+        )
+        
+        object.add_boolean_parameter(
+            "get_smoothinput",
+            "set_smoothinput",
+            "smooth_input_flag",
+            "Smooth-input flag. True means: smooth input SPH properties.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_consph",
+            "set_consph",
+            "conservative_sph_flag",
+            "Conservative-SPH flag. True means: use Springel & Hernquist conservative SPH form (currently the only option).",
+            True
+        )
+        
+        object.add_boolean_parameter(
+            "get_sphinit",
+            "set_sphinit",
+            "sph_dens_init_flag",
+            "SPH-density-init flag. True means: initialize sph density and h_smooth (most probably useless for AMUSE interface).",
+            True
+        )
+        
+        object.add_boolean_parameter(
+            "get_uentropy",
+            "set_uentropy",
+            "integrate_entropy_flag",
+            "Integrate-entropy flag. True means: integrate entropy, else: internal energy.",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_isotherm",
+            "set_isotherm",
+            "isothermal_flag",
+            "Isothermal flag. True means: isothermal gas (requires integrate_entropy_flag == False).",
+            False
+        )
+        
+        object.add_boolean_parameter(
+            "get_eps_is_h",
+            "set_eps_is_h",
+            "eps_is_h_flag",
+            "Eps-is-h flag. True means: set gas particles gravitational epsilon to h (SPH smoothing length).",
+            True
+        )
+        
+        
+        object.add_method_parameter(
+            "get_firstsnap", 
+            "set_firstsnap",
+            "first_snapshot", 
+            "The number of the first snapshot.", 
+            units.none,
+            0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_stepout", 
+            "set_stepout",
+            "output_interval", 
+            "The number of steps between output.", 
+            units.none,
+            5 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_steplog", 
+            "set_steplog",
+            "log_interval", 
+            "The number of steps between logs.", 
+            units.none,
+            5 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_max_tbin", 
+            "set_max_tbin",
+            "maximum_time_bin", 
+            "The maximum time bin (dtime*2**-max_tbin=minimum time step).", 
+            units.none,
+            4096 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_minppbin", 
+            "set_minppbin",
+            "minimum_part_per_bin", 
+            "The minimum number of particles per time bin.", 
+            units.none,
+            1 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_targetnn", 
+            "set_targetnn",
+            "targetnn", 
+            "The target number of neighbour particles for variable gravitational eps.", 
+            units.none,
+            32 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_verbosity", 
+            "set_verbosity",
+            "verbosity", 
+            "The level of terminal output (0=minimum).", 
+            units.none,
+            0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_nsmooth", 
+            "set_nsmooth",
+            "nsmooth", 
+            "The target number of SPH neighbours.", 
+            units.none,
+            64 | units.none
+        )
+        
+        
+        object.add_method_parameter(
+            "get_pboxsize", 
+            "set_pboxsize",
+            "pboxsize", 
+            "The size of simulation domain box (particles outside get deleted).", 
+            nbody_system.length,
+            300.0 | nbody_system.length
+        )
+        
+        object.add_method_parameter(
+            "get_unitm_in_msun", 
+            "set_unitm_in_msun",
+            "code_mass_unit", 
+            "The code mass unit (in Msun, 10^9 standard).", 
+            units.MSun,
+            1.0e9 | units.MSun
+        )
+        
+        object.add_method_parameter(
+            "get_unitl_in_kpc", 
+            "set_unitl_in_kpc",
+            "code_length_unit", 
+            "The code length unit (in kpc, 1 standard).", 
+            units.kpc,
+            1.0 | units.kpc
+        )
+        
+        object.add_method_parameter(
+            "get_tstepcrit", 
+            "set_tstepcrit",
+            "sqrt_timestep_crit_constant", 
+            "Square-root-timestep criterion constant (unitless,standard=1.).", 
+            units.none,
+            1.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_tstpcr2", 
+            "set_tstpcr2",
+            "acc_timestep_crit_constant", 
+            "Acceleration-timestep criterion constant (unitless,standard=0.25).", 
+            units.none,
+            0.25 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_freev", 
+            "set_freev",
+            "free_timestep_crit_constant_v", 
+            "Freeform-timestep criterion constant v.", 
+            units.none,
+            0.5 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_freea", 
+            "set_freea",
+            "free_timestep_crit_constant_a", 
+            "Freeform-timestep criterion constant a.", 
+            units.none,
+            0.35 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_freevexp", 
+            "set_freevexp",
+            "free_timestep_crit_constant_vexp", 
+            "Freeform-timestep criterion constant v_exp.", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_freeaexp", 
+            "set_freeaexp",
+            "free_timestep_crit_constant_aexp", 
+            "Freeform-timestep criterion constant a_exp.", 
+            units.none,
+            -1.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_bh_tol", 
+            "set_bh_tol",
+            "opening_angle", 
+            "Opening angle, theta, for building the tree: between 0 and 1 (unitless, 0.5).", 
+            units.none,
+            0.5 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_gdgtol", 
+            "set_gdgtol",
+            "gadget_cell_opening_constant", 
+            "Gadget-cell-openings criterion parameter  (unitless, .01)", 
+            units.none,
+            0.01 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_nn_tol", 
+            "set_nn_tol",
+            "nn_tol", 
+            "The fractional tolerance in nn_target (0.1).", 
+            units.none,
+            0.1 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_epsgas", 
+            "set_epsgas",
+            "gas_epsilon", 
+            "The gas gravitational smoothing epsilon.", 
+            nbody_system.length,
+            0.005 | nbody_system.length
+        )
+        
+        object.add_method_parameter(
+            "get_gamma", 
+            "set_gamma",
+            "gamma", 
+            "gas polytropic index (1.6666667)", 
+            units.none,
+            1.6666667 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_alpha", 
+            "set_alpha",
+            "alpha", 
+            "SPH artificial viscosity alpha parameter (0.5)", 
+            units.none,
+            0.5 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_beta", 
+            "set_beta",
+            "beta", 
+            "SPH artificial viscosity beta parameter (2*alpha=1.0)", 
+            units.none,
+            1.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_epssph", 
+            "set_epssph",
+            "sph_artificial_viscosity_eps", 
+            "SPH artificial viscosity safety against divergence (0.01)", 
+            units.none,
+            0.01 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_courant", 
+            "set_courant",
+            "courant", 
+            "SPH courant condition parameter (0.3)", 
+            units.none,
+            0.3 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_removgas", 
+            "set_removgas",
+            "min_gas_part_mass", 
+            "minimum gas particle mass (fraction of initial (average) mass)", 
+            units.none,
+            0.25 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_consthsm", 
+            "set_consthsm",
+            "sph_h_const", 
+            "SPH smoothing length if constant", 
+            nbody_system.length,
+            0.2 | nbody_system.length
+        )
+        
+        object.add_method_parameter(
+            "get_nsmtol", 
+            "set_nsmtol",
+            "n_neighbour_tol", 
+            "tolerance in number of SPH neighbours", 
+            units.none,
+            0.1 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_graineff", 
+            "set_graineff",
+            "grain_heat_eff", 
+            "FUV grain heating efficiency parameter (unitless, 0.05)", 
+            units.none,
+            0.05| units.none
+        )
+        
+        object.add_method_parameter(
+            "get_crionrate", 
+            "set_crionrate",
+            "zeta_cr_ion_rate", 
+            "primary cosmic ray ionization rate, zeta (in units of 1.8e-17 sec^-1, 1.)", 
+            1.8e-17 * units.s**-1,
+            3.6 | 1.8e-17 * units.s**-1
+        )
+        
+        object.add_method_parameter(
+            "get_heat_par1", 
+            "set_heat_par1",
+            "heat_par1", 
+            "additional heating 1 parameter (0.0)", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_heat_par2", 
+            "set_heat_par2",
+            "heat_par2", 
+            "additional heating 2 parameter (0.0)", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_cool_par", 
+            "set_cool_par",
+            "cool_par", 
+            "additional cooling parameter (1.0)", 
+            units.none,
+            1.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_optdepth", 
+            "set_optdepth",
+            "optical_depth", 
+            "1/(mean free path) for UV photons (code length **-1, 0.0)", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_tcollfac", 
+            "set_tcollfac",
+            "star_form_delay_fac", 
+            "star formation delay parameter (unitless, 1)", 
+            units.none,
+            1.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_masscrit", 
+            "set_masscrit",
+            "star_form_mass_crit", 
+            "star formation cloud reference mass (Msun, 1.e5)", 
+            units.MSun,
+            1.0e5 | units.MSun
+        )
+        
+        object.add_method_parameter(
+            "get_sfeff", 
+            "set_sfeff",
+            "star_form_eff", 
+            "gas particle mass fraction converted to stars (0.125)", 
+            units.none,
+            0.25 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_tbubble", 
+            "set_tbubble",
+            "supernova_duration", 
+            "Supernova activity time, (Myr, 3.e7)", 
+            units.Myr,
+            3.0e7 | units.Myr
+        )
+        
+        object.add_method_parameter(
+            "get_sne_eff", 
+            "set_sne_eff",
+            "supernova_eff", 
+            "Supernova feedback coupling efficiency, (0.0)", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_tsnbeg", 
+            "set_tsnbeg",
+            "t_supernova_start", 
+            "Supernova feedback start time, (Myr, 3.e6)", 
+            units.Myr,
+            3.0e6 | units.Myr
+        )
+        
+        object.add_method_parameter(
+            "get_rhomax", 
+            "set_rhomax",
+            "max_density", 
+            "Maximum permissible density (code density units, 100)", 
+            units.none,
+            100.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_halofile", 
+            "set_halofile",
+            "halofile", 
+            "Path to initial halo model file, relative to the Fi data directory (none)", 
+            units.string,
+            "none" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_feedback", 
+            "set_feedback",
+            "feedback", 
+            "feedback model (fuv, pres, kine, solo, solh)", 
+            units.string,
+            "fuv" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_sfmode", 
+            "set_sfmode",
+            "star_formation_mode", 
+            "star formation model (gerritsen, nieuw)", 
+            units.string,
+            "gerritsen" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_hupdatemethod", 
+            "set_hupdatemethod",
+            "h_update_method", 
+            "SPH smoothing length criterion (at the moment always 'mass')", 
+            units.string,
+            "mass" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_sph_visc", 
+            "set_sph_visc",
+            "sph_viscosity", 
+            "SPH viscosity (sph,sphv, bulk). Note: not all may work.", 
+            units.string,
+            "sph" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_fi_data_directory", 
+            "set_fi_data_directory",
+            "fi_data_directory", 
+            "Name of the Fi data directory", 
+            units.string,
+            "" | units.string
+        )
+        
+    
     def define_particle_sets(self, object):
         object.define_set('particles', 'id')
         object.set_new('particles', 'new_particle')
