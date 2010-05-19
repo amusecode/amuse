@@ -9,7 +9,7 @@ module amuse_mercuryMod
   public :: mercury_init, mercury_end,finish_init,evolve_mercury, &
     add_particle, get_particle_state,remove_particle,energy_angular_momentum, &
     get_number_of_particles,energy_angular_momentum_deviation, &
-    total_energy_angular_momentum
+    total_energy_angular_momentum,mercury_time
 
   public :: set_central_body,get_central_body
 
@@ -96,6 +96,13 @@ function get_number_of_particles(np) result(ret)
  integer :: ret,np
  np=nbod-1
  ret=0
+end function
+
+function mercury_time(timeout) result(ret)
+  integer :: ret
+  real*8 :: timeout
+  timeout=time
+  ret=0
 end function
 
 function set_central_body(mass,radius,oblateness,spin) result(ret)

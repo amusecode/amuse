@@ -33,7 +33,7 @@ function get_time(time_out) result(ret)
   use amuse_mercuryMod
   integer :: ret
   real*8 :: time_out
-  ret=-2
+  ret=mercury_time(time_out)
 end function  
 
 function evolve(tend) result(ret)
