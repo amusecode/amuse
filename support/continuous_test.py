@@ -17,254 +17,16 @@ from optparse import OptionParser
 from subprocess import call, Popen, PIPE
 
 
+import background_test
+import project
+            
+background_test.RunTests.instance = background_test.RunTests()
+
+
 def number_str(number, singular, plural = None):
         if plural == None:
             plural = singular + 's'
         return str(number) + ' ' + (singular if number == 1 else plural)
-
-def find_method_in_class(name_of_the_method, code, class_to_search):
-    if name_of_the_method in class_to_search.__dict__:
-        member =  class_to_search.__dict__[name_of_the_method]
-        if inspect.isfunction(member):
-            if member.func_code == code:
-                return member
-        if inspect.ismethoddescriptor(member):
-            pass
-    return None
-
-def extract_tb(tb, limit = None):
-    list = []
-    n = 0
-    while tb is not None and (limit is None or n < limit):
-        f = tb.tb_frame
-        lineno = tb.tb_lineno
-        co = f.f_code
-        filename = co.co_filename
-        name = co.co_name
-        linecache.checkcache(filename)
-        line = ""
-        if '__file__' in f.f_globals:
-            for global_name, x in f.f_globals.iteritems():
-                if global_name.startswith('_'):
-                   continue
-                   
-                if inspect.isfunction(x):
-                    if global_name == name and x.func_code == co:
-                        args, varargs, varkw, defaults = inspect.getargspec(x)
-                        name += inspect.formatargspec(args, varargs, varkw, defaults)
-                elif inspect.isclass(x):
-                        method = find_method_in_class(name,co,x)
-                        if not method is None:
-                            args, varargs, varkw, defaults = inspect.getargspec(method)
-                            name += inspect.formatargspec(args, varargs, varkw, defaults)
-                            name = x.__name__ + '.' + name
-                            
-        if line:
-            line = line.strip()
-        else: 
-            line = None
-        list.append((filename, lineno, name, line))
-        tb = tb.tb_next
-        n = n+1
-    return list
-    
-
-class TestCaseReport(object):
-    def __init__(self, test):
-        self.id = test.id()
-        try:
-            self.address = test.address()
-        except Exception:
-            self.address = ('unknown', 'unknown', self.id)
-            pass
-            
-        if self.address[0] is None:
-            self.address = list(self.address)
-            self.address[0] = ""
-            
-        self.start_time = 0.0
-        self.end_time = 0.0
-        self.total_time = 0.0
-        self.number_of_runs = 0.0
-        
-        self.number_of_suite_runs = 0.0
-        
-        if hasattr(test.test, "_dt_test"):
-            self.lineno = test.test._dt_test.lineno
-        elif hasattr(test.test, "_testMethodName"):
-            method = getattr(test.test, getattr(test.test, "_testMethodName"))
-            self.lineno = method.func_code.co_firstlineno
-        else:
-            self.lineno = test.test.descriptor.compat_co_firstlineno
-            
-        self.failed = False
-        self.errored = False
-        self.skipped = False
-        self.found = False
-        
-    def start(self):
-        self.start_time = time.time()
-        self.found = True
-    
-    def end(self):
-        self.end_time = time.time()
-        self.number_of_runs += 1.0
-        self.total_time += (self.end_time - self.start_time)
-        self.failed = False
-        self.errored = False
-        self.skipped = False
-        
-    def mean_time(self):
-        if self.number_of_runs == 0:
-            return 0.0
-        return self.total_time / self.number_of_runs
-
-    def end_with_error(self, error_tuple):
-        self.end_time = time.time()
-        error_type, error_value, error_traceback = error_tuple        
-        self.error_string = traceback.format_exception_only(error_type, error_value)
-        self.traceback = list(reversed(extract_tb(error_traceback)))
-        
-        self.number_of_runs = 0
-        self.total_time = 0.0
-        
-        self.failed = False
-        self.errored = True
-        self.skipped = False
-        
-    def end_with_failure(self, error_tuple):
-        self.end_time = time.time()
-        error_type, error_value, error_traceback = error_tuple        
-        self.error_string = traceback.format_exception_only(error_type, error_value)
-        self.traceback = list(reversed(traceback.extract_tb(error_traceback)))
-        
-        self.number_of_runs = 0
-        self.total_time = 0.0
-        
-        self.failed = True
-        self.errored = False
-        self.skipped = False
-        
-    def end_with_skip(self):
-        self.end_time = time.time()
-        
-        self.skipped = True
-        self.failed = False
-        self.errored = False
-        
-    def to_dict(self):
-        return self.__dict__.copy()
-        
-        
-class MakeAReportOfATestRun(object):
-    score = 2000
-    
-    def __init__(self, previous_report = None):
-        self.errors = 0
-        self.failures = 0
-        self.tests = 0
-        self.start_time = 0
-        self.end_time = 0
-        self.skipped = 0
-        self.problem_text = ""
-        
-        if previous_report is None:
-            self.address_to_report = {}
-        else:
-            self.address_to_report = previous_report.address_to_report
-           
-            
-        self.name = 'report on a test'
-        self.enabled = True
-
-    def addSuccess(self,test):
-        report = self.get_report(test)
-        report.end()
-        
-    def addError(self,test,error_tuple):
-        report = self.get_report(test)
-        error_class, ignore_1, ignore_2 = error_tuple
-        if issubclass(error_class, SkipTest):
-            self.skipped += 1
-            self.tests -= 1
-            report.end_with_skip()
-        else: 
-            report.end_with_error(error_tuple)
-            self.errors += 1
-    
-    def addFailure(self, test, error_tuple):
-        self.failures += 1
-        report = self.get_report(test)
-        report.end_with_failure(error_tuple)
-           
-    def get_report(self, test):
-        try:
-            address = test.address()
-        except Exception:
-            address = ('unknown', 'unknown', test.id())
-            
-        if not address in self.address_to_report:
-            self.address_to_report[address] = TestCaseReport(test)
-        return self.address_to_report[address] 
-        
-    def options(self, parser, env):
-        pass
-        
-    def configure(self, parser, env):
-        pass
-        
-        
-    def beforeTest(self,test):
-        self.tests += 1
-        x = self.get_report(test)
-        x.start()
-        x.number_of_suite_runs += 1
-    
-    def begin(self):
-        self.start_time = time.time()
-        for x in self.address_to_report.values():
-            x.errored = False
-            x.failed = False
-            x.skipped = False
-            x.found = False
-        
-    def finalize(self, x):    
-        self.end_time = time.time()
-        for key, report in list(self.address_to_report.iteritems()):
-            if not report.found:
-                del self.address_to_report[key]
-        pass
-        
-
-    def startTest(self, test):
-        if self.is_test_able_to_run(test):
-           return
-        else:
-           raise SkipTest
-
-    def is_test_able_to_run(self, test):
-        report = self.get_report(test)
-        time_taken = report.mean_time() 
-        if time_taken < 0.1:
-            return True
-        if time_taken < 1.0:
-            return (report.number_of_suite_runs % 5) == 0
-        return (report.number_of_suite_runs % 10) == 0
-    
-    def to_dict(self):
-        result = {}
-        for x in [ 
-            'errors', 'failures', 'tests' , 
-            'start_time', 'end_time', 'skipped',
-            'problem_text']:
-            result[x] = getattr(self, x)
-        
-        testcases = list(self.address_to_report.values())
-        testcases.sort(key=lambda x: os.path.basename(x.address[0]))
-        result['testcases'] = map(lambda x: x.to_dict(),testcases )
-        
-        return result  
-
 
 
 def _run_the_tests(directory):
@@ -275,11 +37,7 @@ def _run_the_tests(directory):
     call(["make", "all"])
     
     print "start test run"
-    null_device = open('/dev/null')
-    os.stdin = null_device
-    report = MakeAReportOfATestRun()
-    plugins = [report , Skip() ,Capture(), Doctest()] 
-    result = TestProgram(exit = False, argv=['nose', directory, '--with-doctest'], plugins=plugins);
+    report = background_test.RunTests.instance.run_tests(None)
     return report
     
 class MakeSVNStatusReport(object):
@@ -400,7 +158,7 @@ class WriteTestReportOnTestingBlog(object):
         
         testcases = list(self.report.address_to_report.values())
 
-        testcases.sort(key=lambda x: os.path.basename(x.address[0]))
+        testcases.sort(key=lambda x: '' if x.address[0] is None else os.path.basename(x.address[0]))
         
         if self.report.failures > 0:
             self.parts.append('<p>Failed tests:</p>')
@@ -415,6 +173,14 @@ class WriteTestReportOnTestingBlog(object):
             self.parts.append('<ul>')
             for x in testcases:
                 if x.errored:
+                    self.write_item_on_test(x)
+            self.parts.append('</ul>')
+            
+        if self.report.skipped > 0:
+            self.parts.append('<p>Skipped tests:</p>')
+            self.parts.append('<ul>')
+            for x in testcases:
+                if x.skipped:
                     self.write_item_on_test(x)
             self.parts.append('</ul>')
         
@@ -463,6 +229,10 @@ class WriteTestReportOnTestingBlog(object):
         self.parts.append('</ul>')
         
     def write_link_to_file_in_svn(self, filename, lineno, id = None):
+        if filename is None:
+            self.parts.append(str(id))
+            return
+            
         if id is None:
             id = filename + ':' + str(lineno)
             

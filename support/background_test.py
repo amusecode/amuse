@@ -439,7 +439,7 @@ class RunTests(object):
             doctest = Doctest()
             doctest.enabled = True
             plugins = [doctest, report , Skip(), Capture()] 
-            argv = ['nose']
+            argv = ['nose', '-v']
             old_working_directory = os.getcwd()
             if not self.WORKING_DIRECTORY is None:
                 argv.extend(['-w', self.WORKING_DIRECTORY])
