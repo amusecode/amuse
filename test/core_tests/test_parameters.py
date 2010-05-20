@@ -536,6 +536,51 @@ class TestParameters(amusetest.TestCase):
         self.assertTrue("test_name" in str(y))
         self.assertTrue("246.0 m" in str(y))
         
+    def test5(self):
+        print "Test 5: testing mixed nbody and physical units"
+        phys_parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            None,
+            "phys_test_name",
+            "a test parameter with physical units", 
+            units.m, 
+            11.0 | units.m
+        )
+        nbody_parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            None,
+            "nbody_test_name",
+            "a test parameter with nbody units", 
+            nbody_system.length, 
+            11.0 | nbody_system.length
+        )
+        
+        class TestModule(object):
+            x = 123.0
+            
+            def get_test(self):
+                return (self.x,0)
+            def set_test(self, value):
+                self.x = value
+                return 0
+            
+        o = TestModule()
+        x = parameters.Parameters([phys_parameter_definition, nbody_parameter_definition], o)
+
+        
+        self.assertTrue("nbody_test_name" in str(x))
+        self.assertTrue("123.0 nbody length" in str(x))
+        self.assertTrue("phys_test_name" in str(x))
+        self.assertTrue("123.0 m" in str(x))
+        
+        convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                convert_nbody.as_converter_from_si_to_nbody()
+            )
+        self.assertEquals(getattr(y,"phys_test_name"), 123.0 | units.m)
+        self.assertAlmostEquals(getattr(y,"nbody_test_name"), 246.0 | units.m)
+        
         
         
         
