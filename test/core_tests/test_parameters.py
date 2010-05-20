@@ -540,7 +540,7 @@ class TestParameters(amusetest.TestCase):
         print "Test 5: testing mixed nbody and physical units"
         phys_parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
             "get_test",
-            None,
+            "set_test",
             "phys_test_name",
             "a test parameter with physical units", 
             units.m, 
@@ -548,7 +548,7 @@ class TestParameters(amusetest.TestCase):
         )
         nbody_parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
             "get_test",
-            None,
+            "set_test",
             "nbody_test_name",
             "a test parameter with nbody units", 
             nbody_system.length, 
@@ -563,10 +563,9 @@ class TestParameters(amusetest.TestCase):
             def set_test(self, value):
                 self.x = value
                 return 0
-            
+        
         o = TestModule()
         x = parameters.Parameters([phys_parameter_definition, nbody_parameter_definition], o)
-
         
         self.assertTrue("nbody_test_name" in str(x))
         self.assertTrue("123.0 nbody length" in str(x))
@@ -580,7 +579,56 @@ class TestParameters(amusetest.TestCase):
             )
         self.assertEquals(getattr(y,"phys_test_name"), 123.0 | units.m)
         self.assertAlmostEquals(getattr(y,"nbody_test_name"), 246.0 | units.m)
+        y.phys_test_name = 1234.0 | units.m
+        self.assertEquals(y.phys_test_name, 1234.0 | units.m)
+        y.nbody_test_name = 12345.0 | nbody_system.length
+        self.assertAlmostEquals(y.nbody_test_name, 24690.0 | units.m)
+        y.nbody_test_name = 12345.0 | units.m
+        self.assertEquals(y.nbody_test_name, 12345.0 | units.m)
         
+    def test6(self):
+        print "Test 5: testing mixed nbody and string units"
+        nbody_parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_nbody",
+            None,
+            "nbody_par_name",
+            "a test parameter with nbody units", 
+            nbody_system.length, 
+            11.0 | nbody_system.length
+        )
+        string_parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
+            "get_string",
+            None,
+            "string_par_name",
+            "a test parameter with string units", 
+            units.string, 
+            "test string" | units.string
+        )
+        
+        class TestModule(object):
+            x = 123.0
+            
+            def get_nbody(self):
+                return (self.x,0)
+            def get_string(self):
+                return (str(10 * self.x),0)
+            
+        o = TestModule()
+        x = parameters.Parameters([string_parameter_definition, nbody_parameter_definition], o)
+
+        
+        self.assertTrue("nbody_par_name" in str(x))
+        self.assertTrue("123.0 nbody length" in str(x))
+        self.assertTrue("string_par_name" in str(x))
+        self.assertTrue("1230.0" in str(x))
+        
+        convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
+        y = parameters.ParametersWithUnitsConverted(
+                x,
+                convert_nbody.as_converter_from_si_to_nbody()
+            )
+        self.assertEquals(getattr(y,"string_par_name"), "1230.0" | units.string)
+        self.assertAlmostEquals(getattr(y,"nbody_par_name"), 246.0 | units.m)
         
         
         
