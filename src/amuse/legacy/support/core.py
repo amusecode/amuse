@@ -10,7 +10,6 @@ import os.path
 
 import logging
 
-from zlib import crc32
 from mpi4py import MPI
 from subprocess import Popen, PIPE
 
@@ -267,7 +266,7 @@ class legacy_function(object):
         if result.name is None:
             result.name = self.specification_function.__name__
         if result.id is None:
-            result.id = abs(crc32(result.name))
+            result.id = abs(self.crc32(result.name))
         if result.description is None:
             import pydoc
             result.description = pydoc.getdoc(self.specification_function)
@@ -280,9 +279,27 @@ class legacy_function(object):
             return time_of_defining_file <= time_of_the_compiled_file
         return True
         
+    @late
+    def crc32(self):
+        try:
+            from zlib import crc32
+            if crc32('amuse')&0xffffffff == 0xc0cc9367:
+                return crc32
+        except Exception:
+            pass
+        try:
+            from binascii import crc32
+            if crc32('amuse')&0xffffffff == 0xc0cc9367:
+                return crc32
+        except Exception:
+            pass
+        
+        raise  Exception("No working crc32 implementation found!")
+        
 
 class legacy_global(object):
-  
+    """ deprecated! """
+    
     def __init__(self, name , id = None, dtype = 'i'):
         """
         Decorator for legacy globals.
@@ -294,7 +311,7 @@ class legacy_global(object):
         self.datatype = _typecode_to_datatype(dtype)
         
         if self.id is None:
-            self.id = crc32(self.name)
+            self.id = abs(self.crc32(self.name))
         
     def __get__(self, instance, owner):
         if instance is None:
@@ -324,6 +341,24 @@ class legacy_global(object):
         result.name = self.name
         result.result_type = self.datatype
         return result
+    
+    @late
+    def crc32(self):
+        try:
+            from zlib import crc32
+            if crc32('amuse')&0xffffffff == 0xc0cc9367:
+                return crc32
+        except Exception:
+            pass
+            
+        try:
+            from binascii import crc32
+            if crc32('amuse')&0xffffffff == 0xc0cc9367:
+                return crc32
+        except Exception:
+            pass
+        
+        raise  Exception("No working crc32 implementation found!")
      
 class ParameterSpecification(object):
     def __init__(self, name, dtype, direction, description):
