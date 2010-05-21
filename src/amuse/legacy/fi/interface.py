@@ -6,14 +6,6 @@ from amuse.legacy.interface.gd import GravitationalDynamicsInterface, Gravitatio
 from amuse.legacy import *
 
 class fi(LegacyInterface,GravitationalDynamicsInterface):   
-    get_density_at_point=None
-    get_temperature_at_point=None
-    get_internalenergy_at_point=None
-    get_pressure_at_point=None
-
-    get_potential_energy=None
-    get_kinetic_energy=None    
-    get_thermal_energy=None
     get_total_radius=None
     get_total_mass=None
     get_center_of_mass_position=None
@@ -32,6 +24,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     set_velocity=None
     set_position=None
     get_position=None
+    get_internal_energy=None
+    set_internal_energy=None
 
                 
     def __init__(self, **options):
@@ -1975,9 +1969,89 @@ class Fi(GravitationalDynamics):
         object.set_delete('particles', 'delete_particle')
         object.add_setter('particles', 'set_state')
         object.add_getter('particles', 'get_state')
+        
+        object.define_set('gas_particles', 'id')
+        object.set_new('gas_particles', 'new_sph_particle')
+        object.set_delete('gas_particles', 'delete_particle')
+        object.add_setter('gas_particles', 'set_state_sph')
+        object.add_getter('gas_particles', 'get_state_sph')
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
+        object.add_method(
+            "new_sph_particle",
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.energy,
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state_sph",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.energy,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_state_sph",
+            (
+                object.NO_UNIT,
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.energy,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_internal_energy",
+            (
+                object.NO_UNIT,
+                nbody_system.energy,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_internal_energy",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                nbody_system.energy,
+                object.ERROR_CODE
+            )
+        )
         
         object.add_method(
             'get_gravity_at_point',

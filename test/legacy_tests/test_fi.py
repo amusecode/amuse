@@ -253,10 +253,12 @@ class TestFiInterface(TestWithMPI):
     def test2(self):
         print "Test 2: testing Fi data directory"
         convert_nbody = nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
-        instance = Fi(convert_nbody, redirection='none')
+        instance = Fi(convert_nbody)
         error = instance.initialize_code()
         self.assertEquals(0, error)
         self.assertTrue('data/fi/input/' in instance.get_fi_data_directory().fi_data_directory)
+        self.assertEquals(instance.get_fi_data_directory().fi_data_directory, 
+            instance.get_data_directory()+'/')
         
         self.assertEquals(False, instance.parameters.radiation_flag)
         instance.parameters.radiation_flag = True
@@ -275,7 +277,7 @@ class TestFiInterface(TestWithMPI):
         
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        instance.evolve_model(365.0 | units.day)
+        instance.evolve_model(1.0 | nbody.time)
         
         instance.cleanup_code()
         instance.stop()
@@ -356,6 +358,82 @@ class TestFiInterface(TestWithMPI):
             self.assertEquals(eval("instance.parameters."+string_par), value)
             exec("instance.parameters."+string_par+" = new_value")
             self.assertEquals(eval("instance.parameters."+string_par), new_value)
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test7(self):
+        print "Test 7: testing Fi SPH particles"
+        number_sph_particles = 1000
+        mass,x,y,z,vx,vy,vz,u=MakeEvrardTest(number_sph_particles).new_model()
+        radius=numpy.zeros_like(mass) # actually a smoothing parameter?
+        attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
+        attr_units = sum([[unit for i in range(n)] for unit,n in zip([nbody.mass, nbody.length, 
+            nbody.speed, nbody.energy],[1,4,3,1])],[])
+        
+        gas = core.Particles(number_sph_particles)
+        for attribute, unit in zip(attributes,attr_units):
+            setattr(gas, attribute, unit.new_quantity(eval(attribute)))
+        
+        instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
+        self.assertEquals(0, instance.initialize_code())
+        instance.parameters.timestep = 0.05 | nbody.time
+        instance.parameters.integrate_entropy_flag = True
+        instance.gas_particles.add_particles(gas)
+        
+        instance.synchronize_model()
+        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.,3)
+        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -0.69, 2)#-0.6611,3)#why different from TestEvrard?
+        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy, 0.05, 2)
+
+        instance.evolve_model(10.0 | units.Myr)
+        instance.synchronize_model()
+        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.2392,3)
+        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.0773,3)
+        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy,0.1882,3)
+        
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test8(self):
+        print "Test 8: testing Fi dark matter + SPH particles"
+        number_sph_particles = 100
+        mass,x,y,z,vx,vy,vz,u=MakeEvrardTest(number_sph_particles).new_model()
+        radius=numpy.zeros_like(mass) # actually a smoothing parameter?
+        attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
+        attr_units = sum([[unit for i in range(n)] for unit,n in zip([nbody.mass, nbody.length, 
+            nbody.speed, nbody.energy],[1,4,3,1])],[])
+        
+        gas = core.Particles(number_sph_particles)
+        for attribute, unit in zip(attributes,attr_units):
+            setattr(gas, attribute, unit.new_quantity(eval(attribute)))
+        
+        dark = core.Particles(2)
+        dark.mass = [1.0, 3.0e-6] | units.MSun
+        dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
+        dark.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
+        dark.radius = [1.0, 0.01] | units.RSun
+        
+        instance = Fi(nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU))
+        self.assertEquals(0, instance.initialize_code())
+        instance.particles.add_particles(dark)
+        instance.gas_particles.add_particles(gas)
+        
+        instance.synchronize_model()
+        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.,3)
+        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.4399, 3)
+        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy, 0.0467, 3)
+#        t = 0 | units.yr
+#        while t < (1.0 | units.yr):
+#            t = t + (0.1 | units.yr)
+#            instance.evolve_model(t)
+#            print t
+#            print instance.particles[1].position.value_in(units.AU)
+        instance.evolve_model(1.0 | units.yr)
+        instance.synchronize_model()
+        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.0021,3)
+        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.9338,3)
+        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy,0.4426,3)
+        
         instance.cleanup_code()
         instance.stop()
     
