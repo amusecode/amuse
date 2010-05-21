@@ -91,4 +91,28 @@ class TestGravitationalDynamics(TestWithMPI):
         self.assertTrue(instance_documentation.find('FUNCTION test(one)') >= 0)
         
     def test6(self):
-        pass
+        print "Testing description of Legacy Function with output parameter"
+        specification = LegacyFunctionSpecification()
+        specification.name ='test'
+        specification.addParameter('one','d',specification.OUT, 'first parameter')
+        specification.result_type = 'i'
+        specification.result_doc = 'an integer'
+        specification.description = 'Example function'
+        
+        x = create_definition.CreateDescriptionOfALegacyFunctionDefinition()
+        x.specification = specification
+        x.start()
+        self.assertTrue(x.out.string.find('int32 test(float64 * one)') > 0)
+        self.assertTrue(x.out.string.find(':returns:') > 0)
+        
+    def test7(self):
+        print "Testing __str__ of Legacy Function"
+        specification = LegacyFunctionSpecification()
+        specification.name ='test'
+        specification.addParameter('one','f',specification.IN, 'first parameter, type: float')
+        specification.addParameter('two','d',specification.OUT, 'second parameter, type double')
+        specification.result_type = 'i'
+        specification.result_doc = 'an integer'
+        specification.description = 'Example function'
+        self.assertEquals(str(specification),"function: int test(float one)\noutput: double two, int __result")
+        

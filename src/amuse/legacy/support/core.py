@@ -398,9 +398,11 @@ class LegacyFunctionSpecification(object):
     >>> specification = LegacyFunctionSpecification()
     >>> specification.name = "test"
     >>> specification.addParameter("one", dtype="int32", direction = specification.IN)
+    >>> specification.addParameter("two", dtype="float64", direction = specification.OUT)
     >>> specification.result_type = "int32"
     >>> print specification
     function: int test(int one)
+    output: double two, int __result
     
     """
     
@@ -513,7 +515,7 @@ class LegacyFunctionSpecification(object):
                     first = False
                 else:
                     p + ', '
-                p + typecode_to_name[x.dtype]
+                p + typecode_to_name[x.datatype]
                 p + ' '
                 p + x.name
             if not self.result_type is None:
