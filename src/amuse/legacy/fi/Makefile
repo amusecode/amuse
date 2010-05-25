@@ -43,19 +43,31 @@ FFLAGS+= -I./src/
 
 LIBS+=$(FFTWLIB)
 
+FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.f90 \
+  $(SRC)/ionize.f90 $(SRC)/molecules.f90 $(SRC)/H2cool.f90 $(SRC)/starprop.f90 \
+  $(SRC)/random.f90 $(SRC)/io.f90 $(SRC)/io-old.f $(SRC)/diagnostics.f90 $(SRC)/readparam.f90 \
+  $(SRC)/ppread.f90 $(SRC)/blackhole.f90 $(SRC)/stepsystem.f90 $(SRC)/buildnearlist.f90 \
+  $(SRC)/pmgrav.f90 $(SRC)/search.f90 $(SRC)/feedback.f90 $(SRC)/fixedhalo.f90 $(SRC)/init.f90 \
+  $(SRC)/timestep.f90 $(SRC)/buildtree.f90 $(SRC)/density.f90 $(SRC)/io2.f90 $(SRC)/heating.f90 \
+  $(SRC)/entdot.f90 $(SRC)/heco.f90 $(SRC)/ethstep.f90 $(SRC)/stellar.f90 $(SRC)/fcco.f90 \
+  $(SRC)/project.f90 $(SRC)/clean.f90 $(SRC)/sort.f90 $(SRC)/util.f90 $(SRC)/gravity.f90 \
+  $(SRC)/tidalsum.f90 $(SRC)/treewalk.f90 $(SRC)/gravsum.f90 $(SRC)/fuvflux.f90
+
+
 all: worker
 
 %.o: %.f90 Makefile
 	$(FC) $(FFLAGS)  -c -o $@ $< 
-        
-worker: worker.f90 interface.o
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) $^ -o $@ $(LIBS)
 
-glworker: glworker.f90 interface.o
+$(SRC)/libfi.a: $(FILES) Makefile
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
+        
+worker: worker.f90 interface.o $(SRC)/libfi.a
+	$(FC) $(FFLAGS) worker.f90 interface.o -o $@ $(LIBS)
+
+glworker: glworker.f90 interface.o $(SRC)/libfi.a
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
+	$(FC) $(FFLAGS) worker.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
 
 worker.f90: interface.py __init__.py
