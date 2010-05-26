@@ -11,6 +11,7 @@ from amuse.support.data import core
 from amuse.legacy.sse.interface import SSE
 from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.mesa.interface import MESA
+from amuse.legacy.cachedse.interface import CachedStellarEvolution
 
 from amuse.legacy.support.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results
@@ -97,6 +98,10 @@ def simulate_evolution_tracks(
 
 def plot_HR_diagram(masses, luminosity_tracks, temperature_tracks, stellar_type_tracks, plotfile):
     try:
+#       This removes the need for ssh -X to be able to do plotting
+        import matplotlib
+        matplotlib.use("Agg") 
+        
         from matplotlib import pyplot
         print "Plotting the data..."
         pyplot.figure(figsize = (7, 8))
@@ -203,6 +208,14 @@ def new_commandline_option_parser():
         help="CODE to use for stellar evolution"
     )
     result.add_option(
+        "-C",
+        "--cache",
+        type="string",
+        default=None,
+        dest="cacheDir",
+        help="Use/write cache from directory"
+    )    
+    result.add_option(
         "-p",
         "--plot_file",
         type="string",
@@ -222,6 +235,9 @@ if __name__ == '__main__':
         parser.error("unknown arguments '{0}'".format(arguments))
     mass_list = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun
     code = new_code(options.code, len(mass_list) | units.none)
+    if not (options.cacheDir is None):
+        print "Using cache directory: %s" % (options.cacheDir)
+        code = CachedStellarEvolution(code, options.cacheDir)    
     simulate_evolution_tracks(
         code,
         masses = mass_list,
