@@ -17,10 +17,10 @@ class ParameterDocumentation(object):
             output += " (default value:" + str(instance.get_default_value_for(parameter_definition.name)) + ")\n\n"
 
         return output
-        
+
 class Parameters(object):
     __doc__ = ParameterDocumentation()
-    
+
     def __init__(self, definitions, instance):
         object.__setattr__(self, '_instance', weakref.ref(instance))
         object.__setattr__(self, '_definitions', definitions)
@@ -44,6 +44,8 @@ class Parameters(object):
 
         definition = self._mapping_from_name_to_definition[name]
         definition.set_value(self._instance(), value)
+        if hasattr(self._instance, "invoke_state_change"):
+            self._instance().invoke_state_change()
 
     def names(self):
         return self._mapping_from_name_to_definition.keys()
@@ -58,14 +60,14 @@ class Parameters(object):
         result.extend(self.names())
         return result
 
-    
+
     def get_default_value_for(self, name):
         if not name in self._mapping_from_name_to_definition:
             raise exception.CoreException("tried to get default value of unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
 
         definition = self._mapping_from_name_to_definition[name]
         return definition.default_value
-    
+
     def __str__(self):
         output = ""
 
@@ -107,9 +109,9 @@ class ParametersWithUnitsConverted(object):
 
     def __dir__(self):
         return dir(self._original)
-        
+
     def get_default_value_for(self, name):
-        return self._converter.from_target_to_source(self._original.get_default_value_for(name)) 
+        return self._converter.from_target_to_source(self._original.get_default_value_for(name))
 
     def __str__(self):
         output = ""
@@ -161,10 +163,10 @@ class ModuleAttributeParameterDefinition(ParameterDefinition):
         self.attribute_name = attribute_name
 
     def get_legacy_value(self, object):
-        return getattr(object, self.attribute_name)
+        return getattr(object.legacy_interface, self.attribute_name)
 
     def set_legacy_value(self, object, number):
-        setattr(object, self.attribute_name, number)
+        setattr(object.legacy_interface, self.attribute_name, number)
 
 class ParameterException(AttributeError):
     template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")
@@ -221,13 +223,13 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
         self.get_method = get_method
         self.set_method = set_method
         self.stored_value = None
-    
+
     def get_value(self, object):
         return True if self.get_legacy_value(object) else False
-    
+
     def set_value(self, object, bool):
         self.set_legacy_value(object, 1 if bool else 0)
-    
+
     def get_legacy_value(self, object):
         if self.get_method is None:
             return self.stored_value
@@ -237,7 +239,7 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
                 raise ParameterException(object, self.name, error, True)
             else:
                 return result
-    
+
     def set_legacy_value(self, object, number):
         if self.set_method is None:
             raise exception.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
@@ -248,7 +250,7 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
         else:
             if self.get_method is None:
                 self.stored_value = number
-    
+
     def is_readonly(self):
         return self.set_method is None
 

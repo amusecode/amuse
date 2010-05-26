@@ -111,6 +111,44 @@ class generic_to_si(object):
                 new_unit *= (unit ** n)
         return new_quantity(number * factor, new_unit)
 
+    def as_converter_from_si_to_generic(self):
+        class SiToGenericConverter(object):
+            def __init__(self, generic_to_si):
+                self.generic_to_si = generic_to_si
+            
+            def from_source_to_target(self, quantity):
+                if hasattr(quantity, 'unit'):
+                    return self.generic_to_si.to_generic(quantity) 
+                else:
+                    return quantity
+                
+            def from_target_to_source(self, quantity):
+                if hasattr(quantity, 'unit'):
+                    return self.generic_to_si.to_si(quantity)
+                else:
+                    return quantity
+                
+        return SiToGenericConverter(self)
+
+    def as_converter_from_generic_to_si(self):
+        class GenericToSiConverter(object):
+            def __init__(self, generic_to_si):
+                self.generic_to_si = generic_to_si
+            
+            def from_source_to_target(self, quantity):
+                if hasattr(quantity, 'unit'):
+                    return self.generic_to_si.to_si(quantity) 
+                else:
+                    return quantity
+                
+            def from_target_to_source(self, quantity):
+                if hasattr(quantity, 'unit'):
+                    return self.generic_to_si.to_generic(quantity)
+                else:
+                    return quantity
+                
+        return GenericToSiConverter(self)
+
     def set_as_default(self):
         """Install this converter as the default converter for the
         modules. When a native nbody module is created it will choose

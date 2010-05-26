@@ -618,8 +618,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         return name == 'parameters'
 
     def get_attribute(self, name, value):
-        return parameters.Parameters(self.definitions, self.interface.legacy_interface)
-
+        return parameters.Parameters(self.definitions, self.interface)
 
     def attribute_names(self):
         return set(['parameters'])
@@ -665,7 +664,7 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
             default_value
         )
         self.definitions.append(definition)
-    
+
     def has_name(self, name):
         return name == 'PARAMETER'
 
@@ -770,14 +769,14 @@ class ParticleSetDefinition(object):
             results.append(x)
 
         return results
-        
+
 
 class CodeInMemoryParticles(core.Particles):
-    
+
     def __init__(self, code_interface = None, storage = None):
         core.Particles.__init__(self, storage = storage)
-        self._private.code_interface = code_interface 
-        
+        self._private.code_interface = code_interface
+
 class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.interface = interface
@@ -891,7 +890,7 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
     def __init__(self, legacy_interface, **options):
         OptionalAttributes.__init__(self, **options)
         self.legacy_interface = legacy_interface
-        self._handlers = [] 
+        self._handlers = []
 
 
         self._handlers.append(LegacyInterfaceHandler(legacy_interface))
@@ -946,7 +945,6 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
         if not found:
             raise AttributeError(name)
         return result
-
 
     def __dir__(self):
         result = set(dir(type(self)))

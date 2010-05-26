@@ -191,6 +191,13 @@ if __name__ == '__main__':
       metavar="EDITOR", 
       default="geany",
       type="string")
+
+    parser.add_option("-b", "--browser", 
+      dest="startbrowser",
+      help="automatically start a browser", 
+      metavar="PORT", 
+      default="yes",
+      type="string")
       
     (options, args) = parser.parse_args()
     
@@ -198,8 +205,9 @@ if __name__ == '__main__':
     print "will use editor: ", options.editor
     webserver.EDITOR = options.editor
     
-    thread = threading.Thread(target = start_browser, args = (options.serverport,))
-    thread.start()
+    if options.startbrowser == "yes":
+        thread = threading.Thread(target = start_browser, args = (options.serverport,))
+        thread.start()
     
     server = ContinuosTestWebServer(options.serverport)
     server.start()

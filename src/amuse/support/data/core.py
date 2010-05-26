@@ -2161,6 +2161,18 @@ class Particle(object):
         return ParticlesSubset(self.particles_set, [self.key])
         
 def center_of_mass(particles):
+    """
+    Returns the center of mass of the particles set.
+
+    >>> particles = Particles(2)
+    >>> particles.x = [-1.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.center_of_mass()
+    quantity<[0.0, 0.0, 0.0] m>
+    """
+
     masses = particles.mass
     x_values = particles.x
     y_values = particles.y
@@ -2178,6 +2190,19 @@ def center_of_mass(particles):
     )
 
 def center_of_mass_velocity(particles):
+    """
+    Returns the center of mass velocity of the particles set.
+
+    >>> particles = Particles(2)
+    >>> particles.vx = [-1.0, 1.0] | units.ms
+    >>> particles.vy = [0.0, 0.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.center_of_mass_velocity()
+    quantity<[0.0, 0.0, 0.0] m * s**-1>
+    """
+
+
     masses = particles.mass
     x_values = particles.vx
     y_values = particles.vy
@@ -2195,6 +2220,18 @@ def center_of_mass_velocity(particles):
     )
     
 def kinetic_energy(particles):
+    """
+    Returns the total kinetic energy of the particles in the particles set.
+
+    >>> particles = Particles(2)
+    >>> particles.vx = [-1.0, 1.0] | units.ms
+    >>> particles.vy = [0.0, 0.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.kinetic_energy()
+    quantity<1.0 m**2 * kg * s**-2>
+    """
+
     mass = particles.mass
     vx = particles.vx
     vy = particles.vy
@@ -2205,6 +2242,18 @@ def kinetic_energy(particles):
     
 
 def potential_energy(particles, smoothing_length_squared = zero, G = constants.G):
+    """
+    Returns the total potential energy of the particles in the particles set.
+
+    >>> particles = Particles(2)
+    >>> particles.x = [0.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.potential_energy()
+    quantity<-6.67428e-11 m**2 * kg * s**-2>
+    """
+
     mass = particles.mass
     x_vector = particles.x
     y_vector = particles.y
@@ -2238,9 +2287,33 @@ AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 
 def particle_specific_kinetic_energy(set, particle):
+    """
+    Returns the kinetic energy of a particle.
+
+    >>> particles = Particles(2)
+    >>> particles.vx = [0.0, 1.0] | units.m
+    >>> particles.vy = [0.0, 0.0] | units.m
+    >>> particles.vz = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles[1].specific_kinetic_energy()
+    quantity<0.5 m**2>
+    """
+
     return 0.5*(particle.velocity**2).sum()
 
 def particle_potential(set, particle, smoothing_length_squared = zero, gravitationalConstant = constants.G):
+    """
+    Returns the potential energy of a particle.
+
+    >>> particles = Particles(2)
+    >>> particles.x = [0.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles[1].potential()
+    quantity<-6.67428e-11 m**2 * s**-2>
+    """
+
     particles = set - particle
     dx = particle.x - particles.x
     dy = particle.y - particles.y

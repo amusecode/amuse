@@ -6,7 +6,7 @@ from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecificati
 from amuse.support.interface import CodeInterface
 
 class CommonCodeInterface(object):
-        
+
     @legacy_function
     def initialize_code():
         """
@@ -14,19 +14,19 @@ class CommonCodeInterface(object):
         any other call on the code (so before any parameters
         are set or particles are defined in the code).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             Code is initialized
         -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention 
+            Error happened during initialization, this error needs to be further specified by every code implemention
         -2 - ERROR
             not yet implemented
         """
-        return function  
-    
-    
+        return function
+
+
     @legacy_function
     def cleanup_code():
         """
@@ -34,19 +34,19 @@ class CommonCodeInterface(object):
         just before stopping the code. No functions
         should be called after this code.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             Code is initialized
         -1 - ERROR
-            Error happened during cleanup, this error needs to be further specified by every code implemention 
+            Error happened during cleanup, this error needs to be further specified by every code implemention
         -2 - ERROR
             not yet implemented
         """
-        return function  
-    
-    
+        return function
+
+
     @legacy_function
     def commit_parameters():
         """
@@ -54,18 +54,18 @@ class CommonCodeInterface(object):
         values of the parameters.
         Called after the parameters have been set or updated.
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             Code is initialized
         -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention 
+            Error happened during initialization, this error needs to be further specified by every code implemention
         -2 - ERROR
             not yet implemented
         """
-        return function  
-    
+        return function
+
     @legacy_function
     def recommit_parameters():
         """
@@ -73,27 +73,25 @@ class CommonCodeInterface(object):
         have been updated (after commit_parameters and
         particles have been loaded).
         """
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
             Model is initialized and evolution can start
          -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention 
+            Error happened during initialization, this error needs to be further specified by every code implemention
         """
-        return function  
-        
 
-        
-        
+        return function
+
+    #def invoke_state_change(self):
+    #    pass
+
 class CommonCode(CodeInterface):
-    
+
     def define_state(self, object):
         object.set_initial_state('UNINITIALIZED')
         object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
-        
+        #object.add_method('INITIALIZED', 'invoke_state_change')
         object.add_transition_to_method('END', 'cleanup_code')
         object.add_method('END', 'stop')
-        
-        
-        

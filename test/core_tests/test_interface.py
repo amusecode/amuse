@@ -10,7 +10,7 @@ from amuse.test import amusetest
 
 class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
     class TestClass(object):
-
+        
         def get_mass(self):
             return 10.0, 0
             
@@ -62,7 +62,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         
         original = self.TestClass()
         instance = interface.CodeInterface(original)
-        
+
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
         
@@ -74,7 +74,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
             nbody_system.length * nbody_system.length, 
             0.3 | nbody_system.length * nbody_system.length
         )
-                
+          
         instance.parameters.epsilon_squared = 100.0 | units.m ** 2
         self.assertAlmostEquals(instance.parameters.epsilon_squared.value_in(units.m**2),  100.0, 6)
         self.assertAlmostEquals(original.eps,  4.0, 6)

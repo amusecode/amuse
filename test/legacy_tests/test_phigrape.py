@@ -196,9 +196,9 @@ class TestCodeInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = PhiGRAPE(convert_nbody)
+        instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.set_eta(0.01,0.02)
-        instance.initialize_code()
         instance.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -236,9 +236,9 @@ class TestCodeInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = PhiGRAPE(convert_nbody)
+        instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.set_eta(0.01,0.02)
-        instance.initialize_code()
         instance.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -301,9 +301,10 @@ class TestCodeInterface(TestWithMPI):
     
     def test5(self):
         instance = PhiGRAPE()
+        instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
         instance.set_eta(0.01,0.02)
-        instance.initialize_code()
+
         
         particles = core.Particles(2)
         print particles

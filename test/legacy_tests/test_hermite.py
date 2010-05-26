@@ -128,8 +128,8 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         hermite = Hermite(convert_nbody)
-        hermite.parameters.epsilon_squared = 0.0 | units.AU**2
         hermite.initialize_code()
+        hermite.parameters.epsilon_squared = 0.0 | units.AU**2
         hermite.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -165,8 +165,8 @@ class TestAmuseInterface(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
         instance = Hermite(convert_nbody)
-        instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.dt_dia = 5000
         
         stars = self.new_system_of_sun_and_earth()
@@ -389,4 +389,34 @@ class TestAmuseInterface(TestWithMPI):
         self.assertNotEquals(p0, p1)
         print p0.x, p1.x
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
-       
+        instance.stop()
+        
+    def test9(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+
+        instance = Hermite(convert_nbody)
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance.parameters.pair_factor = 1e14 | units.none
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+                
+        instance.particles.add_particles(stars)
+        instance.stopping_conditions.pair_detection.enable()
+        instance.evolve_model(365.0 | units.day)
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
+        instance.update_particles(stars)
+        
+        position_at_start = earth.position.value_in(units.AU)[0]
+        position_after_full_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
+
+        print instance.model_time
+        
+        print instance.stopping_conditions.pair_detection.particles(0).key
+        print instance.stopping_conditions.pair_detection.particles(1).key
+        
+        instance.cleanup_module()
+        
+        instance.stop()
+        

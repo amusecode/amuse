@@ -814,7 +814,6 @@ class GravitationalDynamics(common.CommonCode):
 
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
-
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
         object.add_method('EDIT', 'new_particle')
         object.add_method('EDIT', 'delete_particle')
@@ -843,7 +842,6 @@ class GravitationalDynamics(common.CommonCode):
             )
 
     def define_methods(self, object):
-
         object.add_method(
             'evolve',
             (nbody_system.time,),
