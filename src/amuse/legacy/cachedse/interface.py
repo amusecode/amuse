@@ -2,7 +2,7 @@ import os
 import pickle
 import fnmatch
 
-from scipy.interpolate import bisplrep, bisplev
+#from scipy.interpolate import bisplrep, bisplev
 
 import numpy as np
 
