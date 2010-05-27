@@ -64,6 +64,13 @@ class AbstractCodeMethodWrapper(object):
             return None
             
     @late
+    def nbody_input_attributes(self):
+        if self.method_is_code:
+            return self.method.nbody_input_attributes
+        else:
+            return []
+    
+    @late
     def index_output_attributes(self):
         if self.method_is_code:
             return self.method.index_output_attributes

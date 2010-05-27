@@ -123,7 +123,7 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         object.define_converter(self)
 
     def convert_arguments(self, method,  list_arguments, keyword_arguments):
-        converted_list_arguments = [self.from_source_to_target(x) for x in list_arguments]
+        converted_list_arguments = [self.from_source_to_target(x) if bool else x for x,bool in zip(list_arguments,method.nbody_input_attributes)]
         converted_keyword_arguments = {}
         for key, value in keyword_arguments.iteritems():
             converted_keyword_arguments[key] = self.from_source_to_target(value)
@@ -379,6 +379,10 @@ class MethodWithUnits(CodeMethodWrapper):
     @late
     def index_input_attributes(self):
         return self.definition.index_input_attributes
+    
+    @late
+    def nbody_input_attributes(self):
+        return self.definition.nbody_input_attributes
 
     @late
     def index_output_attributes(self):
@@ -490,6 +494,10 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
     @late
     def index_input_attributes(self):
         return map(lambda x : x == self.INDEX, self.units)
+
+    @late
+    def nbody_input_attributes(self):
+        return map(lambda x : isinstance(x, nbody_system.core.unit) and nbody_system.is_nbody_unit(x), self.units)
 
     @late
     def index_output_attributes(self):
