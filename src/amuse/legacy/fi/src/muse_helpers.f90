@@ -256,7 +256,7 @@ subroutine muse_add_particle_star(id,m,x,y,z,vx,vy,vz,e,tf,npart)
  epsgrav(p:p+npart-1)=e(1:npart)
  tform(p:p+npart-1)=tf(1:npart)
  nbexist(p:p+npart-1)=id(1:npart)
-
+write(*,*) tform(p:p+npart-1)
 end subroutine
 
 
@@ -662,6 +662,188 @@ function amuse_set_state_star(id,m,x,y,z,vx,vy,vz,e,tf) result(ret)
   vel(p,2)=vy
   vel(p,3)=vz
   epsgrav(p)=e
+  tform(p)=tf
+  ret=0 
+end function
+
+function amuse_get_mass(id,m) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: m
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(nbexist(p).NE.id) call terror("id error 2")
+  m=mass(p)
+  ret=0 
+end function
+function amuse_get_radius(id,e) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: e
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(nbexist(p).NE.id) call terror("id error 2")
+  e=hsmooth(p)
+  ret=0 
+end function
+function amuse_get_position(id,x,y,z) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: x,y,z
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(nbexist(p).NE.id) call terror("id error 2")
+  x=pos(p,1)
+  y=pos(p,2)
+  z=pos(p,3)
+  ret=0 
+end function
+function amuse_get_velocity(id,vx,vy,vz) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: vx,vy,vz
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(nbexist(p).NE.id) call terror("id error 2")
+  vx=vel(p,1)
+  vy=vel(p,2)
+  vz=vel(p,3)
+  ret=0 
+end function
+function amuse_get_internal_energy(id,u) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: u
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(p.GT.nsph) then
+    ret=1
+    return
+  endif  
+  if(nbexist(p).NE.id) call terror("id error 2")
+  u=ethermal(p)
+  ret=0 
+end function
+function amuse_get_star_tform(id,tf) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: tf
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(p.LT.nbodies-nstar+1) then
+    ret=1
+    return
+  endif  
+  if(nbexist(p).NE.id) call terror("id error 2")
+  tf=tform(p)
+  ret=0 
+end function
+
+function amuse_set_mass(id,m) result(ret)
+  include 'globals.h'
+  integer :: id,p,ret,muse_find_particle
+  real*8 :: m
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif
+  if(nbexist(p).NE.id) call terror("id error 2")
+  mass(p)=m
+  ret=0 
+end function
+function amuse_set_radius(id,e) result(ret)
+  include 'globals.h'
+  integer :: id,p,ret,muse_find_particle
+  real*8 :: e
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif
+  if(nbexist(p).NE.id) call terror("id error 2")
+  epsgrav(p)=e
+  ret=0 
+end function
+function amuse_set_position(id,x,y,z) result(ret)
+  include 'globals.h'
+  integer :: id,p,ret,muse_find_particle
+  real*8 :: x,y,z
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif
+  if(nbexist(p).NE.id) call terror("id error 2")
+  pos(p,1)=x
+  pos(p,2)=y
+  pos(p,3)=z
+  ret=0 
+end function
+function amuse_set_velocity(id,vx,vy,vz) result(ret)
+  include 'globals.h'
+  integer :: id,p,ret,muse_find_particle
+  real*8 :: vx,vy,vz
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif
+  if(nbexist(p).NE.id) call terror("id error 2")
+  vel(p,1)=vx
+  vel(p,2)=vy
+  vel(p,3)=vz
+  ret=0 
+end function
+function amuse_set_internal_energy(id,u) result(ret)
+  include 'globals.h'
+  integer :: id,p,ret,muse_find_particle
+  real*8 :: u
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif
+  if(p.GT.nsph) then
+    ret=-2
+    return
+  endif  
+  if(nbexist(p).NE.id) call terror("id error 2")
+  ethermal(p)=u
+  ret=0 
+end function
+function amuse_set_star_tform(id,tf) result(ret)
+  include 'globals.h'
+  integer :: id,p,ret,muse_find_particle
+  real*8 :: tf
+  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif
+  if(p.LT.nbodies-nstar+1) then
+    ret=-2
+    return
+  endif  
+  if(nbexist(p).NE.id) call terror("id error 2")
   tform(p)=tf
   ret=0 
 end function

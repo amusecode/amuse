@@ -15,6 +15,8 @@ end function
 
 function commit_particles() result(ret)
   integer :: ret
+  call muse_init
+  call muse_set_time(0.0)
   call muse_finalize_init 
   ret=0
 end function
@@ -27,8 +29,6 @@ end function
 
 function commit_parameters() result(ret)
   integer :: ret
-  call muse_init
-  call muse_set_time(0.0)
   ret=0
 end function
 
@@ -205,6 +205,68 @@ function get_state_star(id,mass,eps,x,y,z,vx,vy,vz,tf) result(ret)
   ret=amuse_get_state_star(id,mass,x,y,z,vx,vy,vz,eps,tf)
 end function
 
+function set_mass(id,mass) result(ret)
+  integer id,ret,amuse_set_mass
+  real*8 mass 
+  ret=amuse_set_mass(id,mass)
+end function
+function set_radius(id,eps) result(ret)
+  integer id,ret,amuse_set_radius
+  real*8 eps
+  ret=amuse_set_radius(id,eps)
+end function
+function set_position(id,x,y,z) result(ret)
+  integer id,ret,amuse_set_position
+  real*8 x,y,z 
+  ret=amuse_set_position(id,x,y,z)
+end function
+function set_velocity(id,vx,vy,vz) result(ret)
+  integer id,ret,amuse_set_velocity
+  real*8 vx,vy,vz 
+  ret=amuse_set_velocity(id,vx,vy,vz)
+end function
+function set_internal_energy(id,u) result(ret)
+  integer id,ret,amuse_set_internal_energy
+  real*8 u 
+  ret=amuse_set_internal_energy(id,u)
+end function
+function set_star_tform(id,tf) result(ret)
+  integer id,ret,amuse_set_star_tform
+  real*8 tf 
+  ret=amuse_set_star_tform(id,tf)
+end function
+
+function get_mass(id,mass) result(ret)
+  integer :: id,ret,amuse_get_mass
+  real*8 :: mass
+  ret=amuse_get_mass(id,mass)
+end function
+function get_radius(id,eps) result(ret)
+  integer :: id,ret,amuse_get_radius
+  real*8 :: eps
+  ret=amuse_get_radius(id,eps)
+end function
+function get_position(id,x,y,z) result(ret)
+  integer :: id,ret,amuse_get_position
+  real*8 :: x,y,z
+  ret=amuse_get_position(id,x,y,z)
+end function
+function get_velocity(id,vx,vy,vz) result(ret)
+  integer :: id,ret,amuse_get_velocity
+  real*8 :: vx,vy,vz
+  ret=amuse_get_velocity(id,vx,vy,vz)
+end function
+function get_internal_energy(id,u) result(ret)
+  integer :: id,ret,amuse_get_internal_energy
+  real*8 :: u
+  ret=amuse_get_internal_energy(id,u)
+end function
+function get_star_tform(id,tf) result(ret)
+  integer :: id,ret,amuse_get_star_tform
+  real*8 :: tf
+  ret=amuse_get_star_tform(id,tf)
+end function
+
 function delete_particle(id) result(ret)
   integer id,ret,muse_remove_particle
   ret=muse_remove_particle(id)
@@ -227,18 +289,18 @@ end function
 
 ! setting/ getting parameters
 
-function set_gravity_only(flag) result(ret)
+function set_use_hydro(flag) result(ret)
   integer :: flag,ret
-  if(flag.EQ.0) call amuse_set_usesph(.TRUE.)
-  if(flag.NE.0) call amuse_set_usesph(.FALSE.)
+  if(flag.NE.0) call amuse_set_usesph(.TRUE.)
+  if(flag.EQ.0) call amuse_set_usesph(.FALSE.)
   ret=0
 end function
-function get_gravity_only(flag) result(ret)
+function get_use_hydro(flag) result(ret)
   integer :: ret,flag
   logical :: x
-  flag=1
+  flag=0
   call amuse_get_usesph(x) 
-  if(x) flag=0
+  if(x) flag=1
   ret=0
 end function
 

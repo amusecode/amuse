@@ -26,7 +26,10 @@ class TestCase(unittest.TestCase):
            
            If the base unit for the test (in_units) is not supplied, the
            difference of the two objects is evaluated in units of [second.unit].
-        """                                                                                          
+        """
+        if hasattr(first, 'unit') is not hasattr(second, 'unit'):
+            raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
+                if hasattr(first,'unit') else (second,first)))
         if in_units:
             first = first.as_quantity_in(in_units)
             second = second.as_quantity_in(in_units)

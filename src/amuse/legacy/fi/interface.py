@@ -1,8 +1,6 @@
 import os
 import numpy
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
-#from amuse.support.units import nbody_system
-#from amuse.support.units import units
 from amuse.legacy import *
 
 class fi(LegacyInterface,GravitationalDynamicsInterface):   
@@ -14,18 +12,8 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     get_indices_of_colliding_particles=None
 
     get_potential=None
-    get_mass=None
-    set_mass=None
     set_acceleration=None
     get_acceleration=None
-    get_radius=None
-    set_radius=None
-    get_velocity=None
-    set_velocity=None
-    set_position=None
-    get_position=None
-    get_internal_energy=None
-    set_internal_energy=None
 
                 
     def __init__(self, **options):
@@ -94,6 +82,7 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
         return function
 
     @legacy_function    
@@ -103,6 +92,7 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
         return function
 
     @legacy_function    
@@ -112,6 +102,7 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz','tform']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
         return function
 
     @legacy_function    
@@ -121,6 +112,7 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
         return function
 
     @legacy_function    
@@ -128,20 +120,123 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+        for x in ['mass','radius','x','y','z','vx','vy','vz','tform']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
         return function
-
-
+    
     @legacy_function    
     def set_state_sph():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz']:
+        for x in ['mass','radius','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
         return function
-
+    
+    @legacy_function    
+    def get_mass():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('mass', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_radius():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('radius', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_position():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_velocity():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_internal_energy():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('u', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_star_tform():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('tform', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function    
+    def set_mass():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('mass', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_radius():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('radius', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_position():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_velocity():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['vx','vy','vz']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_internal_energy():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('u', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def set_star_tform():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('tform', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
     @legacy_function      
     def get_time():
         function = LegacyFunctionSpecification()
@@ -223,17 +318,17 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
 # setting/ getting parameters
 # logicals
     @legacy_function   
-    def set_gravity_only():#usesph():
-        """ set_gravity_only([0,1]): SPH hydro if 0, gravity only if 1 """
+    def set_use_hydro():
+        """ set_use_hydro([0,1]): SPH hydro if 1, gravity only if 0 """
         function = LegacyFunctionSpecification()  
-        function.addParameter('gravity_only_flag', dtype='i', direction=function.IN)
+        function.addParameter('use_hydro_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
-    def get_gravity_only():
-        """ get_gravity_only(): SPH hydro if 0, gravity only if 1 """
+    def get_use_hydro():
+        """ get_use_hydro(): SPH hydro if 1, gravity only if 0 """
         function = LegacyFunctionSpecification()  
-        function.addParameter('gravity_only_flag', dtype='i', direction=function.OUT)
+        function.addParameter('use_hydro_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
         return function;
 
@@ -1401,11 +1496,11 @@ class Fi(GravitationalDynamics):
         )
         
         object.add_boolean_parameter(
-            "get_gravity_only",
-            "set_gravity_only",
-            "gravity_only_flag",
-            "Gravity-only flag. False means: SPH hydro included, True means: gravity only.",
-            False
+            "get_use_hydro",
+            "set_use_hydro",
+            "use_hydro_flag",
+            "Hydrodynamics flag. True means: SPH hydro included, False means: gravity only.",
+            True
         )
         
         object.add_boolean_parameter(
@@ -1964,6 +2059,7 @@ class Fi(GravitationalDynamics):
         
     
     def define_particle_sets(self, object):
+        #GravitationalDynamics.define_particle_sets(self, object)# diff name of index!
         object.define_set('particles', 'id')
         object.set_new('particles', 'new_particle')
         object.set_delete('particles', 'delete_particle')
@@ -1975,9 +2071,51 @@ class Fi(GravitationalDynamics):
         object.set_delete('gas_particles', 'delete_particle')
         object.add_setter('gas_particles', 'set_state_sph')
         object.add_getter('gas_particles', 'get_state_sph')
+        object.add_setter('gas_particles', 'set_mass')
+        object.add_getter('gas_particles', 'get_mass', names = ('mass',))
+        object.add_setter('gas_particles', 'set_position')
+        object.add_getter('gas_particles', 'get_position')
+        
+        object.define_set('star_particles', 'id')
+        object.set_new('star_particles', 'new_star_particle')
+        object.set_delete('star_particles', 'delete_particle')
+        object.add_setter('star_particles', 'set_state_star')
+        object.add_getter('star_particles', 'get_state_star')
+        object.add_setter('star_particles', 'set_mass')
+        object.add_getter('star_particles', 'get_mass', names = ('mass',))
+        object.add_setter('star_particles', 'set_position')
+        object.add_getter('star_particles', 'get_position')
+        object.add_setter('star_particles', 'set_velocity')
+        object.add_getter('star_particles', 'get_velocity')
+        object.add_setter('star_particles', 'set_star_tform')
+        object.add_getter('star_particles', 'get_star_tform')
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
+        object.add_method(
+            "set_velocity",
+            (
+                object.INDEX,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_velocity",
+            (
+                object.INDEX,
+            ),
+            (
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                object.ERROR_CODE
+            )
+        )
         object.add_method(
             "new_sph_particle",
             (
@@ -1999,7 +2137,7 @@ class Fi(GravitationalDynamics):
         object.add_method(
             "get_state_sph",
             (
-                object.NO_UNIT,
+                object.INDEX,
             ),
             (
                 nbody_system.mass,
@@ -2017,7 +2155,7 @@ class Fi(GravitationalDynamics):
         object.add_method(
             "set_state_sph",
             (
-                object.NO_UNIT,
+                object.INDEX,
                 nbody_system.mass,
                 nbody_system.length,
                 nbody_system.length,
@@ -2029,26 +2167,101 @@ class Fi(GravitationalDynamics):
                 nbody_system.energy,
             ),
             (
-                object.ERROR_CODE
+                object.ERROR_CODE,
             )
         )
         object.add_method(
             "set_internal_energy",
             (
-                object.NO_UNIT,
+                object.INDEX,
                 nbody_system.energy,
             ),
             (
-                object.ERROR_CODE
+                object.ERROR_CODE,
             )
         )
         object.add_method(
             "get_internal_energy",
             (
-                object.NO_UNIT,
+                object.INDEX,
             ),
             (
                 nbody_system.energy,
+                object.ERROR_CODE
+            )
+        )
+        
+        object.add_method(
+            "new_star_particle",
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                15*units.Myr,
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state_star",
+            (
+                object.INDEX,
+            ),
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                15*units.Myr,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_state_star",
+            (
+                object.INDEX,
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                15*units.Myr,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "set_star_tform",
+            (
+                object.INDEX,
+                15*units.Myr,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_star_tform",
+            (
+                object.INDEX,
+            ),
+            (
+                15*units.Myr,
                 object.ERROR_CODE
             )
         )
