@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="15cm"
+   height="18cm"
+   viewBox="54 27 287 358"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.47 r22583"
+   sodipodi:docname="amuse-overview.svg"
+   inkscape:export-filename="/data2/vanelteren/amuse/amuse-svn/doc/design/amuse-overview.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
+  <metadata
+     id="metadata204">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs202">
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 318.89764 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="531.49603 : 318.89764 : 1"
+       inkscape:persp3d-origin="265.74802 : 212.59843 : 1"
+       id="perspective206" />
+  </defs>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1250"
+     inkscape:window-height="890"
+     id="namedview200"
+     showgrid="false"
+     inkscape:zoom="1.3532331"
+     inkscape:cx="317.54638"
+     inkscape:cy="188.50094"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <g
+     id="g4">
+    <g
+       id="g6">
+      <rect
+         style="fill: #ffffff"
+         x="171.9"
+         y="305.05"
+         width="123"
+         height="43"
+         id="rect8" />
+      <rect
+         style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 4; stroke: #000000"
+         x="171.9"
+         y="305.05"
+         width="123"
+         height="43"
+         id="rect10" />
+    </g>
+    <text
+       style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal"
+       x="183.6"
+       y="330.788"
+       id="text12">
+      <tspan
+         x="183.6"
+         y="330.788"
+         id="tspan14">Hydrodynamics</tspan>
+    </text>
+  </g>
+  <path
+     id="path18"
+     d="m 109.625,65.75 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.575 -29.063,17.738 -27.9,1.1625 0,16.5755 -23.25,17.7375 -23.25,1.1625 0,18.487 -20.925,11.513 -20.925,-6.975 -14.5313,0 -12.2063,-20.85 2.325,-20.85 z"
+     style="fill:#ffffff" />
+  <path
+     id="path20"
+     d="m 109.625,65.75 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.575 -29.063,17.738 -27.9,1.1625 0,16.5755 -23.25,17.7375 -23.25,1.1625 0,18.487 -20.925,11.513 -20.925,-6.975 -14.5313,0 -12.2063,-20.85 2.325,-20.85"
+     style="fill:none;stroke:#000000;stroke-width:2" />
+  <text
+     id="text22"
+     y="78.21833"
+     x="128.73795"
+     style="font-size:11.19919968px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif">
+    <tspan
+       id="tspan24"
+       y="78.21833"
+       x="128.73795">python</tspan>
+    <tspan
+       id="tspan26"
+       y="92.21833"
+       x="128.73795">script</tspan>
+  </text>
+  <path
+     id="path30"
+     d="m 150.375,41.7 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.575 -29.063,17.7375 -27.9,1.1625 0,16.575 -23.25,17.7375 -23.25,1.1625 0,18.4875 -20.925,11.5125 -20.925,-6.975 -14.531,0 -12.206,-20.85 2.325,-20.85 z"
+     style="fill:#ffffff" />
+  <path
+     id="path32"
+     d="m 150.375,41.7 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.575 -29.063,17.7375 -27.9,1.1625 0,16.575 -23.25,17.7375 -23.25,1.1625 0,18.4875 -20.925,11.5125 -20.925,-6.975 -14.531,0 -12.206,-20.85 2.325,-20.85"
+     style="fill:none;stroke:#000000;stroke-width:2" />
+  <text
+     id="text34"
+     y="56.65707"
+     x="188.56833"
+     style="font-size:11.19919968px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif">
+    <tspan
+       id="tspan36"
+       y="56.65707"
+       x="188.56833">python</tspan>
+    <tspan
+       id="tspan38"
+       y="70.657066"
+       x="188.56833">script</tspan>
+  </text>
+  <path
+     id="path42"
+     d="m 231.875,41.6 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.575 -29.062,17.7375 -27.9,1.1625 0,16.575 -23.25,17.7375 -23.25,1.1625 0,18.4875 -20.925,11.5125 -20.925,-6.975 -14.531,0 -12.206,-20.85 2.325,-20.85 z"
+     style="fill:#ffffff" />
+  <path
+     id="path44"
+     d="m 231.875,41.6 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.575 -29.062,17.7375 -27.9,1.1625 0,16.575 -23.25,17.7375 -23.25,1.1625 0,18.4875 -20.925,11.5125 -20.925,-6.975 -14.531,0 -12.206,-20.85 2.325,-20.85"
+     style="fill:none;stroke:#000000;stroke-width:2" />
+  <text
+     id="text46"
+     y="49.505627"
+     x="279.19373"
+     style="font-size:11.19919968px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif">
+    <tspan
+       id="tspan48"
+       y="49.505627"
+       x="279.19373">python</tspan>
+    <tspan
+       id="tspan50"
+       y="63.505627"
+       x="279.19373">script</tspan>
+  </text>
+  <g
+     id="g52">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="144.5"
+       y1="104"
+       x2="170.712"
+       y2="131.024"
+       id="line54" />
+    <polygon
+       style="fill: #000000"
+       points="175.933,136.408 165.382,132.711 170.712,131.024 172.56,125.749 "
+       id="polygon56" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="175.933,136.408 165.382,132.711 170.712,131.024 172.56,125.749 "
+       id="polygon58" />
+  </g>
+  <g
+     id="g60">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="209"
+       y1="110.9"
+       x2="209"
+       y2="128.272"
+       id="line62" />
+    <polygon
+       style="fill: #000000"
+       points="209,135.772 204,125.772 209,128.272 214,125.772 "
+       id="polygon64" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="209,135.772 204,125.772 209,128.272 214,125.772 "
+       id="polygon66" />
+  </g>
+  <g
+     id="g68">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="290"
+       y1="79.85"
+       x2="244.527"
+       y2="130.74"
+       id="line70" />
+    <polygon
+       style="fill: #000000"
+       points="239.53,136.333 242.465,125.544 244.527,130.74 249.921,132.207 "
+       id="polygon72" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="239.53,136.333 242.465,125.544 244.527,130.74 249.921,132.207 "
+       id="polygon74" />
+  </g>
+  <path
+     id="path78"
+     d="m 176.61374,73.894372 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.574998 -29.062,17.737998 -27.9,1.162498 0,16.5755 -23.25,17.7375 -23.25,1.1625 0,18.488 -20.925,11.513 -20.925,-6.974998 -14.531,0 -12.206,-20.85 2.325,-20.85 z"
+     style="fill:#ffffff" />
+  <path
+     id="path80"
+     d="m 176.61374,73.894372 c 0,-20.4 23.25,-15.3 23.25,5.1 0,-18.4875 23.25,-26.1375 23.25,-7.65 0,-18.4875 34.875,-10.8375 23.25,7.65 15.5,0 15.5,20.4 0,20.4 11.625,16.574998 -29.062,17.737998 -27.9,1.162498 0,16.5755 -23.25,17.7375 -23.25,1.1625 0,18.488 -20.925,11.513 -20.925,-6.974998 -14.531,0 -12.206,-20.85 2.325,-20.85"
+     style="fill:none;stroke:#000000;stroke-width:2" />
+  <text
+     id="text82"
+     y="81.800003"
+     x="223.10287"
+     style="font-size:11.19919968px;font-style:normal;font-weight:normal;text-anchor:middle;fill:#000000;font-family:sanserif">
+    <tspan
+       id="tspan84"
+       y="81.800003"
+       x="223.10287">python</tspan>
+    <tspan
+       id="tspan86"
+       y="95.800003"
+       x="223.10287">script</tspan>
+  </text>
+  <g
+     id="g88">
+    <g
+       id="g90">
+      <rect
+         style="fill: #add8e6"
+         x="115"
+         y="139"
+         width="188"
+         height="63"
+         id="rect92" />
+      <rect
+         style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+         x="115"
+         y="139"
+         width="188"
+         height="63"
+         id="rect94" />
+    </g>
+    <g
+       id="g96">
+      <rect
+         style="fill: #ffffff"
+         x="115"
+         y="139"
+         width="114"
+         height="40"
+         id="rect98" />
+      <rect
+         style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+         x="115"
+         y="139"
+         width="114"
+         height="40"
+         id="rect100" />
+    </g>
+    <text
+       style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal"
+       x="165"
+       y="163"
+       id="text102">
+      <tspan
+         x="165"
+         y="163"
+         id="tspan104">AMUSE</tspan>
+    </text>
+    <text
+       style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal"
+       x="237"
+       y="194"
+       id="text106">
+      <tspan
+         x="237"
+         y="194"
+         id="tspan108">python</tspan>
+    </text>
+  </g>
+  <g
+     id="g110">
+    <g
+       id="g112">
+      <rect
+         style="fill: #d8e5e5"
+         x="154"
+         y="244"
+         width="110"
+         height="24"
+         id="rect114" />
+      <rect
+         style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+         x="154"
+         y="244"
+         width="110"
+         height="24"
+         id="rect116" />
+    </g>
+    <text
+       style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal"
+       x="199"
+       y="260"
+       id="text118">
+      <tspan
+         x="199"
+         y="260"
+         id="tspan120">MPI</tspan>
+    </text>
+  </g>
+  <g
+     id="g122">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="209"
+       y1="212.715"
+       x2="209"
+       y2="234.264"
+       id="line124" />
+    <polygon
+       style="fill: #000000"
+       points="209,205.215 214,215.215 209,212.715 204,215.215 "
+       id="polygon126" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="209,205.215 214,215.215 209,212.715 204,215.215 "
+       id="polygon128" />
+    <polygon
+       style="fill: #000000"
+       points="209,241.764 204,231.764 209,234.264 214,231.764 "
+       id="polygon130" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="209,241.764 204,231.764 209,234.264 214,231.764 "
+       id="polygon132" />
+  </g>
+  <g
+     id="g134">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="186.38"
+       y1="275.159"
+       x2="151.49"
+       y2="304.71"
+       id="line136" />
+    <polygon
+       style="fill: #000000"
+       points="192.103,270.311 187.704,280.59 186.38,275.159 181.241,272.959 "
+       id="polygon138" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="192.103,270.311 187.704,280.59 186.38,275.159 181.241,272.959 "
+       id="polygon140" />
+    <polygon
+       style="fill: #000000"
+       points="145.767,309.558 150.166,299.279 151.49,304.71 156.629,306.91 "
+       id="polygon142" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="145.767,309.558 150.166,299.279 151.49,304.71 156.629,306.91 "
+       id="polygon144" />
+  </g>
+  <g
+     id="g146">
+    <g
+       id="g148">
+      <rect
+         style="fill: #ffffff"
+         x="56"
+         y="312"
+         width="123"
+         height="43"
+         id="rect150" />
+      <rect
+         style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 4; stroke: #000000"
+         x="56"
+         y="312"
+         width="123"
+         height="43"
+         id="rect152" />
+    </g>
+    <text
+       style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal"
+       x="74"
+       y="327.5"
+       id="text154">
+      <tspan
+         x="74"
+         y="327.5"
+         id="tspan156">Gravitational</tspan>
+      <tspan
+         x="74"
+         y="343.5"
+         id="tspan158">Dynamics</tspan>
+    </text>
+  </g>
+  <g
+     id="g160">
+    <line
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       x1="216.677"
+       y1="278.197"
+       x2="222.435"
+       y2="294.845"
+       id="line162" />
+    <polygon
+       style="fill: #000000"
+       points="214.225,271.109 222.219,278.925 216.677,278.197 212.769,282.194 "
+       id="polygon164" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="214.225,271.109 222.219,278.925 216.677,278.197 212.769,282.194 "
+       id="polygon166" />
+    <polygon
+       style="fill: #000000"
+       points="224.886,301.933 216.892,294.117 222.435,294.845 226.343,290.848 "
+       id="polygon168" />
+    <polygon
+       style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000"
+       points="224.886,301.933 216.892,294.117 222.435,294.845 226.343,290.848 "
+       id="polygon170" />
+  </g>
+  <g
+     id="g172">
+    <g
+       id="g174">
+      <rect
+         style="fill: #ffffff"
+         x="145.9"
+         y="340.05"
+         width="89.1"
+         height="43"
+         id="rect176" />
+      <rect
+         style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 4; stroke: #000000"
+         x="145.9"
+         y="340.05"
+         width="89.1"
+         height="43"
+         id="rect178" />
+    </g>
+    <text
+       style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal"
+       x="160.413"
+       y="357.975"
+       id="text180">
+      <tspan
+         x="160.413"
+         y="357.975"
+         id="tspan182">Stellar</tspan>
+      <tspan
+         x="160.413"
+         y="373.975"
+         id="tspan184">Evolution</tspan>
+    </text>
+  </g>
+  <g
+     id="g186">
+    <g
+       id="g188">
+      <rect
+         style="fill: #ffffff"
+         x="249.9"
+         y="336.05"
+         width="90.1"
+         height="43"
+         id="rect190" />
+      <rect
+         style="fill: none; fill-opacity:0; stroke-width: 2; stroke-dasharray: 4; stroke: #000000"
+         x="249.9"
+         y="336.05"
+         width="90.1"
+         height="43"
+         id="rect192" />
+    </g>
+    <text
+       style="fill: #000000;text-anchor:start;font-size:12.8;font-family:sanserif;font-style:normal;font-weight:normal"
+       x="264.738"
+       y="353.975"
+       id="text194">
+      <tspan
+         x="264.738"
+         y="353.975"
+         id="tspan196">Radiative</tspan>
+      <tspan
+         x="264.738"
+         y="369.975"
+         id="tspan198">Transfer</tspan>
+    </text>
+  </g>
+</svg>
