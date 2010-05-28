@@ -1662,8 +1662,9 @@ class ParticlesSuperset(AbstractParticleSet):
         indices_and_values = []
         
         for keys_for_set, indices_for_set, set in zip(split_sets, split_indices, self._private.particle_sets):
-            values_for_set = set._get_values(keys_for_set, attributes)
-            indices_and_values.append( (indices_for_set,values_for_set) )
+            if keys_for_set:
+                values_for_set = set._get_values(keys_for_set, attributes)
+                indices_and_values.append( (indices_for_set,values_for_set) )
         
         if keys is None:
             resultlength = len(self)
@@ -1723,8 +1724,10 @@ class ParticlesSuperset(AbstractParticleSet):
         return False
     
     def _get_state_attributes(self):
-        for set in self._private.particle_sets:
-            return set._get_state_attributes()
+        result = set(self._private.particle_sets[0]._get_state_attributes())
+        for particle_set in self._private.particle_sets[1:]:
+            result &= set(particle_set._get_state_attributes())
+        return list(result)
         
         
     def _real_particles(self):
