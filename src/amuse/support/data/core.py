@@ -1703,8 +1703,10 @@ class ParticlesSuperset(AbstractParticleSet):
             set._set_values(keys_for_set, attributes, quantities)
     
     def _get_attributes(self):
-        for set in self._private.particle_sets:
-            return set._get_attributes()
+        result = set(self._private.particle_sets[0]._get_attributes())
+        for particle_set in self._private.particle_sets[1:]:
+            result &= set(particle_set._get_attributes())
+        return list(result)
         
     def _get_keys(self):
         result = []

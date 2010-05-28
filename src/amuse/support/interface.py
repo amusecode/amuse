@@ -719,6 +719,7 @@ class ParticleSetDefinition(object):
 
         self.selects_form_particle = []
         self.methods = []
+        self.is_superset = False
         self.is_inmemory = False
         self.particles_factory = core.Particles
 
@@ -778,6 +779,50 @@ class ParticleSetDefinition(object):
 
         return results
 
+class ParticleSupersetDefinition(object):
+
+    def __init__(self, handler, particle_subset_names):
+        self.handler = handler
+        self.particle_subset_names = particle_subset_names
+        self.name_of_indexing_attribute = 'index_of_the_particle'
+        self.new_particle_method = ('new_any_particle',(), None)
+        self.name_of_delete_particle_method = 'delete_particle'
+        self.name_of_number_of_particles_method = 'get_number_of_particles'
+        self.setters = []
+        self.getters = []
+        self.queries = []
+        self.attributes = []
+
+        self.selects_form_particle = []
+        self.methods = []
+        self.is_superset = True
+        self.is_inmemory = False
+        self.particles_factory = core.ParticlesSuperset
+
+    def new_queries(self, interface):
+        queries = []
+        for name, names, public_name in self.queries:
+            x = code_particles.ParticleQueryMethod(getattr(interface, name), names, public_name)
+            queries.append(x)
+
+        return queries
+
+    def new_selects_from_particle(self, interface):
+        results = []
+        for name, names, public_name in self.selects_form_particle:
+            x = code_particles.ParticleSpecificSelectMethod(getattr(interface, name), names, public_name)
+            results.append(x)
+
+        return results
+
+    def new_particle_methods(self, interface):
+        results = []
+        for name, public_name in self.methods:
+            x = code_particles.ParticleMethod(getattr(interface, name), public_name)
+            results.append(x)
+
+        return results
+
 
 class CodeInMemoryParticles(core.Particles):
 
@@ -799,6 +844,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         if name in self.particle_sets:
             return self.particle_sets[name]
         else:
+            if self.sets[name].is_superset:
+                subsets = [self.get_attribute(subset_name,None) for subset_name in self.sets[name].particle_subset_names]
+                self.particle_sets[name] = self.sets[name].particles_factory(subsets)
+                return self.particle_sets[name]
             storage = self.sets[name].new_storage(self.interface)
             if self.sets[name].is_inmemory:
                 result = self.sets[name].particles_factory(self.interface, storage = storage)
@@ -838,6 +887,10 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def define_set(self, name, name_of_indexing_attribute = 'index_of_the_particle'):
         definition = ParticleSetDefinition(self)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
+        self.sets[name] = definition
+
+    def define_super_set(self, name, particle_subsets):
+        definition = ParticleSupersetDefinition(self, particle_subsets)
         self.sets[name] = definition
 
     def define_inmemory_set(self, name, particles_factory = CodeInMemoryParticles):
