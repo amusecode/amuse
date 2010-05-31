@@ -1597,10 +1597,11 @@ class ParticlesSuperset(AbstractParticleSet):
     [10.0, 20.0, 30.0, 40.0, 70.0, 60.0] kg
     """
     
-    def __init__(self, particle_sets):
+    def __init__(self, particle_sets, index_to_default_set=None):
         AbstractParticleSet.__init__(self)
         
         self._private.particle_sets = particle_sets
+        self._private.index_to_default_set = index_to_default_set
         
         if self.has_duplicates():
             raise Exception("Unable to add a particle, because it was already part of this set.")
@@ -1649,7 +1650,11 @@ class ParticlesSuperset(AbstractParticleSet):
                     
         
     def _set_particles(self, keys, attributes = [], values = []):
-        raise Exception("Cannot add particles to a superset")
+        if not self._private.index_to_default_set is None:
+            self._private.particle_sets[self._private.index_to_default_set]._set_particles(keys, 
+                attributes, values)
+        else:
+            raise Exception("Cannot add particles to a superset")
         
     def _remove_particles(self, keys):
         split_sets, split_indices = self._split_keys_over_sets(keys)

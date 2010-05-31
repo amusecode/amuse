@@ -100,7 +100,7 @@ function get_thermal_energy(e) result(ret)
 end function
 
 
-function new_particle(ids,mass,eps,x,y,z,vx,vy,vz) result(ret)
+function new_dm_particle(ids,mass,eps,x,y,z,vx,vy,vz) result(ret)
   integer :: ids,ret,oldnp,muse_get_nbodies
   integer :: new_id, add_dm_particle
   real*8 :: mass,eps,x,y,z,vx,vy,vz

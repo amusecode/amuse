@@ -45,8 +45,11 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
     def reinitialize_particles(self):
         return self.recommit_particles()
     
+    def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
+        return self.new_dm_particle(mass, radius, x, y, z, vx, vy, vz)
+    
     @legacy_function    
-    def new_particle():
+    def new_dm_particle():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
@@ -2060,11 +2063,14 @@ class Fi(GravitationalDynamics):
     
     def define_particle_sets(self, object):
         #GravitationalDynamics.define_particle_sets(self, object)# diff name of index!
-        object.define_set('particles', 'id')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_state')
-        object.add_getter('particles', 'get_state')
+        object.define_super_set('particles', ['dm_particles','gas_particles','star_particles'], 
+            index_to_default_set = 0)
+        
+        object.define_set('dm_particles', 'id')
+        object.set_new('dm_particles', 'new_dm_particle')
+        object.set_delete('dm_particles', 'delete_particle')
+        object.add_setter('dm_particles', 'set_state')
+        object.add_getter('dm_particles', 'get_state')
         
         object.define_set('gas_particles', 'id')
         object.set_new('gas_particles', 'new_sph_particle')
@@ -2114,6 +2120,23 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "new_dm_particle",
+            (
+                nbody_system.mass,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.length,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE,
             )
         )
         object.add_method(

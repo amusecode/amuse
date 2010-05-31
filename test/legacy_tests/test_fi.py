@@ -211,7 +211,7 @@ class TestFiInterface(TestWithMPI):
         earth.position = [149.5e6, 0.0, 0.0] | units.km
         earth.velocity = [0.0, 29800, 0.0] | units.ms
         
-        instance.particles.add_particles(stars)
+        instance.dm_particles.add_particles(stars)
         self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
         
         postion_at_start = earth.position.x
@@ -271,7 +271,7 @@ class TestFiInterface(TestWithMPI):
         stars.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
         stars.radius = [1.0, 0.01] | units.RSun
         
-        instance.particles.add_particles(stars)
+        instance.dm_particles.add_particles(stars)
         instance.evolve_model(1.0 | nbody.time)
         
         instance.cleanup_code()
@@ -410,7 +410,7 @@ class TestFiInterface(TestWithMPI):
         
         instance = Fi(nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU))
         self.assertEquals(0, instance.initialize_code())
-        instance.particles.add_particles(dark)
+        instance.dm_particles.add_particles(dark)
         instance.gas_particles.add_particles(gas)
         
         instance.synchronize_model()
@@ -422,7 +422,7 @@ class TestFiInterface(TestWithMPI):
 #            t = t + (0.1 | units.yr)
 #            instance.evolve_model(t)
 #            print t
-#            print instance.particles[1].position.value_in(units.AU)
+#            print instance.dm_particles[1].position.value_in(units.AU)
         instance.evolve_model(1.0 | units.yr)
         instance.synchronize_model()
         self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.0021,3)
@@ -460,7 +460,7 @@ class TestFiInterface(TestWithMPI):
         instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc), debugger='none')
         self.assertEquals(0, instance.initialize_code())
         instance.parameters.verbosity = 1
-        instance.particles.add_particles(dark)
+        instance.dm_particles.add_particles(dark)
         instance.star_particles.add_particles(star)
         instance.gas_particles.add_particles(gas)
         
@@ -506,6 +506,68 @@ class TestFiInterface(TestWithMPI):
         self.assertAlmostEqual(instance.star_particles[1].x, 1.0 | units.AU,3)
 
         self.assertAlmostEqual(instance.kinetic_energy, 2.6493e+33|units.J, 3, in_units=1e+33*units.J)
+        
+        instance.cleanup_code()
+        instance.stop()
+    
+    def test11(self):
+        print "Test 11: testing Fi (dm+sph+star) particles Superset"
+        number_sph_particles = 100
+        gas = core.Particles(number_sph_particles)
+        mass,x,y,z,vx,vy,vz,u=MakeEvrardTest(number_sph_particles).new_model()
+        radius=numpy.zeros_like(mass) # actually a smoothing parameter?
+        attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
+        attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
+            nbody.speed, nbody.speed, nbody.speed, nbody.energy]
+        for attribute, unit in zip(attributes,attr_units):
+            setattr(gas, attribute, unit.new_quantity(eval(attribute)))
+        
+        dark = core.Particles(2)
+        dark.mass = [0.4, 0.4] | nbody.mass
+        dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
+        dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
+        dark.radius = [0.0, 0.0] | units.RSun
+        
+        star = core.Particles(2)
+        star.mass = [0.02, 0.02] | nbody.mass
+        star.position = [[0.1,0.2,0.3], [0.4,0.5,0.6]] | units.kpc
+        star.velocity = [[-300.0,-200.0,-100.0], [-6.0,-5.0,-4.0]] | units.km / units.s
+        star.radius = [0.0, 0.0] | units.RSun
+        star.tform = [1000.0, 1000.0] | units.Myr
+        
+        convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        instance = Fi(convert_nbody, debugger='none')
+        self.assertEquals(0, instance.initialize_code())
+        instance.parameters.verbosity = 1
+
+        self.assertEquals(0, len(instance.particles))
+        instance.dm_particles.add_particles(dark)
+        instance.star_particles.add_particles(star)
+        instance.gas_particles.add_particles(gas)
+        self.assertEquals(number_sph_particles+4, len(instance.particles))
+        
+        print "The 'particles' superset can still be used as standard GD 'particles' set."
+        default = core.Particles(2)
+        default.mass = [0.4, 0.4] | nbody.mass
+        default.position = [[0.5,-0.5,0.04], [1.5,0.5,0.08]] | units.kpc
+        default.velocity = [[10.0,10.0,10.0], [10.0,10.0,10.0]] | units.km / units.s
+        default.radius = [0.0, 0.0] | units.RSun
+        instance.particles.add_particles(default)
+        
+        self.assertEquals(number_sph_particles+6, len(instance.particles))
+        print instance.particles # only prints those particle attributes the subsets have in common
+        
+        instance.synchronize_model()
+        self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), 
+            instance.dm_particles.kinetic_energy() +
+            instance.star_particles.kinetic_energy() +
+            instance.gas_particles.kinetic_energy())
+        self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), 
+            convert_nbody.to_si(instance.get_kinetic_energy().kinetic_energy | nbody.energy))
+        instance.evolve_model(1.0 | units.yr)
+        instance.synchronize_model()
+        self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), 
+            convert_nbody.to_si(instance.get_kinetic_energy().kinetic_energy | nbody.energy))
         
         instance.cleanup_code()
         instance.stop()
