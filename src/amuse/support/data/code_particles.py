@@ -57,14 +57,6 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         else:
             return ()
         
-    def intersection(self, attributes):
-        result = set([])
-        names = set(self.attribute_names)
-        for x in attributes:
-            if x in names:
-                result.add(x)
-        return result
-    
     def apply(self, storage, indices, attributes_to_return):
         
         if len(indices) > 1: 
@@ -125,17 +117,6 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
             result[name] = index
         return result
         
-    def intersection(self, attributes):
-        result = set([])
-        names = set(self.attribute_names)
-        for x in attributes:
-            if x in names:
-                result.add(x)
-        if len(result) != len(names):
-            return set([])
-        return result
-        
-    
     def apply(self, indices, attributes = [], values = []):
 
         list_arguments = self.convert_attributes_and_values_to_list_arguments(attributes, values)
@@ -282,15 +263,21 @@ class InCodeAttributeStorage(AttributeStorage):
             
     def select_getters_for(self, attributes):
         set_of_attributes = set(attributes)
-        result = []
-        for particle_method in self.getters:
-            provided_attributes = particle_method.intersection(set_of_attributes)
-            if provided_attributes:
+        result = [getter for getter in self.getters if set(getter.attribute_names) == set_of_attributes]
+        if result: return result
+        
+        sorted_getters = sorted(self.getters, cmp=lambda x,y: len(y.attribute_names)-len(x.attribute_names))
+        for particle_method in sorted_getters:
+            if set_of_attributes >= set(particle_method.attribute_names):
                 result.append(particle_method)
-                set_of_attributes -= provided_attributes
-            
+                set_of_attributes -= set(particle_method.attribute_names)
         if set_of_attributes:
-            raise Exception("Do not have attributes {0}".format(sorted(set_of_attributes)))
+            for particle_method in reversed(sorted_getters):
+                if set_of_attributes & set(particle_method.attribute_names):
+                    result.append(particle_method)
+                    set_of_attributes -= set(particle_method.attribute_names)
+            if set_of_attributes:
+                raise Exception("Do not have attributes {0}".format(sorted(set_of_attributes)))
         return result
         
     
@@ -298,10 +285,9 @@ class InCodeAttributeStorage(AttributeStorage):
         set_of_attributes = set(attributes)
         result = []
         for particle_method in self.setters:
-            provided_attributes = particle_method.intersection(set_of_attributes)
-            if provided_attributes:
+            if set_of_attributes >= set(particle_method.attribute_names):
                 result.append(particle_method)
-                set_of_attributes -= provided_attributes
+                set_of_attributes -= set(particle_method.attribute_names)
                 
         if set_of_attributes:
             raise Exception("Cannot set attributes {0}".format(sorted(set_of_attributes)))

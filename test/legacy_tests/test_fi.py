@@ -211,7 +211,7 @@ class TestFiInterface(TestWithMPI):
         earth.position = [149.5e6, 0.0, 0.0] | units.km
         earth.velocity = [0.0, 29800, 0.0] | units.ms
         
-        instance.dm_particles.add_particles(stars)
+        instance.particles.add_particles(stars)
         self.assertEquals(instance.parameters.timestep, 0.5 | units.day)
         
         postion_at_start = earth.position.x
@@ -271,7 +271,7 @@ class TestFiInterface(TestWithMPI):
         stars.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
         stars.radius = [1.0, 0.01] | units.RSun
         
-        instance.dm_particles.add_particles(stars)
+        instance.particles.add_particles(stars)
         instance.evolve_model(1.0 | nbody.time)
         
         instance.cleanup_code()
