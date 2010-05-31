@@ -204,21 +204,57 @@ class TwoBodyImplementation(object):
     return 0
     
     
-  def get_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
-    try:
-      particle = self.particles[index_of_the_particle]
-      mass.value = particle['mass']
-      radius.value = particle['radius']
-      x.value = particle['x']
-      y.value = particle['y']
-      z.value = particle['z']
-      vx.value = particle['vx']
-      vy.value = particle['vy']
-      vz.value = particle['vz']
-      return 0
-    except:        
-      return -1
-      
+    def get_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
+        try:
+            particle = self.particles[index_of_the_particle]
+            mass.value = particle['mass']
+            radius.value = particle['radius']
+            x.value = particle['x']
+            y.value = particle['y']
+            z.value = particle['z']
+            vx.value = particle['vx']
+            vy.value = particle['vy']
+            vz.value = particle['vz']
+            return 0
+        except:        
+            return -1
+    
+    def get_mass(self, index_of_the_particle, mass):
+        try:
+            particle = self.particles[index_of_the_particle]
+            mass.value = particle['mass']
+            return 0
+        except:        
+            return -1
+    
+    def get_radius(self, index_of_the_particle, radius):
+        try:
+            particle = self.particles[index_of_the_particle]
+            radius.value = particle['radius']
+            return 0
+        except:        
+            return -1
+    
+    def get_position(self, index_of_the_particle, x, y, z):
+        try:
+            particle = self.particles[index_of_the_particle]
+            x.value = particle['x']
+            y.value = particle['y']
+            z.value = particle['z']
+            return 0
+        except:        
+            return -1
+    
+    def get_velocity(self, index_of_the_particle, vx, vy, vz):
+        try:
+            particle = self.particles[index_of_the_particle]
+            vx.value = particle['vx']
+            vy.value = particle['vy']
+            vz.value = particle['vz']
+            return 0
+        except:        
+            return -1
+    
   def get_time(self, time):
     time.value = self.tnow
     return 0
