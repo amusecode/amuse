@@ -1,7 +1,7 @@
 from amuse.legacy import *
 
 
-class capreole(LegacyInterface):
+class Capreole(LegacyInterface):
     def __init__(self, **args):
         LegacyInterface.__init__(self, name_of_the_worker = 'worker',**args)
 
@@ -128,7 +128,7 @@ class capreole(LegacyInterface):
         return function
 
 
-class glcapreole(capreole):
+class GLCapreole(Capreole):
     def __init__(self, **options):
         LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
         
