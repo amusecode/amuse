@@ -2225,7 +2225,7 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                15*units.Myr,
+                nbody_system.time,
             ),
             (
                 object.INDEX,
@@ -2246,7 +2246,7 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                15*units.Myr,
+                nbody_system.time,
                 object.ERROR_CODE
             )
         )
@@ -2262,7 +2262,7 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                15*units.Myr,
+                nbody_system.time,
             ),
             (
                 object.ERROR_CODE,
@@ -2272,7 +2272,7 @@ class Fi(GravitationalDynamics):
             "set_star_tform",
             (
                 object.INDEX,
-                15*units.Myr,
+                nbody_system.time,
             ),
             (
                 object.ERROR_CODE,
@@ -2284,7 +2284,7 @@ class Fi(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                15*units.Myr,
+                nbody_system.time,
                 object.ERROR_CODE
             )
         )

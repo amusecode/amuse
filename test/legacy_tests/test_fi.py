@@ -484,19 +484,17 @@ class TestFiInterface(TestWithMPI):
         stars.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.AU
         stars.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
         stars.radius = [1.0, 1.0] | units.RSun # results are nonsense if not (r1 == r2)... ?
-        stars.tform = [-1.0, -50.0] | units.Myr
+        stars.tform = [-10.0, -50.0] | units.Myr
         
         instance = Fi(nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU))#, debugger='xterm')
         self.assertEquals(0, instance.initialize_code())
         instance.parameters.timestep = 0.5 | units.day
         instance.star_particles.add_particles(stars)
-        self.assertAlmostEqual(instance.star_particles.tform, [-1.0, -50.0] | units.Myr)
-        instance.star_particles.tform = [-100.0, -5000.0] | units.Myr
-        self.assertAlmostEqual(instance.star_particles.tform, [-100.0, -5000.0] | units.Myr)
+        self.assertAlmostEqual(instance.star_particles.tform, [-10.0, -50.0] | units.Myr)
+        instance.star_particles.tform = [-100.0, -500.0] | units.Myr
         
-        instance.synchronize_model() # This changes instance.star_particles.tform, why?
-#        self.assertAlmostEqual(instance.star_particles.tform, [-100.0, -5000.0] | units.Myr)
-        print instance.star_particles.tform.as_quantity_in(units.Myr)
+        instance.synchronize_model()
+        self.assertAlmostEqual(instance.star_particles.tform, [-100.0, -500.0] | units.Myr)
         self.assertAlmostEqual(instance.kinetic_energy, 2.6493e+33|units.J, 3, in_units=1e+33*units.J)
         self.assertAlmostEqual(instance.star_particles.kinetic_energy(), 2.6493e+33|units.J, 3, in_units=1e+33*units.J)
 

@@ -179,7 +179,7 @@ subroutine muse_reset(time)
 
  input=0
  input(1:4)=1  ! mass+pos+vel+eps
-! input(5)=1    ! tform
+ input(5)=1    ! tform
  input(42)=1   ! nbexist
 
  input(11)=1   ! ethermal
