@@ -60,6 +60,10 @@ class Xml2Particles(object):
         self.system = core.Particles()
         self.translator = {'N':'number','m':'mass','r':'position','v':'velocity','system_time':'timestamp'}
         self.timestamp = None
+        self.mass_scale = None
+        self.size_scale = None
+        self.time_scale = None
+        
 
     def add_particle_with_parameters(self, subnode, parent):
         added_particle = self.system.add_particle(core.Particle())  
@@ -90,7 +94,13 @@ class Xml2Particles(object):
                 
     
     def copy_starlab_parameter_to_star(self, key, value, particle):
-        if key in self.translator.keys():                                     
+        if key == 'mass_scale':
+            self.mass_scale = float(value)
+        elif key == 'size_scale':
+            self.size_scale = float(value)
+        elif key == 'time_scale':
+            self.time_scale = float(value)
+        elif key in self.translator.keys():                                     
             amuse_key = self.translator[key]                                  
             if amuse_key == 'mass':                                           
                 particle.mass = float(value)|nbody_system.mass                              
@@ -288,7 +298,16 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         xml_string = x.convert_startlab_string_to_xml_string(string)
         xml2particles = Xml2Particles()
         xml2particles.parse_xml(xml_string)
-        if not self.nbody_to_si_converter is None:
+        if not xml2particles.mass_scale is None:
+            convert_nbody = nbody_system.nbody_to_si(
+                (1.0 / xml2particles.mass_scale) | units.MSun,
+                (1.0 / xml2particles.size_scale) | units.RSun,
+            )
+            result = core.ParticlesWithUnitsConverted(
+                xml2particles.system,
+                convert_nbody.as_converter_from_si_to_nbody()
+            )   
+        elif not self.nbody_to_si_converter is None:
             result = core.ParticlesWithUnitsConverted(
                 xml2particles.system,
                 self.nbody_to_si_converter.as_converter_from_si_to_nbody()
