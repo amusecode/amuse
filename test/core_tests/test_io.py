@@ -245,7 +245,7 @@ class FormatTests(amusetest.TestCase):
         self.assertEquals(default, None)
         
         options = base.get_options_for_format('dyn')
-        name, description, default = options[0]
+        name, description, default = options[1]
         self.assertEquals(name, 'nbody_to_si_converter')
         
         options = base.get_options_for_format('hdf5')
