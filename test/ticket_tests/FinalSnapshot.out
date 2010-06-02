@@ -1,0 +1,504 @@
+(Particle
+  name = root
+  N = 10
+(Log
+ ===>  Wed Jun  2 10:34:52 2010
+       Starlab 4.4.4 (user spz) : makeplummer -n 1024 -u -i
+       random number generator seed = 1275467692
+  initial_mass = 1
+ ===>  Wed Jun  2 10:34:52 2010
+       Starlab 4.4.4 (user spz) : makemass -u 100 -l 0.1 -f 4
+       random number generator seed = 1275467692
+       Kroupa mass function, total mass =   485.41 Solar
+ ===>  Wed Jun  2 10:34:52 2010
+       Starlab 4.4.4 (user spz) : makesecondary -f 0.5
+       random number generator seed = 1275467692
+       total mass in secondaries =   132.35 Solar
+ ===>  Wed Jun  2 10:34:53 2010
+       Starlab 4.4.4 (user spz) : add_star -R 0.2
+ ===>  Wed Jun  2 10:34:53 2010
+       Starlab 4.4.4 (user spz) : makebinary -f 3 -u 1000 -l 1
+       random number generator seed = 1275467693
+ ===>  Wed Jun  2 10:34:53 2010
+       Starlab 4.4.4 (user spz) : scale -s
+  initial_total_energy = -0.25
+  initial_rvirial = 1
+ ===>  Wed Jun  2 10:43:11 2010
+       Starlab 4.4.4 (user spz) : kira -t 187 -B -u -D 10
+  kira_allow_unperturbed = 1
+  kira_allow_multiples = 1
+       random number generator seed = 1275468191
+  kira_eta = 0.1
+  kira_eps = 0
+  kira_d_min_fac = 0.25
+  kira_d_min_sq = 6.40932e-05
+  kira_lag_factor = 2.5
+  kira_gamma = 1e-07
+  kira_log_max_slow = 0
+  log_max_slow = 0
+  kira_dt_log = 1
+  kira_dt_sstar = 0.015625
+  kira_dt_esc = 1
+  kira_dt_reinit = 1
+  kira_stellar_encounter_criterion = 0
+  kira_stellar_merger_criterion = 0
+  kira_stellar_tidal_capture_criterion = 0
+  kira_remove_escapers = 0
+  physical_initial_mass = 617.756
+  kira_evolve_stars = 1
+  kira_evolve_binaries = 1
+  cpu_time = 1692.57
+  total_cpu_time = 1692.57
+  cpu_time_predict = 0
+  cpu_time_top_level_force = 0
+  cpu_time_low_level_force = 0
+  cpu_time_external_force = 0
+  cpu_time_total_force = 0
+  cpu_time_correct = 0
+  cpu_time_unperturbed = 0
+  cpu_time_final_step = 0
+  cpu_time_tree_check = 0
+  cpu_time_integrate = 0
+  cpu_time_other = 0
+  step_top_single = 19461014
+  step_top_cm = 17155
+  step_low_level = 196047
+  force_correction = 25741234
+  limit_timestep_correction = 0
+  pert_step = 197537
+  pert_with_list = 14427425
+  pert_without_list = 69587
+  perturber_overflow = 12342
+  neighbor_sync = 6
+  full_unpert_step = 215
+  full_unpert_orbit = 9554
+  partial_unpert_orbit = 437
+  tree_change = 1274
+  top_level_combine = 381
+  low_level_combine = 0
+  top_level_split = 893
+  leaf_merge = 0
+  total_kick = 0
+  step_stellar = 11968
+  step_dmslow = 0
+  step_dmfast = 0
+  step_correct = 181
+  dm_escapers = 0
+  dm_massloss = 0.0464247
+  initial_etot = 125.919
+  de_total = 0.0157276
+  de_merge = 0
+  de_tidal_diss = 0
+  de_massloss = 0.0157276
+  de_kick = 0
+ ===>  Wed Jun  2 11:12:28 2010
+       Starlab 4.4.4 (user spz) : flatten
+)Log
+(Dynamics
+  system_time  =  187
+  m  =  0.953575109205781479
+  r  =  0.0936982277586396045 0.732430609512850994 0.00143522495815377
+  v  =  0.0016663327934657501 0.00445217538795920041 -0.000187093177925427991
+  t  =  187
+  a  =  0 0 0
+  pot  =  0
+  dt =  0
+  R_eff  =  0
+  steps  =  0
+  dir_f  =  0
+  indir_f  =  0
+  com_time = 187
+  com_pos = 0.0936982277586396 0.732430609512851 0.00143522495815377
+  com_vel = 0.00166633279346575 0.0044521753879592 -0.000187093177925428
+  total_energy = 125.935128135572
+  energy_time = 187
+  potential_energy = -0.00950143451590349
+  kinetic_energy = 125.944629570088
+  mcom_time = 187
+  mcom_pos = 5.572531983 -6.079826021 -5.144942994
+  mcom_vel = 0.03096035326 -0.0318742473 -0.02777362138
+  mcom_f = 0.9
+  mcom_n_iter = 2
+  std_center_time = 187
+  std_center_pos = 5.57253 -6.07983 -5.14494
+  std_center_vel = 0.0309604 -0.0318742 -0.0277736
+  boolfn = 1
+  n_nodes = 154
+  lagr_time = 187
+  lagr_pos = 5.57253 -6.07983 -5.14494
+  lagr_vel = 0.0309604 -0.0318742 -0.0277736
+  pos_type = modified center of mass
+  n_lagr = 9
+  r_lagr = 5.221563 6.067126 6.087805 7.617629 7.791216 11.251237 59.515697 559.043434 1550.629567
+  kira_rhalf = 184.46
+  kira_half_density = 1.81354e-08
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  mass_scale     =  0.00161876245773882725
+  size_scale     =  1.1275e-07
+  time_scale     =  18.7136777977870281
+)Star
+(Particle
+  i = 87
+  name = 87
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.000170900728575719971
+  r  =  2.59978591374829504 -12.5510689284755319 -1.22529027027205606
+  v  =  0.129523773306090662 -0.10722216206808606 -0.273336351495469199
+  t  =  187
+  a  =  -0.0625892925559027452 0.00816129762098164596 0.00958041227871507355
+  pot  =  -0.111350219395060818
+  dt =  0.015625
+  R_eff  =  1.55283194529534436e-08
+  steps  =  13359
+  dir_f  =  29725393478
+  indir_f  =  63855
+  prev_steps = 13359
+  prev_f_dir = 2.97254e+10
+  prev_f_ind = 63855
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  0.105574927166548649
+  M_env  =  0.105574927166548649
+  M_core =  0
+  T_eff  =  2847.43692968364985
+  L_eff  =  0.00112493910327801454
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 31
+  name = 31
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.0170883715722921527
+  r  =  1.58422840319937652 -12.5951902046754753 -1.56473071397677832
+  v  =  0.0473992403663476003 -0.0440740558011950556 -0.0071164907298586445
+  t  =  187
+  a  =  0.0738325732957253872 -0.0180877249416441406 0.0548113842846739974
+  pot  =  -0.10919435381537447
+  dt =  0.015625
+  R_eff  =  5.69755478759740904e-07
+  steps  =  15851
+  dir_f  =  29664558657
+  indir_f  =  1474346
+  prev_steps = 15851
+  prev_f_dir = 2.96646e+10
+  prev_f_ind = 1.47435e+06
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  8.73160401190466828
+  T_rel  =  8.73554433704361166
+  M_rel  =  10.5552368183123146
+  M_env  =  10.5552368183123146
+  M_core =  0
+  T_eff  =  24687.460770079153
+  L_eff  =  8557.48916161380839
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 151
+  name = 151
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.013742913246258523
+  r  =  2.00747045208506014 -12.4574939845277015 -1.04955254922841767
+  v  =  0.015685389279493922 -0.051496820920804931 -0.181233482290345971
+  t  =  187
+  a  =  -0.0644123740087349655 0.00355627296118924806 -0.0140146879072221928
+  pot  =  -0.111563742553015294
+  dt =  0.015625
+  R_eff  =  4.70441584703610521e-07
+  steps  =  40224
+  dir_f  =  30101755387
+  indir_f  =  9974148
+  prev_steps = 40224
+  prev_f_dir = 3.01018e+10
+  prev_f_ind = 9.97415e+06
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  9.81094027096464849
+  M_rel  =  8.48976524045124492
+  M_env  =  8.48976524045124492
+  M_core =  0
+  T_eff  =  22301.1600185603493
+  L_eff  =  3884.9449614012733
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 821
+  name = 821
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.00664958684904069872
+  r  =  2.33787448222065342 -12.0215473966097619 -0.541097064554301288
+  v  =  0.0388106564671150886 -0.185292832590009005 -0.135457693265023854
+  t  =  187
+  a  =  -0.0201959762591719869 -0.0250282174482086076 -0.0305813109274198254
+  pot  =  -0.0929719542338833249
+  dt =  0.015625
+  R_eff  =  2.65843959428682334e-07
+  steps  =  15357
+  dir_f  =  29708182160
+  indir_f  =  275932
+  prev_steps = 15357
+  prev_f_dir = 2.97082e+10
+  prev_f_ind = 275932
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  4.10782126633279621
+  M_env  =  4.10782126633279621
+  M_core =  0
+  T_eff  =  15093.0915374010474
+  L_eff  =  260.273566649333191
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 749
+  name = 749
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.00117490959074204536
+  r  =  1.87850853865506662 -12.4065198631883344 -0.96977361348574409
+  v  =  0.158501684574043095 -0.323331628983629327 -0.352175607947650793
+  t  =  187
+  a  =  0.420461347095778815 -0.185270324071467124 -0.3071453048507084
+  pot  =  -0.188947251485992535
+  dt =  0.015625
+  R_eff  =  7.59295342642504263e-08
+  steps  =  15033
+  dir_f  =  29857456327
+  indir_f  =  62861
+  prev_steps = 15033
+  prev_f_dir = 2.98575e+10
+  prev_f_ind = 62861
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  0.725807288849051435
+  M_env  =  0.725807288849051435
+  M_core =  0
+  T_eff  =  4375.7441359733939
+  L_eff  =  0.150000530884660532
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 109
+  name = 109
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.00669046826689648905
+  r  =  1.09945983941888192 -14.6824277026817729 0.342741633784338307
+  v  =  -0.00200101293459712401 -0.0587134623475749282 -0.0220016252737728693
+  t  =  187
+  a  =  0.00134599399976624155 0.00910378353777221115 -0.0074813660882722989
+  pot  =  -0.0679397250174325618
+  dt =  0.015625
+  R_eff  =  2.70657812228566355e-07
+  steps  =  96735
+  dir_f  =  20865147618
+  indir_f  =  66011084
+  prev_steps = 96735
+  prev_f_dir = 2.08651e+10
+  prev_f_ind = 6.60111e+07
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  Class   =  accreting
+  T_cur  =  4.81677890426003774
+  M_rel  =  4.13307600192438862
+  M_env  =  4.13307600192438862
+  M_core =  0
+  T_eff  =  15088.2260339307359
+  L_eff  =  269.437168849878447
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 511
+  name = 511
+  N = 1
+(Log
+main_sequence_to_hertzsprung_gap_at_time =   5.91
+hertzsprung_gap_to_horizontal_branch_at_time =   5.92
+horizontal_branch_to_helium_star_at_time =   6.39
+helium_star_to_helium_giant_at_time =   6.58
+helium_giant_to_neutron_star_at_time =   6.62
+v_kick =  -0.00,  -0.00,   0.00
+neutron_star_to_black_hole_at_time =   6.62
+v_kick =  -0.00,   0.00,   0.00
+)Log
+(Dynamics
+  m  =  0.0024592385101885484
+  r  =  1.7402616168456615 -13.5533369905359535 -1.16631702313972907
+  v  =  0.0128064381570178101 0.0513732687167498606 -0.0699847025759421509
+  t  =  187
+  a  =  -0.00544555769276612589 0.0335058990419687189 -0.00529008353301790944
+  pot  =  -0.100722948373996327
+  dt =  0.015625
+  R_eff  =  -7.27985967284586442e-13
+  steps  =  43978
+  dir_f  =  21101900183
+  indir_f  =  30864303
+  prev_steps = 43978
+  prev_f_dir = 2.11019e+10
+  prev_f_ind = 3.08643e+07
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  black_hole
+  T_cur  =  6.61742153437859848
+  T_rel  =  0
+  M_rel  =  28.0664766567182298
+  M_env  =  0
+  M_core =  1.51920900959350247
+  T_eff  =  718079.592554941308
+  L_eff  =  0.0100000000000000002
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 97
+  name = 97
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.000280920530614226752
+  r  =  1.32552868513108568 -13.9994414545831667 -0.0346411634401318849
+  v  =  -0.0340017935627325366 -0.0911066579411431848 0.00795681215847877411
+  t  =  187
+  a  =  0.000477469922433366729 0.00307275649935939395 -0.00569008317624431804
+  pot  =  -0.0866501430069402806
+  dt =  0.015625
+  R_eff  =  2.35018697673244757e-08
+  steps  =  14469
+  dir_f  =  29884045998
+  indir_f  =  319716
+  prev_steps = 14469
+  prev_f_dir = 2.9884e+10
+  prev_f_ind = 319716
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  0.173540304984976829
+  M_env  =  0.173540304984976829
+  M_core =  0
+  T_eff  =  3197.33217850276924
+  L_eff  =  0.00409656180078473483
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 453
+  name = 453
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.00132982491823336658
+  r  =  0.324583507508385993 -12.0259854311216223 -1.80625996662165678
+  v  =  0.0520690745838012295 -0.124043074580540272 0.0476444926147021885
+  t  =  187
+  a  =  0.0172252575093739535 -0.00951491560341088602 0.00740940891620816677
+  pot  =  -0.0818199234399815262
+  dt =  0.015625
+  R_eff  =  8.39182392681607356e-08
+  steps  =  13406
+  dir_f  =  29674668765
+  indir_f  =  415393
+  prev_steps = 13406
+  prev_f_dir = 2.96747e+10
+  prev_f_ind = 415393
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  0.821507140764146548
+  M_env  =  0.821507140764146548
+  M_core =  0
+  T_eff  =  4813.62524046608087
+  L_eff  =  0.268327679852919609
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+(Particle
+  i = 855
+  name = 855
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.000227826766314251919
+  r  =  3.2389315721093026 -11.9784718040427176 -2.41128615879846686
+  v  =  -0.166551603679942567 -0.207178826124079229 0.0873148279500099989
+  t  =  187
+  a  =  -0.0149990522347633742 -0.000158296111888486747 0.01386570762095664
+  pot  =  -0.0766560390097034833
+  dt =  0.015625
+  R_eff  =  2.00393596779633316e-08
+  steps  =  13880
+  dir_f  =  29878713189
+  indir_f  =  51341
+  prev_steps = 13880
+  prev_f_dir = 2.98787e+10
+  prev_f_ind = 51341
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  0.140741320769504602
+  M_env  =  0.140741320769504602
+  M_core =  0
+  T_eff  =  3047.08259608472235
+  L_eff  =  0.00245679111853702595
+  z_eff  =  0.0200000000000000004
+)Star
+)Particle
+)Particle
