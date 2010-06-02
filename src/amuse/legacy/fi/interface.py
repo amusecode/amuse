@@ -1,23 +1,36 @@
 import os
 import numpy
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
+from amuse.legacy.support.lit import LiteratureRefs
 from amuse.legacy import *
 
-class fi(LegacyInterface,GravitationalDynamicsInterface):   
+class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs):   
+    """
+    FI is a parallel TreeSPH code for galaxy simulations. Extensively 
+    rewritten, extended and parallelized it is a development from code from 
+    Jeroen Gerritsen and Roelof Bottema, which itself goes back to Treesph. 
+    
+    Note that some features are not working atm. These may be fixed in the 
+    future. (and I will think of a better name)
+    
+    The relevant references are:
+        .. [#] Pelupessy, PhD thesis 2005, Leiden Observatory
+        .. [#] Pelupessy, van der Werf & Icke, 2004, A&A 422, 55
+        .. [#] Gerritsen & Icke, 1997, A&A 325, 972
+        .. [#] Hernquist & Katz, 1989, ApJS 70, 419
+    """
     get_total_radius=None
     get_total_mass=None
     get_center_of_mass_position=None
     get_center_of_mass_velocity=None
-
     get_indices_of_colliding_particles=None
-
     get_potential=None
     set_acceleration=None
     get_acceleration=None
-
                 
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker = 'worker', **options)
+        LiteratureRefs.__init__(self)
                      
     def get_data_directory(self):
         """
@@ -1416,7 +1429,7 @@ class fi(LegacyInterface,GravitationalDynamicsInterface):
         """
         return function
     
-class glfi(fi):
+class GlFiInterface(FiInterface):
     def __init__(self, **options):
         LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
     
@@ -1428,14 +1441,22 @@ class glfi(fi):
     def start_viewer(self):
         self.viewer()
         
+class FiDoc(object):
+
+    def __get__(self, instance, owner):
+        return instance.legacy_doc+"\n\n"+instance.parameters.__doc__
+
 class Fi(GravitationalDynamics):
+    
+    __doc__ = FiDoc()
     
     def __init__(self, convert_nbody = None, use_gl = False, **options):
                 
         if(use_gl):
-          legacy_interface = glfi(**options)
+          legacy_interface = GlFiInterface(**options)
         else:
-          legacy_interface = fi(**options)            
+          legacy_interface = FiInterface(**options)            
+        self.legacy_doc = legacy_interface.__doc__
         
         #if convert_nbody is None:
         #    convert_nbody=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)

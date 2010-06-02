@@ -3,7 +3,7 @@ import sys
 import numpy
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.legacy.fi.interface import fi, Fi
+from amuse.legacy.fi.interface import FiInterface, Fi
 from amuse.ext.evrard_test import MakeEvrardTest
 
 from amuse.support.units import nbody_system as nbody
@@ -14,12 +14,12 @@ from amuse.legacy.support import channel
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):
-        instance=fi()
+        instance=FiInterface()
         instance.setup_module()
         instance.stop()
     
     def test2(self):
-        instance=fi()
+        instance=FiInterface()
         instance.setup_module()
         
         for x,l in [('use_hydro',1),('radiate',0),('starform',0),('cosmo',1),
@@ -74,7 +74,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        instance=fi()
+        instance=FiInterface()
         instance.setup_module()
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
@@ -85,7 +85,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
     
     def test4(self):
-        instance=fi()
+        instance=FiInterface()
         instance.setup_module()
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         instance.set_time_step(2.0)
@@ -95,7 +95,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
     
     def test5(self):
-        instance=fi()
+        instance=FiInterface()
         instance.setup_module()
         instance.set_eps(0.001)
         instance.set_directsum(1)
@@ -136,7 +136,7 @@ class TestEvrard(TestWithMPI):
         evrard=MakeEvrardTest(1000)
         mass,x,y,z,vx,vy,vz,u=evrard.new_model()
         smooth=numpy.zeros_like(mass)
-        nb = fi()
+        nb = FiInterface()
         nb.setup_module()
         
         nb.set_stepout(99999)

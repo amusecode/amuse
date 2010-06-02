@@ -184,7 +184,7 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
 class HermiteDoc(object):
 
     def __get__(self, instance, owner):
-        return instance.parameters.__doc__
+        return instance.legacy_doc+"\n\n"+instance.parameters.__doc__
 
 class Hermite(GravitationalDynamics):
 
@@ -194,6 +194,7 @@ class Hermite(GravitationalDynamics):
         self.stopping_conditions = StoppingConditions(self)
 
         legacy_interface = HermiteInterface(**options)
+        self.legacy_doc = legacy_interface.__doc__
 
         GravitationalDynamics.__init__(
             self,

@@ -27,7 +27,7 @@ from amuse.legacy.hermite0.interface import Hermite, HermiteInterface
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
 from amuse.legacy.octgrav.interface import Octgrav, OctgravInterface
 from amuse.legacy.twobody.twobody import TwoBody, TwoBodyInterface
-from amuse.legacy.fi.interface import Fi, fi
+from amuse.legacy.fi.interface import Fi, FiInterface
 
 from amuse.legacy.sse.interface import SSE, SSEInterface
 from amuse.legacy.bse.interface import BSE, BSEInterface

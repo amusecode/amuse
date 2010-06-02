@@ -71,10 +71,10 @@ glworker: glworker.f90 interface.o $(SRC)/libfi.a
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
 
 worker.f90: interface.py __init__.py
-	$(CODE_GENERATOR) --type=f90 $< fi -o $@
+	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
 
 glworker.f90: interface.py __init__.py
-	$(CODE_GENERATOR) --type=f90 $< glfi -o $@
+	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
 
 
 __init__.py:

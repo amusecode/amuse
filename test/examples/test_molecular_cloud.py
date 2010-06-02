@@ -37,7 +37,7 @@ def run_cloud(x):
   mass,x,y,z,vx,vy,vz,u=cloud.new_model()
   smooth=numpy.zeros_like(mass)
 
-  nb = interface.fi(redirection="none")
+  nb = interface.FiInterface(redirection="none")
   nb.initialize_code()
 
   nb.set_stepout(99999)
