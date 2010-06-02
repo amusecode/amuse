@@ -296,7 +296,10 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         else:
             result = xml2particles.system
         
-        return result[0].children()
+        if self.return_children:
+            return result[0].children()
+        else:
+            return result[0]
         
     def store_string(self):
         if not self.nbody_to_si_converter is None:
@@ -310,6 +313,11 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         x = Particles2Dyn()
         return x.convert_to_string(particles)
        
+    
+    @base.format_option
+    def return_children(self):
+        "if True returns the children of the root node, if False returns the root node"
+        return True
         
 
     @base.format_option
