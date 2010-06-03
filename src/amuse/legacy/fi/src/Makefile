@@ -23,14 +23,17 @@ APPS= fi glfi snapviewer hicube map sfh sfh2 rgabe togabe \
       tosimplex tosimple
 
 # -----------------------------------------------------------------------
-
-FILES=mem.o elements.o cooling.o ionize.o molecules.o H2cool.o starprop.o \
-  random.o io.o io-old.o diagnostics.o readparam.o ppread.o \
+COMMONFILES = mem.o elements.o cooling.o ionize.o molecules.o H2cool.o starprop.o \
+  random.o io-old.o diagnostics.o readparam.o ppread.o \
   blackhole.o stepsystem.o buildnearlist.o pmgrav.o \
   search.o feedback.o fixedhalo.o init.o timestep.o buildtree.o \
-  density.o io2.o heating.o entdot.o heco.o ethstep.o \
+  density.o heating.o entdot.o heco.o ethstep.o \
   stellar.o fcco.o project.o clean.o sort.o util.o \
   gravity.o tidalsum.o treewalk.o gravsum.o fuvflux.o
+
+LIBFILES = $(COMMONFILES) muse_io2_stub.o muse_io_stub.o hash.o muse_helpers.o
+
+FILES = $(COMMONFILES) io.o io2.o
 
 SFILES=extern_dummy.o 
 
@@ -130,7 +133,7 @@ muse: muse_dynamics_interface muse_dynamics_interface_gl \
 
 amuse_interface: libfi.a
 
-libfi.a: $(FILES) hash.o muse_helpers.o 
+libfi.a: $(LIBFILES)
 	ar crs $@ $^
 
 muse_dynamics_interface: muse_interface.f90 $(FILES) hash.o muse_helpers.o

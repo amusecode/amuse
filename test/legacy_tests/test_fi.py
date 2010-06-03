@@ -553,7 +553,11 @@ class TestFiInterface(TestWithMPI):
         instance.particles.add_particles(default)
         
         self.assertEquals(number_sph_particles+6, len(instance.particles))
-        print instance.particles # only prints those particle attributes the subsets have in common
+        print "'>>> print instance.particles' only prints those particle attributes the subsets have in common."
+        string_produced_by_print = instance.particles.__str__()
+        self.assertTrue("mass" in string_produced_by_print)
+        self.assertTrue("radius" in string_produced_by_print)
+        self.assertFalse("tform" in string_produced_by_print)
         
         instance.synchronize_model()
         self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), 
