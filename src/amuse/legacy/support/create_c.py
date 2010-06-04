@@ -17,6 +17,25 @@ dtype_to_spec = DTypeToSpecDictionary({
 })
 
 
+EXIT_HANDLER_STRING = """\
+void onexit(void) {
+    int flag = 0;
+    MPI_Finalized(&flag);
+    
+    if(!flag) {
+        MPI::Intercomm parent = MPI::COMM_WORLD.Get_parent();
+        int rank = parent.Get_rank();
+        
+        message_header reply_header;
+        reply_header.tag = -2;
+        reply_header.send(parent, rank);
+        
+        parent.Disconnect();
+        MPI_Finalize();
+    }
+}
+"""
+
 class MakeCCodeString(MakeCodeString):
     @late
     def dtype_to_spec(self):
@@ -372,6 +391,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
         self.out.lf().lf()
         self.output_header_class_definition()
+        self.output_onexit_fuinction()
         self.output_runloop_function_def_start()
         self.output_switch_start()
                 
@@ -385,10 +405,10 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
     def output_mpi_include(self):
         self.out.n() + '#include <mpi.h>'
-
         self.out.n() + '#include <iostream>'
-        
         self.out.n() + '#include <string.h>'
+        self.out.n() + '#include <stdlib.h>'
+        
         
     def output_local_includes(self):
         self.out.n()
@@ -406,7 +426,9 @@ class MakeACStringOfAClassWithLegacyFunctions\
         uc = MakeCMessageHeaderClassDefinition()
         uc.out = self.out
         uc.start()
-        #self.out + HEADER_CLASS_STRING
+    
+    def output_onexit_fuinction(self):
+        self.out.lf() + EXIT_HANDLER_STRING
         
     def output_runloop_function_def_start(self):
         self.out.lf().lf() + 'void run_loop() {'
@@ -616,6 +638,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.indent().lf() 
         #self.out.lf() + 'int provided;'
         self.out.lf() + 'MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);'
+        self.out.lf() + 'atexit(onexit);'
         self.out.lf().lf() + 'run_loop();'
         self.out.lf().lf() + 'MPI_Finalize();'
         self.out.lf() + 'return 0;'

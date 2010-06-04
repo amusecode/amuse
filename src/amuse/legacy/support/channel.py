@@ -223,6 +223,7 @@ class Message(object):
     def mpi_recieve(self, comm, array):
         comm.Bcast(array, root = 0)
         
+        
     def mpi_send(self, comm, array):
         comm.Send(array, dest=0, tag = 999)
 
@@ -397,6 +398,9 @@ class MpiChannel(MessageChannel):
     :argument debug_with_gdb: If True opens an xterm with a gdb to debug the remote process
     :argument hostname: Name of the node to run the application on
     """
+    _mpi_is_broken_after_possible_code_crash = False
+    
+    
     def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
         MessageChannel.__init__(self, **options)
         
@@ -410,7 +414,10 @@ class MpiChannel(MessageChannel):
         if self.check_mpi:
             if not is_mpd_running():
                 raise Exception("The mpd daemon is not running, please make sure it is started before starting this code")
-            
+        
+        if self._mpi_is_broken_after_possible_code_crash:
+            raise Exception("Another code has crashed, cannot spawn a new code, please stop the script and retry")
+        
         if not self.hostname is None:
             self.info = MPI.Info.Create()
             self.info['host'] = self.hostname
@@ -517,7 +524,12 @@ class MpiChannel(MessageChannel):
             
     def stop(self):
         if not self.intercomm is None:
-            self.intercomm.Disconnect()
+            try:
+                self.intercomm.Disconnect()
+            except MPI.Exception as ex:
+                if ex.error_class == MPI.ERR_OTHER:
+                    type(self)._mpi_is_broken_after_possible_code_crash = True
+                
             self.intercomm = None
     
     def determine_length_from_data(self, doubles_in, ints_in, floats_in, chars_in):
@@ -537,7 +549,9 @@ class MpiChannel(MessageChannel):
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         if self.is_inuse():
             raise Exception("You've tried to send a message to a code that is already handling a message, this is not correct")
-            
+        if self.intercomm is None:
+            raise Exception("You've tried to send a message to a code that is not running")
+        
         length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in)
         
         if length > self.max_message_length:
@@ -600,10 +614,19 @@ class MpiChannel(MessageChannel):
             return x
         
         message = ServerSideMessage()
-        message.recieve(self.intercomm)
-        
-        if message.tag < 0:
+        try:
+            message.recieve(self.intercomm)
+        except MPI.Exception as ex:
+            self.stop()
+            raise
+            
+        if message.tag == -1:
             raise Exception("Not a valid message, message is not understood by legacy code")
+        elif message.tag == -2:
+            self.stop()
+            raise Exception("Fatal error in code, code has exited")
+                
+            
             
         if message.length > 1 or handle_as_array:
             doubles_result = unpack_array(message.doubles, message.length, 'float64')
