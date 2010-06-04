@@ -300,3 +300,21 @@ The descendents of star 0 form a subset:
     quantity<[1.98892e+26, 1.98892e+27] kg>
 
 
+Methods to retreive physical properties of the particles set
+------------------------------------------------------------
+Particle sets have a number of functions for calculating physical
+properties that apply to the sets. Although some of these might be implemented
+in the legacy codes as well, using them via particle sets guarantees
+the applicability to *all* particles when multiple legacy codes
+are used. Furthermore, the particle set functions provide a uniform
+way of doing the calculations. Speed might be the downside.
+
+.. automodule:: amuse.support.data.core
+       
+.. autofunction:: center_of_mass 
+.. autofunction:: center_of_mass_velocity
+.. autofunction:: kinetic_energy
+.. autofunction:: potential_energy 
+.. autofunction:: particle_specific_kinetic_energy
+.. autofunction:: particle_potential
+
