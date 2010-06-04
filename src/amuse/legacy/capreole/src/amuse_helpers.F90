@@ -6,7 +6,8 @@ module amuse_helpers
   use times
   use hydro
   use scaling, only: SCDENS,SCMOME,SCENER,SCTIME,SCLENG
-  use boundary, only: boundaries,REFLECTIVE,OUTFLOW,PROBLEM_DEF
+  use boundary, only: boundaries,REFLECTIVE,REFLECTIVE_SHIFT, &
+    OUTFLOW,PROBLEM_DEF
   use sizes, only: neq,neuler,mbc,nrOfDim,RHO,RHVX,RHVY,RHVZ,EN  
   use problem
   
@@ -22,6 +23,7 @@ module amuse_helpers
   function amuse_evolve(tend) result(ret)
     integer :: ret,nf
     real*8 :: tend
+
     if(tend-time.GT.0) then
       lastframe=0
       nf=1
@@ -113,45 +115,63 @@ module amuse_helpers
     select case (lowx)
     case("reflective")
       domainboundaryconditions(1,1)=REFLECTIVE    
+    case("ref_shift")
+      domainboundaryconditions(1,1)=REFLECTIVE_SHIFT    
     case default
       ret=-1
+      return
     end select
 
     select case (highx)
     case("reflective")
       domainboundaryconditions(1,2)=REFLECTIVE    
+    case("ref_shift")
+      domainboundaryconditions(1,2)=REFLECTIVE_SHIFT    
     case default
       ret=-1
+      return
     end select
 
     select case (lowy)
     case("reflective")
       domainboundaryconditions(2,1)=REFLECTIVE    
+    case("ref_shift")
+      domainboundaryconditions(2,1)=REFLECTIVE_SHIFT    
     case default
       ret=-1
+      return
     end select
 
     select case (highy)
     case("reflective")
       domainboundaryconditions(2,2)=REFLECTIVE    
+    case("ref_shift")
+      domainboundaryconditions(2,2)=REFLECTIVE_SHIFT    
     case default
       ret=-1
+      return
     end select
 
     select case (lowz)
     case("reflective")
       domainboundaryconditions(3,1)=REFLECTIVE    
+    case("ref_shift")
+      domainboundaryconditions(3,1)=REFLECTIVE_SHIFT    
     case default
       ret=-1
+      return
     end select
 
     select case (highz)
     case("reflective")
       domainboundaryconditions(3,2)=REFLECTIVE    
+    case("ref_shift")
+      domainboundaryconditions(3,2)=REFLECTIVE_SHIFT    
     case default
       ret=-1
+      return
     end select
-
+    ret=0
   end function
 
   function fill_grid(ix,iy,iz,istate) result(ret)

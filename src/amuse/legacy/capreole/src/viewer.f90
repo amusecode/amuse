@@ -302,11 +302,11 @@ module snap_viewer
 !  real(kind=glfloat),dimension(3) :: da=(/.15,.075, .026/) 
 !  real(kind=glfloat),dimension(3) :: no=(/1.,0., .0/) 
  
-  integer :: colorgas=1
+  integer :: colorgas=3
   logical :: show_axes=.FALSE.,show_box=.TRUE.,show_data=.TRUE.
-  integer(glint) :: update_flag=0 
+  integer(glint) :: update_flag=1 
     
-  integer(glint) ::framerate=5000;
+  integer(glint) ::framerate=50;
   integer(glint), parameter:: FASTUPDATE=50,SLOWUPDATE=5000
   
   real(kind=glfloat),save :: pointsize_gas=3.,pointsize_stars=1.5,pointsize_halo=1.
@@ -368,9 +368,9 @@ subroutine gaslist
   do k=1,meshz
   do i=1,meshx
     do j=1,meshy
-    xt=x(i)
-    yt=y(j)
-    zt=z(k)
+    xt=x(i)/boxsize
+    yt=y(j)/boxsize
+    zt=z(k)/boxsize
     lrho=state(i,j,k,RHO)
     lvel=(state(i,j,k,RHVX)*state(i,j,k,RHVX)+ &
               state(i,j,k,RHVY)*state(i,j,k,RHVY)+ &
@@ -490,7 +490,10 @@ end function starscale
 
 function starcentre() result(centre)
   real :: centre(3)
+        top=top/boxsize
+        bot=bot/boxsize
         centre=top/2+bot/2
+!        centre=centre/boxsize
 end function starcentre
 
 recursive subroutine starreset(dummy)
@@ -784,7 +787,7 @@ subroutine drawtext
    if(xp2-xp1.gt.320) then
     write(rs,'(f8.2)') time
     call outputtext(xp1+3._gldouble,yp1+3._gldouble,'time:'//rs)
-    write(rs,'(f8.2)') top(1)-bot(1)
+    write(rs,'(g8.2)') boxsize
     call outputtext(xp2-120._gldouble,yp1+3._gldouble,'box:'//rs)
    endif
 
@@ -817,7 +820,7 @@ function initnbody()
   real :: initnbody
   
   boxsize=starscale()
-  initnbody=boxsize
+  initnbody=1. !boxsize
   da(3)=1./initnbody**2*16.
   da(2)=da(3)*initnbody/2.
 

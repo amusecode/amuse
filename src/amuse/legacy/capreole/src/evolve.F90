@@ -93,7 +93,6 @@ contains
 #endif
        ! Make sure that dt does not take us beyond nexttime
        dt=min(nexttime-time,dt)
-
        ! Integrate one time step
        ! istop will be non-zero in case of severe problems
        call integrate(nstep,istop)
