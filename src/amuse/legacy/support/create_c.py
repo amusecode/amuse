@@ -71,7 +71,13 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
         self.output_lines_with_inout_variables()
         
         if self.specification.must_handle_array:
-            pass
+            if not self.specification.result_type is None:
+                spec = self.dtype_to_spec[self.specification.result_type]
+                self.out.lf() + 'for (int i = 1 ; i < request_header.len; i++){'
+                self.out.indent()
+                self.out.lf() + spec.output_var_name + '[i]' + ' = ' + spec.output_var_name + '[0]' + ';'
+                self.out.dedent()
+                self.out.lf() + '}'
         elif self.specification.can_handle_array:
             self.out.dedent()
             self.out.lf() + '}'

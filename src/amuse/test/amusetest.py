@@ -140,7 +140,7 @@ class TestWithMPI(TestCase):
     
     def new_instance(self, factory, *arguments, **kwarguments):
         try:
-            return factory(*arguments)
+            return factory(*arguments, **kwarguments)
         except Exception as message:
             if os.path.exists(os.path.join(os.path.dirname(inspect.getfile(factory)),'src')):
                 raise            

@@ -7,6 +7,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
     
     def __init__(self, **options):
         LegacyInterface.__init__(self, **options)
+        self.set_auto_decomposition(1)
     
     @legacy_function
     def test():
@@ -67,16 +68,16 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         return function
           
     def setup_mesh(self, nmeshx, nmeshy, nmeshz, xlength, ylength, zlength):
-        self.par_seti("grid", "Nx1", "%d", nmeshx, "")
-        self.par_seti("grid", "Nx2", "%d", nmeshy, "")
-        self.par_seti("grid", "Nx3", "%d", nmeshz, "")
+        self.par_seti("grid", "Nx1", "%d", nmeshx, "-")
+        self.par_seti("grid", "Nx2", "%d", nmeshy, "-")
+        self.par_seti("grid", "Nx3", "%d", nmeshz, "-")
         
-        self.par_setd("grid", "x1min", "%.15e", 0.0, "")
-        self.par_setd("grid", "x1max", "%.15e", xlength, "")
-        self.par_setd("grid", "x2min", "%.15e", 0.0, "")
-        self.par_setd("grid", "x2max", "%.15e", ylength, "")
-        self.par_setd("grid", "x3min", "%.15e", 0.0, "")
-        self.par_setd("grid", "x3max", "%.15e", zlength, "")
+        self.par_setd("grid", "x1min", "%.15e", 0.0, "-")
+        self.par_setd("grid", "x1max", "%.15e", xlength, "-")
+        self.par_setd("grid", "x2min", "%.15e", 0.0, "-")
+        self.par_setd("grid", "x2max", "%.15e", ylength, "-")
+        self.par_setd("grid", "x3min", "%.15e", 0.0, "-")
+        self.par_setd("grid", "x3max", "%.15e", zlength, "-")
         
         return 0
         
@@ -106,6 +107,18 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         
     
     @legacy_function    
+    def get_grid_state_mpi():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function    
     def get_grid_state():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
@@ -120,22 +133,29 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         self.par_setd("problem", "iso_csound", "%.15e", value, "") 
         
     def set_gamma(self, value):
-        self.par_setd("problem", "gamma", "%.15e", value, "") 
+        self.par_setd("problem", "gamma", "%.15e", value, "-") 
     
     def set_courant_friedrichs_lewy_number(self, value):
-        self.par_setd("time", "cour_no", "%.15e", value, "") 
+        self.par_setd("time", "cour_no", "%.15e", value, "-") 
         
     def set_boundary(self, xbound1, xbound2, ybound1, ybound2, zbound1, zbound2):
         map_from_string_to_flag = {"reflective": 1, "outflow":2, "periodic":4}
         
-        self.par_seti("grid", "ibc_x1", "%d", map_from_string_to_flag[xbound1], "")
-        self.par_seti("grid", "obc_x1", "%d", map_from_string_to_flag[xbound2], "")
-        self.par_seti("grid", "ibc_x2", "%d", map_from_string_to_flag[ybound1], "")
-        self.par_seti("grid", "obc_x2", "%d", map_from_string_to_flag[ybound2], "")
-        self.par_seti("grid", "ibc_x3", "%d", map_from_string_to_flag[zbound1], "")
-        self.par_seti("grid", "obc_x3", "%d", map_from_string_to_flag[zbound1], "")
-        
+        self.par_seti("grid", "ibc_x1", "%d", map_from_string_to_flag[xbound1], "-")
+        self.par_seti("grid", "obc_x1", "%d", map_from_string_to_flag[xbound2], "-")
+        self.par_seti("grid", "ibc_x2", "%d", map_from_string_to_flag[ybound1], "-")
+        self.par_seti("grid", "obc_x2", "%d", map_from_string_to_flag[ybound2], "-")
+        self.par_seti("grid", "ibc_x3", "%d", map_from_string_to_flag[zbound1], "-")
+        self.par_seti("grid", "obc_x3", "%d", map_from_string_to_flag[zbound1], "-")
     
+    def set_parallel(self, nx, ny, nz):
+        self.par_seti("parallel", "NGrid_x1", "%d", nx, "-")
+        self.par_seti("parallel", "NGrid_x2", "%d", ny, "-")
+        self.par_seti("parallel", "NGrid_x3", "%d", nz, "-")
+        
+    def set_auto_decomposition(self, value):
+        self.par_seti("parallel", "auto", "%d", value, "-")
+        
     @legacy_function    
     def initialize_grid():
         function = LegacyFunctionSpecification()  

@@ -15,6 +15,10 @@
 #include "globals.h"
 #include "prototypes.h"
 
+#ifdef MPI_PARALLEL
+#include <mpi.h>
+#endif
+
 
 static Grid level0_Grid;      /* only level0 Grid and Domain in this version */
 static Domain level0_Domain;
@@ -30,8 +34,19 @@ int recommit_parameters(){
 }
 
 int initialize_code(){
+#ifdef MPI_PARALLEL
+/* Get my task id (rank in MPI) */
+  if(MPI_SUCCESS != MPI_Comm_rank(MPI_COMM_WORLD,&(level0_Grid.my_id)))
+    ath_error("Error on calling MPI_Comm_rank\n");
+
+/* Get the number of processes */
+  if(MPI_SUCCESS != MPI_Comm_size(MPI_COMM_WORLD,&(level0_Grid.nproc)))
+    ath_error("Error on calling MPI_Comm_size\n");
+#else
   level0_Grid.my_id = 0;
   level0_Grid.nproc = 1;
+#endif
+
   par_open("/dev/null"); /* to trick athena into thinking it has opened a parameter file, will not work on windows */
   
   show_config_par();   /* Add the configure block to the parameter database */
@@ -55,20 +70,24 @@ int get_nghost(int * value) {
 }
 
 int commit_parameters(){
+  printf("1");
   int out_level = par_geti_def("log","out_level",0);
   int err_level = par_geti_def("log","err_level",0);
+  
+  printf("2");
   ath_log_set_level(out_level, err_level);
   
-  
   CourNo = par_getd("time","cour_no");
-  /*
+
+#ifdef ISOTHERMAL
   Iso_csound = par_getd("problem","iso_csound");
   Iso_csound2 = Iso_csound*Iso_csound;
-  */
-  
+#else
   Gamma = par_getd("problem","gamma");
   Gamma_1 = Gamma - 1.0;
   Gamma_2 = Gamma - 2.0;
+#endif
+  
   
   init_domain(&level0_Grid, &level0_Domain);
   
@@ -148,6 +167,62 @@ int fill_grid_state(
   
   return 0;
 }
+
+int get_grid_state_mpi(
+    int * i, int * j, int * k, 
+    double * rho, 
+    double * rhovx, double * rhovy, double * rhovz, 
+    double * en, 
+    int number_of_points)
+{
+    int imin = level0_Grid.is + level0_Grid.idisp;
+    int imax = level0_Grid.ie + level0_Grid.idisp;
+    int jmin = level0_Grid.js + level0_Grid.jdisp;
+    int jmax = level0_Grid.je + level0_Grid.jdisp;
+    int kmin = level0_Grid.ks + level0_Grid.kdisp;
+    int kmax = level0_Grid.ke + level0_Grid.kdisp;
+    int l=0;
+    int i0,j0,k0 = 0;
+    
+    printf("%d, %d, %d\n",imin, imax, level0_Grid.idisp);
+    printf("%d, %d, %d\n",jmin, jmax, level0_Grid.jdisp);
+    printf("%d, %d, %d\n",kmin, kmax, level0_Grid.kdisp);
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        
+        if ( 
+            (i0 >= imin && i0 <= imax) &&
+            (j0 >= jmin && j0 <= jmax) &&
+            (k0 >= kmin && k0 <= kmax)
+        ) {
+            i0 -= level0_Grid.idisp;
+            j0 -= level0_Grid.jdisp;
+            k0 -= level0_Grid.kdisp;
+            
+            rho[l] = level0_Grid.U[k0][j0][i0].d;
+            rhovx[l] = level0_Grid.U[k0][j0][i0].M1;
+            rhovy[l] = level0_Grid.U[k0][j0][i0].M2;
+            rhovz[l] = level0_Grid.U[k0][j0][i0].M3;
+            en[l] = level0_Grid.U[k0][j0][i0].E;
+        } else {
+            rho[l] = rhovx[l] = rhovy[l]= rhovz[l] = en[l] = 0.0;
+        } 
+    }
+    
+#ifdef MPI_PARALLEL
+    if(level0_Grid.my_id) {
+        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+    return 0;
+}
+
+
 
 int get_grid_state(
   int i, int j, int k, 

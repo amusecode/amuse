@@ -1,6 +1,7 @@
 
 ATHENA_DIR = src/athena3.1
 
+CC = mpicc
 CFLAGS   += -g -I$(ATHENA_DIR)/src 
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -ldl -lm
@@ -50,9 +51,9 @@ distclean:
 
 $(CODELIB): src
 	@echo $(ATHENA_OBJS)
-	cd $(ATHENA_DIR); ./configure --with-gas=hydro
+	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi
 	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem.c src/problem.c
-	cd $(ATHENA_DIR); make all CFLAGS=-g
+	cd $(ATHENA_DIR); make all CFLAGS=-g CC=mpicc LDR=mpicc
 	ar rv $(CODELIB) $(ATHENA_OBJS)
 	ranlib $(CODELIB)
      

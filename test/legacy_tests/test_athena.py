@@ -35,7 +35,7 @@ class TestAthenaInterface(TestWithMPI):
         
         
     def test3(self):
-        instance=self.new_instance(AthenaInterface)
+        instance=self.new_instance(AthenaInterface, debugger="none")
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.8)
@@ -127,6 +127,30 @@ class TestAthenaInterface(TestWithMPI):
         timestep, error =  instance.get_timestep()
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEqual(timestep, 0.159999, 5)
+        
+        instance.stop()
+        
+    def test6(self):
+        instance=self.new_instance(AthenaInterface, number_of_workers=2, debugger="none")
+        instance.initialize_code()
+        instance.setup_mesh(128,1,1,1.0,0,0)
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        self.assertEquals(result, 0)
+        
+        nghost, error = instance.get_nghost()
+        self.assertEquals(4, nghost)
+        instance.fill_grid_linearwave_1d(0, 1e-06, 0.0, 1)
+        error = instance.initialize_grid()
+        self.assertEquals(error, 0)
+        
+        rho1, rhovx1, rhovy1, rhovz1, energy1, error1 = instance.get_grid_state_mpi([60,61,62,63],[0,0,0,0],[0,0,0,0])
+        
+        print rhovx1[0]
+        
+        self.assertTrue(True)
         
         instance.stop()
         
