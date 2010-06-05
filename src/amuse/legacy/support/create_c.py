@@ -483,7 +483,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
                 self.out + ',  ' 
                 self.out + spec.input_var_name + '[' + 'request_header.' + spec.counter_name 
                 self.out + ' * ' + 'request_header.len' + '- 1] + 1'
-                self.out + ', ' + spec.mpi_type+ ', 0);'
+                self.out + ', ' +'MPI_CHARACTER'+ ', 0);'
             
             self.out.dedent().lf() +'}'
             
