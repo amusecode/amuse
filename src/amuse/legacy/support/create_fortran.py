@@ -33,7 +33,12 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
         return dtype_to_spec
         
     def index_string(self, index):
-        if self.specification.can_handle_array:
+        if self.specification.must_handle_array:
+            if index == 0:
+                return '1'
+            else:
+                return '( %d * len_in) + 1' % (index )
+        elif self.specification.can_handle_array:
             if index == 0:
                 return 'i'
             else:
@@ -53,7 +58,9 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
         self.output_lines_before_with_clear_out_variables()
         self.output_lines_before_with_clear_input_variables()
         
-        if self.specification.can_handle_array:
+        if self.specification.must_handle_array:
+            pass
+        elif self.specification.can_handle_array:
             self.out.lf() + 'do i = 1, len_in, 1'
             self.out.indent()
         
@@ -64,7 +71,15 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
         self.output_lines_with_inout_variables()
         
         
-        if self.specification.can_handle_array:
+        if self.specification.must_handle_array:
+            if not self.specification.result_type is None:
+                spec = self.dtype_to_spec[self.specification.result_type]
+                self.out.lf() + 'DO i = 2, len_in'
+                self.out.indent()
+                self.out.lf() + spec.output_var_name + '(i)' + ' = ' + spec.output_var_name + '(1)'
+                self.out.dedent()
+                self.out.lf() + 'END DO'
+        elif self.specification.can_handle_array:
             self.out.dedent()
             self.out.lf() + 'end do'
             
@@ -116,6 +131,8 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
                 else:
                     self.out.n() + spec.output_var_name
                     self.out + '(' + self.index_string(parameter.output_index) + ')'
+            elif parameter.direction == LegacyFunctionSpecification.LENGTH:
+                self.out.n() + 'len_in'
                 
         self.out.dedent()
         

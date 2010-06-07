@@ -53,7 +53,7 @@ int echo_array_with_result(int * in, int *out, int len) {
     for(i = 0; i < len; i++) {
         out[i] = in[i];
     }
-    return 0;
+    return -1;
 }
 """
 
@@ -333,7 +333,10 @@ class TestInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         (output_ints, error) = instance.echo_array_with_result([4,5,6])
         instance.stop()
-        print output_ints, error
         self.assertEquals(output_ints[0], 4)
         self.assertEquals(output_ints[1], 5)
         self.assertEquals(output_ints[2], 6)
+        
+        self.assertEquals(error[0], -1)
+        self.assertEquals(error[1], -1)
+        self.assertEquals(error[2], -1)

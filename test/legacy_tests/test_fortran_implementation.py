@@ -92,12 +92,25 @@ function echo_string_fixed_len(string_in, string_out)
     
     echo_string_fixed_len = 0
 end function
+
+function echo_array_with_result(int_in, int_out, N)
+    implicit none
+    integer, intent(in) :: N
+    integer :: int_in(N), int_out(N)
+    integer :: echo_array_with_result,  i
+    
+    do i = 1, N
+     int_out(i) = int_in(i)
+    end do
+    
+    echo_array_with_result = -1
+end function
 """
 
 class ForTestingInterface(LegacyInterface):
     
-    def __init__(self, exefile):
-        LegacyInterface.__init__(self, exefile)
+    def __init__(self, exefile, **options):
+        LegacyInterface.__init__(self, exefile, **options)
 
     @legacy_function
     def echo_int():
@@ -169,6 +182,17 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function  
+        
+    @legacy_function
+    def echo_array_with_result():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('int_in', dtype='int32', direction=function.IN)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function    
+    
 
 
 
@@ -185,7 +209,7 @@ class TestInterface(TestWithMPI):
             f.write(string)
             
         process = subprocess.Popen(
-            ["mpif90", "-c",  "-o", objectname, sourcename],
+            ["mpif90", "-g", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
@@ -334,4 +358,19 @@ class TestInterface(TestWithMPI):
         del instance
         self.assertEquals(error, 0)
         self.assertEquals(out[0], "abc")
+        
+        
+    def test13(self):
+        instance = ForTestingInterface(self.exefile, debugger="none")
+        (output_ints, error) = instance.echo_array_with_result([4,5,6])
+        instance.stop()
+        print output_ints, error
+        self.assertEquals(output_ints[0], 4)
+        self.assertEquals(output_ints[1], 5)
+        self.assertEquals(output_ints[2], 6)
+        
+        self.assertEquals(error[0], -1)
+        self.assertEquals(error[1], -1)
+        self.assertEquals(error[2], -1)
+    
 
