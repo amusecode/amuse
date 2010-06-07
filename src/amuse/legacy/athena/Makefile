@@ -36,6 +36,8 @@ else
 		@make -s --no-print-directory -C . raise_error
 endif
 
+ATHENA_OBJS := $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o))
+
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code

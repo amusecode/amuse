@@ -24,6 +24,7 @@ static Grid level0_Grid;      /* only level0 Grid and Domain in this version */
 static Domain level0_Domain;
 static VGFun_t Integrate;
 static int is_dt_set_by_script=0;
+static int is_restart = 0;
 
 int cleanup_code(){
   return 0;
@@ -48,7 +49,7 @@ int initialize_code(){
 #endif
 
   par_open("/dev/null"); /* to trick athena into thinking it has opened a parameter file, will not work on windows */
-  
+  is_restart = 0;
   show_config_par();   /* Add the configure block to the parameter database */
   return 0;
 }
@@ -109,6 +110,15 @@ int initialize_grid()
   lr_states_init(level0_Grid.Nx1,level0_Grid.Nx2,level0_Grid.Nx3);
   
   Integrate = integrate_init(level0_Grid.Nx1,level0_Grid.Nx2,level0_Grid.Nx3);
+
+#ifdef SELF_GRAVITY
+  SelfGrav = selfg_init(&level0_Grid, &level0_Domain);
+  if(is_restart == 0) {
+      (*SelfGrav)(&level0_Grid, &level0_Domain);
+  }
+  /* Only bvals for Phi set when last argument of set_bvals = 1  */
+  set_bvals(&level0_Grid, 1);
+#endif
   
   return 0;
 }
@@ -184,10 +194,6 @@ int get_grid_state_mpi(
     int l=0;
     int i0,j0,k0 = 0;
     
-    printf("%d, %d, %d\n",imin, imax, level0_Grid.idisp);
-    printf("%d, %d, %d\n",jmin, jmax, level0_Grid.jdisp);
-    printf("%d, %d, %d\n",kmin, kmax, level0_Grid.kdisp);
-    
     for(l=0; l < number_of_points; l++) {
         i0 = i[l];
         j0 = j[l];
@@ -229,6 +235,46 @@ int get_grid_state_mpi(
     return 0;
 }
 
+
+int fill_grid_state_mpi(
+    int * i, int * j, int * k, 
+    double * rho, 
+    double * rhovx, double * rhovy, double * rhovz, 
+    double * en, 
+    int number_of_points)
+{
+    int imin = level0_Grid.is + level0_Grid.idisp;
+    int imax = level0_Grid.ie + level0_Grid.idisp;
+    int jmin = level0_Grid.js + level0_Grid.jdisp;
+    int jmax = level0_Grid.je + level0_Grid.jdisp;
+    int kmin = level0_Grid.ks + level0_Grid.kdisp;
+    int kmax = level0_Grid.ke + level0_Grid.kdisp;
+    int l=0;
+    int i0,j0,k0 = 0;
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        
+        if ( 
+            (i0 >= imin && i0 <= imax) &&
+            (j0 >= jmin && j0 <= jmax) &&
+            (k0 >= kmin && k0 <= kmax)
+        ) {
+            i0 -= level0_Grid.idisp;
+            j0 -= level0_Grid.jdisp;
+            k0 -= level0_Grid.kdisp;
+            level0_Grid.U[k0][j0][i0].d = rho[l];
+            level0_Grid.U[k0][j0][i0].M1 = rhovx[l];
+            level0_Grid.U[k0][j0][i0].M2 = rhovy[l];
+            level0_Grid.U[k0][j0][i0].M3 = rhovz[l];
+            level0_Grid.U[k0][j0][i0].E = en[l];
+        }
+    }
+    
+    return 0;
+}
 
 
 int get_grid_state(
@@ -533,7 +579,20 @@ int evolve(double tlim) {
         if ((tlim-level0_Grid.time) < level0_Grid.dt) {
             level0_Grid.dt = (tlim-level0_Grid.time);
         }
+        
         (*Integrate)(&level0_Grid);
+        
+        Userwork_in_loop(&level0_Grid, &level0_Domain);
+        
+        
+#ifdef SELF_GRAVITY
+        (*SelfGrav)(&level0_Grid, &level0_Domain);
+        /* Only bvals for Phi set when last argument of set_bvals = 1  */
+        set_bvals(&level0_Grid, 1);
+        selfg_flux_correction(&level0_Grid);
+#endif
+        
+        
         level0_Grid.nstep++;
         level0_Grid.time += level0_Grid.dt;
         new_dt(&level0_Grid);

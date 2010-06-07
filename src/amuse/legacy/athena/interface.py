@@ -8,26 +8,6 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
     def __init__(self, **options):
         LegacyInterface.__init__(self, **options)
         self.set_auto_decomposition(1)
-    
-    @legacy_function
-    def test():
-        function = LegacyFunctionSpecification()  
-        #function.addParameter('mass', dtype='float64', direction=function.IN)
-        function.result_type = 'int32'
-        function.can_handle_array = True
-        return function
-        
-    @legacy_function   
-    def setup_mesh():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('nmeshx', dtype='i', direction=function.IN)
-        function.addParameter('nmeshy', dtype='i', direction=function.IN)
-        function.addParameter('nmeshz', dtype='i', direction=function.IN)
-        function.addParameter('xlength', dtype='d', direction=function.IN)
-        function.addParameter('ylength', dtype='d', direction=function.IN)
-        function.addParameter('zlength', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
         
     @legacy_function
     def par_seti():
@@ -114,6 +94,19 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        
+        return function
+        
+    @legacy_function    
+    def fill_grid_state_mpi():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.IN)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function

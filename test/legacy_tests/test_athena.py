@@ -193,4 +193,35 @@ class TestAthenaInterface(TestWithMPI):
         
         instance.stop()
         
+    
+    def test9(self):
+        results = []
+        for x in range(1,5):
+            instance=self.new_instance(AthenaInterface, number_of_workers=x, debugger="none")
+            instance.initialize_code()
+            instance.setup_mesh(128,1,1,1.0,0,0)
+            instance.set_gamma(1.6666666666666667)
+            instance.set_courant_friedrichs_lewy_number(0.8)
+            instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+            result = instance.commit_parameters()
+            self.assertEquals(result, 0)
+            
+            nghost, error = instance.get_nghost()
+            self.assertEquals(4, nghost)
+            instance.fill_grid_linearwave_1d(0, 1e-06, 0.0, 1)
+            error = instance.initialize_grid()
+            self.assertEquals(error, 0)
+            instance.evolve(5.0)
+        
+            result = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+            results.append(list(result))
+            
+            
+            instance.stop()
+        
+        for x in range(128):
+            for y in range(6):
+                self.assertEquals(results[1][y][x], results[0][y][x])
+                self.assertEquals(results[2][y][x], results[0][y][x])
+                self.assertEquals(results[3][y][x], results[0][y][x])
         
