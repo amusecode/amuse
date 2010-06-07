@@ -27,7 +27,7 @@ else
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
 		@echo "DO_INSTALL_ATHENA is not set. Athena will not be downloaded and build."
-		@echo "If you do want SeBa, set DO_INSTALL_ATHENA  to 1."
+		@echo "If you do want Athena, set DO_INSTALL_ATHENA  to 1."
 		@echo "bash> export DO_INSTALL_ATHENA = 1"
 		@echo "csh> setenv DO_INSTALL_ATHENA  1"
 		@echo ""
