@@ -130,8 +130,38 @@ class TestAthenaInterface(TestWithMPI):
         
         instance.stop()
         
-    def test6(self):
-        instance=self.new_instance(AthenaInterface, number_of_workers=2, debugger="none")
+    def test7(self):
+        results = []
+        for x in range(1,4):
+            instance=self.new_instance(AthenaInterface, number_of_workers=x, debugger="none")
+            instance.initialize_code()
+            instance.setup_mesh(128,1,1,1.0,0,0)
+            instance.set_gamma(1.6666666666666667)
+            instance.set_courant_friedrichs_lewy_number(0.8)
+            instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+            result = instance.commit_parameters()
+            self.assertEquals(result, 0)
+            
+            nghost, error = instance.get_nghost()
+            self.assertEquals(4, nghost)
+            instance.fill_grid_linearwave_1d(0, 1e-06, 0.0, 1)
+            error = instance.initialize_grid()
+            self.assertEquals(error, 0)
+            
+            result = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+            results.append(list(result))
+            
+            
+            instance.stop()
+        
+        for x in range(128):
+            for y in range(6):
+                self.assertEquals(results[1][y][x], results[0][y][x])
+                self.assertEquals(results[2][y][x], results[0][y][x])
+        
+    
+    def test8(self):
+        instance=self.new_instance(AthenaInterface, number_of_workers=1)
         instance.initialize_code()
         instance.setup_mesh(128,1,1,1.0,0,0)
         instance.set_gamma(1.6666666666666667)
@@ -140,20 +170,27 @@ class TestAthenaInterface(TestWithMPI):
         result = instance.commit_parameters()
         self.assertEquals(result, 0)
         
-        nghost, error = instance.get_nghost()
-        self.assertEquals(4, nghost)
         instance.fill_grid_linearwave_1d(0, 1e-06, 0.0, 1)
         error = instance.initialize_grid()
         self.assertEquals(error, 0)
         
-        rho1, rhovx1, rhovy1, rhovz1, energy1, error1 = instance.get_grid_state_mpi([60,61,62,63],[0,0,0,0],[0,0,0,0])
+        timestep, error =  instance.get_timestep()
+        self.assertEquals(error, 0)
+        self.assertAlmostRelativeEqual(timestep,  0.006249991, 5)
         
-        print rhovx1[0]
+        rho0, rhovx0, rhovy0, rhovz0, energy0, error0  = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+        instance.evolve(5.0)
+        rho, rhovx, rhovy, rhovz, energy, error  = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
         
-        self.assertTrue(True)
+        error_rho = numpy.sum(numpy.abs(rho - rho0))
+        error_rhovx =  numpy.sum(numpy.abs(rhovx - rhovx0))
+        error_rhovy =  numpy.sum(numpy.abs(rhovy - rhovy0))
+        error_rhovz =  numpy.sum(numpy.abs(rhovz - rhovz0))
+        error_energy =  numpy.sum(numpy.abs(energy - energy0))
+        self.assertAlmostRelativeEquals(error_rho / 128.0, 1.877334e-09, 6)
+        self.assertAlmostRelativeEquals(error_rhovx / 128.0, 1.877334e-09, 6)
+        self.assertAlmostRelativeEquals(error_energy / 128.0, 2.816001e-09, 6)
         
         instance.stop()
-        
-        
         
         
