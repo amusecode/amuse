@@ -195,8 +195,11 @@ class TestCodeInterface(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = PhiGRAPE(convert_nbody)
+        instance = PhiGRAPE(convert_nbody)#, mode="gpu", redirection="none", debugger="xterm")
+        print "ONE"
         instance.initialize_code()
+        print "ONE"
+
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.set_eta(0.01,0.02)
         instance.dt_dia = 5000

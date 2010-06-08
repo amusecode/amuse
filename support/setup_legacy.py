@@ -349,15 +349,23 @@ class BuildOneLegacyCode(LegacyCommand):
         environment = self.environment
         environment.update(os.environ)
         
+        results = []
         for x in self.makefile_paths():
             self.announce("cleaning " + x)
             call(['make','-C', x, 'clean'])
             returncode = call(['make','-C', x, 'all'], env = environment)
+            results.append(('default',returncode,))
             
             special_targets = self.get_special_targets(x, environment)
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name)
                 returncode = call(['make','-C', x, target], env = environment)
+                results.append((target,returncode,))
+        
+        for name, returncode in results:
+            print name, "...", "failed" if returncode == 2 else "succeeded"
+            
+
                 
             
             

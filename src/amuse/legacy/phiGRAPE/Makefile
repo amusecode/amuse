@@ -13,16 +13,19 @@ CODELIB=$(SRCDIR)/libphigrape.a
 
 GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 
-ifndef CUDA_LIBDIRS
-	CUDA_LIBDIRS = -L/data1/pelupes/libraries/CUDA/cuda/lib 
-endif
-CUDA_LIBS ?= -lcudart
 
-SAPPORO_LIBDIRS ?= -L/data1/pelupes/libraries/sapporo_v1.5
+CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
+CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
+
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib 
+CUDA_LIBS ?= -lcudartemu
+
+SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo
 GRAPE6_LIBDIRS ?= -L$(GRAPE6)/lib
 
+BOOSTLIBS = -L/opt/local/lib -lboost_thread-mt
 LLIBSDIR = $(SAPPORO_LIBDIRS) $(CUDA_LIBDIRS) $(GRAPE6_LIBDIRS)
-GPULIBS  = $(CUDA_LIBS) -lsapporo -L/opt/local/lib -lboost_thread-mt -lpthread -L/usr/lib64 -lstdc++
+GPULIBS  =  $(CUDA_LIBS) -lsapporo  -lpthread -L/usr/lib64 -lstdc++-static
 GRAPE6LIBS  ?= -lg6lx
 LIBS     =  -lm -lpthread
 
@@ -40,10 +43,10 @@ THREADLIB ?= -L. -lpthread src/libpt.a
 
 PGLIBS ?= -L. -lpg5
 
-G6LIBS ?= -L../../../../lib/g6 -lg6
+G6LIBS ?= -L$(AMUSE_DIR)/lib/g6 -lg6
 
-CFLAGS += -O2 $(OPTS)
-FFLAGS += -O2 $(OPTS)
+CFLAGS += -g  $(OPTS)
+FFLAGS += -g $(OPTS)
 FFLAGS += -I./src/
 
 all: worker_code 
