@@ -105,7 +105,6 @@ void sapporo::calc_firsthalf(int cluster_id,
   }
 
   send_i_particles_to_device(device_id, ni);
-  std::cerr<<"ni:"<<ni<<"nj"<<nj<<std::endl;
   if(address_j.size() > 0) {
     address_j.clear();
     t_j.clear();
