@@ -194,11 +194,8 @@ class TestCodeInterface(TestWithMPI):
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
-        instance = PhiGRAPE(convert_nbody)#, mode="gpu", redirection="none", debugger="xterm")
-        print "ONE"
+        instance = PhiGRAPE(convert_nbody, mode="gpu", redirection="none")#, debugger="xterm")
         instance.initialize_code()
-        print "ONE"
 
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.set_eta(0.01,0.02)
@@ -232,13 +229,12 @@ class TestCodeInterface(TestWithMPI):
         
         instance.cleanup_module()
         
-        del instance
-        
+        instance.stop()
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
-        instance = PhiGRAPE(convert_nbody)
+        instance = PhiGRAPE(convert_nbody, mode="gpu")
+        
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.set_eta(0.01,0.02)
@@ -274,7 +270,7 @@ class TestCodeInterface(TestWithMPI):
             figure.savefig(output_file)
         
         instance.cleanup_module()
-        del instance
+        instance.stop()
         
     
     def test4(self):
@@ -320,13 +316,12 @@ class TestCodeInterface(TestWithMPI):
         instance.initialize_particles(0.0 )
         
         zero = 0.0 | nbody_system.length
-        fx, fy, fz = instance.get_gravity_at_point(zero, 1.0 | nbody_system.length, zero, zero)
+        fx, fy, fz = instance.get_gravity_at_point(zero, 1.0| nbody_system.length, zero, zero)
         self.assertAlmostEqual(fx, 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostEqual(fy, 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostEqual(fz, 0.0 | nbody_system.acceleration, 3)
-    
         for x in (0.25, 0.5, 0.75):
-            x0 = x | nbody_system.length
+            x0 = x| nbody_system.length
             x1 = (2.0 - x) | nbody_system.length
             potential0 = instance.get_potential_at_point(zero, x0, zero, zero)
             potential1 = instance.get_potential_at_point(zero, x1, zero, zero)
@@ -358,3 +353,43 @@ class TestCodeInterface(TestWithMPI):
         copyof = instance.particles.copy()
         
         self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
+        
+    def test7(self):
+        instance = PhiGRAPE()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        instance.set_eta(0.01,0.02)
+
+        
+        particles = core.Particles(2)
+        print particles
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius =  [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+        
+        instance.initialize_particles(0.0 )
+        
+        zero = [0.0, 0.0, 0.0] | nbody_system.length
+        fx, fy, fz = instance.get_gravity_at_point(zero, [0.5, 1.0, 1.5] | nbody_system.length, zero, zero)
+        print fx, fy
+        self.assertAlmostRelativeEqual(fx[0], -3.55555555556 | nbody_system.acceleration, 5)
+        self.assertAlmostRelativeEqual(fy[0], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fz[0], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fx[1], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fy[1], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fz[1], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fx[2], 3.55555555556 | nbody_system.acceleration, 5)
+        self.assertAlmostRelativeEqual(fy[2], 0.0 | nbody_system.acceleration, 3)
+        self.assertAlmostRelativeEqual(fz[2], 0.0 | nbody_system.acceleration, 3)
+        
+        n = 512
+        x = nbody_system.length.new_quantity(numpy.linspace(0.1, 1.9, n))
+        zero = nbody_system.length.new_quantity(numpy.zeros(n))
+        print x
+        fx, fy, fz = instance.get_gravity_at_point(zero, x , zero, zero)
+        print fx
+        for i in range(n/2):
+            self.assertAlmostRelativeEqual(fx[i] , - fx[n - 1 - i], 5)
+        

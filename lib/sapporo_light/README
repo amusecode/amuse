@@ -1,0 +1,24 @@
+Sapporo Light library v1.0 to simulate GRAPE6 hardware with G80/G92 GPUs.
+
+Testes with CUDA version 3.0
+
+Type 'make' to compile the library (libsapporo.a).
+ 
+This "Light" version of Sapporo is without 
+multi-threading support and does not need
+C++. This makes it easier to integrate into
+fortran codes, but beware, it can only use one
+GPU device per application!
+
+
+If you have further questions, feel free to contact me.
+
+ (c) 2010
+ Arjen van Elteren, vanelteren@strw.leidenuniv.nl
+ 
+ (c) 2008
+ Evghenii Gaburov, egaburov@science.uva.nl
+ Sterrenkundig Instituut "Anton Pannekoek" 
+ Section Computational Science
+ Universiteit van Amsterdam
+

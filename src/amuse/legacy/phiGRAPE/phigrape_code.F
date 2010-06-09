@@ -179,16 +179,23 @@ C---  get array address
       
       
 
-      FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz)
+      FUNCTION get_gravity_at_point(eps1, x1, y1, z1, fx, fy, fz, 
+     $  number_of_points)
       IMPLICIT NONE
-      DOUBLE PRECISION :: eps1, x1, y1, z1, fx, fy, fz, p
+      INTEGER, intent(IN) :: number_of_points
+      DOUBLE PRECISION :: eps1(number_of_points), x1(number_of_points)
+      DOUBLE PRECISION ::  y1(number_of_points), z1(number_of_points)
+      DOUBLE PRECISION :: fx(number_of_points), fy(number_of_points)
+      DOUBLE PRECISION :: fz(number_of_points)
+      DOUBLE PRECISION p(number_of_points)
       INTEGER get_gravity_at_point
 #include "src/general.inc"
       
       CALL initgrape
       CALL update_grape(1) 
       
-      CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p)
+      CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p,
+     $  number_of_points)
       
       CALL g6_close(clusterid)
         
@@ -196,18 +203,24 @@ C---  get array address
       END
       
 
-      FUNCTION get_potential_at_point(eps1, x1, y1, z1, p) 
+      FUNCTION get_potential_at_point(eps1, x1, y1, z1, p,
+     $ number_of_points)
       IMPLICIT NONE
-      DOUBLE PRECISION :: eps1, x1, y1, z1, p
-      DOUBLE PRECISION :: fx, fy, fz
+      INTEGER, intent(IN) :: number_of_points
+      DOUBLE PRECISION :: eps1(number_of_points), x1(number_of_points)
+      DOUBLE PRECISION ::  y1(number_of_points), z1(number_of_points)
+      DOUBLE PRECISION :: fx(number_of_points), fy(number_of_points)
+      DOUBLE PRECISION :: fz(number_of_points)
+      DOUBLE PRECISION :: p(number_of_points)
       INTEGER get_potential_at_point   
 #include "src/general.inc"  
+      
       
       CALL initgrape
       CALL update_grape(1) 
       
-      
-      CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p)
+      CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p,
+     $  number_of_points)
       
       CALL g6_close(clusterid)
 

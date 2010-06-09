@@ -104,7 +104,56 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         function.result_type = 'i'
         return function
 
-
+    @legacy_function
+    def get_gravity_at_point():
+        """
+        Determine the gravitational force on a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+            description = "The smoothing parameter")
+        function.addParameter('x', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('y', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('z', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('forcex', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('forcey', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('forcez', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('number_of_points', dtype='int32', direction=function.LENGTH,
+            description = "number of points to determine the force for")
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        function.result_doc = """
+         0 - OK
+            Force could be calculated
+        -1 - ERROR
+            No force calculation supported
+        """
+        return function
+        
+    
+    @legacy_function
+    def get_potential_at_point():
+        """
+        Determine the potential on a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+         description = "The smoothing factor, may be ignored by the code")
+        function.addParameter('x', dtype='float64', direction=function.IN)
+        function.addParameter('y', dtype='float64', direction=function.IN)
+        function.addParameter('z', dtype='float64', direction=function.IN)
+        function.addParameter('phi', dtype='float64', direction=function.OUT)
+        function.addParameter('number_of_points', dtype='int32', direction=function.LENGTH,
+            description = "number of points to determine the force for")
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
 
 
 
