@@ -194,7 +194,7 @@ class TestCodeInterface(TestWithMPI):
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, mode="gpu", redirection="none")#, debugger="xterm")
+        instance = PhiGRAPE(convert_nbody, redirection="none")#, debugger="xterm")
         instance.initialize_code()
 
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -233,7 +233,7 @@ class TestCodeInterface(TestWithMPI):
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, mode="gpu")
+        instance = PhiGRAPE(convert_nbody)
         
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
