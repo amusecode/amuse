@@ -509,8 +509,10 @@ void real_system::setup_tree()
     bhnode * btmp = bn+1;
     int heap_remainder = bnsize-1;
     BHlong key = 0;
+    
     bn->create_tree_recursive(btmp,heap_remainder,key,
-			      default_key_length, 12 );
+			      default_key_length, ncrit_for_tree);
+    //cello: last argument was 12 for some reason 
                   
     
     set_cm_quantities_for_default_tree();
