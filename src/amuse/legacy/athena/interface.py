@@ -1,6 +1,8 @@
 from amuse.legacy import *
 from amuse.legacy.interface.common import CommonCodeInterface
 
+import numpy
+
 class AthenaInterface(LegacyInterface, CommonCodeInterface):
     
     include_headers = ['worker_code.h']
@@ -60,6 +62,28 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         self.par_setd("grid", "x3max", "%.15e", zlength, "-")
         
         return 0
+        
+    
+    def get_index_range_inclusive(self):
+        """
+        Returns the min and max values of indices in each
+        direction. The range is inclusive, the min index
+        and max index both exist and can be queried.
+        The total number of cells in one direction
+        is max - min + 1.
+        """
+        ni = self.par_geti("grid", "Nx1")
+        nj = self.par_geti("grid", "Nx2")
+        nk = self.par_geti("grid", "Nx3")
+        return (0, ni[0]-1, 0 , nj[0]-1 , 0, nk[0]-1)
+        
+    def get_mesh_indices(self):
+        """
+        Return 3 arrays, containing the indices for i, j and k
+        """
+        si,ei,sj,ej,sk,ek = self.get_index_range_inclusive()
+        indexgrid = numpy.mgrid[slice(si,ei+1),slice(sj,ej+1),slice(sk,ek+1)]
+        return indexgrid.reshape(3, -1)
         
     
     @legacy_function    
