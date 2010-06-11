@@ -11,6 +11,7 @@ from amuse.support.units import units
 from amuse.support.units import core
 from amuse.support.units import si
 from amuse.support.units import constants
+from amuse.support.units import nbody_system
 from amuse.support.units import nbody_system as nbody
 
 from amuse.support.data import particle_attributes

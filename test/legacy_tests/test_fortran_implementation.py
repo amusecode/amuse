@@ -372,5 +372,15 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error[0], -1)
         self.assertEquals(error[1], -1)
         self.assertEquals(error[2], -1)
+        
+    
+    def test14(self):
+        
+        for x in range(4):
+            instance = ForTestingInterface(self.exefile)
+            int_out, error = instance.echo_int(10)
+            instance.stop()
+            self.assertEquals(int_out, 10)
+            self.assertEquals(error, 0)
     
 

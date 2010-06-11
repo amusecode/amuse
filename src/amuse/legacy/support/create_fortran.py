@@ -513,6 +513,9 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         
     def output_runloop_function_def_end(self):
         
+        self.out.lf().lf() + 'if (rank .eq. 0 ) then'
+        self.out.indent().lf()
+        
         self.out.lf().lf() + 'header(1) = tag_out'
         self.out.lf() + 'header(2) = len_out'
         for i, dtype in enumerate(dtypes):
@@ -567,6 +570,12 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
                 self.out.lf() + 'parent, ioerror)'
                 
             self.out.dedent().dedent().lf() +'end if'
+        
+        
+        
+        self.out.dedent().lf()+ 'end if'
+        self.out.indent().lf().lf()
+            
         self.out.dedent()
         self.out.lf() + 'end do'
         

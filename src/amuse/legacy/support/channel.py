@@ -428,6 +428,8 @@ class RunStandardStreamsRedirection(object):
             self.copied_fds = True
     
     def after_spawn(self):
+        if not self.copied_fds:
+            return
         if not self.restored_fds:
             os.dup2(self.fd_stdin, 0)
             os.dup2(self.fd_stdout, 1)
@@ -601,7 +603,6 @@ class MpiChannel(MessageChannel):
         try:
             self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
         finally:
-            
             RunStandardStreamsRedirection.instance().after_spawn() 
             if False:
                 if not self.redirection_filenames is None and not fd_stdin is None:

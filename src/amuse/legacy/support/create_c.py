@@ -511,13 +511,15 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.dedent().lf() + '}'
         
     def output_runloop_function_def_end(self):
-        self.out.lf().lf() + 'reply_header.send(parent, rank);'
-        
         self.out.lf().lf() + 'MPI::COMM_WORLD.Barrier();'
         self.out.lf().lf()
         
         self.out.lf() + 'if(rank == 0) {'
+        
         self.out.indent().lf()
+        self.out.lf().lf() + 'reply_header.send(parent, rank);'
+        self.out.lf().lf()
+        
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]  
             
