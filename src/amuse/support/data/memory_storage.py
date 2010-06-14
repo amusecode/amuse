@@ -1,11 +1,23 @@
+import numpy
+
 from amuse.support.data import values
-from amuse.support.data.values import Quantity, new_quantity, zero
-from amuse.support.units import constants
-from amuse.support.units import units
-from amuse.support.core import CompositeDictionary
-
-
 from amuse.support.data.base import *
+    
+
+class AttributeValues(object):
+    __slots__ = ["attribute", "values", "unit", "model_times"]
+    
+    def __init__(self, attribute, unit, values = None,  model_times = None, length = None):
+        self.attribute = attribute
+        self.unit = unit
+        self.model_times = model_times
+        if values is None:
+            self.values = numpy.zeros(length, dtype = self.unit.dtype)
+        else:
+            self.values = values
+        
+    def copy(self):
+        return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_times)
         
 class InMemoryAttributeStorage(AttributeStorage):
     
@@ -15,7 +27,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.mapping_from_particle_to_index = {}
         self.particle_keys = []
 
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         if len(values) != len(attributes):
             raise Exception(
                 "you need to provide the same number of value list as attributes, found {0} attributes and {1} list of values".format(
@@ -83,12 +95,12 @@ class InMemoryAttributeStorage(AttributeStorage):
             
         results = []
         for attribute in attributes:
-             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-             if indices is None:
-                 selected_values = attribute_values.values
-             else:
-                 selected_values = attribute_values.values.take(indices)
-             results.append(attribute_values.unit.new_quantity(selected_values))
+            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            if indices is None:
+                selected_values = attribute_values.values
+            else:
+                selected_values = attribute_values.values.take(indices)
+                results.append(attribute_values.unit.new_quantity(selected_values))
         
         return results
         
@@ -273,7 +285,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         
         mapping_from_attribute_to_values_and_unit = self.mapping_from_attribute_to_values_and_unit.copy()
         for attribute, attribute_values in mapping_from_attribute_to_values_and_unit.iteritems():
-            attribute_values.values = numpy.delete(attribute_values.values,indices)
+            attribute_values.values = numpy.delete(attribute_values.values, indices)
         
         self.particle_keys = numpy.delete(self.particle_keys,indices)
         self.reindex()
@@ -282,19 +294,19 @@ class InMemoryAttributeStorage(AttributeStorage):
         indices = self.get_indices_of(keys)
         
         for attribute, attribute_values in self.mapping_from_attribute_to_values_and_unit.iteritems():
-            attribute_values.values = numpy.delete(attribute_values.values,indices)
+            attribute_values.values = numpy.delete(attribute_values.values, indices)
         
         self.particle_keys = numpy.delete(self.particle_keys,indices)
         self.reindex()
         
     def reindex(self):
-        d = {}
+        new_index = {}
         index = 0
         for particle_key in self.particle_keys:
-            d[particle_key] = index
+            new_index[particle_key] = index
             index += 1
           
-        self.mapping_from_particle_to_index = d
+        self.mapping_from_particle_to_index = new_index
 
     def attributes(self):
         return set(self.mapping_from_attribute_to_values_and_unit.keys())

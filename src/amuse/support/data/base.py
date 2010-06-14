@@ -10,7 +10,16 @@ import numpy
 import random
 import inspect
 
-class BasicUniqueKeyGenerator(object):
+
+class KeyGenerator(object):
+    
+    def next(self):
+        pass
+        
+    def next_set_of_keys(self, length):
+        pass
+        
+class BasicUniqueKeyGenerator(KeyGenerator):
     
     def __init__(self):
         self.lowest_unique_key = 1
@@ -30,7 +39,7 @@ class BasicUniqueKeyGenerator(object):
         return numpy.arange(from_key, to_key)
         
 
-class RandomNumberUniqueKeyGenerator(object):
+class RandomNumberUniqueKeyGenerator(KeyGenerator):
     DEFAULT_NUMBER_OF_BITS = 64
     
     def __init__(self, number_of_bits = DEFAULT_NUMBER_OF_BITS):
@@ -48,25 +57,14 @@ class RandomNumberUniqueKeyGenerator(object):
         
 UniqueKeyGenerator = RandomNumberUniqueKeyGenerator()
 
-class AttributeValues(object):
-    __slots__ = ["attribute", "values", "unit", "model_times"]
-    
-    def __init__(self, attribute, unit, values = None,  model_times = None, length = None):
-        self.attribute = attribute
-        self.unit = unit
-        self.model_times = model_times
-        if values is None:
-            self.values = numpy.zeros(length, dtype = self.unit.dtype)
-        else:
-            self.values = values
-        
-    def copy(self):
-        return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_times)
 
 
 class AttributeStorage(object):
+    """
+    Abstract base class of particle storage models.
+    """
     
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         pass
         
     def _remove_particles(self, keys):
@@ -76,9 +74,6 @@ class AttributeStorage(object):
         pass
         
     def _set_values(self, particles, attributes, list_of_values_to_set):
-        pass
-        
-    def _set_particles(self, keys, attributes = [], values = []):
         pass
         
     def _get_attributes(self):
@@ -95,7 +90,10 @@ class AttributeStorage(object):
 
 
 class DerivedAttribute(object):
-
+    """
+    Abstract base class for calculated properties and 
+    methods on sets.
+    """
     def get_values_for_entities(self, particles):
         return None
     
@@ -109,7 +107,9 @@ class DerivedAttribute(object):
         raise Exception("cannot set value of attribute '{0}'")
 
 class VectorAttribute(DerivedAttribute):
-    
+    """
+    Combine multiple attributes into a vecter attribute
+    """
     def  __init__(self, attribute_names):
         self.attribute_names = attribute_names
     
@@ -158,7 +158,10 @@ class VectorAttribute(DerivedAttribute):
 
     
 class CalculatedAttribute(DerivedAttribute):
-    
+    """
+    Calculate the value of an attribute based
+    on existing attributes.
+    """
     def  __init__(self, function, attribute_names = None):
         self.function = function
         if attribute_names is None:
@@ -299,7 +302,7 @@ class AbstractSet(object):
     def _set_values(self, keys, attributes, values):
         pass
         
-    def _set_particles(self, keys, attributes, values):
+    def _add_particles(self, keys, attributes, values):
         pass
         
     def _remove_particles(self, keys):
@@ -503,7 +506,7 @@ class AbstractSet(object):
         keys = self._get_keys()
         values = self._get_values(keys, attributes)
         result = self._particles_factory()()
-        result._set_particles(keys, attributes, values)
+        result._add_particles(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -513,7 +516,7 @@ class AbstractSet(object):
         keys = self._get_keys()
         values = self._get_values(keys, attributes)
         result = Particles()
-        result._set_particles(keys, attributes, values)
+        result._add_particles(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -641,7 +644,7 @@ class AbstractSet(object):
         keys = particles._get_keys()
         values = particles._get_values(keys, attributes)
         values = map(self._convert_from_particles, values)
-        self._set_particles(keys, attributes, values)
+        self._add_particles(keys, attributes, values)
         return ParticlesSubset(self._real_particles(), keys)
     
     
@@ -747,7 +750,7 @@ class AbstractSet(object):
         if added_keys:
             attributes = self._get_attributes()
             values = self._get_values(added_keys, attributes)
-            other_particles._set_particles(added_keys, attributes, values)
+            other_particles._add_particles(added_keys, attributes, values)
         
         removed_keys = list(removed_keys)
         if removed_keys:

@@ -137,7 +137,7 @@ class AbstractParticleSet(AbstractSet):
     def _set_values(self, keys, attributes, values):
         pass
         
-    def _set_particles(self, keys, attributes, values):
+    def _add_particles(self, keys, attributes, values):
         pass
         
     def _remove_particles(self, keys):
@@ -285,7 +285,7 @@ class AbstractParticleSet(AbstractSet):
         keys = self._get_keys()
         values = self._get_values(keys, attributes)
         result = self._particles_factory()()
-        result._set_particles(keys, attributes, values)
+        result._add_particles(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -295,7 +295,7 @@ class AbstractParticleSet(AbstractSet):
         keys = self._get_keys()
         values = self._get_values(keys, attributes)
         result = Particles()
-        result._set_particles(keys, attributes, values)
+        result._add_particles(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -421,7 +421,7 @@ class AbstractParticleSet(AbstractSet):
         keys = particles._get_keys()
         values = particles._get_values(keys, attributes)
         values = map(self._convert_from_particles, values)
-        self._set_particles(keys, attributes, values)
+        self._add_particles(keys, attributes, values)
         return ParticlesSubset(self._real_particles(), keys)
     
     
@@ -523,7 +523,7 @@ class AbstractParticleSet(AbstractSet):
         if added_keys:
             attributes = self._get_attributes()
             values = self._get_values(added_keys, attributes)
-            other_particles._set_particles(added_keys, attributes, values)
+            other_particles._add_particles(added_keys, attributes, values)
         
         removed_keys = list(removed_keys)
         if removed_keys:
@@ -729,7 +729,7 @@ class Particles(AbstractParticleSet):
                 particle_keys = UniqueKeyGenerator.next_set_of_keys(size)
             else:
                 particle_keys = keys
-            self._set_particles(particle_keys)
+            self._add_particles(particle_keys)
             
         self._private.previous = None
         self._private.timestamp = None
@@ -806,9 +806,9 @@ class Particles(AbstractParticleSet):
 
                     
             
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         
-        self._private.attribute_storage._set_particles(keys, attributes, values)
+        self._private.attribute_storage._add_particles(keys, attributes, values)
         
     def _remove_particles(self, keys):
         self._private.attribute_storage._remove_particles(keys)
@@ -920,9 +920,9 @@ class ParticlesSuperset(AbstractParticleSet):
         return split_sets, split_indices
                     
         
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         if not self._private.index_to_default_set is None:
-            self._private.particle_sets[self._private.index_to_default_set]._set_particles(keys, 
+            self._private.particle_sets[self._private.index_to_default_set]._add_particles(keys, 
                 attributes, values)
         else:
             raise Exception("Cannot add particles to a superset")
@@ -1036,14 +1036,14 @@ class ParticlesSubset(AbstractParticleSet):
         else:
             return Particle(self._get_keys()[index], self._real_particles())
             
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         """
         Adds particles from to the subset, also
         adds the particles to the superset
         """
         self._private.keys = numpy.concatenate((self.keys,  numpy.array(keys,dtype='uint64')))
         self._private.set_of_keys += set(keys)
-        self._private.particles._set_particles(keys, attributes, values)
+        self._private.particles._add_particles(keys, attributes, values)
         
     def _remove_particles(self, keys):
         """
@@ -1186,12 +1186,12 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         copiedParticles =  self._private.particles.copy()
         return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
         
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         converted_values = []
         for quantity in values:
             converted_quantity = self._private.converter.from_source_to_target(quantity)
             converted_values.append(converted_quantity)
-        self._private.particles._set_particles(keys, attributes, converted_values)
+        self._private.particles._add_particles(keys, attributes, converted_values)
         
     def _remove_particles(self, keys):
         self._private.particles._remove_particles(keys)

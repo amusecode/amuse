@@ -295,7 +295,7 @@ class InCodeAttributeStorage(AttributeStorage):
         return result
         
             
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         
         indices = self.new_particle_method.apply( attributes, values)
         

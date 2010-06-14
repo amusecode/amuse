@@ -15,7 +15,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = InMemoryAttributeStorage()
-        instance._set_particles(particles, attributes, values)
+        instance._add_particles(particles, attributes, values)
         
         self.assertEquals(2.0 | units.m, instance.get_value_of(particles[1], "a"))
         
@@ -29,7 +29,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = InMemoryAttributeStorage()
-        instance._set_particles(particles, attributes, values)
+        instance._add_particles(particles, attributes, values)
         
         indices = instance.get_indices_of([
             particles[2], 
@@ -59,7 +59,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = InMemoryAttributeStorage()
-        instance._set_particles(particles, attributes, values)
+        instance._add_particles(particles, attributes, values)
         
         
         instance._set_values(
@@ -85,7 +85,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = InMemoryAttributeStorage()
-        instance._set_particles(particles, attributes, values)
+        instance._add_particles(particles, attributes, values)
         
         instance.remove_particles([particles[0], particles[2]])
         
@@ -109,12 +109,12 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = InMemoryAttributeStorage()
-        instance._set_particles(particles, attributes, values)
+        instance._add_particles(particles, attributes, values)
         
         self.assertEquals(len(instance), 4)
         
         particles = [4,5,6,7]
-        instance._set_particles(particles, attributes, values)
+        instance._add_particles(particles, attributes, values)
         
         self.assertEquals(len(instance), 8)
         

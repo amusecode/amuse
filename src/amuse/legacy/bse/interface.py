@@ -166,7 +166,7 @@ class BSEParticles(Particles):
         Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface 
         
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         if len(keys) == 0:
             return
             
@@ -217,7 +217,7 @@ class BSEParticles(Particles):
                 all_attributes.append(attribute)
                 all_values.append(default_value.as_vector_with_length(len(keys)))
         
-        super(BSEParticles, self)._set_particles(keys, all_attributes, all_values)
+        super(BSEParticles, self)._add_particles(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
 

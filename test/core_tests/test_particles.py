@@ -213,7 +213,7 @@ class TestParticlesWithBinding(TestBase):
     
     def test1(self):
         interface = self.TestInterface()
-        interface.particles._set_particles(
+        interface.particles._add_particles(
             [1,2],
             ["mass"],
             [[3.0, 4.0] | units.kg]
@@ -241,7 +241,7 @@ class TestParticlesWithBinding(TestBase):
     
     def test2(self):
         interface = self.TestInterface()
-        interface.particles._set_particles(
+        interface.particles._add_particles(
             [1, 2],
             ["mass"],
             [[3.0, 4.0] | units.kg]
@@ -251,7 +251,7 @@ class TestParticlesWithBinding(TestBase):
         
         self.assertEquals(len(remote_particles), 2)
         
-        interface.particles._set_particles(
+        interface.particles._add_particles(
             [3, 4],
             ["mass"],
             [[5.0, 6.0] | units.kg]

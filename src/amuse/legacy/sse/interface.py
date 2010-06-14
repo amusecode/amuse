@@ -89,7 +89,7 @@ class SSEParticles(Particles):
     def calculate_effective_temperature(self, luminosity, radius):
         return ((luminosity/(constants.four_pi_stefan_boltzmann*radius**2))**.25).in_(units.K)
         
-    def _set_particles(self, keys, attributes = [], values = []):
+    def _add_particles(self, keys, attributes = [], values = []):
         if len(keys) == 0:
             return
             
@@ -124,7 +124,7 @@ class SSEParticles(Particles):
                 all_attributes.append(attribute)
                 all_values.append(default_value.as_vector_with_length(len(keys)))
         
-        super(SSEParticles, self)._set_particles(keys, all_attributes, all_values)
+        super(SSEParticles, self)._add_particles(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
         self._private.code_interface._evolve_particles(added_particles, 1e-06 | units.Myr)
