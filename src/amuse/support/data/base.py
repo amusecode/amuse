@@ -76,7 +76,7 @@ class AttributeStorage(object):
     def _set_values(self, particles, attributes, list_of_values_to_set):
         pass
         
-    def _get_attributes(self):
+    def _get_attribute_names(self):
         pass
     
     def _has_key(self, key):
@@ -220,28 +220,34 @@ class AbstractSet(object):
     class PrivateProperties(object):
         """
         Defined for superclasses to store private properties.
-        A particle-set has ```__setattr__``` defined.
-        The ```__setattr__``` function will set all attributes
-        of the particles in the set to the specified value(s).
+        Every set has :meth:`__setattr__` defined.
+        
+        The :meth:`__setattr__` function will set all attributes
+        of the entities in the set to the specified value(s).
+        
         To be able to define attributes on the set itself we
-        use an instance of this class, attributes can be defined as::
+        use an instance of this class, attributes can be 
+        defined as::
         
             self._private.new_attribute = 'new value'
         
         Subclass implementers do not need to
-        use the ```object.__setattr__``` syntax.
+        use the :meth:`object.__setattr__` syntax.
         
-        For documentation about the __setattr__ call please
-        see the ```python data model``` documentation on the python
-        website.
+        For documentation about the :meth:`~object.__setattr__`
+        call please see the 
+        `python data model <http://docs.python.org/reference/datamodel.html>`_ 
+        documentation on the python website.
         """
         pass
         
     def __init__(self, original = None):
         if original is None:
-            object.__setattr__(self, "_derived_attributes", CompositeDictionary(self.GLOBAL_DERIVED_ATTRIBUTES))
+            derived_attributes = self.GLOBAL_DERIVED_ATTRIBUTES
         else:
-            object.__setattr__(self, "_derived_attributes", original._derived_attributes)
+            derived_attributes = original._derived_attributes
+            
+        object.__setattr__(self, "_derived_attributes", CompositeDictionary(derived_attributes))
         object.__setattr__(self, "_private", self.PrivateProperties())
     
     
@@ -251,8 +257,10 @@ class AbstractSet(object):
         elif name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[name_of_the_attribute].get_values_for_entities(self)
         else:
-            if name_of_the_attribute in self._get_attributes():
-                return self._convert_to_particles(self._get_values(self._get_keys(), [name_of_the_attribute])[0])
+            if name_of_the_attribute in self._get_attribute_names():
+                return self._convert_to_entities_or_quantities(
+                    self._get_values(self._get_keys(), [name_of_the_attribute])[0]
+                )
             else:
                 raise AttributeError("You tried to access attribute '{0}'"
                     " but this attribute is not defined for this set.".format(name_of_the_attribute))
@@ -266,13 +274,13 @@ class AbstractSet(object):
         if name_of_the_attribute in self._derived_attributes:
             self._derived_attributes[name_of_the_attribute].set_values_for_entities(self, value)
         else:
-            self._set_values(self._get_keys(), [name_of_the_attribute], [self._convert_from_particles(value)])
+            self._set_values(self._get_keys(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
     
     def _get_value_of_attribute(self, key, attribute):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, key)
         else:
-            return self._convert_to_particles(self._get_values([key], [attribute])[0])[0]
+            return self._convert_to_entities_or_quantities(self._get_values([key], [attribute])[0])[0]
         
     def _set_value_of_attribute(self, key, attribute, value):
         if attribute in self._derived_attributes:
@@ -280,13 +288,13 @@ class AbstractSet(object):
         else:
             return self._set_values([key], [attribute], value.as_vector_with_length(1))
             
-    def _convert_to_particles(self, x):
+    def _convert_to_entities_or_quantities(self, x):
         if x.unit.iskey():
             return self._subset(x.number)
         else:
             return x
         
-    def _convert_from_particles(self, x):
+    def _convert_from_entities_or_quantities(self, x):
         if isinstance(x, Quantity):
             return x 
         else:
@@ -314,26 +322,14 @@ class AbstractSet(object):
     def _has_key(self):
         return False
     
-    def _get_attributes(self):
+    def _get_attribute_names(self):
         return []
     
     def _get_state_attributes(self):
         return []
     
-    def _real_particles(self):
+    def _original_set(self):
         return self
-        
-    #
-    #
-    #
-    
-    def _values_of_particle(self, key):
-        attributes = self._get_attributes()
-        keys = [key]
-        values = self._get_values(keys, attributes)
-        
-        for attribute, val in zip(attributes, values):
-            yield attribute, val[0]
     
     def add_vector_attribute(self, name_of_the_attribute, name_of_the_components):
         self._derived_attributes[name_of_the_attribute] = VectorAttribute(name_of_the_components)
@@ -488,13 +484,11 @@ class AbstractSet(object):
         """
         self._derived_attributes[name_of_the_attribute] = FunctionAttribute(None, function)
         
-   
-        
     def __len__(self):
         return len(self._get_keys())
         
-    def _particles_factory(self):
-        return type(self._real_particles())
+    def _set_factory(self):
+        return type(self._original_set())
 
     def copy(self):
         """
@@ -502,17 +496,17 @@ class AbstractSet(object):
         all attributes and values into this set. The history
         of the set is not copied over.
         """
-        attributes = self._get_attributes()
+        attributes = self._get_attribute_names()
         keys = self._get_keys()
         values = self._get_values(keys, attributes)
-        result = self._particles_factory()()
+        result = self._set_factory()()
         result._add_particles(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
         
     def copy_to_memory(self):
-        attributes = self._get_attributes()
+        attributes = self._get_attribute_names()
         keys = self._get_keys()
         values = self._get_values(keys, attributes)
         result = Particles()
@@ -573,8 +567,8 @@ class AbstractSet(object):
         [1.0, 2.0, 3.0, 4.0] m
         """
         particles = particles.as_set()
-        original_particles_set = self._real_particles()
-        if set(original_particles_set.key)!=set(particles._real_particles().key):
+        original_particles_set = self._original_set()
+        if set(original_particles_set.key)!=set(particles._original_set().key):
             raise Exception("Can't create new subset from particles belonging to "
                 "separate particle sets. Try creating a superset instead.")
         keys = list(self.key) + list(particles.key)
@@ -640,12 +634,12 @@ class AbstractSet(object):
         >>> print particles1.x
         [1.0, 2.0, 3.0, 4.0] m
         """
-        attributes = particles._get_attributes()
+        attributes = particles._get_attribute_names()
         keys = particles._get_keys()
         values = particles._get_values(keys, attributes)
-        values = map(self._convert_from_particles, values)
+        values = map(self._convert_from_entities_or_quantities, values)
         self._add_particles(keys, attributes, values)
-        return ParticlesSubset(self._real_particles(), keys)
+        return ParticlesSubset(self._original_set(), keys)
     
     
     def add_particle(self, particle):
@@ -748,7 +742,7 @@ class AbstractSet(object):
         
         added_keys = list(added_keys)
         if added_keys:
-            attributes = self._get_attributes()
+            attributes = self._get_attribute_names()
             values = self._get_values(added_keys, attributes)
             other_particles._add_particles(added_keys, attributes, values)
         
@@ -895,7 +889,7 @@ class AbstractSet(object):
         return other._subset(selected_keys)
         
     def _subset(self, keys):
-        return ParticlesSubset(self._real_particles(), keys)
+        return ParticlesSubset(self._original_set(), keys)
         
         
     def __dir__(self):
@@ -920,7 +914,7 @@ class AbstractSet(object):
     
     def _attributes_for_dir(self):
         result = []
-        result.extend(self._get_attributes())
+        result.extend(self._get_attribute_names())
         result.extend(self._derived_attributes.keys())
         return result
         
@@ -932,7 +926,7 @@ class AbstractSet(object):
         return result
         
     def stored_attributes(self):
-        return list(self._get_attributes())
+        return list(self._get_attribute_names())
         
 
     def is_empty(self):

@@ -142,7 +142,7 @@ class InMemoryAttributeStorage(AttributeStorage):
             
     
     
-    def _get_attributes(self):
+    def _get_attribute_names(self):
         return sorted(self.mapping_from_attribute_to_values_and_unit.keys())
     
     

@@ -373,11 +373,11 @@ class InCodeAttributeStorage(AttributeStorage):
         indices_to_delete = self.get_key_indices_of(keys)
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
             
-    def _get_attributes(self):
+    def _get_attribute_names(self):
         return self.attributes
     
     def _state_attributes(self):
-        return self._get_attributes()
+        return self._get_attribute_names()
         
     def _get_keys(self):
         return self.particle_keys

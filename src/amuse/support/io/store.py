@@ -45,7 +45,7 @@ class HDF5AttributeStorage(AttributeStorage):
         dataset = self.attributesgroup[attribute]
         return eval(dataset.attrs["units"], core.__dict__) 
         
-    def _get_attributes(self):
+    def _get_attribute_names(self):
         return self.attributesgroup.keys()
         
     def _get_values(self, particles, attributes):
@@ -98,7 +98,7 @@ class StoreHDF(object):
         
         
         group.attrs["number_of_particles"] = len(particles)
-        group.attrs["class_of_the_particles"] = pickle.dumps(particles._particles_factory())
+        group.attrs["class_of_the_particles"] = pickle.dumps(particles._set_factory())
         
         quantity = particles.get_timestamp()
         if not quantity is None:
@@ -119,9 +119,9 @@ class StoreHDF(object):
         keys = particles._get_keys()
         dataset = group.create_dataset("keys", data=keys)
         
-        all_values = particles._get_values(None, particles._get_attributes())
+        all_values = particles._get_values(None, particles._get_attribute_names())
     
-        for attribute, quantity in zip(particles._get_attributes(), all_values):
+        for attribute, quantity in zip(particles._get_attribute_names(), all_values):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
             dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()

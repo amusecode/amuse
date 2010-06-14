@@ -315,14 +315,14 @@ class TestSSE(TestWithMPI):
         stars.synchronize_to(sse.particles)
         
         channel = sse.particles.new_channel_to(stars)
-        channel.copy_attributes(sse.particles._get_attributes())   
+        channel.copy_attributes(sse.particles._get_attribute_names())   
         
         previous_type = sse.particles.stellar_type
         results = []
         
         sse.evolve_model(121.5 | units.Myr)
         
-        channel.copy_attributes(sse.particles._get_attributes())   
+        channel.copy_attributes(sse.particles._get_attribute_names())   
         
         self.assertAlmostEqual(star.mass.value_in(units.MSun), 0.997, 3)
          
@@ -341,7 +341,7 @@ class TestSSE(TestWithMPI):
         stars.synchronize_to(sse.particles)
         
         channel = sse.particles.new_channel_to(stars)
-        channel.copy_attributes(sse.particles._get_attributes())   
+        channel.copy_attributes(sse.particles._get_attribute_names())   
         
         previous_type = star.stellar_type
         results = []
