@@ -143,6 +143,30 @@ class TestMPIInterface(TestWithMPI):
         self.assertEqual(fz,0.25)
         instance.stop()
 
+    def test8(self):
+        instance=Capreole()
+        instance.setup_module()
+        err=instance.set_boundary("periodic","reflective",
+        "periodic","reflective",
+        "periodic","reflective")
+        self.assertEqual(err,-1)
+        instance.stop
+
+        instance=Capreole()
+        instance.setup_module()
+        err=instance.set_boundary("reflective","periodic",
+        "periodic","reflective",
+        "periodic","reflective")
+        self.assertEqual(err,-2)
+        instance.stop
+
+        instance=Capreole()
+        instance.setup_module()
+        err=instance.set_boundary("periodic","periodic",
+        "periodic","periodic",
+        "periodic","periodic")
+        self.assertEqual(err,0)
+        instance.stop
 
 class TestSodShocktube(TestWithMPI):
     
