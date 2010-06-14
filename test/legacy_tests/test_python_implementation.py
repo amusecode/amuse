@@ -359,7 +359,8 @@ class TestInterface(TestWithMPI):
         
         self.assertEquals(request1.result(), 0)
         self.assertEquals(request2.result(), 0)
-    
+        
+        y.stop()
         x.stop()
     
     def test16(self):

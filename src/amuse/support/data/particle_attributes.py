@@ -1,6 +1,11 @@
 from amuse.support.units import nbody_system
-from amuse.support.data import core
+from amuse.support.data import base
+from amuse.support.data.particles import ParticlesWithUnitsConverted
 from amuse.support.data.values import zero
+from amuse.support.data import values
+from amuse.support.data.values import Quantity, new_quantity, zero
+from amuse.support.units import constants
+from amuse.support.units import units
 
 def move_to_center(particles):
     """
@@ -22,7 +27,7 @@ def scale_to_standard(particles, convert_nbody = None, smoothing_length_squared 
         the potential energy
     """
     if not convert_nbody is None:
-        particles = core.ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_nbody_to_si())
+        particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_nbody_to_si())
         if not smoothing_length_squared is zero:
             smoothing_length_squared = convert_nbody.to_nbody(smoothing_length_squared)
     
@@ -42,8 +47,192 @@ def scale_to_standard(particles, convert_nbody = None, smoothing_length_squared 
     particles.position *= scale_factor 
     
 
-core.AbstractParticleSet.add_global_function_attribute("move_to_center", move_to_center)
-core.AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_standard)
+
+def center_of_mass(particles):
+    """
+    Returns the center of mass of the particles set.
+    The center of mass is defined as the average 
+    of the positions of the particles, weighted by their masses.
+    
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.x = [-1.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.center_of_mass()
+    quantity<[0.0, 0.0, 0.0] m>
+    """
+
+    masses = particles.mass
+    x_values = particles.x
+    y_values = particles.y
+    z_values = particles.z
+    
+    total_mass = masses.sum()
+    massx = (masses * x_values).sum()
+    massy = (masses * y_values).sum()
+    massz = (masses * z_values).sum()
+
+    return values.VectorQuantity.new_from_scalar_quantities(
+        massx/total_mass,
+        massy/total_mass,
+        massz/total_mass
+    )
+
+def center_of_mass_velocity(particles):
+    """
+    Returns the center of mass velocity of the particles set.
+    The center of mass velocity is defined as the average 
+    of the velocities of the particles, weighted by their masses.
+
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.vx = [-1.0, 1.0] | units.ms
+    >>> particles.vy = [0.0, 0.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.center_of_mass_velocity()
+    quantity<[0.0, 0.0, 0.0] m * s**-1>
+    """
+
+
+    masses = particles.mass
+    x_values = particles.vx
+    y_values = particles.vy
+    z_values = particles.vz
+    
+    total_mass = masses.sum()
+    massx = (masses * x_values).sum()
+    massy = (masses * y_values).sum()
+    massz = (masses * z_values).sum()
+
+    return values.VectorQuantity.new_from_scalar_quantities(
+        massx/total_mass,
+        massy/total_mass,
+        massz/total_mass
+    )
+    
+def kinetic_energy(particles):
+    """
+    Returns the total kinetic energy of the
+    particles in the particles set.
+
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.vx = [-1.0, 1.0] | units.ms
+    >>> particles.vy = [0.0, 0.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.kinetic_energy()
+    quantity<1.0 m**2 * kg * s**-2>
+    """
+
+    mass = particles.mass
+    vx = particles.vx
+    vy = particles.vy
+    vz = particles.vz
+    v_squared = (vx * vx) + (vy * vy) + (vz * vz)
+    m_v_squared = mass * v_squared
+    return 0.5 * m_v_squared.sum()
+    
+
+def potential_energy(particles, smoothing_length_squared = zero, G = constants.G):
+    """
+    Returns the total potential energy of the particles in the particles set.
+    
+    :argument smooting_length_squared: the smoothing length is added to every distance.
+    :argument G: gravitational constant, need to be changed for particles in different units systems
+    
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.x = [0.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.potential_energy()
+    quantity<-6.67428e-11 m**2 * kg * s**-2>
+    """
+
+    mass = particles.mass
+    x_vector = particles.x
+    y_vector = particles.y
+    z_vector = particles.z
+           
+    sum_of_energies = zero
+    
+    for i in range(len(particles)):
+       x = x_vector[i]
+       y = y_vector[i]
+       z = z_vector[i]
+       dx = x - x_vector[i+1:]
+       dy = y - y_vector[i+1:]
+       dz = z - z_vector[i+1:]
+       dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+       dr = (dr_squared+smoothing_length_squared).sqrt()
+       m_m = mass[i] * mass[i+1:]
+       
+       energy_of_this_particle = (m_m / dr).sum()
+       sum_of_energies -= energy_of_this_particle
+        
+    return G * sum_of_energies 
+
+
+
+def particle_specific_kinetic_energy(set, particle):
+    """
+    Returns the kinetic energy of a particle.
+
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.vx = [0.0, 1.0] | units.m
+    >>> particles.vy = [0.0, 0.0] | units.m
+    >>> particles.vz = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles[1].specific_kinetic_energy()
+    quantity<0.5 m**2>
+    """
+
+    return 0.5*(particle.velocity**2).sum()
+
+def particle_potential(set, particle, smoothing_length_squared = zero, gravitationalConstant = constants.G):
+    """
+    Returns the potential energy of a particle.
+
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.x = [0.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles[1].potential()
+    quantity<-6.67428e-11 m**2 * s**-2>
+    """
+
+    particles = set - particle
+    dx = particle.x - particles.x
+    dy = particle.y - particles.y
+    dz = particle.z - particles.z 
+    dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+    dr = (dr_squared+smoothing_length_squared).sqrt()
+    return - gravitationalConstant * (particles.mass / dr).sum()
+
+
+    
+base.AbstractSet.add_global_function_attribute("center_of_mass", center_of_mass)
+base.AbstractSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
+base.AbstractSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
+base.AbstractSet.add_global_function_attribute("potential_energy", potential_energy)
+
+base.AbstractSet.add_global_vector_attribute("position", ["x","y","z"])
+base.AbstractSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
+
+base.AbstractSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
+base.AbstractSet.add_global_function_attribute("potential", None, particle_potential)
+
+
+base.AbstractSet.add_global_function_attribute("move_to_center", move_to_center)
+base.AbstractSet.add_global_function_attribute("scale_to_standard", scale_to_standard)
     
     
     

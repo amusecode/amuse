@@ -563,7 +563,7 @@ class AbstractSet(object):
         >>> particles2.x = [3.0, 4.0] | units.m
         >>> new_set = particles1 + particles2
         >>> new_set  # doctest:+ELLIPSIS
-        <amuse.support.data.core.ParticlesSubset object at 0x...>
+        <amuse.support.data.particles.ParticlesSubset object at 0x...>
         >>> print len(new_set)
         4
         >>> print new_set.x
@@ -594,7 +594,7 @@ class AbstractSet(object):
         >>> junk = particles[2:]
         >>> new_set = particles - junk
         >>> new_set  # doctest:+ELLIPSIS
-        <amuse.support.data.core.ParticlesSubset object at 0x...>
+        <amuse.support.data.particles.ParticlesSubset object at 0x...>
         >>> print len(new_set)
         2
         >>> print new_set.x
@@ -631,7 +631,7 @@ class AbstractSet(object):
         >>> particles2 = Particles(2)
         >>> particles2.x = [3.0, 4.0] | units.m
         >>> particles1.add_particles(particles2)  # doctest:+ELLIPSIS
-        <amuse.support.data.core.ParticlesSubset object at 0x...>
+        <amuse.support.data.particles.ParticlesSubset object at 0x...>
         >>> print len(particles1)
         4
         >>> print particles1.x
@@ -658,7 +658,7 @@ class AbstractSet(object):
         >>> particle = Particle()
         >>> particle.x = 1.0 | units.m
         >>> particles.add_particle(particle)  # doctest:+ELLIPSIS
-        <amuse.support.data.core.Particle object at ...>
+        <amuse.support.data.particles.Particle object at ...>
         >>> print len(particles)
         1
         >>> print particles.x
@@ -679,7 +679,7 @@ class AbstractSet(object):
         >>> particles1.x = [1.0, 2.0] | units.m
         >>> particles2 = Particles()
         >>> particles2.add_particle(particles1[0]) # doctest:+ELLIPSIS
-        <amuse.support.data.core.Particle object at ...>
+        <amuse.support.data.particles.Particle object at ...>
         >>> particles1.remove_particles(particles2)
         >>> print len(particles1)
         1
@@ -721,14 +721,14 @@ class AbstractSet(object):
         
         :parameter other_particles: particle set wich has to be updated
         
-        >>> from amuse.support.data.core import Particles,Particle
+        >>> from amuse.support.data.core import Particles, Particle
         >>> particles = Particles(2)
         >>> particles.x = [1.0, 2.0] | units.m
         >>> copy = particles.copy()
         >>> new_particle = Particle()
         >>> new_particle.x = 3.0 | units.m
         >>> particles.add_particle(new_particle)# doctest:+ELLIPSIS
-        <amuse.support.data.core.Particle object at ...>
+        <amuse.support.data.particles.Particle object at ...>
         >>> print particles.x
         [1.0, 2.0, 3.0] m
         >>> print copy.x
