@@ -1,6 +1,6 @@
 from amuse.support.units import nbody_system
 from amuse.support.data import base
-from amuse.support.data.particles import ParticlesWithUnitsConverted
+from amuse.support.data.particles import ParticlesWithUnitsConverted, AbstractParticleSet
 from amuse.support.data.values import zero
 from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity, zero
@@ -219,20 +219,20 @@ def particle_potential(set, particle, smoothing_length_squared = zero, gravitati
 
 
     
-base.AbstractSet.add_global_function_attribute("center_of_mass", center_of_mass)
-base.AbstractSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
-base.AbstractSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
-base.AbstractSet.add_global_function_attribute("potential_energy", potential_energy)
+AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
+AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
+AbstractParticleSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
+AbstractParticleSet.add_global_function_attribute("potential_energy", potential_energy)
 
-base.AbstractSet.add_global_vector_attribute("position", ["x","y","z"])
-base.AbstractSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
+AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
+AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 
-base.AbstractSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
-base.AbstractSet.add_global_function_attribute("potential", None, particle_potential)
+AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
+AbstractParticleSet.add_global_function_attribute("potential", None, particle_potential)
 
 
-base.AbstractSet.add_global_function_attribute("move_to_center", move_to_center)
-base.AbstractSet.add_global_function_attribute("scale_to_standard", scale_to_standard)
+AbstractParticleSet.add_global_function_attribute("move_to_center", move_to_center)
+AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_standard)
     
     
     

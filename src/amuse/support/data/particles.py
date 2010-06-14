@@ -119,6 +119,10 @@ class AbstractParticleSet(AbstractSet):
 
     """
     
+    
+    GLOBAL_DERIVED_ATTRIBUTES = {}
+    
+    
     def __init__(self, original = None):
         AbstractSet.__init__(self, original)
     
