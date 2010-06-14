@@ -2,18 +2,22 @@ module boundary
 
   ! Module for Capreole
   ! Author: Garrelt Mellema
-  ! Date: 2007-10-05 (previous 2004-05-11)
+  ! Date: 2010-06-14
   !
   ! This module contains the routines related with handling the grid
-  ! boundaries. This is mostly the internal boundaries.
+  ! boundaries. This is mostly the internal (MPI) boundaries, but also
+  ! the outside boundaries.
   !
   ! History:
+  ! 2004-05-11: first dated version
   ! 2007-10-05: clean-up, added only's to use statements.
+  ! 2010-01-25: added option for problem specific boundary conditions here
+  ! 2010-06-14: added periodic boundary conditions.
 
   use precision, only: dp
   use my_mpi
   use sizes, only: neq, mbc, RHO, RHVX, RHVY, RHVZ, EN, nrofDim
-  use mesh, only: sx,ex,sy,ey,sz,ez
+  use mesh, only: sx,ex,sy,ey,sz,ez,meshx,meshy,meshz
   use grid, only: vol,volx
   use geometry, only: presfunc
   use hydro, only: state, NEW, OLD, set_state_pointer
@@ -25,7 +29,8 @@ module boundary
   integer,parameter,public :: REFLECTIVE=-1
   integer,parameter,public :: REFLECTIVE_SHIFT=-2
   integer,parameter,public :: OUTFLOW=1
-  integer,parameter,public :: PROBLEM_DEF=2
+  integer,parameter,public :: PERIODIC=2
+  integer,parameter,public :: PROBLEM_DEF=3
   integer,parameter,public :: X_IN=1
   integer,parameter,public :: X_OUT=2
   integer,parameter,public :: Y_IN=3
@@ -104,7 +109,7 @@ contains
 
     ! Account for non-existing neighbours, these are real boundaries
     ! the [inner,outer][x,y]bound routines need to be supplied
- 
+
     if (nbrleft == MPI_PROC_NULL) &
          call innerxbound(newold,domainboundaryconditions(1,1),problem_boundary_routine)
     if (nbrright == MPI_PROC_NULL) &
@@ -342,6 +347,20 @@ contains
     state => set_state_pointer(newold)
 
     select case (boundarycondition)
+    case (PERIODIC)
+       if (sx /= 1 .or. ex /= meshx) then
+          write(*,*) "Error, applying periodic boundary conditions in MPI case"
+          write(*,*) "Fix mpi.F90"
+       endif
+       do ieq=1,neq
+          do k=sz-mbc,ez+mbc
+             do j=sy-mbc,ey+mbc
+                do i=sx-mbc,sx-1
+                   state(i,j,k,ieq)=state(ex+i,j,k,ieq)
+                enddo
+             enddo
+          enddo
+       enddo
     case (REFLECTIVE)
        do k=sz-mbc,ez+mbc
           do j=sy-mbc,ey+mbc
@@ -399,6 +418,20 @@ contains
     state => set_state_pointer(newold)
 
     select case (boundarycondition)
+    case (PERIODIC)
+       if (sx /= 1 .or. ex /= meshx) then
+          write(*,*) "Error, applying periodic boundary conditions in MPI case"
+          write(*,*) "Fix mpi.F90"
+       endif
+       do ieq=1,neq
+          do k=sz-mbc,ez+mbc
+             do j=sy-mbc,ey+mbc
+                do i=ex+1,ex+mbc
+                   state(i,j,k,ieq)=state(i-ex,j,k,ieq)
+                enddo
+             enddo
+          enddo
+       enddo
     case (REFLECTIVE)
        do k=sz-mbc,ez+mbc
           do j=sy-mbc,ey+mbc
@@ -456,6 +489,20 @@ contains
     state => set_state_pointer(newold)
 
     select case (boundarycondition)
+    case (PERIODIC)
+       if (sy /= 1 .or. ey /= meshy) then
+          write(*,*) "Error, applying periodic boundary conditions in MPI case"
+          write(*,*) "Fix mpi.F90"
+       endif
+       do ieq=1,neq
+          do k=sz-mbc,ez+mbc
+             do j=sy-mbc,sy-1
+                do i=sx-mbc,ex+mbc
+                   state(i,j,k,ieq)=state(i,ey+j,k,ieq)
+                enddo
+             enddo
+          enddo
+       enddo
     case (REFLECTIVE)
        do k=sz-mbc,ez+mbc
           do j=sy-mbc,sy-1
@@ -515,6 +562,20 @@ contains
     state => set_state_pointer(newold)
 
     select case (boundarycondition)
+    case (PERIODIC)
+       if (sy /= 1 .or. ey /= meshy) then
+          write(*,*) "Error, applying periodic boundary conditions in MPI case"
+          write(*,*) "Fix mpi.F90"
+       endif
+       do ieq=1,neq
+          do k=sz-mbc,ez+mbc
+             do j=ey+1,ey+mbc
+                do i=sx-mbc,ex+mbc
+                   state(i,j,k,ieq)=state(i,j-ey,k,ieq)
+                enddo
+             enddo
+          enddo
+       enddo
     case (REFLECTIVE)
        do k=sz-mbc,ez+mbc
           do j=ey+1,ey+mbc
@@ -574,6 +635,20 @@ contains
     state => set_state_pointer(newold)
 
     select case (boundarycondition)
+    case (PERIODIC)
+       if (sz /= 1 .or. ez /= meshz) then
+          write(*,*) "Error, applying periodic boundary conditions in MPI case"
+          write(*,*) "Fix mpi.F90"
+       endif
+       do ieq=1,neq
+          do k=sz-mbc,sz-1
+             do j=sy-mbc,ey+mbc
+                do i=sx-mbc,ex+mbc
+                   state(i,j,k,ieq)=state(i,j,ez+k,ieq)
+                enddo
+             enddo
+          enddo
+       enddo
     case (REFLECTIVE)
        do k=sz-mbc,sz-1
           do j=sy-mbc,ey+mbc
@@ -635,6 +710,20 @@ contains
     state => set_state_pointer(newold)
 
     select case (boundarycondition)
+    case (PERIODIC)
+       if (sz /= 1 .or. ez /= meshx) then
+          write(*,*) "Error, applying periodic boundary conditions in MPI case"
+          write(*,*) "Fix mpi.F90"
+       endif
+       do ieq=1,neq
+          do k=ez+1,ez+mbc
+             do j=sy-mbc,ey+mbc
+                do i=sx-mbc,ex+mbc
+                   state(i,j,k,ieq)=state(i,j,k-ez,ieq)
+                enddo
+             enddo
+          enddo
+       enddo
     case (REFLECTIVE)
        do k=ez+1,ez+mbc
           do j=sy-mbc,ey+mbc

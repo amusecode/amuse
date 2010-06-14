@@ -7,7 +7,7 @@ module amuse_helpers
   use hydro
   use scaling, only: SCDENS,SCMOME,SCENER,SCTIME,SCLENG
   use boundary, only: boundaries,REFLECTIVE,REFLECTIVE_SHIFT, &
-    OUTFLOW,PROBLEM_DEF
+    OUTFLOW,PROBLEM_DEF,PERIODIC
   use sizes, only: neq,neuler,mbc,nrOfDim,RHO,RHVX,RHVY,RHVZ,EN  
   use problem
   
@@ -111,12 +111,16 @@ module amuse_helpers
   function amuse_set_boundary(lowx,highx,lowy,highy,lowz,highz) result(ret)
     integer :: ret
     character(len=10) :: lowx,highx,lowy,highy,lowz,highz
+    logical :: periods(3)=.FALSE.
 
     select case (lowx)
     case("reflective")
       domainboundaryconditions(1,1)=REFLECTIVE    
     case("ref_shift")
       domainboundaryconditions(1,1)=REFLECTIVE_SHIFT    
+    case("periodic")
+      domainboundaryconditions(1,1)=PERIODIC
+      periods(1)=.TRUE.
     case default
       ret=-1
       return
@@ -127,6 +131,9 @@ module amuse_helpers
       domainboundaryconditions(1,2)=REFLECTIVE    
     case("ref_shift")
       domainboundaryconditions(1,2)=REFLECTIVE_SHIFT    
+    case("periodic")
+      domainboundaryconditions(1,2)=PERIODIC
+      periods(1)=.TRUE.
     case default
       ret=-1
       return
@@ -137,6 +144,9 @@ module amuse_helpers
       domainboundaryconditions(2,1)=REFLECTIVE    
     case("ref_shift")
       domainboundaryconditions(2,1)=REFLECTIVE_SHIFT    
+    case("periodic")
+      domainboundaryconditions(2,1)=PERIODIC
+      periods(2)=.TRUE.
     case default
       ret=-1
       return
@@ -147,6 +157,9 @@ module amuse_helpers
       domainboundaryconditions(2,2)=REFLECTIVE    
     case("ref_shift")
       domainboundaryconditions(2,2)=REFLECTIVE_SHIFT    
+    case("periodic")
+      domainboundaryconditions(2,2)=PERIODIC
+      periods(2)=.TRUE.
     case default
       ret=-1
       return
@@ -157,6 +170,9 @@ module amuse_helpers
       domainboundaryconditions(3,1)=REFLECTIVE    
     case("ref_shift")
       domainboundaryconditions(3,1)=REFLECTIVE_SHIFT    
+    case("periodic")
+      domainboundaryconditions(3,1)=PERIODIC
+      periods(3)=.TRUE.
     case default
       ret=-1
       return
@@ -167,11 +183,14 @@ module amuse_helpers
       domainboundaryconditions(3,2)=REFLECTIVE    
     case("ref_shift")
       domainboundaryconditions(3,2)=REFLECTIVE_SHIFT    
+    case("periodic")
+      domainboundaryconditions(3,2)=PERIODIC
+      periods(3)=.TRUE.
     case default
       ret=-1
       return
     end select
-    ret=0
+    ret=check_boundaries()
   end function
 
   function fill_grid(ix,iy,iz,istate) result(ret)
@@ -302,6 +321,46 @@ module amuse_helpers
     tnow=time
     ret=0
   end function
+
+  function check_boundaries() result(ret)
+    integer :: ret,i
+    logical :: periods(nrOfDim)
+
+#ifdef MPI  
+    call get_periods(periods)
+#endif
+  
+    ret=0
+    do i=1,nrOfDim
+#ifdef MPI  
+      if(periods(i)) then
+        if(domainboundaryconditions(i,1).NE.PERIODIC.OR. &
+             domainboundaryconditions(i,2).NE.PERIODIC) then
+           ret=-1
+           return
+        endif         
+      else
+        if(domainboundaryconditions(i,1).EQ.PERIODIC.OR. &
+             domainboundaryconditions(i,2).EQ.PERIODIC) then
+           ret=-2
+           return
+        endif    
+      endif
+#else
+      if(domainboundaryconditions(i,1).EQ.PERIODIC.AND. &
+             domainboundaryconditions(i,2).NE.PERIODIC) then
+         ret=-1
+         return
+      endif         
+      if(domainboundaryconditions(i,1).NE.PERIODIC.AND. &
+             domainboundaryconditions(i,2).EQ.PERIODIC) then
+         ret=-2
+         return
+      endif         
+#endif
+    enddo
+    
+  end function  
   
 end module
 

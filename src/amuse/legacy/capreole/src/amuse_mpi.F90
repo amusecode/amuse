@@ -63,11 +63,22 @@ module my_mpi
   integer,public ::  nbrdown,nbrup     !< up and down neighbours 
   integer,public ::  nbrabove,nbrbelow !< above and below neighbours 
 
-  public :: mpi_setup,mpi_end
+  public :: mpi_setup,mpi_end,set_periods,get_periods
   private :: mpi_basic,mpi_topology,fnd3dnbrs
+
+  logical,dimension(NPDIM), private :: periods=.FALSE.
 
 contains
 
+  subroutine set_periods(period_in)
+    logical,dimension(NPDIM) :: period_in
+    periods=period_in
+  end subroutine
+  
+  subroutine get_periods(period_out)
+    logical,dimension(NPDIM) :: period_out
+    period_out=periods
+  end subroutine
   !----------------------------------------------------------------------------
   subroutine mpi_setup
 
@@ -118,7 +129,6 @@ contains
 
     ! Construct a new MPI communicator for domain decomposition
 
-    logical,dimension(NPDIM) :: periods ! for periodic grid
     logical                  :: reorder ! reorder the MPI_COMM_WORLD
     integer          :: mpi_ierror=0
 
@@ -128,8 +138,6 @@ contains
     !dims(1)=1
 
     call MPI_Dims_create(npr,NPDIM,dims,mpi_ierror)
-
-    periods(:)=.FALSE.      ! non-periodic boundaries
 
     reorder=.TRUE.
     ! makes MPI_COMM_NEW    
