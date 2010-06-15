@@ -121,6 +121,8 @@ module amuse_helpers
     case("periodic")
       domainboundaryconditions(1,1)=PERIODIC
       periods(1)=.TRUE.
+    case("outflow")
+      domainboundaryconditions(1,1)=OUTFLOW          
     case default
       ret=-1
       return
@@ -134,6 +136,8 @@ module amuse_helpers
     case("periodic")
       domainboundaryconditions(1,2)=PERIODIC
       periods(1)=.TRUE.
+    case("outflow")
+      domainboundaryconditions(1,2)=OUTFLOW          
     case default
       ret=-1
       return
@@ -147,6 +151,8 @@ module amuse_helpers
     case("periodic")
       domainboundaryconditions(2,1)=PERIODIC
       periods(2)=.TRUE.
+    case("outflow")
+      domainboundaryconditions(2,1)=OUTFLOW          
     case default
       ret=-1
       return
@@ -160,6 +166,8 @@ module amuse_helpers
     case("periodic")
       domainboundaryconditions(2,2)=PERIODIC
       periods(2)=.TRUE.
+    case("outflow")
+      domainboundaryconditions(2,2)=OUTFLOW          
     case default
       ret=-1
       return
@@ -173,6 +181,8 @@ module amuse_helpers
     case("periodic")
       domainboundaryconditions(3,1)=PERIODIC
       periods(3)=.TRUE.
+    case("outflow")
+      domainboundaryconditions(3,1)=OUTFLOW          
     case default
       ret=-1
       return
@@ -186,6 +196,8 @@ module amuse_helpers
     case("periodic")
       domainboundaryconditions(3,2)=PERIODIC
       periods(3)=.TRUE.
+    case("outflow")
+      domainboundaryconditions(3,2)=OUTFLOW          
     case default
       ret=-1
       return
