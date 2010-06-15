@@ -1,60 +1,40 @@
 import numpy
 
 from amuse.support.data import values
+from amuse.support.data.values import VectorQuantity
 from amuse.support.data.base import *
     
 
-class AttributeValues(object):
-    __slots__ = ["attribute", "values", "unit", "model_times"]
-    
-    def __init__(self, attribute, unit, values = None,  model_times = None, length = None):
-        self.attribute = attribute
-        self.unit = unit
-        self.model_times = model_times
-        if values is None:
-            self.values = numpy.zeros(length, dtype = self.unit.dtype)
-        else:
-            self.values = values
-        
-    def copy(self):
-        return AttributeValues(self.attribute, self.unit, self.values.copy(), self.model_times)
-        
 class InMemoryAttributeStorage(AttributeStorage):
     
     def __init__(self):
-        self.model_times = None
-        self.mapping_from_attribute_to_values_and_unit = {}
+        self.mapping_from_attribute_to_quantities = {}
         self.mapping_from_particle_to_index = {}
         self.particle_keys = []
 
-    def _add_particles(self, keys, attributes = [], values = []):
-        if len(values) != len(attributes):
+    def _add_particles(self, keys, attributes = [], quantities = []):
+        if len(quantities) != len(attributes):
             raise Exception(
-                "you need to provide the same number of value list as attributes, found {0} attributes and {1} list of values".format(
-                    len(attributes), len(values)
+                "you need to provide the same number of quantities as attributes, found {0} attributes and {1} list of values".format(
+                    len(attributes), len(quantities)
                 )
             )
-        if len(values) > 0 and len(keys) != len(values[0]):
+        if len(quantities) > 0 and len(keys) != len(quantities[0]):
             raise Exception(
                 "you need to provide the same number of values as particles, found {0} values and {1} particles".format(
-                    len(values[0]), len(keys)
+                    len(quantities[0]), len(keys)
                 )
             )
         
         if len(self.particle_keys) > 0:
-            self.append_to_storage(keys, attributes, values)
+            self.append_to_storage(keys, attributes, quantities)
         else:
-            self.setup_storage(keys, attributes, values)
+            self.setup_storage(keys, attributes, quantities)
             
-    def setup_storage(self, keys, attributes, values):
-        self.mapping_from_attribute_to_values_and_unit = {}
-        for attribute, quantity in zip(attributes, values):
-            self.mapping_from_attribute_to_values_and_unit[attribute] = AttributeValues(
-                attribute,
-                quantity.unit,
-                quantity.number,
-                None
-            )
+    def setup_storage(self, keys, attributes, quantities):
+        self.mapping_from_attribute_to_quantities = {}
+        for attribute, quantity in zip(attributes, quantities):
+            self.mapping_from_attribute_to_quantities[attribute] = quantity.as_vector_quantity()
          
         self.particle_keys = numpy.array(keys, dtype='uint64')
 
@@ -62,24 +42,22 @@ class InMemoryAttributeStorage(AttributeStorage):
     
     def append_to_storage(self, keys, attributes, values):
         for attribute, values_to_set in zip(attributes, values):
-            if attribute in self.mapping_from_attribute_to_values_and_unit:
-                attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            if attribute in self.mapping_from_attribute_to_quantities:
+                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                attribute_values = AttributeValues(
-                    attribute,
+                attribute_values = VectorQuantity.zeros(
+                    len(self.particle_keys),
                     values_to_set.unit,
-                    length = len(self.particle_keys)
                 )
             
-                self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
-            values_in_the_right_units = values_to_set.value_in(attribute_values.unit)
-            attribute_values.values = numpy.concatenate((attribute_values.values, values_in_the_right_units))
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+            attribute_values.extend(values_to_set)
         
         old_length = len(self.particle_keys)
-        for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
-            zeros_for_concatenation = numpy.zeros(len(keys), dtype=attribute_values.unit.dtype)
-            if len(attribute_values.values) == old_length:
-                attribute_values.values = numpy.concatenate((attribute_values.values, zeros_for_concatenation))
+        for attribute_values in self.mapping_from_attribute_to_quantities.values():
+            if len(attribute_values) == old_length:
+                zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
+                attribute_values.extend(zeros_for_concatenation)
         
                 
         index = len(self.particle_keys)
@@ -95,55 +73,36 @@ class InMemoryAttributeStorage(AttributeStorage):
             
         results = []
         for attribute in attributes:
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             if indices is None:
-                selected_values = attribute_values.values
+                selected_values = attribute_values
             else:
-                selected_values = attribute_values.values.take(indices)
-                results.append(attribute_values.unit.new_quantity(selected_values))
+                selected_values = attribute_values.take(indices)
+            
+            results.append(selected_values)
         
         return results
         
-    def _set_values(self, particles, attributes, list_of_values_to_set, model_times = None):
+    def _set_values(self, particles, attributes, list_of_values_to_set):
         indices = self.get_indices_of(particles)
         
-        model_times = self._convert_model_times(model_times, len(indices))
-        
-        previous_model_times = None
-        if list_of_values_to_set is None:
-            for attribute in attributes:
-                if attribute in self.mapping_from_attribute_to_values_and_unit:
-                    attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-                else:
-                    raise Exception("unknown attribute '{0}'".format(attribute))
-                     
-                selected_values = numpy.zeros(len(indices), dtype=attribute_values.values.dtype)
-                
-                attribute_values.values.put(indices, selected_values)
-            return
-            
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
-            if attribute in self.mapping_from_attribute_to_values_and_unit:
-                attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+            if attribute in self.mapping_from_attribute_to_quantities:
+                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
             else:
-                attribute_values = AttributeValues(
-                   attribute,
+                attribute_values = VectorQuantity.zeros(
+                   len(self.particle_keys),
                    values_to_set.unit,
-                   length = len(self.particle_keys)
                 )
-                self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
                  
-            selected_values = values_to_set.value_in(attribute_values.unit)
-            attribute_values.values.put(indices, selected_values)
-            if not model_times is None:
-                if not previous_model_times is attribute_values.model_times:
-                    attribute_values.model_times.put(indices, model_times)
-                    previous_model_times = attribute_values.model_times
+            attribute_values.put(indices, values_to_set)
+            
             
     
     
     def _get_attribute_names(self):
-        return sorted(self.mapping_from_attribute_to_values_and_unit.keys())
+        return sorted(self.mapping_from_attribute_to_quantities.keys())
     
     
     def _has_key(self, key):
@@ -159,40 +118,21 @@ class InMemoryAttributeStorage(AttributeStorage):
         copy = InMemoryAttributeStorage()
         copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
         copy.particle_keys = self.particle_keys.copy()
-        for attribute, attribute_values in self.mapping_from_attribute_to_values_and_unit.iteritems():
-            copy.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values.copy()
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+            copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
         
     def get_value_of(self, particle_key, attribute):
-        if not attribute in self.mapping_from_attribute_to_values_and_unit:
+        if not attribute in self.mapping_from_attribute_to_quantities:
             raise AttributeError("particle does not have a "+attribute)
         
-        attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
+        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
         
         index = self.mapping_from_particle_to_index[particle_key]
         
-        return attribute_values.unit.new_quantity(attribute_values.values[index])
+        return attribute_values[index]
         
             
-    def iter_values_of_particle(self, particle_key):
-        index = self.mapping_from_particle_to_index[particle_key]
-        for attribute in self.mapping_from_attribute_to_values_and_unit:
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            yield attribute, (attribute_values.values[index] | attribute_values.unit)
-    
-    
-            
-    def iter_values_of(self, attribute):
-        if not attribute in self.mapping_from_attribute_to_values_and_unit:
-            return
-            
-        attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-        values = attribute_values.values
-        unit = attribute_values.unit
-        particles = self.particle_keys
-        
-        for index in range(len(self.particle_keys)):
-            yield particles[i], (values[i] | unit)
             
    
     def get_indices_of(self, particles):
@@ -208,93 +148,12 @@ class InMemoryAttributeStorage(AttributeStorage):
             result[index] = mapping_from_particle_to_index[particle_key]
             index += 1
         return result
-    
-    def get_values_of_particles_in_units(self, particles, attributes, target_units):
-        indices = self.get_indices_of(particles)
-            
-        results = []
-        for attribute, target_unit in zip(attributes, target_units):
-             attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-             value_of_unit_in_target_unit = attribute_values.unit.value_in(target_unit )
-             if indices is None:
-                 selected_values = attribute_values.values
-             else:
-                 selected_values = attribute_values.values.take(indices)
-             if value_of_unit_in_target_unit != 1.0:
-                selected_values *= value_of_unit_in_target_unit
-             results.append(selected_values)
-        
-        return results
-        
-    
-            
-    def _convert_model_times(self, model_times, length):
-        if not model_times is None and isinstance(model_times, values.ScalarQuantity):
-            return model_times.unit.new_quantity(numpy.linspace(model_times.number, model_times.number, length) )
-        else:
-            return model_times
-    
-    def set_values_of_particles_in_units(self, particles, attributes, list_of_values_to_set, source_units, model_times = None):
-        indices = self.get_indices_of(particles)
-        
-        model_times = self._convert_model_times(model_times, len(indices))
-        
-        previous_model_times = None
-        results = []
-        for attribute, values_to_set, source_unit in zip(attributes, list_of_values_to_set, source_units):
-            selected_values = values_to_set
-            
-            if attribute in self.mapping_from_attribute_to_values_and_unit:
-                attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            else:
-                attribute_values = AttributeValues(
-                   attribute,
-                   source_unit,
-                   length = len(self.particle_keys)
-                )
-                self.mapping_from_attribute_to_values_and_unit[attribute] = attribute_values
-                 
-            value_of_source_unit_in_list_unit = source_unit.value_in(attribute_values.unit)
-            if value_of_source_unit_in_list_unit != 1.0:
-                selected_values *= value_of_source_unit_in_list_unit 
-             
-            attribute_values.values.put(indices, selected_values)
-            if not model_times is None:
-                if not previous_model_times is attribute_values.model_times:
-                    attribute_values.model_times.put(indices, model_times)
-                    previous_model_times = attribute_values.model_times
-            
-        return results
-        
-             
-    def merge_into(self, others):
-        source_attributes = []
-        source_units = []
-        source_valeus = []
-        for attribute in self.mapping_from_attribute_to_values_and_unit:
-            attribute_values = self.mapping_from_attribute_to_values_and_unit[attribute]
-            source_attributes.append(attribute_values.attribute)
-            source_values.append(attribute_values.values)
-            source_units.append(attribute_values.unit)
-            
-                
-        other.set_values_of_particles_in_units(self.particle_keys, source_attributes, source_values, source_units)
-        
-    def remove_particles(self, particles):
-        indices = self.get_indices_of(particles)
-        
-        mapping_from_attribute_to_values_and_unit = self.mapping_from_attribute_to_values_and_unit.copy()
-        for attribute, attribute_values in mapping_from_attribute_to_values_and_unit.iteritems():
-            attribute_values.values = numpy.delete(attribute_values.values, indices)
-        
-        self.particle_keys = numpy.delete(self.particle_keys,indices)
-        self.reindex()
         
     def _remove_particles(self, keys):
         indices = self.get_indices_of(keys)
         
-        for attribute, attribute_values in self.mapping_from_attribute_to_values_and_unit.iteritems():
-            attribute_values.values = numpy.delete(attribute_values.values, indices)
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+            attribute_values._number = numpy.delete(attribute_values.number, indices)
         
         self.particle_keys = numpy.delete(self.particle_keys,indices)
         self.reindex()
@@ -309,12 +168,128 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.mapping_from_particle_to_index = new_index
 
     def attributes(self):
-        return set(self.mapping_from_attribute_to_values_and_unit.keys())
+        return set(self.mapping_from_attribute_to_quantities.keys())
     
     def _state_attributes(self):
         return self.attributes()
         
-    def set_model_time(self, value): 
-        model_times = self._convert_model_times(value, len(self.particle_keys))
-        for attribute_values in self.mapping_from_attribute_to_values_and_unit.values():
-            attribute_values.model_times = model_times
+        
+
+
+class InMemoryGridAttributeStorage(object):
+    
+    def __init__(self, number_of_i, number_of_j, number_of_k):
+        self.mapping_from_attribute_to_quantities = {}
+    
+    def storage_shape():
+        return (number_of_i, number_of_j, number_of_k)
+        
+    def _add_particles(self, keys, attributes = [], quantities = []):
+        raise Exception("adding points to the grid is not implemented")
+            
+            
+    def _get_values(self, i_indices, j_indices, k_indices, attributes):
+        results = []
+        for attribute in attributes:
+            attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+            if indices is None:
+                selected_values = attribute_values
+            else:
+                selected_values = attribute_values[i_indices, j_indices, k_indices]
+                
+            
+            results.append(selected_values)
+        
+        return results
+        
+    def _set_values(self,  i_indices, j_indices, k_indices, attributes, list_of_values_to_set):
+        indices = self.get_indices_of(particles)
+        
+        for attribute, values_to_set in zip(attributes, list_of_values_to_set):
+            if attribute in self.mapping_from_attribute_to_quantities:
+                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+            else:
+                attribute_values = VectorQuantity.zeros(
+                   (self.storage_shape()),
+                   values_to_set.unit,
+                )
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+                 
+            values = values_to_set.value_in(attribute_values.unit)
+            attribute_values._number[i_indices, j_indices, k_indices] = values.reshape(len(i_indices))
+            
+            
+    
+    
+    def _get_attribute_names(self):
+        return sorted(self.mapping_from_attribute_to_quantities.keys())
+    
+    
+    def _has_key(self, key):
+        return key in self.mapping_from_particle_to_index
+        
+    def _get_keys(self):
+        return self.particle_keys
+        
+    def __len__(self):
+        return len(self.particle_keys)
+        
+    def copy(self):
+        copy = InMemoryAttributeStorage()
+        copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
+        copy.particle_keys = self.particle_keys.copy()
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+            copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
+        return copy
+        
+    def get_value_of(self, particle_key, attribute):
+        if not attribute in self.mapping_from_attribute_to_quantities:
+            raise AttributeError("particle does not have a "+attribute)
+        
+        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+        
+        index = self.mapping_from_particle_to_index[particle_key]
+        
+        return attribute_values[index]
+        
+            
+            
+   
+    def get_indices_of(self, particles):
+        if particles is None:
+            return numpy.arange(0,len(self.particle_keys))
+            
+        mapping_from_particle_to_index = self.mapping_from_particle_to_index 
+        result = numpy.zeros(len(particles),dtype='int32')
+        #result = [mapping_from_particle_to_index[id(particle)] for particle in particles]
+        
+        index = 0
+        for index, particle_key in enumerate(particles):
+            result[index] = mapping_from_particle_to_index[particle_key]
+            index += 1
+        return result
+        
+    def _remove_particles(self, keys):
+        indices = self.get_indices_of(keys)
+        
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+            attribute_values._number = numpy.delete(attribute_values.number, indices)
+        
+        self.particle_keys = numpy.delete(self.particle_keys,indices)
+        self.reindex()
+        
+    def reindex(self):
+        new_index = {}
+        index = 0
+        for particle_key in self.particle_keys:
+            new_index[particle_key] = index
+            index += 1
+          
+        self.mapping_from_particle_to_index = new_index
+
+    def attributes(self):
+        return set(self.mapping_from_attribute_to_quantities.keys())
+    
+    def _state_attributes(self):
+        return self.attributes()
+

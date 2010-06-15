@@ -104,18 +104,7 @@ class StoreHDF(object):
         if not quantity is None:
             group.attrs["timestamp"] = quantity.value_in(quantity.unit)
             group.attrs["timestamp_unit"] = quantity.unit.reference_string()
-        
-        #times_group = group.create_group("times")
-        #previous_model_times = None
-        #all_stored_model_time_references = {}
-        #for attribute_values in particles._get_attributes():
-        #    index = 0
-        #    if not attribute_values.model_times is previous_model_times:
-        #        model_times = attribute_values.model_times
-        #        dataset = times_group.create_dataset(str(index), data=model_times.number)
-        #        dataset.attrs["units"] = str(model_times.unit.to_simple_form())
-        #        all_stored_model_time_references[id(model_times)] = index
-        #        index += 1
+    
         keys = particles._get_keys()
         dataset = group.create_dataset("keys", data=keys)
         
@@ -125,9 +114,7 @@ class StoreHDF(object):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
             dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
-            #if not attribute_values.model_times is None:
-            #    dataset.attrs["model-times-ref"] = all_stored_model_time_references[id(attribute_values.model_times)]
-    
+            
         self.hdf5file.flush()
         
     def load(self):

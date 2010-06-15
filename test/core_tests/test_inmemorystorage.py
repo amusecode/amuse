@@ -60,6 +60,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         
         instance = InMemoryAttributeStorage()
         instance._add_particles(particles, attributes, values)
+        self.assertEquals(values[0][0], 1.0 | units.m)
         
         
         instance._set_values(
@@ -87,7 +88,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         instance = InMemoryAttributeStorage()
         instance._add_particles(particles, attributes, values)
         
-        instance.remove_particles([particles[0], particles[2]])
+        instance._remove_particles([particles[0], particles[2]])
         
       
         all_values = instance._get_values(

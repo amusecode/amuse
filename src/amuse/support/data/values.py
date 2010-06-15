@@ -267,7 +267,7 @@ class VectorQuantity(Quantity):
         if unit is None:
             self._number = numpy.array((), dtype='float64')
         else:
-            self._number = numpy.array(array, dtype=unit.dtype)
+            self._number = numpy.asarray(array, dtype=unit.dtype)
     
     @classmethod
     def new_from_scalar_quantities(cls, *values):
@@ -280,6 +280,11 @@ class VectorQuantity(Quantity):
         return cls(array, unit)
 
     
+    @classmethod
+    def zeros(cls, length, unit):
+        array = numpy.zeros(length, dtype=unit.dtype)
+        return cls(array, unit)
+        
     def is_vector(self):
         return True
         
@@ -287,6 +292,9 @@ class VectorQuantity(Quantity):
     def as_vector_with_length(self, length):
         if length != len(self):
             raise Exception("Can only return a vector with the same length")
+        return self
+    
+    def as_vector_quantity(self):
         return self
     
     def __len__(self):
@@ -353,10 +361,19 @@ class VectorQuantity(Quantity):
         >>> vector = [0.0, 1.0, 2.0] | si.kg
         >>> print vector[1]
         1.0 kg
+        >>> print vector[0:2]
+        [0.0, 1.0] kg
+        >>> print vector[[0,2,]]
+        [0.0, 2.0] kg
         """
         
         return new_quantity( self._number[index] , self.unit )
-        
+    
+    def take(self, indices):
+        return VectorQuantity(self._number.take(indices), self.unit)
+    
+    def put(self, indices, vector):
+        self._number.put(indices, vector.value_in(self.unit))
     
     def __setitem__(self, index, quantity):
         """Update the "index" component to the specified quantity.
@@ -488,7 +505,21 @@ class VectorQuantity(Quantity):
         [1.0, 2.0, 3.0, 4.0] kg
         """
         self._number = numpy.append(self._number, [scalar_quantity.value_in(self.unit)])
-        
+    
+    def extend(self, vector_quantity):
+        """
+        Concatenate the vector quantity to this vector.
+        If the units differ, the vector_quantity argument
+        is converted to the units of this vector.
+
+        >>> from amuse.support.units import units
+        >>> vector1 = [1.0, 2.0, 3.0] | units.kg
+        >>> vector2 = [1500, 2500, 6000] | units.g
+        >>> vector1.extend(vector2)
+        >>> print vector1
+        [1.0, 2.0, 3.0, 1.5, 2.5, 6.0] kg
+        """
+        self._number = numpy.concatenate((self._number, vector_quantity.value_in(self.unit)))
     
     def min(self, other):
         """
@@ -699,7 +730,9 @@ class NonNumericQuantity(Quantity):
     
     def as_vector_with_length(self, length):
         return VectorQuantity(numpy.ones(length) * self.value, self.unit)
-        
+    
+    def as_vector_quantity(self):
+        return VectorQuantity([self.value], self.unit)
 
 class AdaptingVectorQuantity(VectorQuantity):
     """
