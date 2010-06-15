@@ -333,7 +333,7 @@ class TestFiInterface(TestWithMPI):
             0.25, 0.2 | nbody.length, 0.1, 0.05, 3.6 | 1.8e-17 * units.s**-1, 0.0, 0.0, 1.0, 
             0.0, 1.0, 1.0e5 | units.MSun, 0.25, 3.0e7 | units.Myr, 0.0, 3.e6 | units.Myr, 100.0]
         defaults = [val | units.none if isinstance(val,float) else val for val in defaults]
-        defaults = [instance.convert_nbody.to_si(val) if nbody.is_nbody_unit(val.unit) else val for val in defaults]
+        defaults = [instance.unit_converter.to_si(val) if nbody.is_nbody_unit(val.unit) else val for val in defaults]
         for double_par, value in zip(par_names, defaults):
             self.assertAlmostRelativeEquals(eval("instance.parameters."+double_par), value, 7)
             exec("instance.parameters."+double_par+" = 2 * value")

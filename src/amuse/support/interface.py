@@ -3,6 +3,8 @@ from amuse.support.data import core
 from amuse.support.data import values
 from amuse.support.data import code_particles
 from amuse.support.units import nbody_system
+from amuse.support.units import generic_unit_system as generic_system
+from amuse.support.units.core import unit
 from amuse.support.options import OptionalAttributes
 
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition
@@ -497,7 +499,8 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     @late
     def nbody_input_attributes(self):
-        return map(lambda x : isinstance(x, nbody_system.core.unit) and nbody_system.is_nbody_unit(x), self.units)
+        return map(lambda x : isinstance(x, unit) and 
+            (nbody_system.is_nbody_unit(x) or generic_system.is_generic_unit(x)), self.units)
 
     @late
     def index_output_attributes(self):

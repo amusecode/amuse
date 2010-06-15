@@ -2,11 +2,6 @@
 """
 from amuse.support.units import units
 from amuse.support.units import core
-from amuse.support.units import constants
-
-from amuse.support.data.values import new_quantity
-
-import numpy
 
 class generic_unit(core.base_unit):
     def __init__(self, unit_in_si, system):

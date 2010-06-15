@@ -1473,10 +1473,10 @@ class Fi(GravitationalDynamics):
         
         self.legacy_interface.set_fi_data_directory(self.legacy_interface.get_data_directory()+'/')
         
-        if not self.convert_nbody is None:
-            value=self.convert_nbody.to_si(nbody_system.length).in_(units.kpc).number 
+        if not self.unit_converter is None:
+            value=self.unit_converter.to_si(nbody_system.length).in_(units.kpc).number 
             self.legacy_interface.set_unitl_in_kpc(value)
-            value=self.convert_nbody.to_si(nbody_system.mass).in_(units.MSun).number 
+            value=self.unit_converter.to_si(nbody_system.mass).in_(units.MSun).number 
             self.legacy_interface.set_unitm_in_msun(value)
         
         return result

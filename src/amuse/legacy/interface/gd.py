@@ -5,6 +5,7 @@ Stellar Dynamics Interface Defintion
 from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.interface import CodeInterface
 from amuse.support.units import nbody_system
+from amuse.support.units import generic_unit_converter
 from amuse.legacy.interface import common
 
 class GravitationalDynamicsInterface(common.CommonCodeInterface):
@@ -798,9 +799,9 @@ class GravitationalDynamics(common.CommonCode):
 
     __doc__ = GdAutoDoc()
 
-    def __init__(self, legacy_interface, convert_nbody = None,  **options):
-        self.convert_nbody = convert_nbody
-
+    def __init__(self, legacy_interface, unit_converter = None,  **options):
+        self.unit_converter = unit_converter
+        
         CodeInterface.__init__(self, legacy_interface, **options)
 
     def define_properties(self, object):
@@ -1036,6 +1037,10 @@ class GravitationalDynamics(common.CommonCode):
         return subset
 
     def define_converter(self, object):
-        if not self.convert_nbody is None:
-            if not self.convert_nbody is self.NBODY:
-                object.set_nbody_converter(self.convert_nbody)
+#        if not self.convert_nbody is None:
+#            if not self.convert_nbody is self.NBODY:
+#                object.set_nbody_converter(self.convert_nbody)
+        if isinstance(self.unit_converter, nbody_system.nbody_to_si):
+            object.set_converter(self.unit_converter.as_converter_from_si_to_nbody())
+        elif isinstance(self.unit_converter, generic_unit_converter.generic_to_si):
+            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())

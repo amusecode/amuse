@@ -1,5 +1,6 @@
 import numpy
 from amuse.support.units.generic_unit_system import *
+from amuse.support.data.values import new_quantity
 
 class generic_to_si(object):
     DEFAULT_CONVERTER = None
@@ -24,8 +25,6 @@ class generic_to_si(object):
         if self.matrixrank(self.new_base) < self.system_rank:
             raise Exception("Must provide three orthogonal units, e.g. mass,length,time or mass, velocity, time")
         self.new_base_inv = self.new_base ** -1
-        print self.new_base
-        print self.new_base_inv
         self.set_default_converter_if_uninitialised(self)
 
     def matrixrank(self, A, tol=1e-8):
@@ -45,7 +44,7 @@ class generic_to_si(object):
             factors_of_the_bases[row] = value.number * value.unit.factor
 
         log_factors_of_the_bases = numpy.log(factors_of_the_bases)
-        return numpy.exp(self.new_base_inv*log_factors_of_the_bases)
+        return numpy.array(numpy.exp(self.new_base_inv*log_factors_of_the_bases))[:,0]
 
     @property
     def units(self):

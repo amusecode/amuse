@@ -1,6 +1,7 @@
 import weakref
 
 from amuse.support.units import nbody_system
+from amuse.support.units import generic_unit_system as generic_system
 from amuse.support.data import values
 from amuse.support import exception
 
@@ -96,7 +97,8 @@ class ParametersWithUnitsConverted(object):
 
     def __setattr__(self, name, value):
         default_value = self._original.get_default_value_for(name)
-        if not isinstance(default_value,bool) and nbody_system.is_nbody_unit(default_value.unit):
+        if not isinstance(default_value,bool) and (nbody_system.is_nbody_unit(default_value.unit) 
+                or generic_system.is_generic_unit(default_value.unit)):
             setattr(self._original, name, self._converter.from_source_to_target(value))
         else:
             setattr(self._original, name, value)
