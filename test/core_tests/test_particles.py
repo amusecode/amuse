@@ -8,10 +8,8 @@ from amuse.support.interface import CodeInterface
 
 import numpy
 
-class TestBase(amusetest.TestCase):
-    pass
     
-class TestParticles(TestBase):
+class TestParticles(amusetest.TestCase):
     
     def test1(self):
         
@@ -99,7 +97,7 @@ class TestParticles(TestBase):
 
         
         
-class TestStars(TestBase):
+class TestStars(amusetest.TestCase):
 
     def test1(self):
         stars = core.Stars(2)
@@ -146,7 +144,7 @@ class TestStars(TestBase):
 
 
 
-class TestParticlesWithBinding(TestBase):
+class TestParticlesWithBinding(amusetest.TestCase):
     class TestLegacyCode(object):
             
         def __init__(self):
@@ -375,7 +373,7 @@ class TestParticlesWithBinding(TestBase):
         
         
         
-class TestParticlesWithUnitsConverted(TestBase):
+class TestParticlesWithUnitsConverted(amusetest.TestCase):
     
     def test1(self):
         stars = core.Stars(2)
@@ -441,7 +439,7 @@ class TestParticlesWithUnitsConverted(TestBase):
         
 
 
-class TestParticlesWithChildren(TestBase):
+class TestParticlesWithChildren(amusetest.TestCase):
     
     def test1(self):
         
@@ -571,7 +569,7 @@ class TestParticlesWithChildren(TestBase):
         self.assertEquals(copy[1].parent, parent)
         self.assertEquals(len(copy[0].descendents()), 4)
         
-class TestParticlesSuperset(TestBase):
+class TestParticlesSuperset(amusetest.TestCase):
     
     def test1(self):
         print "Test1: getting attributes of a particle superset."
@@ -620,7 +618,7 @@ class TestParticlesSuperset(TestBase):
             print dictionary[key],value
             self.assertEqual(dictionary[key],value)
     
-class TestSliceParticles(TestBase):
+class TestSliceParticles(amusetest.TestCase):
     
     def test1(self):
         print "Test: slice a particle set."
@@ -661,7 +659,7 @@ class TestSliceParticles(TestBase):
         self.assertEqual(len(empty),   0)
         print "ok!"
     
-class TestAddParticles(TestBase):
+class TestAddParticles(amusetest.TestCase):
     
     def test1(self):
         print "Test1: create a particle subset by adding a particle to a set."
@@ -803,7 +801,7 @@ class TestAddParticles(TestBase):
         self.assertTrue(isinstance(new_set, core.ParticlesSubset))
         self.assertEqual(len(new_set),3)
     
-class TestSubtractParticles(TestBase):
+class TestSubtractParticles(amusetest.TestCase):
     
     def test1(self):
         print "Test1: create a particle subset by removing a particle from a set."

@@ -1,7 +1,9 @@
 from amuse.test import amusetest
 import numpy
 
-from amuse.support.data.core import InMemoryAttributeStorage
+from amuse.support.data.memory_storage import InMemoryAttributeStorage
+from amuse.support.data.memory_storage import InMemoryGridAttributeStorage
+
 from amuse.support.units  import units
 
 class TestInMemoryAttributeStorage(amusetest.TestCase):
@@ -133,7 +135,39 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         self.assertEquals(all_values[0][0], 2.0 | units.m)
         self.assertEquals(all_values[0][1], 2.0 | units.m)
         
+
+class TestInMemoryGridAttributeStorage(amusetest.TestCase):
+    
+    def test1(self):
+        x = InMemoryGridAttributeStorage(5,4,3)
+        i = (0,1,2,3,4)
+        j = (1,3,1,3,1)
+        k = (0,2,0,2,0)
+        x._set_values(
+            (i,j,k), 
+            ['a','b'], 
+            [2.0 | units.kg, 1.0 | units.m]
+        )
         
+        b, a = x._get_values(None, ['b','a'])
+        print a
+        self.assertEquals(b[0][1][0], 1.0 | units.m)
+        self.assertEquals(b[0][0][0], 0.0 | units.m)
+        self.assertEquals(a[0][1][0], 2.0 | units.kg)
+        self.assertEquals(a[1][3][2], 2.0 | units.kg)
+        self.assertEquals(a[1][2][2], 0.0 | units.kg)
+        
+        (b,) = x._get_values((numpy.s_[0:4], numpy.s_[1:4], numpy.s_[:]), ['a'])
+        
+        self.assertEquals(b[0][0][0], 2.0 | units.kg)
+        self.assertEquals(b[0][0][2], 0.0 | units.kg)
+        self.assertEquals(b[1][2][2], 2.0 | units.kg)
+        self.assertEquals(b[2][0][0], 2.0 | units.kg)
+        self.assertEquals(b[3][2][2], 2.0 | units.kg)
+        
+        self.assertEquals(b.sum(), 8.0 | units.kg)
+        
+        self.assertEquals(sorted(x._get_attribute_names()), ["a", "b"])
         
         
         

@@ -802,20 +802,15 @@ class Particles(AbstractParticleSet):
                     
             
     def _add_particles(self, keys, attributes = [], values = []):
-        
         self._private.attribute_storage._add_particles(keys, attributes, values)
         
     def _remove_particles(self, keys):
         self._private.attribute_storage._remove_particles(keys)
     
     def _get_values(self, keys, attributes):
-        
-        result = self._private.attribute_storage._get_values(keys, attributes)
-        return result
-                
+        return self._private.attribute_storage._get_values(keys, attributes)
         
     def _set_values(self, keys, attributes, values):
-        
         self._private.attribute_storage._set_values(keys, attributes, values)
     
     def _get_attribute_names(self):
@@ -823,7 +818,6 @@ class Particles(AbstractParticleSet):
         
     def _get_state_attributes(self):
         return self._private.attribute_storage._state_attributes()
-        
         
     def _get_keys(self):
         return self._private.attribute_storage._get_keys()

@@ -309,12 +309,16 @@ class MakeAReportOfATestRun(object):
         time_taken = report.mean_time() 
         if time_taken < 0.1:
             return True
-        if time_taken < 1.0:
+        if time_taken < 0.25:
             return (report.number_of_suite_runs % 5) == 0
-        if time_taken < 3.0:
+        if time_taken < 0.5:
+            return (report.number_of_suite_runs % 10) == 0
+        if time_taken < 1.0:
             return (report.number_of_suite_runs % 15) == 0
+        if time_taken < 3.0:
+            return (report.number_of_suite_runs % 30) == 0
             
-        return (report.number_of_suite_runs % 30) == 0
+        return (report.number_of_suite_runs % 40) == 0
     
     def has_errors(self):
         return self.errors > 0
