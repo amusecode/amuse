@@ -92,6 +92,7 @@ int evolve_star(double mass, double endtime, double metal, double * resulttime, 
        *end_radius = bi->get_starbase()->get_effective_radius(); 
         //    << "   " << type_string(bi->get_starbase()->get_element_type())
     }
-
+    
+    return 0;
 }
 
