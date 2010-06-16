@@ -77,6 +77,7 @@ class HDF5AttributeStorage(AttributeStorage):
                 dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
                 dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
             dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
+    
         
         
 class StoreHDF(object):
@@ -145,7 +146,10 @@ class StoreHDF(object):
             x._private.previous = previous
             previous = x
             
-        return all_particle_sets[-1]
+        last = all_particle_sets[-1]
+        copy_of_last = last.copy_to_memory()
+        copy_of_last._private.previous = last
+        return copy_of_last
         
         
     

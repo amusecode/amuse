@@ -36,7 +36,7 @@ def combine_slices(slice0, slice1):
     return newstart, newstop, newstep
 
 def combine_indices(index0, index1):
-    if isinstance(index0, collections.Sequence):
+    if isinstance(index0, tuple):
         if len(index0) == 1:
            index0 = index0[0]
         else:
