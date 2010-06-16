@@ -205,15 +205,16 @@ class FormatTests(amusetest.TestCase):
         x.mass = [100.0, 200.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5")
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
+        y = y.previous_state()
         self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertAlmostEquals([10.0, 20.0] | units.kg, y._private.previous.mass, 8)
-        self.assertAlmostEquals([1.0, 2.0] | units.kg, y._private.previous._private.previous.mass, 8)
-        self.assertEqual(y._private.previous._private.previous._private.previous, None)
+        self.assertAlmostEquals([10.0, 20.0] | units.kg, y.previous_state().mass, 8)
+        self.assertAlmostEquals([1.0, 2.0] | units.kg, y.previous_state().previous_state().mass, 8)
+        self.assertEqual(y.previous_state().previous_state().previous_state(), None)
         
         io.write_set_to_file(x, "test_unit.hdf5","hdf5", append_to_file=False)
         y = io.read_set_from_file("test_unit.hdf5","hdf5")
         self.assertAlmostEquals(x.mass, y.mass, 8)
-        self.assertEqual(y._private.previous, None)
+        self.assertEqual(y.previous_state().previous_state(), None)
         
         os.remove("test_unit.hdf5")
         
