@@ -219,7 +219,7 @@ class OrderedDictionary(object):
         return key in self.mapping
         
     def  __iter__(self):
-        return self.values()
+        return self.itervalues()
         
     def  __len__(self):
         return len(self.orderedKeys)
@@ -227,7 +227,7 @@ class OrderedDictionary(object):
     def __str__(self):
         result = 'OrderedDictionary({'
         elements = []
-        for x in self.keys():
+        for x in self.iterkeys():
             elements.append(repr(x) + ':' + repr(self[x]))
         result += ', '.join(elements)
         result += '})'
@@ -240,12 +240,18 @@ class OrderedDictionary(object):
     def __getattr__(self, key):
         return self.mapping[key]
         
-    def keys(self):
+    def iterkeys(self):
         return iter(self.orderedKeys)
         
-    def values(self):
+    def itervalues(self):
         for x in self.orderedKeys:
             yield self.mapping[x]
+    
+    def keys(self):
+        return self.orderedKeys
+    
+    def values(self):
+        return [self.mapping[x] for x in self.orderedKeys]
             
 
         
