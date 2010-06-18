@@ -1,0 +1,62 @@
+#!/bin/bash
+#--------------------------------------- Basic operation mode of code
+#OPT   +=  -DPERIODIC
+OPT   +=  -DUNEQUALSOFTENINGS
+
+
+#--------------------------------------- Things that are always recommended
+OPT   +=  -DPEANOHILBERT
+OPT   +=  -DWALLCLOCK
+
+
+#--------------------------------------- TreePM Options
+#OPT   +=  -DPMGRID=128
+#OPT   +=  -DPLACEHIGHRESREGION=3
+#OPT   +=  -DENLARGEREGION=1.2
+#OPT   +=  -DASMTH=1.25
+#OPT   +=  -DRCUT=4.5
+
+
+#--------------------------------------- Single/Double Precision
+OPT   +=  -DDOUBLEPRECISION
+#OPT   +=  -DDOUBLEPRECISION_FFTW
+
+
+#--------------------------------------- Time integration options
+OPT   +=  -DSYNCHRONIZATION
+#OPT   +=  -DFLEXSTEPS
+#OPT   +=  -DPSEUDOSYMMETRIC
+#OPT   +=  -DNOSTOP_WHEN_BELOW_MINTIMESTEP
+#OPT   +=  -DNOPMSTEPADJUSTMENT
+
+
+#--------------------------------------- Output 
+#OPT   +=  -DHAVE_HDF5
+#OPT   +=  -DOUTPUTPOTENTIAL
+#OPT   +=  -DOUTPUTACCELERATION
+#OPT   +=  -DOUTPUTCHANGEOFENTROPY
+#OPT   +=  -DOUTPUTTIMESTEP
+
+
+#--------------------------------------- Things for special behaviour
+#OPT   +=  -DNOGRAVITY
+#OPT   +=  -DNOTREERND
+#OPT   +=  -DNOTYPEPREFIX_FFTW
+#OPT   +=  -DLONG_X=60
+#OPT   +=  -DLONG_Y=5
+#OPT   +=  -DLONG_Z=0.2
+#OPT   +=  -DTWODIMS
+#OPT   +=  -DSPH_BND_PARTICLES
+#OPT   +=  -DNOVISCOSITYLIMITER
+#OPT   +=  -DCOMPUTE_POTENTIAL_ENERGY
+#OPT   +=  -DLONGIDS
+#OPT   +=  -DISOTHERM_EQS
+#OPT   +=  -DADAPTIVE_GRAVSOFT_FORGAS
+#OPT   +=  -DSELECTIVE_NO_GRAVITY=2+4+8+16
+
+#--------------------------------------- Testing and Debugging options
+#OPT   +=  -DFORCETEST=0.1
+
+
+#--------------------------------------- Glass making
+#OPT   +=  -DMAKEGLASS=262144

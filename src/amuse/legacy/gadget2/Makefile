@@ -1,0 +1,45 @@
+SRCDIR		= src
+include $(SRCDIR)/makefile_options
+CXXFLAGS += -Wall -g -DTOOLBOX $(OPT)
+
+AMUSE_DIR?=../../../..
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
+SCLIBS ?= -L../../../../lib/stopcond -lstopcond
+SCINC ?= -I../../../../lib/stopcond
+
+CODELIB = $(SRCDIR)/libgadget.a
+LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
+	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  $(SRCDIR)/timestep.c  \
+	$(SRCDIR)/init.c  $(SRCDIR)/restart.c  $(SRCDIR)/io.c  \
+	$(SRCDIR)/accel.c  $(SRCDIR)/read_ic.c  $(SRCDIR)/ngb.c  \
+	$(SRCDIR)/system.c  $(SRCDIR)/allocate.c  $(SRCDIR)/density.c  \
+	$(SRCDIR)/gravtree.c  $(SRCDIR)/hydra.c  $(SRCDIR)/driftfac.c  \
+	$(SRCDIR)/domain.c  $(SRCDIR)/allvars.c  $(SRCDIR)/potential.c  \
+	$(SRCDIR)/forcetree.c  $(SRCDIR)/peano.c  $(SRCDIR)/gravtree_forcetest.c  \
+	$(SRCDIR)/pm_periodic.c  $(SRCDIR)/pm_nonperiodic.c  $(SRCDIR)/longrange.c
+
+OBJS = gadget_code.o
+
+all:	worker_code
+
+$(CODELIB): $(LIBFILES) $(SRCDIR)/Makefile $(SRCDIR)/makefile_options
+	make -C $(SRCDIR) all
+
+clean:
+	rm -f *.o *.pyc worker_code.cc worker_code.h worker_code
+	make -C $(SRCDIR) clean
+
+worker_code.cc: interface.py
+	$(CODE_GENERATOR) --type=c $^ Gadget2Interface -o $@
+
+worker_code.h: interface.py
+	$(CODE_GENERATOR) --type=H $^ Gadget2Interface -o $@
+
+worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_options
+	mpicxx $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS) -lgsl -lgslcblas
+
+gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
+	mpicxx $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc
+
