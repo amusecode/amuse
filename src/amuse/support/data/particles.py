@@ -130,7 +130,7 @@ class AbstractParticleSet(AbstractSet):
     def check_attribute(self, name_of_the_attribute, value):
         if not (isinstance(value, Quantity) or isinstance(value, Particle) or isinstance(value, AbstractParticleSet)):
             raise AttributeError("Can only assign quantities or other particles to an attribute.")
-        
+            
     #
     # Particle storage interface
     #

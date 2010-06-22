@@ -29,6 +29,10 @@ ifeq ($(FORTRAN), gfortran)
 FFLAGS = -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
 endif
 
+ifeq ($(FORTRAN), f95)
+FFLAGS = -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
+endif
+
 ifeq  ($(FORTRAN), ifort)
 # ifort flags
 FFLAGS= -r8 -O -ip -u $(PIC)

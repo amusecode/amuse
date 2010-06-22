@@ -32,6 +32,9 @@ def combine_slices(slice0, slice1):
     return newstart, newstop, newstep
 
 def combine_indices(index0, index1):
+    if index1 is None:
+        return index0
+        
     if isinstance(index0, tuple):
         if len(index0) == 1:
            index0 = index0[0]
@@ -64,13 +67,17 @@ def is_all_int(sequence):
     return True
     
 def number_of_dimensions(array, index):
+    return number_of_dimensions_after_index(array.ndim, index)
+
+def number_of_dimensions_after_index(number_of_dimensions, index):
     if isinstance(index, tuple):
         if is_all_int(index):
-            return array.ndim - len(index)
+            return number_of_dimensions - len(index)
     elif isinstance(index, int) or isinstance(index, long):
-        return array.ndim - 1
+        return number_of_dimensions - 1
     elif isinstance(index, slice):
-        return array.ndim
+        return number_of_dimensions
     else:
         raise Exception("Not handled yet")
+    
     

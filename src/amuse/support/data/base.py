@@ -137,7 +137,7 @@ class VectorAttribute(DerivedAttribute):
         instance._set_values(instance._get_keys(), self.attribute_names, list_of_values)
     
     def get_value_for_entity(self, instance,  key):
-        values = instance._get_values([key], self.attribute_names)
+        values = instance._get_values_for_entity(key, self.attribute_names)
           
         unit_of_the_values = None
         results = []
@@ -146,14 +146,13 @@ class VectorAttribute(DerivedAttribute):
                 unit_of_the_values = quantity.unit
             results.append(quantity.value_in(unit_of_the_values))
             
-        results = numpy.dstack(results)[0]
-        return unit_of_the_values.new_quantity(results[0])
+        return unit_of_the_values.new_quantity(results)
 
     def set_value_for_entity(self, instance, key, vector):
         list_of_values = []
         for quantity in vector:
-            list_of_values.append(quantity.as_vector_with_length(1))
-        instance._set_values([key], self.attribute_names, list_of_values)
+            list_of_values.append(quantity)
+        instance._set_values_for_entity(key, self.attribute_names, list_of_values)
 
 
     
@@ -175,8 +174,8 @@ class CalculatedAttribute(DerivedAttribute):
         return self.function(*values)
     
     def get_value_for_entity(self, instance,  key):
-        values = instance._get_values([key], self.attribute_names)
-        return self.function(*values)[0]
+        values = instance._get_values_for_entity(key, self.attribute_names)
+        return self.function(*values)
         
 
 class FunctionAttribute(DerivedAttribute):
@@ -281,7 +280,13 @@ class AbstractSet(object):
             return self._derived_attributes[attribute].get_value_for_entity(self, key)
         else:
             return self._convert_to_entities_or_quantities(self._get_values([key], [attribute])[0])[0]
+    
+    def _get_values_for_entity(self, key, attributes):
+        return [x[0] for x in self._get_values([key], attributes)]
         
+    def _set_values_for_entity(self, key, attributes, values):
+        return self._set_values([key], attributes, [x.as_vector_with_length(1) for x in values])
+    
     def _set_value_of_attribute(self, key, attribute, value):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].set_value_for_entity(self, key, value)

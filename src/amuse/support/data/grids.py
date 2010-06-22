@@ -12,8 +12,27 @@ class AbstractGrid(AbstractSet):
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
     
+    def _get_value_of_attribute(self, key, attribute):
+        if attribute in self._derived_attributes:
+            return self._derived_attributes[attribute].get_value_for_entity(self, key)
+        else:
+            return self._convert_to_entities_or_quantities(self._get_values(key, [attribute])[0])
+        
+    def _set_value_of_attribute(self, key, attribute, value):
+        if attribute in self._derived_attributes:
+            return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
+        else:
+            return self._set_values(key, [attribute], value)
 
-
+    def _get_values_for_entity(self, key, attributes):
+        return self._get_values(key, attributes)
+        
+    def _set_values_for_entity(self, key, attributes, values):
+        return self._set_values(key, attributes, values)
+    
+    def _get_particle(self, index):
+        return GridPoint(index, self._original_set())
+        
 class Grid(AbstractGrid):
     def __init__(self, number_of_points_in_x_direction, number_of_points_in_y_direction, number_of_points_in_z_direction, storage = None):
         AbstractGrid.__init__(self)
@@ -26,7 +45,7 @@ class Grid(AbstractGrid):
             )
         else:
             self._private.attribute_storage = storage
-
+            
     def _get_values(self, indices, attributes):
         result = self._private.attribute_storage._get_values(indices, attributes)
         return result
@@ -44,14 +63,61 @@ class Grid(AbstractGrid):
         return self._private.attribute_storage._get_keys()
     
     def __getitem__(self, index):
-        return SubGrid(self, index)
+        if indexing.number_of_dimensions_after_index(3, index) == 0:
+            return GridPoint(index, self)
+        else:
+            return SubGrid(self, index)
+            
+    def number_of_dimensions(self):
+        return 3
         
+        
+class SubGrid(AbstractGrid):
+    def __init__(self, grid, indices):
+        AbstractGrid.__init__(self, grid)
+        
+        self._private.grid = grid
+        self._private.indices = indices
+    
+    def _original_set(self):
+        return self._private.grid
+        
+    
+    def _get_keys(self):
+        return self._private.indices
+        
+    def _get_values(self, indices, attributes):
+        combined_index = indexing.combine_indices(self._private.indices, indices)
+        result = self._private.grid._get_values(combined_index, attributes)
+        return result
+    
+    def _set_values(self, indices, attributes, values):
+        combined_index = indexing.combine_indices(self._private.indices, indices)
+        self._private.grid._set_values(combined_index, attributes, values)
+            
+    def _get_keys(self):
+        return None
+
+    def number_of_dimensions(self):
+        return indexing.number_of_dimensions_after_index(3, self._private.indices)
+        
+    def __getitem__(self, index):
+        combined_index = indexing.combine_indices(self._private.indices, index)
+        if indexing.number_of_dimensions_after_index(3, combined_index) == 0:
+            return GridPoint(combined_index, self._original_set())
+        else:
+            return SubGrid(self._original_set(), combined_index)
+            
+    
+    def _get_attribute_names(self):
+        return self._private.grid._get_attribute_names()
+        
+
 class GridPoint(object):
 
     def __init__(self, index, grid):
-        self.index = index
-        self.grid = grid
-    
+        object.__setattr__(self,"index",index)
+        object.__setattr__(self,"grid",grid)    
     
     def __setattr__(self, name_of_the_attribute, new_value_for_the_attribute):
         if isinstance(new_value_for_the_attribute, values.Quantity):
@@ -60,28 +126,7 @@ class GridPoint(object):
             raise AttributeError("Can only assign quantities or other particles to an attribute.")
     
     def __getattr__(self, name_of_the_attribute):
-        return self.particles_set._get_value_of_attribute(self.index, name_of_the_attribute)
-                
-class SubGrid(AbstractGrid):
-    def __init__(self, grid, indices):
-        AbstractParticleSet.__init__(self, particles)
-        
-        self._private.grid = grid
-        self._private.indices = indices
+        return self.grid._get_value_of_attribute(self.index, name_of_the_attribute)
     
     
-    def _original_set(self):
-        return self._private.grid
         
-    def __getitem__(self, index):
-        return SubGrid(self, indexing.combine_indices(self._private.indices, index))
-        
-    def _get_values(self, indices, attributes):
-        result = self._private.attribute_storage._get_values(indices, attributes)
-        return result
-    
-    def _set_values(self, indices, attributes, values):
-        self._private.attribute_storage._set_values(indices, attributes, values)
-            
-    def _get_keys(self):
-        return self._private_indices

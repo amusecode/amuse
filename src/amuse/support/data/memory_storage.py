@@ -201,7 +201,6 @@ class InMemoryGridAttributeStorage(object):
                 selected_values = attribute_values
             else:
                 selected_values = attribute_values[indices]
-                
             
             results.append(selected_values)
         
@@ -228,7 +227,7 @@ class InMemoryGridAttributeStorage(object):
         return key in self.mapping_from_particle_to_index
         
     def _get_keys(self):
-        return numpy.s_[0:self.number_of_i], numpy.s_[0:self.number_of_j], numpy.s_[0:self.number_of_k]
+        return None #numpy.s_[0:self.number_of_i], numpy.s_[0:self.number_of_j], numpy.s_[0:self.number_of_k]
         
     def __len__(self):
         return self.number_of_i * self.number_of_j * self.number_of_k
