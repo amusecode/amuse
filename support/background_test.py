@@ -6,6 +6,7 @@ import inspect
 import os.path
 import Queue as queue
 import subprocess
+import threading
 
 from mpi4py import MPI
 
@@ -122,6 +123,7 @@ class TestCaseReport(object):
     
     def start(self):
         self.start_time = time.time()
+        self.end_time = 0.0
         self.found = True
     
     def end(self):
@@ -231,7 +233,8 @@ class MakeAReportOfATestRun(object):
         pass
         
     def store_report(self, report):
-        self._reports_queue.put(('unit-report',report.to_dict(), self.to_information_dict() ))
+        if self.total_number_of_tests() % 5 == 0 or report.failed or report.errored:
+            self._reports_queue.put(('unit-report',report.to_dict(), self.to_information_dict() ))
         
     
     def prepareTest(self, suite):
@@ -286,6 +289,7 @@ class MakeAReportOfATestRun(object):
     
     def begin(self):
         self.start_time = time.time()
+        self.end_time = 0
         for x in self.address_to_report.values():
             x.errored = False
             x.failed = False
@@ -358,19 +362,20 @@ class MakeAReportOfATestRun(object):
             delta_time = self.end_time - self.start_time
             title += ("%10.3f" % delta_time) + 's';
         else:
-            delta_time = time.time() - self.start_time
-            title += "running ("+("%10.3f" % delta_time) + 's )';
+            cur_time = time.time()
+            delta_time =  cur_time - self.start_time
+            title += "(running {0:10.3f})".format(delta_time)
             
         title += ' ';
         title += time.strftime("%H:%M:%S", time.gmtime(self.start_time))
         return title;
 
     def is_running(self):
-        return self.end_time == 0.0
+        return self.end_time <= 1.0
         
     def to_information_dict(self):
         result = {}
-        if self.is_running():
+        if not self.is_running():
             result['report_id'] = self.report_id
         else:
             result['report_id'] = -1
@@ -444,7 +449,9 @@ class RunTests(object):
     def __init__(self):
         self.test_is_running = False
         self.report_queue = queue.Queue()
-        self.report_info = ""
+        self.report_info = {}
+        self.life_reports = []
+        self.get_life_reports_semaphore = threading.Semaphore()
         
     def _perform_the_testrun(self, directories, results_queue, previous_report = None):
         try:
@@ -530,6 +537,7 @@ class RunTests(object):
         if self.test_is_running:
             raise Exception("Test is already running")
         
+        self.life_reports = []
         self.clear_reports_queue()
         self.test_is_running = True
         try:
@@ -556,7 +564,8 @@ class RunTests(object):
                     break;
                 if message[0] == 'unit-report':
                     self.report_info = message[2]
-                    self.report_queue.put(message[1])
+                    if(message[1]['failed'] or message[1]['errored']):
+                        self.report_queue.put(message[1])
                 if message[0] == 'start-report':
                     print message[1]
                 last_message = message
@@ -580,15 +589,18 @@ class RunTests(object):
                 must_clear = False
                 
     def get_reports(self):
-        result = []
-        must_clear = not self.report_queue.empty()
-        while must_clear:
-            try:
-                result.append(self.report_queue.get_nowait())
-                must_clear = not self.report_queue.empty()
-            except queue.Empty:
-                must_clear = False
-        return result
+        self.get_life_reports_semaphore.acquire()
+        try:
+            must_clear = not self.report_queue.empty()
+            while must_clear:
+                try:
+                    self.life_reports.append(self.report_queue.get_nowait())
+                    must_clear = not self.report_queue.empty()
+                except queue.Empty:
+                    must_clear = False
+            return self.life_reports
+        finally:
+            self.get_life_reports_semaphore.release()
         
             
 

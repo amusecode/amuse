@@ -11,7 +11,7 @@
 <script type="text/javascript">
 var event_polling_interval_id;
 var current_interval = 10000;
-var last_report_id = -1;
+var last_report_id = -2;
 
 function on_line_click(event) {
     path = $(this).attr('path');
@@ -50,23 +50,32 @@ function handle_results_of_poll(report) {
     if (report.report_id >= 0) {
         if (report.report_id != last_report_id) {
             $.getJSON("/get_last_report", handle_last_report);
-            last_report_id=report.report_id
-            clear_testcases = true;
+            last_report_id=report.report_id;
             set_polling_interval(1000);
             return;
         }
     }
-    
-    if (report.report_id == -1) {
+    if (report.report_id != last_report_id) {
+        clear_testcases = true;
+        last_report_id=report.report_id;
+        set_polling_interval(250);
+    }
+    if (report.report_id < 0) {
         handle_intermediate_results(report);
-        set_polling_interval(100);
         return
     }
     
 }
 
 function do_one_poll() {
-    $.getJSON("/get_last_report_information", handle_results_of_poll)
+    //$.getJSON(, )
+    $.ajax({
+      async: false,
+      url: "/get_last_report_information",
+      dataType: 'json',
+      success: handle_results_of_poll
+    });
+
 }
 
 function poll_for_events() {
@@ -103,9 +112,10 @@ function document_title(report) {
 }
 
 
+var previous_length = 0;
 function handle_intermediate_results(report)
 {
-    if(clear_testcases) {
+    if(clear_testcases || report.reports.length > previous_length) {
         $('#tests-errored').children().remove()
         $('#tests-run').children().remove()
         $('#tests-failed').children().remove()
@@ -123,6 +133,12 @@ function handle_intermediate_results(report)
         $('#report-title').addClass('no-errors');
             
     }
+    
+    if (report.reports.length > previous_length) {
+        previous_length = report.reports.length;
+        print_testcases(report.reports);
+    }
+
 }
 
 function handle_last_report(report) {
@@ -184,8 +200,9 @@ function handle_last_report(report) {
 function print_testcases(testcases) {
     var offset = 0;
     var part = 50;
+    clear_testcases = false;
     var intervalid = setInterval(function() {
-        if(offset > testcases.length) {
+        if(offset > testcases.length || clear_testcases) {
             clearInterval(intervalid);
             return;
         }
@@ -281,7 +298,7 @@ function print_testcases(testcases) {
         }
         
         offset = offset + part;
-    }, 10)
+    }, 250)
     
 }
 

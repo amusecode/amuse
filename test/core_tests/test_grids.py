@@ -17,9 +17,9 @@ class TestGrids(amusetest.TestCase):
     def test1(self):
         grid = core.Grid(5,4,3)
         grid.mass = 2.0 | units.kg
-        print grid.mass
         self.assertEquals(grid.mass[0][1][2], 2.0 | units.kg)
-    
+        self.assertEquals(len(grid.mass), 5)
+        
     def test2(self):
         grid = core.Grid(5,4,3)
         grid.mass = units.kg.new_quantity(numpy.arange(5*4*3).reshape(5,4,3))

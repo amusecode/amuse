@@ -158,7 +158,7 @@ class ContinuosTestWebServer(webserver.WebServer):
             result =  self.get_live_report_info()
         else:
             result =  self.last_report.to_information_dict()
-        result['reports'] = [] #self.get_live_reports();
+        result['reports'] = self.get_live_reports()
         return result
     
     def get_live_reports(self):
