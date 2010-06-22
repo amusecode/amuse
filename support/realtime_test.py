@@ -150,18 +150,22 @@ class ContinuosTestWebServer(webserver.WebServer):
         if self.last_report is None:
             return None
         else:
-            return self.last_report.to_dict()
+            result = self.last_report.to_dict()
+            return result
             
     def get_last_report_information(self):
         if self.last_report is None:
-            result = {'report_id':-1, 'title':'running'} 
+            result =  self.get_live_report_info()
         else:
             result =  self.last_report.to_information_dict()
-        result['reports'] = self.get_live_reports();
+        result['reports'] = [] #self.get_live_reports();
         return result
     
     def get_live_reports(self):
         return background_test.RunTests.instance.get_reports()
+    
+    def get_live_report_info(self):
+        return background_test.RunTests.instance.report_info
         
     def set_last_report(self, report):
         self.last_report = report

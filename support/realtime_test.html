@@ -47,17 +47,18 @@ function handle_results_of_poll(report) {
     
     document.title = report.title;
     
-    if (report.report_id != last_report_id) {
-        $.getJSON("/get_last_report", handle_last_report);
-        last_report_id=report.report_id
-        clear_testcases = true;
-        set_polling_interval(1000);
-        return;
+    if (report.report_id >= 0) {
+        if (report.report_id != last_report_id) {
+            $.getJSON("/get_last_report", handle_last_report);
+            last_report_id=report.report_id
+            clear_testcases = true;
+            set_polling_interval(1000);
+            return;
+        }
     }
     
-    if (report.reports.length > 0) {
-        document.title = "running...";
-        handle_intermediate_results(report.reports);
+    if (report.report_id == -1) {
+        handle_intermediate_results(report);
         set_polling_interval(100);
         return
     }
@@ -102,7 +103,7 @@ function document_title(report) {
 }
 
 
-function handle_intermediate_results(testcases)
+function handle_intermediate_results(report)
 {
     if(clear_testcases) {
         $('#tests-errored').children().remove()
@@ -112,7 +113,16 @@ function handle_intermediate_results(testcases)
         clear_testcases = false
     }
     
-    print_testcases(testcases)
+    $('#report-title').html(report.title);
+    
+    if(!report.success) {
+        $('#report-title').removeClass('no-errors');
+        $('#report-title').addClass('errors');
+    } else {
+        $('#report-title').removeClass('errors ');
+        $('#report-title').addClass('no-errors');
+            
+    }
 }
 
 function handle_last_report(report) {
@@ -172,97 +182,107 @@ function handle_last_report(report) {
 }
 
 function print_testcases(testcases) {
-    
-    for (var i = 0; i < testcases.length; i++) {
-        var testcase = testcases[i];
-        var item = $('<li></li>');
-        var file_and_line = $('<a></a>');
-        file_and_line.attr('href','#');
-        file_and_line.addClass('file-lineno');
-        var filename = testcase.address[0].split('/').pop();
-        file_and_line.append(filename + ' : ' + testcase.lineno);
-        file_and_line.appendTo(item);
-        file_and_line.attr('path',testcase.address[0]);
-        file_and_line.attr('module',testcase.address[1]);
-        file_and_line.attr('testcase',testcase.address[2]);
-        file_and_line.attr('lineno', testcase.lineno);
-        file_and_line.click(on_line_click);
-        item.append(' ');
-        
-        var run_button = $('<a>run</a>');
-        run_button.attr('href','#');
-        run_button.addClass('run-button');
-        run_button.appendTo(item);
-        run_button.attr('a0',testcase.address[0]);
-        run_button.attr('a1',testcase.address[1]);
-        run_button.attr('a2',testcase.address[2]);
-        run_button.click(on_run_button_click);
-        item.append(' ');
-        
-        var address = $('<span></span>');
-        address.addClass('test-address');
-        address.append(testcase.address[2]) ;
-        address.appendTo(item);
-        var delta_time = $('<span></span>');
-        if(testcase.skipped ) {
-            delta_time.text('(' + (testcase.mean_time).toFixed(3) + ')')
-        } else {
-            delta_time.text('(' + (testcase.end_time - testcase.start_time).toFixed(3) + ')')
+    var offset = 0;
+    var part = 50;
+    var intervalid = setInterval(function() {
+        if(offset > testcases.length) {
+            clearInterval(intervalid);
+            return;
         }
-        item.append(' ');
-        delta_time.appendTo(item);
-        
-        if(testcase.skipped ) {
-            item.appendTo($('#tests-skipped'));
-        } else {
-            item.appendTo($('#tests-run'));
-        }
-        if(testcase.errored || testcase.failed) {
-            root = item.clone(true)
-            if(testcase.errored ) {
-                root.appendTo($('#tests-errored'));
-            } else {
-                root.appendTo($('#tests-failed'));
-            }
-            item = $('<li></li>').appendTo($('<ul></ul>').appendTo(root));
-            item = $('<pre></pre>').appendTo(item);
+        for (var i = offset; i < Math.min(offset+part, testcases.length); i++) {
+            var testcase = testcases[i];
+            var item = $('<li></li>');
+            var file_and_line = $('<a></a>');
+            file_and_line.attr('href','#');
+            file_and_line.addClass('file-lineno');
+            var filename = testcase.address[0].split('/').pop();
+            file_and_line.append(filename + ' : ' + testcase.lineno);
+            file_and_line.appendTo(item);
+            file_and_line.attr('path',testcase.address[0]);
+            file_and_line.attr('module',testcase.address[1]);
+            file_and_line.attr('testcase',testcase.address[2]);
+            file_and_line.attr('lineno', testcase.lineno);
+            file_and_line.click(on_line_click);
+            item.append(' ');
             
-            for(var j = 0; j < testcase.error_string.length; j++) {
-                item.append(document.createTextNode(testcase.error_string[j]));
+            var run_button = $('<a>run</a>');
+            run_button.attr('href','#');
+            run_button.addClass('run-button');
+            run_button.appendTo(item);
+            run_button.attr('a0',testcase.address[0]);
+            run_button.attr('a1',testcase.address[1]);
+            run_button.attr('a2',testcase.address[2]);
+            run_button.click(on_run_button_click);
+            item.append(' ');
+            
+            var address = $('<span></span>');
+            address.addClass('test-address');
+            address.append(testcase.address[2]) ;
+            address.appendTo(item);
+            var delta_time = $('<span></span>');
+            if(testcase.skipped ) {
+                delta_time.text('(' + (testcase.mean_time).toFixed(3) + ')')
+            } else {
+                delta_time.text('(' + (testcase.end_time - testcase.start_time).toFixed(3) + ')')
             }
-            traceback = $('<ul></ul>');
-            traceback.addClass('traceback-list');
-            tb = testcase.traceback;
-            for(var j = 0 ; j < tb.length; j++) {
-                frame = tb[j];
+            item.append(' ');
+            delta_time.appendTo(item);
+            
+            if(testcase.skipped ) {
+                item.appendTo($('#tests-skipped'));
+            } else {
+                item.appendTo($('#tests-run'));
+            }
+            if(testcase.errored || testcase.failed) {
+                root = item.clone(true)
+                if(testcase.errored ) {
+                    root.appendTo($('#tests-errored'));
+                } else {
+                    root.appendTo($('#tests-failed'));
+                }
+                item = $('<li></li>').appendTo($('<ul></ul>').appendTo(root));
+                item = $('<pre></pre>').appendTo(item);
                 
-                filename = frame[0].split('/').pop();
-                tb_item = $('<li></li>');
-                file_and_line = $('<a></a>');
-                file_and_line.attr('href','#');
-                file_and_line.addClass('file-lineno');
-                file_and_line.append(filename + ' : ' + frame[1]);
-                file_and_line.appendTo(tb_item);
-                tb_item.append(' ');
-                call = $('<span></span>');
-                call.addClass('function-call');
-                call.append(frame[2]);
-                call.appendTo(tb_item);
-                file_and_line.attr('path',frame[0]);
-                file_and_line.attr('lineno',frame[1]);
-                file_and_line.click(on_line_click);
-                tb_item.appendTo(traceback);
+                for(var j = 0; j < testcase.error_string.length; j++) {
+                    item.append(document.createTextNode(testcase.error_string[j]));
+                }
+                traceback = $('<ul></ul>');
+                traceback.addClass('traceback-list');
+                tb = testcase.traceback;
+                for(var j = 0 ; j < tb.length; j++) {
+                    frame = tb[j];
+                    
+                    filename = frame[0].split('/').pop();
+                    tb_item = $('<li></li>');
+                    file_and_line = $('<a></a>');
+                    file_and_line.attr('href','#');
+                    file_and_line.addClass('file-lineno');
+                    file_and_line.append(filename + ' : ' + frame[1]);
+                    file_and_line.appendTo(tb_item);
+                    tb_item.append(' ');
+                    call = $('<span></span>');
+                    call.addClass('function-call');
+                    call.append(frame[2]);
+                    call.appendTo(tb_item);
+                    file_and_line.attr('path',frame[0]);
+                    file_and_line.attr('lineno',frame[1]);
+                    file_and_line.click(on_line_click);
+                    tb_item.appendTo(traceback);
+                }
+                traceback.children(':even').addClass('even');
+                traceback.children(':odd').addClass('odd');
+                traceback.appendTo(item);
             }
-            traceback.children(':even').addClass('even');
-            traceback.children(':odd').addClass('odd');
-            traceback.appendTo(item);
+            
+            $('#tests-run').children(':even').addClass('even');
+            $('#tests-run').children(':odd').addClass('odd');
+            $('#tests-skipped').children(':even').addClass('even');
+            $('#tests-skipped').children(':odd').addClass('odd');
         }
         
-        $('#tests-run').children(':even').addClass('even');
-        $('#tests-run').children(':odd').addClass('odd');
-        $('#tests-skipped').children(':even').addClass('even');
-        $('#tests-skipped').children(':odd').addClass('odd');
-    }
+        offset = offset + part;
+    }, 10)
+    
 }
 
 function handle_ajax_error(request,textStatus, errorThrown) { 
@@ -278,7 +298,6 @@ function startPage() {
      $('#start-button').click(function() {$.getJSON("/start", function(data){});});
      $('#stop-button').click(function() {$.getJSON("/stop", function(data){});});
      $('#pause-button').click(function() {$.getJSON("/pause", function(data){});});
-     $.getJSON("/get_last_report", handle_last_report);
      poll_for_events();
 }
 

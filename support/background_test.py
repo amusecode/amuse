@@ -231,7 +231,7 @@ class MakeAReportOfATestRun(object):
         pass
         
     def store_report(self, report):
-        self._reports_queue.put(('unit-report',report.to_dict()))
+        self._reports_queue.put(('unit-report',report.to_dict(), self.to_information_dict() ))
         
     
     def prepareTest(self, suite):
@@ -333,7 +333,6 @@ class MakeAReportOfATestRun(object):
         return self.tests + self.skipped  + self.failures + self.errors
         
     def title_string(self):
-        delta_time = self.end_time - self.start_time
         title = '';
         if self.has_failures() or self.has_errors():
             title += "FAIL "
@@ -354,14 +353,27 @@ class MakeAReportOfATestRun(object):
             title += 'S' + str(self.skipped) + ' '
         
         title += 'T' + str(self.total_number_of_tests()) + ' '
-        title += ("%10.3f" % delta_time) + 's';
+        
+        if not self.is_running():
+            delta_time = self.end_time - self.start_time
+            title += ("%10.3f" % delta_time) + 's';
+        else:
+            delta_time = time.time() - self.start_time
+            title += "running ("+("%10.3f" % delta_time) + 's )';
+            
         title += ' ';
         title += time.strftime("%H:%M:%S", time.gmtime(self.start_time))
         return title;
 
+    def is_running(self):
+        return self.end_time == 0.0
+        
     def to_information_dict(self):
         result = {}
-        result['report_id'] = self.report_id
+        if self.is_running():
+            result['report_id'] = self.report_id
+        else:
+            result['report_id'] = -1
         result['title'] = self.title_string()
         result['success'] = not self.has_errors() and not self.has_failures()
         return result
@@ -432,6 +444,7 @@ class RunTests(object):
     def __init__(self):
         self.test_is_running = False
         self.report_queue = queue.Queue()
+        self.report_info = ""
         
     def _perform_the_testrun(self, directories, results_queue, previous_report = None):
         try:
@@ -542,7 +555,7 @@ class RunTests(object):
                 if message is None:
                     break;
                 if message[0] == 'unit-report':
-                    #print message[1]["id"]
+                    self.report_info = message[2]
                     self.report_queue.put(message[1])
                 if message[0] == 'start-report':
                     print message[1]
