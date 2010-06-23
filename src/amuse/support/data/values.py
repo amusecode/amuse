@@ -208,7 +208,15 @@ class ScalarQuantity(Quantity):
     
     def as_vector_with_length(self, length):
         return VectorQuantity(numpy.ones(length, dtype=self.unit.dtype) * self.number, self.unit)
-        
+    
+    
+    def reshape(self, shape):
+        if shape == -1 or (len(shape) == 1 and shape[0] == 1):
+            return VectorQuantity([self.number], self.unit)
+        else:
+            raise Exception("Cannot reshape a scale to vector of shape '{0}'".format(shape))
+    
+    
     def __str__(self):
         unit_str = str(self.unit)
         if unit_str:
@@ -591,7 +599,9 @@ class VectorQuantity(Quantity):
             
     def accumulate(self): 
         return VectorQuantity(numpy.add.accumulate(self.number), self.unit)
-        
+    
+    def reshape(self, shape):
+        return VectorQuantity(self.number.reshape(shape), self.unit)
     
 class ZeroQuantity(Quantity):
     """

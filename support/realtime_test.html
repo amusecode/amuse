@@ -58,7 +58,7 @@ function handle_results_of_poll(report) {
     if (report.report_id != last_report_id) {
         clear_testcases = true;
         last_report_id=report.report_id;
-        set_polling_interval(250);
+        set_polling_interval(150);
     }
     if (report.report_id < 0) {
         handle_intermediate_results(report);
@@ -113,9 +113,10 @@ function document_title(report) {
 
 
 var previous_length = 0;
+
 function handle_intermediate_results(report)
 {
-    if(clear_testcases || report.reports.length > previous_length) {
+    if(clear_testcases || report.reports.length != previous_length) {
         $('#tests-errored').children().remove()
         $('#tests-run').children().remove()
         $('#tests-failed').children().remove()
@@ -134,7 +135,7 @@ function handle_intermediate_results(report)
             
     }
     
-    if (report.reports.length > previous_length) {
+    if (report.reports.length != previous_length) {
         previous_length = report.reports.length;
         print_testcases(report.reports);
     }

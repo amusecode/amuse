@@ -1,7 +1,7 @@
 from amuse.support.data import parameters
 from amuse.support.data import core
 from amuse.support.data import values
-from amuse.support.data import code_particles
+from amuse.support.data import incode_storage
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system as generic_system
 from amuse.support.units.core import unit
@@ -732,23 +732,23 @@ class ParticleSetDefinition(object):
             return core.InMemoryAttributeStorage()
 
         setters = []
-        for name, mapping, names in self.setters:
-            x = code_particles.ParticleSetAttributesMethod(getattr(interface, name), mapping, names)
+        for name, names in self.setters:
+            x = incode_storage.ParticleSetAttributesMethod(getattr(interface, name), names)
             setters.append(x)
 
         getters = []
-        for name, mapping, names in self.getters:
-            x = code_particles.ParticleGetAttributesMethod(getattr(interface, name), mapping, names)
+        for name, names in self.getters:
+            x = incode_storage.ParticleGetAttributesMethod(getattr(interface, name), names)
             getters.append(x)
 
 
-        name, mapping, names = self.new_particle_method
-        new_particle_method = code_particles.NewParticleMethod(getattr(interface, name), mapping, names)
+        name, names = self.new_particle_method
+        new_particle_method = incode_storage.NewParticleMethod(getattr(interface, name), names)
 
         delete_particle_method = getattr(interface, self.name_of_delete_particle_method)
         number_of_particles_method = None #getattr(interface, self.name_of_number_of_particles_method)
 
-        return code_particles.InCodeAttributeStorage(
+        return incode_storage.InCodeAttributeStorage(
             interface,
             new_particle_method,
             delete_particle_method,
@@ -761,7 +761,7 @@ class ParticleSetDefinition(object):
     def new_queries(self, interface):
         queries = []
         for name, names, public_name in self.queries:
-            x = code_particles.ParticleQueryMethod(getattr(interface, name), names, public_name)
+            x = incode_storage.ParticleQueryMethod(getattr(interface, name), names, public_name)
             queries.append(x)
 
         return queries
@@ -769,7 +769,7 @@ class ParticleSetDefinition(object):
     def new_selects_from_particle(self, interface):
         results = []
         for name, names, public_name in self.selects_form_particle:
-            x = code_particles.ParticleSpecificSelectMethod(getattr(interface, name), names, public_name)
+            x = incode_storage.ParticleSpecificSelectMethod(getattr(interface, name), names, public_name)
             results.append(x)
 
         return results
@@ -777,7 +777,7 @@ class ParticleSetDefinition(object):
     def new_particle_methods(self, interface):
         results = []
         for name, public_name in self.methods:
-            x = code_particles.ParticleMethod(getattr(interface, name), public_name)
+            x = incode_storage.ParticleMethod(getattr(interface, name), public_name)
             results.append(x)
 
         return results
@@ -867,19 +867,19 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         definition.particles_factory = particles_factory
         self.sets[name] = definition
 
-    def set_new(self, name_of_the_set, name_of_new_particle_method, mapping = (), names = None):
-        self.sets[name_of_the_set].new_particle_method = (name_of_new_particle_method, mapping, names)
+    def set_new(self, name_of_the_set, name_of_new_particle_method, names = None):
+        self.sets[name_of_the_set].new_particle_method = (name_of_new_particle_method, names)
 
     def set_delete(self, name_of_the_set, name_of_delete_particle_method):
         self.sets[name_of_the_set].name_of_delete_particle_method = name_of_delete_particle_method
 
-    def add_getter(self, name_of_the_set, name_of_the_getter, mapping = (), names = None):
+    def add_getter(self, name_of_the_set, name_of_the_getter, names = None):
 
-        self.sets[name_of_the_set].getters.append((name_of_the_getter, mapping, names))
+        self.sets[name_of_the_set].getters.append((name_of_the_getter, names))
 
-    def add_setter(self, name_of_the_set, name_of_the_setter, mapping = (), names = None):
+    def add_setter(self, name_of_the_set, name_of_the_setter, names = None):
 
-        self.sets[name_of_the_set].setters.append((name_of_the_setter,mapping, names))
+        self.sets[name_of_the_set].setters.append((name_of_the_setter, names))
 
     def add_attribute(self, name_of_the_set, name_of_the_attribute, name_of_the_method, names = None):
 

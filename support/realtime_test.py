@@ -65,7 +65,11 @@ class RunAllTestsWhenAChangeHappens(object):
                     number_of_changed_files += 1
                     
                 if number_of_changed_files > 0 or self.server.last_report is None:
-                    report = background_test.RunTests.instance.run_tests(self.server.last_report)
+                    last_report = self.server.last_report
+                    
+                    self.server.set_last_report(None)
+                    
+                    report = background_test.RunTests.instance.run_tests(last_report)
                 
                     self.server.set_last_report(report)
              
@@ -169,9 +173,9 @@ class ContinuosTestWebServer(webserver.WebServer):
         
     def set_last_report(self, report):
         self.last_report = report
-        self.report_id += 1
-        self.last_report.report_id = self.report_id
-        #self.events_queue.put('done')
+        if not report is None:
+            self.report_id += 1
+            self.last_report.report_id = self.report_id
         
 
 def start_browser(serverport):
