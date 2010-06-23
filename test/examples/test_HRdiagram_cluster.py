@@ -31,7 +31,7 @@ distribution.
 
 
 def simulate_stellar_evolution(
-	stellar_evolution,
+	stellar_evolution = SSE(),
 	number_of_stars = 1000, 
 	end_time = 1000.0 | units.Myr, 
 	name_of_the_figure = "cluster_HR_diagram.png", 

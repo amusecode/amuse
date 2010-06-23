@@ -29,7 +29,7 @@ def stellar_remnant_state(star):
 		star.stellar_type.value_in(units.stellar_type) < 16
 
 def simulate_evolution_tracks(
-	stellar_evolution,
+	stellar_evolution = SSE(),
 	masses = [0.5, 1.0, 2.0, 5.0, 10.0, 20.0, 30.0] | units.MSun,
 	name_of_the_figure = "HR_evolution_tracks.png"
 	):
