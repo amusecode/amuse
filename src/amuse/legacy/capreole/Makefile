@@ -1,3 +1,4 @@
+FORTRAN ?= gfortran
 FC = mpif90
 
 SRC=src
