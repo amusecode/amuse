@@ -17,7 +17,6 @@ const bool debug = true;
 
 bool particles_initialized = false;
 int particles_counter = 0;
-int SPH_particles_counter = 0;
 vector<dynamics_state> ds;        // for initialization only
 vector<sph_state> sph_ds;         // for initialization only
 
@@ -69,8 +68,22 @@ int initialize_code(){
 #ifdef PMGRID
     long_range_init();
 #endif
-    All.TimeLastRestartFile = CPUThisRun;
     set_random_numbers();
+    for(int i = 0; i < 6; i++)
+        All.MassTable[i] = 0;
+    All.Time = 0;
+    All.NumCurrentTiStep = 0;	/* setup some counters */
+    All.SnapshotFileCount = 0;
+    All.TotNumOfForces = All.NumForcesSinceLastDomainDecomp = 0;
+    All.TimeLastStatistics = All.TimeBegin - All.TimeBetStatistics;
+#ifdef PMGRID
+    All.PM_Ti_endstep = All.PM_Ti_begstep = 0;
+#endif
+#ifdef FLEXSTEPS
+    All.PresentMinStep = TIMEBASE;
+#endif
+    All.Ti_nextoutput = -1; // find_next_outputtime(All.Ti_Current);
+    
     t1 = second();
     CPUThisRun += timediff(t0, t1);
     All.CPU_Total += timediff(t0, t1);
@@ -99,60 +112,42 @@ int commit_particles(){
     double t0, t1, a3;
     int i, j;
     t0 = second();
-//    init();			/* ... read in initial model */
-
-    for(int i = 0; i < 6; i++)
-        All.MassTable[i] = 0;
-
-    All.TotNumPart = particles_counter;
-    All.TotN_gas = SPH_particles_counter;
-    NumPart = particles_counter;
-    N_gas = SPH_particles_counter;
+    All.TotNumPart = ds.size()+sph_ds.size();
+    All.TotN_gas = sph_ds.size();
+    NumPart = All.TotNumPart;
+    N_gas = All.TotN_gas;
     All.MaxPart = All.PartAllocFactor * (All.TotNumPart / NTask);	/* sets the maximum number of particles that may */
     All.MaxPartSph = All.PartAllocFactor * (All.TotN_gas / NTask);	/* sets the maximum number of particles that may 
                                                                         reside on a processor */
     allocate_memory();
     for(i = 0; i < N_gas; i++){	/* initialize sph particles */
-        P[i].ID = sph_ds[i].id;
-        P[i].Mass = sph_ds[i].mass;
-        P[i].Pos[0] = sph_ds[i].x;
-        P[i].Pos[1] = sph_ds[i].y;
-        P[i].Pos[2] = sph_ds[i].z;
-        P[i].Vel[0] = sph_ds[i].vx;
-        P[i].Vel[1] = sph_ds[i].vy;
-        P[i].Vel[2] = sph_ds[i].vz;
+        P[i].ID = sph_ds.at(i).id;
+        P[i].Mass = sph_ds.at(i).mass;
+        P[i].Pos[0] = sph_ds.at(i).x;
+        P[i].Pos[1] = sph_ds.at(i).y;
+        P[i].Pos[2] = sph_ds.at(i).z;
+        P[i].Vel[0] = sph_ds.at(i).vx;
+        P[i].Vel[1] = sph_ds.at(i).vy;
+        P[i].Vel[2] = sph_ds.at(i).vz;
         P[i].Type = 0; // SPH particles (dark matter particles have type 1)
-        SphP[i].Entropy = sph_ds[i].u;
+        SphP[i].Entropy = sph_ds.at(i).u;
         SphP[i].Density = -1;
         SphP[i].Hsml = 0;
     }
     for (i = N_gas; i < NumPart; i++){	/* initialize dark matter particles */
         j=i-N_gas;
-        P[i].ID = ds[j].id;
-        P[i].Mass = ds[j].mass;
-        P[i].Pos[0] = ds[j].x;
-        P[i].Pos[1] = ds[j].y;
-        P[i].Pos[2] = ds[j].z;
-        P[i].Vel[0] = ds[j].vx;
-        P[i].Vel[1] = ds[j].vy;
-        P[i].Vel[2] = ds[j].vz;
+        P[i].ID = ds.at(j).id;
+        P[i].Mass = ds.at(j).mass;
+        P[i].Pos[0] = ds.at(j).x;
+        P[i].Pos[1] = ds.at(j).y;
+        P[i].Pos[2] = ds.at(j).z;
+        P[i].Vel[0] = ds.at(j).vx;
+        P[i].Vel[1] = ds.at(j).vy;
+        P[i].Vel[2] = ds.at(j).vz;
         P[i].Type = 1; // dark matter particles (SPH particles have type 0)
     }
-    All.Time = All.TimeBegin = 0;
     All.Ti_Current = 0;
-    if(All.ComovingIntegrationOn){
-        All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
-        a3 = All.Time * All.Time * All.Time;
-    }else{
-        All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
-        a3 = 1;
-    }
     set_softenings();
-    All.NumCurrentTiStep = 0;	/* setup some counters */
-    All.SnapshotFileCount = 0;
-    All.TotNumOfForces = 0;
-    All.NumForcesSinceLastDomainDecomp = 0;
-    All.TimeLastStatistics = All.TimeBegin - All.TimeBetStatistics;
     for(i = 0; i < NumPart; i++){	/*  start-up initialization */
         for(j = 0; j < 3; j++)
             P[i].GravAccel[j] = 0;
@@ -166,11 +161,7 @@ int commit_particles(){
         P[i].GravCost = 1;
         P[i].Potential = 0;
     }
-#ifdef PMGRID
-    All.PM_Ti_endstep = All.PM_Ti_begstep = 0;
-#endif
 #ifdef FLEXSTEPS
-    All.PresentMinStep = TIMEBASE;
     for(i = 0; i < NumPart; i++)	/*  start-up initialization */
         P[i].FlexStepGrp = (int) (TIMEBASE * get_random_number(P[i].ID));
 #endif
@@ -180,10 +171,6 @@ int commit_particles(){
             SphP[i].HydroAccel[j] = 0;
         }
         SphP[i].DtEntropy = 0;
-        if(RestartFlag == 0){
-            SphP[i].Hsml = 0;
-            SphP[i].Density = -1;
-        }
     }
     
     ngb_treeallocate(MAX_NGB);
@@ -196,8 +183,6 @@ int commit_particles(){
     force_treeallocate(All.TreeAllocFactor * All.MaxPart, 10*All.MaxPart);
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
     Flag_FullStep = 1;		/* to ensure that Peano-Hilber order is done */
-//    for(i = 0; i < NumPart; i++)
-//        cout << i << " type " << P[i].Type << endl << flush;
     domain_Decomposition();	/* do initial domain decomposition (gives equal numbers of particles) */
     ngb_treebuild();		/* will build tree */
     setup_smoothinglengths();
@@ -208,17 +193,17 @@ int commit_particles(){
    * Once the density has been computed, we can convert thermal energy to entropy.
    */
 #ifndef ISOTHERM_EQS
-    if(header.flag_entropy_instead_u == 0)
-        for(i = 0; i < N_gas; i++)
-            SphP[i].Entropy = GAMMA_MINUS1 * SphP[i].Entropy / pow(SphP[i].Density / a3, GAMMA_MINUS1);
+//  if(header.flag_entropy_instead_u == 0){
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    for(i = 0; i < N_gas; i++)
+        SphP[i].Entropy = GAMMA_MINUS1 * SphP[i].Entropy / pow(SphP[i].Density / a3, GAMMA_MINUS1);
+//  }
 #endif
 #ifdef PMGRID
     long_range_init_regionsize();
 #endif
     if(All.ComovingIntegrationOn)
         init_drift_table();
-    All.Ti_nextoutput = find_next_outputtime(All.Ti_Current);
-    All.TimeLastRestartFile = CPUThisRun;
     t1 = second();
     CPUThisRun += timediff(t0, t1);
     All.CPU_Total += timediff(t0, t1);
@@ -227,13 +212,49 @@ int commit_particles(){
     return 0;
 }
 int recommit_particles(){
-    return -1;
+    struct particle_data Pcurrent;
+    struct sph_particle_data SphPcurrent;
+    double a3;
+    if (particles_initialized){
+        for (vector<dynamics_state>::iterator state_iter = ds.begin(); state_iter != ds.end(); state_iter++){
+            if(!(find_particle((*state_iter).id, &Pcurrent))){
+                (*state_iter).mass = Pcurrent.Mass;
+                (*state_iter).x = Pcurrent.Pos[0];
+                (*state_iter).y = Pcurrent.Pos[1];
+                (*state_iter).z = Pcurrent.Pos[2];
+                (*state_iter).vx = Pcurrent.Vel[0];
+                (*state_iter).vy = Pcurrent.Vel[1];
+                (*state_iter).vz = Pcurrent.Vel[2];
+            }
+        }
+        if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+        for (vector<sph_state>::iterator state_iter = sph_ds.begin(); state_iter != sph_ds.end(); state_iter++){
+            if(!(find_particle((*state_iter).id, &Pcurrent)) && !(find_sph_particle((*state_iter).id, &SphPcurrent))){
+                (*state_iter).mass = Pcurrent.Mass;
+                (*state_iter).x = Pcurrent.Pos[0];
+                (*state_iter).y = Pcurrent.Pos[1];
+                (*state_iter).z = Pcurrent.Pos[2];
+                (*state_iter).vx = Pcurrent.Vel[0];
+                (*state_iter).vy = Pcurrent.Vel[1];
+                (*state_iter).vz = Pcurrent.Vel[2];
+                (*state_iter).u = SphPcurrent.Entropy * pow(SphPcurrent.Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+            }
+        }
+        free_memory();
+    }
+    return commit_particles();
 }
 int evolve(double t_end){
     double t0, t1;
     int stopflag = 0;
     All.TimeMax = t_end;
-    All.Timebase_interval = (All.TimeMax - All.Time) / TIMEBASE;
+    All.TimeBegin = All.Time;
+    if(All.ComovingIntegrationOn){
+        All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
+    }else{
+        All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
+    }
+    All.Ti_Current = 0;
     do {				/* main loop */
         t0 = second();
         find_next_sync_point_and_drift();	/* find next synchronization point and drift particles to this time.
@@ -276,43 +297,46 @@ int synchronize_model() {
 }
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
     dynamics_state state;
-    if (!particles_initialized){
-        state.id = ++particles_counter;
-        state.mass = mass;
-        state.x = x;
-        state.y = y;
-        state.z = z;
-        state.vx = vx;
-        state.vy = vy;
-        state.vz = vz;
-        ds.push_back(state);
-        *id = state.id;
-        return 0;
-    }
-    cout << "Unable to add particles after commit_particles() call." << endl;
-    return -1;
+    state.id = ++particles_counter;
+    state.mass = mass;
+    state.x = x;
+    state.y = y;
+    state.z = z;
+    state.vx = vx;
+    state.vy = vy;
+    state.vz = vz;
+    ds.push_back(state);
+    *id = state.id;
+    return 0;
 }
 int new_sph_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double u){
     sph_state state;
-    if (!particles_initialized){
-        state.id = ++particles_counter;
-        state.mass = mass;
-        state.x = x;
-        state.y = y;
-        state.z = z;
-        state.vx = vx;
-        state.vy = vy;
-        state.vz = vz;
-        state.u = u;
-        sph_ds.push_back(state);
-        SPH_particles_counter++;
-        *id = state.id;
-        return 0;
-    }
-    cout << "Unable to add particles after commit_particles() call." << endl;
-    return -1;
+    state.id = ++particles_counter;
+    state.mass = mass;
+    state.x = x;
+    state.y = y;
+    state.z = z;
+    state.vx = vx;
+    state.vy = vy;
+    state.vz = vz;
+    state.u = u;
+    sph_ds.push_back(state);
+    *id = state.id;
+    return 0;
 }
 int delete_particle(int id){
+    for (vector<dynamics_state>::iterator state_iter = ds.begin(); state_iter != ds.end(); state_iter++){
+        if ((*state_iter).id == id){
+            ds.erase(state_iter);
+            return 0;
+        }
+    }
+    for (vector<sph_state>::iterator state_iter = sph_ds.begin(); state_iter != sph_ds.end(); state_iter++){
+        if ((*state_iter).id == id){
+            sph_ds.erase(state_iter);
+            return 0;
+        }
+    }
     return -1;
 }
 
@@ -481,18 +505,23 @@ int set_nsmtol(double n_neighbour_tol){
 // particle property getters/setters: (will only work after commit_particles() is called)
 
 int get_index_of_first_particle(int *index_of_the_particle){
-    if(All.TotNumPart > 0){
-        *index_of_the_particle = 1;
-        return 0;
-    }
-    return -1;
+    return get_index_of_next_particle(0, index_of_the_particle);
 }
 int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next_particle){
-    if(All.TotNumPart > index_of_the_particle){
-        *index_of_the_next_particle = index_of_the_particle + 1;
-        return (*index_of_the_next_particle == All.TotNumPart) ? 1 : 0;
+    struct particle_data Pcurrent;
+    bool found = false;
+    for (int i = index_of_the_particle+1; i <= particles_counter; i++){
+        if (!(find_particle(i, &Pcurrent))) {
+            if (found){
+                return 0;
+            } else {
+                *index_of_the_next_particle = Pcurrent.ID;
+                found = true;
+            }
+        }
     }
-    return -1;
+    if (found) return 1; // This was the last particle.
+    return -1; // No particle found.
 }
 int find_particle(int index_of_the_particle, struct particle_data *Pfound){
     for(int i = 0; i < All.TotNumPart; i++){
@@ -714,7 +743,8 @@ int get_thermal_energy(double *thermal_energy){
     return -1;
 }
 int get_number_of_particles(int *number_of_particles){
-    return -1; 
+    *number_of_particles = All.TotNumPart;
+    return 0; 
 }
 int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2){
     return -1;

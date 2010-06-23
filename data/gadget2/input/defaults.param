@@ -44,10 +44,10 @@ BoxSize               0
 
 % Output frequency
 
-TimeBetSnapshot        0.5
-TimeOfFirstSnapshot    0
+TimeBetSnapshot        0.5 % > TimeMax: no Snapshots
+TimeOfFirstSnapshot    0.5 % > TimeMax: no Snapshots
 
-CpuTimeBetRestartFile     36000.0    ; here in seconds
+CpuTimeBetRestartFile     36000.0  %  ; here in seconds (unused)
 TimeBetStatistics         0.05
 
 NumFilesPerSnapshot       1

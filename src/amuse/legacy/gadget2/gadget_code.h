@@ -24,6 +24,8 @@ typedef struct {
 extern "C" void   begrun(void);
 extern "C" double second(void);
 
+int find_particle(int index_of_the_particle, struct particle_data *Pfound);
+int find_sph_particle(int index_of_the_particle, struct sph_particle_data *SphPfound);
 
 
 

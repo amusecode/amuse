@@ -115,12 +115,14 @@ class TestGadget2Interface(TestWithMPI):
         mass, x,y,z, vx,vy,vz, u = evrard.new_model()
         number_of_particles = len(mass)
         first_half = number_of_particles/2
-        indices, results = instance.new_sph_particle(mass[:first_half],x[:first_half],y[:first_half],z[:first_half],vx[:first_half],vy[:first_half],vz[:first_half],u[:first_half])
+        indices, results = instance.new_sph_particle(mass[:first_half],x[:first_half],y[:first_half],z[:first_half],
+            vx[:first_half],vy[:first_half],vz[:first_half],u[:first_half])
         self.assertEquals([0 for i in range(first_half)], list(results))
         self.assertEquals([i+1 for i in range(first_half)], list(indices))
         self.assertEquals([number_of_particles/2+1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
         self.assertEquals([number_of_particles/2+2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
-        indices, results = instance.new_sph_particle(mass[first_half:],x[first_half:],y[first_half:],z[first_half:],vx[first_half:],vy[first_half:],vz[first_half:],u[first_half:])
+        indices, results = instance.new_sph_particle(mass[first_half:],x[first_half:],y[first_half:],z[first_half:],
+            vx[first_half:],vy[first_half:],vz[first_half:],u[first_half:])
         self.assertEquals([0 for i in range(number_of_particles-first_half)], list(results))
         self.assertEquals([first_half+i+1+2 for i in range(number_of_particles-first_half)], list(indices))
         self.assertEquals(0, instance.commit_particles())
@@ -136,6 +138,48 @@ class TestGadget2Interface(TestWithMPI):
             self.assertAlmostEquals(mass_list[i], mass)
         
         self.assertEquals(0, instance.evolve(0.001))
+        self.assertEquals(0, instance.cleanup_code())
+        instance.stop()
+    
+    def test7(self):
+        instance = Gadget2Interface(**default_options)
+        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEquals(0, instance.commit_parameters())
+        target_number_of_particles = 100
+        evrard = MakeEvrardTest(target_number_of_particles)
+        mass, x,y,z, vx,vy,vz, u = evrard.new_model()
+        number_of_particles = len(mass)
+        indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
+        self.assertEquals([0 for i in range(number_of_particles)], list(results))
+        self.assertEquals([i+1 for i in range(number_of_particles)], list(indices))
+        self.assertEquals([number_of_particles+1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
+        self.assertEquals([number_of_particles+2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
+        self.assertEquals(0, instance.commit_particles())
+        self.assertEquals(0, instance.evolve(0.0001))
+        self.assertEquals(0, instance.evolve(0.0002))
+        self.assertEquals(0, instance.delete_particle(number_of_particles-1))
+        self.assertEquals(0, instance.delete_particle(number_of_particles+1))
+        self.assertEquals(-1, instance.delete_particle(number_of_particles-1))
+        indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
+        self.assertEquals([2*number_of_particles+3, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
+        self.assertEquals(0, instance.recommit_particles())
+        mass_list = [x for sublist in [mass[:number_of_particles-2], [mass[number_of_particles-1], 0.02],
+            mass, [0.02]] for x in sublist]
+        index_list = [x for sublist in [range(1,number_of_particles-1), [number_of_particles], 
+            range(number_of_particles+2,2*number_of_particles+4)] for x in sublist]
+        index, result = instance.get_index_of_first_particle().values()
+        self.assertEquals([index_list[0], 0], [index, result])
+        for i in range(1, 2*number_of_particles+1):
+            index, result = instance.get_index_of_next_particle(index)
+            self.assertEquals([index_list[i], 0 if (i < 2*number_of_particles) else 1], [index, result])
+            mass, result = instance.get_mass(index)
+            self.assertEquals(0, result)
+            self.assertAlmostEquals(mass_list[i], mass)
+        
+        self.assertEquals(0, instance.evolve(0.0003))
+        self.assertEquals(0, instance.evolve(0.0004))
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
     
