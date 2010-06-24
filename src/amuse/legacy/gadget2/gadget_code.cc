@@ -424,6 +424,14 @@ int set_gadget_output_directory(char *output_directory){
             strcat(All.OutputDir, "/");
     return 0;
 }
+int get_nogravity(int *no_gravity_flag){
+#ifdef NOGRAVITY
+    *no_gravity_flag = 1;
+#else
+    *no_gravity_flag = 0;
+#endif
+    return 0;
+}
 int get_gdgop(int *gadget_cell_opening_flag){
     *gadget_cell_opening_flag = All.TypeOfOpeningCriterion;
     return 0;
@@ -673,26 +681,23 @@ int set_state_sph(int index, double mass, double x, double y, double z, double v
 }
 int get_acceleration(int index, double * ax, double * ay, double * az){
     struct particle_data Pcurrent;
+    struct sph_particle_data SphPcurrent;
     if(!(find_particle(index, &Pcurrent))){
         *ax = Pcurrent.GravAccel[0];
         *ay = Pcurrent.GravAccel[1];
         *az = Pcurrent.GravAccel[2];
-//        if(Pcurrent.Type == 0){
-//            *ax += Pcurrent.HydroAccel[0];
-//            *ay += Pcurrent.HydroAccel[1];
-//            *az += Pcurrent.HydroAccel[2];
-//        }
+        if(Pcurrent.Type == 0){
+            if(!(find_sph_particle(index, &SphPcurrent))){
+                *ax += SphPcurrent.HydroAccel[0];
+                *ay += SphPcurrent.HydroAccel[1];
+                *az += SphPcurrent.HydroAccel[2];
+            }
+        }
         return 0;
     }
     return -1;
 }
 int set_acceleration(int index, double ax, double ay, double az){
-    struct particle_data Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        Pcurrent.GravAccel[0] = ax;
-        Pcurrent.GravAccel[1] = ay;
-        Pcurrent.GravAccel[2] = az;
-    }
     return -1;
 }
 int get_internal_energy(int index, double *internal_energy){

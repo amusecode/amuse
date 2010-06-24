@@ -285,6 +285,14 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function.result_type = 'int32'
         return function
     @legacy_function
+    def get_nogravity():
+        """ get_nogravity(): get no-gravity flag. True means: gravitational forces are switched of for all particles
+        (read-only: makefile option NOGRAVITY)."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('no_gravity_flag', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function;
+    @legacy_function
     def set_gdgop():
         """ set_gdgop([0,1]): use of gadget cell opening criterion if 1 """
         function = LegacyFunctionSpecification()
@@ -482,21 +490,14 @@ class Gadget2(GravitationalDynamics):
             1.0 | generic_system.time
         ) 
         
-#        object.add_boolean_parameter( # NOGRAVITY or SELECTIVE_NO_GRAVITY?
-#            "get_selfgrav",
-#            "set_selfgrav",
-#            "self_gravity_flag",
-#            "Self-gravity flag. False means: self-gravity is not used, only external potentials.",
-#            True
-#        )
-        
-#        object.add_boolean_parameter( # What does this mean? probably not the same as UNEQUALSOFTENINGS
-#            "get_adaptive_eps",
-#            "set_adaptive_eps",
-#            "adaptive_smoothing_flag",
-#            "Adaptive-smoothing flag. True means: use of adaptive gravity smoothing for all particles.",
-#            False
-#        )
+        object.add_boolean_parameter(
+            "get_nogravity",
+            None,
+            "no_gravity_flag",
+            "No-gravity flag. True means: gravitational forces are switched of for all particles "
+                "(read-only: makefile option NOGRAVITY).",
+            False
+        )
         
         object.add_boolean_parameter(
             "get_gdgop",
@@ -660,7 +661,6 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('dm_particles', 'get_position')
         object.add_setter('dm_particles', 'set_velocity')
         object.add_getter('dm_particles', 'get_velocity')
-        object.add_setter('dm_particles', 'set_acceleration')
         object.add_getter('dm_particles', 'get_acceleration')
         
         object.define_set('gas_particles', 'index_of_the_particle')
@@ -674,7 +674,6 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_position')
         object.add_setter('gas_particles', 'set_velocity')
         object.add_getter('gas_particles', 'get_velocity')
-        object.add_setter('gas_particles', 'set_acceleration')
         object.add_getter('gas_particles', 'get_acceleration')
     
     def define_methods(self, object):
