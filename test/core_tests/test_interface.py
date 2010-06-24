@@ -7,6 +7,7 @@ from amuse.support.data import core
 from amuse.support.core import OrderedDictionary
 
 from amuse.test import amusetest
+import numpy
 
 class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
     class TestClass(object):
@@ -799,5 +800,57 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
         
+class TestGridWithBinding(amusetest.TestCase):
+    class TestInterface(object):
         
+        shape = (11,5,5)
+        
+        def __init__(self):
+            self.storage = numpy.arange(
+                self.shape[0]*self.shape[1]*self.shape[2]).reshape(self.shape)
+            
+        def get_range(self):
+            return (0,self.shape[0]-1,0,self.shape[1]-1,0,self.shape[2]-1)
+            
+        def get_a(self,i_s,j_s,k_s):
+            #print "indices:", i_s, j_s, k_s
+            #print "values:", numpy.asarray([(self.storage[i][j][k]) for i,j,k in zip(i_s, j_s, k_s)])
+            return [numpy.asarray([(self.storage[i][j][k]) for i,j,k in zip(i_s, j_s, k_s)]),]
+            
+        def set_a(self, i_s, j_s, k_s, values):
+            index = 0
+            for i,j,k in zip(i_s, j_s, k_s):
+                self.storage[i][j][k] = values[index].value_in(units.m)
+                index += 1
+                print index
+        
+            
+        
+            
+    def test1(self):
+        original = self.TestInterface()
+        
+        instance = interface.CodeInterface(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_a',(handler.INDEX, handler.INDEX,handler.INDEX,), (units.kg,))
+        handler.add_method('set_a',(handler.INDEX, handler.INDEX,handler.INDEX, units.kg,), ())
+      
+        print instance.get_a([1],[2],[3])
+        print [38] | units.kg
+        
+        self.assertEquals(instance.get_a([1],[2],[3]), [38] | units.kg)
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_grid('grid',)
+        handler.add_setter('grid', 'set_a', names = ('mass',))
+        handler.add_getter('grid', 'get_a', names = ('mass',))
+        
+        grid = instance.grid
+        
+        
+        self.assertEquals(grid[1][2][3].mass, 38 | units.kg)
+        self.assertEquals(grid[0:2][1][2][3].mass, 38 | units.kg)
+        self.assertEquals(len(grid[1][2].mass), 5)
+        self.assertTrue(numpy.all(grid[1][2].mass == [35,36,37,38,39] | units.kg))
         

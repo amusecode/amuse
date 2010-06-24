@@ -34,7 +34,7 @@ class AbstractGrid(AbstractSet):
         return GridPoint(index, self._original_set())
         
 class Grid(AbstractGrid):
-    def __init__(self, number_of_points_in_x_direction, number_of_points_in_y_direction, number_of_points_in_z_direction, storage = None):
+    def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):
         AbstractGrid.__init__(self)
         
         if storage is None:

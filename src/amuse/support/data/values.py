@@ -214,9 +214,14 @@ class ScalarQuantity(Quantity):
         if shape == -1 or (len(shape) == 1 and shape[0] == 1):
             return VectorQuantity([self.number], self.unit)
         else:
-            raise Exception("Cannot reshape a scale to vector of shape '{0}'".format(shape))
+            raise Exception("Cannot reshape a scalar to vector of shape '{0}'".format(shape))
     
-    
+    def __getitem__(self, index):
+        if index == 0:
+            return self
+        else:
+            raise Exception("ScalarQuantity does not support indexing")
+            
     def __str__(self):
         unit_str = str(self.unit)
         if unit_str:

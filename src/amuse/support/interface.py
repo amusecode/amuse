@@ -707,7 +707,10 @@ class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
         object.define_errorcodes(self)
 
 
-class ParticleSetDefinition(object):
+class AbstracParticleSetDefinition(object):
+    pass
+    
+class ParticleSetDefinition(AbstracParticleSetDefinition):
 
     def __init__(self, handler):
         self.handler = handler
@@ -758,6 +761,33 @@ class ParticleSetDefinition(object):
             self.name_of_indexing_attribute
         )
 
+    
+    def new_set_instance(self, handler):
+        storage = self.new_storage(handler.interface)
+        if self.is_inmemory:
+            result = self.particles_factory(handler.interface, storage = storage)
+        else:
+            result = self.particles_factory(storage = storage)
+            
+        queries = self.new_queries(handler.interface)
+        for x in queries:
+            result.add_function_attribute(x.public_name, x.apply)
+
+        selects = self.new_selects_from_particle(handler.interface)
+        for x in selects:
+            result.add_function_attribute(x.public_name, x.apply_on_all)
+            result.add_particle_function_attribute(x.public_name, x.apply_on_one)
+
+        selects = self.new_particle_methods(handler.interface)
+        for x in selects:
+            result.add_function_attribute(x.public_name, x.apply_on_all, x.apply_on_one)
+
+        attributes = self.attributes
+        for name_of_the_attribute, name_of_the_method, names in attributes:
+            result.add_calculated_attribute(name_of_the_attribute, getattr(handler.interface, name_of_the_method), names)
+
+        return result
+
     def new_queries(self, interface):
         queries = []
         for name, names, public_name in self.queries:
@@ -782,7 +812,7 @@ class ParticleSetDefinition(object):
 
         return results
 
-class ParticleSupersetDefinition(object):
+class ParticleSupersetDefinition(AbstracParticleSetDefinition):
 
     def __init__(self, handler, particle_subset_names, index_to_default_set=None):
         self.handler = handler
@@ -790,6 +820,50 @@ class ParticleSupersetDefinition(object):
         self.index_to_default_set = index_to_default_set
         self.is_superset = True
         self.particles_factory = core.ParticlesSuperset
+        
+    
+    def new_set_instance(self, handler):
+        subsets = [handler.get_attribute(subset_name, None) for subset_name in self.particle_subset_names]
+        return self.particles_factory(
+            subsets, 
+            index_to_default_set=self.index_to_default_set
+        )
+    
+class GridDefinition(AbstracParticleSetDefinition):
+
+    def __init__(self, handler):
+        self.handler = handler
+        self.name_of_range_method = 'get_range'
+        self.setters = []
+        self.getters = []
+        self.particles_factory = core.Grid
+
+    def new_storage(self, interface):
+
+        setters = []
+        for name, names in self.setters:
+            x = incode_storage.ParticleSetAttributesMethod(getattr(interface, name), names)
+            setters.append(x)
+
+        getters = []
+        for name, names in self.getters:
+            x = incode_storage.ParticleGetAttributesMethod(getattr(interface, name), names)
+            getters.append(x)
+
+        range_method = getattr(interface, self.name_of_range_method)
+
+        return incode_storage.InCodeGridAttributeStorage(
+            interface,
+            range_method,
+            setters,
+            getters,
+        )
+
+    
+    def new_set_instance(self, handler):
+        storage = self.new_storage(handler.interface)
+        result = self.particles_factory(storage = storage)
+        return result
 
 class CodeInMemoryParticles(core.Particles):
 
@@ -800,50 +874,25 @@ class CodeInMemoryParticles(core.Particles):
 class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.interface = interface
-        self.sets = {}
-        self.particle_sets = {}
+        self.mapping_from_name_to_set_definition = {}
+        self.mapping_from_name_to_set_instance = {}
 
 
     def supports(self, name, was_found):
-        return name in self.sets
+        return name in self.mapping_from_name_to_set_definition
 
     def get_attribute(self, name, value):
-        if name in self.particle_sets:
-            return self.particle_sets[name]
+        if name in self.mapping_from_name_to_set_instance:
+            return self.mapping_from_name_to_set_instance[name]
         else:
-            if self.sets[name].is_superset:
-                subsets = [self.get_attribute(subset_name,None) for subset_name in self.sets[name].particle_subset_names]
-                self.particle_sets[name] = self.sets[name].particles_factory(subsets, 
-                    index_to_default_set=self.sets[name].index_to_default_set)
-                return self.particle_sets[name]
-            storage = self.sets[name].new_storage(self.interface)
-            if self.sets[name].is_inmemory:
-                result = self.sets[name].particles_factory(self.interface, storage = storage)
-            else:
-                result = self.sets[name].particles_factory(storage = storage)
-            queries = self.sets[name].new_queries(self.interface)
-            for x in queries:
-                result.add_function_attribute(x.public_name, x.apply)
-
-            selects = self.sets[name].new_selects_from_particle(self.interface)
-            for x in selects:
-                result.add_function_attribute(x.public_name, x.apply_on_all)
-                result.add_particle_function_attribute(x.public_name, x.apply_on_one)
-
-
-            selects = self.sets[name].new_particle_methods(self.interface)
-            for x in selects:
-                result.add_function_attribute(x.public_name, x.apply_on_all, x.apply_on_one)
-
-            attributes = self.sets[name].attributes
-            for name_of_the_attribute, name_of_the_method, names in attributes:
-                result.add_calculated_attribute(name_of_the_attribute, getattr(self.interface, name_of_the_method), names)
-
-            self.particle_sets[name] = result
+            set_definition = self.mapping_from_name_to_set_definition[name]
+            result = set_definition.new_set_instance(self)
+                
+            self.mapping_from_name_to_set_instance[name] = result
             return result
 
     def attribute_names(self):
-        return set(self.sets.keys())
+        return set(self.mapping_from_name_to_set_definition.keys())
 
 
     def has_name(self, name):
@@ -855,55 +904,65 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def define_set(self, name, name_of_indexing_attribute = 'index_of_the_particle'):
         definition = ParticleSetDefinition(self)
         definition.name_of_indexing_attribute = name_of_indexing_attribute
-        self.sets[name] = definition
+        self.mapping_from_name_to_set_definition[name] = definition
 
     def define_super_set(self, name, particle_subsets, index_to_default_set = None):
         definition = ParticleSupersetDefinition(self, particle_subsets, index_to_default_set)
-        self.sets[name] = definition
+        self.mapping_from_name_to_set_definition[name] = definition
 
     def define_inmemory_set(self, name, particles_factory = CodeInMemoryParticles):
         definition = ParticleSetDefinition(self)
         definition.is_inmemory = True
         definition.particles_factory = particles_factory
-        self.sets[name] = definition
-
+        self.mapping_from_name_to_set_definition[name] = definition
+    
+    def define_grid(self, name, name_of_indexing_attribute = 'index_of_the_particle'):
+        definition = GridDefinition(self)
+        definition.name_of_indexing_attribute = name_of_indexing_attribute
+        self.mapping_from_name_to_set_definition[name] = definition
+        
     def set_new(self, name_of_the_set, name_of_new_particle_method, names = None):
-        self.sets[name_of_the_set].new_particle_method = (name_of_new_particle_method, names)
+        self.mapping_from_name_to_set_definition[name_of_the_set].new_particle_method = (name_of_new_particle_method, names)
+        
+    def set_grid_range(self, name_of_the_set, name_of_the_range_method):
+        self.mapping_from_name_to_set_definition[name_of_the_set].name_of_the_range_method = name_of_the_range_method
 
     def set_delete(self, name_of_the_set, name_of_delete_particle_method):
-        self.sets[name_of_the_set].name_of_delete_particle_method = name_of_delete_particle_method
+        self.mapping_from_name_to_set_definition[name_of_the_set].name_of_delete_particle_method = name_of_delete_particle_method
 
     def add_getter(self, name_of_the_set, name_of_the_getter, names = None):
 
-        self.sets[name_of_the_set].getters.append((name_of_the_getter, names))
+        self.mapping_from_name_to_set_definition[name_of_the_set].getters.append((name_of_the_getter, names))
 
     def add_setter(self, name_of_the_set, name_of_the_setter, names = None):
 
-        self.sets[name_of_the_set].setters.append((name_of_the_setter, names))
+        self.mapping_from_name_to_set_definition[name_of_the_set].setters.append((name_of_the_setter, names))
 
     def add_attribute(self, name_of_the_set, name_of_the_attribute, name_of_the_method, names = None):
 
-        self.sets[name_of_the_set].attributes.append((name_of_the_attribute,name_of_the_method, names))
+        self.mapping_from_name_to_set_definition[name_of_the_set].attributes.append((name_of_the_attribute,name_of_the_method, names))
 
     def add_query(self, name_of_the_set, name_of_the_query, names = (), public_name = None):
         if not public_name:
             public_name = name_of_the_query
 
-        self.sets[name_of_the_set].queries.append((name_of_the_query, names, public_name))
+        self.mapping_from_name_to_set_definition[name_of_the_set].queries.append((name_of_the_query, names, public_name))
 
 
     def add_method(self, name_of_the_set, name_of_the_method, public_name = None):
         if not public_name:
             public_name = name_of_the_method
 
-        self.sets[name_of_the_set].methods.append((name_of_the_method, public_name))
+        self.mapping_from_name_to_set_definition[name_of_the_set].methods.append((name_of_the_method, public_name))
 
 
     def add_select_from_particle(self, name_of_the_set, name, names = (), public_name = None):
         if not public_name:
             public_name = name
 
-        self.sets[name_of_the_set].selects_form_particle.append((name, names, public_name))
+        self.mapping_from_name_to_set_definition[name_of_the_set].selects_form_particle.append((name, names, public_name))
+
+
 
 
 class OverriddenCodeInterface(object):

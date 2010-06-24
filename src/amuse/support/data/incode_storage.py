@@ -480,7 +480,6 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     def _get_values(self, indices, attributes):
         i,j,k = self._to_arrays_of_indices(indices)
         mapping_from_attribute_to_result = {}
-        
         for getter in self.select_getters_for(attributes):
             result = getter.get_attribute_values(self, attributes, i.reshape(-1), j.reshape(-1),k.reshape(-1))
             mapping_from_attribute_to_result.update(result)
