@@ -86,7 +86,7 @@ glworker_code.f90: interface.py __init__.py
 
 clean:
 	make -C src clean
-	rm -f __init__.py *.pyc
+	rm -f __init__.py *.pyc *.o
 	rm -f worker_code_gpu worker_code_grape
 	rm -f worker_code worker_code.f90
 	rm -f glworker_code glworker_code.f90

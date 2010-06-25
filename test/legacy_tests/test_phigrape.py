@@ -393,3 +393,25 @@ class TestCodeInterface(TestWithMPI):
         for i in range(n/2):
             self.assertAlmostRelativeEqual(fx[i] , - fx[n - 1 - i], 5)
         
+    def test8(self):
+        particles = core.Particles(6)
+        particles.mass = nbody_system.mass.new_quantity(range(1,7))
+        particles.radius =   0.00001 | nbody_system.length
+        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0] ,[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
+        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
+        
+        for current_mode in ['g6lib','gpu','grape','pg']:
+            try:
+                instance = PhiGRAPE(mode = current_mode)
+            except:
+                print "Running PhiGRAPE with mode=", current_mode, " was unsuccessful."
+            else:
+                print "Running PhiGRAPE with mode=", current_mode, "... ",
+                instance.initialize_code()
+                instance.particles.add_particles(particles)
+                instance.initialize_particles(0.0)
+                instance.evolve_model(0.1 | nbody_system.time)
+                instance.cleanup_module()
+                instance.stop()
+                print "ok"
+    

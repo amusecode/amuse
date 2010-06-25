@@ -1,8 +1,11 @@
 .SUFFIXES: .cu 
 
-CUDAPATH    := /data2/vanelteren/cuda
-CUDASDKPATH := /data2/vanelteren/cuda-sdk/C
-CUDAINCLUDE := -I$(CUDAPATH)/include -I$(CUDASDKPATH)/common/inc
+CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
+CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
+
+CUDAPATH    ?= $(CUDA_TK)
+CUDASDKPATH ?= $(CUDA_SDK)
+CUDAINCLUDE ?= -I$(CUDAPATH)/include -I$(CUDASDKPATH)/common/inc
 
 CXX  := g++
 CC   := gcc
