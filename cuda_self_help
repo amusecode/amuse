@@ -1,0 +1,135 @@
+#! /bin/sh
+# Detects available hardware and various settings to provide help for
+# setting up GPGPU with CUDA, required for executing code on a GPU.
+echo
+echo "Welcome to the AMUSE self-help for setting up GPGPU with CUDA."
+echo
+echo -n "Checking whether you have the NVIDIA graphics driver... "
+which nvidia-settings >& /dev/null
+if [ $? -eq 0 ]; then
+    echo "ok"
+else
+    echo "no"
+    echo "    Couldn't find the nvidia-settings utility (used to configure "
+    echo "    the NVIDIA graphics driver). Do you have an NVIDIA GPU card?"
+    exit 1
+fi
+echo -n "Checking the NVIDIA graphics driver version... "
+echo `nvidia-settings -q NvidiaDriverVersion | gawk '{ORS = " " ; print $4}'`
+echo -n "Checking 32/64 bit... "
+uname -i | grep '64' >& /dev/null
+if [ $? -eq 0 ]; then
+    echo "64 bit hardware platform."
+    X_BITS_LIB="lib64"
+else
+    echo "32 bit hardware platform."
+    X_BITS_LIB="lib"
+fi
+echo
+
+echo "Checking relevant environment variables... "
+echo -n "Searching LD_LIBRARY_PATH... "
+found=0
+IFS=$':'
+for one_path in $LD_LIBRARY_PATH
+do
+    if [ -e $one_path/libcudart.so.2 ]; then
+        echo "found libcudart.so.2 in directory " $one_path
+        found=1
+    fi
+done
+if [ $found == 0 ]; then
+    echo "libcudart.so.2 not found in LD_LIBRARY_PATH. Do either of:"
+    echo "   bash> export LD_LIBRARY_PATH=/path/to/cudalib:\$LD_LIBRARY_PATH"
+    echo "   csh> setenv LD_LIBRARY_PATH /path/to/cudalib:\$LD_LIBRARY_PATH"
+    exit 1
+fi
+
+echo -n "Checking CUDA_SDK...         "
+if [ -n "$CUDA_SDK" ]; then
+    if [ -d $CUDA_SDK/common/inc ]; then
+        echo "ok"
+    else
+        echo "set, but unable to find CUDA SDK path. please set the CUDA_SDK "
+        echo "    variable to the directory that holds the common/inc subdirectory, "
+        echo "    typically: /path/to/cudasdk/C"
+        exit 1
+    fi
+else
+    if [ -d /disks/koppoel1/CUDA23/cudasdk/C/common/inc ]; then
+        echo "not set, but default CUDA SDK path exists: ok"
+    else
+        echo "unable to find CUDA SDK path. Please set the CUDA_SDK variable "
+        echo "  to the directory where you installed the CUDA SDK. Do either of:"
+        echo "     bash> export CUDA_SDK=/path/to/cudasdk"
+        echo "     csh> setenv CUDA_SDK /path/to/cudasdk"
+        exit 1
+    fi
+fi
+
+echo -n "Checking CUDA_TK...          "
+if [ -n "$CUDA_TK" ]; then
+    if [ -d $CUDA_TK/include ]; then
+        echo "ok"
+    else
+        echo "set, but unable to find CUDA TK path. please set the CUDA_TK "
+        echo "    variable to the directory that holds the include subdirectory, "
+        echo "    typically: /path/to/cuda"
+        exit 1
+    fi
+else
+    if [ -d /disks/koppoel1/CUDA23/cuda/include ]; then
+        echo "not set, but default CUDA TK path exists: ok"
+        CUDA_TK=/disks/koppoel1/CUDA23/cuda
+    else
+        echo "unable to find CUDA TK path. Please set the CUDA_TK variable "
+        echo "  to the directory where you installed the CUDA TK. Do either of:"
+        echo "     bash> export CUDA_TK=/path/to/cuda"
+        echo "     csh> setenv CUDA_TK /path/to/cuda"
+        exit 1
+    fi
+fi
+
+echo -n "Checking CUDA_LIBDIRS...     "
+if [ -n "$CUDA_LIBDIRS" ]; then
+    if [ -e $CUDA_LIBDIRS/libcudart.so.2 ]; then
+        echo "ok"
+    else
+        echo "set, but unable to find the libraries. please set the CUDA_LIBDIRS "
+        echo "    variable to the directory that holds the libcudart.so.2 library, "
+        echo "    typically: /path/to/cuda/$X_BITS_LIB"
+        exit 1
+    fi
+else
+    if [ -e $CUDA_TK/$X_BITS_LIB/libcudart.so.2 ]; then
+        echo "not set, but found libraries in default path: ok"
+    else
+        echo "unable to find the CUDA libraries. Please set the CUDA_LIBDIRS variable "
+        echo "  to the directory where the CUDA libraries reside. Do either of:"
+        echo "     bash> export CUDA_LIBDIRS=/path/to/cuda/$X_BITS_LIB"
+        echo "     csh> setenv CUDA_LIBDIRS /path/to/cuda/$X_BITS_LIB"
+        exit 1
+    fi
+fi
+
+echo -n "Checking CUDA_LIBS...        "
+if [ -n "$CUDA_LIBS" ]; then
+    echo $CUDA_LIBS | grep 'lcudart' >& /dev/null
+    if [ $? -eq 0 ]; then
+        echo "ok"
+    else
+        echo "set, but cudart library not included. Add -lcudart to CUDA_LIBS"
+        exit 1
+    fi
+else
+    echo "not set, using default: ok"
+fi
+echo
+echo "Everything seems ok!"
+echo "Now try building for example Octgrav and run the nosetests (from AMUSE root directory):"
+echo "> make octgrav.code"
+echo "> nosetests test/legacy_tests/test_octgrav.py"
+echo
+echo "If this fails, please contact us at: vriesn (at) strw.leidenuniv.nl or"
+echo "join us on the #amuse channel on irc.freenode.net."
+echo
