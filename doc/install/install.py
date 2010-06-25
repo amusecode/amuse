@@ -57,15 +57,15 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.4' , 
+            '1.8.4',
             'hdf5-' , '-patch1.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/current/src/', 
+            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.4-patch1/src/', 
             self.hdf5_build
           ) ,
           (
             'h5py', 
             ['hdf'], 
-            '1.2.1', 
+            '1.3.0', 
             'h5py-' , '.tar.gz', 
             'http://h5py.googlecode.com/files/', self.h5py_build
           ) ,

@@ -151,12 +151,11 @@ class StoreHDF(object):
         copy_of_last._private.previous = last
         return copy_of_last
         
-        
-    
     def particles_group(self):
         return self.hdf5file.require_group(self.PARTICLES_GROUP_NAME)
         
     def close(self):
+        self.hdf5file.flush()
         self.hdf5file.close()
 
 class HDF5FileFormatProcessor(base.FileFormatProcessor):

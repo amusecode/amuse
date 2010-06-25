@@ -35,6 +35,7 @@ class TestStoreHDF(amusetest.TestCase):
         output_file = os.path.join(test_results_path, "test.hdf5")
         if os.path.exists(output_file):
             os.remove(output_file)
+            
         instance = store.StoreHDF(output_file)
         number_of_particles = 10
         p = Particles(number_of_particles)
@@ -65,6 +66,7 @@ class TestStoreHDF(amusetest.TestCase):
         p.mass = [x * 2.0 for x in range(number_of_particles)] | nbody_system.mass
         
         instance.store(p.savepoint(1 | nbody_system.time))
+        instance.close()
         
         instance = store.StoreHDF(output_file)
         loaded_particles = instance.load()

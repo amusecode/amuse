@@ -1,4 +1,17 @@
-import matplotlib.pyplot as native_plot
+try:
+    import matplotlib.pyplot as native_plot
+except ImportError:
+    class FakePlotLibrary(object):
+        def stub(self, *args, **kwargs):
+            raise Exception("No plot library available")
+        plot = stub
+        scatter = stub
+        hist = stub
+        xlabel = stub
+        ylabel = stub
+            
+    native_plot = FakePlotLibrary()
+    
 import numpy as np
 from amuse.support.units import units
 from amuse.support.data import values
