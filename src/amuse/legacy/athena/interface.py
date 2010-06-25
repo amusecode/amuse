@@ -1,6 +1,8 @@
 from amuse.legacy import *
 from amuse.legacy.interface.common import CommonCodeInterface
 
+from amuse.support.units.generic_unit_system import *
+
 import numpy
 
 class AthenaInterface(LegacyInterface, CommonCodeInterface):
@@ -249,15 +251,42 @@ class Athena(CodeInterface):
     def __init__(self, **options):
         CodeInterface.__init__(self,  AthenaInterface(**options), **options)
     
+    def define_properties(self, object):
+        object.add_property('get_time', time, "model_time")
+        
     def define_methods(self, object):
-        pass
-    
+        object.add_method(
+            'evolve',
+            (time,),
+            (object.ERROR_CODE,),
+        )
+        object.add_method(
+            'get_position_of_index',
+            (object.INDEX, object.INDEX, object.INDEX,),
+            (length, length, length, object.ERROR_CODE,)
+        )
+        
+        density = mass / (length ** 3)
+        momentum =  mass * length / time
+        
+        object.add_method(
+            'fill_grid_state_mpi',
+            (object.INDEX, object.INDEX, object.INDEX,
+            density, momentum, momentum, momentum, energy),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_grid_state_mpi',
+            (object.INDEX, object.INDEX, object.INDEX,),
+            (density, momentum, momentum, momentum, energy,
+            object.ERROR_CODE,)
+        )
     
     def define_particle_sets(self, object):
-        pass
+        object.define_grid('grid')
+        object.set_grid_range('grid', 'get_index_range_inclusive')
+        object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
+        object.add_getter('grid', 'get_grid_state_mpi', names=('rho', 'rhox','rhoy','rhoz','energy'))
+        object.add_setter('grid', 'fill_grid_state_mpi', names=('rho', 'rhox','rhoy','rhoz','energy'))
         
-    def _evolve_particles(self, particles, end_time):
-        pass
-
-    def evolve_model(self, end_time = None):
-        pass
+        

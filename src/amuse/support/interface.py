@@ -833,7 +833,7 @@ class GridDefinition(AbstracParticleSetDefinition):
 
     def __init__(self, handler):
         self.handler = handler
-        self.name_of_range_method = 'get_range'
+        self.name_of_the_get_range_method = 'get_range'
         self.setters = []
         self.getters = []
         self.particles_factory = core.Grid
@@ -850,7 +850,7 @@ class GridDefinition(AbstracParticleSetDefinition):
             x = incode_storage.ParticleGetAttributesMethod(getattr(interface, name), names)
             getters.append(x)
 
-        range_method = getattr(interface, self.name_of_range_method)
+        range_method = getattr(interface, self.name_of_the_get_range_method)
 
         return incode_storage.InCodeGridAttributeStorage(
             interface,
@@ -924,8 +924,8 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     def set_new(self, name_of_the_set, name_of_new_particle_method, names = None):
         self.mapping_from_name_to_set_definition[name_of_the_set].new_particle_method = (name_of_new_particle_method, names)
         
-    def set_grid_range(self, name_of_the_set, name_of_the_range_method):
-        self.mapping_from_name_to_set_definition[name_of_the_set].name_of_the_range_method = name_of_the_range_method
+    def set_grid_range(self, name_of_the_set, name_of_the_get_range_method):
+        self.mapping_from_name_to_set_definition[name_of_the_set].name_of_the_get_range_method = name_of_the_get_range_method
 
     def set_delete(self, name_of_the_set, name_of_delete_particle_method):
         self.mapping_from_name_to_set_definition[name_of_the_set].name_of_delete_particle_method = name_of_delete_particle_method

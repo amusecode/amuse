@@ -104,7 +104,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     def get_attribute_values(self, storage, attributes_to_return, *indices):
         
         self.check_arguments(storage, indices, attributes_to_return)  
-          
+        
         return_value = self.method(*indices)
         
         return self.convert_return_value(return_value, storage, attributes_to_return)

@@ -3,7 +3,9 @@ import sys
 import numpy
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.legacy.athena.interface import AthenaInterface
+from amuse.legacy.athena.interface import AthenaInterface, Athena
+
+from amuse.support.units import generic_unit_system
 
 from mpi4py import MPI
 
@@ -225,3 +227,28 @@ class TestAthenaInterface(TestWithMPI):
                 self.assertEquals(results[2][y][x], results[0][y][x])
                 self.assertEquals(results[3][y][x], results[0][y][x])
         
+
+
+class TestAthena(TestWithMPI):
+    
+    def test0(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        
+        #print instance.grid[0].y
+        
+        firstx = instance.grid[0][0][0].x
+        allx = instance.grid[0].x
+        for j in range(20):
+            for k in range(40):
+                self.assertEquals(allx[j][k], firstx)
+        
+        print instance.grid[0][0].rho
+        self.assertEquals(instance.grid[0][0][0].rho , 0.0 |generic_unit_system.mass / generic_unit_system.length ** 3)
+        
+        instance.stop()
