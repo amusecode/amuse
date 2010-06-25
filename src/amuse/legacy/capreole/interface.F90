@@ -38,6 +38,79 @@ function initialize_grid(t0) result(ret)
   
 end function  
 
+function set_boundary_innerxstate(rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+  use amuse_helpers
+  integer :: ret
+  real*8 :: tmp(neq),rho_in,rhvx_in,rhvy_in,rhvz_in,en_in    
+  tmp(RHO)=rho_in
+  tmp(RHVX)=rhvx_in
+  tmp(RHVY)=rhvy_in
+  tmp(RHVZ)=rhvz_in
+  tmp(EN)=en_in
+  ret=amuse_set_boundary_innerxstate(tmp)
+end function  
+
+function set_boundary_innerystate(rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+  use amuse_helpers
+  integer :: ret
+  real*8 :: tmp(neq),rho_in,rhvx_in,rhvy_in,rhvz_in,en_in    
+  tmp(RHO)=rho_in
+  tmp(RHVX)=rhvx_in
+  tmp(RHVY)=rhvy_in
+  tmp(RHVZ)=rhvz_in
+  tmp(EN)=en_in
+  ret=amuse_set_boundary_innerystate(tmp)
+end function  
+
+function set_boundary_innerzstate(rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+  use amuse_helpers
+  integer :: ret
+  real*8 :: tmp(neq),rho_in,rhvx_in,rhvy_in,rhvz_in,en_in    
+  tmp(RHO)=rho_in
+  tmp(RHVX)=rhvx_in
+  tmp(RHVY)=rhvy_in
+  tmp(RHVZ)=rhvz_in
+  tmp(EN)=en_in
+  ret=amuse_set_boundary_innerzstate(tmp)
+end function  
+
+function set_boundary_outerxstate(rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+  use amuse_helpers
+  integer :: ret
+  real*8 :: tmp(neq),rho_in,rhvx_in,rhvy_in,rhvz_in,en_in    
+  tmp(RHO)=rho_in
+  tmp(RHVX)=rhvx_in
+  tmp(RHVY)=rhvy_in
+  tmp(RHVZ)=rhvz_in
+  tmp(EN)=en_in
+  ret=amuse_set_boundary_outerxstate(tmp)
+end function  
+
+function set_boundary_outerystate(rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+  use amuse_helpers
+  integer :: ret
+  real*8 :: tmp(neq),rho_in,rhvx_in,rhvy_in,rhvz_in,en_in    
+  tmp(RHO)=rho_in
+  tmp(RHVX)=rhvx_in
+  tmp(RHVY)=rhvy_in
+  tmp(RHVZ)=rhvz_in
+  tmp(EN)=en_in
+  ret=amuse_set_boundary_outerystate(tmp)
+end function  
+
+function set_boundary_outerzstate(rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+  use amuse_helpers
+  integer :: ret
+  real*8 :: tmp(neq),rho_in,rhvx_in,rhvy_in,rhvz_in,en_in    
+  tmp(RHO)=rho_in
+  tmp(RHVX)=rhvx_in
+  tmp(RHVY)=rhvy_in
+  tmp(RHVZ)=rhvz_in
+  tmp(EN)=en_in
+  ret=amuse_set_boundary_outerzstate(tmp)
+end function  
+
+
 function set_boundary(lowx,highx,lowy,highy,lowz,highz) result(ret)
   use amuse_helpers
   integer :: ret

@@ -46,6 +46,54 @@ class Capreole(LegacyInterface):
         return function
 
     @legacy_function    
+    def set_boundary_innerxstate():
+        function = LegacyFunctionSpecification()  
+        for x in ["rho_in","rhvx_in","rhvy_in","rhvz_in","en_in"]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_boundary_outerxstate():
+        function = LegacyFunctionSpecification()  
+        for x in ["rho_in","rhvx_in","rhvy_in","rhvz_in","en_in"]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_boundary_innerystate():
+        function = LegacyFunctionSpecification()  
+        for x in ["rho_in","rhvx_in","rhvy_in","rhvz_in","en_in"]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_boundary_outerystate():
+        function = LegacyFunctionSpecification()  
+        for x in ["rho_in","rhvx_in","rhvy_in","rhvz_in","en_in"]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_boundary_innerzstate():
+        function = LegacyFunctionSpecification()  
+        for x in ["rho_in","rhvx_in","rhvy_in","rhvz_in","en_in"]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_boundary_outerzstate():
+        function = LegacyFunctionSpecification()  
+        for x in ["rho_in","rhvx_in","rhvy_in","rhvz_in","en_in"]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
     def fill_grid_state():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True

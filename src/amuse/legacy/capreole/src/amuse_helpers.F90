@@ -10,6 +10,7 @@ module amuse_helpers
     OUTFLOW,PROBLEM_DEF,PERIODIC
   use sizes, only: neq,neuler,mbc,nrOfDim,RHO,RHVX,RHVY,RHVZ,EN  
   use problem
+  use atomic, only: gamma, gamma1
   
   contains
 
@@ -108,6 +109,72 @@ module amuse_helpers
     ret=0
   end function
 
+  function amuse_set_boundary_innerxstate(istate) result(ret)
+    integer :: ret
+    real*8 :: istate(neq)    
+    ret=0
+    innerxstate=istate  
+    innerxpressure=gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+    if(innerxpressure.LE.0) ret=-1
+    ret=0
+  end function  
+
+  function amuse_set_boundary_innerystate(istate) result(ret)
+    integer :: ret
+    real*8 :: istate(neq)    
+    ret=0
+    innerystate=istate  
+    innerypressure=gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+    if(innerypressure.LE.0) ret=-1
+    ret=0
+  end function  
+
+  function amuse_set_boundary_innerzstate(istate) result(ret)
+    integer :: ret
+    real*8 :: istate(neq)    
+    ret=0
+    innerzstate=istate  
+    innerzpressure=gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+    if(innerzpressure.LE.0) ret=-1
+    ret=0
+  end function  
+
+  function amuse_set_boundary_outerxstate(istate) result(ret)
+    integer :: ret
+    real*8 :: istate(neq)    
+    ret=0
+    outerxstate=istate  
+    outerxpressure=gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+    if(outerxpressure.LE.0) ret=-1
+    ret=0
+  end function  
+
+  function amuse_set_boundary_outerystate(istate) result(ret)
+    integer :: ret
+    real*8 :: istate(neq)    
+    ret=0
+    outerystate=istate  
+    outerypressure=gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+    if(outerypressure.LE.0) ret=-1
+    ret=0
+  end function  
+
+  function amuse_set_boundary_outerzstate(istate) result(ret)
+    integer :: ret
+    real*8 :: istate(neq)    
+    ret=0
+    outerzstate=istate  
+    outerzpressure=gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+    if(outerzpressure.LE.0) ret=-1
+    ret=0
+  end function  
+
   function amuse_set_boundary(lowx,highx,lowy,highy,lowz,highz) result(ret)
     integer :: ret
     character(len=10) :: lowx,highx,lowy,highy,lowz,highz
@@ -123,6 +190,8 @@ module amuse_helpers
       periods(1)=.TRUE.
     case("outflow")
       domainboundaryconditions(1,1)=OUTFLOW          
+    case("interface")
+      domainboundaryconditions(1,1)=PROBLEM_DEF          
     case default
       ret=-1
       return
@@ -138,6 +207,8 @@ module amuse_helpers
       periods(1)=.TRUE.
     case("outflow")
       domainboundaryconditions(1,2)=OUTFLOW          
+    case("interface")
+      domainboundaryconditions(1,2)=PROBLEM_DEF          
     case default
       ret=-1
       return
@@ -153,6 +224,8 @@ module amuse_helpers
       periods(2)=.TRUE.
     case("outflow")
       domainboundaryconditions(2,1)=OUTFLOW          
+    case("interface")
+      domainboundaryconditions(2,1)=PROBLEM_DEF          
     case default
       ret=-1
       return
@@ -168,6 +241,8 @@ module amuse_helpers
       periods(2)=.TRUE.
     case("outflow")
       domainboundaryconditions(2,2)=OUTFLOW          
+    case("interface")
+      domainboundaryconditions(2,2)=PROBLEM_DEF          
     case default
       ret=-1
       return
@@ -183,6 +258,8 @@ module amuse_helpers
       periods(3)=.TRUE.
     case("outflow")
       domainboundaryconditions(3,1)=OUTFLOW          
+    case("interface")
+      domainboundaryconditions(3,1)=PROBLEM_DEF          
     case default
       ret=-1
       return
@@ -198,6 +275,8 @@ module amuse_helpers
       periods(3)=.TRUE.
     case("outflow")
       domainboundaryconditions(3,2)=OUTFLOW          
+    case("interface")
+      domainboundaryconditions(3,2)=PROBLEM_DEF          
     case default
       ret=-1
       return

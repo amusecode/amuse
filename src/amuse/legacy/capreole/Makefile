@@ -11,9 +11,9 @@ MPILIBS=$(SRC)/libcapreole_mpi.a
 
 GLOBJECTS=$(SRC)/fthread.o $(SRC)/viewer.o $(SRC)/libpt.a
 
-GLINCLUDE = -I/usr/include/GL -I/home/inti/libraries/f90gl-1.2.11/include/GL/
+GLINCLUDE = -I/usr/include/GL -I/data/pelupes/libraries/f90gl-1.2.11/include/GL/
 
-GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
+GLLIB = -L/data/pelupes/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
 
 X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
@@ -29,7 +29,7 @@ endif
 
 ifeq  ($(FORTRAN), ifort)
 # ifort flags
-FFLAGS= -O -ip -u -g -traceback -DIFORT  $(PIC)
+FFLAGS= -O -ip -u -g -traceback -fpp1 -DIFORT  $(PIC)
 endif
 
 MPI_FLAGS = -DMPI # 

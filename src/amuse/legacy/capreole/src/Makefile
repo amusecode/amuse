@@ -58,7 +58,7 @@ FC = ifort # Intel compiler
 MPIFC = mpif90 # MPI compiler
 
 # F90 options (ifort)
-IFORTFLAGS = -O -g -traceback -ip -DIFORT
+IFORTFLAGS = -O -g -traceback -ip -fpp1 -DIFORT
 #IFORTFLAGS = -O3 -vec_report -u -fpe0 -ipo -DIFORT -shared-intel #-check all -traceback
 #IFORTFLAGS = -O3 -vec_report -u -fpe0 -ipo -mcmodel=medium -shared-intel -DIFORT #-check all -traceback
 # Processor dependent optimization
@@ -131,9 +131,9 @@ LDFLAGS = $(OPTIONS) #-L/afs/astro.su.se/pkg/intel/Compiler/11.1/056/lib/intel64
 LIBS = -lirc
 
 GLINCLUDE = -I/usr/include/GL \
--I/home/inti/libraries/f90gl-1.2.11/include/GL/
+-I/data/pelupes/libraries/f90gl-1.2.11/include/GL/
 
-GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
+GLLIB = -L/data/pelupes/libraries/f90gl-1.2.11/lib \
 -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
 
 X11LIB = -L/usr/X11R6/lib64 -lXaw -lXt -lXmu -lXi -lXext -lX11

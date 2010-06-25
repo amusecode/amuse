@@ -19,7 +19,7 @@ module my_mpi
   USE XLFUTILITY, only: hostnm => hostnm_ , flush => flush_
 #endif
 
-#ifdef IFORT
+#ifdef IFORT 
   USE IFPORT, only: hostnm, flush
 #ifdef _OPENMP
   USE OMP_LIB, only: omp_get_num_threads, omp_get_thread_num
@@ -101,7 +101,7 @@ contains
 #endif
     !$omp end parallel
 
-    flush(log_unit)
+!    flush(log_unit)
 
     call mpi_topology ()
 
