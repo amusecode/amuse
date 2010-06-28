@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # Detects available hardware and various settings to provide help for
 # setting up GPGPU with CUDA, required for executing code on a GPU.
 echo
