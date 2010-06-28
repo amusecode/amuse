@@ -1,0 +1,146 @@
+====================
+Stopping Conditions
+====================
+
+Introduction
+------------
+Codes in AMUSE evolve their models in three loops, the "inner", 
+the "outer" loop, and the "script" loop. The 
+"inner" loop is controlled by the code and evolves the model 
+in a sufficiently small step to limit errors
+and be able to simulate important physics. The "outer" loop invocates
+the "inner" loop until a condition is met specified by the AMUSE script.
+The AMUSE script (or the "script" loops) interacts with the "outer"
+loop.
+
+ .. graphviz::
+    
+    digraph layers0 {
+      fontsize=10.0;
+      node [fontsize=10.0,shape=box, style=filled, fillcolor=lightyellow, width=1.5];
+      subgraph cluster0 {
+      fontsize=10.0;
+            style=filled;
+            color=azure2;
+            labeljust="l";
+            label="AMUSE Script";
+            "script loop";
+      } 
+      subgraph cluster1 {
+      fontsize=10.0;
+            style=filled;
+            color=azure2;
+            labeljust="l";
+            label="Legacy Code";
+            "outer loop";
+            "inner loop";
+      }
+      "script loop" -> "outer loop"[minlen=2];
+      "outer loop" -> "inner loop";
+      
+      "script loop" -> "script loop"  [dir="back", constraint=false,minlen=2, headport="se", tailport="ne"];
+      "outer loop" -> "outer loop"[dir="back", constraint=false, headport="se", tailport="ne"];
+      "inner loop" -> "inner loop"[dir="back", constraint=false, headport="se", tailport="ne"];
+    }
+
+In AMUSE the outerloop is always limited by the model time. Every 
+:func:`evolve` call has one argument, the model time. When the
+simulation goes beyond this time, control is returned to the caller.
+This process is shown in the following code example.
+
+.. code-block:: c
+
+    // example outer loop
+    void outer_loop(double end_time) 
+    {
+        while(model_time < end_time) 
+        {
+            ...
+            inner_loop()
+            ...
+            model_time += delta_time_for_this_step
+        }
+        return
+    }
+
+The model time is often enough to control the loop, but some
+situations call for an earlier break in the loop when the model 
+time has not reached the end time. The framework supports
+**stopping conditions** to be able to break the outer loop
+before the end time is hit. The following code example,
+shows how these conditions might work.
+
+.. code-block:: c
+
+    // example outer loop with stopping conditions
+    void outer_loop(double end_time) 
+    {
+        int special_condition_was_hit = 0;
+        
+        while(model_time < end_time) 
+        {
+            ...
+            inner_loop()
+            ...
+            check_if_special_conditions_are_hit();
+            ...
+            model_time += delta_time_for_this_step
+            ...
+            if(special_condition_was_hit) {
+                break;
+            }
+        }
+        return
+    }
+
+For example, a code might be able to detect a collision 
+of two stars and the user wants to handle this event. 
+If the code would proceed to the end time, the collision 
+is long over and the user has no way to know about
+the collision and cannot handle it.
+
+.. image:: stopping_conditions_collision.png
+
+AMUSE provides a framework for using and implementing stopping
+conditions. This framework uses simple tables in the
+codes and translates these tables to objects in the python 
+scripts. In the next section the use of this framework 
+is described. In the final section the implementation of
+the framework in a legacy code is described.
+
+Using stopping conditions
+-------------------------
+
+All ineraction with the *stopping conditions* of a *legacy code*
+is via the :attr:`stopping_conditions` attribute of a :class:`CodeInterface`
+class. When the :attr:`stopping_conditions` attribute is 
+queried it returns a :class:`StoppingConditions` object. All 
+:class:`StoppingConditions` objects have an attribute for each
+stopping condition supported by AMUSE. The 
+attributes have the following names:
+    
+collision_detection
+    The outer loop breaks when two stars connect
+pair_detection
+    The outer loop breaks when two stars pair, possibly
+    creating a binary star.
+escaper_detection
+    The outer loops breaks when a star escapes the
+    simulation (is no longer gravitationally bound
+    to the other stars)
+timeout_detection
+    The outer loops breaks when a certain amount
+    of computer (wall-clock) has elapsed.
+
+For every attribute the user can determine if it is
+supported, if it was enabled or if it was hit during
+the :func:`evolve` loop.
+
+
+.. note ::
+
+    :class:`CodeInterface` objects provide a object oriented
+    interface to the legacy codes.
+
+
+

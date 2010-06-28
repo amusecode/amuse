@@ -207,7 +207,8 @@ class StoppingCondition(object):
             if type == self.type:
                 selected.append(index)
         return self.conditions.code.particles.get_stopping_condition_particle_index(selected, [index_in_the_contition]*len(selected))
-        
+    
+    
         
 class StoppingConditions():
 
@@ -233,6 +234,27 @@ class StoppingConditions():
             3, 
             "If enabled, the code will stop at the end of the inner loop when the computer time is abouve a set timeout"
         )
+        
+    
+    def all_conditions(self):
+        for name in dir(self):
+            if name.startswith("_"):
+                continue
+            else:
+                value = getattr(self, name)
+                if isinstance(value, StoppingCondition):
+                    yield name, value
+                    
+    def __str__(self):
+        parts = []
+        parts.append('Stopping conditions\n')
+        supported = [name for name, condition in self.all_conditions() if condition.is_supported()]
+        enabled = [name for name, condition in self.all_conditions() if condition.is_enabled()]
+        hit = [name for name, condition in self.all_conditions() if condition.is_set()]
+        parts.append('* supported conditions: ')
+        parts.append(', '.join(supported))
+        parts.append('\n')
+        return ''.join(parts)
         
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -325,4 +347,5 @@ class StoppingConditions():
     def define_particle_set(self, object, name_of_the_set = 'particles'):
         object.add_query(name_of_the_set, 'get_stopping_condition_particle_index')
     
+        
         
