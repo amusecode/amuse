@@ -307,3 +307,25 @@ class TestGadget2(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
+    def test7(self):
+        print "Testing more Gadget parameters"
+        instance = Gadget2(self.default_converter, **default_options)
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(True, instance.parameters.gadget_cell_opening_flag)
+        instance.parameters.gadget_cell_opening_flag = False
+        self.assertEquals(False, instance.parameters.gadget_cell_opening_flag)
+        
+        for par, value in [('n_neighbour_tol',0.1),('nsmooth',50),('opening_angle',0.5),('gadget_cell_opening_constant',0.005),
+            ('artificial_viscosity_alpha',0.5),('courant',0.3)]:
+            self.assertEquals(value | units.none, eval("instance.parameters."+par))
+            exec("instance.parameters."+par+" = 1 | units.none")
+            self.assertEquals(1 | units.none, eval("instance.parameters."+par))
+        
+        self.assertEquals(instance.unit_converter.to_si(0.01 | generic_system.length), 
+            instance.parameters.gas_epsilon)
+        instance.parameters.gas_epsilon = 0.1 | generic_system.length
+        self.assertEquals(instance.unit_converter.to_si(0.1 | generic_system.length), 
+            instance.parameters.gas_epsilon)
+        instance.cleanup_code()
+        instance.stop()
+    

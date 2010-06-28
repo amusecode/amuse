@@ -17,7 +17,7 @@ GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
-CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib 
+CUDA_LIBDIRS ?= -L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64
 CUDA_LIBS ?= -lcudart
 
 SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light

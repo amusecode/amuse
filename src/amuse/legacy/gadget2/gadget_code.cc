@@ -16,6 +16,7 @@ using namespace std;
 const bool debug = true;
 
 bool particles_initialized = false;
+bool outfiles_opened = false;
 int particles_counter = 0;
 vector<dynamics_state> ds;        // for initialization only
 vector<sph_state> sph_ds;         // for initialization only
@@ -90,7 +91,10 @@ int initialize_code(){
     return 0;
 }
 int cleanup_code(){
-    close_outputfiles();
+    if (outfiles_opened)
+        close_outputfiles();
+    if (particles_initialized)
+        free_memory();
     return 0;
 }
 int commit_parameters(){
@@ -103,6 +107,7 @@ int commit_parameters(){
     }
     system(command);
     open_outputfiles();
+    outfiles_opened = true;
     return 0;
 }
 int recommit_parameters(){

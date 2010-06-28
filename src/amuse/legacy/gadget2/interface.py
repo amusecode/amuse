@@ -417,14 +417,14 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     def set_nsmtol():
         """ fractional tolerance in number of SPH neighbours """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('nsmtol', dtype='d', direction=function.IN)
+        function.addParameter('n_neighbour_tol', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function;
     @legacy_function   
     def get_nsmtol():
         """ fractional tolerance in number of SPH neighbours """            
         function = LegacyFunctionSpecification()  
-        function.addParameter('nsmtol', dtype='d', direction=function.OUT)
+        function.addParameter('n_neighbour_tol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function;
     
@@ -531,7 +531,7 @@ class Gadget2(GravitationalDynamics):
             "nsmooth", 
             "The target number of SPH neighbours.", 
             units.none,
-            64 | units.none
+            50 | units.none
         )
         
         object.add_method_parameter(

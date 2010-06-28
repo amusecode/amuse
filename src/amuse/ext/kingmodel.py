@@ -473,7 +473,7 @@ class MakeKingModel(object):
     @property
     def result(self):
         masses, positions, velocities = self.makeking()
-        result = core.Stars(self.number_of_particles)
+        result = core.Particles(self.number_of_particles)
         if self.convert_nbody is None:
             result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
             result.position = nbody_system.length.new_quantity(positions)

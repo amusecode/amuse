@@ -80,8 +80,8 @@ TreeDomainUpdateFrequency    0.1
 %  Further parameters of SPH
 
 DesNumNgb              50
-MaxNumNgbDeviation     2
-ArtBulkViscConst       0.8
+MaxNumNgbDeviation     5
+ArtBulkViscConst       0.5
 InitGasTemp            0          % always ignored if set to 0 
 MinGasTemp             0    
 

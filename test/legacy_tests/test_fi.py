@@ -323,7 +323,7 @@ class TestFiInterface(TestWithMPI):
             'sqrt_timestep_crit_constant','acc_timestep_crit_constant','free_timestep_crit_constant_v',
             'free_timestep_crit_constant_a','free_timestep_crit_constant_vexp',
             'free_timestep_crit_constant_aexp','opening_angle','gadget_cell_opening_constant',
-            'nn_tol','gas_epsilon','gamma','alpha','beta','sph_artificial_viscosity_eps','courant',
+            'nn_tol','gas_epsilon','gamma','artificial_viscosity_alpha','beta','sph_artificial_viscosity_eps','courant',
             'min_gas_part_mass','sph_h_const','n_neighbour_tol','grain_heat_eff','zeta_cr_ion_rate',
             'heat_par1','heat_par2','cool_par','optical_depth','star_form_delay_fac','star_form_mass_crit',
             'star_form_eff','supernova_duration','supernova_eff','t_supernova_start','max_density']

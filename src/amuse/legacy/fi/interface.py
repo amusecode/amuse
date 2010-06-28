@@ -1850,7 +1850,7 @@ class Fi(GravitationalDynamics):
         object.add_method_parameter(
             "get_alpha", 
             "set_alpha",
-            "alpha", 
+            "artificial_viscosity_alpha", 
             "SPH artificial viscosity alpha parameter (0.5)", 
             units.none,
             0.5 | units.none
