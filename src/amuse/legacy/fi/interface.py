@@ -1481,6 +1481,10 @@ class Fi(GravitationalDynamics):
         
         return result
 
+    def define_properties(self, object):
+        GravitationalDynamics.define_properties(self, object)
+        object.add_property("get_thermal_energy", nbody_system.energy)
+    
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_eps2", 
