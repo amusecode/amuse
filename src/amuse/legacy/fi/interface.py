@@ -2171,7 +2171,7 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                nbody_system.energy,
+                nbody_system.specific_energy,
             ),
             (
                 object.INDEX,
@@ -2192,7 +2192,7 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                nbody_system.energy,
+                nbody_system.specific_energy,
                 object.ERROR_CODE
             )
         )
@@ -2208,7 +2208,7 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed,
                 nbody_system.speed,
                 nbody_system.speed,
-                nbody_system.energy,
+                nbody_system.specific_energy,
             ),
             (
                 object.ERROR_CODE,
@@ -2218,7 +2218,7 @@ class Fi(GravitationalDynamics):
             "set_internal_energy",
             (
                 object.INDEX,
-                nbody_system.energy,
+                nbody_system.specific_energy,
             ),
             (
                 object.ERROR_CODE,
@@ -2230,7 +2230,7 @@ class Fi(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                nbody_system.energy,
+                nbody_system.specific_energy,
                 object.ERROR_CODE
             )
         )

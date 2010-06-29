@@ -5,6 +5,7 @@ from math import *
 import numpy
 from amuse.support.units import generic_unit_system as generic_system 
 from amuse.support.units import nbody_system
+from amuse.support.data.core import Particles
 
 class uniform_random_unit_cube(object):
   def __init__(self,targetN):
@@ -117,16 +118,16 @@ class MakeEvrardModel(object):
         vx = numpy.zeros_like(x)
         vy = numpy.zeros_like(x)
         vz = numpy.zeros_like(x)
-        return (mass, x, y, z, vx, vy, vz, internal_energy)
+        return (mass, numpy.hstack((x, y, z)), numpy.hstack((vx, vy, vz)), internal_energy)
         
     @property
     def result(self):
         masses, positions, velocities, internal_energies = self.new_model()
-        result = core.Particles(self.actual_number_of_particles)
-        result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
+        result = Particles(self.actual_number_of_particles)
+        result.mass = nbody_system.mass.new_quantity(masses)
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity(velocities)
-        result.u = nbody_system.energy.new_quantity(internal_energies)
+        result.u = nbody_system.specific_energy.new_quantity(internal_energies)
 
         result.position -= result.center_of_mass()
         result.velocity -= result.center_of_mass_velocity()

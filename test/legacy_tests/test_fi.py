@@ -363,7 +363,7 @@ class TestFiInterface(TestWithMPI):
         radius=numpy.zeros_like(mass) # actually a smoothing parameter?
         attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
         attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.energy]
+            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
         
         gas = core.Particles(number_sph_particles)
         for attribute, unit in zip(attributes,attr_units):
@@ -396,7 +396,7 @@ class TestFiInterface(TestWithMPI):
         radius=numpy.zeros_like(mass) # actually a smoothing parameter?
         attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
         attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.energy]
+            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
         
         gas = core.Particles(number_sph_particles)
         for attribute, unit in zip(attributes,attr_units):
@@ -440,7 +440,7 @@ class TestFiInterface(TestWithMPI):
         radius=numpy.zeros_like(mass) # actually a smoothing parameter?
         attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
         attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.energy]
+            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
         for attribute, unit in zip(attributes,attr_units):
             setattr(gas, attribute, unit.new_quantity(eval(attribute)))
         
@@ -516,7 +516,7 @@ class TestFiInterface(TestWithMPI):
         radius=numpy.zeros_like(mass) # actually a smoothing parameter?
         attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
         attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.energy]
+            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
         for attribute, unit in zip(attributes,attr_units):
             setattr(gas, attribute, unit.new_quantity(eval(attribute)))
         
