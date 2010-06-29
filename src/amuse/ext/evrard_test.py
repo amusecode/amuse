@@ -5,7 +5,7 @@ from math import *
 import numpy
 from amuse.support.units import generic_unit_system as generic_system 
 from amuse.support.units import nbody_system
-from amuse.support.data.core import Particles
+from amuse.support.data.core import Particles, ParticlesWithUnitsConverted
 
 class uniform_random_unit_cube(object):
   def __init__(self,targetN):
@@ -133,7 +133,7 @@ class MakeEvrardModel(object):
         result.velocity -= result.center_of_mass_velocity()
         
         if not self.convert_nbody is None:
-            result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
             result = result.copy_to_memory()
             
         return result

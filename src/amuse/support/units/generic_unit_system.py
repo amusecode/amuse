@@ -24,6 +24,7 @@ acceleration = length / (time ** 2)
 force = mass*acceleration
 potential = (length ** 2) / (time ** 2)
 energy = mass * potential
+specific_energy = potential
 speed = length / time
 charge = current * time
 

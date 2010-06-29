@@ -2087,7 +2087,6 @@ class Fi(GravitationalDynamics):
         
     
     def define_particle_sets(self, object):
-        #GravitationalDynamics.define_particle_sets(self, object)# diff name of index!
         object.define_super_set('particles', ['dm_particles','gas_particles','star_particles'], 
             index_to_default_set = 0)
         
@@ -2096,6 +2095,12 @@ class Fi(GravitationalDynamics):
         object.set_delete('dm_particles', 'delete_particle')
         object.add_setter('dm_particles', 'set_state')
         object.add_getter('dm_particles', 'get_state')
+        object.add_setter('dm_particles', 'set_mass')
+        object.add_getter('dm_particles', 'get_mass', names = ('mass',))
+        object.add_setter('dm_particles', 'set_position')
+        object.add_getter('dm_particles', 'get_position')
+        object.add_setter('dm_particles', 'set_velocity')
+        object.add_getter('dm_particles', 'get_velocity')
         
         object.define_set('gas_particles', 'id')
         object.set_new('gas_particles', 'new_sph_particle')
@@ -2106,6 +2111,10 @@ class Fi(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_mass', names = ('mass',))
         object.add_setter('gas_particles', 'set_position')
         object.add_getter('gas_particles', 'get_position')
+        object.add_setter('gas_particles', 'set_velocity')
+        object.add_getter('gas_particles', 'get_velocity')
+        object.add_setter('gas_particles', 'set_internal_energy')
+        object.add_getter('gas_particles', 'get_internal_energy')
         
         object.define_set('star_particles', 'id')
         object.set_new('star_particles', 'new_star_particle')

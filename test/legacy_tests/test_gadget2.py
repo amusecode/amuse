@@ -261,7 +261,7 @@ class TestGadget2(TestWithMPI):
         number_sph_particles = len(mass)
         attributes = ['mass','x','y','z','vx','vy','vz','u']
         attr_units = [generic_system.mass, generic_system.length, generic_system.length, generic_system.length, 
-            generic_system.speed, generic_system.speed, generic_system.speed, generic_system.energy]
+            generic_system.speed, generic_system.speed, generic_system.speed, generic_system.specific_energy]
         
         gas = core.Particles(number_sph_particles)
         for attribute, unit in zip(attributes,attr_units):
@@ -285,7 +285,7 @@ class TestGadget2(TestWithMPI):
         number_sph_particles = len(mass)
         attributes = ['mass','x','y','z','vx','vy','vz','u']
         attr_units = [generic_system.mass, generic_system.length, generic_system.length, generic_system.length, 
-            generic_system.speed, generic_system.speed, generic_system.speed, generic_system.energy]
+            generic_system.speed, generic_system.speed, generic_system.speed, generic_system.specific_energy]
         
         gas = core.Particles(number_sph_particles)
         for attribute, unit in zip(attributes,attr_units):

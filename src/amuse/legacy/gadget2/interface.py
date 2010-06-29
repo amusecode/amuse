@@ -675,6 +675,8 @@ class Gadget2(GravitationalDynamics):
         object.add_setter('gas_particles', 'set_velocity')
         object.add_getter('gas_particles', 'get_velocity')
         object.add_getter('gas_particles', 'get_acceleration')
+        object.add_setter('gas_particles', 'set_internal_energy')
+        object.add_getter('gas_particles', 'get_internal_energy')
     
     def define_methods(self, object):
         #GravitationalDynamics.define_methods(self, object)
@@ -854,7 +856,7 @@ class Gadget2(GravitationalDynamics):
                 generic_system.speed,
                 generic_system.speed,
                 generic_system.speed,
-                generic_system.energy,
+                generic_system.specific_energy,
             ),
             (
                 object.INDEX,
@@ -874,7 +876,7 @@ class Gadget2(GravitationalDynamics):
                 generic_system.speed,
                 generic_system.speed,
                 generic_system.speed,
-                generic_system.energy,
+                generic_system.specific_energy,
                 object.ERROR_CODE
             )
         )
@@ -889,7 +891,7 @@ class Gadget2(GravitationalDynamics):
                 generic_system.speed,
                 generic_system.speed,
                 generic_system.speed,
-                generic_system.energy,
+                generic_system.specific_energy,
             ),
             (
                 object.ERROR_CODE,
@@ -899,7 +901,7 @@ class Gadget2(GravitationalDynamics):
             "set_internal_energy",
             (
                 object.INDEX,
-                generic_system.energy,
+                generic_system.specific_energy,
             ),
             (
                 object.ERROR_CODE,
@@ -911,7 +913,7 @@ class Gadget2(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                generic_system.energy,
+                generic_system.specific_energy,
                 object.ERROR_CODE
             )
         )
