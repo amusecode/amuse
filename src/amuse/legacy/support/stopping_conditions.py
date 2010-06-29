@@ -120,7 +120,7 @@ class StoppingConditionInterface(object):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True 
         function.addParameter('index', dtype='int32', direction=function.IN, description = "Index in the array[0,number_of_stopping_conditions_set>")
-        function.addParameter('index_of_the_condition', dtype='int32', direction=function.OUT, description = "Kind of the condition, can be used to retrieve specific information")
+        function.addParameter('type', dtype='int32', direction=function.OUT, description = "Kind of the condition, can be used to retrieve specific information")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -136,8 +136,8 @@ class StoppingConditionInterface(object):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True 
         function.addParameter('index', dtype='int32', direction=function.IN, description = "Index in the array[0,number_of_stopping_conditions_set>")
-        function.addParameter('index_in_the_condition', dtype='int32', direction=function.IN, description = "Particle x involved in the condition (for pair collisons 0 and 1 are possible)")
-        function.addParameter('index_of_particle', dtype='int32', direction=function.OUT, description = "Index of particle[n] of the condition")
+        function.addParameter('index_of_the_column', dtype='int32', direction=function.IN, description = "Column index involved in the condition (for pair collisons 0 and 1 are possible)")
+        function.addParameter('index_of_particle', dtype='int32', direction=function.OUT, description = "Set to the identifier of particle[index_of_the_column][index]")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -152,7 +152,7 @@ class StoppingConditionInterface(object):
         """
         function = LegacyFunctionSpecification()  
         function.can_handle_array = False 
-        function.addParameter('value', dtype='float64', direction=function.IN, description = "Avaible wallclock time in seconds")
+        function.addParameter('value', dtype='float64', direction=function.IN, description = "Available wallclock time in seconds")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -222,7 +222,7 @@ class StoppingConditions():
         self.pair_detection = StoppingCondition(
             self, 
             1, 
-            "If enabled, the code will stop at the end of the inner loop when two stars connect"
+            "If enabled, the code will stop at the end of the inner loop when two stars are bound"
         )
         self.escaper_detection = StoppingCondition(
             self, 

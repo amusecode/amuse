@@ -404,37 +404,37 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
             rv_r2 /= r2;
 
             if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
-	      real rsum = radius[i] + radius[j];
-	      if (r2 <= rsum*rsum) {
-		int stopping_index  = next_index_for_stopping_condition();
-		set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-		set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
-		set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
-	      }
+              real rsum = radius[i] + radius[j];
+              if (r2 <= rsum*rsum) {
+                int stopping_index  = next_index_for_stopping_condition();
+                set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+                set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+              }
             }
-	    if(PAIR_DETECTION_BITMAP & enabled_conditions) {
-	      //fprintf(stdout, 'doing pairdetection\n');
-	      real rsum = radius[i] + radius[j];
-	      if (r2 <= rsum*rsum * pair_detect_factor) {
-		//added by mcello
-		//escape velocity criterium, usual E = V + T=0 
-		//but for kinetic energy we use reduced mass: 
-		//T = T1 + T2 = 0.5 * m1*m2/M v^2 (rel vel w.r.t. C.O.M)
-		if (mass[i]+mass[j]/sqrt(r2 + eps2) > 0.5 * v2) {
-		  int stopping_index = next_index_for_stopping_condition();
-		  set_stopping_condition_info(stopping_index, PAIR_DETECTION);
-		  if (mass[i] >= mass[j]) {
-		    set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
-		    set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
-		  }
-		  else {
-		    set_stopping_condition_particle_index(stopping_index, 0, ident[j]);
-		    set_stopping_condition_particle_index(stopping_index, 1, ident[i]);
-		  }
-		}
-	      }
-	    }
-	    
+            if(PAIR_DETECTION_BITMAP & enabled_conditions) {
+              //fprintf(stdout, 'doing pairdetection\n');
+              real rsum = radius[i] + radius[j];
+              if (r2 <= rsum*rsum * pair_detect_factor) {
+                //added by mcello
+                //escape velocity criterium, usual E = V + T=0 
+                //but for kinetic energy we use reduced mass: 
+                //T = T1 + T2 = 0.5 * m1*m2/M v^2 (rel vel w.r.t. C.O.M)
+                if (mass[i]+mass[j]/sqrt(r2 + eps2) > 0.5 * v2) {
+                  int stopping_index = next_index_for_stopping_condition();
+                  set_stopping_condition_info(stopping_index, PAIR_DETECTION);
+                  if (mass[i] >= mass[j]) {
+                    set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+                    set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+                  }
+                  else {
+                    set_stopping_condition_particle_index(stopping_index, 0, ident[j]);
+                    set_stopping_condition_particle_index(stopping_index, 1, ident[i]);
+                  }
+                }
+              }
+            }
+            
             r2 += eps2;                            // | rji |^2 + eps^2
             real r = sqrt(r2);                     // | rji |
             real r3 = r * r2;                      // | rji |^3

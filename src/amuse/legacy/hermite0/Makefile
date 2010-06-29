@@ -12,8 +12,8 @@ AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SCLIBS ?= -L../../../../lib/stopcond -lstopcondmpi
-SCINC ?= -I../../../../lib/stopcond
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 all: worker_code
 

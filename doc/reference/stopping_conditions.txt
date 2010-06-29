@@ -63,12 +63,12 @@ This process is shown in the following code example.
         return
     }
 
-The model time is often enough to control the loop, but some
+The model time is often enough to control the loop but some
 situations call for an earlier break in the loop when the model 
-time has not reached the end time. The framework supports
-**stopping conditions** to be able to break the outer loop
-before the end time is hit. The following code example,
-shows how these conditions might work.
+time has not reached the end time. To be able to break the outer loop
+before the end time is hit, the framework supports
+**stopping conditions**. The following code example
+shows how these conditions might work in a C code.
 
 .. code-block:: c
 
@@ -101,7 +101,8 @@ the collision and cannot handle it.
 
 .. image:: stopping_conditions_collision.png
 
-AMUSE provides a framework for using and implementing stopping
+The **stopping conditiopns** framework in AMUSE
+provides functionality for using and implementing stopping
 conditions. This framework uses simple tables in the
 codes and translates these tables to objects in the python 
 scripts. In the next section the use of this framework 
@@ -111,7 +112,7 @@ the framework in a legacy code is described.
 Using stopping conditions
 -------------------------
 
-All ineraction with the *stopping conditions* of a *legacy code*
+All interaction with the *stopping conditions* of a *legacy code*
 is via the :attr:`stopping_conditions` attribute of a :class:`CodeInterface`
 class. When the :attr:`stopping_conditions` attribute is 
 queried it returns a :class:`StoppingConditions` object. All 
@@ -130,7 +131,7 @@ escaper_detection
     to the other stars)
 timeout_detection
     The outer loops breaks when a certain amount
-    of computer (wall-clock) has elapsed.
+    of computer (wall-clock) time has elapsed.
 
 .. note ::
 
@@ -169,14 +170,16 @@ the :func:`evolve` loop.
     False
     >>> code.stop()
 
-When a stopping condition was hit the user can query which particles 
-were involved in the condition. The particles involved are stored in
-columns. For pair wise detections (collection and pair) the condition
+When a stopping condition was hit during the inner or outer loop evaluation
+the user can query which particles were involved. 
+The particles involved are stored in columns. 
+For pair wise detections (collection and pair) the condition
 provides two columns. The first column contains all the first particles
 of the pairs and the second column contains all the second particles
 of the pairs. These columns can be queried with the :meth:`particles`
 method on a stopping condition attribute. This method takes one 
-argument, the columnindex.
+argument, the columnindex and returns a particle subset with
+the involved particles.
 
 ========  ============  ============
 Pair      particles(0)  particles(1)
@@ -206,7 +209,7 @@ All codes supporting stopping conditions
 must implement the :class:`StoppingConditionInterface`
 interface. This can be easily done by inheriting
 from the :class:`StoppingConditionInterface` and implementing
-all the functions defined in the interface.
+all the functions defined in the interface:
 
 .. code-block:: python
 
@@ -214,7 +217,7 @@ all the functions defined in the interface.
         ...
         
 This :class:`StoppingConditionInterface` interface models the interface to a
-simple data model, best described as two tables::
+simple data model, best described as two tables:
 
 Defined stopping conditions table
     This table list the types of stopping conditions
@@ -283,9 +286,220 @@ The stopping conditions tables are implemented as a
 static C library. This library is part of the AMUSE distribution
 and can be found in the ```lib/stopcond``` directory. 
 
+The library implements *all* functions of the :class:`StoppingConditionInterface`
+interface and provides a number functions for the 
+legacy code implementer to actually set and support
+stopping conditions. The library does not implement any
+stopping condition detection routines. These have to
+be implemented on a per code basis. The functionality
+of the library is limited to managing the stopping conditions
+tables and the library has to be controlled by the code
+so that stopping conditions are set.  
+
+The library implements the defined stopping conditions table as
+three long integers. These integers are used as bitmaps (the state
+of individual bits is used to determine if a condition is true or
+false). The individual bits can be testes with the following
+macros:
+
+.. data:: COLLISION_DETECTION_BITMAP
+
+.. data:: PAIR_DETECTION_BITMAP      
+
+.. data:: ESCAPER_DETECTION_BITMAP  
+    
+
+.. data:: TIMEOUT_DETECTION_BITMAP
+    
 
 
+The three global variables are:
+
+.. c:var:: long enabled_conditions
+
+    Individual bits are set when the user enables a stopping condition.
+    
+.. c:var:: long set_conditions
+
+    Individual bits are set when the a condition is detected by the
+    code. (the :c:func:`set_stopping_condition_info` will fill
+    this bitmap)
+    
+.. c:var:: long supported_conditions
+
+    Individual bits are set for supported conditions. This global
+    must be defined by the code. For a code that support
+    collision detection and timeout detection the variable can
+    be defined as:
+    
+    .. code-block:: c
+        
+        long supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
+
+To refer to the type of a stopping condition, the library defines the
+following macros:
+
+.. data:: COLLISION_DETECTION
+
+.. data:: PAIR_DETECTION  
+   
+.. data:: ESCAPER_DETECTION   
+
+.. data:: TIMEOUT_DETECTION
 
 
+The following four functions can be used to set and reset
+the stopping conditions.
+
+.. c:function:: int reset_stopping_conditions()
+
+    Resets all stopping conditions. Needs to be called just
+    before entering the outer_loop
+    
+    .. code-block:: c
+    
+        void outer_loop(double end_time) 
+        {
+            reset_stopping_conditions()
+            while(model_time < end_time) 
+            {
+                ...
+            }
+        }
+        
+.. c:function:: int next_index_for_stopping_condition()
+
+    Reserves a row on the stopping conditions table.
+    Needs to be called after detecting a stopping condition so
+    that the code can fill in the stopping condition information.
+    
+    .. code-block:: c
+    
+        if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
+            int row = next_index_for_stopping_condition();
+            set_stopping_condition_info(row, COLLISION_DETECTION);
+            ...
+        }
+    
+.. c:function:: int set_stopping_condition_info(int index, int type)
+
+    Sets the type of stopping condition encountered for
+    the given row index. Use one of the predefined type macros
+    for the type argument
+    
+    .. code-block:: c
+        
+        set_stopping_condition_info(row, COLLISION_DETECTION);
+    
+    
+.. c:function:: int set_stopping_condition_particle_index(int index, int column_index, int index_of_particle)
+
+    Sets the id of a particles involved in the stopping
+    conditionion (only needed for stopping conditions with particles)
+    .. code-block:: c
+
+        set_stopping_condition_info(row, COLLISION_DETECTION);
+        set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+        set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+    
+
+For MPI enabled codes, the stopping conditions must be distributed
+and collected. The following three functions can be used to
+manage the MPI communication.
+
+.. c:function:: int mpi_setup_stopping_conditions()
+
+    Setups some globals for MPI communication, this needs
+    to be called once per code execution (for example
+    in a :func:`initialize_code` function)
+    
+.. c:function:: int mpi_distribute_stopping_conditions()
+
+    Distributes the state of the conditions, so each process
+    knows which conditions are enabled by the user. Needs
+    to be called when the parallel code is entered (and all
+    other data is distributed).
+    
+    
+.. c:function:: int mpi_collect_stopping_conditions()
+
+    Collects the individual tables of the set conditions and
+    combines these to one table on the root process (MPI rank
+    == 0). Needs to be called at the end of the parallel part
+    of the code.
+
+The procedure for adding stopping conditions is explained by
+the following steps.
+
+1.  Add compiler and linker flags to the build script or
+    Makefile.
+
+    To use the ```stopcond``` library, the compile and link steps
+    of the legacy code must be changed. The following compiler flags
+    need to be added::
+        
+        -I$(AMUSE_DIR)/lib/stopcond
+        
+    For the link step the following linker flags are needed::
+
+        -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+
+2.  Include the header file and defining the globals
+
+    The name of the header file is "stopcond.h" and
+    this header file needs to be included in all
+    files refering to the stopping conditions.
+    
+    .. code-block:: c
+        
+        #include <stopcond.h>
+    
+    In one file of the legacy code the :c:data:`supported_conditions`
+    bitmap must be defined:
+    
+    .. code-block:: c
+        
+        long supported_conditions = COLLISION_DETECTION_BITMAP
+
+3.  Check for a condition when it is enabled and set the condition
+    if found.
+    
+    .. code-block:: c
+    
+        if(COLLISION_DETECTION_BITMAP & enabled_conditions) 
+        {
+            real sum_of_the_radii = radius_of_star[i] + radius_of_star[j];
+            if (distance_between_stars <= sum_of_the_radii) 
+            {
+                int stopping_index  = next_index_for_stopping_condition();
+                set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                set_stopping_condition_particle_index(
+                    stopping_index, 
+                    0, 
+                    identifier_of_star[i]
+                );
+                set_stopping_condition_particle_index(
+                    stopping_index, 
+                    1, 
+                    identifier_of_star[j]
+                );
+            }
+        }
+
+4.  Break the outer loop when any condition is set. The 
+    :c:data:`set_conditions` can be tested:    
+    
+    .. code-block:: c
+    
+        while(...) {
+            ...
+            if(set_conditions) 
+            {
+                break;
+            }
+        }
 
 
+A good example of a code implementing the stopping conditions
+is the "hermite0" legacy code. The code can be found
+in the 'src/amuse/legacy/hermite0' directory.
