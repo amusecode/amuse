@@ -132,15 +132,160 @@ timeout_detection
     The outer loops breaks when a certain amount
     of computer (wall-clock) has elapsed.
 
-For every attribute the user can determine if it is
-supported, if it was enabled or if it was hit during
-the :func:`evolve` loop.
-
-
 .. note ::
 
     :class:`CodeInterface` objects provide a object oriented
     interface to the legacy codes.
+    
+
+All :class:`StoppingConditions` objects provide a string 
+representation describing the supported conditions and their
+states.
+
+.. code-block:: python
+
+    >>> from amuse.lab import *
+    >>> code = Hermite()
+    >>> print code.stopping_conditions
+    Stopping conditions of a 'Hermite' object
+    * supported conditions: collision_detection, pair_detection, timeout_detection
+    * enabled conditions: none
+    * set conditions: none
+    >>> code.stop()
+
+For every attribute the user can determine if it is
+supported, if it was enabled or if it was hit during
+the :func:`evolve` loop.
+
+.. code-block:: python
+
+    >>> from amuse.lab import *
+    >>> code = Hermite()
+    >>> print code.stopping_conditions.collision_detection.is_supported()
+    True
+    >>> print code.stopping_conditions.collision_detection.is_enabled()
+    False
+    >>> print code.stopping_conditions.collision_detection.is_set()
+    False
+    >>> code.stop()
+
+When a stopping condition was hit the user can query which particles 
+were involved in the condition. The particles involved are stored in
+columns. For pair wise detections (collection and pair) the condition
+provides two columns. The first column contains all the first particles
+of the pairs and the second column contains all the second particles
+of the pairs. These columns can be queried with the :meth:`particles`
+method on a stopping condition attribute. This method takes one 
+argument, the columnindex.
+
+========  ============  ============
+Pair      particles(0)  particles(1)
+========  ============  ============
+1 + 2     1              2
+5 + 11    5              11
+12 + 10   12             10
+========  ============  ============
+
+.. code-block:: python
+
+    >>> from amuse.lab import *
+    >>> code = Hermite()
+    >>> sc = code.stopping_conditions.collision_detection
+    >>> sc.enable()
+    >>> code.evolve_model(0.1 | nbody_system.time)
+    >>> print sc.is_set()
+    True
+    >>> print sc.particles(0)
+    ...
+    >>> pair = sc.particles(0)[0], sc.particles(1)[0] 
+    >>> code.stop()
+
+Implementing stopping conditions
+--------------------------------
+All codes supporting stopping conditions
+must implement the :class:`StoppingConditionInterface`
+interface. This can be easily done by inheriting
+from the :class:`StoppingConditionInterface` and implementing
+all the functions defined in the interface.
+
+.. code-block:: python
+
+    class MyCodeInterface(LegacyInterface, StoppingConditionInterface):
+        ...
+        
+This :class:`StoppingConditionInterface` interface models the interface to a
+simple data model, best described as two tables::
+
+Defined stopping conditions table
+    This table list the types of stopping conditions
+    and if these are supported by the code, and if so, if 
+    these are enabled by the user.
+    
+    ======  ========= ========
+    type    supported enabled 
+    int     int       int
+            read only read/write
+    ======  ========= ========  
+    0       0         0
+    1       1         0
+    2       0         0
+    3       1         0
+    ======  ========= ========  
+
+    type
+        The type of the stopping condition, integer between
+        0 and N. defined by the framework
+    supported
+        1 if the stopping condition is supported, 0 otherwhise.
+        Needs to be set by the implementor
+    enabled
+        1 if enabled by the user, 0 otherwhise.
+        Implementor must provide a mechanism to set and unset 
+        this field.
+
+Set stopping conditions table
+    This table has a row for each stopping condition
+    set during the outer and inner loop evaluations.
+    Every row lists the type of condition set and which
+    particles were involved (if any). The id of the
+    last particle in the list must be -1.
+    
+    ======  =========== =========== ======= ============
+    type    particle[0] particle(1) ...     particle(n)
+    int     int         int         int     int
+    ======  =========== =========== ======= ============
+    1       1           2           -1      -1
+    1       10          12          -1      -1
+    3       -1          ...
+    1       11          20          ...    
+    ...
+    3       -1
+    ======  =========== =========== ======= ============
+
+    type
+        The type of the stopping condition, integer between
+        0 and N. defined by the framework. Set by the code
+    particle(0...n)
+        Index of the particle involved in the stopping condition.
+        The index of the last particle must be -1
+
+.. autoclass:: amuse.legacy.support.stopping_conditions.StoppingConditionInterface
+    :members:
+
+This interface contains a lot of functions and implementing it 
+might be a time consuming task. To help implementing the 
+interface, AMUSE provides a C library that does most of the 
+table management, this library is described in the next section.
+
+Using the stopping conditions library
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The stopping conditions tables are implemented as a 
+static C library. This library is part of the AMUSE distribution
+and can be found in the ```lib/stopcond``` directory. 
+
+
+
+
 
 
 

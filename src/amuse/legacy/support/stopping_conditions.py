@@ -247,14 +247,29 @@ class StoppingConditions():
                     
     def __str__(self):
         parts = []
-        parts.append('Stopping conditions\n')
-        supported = [name for name, condition in self.all_conditions() if condition.is_supported()]
+        parts.append("Stopping conditions of a '{0}' object\n".format(type(self.code).__name__))
+        supported = self.supported_conditions()
         enabled = [name for name, condition in self.all_conditions() if condition.is_enabled()]
         hit = [name for name, condition in self.all_conditions() if condition.is_set()]
         parts.append('* supported conditions: ')
         parts.append(', '.join(supported))
         parts.append('\n')
+        parts.append('* enabled conditions: ')
+        if enabled:
+            parts.append(', '.join(enabled))
+        else:
+            parts.append('none')
+        parts.append('\n')
+        parts.append('* set conditions: ')
+        if hit:
+            parts.append(', '.join(hit))
+        else:
+            parts.append('none')
+        parts.append('\n')
         return ''.join(parts)
+    
+    def supported_conditions(self):
+        return [name for name, condition in self.all_conditions() if condition.is_supported()]
         
     def define_parameters(self, object):
         object.add_method_parameter(
