@@ -33,13 +33,13 @@ found=0
 IFS=$':'
 for one_path in $LD_LIBRARY_PATH
 do
-    if [ -e $one_path/libcudart.so.2 ]; then
-        echo "found libcudart.so.2 in directory " $one_path
+    if [ -e $one_path/libcudart.so ]; then
+        echo "found libcudart.so in directory " $one_path
         found=1
     fi
 done
 if [ $found == 0 ]; then
-    echo "libcudart.so.2 not found in LD_LIBRARY_PATH. Do either of:"
+    echo "libcudart.so not found in LD_LIBRARY_PATH. Do either of:"
     echo "   bash> export LD_LIBRARY_PATH=/path/to/cudalib:\$LD_LIBRARY_PATH"
     echo "   csh> setenv LD_LIBRARY_PATH /path/to/cudalib:\$LD_LIBRARY_PATH"
     exit 1
@@ -92,16 +92,16 @@ fi
 
 echo -n "Checking CUDA_LIBDIRS...     "
 if [ -n "$CUDA_LIBDIRS" ]; then
-    if [ -e $CUDA_LIBDIRS/libcudart.so.2 ]; then
+    if [ -e $CUDA_LIBDIRS/libcudart.so ]; then
         echo "ok"
     else
         echo "set, but unable to find the libraries. please set the CUDA_LIBDIRS "
-        echo "    variable to the directory that holds the libcudart.so.2 library, "
+        echo "    variable to the directory that holds the libcudart.so library, "
         echo "    typically: /path/to/cuda/$X_BITS_LIB"
         exit 1
     fi
 else
-    if [ -e $CUDA_TK/$X_BITS_LIB/libcudart.so.2 ]; then
+    if [ -e $CUDA_TK/$X_BITS_LIB/libcudart.so ]; then
         echo "not set, but found libraries in default path: ok"
     else
         echo "unable to find the CUDA libraries. Please set the CUDA_LIBDIRS variable "
@@ -126,7 +126,10 @@ else
 fi
 echo
 echo "Everything seems ok!"
-echo "Now try building for example Octgrav and run the nosetests (from AMUSE root directory):"
+echo "Now try building for example Octgrav and run the nosetests (from AMUSE root directory),"
+echo "but first re-initialize mpd (or it will remember its original environment):"
+echo "> mpdallexit"
+echo "> mpd &"
 echo "> make octgrav.code"
 echo "> nosetests test/legacy_tests/test_octgrav.py"
 echo
