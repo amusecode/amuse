@@ -93,25 +93,22 @@ class MakeEvrardTest(object):
 
 class MakeEvrardModel(object):
     
-    def __init__(self, target_number_of_particles, convert_nbody = None, base_grid = None, size = 1.,
-            mass = 1., internal_energy = 0.05, seed = None):
+    def __init__(self, target_number_of_particles, convert_nbody = None, base_grid = None, 
+            internal_energy = 0.05, seed = None):
         self.target_number_of_particles = target_number_of_particles
         self.convert_nbody = convert_nbody
-        self.size = size
-        self.mass = mass
         self.internal_energy = internal_energy
         self.base_sphere = uniform_unit_sphere(target_number_of_particles, base_grid)   
-        if not seed is None:
-            numpy.random.seed(seed)
+        numpy.random.seed(seed)
     
     def new_model(self):
         x, y, z = self.base_sphere.make_xyz()
         self.actual_number_of_particles = len(x)
         r = numpy.sqrt(x**2+y**2+z**2)
-        rtarget = self.size*r**1.5
+        rtarget = r**1.5
         mass = numpy.ones_like(x)/self.actual_number_of_particles
         internal_energy = numpy.ones_like(x)*self.internal_energy
-        r = r.clip(1.e-8, 2*self.size)
+        r = r.clip(1.e-8, 2.0)
         x = rtarget*x/r
         y = rtarget*y/r
         z = rtarget*z/r
@@ -130,7 +127,6 @@ class MakeEvrardModel(object):
         result.u = nbody_system.specific_energy.new_quantity(internal_energies)
 
         result.position -= result.center_of_mass()
-        result.velocity -= result.center_of_mass_velocity()
         
         if not self.convert_nbody is None:
             result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())

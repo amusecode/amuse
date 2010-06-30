@@ -567,7 +567,11 @@ class PropertyWithUnitsDefinition(object):
         if hasattr(function_or_attribute, '__call__'):
             return_value = function_or_attribute()
             if hasattr(return_value, '__iter__'):
-                value, errorcode = return_value
+                if len(return_value) > 2:
+                    return_value = list(return_value)
+                    value, errorcode = return_value[:-1], return_value[-1]
+                else:
+                    value, errorcode = return_value
                 if errorcode < 0:
                     raise Exception("calling '{0}' to get the value for property '{1}' resulted in an error (errorcode {2})".format(self.function_or_attribute_name, self.public_name, errorcode))
                 else:

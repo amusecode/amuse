@@ -463,12 +463,13 @@ class Gadget2(GravitationalDynamics):
         return result
     
     def define_properties(self, object):
-#        object.add_property("get_kinetic_energy", generic_system.mass * generic_system.length ** 2  * generic_system.time ** -2)
-#        object.add_property("get_potential_energy", generic_system.mass * generic_system.length ** 2  * generic_system.time ** -2)
-#        object.add_property("get_total_radius", generic_system.length)
-#        object.add_property("get_center_of_mass_position", generic_system.length)
-#        object.add_property("get_center_of_mass_velocity", generic_system.length / generic_system.time)
-#        object.add_property("get_total_mass", generic_system.mass)
+        object.add_property("get_kinetic_energy", generic_system.energy)
+        object.add_property("get_potential_energy", generic_system.energy)
+        object.add_property("get_thermal_energy", generic_system.energy)
+        object.add_property("get_total_radius", generic_system.length)
+        object.add_property("get_center_of_mass_position", generic_system.length)
+        object.add_property("get_center_of_mass_velocity", generic_system.speed)
+        object.add_property("get_total_mass", generic_system.mass)
         object.add_property('get_time', generic_system.time, "model_time")
     
     def define_parameters(self, object):
@@ -522,7 +523,7 @@ class Gadget2(GravitationalDynamics):
             "eps_is_h_flag",
             "Eps-is-h flag. True means: set gas particles gravitational epsilon to h (SPH smoothing length) "
                 "(read-only: makefile option ADAPTIVE_GRAVSOFT_FORGAS).",
-            True
+            False
         )
         
         object.add_method_parameter(
@@ -605,7 +606,7 @@ class Gadget2(GravitationalDynamics):
             "gas polytropic index (1.6666667 or 1 for isothermal"
                 "(read-only: makefile option ISOTHERM_EQS).", 
             units.none,
-            1.6666667 | units.none
+            (5.0/3) | units.none
         )
         
         object.add_method_parameter(

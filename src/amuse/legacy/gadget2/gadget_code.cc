@@ -735,22 +735,41 @@ int get_time(double *time){
     return 0;
 }
 int get_total_radius(double *radius){
-    return -2;
+    double r_squared;
+    int i, j;
+    compute_global_quantities_of_system();
+    *radius = 0;
+    for (i = 0; i < NumPart; i++){
+        for (r_squared = 0, j = 0; j < 3; j++)
+            r_squared += (SysState.CenterOfMass[j]-P[i].Pos[j])*(SysState.CenterOfMass[j]-P[i].Pos[j]);
+        if (r_squared > *radius)
+            *radius = r_squared;
+    }
+    *radius = sqrt(*radius);
+    return 0;
 }
 int get_total_mass(double *mass){
-    return -1;
+    compute_global_quantities_of_system();
+    *mass = SysState.Mass;
+    return 0;
 }
 int get_potential(double x, double y, double z, double *V){
     return -2;
 }
 int get_kinetic_energy(double *kinetic_energy){
-    return -1;
+    compute_global_quantities_of_system();
+    *kinetic_energy = SysState.EnergyKin;
+    return 0;
 }
 int get_potential_energy(double *potential_energy){
-    return -1;
+    compute_global_quantities_of_system();
+    *potential_energy = SysState.EnergyPot;
+    return 0;
 }
 int get_thermal_energy(double *thermal_energy){
-    return -1;
+    compute_global_quantities_of_system();
+    *thermal_energy = SysState.EnergyInt;
+    return 0;
 }
 int get_number_of_particles(int *number_of_particles){
     *number_of_particles = All.TotNumPart;
@@ -760,10 +779,18 @@ int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_pa
     return -1;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
-    return -1;
+    compute_global_quantities_of_system();
+    *x = SysState.CenterOfMass[0];
+    *y = SysState.CenterOfMass[1];
+    *z = SysState.CenterOfMass[2];
+    return 0;
 }
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
-    return -1;
+    compute_global_quantities_of_system();
+    *vx = SysState.Momentum[0]/SysState.Mass;
+    *vy = SysState.Momentum[1]/SysState.Mass;
+    *vz = SysState.Momentum[2]/SysState.Mass;
+    return 0;
 }
 int get_gravity_at_point(double eps, double x, double y, double z,  double *forcex, double *forcey, double *forcez){
     return -1;
