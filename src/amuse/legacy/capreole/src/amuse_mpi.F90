@@ -138,7 +138,6 @@ contains
     !dims(1)=1
 
     call MPI_Dims_create(npr,NPDIM,dims,mpi_ierror)
-
     reorder=.TRUE.
     ! makes MPI_COMM_NEW    
     call MPI_Cart_create(MPI_COMM_WORLD,NPDIM,dims,periods,reorder, &
@@ -182,6 +181,9 @@ contains
     call MPI_Cart_shift( MPI_COMM_NEW, 0,  1, nbrleft,  nbrright, mpi_ierror )
     call MPI_Cart_shift( MPI_COMM_NEW, 1,  1, nbrdown,  nbrup,    mpi_ierror )
     call MPI_Cart_shift( MPI_COMM_NEW, 2,  1, nbrbelow, nbrabove, mpi_ierror )
+
+!    print*, nbrleft,  nbrright, nbrdown,  nbrup,nbrbelow, nbrabove
+!    stop
 
   end subroutine fnd3dnbrs
 

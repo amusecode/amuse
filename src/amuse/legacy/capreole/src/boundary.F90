@@ -276,14 +276,14 @@ contains
          zplane1,(sizex+2*mbc)*(sizey+2*mbc)*mbc*neq, &
          MPI_DOUBLE_PRECISION,nbrbelow,zfromabove,  &
          zplane3,(sizex+2*mbc)*(sizey+2*mbc)*mbc*neq, &
-         MPI_DOUBLE_PRECISION,nbrbelow,zfrombelow, &
+         MPI_DOUBLE_PRECISION,nbrabove,zfromabove, &
          MPI_COMM_NEW,status,ierror)
 
     call MPI_SENDRECV( &
          zplane2,(sizex+2*mbc)*(sizey+2*mbc)*mbc*neq, &
          MPI_DOUBLE_PRECISION,nbrabove,zfrombelow,   &
          zplane4,(sizex+2*mbc)*(sizey+2*mbc)*mbc*neq, &
-         MPI_DOUBLE_PRECISION,nbrabove,zfromabove, &
+         MPI_DOUBLE_PRECISION,nbrbelow,zfrombelow, &
          MPI_COMM_NEW,status,ierror)
 
     ! Fill the boundaries with the received planes

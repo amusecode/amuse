@@ -281,6 +281,13 @@ module amuse_helpers
       ret=-1
       return
     end select
+
+
+#ifdef MPI  
+    call set_periods(periods)
+#endif
+
+
     ret=check_boundaries()
   end function
 
