@@ -472,6 +472,16 @@ class Gadget2(GravitationalDynamics):
         object.add_property("get_total_mass", generic_system.mass)
         object.add_property('get_time', generic_system.time, "model_time")
     
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        object.add_method('EDIT', 'new_dm_particle')
+        object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
+        object.add_method('EDIT', 'new_sph_particle')
+        object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
+        object.add_method('RUN', 'get_velocity')
+        object.add_method('RUN', 'get_acceleration')
+        object.add_method('RUN', 'get_internal_energy')
+    
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_epsilon_squared", 
