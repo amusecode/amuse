@@ -659,9 +659,14 @@ class LegacyPythonInterface(LegacyInterface):
         
         string = self.new_executable_script_string_for(implementation_factory)
         
-        path = inspect.getfile(implementation_factory)
-        path = os.path.dirname(path)
-        path = os.path.join(path, 'worker-script')
+        #path = inspect.getfile(implementation_factory)
+        #path = os.path.dirname(path)
+        #path = os.path.join(path, 'workerscript')
+        
+        filename = os.path.basename(inspect.getfile(implementation_factory))
+        filename = filename.split('.')[0]
+        path = os.path.abspath(os.path.curdir)
+        path = os.path.join(path, filename)
         
         with open(path, 'w') as f:
             f.write(string)
