@@ -136,9 +136,9 @@
      &                 n_act_step
 
 !---  GRAPE vars
-      INTEGER         clusterid,npipe
+      INTEGER         clusterid,npipe,g_initialized,g_init_once
 
-      COMMON /g6varsi/ clusterid,npipe
+      COMMON /g6varsi/ clusterid,npipe,g_initialized,g_init_once
 
 
 !---  timing

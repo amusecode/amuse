@@ -90,6 +90,30 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         return function
 
 
+    @legacy_function
+    def set_initialize_once():
+        """
+        Sets the initialize GPU/GRAPE once parameter. When
+        set the GPU will be initialized during the
+        :func:`commit_parameters` call and released
+        during the :func:`cleanup_code` call.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='i', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def get_initialize_once():
+        """
+        Returns the current value of the initialize once
+        parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='i', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
 
     @legacy_function
     def get_energy_error():
@@ -156,7 +180,7 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         return function
 
 
-
+    
 
 class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
 
@@ -222,6 +246,15 @@ class PhiGRAPE(GravitationalDynamics):
             units.none ,
             0.01 |  units.none
         )
+        
+        object.add_method_parameter(
+            "get_initialize_once",
+            "set_initialize_once",
+            "initialize_gpu_once",
+            "set to 1 if the gpu must only be initialized once, 0 if it can be initialized for every call\nIf you want to run multiple instances of the code on the same gpu this parameter needs to be 0 (default)",
+            units.none ,
+            0 |  units.none
+        )
 
 
 
@@ -239,3 +272,9 @@ class PhiGRAPE(GravitationalDynamics):
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.potential, object.ERROR_CODE)
         )
+        
+    
+    def stop(self):
+        self.cleanup_code()
+        self.overridden().stop()
+        

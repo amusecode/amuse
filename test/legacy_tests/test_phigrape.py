@@ -34,7 +34,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(2.0, retrieved_state['radius'])
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
         instance.cleanup_module()
-        del instance
+        instance.stop()
         
     def test2(self):
         instance = PhiGRAPEInterface()
@@ -44,7 +44,7 @@ class TestMPIInterface(TestWithMPI):
             value, error = instance.get_eps2()
             self.assertEquals(error, 0)
             self.assertEquals(x, value)
-        del instance
+        instance.stop()
         
     
     def test3(self):
@@ -65,7 +65,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(12.0,  retrieved_state['mass'][0])
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 4)
         instance.cleanup_module()
-        del instance
+        instance.stop()
     
     def test5(self):
         instance = PhiGRAPEInterface()
@@ -139,7 +139,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertEqual( Ep, -0.5)        
 
         instance.cleanup_module()
-        del instance
+        instance.stop()
 
     def test8(self):
         instance = PhiGRAPEInterface()
@@ -171,7 +171,7 @@ class TestMPIInterface(TestWithMPI):
         state2 = instance.get_state(id2)
         self.assertTrue( abs(state1['x'] - state2['x'])<0.2)
         """
-        del instance
+        instance.stop()
         
 
 class TestCodeInterface(TestWithMPI):
@@ -194,7 +194,7 @@ class TestCodeInterface(TestWithMPI):
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        instance = PhiGRAPE(convert_nbody, redirection="none")#, debugger="xterm")
+        instance = PhiGRAPE(convert_nbody)#, redirection="none")#, debugger="xterm")
         instance.initialize_code()
 
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -296,7 +296,8 @@ class TestCodeInterface(TestWithMPI):
         
         self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
         self.assertEquals(instance.get_mass(2), 33.0| units.kg)  
-    
+        
+        instance.stop()
     
     def test5(self):
         instance = PhiGRAPE()
@@ -338,6 +339,8 @@ class TestCodeInterface(TestWithMPI):
             self.assertAlmostEqual(fx, fx0, 2)
             self.assertAlmostEqual(potential0, potential1, 5)
       
+        instance.stop()
+        
     def test6(self):
         instance = PhiGRAPE()
         instance.initialize_code()
@@ -353,6 +356,8 @@ class TestCodeInterface(TestWithMPI):
         copyof = instance.particles.copy()
         
         self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
+        
+        instance.stop()
         
     def test7(self):
         instance = PhiGRAPE()
@@ -393,6 +398,8 @@ class TestCodeInterface(TestWithMPI):
         for i in range(n/2):
             self.assertAlmostRelativeEqual(fx[i] , - fx[n - 1 - i], 5)
         
+        instance.stop()
+        
     def test8(self):
         particles = core.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
@@ -414,4 +421,44 @@ class TestCodeInterface(TestWithMPI):
                 instance.cleanup_module()
                 instance.stop()
                 print "ok"
+                
     
+    def test9(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        instance = PhiGRAPE(convert_nbody, redirection="none")#, debugger="xterm")
+        instance.initialize_code()
+
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance.parameters.initialize_gpu_once = 1
+        instance.set_eta(0.01,0.02)
+        instance.dt_dia = 5000
+        
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+
+        instance.setup_particles(stars)
+        instance.initialize_particles(0.0)
+
+        instance.evolve_model(365 | units.day)
+
+        instance.update_particles(stars)
+        
+        position_at_start = earth.position.value_in(units.AU)[0]
+        position_after_full_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
+        
+        instance.evolve_model(365.0 + (365.0 / 2) | units.day)
+        
+        instance.update_particles(stars)
+        position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
+        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
+                
+        instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
+        
+        instance.update_particles(stars)
+        position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
+        #self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
+        
+        instance.cleanup_module()
+        
+        instance.stop()

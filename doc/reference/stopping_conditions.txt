@@ -396,6 +396,7 @@ the stopping conditions.
 
     Sets the id of a particles involved in the stopping
     conditionion (only needed for stopping conditions with particles)
+    
     .. code-block:: c
 
         set_stopping_condition_info(row, COLLISION_DETECTION);

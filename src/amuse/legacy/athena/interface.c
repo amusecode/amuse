@@ -20,11 +20,56 @@
 #endif
 
 
+#include <math.h>
+
 static Grid level0_Grid;      /* only level0 Grid and Domain in this version */
 static Domain level0_Domain;
 static VGFun_t Integrate;
 static int is_dt_set_by_script=0;
 static int is_restart = 0;
+
+
+
+static inline void ijk_pos( const Grid *pG,
+    const Real x1, const Real x2, const Real x3,
+    Real * i, Real * j,Real * k
+)
+{
+  *i = ((x1 - pG->x1_0)/pG->dx1) - 0.5 - pG->idisp;
+  *j = ((x2 - pG->x2_0)/pG->dx2) - 0.5 - pG->jdisp;
+  *k = ((x3 - pG->x3_0)/pG->dx3) - 0.5 - pG->kdisp;
+  
+  fprintf(stderr, "%f, %f, %f\n", i, j, k);
+}
+
+static Real ***Potentials=NULL;
+
+static Real grav_pot(const Real x1, const Real x2, const Real x3)
+{
+    Real i, j, k;
+    ijk_pos(&level0_Grid, x1, x2, x3, &i, &j, &k);
+    
+    int ii, jj, kk;
+    
+    ii = i;
+    jj = j;
+    kk = k;
+    
+    Real potential0 = Potentials[kk][jj][ii];
+    Real potential1 = potential0;
+    if(ii < i) {
+        potential1 = Potentials[kk][jj][ii - 1];
+    } if(jj < j) {
+        potential1 = Potentials[kk][jj - 1][ii];
+    } if(kk < k) {
+        potential1 = Potentials[kk - 1][jj][ii];
+    } else {
+        potential1 = potential0;
+    }
+    
+    return potential0 + potential1 / 2.0;
+}
+
 
 int cleanup_code(){
   return 0;
@@ -51,6 +96,9 @@ int initialize_code(){
   par_open("/dev/null"); /* to trick athena into thinking it has opened a parameter file, will not work on windows */
   is_restart = 0;
   show_config_par();   /* Add the configure block to the parameter database */
+  
+  
+  /*StaticGravPot = grav_pot;*/
   return 0;
 }
 
@@ -120,6 +168,15 @@ int initialize_grid()
   set_bvals(&level0_Grid, 1);
 #endif
   
+  if ((Potentials = (Real***)calloc_3d_array(
+    level0_Grid.Nx1 + 2 * nghost, 
+    level0_Grid.Nx2 + 2 * nghost, 
+    level0_Grid.Nx3 + 2 * nghost, 
+    sizeof(Real))) == NULL)
+  {
+    return -1;
+  }
+  
   return 0;
 }
 
@@ -129,21 +186,44 @@ int get_position_of_index(int i, int j, int k, double * x, double * y,
   if (level0_Domain.grid_block == NULL) {
     return -1;
   }
-  if (i < level0_Domain.ixs  || i > level0_Domain.ixe) {
+  
+  if (i < (level0_Domain.ixs - nghost)  || i > (level0_Domain.ixe + nghost)) {
     return -1;
   }
-  if (j < level0_Domain.jxs  || j > level0_Domain.jxe) {
+  if (j < (level0_Domain.jxs - nghost)  || j > (level0_Domain.jxe + nghost)) {
     return -1;
   }
-  if (k < level0_Domain.kxs  || k > level0_Domain.kxe) {
+  if (k < (level0_Domain.kxs - nghost) || k > (level0_Domain.kxe + nghost)) {
     return -1;
   }
   
-  cc_pos(&level0_Grid,i,j,k,x,y,z);
+  
+  cc_pos(
+    &level0_Grid,
+    i + level0_Grid.is,
+    j + level0_Grid.js,
+    k + level0_Grid.ks,
+    x,y,z
+  );
   
   return 0;
 }
 
+
+
+int get_index_of_position(double x, double y, 
+  double z, double *i , double * j, double * k){
+
+  if (level0_Domain.grid_block == NULL) {
+    return -1;
+  }
+  
+  ijk_pos(&level0_Grid,x,y,z,i,j,k);
+  *i -= level0_Grid.is;
+  *j -= level0_Grid.js;
+  *k -= level0_Grid.ks;
+  return 0;
+}
 
 int test() {
     return 1;

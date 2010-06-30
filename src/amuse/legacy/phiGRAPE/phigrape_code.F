@@ -190,14 +190,14 @@ C---  get array address
       DOUBLE PRECISION p(number_of_points)
       INTEGER get_gravity_at_point
 #include "src/general.inc"
-      
-      CALL initgrape
+         
+      CALL amuse_init_grape
       CALL update_grape(1) 
       
       CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p,
      $  number_of_points)
       
-      CALL g6_close(clusterid)
+      CALL amuse_close_grape
         
       get_gravity_at_point = 0
       END
@@ -216,13 +216,13 @@ C---  get array address
 #include "src/general.inc"  
       
       
-      CALL initgrape
+      CALL amuse_init_grape
       CALL update_grape(1) 
       
       CALL gravity_at_point(time_cur, x1, y1, z1, fx, fy, fz, p,
      $  number_of_points)
       
-      CALL g6_close(clusterid)
+      CALL amuse_close_grape
 
       get_potential_at_point = 0
       END
@@ -508,6 +508,67 @@ c         PRINT*, 'Warning: system not initialised yet'
       get_eta = 0
       RETURN
       END
+      
+      FUNCTION get_initialize_once(result_value)
+      IMPLICIT NONE
+#include "src/general.inc"
+
+      INTEGER get_initialize_once, result_value
+      
+      result_value = g_init_once
+      get_initialize_once = 0
+      RETURN
+      END
+      
+      FUNCTION set_initialize_once(input_value)
+      IMPLICIT NONE
+#include "src/general.inc"
+
+      INTEGER set_initialize_once, input_value
+      
+      IF(g_init_once.EQ.1) THEN
+        IF(input_value.EQ.0) THEN
+           IF(g_initialized.EQ.1) THEN
+                CALL g6_close(clusterid) 
+                g_initialized = 0
+           ENDIF
+        ENDIF
+      ENDIF
+      
+      g_init_once = input_value
+      
+      set_initialize_once = 0
+      
+      RETURN
+      END
+      
+      
+      SUBROUTINE amuse_init_grape
+      IMPLICIT NONE
+#include "src/general.inc"
+
+      IF(g_init_once.EQ.1) THEN
+        IF(g_initialized.EQ.0) THEN
+            CALL initgrape
+            g_initialized = 1
+        ENDIF
+      ELSE
+        CALL initgrape
+        g_initialized = 1
+      ENDIF
+      
+      END
+      
+      SUBROUTINE amuse_close_grape
+      IMPLICIT NONE
+#include "src/general.inc"
+
+      IF(g_init_once.NE.1) THEN
+        CALL g6_close(clusterid) 
+        g_initialized = 0
+      ENDIF
+      
+      END
 C====================================================================
 C===
 C===  setup_module: function to setup the neccessary things for 
@@ -522,6 +583,8 @@ C====================================================================
 #include "src/general.inc"
       INTEGER i,initialize_code
       
+      g_init_once = 0
+      g_initialized = 0
       
       eta_s   = 0.01
       eta     = 0.02
@@ -530,12 +593,6 @@ C---  initialise MPI
 C--------------------------------------------------------------------
       CALL initmpi
 C          -------
-
-C--------------------------------------------------------------------
-C---  initialise the GRAPE
-C--------------------------------------------------------------------
-C      CALL initgrape
-C          ---------
 
 C--------------------------------------------------------------------
 C---  set array to find particles by id to -1
@@ -559,7 +616,7 @@ C--------------------------------------------------------------------
       
 C (re)start grape (fip)
 C  update local particles on grape
-      CALL initgrape
+      CALL amuse_init_grape
       CALL update_grape(1) 
 
       time = 0.0d0
@@ -653,7 +710,7 @@ C          ------
       commit_particles = 0
 
 C     close grape before exiting (fip)
-      CALL g6_close(clusterid)
+      CALL amuse_close_grape
 
       RETURN
       END
@@ -672,7 +729,7 @@ C====================================================================
 
 C (re)start grape (fip)
 C  update local particles on grape
-      CALL initgrape
+      CALL amuse_init_grape
       CALL update_grape(1) 
 
 C---  set individual particle times and time steps
@@ -747,7 +804,7 @@ C          ------
       recommit_particles = 0
 
 C     close grape before exiting (fip)
-      CALL g6_close(clusterid)
+      CALL amuse_close_grape
 
       RETURN
       END
@@ -765,7 +822,12 @@ C     close grape before exiting (fip)
       N=0
 
 C---  just release GRAPE
-Cfip      CALL g6_close(clusterid)
+      IF (g_init_once.EQ.1) THEN
+        IF (g_initialized.EQ.1) THEN
+            CALL g6_close(clusterid)
+            g_initialized = 0
+        ENDIF
+      ENDIF
 C          --------
 
 C--------------------------------------------------------------------
@@ -1119,7 +1181,7 @@ C---  get array address
          RETURN
       ENDIF
 
-      CALL initgrape
+      CALL amuse_init_grape
       CALL update_grape(1) 
 
 C---  synchronize system
@@ -1128,7 +1190,7 @@ C          ----------
       CALL sync
 C          ----
 C     close grape before continuing
-      CALL g6_close(clusterid)
+      CALL amuse_close_grape
 
 C---  shift particles after ip to free spot
       DO i=ip,N-1
@@ -1207,7 +1269,7 @@ C---  local vars
 
 C (re)start grape (fip)
 C  update local particles on grape
-      CALL initgrape
+      CALL amuse_init_grape
       CALL update_grape(1) 
 
       t_end      = tend
@@ -1315,7 +1377,7 @@ C cello      evolve = idprimary        ! return primary collision member or -1
 
       
 C     close grape before exiting (fip)
-      CALL g6_close(clusterid)
+      CALL amuse_close_grape
 
       evolve = 0
 
@@ -1326,7 +1388,7 @@ C     close grape before exiting (fip)
 #include "src/general.inc"
       INTEGER synchronize_model
     
-      CALL initgrape
+      CALL amuse_init_grape
       CALL update_grape(1) 
       
       CALL selectsync(time_cur)
@@ -1339,7 +1401,7 @@ C     close grape before exiting (fip)
       
       synchronize_model = 0
       
-      CALL g6_close(clusterid)
+      CALL amuse_close_grape
 
 
       END
@@ -1401,6 +1463,14 @@ C     close grape before exiting (fip)
 #include "src/general.inc"
       INTEGER  commit_parameters
       commit_parameters = 0
+      
+      IF(g_init_once.EQ.1) THEN
+        IF(g_initialized.EQ.0) THEN
+            CALL initgrape
+            g_initialized = 1
+        ENDIF
+      ENDIF
+      
       END
       
       FUNCTION recommit_parameters()

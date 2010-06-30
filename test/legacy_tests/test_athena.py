@@ -69,12 +69,12 @@ class TestAthenaInterface(TestWithMPI):
         x,y,z, error= instance.get_position_of_index(0,0,0)
         self.assertEquals(error, 0)
         print x,y,z
-        self.assertAlmostRelativeEquals(-0.35, x)  
-        self.assertAlmostRelativeEquals(-0.175, y)
-        self.assertAlmostRelativeEquals(-0.0875, z)
+        self.assertAlmostRelativeEquals(0.05, x)  
+        self.assertAlmostRelativeEquals(0.025, y)
+        self.assertAlmostRelativeEquals(0.0125, z)
         
         
-        x,y,z, error= instance.get_position_of_index(10,1,1)
+        x,y,z, error= instance.get_position_of_index(15,5,5)
         self.assertEquals(error, -1)
         instance.stop()
         
@@ -226,9 +226,42 @@ class TestAthenaInterface(TestWithMPI):
                 self.assertEquals(results[1][y][x], results[0][y][x])
                 self.assertEquals(results[2][y][x], results[0][y][x])
                 self.assertEquals(results[3][y][x], results[0][y][x])
+    
+    def test10(self):
+        instance=self.new_instance(AthenaInterface, debugger="none")
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.setup_mesh(5, 5, 5, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.commit_parameters()
+        instance.initialize_grid()
+        x,y,z,error = instance.get_position_of_index([0,1,2,3,4],[0,0,0,0,0],[0,0,0,0,0])
         
-
-
+        for x0, x1 in zip(x, [0.1, 0.3, 0.5, 0.7, 0.9]):
+            self.assertAlmostRelativeEqual(x0, x1)
+        
+        for y0, y1 in zip(y, [0.1, 0.1, 0.1, 0.1, 0.1]):
+            self.assertAlmostRelativeEqual(y0, y1)
+        
+        i,j,k,error = instance.get_index_of_position(0.3, 0.1, 0.1)
+        
+        print i,j,k
+        
+        self.assertAlmostRelativeEqual(i, 1)
+        self.assertAlmostRelativeEqual(j, 0)
+        self.assertAlmostRelativeEqual(k, 0)
+        
+        i,j,k,error = instance.get_index_of_position(0.4, 0.1, 0.1)
+        self.assertAlmostRelativeEqual(i, 1.5)
+        self.assertAlmostRelativeEqual(j, 0)
+        self.assertAlmostRelativeEqual(k, 0)
+        
+        x,y,z,error = instance.get_position_of_index(-1,0,0)
+        print error
+        self.assertAlmostRelativeEqual(x, -0.1)
+        instance.stop()
+        
 class TestAthena(TestWithMPI):
     
     def test0(self):

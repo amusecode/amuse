@@ -78,15 +78,15 @@ worker_code_grape: worker_code.f90 phigrape_code.o $(CODELIB)
 worker_code_phantom_grape: worker_code.f90 phigrape_code.o $(CODELIB)
 	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(PGLIBS)
 
-worker_code.f90: interface.py __init__.py
+worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@
 
-glworker_code.f90: interface.py __init__.py
+glworker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterfaceGL -o $@
 
 clean:
 	make -C src clean
-	rm -f __init__.py *.pyc *.o
+	rm -f *.pyc *.o
 	rm -f worker_code_gpu worker_code_grape
 	rm -f worker_code worker_code.f90
 	rm -f glworker_code glworker_code.f90
