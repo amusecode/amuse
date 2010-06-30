@@ -109,7 +109,7 @@ class TestMPIInterface(TestWithMPI):
            [0.0,1.0,0.0],
            [0.0,0.0,0.0],
            [0.0,0.0,0.0] )
-        instance.initialize_particles(0.0)
+        instance.commit_particles()
         self.assertEqual(instance.get_number_of_particles().number_of_particles, 3)
         instance.synchronize_model()
         Ep=instance.get_potential_energy()['potential_energy']
@@ -118,7 +118,7 @@ class TestMPIInterface(TestWithMPI):
         self.assertAlmostEqual( Ek, 0.5,10)
         self.assertAlmostEqual( Ep, -2.5,10)
         instance.delete_particle(2)
-        instance.reinitialize_particles() 
+        instance.recommit_particles()
         instance.synchronize_model()
         n=instance.get_number_of_particles()['number_of_particles']
         Ep=instance.get_potential_energy()['potential_energy']

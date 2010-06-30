@@ -52,12 +52,6 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     def cleanup_module(self):
         return self.cleanup_code()
        
-    def initialize_particles(self, ignore):
-        return self.commit_particles()
-        
-    def reinitialize_particles(self):
-        return self.recommit_particles()
-    
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
         return self.new_dm_particle(mass, radius, x, y, z, vx, vy, vz)
     
