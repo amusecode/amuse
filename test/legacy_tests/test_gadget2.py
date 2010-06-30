@@ -216,7 +216,6 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostEquals(instance.parameters.timestep, 0.1 | units.Myr)
         self.assertAlmostRelativeEquals(instance.parameters.code_mass_unit, 1.989e43 | units.g, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
-        instance.cleanup_code()
         instance.stop()
     
     def test3(self):
@@ -224,7 +223,6 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(0, instance.initialize_code())
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
-        instance.commit_parameters()
         
         dark = core.Particles(2)
         dark.mass = [0.4, 0.4] | generic_system.mass
@@ -233,42 +231,29 @@ class TestGadget2(TestWithMPI):
         dark.radius = [0.0, 0.0] | units.RSun
         
         instance.dm_particles.add_particles(dark)
-        
-        instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
-        print instance.model_time
         self.assertAlmostEquals(instance.model_time, 1.0 | units.Myr, 3)
-        instance.cleanup_code()
         instance.stop()
     
     def test4(self):
-        print "Testing Gadget, 1000 nbody particles"
+        print "Testing Gadget, 100 nbody particles"
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(0, instance.initialize_code())
-        instance.commit_parameters()
         convert_nbody = nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
-        dark = MakePlummerModel(1000, convert_nbody).result
-        dark.radius = 0.0 | units.RSun
+        dark = MakePlummerModel(100, convert_nbody).result
         instance.dm_particles.add_particles(dark)
-        instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
-        instance.cleanup_code()
         instance.stop()
     
     def test5(self):
         print "Test 5: testing SPH particles"
-        target_number_sph_particles = 1000
+        target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
-        
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(0, instance.initialize_code())
         instance.parameters.timestep = 0.005 | generic_system.time
-        instance.commit_parameters()
         instance.gas_particles.add_particles(gas)
-        
-        instance.commit_particles()
         instance.evolve_model(0.0001 | generic_system.time)
-        instance.cleanup_code()
         instance.stop()
     
     def test6(self):
@@ -282,14 +267,9 @@ class TestGadget2(TestWithMPI):
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
         
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
-        instance.commit_parameters()
         instance.dm_particles.add_particles(dark)
         instance.gas_particles.add_particles(gas)
-        
-        instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
-        instance.cleanup_code()
         instance.stop()
     
     def test7(self):
@@ -311,7 +291,6 @@ class TestGadget2(TestWithMPI):
         instance.parameters.gas_epsilon = 0.1 | generic_system.length
         self.assertEquals(instance.unit_converter.to_si(0.1 | generic_system.length), 
             instance.parameters.gas_epsilon)
-        instance.cleanup_code()
         instance.stop()
     
     def test8(self):
@@ -326,8 +305,6 @@ class TestGadget2(TestWithMPI):
                             ('code_time_unit',     self.default_converter.to_si(generic_system.time)),
                             ('code_velocity_unit', self.default_converter.to_si(generic_system.speed)),
                             ('polytropic_index_gamma', (5.0/3) | units.none)]:
-            print par
-            print str(value)
             self.assertEquals(value, eval("instance.parameters."+par))
             try:
                 exec("instance.parameters."+par+" = value")
@@ -335,8 +312,6 @@ class TestGadget2(TestWithMPI):
             except Exception as ex:
                 self.assertEquals("Could not set value for parameter '"+par+"' of a 'Gadget2' object, "
                     "parameter is read-only", str(ex))
-
-        instance.cleanup_code()
         instance.stop()
     
     def test9(self):
@@ -344,10 +319,7 @@ class TestGadget2(TestWithMPI):
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
-        instance.commit_parameters()
         instance.gas_particles.add_particles(gas)
-        instance.commit_particles()
         self.assertEquals(instance.model_time,                        0.0 | units.s)
         self.assertEquals(instance.kinetic_energy,                    0.0 | units.J)
         self.assertEquals(instance.potential_energy,                  0.0 | units.J)
@@ -356,7 +328,6 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostEquals(instance.center_of_mass_position, [0,0,0] | 1e+19*units.m)
         self.assertAlmostEquals(instance.center_of_mass_velocity, [0,0,0] | units.m/units.s)
         self.assertAlmostEquals(instance.total_mass,                1.989 | 1e+40*units.kg)
-        instance.cleanup_code()
         instance.stop()
     
     def test10(self):

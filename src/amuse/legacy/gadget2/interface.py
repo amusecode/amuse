@@ -481,6 +481,15 @@ class Gadget2(GravitationalDynamics):
         object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
+        
+        object.add_method('RUN', 'get_kinetic_energy')
+        object.add_method('RUN', 'get_potential_energy')
+        object.add_method('RUN', 'get_thermal_energy')
+        object.add_method('RUN', 'get_total_radius')
+        object.add_method('RUN', 'get_center_of_mass_position')
+        object.add_method('RUN', 'get_center_of_mass_velocity')
+        object.add_method('RUN', 'get_total_mass')
+        object.add_method('RUN', 'get_time')
     
     def define_parameters(self, object):
         object.add_method_parameter(
