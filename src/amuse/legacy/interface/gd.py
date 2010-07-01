@@ -1030,6 +1030,10 @@ class GravitationalDynamics(common.CommonCode):
         object.add_getter('particles', 'get_mass', names = ('mass',))
         object.add_setter('particles', 'set_position')
         object.add_getter('particles', 'get_position')
+        object.add_setter('particles', 'set_velocity')
+        object.add_getter('particles', 'get_velocity')
+        object.add_setter('particles', 'set_radius')
+        object.add_getter('particles', 'get_radius')
         object.add_query('particles', 'get_indices_of_colliding_particles', public_name = 'select_colliding_particles')
 
     def get_colliding_particles(self):
