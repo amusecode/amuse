@@ -1,5 +1,6 @@
 FORTRAN ?= gfortran
-export FC = $(FORTRAN)
+FC      ?= $(FORTRAN)
+export FC
 
 AMUSE_DIR ?=../../../..
 MESA_MAKE_DIR=./mesa_reqs
@@ -18,13 +19,14 @@ STAR_WORK_OBJS = \
    $(MESA_MAKE_DIR)/run_star.o 
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
-DOWNLOAD_FROM_SVN = ./build_mesa.py build
+DOWNLOAD_FROM_SVN = ./build_mesa.py download
 
 all:	worker_code
 
 src:
 ifdef DO_INSTALL_MESA
 		$(DOWNLOAD_FROM_SVN)
+		cd $(MESA_DIR); ./install
 else
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
