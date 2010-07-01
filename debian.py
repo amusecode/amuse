@@ -28,7 +28,8 @@ depends = \
     'bash (>= 2.05a-11)',
     'python2.6 (>=2.6.0)',
     'python-numpy (>=1.3.0)',
-    'python-nose',
+    'python-nose (>=0.11)',
+    'python-matplotlib (>=0.99)',
     'python-setuptools',
     'python-docutils',
     'libhdf5-serial-dev (>=1.8)',
@@ -89,8 +90,8 @@ def makedirs():
     shutil.copytree('doc', './{0}/usr/share/doc/amuse-2.2/doc'.format(package_name))
     shutil.copy('amuse.sh', './{0}/usr/bin'.format(package_name))
     shutil.copy('iamuse.sh', './{0}/usr/bin'.format(package_name))
-    os.chmod('./{0}/usr/bin/amuse.sh'.format(package_name), 755)
-    os.chmod('./{0}/usr/bin/iamuse.sh'.format(package_name), 755)
+    os.chmod('./{0}/usr/bin/amuse.sh'.format(package_name), 0b111101101)
+    os.chmod('./{0}/usr/bin/iamuse.sh'.format(package_name), 0b111101101)
 
 def package():
     if os.path.exists('./'+package_name):
