@@ -707,7 +707,25 @@ int get_potential_at_point(double eps, double x, double y, double z, double * ph
 
 int get_velocity(int id, double *vx, double *vy, double *vz)
 {
-  return -2;
+    int i = get_index_from_identity(id);
+
+    if (!initialized && i >= 0 && i < (int) ds.size()) {
+       dynamics_state state = ds[i];
+       *vx = state.vx;
+       *vy = state.vy;
+       *vz = state.vz;
+        return 0;
+    }
+    else if (i >= 0 && i < bhtcs.n) {
+        nbody_particle *np = bhtcs.get_particle_pointer();
+        vec v = np[i].get_vel();
+        *vx = v[0];
+        *vy = v[1];
+        *vz = v[2];
+        return 0;
+    } else {
+        return -1;
+    }
 }
 
 int setup_module()

@@ -745,8 +745,9 @@ int evolve_system(real t_end)
         MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
         get_acc_jerk_pot_coll(&epot, &coll_time);
         dt = calculate_step(coll_time);
-        t_evolve = t_end;
+        t_evolve = t;
       } else {
+        t_evolve = t;
       }
 
     // Note: On exit, under all circumstances, the system is
@@ -880,10 +881,8 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
   i = id;
   if (i < (int) ident.size())
     {
-      real del = t_evolve - t;
-
-      vec position = pos[i] + vel[i]*del + acc[i]*del*del/2 + jerk[i]*del*del*del/6;
-      vec velocity = vel[i] + acc[i]*del + jerk[i]*del*del/2;
+      vec position = pos[i];
+      vec velocity = vel[i];
 
       //*id_out = id;
       *_mass = mass[i];

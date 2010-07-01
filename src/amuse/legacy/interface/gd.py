@@ -829,6 +829,7 @@ class GravitationalDynamics(common.CommonCode):
         object.add_method('RUN', 'get_state')
         object.add_method('RUN', 'get_mass')
         object.add_method('RUN', 'get_position')
+        object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_gravity_at_point')
         object.add_method('RUN', 'get_potential_at_point')
 
@@ -973,6 +974,30 @@ class GravitationalDynamics(common.CommonCode):
                 object.ERROR_CODE
             )
         )
+        object.add_method(
+            "set_velocity",
+            (
+                object.NO_UNIT,
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_velocity",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                nbody_system.speed,
+                nbody_system.speed,
+                nbody_system.speed,
+                object.ERROR_CODE
+            )
+        )
 
         #object.add_method(
         #    "get_time_step",
@@ -1030,6 +1055,10 @@ class GravitationalDynamics(common.CommonCode):
         object.add_getter('particles', 'get_mass', names = ('mass',))
         object.add_setter('particles', 'set_position')
         object.add_getter('particles', 'get_position')
+        object.add_setter('particles', 'set_velocity')
+        object.add_getter('particles', 'get_velocity')
+        object.add_setter('particles', 'set_radius')
+        object.add_getter('particles', 'get_radius')
         object.add_query('particles', 'get_indices_of_colliding_particles', public_name = 'select_colliding_particles')
 
     def get_colliding_particles(self):
@@ -1037,9 +1066,6 @@ class GravitationalDynamics(common.CommonCode):
         return subset
 
     def define_converter(self, object):
-#        if not self.convert_nbody is None:
-#            if not self.convert_nbody is self.NBODY:
-#                object.set_nbody_converter(self.convert_nbody)
         if isinstance(self.unit_converter, nbody_system.nbody_to_si):
             object.set_converter(self.unit_converter.as_converter_from_si_to_nbody())
         elif isinstance(self.unit_converter, generic_unit_converter.generic_to_si):
