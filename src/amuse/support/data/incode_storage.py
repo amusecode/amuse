@@ -403,6 +403,9 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     def _get_values(self, keys, attributes):
         indices_in_the_code = self.get_indices_of(keys)
         
+        if len(indices_in_the_code) == 0:
+            return [[] for attribute in attributes]
+             
         mapping_from_attribute_to_result = {}
         
         for getter in self.select_getters_for(attributes):
@@ -416,7 +419,10 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         
     def _set_values(self, keys, attributes, values):
         indices_in_the_code = self.get_indices_of(keys)
-    
+        
+        if len(indices_in_the_code) == 0:
+            return
+            
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(attributes, values, indices_in_the_code)
     
