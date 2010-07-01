@@ -19,8 +19,12 @@ class generate_debian_package(object):
     def __init__(self):
         pass
 
+#f=os.popen('uname -m')
+#architecture = f.readlines()[0]
+#print architecture
+#f.close()
 version = '2.2-1'
-debianversion = '9.10'
+debianversion = 'ubuntu'
 architecture = 'amd64'
 package_name = 'amuse_{0}-{1}-{2}'.format(version, debianversion, architecture)
 depends = \
@@ -32,7 +36,7 @@ depends = \
     'python-matplotlib (>=0.99)',
     'python-setuptools',
     'python-docutils',
-    'libhdf5-serial-dev (>=1.8)',
+    'libhdf5-serial-dev (>=1.6)',
     'hdf5-tools',
     'libfftw3-3', 
     'libfftw3-dev', 
@@ -48,11 +52,9 @@ Architecture: all
 Depends: {1} 
 Maintainer: amuseteam <info@amusecode.org>
 Description: Astrophysical Multipurpose Software Environment
- Our aim is to provide a software framework for 
- large-scale simulations of dense stellar systems, 
- in which existing codes for dynamics, stellar evolution, 
- and hydrodynamics can be easily coupled, 
- and place them in the appropriate observational context. 
+ A software framework for large-scale simulations of dense 
+ stellar systems, in which existing codes for dynamics, 
+ stellar evolution, and hydrodynamics can be easily coupled. 
 """
 dirtree = \
 [
