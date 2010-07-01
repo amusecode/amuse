@@ -9,7 +9,143 @@ from amuse.support.data.incode_storage import *
 
 import numpy
 
-
+class TestParticles(amusetest.TestCase):
+    
+    def test1(self):
+        class Code(object):
+            def __init__(self):
+                # x,y,z,mass
+                self.data = []
+                self.get_position_called = False
+                self.set_position_called = False
+                
+            def get_number_of_particles(self):
+                return  0 if not self.data else len(self.data[0])
+                
+            def get_position(self,index):
+                self.get_position_called = True
+                data_to_return = [(self.data[0][i], self.data[1][i], self.data[2][i]) for i in index]
+                data_to_return = numpy.asarray(data_to_return).reshape(3,-1)
+                return [units.m(x) for x in data_to_return]
+                
+            def set_position(self,index,x,y,z):
+                self.set_position_called = True
+                pass
+                
+            def new_particle(self, x, y, z):
+                x = x.value_in(units.m)
+                y = y.value_in(units.m)
+                z = z.value_in(units.m)
+                self.data = [x,y,z]
+                return [i for i in range(len(x))]
+                
+        code = Code()
+        storage = InCodeAttributeStorage(
+            code,
+            NewParticleMethod(code.new_particle ,("x","y","z")),
+            None,
+            code.get_number_of_particles,
+            [],
+            [ParticleGetAttributesMethod(code.get_position,("x","y","z")),],
+            name_of_the_index = "index"
+        )
+        
+        self.assertEquals(len(storage), 0)
+        self.assertEquals(storage._get_attribute_names(), set(["x","y","z"]))
+        
+        self.assertFalse(code.get_position_called)
+        storage._get_values([],["x","y","z"])
+        self.assertFalse(code.get_position_called)
+        
+        storage._add_particles(
+            [1,2,3,4],
+            ["x","y","z"],
+            [
+                units.m([1,2,3,4]),
+                units.m([2,3,4,5]),
+                units.m([3,4,5,6])
+            ]
+        )
+        
+        self.assertEquals(len(storage), 4)
+    
+    def test2(self):
+        class Code(object):
+            def __init__(self):
+                # x,y,z,mass
+                self.data = []
+                self.get_position_called = False
+                self.set_position_called = False
+                self.get_mass_called = False
+                self.set_mass_called = False
+                
+            def get_number_of_particles(self):
+                return  0 if not self.data else len(self.data[0])
+                
+            def get_position(self,index):
+                self.get_position_called = True
+                data_to_return = [(self.data[0][i], self.data[1][i], self.data[2][i]) for i in index]
+                data_to_return = numpy.asarray(data_to_return).reshape(3,-1)
+                return [units.m(x) for x in data_to_return]
+            
+            def get_mass(self,index):
+                self.get_mass_called = True
+                data_to_return = [self.data[3][i] for i in index]
+                return units.kg(data_to_return)
+                
+            def set_position(self,index,x,y,z):
+                self.set_position_called = True
+                pass
+                
+            def set_mass(self,index,mass):
+                self.set_mass_called = True
+                pass
+                
+            def new_particle(self, x, y, z, mass):
+                x = x.value_in(units.m)
+                y = y.value_in(units.m)
+                z = z.value_in(units.m)
+                mass = mass.value_in(units.kg)
+                self.data = [x,y,z, mass]
+                return [i for i in range(len(x))]
+                
+        code = Code()
+        storage = InCodeAttributeStorage(
+            code,
+            NewParticleMethod(code.new_particle ,("x","y","z","mass")),
+            None,
+            code.get_number_of_particles,
+            [],
+            [
+                ParticleGetAttributesMethod(code.get_position,("x","y","z")),
+                ParticleGetAttributesMethod(code.get_mass,("mass",)),
+            ],
+            name_of_the_index = "index"
+        )
+        
+        storage._add_particles(
+            [1,2,3,4],
+            ["x","y","z", "mass"],
+            [
+                units.m([1,2,3,4]),
+                units.m([2,3,4,5]),
+                units.m([3,4,5,6]),
+                units.kg([13,14,15,16]),
+            ]
+        )
+        
+        self.assertEquals(len(storage), 4)
+        
+        self.assertEquals(storage._get_attribute_names(), set(["x","y","z", "mass"]))
+        
+        self.assertFalse(code.get_position_called)
+        self.assertFalse(code.get_mass_called)
+        x,y,mass = storage._get_values([2,3],["x","y","mass"])
+        self.assertTrue(code.get_position_called)
+        self.assertTrue(code.get_mass_called)
+        self.assertEquals(x[1], 3 | units.m)
+        self.assertEquals(mass[1], 15 | units.kg)
+        
 class TestGrids(amusetest.TestCase):
     
     def test1(self):
