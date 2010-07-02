@@ -546,7 +546,7 @@ class AbstractSet(object):
         channel.copy_attributes([attribute_name])
     
     def new_channel_to(self, other):
-        return ParticleInformationChannel(self, other)
+        raise NotImplementedError()
         
     def __add__(self, particles):
         """

@@ -96,6 +96,31 @@ class TestGrids(amusetest.TestCase):
         self.assertEquals(subgrid.position[1][1], 119 | units.m)
         self.assertEquals(subgrid.position[1][2], 219 | units.m)
         
+    
+    def test8(self):
+        grid0 = core.Grid(5,4,3)
+        x = numpy.arange(5*4*3).reshape(5,4,3)
+        y = x + 100.0
+        grid0.x = units.m.new_quantity(x)
+        grid0.y = units.m.new_quantity(y)
+        
+        grid1 = core.Grid(5,4,3)
+        x = numpy.arange(5*4*3).reshape(5,4,3)
+        x = x + 200.0
+        y = x + 200.0
+        grid1.x = units.m.new_quantity(x)
+        grid1.y = units.m.new_quantity(y)
+    
+        self.assertTrue(numpy.all(grid0[1][2].x != grid1[1][2].x))
+        
+        channel = grid0.new_channel_to(grid1)
+        channel.copy_attributes(["x",])
+        
+        self.assertTrue(numpy.all(grid0[1][2].x == grid1[1][2].x))
+        self.assertTrue(numpy.all(grid0[1][2].y != grid1[1][2].y))
+        
+
+        
 class TestIndexing(amusetest.TestCase):
     def test1(self):
         self.assertEquals(2, number_of_dimensions_after_index(3, 1))

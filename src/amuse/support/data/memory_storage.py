@@ -243,4 +243,7 @@ class InMemoryGridAttributeStorage(object):
     
     def _state_attributes(self):
         return self.attributes()
+        
+    def _get_writeable_attribute_names(self):
+        return self.attributes()
 

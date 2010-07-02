@@ -33,6 +33,10 @@ class AbstractGrid(AbstractSet):
     def _get_particle(self, index):
         return GridPoint(index, self._original_set())
         
+    
+    def new_channel_to(self, other):
+        return GridInformationChannel(self, other)
+        
 class Grid(AbstractGrid):
     def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):
         AbstractGrid.__init__(self)
@@ -55,6 +59,10 @@ class Grid(AbstractGrid):
 
     def _get_attribute_names(self):
         return self._private.attribute_storage._get_attribute_names()
+        
+    def _get_writeable_attribute_names(self):
+        return self._private.attribute_storage._get_writeable_attribute_names()
+
 
     def _original_set(self):
         return self
@@ -70,6 +78,10 @@ class Grid(AbstractGrid):
             
     def number_of_dimensions(self):
         return 3
+        
+    @property
+    def shape(self):
+        return self._private.attribute_storage.storage_shape()
         
         
 class SubGrid(AbstractGrid):
@@ -112,6 +124,10 @@ class SubGrid(AbstractGrid):
     def _get_attribute_names(self):
         return self._private.grid._get_attribute_names()
         
+    def _get_writeable_attribute_names(self):
+        return self._private.grid._get_writeable_attribute_names()
+    
+        
 
 class GridPoint(object):
 
@@ -127,6 +143,37 @@ class GridPoint(object):
     
     def __getattr__(self, name_of_the_attribute):
         return self.grid._get_value_of_attribute(self.index, name_of_the_attribute)
+        
+
+class GridInformationChannel(object):
+    """
+    A channel to copy attributes from one grid to another.
+    For each dimension copies cells from 0 - min(grid0.size, grid1.size).
+    """
+    
+    def __init__(self, source, target):
+        self.source = source
+        self.target = target
+        self._reindex()
+        
+    def _reindex(self):
+        source_shape = self.source.shape
+        target_shape = self.target.shape
+        if len(source_shape) != len(target_shape):
+            raise Exception("The source and target grids do not have the same dimensions, cannot use this channel")
+        index = [numpy.s_[0:min(x,y)] for x,y in zip(source_shape, target_shape)]
+        index = tuple(index)
+        print index
+        
+        self.index = index
+        
+        
+    def copy_attributes(self, attributes):
+        data = self.source._get_values(self.index, attributes)
+        self.target._set_values(self.index, attributes, data)
+    
+    def copy(self):
+        self.copy_attributes(self.target._get_writeable_attribute_names())
     
     
         

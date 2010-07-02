@@ -52,7 +52,6 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     jj = j;
     kk = k;
     
-    
     Real potential0 = Potentials[kk][jj][ii];
     Real potential1 = potential0;
     if(ii < i) {
@@ -150,6 +149,17 @@ int commit_parameters(){
   
   init_grid(&level0_Grid, &level0_Domain);
   
+  
+  if ((Potentials = (Real***)calloc_3d_array(
+    level0_Grid.Nx1 + 2 * nghost, 
+    level0_Grid.Nx2 + 2 * nghost, 
+    level0_Grid.Nx3 + 2 * nghost, 
+    sizeof(Real))) == NULL)
+  {
+    return -1;
+  }
+
+  
   return 0;
 }
 
@@ -175,16 +185,7 @@ int initialize_grid()
   /* Only bvals for Phi set when last argument of set_bvals = 1  */
   set_bvals(&level0_Grid, 1);
 #endif
-  
-  if ((Potentials = (Real***)calloc_3d_array(
-    level0_Grid.Nx1 + 2 * nghost, 
-    level0_Grid.Nx2 + 2 * nghost, 
-    level0_Grid.Nx3 + 2 * nghost, 
-    sizeof(Real))) == NULL)
-  {
-    return -1;
-  }
-  
+    
   return 0;
 }
 
@@ -385,16 +386,26 @@ int get_potential(
     if (level0_Domain.grid_block == NULL) {
         return -1;
     }
+    if (Potentials == NULL) {
+        return -1;
+    }
 
     int imin = level0_Grid.is + level0_Grid.idisp - 1;
     int imax = level0_Grid.ie + level0_Grid.idisp + 1;
-    int jmin = level0_Grid.js + level0_Grid.jdisp - 1;
-    int jmax = level0_Grid.je + level0_Grid.jdisp + 1;
-    int kmin = level0_Grid.ks + level0_Grid.kdisp - 1;
-    int kmax = level0_Grid.ke + level0_Grid.kdisp + 1;
+    int jmin = level0_Grid.js + level0_Grid.jdisp;
+    int jmax = level0_Grid.je + level0_Grid.jdisp;
+    if(jmin != jmax) {
+        jmin--;
+        jmax++;
+    }
+    int kmin = level0_Grid.ks + level0_Grid.kdisp;
+    int kmax = level0_Grid.ke + level0_Grid.kdisp;
+    if(kmin != kmax) {
+        kmin--;
+        kmax++;
+    }
     int l=0;
     int i0,j0,k0 = 0;
-    
     for(l=0; l < number_of_points; l++) {
         i0 = i[l];
         j0 = j[l];
@@ -408,6 +419,7 @@ int get_potential(
             i0 -= level0_Grid.idisp;
             j0 -= level0_Grid.jdisp;
             k0 -= level0_Grid.kdisp;
+            
             potential[l] = Potentials[k0][j0][i0];
         } else {
             potential[l] = 0.0;
@@ -433,13 +445,24 @@ int set_potential(
     if (level0_Domain.grid_block == NULL) {
         return -1;
     }
+    if (Potentials == NULL) {
+        return -1;
+    }
 
     int imin = level0_Grid.is + level0_Grid.idisp - 1;
     int imax = level0_Grid.ie + level0_Grid.idisp + 1;
-    int jmin = level0_Grid.js + level0_Grid.jdisp - 1;
-    int jmax = level0_Grid.je + level0_Grid.jdisp + 1;
+    int jmin = level0_Grid.js + level0_Grid.jdisp;
+    int jmax = level0_Grid.je + level0_Grid.jdisp;
+    if(jmin != jmax) {
+        jmin--;
+        jmax++;
+    }
     int kmin = level0_Grid.ks + level0_Grid.kdisp - 1;
     int kmax = level0_Grid.ke + level0_Grid.kdisp + 1;
+    if(kmin != kmax) {
+        kmin--;
+        kmax++;
+    }
     int l=0;
     int i0,j0,k0 = 0;
     

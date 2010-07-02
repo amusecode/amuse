@@ -274,6 +274,11 @@ class AbstractInCodeAttributeStorage(object):
             self.attributes |= set(x.attribute_names)
         for x in self.setters:
             self.attributes |= set(x.attribute_names)
+            
+        self.writable_attributes = set([])
+        for x in self.setters:
+            self.writable_attributes |= set(x.attribute_names)
+        
     
     def select_getters_for(self, attributes):
         set_of_attributes = set(attributes)
@@ -531,4 +536,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     
     def _state_attributes(self):
         return self.attributes()
+        
+    def _get_writeable_attribute_names(self):
+        return self.writable_attributes
 

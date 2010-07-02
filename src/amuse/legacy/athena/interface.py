@@ -207,6 +207,20 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         
     
     @legacy_function
+    def set_has_external_gravitational_potential():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='int32', direction=function.IN) 
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def get_has_external_gravitational_potential():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='int32', direction=function.OUT) 
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
     def get_nghost():
         function = LegacyFunctionSpecification() 
         function.addParameter('value', dtype='int32', direction=function.OUT) 
@@ -262,10 +276,16 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         direction for the potential field, this
         range is 1 cell larger than the normal grid
         in all directions"""
-        normal_range = numpy.asarray(self.get_index_range_inclusive())
-        extension = (-1,1,-1,1,-1,1)
-        return normal_range + extension
-        
+        imin,imax,jmin,jmax,kmin,kmax = numpy.asarray(self.get_index_range_inclusive())
+        imin -= 1
+        imax += 1
+        if jmin != jmax:
+            jmin -= 1
+            jmax += 1
+        if kmin != kmax:
+            kmin -=1
+            kmax +=1
+        return imin,imax, jmin, jmax, kmin, kmax        
     
     @legacy_function    
     def set_potential():
