@@ -125,8 +125,10 @@ class MakeEvrardModel(object):
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity(velocities)
         result.u = nbody_system.specific_energy.new_quantity(internal_energies)
-
+        
         result.position -= result.center_of_mass()
+        scale_factor = (result.potential_energy(G=nbody_system.G)) / (-0.5 | nbody_system.energy)
+        result.position *= scale_factor
         
         if not self.convert_nbody is None:
             result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
@@ -137,7 +139,7 @@ class MakeEvrardModel(object):
 """
 Create an evrard gas sphere with approximately the given number of particles. 
 Returns a set of particles with equal mass and internal energy. Positions are 
-randomly distributed to fit a evrard gas distribution model (density 
+randomly distributed to fit an evrard gas distribution model (density 
 proportional to r^-1). Velocities are set to zero initially. The particles 
 are centered around their center of mass (the center of mass position is zero).
 
