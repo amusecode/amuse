@@ -255,6 +255,41 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         function.result_type = 'i'
         return function
         
+        
+    def get_index_range_for_potential(self):
+        """
+        Returns the min and max values of indices in each
+        direction for the potential field, this
+        range is 1 cell larger than the normal grid
+        in all directions"""
+        normal_range = numpy.asarray(self.get_index_range_inclusive())
+        extension = (-1,1,-1,1,-1,1)
+        return normal_range + extension
+        
+    
+    @legacy_function    
+    def set_potential():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('potential', dtype='d', direction=function.IN)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function    
+    def get_potential():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('potential', dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+
+        
     
 class Athena(CodeInterface):
 
@@ -291,6 +326,19 @@ class Athena(CodeInterface):
             (density, momentum, momentum, momentum, energy,
             object.ERROR_CODE,)
         )
+
+        object.add_method(
+            'set_potential',
+            (object.INDEX, object.INDEX, object.INDEX,
+            energy),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_potential',
+            (object.INDEX, object.INDEX, object.INDEX,),
+            (energy,
+            object.ERROR_CODE,)
+        )
     
     def define_particle_sets(self, object):
         object.define_grid('grid')
@@ -298,5 +346,11 @@ class Athena(CodeInterface):
         object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
         object.add_getter('grid', 'get_grid_state_mpi', names=('rho', 'rhox','rhoy','rhoz','energy'))
         object.add_setter('grid', 'fill_grid_state_mpi', names=('rho', 'rhox','rhoy','rhoz','energy'))
+
+        object.define_grid('potential_grid')
+        object.set_grid_range('potential_grid', 'get_index_range_for_potential')
+        object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
+        object.add_getter('potential_grid', 'get_potential', names=('potential',))
+        object.add_setter('potential_grid', 'set_potential', names=('potential', ))
         
         

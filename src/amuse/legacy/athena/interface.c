@@ -357,6 +357,89 @@ int fill_grid_state_mpi(
 }
 
 
+
+
+int get_potential(
+    int * i, int * j, int * k, 
+    double * potential,
+    int number_of_points)
+{
+    int imin = level0_Grid.is + level0_Grid.idisp;
+    int imax = level0_Grid.ie + level0_Grid.idisp;
+    int jmin = level0_Grid.js + level0_Grid.jdisp;
+    int jmax = level0_Grid.je + level0_Grid.jdisp;
+    int kmin = level0_Grid.ks + level0_Grid.kdisp;
+    int kmax = level0_Grid.ke + level0_Grid.kdisp;
+    int l=0;
+    int i0,j0,k0 = 0;
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        
+        if ( 
+            (i0 >= imin && i0 <= imax) &&
+            (j0 >= jmin && j0 <= jmax) &&
+            (k0 >= kmin && k0 <= kmax)
+        ) {
+            i0 -= level0_Grid.idisp;
+            j0 -= level0_Grid.jdisp;
+            k0 -= level0_Grid.kdisp;
+            potential[l] = Potentials[k0][j0][i0];
+        } else {
+            potential[l] = 0.0;
+        } 
+    }
+    
+#ifdef MPI_PARALLEL
+    if(level0_Grid.my_id) {
+        MPI_Reduce(potential, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, potential, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+    return 0;
+}
+
+
+int set_potential(
+    int * i, int * j, int * k, 
+    double * potential, 
+    int number_of_points)
+{
+    int imin = level0_Grid.is + level0_Grid.idisp;
+    int imax = level0_Grid.ie + level0_Grid.idisp;
+    int jmin = level0_Grid.js + level0_Grid.jdisp;
+    int jmax = level0_Grid.je + level0_Grid.jdisp;
+    int kmin = level0_Grid.ks + level0_Grid.kdisp;
+    int kmax = level0_Grid.ke + level0_Grid.kdisp;
+    int l=0;
+    int i0,j0,k0 = 0;
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        
+        if ( 
+            (i0 >= imin && i0 <= imax) &&
+            (j0 >= jmin && j0 <= jmax) &&
+            (k0 >= kmin && k0 <= kmax)
+        ) {
+            i0 -= level0_Grid.idisp;
+            j0 -= level0_Grid.jdisp;
+            k0 -= level0_Grid.kdisp;
+            printf(stderr, "i,j,k: %d, %d, %d\n", i0, j0, k0);
+            
+            Potentials[k0][j0][i0] = potential[l];
+        }
+    }
+    
+    return 0;
+}
+
+
 int get_grid_state(
   int i, int j, int k, 
   double * rho, double * rhovx, double * rhovy, double * rhovz, 

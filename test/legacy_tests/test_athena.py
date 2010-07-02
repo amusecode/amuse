@@ -60,6 +60,8 @@ class TestAthenaInterface(TestWithMPI):
         instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         
+        imin, imax, jmin, jmax, kmin, kmax = instance.get_index_range_inclusive()
+        
         x,y,z, error= instance.get_position_of_index(2,2,2)
         self.assertEquals(error, -1)
         
@@ -262,6 +264,50 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEqual(x, -0.1)
         instance.stop()
         
+    def test11(self):
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        
+        imin, imax, jmin, jmax, kmin, kmax = instance.get_index_range_inclusive()
+        
+        self.assertEquals(imin, 0)
+        self.assertEquals(jmin, 0)
+        self.assertEquals(kmin, 0)
+        self.assertEquals(imax, 9)
+        self.assertEquals(jmax, 19)
+        self.assertEquals(kmax, 39)
+        
+        imin, imax, jmin, jmax, kmin, kmax = instance.get_index_range_for_potential()
+        
+        self.assertEquals(imin, -1)
+        self.assertEquals(jmin, -1)
+        self.assertEquals(kmin, -1)
+        self.assertEquals(imax, 10)
+        self.assertEquals(jmax, 20)
+        self.assertEquals(kmax, 40)
+
+    def test12(self):
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        
+        instance.commit_parameters()
+        instance.initialize_grid()
+        x,y,z, error= instance.get_position_of_index(-1,-1,-1)
+        self.assertEquals(error, 0)
+        print x,y,z
+        self.assertAlmostRelativeEquals(-0.05, x)  
+        self.assertAlmostRelativeEquals(-0.025, y)
+        self.assertAlmostRelativeEquals(-0.0125, z)
+
+                        
 class TestAthena(TestWithMPI):
     
     def test0(self):
@@ -285,3 +331,22 @@ class TestAthena(TestWithMPI):
         self.assertEquals(instance.grid[0][0][0].rho , 0.0 |generic_unit_system.mass / generic_unit_system.length ** 3)
         
         instance.stop()
+        
+    
+    def test1(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+                
+        firstx = instance.potential_grid[0][0][0].x
+        print firstx
+        self.assertEquals(firstx, -0.05 | generic_unit_system.length)
+        allx = instance.potential_grid[0].x
+        for j in range(20):
+            for k in range(40):
+                self.assertEquals(allx[j][k], firstx)
+                instance.stop()
