@@ -217,12 +217,38 @@ def particle_potential(set, particle, smoothing_length_squared = zero, gravitati
     dr = (dr_squared+smoothing_length_squared).sqrt()
     return - gravitationalConstant * (particles.mass / dr).sum()
 
+def virial_radius(particles):
+    """
+    Returns the virial radius of the particles set.
+    The virial radius is the inverse of the average inverse 
+    distance between particles, weighted by their masses.
+    
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.x = [-1.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.virial_radius()
+    quantity<4.0 m>
+    """
+    if len(particles) < 2:
+        raise Exception("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
+    partial_sum = zero
+    length_unit = particles.position.unit
+    for i, particle_1 in enumerate(particles-particles[-1]):
+        distance_vecs = [particle_1.position.number - particle_2.position.number 
+            for particle_2 in particles[i+1:]] | length_unit
+        partial_sum += ((particle_1.mass * particles[i+1:].mass) / distance_vecs.lengths()).sum()        
+    return (particles.mass.sum()**2) / (2*partial_sum)
+
 
     
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
 AbstractParticleSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
 AbstractParticleSet.add_global_function_attribute("potential_energy", potential_energy)
+AbstractParticleSet.add_global_function_attribute("virial_radius", virial_radius)
 
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
