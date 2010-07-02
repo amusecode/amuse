@@ -27,8 +27,7 @@ static Domain level0_Domain;
 static VGFun_t Integrate;
 static int is_dt_set_by_script=0;
 static int is_restart = 0;
-
-
+static int has_external_gravitational_potential=0;
 
 static inline void ijk_pos( const Grid *pG,
     const Real x1, const Real x2, const Real x3,
@@ -38,8 +37,6 @@ static inline void ijk_pos( const Grid *pG,
   *i = ((x1 - pG->x1_0)/pG->dx1) - 0.5 - pG->idisp;
   *j = ((x2 - pG->x2_0)/pG->dx2) - 0.5 - pG->jdisp;
   *k = ((x3 - pG->x3_0)/pG->dx3) - 0.5 - pG->kdisp;
-  
-  fprintf(stderr, "%f, %f, %f\n", i, j, k);
 }
 
 static Real ***Potentials=NULL;
@@ -55,19 +52,19 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     jj = j;
     kk = k;
     
+    
     Real potential0 = Potentials[kk][jj][ii];
     Real potential1 = potential0;
     if(ii < i) {
-        potential1 = Potentials[kk][jj][ii - 1];
-    } if(jj < j) {
-        potential1 = Potentials[kk][jj - 1][ii];
-    } if(kk < k) {
-        potential1 = Potentials[kk - 1][jj][ii];
+        potential1 = Potentials[kk][jj][ii + 1];
+    } else if(jj < j) {
+        potential1 = Potentials[kk][jj + 1][ii];
+    } else if(kk < k) {
+        potential1 = Potentials[kk + 1][jj][ii];
     } else {
         potential1 = potential0;
     }
-    
-    return potential0 + potential1 / 2.0;
+    return (potential0 + potential1) / 2.0;
 }
 
 
@@ -78,6 +75,16 @@ int cleanup_code(){
 int recommit_parameters(){
   return 0;
 }
+
+int set_has_external_gravitational_potential(int value) {
+    has_external_gravitational_potential = value;
+    return 0;
+}
+
+int get_has_external_gravitational_potential(int * value) {
+    *value = has_external_gravitational_potential;
+    return 0;
+} 
 
 int initialize_code(){
 #ifdef MPI_PARALLEL
@@ -98,7 +105,6 @@ int initialize_code(){
   show_config_par();   /* Add the configure block to the parameter database */
   
   
-  /*StaticGravPot = grav_pot;*/
   return 0;
 }
 
@@ -119,12 +125,14 @@ int get_nghost(int * value) {
 }
 
 int commit_parameters(){
-  printf("1");
   int out_level = par_geti_def("log","out_level",0);
   int err_level = par_geti_def("log","err_level",0);
   
-  printf("2");
   ath_log_set_level(out_level, err_level);
+  
+  if(has_external_gravitational_potential) {
+    StaticGravPot = grav_pot;
+  }
   
   CourNo = par_getd("time","cour_no");
 
@@ -209,7 +217,16 @@ int get_position_of_index(int i, int j, int k, double * x, double * y,
   return 0;
 }
 
+int get_interpolated_gravitational_potential(double x, double y, double z, double * potential) {
+    
+    if (level0_Domain.grid_block == NULL) {
+        return -1;
+    }
 
+    *potential = grav_pot(x,y,z);
+    
+    return 0;
+}
 
 int get_index_of_position(double x, double y, 
   double z, double *i , double * j, double * k){
@@ -364,12 +381,17 @@ int get_potential(
     double * potential,
     int number_of_points)
 {
-    int imin = level0_Grid.is + level0_Grid.idisp;
-    int imax = level0_Grid.ie + level0_Grid.idisp;
-    int jmin = level0_Grid.js + level0_Grid.jdisp;
-    int jmax = level0_Grid.je + level0_Grid.jdisp;
-    int kmin = level0_Grid.ks + level0_Grid.kdisp;
-    int kmax = level0_Grid.ke + level0_Grid.kdisp;
+      
+    if (level0_Domain.grid_block == NULL) {
+        return -1;
+    }
+
+    int imin = level0_Grid.is + level0_Grid.idisp - 1;
+    int imax = level0_Grid.ie + level0_Grid.idisp + 1;
+    int jmin = level0_Grid.js + level0_Grid.jdisp - 1;
+    int jmax = level0_Grid.je + level0_Grid.jdisp + 1;
+    int kmin = level0_Grid.ks + level0_Grid.kdisp - 1;
+    int kmax = level0_Grid.ke + level0_Grid.kdisp + 1;
     int l=0;
     int i0,j0,k0 = 0;
     
@@ -408,12 +430,16 @@ int set_potential(
     double * potential, 
     int number_of_points)
 {
-    int imin = level0_Grid.is + level0_Grid.idisp;
-    int imax = level0_Grid.ie + level0_Grid.idisp;
-    int jmin = level0_Grid.js + level0_Grid.jdisp;
-    int jmax = level0_Grid.je + level0_Grid.jdisp;
-    int kmin = level0_Grid.ks + level0_Grid.kdisp;
-    int kmax = level0_Grid.ke + level0_Grid.kdisp;
+    if (level0_Domain.grid_block == NULL) {
+        return -1;
+    }
+
+    int imin = level0_Grid.is + level0_Grid.idisp - 1;
+    int imax = level0_Grid.ie + level0_Grid.idisp + 1;
+    int jmin = level0_Grid.js + level0_Grid.jdisp - 1;
+    int jmax = level0_Grid.je + level0_Grid.jdisp + 1;
+    int kmin = level0_Grid.ks + level0_Grid.kdisp - 1;
+    int kmax = level0_Grid.ke + level0_Grid.kdisp + 1;
     int l=0;
     int i0,j0,k0 = 0;
     
@@ -430,7 +456,6 @@ int set_potential(
             i0 -= level0_Grid.idisp;
             j0 -= level0_Grid.jdisp;
             k0 -= level0_Grid.kdisp;
-            printf(stderr, "i,j,k: %d, %d, %d\n", i0, j0, k0);
             
             Potentials[k0][j0][i0] = potential[l];
         }

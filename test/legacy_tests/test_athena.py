@@ -91,10 +91,10 @@ class TestAthenaInterface(TestWithMPI):
         result = instance.commit_parameters()
         self.assertEquals(result, 0)
         
-        error = instance.fill_grid_state(1,1,1, 0.1, 0.2, 0.3, 0.4, 0.5)
+        error = instance.fill_grid_state_mpi(1,1,1, 0.1, 0.2, 0.3, 0.4, 0.5)
         self.assertEquals(error, 0)
         
-        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,1)
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state_mpi(1,1,1)
         
         self.assertEquals(error, 0)
         self.assertEquals(rho, 0.1)
@@ -306,10 +306,65 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(-0.05, x)  
         self.assertAlmostRelativeEquals(-0.025, y)
         self.assertAlmostRelativeEquals(-0.0125, z)
-
-                        
-class TestAthena(TestWithMPI):
+        
     
+    def test13(self):
+        instance=self.new_instance(AthenaInterface)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.8)
+        instance.setup_mesh(2, 2, 2, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        
+        instance.commit_parameters()
+        instance.initialize_grid()
+        
+        potential_along_one_axis = [-1.0,0.0,1.0,2.0]
+        
+        instance.set_potential(
+            [-1,0,1,2],
+            [0,0,0,0],
+            [0,0,0,0], 
+            potential_along_one_axis
+        )
+        got_potential,error = instance.get_potential(
+            [-1,0,1,2],
+            [0,0,0,0],
+            [0,0,0,0])
+        print got_potential, error
+        for expected, actual in zip(potential_along_one_axis, got_potential):
+            self.assertEquals(expected, actual)
+        
+        x,y,z,error = instance.get_position_of_index(
+            [-1,0,1,2],
+            [0,0,0,0],
+            [0,0,0,0])
+        for expected, actual in zip([-0.25,0.25,0.75,1.25], x):
+            self.assertEquals(expected, actual)
+        for expected, actual in zip([0.25,0.25,0.25,0.25], y):
+            self.assertEquals(expected, actual)
+        for expected, actual in zip([0.25,0.25,0.25,0.25], z):
+            self.assertEquals(expected, actual)
+            
+        potential, error = instance.get_interpolated_gravitational_potential(0, 0.25, 0.25)
+        print potential, error
+        self.assertEquals(error, 0)
+        self.assertEquals(potential, -0.5)
+        potential, error = instance.get_interpolated_gravitational_potential(0.75, 0.5, 0.25)
+        print potential, error
+        self.assertEquals(error, 0)
+        self.assertEquals(potential, 0.5)
+        potential, error = instance.get_interpolated_gravitational_potential(0.75, 0.25, 0.5)
+        print potential, error
+        self.assertEquals(error, 0)
+        self.assertEquals(potential, 0.5)
+        potential, error = instance.get_interpolated_gravitational_potential(0.75, 0.25, 0.0)
+        print potential, error
+        self.assertEquals(error, 0)
+        self.assertEquals(potential, 0.5)
+
+
+class TestAthena(TestWithMPI):
     def test0(self):
         instance=self.new_instance(Athena)
         instance.initialize_code()

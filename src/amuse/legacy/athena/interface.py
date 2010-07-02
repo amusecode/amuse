@@ -288,6 +288,24 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
+        
+    @legacy_function    
+    def get_interpolated_gravitational_potential():
+        """
+        Return the interpolated gravitational potential, can
+        only interpolate over one axis at the time and
+        only at half way points between the grid points.
+        **For debugging purposes only**
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('potential', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    
 
         
     
