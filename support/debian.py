@@ -21,11 +21,13 @@ depends = \
     'python-matplotlib (>=0.99)',
     'python-setuptools',
     'python-docutils',
+    'python-h5py (>=1.2.1)',
     'libhdf5-serial-dev (>=1.6)',
     'hdf5-tools',
     'libfftw3-3', 
     'libfftw3-dev', 
     'libfftw3-doc',
+    'mpich2 (>=1.2.1)'
 ]
 control = \
 """
@@ -41,6 +43,11 @@ Description: Astrophysical Multipurpose Software Environment
  stellar systems, in which existing codes for dynamics, 
  stellar evolution, and hydrodynamics can be easily coupled. 
 """
+postinst = \
+"""#!/bin/sh -e
+easy_install mpi4py
+"""
+
 dirtree = \
 [
 package_name,
@@ -76,6 +83,11 @@ class generate_debian_package(object):
         f.write(control.format(version, dependency_string))
         f.close()
 
+        f = open('./{0}/DEBIAN/postinst'.format(package_name),'w')
+        f.write(postinst)
+        f.close()
+        os.chmod('./{0}/DEBIAN/postinst'.format(package_name), 0b111101101)
+
         shutil.copytree('src', './{0}/usr/share/{1}/src'.format(package_name, amuse_version))
         shutil.copytree('test', './{0}/usr/share/{1}/test'.format(package_name, amuse_version))
         shutil.copytree('doc', './{0}/usr/share/doc/{1}/doc'.format(package_name, amuse_version))
@@ -92,7 +104,7 @@ class generate_debian_package(object):
             os.system('fakeroot dpkg-deb --build {0}'.format(package_name))
             
     def cleanup(self):
-        shutil.rmtree(package_name)
+        #shutil.rmtree(package_name)
         os.system('python setup.py generate_main')
             
     def __repr__(self):
