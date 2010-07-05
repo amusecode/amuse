@@ -8,6 +8,7 @@ include src/amuse/legacy/evtwin/src/modules
 recursive-include src *
 recursive-include test *
 recursive-include lib *
+recursive-include data *
 recursive-include support *.py
 
 recursive-include doc/install *.* 
