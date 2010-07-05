@@ -39,7 +39,7 @@ Clean.sub_commands.append(('clean_python',None))
  
 setup(
     name = 'amuse',
-    version = '2.2',
+    version = '2.3',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
     classifiers = [
@@ -53,6 +53,7 @@ setup(
         'Operating System :: POSIX',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: C',
+        'Programming Language :: C++',
         'Programming Language :: Fortran',
         'Topic :: Scientific/Engineering :: Astronomy',
     ],
