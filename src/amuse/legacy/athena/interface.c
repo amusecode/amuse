@@ -36,7 +36,11 @@ static inline void ijk_pos( const Grid *pG,
 {
   *i = ((x1 - pG->x1_0)/pG->dx1) - 0.5 - pG->idisp;
   *j = ((x2 - pG->x2_0)/pG->dx2) - 0.5 - pG->jdisp;
-  *k = ((x3 - pG->x3_0)/pG->dx3) - 0.5 - pG->kdisp;
+  if(pG->dx3 == 0) {
+    *k = 0.0;
+  } else {
+    *k = ((x3 - pG->x3_0)/pG->dx3) - 0.5 - pG->kdisp;
+  }
 }
 
 static Real ***Potentials=NULL;
