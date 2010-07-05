@@ -90,6 +90,8 @@ class generate_debian_package(object):
 
         shutil.copytree('src', './{0}/usr/share/{1}/src'.format(package_name, amuse_version))
         shutil.copytree('test', './{0}/usr/share/{1}/test'.format(package_name, amuse_version))
+        shutil.copytree('data', './{0}/usr/share/{1}/data'.format(package_name, amuse_version))
+        shutil.copytree('lib', './{0}/usr/share/{1}/lib'.format(package_name, amuse_version))
         shutil.copytree('doc', './{0}/usr/share/doc/{1}/doc'.format(package_name, amuse_version))
 
         shutil.copy('amuse.sh', './{0}/usr/bin'.format(package_name))
