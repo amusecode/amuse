@@ -14,7 +14,7 @@ class generate_main(Command):
     description = "generate shell script to run amuse"
 
     user_options = [
-        ('amuse-dir', 'd', "root directory of the amuse project"),
+        ('amuse-dir=', 'd', "root directory of the amuse project"),
     ]
 
     def initialize_options (self):
