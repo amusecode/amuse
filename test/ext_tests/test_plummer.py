@@ -78,3 +78,12 @@ class TestPlummer(TestData):
         self.assertEquals(stars[0].mass.value_in(nbody_system.mass), 0.5)
         self.assertEquals(stars[1].mass.value_in(nbody_system.mass), 0.5)
         
+    def test4(self):
+        stars = new_plummer_sphere(2, do_scale = True)
+        self.assertAlmostEqual(stars.kinetic_energy(),             0.25 | nbody_system.energy)
+        self.assertAlmostEqual(stars.potential_energy(G=nbody_system.G), -0.50 | nbody_system.energy)
+        self.assertAlmostEqual(stars.center_of_mass(),          [0,0,0] | nbody_system.length)
+        self.assertAlmostEqual(stars.center_of_mass_velocity(), [0,0,0] | nbody_system.speed)
+        self.assertAlmostEqual(stars.mass.sum(),                   1.00 | nbody_system.mass)
+        self.assertAlmostEqual(stars.virial_radius(),              1.00 | nbody_system.length)
+        
