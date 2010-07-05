@@ -104,7 +104,7 @@ class generate_debian_package(object):
             os.system('fakeroot dpkg-deb --build {0}'.format(package_name))
             
     def cleanup(self):
-        #shutil.rmtree(package_name)
+        shutil.rmtree(package_name)
         os.system('python setup.py generate_main')
             
     def __repr__(self):
