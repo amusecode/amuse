@@ -51,27 +51,30 @@ class SmallNInterface(LegacyInterface):
     @legacy_function
     def add_to_interaction():
         function = LegacyFunctionSpecification()
-        function.addParameter('id', 'i', function.OUT)
-        for x in ['m', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
+        function.addParameter('index_of_the_particle', 'int32', function.OUT)
+        for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, 'd', function.IN)
+        function.can_handle_array = True
         return function;
 
     @legacy_function
     def get_particle_result():
         function = LegacyFunctionSpecification()
         function.addParameter('k', 'i', function.IN)
-        function.addParameter('id', 'i', function.OUT)
+        function.addParameter('index_of_the_particle', 'int32', function.OUT)
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, 'd', function.OUT)
+        function.can_handle_array = True
         return function;
 
     @legacy_function
     def get_particle_original():
         function = LegacyFunctionSpecification()
         function.addParameter('k', 'i', function.IN)
-        function.addParameter('id', 'i', function.OUT)
+        function.addParameter('index_of_the_particle', 'i', function.OUT)
         for x in ['mass', 'x', 'y', 'z', 'vx', 'vy', 'vz']:
             function.addParameter(x, 'd', function.OUT)
+        function.can_handle_array = True
         return function
 
     @legacy_function
@@ -126,7 +129,7 @@ class SmallNInterface(LegacyInterface):
         self.time = end_time
 
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
-        return (self.add_to_interaction(mass, x, y, z, vx, vy, vz),0)
+        return self.add_to_interaction(mass, x, y, z, vx, vy, vz)
 
     def reset_close_encounter(self):
         """ Resets the internal variables so that a new close encounter can be
@@ -142,6 +145,18 @@ class SmallNInterface(LegacyInterface):
             (key, mass, x, y, z, vx, vy, vz) = self.get_particle_original(index)
        
         return mass, x, y, z, vx, vy, vz
+        
+    def initialize_code(self):
+        pass
+        
+    def cleanup_code(self):
+        pass
+        
+    def commit_parameters(self):
+        pass
+        
+    def commit_particles(self):
+        pass
 
 
         
@@ -177,8 +192,8 @@ class SmallN(GravitationalDynamics):
     def define_properties(self, object):
         object.add_property("get_total_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
         
-    def define_state(self, object):
-        pass
+    #def define_state(self, object):
+    #    pass
         
     def define_methods(self, object):
             
@@ -189,10 +204,9 @@ class SmallN(GravitationalDynamics):
         )
 
         object.add_method(
-            "new_particle", 
+            "add_to_interaction", 
             (
                 nbody_system.mass,
-                nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
                 nbody_system.length,
@@ -202,7 +216,6 @@ class SmallN(GravitationalDynamics):
             ), 
             ( 
                 object.NO_UNIT,
-                object.ERROR_CODE
             )
         )
         object.add_method(
@@ -248,7 +261,7 @@ class SmallN(GravitationalDynamics):
     
     def define_particle_sets(self, object):
         object.define_set('particles', 'index_of_the_particle')
-        object.set_new('particles', 'new_particle')
+        object.set_new('particles', 'add_to_interaction')
         object.set_delete('particles', 'delete_particle')
         object.add_getter('particles', 'get_state', names = ('mass','x', 'y','z', 'vx','vy','vz'))
         
