@@ -155,9 +155,9 @@ int commit_parameters(){
   
   
   if ((Potentials = (Real***)calloc_3d_array(
-    level0_Grid.Nx1 + 2 * nghost, 
-    level0_Grid.Nx2 + 2 * nghost, 
     level0_Grid.Nx3 + 2 * nghost, 
+    level0_Grid.Nx2 + 2 * nghost,
+    level0_Grid.Nx1 + 2 * nghost,  
     sizeof(Real))) == NULL)
   {
     return -1;
@@ -483,7 +483,6 @@ int set_potential(
             i0 -= level0_Grid.idisp;
             j0 -= level0_Grid.jdisp;
             k0 -= level0_Grid.kdisp;
-            
             Potentials[k0][j0][i0] = potential[l];
         }
     }

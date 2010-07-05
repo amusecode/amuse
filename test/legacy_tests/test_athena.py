@@ -526,21 +526,21 @@ class TestAthena(TestWithMPI):
         print instance.grid.x[0].number.shape
         x = instance.potential_grid.x[0]
         y = instance.potential_grid.y[0]
-        print x
-        print y
+        
+        
         for i in range(12):
             for j in range(12):
                 px = x[i][j][0].value_in(generic_unit_system.length)
                 py = y[i][j][0].value_in(generic_unit_system.length)
-                potential =  (math.sin(py * math.pi)+math.sin(px *math.pi)) / -20.0
+                potential =  (math.sin(py * math.pi)+math.sin(px *math.pi)) / 200.0
                 if px < 0 or px > 1.0:
                     potential = 0.0
                 if py < 0 or py > 1.0:
                     potential = 0.0
-                potential_grid.potential[i][j][0] = generic_unit_system.energy.new_quantity(potential)
+                instance.potential_grid[i][j][0].potential = generic_unit_system.energy.new_quantity([potential])
         print potential_grid.potential
-        channel = potential_grid.new_channel_to(instance.potential_grid)
-        channel.copy()
+        #channel = potential_grid.new_channel_to(instance.potential_grid)
+        #channel.copy()
         result = instance.initialize_grid() 
         
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
@@ -548,9 +548,13 @@ class TestAthena(TestWithMPI):
             self.assertEquals(x, 0.1)
             
         instance.evolve(1.0 | generic_unit_system.time)
-        print instance.grid.rhox
-        print instance.grid.rho
-        
+        #print instance.grid.rhox
+        #z = instance.grid.rho[0][...,...,0]
+        #z = instance.potential_grid.potential[0][...,...,0]
+        #z = z.value_in(generic_unit_system.energy)
+        #from matplotlib import pyplot
+        #pyplot.imshow(z)
+        #pyplot.savefig("bla.png")
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertNotEquals(x, 0.1)
         
