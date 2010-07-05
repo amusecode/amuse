@@ -1,0 +1,4 @@
+#! /bin/bash
+# Run the nosetests, including the slowtests
+
+nosetests -m '(?:^|[b_.-]|[Ss]low)[Tt]est' $@

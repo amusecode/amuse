@@ -317,7 +317,7 @@ class TestGadget2(TestWithMPI):
     def test9(self):
         print "Testing Gadget properties"
         target_number_of_particles = 100
-        gas = new_evrard_gas_sphere(target_number_of_particles, self.default_convert_nbody, seed = 1234)
+        gas = new_evrard_gas_sphere(target_number_of_particles, self.default_convert_nbody, do_scale=True, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
         instance.gas_particles.add_particles(gas)
         self.assertEquals(instance.model_time,                        0.0 | units.s)
