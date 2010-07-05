@@ -3,8 +3,6 @@ include Makefile
 include configure
 include README.txt
 
-include src/amuse/legacy/evtwin/src/modules
-
 recursive-include src *
 recursive-include test *
 recursive-include lib *
