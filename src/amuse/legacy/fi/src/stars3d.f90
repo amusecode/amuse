@@ -980,7 +980,7 @@ integer(glcint) :: i,j,k,l
 integer(glcint) :: win,menu
  
  if(glutGet(GLUT_ELAPSED_TIME).NE.0) then
-  print*,'already viewer present?'
+!  print*,'already viewer present?'
 !  return
  endif
  call glutInit

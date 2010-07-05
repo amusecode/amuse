@@ -72,7 +72,7 @@ worker: worker.f90 interface.o $(SRC)/libfi.a
 
 glworker: glworker.f90 interface.o $(SRC)/libfi.a
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) worker.f90 interface.o -o $@  $(GLOBJECTS) \
+	$(FC) $(FFLAGS) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
 
 worker.f90: interface.py __init__.py

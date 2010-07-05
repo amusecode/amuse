@@ -83,12 +83,11 @@ subroutine initeps
     else 
       epsavg=0.
       low=1
-      if(usesph) low=1+nsph
-      epsavg=MINVAL(epsgrav(low:nbodies))
-      do i=low+1,nbodies
+      if(usesph.AND.nbodies.GT.nsph) low=1+nsph
+      do i=low,nbodies
         epsavg=epsavg+epsgrav(i)
       enddo
-      if(low-1.NE.nbodies) epsavg=epsavg/(nbodies-low+1)
+      epsavg=epsavg/(nbodies-low+1)
     endif
   else
     epsavg=eps
