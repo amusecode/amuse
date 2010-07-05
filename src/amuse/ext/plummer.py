@@ -10,10 +10,12 @@ import numpy, numpy.random
 import random
 
 class MakePlummerModel(object):
-    def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999, random_state = None):
+    def __init__(self, number_of_particles, convert_nbody = None, radius_cutoff = 22.8042468, mass_cutoff = 0.999, 
+            do_scale = False, random_state = None):
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
         self.mass_cutoff = min(mass_cutoff, self.calculate_mass_cuttof_from_radius_cutoff(radius_cutoff))
+        self.do_scale = do_scale
         self.random_state = random_state
         
         
@@ -95,8 +97,9 @@ class MakePlummerModel(object):
         result.position = nbody_system.length.new_quantity(positions)
         result.velocity = nbody_system.speed.new_quantity( velocities)
 
-        result.position -= result.center_of_mass()
-        result.velocity -= result.center_of_mass_velocity()
+        result.move_to_center()
+        if self.do_scale:
+            result.scale_to_standard()
         
         if not self.convert_nbody is None:
             result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
@@ -110,13 +113,15 @@ class MakePlummerModel(object):
 """
 Create a plummer sphere with the given number of particles. Returns
 a set of stars with equal mass and positions and velocities distributed
-to fit a plummer star distribution model. The stars are centered around
-their center of mass (the center of mass position is zero)
+to fit a plummer star distribution model. The model is centered around the 
+origin. Positions and velocities are optionally scaled such that the kinetic and 
+potential energies are 0.25 and -0.5 in nbody-units, respectively.
 
 :argument number_of_particles: Number of particles to include in the plummer sphere
 :argument convert_nbody:  When given will convert the resulting set to SI units
 :argument radius_cutoff: Cutoff value for the radius (defaults to 22.8042468)
 :argument mass_cutoff: Mass percentage inside radius of 1
+:argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
 """
 def new_plummer_sphere(number_of_particles, *list_arguments, **keyword_arguments):
     uc = MakePlummerModel(number_of_particles, *list_arguments, **keyword_arguments)

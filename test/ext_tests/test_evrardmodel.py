@@ -14,7 +14,7 @@ class TestEvrardModel(amusetest.TestCase):
     def test2(self):
         print "Testing properties of an Evrard model."
         target_number_of_particles = 1000
-        gas_parts = new_evrard_gas_sphere(target_number_of_particles, seed=1234)
+        gas_parts = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed=1234)
         self.assertEquals(len(gas_parts), 978)
         self.assertAlmostEqual(gas_parts.kinetic_energy(),             0.00 | nbody.energy)
         self.assertAlmostEqual(gas_parts.potential_energy(G=nbody.G), -0.50 | nbody.energy)
@@ -25,6 +25,6 @@ class TestEvrardModel(amusetest.TestCase):
     def test3(self):
         print "Testing virial radius of an Evrard model."
         target_number_of_particles = 100
-        gas_parts = new_evrard_gas_sphere(target_number_of_particles, seed=1234)
+        gas_parts = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed=1234)
         self.assertAlmostEqual(gas_parts.virial_radius(),             1.00 | nbody.length)
     

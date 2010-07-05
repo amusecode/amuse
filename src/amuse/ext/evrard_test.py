@@ -94,10 +94,11 @@ class MakeEvrardTest(object):
 class MakeEvrardModel(object):
     
     def __init__(self, target_number_of_particles, convert_nbody = None, base_grid = None, 
-            internal_energy = 0.05, seed = None):
+            internal_energy = 0.05, do_scale = False, seed = None):
         self.target_number_of_particles = target_number_of_particles
         self.convert_nbody = convert_nbody
         self.internal_energy = internal_energy
+        self.do_scale = do_scale
         self.base_sphere = uniform_unit_sphere(target_number_of_particles, base_grid)   
         numpy.random.seed(seed)
     
@@ -127,8 +128,9 @@ class MakeEvrardModel(object):
         result.u = nbody_system.specific_energy.new_quantity(internal_energies)
         
         result.position -= result.center_of_mass()
-        scale_factor = (result.potential_energy(G=nbody_system.G)) / (-0.5 | nbody_system.energy)
-        result.position *= scale_factor
+        if self.do_scale:
+            scale_factor = (result.potential_energy(G=nbody_system.G)) / (-0.5 | nbody_system.energy)
+            result.position *= scale_factor
         
         if not self.convert_nbody is None:
             result = ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
@@ -138,23 +140,18 @@ class MakeEvrardModel(object):
     
 """
 Create an evrard gas sphere with approximately the given number of particles. 
-Returns a set of particles with equal mass and internal energy. Positions are 
-randomly distributed to fit an evrard gas distribution model (density 
-proportional to r^-1). Velocities are set to zero initially. The particles 
-are centered around their center of mass (the center of mass position is zero).
+Returns a set of particles with equal mass and specific internal energy. 
+Positions are randomly distributed to fit an evrard gas distribution model 
+(density proportional to r^-1). Velocities are set to zero initially. The 
+model is centered around the origin. Positions are optionally scaled such 
+that the potential energy is -0.5 in nbody-units.
 
-:argument target_number_of_particles: Target number of particles to include in the plummer sphere
+:argument target_number_of_particles: Target number of particles to include in the model
 :argument convert_nbody:  When given will convert the resulting set to SI units
-:argument internal_energy: The internal energy of each particle (defaults to 0.05)
+:argument internal_energy: The specific internal energy of each particle (defaults to 0.05)
+:argument do_scale: scale the positions to exact nbody units (U=-0.5)
+:argument seed:  Seed for the random number generator
 """
 def new_evrard_gas_sphere(target_number_of_particles, *list_arguments, **keyword_arguments):
     uc = MakeEvrardModel(target_number_of_particles, *list_arguments, **keyword_arguments)
     return uc.result
-
-
-if __name__=="__main__":
-  sphere=MakeEvrardTest(10000)
-  mass,x,y,z,vx,vy,vz,u=sphere.new_model()
-  print mass[0],x[0],vx[0],u[0]
-  print len(mass),len(x),len(vx),len(u)
-  

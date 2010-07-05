@@ -4,9 +4,12 @@ import math
 import numpy
         
 class MakeKingModel(object):
-    def __init__(self, number_of_particles, convert_nbody, W0, beta=0.0):
+    def __init__(self, number_of_particles, W0, convert_nbody = None, do_scale = False, 
+            beta = 0.0, seed = None, verbose = False):
         self.number_of_particles = number_of_particles
         self.convert_nbody = convert_nbody
+        self.do_scale = do_scale
+        self.verbose = verbose
         self.beta = beta
         self.W0 = W0
         self.beta_w0 = beta*W0
@@ -19,12 +22,11 @@ class MakeKingModel(object):
         
         # // profile
         self.NM = 2500
-        # real rr[NM+1], d[NM+1], v2[NM+1], psi[NM+1], zm[NM+1]; CHECK whether array sizes match in the end.
         self.rr=[]; self.d=[]; self.v2=[]; self.psi=[]; self.zm=[]
-        
         self.NINDX = 100
-        # int indx[NINDX+1];
         self.indx=[]
+        
+        numpy.random.seed(seed)
         
     def compute_v33(self):
         v33 = []
@@ -124,7 +126,6 @@ class MakeKingModel(object):
         if (x <= 0):
             d = 1
         else:
-#            print y[0], x, self.get_dens_and_vel(y[0]/x, False), self.dc_inverse
             d = (self.get_dens_and_vel(y[0]/x, False)) * self.dc_inverse
             # // d is rho/rho_0
             # // False suppresses vel
@@ -417,10 +418,11 @@ class MakeKingModel(object):
         kin *= 0.25*sig*sig*v20
         rvirial = -0.5/pot
         #    // Initialize the N-body system.
-        print " King model, w0 = ",self.W0,", Rt/Rc = ",rr[nprof],", Rh/Rc = ",rhalf,", Mc/M = ", zmcore
-        #    // Write essential model information
-        print "initial_mass", 1.0
-        print "initial_rtidal_over_rvirial",  rr[nprof] / (0.25/kin)
+        if self.verbose:
+            print " King model, w0 = ",self.W0,", Rt/Rc = ",rr[nprof],", Rh/Rc = ",rhalf,", Mc/M = ", zmcore
+            #    // Write essential model information
+            print "initial_mass", 1.0
+            print "initial_rtidal_over_rvirial",  rr[nprof] / (0.25/kin)
         #    // Assign positions and velocities. Note that it may actually
         #    // be preferable to do this in layers instead.
         masses = numpy.zeros((self.number_of_particles,1)) + (1.0 / self.number_of_particles)
@@ -444,43 +446,43 @@ class MakeKingModel(object):
         #    // System is in virial equilibrium in a consistent set of units
         #    // with G, core radius, and total mass = 1.
         
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# like in plummer.py, positions are not transformed to th center of mass!
-# (otherwise it would have to be done again after changing masses...)
-#
-#    // Transform to center-of-mass coordinates and optionally
-#    // scale to standard parameters.
-#    b->to_com();
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
-        if (False):
-            get_top_level_energies(b, 0.0, potential, kinetic)
-            scale_virial(b, -0.5, potential, kinetic) #	// scales kinetic
-            energy = kinetic + potential
-            scale_energy(b, -0.25, energy) #			// scales energy
-            print "initial_total_energy", -0.25
-            print "initial_rvirial", 1.0
-            print "total_energy", -0.25
-        
         return (masses, positions, velocities)
-    
-    def move_particles_to_center_of_mass(self, particles):
-        center_of_mass = particles.center_of_mass()
-        center_of_mass_velocity = particles.center_of_mass_velocity()
-        particles.position = particles.position - center_of_mass
-        particles.velocity = particles.velocity - center_of_mass_velocity     
    
     @property
     def result(self):
         masses, positions, velocities = self.makeking()
         result = core.Particles(self.number_of_particles)
-        if self.convert_nbody is None:
-            result.mass = nbody_system.mass.new_quantity(numpy.hstack(masses))
-            result.position = nbody_system.length.new_quantity(positions)
-            result.velocity = nbody_system.speed.new_quantity(velocities)
-        else:
-            result.mass = self.convert_nbody.to_si(nbody_system.mass.new_quantity(numpy.hstack(masses)))
-            result.position = self.convert_nbody.to_si( nbody_system.length.new_quantity(positions))
-            result.velocity = self.convert_nbody.to_si(nbody_system.speed.new_quantity( velocities))
+        result.mass = nbody_system.mass.new_quantity(masses)
+        result.position = nbody_system.length.new_quantity(positions)
+        result.velocity = nbody_system.speed.new_quantity(velocities)
+        result.move_to_center()
+        if self.do_scale:
+            result.scale_to_standard()
+        
+        if not self.convert_nbody is None:
+            result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = result.copy_to_memory()
+        
         return result
     
+
+"""
+Create a King model with the given number of particles and King dimensionless 
+depth W0. Returns a set of particles with equal mass and positions and velocities 
+distributed to fit a King distribution model. The model is centered around the 
+origin. Positions and velocities are optionally scaled such that the kinetic and 
+potential energies are 0.25 and -0.5 in nbody-units, respectively.
+
+:argument number_of_particles: Number of particles to include in the King model
+:argument W0: King dimensionless depth, allowed range: < 0, 16 ]
+:argument convert_nbody:  When given will convert the resulting set to SI units
+:argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
+:argument beta:  Steve's rescaling parameter (< 1) [0]. Models with b > 0 are just 
+:argument seed:  Seed for the random number generator
+    rescaled King models; models with b < 0 approach isothermal spheres as 
+    b --> -infinity.
+:argument verbose: Be verbose (output is suppressed by default) [False]
+"""
+def new_king_model(number_of_particles, W0, *list_arguments, **keyword_arguments):
+    uc = MakeKingModel(number_of_particles, W0, *list_arguments, **keyword_arguments)
+    return uc.result

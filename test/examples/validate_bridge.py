@@ -20,7 +20,7 @@ from amuse.legacy.fi.interface import Fi
 from amuse.ext.bridge import bridge
 from amuse.support.units import constants
 from amuse.ext.derived_grav_systems import copycat
-from amuse.ext.kingmodel import MakeKingModel
+from amuse.ext.kingmodel import new_king_model
 
 def sys_from_parts(base_class,parts,converter,eps=None,timestep=None,usegl=False,mode=None):
   if mode is None:
@@ -44,7 +44,7 @@ def sys_from_parts(base_class,parts,converter,eps=None,timestep=None,usegl=False
 
 def sys_from_king(base_class,N,W, converter, eps=None,\
                             timestep=None,usegl=False,mode=None):
-  parts=MakeKingModel(N, converter, W0=W).result
+  parts = new_king_model(N, W0=W, convert_nbody=converter)
   parts.radius=0.| nbody_system.length
   return sys_from_parts(base_class,parts,converter,eps,timestep,usegl,mode)
 

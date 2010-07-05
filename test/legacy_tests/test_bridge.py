@@ -9,7 +9,7 @@ from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
 from amuse.legacy.bhtree.interface import BHTree
 from amuse.ext.bridge import bridge
-from amuse.ext.kingmodel import MakeKingModel
+from amuse.ext.kingmodel import new_king_model
 
 def sys_from_parts(base_class,parts,converter,eps=None):
   interface=base_class(converter)
@@ -27,8 +27,7 @@ class testBridge(TestWithMPI):
 
     test_class=PhiGRAPE
     number_of_particles = 50
-    instance = MakeKingModel(number_of_particles, convert, W0=7)
-    stars = instance.result
+    stars = new_king_model(number_of_particles, W0=7, convert_nbody=convert)
     stars.radius = 0.0 | units.RSun
 
     cluster=test_class(convert)
