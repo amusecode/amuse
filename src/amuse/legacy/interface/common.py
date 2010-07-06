@@ -84,14 +84,14 @@ class CommonCodeInterface(object):
 
         return function
 
-    #def invoke_state_change(self):
-    #    pass
+    def invoke_state_change(self):
+        pass
 
 class CommonCode(CodeInterface):
 
     def define_state(self, object):
         object.set_initial_state('UNINITIALIZED')
         object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
-        #object.add_method('INITIALIZED', 'invoke_state_change')
+        object.add_method('INITIALIZED', 'invoke_state_change')
         object.add_transition_to_method('END', 'cleanup_code')
         object.add_method('END', 'stop')

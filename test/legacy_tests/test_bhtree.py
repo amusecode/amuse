@@ -557,7 +557,6 @@ class TestAmuseInterface(TestWithMPI):
             instance.parameters.epsilon_squared = x | units.AU**2
             self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         
-        instance.commit_parameters()
         (value, error) = instance.get_time_step()
         self.assertEquals(0, error)
         self.assertEquals(0.015625, value)

@@ -560,4 +560,53 @@ class TestFiInterface(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
+    def test12(self):
+        print "Testing Fi states"
+        target_number_of_particles = 100
+        gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
+        gas.radius = 0.0 | nbody.length
+        dark = core.Particles(2)
+        dark.mass = [0.4, 0.4] | nbody.mass
+        dark.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | nbody.length
+        dark.velocity = [[0.1, 0.1, 0.1], [1.0, 1.0, 1.0]] | nbody.speed
+        dark.radius = 0.0 | nbody.length
+        
+        print "First do everything manually:"
+        convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        instance = Fi(convert_nbody)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.gas_particles.add_particles(gas)
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        mass = instance.gas_particles[0].mass
+        instance.evolve_model(0.001 | nbody.time)
+        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        instance.cleanup_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        instance.stop()
+        
+        print "initialize_code(), commit_parameters(), (re)commit_particles(), and cleanup_code() should be called " \
+            "automatically before setting parameters, new_xx_particle(), get_xx(), and stop():"
+        instance = Fi(convert_nbody)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.parameters.timestep = 0.001 | nbody.time
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.gas_particles.add_particles(gas)
+        instance.dm_particles.add_particles(dark)
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        mass = instance.gas_particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.synchronize_model() # model was already synchronized, but fi doesn't seem to get that...
+        instance.dm_particles.remove_particles(dark)
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        mass = instance.gas_particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.evolve_model(0.002 | nbody.time)
+        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        instance.stop()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
     
