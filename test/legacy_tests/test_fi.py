@@ -4,7 +4,7 @@ import numpy
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.legacy.fi.interface import FiInterface, Fi
-from amuse.ext.evrard_test import MakeEvrardTest
+from amuse.ext.evrard_test import new_evrard_gas_sphere
 
 from amuse.support.units import nbody_system as nbody
 from amuse.support.units import units
@@ -358,49 +358,37 @@ class TestFiInterface(TestWithMPI):
     
     def test7(self):
         print "Test 7: testing Fi SPH particles"
-        number_sph_particles = 1000
-        mass,x,y,z,vx,vy,vz,u=MakeEvrardTest(number_sph_particles).new_model()
-        radius=numpy.zeros_like(mass) # actually a smoothing parameter?
-        attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
-        attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
+        target_number_of_particles = 1000
+        gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
+        gas.radius = 0.0 | nbody.length
         
-        gas = core.Particles(number_sph_particles)
-        for attribute, unit in zip(attributes,attr_units):
-            setattr(gas, attribute, unit.new_quantity(eval(attribute)))
-        
-        instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
+        convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        instance = Fi(convert_nbody)
         self.assertEquals(0, instance.initialize_code())
         instance.parameters.timestep = 0.05 | nbody.time
         instance.parameters.integrate_entropy_flag = True
         instance.gas_particles.add_particles(gas)
         
-        instance.synchronize_model()
-        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.,3)
-        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -0.69, 2)#-0.6611,3)#why different from TestEvrard?
-        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy, 0.05, 2)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.00 | nbody.energy)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -0.50 | nbody.energy, 2)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.05 | nbody.energy)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -0.45 | nbody.energy, 2)
         
         instance.evolve_model(10.0 | units.Myr)
         instance.synchronize_model()
-        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.2392,3)
-        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.0773,3)
-        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy,0.1882,3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.0555 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -0.5642 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0628 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -0.45 | nbody.energy, 2)
         
         instance.cleanup_code()
         instance.stop()
     
     def test8(self):
         print "Test 8: testing Fi dark matter + SPH particles"
-        number_sph_particles = 100
-        mass,x,y,z,vx,vy,vz,u=MakeEvrardTest(number_sph_particles).new_model()
-        radius=numpy.zeros_like(mass) # actually a smoothing parameter?
-        attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
-        attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
-        
-        gas = core.Particles(number_sph_particles)
-        for attribute, unit in zip(attributes,attr_units):
-            setattr(gas, attribute, unit.new_quantity(eval(attribute)))
+        target_number_of_particles = 100
+        gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
+        gas.radius = 0.0 | nbody.length
         
         dark = core.Particles(2)
         dark.mass = [1.0, 3.0e-6] | units.MSun
@@ -408,41 +396,36 @@ class TestFiInterface(TestWithMPI):
         dark.velocity = [[0.0,0.0,0.0], [0.0,29.8,0.0]] | units.km / units.s
         dark.radius = [1.0, 0.01] | units.RSun
         
-        instance = Fi(nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU))
+        convert_nbody = nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
+        instance = Fi(convert_nbody)
         self.assertEquals(0, instance.initialize_code())
         instance.dm_particles.add_particles(dark)
         instance.gas_particles.add_particles(gas)
         
-        instance.synchronize_model()
-        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.,3)
-        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.4399, 3)
-        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy, 0.0467, 3)
-#        t = 0 | units.yr
-#        while t < (1.0 | units.yr):
-#            t = t + (0.1 | units.yr)
-#            instance.evolve_model(t)
-#            print t
-#            print instance.dm_particles[1].position.value_in(units.AU)
+        print convert_nbody.to_nbody(instance.kinetic_energy)
+        print convert_nbody.to_nbody(instance.potential_energy)
+        print convert_nbody.to_nbody(instance.thermal_energy)
+        print convert_nbody.to_nbody(instance.total_energy)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.0000 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.3724 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody.energy)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -1.3224 | nbody.energy, 3)
+        
         instance.evolve_model(1.0 | units.yr)
         instance.synchronize_model()
-        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 0.0021,3)
-        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.9338,3)
-        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy,0.4426,3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.0039 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.8132 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.4134 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -1.3958 | nbody.energy, 3)
         
         instance.cleanup_code()
         instance.stop()
     
     def test9(self):
         print "Test 9: testing Fi dark matter + SPH + star particles"
-        number_sph_particles = 100
-        gas = core.Particles(number_sph_particles)
-        mass,x,y,z,vx,vy,vz,u=MakeEvrardTest(number_sph_particles).new_model()
-        radius=numpy.zeros_like(mass) # actually a smoothing parameter?
-        attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
-        attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
-        for attribute, unit in zip(attributes,attr_units):
-            setattr(gas, attribute, unit.new_quantity(eval(attribute)))
+        target_number_of_particles = 100
+        gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
+        gas.radius = 0.0 | nbody.length
         
         dark = core.Particles(2)
         dark.mass = [0.4, 0.4] | nbody.mass
@@ -457,22 +440,33 @@ class TestFiInterface(TestWithMPI):
         star.radius = [0.0, 0.0] | units.RSun
         star.tform = [1000.0, 1000.0] | units.Myr
         
-        instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc), debugger='none')
+        convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        instance = Fi(convert_nbody)
         self.assertEquals(0, instance.initialize_code())
         instance.parameters.verbosity = 1
         instance.dm_particles.add_particles(dark)
         instance.star_particles.add_particles(star)
         instance.gas_particles.add_particles(gas)
         
-        instance.synchronize_model()
-        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 1.7204,3)
-        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.3376, 3)
-        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy, 0.0467, 3)
+        print convert_nbody.to_nbody(instance.kinetic_energy)
+        print convert_nbody.to_nbody(instance.potential_energy)
+        print convert_nbody.to_nbody(instance.thermal_energy)
+        print convert_nbody.to_nbody(instance.total_energy)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.7204 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.2830 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody.energy)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),      0.4874 | nbody.energy, 3)
+        
         instance.evolve_model(1.0 | units.yr)
         instance.synchronize_model()
-        self.assertAlmostEqual(instance.get_kinetic_energy().kinetic_energy, 1.4919,3)
-        self.assertAlmostEqual(instance.get_potential_energy().potential_energy, -1.5947,3)
-        self.assertAlmostEqual(instance.get_thermal_energy().thermal_energy,0.3606,3)
+        print convert_nbody.to_nbody(instance.kinetic_energy)
+        print convert_nbody.to_nbody(instance.potential_energy)
+        print convert_nbody.to_nbody(instance.thermal_energy)
+        print convert_nbody.to_nbody(instance.total_energy)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.5130 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.2717 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.1455 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),      0.3868 | nbody.energy, 3)
         
         instance.cleanup_code()
         instance.stop()
@@ -510,15 +504,10 @@ class TestFiInterface(TestWithMPI):
     
     def test11(self):
         print "Test 11: testing Fi (dm+sph+star) particles Superset"
-        number_sph_particles = 100
-        gas = core.Particles(number_sph_particles)
-        mass,x,y,z,vx,vy,vz,u=MakeEvrardTest(number_sph_particles).new_model()
-        radius=numpy.zeros_like(mass) # actually a smoothing parameter?
-        attributes = ['mass','radius','x','y','z','vx','vy','vz','u']
-        attr_units = [nbody.mass, nbody.length, nbody.length, nbody.length, nbody.length, 
-            nbody.speed, nbody.speed, nbody.speed, nbody.specific_energy]
-        for attribute, unit in zip(attributes,attr_units):
-            setattr(gas, attribute, unit.new_quantity(eval(attribute)))
+        target_number_of_particles = 100
+        gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
+        gas.radius = 0.0 | nbody.length
+        number_sph_particles = len(gas)
         
         dark = core.Particles(2)
         dark.mass = [0.4, 0.4] | nbody.mass
@@ -534,9 +523,8 @@ class TestFiInterface(TestWithMPI):
         star.tform = [1000.0, 1000.0] | units.Myr
         
         convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
-        instance = Fi(convert_nbody, debugger='none')
+        instance = Fi(convert_nbody)
         self.assertEquals(0, instance.initialize_code())
-        instance.parameters.verbosity = 1
 
         self.assertEquals(0, len(instance.particles))
         instance.dm_particles.add_particles(dark)
@@ -564,12 +552,10 @@ class TestFiInterface(TestWithMPI):
             instance.dm_particles.kinetic_energy() +
             instance.star_particles.kinetic_energy() +
             instance.gas_particles.kinetic_energy())
-        self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), 
-            convert_nbody.to_si(instance.get_kinetic_energy().kinetic_energy | nbody.energy))
+        self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), instance.kinetic_energy)
         instance.evolve_model(1.0 | units.yr)
         instance.synchronize_model()
-        self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), 
-            convert_nbody.to_si(instance.get_kinetic_energy().kinetic_energy | nbody.energy))
+        self.assertAlmostRelativeEqual(instance.particles.kinetic_energy(), instance.kinetic_energy)
         
         instance.cleanup_code()
         instance.stop()

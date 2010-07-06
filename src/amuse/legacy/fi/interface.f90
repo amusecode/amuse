@@ -99,6 +99,14 @@ function get_thermal_energy(e) result(ret)
   ret=0
 end function
 
+function get_total_energy(e) result(ret)
+  integer :: ret
+  real*8 :: e,ek,ep,eth
+  call muse_energies(0,ek,ep,eth)
+  e=ek+ep+eth
+  ret=0
+end function
+
 
 function new_dm_particle(ids,mass,eps,x,y,z,vx,vy,vz) result(ret)
   integer :: ids,ret,oldnp,muse_get_nbodies

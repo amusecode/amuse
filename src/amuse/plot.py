@@ -31,7 +31,6 @@ class UnitlessArgs(object):
                 stripped = v.value_in(v.unit)
                 cli.stripped_args.append(stripped)
                 cli.unitnames_of_args.append(v.unit.name)
-                print v.unit.name
             else:
                 cli.stripped_args.append(v)
         

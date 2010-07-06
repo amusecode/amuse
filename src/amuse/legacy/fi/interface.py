@@ -275,6 +275,13 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         function.result_type = 'i'
         return function
 
+    @legacy_function      
+    def get_total_energy():
+        function = LegacyFunctionSpecification()
+        function.addParameter('total_energy', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
 
     @legacy_function          
     def delete_particle():
@@ -1478,6 +1485,32 @@ class Fi(GravitationalDynamics):
     def define_properties(self, object):
         GravitationalDynamics.define_properties(self, object)
         object.add_property("get_thermal_energy", nbody_system.energy)
+        object.add_property("get_total_energy", nbody_system.energy)
+    
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        object.add_method('EDIT', 'new_dm_particle')
+        object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
+        object.add_method('EDIT', 'new_sph_particle')
+        object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
+        object.add_method('EDIT', 'new_star_particle')
+        object.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
+        object.add_method('RUN', 'get_velocity')
+        object.add_method('RUN', 'get_acceleration')
+        object.add_method('RUN', 'get_internal_energy')
+        object.add_method('RUN', 'get_star_tform')
+        object.add_method('RUN', 'get_state_sph')
+        object.add_method('RUN', 'get_state_star')
+        
+        object.add_method('RUN', 'get_kinetic_energy')
+        object.add_method('RUN', 'get_potential_energy')
+        object.add_method('RUN', 'get_thermal_energy')
+        object.add_method('RUN', 'get_total_energy')
+        object.add_method('RUN', 'get_total_radius')
+        object.add_method('RUN', 'get_center_of_mass_position')
+        object.add_method('RUN', 'get_center_of_mass_velocity')
+        object.add_method('RUN', 'get_total_mass')
+        object.add_method('RUN', 'get_time')
     
     def define_parameters(self, object):
         object.add_method_parameter(
