@@ -93,6 +93,7 @@ class generate_debian_package(object):
         shutil.copytree('data', './{0}/usr/share/{1}/data'.format(package_name, amuse_version))
         shutil.copytree('lib', './{0}/usr/share/{1}/lib'.format(package_name, amuse_version))
         shutil.copytree('doc', './{0}/usr/share/doc/{1}/doc'.format(package_name, amuse_version))
+        self.touch('./{0}/usr/share/{1}/build.py'.format(package_name, amuse_version))
 
         shutil.copy('amuse.sh', './{0}/usr/bin'.format(package_name))
         shutil.copy('iamuse.sh', './{0}/usr/bin'.format(package_name))
@@ -112,6 +113,11 @@ class generate_debian_package(object):
     def __repr__(self):
         s = "generated debian package: {0}.deb".format(package_name)
         return s
+
+    def touch(self, filename):
+        if not os.path.exists(filename):
+            open(filename, 'w').close()
+            
     
 if __name__ == '__main__':
     instance = generate_debian_package()
