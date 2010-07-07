@@ -816,6 +816,8 @@ class GravitationalDynamics(common.CommonCode):
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','PARAMETER_CHANGE','invoke_state_change2')
+        object.add_transition('PARAMETER_CHANGE','RUN','recommit_parameters')
         object.add_method('EDIT', 'new_particle')
         object.add_method('EDIT', 'delete_particle')
         object.add_transition('EDIT', 'RUN', 'commit_particles')
