@@ -27,7 +27,9 @@ depends = \
     'libfftw3-3', 
     'libfftw3-dev', 
     'libfftw3-doc',
-    'mpich2 (>=1.2.1)'
+    'mpich2 (>=1.2.1)',
+    'libgsl0ldbl',
+    'libgsl0-dev'
 ]
 control = \
 """
