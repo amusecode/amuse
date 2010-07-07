@@ -18,6 +18,7 @@ These are the packages AMUSE needs:
 * mpi4py (version >= 1.0)
 * nose (version >= 0.11)
 * FFTW (version >= 3.0)
+* GSL
 
 
 In the first two sections (compilers_ and installation_scripts_) we explain how to use the two
@@ -254,6 +255,20 @@ check for the availability of fftw on your system, you can use ``fftw-wisdom``:
 
 You can download the FFTW library from http://www.fftw.org. 
 
+GSL
+-------
+The GNU Scientific Library (GSL) is a numerical library for C and C++ 
+programmers. It is free software under the GNU General Public License.
+To check for the availability of GSL on your system, you can use ``gsl-config``:
+
+.. code-block:: sh
+
+   > gsl-config --version
+   1.14
+
+
+You can download GSL from http://www.gnu.org/software/gsl/. 
+
 
 Installing on Ubuntu 9.04
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -312,6 +327,12 @@ FFTW
 On Ubuntu, FFTW can be installed with::
 
     > sudo apt-get install libfftw3 libfftw3-dev libfftw3-doc
+
+GSL
+-------
+On Ubuntu, GSL can be installed with::
+
+    > sudo apt-get install libgsl0 libgsl0-dev
 
 Python packages in Ubuntu
 -------------------------
@@ -406,6 +427,12 @@ FFTW
 On Fedora, FFTW can be installed with::
 
     > sudo yum install fftw fftw-devel
+
+GSL
+-------
+On Fedora, GSL can be installed with::
+
+    > sudo yum install gsl gsl-devel
 
 Python packages in Fedora
 -------------------------
@@ -537,6 +564,12 @@ FFTW
 Some codes in AMUSE need FFTW 3, FFTW can be installed with::
 
     > sudo zypper install fftw3 fftw3-devel
+
+GSL
+-------
+On OpenSuse (10.2 and newer), GSL can be installed with::
+
+    > sudo zypper install gsl gsl-devel
 
 Python packages in Fedora
 -------------------------

@@ -104,6 +104,14 @@ class InstallPrerequisites(object):
             'http://www.fftw.org/',    #download url, filename is appended
             self.fftw_build            #method to use for building
           ) ,
+          (
+            'gsl' ,                    #name to refer by
+            [],                        #names of prerequisites (unused)
+            '1.14' ,                   #version string
+            'gsl-', '.tar.gz',         #pre- and postfix for filename
+            'http://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
+            self.fftw_build            #method to use for building - same as for FFTW should work
+          ) ,
         ]
         
     @late
