@@ -29,7 +29,7 @@ Myr = myr
 # cgs units
 g = named('gram','g', 1e-3 * kg)
 cm = named('centimeter','cm',0.01*m)
-erg = named('energy','erg', 1e-7 * J)
+erg = named('erg','erg', 1e-7 * J)
 
 percent = named('percent', '%', 0.01 * none)
 metallicity = core.none_unit('metallicity', 'metallicity')

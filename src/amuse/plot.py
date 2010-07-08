@@ -12,32 +12,38 @@ except ImportError:
             
     native_plot = FakePlotLibrary()
     
-import numpy as np
 from amuse.support.units import units
 from amuse.support.data import values
 
-auto_label = "[{0}]"
-custom_label = "{0} [{1}]"
+auto_label = "{0}"
+custom_label = "{0} {1}"
 
 class UnitlessArgs(object):
-    stripped_args = []
-    unitnames_of_args = []
+    current_plot = None
 
     @classmethod
     def strip(cli, *args, **kwargs):
+        if cli.current_plot is native_plot.gca():
+            args = [arg.as_quantity_in(unit) if isinstance(arg, values.Quantity) else arg 
+                for arg, unit in map(None, args, cli.arg_units)]
         cli.clear()
+        cli.current_plot = native_plot.gca()
         for i, v in enumerate(args):
             if isinstance(v, values.Quantity):
-                stripped = v.value_in(v.unit)
-                cli.stripped_args.append(stripped)
-                cli.unitnames_of_args.append(v.unit.name)
+                cli.stripped_args.append(v.value_in(v.unit))
+                cli.arg_units.append(v.unit)
+                cli.unitnames_of_args.append("["+str(v.unit)+"]")
             else:
                 cli.stripped_args.append(v)
+                cli.arg_units.append(None)
+                cli.unitnames_of_args.append("")
         
     @classmethod
     def clear(cli):
-        stripped_args = []
-        unitnames_of_args = []
+        cli.stripped_args = []
+        cli.arg_units = []
+        cli.unitnames_of_args = []
+        
 
 def plot(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
@@ -54,7 +60,8 @@ def scatter(x, y, s=20, c='b', marker='o', cmap=None, norm=None, vmin=None, vmax
 def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, bottom=None, histtype='bar', align='mid', orientation='vertical', rwidth=None, log=False, hold=None, **kwargs):
     UnitlessArgs.strip(x)
     args = UnitlessArgs.stripped_args
-    native_plot.scatter(args[0], bins, range, normed, weights, cumulative, bottom, histtype, align, orientation, rwidth, log, hold, **kwargs)
+    native_plot.hist(args[0], bins, range, normed, weights, cumulative, bottom, histtype, align, orientation, rwidth, log, hold, **kwargs)
+    UnitlessArgs.unitnames_of_args.append("")
 
 def xlabel(s, *args, **kwargs):
     s = custom_label.format(s, UnitlessArgs.unitnames_of_args[0])
@@ -65,14 +72,44 @@ def ylabel(s, *args, **kwargs):
     native_plot.ylabel(s, *args, **kwargs)
 
 if __name__ == '__main__':
-    x = range(-10,10)|units.m
-    y = [i.number**2 for i in x]|units.m
-    native_plot.subplot(2,1,1)
-    plot(x,y)
+    import numpy as np
+    x = np.pi/20.0 * (range(-10,10) | units.m)
+    y1 = units.m.new_quantity(np.sin(x.number))
+    y2 = x
+    native_plot.subplot(2,2,1)
+    plot(x, y1, label='data')
+    scatter(x, y2, label='model')
     xlabel('x')
     ylabel('y')
-    native_plot.subplot(2,1,2)
-    scatter(x,y)
-    xlabel('x')
-    ylabel('y')
+    native_plot.legend(loc=2)
+    
+    x = range(50) | units.Myr
+    y1 = values.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
+    y2 = -(1e43 | units.J) - y1
+    native_plot.subplot(2,2,2)
+    plot(x, y1, label='E_kin')
+    plot(x, y2, label='E_pot')
+    xlabel('t')
+    ylabel('E')
+    native_plot.legend()
+    
+    x = range(7) | units.day
+    y1 = [0, 4, 2, 3, 2, 5, 1]
+    y2 = [3, 0, 2, 2, 3, 0, 4]
+    native_plot.subplot(2,2,3)
+    plot(x, y1, 'ks', label='coffee')
+    plot(x, y2, 'yo', label='tea')
+    xlabel('time')
+    ylabel('consumption / day')
+    native_plot.legend()
+    
+    y1 = units.N.new_quantity(np.random.normal(0.,1.,100))
+    x = (units.g * units.cm * units.s**-2).new_quantity(np.arange(-3.0e5, 3.0e5, 0.1e5))
+    y2 = np.exp(-np.arange(-3., 3., 0.1)**2)/np.sqrt(np.pi)
+    native_plot.subplot(2,2,4)
+    hist(y1, bins=12, range=(-3,3), normed=True, label='data')
+    plot(x, y2, 'y--', label='model')
+    xlabel('force')
+    ylabel('pdf')
+    native_plot.legend()
     native_plot.show()
