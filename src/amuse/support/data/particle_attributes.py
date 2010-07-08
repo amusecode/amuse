@@ -242,6 +242,18 @@ def virial_radius(particles):
         partial_sum += ((particle_1.mass * particles[i+1:].mass) / distance_vecs.lengths()).sum()        
     return (particles.mass.sum()**2) / (2*partial_sum)
 
+def total_mass(particles):
+    """
+    Returns the total mass of the particles set.
+    
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(3)
+    >>> particles.mass = [1.0, 2.0, 3.0] | units.kg
+    >>> particles.total_mass()
+    quantity<6.0 kg>
+    """
+    return particles.mass.sum()
+
 
     
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
@@ -249,6 +261,7 @@ AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", cen
 AbstractParticleSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
 AbstractParticleSet.add_global_function_attribute("potential_energy", potential_energy)
 AbstractParticleSet.add_global_function_attribute("virial_radius", virial_radius)
+AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
 
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
