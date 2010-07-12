@@ -27,16 +27,21 @@ class SalpeterIMF(object):
         factor = (pow(self.mass_max / self.mass_min , alpha1) - one )
         return self.mass_min * (pow(one + (factor * random_number), 1.0 / alpha1))
         
-    def next_mass(self):
-        return self.mass(self.random.random())
+    def next_mass(self,N=1):
+        return self.mass(self.random.random(N))
+#    def next_mass(self):
+#        return self.mass(self.random.random())
         
     def next_set(self, number_of_stars):
-        set_of_masses = self.mass_min.unit.new_quantity(numpy.zeros(number_of_stars))
-        total_mass = self.mass_min.unit.new_quantity(0.0)
-        for i in range(number_of_stars):
-           mass = self.next_mass()
-           set_of_masses[i] = mass
-           total_mass += mass
+#        set_of_masses = self.mass_min.unit.new_quantity(numpy.zeros(number_of_stars))
+#        total_mass = self.mass_min.unit.new_quantity(0.0)
+        set_of_masses=self.next_mass(number_of_stars).in_(self.mass_min.unit)
+        total_mass=set_of_masses.sum()
+#        for i in range(number_of_stars):
+#           mass = self.next_mass()
+#           set_of_masses[i] = mass
+#           total_mass += mass
+        
         return (total_mass, set_of_masses)
         
 
