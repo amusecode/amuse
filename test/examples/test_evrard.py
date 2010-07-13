@@ -15,6 +15,10 @@ from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.test.amusetest import get_path_to_results
 from amuse.legacy.support.core import is_mpd_running
 
+import logging
+#logging.basicConfig(level=logging.DEBUG)
+
+
 def energy_plot(time,ek,ep,eth):
   if not HAS_MATPLOTLIB:
     return
@@ -35,20 +39,19 @@ def run_evrard(x):
   smooth=numpy.zeros_like(mass)
 
   nb = interface.FiInterface(redirection="none")
-  nb.initialize_code()
+  nb.setup_module()
 
-  nb.set_stepout(99999)
-  nb.set_steplog(99999)
+#  nb.set_stepout(99999)
+#  nb.set_steplog(99999)
   nb.set_use_hydro(1)
   nb.set_radiate(0)
   nb.set_dtime(0.05)
-  nb.set_gdgop(1)
-  nb.set_uentropy(1)
-  nb.set_verbosity(0)
+#  nb.set_gdgop(1)
+  nb.set_uentropy(0)
+#  nb.set_verbosity(0)
     
   ids,error = nb.new_sph_particle(mass,smooth,x,y,z,vx,vy,vz,u)
   if filter(lambda x: x != 0, error) != []: raise Exception
-
   nb.commit_particles()
 
   if hasattr(nb,"viewer"):
@@ -77,6 +80,7 @@ def run_evrard(x):
     Ep.append(e)
     e,ret=nb.get_thermal_energy()
     Eth.append(e)
+
 
   nb.cleanup_code()
   nb.stop()
