@@ -33,7 +33,7 @@ def energy_plot(time,ek,ep,eth):
   pyplot.savefig(os.path.join(test_results_path, "test.png"))
 
 def run_cloud(x):
-  cloud=molecular_cloud(64,-4.,x,base_grid=regular_grid_unit_cube)
+  cloud=molecular_cloud(32,-4.,x,base_grid=regular_grid_unit_cube)
   mass,x,y,z,vx,vy,vz,u=cloud.new_model()
   smooth=numpy.zeros_like(mass)
 
@@ -50,6 +50,8 @@ def run_cloud(x):
   nb.set_isotherm(1)
   nb.set_gamma(1.0)
   nb.set_verbosity(0)
+  nb.set_unitl_in_kpc(0.01)
+  nb.set_unitm_in_msun(10000.)
     
   ids,error = nb.new_sph_particle(mass,smooth,x,y,z,vx,vy,vz,u)
   if filter(lambda x: x != 0, error) != []: raise Exception
@@ -70,7 +72,8 @@ def run_cloud(x):
   Ep.append(e)
   e,ret=nb.get_thermal_energy()
   Eth.append(e)
-  while tnow<1.0:
+
+  while tnow<.8:
     tnow=tnow+dt
     nb.evolve(tnow)
     nb.synchronize_model()
@@ -83,9 +86,6 @@ def run_cloud(x):
     e,ret=nb.get_thermal_energy()
     Eth.append(e)
 
-  nb.cleanup_code()
-  nb.stop()
-  
   nb.stop()
  
   time=numpy.array(time)
@@ -93,7 +93,7 @@ def run_cloud(x):
   Ep=numpy.array(Ep)
   Eth=numpy.array(Eth)
   energy_plot(time,Ek,Ep,Eth)
-
+  
 def test_cloud():
   if not is_mpd_running():
       return
