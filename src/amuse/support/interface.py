@@ -432,6 +432,9 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             return errorcode
 
     def handle_as_errorcode(self, errorcode):
+        if hasattr(errorcode, 'any'):
+            if not errorcode.any():
+                return
         if hasattr(errorcode, '__iter__'):
             for x in errorcode:
                 self.handle_errorcode(x)
