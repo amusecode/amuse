@@ -119,7 +119,7 @@ def validate_bridge():
 
   while( t < total_sim_time):
     t=t+dt_diag
-    bridgesys.evolve( convert_gal.to_si(t),
+    bridgesys.evolve_model( convert_gal.to_si(t),
                     timestep=convert_gal.to_si( sim_step )) 
 
     bridgesys.synchronize_model()
