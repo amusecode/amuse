@@ -1512,6 +1512,10 @@ class Fi(GravitationalDynamics):
         object.add_method('RUN', 'get_total_mass')
         object.add_method('RUN', 'get_time')
     
+# this should be checked!
+        object.add_method('EDIT', 'get_gravity_at_point')
+        object.add_method('EDIT', 'get_potential_at_point')
+    
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_eps2", 
