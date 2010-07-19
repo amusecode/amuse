@@ -107,8 +107,6 @@ class MakePlummerModel(object):
             
         return result
         
-        
-        
     
 """
 Create a plummer sphere with the given number of particles. Returns

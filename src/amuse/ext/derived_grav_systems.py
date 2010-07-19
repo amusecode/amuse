@@ -27,7 +27,6 @@ class center_of_mass(object):
     xx,yy,zz=self.baseclass.get_center_of_mass_position()
     
     eps2=self.baseclass.parameters.epsilon_squared
-    
     dr2=((xx-x)**2+(yy-y)**2+(zz-z)**2+eps2)
     
     phi=-constants.G*mass/dr2**0.5
@@ -51,7 +50,6 @@ class copycat(object):
 
     instance.initialize_code()
     instance.parameters.epsilon_squared = self.system.parameters.epsilon_squared
-    
     parts=self.system.particles.copy()
     instance.particles.add_particles(parts)
 
@@ -65,7 +63,6 @@ class copycat(object):
 
     instance.initialize_code()
     instance.parameters.epsilon_squared = self.system.parameters.epsilon_squared
-    
     parts=self.system.particles.copy()
     instance.particles.add_particles(parts)
 

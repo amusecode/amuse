@@ -94,10 +94,11 @@ class MakeEvrardTest(object):
 class MakeEvrardModel(object):
     
     def __init__(self, target_number_of_particles, convert_nbody = None, base_grid = None, 
-            internal_energy = 0.05, do_scale = False, seed = None):
+            internal_energy = 0.05, do_scale = False, seed = None,size=1.):
         self.target_number_of_particles = target_number_of_particles
         self.convert_nbody = convert_nbody
         self.internal_energy = internal_energy
+        self.size=size
         self.do_scale = do_scale
         self.base_sphere = uniform_unit_sphere(target_number_of_particles, base_grid)   
         numpy.random.seed(seed)
@@ -106,10 +107,10 @@ class MakeEvrardModel(object):
         x, y, z = self.base_sphere.make_xyz()
         self.actual_number_of_particles = len(x)
         r = numpy.sqrt(x**2+y**2+z**2)
-        rtarget = r**1.5
+        rtarget = self.size*r**1.5
         mass = numpy.ones_like(x)/self.actual_number_of_particles
         internal_energy = numpy.ones_like(x)*self.internal_energy
-        r = r.clip(1.e-8, 2.0)
+        r = r.clip(1.e-8, 2.0*self.size)
         x = rtarget*x/r
         y = rtarget*y/r
         z = rtarget*z/r

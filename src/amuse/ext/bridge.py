@@ -129,7 +129,7 @@ class bridge(object):
     self.do_sync[interface]=do_sync  
     return 0
     
-  def evolve(self,tend,timestep=None):
+  def evolve_model(self,tend,timestep=None):
     """
     evolve combined system to tend, timestep fixes timestep
     """
@@ -207,7 +207,7 @@ class bridge(object):
   def drift_systems(self,tend):
     threads=[]
     for x in self.systems:
-      if hasattr(x,"evolve"):
+      if hasattr(x,"evolve_model"):
         offset=self.time_offsets[x]
         if(self.verbose):
           print "evolving", x.__class__.__name__,
