@@ -86,3 +86,26 @@ class TwoBodyInterfaceTests(TestWithMPI):
         
         position = instance.particles[0].position
         self.assertAlmostEqual(((position.x**2+position.y**2+position.z**2)/(7.1e6)**2).value_in(units.m**2),1.,7)
+
+    def test3(self):
+        convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
+        instance = twobody.TwoBody(convert_nbody)
+        
+        p = core.Particle()
+        p.mass = 5.9742e24 | units.kg
+        p.radius = 7.1e6 | units.m
+        p.position = [0.,7.e6,-1.2124e7] | units.m
+        p.velocity = [0.,2.6679e3,4.6210e3] | units.m/units.s
+        
+        instance.particles.add_particle(p)
+        
+        instance.evolve_model(3600.0 | units.s)
+        
+        dt = convert_nbody.to_si(instance.model_time)
+
+        
+        self.assertEqual(instance.particles[0].mass,5.9742e24 | units.kg)
+       
+        instance.particles[0].mass=0.8*5.9742e24 | units.kg
+        instance.evolve_model(4000.0 | units.s)
+        self.assertEqual(instance.particles.mass[0],0.8*5.9742e24 | units.kg)
