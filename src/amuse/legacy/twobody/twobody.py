@@ -203,6 +203,29 @@ class TwoBodyImplementation(object):
     index_of_the_particle.value = len(self.particles)-1
     return 0
     
+  def set_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
+    try:
+      particle = self.particles[index_of_the_particle]
+      particle['mass'] = mass  
+      particle['radius'] = radius 
+      particle['x'] =x
+      particle['y'] =y
+      particle['z'] =z
+      particle['vx'] =vx
+      particle['vy'] =vy
+      particle['vz'] =vz
+      return 0
+    except:        
+      return -1
+
+  def set_mass(self, index_of_the_particle, mass):
+    try:
+      particle = self.particles[index_of_the_particle]
+      particle['mass'] = mass  
+      return 0
+    except:        
+      return -1
+
     
   def get_state(self, index_of_the_particle, mass, radius, x, y, z, vx, vy, vz):
     try:
