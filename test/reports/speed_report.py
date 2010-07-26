@@ -1,3 +1,8 @@
+
+
+
+
+
 from amuse.lab import *
 
 
@@ -13,8 +18,15 @@ from mpi4py import MPI
 class TimeoutException(Exception):
     pass
     
+class SkipException(Exception):
+    pass
+    
 class RunSpeedTests(object):
     
+    @late
+    def report_lines(self):
+        return []
+        
     @late
     def report_lines(self):
         return []
@@ -29,11 +41,12 @@ class RunSpeedTests(object):
     
     @late
     def maximum_number_of_seconds_to_allow_per_test(self):
-        return 1
+        return 1200
         
     def method_to_action(self, x):
         name = x.__name__
         name = name[len(self.method_prefix):]
+        name = name.replace('_d_', '.')
         name = name.replace('_', ' ')
         return name
         
@@ -58,17 +71,28 @@ class RunSpeedTests(object):
         
     def run(self):
         
+        self.total_time = 0.0
+    
         for x in self.names_of_testing_methods():
             method = getattr(self, x)
+            print >> sys.stderr , self.row_formatters[0](method), '...',
             try:        
                 method()
             except TimeoutException, ex:
-                pass
+                print >> sys.stderr , "timed out,", ex
+                continue
+            except SkipException, ex:
+                print >> sys.stderr , "skipped,", ex
+                continue
             except Exception, ex:
+                print ex
                 self.t1=-1
                 self.t0=0
                 pass
-            self.report_lines.append((method,self.t1-self.t0))
+            delta_time = self.t1-self.t0
+            self.total_time = self.total_time + delta_time
+            print >> sys.stderr , self.row_formatters[1](delta_time)
+            self.report_lines.append((method,delta_time))
         
         lines = []
         
@@ -81,9 +105,12 @@ class RunSpeedTests(object):
         lines.append(self.grid_table_row_separator_line())
         lines.append(self.grid_table_row_line(self.header_line))
         lines.append(self.grid_table_row_separator_line('='))
-        for x in self.report_lines_as_strings:
+        for x in self.report_lines_as_strings[:-1]:
             lines.append(self.grid_table_row_line(x))
-            lines.append(self.grid_table_row_separator_line())
+        lines.append(self.grid_table_row_line(self.report_lines_as_strings[-1]))
+        lines.append(self.grid_table_row_separator_line('='))
+        lines.append(self.grid_table_row_line(['total time', self.row_formatters[1](self.total_time) ]))
+        lines.append(self.grid_table_row_separator_line('='))
         
         for x in lines:
             print x
@@ -111,14 +138,32 @@ class RunSpeedTests(object):
         new_plummer_sphere(self.total_number_of_points)
         self.end_measurement()
         
+    def speed_make_salpeter_mass_distribution(self):
+        """plummer sphere"""
+        self.start_measurement()
+        new_salpeter_mass_distribution(self.total_number_of_points)
+        self.end_measurement()
+        
+    def speed_make_salpeter_mass_distribution_nbody(self):
+        """plummer sphere"""
+        self.start_measurement()
+        new_salpeter_mass_distribution_nbody(self.total_number_of_points)
+        self.end_measurement()
+        
     def speed_scale_plummer_sphere(self):
         input = new_plummer_sphere(self.total_number_of_points)
+        if self.total_number_of_points > 20000:
+            raise SkipException("too many points")
         self.start_measurement()
         input.scale_to_standard()
         self.end_measurement()
         
         
     def speed_calculate_potential_energy(self):
+        
+        if self.total_number_of_points > 20000:
+            raise SkipException("too many points")
+    
         input = new_plummer_sphere(self.total_number_of_points)
         self.start_measurement()
         input.potential_energy()
@@ -160,8 +205,23 @@ class RunSpeedTests(object):
         code.stop()
     
     
-    def speed_evolve_code_001_time_in_BHTree(self):
+    def speed_copy_particles_from_code(self):
+        code = BHTree()
+        particles = new_plummer_sphere(self.total_number_of_points)
+        particles.radius = 0| nbody.length
+        code.particles.add_particles(particles)
+        channel = code.particles.new_channel_to(particles)
+        self.start_measurement()
+        channel.copy()
+        self.end_measurement()
+        code.stop()
+    
+    def speed_evolve_code_0_d_001_time_in_BHTree(self):
         """plummer sphere"""
+    
+        if self.total_number_of_points > 10000:
+            raise SkipException("too many points")
+    
         code = BHTree()
         particles = new_plummer_sphere(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -171,8 +231,12 @@ class RunSpeedTests(object):
         self.end_measurement()
         code.stop()
     
-    def speed_evolve_code_001_time_in_Hermite(self):
+    def speed_evolve_code_0_d_001_time_in_Hermite(self):
         """plummer sphere"""
+    
+        if self.total_number_of_points > 5000:
+            raise SkipException("too many points")
+    
         code = Hermite()
         particles = new_plummer_sphere(self.total_number_of_points)
         particles.radius = 0| nbody.length
@@ -212,8 +276,17 @@ class RunSpeedTests(object):
         parts.append('|')
         return ''.join(parts)
     
-        
+    
 
+    def speed_iterate_over_particles(self):
+        particles = Particles(self.total_number_of_points)
+        particles.radius = 1.0 | nbody_system.length
+        self.start_measurement()
+        for x in particles:
+            x.radius
+        self.end_measurement()
+    
+    
 if __name__ == '__main__':
     #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
     if len(sys.argv) > 1:
@@ -223,3 +296,10 @@ if __name__ == '__main__':
         
     x = RunSpeedTests(n)
     x.run()
+
+
+
+
+
+
+

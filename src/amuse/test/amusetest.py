@@ -54,8 +54,13 @@ class TestCase(unittest.TestCase):
     assertAlmostEquals =  failUnlessAlmostEqual
     
     
-    def failUnlessAlmostRelativeEqual(self, first, second, places=PRECISION, msg=None):
-        
+    def failUnlessAlmostRelativeEqual(self, first, second, places=None, msg=None):
+        if places is None:
+            places = self.PRECISION
+            
+        if places <= 0:
+            places = self.PRECISION + places
+            
         if abs(first) > abs(second):
             relativeError = abs((second-first) / first)
         else:

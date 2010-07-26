@@ -326,7 +326,7 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.gas_particles.potential_energy(), 
             self.default_convert_nbody.to_si(-0.5 | nbody_system.energy),7)
         self.assertAlmostEquals(instance.thermal_energy,    4.27851824913 | 1e+49*units.J)
-        self.assertAlmostEquals(instance.total_radius,      4.05920311526 | 1e+19*units.m)
+        self.assertAlmostEquals(instance.total_radius,      3.96592921066 | 1e+19*units.m)
         self.assertAlmostEquals(instance.center_of_mass_position, [0,0,0] | 1e+19*units.m)
         self.assertAlmostEquals(instance.center_of_mass_velocity, [0,0,0] | units.m/units.s)
         self.assertAlmostEquals(instance.total_mass,                1.989 | 1e+40*units.kg)
