@@ -9,13 +9,13 @@ class TestEvrardModel(amusetest.TestCase):
         print "First test: making an Evrard gas sphere model."
         target_number_of_particles = 1000
         gas_parts = new_evrard_gas_sphere(target_number_of_particles, seed=1234)
-        self.assertEquals(len(gas_parts), 978)
+        self.assertEquals(len(gas_parts), 1000)
     
     def test2(self):
         print "Testing properties of an Evrard model."
         target_number_of_particles = 1000
         gas_parts = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed=1234)
-        self.assertEquals(len(gas_parts), 978)
+        self.assertEquals(len(gas_parts), 1000)
         self.assertAlmostEqual(gas_parts.kinetic_energy(),             0.00 | nbody.energy)
         self.assertAlmostEqual(gas_parts.potential_energy(G=nbody.G), -0.50 | nbody.energy)
         self.assertAlmostEqual(gas_parts.center_of_mass(),          [0,0,0] | nbody.length)
