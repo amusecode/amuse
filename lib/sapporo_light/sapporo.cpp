@@ -12,7 +12,7 @@ double get_time() {
   
   gettimeofday(&Tvalue,&dummy);
   return ((double) Tvalue.tv_sec +
-	  1.e-6*((double) Tvalue.tv_usec));
+          1.e-6*((double) Tvalue.tv_usec));
 }
 
 int sapporo::open(int cluster_id) {
@@ -20,7 +20,7 @@ int sapporo::open(int cluster_id) {
   nCUDAdevices = get_device_count();
   if (nCUDAdevices > 0) {
     fprintf(stderr, "sapporo::open - found %d CUDA device(s)\n",
-	    nCUDAdevices);
+            nCUDAdevices);
   } else {
     fprintf(stderr, "sapporo::open - FATAL! No CUDA device found\n");
     exit(-1);
@@ -55,16 +55,16 @@ int sapporo::get_n_pipes() {
 }
 
 int sapporo::set_j_particle(int cluster_id,
-			   int address,
-			   int id,
-			   double tj, double dtj,
-			   double mass,
-			   double k18[3], double j6[3],
-			   double a2[3], double v[3], double x[3]) {
+                           int address,
+                           int id,
+                           double tj, double dtj,
+                           double mass,
+                           double k18[3], double j6[3],
+                           double a2[3], double v[3], double x[3]) {
 
   if (address > nj_max) {
     fprintf(stderr, "Fatal! address= %d > nj_max= %d. I am giving up.\n",
-	    address, nj_max);
+            address, nj_max);
     exit(-1);
   }
 
@@ -83,18 +83,18 @@ int sapporo::set_j_particle(int cluster_id,
 };
 
 void sapporo::calc_firsthalf(int cluster_id,
-			    int nj, int ni,
-			    int id[], 
-			    double xi[][3], double vi[][3],
-			    double aold[][3], double j6old[][3],
-			    double phiold[3], 
-			    double eps2, double h2[]) {
+                            int nj, int ni,
+                            int id[], 
+                            double xi[][3], double vi[][3],
+                            double aold[][3], double j6old[][3],
+                            double phiold[3], 
+                            double eps2, double h2[]) {
   for (int i = 0; i < ni; i++) {
     DS Dmass = (DS){h2[i], INT_AS_FLOAT(id[i])};
     pos_i[i] = (DS4) { to_DS(xi[i][0]),
-		       to_DS(xi[i][1]),
-		       to_DS(xi[i][2]),
-		       Dmass };
+                       to_DS(xi[i][1]),
+                       to_DS(xi[i][2]),
+                       Dmass };
     vel_i[i] = (float4){ vi[i][0], vi[i][1], vi[i][2], eps2};
     EPS2 = eps2;
 
@@ -118,11 +118,11 @@ void sapporo::calc_firsthalf(int cluster_id,
 }
 
 int sapporo::calc_lasthalf(int cluster_id,
-			  int nj, int ni,
-			  int index[], 
-			  double xi[][3], double vi[][3],
-			  double eps2, double h2[],
-			  double acc[][3], double jerk[][3], double pot[]) {
+                          int nj, int ni,
+                          int index[], 
+                          double xi[][3], double vi[][3],
+                          double eps2, double h2[],
+                          double acc[][3], double jerk[][3], double pot[]) {
 
   for (int i = 0; i < ni; i++) {
     pot[i] = 0;
@@ -149,12 +149,12 @@ int sapporo::calc_lasthalf(int cluster_id,
 
 
 int sapporo::calc_lasthalf2(int cluster_id,
-			   int nj, int ni,
-			   int index[], 
-			   double xi[][3], double vi[][3],
-			   double eps2, double h2[],
-			   double acc[][3], double jerk[][3], double pot[],
-			   int nnbindex[]) {
+                           int nj, int ni,
+                           int index[], 
+                           double xi[][3], double vi[][3],
+                           double eps2, double h2[],
+                           double acc[][3], double jerk[][3], double pot[],
+                           int nnbindex[]) {
   
 
     float ds_min[NTHREADS];
@@ -176,7 +176,7 @@ int sapporo::calc_lasthalf2(int cluster_id,
         float  ds   = ds_i[i];
 
         //       fprintf(stdout, "device= %d, ni= %d pot = %g\n",
-        // 	      dev, i, acci.x);
+        //               dev, i, acci.x);
 
         pot[i]    += acci.w;
 
@@ -212,10 +212,10 @@ int sapporo::read_ngb_list(int cluster_id) {
 }
 
 int sapporo::get_ngb_list(int cluster_id,
-			 int ipipe,
-			 int maxlength,
-			 int &nblen,
-			 int nbl[]) {
+                         int ipipe,
+                         int maxlength,
+                         int &nblen,
+                         int nbl[]) {
 
     if (ipipe >= device.ni) {
         fprintf(stderr, "Fatal! ipipe= %d >= dev.ni= %d. I give up.\n",

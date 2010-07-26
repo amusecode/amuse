@@ -3,6 +3,7 @@
 
 
 
+
 from amuse.lab import *
 
 
@@ -287,6 +288,30 @@ class RunSpeedTests(object):
         self.end_measurement()
     
     
+
+    def speed_iterate_over_array(self):
+        class Test(object):
+            def __init__(self):
+                self.radius = 1.0
+    
+        particles = [Test() for x in range(self.total_number_of_points)]
+        self.start_measurement()
+        for x in particles:
+            x.radius
+        self.end_measurement()
+    
+    
+
+    def speed_iterate_over_particles2(self):
+        particles = Particles(self.total_number_of_points)
+        particles.radius = 1.0 | nbody_system.length
+        self.start_measurement()
+        y = particles.radius
+        for x in range(self.total_number_of_points):
+            Particle(x)
+        self.end_measurement()
+    
+    
 if __name__ == '__main__':
     #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
     if len(sys.argv) > 1:
@@ -296,6 +321,7 @@ if __name__ == '__main__':
         
     x = RunSpeedTests(n)
     x.run()
+
 
 
 

@@ -45,14 +45,14 @@ __device__ DS dsadd(DS a, float b) {
 
 template<bool ngb>
 __device__ void body_body_interaction(float &ds_min,
-				      int &n_ngb, int *ngb_list,
-				      float4 &acc_i, float4 &jrk_i,
-				      DS4     pos_i, float4  vel_i,
-				      DS4     pos_j, float4  vel_j) {
+                                      int &n_ngb, int *ngb_list,
+                                      float4 &acc_i, float4 &jrk_i,
+                                      DS4     pos_i, float4  vel_i,
+                                      DS4     pos_j, float4  vel_j) {
 
   float3 dr = {(pos_j.x.x - pos_i.x.x) + (pos_j.x.y - pos_i.x.y),
- 	       (pos_j.y.x - pos_i.y.x) + (pos_j.y.y - pos_i.y.y),
- 	       (pos_j.z.x - pos_i.z.x) + (pos_j.z.y - pos_i.z.y)};   // 3x3 = 9 FLOP
+                (pos_j.y.x - pos_i.y.x) + (pos_j.y.y - pos_i.y.y),
+                (pos_j.z.x - pos_i.z.x) + (pos_j.z.y - pos_i.z.y)};   // 3x3 = 9 FLOP
 
   
   float ds2 = ((dr.x*dr.x + (dr.y*dr.y)) + dr.z*dr.z);
@@ -61,7 +61,7 @@ __device__ void body_body_interaction(float &ds_min,
 
     if (ds2 <= pos_i.w.x) {
       if (n_ngb < NGB_PB) {
-	ngb_list[n_ngb++] = __float_as_int(pos_j.w.y);
+        ngb_list[n_ngb++] = __float_as_int(pos_j.w.y);
       }
     }
 
@@ -108,14 +108,14 @@ __device__ void body_body_interaction(float &ds_min,
 #define ajc(i, j) (i + __mul24(blockDim.x,j))
 template<bool ngb>
 __global__ void dev_evaluate_gravity(int nj_total, int nj,
-				     int offset,
-				     DS4    *pos_j, 
-				     float4 *vel_j,
-				     DS4    *pos_i,
-				     float4 *vel_i,
-				     float4 *acc_i, 
-				     float4 *jrk_i,
-				     int *ngb_list) {
+                                     int offset,
+                                     DS4    *pos_j, 
+                                     float4 *vel_j,
+                                     DS4    *pos_i,
+                                     float4 *vel_i,
+                                     float4 *acc_i, 
+                                     float4 *jrk_i,
+                                     int *ngb_list) {
   extern __shared__ DS4 shared_pos[];
   float4 *shared_vel = (float4*)&shared_pos[blockDim.x*blockDim.y];
 
@@ -154,14 +154,14 @@ __global__ void dev_evaluate_gravity(int nj_total, int nj,
 // #pragma unroll 16
     for (int k = 0; k < j1; k++) {
       body_body_interaction<ngb>(ds_min, n_ngb, local_ngb_list,
-				 acc, jrk, pos, vel,
-				 shared_pos[ajc(k, threadIdx.y)], shared_vel[ajc(k, threadIdx.y)]);
+                                 acc, jrk, pos, vel,
+                                 shared_pos[ajc(k, threadIdx.y)], shared_vel[ajc(k, threadIdx.y)]);
     }
     
     for (int k = j1; k < j; k++) {
       body_body_interaction<ngb>(ds_min, n_ngb, local_ngb_list,
-				 acc, jrk, pos, vel,
-				 shared_pos[ajc(k, threadIdx.y)], shared_vel[ajc(k, threadIdx.y)]);
+                                 acc, jrk, pos, vel,
+                                 shared_pos[ajc(k, threadIdx.y)], shared_vel[ajc(k, threadIdx.y)]);
     }
     
       
@@ -203,8 +203,8 @@ __global__ void dev_evaluate_gravity(int nj_total, int nj,
       jrk.z += jrk1.z;
       
       if (ds1  < ds_min) {
-	jrk.w   = jrk1.w;
-	ds_min  = ds1;
+        jrk.w   = jrk1.w;
+        ds_min  = ds1;
       }
 
       shared_ofs[ajc(threadIdx.x, i)] = min(n_ngb + 1, NGB_PB);
@@ -238,12 +238,12 @@ __global__ void dev_evaluate_gravity(int nj_total, int nj,
  *  gridDim.x  = ni
  */ 
 __global__ void dev_reduce_forces(float4 *acc_i, 
-				  float4 *jrk_i,
-				  float  *ds_i,
-				  float4 *vel_i,
-				  int offset_ds,
-				  int offset,
-				  int *ngb_list) {
+                                  float4 *jrk_i,
+                                  float  *ds_i,
+                                  float4 *vel_i,
+                                  int offset_ds,
+                                  int offset,
+                                  int *ngb_list) {
   
   extern __shared__ float4 shared_acc[];
   float4 *shared_jrk = (float4*)&shared_acc[blockDim.x];
@@ -259,7 +259,7 @@ __global__ void dev_reduce_forces(float4 *acc_i,
   int ngb_index = threadIdx.x * NGB_PB + blockIdx.x * NGB_PB*NBLOCKS;
   shared_ngb[threadIdx.x] = ngb_list[ngb_index];
   shared_ofs[threadIdx.x] = 0;
-	 
+         
   __syncthreads();
 
   int n_ngb = shared_ngb[threadIdx.x];
@@ -279,8 +279,8 @@ __global__ void dev_reduce_forces(float4 *acc_i,
       jrk0.z += shared_jrk[i].z;
 
       if (shared_ds[i] < ds0) {
-	ds0    = shared_ds[i];
-	jrk0.w = shared_jrk[i].w;
+        ds0    = shared_ds[i];
+        jrk0.w = shared_jrk[i].w;
       }
 
       shared_ofs[i] = min(n_ngb + 1, NGB_PP);
@@ -315,14 +315,14 @@ __global__ void dev_reduce_forces(float4 *acc_i,
 }
 
 __global__ void dev_copy_particles(int nj, int nj_max,
-				   int *address_j,
-				   DS2 *t_j,
-				   DS4    *Ppos_j, 
-				   float4 *Pvel_j,
-				   DS4    *pos_j, 
-				   float4 *vel_j,
-				   float4 *acc_j,
-				   float4 *jrk_j) {
+                                   int *address_j,
+                                   DS2 *t_j,
+                                   DS4    *Ppos_j, 
+                                   float4 *Pvel_j,
+                                   DS4    *pos_j, 
+                                   float4 *vel_j,
+                                   float4 *acc_j,
+                                   float4 *jrk_j) {
   int index = blockIdx.x * blockDim.x + threadIdx.x;
   if (index < nj) {
     t_j  [address_j[index]] = t_j  [nj_max + index];
@@ -341,17 +341,17 @@ __global__ void dev_copy_particles(int nj, int nj_max,
   }
   __syncthreads();
 };
-				   
+                                   
 
 __global__ void dev_predictor(int nj,
-			      DS  t_i,
-			      DS2    *t_j,
-			      DS4    *Ppos_j,
-			      float4 *Pvel_j,
-			      DS4    *pos_j, 
-			      float4 *vel_j,
-			      float4 *acc_j,
-			      float4 *jrk_j) {
+                              DS  t_i,
+                              DS2    *t_j,
+                              DS4    *Ppos_j,
+                              float4 *Pvel_j,
+                              DS4    *pos_j, 
+                              float4 *vel_j,
+                              float4 *acc_j,
+                              float4 *jrk_j) {
   int index = blockIdx.x * blockDim.x + threadIdx.x;
   
   if (index < nj) {

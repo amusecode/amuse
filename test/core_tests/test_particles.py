@@ -7,8 +7,9 @@ from amuse.support.data import core
 from amuse.support.interface import CodeInterface
 
 import numpy
+import time
+import sys
 
-    
 class TestParticles(amusetest.TestCase):
     
     def test1(self):
@@ -881,3 +882,72 @@ class TestSubtractParticles(amusetest.TestCase):
         except Exception as ex:
             self.assertEquals("Cannot subtract particle(s) from a particle.", str(ex))
     
+
+class TestIterateOverParticles(amusetest.TestCase):
+    
+    def iterate_over_array(self, particles):
+        for x in particles:
+            x.radius
+    
+    def iterate_over_particles(self, particles):
+        for x in particles:
+            x.key
+
+
+    def test1(self):
+        self.total_number_of_points = 10000
+    
+        class Test(object):
+            def __init__(self):
+                self.radius = 1.0
+    
+        particles = [Test() for x in range(self.total_number_of_points)]
+        particles = core.Particles(self.total_number_of_points)
+        particles.radius = 2.0 | nbody_system.length
+        t0 = time.time()
+        self.iterate_over_particles1(particles)
+        t1 = time.time()
+        dt0 = t1 - t0
+        
+        particles = core.Particles(self.total_number_of_points)
+        particles.radius = 2.0 | nbody_system.length
+        t0 = time.time()
+        self.iterate_over_particles2(particles)
+        t1 = time.time()
+        dt1 = t1 - t0
+        
+        print dt1, dt0, dt1 / dt0
+    
+        self.assertTrue(dt1 / dt0 < 7)
+
+    def iterate_over_particles1(self, particles):
+        for x in particles:
+            x.key
+    
+    def iterate_over_particles2(self, particles):
+        for x in particles:
+            x.radius
+    
+    def test2(self):
+        self.total_number_of_points = 10000
+    
+        class Test(object):
+            def __init__(self):
+                self.radius = 1.0
+    
+        particles = [Test() for x in range(self.total_number_of_points)]
+        t0 = time.time()
+        self.iterate_over_particles2(particles)
+        t1 = time.time()
+        dt0 = t1 - t0
+        
+        particles = core.Particles(self.total_number_of_points)
+        particles.radius = 2.0 | nbody_system.length
+        t0 = time.time()
+        self.iterate_over_particles2(particles)
+        t1 = time.time()
+        dt1 = t1 - t0
+        
+        print dt1, dt0, dt1 / dt0
+    
+        self.assertTrue(dt1 / dt0 < 200)

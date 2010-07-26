@@ -1,3 +1,6 @@
+
+
+
 from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
@@ -176,11 +179,9 @@ class AbstractParticleSet(AbstractSet):
     # public API
     #
     def __iter__(self):
-        index = 0
+        original_set = self._original_set()
         for key in self._get_keys():
-            p = Particle(key, self._original_set())
-            yield p
-            index += 1
+            yield Particle(key,original_set)
 
     def __getitem__(self, index):
         if isinstance(index, slice):
@@ -807,7 +808,7 @@ class Particles(AbstractParticleSet):
     def _remove_particles(self, keys):
         self._private.attribute_storage._remove_particles(keys)
     
-    def _get_values(self, keys, attributes):
+    def _get_values(self, keys, attributes, indices = None, version = None):
         return self._private.attribute_storage._get_values(keys, attributes)
         
     def _set_values(self, keys, attributes, values):
@@ -828,6 +829,11 @@ class Particles(AbstractParticleSet):
     
     
 
+
+    def _get_value(self, key, attribute):
+        return self._private.attribute_storage._get_value(key, attribute)
+    
+    
 class ParticlesSuperset(AbstractParticleSet):
     """A superset of particles. Attribute values are not
     stored by the superset. The superset provides a view
@@ -1314,12 +1320,14 @@ class Particle(object):
             raise AttributeError("Can only assign quantities or other particles to an attribute.")
     
     def __getattr__(self, name_of_the_attribute):
-        if ((name_of_the_attribute in self.particles_set._get_attribute_names()) or 
-            (name_of_the_attribute in self.particles_set._derived_attributes)):
+        try:
             return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
-        else:
-            raise AttributeError("You tried to access attribute '{0}'"
-                " but this attribute is not defined for this set.".format(name_of_the_attribute))
+        except Exception as ex:
+            if ((name_of_the_attribute in self.particles_set._get_attribute_names()) or 
+            (name_of_the_attribute in self.particles_set._derived_attributes)):
+                raise
+            else:
+                raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute))
     
     def children(self):
         return self.particles_set.select(lambda x : x == self, ["parent"])
@@ -1430,3 +1438,6 @@ class Particle(object):
         """
         return ParticlesSubset(self.particles_set, [self.key])
         
+
+
+

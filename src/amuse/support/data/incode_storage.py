@@ -1,3 +1,4 @@
+
 from amuse.support.data import parameters
 from amuse.support.data.core import Particles, ParticleInformationChannel, Particle
 from amuse.support.data.core import AttributeStorage
@@ -6,6 +7,7 @@ import numpy
 
 from amuse.support.units import nbody_system, units
 from amuse.support.data import values
+from amuse.support.data import base
 from amuse.support.core import late
 
 import inspect
@@ -257,7 +259,7 @@ class ParticleMethod(AbstractCodeMethodWrapper):
 
 
 
-class AbstractInCodeAttributeStorage(object):
+class AbstractInCodeAttributeStorage(base.AttributeStorage):
     def __init__(self, 
             code_interface, 
             setters,
@@ -539,4 +541,5 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         
     def _get_writeable_attribute_names(self):
         return self.writable_attributes
+
 

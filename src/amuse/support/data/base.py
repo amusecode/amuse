@@ -1,3 +1,6 @@
+
+
+
 from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
@@ -63,6 +66,7 @@ class AttributeStorage(object):
     """
     Abstract base class of particle storage models.
     """
+    __version__ = -1
     
     def _add_particles(self, keys, attributes = [], values = []):
         pass
@@ -89,6 +93,11 @@ class AttributeStorage(object):
         return 0
 
 
+
+    def _get_value(self, particle, attribute):
+        return self._get_values([particle],[attribute])[0][0]
+    
+    
 class DerivedAttribute(object):
     """
     Abstract base class for calculated properties and 
@@ -275,11 +284,11 @@ class AbstractSet(object):
         else:
             self._set_values(self._get_keys(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
     
-    def _get_value_of_attribute(self, key, attribute):
+    def _get_value_of_attribute(self, key, attribute, index = None, version = None):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, key)
         else:
-            return self._convert_to_entities_or_quantities(self._get_values([key], [attribute])[0])[0]
+            return self._convert_to_entity_or_quantity(self._get_value(key, attribute))
     
     def _get_values_for_entity(self, key, attributes):
         return [x[0] for x in self._get_values([key], attributes)]
@@ -937,3 +946,19 @@ class AbstractSet(object):
     def is_empty(self):
         return self.__len__()==0
             
+
+
+
+    def _get_value(self, key, attribute):
+        return self._get_values([key],[attribute])[0][0]
+    
+    
+
+    def _convert_to_entity_or_quantity(self, x):
+        if x.unit.iskey():
+            return self._subset([x.number])[0]
+        else:
+            return x
+    
+    
+

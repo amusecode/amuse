@@ -1,3 +1,5 @@
+
+
 import numpy
 
 from amuse.support.data import values
@@ -11,6 +13,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.mapping_from_attribute_to_quantities = {}
         self.mapping_from_particle_to_index = {}
         self.particle_keys = []
+        self.__version__ = 0
 
     def _add_particles(self, keys, attributes = [], quantities = []):
         if len(quantities) != len(attributes):
@@ -30,6 +33,8 @@ class InMemoryAttributeStorage(AttributeStorage):
             self.append_to_storage(keys, attributes, quantities)
         else:
             self.setup_storage(keys, attributes, quantities)
+    
+        self.__version__ = self.__version__ + 1
             
     def setup_storage(self, keys, attributes, quantities):
         self.mapping_from_attribute_to_quantities = {}
@@ -123,9 +128,6 @@ class InMemoryAttributeStorage(AttributeStorage):
         return copy
         
     def get_value_of(self, particle_key, attribute):
-        if not attribute in self.mapping_from_attribute_to_quantities:
-            raise AttributeError("particle does not have a "+attribute)
-        
         attribute_values = self.mapping_from_attribute_to_quantities[attribute]
         
         index = self.mapping_from_particle_to_index[particle_key]
@@ -157,6 +159,8 @@ class InMemoryAttributeStorage(AttributeStorage):
         
         self.particle_keys = numpy.delete(self.particle_keys,indices)
         self.reindex()
+    
+        self.__version__ = self.__version__ + 1
         
     def reindex(self):
         new_index = {}
@@ -176,6 +180,29 @@ class InMemoryAttributeStorage(AttributeStorage):
         
 
 
+
+    def _get_values_for_indices(self, indices, attributes):
+    
+        results = []
+        for attribute in attributes:
+            attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+            if indices is None:
+                selected_values = attribute_values
+            else:
+                selected_values = attribute_values.take(indices)
+            
+            results.append(selected_values)
+        
+        return results
+    
+    
+
+    def _get_value(self, particle_key, attribute):
+        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+        index = self.mapping_from_particle_to_index[particle_key]
+        return attribute_values[index]
+    
+    
 class InMemoryGridAttributeStorage(object):
     
     def __init__(self, number_of_i, number_of_j, number_of_k):
@@ -246,4 +273,6 @@ class InMemoryGridAttributeStorage(object):
         
     def _get_writeable_attribute_names(self):
         return self.attributes()
+
+
 
