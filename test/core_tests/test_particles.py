@@ -918,7 +918,7 @@ class TestIterateOverParticles(amusetest.TestCase):
         
         print dt1, dt0, dt1 / dt0
     
-        self.assertTrue(dt1 / dt0 < 7)
+        self.assertTrue((dt1 / dt0) < 7)
 
     def iterate_over_particles1(self, particles):
         for x in particles:
@@ -936,8 +936,13 @@ class TestIterateOverParticles(amusetest.TestCase):
                 self.radius = 1.0
     
         particles = [Test() for x in range(self.total_number_of_points)]
+        
+        particles = core.Particles(self.total_number_of_points)
+        particles.radius = 2.0 | nbody_system.length
         t0 = time.time()
-        self.iterate_over_particles2(particles)
+        #self.iterate_over_array(particles)
+        for key in particles._get_keys():
+            key
         t1 = time.time()
         dt0 = t1 - t0
         
@@ -950,4 +955,4 @@ class TestIterateOverParticles(amusetest.TestCase):
         
         print dt1, dt0, dt1 / dt0
     
-        self.assertTrue(dt1 / dt0 < 200)
+        self.assertTrue((dt1 / dt0) < 400)

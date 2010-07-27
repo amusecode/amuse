@@ -208,7 +208,11 @@ function print_testcases(testcases) {
             return;
         }
         for (var i = offset; i < Math.min(offset+part, testcases.length); i++) {
+            
             var testcase = testcases[i];
+            if (!testcase.errored && !testcase.failed) {
+                continue;
+            }
             var item = $('<li></li>');
             var file_and_line = $('<a></a>');
             file_and_line.attr('href','#');
@@ -249,7 +253,7 @@ function print_testcases(testcases) {
             if(testcase.skipped ) {
                 item.appendTo($('#tests-skipped'));
             } else {
-                item.appendTo($('#tests-run'));
+                //item.appendTo($('#tests-run'));
             }
             if(testcase.errored || testcase.failed) {
                 root = item.clone(true)
@@ -299,7 +303,7 @@ function print_testcases(testcases) {
         }
         
         offset = offset + part;
-    }, 250)
+    }, 10)
     
 }
 
