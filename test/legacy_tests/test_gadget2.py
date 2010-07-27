@@ -210,10 +210,10 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_length_unit, self.UnitLength, 7)
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
-        instance.parameters.timestep = 0.1 | units.Myr
+        instance.parameters.opening_angle = 0.4 | units.none
         instance.commit_parameters()
         self.assertAlmostEquals(instance.parameters.epsilon_squared, 0.01 | units.kpc**2)
-        self.assertAlmostEquals(instance.parameters.timestep, 0.1 | units.Myr)
+        self.assertAlmostEquals(instance.parameters.opening_angle, 0.4 | units.none)
         self.assertAlmostRelativeEquals(instance.parameters.code_mass_unit, 1.989e43 | units.g, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
         instance.stop()
@@ -251,7 +251,6 @@ class TestGadget2(TestWithMPI):
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(0, instance.initialize_code())
-        instance.parameters.timestep = 0.005 | generic_system.time
         instance.gas_particles.add_particles(gas)
         instance.evolve_model(0.0001 | generic_system.time)
         instance.stop()
@@ -321,10 +320,8 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         instance.gas_particles.add_particles(gas)
         self.assertEquals(instance.model_time,                        0.0 | units.s)
-        self.assertEquals(instance.kinetic_energy,                    0.0 | units.J)
-        self.assertEquals(instance.potential_energy,                  0.0 | units.J) # ???
-        self.assertAlmostRelativeEquals(instance.gas_particles.potential_energy(), 
-            self.default_convert_nbody.to_si(-0.5 | nbody_system.energy),7)
+        self.assertAlmostEquals(instance.potential_energy, -4.27843220393 | 1e+50*units.J)
+        self.assertAlmostEquals(instance.kinetic_energy,              0.0 | 1e+49*units.J)
         self.assertAlmostEquals(instance.thermal_energy,    4.27851824913 | 1e+49*units.J)
         self.assertAlmostEquals(instance.total_radius,      3.96592921066 | 1e+19*units.m)
         self.assertAlmostEquals(instance.center_of_mass_position, [0,0,0] | 1e+19*units.m)

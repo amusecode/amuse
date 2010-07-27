@@ -17,6 +17,8 @@ const bool debug = true;
 
 bool particles_initialized = false;
 bool outfiles_opened = false;
+bool global_quantities_of_system_up_to_date = false;
+bool potential_energy_also_up_to_date = false;
 int particles_counter = 0;
 vector<dynamics_state> ds;        // for initialization only
 vector<sph_state> sph_ds;         // for initialization only
@@ -39,8 +41,10 @@ int set_parameterfile_path(char *parameterfile_path){
         cout << "Parameters will be read from: " << ParameterFile << endl;
     return 0;
 }
+
 int initialize_code(){
     double t0, t1;
+    char command[200];
     MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
     MPI_Comm_size(MPI_COMM_WORLD, &NTask);
     for(PTask = 0; NTask > (1 << PTask); PTask++);
@@ -55,9 +59,9 @@ int initialize_code(){
         printf("\nThis is Gadget, version `%s'.\n", GADGETVERSION);
         printf("\nRunning on %d processors.\n", NTask);
     }
-    cout << endl << endl << "The following error message from 'cp' can be freely ignored:" << endl;
     read_parameter_file(ParameterFile);	/* ... read in parameters for this run */
-    cout << flush;
+    sprintf(command, "rm -f %s%s", All.OutputDir, "parameters-usedvalues");
+    system(command);
     allocate_commbuffers();	/* ... allocate buffer-memory for particle 
 				   exchange during force computation */
     set_units();
@@ -72,7 +76,13 @@ int initialize_code(){
     set_random_numbers();
     for(int i = 0; i < 6; i++)
         All.MassTable[i] = 0;
-    All.Time = 0;
+    All.Time = All.TimeBegin;
+    if(All.ComovingIntegrationOn){
+        All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
+    }else{
+        All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
+    }
+    All.Ti_Current = 0;
     All.NumCurrentTiStep = 0;	/* setup some counters */
     All.SnapshotFileCount = 0;
     All.TotNumOfForces = All.NumForcesSinceLastDomainDecomp = 0;
@@ -90,6 +100,7 @@ int initialize_code(){
     All.CPU_Total += timediff(t0, t1);
     return 0;
 }
+
 int cleanup_code(){
     if (outfiles_opened)
         close_outputfiles();
@@ -97,12 +108,12 @@ int cleanup_code(){
         free_memory();
     return 0;
 }
+
 int commit_parameters(){
     char command[200];
     sprintf(command, "mv -f %s%s %s%s", ParameterFile, "-usedvalues", All.OutputDir, "parameters-usedvalues");
     if (strlen(command) > 198){
-        if (debug)
-            cout << "Error: ParameterFile and/or OutputDir names too long. " << command << endl;
+        cerr << "Error: ParameterFile and/or OutputDir names too long. " << command << endl;
         return -1;
     }
     system(command);
@@ -113,6 +124,7 @@ int commit_parameters(){
 int recommit_parameters(){
     return 0;
 }
+
 int commit_particles(){
     double t0, t1, a3;
     int i, j;
@@ -249,56 +261,105 @@ int recommit_particles(){
     }
     return commit_particles();
 }
-int evolve(double t_end){
+bool drift_to_t_end(int ti_end){
+    bool done;
+    int n, min, min_glob, flag, *temp;
+    double timeold;
     double t0, t1;
-    int stopflag = 0;
-    All.TimeMax = t_end;
-    All.TimeBegin = All.Time;
-    if(All.ComovingIntegrationOn){
-        All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
-    }else{
-        All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
+    t0 = second();
+    timeold = All.Time;
+    for(n = 1, min = P[0].Ti_endstep; n < NumPart; n++)
+        if(min > P[n].Ti_endstep)
+            min = P[n].Ti_endstep;
+    MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+    /* We check whether this is a full step where all particles are synchronized */
+    flag = 1;
+    for(n = 0; n < NumPart; n++)
+        if(P[n].Ti_endstep > min_glob)
+            flag = 0;
+    MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
+#ifdef PMGRID
+    if(min_glob >= All.PM_Ti_endstep){
+        min_glob = All.PM_Ti_endstep;
+        Flag_FullStep = 1;
     }
-    All.Ti_Current = 0;
-    do {				/* main loop */
-        t0 = second();
-        find_next_sync_point_and_drift();	/* find next synchronization point and drift particles to this time.
-                        * If needed, this function will also write an output file
-                        * at the desired time. */
-        every_timestep_stuff();	/* write some info to log-files */
-        domain_Decomposition();	/* do domain decomposition if needed */
-        compute_accelerations(0);	/* compute accelerations for 
-                    * the particles that are to be advanced  */
-        /* check whether we want a full energy statistics */
-        if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics){
-#ifdef COMPUTE_POTENTIAL_ENERGY
-            compute_potential();
 #endif
-            energy_statistics();	/* compute and output energy statistics */
-            All.TimeLastStatistics += All.TimeBetStatistics;
-        }
-        advance_and_find_timesteps();	/* 'kick' active particles in
-                        * momentum space and compute new
-                        * timesteps for them  */
-        All.NumCurrentTiStep++;
-        /* Check whether we need to interrupt the run */
-        if(ThisTask == 0){
-            /* are we running out of CPU-time ? If yes, interrupt run. */
-            if(CPUThisRun > 0.85 * All.TimeLimitCPU){
-                printf("reaching time-limit. stopping.\n");
-                stopflag = 2;
-            }
-        }
-        MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
-        if(stopflag) return -1;
-    } while(All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax);
+    /* Determine 'NumForceUpdate', i.e. the number of particles on this processor that are going to be active */
+    for(n = 0, NumForceUpdate = 0; n < NumPart; n++){
+        if(P[n].Ti_endstep == min_glob)
+#ifdef SELECTIVE_NO_GRAVITY
+          if(!((1 << P[n].Type) & (SELECTIVE_NO_GRAVITY)))
+#endif
+            NumForceUpdate++;
+    }
+    /* note: NumForcesSinceLastDomainDecomp has type "long long" */
+    temp = (int*) malloc(NTask * sizeof(int));
+    MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, MPI_COMM_WORLD);
+    for(n = 0; n < NTask; n++)
+        All.NumForcesSinceLastDomainDecomp += temp[n];
+    free(temp);
     t1 = second();
-    All.CPU_Total += timediff(t0, t1);
-    CPUThisRun += timediff(t0, t1);
+    All.CPU_Predict += timediff(t0, t1);
+    if (min_glob >= ti_end){
+        min_glob = ti_end;
+        done = true;
+    } else {
+        done = false;
+    }
+    move_particles(All.Ti_Current, min_glob);
+    All.Ti_Current = min_glob;
+    if(All.ComovingIntegrationOn)
+        All.Time = All.TimeBegin * exp(All.Ti_Current * All.Timebase_interval);
+    else
+        All.Time = All.TimeBegin + All.Ti_Current * All.Timebase_interval;
+    All.TimeStep = All.Time - timeold;
+    return done;
+}
+int evolve(double t_end){
+    bool done;
+    double t0, t1;
+    int Ti_end, stopflag = 0;
+    Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
+    if (Ti_end >= All.Ti_Current){
+        global_quantities_of_system_up_to_date = false;
+        done = drift_to_t_end(Ti_end); /* find next synchronization point and drift particles to MIN(this time, t_end). */
+        while (!done && All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax){
+            t0 = second();
+            every_timestep_stuff();	/* write some info to log-files */
+            domain_Decomposition();	/* do domain decomposition if needed */
+            compute_accelerations(0);	/* compute accelerations for 
+                        * the particles that are to be advanced  */
+            /* check whether we want a full energy statistics */
+            if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics){
+#ifdef COMPUTE_POTENTIAL_ENERGY
+                compute_potential();
+#endif
+                energy_statistics();	/* compute and output energy statistics */
+                All.TimeLastStatistics += All.TimeBetStatistics;
+            }
+            advance_and_find_timesteps();	/* 'kick' active particles in
+                            * momentum space and compute new
+                            * timesteps for them  */
+            done = drift_to_t_end(Ti_end);
+            All.NumCurrentTiStep++;
+            
+            /* Check whether we need to interrupt the run */
+            if(ThisTask == 0){
+                /* are we running out of CPU-time ? If yes, interrupt run. */
+                if(CPUThisRun > 0.85 * All.TimeLimitCPU){printf("reaching time-limit. stopping.\n"); stopflag = 2;}
+            }
+            MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
+            if(stopflag) return -1;
+            
+            t1 = second();
+            All.CPU_Total += timediff(t0, t1);
+            CPUThisRun += timediff(t0, t1);
+        }
+    } else {return -1;}
     return 0;
 }
 int synchronize_model() {
-    return -1;
+    return 0;
 }
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
     dynamics_state state;
@@ -730,6 +791,14 @@ int set_internal_energy(int index, double internal_energy){
 
 // simulation property getters:
 
+void update_global_quantities(bool do_potential){
+    if (do_potential) {
+        compute_potential();
+        potential_energy_also_up_to_date = true;
+    } else {potential_energy_also_up_to_date = false;}
+    compute_global_quantities_of_system();
+    global_quantities_of_system_up_to_date = true;
+}
 int get_time(double *time){
     *time = All.Time;
     return 0;
@@ -737,7 +806,8 @@ int get_time(double *time){
 int get_total_radius(double *radius){
     double r_squared;
     int i, j;
-    compute_global_quantities_of_system();
+    if (!global_quantities_of_system_up_to_date)
+        update_global_quantities(false);
     *radius = 0;
     for (i = 0; i < NumPart; i++){
         for (r_squared = 0, j = 0; j < 3; j++)
@@ -749,7 +819,8 @@ int get_total_radius(double *radius){
     return 0;
 }
 int get_total_mass(double *mass){
-    compute_global_quantities_of_system();
+    if (!global_quantities_of_system_up_to_date)
+        update_global_quantities(false);
     *mass = SysState.Mass;
     return 0;
 }
@@ -757,17 +828,20 @@ int get_potential(double x, double y, double z, double *V){
     return -2;
 }
 int get_kinetic_energy(double *kinetic_energy){
-    compute_global_quantities_of_system();
+    if (!global_quantities_of_system_up_to_date)
+        update_global_quantities(false);
     *kinetic_energy = SysState.EnergyKin;
     return 0;
 }
 int get_potential_energy(double *potential_energy){
-    compute_global_quantities_of_system();
+    if (!(global_quantities_of_system_up_to_date && potential_energy_also_up_to_date))
+        update_global_quantities(true);
     *potential_energy = SysState.EnergyPot;
     return 0;
 }
 int get_thermal_energy(double *thermal_energy){
-    compute_global_quantities_of_system();
+    if (!global_quantities_of_system_up_to_date)
+        update_global_quantities(false);
     *thermal_energy = SysState.EnergyInt;
     return 0;
 }
@@ -779,14 +853,16 @@ int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_pa
     return -1;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
-    compute_global_quantities_of_system();
+    if (!global_quantities_of_system_up_to_date)
+        update_global_quantities(false);
     *x = SysState.CenterOfMass[0];
     *y = SysState.CenterOfMass[1];
     *z = SysState.CenterOfMass[2];
     return 0;
 }
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
-    compute_global_quantities_of_system();
+    if (!global_quantities_of_system_up_to_date)
+        update_global_quantities(false);
     *vx = SysState.Momentum[0]/SysState.Mass;
     *vy = SysState.Momentum[1]/SysState.Mass;
     *vz = SysState.Momentum[2]/SysState.Mass;

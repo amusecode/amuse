@@ -1,7 +1,7 @@
 %  Relevant files
 
 InitCondFile  	   ICs/galaxy_littleendian.dat
-OutputDir          no_output_yet
+OutputDir          .
 
 EnergyFile         energy.txt
 InfoFile           info.txt
@@ -34,7 +34,7 @@ PeriodicBoundariesOn     0
 %  Caracteristics of run
 
 TimeBegin           0.0        % Begin of the simulation
-TimeMax	            0.003        % End of the simulation (unused)
+TimeMax	      100.0        % End of the simulation
 
 Omega0	              0
 OmegaLambda           0

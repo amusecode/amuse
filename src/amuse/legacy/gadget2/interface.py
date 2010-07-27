@@ -503,9 +503,9 @@ class Gadget2(GravitationalDynamics):
         
         object.add_method_parameter(
             "get_time_step", 
-            "set_time_step",
+            None,
             "timestep", 
-            "timestep for system", 
+            "timestep for system, Gadget2 calculates this by itself, based on particle acceleration.", 
             generic_system.time, 
             1.0 | generic_system.time
         ) 
