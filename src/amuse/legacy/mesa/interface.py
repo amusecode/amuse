@@ -116,6 +116,50 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
+    @legacy_function   
+    def get_number_of_zones():
+        """
+        Retrieve the current number of zones/mesh-cells of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('n_zones', dtype='int32', direction=function.OUT
+            , description="The current number of zones/mesh-cells of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+    
+    @legacy_function   
+    def get_mass_fraction_at_zone():
+        """
+        Retrieve the mass fraction at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter('dq_i', dtype='float64', direction=function.OUT
+            , description="The mass fraction at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
     @legacy_function
     def get_max_age_stop_condition():
         """
@@ -581,6 +625,8 @@ class MESA(CodeInterface):
         object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
         object.add_getter('particles', 'get_temperature',names = ('temperature',))
         
+        object.add_method('particles', 'get_number_of_zones')
+        object.add_method('particles', 'get_mass_profile')
         object.add_method('particles', 'evolve', 'evolve_one_step')
     
     def define_errorcodes(self, object):
@@ -642,6 +688,16 @@ class MESA(CodeInterface):
             (object.INDEX,), 
             (units.yr, object.ERROR_CODE,)
         )
+        object.add_method(
+            "get_number_of_zones", 
+            (object.INDEX,), 
+            (units.none, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_mass_fraction_at_zone", 
+            (object.INDEX,units.none,), 
+            (units.none, object.ERROR_CODE,)
+        )
         
     
     def initialize_module_with_default_parameters(self):
@@ -662,5 +718,12 @@ class MESA(CodeInterface):
         for particle in self.particles:
             while particle.age < end_time:
                 particle.evolve_one_step()
-                
-        
+    
+    def get_mass_profile(self, indices_of_the_stars):
+        if hasattr(indices_of_the_stars, '__iter__'):
+            if len(indices_of_the_stars) > 1:
+                raise Exception("Querying mass profiles of more than one particle at a time is not supported.")
+            indices_of_the_stars = indices_of_the_stars[0]
+        number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, list(range(1,number_of_zones+1)) | units.none)
+    

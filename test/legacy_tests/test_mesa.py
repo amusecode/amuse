@@ -321,9 +321,12 @@ class TestMESA(TestWithMPI):
         from_code_to_model.copy()
         #print stars
         #instance.evolve_model(end_time = 0.03 | units.Myr) # speeding test up:
-        instance.evolve_model()
         self.assertEquals(stars[0].mass, mass)
         self.assertAlmostEquals(stars[0].luminosity, 5841. | units.LSun, 0)
+        instance.evolve_model()
+        from_code_to_model.copy()
+        self.assertEquals(stars[0].mass, mass)
+        self.assertAlmostEquals(stars[0].luminosity, 5820.85 | units.LSun, 0)
         instance.stop()
         del instance
     
@@ -429,5 +432,28 @@ class TestMESA(TestWithMPI):
         except Exception as ex:
             self.assertEquals("Error when calling 'evolve' of a 'MESA', "
                 "errorcode is -12, error is 'Evolve terminated: Maximum age reached.'", str(ex))
+        instance.stop()
+        del instance
+    
+    def test6(self):
+        print "Test for obtaining the stellar structure model"
+        stars = core.Particles(2)
+        stars.mass = [1.0, 10.0] | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_module_with_current_parameters() 
+        instance.setup_particles(stars)
+        instance.initialize_stars()
+        self.assertEquals(instance.particles.get_number_of_zones(), [479, 985] | units.none)
+        self.assertEquals(len(instance.particles[0].get_mass_profile()), 479)
+        self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0 | units.none)
+        try:
+            print instance.particles.get_mass_profile()
+            self.fail("Should not be able to get profiles of more than one star at a time.")
+        except Exception as ex:
+            self.assertEquals("Querying mass profiles of more than one particle at a time is not supported.", str(ex))
+        print instance.particles
         instance.stop()
         del instance

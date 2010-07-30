@@ -235,7 +235,10 @@ class AbstractParticleSet(AbstractSet):
                     values_to_show.append(format_str11('...'))
                     values_to_show.extend(map(format_float,quantity.number[-20:]))
             else:
-                values_to_show = map(format_float,quantity.number)
+                if quantity.unit.dtype:
+                    values_to_show = map(format_str11,quantity.number)
+                else:
+                    values_to_show = map(format_float,quantity.number)
             
             column.extend(values_to_show)
             column.append('=' * 11)

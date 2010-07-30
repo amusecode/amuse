@@ -515,6 +515,10 @@ class enumeration_unit(nonnumeric_unit):
         for x in self.possible_values:
             yield x | self
         
+    @property
+    def dtype(self):
+        return 'int32'
+    
     
 class named_unit(unit):
     """
