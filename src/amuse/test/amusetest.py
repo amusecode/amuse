@@ -129,6 +129,9 @@ class TestCase(unittest.TestCase):
             
     def get_path_to_results(self):
         return get_path_to_results()
+    
+    def get_amuse_root_dir(self):
+        return get_amuse_root_dir()
 
             
     
@@ -159,14 +162,23 @@ class TestWithMPI(TestCase):
             self.skip("Tried to instantiate a new object of the optional code with type '{0}', but this code is not available".format(factory))
          
          
-      
 def get_path_to_results():
-    dir = os.path.abspath(__file__)
-    while not os.path.exists(os.path.join(dir,'build.py')):
-        dir = os.path.dirname(dir)
-    amuse_root_dir = dir
+    name_of_testresults_directory = 'test_results'
+    if os.path.exists(os.path.abspath(name_of_testresults_directory)):
+        return os.path.abspath(name_of_testresults_directory)
+    
+    amuse_root_dir = get_amuse_root_dir()
     test_results_dir = os.path.join(amuse_root_dir, 'test_results')
     if os.path.exists(test_results_dir):
         return test_results_dir
     else:
-        return './'
+        return os.getcwd()
+
+def get_amuse_root_dir():
+    if 'AMUSE_ROOT_DIR' is os.environ:
+        return os.environ['AMUSE_ROOT_DIR']
+    result = os.path.abspath(__file__)
+    while not os.path.exists(os.path.join(result,'build.py')):
+        result = os.path.dirname(result)
+    return result
+      

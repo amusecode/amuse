@@ -5,6 +5,8 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy.support import channel
 
+from amuse.support.interface import CodeInterface
+
 from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.support import create_c
 
@@ -15,7 +17,11 @@ codestring = """
 
 int echo_int(int int_in, int * int_out) {
     *int_out = int_in;
-    return 0;
+    if(int_in < 0) {
+        return -1;
+    } else {
+        return 0;
+    }
 }
 
 int echo_double(double in, double * out) {
@@ -134,6 +140,22 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'string'
         function.can_handle_array = True
         return function  
+
+class ForTesting(CodeInterface):
+    
+    def __init__(self, exefile, **options):
+        CodeInterface.__init__(self, ForTestingInterface(exefile), **options)
+    
+    def define_methods(self, object):
+        object.add_method(
+            'echo_int',
+            (units.m,)
+            ,
+            (
+                units.m,
+                object.ERROR_CODE,
+            )
+        )
 
 
 
@@ -340,3 +362,12 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error[0], -1)
         self.assertEquals(error[1], -1)
         self.assertEquals(error[2], -1)
+
+    def test13(self):
+        instance = ForTesting(self.exefile)
+        try:
+            output_ints = instance.echo_int([-1 , -2]| units.m)
+        except Exception as ex:
+            self.assertEquals(str(ex), "Error when calling 'echo_int' of a 'ForTesting', errorcode is -1")
+            
+        instance.stop()

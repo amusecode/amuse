@@ -78,29 +78,32 @@ class TestInterface(TestWithMPI):
     def cxx_compile(self, objectname, string):
         root, ext = os.path.splitext(objectname)
         sourcename = root + '.cc'
-        
+        if os.path.exists(objectname):
+            os.remove(objectname)
         with open(sourcename, "w") as f:
             f.write(string)
-            
+        
+        rootdir = get_amuse_root_dir()
+        arguments = ["mpicxx", "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
         process = subprocess.Popen(
-            ["mpicxx", "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
+            arguments,
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        
-        if not os.path.exists(objectname):
-            raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
+        if not os.path.exists(objectname): # or process.poll() == 1:
+            raise Exception("Could not compile {0}, error = {1} ({2})".format(objectname, stderr, ' '.join(arguments)))
             
     
     def c_build(self, exename, objectnames):
-        dir = get_amuse_root_dir()
+        rootdir = get_amuse_root_dir()
+        
         arguments = ["mpicxx"]
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
-        arguments.extend(["-L"+dir+"/lib/stopcond","-lstopcond"])
+        arguments.extend(["-L"+rootdir+"/lib/stopcond","-lstopcond"])
         print ' '.join(arguments)
         process = subprocess.Popen(
             arguments,
