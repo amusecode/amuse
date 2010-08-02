@@ -1,6 +1,7 @@
 from amuse.test.amusetest import TestWithMPI
 import sys
 import os.path
+from numpy import pi
 
 from amuse.legacy.mesa.interface import MESA, MESAInterface
 
@@ -446,6 +447,7 @@ class TestMESA(TestWithMPI):
         instance.initialize_module_with_current_parameters() 
         instance.setup_particles(stars)
         instance.initialize_stars()
+        instance.evolve_model()
         self.assertEquals(instance.particles.get_number_of_zones(), [479, 985] | units.none)
         self.assertEquals(len(instance.particles[0].get_mass_profile()), 479)
         self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0 | units.none)
@@ -455,5 +457,15 @@ class TestMESA(TestWithMPI):
         except Exception as ex:
             self.assertEquals("Querying mass profiles of more than one particle at a time is not supported.", str(ex))
         print instance.particles
+        self.assertEquals(len(instance.particles[1].get_density_profile()), 985)
+        self.assertIsOfOrder(instance.particles[0].get_radius_profile()[0],          1.0 | units.RSun)
+        self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[-1],  1.0e7 | units.K)
+        self.assertIsOfOrder(instance.particles[0].get_luminosity_profile()[0],      1.0 | units.LSun)
+        delta_mass = instance.particles[0].get_mass_profile() * instance.particles[0].mass
+        radius1 = instance.particles[0].get_radius_profile()
+        radius2 = radius1[1:]
+        radius2.append(0|units.m)
+        delta_radius_cubed = (radius1**3 - radius2**3)
+        self.assertAlmostEquals(instance.particles[0].get_density_profile() / (delta_mass/(4./3.*pi*delta_radius_cubed)), [1]*479|units.none, places=3)
         instance.stop()
         del instance

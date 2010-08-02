@@ -426,7 +426,7 @@
       end function
 
 ! Return the current number of zones/mesh-cells of the star
-   integer function get_number_of_zones(AMUSE_id, AMUSE_value)
+      integer function get_number_of_zones(AMUSE_id, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
          use amuse_support, only: failed
          implicit none
@@ -444,8 +444,8 @@
          endif
       end function
 
-! Return the current number of zones/mesh-cells of the star
-   integer function get_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+! Return the mass fraction at the specified zone/mesh-cell of the star
+      integer function get_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
          use amuse_support, only: failed
          implicit none
@@ -464,6 +464,102 @@
             else
                 AMUSE_value = s% dq(AMUSE_zone)
                 get_mass_fraction_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the temperature at the specified zone/mesh-cell of the star
+      integer function get_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_temperature_at_zone = -1
+         else
+            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+                AMUSE_value = -1.0
+                get_temperature_at_zone = -2
+            else
+                AMUSE_value = exp(s% xs(s% i_lnT, AMUSE_zone))
+                get_temperature_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the density at the specified zone/mesh-cell of the star
+      integer function get_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_density_at_zone = -1
+         else
+            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+                AMUSE_value = -1.0
+                get_density_at_zone = -2
+            else
+                AMUSE_value = exp(s% xs(s% i_lnd, AMUSE_zone))
+                get_density_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the radius at the specified zone/mesh-cell of the star
+      integer function get_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_radius_at_zone = -1
+         else
+            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+                AMUSE_value = -1.0
+                get_radius_at_zone = -2
+            else
+                AMUSE_value = exp(s% xs(s% i_lnR, AMUSE_zone))
+                get_radius_at_zone = 0
+            endif
+         endif
+      end function
+
+! Return the luminosity at the specified zone/mesh-cell of the star
+      integer function get_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_luminosity_at_zone = -1
+         else
+            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+                AMUSE_value = -1.0
+                get_luminosity_at_zone = -2
+            else
+                AMUSE_value = s% xs(s% i_lum, AMUSE_zone)
+                get_luminosity_at_zone = 0
             endif
          endif
       end function

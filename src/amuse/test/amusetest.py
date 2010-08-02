@@ -6,6 +6,7 @@ import inspect
 
 from amuse.support import exceptions
 from amuse.support.data import values
+from amuse.support.units.si import no_unit
 
 class SkipTest(exceptions.AmuseException):
     pass
@@ -77,6 +78,21 @@ class TestCase(unittest.TestCase):
            
     assertAlmostRelativeEqual = failUnlessAlmostRelativeEqual
     assertAlmostRelativeEquals = failUnlessAlmostRelativeEqual
+    
+    def assertIsOfOrder(self, first, second, msg=None):
+        ratio = first/second
+        if isinstance(ratio, values.Quantity):
+            if ratio.unit.base:
+                raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
+            ratio = ratio.value_in(no_unit)
+        tmp = numpy.array(numpy.round(numpy.log10(ratio)) != 0).flatten()
+        if len(tmp) == 1:
+            if tmp[0]:
+                raise self.failureException,(msg or '%r is not of order %r' % (first, second))                     
+        elif any(tmp):
+            err_list = ["@%i, %r is not of order %r" % (i,first[i], second[i]) for (i,b) in enumerate(tmp) if b]
+            err = '\n'.join(err_list)
+            raise self.failureException,(msg or err)                     
     
     def run(self, result=None):
         if result is None:
