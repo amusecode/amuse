@@ -3,7 +3,7 @@ import weakref
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system as generic_system
 from amuse.support.data import values
-from amuse.support import exception
+from amuse.support import exceptions
 
 import warnings
 
@@ -32,17 +32,17 @@ class Parameters(object):
 
     def __getattr__(self, name):
         if not name in self._mapping_from_name_to_definition:
-            raise exception.CoreException("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
-
-
+            raise exceptions.CoreException("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+    
+    
         definition = self._mapping_from_name_to_definition[name]
         return definition.get_value(self._instance())
 
     def __setattr__(self, name, value):
         if not name in self._mapping_from_name_to_definition:
-            warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exception.AmuseWarning)
+            warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
             return
-
+    
         definition = self._mapping_from_name_to_definition[name]
         definition.set_value(self._instance(), value)
         if hasattr(self._instance(), "invoke_state_change"):
@@ -64,8 +64,8 @@ class Parameters(object):
 
     def get_default_value_for(self, name):
         if not name in self._mapping_from_name_to_definition:
-            raise exception.CoreException("tried to get default value of unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
-
+            raise exceptions.CoreException("tried to get default value of unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
+    
         definition = self._mapping_from_name_to_definition[name]
         return definition.default_value
 
@@ -204,8 +204,8 @@ class ModuleMethodParameterDefinition_Next(ParameterDefinition):
 
     def set_legacy_value(self, object, number):
         if self.set_method is None:
-            raise exception.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
-
+            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+    
         error = getattr(object, self.set_method)(number)
         if error < 0:
             raise ParameterException(object, self.name, error, False)
@@ -244,8 +244,8 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
 
     def set_legacy_value(self, object, number):
         if self.set_method is None:
-            raise exception.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
-
+            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+    
         error = getattr(object, self.set_method)(number)
         if error < 0:
             raise ParameterException(object, self.name, error, False)

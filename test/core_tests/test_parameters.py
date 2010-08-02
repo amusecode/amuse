@@ -4,7 +4,7 @@ from amuse.support.units import units
 from amuse.support.data import parameters
 
 import warnings
-from amuse.support import exception
+from amuse.support import exceptions
 
 class TestAttributeParameterDefintions(amusetest.TestCase):
     def test1(self):
@@ -382,24 +382,24 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             units.m,
             11.0 | units.m
         )
-
+    
         class TestModule(object):
             def get_test(self):
                 return (self.x,0)
             def set_test(self, value):
                 self.x = value
                 return 0
-
-
+    
+    
         instance = TestModule()
-
+    
         p = parameters.Parameters([parameter_definition], instance)
         instance.x = 1
         self.assertEquals(p.test_name , 1 | units.m)
-
+    
         try:
             p.test_name = 2 | units.m
-        except exception.CoreException, e:
+        except exceptions.CoreException, e:
             self.assertEquals("Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only", str(e))
         else:
             self.fail("Should raise readonly exception")

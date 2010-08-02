@@ -3,7 +3,7 @@ import os.path
 import os
 
 from amuse.support.core import late
-from amuse.support.exception import CoreException
+from amuse.support import exceptions
 
 class GlobalOptions(object):
     INSTANCE = None
@@ -18,6 +18,8 @@ class GlobalOptions(object):
         
     @late
     def amuse_rootdirectory(self):
+        if 'AMUSE_ROOT_DIR' in os.environ:
+            return os.environ['AMUSE_ROOT_DIR']
         result = os.path.abspath(__file__)
         while not os.path.exists(os.path.join(result,'build.py')):
             result = os.path.dirname(result)
@@ -107,7 +109,7 @@ class option(object):
         if hasattr(self, type.upper()):
             self.valuetype = getattr(self, type.upper())
         else:
-            raise CoreException("'{0}' is not a valid type for option".format(type))
+            raise exceptions.CoreException("'{0}' is not a valid type for option".format(type))
             
         self.validator = self.default_validator
         self.choices = set(choices)
@@ -163,7 +165,7 @@ class option(object):
         
     def choice_validator(self, value):
         if not value in self.choices:
-            raise CoreException("{0} is not a valid choice for option '{1}', valid values are: {2}".format(value, self.name, sorted(self.choices)))
+            raise exceptions.CoreException("{0} is not a valid choice for option '{1}', valid values are: {2}".format(value, self.name, sorted(self.choices)))
         return value
     
     def get_sections(self, instance):

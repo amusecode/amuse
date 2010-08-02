@@ -1,7 +1,7 @@
 from docutils import core
 import docutils.nodes as nodes
 from collections import namedtuple
-from amuse.support import exception
+from amuse.support import exceptions
 import warnings
 
 import atexit
@@ -38,7 +38,7 @@ class TracLiteratureReferences(object):
         string = self.all_literature_references_string()
         if string:
             prefix = "\n\nYou have used the following codes, which contain literature references:\n"
-            warnings.warn(prefix + self.all_literature_references_string(), exception.AmuseWarning)
+            warnings.warn(prefix + self.all_literature_references_string(), exceptions.AmuseWarning)
         
     
     def get_literature_list_of_class(self, cls):

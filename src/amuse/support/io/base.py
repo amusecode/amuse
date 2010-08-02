@@ -1,20 +1,20 @@
-
-
 from amuse.support.core import late
-from amuse.support import exception
+from amuse.support import exceptions
 import os.path
 
 import textwrap
 
+
+
 registered_fileformat_processors = {}
 
-class IoException(exception.CoreException):
-    errorcode = exception.ErrorCode(exception.CoreException.majorcode, 100, "io exception")
+class IoException(exceptions.CoreException):
+    errorcode = exceptions.ErrorCode(exceptions.CoreException.majorcode, 100, "io exception")
     
 class UnsupportedFormatException(IoException):
     """Raised when the given format is not supported by AMUSE.
     """
-    errorcode = exception.ErrorCode(
+    errorcode = exceptions.ErrorCode(
         IoException.majorcode, 
         101, 
         "a format is not supported",
@@ -24,7 +24,7 @@ class UnsupportedFormatException(IoException):
 class CannotSaveException(IoException):
     """Raised when the given format cannot save data (only reading of data is supported for the format)
     """
-    errorcode = exception.ErrorCode(
+    errorcode = exceptions.ErrorCode(
         IoException.majorcode, 
         102, 
         "a format is read-only",
@@ -34,7 +34,7 @@ class CannotSaveException(IoException):
 class CannotLoadException(IoException):
     """Raised when the given format cannot read data (only saving of data is supported for the format)
     """
-    errorcode = exception.ErrorCode(
+    errorcode = exceptions.ErrorCode(
         IoException.majorcode, 
         103, 
         "a format is write-only",

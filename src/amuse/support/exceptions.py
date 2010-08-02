@@ -10,6 +10,7 @@ class ErrorCode(object):
     def __str__(self):
         return "E{0}.{1}".format(self.majorcode, self.minorcode)
 
+
 class AmuseException(Exception):
     errorcode = ErrorCode(-1,-1, "unknown error")
     
@@ -21,13 +22,17 @@ class AmuseException(Exception):
             return self.errorcode.formatstring.format(*self.args)
         return self.args[0]
 
+
+class AmuseWarning(Warning):
+    pass
+
+
 class CoreException(AmuseException):
     majorcode = 0
     errorcode = ErrorCode(majorcode,-1, "core error")
-    
+
+
 class LegacyException(AmuseException):
     majorcode = 1
     errorcode = ErrorCode(majorcode,-1, "legacy code error")
-    
-class AmuseWarning(Warning):
-    pass
+
