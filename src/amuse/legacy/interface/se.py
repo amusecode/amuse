@@ -215,6 +215,7 @@ class StellarEvolution(object):
         the current age of the star.
         """
         function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star, as returned by the new_zams_star function")
         function.result_type = 'int32'
