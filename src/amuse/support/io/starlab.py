@@ -31,13 +31,13 @@ class Dyn2Xml(object):
                 newline = self.convert_storyline(line)
           
             xml_lines.append(newline)
-
-        xml_lines.append("</System>")    
-
+    
+        xml_lines.append("</System>")
+    
        
         if closepar!=openpar:
-            raise Exception("\nConversion failure, parenthesis mismatch. Return: no output string written\n")
-
+            raise base.IoException("\nConversion failure, parenthesis mismatch. Return: no output string written\n")
+    
         return '\n'.join(xml_lines)
         
     def convert_to_xml(self,inputfile):

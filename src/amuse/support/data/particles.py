@@ -1,14 +1,15 @@
-
-
-
 from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
 
+from amuse.support import exceptions
 from amuse.support.data.base import *
 from amuse.support.data.memory_storage import *
+
+
+
 
 class AbstractParticleSet(AbstractSet):
     """
@@ -352,12 +353,12 @@ class AbstractParticleSet(AbstractSet):
             particles = particles.as_set()
         original_particles_set = self._original_set()
         if set(original_particles_set.key)!=set(particles._original_set().key):
-            raise Exception("Can't create new subset from particles belonging to "
+            raise exceptions.AmuseException("Can't create new subset from particles belonging to "
                 "separate particle sets. Try creating a superset instead.")
         keys = list(self.key) + list(particles.key)
         new_set = ParticlesSubset(original_particles_set, keys)
         if new_set.has_duplicates():
-            raise Exception("Unable to add a particle, because it was already part of this set.")
+            raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
         return new_set
     
     def __sub__(self, particles):
@@ -383,13 +384,14 @@ class AbstractParticleSet(AbstractSet):
         """
         if isinstance(particles, Particle):
             particles = particles.as_set()
-        new_keys = [] ; new_keys.extend(self._get_keys())
+        new_keys = []
+        new_keys.extend(self._get_keys())
         subtract_keys = particles._get_keys()
         for key in subtract_keys:
             if key in new_keys:
                 new_keys.remove(key)
             else:
-                raise Exception("Unable to subtract a particle, because "
+                raise exceptions.AmuseException("Unable to subtract a particle, because "
                     "it is not part of this set.")
         return self._subset(new_keys)
     
@@ -762,7 +764,7 @@ class Particles(AbstractParticleSet):
             states_and_distances.append((state, distance,))
         
         if len(states_and_distances) == 0:
-            raise Exception("You asked for a state at timestamp '{0}', but the set does not have any saved states so this state cannot be returned")
+            raise exceptions.AmuseException("You asked for a state at timestamp '{0}', but the set does not have any saved states so this state cannot be returned")
             
         accompanying_state, min_distance = states_and_distances[0]
         for state, distance  in states_and_distances:
@@ -873,7 +875,7 @@ class ParticlesSuperset(AbstractParticleSet):
         self._private.index_to_default_set = index_to_default_set
         
         if self.has_duplicates():
-            raise Exception("Unable to add a particle, because it was already part of this set.")
+            raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
         
     
     def __len__(self):
@@ -923,7 +925,7 @@ class ParticlesSuperset(AbstractParticleSet):
             self._private.particle_sets[self._private.index_to_default_set]._add_particles(keys, 
                 attributes, values)
         else:
-            raise Exception("Cannot add particles to a superset")
+            raise exceptions.AmuseException("Cannot add particles to a superset")
         
     def _remove_particles(self, keys):
         split_sets, split_indices = self._split_keys_over_sets(keys)
@@ -1347,7 +1349,7 @@ class Particle(object):
         
     def add_child(self, child):
         if self.particles_set != child.particles_set:
-            raise Exception("The parent and child particles should be in the same set")
+            raise exceptions.AmuseException("The parent and child particles should be in the same set")
         
         child.parent = self
                 
@@ -1380,7 +1382,7 @@ class Particle(object):
         Raises an exception: cannot subtract particle(s) 
         from a particle.
         """
-        raise Exception("Cannot subtract particle(s) from a particle.")
+        raise exceptions.AmuseException("Cannot subtract particle(s) from a particle.")
     
     def __str__(self):
         """

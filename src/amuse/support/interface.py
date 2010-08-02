@@ -10,6 +10,7 @@ from amuse.support.options import OptionalAttributes
 from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition
 
 from amuse.support.core import late
+from amuse.support import exceptions
 
 import inspect
 
@@ -247,7 +248,7 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         transitions = self._get_transitions_path_from_to(self._current_state, state)
         if transitions is None:
             raise Exception("No transition from current state {0} to {1} possible".format(self._current_state, state))
-
+    
         transitions_with_methods = filter(lambda x : not x.method is None,transitions)
         if not self._do_automatic_state_transitions and len(transitions_with_methods) > 0:
             lines = []
@@ -257,10 +258,10 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
                     lines.append("{0}, automatic". format(x))
                 else:
                     lines.append("{0}, calling '{1}'". format(x, x.method.function_name))
-            exception = Exception('\n'.join(lines))
+            exception = exceptions.AmuseException('\n'.join(lines))
             exception.transitions = transitions
             raise exception
-
+    
         for transition in transitions:
             transition.do()
 
@@ -424,9 +425,9 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
 
     def handle_errorcode(self, errorcode):
         if errorcode in self.handler.interface.errorcodes:
-            raise Exception("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.handler.interface).__name__, errorcode,  self.handler.interface.errorcodes[errorcode]))
+            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}, error is '{3}'".format(self.name, type(self.handler.interface).__name__, errorcode,  self.handler.interface.errorcodes[errorcode]))
         elif errorcode < 0:
-            raise Exception("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.handler.interface).__name__, errorcode))
+            raise exceptions.AmuseException("Error when calling '{0}' of a '{1}', errorcode is {2}".format(self.name, type(self.handler.interface).__name__, errorcode))
         else:
             return errorcode
 
@@ -565,7 +566,7 @@ class PropertyWithUnitsDefinition(object):
             function_or_attribute = original
         else:
             function_or_attribute = getattr(self.handler.interface, self.function_or_attribute_name)
-
+    
         if hasattr(function_or_attribute, '__call__'):
             return_value = function_or_attribute()
             if hasattr(return_value, '__iter__'):
@@ -575,7 +576,7 @@ class PropertyWithUnitsDefinition(object):
                 else:
                     value, errorcode = return_value
                 if errorcode < 0:
-                    raise Exception("calling '{0}' to get the value for property '{1}' resulted in an error (errorcode {2})".format(self.function_or_attribute_name, self.public_name, errorcode))
+                    raise exceptions.AmuseException("calling '{0}' to get the value for property '{1}' resulted in an error (errorcode {2})".format(self.function_or_attribute_name, self.public_name, errorcode))
                 else:
                     return self.unit.new_quantity(value)
             else:

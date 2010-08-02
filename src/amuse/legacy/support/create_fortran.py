@@ -1,4 +1,5 @@
 from amuse.support.core import late
+from amuse.support import exceptions
 from amuse.legacy.support.core import LegacyFunctionSpecification
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
@@ -23,7 +24,7 @@ dtype_to_spec = DTypeToSpecDictionary({
 class MakeAFortranStringFromAFunctionSpecification(MakeCodeString):
     @late
     def specification(self):
-        raise Exception("No specification set, please set the specification first")
+        raise exceptions.AmuseException("No specification set, please set the specification first")
         
 class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFunctionSpecification):
     MAX_STRING_LEN = 256

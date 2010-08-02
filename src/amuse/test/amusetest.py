@@ -4,10 +4,10 @@ import numpy
 import os
 import inspect
 
+from amuse.support import exceptions
 from amuse.support.data import values
 
-
-class SkipTest(Exception):
+class SkipTest(exceptions.AmuseException):
     pass
     
 class TestCase(unittest.TestCase):

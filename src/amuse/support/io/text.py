@@ -141,7 +141,7 @@ class TableFormattedText(base.FileFormatProcessor):
             columns = self.split_into_columns(self.cursor.line())
             if len(columns)>0:
                 if len(columns) != len(self.attribute_names):
-                    raise Exception(
+                    raise base.IoException(
                         "Number of values on line '{0}' is {1}, expected {2}".format(self.cursor.line(), len(columns), len(self.attribute_names)))
             
             
@@ -151,7 +151,7 @@ class TableFormattedText(base.FileFormatProcessor):
                 
                 number_of_particles += 1
             self.cursor.forward()
-
+    
         quantities = map(
             lambda value, unit : unit.new_quantity(value), 
             values, 

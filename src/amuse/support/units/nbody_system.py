@@ -1,14 +1,15 @@
-"""
-"""
 from amuse.support.units import units
 from amuse.support.units import core
 from amuse.support.units import constants
+from amuse.support import exceptions
 
 from amuse.support.data.values import new_quantity
 
 
 import numpy
 
+"""
+"""
 class nbody_unit(core.base_unit):
     def __init__(self, unit_in_si, system):
         core.base_unit.__init__(self, unit_in_si.quantity, unit_in_si.name, unit_in_si.symbol, system)
@@ -44,7 +45,7 @@ class nbody_to_si(object):
         self.value1 = value1
         self.value2 = value2
         if self.unit1.base == self.unit2.base:
-            raise Exception("Must provide two orthogonal units for example mass and length or time and length")
+            raise exceptions.AmuseException("Must provide two orthogonal units for example mass and length or time and length")
         unit_was_found = [False, False, False]
         
         self.Gis1 = units.one / constants.G
@@ -58,7 +59,7 @@ class nbody_to_si(object):
                 if y[1] == x[1]:
                     unit_was_found[i] = True
         if len(filter(None, unit_was_found)) < 2:
-            raise Exception("Must provide more units")
+            raise exceptions.AmuseException("Must provide more units")
             
         
     @property

@@ -1,11 +1,11 @@
-
-
 import numpy
 
 from amuse.support.data import values
 from amuse.support.data.values import VectorQuantity
 from amuse.support.data.base import *
-    
+from amuse.support import exceptions
+
+
 
 class InMemoryAttributeStorage(AttributeStorage):
     
@@ -17,13 +17,13 @@ class InMemoryAttributeStorage(AttributeStorage):
 
     def _add_particles(self, keys, attributes = [], quantities = []):
         if len(quantities) != len(attributes):
-            raise Exception(
+            raise exceptions.AmuseException(
                 "you need to provide the same number of quantities as attributes, found {0} attributes and {1} list of values".format(
                     len(attributes), len(quantities)
                 )
             )
         if len(quantities) > 0 and len(keys) != len(quantities[0]):
-            raise Exception(
+            raise exceptions.AmuseException(
                 "you need to provide the same number of values as particles, found {0} values and {1} particles".format(
                     len(quantities[0]), len(keys)
                 )
@@ -215,10 +215,10 @@ class InMemoryGridAttributeStorage(object):
         return (self.number_of_i, self.number_of_j, self.number_of_k)
         
     def _add_particles(self, keys, attributes = [], quantities = []):
-        raise Exception("adding points to the grid is not implemented")
+        raise exceptions.AmuseException("adding points to the grid is not implemented")
             
     def _remove_particles(self, keys):
-        raise Exception("removing points from the grid is not implemented")
+        raise exceptions.AmuseException("removing points from the grid is not implemented")
         
     def _get_values(self, indices, attributes):
         results = []

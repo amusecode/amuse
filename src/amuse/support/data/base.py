@@ -1,17 +1,16 @@
-
-
-
 from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
-
+from amuse.support import exceptions
 from amuse.support.data.base import *
 
 import numpy
 import random
 import inspect
+
+
 
 
 class KeyGenerator(object):
@@ -45,9 +44,11 @@ class BasicUniqueKeyGenerator(KeyGenerator):
 class RandomNumberUniqueKeyGenerator(KeyGenerator):
     DEFAULT_NUMBER_OF_BITS = 64
     
-    def __init__(self, number_of_bits = DEFAULT_NUMBER_OF_BITS):
+    def __init__(self, number_of_bits = None):
+        if number_of_bits is None:
+            number_of_bits = self.DEFAULT_NUMBER_OF_BITS
         if number_of_bits > 64:
-            raise Exception("number of bits is larger than 64, this is currently unsupported!")
+            raise exceptions.AmuseException("number of bits is larger than 64, this is currently unsupported!")
         self.number_of_bits = number_of_bits
         
     def next(self):
@@ -107,13 +108,13 @@ class DerivedAttribute(object):
         return None
     
     def set_values_for_entities(self, particles, value):
-        raise Exception("cannot set value of attribute '{0}'")
+        raise exceptions.AmuseException("cannot set value of attribute '{0}'")
 
     def get_value_for_entity(self, particles, key):
         return None
 
     def set_value_for_entity(self, particles, key, value):
-        raise Exception("cannot set value of attribute '{0}'")
+        raise exceptions.AmuseException("cannot set value of attribute '{0}'")
 
 class VectorAttribute(DerivedAttribute):
     """
@@ -588,7 +589,7 @@ class AbstractSet(object):
         keys = list(self.key) + list(particles.key)
         new_set = ParticlesSubset(original_particles_set, keys)
         if new_set.has_duplicates():
-            raise Exception("Unable to add a particle, because it was already part of this set.")
+            raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
         return new_set
     
     def __sub__(self, particles):
@@ -620,7 +621,7 @@ class AbstractSet(object):
             if key in new_keys:
                 new_keys.remove(key)
             else:
-                raise Exception("Unable to subtract a particle, because "
+                raise exceptions.AmuseException("Unable to subtract a particle, because "
                     "it is not part of this set.")
         return self._subset(new_keys)
     
@@ -962,3 +963,39 @@ class AbstractSet(object):
     
     
 
+
+    def __add__(self, particles):
+        """
+        Returns a particle subset, composed of the given
+        particle(s) and this particle set. Attribute values are
+        not stored by the subset. The subset provides a view
+        on two or more sets of particles.
+        
+        :parameter particles: (set of) particle(s) to be added to self.
+        
+        >>> from amuse.support.data.core import Particles
+        >>> particles = Particles(4)
+        >>> particles1 = particles[:2]
+        >>> particles1.x = [1.0, 2.0] | units.m
+        >>> particles2 = particles[2:]
+        >>> particles2.x = [3.0, 4.0] | units.m
+        >>> new_set = particles1 + particles2
+        >>> new_set  # doctest:+ELLIPSIS
+        <amuse.support.data.particles.ParticlesSubset object at 0x...>
+        >>> print len(new_set)
+        4
+        >>> print new_set.x
+        [1.0, 2.0, 3.0, 4.0] m
+        """
+        particles = particles.as_set()
+        original_particles_set = self._original_set()
+        if set(original_particles_set.key)!=set(particles._original_set().key):
+            raise Exception("Can't create new subset from particles belonging to "
+                "separate particle sets. Try creating a superset instead.")
+        keys = list(self.key) + list(particles.key)
+        new_set = ParticlesSubset(original_particles_set, keys)
+        if new_set.has_duplicates():
+            raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
+        return new_set
+    
+    

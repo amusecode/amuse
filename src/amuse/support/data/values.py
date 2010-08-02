@@ -1,9 +1,10 @@
-"""
-"""
 from math import sqrt
 import numpy
 from amuse.support.core import late
+from amuse.support import exceptions
 
+"""
+"""
 class Quantity(object):
     """
     A Quantity objects represents a scalar or vector with a
@@ -52,7 +53,7 @@ class Quantity(object):
     >>> x.value_in(units.g) # but only if the units are compatible!
     Traceback (most recent call last):
         File "<stdin>", line 1, in ?
-    Exception: Cannot expres: g in m
+    AmuseException: Cannot expres: g in m
 
     
     """
@@ -214,13 +215,13 @@ class ScalarQuantity(Quantity):
         if shape == -1 or (len(shape) == 1 and shape[0] == 1):
             return VectorQuantity([self.number], self.unit)
         else:
-            raise Exception("Cannot reshape a scalar to vector of shape '{0}'".format(shape))
+            raise exceptions.AmuseException("Cannot reshape a scalar to vector of shape '{0}'".format(shape))
     
     def __getitem__(self, index):
         if index == 0:
             return self
         else:
-            raise Exception("ScalarQuantity does not support indexing")
+            raise exceptions.AmuseException("ScalarQuantity does not support indexing")
             
     def __str__(self):
         unit_str = str(self.unit)
@@ -304,7 +305,7 @@ class VectorQuantity(Quantity):
     
     def as_vector_with_length(self, length):
         if length != len(self):
-            raise Exception("Can only return a vector with the same length")
+            raise exceptions.AmuseException("Can only return a vector with the same length")
         return self
     
     def as_vector_quantity(self):
@@ -717,17 +718,17 @@ class NonNumericQuantity(Quantity):
         Quantity.__init__(self, unit)
         self.value = value
         if not unit.is_valid_value(value):
-            raise Exception("<{0}> is not a valid value for {1!r}".format(value, unit))
+            raise exceptions.AmuseException("<{0}> is not a valid value for {1!r}".format(value, unit))
     
     def as_quantity_in(self, another_unit): 
         if not another_unit == self.unit:
-            raise Exception("Cannot convert non-numeric quantities in to another unit")
+            raise exceptions.AmuseException("Cannot convert non-numeric quantities in to another unit")
             
         return new_quantity(self.value, another_unit)
 
     def value_in(self, unit):
         if not unit == self.unit:
-            raise Exception("Cannot convert non-numeric quantities in to another unit")
+            raise exceptions.AmuseException("Cannot convert non-numeric quantities in to another unit")
         
         return self.value
         

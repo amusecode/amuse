@@ -1,6 +1,7 @@
 import numpy
 from amuse.support.units.generic_unit_system import *
 from amuse.support.data.values import new_quantity
+from amuse.support import exceptions
 
 class generic_to_si(object):
     DEFAULT_CONVERTER = None
@@ -12,18 +13,18 @@ class generic_to_si(object):
         
         self.new_base = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
         self.new_base_inv = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
-
+    
         available_units = set()
         for unit in self.units_of_values:#[self.value.unit, self.value2.unit, self.value3.unit]:
             for i in unit.base:
                 available_units.add(i[1])
         if not len(available_units) is self.system_rank:
-            raise Exception("Must provide three orthogonal units")
+            raise exceptions.AmuseException("Must provide three orthogonal units")
         self.list_of_available_units = list(available_units)
-
+    
         self.new_base = self.determine_new_base()
         if self.matrixrank(self.new_base) < self.system_rank:
-            raise Exception("Must provide three orthogonal units, e.g. mass,length,time or mass, velocity, time")
+            raise exceptions.AmuseException("Must provide three orthogonal units, e.g. mass,length,time or mass, velocity, time")
         self.new_base_inv = self.new_base ** -1
         self.set_default_converter_if_uninitialised(self)
 
@@ -158,7 +159,7 @@ class generic_to_si(object):
     @classmethod
     def get_default(cls):
         if cls.DEFAULT_CONVERTER is None:
-            raise Exception("Asked for the default nbody to SI converter,"
+            raise exceptions.AmuseException("Asked for the default nbody to SI converter,"
             " but no converter has been set!.\n"
             "Please create a nbody_to_si converter first,"
             " and use the 'set_as_default' method.")

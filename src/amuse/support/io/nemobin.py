@@ -278,7 +278,7 @@ class NemoBinaryFile(object):
             mustswap = True
             
         if not (magic_number == self.SingMagic or magic_number == self.PlurMagic):
-            raise Exception("Item does not have a valid header")
+            raise base.IoException("Item does not have a valid header")
         
         typecharacter = self.read_string()
         if not typecharacter == TesItem.typecharacter:

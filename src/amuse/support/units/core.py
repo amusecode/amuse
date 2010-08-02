@@ -1,5 +1,6 @@
 from amuse.support.data import values
 from amuse.support.core import late
+from amuse.support import exceptions
 
 import numpy
 
@@ -170,7 +171,7 @@ class unit(object):
             other_factor = x.factor
             return this_factor / other_factor
         else:
-            raise Exception("Cannot expres: " + str(x) + " in " + str(self))
+            raise exceptions.AmuseException("Cannot expres: {0} in {1}".format(x, self))
       
     def in_(self, x):
         return self.as_quantity_in(x)
@@ -189,7 +190,7 @@ class unit(object):
         quantity<1000.0 kg>
         """
         if isinstance(unit, values.Quantity):
-            raise Exception("Cannot expres a unit in a quantity")
+            raise exceptions.AmuseException("Cannot expres a unit in a quantity")
         else:
             factor = self.conversion_factor_from(unit)
             return values.new_quantity(factor, unit)
@@ -386,19 +387,19 @@ class nonnumeric_unit(unit):
         return 'no_system.get({0!r})'.format(self.name)
         
     def __mul__(self, other):
-        raise Exception("Cannot derive other units from a non numeric unit")
+        raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
     def __div__(self, other):
-        raise Exception("Cannot derive other units from a non numeric unit")
+        raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
 
     def __rmul__(self, other):
-        raise Exception("Cannot derive other units from a non numeric unit")
+        raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
     
     def __rdiv__(self, other):
-        raise Exception("Cannot derive other units from a non numeric unit")
+        raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
     def __pow__(self, other):
-        raise Exception("Cannot derive other units from a non numeric unit")
+        raise exceptions.AmuseException("Cannot derive other units from a non numeric unit")
         
     def is_non_numeric(self):
         return True
@@ -458,7 +459,7 @@ class enumeration_unit(nonnumeric_unit):
     >>> 3 | my_unit
     Traceback (most recent call last):
         ...
-    Exception: <3> is not a valid value for unit<my_unit>
+    AmuseException: <3> is not a valid value for unit<my_unit>
     
     
     Or, with default values:
@@ -476,13 +477,13 @@ class enumeration_unit(nonnumeric_unit):
         self.possible_values = self._inital_list_of_possible_values(possible_values, names_for_values)
         self.names_for_values = self._inital_names_for_values(possible_values, names_for_values)
         if not len(self.possible_values) == len(self.names_for_values):
-            raise Exception("Must provide equal lenght list for values({0}) and names({1})".format(len(self.possible_values), len(self.names_for_values))) 
+            raise exceptions.AmuseException("Must provide equal lenght list for values({0}) and names({1})".format(len(self.possible_values), len(self.names_for_values)))
         self.mapping_from_values_to_names = self._inital_mapping_from_values_to_names()
         
     def _inital_list_of_possible_values(self, possible_values, names_for_values):
         if possible_values is None:
             if names_for_values is None:
-                raise Exception("Must provide a list of values and / or a list of names for each value")
+                raise exceptions.AmuseException("Must provide a list of values and / or a list of names for each value")
             else:
                 return range(len(names_for_values))
         else:
@@ -499,7 +500,7 @@ class enumeration_unit(nonnumeric_unit):
     def _inital_names_for_values(self, possible_values, names_for_values):
         if names_for_values is None:
             if possible_values is None:
-                raise Exception("Must provide a list of values and / or a list of names for each value")
+                raise exceptions.AmuseException("Must provide a list of values and / or a list of names for each value")
             else:
                 return [str(x) for x in possible_values]
         else:

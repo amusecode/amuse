@@ -54,6 +54,6 @@ class Seba(CodeInterface):
 
     def evolve_model(self, end_time = None):
         if end_time is None:
-            raise Exception("Cannot determine end_time from the code yet, so end_time must be provided!")
+            raise exceptions.LegacyException("Cannot determine end_time from the code yet, so end_time must be provided!")
             
         self._evolve_particles(self.particles, end_time)

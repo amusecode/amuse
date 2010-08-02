@@ -722,7 +722,7 @@ class MESA(CodeInterface):
     def get_mass_profile(self, indices_of_the_stars):
         if hasattr(indices_of_the_stars, '__iter__'):
             if len(indices_of_the_stars) > 1:
-                raise Exception("Querying mass profiles of more than one particle at a time is not supported.")
+                raise exceptions.LegacyException("Querying mass profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
         number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, list(range(1,number_of_zones+1)) | units.none)

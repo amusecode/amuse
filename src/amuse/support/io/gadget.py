@@ -236,7 +236,7 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         bytes = file.read(4)
         length_of_block_after = struct.unpack(format, bytes)[0]
         if(length_of_block_after != length_of_block):
-            raise Exception("Block is mangled sizes don't match before: {0}, after: {1}".format(length_of_block, length_of_block_after))
+            raise base.IoException("Block is mangled sizes don't match before: {0}, after: {1}".format(length_of_block, length_of_block_after))
         return result
         
     def read_fortran_block_floats(self, file):

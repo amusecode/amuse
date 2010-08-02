@@ -1,9 +1,3 @@
-"""
-This module implements the code to the define interfaces between python
-code and C++ or Fortran legacy codes. It provides the abstract base
-class for all legacy codes.
-"""
-
 import weakref
 import atexit
 import os.path
@@ -13,13 +7,20 @@ import logging
 from mpi4py import MPI
 from subprocess import Popen, PIPE
 
+from amuse.support import exceptions
 from amuse.support.core import late
 from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
 from amuse.legacy.support.create_definition import LegacyDocStringProperty
 from amuse.legacy.support.channel import MpiChannel, MultiprocessingMPIChannel
 from amuse.legacy.support.channel import is_mpd_running
-        
+
+"""
+This module implements the code to the define interfaces between python
+code and C++ or Fortran legacy codes. It provides the abstract base
+class for all legacy codes.
+"""
+
 def ensure_mpd_is_running():
     if not is_mpd_running():
         name_of_the_vendor, version = MPI.get_vendor()
@@ -43,7 +44,7 @@ def _typecode_to_datatype(typecode):
     if typecode in values:
         return typecode
     
-    raise Exception("{0} is not a valid typecode".format(typecode))
+    raise exceptions.AmuseException("{0} is not a valid typecode".format(typecode))
     
 
 
@@ -80,7 +81,7 @@ class LegacyCall(object):
         try:
             (doubles, ints, floats, strings) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
         except Exception, ex:
-            raise Exception("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
+            raise exceptions.LegacyException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
         return self.converted_results(doubles, ints, floats, strings, handle_as_array)
     
     def async(self, *arguments_list, **keyword_arguments):
@@ -96,7 +97,7 @@ class LegacyCall(object):
             try:
                 (doubles, ints, floats, strings) = function()
             except Exception, ex:
-                raise Exception("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
+                raise exceptions.LegacyException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
             return self.converted_results(doubles, ints, floats, strings, handle_as_array)
             
         request.add_result_handler(handle_result)
@@ -196,14 +197,14 @@ class LegacyCall(object):
                 input_parameters_seen.remove(parameter.name)
         
         if input_parameters_seen:
-            raise Exception("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
+            raise exceptions.LegacyException("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
             
         dtype_to_keyword = {
             'float64' : 'doubles_in',
             'float32' : 'floats_in',
             'int32'  : 'ints_in',
             'string'  : 'chars_in',
-        }       
+        }   
         call_keyword_arguments = {}
         for dtype, values in dtype_to_values.iteritems():
             keyword = dtype_to_keyword[dtype]
@@ -358,7 +359,7 @@ class legacy_global(object):
         except Exception:
             pass
         
-        raise  Exception("No working crc32 implementation found!")
+        raise  exceptions.LegacyException("No working crc32 implementation found!")
      
 class ParameterSpecification(object):
     def __init__(self, name, dtype, direction, description):
@@ -607,7 +608,7 @@ class LegacyInterface(object):
             if isinstance(value, legacy_function):
                 is_up_to_date = value.is_compiled_file_up_to_date(modificationtime_of_worker)
                 if not is_up_to_date:
-                    raise Exception("""The worker code of the '{0}' interface class is not up to date.
+                    raise exceptions.LegacyException("""The worker code of the '{0}' interface class is not up to date.
 Please do a 'make clean; make' in the root directory.
 """.format(type(self).__name__))
         
@@ -645,7 +646,7 @@ class LegacyPythonInterface(LegacyInterface):
     def __init__(self, implementation_factory = None, name_of_the_worker = None , **options):
         if name_of_the_worker is None:
             if implementation_factory is None:
-                raise Exception("Must provide the name of a worker script or the implementation_factory class")
+                raise exceptions.LegacyException("Must provide the name of a worker script or the implementation_factory class")
             name_of_the_worker = self.make_executable_script_for(implementation_factory)
         
         LegacyInterface.__init__(self, name_of_the_worker, **options)

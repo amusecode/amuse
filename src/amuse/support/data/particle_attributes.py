@@ -6,6 +6,7 @@ from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
 from amuse.support.units import units
+from amuse.support import exceptions
 
 def move_to_center(particles):
     """
@@ -153,7 +154,10 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     >>> particles.potential_energy()
     quantity<-6.67428e-11 m**2 * kg * s**-2>
     """
-
+    
+    if len(particles) < 2:
+        raise exceptions.AmuseException("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
+    
     mass = particles.mass
     x_vector = particles.x
     y_vector = particles.y
@@ -161,7 +165,7 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
            
     sum_of_energies = zero
     
-    for i in range(len(particles)):
+    for i in range(len(particles) - 1):
        x = x_vector[i]
        y = y_vector[i]
        z = z_vector[i]
@@ -233,14 +237,26 @@ def virial_radius(particles):
     quantity<4.0 m>
     """
     if len(particles) < 2:
-        raise Exception("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
+        raise exceptions.AmuseException("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
     partial_sum = zero
-    length_unit = particles.position.unit
-    for i, particle_1 in enumerate(particles-particles[-1]):
-        distance_vecs = [particle_1.position.number - particle_2.position.number 
-            for particle_2 in particles[i+1:]] | length_unit
-        partial_sum += ((particle_1.mass * particles[i+1:].mass) / distance_vecs.lengths()).sum()        
-    return (particles.mass.sum()**2) / (2*partial_sum)
+    
+    mass = particles.mass
+    x_vector = particles.x
+    y_vector = particles.y
+    z_vector = particles.z
+    
+    for i in range(len(particles) - 1):
+       x = x_vector[i]
+       y = y_vector[i]
+       z = z_vector[i]
+       dx = x - x_vector[i+1:]
+       dy = y - y_vector[i+1:]
+       dz = z - z_vector[i+1:]
+       dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+       dr = (dr_squared).sqrt()
+       m_m = mass[i] * mass[i+1:]
+       partial_sum += (m_m / dr).sum()
+    return (mass.sum()**2) / (2 * partial_sum)
 
 def total_mass(particles):
     """

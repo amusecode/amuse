@@ -1,14 +1,15 @@
-
-"""
-"""
 from amuse.support.units import units
 from amuse.support.units import core
 from amuse.support.units import constants
+from amuse.support import exceptions
 
 from amuse.support.data.values import new_quantity
 
 import numpy
 
+
+"""
+"""
 class hydro_unit(core.base_unit):
     def __init__(self, unit_in_si, system):
         core.base_unit.__init__(self, unit_in_si.quantity, unit_in_si.name, unit_in_si.symbol, system)
@@ -44,21 +45,21 @@ class hydro_to_si(object):
         
         self.new_base = numpy.mat(numpy.zeros((3,3)))
         self.new_base_inv = numpy.mat(numpy.zeros((3,3)))
-
+    
         #isolate the 3 base units
         available_units = set()
         for unit in [value1.unit, value2.unit, value3.unit]:
             for i in unit.base:
                 available_units.add(i[1])
         if not len(available_units) is 3:
-            raise Exception("Must provide three orthogonal units")
+            raise exceptions.AmuseException("Must provide three orthogonal units")
         self.list_of_available_units = list(available_units)
-
+    
         self.new_base = self.determine_new_base()
         if self.matrixrank(self.new_base) < 3:
-            raise Exception("Must provide three orthogonal units, e.g. mass,length,time or mass, velocity, time")
+            raise exceptions.AmuseException("Must provide three orthogonal units, e.g. mass,length,time or mass, velocity, time")
         self.new_base_inv = self.new_base ** -1
-
+    
         self.set_default_converter_if_uninitialised(self)
 
     def matrixrank(self, A, tol=1e-8):
@@ -166,7 +167,7 @@ class hydro_to_si(object):
     @classmethod
     def get_default(cls):
         if cls.DEFAULT_CONVERTER is None:
-            raise Exception("Asked for the default nbody to SI converter,"
+            raise exceptions.AmuseException("Asked for the default nbody to SI converter,"
             " but no converter has been set!.\n"
             "Please create a nbody_to_si converter first,"
             " and use the 'set_as_default' method.")

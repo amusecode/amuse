@@ -15,6 +15,7 @@ from subprocess import Popen, PIPE
 
 from amuse.support.options import OptionalAttributes, option
 from amuse.support.core import late
+from amuse.support import exceptions
 
 class ASyncRequest(object):
         
@@ -335,7 +336,7 @@ class MessageChannel(OptionalAttributes):
                 tried_workers.append(full_name_of_the_worker)
                 current_type = current_type.__bases__[0]
                 if current_type.__bases__[0] is object:
-                    raise Exception("The worker application does not exists, it should be at: {0}".format(tried_workers))
+                    raise exceptions.LegacyException("The worker application does not exists, it should be at: {0}".format(tried_workers))
             else:
                 found = True
         return full_name_of_the_worker
@@ -500,10 +501,10 @@ class MpiChannel(MessageChannel):
            
         if self.check_mpi:
             if not is_mpd_running():
-                raise Exception("The mpd daemon is not running, please make sure it is started before starting this code")
+                raise exceptions.LegacyException("The mpd daemon is not running, please make sure it is started before starting this code")
         
         if self._mpi_is_broken_after_possible_code_crash:
-            raise Exception("Another code has crashed, cannot spawn a new code, please stop the script and retry")
+            raise exceptions.LegacyException("Another code has crashed, cannot spawn a new code, please stop the script and retry")
         
         if not self.hostname is None:
             self.info = MPI.Info.Create()
@@ -642,9 +643,9 @@ class MpiChannel(MessageChannel):
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         if self.is_inuse():
-            raise Exception("You've tried to send a message to a code that is already handling a message, this is not correct")
+            raise exceptions.LegacyException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.intercomm is None:
-            raise Exception("You've tried to send a message to a code that is not running")
+            raise exceptions.LegacyException("You've tried to send a message to a code that is not running")
         
         length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in)
         
@@ -715,10 +716,10 @@ class MpiChannel(MessageChannel):
             raise
             
         if message.tag == -1:
-            raise Exception("Not a valid message, message is not understood by legacy code")
+            raise exceptions.LegacyException("Not a valid message, message is not understood by legacy code")
         elif message.tag == -2:
             self.stop()
-            raise Exception("Fatal error in code, code has exited")
+            raise exceptions.LegacyException("Fatal error in code, code has exited")
                 
             
             
@@ -744,7 +745,7 @@ class MpiChannel(MessageChannel):
             message = function()
             
             if message.tag < 0:
-                raise Exception("Not a valid message, message is not understood by legacy code")
+                raise exceptions.LegacyException("Not a valid message, message is not understood by legacy code")
                 
             if message.length > 1 or handle_as_array:
                 doubles_result = unpack_array(message.doubles, message.length, 'float64')
@@ -758,7 +759,7 @@ class MpiChannel(MessageChannel):
                 strings_result = message.strings
             
             return (doubles_result, ints_result, floats_result, strings_result)
-
+    
         request.add_result_handler(handle_result)
         
         return request

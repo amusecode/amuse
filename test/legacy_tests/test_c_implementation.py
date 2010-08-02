@@ -9,6 +9,7 @@ from amuse.support.interface import CodeInterface
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.support import create_c
+from amuse.support import exceptions
 
 import subprocess
 import os
@@ -371,3 +372,12 @@ class TestInterface(TestWithMPI):
             self.assertEquals(str(ex), "Error when calling 'echo_int' of a 'ForTesting', errorcode is -1")
             
         instance.stop()
+
+    def test14(self):
+        instance = ForTesting(self.exefile)
+        self.assertRaises(exceptions.LegacyException, lambda : instance.echo_int())
+        instance.legacy_interface.echo_int.specification.id = -9
+        self.assertRaises(exceptions.LegacyException, lambda : instance.echo_int(1 | units.m))
+        instance.stop()
+    
+    

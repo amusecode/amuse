@@ -1,4 +1,5 @@
 from amuse.support.core import late
+from amuse.support import exceptions
 from amuse.legacy.support.core import LegacyFunctionSpecification
 from amuse.legacy.support.create_code import MakeCodeString
 from amuse.legacy.support.create_code import MakeCodeStringOfAClassWithLegacyFunctions
@@ -46,7 +47,7 @@ class MakeCCodeString(MakeCodeString):
 class MakeCStringFromAFunctionSpecification(MakeCCodeString):
     @late
     def specification(self):
-        raise Exception("No specification set, please set the specification first")
+        raise exceptions.AmuseException("No specification set, please set the specification first")
         
 class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecification):
 
@@ -261,7 +262,7 @@ class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCStringFrom
 class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
     @late
     def legacy_global(self):
-        raise Exception("No legacy_global set, please set the legacy_global first")
+        raise exceptions.AmuseException("No legacy_global set, please set the legacy_global first")
     
             
     def start(self):
@@ -378,7 +379,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
 
     @late
     def class_with_legacy_functions(self):
-        raise Exception("No class_with_legacy_functions set, please set the class_with_legacy_functions first")
+        raise exceptions.AmuseException("No class_with_legacy_functions set, please set the class_with_legacy_functions first")
     
     @late
     def dtype_to_spec(self):

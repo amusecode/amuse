@@ -104,7 +104,7 @@ def read_set_from_file(
     :func:`get_options_for_format`
     """
     if not os.path.exists(filename):
-        raise Exception("Error: file '{0}' does not exist.".format(filename))
+        raise IoException("Error: file '{0}' does not exist.".format(filename))
         
     
     processor_factory = _get_processor_factor(format)

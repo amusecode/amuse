@@ -1,5 +1,6 @@
 from amuse.support.units import nbody_system
 from amuse.support.core import late
+from amuse.support import exceptions
 
 import inspect
 
@@ -99,7 +100,7 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
     
     def async(self, *list_arguments, **keyword_arguments):
         if not self.is_async_supported:
-            raise Exception("async call is not supported for this method")
+            raise exceptions.AmuseException("async call is not supported for this method")
         
         
         object = self.precall()

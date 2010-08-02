@@ -1,8 +1,9 @@
 from amuse.support.data import core
 from amuse.support.units import nbody_system
+from amuse.support import exceptions
 import math
 import numpy
-        
+
 class MakeKingModel(object):
     def __init__(self, number_of_particles, W0, convert_nbody = None, do_scale = False, 
             beta = 0.0, seed = None, verbose = False):
@@ -309,7 +310,8 @@ class MakeKingModel(object):
             if (self.zm[i1] > rno):
                 found_index = True
                 break
-        if (not found_index): raise Exception("makeking: error in getpos")
+        if (not found_index):
+            raise exceptions.AmuseException("makeking: error in getpos")
         rfac = (rno - self.zm[i1-1]) / (self.zm[i1] - self.zm[i1-1])
         radius = self.rr[i1-1] + rfac * (self.rr[i1] - self.rr[i1-1])
         potential = self.psi[i1-1] + rfac * (self.psi[i1] - self.psi[i1-1])
@@ -368,7 +370,8 @@ class MakeKingModel(object):
     def makeking(self):
         #// Create a King model, and optionally initialize an N-body system
         #// with total mass = n, core radius = 1.
-        if (self.W0 > 16): raise Exception("makeking: must specify w0 < 16")
+        if (self.W0 > 16): 
+            raise exceptions.AmuseException("makeking: must specify w0 < 16")
         #    // Compute the cluster density/velocity/potential profile
         (nprof, v20) = self.poisson()
         zm = self.zm
@@ -380,11 +383,11 @@ class MakeKingModel(object):
             len(rr) == nprof+1 and len(v2) == nprof+1 and 
             len(psi) == nprof+1):
                 print len(zm), len(d), len(rr), len(v2), len(psi), nprof+1
-                raise Exception("Error in result of Poisson")
+                raise exceptions.AmuseException("Error in result of Poisson")
         #    // Determine statistics and characteristic scales of the King model.
-        rho0 = 1 / zm[nprof] #	 // Central density for total mass = 1
+        rho0 = 1 / zm[nprof]#	 // Central density for total mass = 1
         #    // Unit of velocity = sig, where rc^2 = 9 sig^2 / (4 pi G rho0)
-        sig = math.sqrt(4.0 * math.pi * rho0 / 9.0) # // This 3 was v20 in the f77 version...
+        sig = math.sqrt(4.0 * math.pi * rho0 / 9.0)# // This 3 was v20 in the f77 version...
         #					 // v20 is central vel. disp. / sig^2
         #    // Scale the zm array to unit total mass.
         inv_total_mass = 1.0 / zm[nprof]
@@ -404,7 +407,8 @@ class MakeKingModel(object):
                 self.indx.append(j - 1)
                 z = z + dz
         self.indx.append(nprof)
-        if not (len(self.indx)==self.NINDX+1): raise Exception("Error in length of indx")
+        if not (len(self.indx)==self.NINDX+1):
+            raise exceptions.AmuseException("Error in length of indx")
         zmcore = zm[jcore] + (zm[jcore+1] - zm[jcore]) * (1 - 
             rr[jcore]) / (rr[jcore+1] - rr[jcore])
         rhalf = rr[jhalf] + (rr[jhalf+1] - rr[jhalf]) * (0.5 -  

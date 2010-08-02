@@ -1,4 +1,3 @@
-
 from amuse.support.data import parameters
 from amuse.support.data.core import Particles, ParticleInformationChannel, Particle
 from amuse.support.data.core import AttributeStorage
@@ -9,6 +8,7 @@ from amuse.support.units import nbody_system, units
 from amuse.support.data import values
 from amuse.support.data import base
 from amuse.support.core import late
+from amuse.support import exceptions
 
 import inspect
 
@@ -77,7 +77,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
             elif self.method_is_code:
                 if not self.method.legacy_specification is None:
                     if not self.method.legacy_specification.can_handle_array:
-                        raise Exception(
+                        raise exceptions.AmuseException(
                             "getter method {0} cannot handle arrays".format(self.method)
                         )
     
@@ -307,7 +307,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
                     set_of_attributes -= set(access_method.attribute_names)
                     
         if set_of_attributes:
-            raise Exception("Do not have attributes {0}".format(sorted(set_of_attributes)))
+            raise exceptions.AmuseException("Do not have attributes {0}".format(sorted(set_of_attributes)))
         
         return result
     
@@ -320,7 +320,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
                 set_of_attributes -= set(access_method.attribute_names)
                 
         if set_of_attributes:
-            raise Exception("Cannot set attributes {0}".format(sorted(set_of_attributes)))
+            raise exceptions.AmuseException("Cannot set attributes {0}".format(sorted(set_of_attributes)))
             
         return result
     
@@ -479,10 +479,10 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         return (imax - imin + 1, jmax - jmin + 1, kmax - kmin + 1)
         
     def _add_particles(self, keys, attributes = [], quantities = []):
-        raise Exception("adding points to the grid is not implemented")
+        raise exceptions.AmuseException("adding points to the grid is not implemented")
             
     def _remove_particles(self, keys):
-        raise Exception("removing points from the grid is not implemented")
+        raise exceptions.AmuseException("removing points from the grid is not implemented")
     
     def _to_arrays_of_indices(self, index):
         imin, imax, jmin, jmax, kmin, kmax = self.get_range_method()

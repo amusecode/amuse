@@ -4,6 +4,7 @@ from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
 
+from amuse.support import exceptions
 from amuse.support.data.base import *
 from amuse.support.data.memory_storage import *
 from amuse.support.data import indexing
@@ -160,7 +161,7 @@ class GridInformationChannel(object):
         source_shape = self.source.shape
         target_shape = self.target.shape
         if len(source_shape) != len(target_shape):
-            raise Exception("The source and target grids do not have the same dimensions, cannot use this channel")
+            raise exceptions.AmuseException("The source and target grids do not have the same dimensions, cannot use this channel")
         index = [numpy.s_[0:min(x,y)] for x,y in zip(source_shape, target_shape)]
         index = tuple(index)
         print index
