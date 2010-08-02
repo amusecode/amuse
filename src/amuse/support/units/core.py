@@ -271,6 +271,11 @@ class unit(object):
     def isnone(self):
         return False
         
+
+    def is_generic(self):
+        return False
+    
+    
 class base_unit(unit):
     """
     base_unit objects are  orthogonal, indivisable units 

@@ -339,7 +339,7 @@ class TestAmuseInterface(TestWithMPI):
     
     def test7(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
-
+    
         instance = BHTree(convert_nbody)
         instance.commit_parameters()
         
@@ -350,19 +350,19 @@ class TestAmuseInterface(TestWithMPI):
         particles.radius =  [10.0, 20.0] | units.m
         particles.position = [[10.0, 20.0, 30.0], [20.0, 40.0, 60.0]] | units.m
         particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | units.m / units.s
-
+    
         
         instance.particles.add_particles(particles)
         instance.commit_particles()
         
-        self.assertEquals(instance.get_mass(1), 15.0| units.kg)  
-        self.assertEquals(instance.get_position(1)[2], 30.0| units.m)   
+        self.assertEquals(instance.get_mass(1), 15.0| units.kg)
+        self.assertAlmostRelativeEquals(instance.get_position(1)[2], 30.0| units.m)
         
         self.assertEquals(len(instance.particles), 2)
         
         
-        self.assertEquals(instance.particles.mass[1] , 30.0 | units.kg) 
-        self.assertEquals(instance.particles.position[1][2] , 60.0 | units.m)   
+        self.assertAlmostRelativeEquals(instance.particles.mass[1] , 30.0 | units.kg)
+        self.assertAlmostRelativeEquals(instance.particles.position[1][2] , 60.0 | units.m)   
         
     def test8(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)

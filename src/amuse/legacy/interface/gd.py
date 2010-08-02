@@ -1068,7 +1068,5 @@ class GravitationalDynamics(common.CommonCode):
         return subset
 
     def define_converter(self, object):
-        if isinstance(self.unit_converter, nbody_system.nbody_to_si):
-            object.set_converter(self.unit_converter.as_converter_from_si_to_nbody())
-        elif isinstance(self.unit_converter, generic_unit_converter.generic_to_si):
+        if not self.unit_converter is None:
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())

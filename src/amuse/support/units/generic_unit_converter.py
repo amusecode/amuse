@@ -3,8 +3,7 @@ from amuse.support.units.generic_unit_system import *
 from amuse.support.data.values import new_quantity
 from amuse.support import exceptions
 
-class generic_to_si(object):
-    DEFAULT_CONVERTER = None
+class ConvertBetweenGenericAndSiUnits(object):
 
     def __init__(self, *kargs):
         self.values = kargs
@@ -26,7 +25,6 @@ class generic_to_si(object):
         if self.matrixrank(self.new_base) < self.system_rank:
             raise exceptions.AmuseException("Must provide three orthogonal units, e.g. mass,length,time or mass, velocity, time")
         self.new_base_inv = self.new_base ** -1
-        self.set_default_converter_if_uninitialised(self)
 
     def matrixrank(self, A, tol=1e-8):
         s = numpy.linalg.svd(A,compute_uv=0)
@@ -149,39 +147,3 @@ class generic_to_si(object):
                 
         return GenericToSiConverter(self)
 
-    def set_as_default(self):
-        """Install this converter as the default converter for the
-        modules. When a native nbody module is created it will choose
-        this converter (if no other converter is given during creation)
-        """
-        self.set_default_converter(self)
-
-    @classmethod
-    def get_default(cls):
-        if cls.DEFAULT_CONVERTER is None:
-            raise exceptions.AmuseException("Asked for the default nbody to SI converter,"
-            " but no converter has been set!.\n"
-            "Please create a nbody_to_si converter first,"
-            " and use the 'set_as_default' method.")
-        else:
-            return cls.DEFAULT_CONVERTER
-
-    @classmethod
-    def set_default_converter(cls, object):
-        cls.DEFAULT_CONVERTER = object
-
-    @classmethod
-    def set_default_converter_if_uninitialised(cls, object):
-        if cls.DEFAULT_CONVERTER is None:
-            cls.set_default_converter(object)
-
-class noconvert_generic_to_si(object):
-
-    def __init__(self):
-        pass
-
-    def to_si(self, value):
-        return value
-
-    def to_generic(self, value):
-        return value

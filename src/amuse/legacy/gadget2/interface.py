@@ -441,10 +441,10 @@ class Gadget2(GravitationalDynamics):
     def __init__(self, unit_converter = None, **options):
         legacy_interface = Gadget2Interface(**options)
         if unit_converter is None:
-            unit_converter = generic_system.generic_to_si(
+            unit_converter = ConvertBetweenGenericAndSi(
                 3.085678e21 | units.cm,   # 1.0 kpc
                 1.989e43 | units.g,       # 1.0e10 solar masses
-                1e5 | units.cm / units.s) # 1 km/sec
+                1e5 | units.cm / units.s)# 1 km/sec
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
@@ -456,21 +456,21 @@ class Gadget2(GravitationalDynamics):
         self.set_parameterfile_path(self.default_path_to_parameterfile)
         result = self.overridden().initialize_code()
         self.set_gadget_output_directory(self.get_output_directory())
-        self.set_unit_mass(self.unit_converter.to_si(generic_system.mass).value_in(units.g))
-        self.set_unit_length(self.unit_converter.to_si(generic_system.length).value_in(units.cm))
+        self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
+        self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm))
         self.set_unit_velocity(self.unit_converter.to_si(
-            generic_system.length/generic_system.time).value_in(units.cm/units.s))
+            generic_unit_system.length/generic_unit_system.time).value_in(units.cm/units.s))
         return result
     
     def define_properties(self, object):
-        object.add_property("get_kinetic_energy", generic_system.energy)
-        object.add_property("get_potential_energy", generic_system.energy)
-        object.add_property("get_thermal_energy", generic_system.energy)
-        object.add_property("get_total_radius", generic_system.length)
-        object.add_property("get_center_of_mass_position", generic_system.length)
-        object.add_property("get_center_of_mass_velocity", generic_system.speed)
-        object.add_property("get_total_mass", generic_system.mass)
-        object.add_property('get_time', generic_system.time, "model_time")
+        object.add_property("get_kinetic_energy", generic_unit_system.energy)
+        object.add_property("get_potential_energy", generic_unit_system.energy)
+        object.add_property("get_thermal_energy", generic_unit_system.energy)
+        object.add_property("get_total_radius", generic_unit_system.length)
+        object.add_property("get_center_of_mass_position", generic_unit_system.length)
+        object.add_property("get_center_of_mass_velocity", generic_unit_system.speed)
+        object.add_property("get_total_mass", generic_unit_system.mass)
+        object.add_property('get_time', generic_unit_system.time, "model_time")
     
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
@@ -497,8 +497,8 @@ class Gadget2(GravitationalDynamics):
             "set_epsilon_squared",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            generic_system.length * generic_system.length, 
-            0.0001 | generic_system.length * generic_system.length
+            generic_unit_system.length * generic_unit_system.length, 
+            0.0001 | generic_unit_system.length * generic_unit_system.length
         )
         
         object.add_method_parameter(
@@ -506,8 +506,8 @@ class Gadget2(GravitationalDynamics):
             None,
             "timestep", 
             "timestep for system, Gadget2 calculates this by itself, based on particle acceleration.", 
-            generic_system.time, 
-            1.0 | generic_system.time
+            generic_unit_system.time, 
+            1.0 | generic_unit_system.time
         ) 
         
         object.add_boolean_parameter(
@@ -614,8 +614,8 @@ class Gadget2(GravitationalDynamics):
             "set_epsgas",
             "gas_epsilon", 
             "The gas gravitational smoothing epsilon.", 
-            generic_system.length,
-            0.01 | generic_system.length
+            generic_unit_system.length,
+            0.01 | generic_unit_system.length
         )
         
         object.add_method_parameter(
@@ -702,19 +702,19 @@ class Gadget2(GravitationalDynamics):
         #GravitationalDynamics.define_methods(self, object)
         object.add_method(
             'evolve',
-            (generic_system.time,),
+            (generic_unit_system.time,),
             public_name = 'evolve_model'
         )
         object.add_method(
             "new_particle",
             (
-                generic_system.mass,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
             ),
             (
                 object.INDEX,
@@ -736,13 +736,13 @@ class Gadget2(GravitationalDynamics):
                 object.NO_UNIT,
             ),
             (
-                generic_system.mass,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
                 object.ERROR_CODE
             )
         )
@@ -750,13 +750,13 @@ class Gadget2(GravitationalDynamics):
             "set_state",
             (
                 object.NO_UNIT,
-                generic_system.mass,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
             ),
             (
                 object.ERROR_CODE
@@ -766,7 +766,7 @@ class Gadget2(GravitationalDynamics):
             "set_mass",
             (
                 object.NO_UNIT,
-                generic_system.mass,
+                generic_unit_system.mass,
             ),
             (
                 object.ERROR_CODE
@@ -778,7 +778,7 @@ class Gadget2(GravitationalDynamics):
                 object.NO_UNIT,
             ),
             (
-                generic_system.mass,
+                generic_unit_system.mass,
                 object.ERROR_CODE
             )
         )
@@ -786,7 +786,7 @@ class Gadget2(GravitationalDynamics):
             "set_radius",
             (
                 object.NO_UNIT,
-                generic_system.length,
+                generic_unit_system.length,
             ),
             (
                 object.ERROR_CODE
@@ -798,7 +798,7 @@ class Gadget2(GravitationalDynamics):
                 object.NO_UNIT,
             ),
             (
-                generic_system.length,
+                generic_unit_system.length,
                 object.ERROR_CODE
             )
         )
@@ -806,9 +806,9 @@ class Gadget2(GravitationalDynamics):
             "set_position",
             (
                 object.NO_UNIT,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
             ),
             (
                 object.ERROR_CODE
@@ -820,9 +820,9 @@ class Gadget2(GravitationalDynamics):
                 object.NO_UNIT,
             ),
             (
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
                 object.ERROR_CODE
             )
         )
@@ -830,9 +830,9 @@ class Gadget2(GravitationalDynamics):
             "set_velocity",
             (
                 object.INDEX,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
             ),
             (
                 object.ERROR_CODE
@@ -844,22 +844,22 @@ class Gadget2(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
                 object.ERROR_CODE
             )
         )
         object.add_method(
             "new_dm_particle",
             (
-                generic_system.mass,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
             ),
             (
                 object.INDEX,
@@ -869,14 +869,14 @@ class Gadget2(GravitationalDynamics):
         object.add_method(
             "new_sph_particle",
             (
-                generic_system.mass,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.specific_energy,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.specific_energy,
             ),
             (
                 object.INDEX,
@@ -889,14 +889,14 @@ class Gadget2(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                generic_system.mass,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.specific_energy,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.specific_energy,
                 object.ERROR_CODE
             )
         )
@@ -904,14 +904,14 @@ class Gadget2(GravitationalDynamics):
             "set_state_sph",
             (
                 object.INDEX,
-                generic_system.mass,
-                generic_system.length,
-                generic_system.length,
-                generic_system.length,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.speed,
-                generic_system.specific_energy,
+                generic_unit_system.mass,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.speed,
+                generic_unit_system.specific_energy,
             ),
             (
                 object.ERROR_CODE,
@@ -921,7 +921,7 @@ class Gadget2(GravitationalDynamics):
             "set_internal_energy",
             (
                 object.INDEX,
-                generic_system.specific_energy,
+                generic_unit_system.specific_energy,
             ),
             (
                 object.ERROR_CODE,
@@ -933,21 +933,21 @@ class Gadget2(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                generic_system.specific_energy,
+                generic_unit_system.specific_energy,
                 object.ERROR_CODE
             )
         )
         
         object.add_method(
             'get_gravity_at_point',
-            (generic_system.length, generic_system.length, generic_system.length, generic_system.length),
-            (generic_system.acceleration, generic_system.acceleration, generic_system.acceleration, object.ERROR_CODE)
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length),
+            (generic_unit_system.acceleration, generic_unit_system.acceleration, generic_unit_system.acceleration, object.ERROR_CODE)
         )
         
         object.add_method(
             'get_potential_at_point',
-            (generic_system.length, generic_system.length, generic_system.length, generic_system.length),
-            (generic_system.potential, object.ERROR_CODE)
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length),
+            (generic_unit_system.potential, object.ERROR_CODE)
         )
         
     

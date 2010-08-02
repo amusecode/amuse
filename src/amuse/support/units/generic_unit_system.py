@@ -11,6 +11,11 @@ class generic_unit(core.base_unit):
     def __str__(self):
         return 'generic '+self.unit_in_si.quantity
 
+
+    def is_generic(self):
+        return True
+    
+    
 generic_system = core.system('generic')
 
 length = generic_unit(units.m, generic_system)
@@ -30,6 +35,6 @@ charge = current * time
 
 def is_generic_unit(unit):
     for factor, x in unit.base:
-        if isinstance(x, generic_unit):
+        if x.is_generic():
             return True
     return False

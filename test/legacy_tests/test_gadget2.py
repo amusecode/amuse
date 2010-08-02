@@ -4,7 +4,8 @@ from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
 
 from amuse.support.units import nbody_system
-from amuse.support.units import generic_unit_converter as generic_system
+from amuse.support.units import generic_unit_converter
+from amuse.support.units import generic_unit_system 
 from amuse.support.units import units
 from amuse.support.data import core
 from amuse.legacy.support import channel
@@ -189,7 +190,7 @@ class TestGadget2(TestWithMPI):
     UnitLength = 3.085678e21 | units.cm     # 1.0 kpc
     UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
     UnitVelocity = 1e5 | units.cm / units.s # 1 km/sec
-    default_converter = generic_system.generic_to_si(UnitLength, UnitMass, UnitVelocity)
+    default_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
     default_convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
     
     def test1(self):
@@ -225,7 +226,7 @@ class TestGadget2(TestWithMPI):
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
         
         dark = core.Particles(2)
-        dark.mass = [0.4, 0.4] | generic_system.mass
+        dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
         dark.radius = [0.0, 0.0] | units.RSun
@@ -252,7 +253,7 @@ class TestGadget2(TestWithMPI):
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(0, instance.initialize_code())
         instance.gas_particles.add_particles(gas)
-        instance.evolve_model(0.0001 | generic_system.time)
+        instance.evolve_model(0.0001 | generic_unit_system.time)
         instance.stop()
     
     def test6(self):
@@ -261,7 +262,7 @@ class TestGadget2(TestWithMPI):
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
         
         dark = core.Particles(2)
-        dark.mass = [0.4, 0.4] | generic_system.mass
+        dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
         
@@ -285,10 +286,10 @@ class TestGadget2(TestWithMPI):
             exec("instance.parameters."+par+" = 1 | units.none")
             self.assertEquals(1 | units.none, eval("instance.parameters."+par))
         
-        self.assertEquals(instance.unit_converter.to_si(0.01 | generic_system.length), 
+        self.assertEquals(instance.unit_converter.to_si(0.01 | generic_unit_system.length), 
             instance.parameters.gas_epsilon)
-        instance.parameters.gas_epsilon = 0.1 | generic_system.length
-        self.assertEquals(instance.unit_converter.to_si(0.1 | generic_system.length), 
+        instance.parameters.gas_epsilon = 0.1 | generic_unit_system.length
+        self.assertEquals(instance.unit_converter.to_si(0.1 | generic_unit_system.length), 
             instance.parameters.gas_epsilon)
         instance.stop()
     
@@ -299,10 +300,10 @@ class TestGadget2(TestWithMPI):
         for par, value in [ ('no_gravity_flag',False),
                             ('isothermal_flag', False),
                             ('eps_is_h_flag',   False),
-                            ('code_mass_unit',     self.default_converter.to_si(generic_system.mass)),
-                            ('code_length_unit',   self.default_converter.to_si(generic_system.length)),
-                            ('code_time_unit',     self.default_converter.to_si(generic_system.time)),
-                            ('code_velocity_unit', self.default_converter.to_si(generic_system.speed)),
+                            ('code_mass_unit',     self.default_converter.to_si(generic_unit_system.mass)),
+                            ('code_length_unit',   self.default_converter.to_si(generic_unit_system.length)),
+                            ('code_time_unit',     self.default_converter.to_si(generic_unit_system.time)),
+                            ('code_velocity_unit', self.default_converter.to_si(generic_unit_system.speed)),
                             ('polytropic_index_gamma', (5.0/3) | units.none)]:
             self.assertEquals(value, eval("instance.parameters."+par))
             try:
@@ -334,7 +335,7 @@ class TestGadget2(TestWithMPI):
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
         dark = core.Particles(2)
-        dark.mass = [0.4, 0.4] | generic_system.mass
+        dark.mass = [0.4, 0.4] | generic_unit_system.mass
         dark.position = [[0.0,0.0,0.0], [1.0,0.0,0.0]] | units.kpc
         dark.velocity = [[100.0,100.0,100.0], [1.0,1.0,1.0]] | units.km / units.s
         
@@ -349,7 +350,7 @@ class TestGadget2(TestWithMPI):
         instance.commit_particles()
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         mass = instance.gas_particles[0].mass
-        instance.evolve_model(0.001 | generic_system.time)
+        instance.evolve_model(0.001 | generic_unit_system.time)
         self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
         instance.cleanup_code()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
@@ -369,7 +370,7 @@ class TestGadget2(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
         mass = instance.gas_particles[0].mass
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
-        instance.evolve_model(0.001 | generic_system.time)
+        instance.evolve_model(0.001 | generic_unit_system.time)
         self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
