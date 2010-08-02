@@ -54,7 +54,6 @@ class HandleCodeInterfaceAttributeAccess(object):
     def attribute_names(self):
         return set([])
 
-
     def setup(self, object):
         pass
 

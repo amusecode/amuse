@@ -251,10 +251,10 @@ class ParticleMethod(AbstractCodeMethodWrapper):
         all_indices = storage.mapping_from_index_in_the_code_to_particle_key.keys()
         return self.method(list(all_indices), *list_arguments, **keyword_arguments)
     
-    def apply_on_one(self, set,  particle):
+    def apply_on_one(self, set,  particle, *list_arguments, **keyword_arguments):
         storage = particle.particles_set._private.attribute_storage
         index = storage.get_indices_of([particle.key])
-        return self.method(index[0])
+        return self.method(index[0], *list_arguments, **keyword_arguments)
         
 
 

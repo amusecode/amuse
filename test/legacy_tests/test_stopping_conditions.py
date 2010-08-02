@@ -9,7 +9,6 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.support import create_c
 from amuse.legacy.support import stopping_conditions
 from amuse.support.interface import CodeInterface
-from amuse.legacy import get_amuse_root_dir
 
 import subprocess
 import os
@@ -76,6 +75,7 @@ class ForTesting(CodeInterface):
         
 class TestInterface(TestWithMPI):
     def cxx_compile(self, objectname, string):
+    
         root, ext = os.path.splitext(objectname)
         sourcename = root + '.cc'
         if os.path.exists(objectname):
@@ -83,7 +83,7 @@ class TestInterface(TestWithMPI):
         with open(sourcename, "w") as f:
             f.write(string)
         
-        rootdir = get_amuse_root_dir()
+        rootdir = self.get_amuse_root_dir()
         arguments = ["mpicxx", "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
         process = subprocess.Popen(
             arguments,
@@ -97,7 +97,7 @@ class TestInterface(TestWithMPI):
             
     
     def c_build(self, exename, objectnames):
-        rootdir = get_amuse_root_dir()
+        rootdir = self.get_amuse_root_dir()
         
         arguments = ["mpicxx"]
         arguments.extend(objectnames)
