@@ -171,7 +171,7 @@ class unit(object):
             other_factor = x.factor
             return this_factor / other_factor
         else:
-            raise exceptions.AmuseException("Cannot expres: {0} in {1}".format(x, self))
+            raise IncompatibleUnitsException(x, self)
       
     def in_(self, x):
         return self.as_quantity_in(x)
@@ -795,4 +795,12 @@ def unset_numpy_or_operator():
     
 #set_numpy_or_operator()
        
+
+
+class UnitException(exceptions.AmuseException):
+    formatstring = "Unit exception: {0}"
+
+
+class IncompatibleUnitsException(exceptions.AmuseException):
+    formatstring = "Cannot express {1} in {0}, the units do not have the same bases"
 

@@ -12,15 +12,15 @@ class ErrorCode(object):
 
 
 class AmuseException(Exception):
-    errorcode = ErrorCode(-1,-1, "unknown error")
+    formatstring = "{0}"
     
-    def __init__(self, *args):
-        Exception.__init__(self, *args)
+    def __init__(self, *arguments):
+        Exception.__init__(self)
+        self.arguments = arguments
+        
     
     def __str__(self):
-        if self.errorcode.formatstring:
-            return self.errorcode.formatstring.format(*self.args)
-        return self.args[0]
+        return self.formatstring.format(*self.arguments)
 
 
 class AmuseWarning(Warning):

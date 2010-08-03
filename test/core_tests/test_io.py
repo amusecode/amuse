@@ -74,7 +74,7 @@ class FrameworkTests(amusetest.TestCase):
             y = io.read_set_from_file("non_existent","test")
             self.fail("Should never get here.")
         except Exception as ex:
-            self.assertEqual("Error: file 'non_existent' does not exist.", str(ex))
+            self.assertEqual("IO exception: Error: file 'non_existent' does not exist.", str(ex))
         
         processor = base.FileFormatProcessor(format="test")
         try:

@@ -1,6 +1,7 @@
 from amuse.test import amusetest
 import numpy
 
+from amuse.support.units import core
 from amuse.support.units.units import *
 from amuse.support.units.constants import *
 
@@ -77,6 +78,16 @@ class TestUnitConversions(amusetest.TestCase):
         fine_structure_constant = 7.297352537650e-3 | none
         self.assertAlmostEquals(fine_structure_constant_calculated.number, fine_structure_constant.number, 5)
         
+    
+
+    def test11(self):
+        try:
+            vel1 = 1 | m / s
+            vel1.as_quantity_in(s / m)
+            self.fail("units are incompatible, exception expected")
+        except core.IncompatibleUnitsException as ex:
+            self.assertEquals(str(ex),'Cannot express m / s in s / m, the units do not have the same bases')
+    
     
 class TestNonNumericUnits(amusetest.TestCase):
     def test1(self):

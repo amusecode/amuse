@@ -9,37 +9,22 @@ import textwrap
 registered_fileformat_processors = {}
 
 class IoException(exceptions.CoreException):
-    errorcode = exceptions.ErrorCode(exceptions.CoreException.majorcode, 100, "io exception")
+    formatstring = "IO exception: {0}"
     
 class UnsupportedFormatException(IoException):
     """Raised when the given format is not supported by AMUSE.
     """
-    errorcode = exceptions.ErrorCode(
-        IoException.majorcode, 
-        101, 
-        "a format is not supported",
-        "You tried to load or save a file with fileformat '{0}', but this format is not in the supported formats list"
-    )
+    formatstring = "You tried to load or save a file with fileformat '{0}', but this format is not in the supported formats list"
 
 class CannotSaveException(IoException):
     """Raised when the given format cannot save data (only reading of data is supported for the format)
     """
-    errorcode = exceptions.ErrorCode(
-        IoException.majorcode, 
-        102, 
-        "a format is read-only",
-        "You tried to save a file with fileformat '{0}', but this format is not supported for writing files"
-    )
+    formatstring = "You tried to save a file with fileformat '{0}', but this format is not supported for writing files"
 
 class CannotLoadException(IoException):
     """Raised when the given format cannot read data (only saving of data is supported for the format)
     """
-    errorcode = exceptions.ErrorCode(
-        IoException.majorcode, 
-        103, 
-        "a format is write-only",
-        "You tried to load a file with fileformat '{0}', but this format is not supported for reading files"
-    )
+    formatstring = "You tried to load a file with fileformat '{0}', but this format is not supported for reading files"
 
     
 class format_option(late):

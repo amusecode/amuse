@@ -5,25 +5,26 @@ from amuse.support import exceptions
 
 class ConvertBetweenGenericAndSiUnits(object):
 
-    def __init__(self, *kargs):
-        self.values = kargs
-        self.units_of_values = [i.unit for i in self.values]
-        self.system_rank = len(kargs)
+    def __init__(self, *arguments_list):
+        self.values = arguments_list
+        self.units_of_values = [x.unit for x in self.values]
+        self.system_rank = len(self.values)
         
         self.new_base = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
         self.new_base_inv = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
     
         available_units = set()
-        for unit in self.units_of_values:#[self.value.unit, self.value2.unit, self.value3.unit]:
-            for i in unit.base:
-                available_units.add(i[1])
+        for unit in self.units_of_values:
+            for x in unit.base:
+                available_units.add(x[1])
         if not len(available_units) is self.system_rank:
-            raise exceptions.AmuseException("Must provide three orthogonal units")
+            raise UnitsNotOrtogonalException(self.system_rank, len(available_units))
         self.list_of_available_units = list(available_units)
     
         self.new_base = self.determine_new_base()
-        if self.matrixrank(self.new_base) < self.system_rank:
-            raise exceptions.AmuseException("Must provide three orthogonal units, e.g. mass,length,time or mass, velocity, time")
+        rank_of_new_base = self.matrixrank(self.new_base)
+        if rank_of_new_base < self.system_rank:
+            raise UnitsNotOrtogonalException(self.system_rank, rank_of_new_base)
         self.new_base_inv = self.new_base ** -1
 
     def matrixrank(self, A, tol=1e-8):
@@ -146,4 +147,8 @@ class ConvertBetweenGenericAndSiUnits(object):
                     return quantity
                 
         return GenericToSiConverter(self)
+
+
+class UnitsNotOrtogonalException(exceptions.AmuseException):
+    formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'
 

@@ -53,7 +53,7 @@ class Quantity(object):
     >>> x.value_in(units.g) # but only if the units are compatible!
     Traceback (most recent call last):
         File "<stdin>", line 1, in ?
-    AmuseException: Cannot expres: g in m
+    IncompatibleUnitsException: Cannot express m in g, the units do not have the same bases
 
     
     """

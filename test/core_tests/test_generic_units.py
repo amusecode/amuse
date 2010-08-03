@@ -65,3 +65,13 @@ class TestGenericUnits(amusetest.TestCase):
         self.assertAlmostEqual(T_in_si, [3.085678e16, 2*3.085678e16] | units.s, 3, in_units=units.s*units.kpc/units.km)
         self.assertAlmostEqual(L_in_si, [3.085678e19, 2*3.085678e19] | units.m, 3, in_units=3.085678e19*units.m)
     
+
+    def test5(self):
+       
+        try:
+            convert_generic = ConvertBetweenGenericAndSiUnits(1 | units.km, 2 | units.s, 3 | units.km / units.s)
+            self.fail("units were not checked correctly")
+        except UnitsNotOrtogonalException as ex:
+            self.assertEquals(str(ex), 'The number of orthoganal units is incorrect, expected 3 but found 2. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)')
+    
+    
