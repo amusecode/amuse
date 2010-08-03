@@ -337,7 +337,6 @@ class StoppingConditions():
         object.add_method(
             'get_number_of_stopping_conditions_set',
             (   
-                object.NO_UNIT,
             ),
             (
                 object.NO_UNIT,

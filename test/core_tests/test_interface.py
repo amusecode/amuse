@@ -5,6 +5,9 @@ from amuse.support.data.binding import *
 from amuse.support.data.parameters import *
 from amuse.support.data import core
 from amuse.support.core import OrderedDictionary
+from amuse.support import exceptions
+
+from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
 
 from amuse.test import amusetest
 import numpy
@@ -854,3 +857,71 @@ class TestGridWithBinding(amusetest.TestCase):
         self.assertEquals(len(grid[1][2].mass), 5)
         self.assertTrue(numpy.all(grid[1][2].mass == [35,36,37,38,39] | units.kg))
         
+
+class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
+    
+        
+    def test1(self):
+        class TestClass(object):
+           
+            @legacy_function
+            def echo_inputs():
+                function = LegacyFunctionSpecification()
+                function.addParameter('input1', dtype='d', direction=function.OUT)
+                function.addParameter('input2', dtype='d', direction=function.OUT)
+                function.addParameter('output1', dtype='d', direction=function.IN)
+                function.addParameter('output2', dtype='d', direction=function.IN)
+                function.result_type = 'i'
+                return function
+            
+        original = TestClass()
+        instance = interface.CodeInterface(original)
+        
+        
+        handler = instance.get_handler('METHOD')
+        try:
+            handler.add_method('echo_inputs', (units.m, units.s), (units.s, handler.ERROR_CODE))
+            instance.echo_inputs
+            self.fail("should fail as the input is not correct")
+        except exceptions.AmuseException as ex:
+            self.assertEquals(str(ex), "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', the number of outputs do not match, expected 3, actual 2.")
+            
+        instance = interface.CodeInterface(original)
+        handler = instance.get_handler('METHOD')
+        try:
+            handler.add_method('echo_inputs', (units.m, units.s), (units.s, units.m, units.s, handler.ERROR_CODE))
+            instance.echo_inputs
+            self.fail("should fail as the input is not correct")
+        except exceptions.AmuseException as ex:
+            self.assertEquals(str(ex), "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', the number of outputs do not match, expected 3, actual 4.")
+
+
+    def test2(self):
+        class TestClass(object):
+           
+            @legacy_function
+            def echo_inputs():
+                function = LegacyFunctionSpecification()
+                function.addParameter('input1', dtype='d', direction=function.OUT)
+                function.addParameter('input2', dtype='d', direction=function.OUT)
+                function.addParameter('output1', dtype='d', direction=function.IN)
+                function.addParameter('output2', dtype='d', direction=function.IN)
+                function.result_type = 'i'
+                return function
+            
+        original = TestClass()
+        
+        instance = interface.CodeInterface(original)
+        
+        
+        handler = instance.get_handler('METHOD')
+        try:
+            handler.add_method('echo_inputs', (units.m), (units.s, units.m, handler.ERROR_CODE), )
+            instance.echo_inputs
+            
+            self.fail("should fail as the input is not correct")
+        except exceptions.AmuseException as ex:
+            print type(ex)
+            self.assertEquals(str(ex), "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', the number of inputs do not match, expected 2, actual 1.")
+    
+    

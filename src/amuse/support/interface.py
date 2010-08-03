@@ -7,7 +7,7 @@ from amuse.support.units import generic_unit_system
 from amuse.support.units.core import unit
 from amuse.support.options import OptionalAttributes
 
-from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition
+from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition, IncorrectWrappedMethodException
 
 from amuse.support.core import late
 from amuse.support import exceptions
@@ -417,6 +417,11 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         else:
             self.handle_return_value = self.handle_as_unit
 
+    def check_wrapped_method(self, method):
+        if method.method_is_legacy or method.method_is_code:
+            self.check_outputs_of_method(method)
+            self.check_inputs_of_method(method)
+        
     def new_method(self, original_method):
         if self.has_same_name_as_original:
             return MethodWithUnits(original_method, self)
@@ -511,6 +516,54 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         else:
             return map(lambda x : x == self.INDEX, self.return_units)
 
+
+    def check_inputs_of_method(self, method):
+    
+        specification = method.legacy_specification
+        if specification is None:
+            return
+            
+        number_expected_inputs  = len(specification.input_parameters)
+            
+        if self.units:
+            if hasattr(self.units, '__len__'):
+                number_specified_inputs = len(self.units)
+            else:
+                number_specified_inputs = 1
+        else:
+            number_specified_inputs = 0
+        
+        if number_expected_inputs != number_specified_inputs:
+            raise IncorrectMethodDefinition(self.name, type(self.handler.interface).__name__, number_expected_inputs, number_specified_inputs, 'inputs')
+    
+    
+
+    def check_outputs_of_method(self, method):
+    
+        specification = method.legacy_specification
+        if specification is None:
+            return
+            
+        number_expected_outputs  = len(specification.output_parameters)
+        if specification.result_type != None:
+            number_expected_outputs  += 1
+            
+        if self.return_units:
+            if hasattr(self.return_units, '__len__'):
+                number_specified_outputs = len(self.return_units)
+            else:
+                number_specified_outputs = 1
+        else:
+            number_specified_outputs = 0
+        
+        print number_specified_outputs, number_expected_outputs
+        if number_expected_outputs == 1 and  number_specified_outputs == 0:
+            return#defualt error checks for one output
+            
+        if number_expected_outputs != number_specified_outputs:
+            raise IncorrectMethodDefinition(self.name, type(self.handler.interface).__name__, number_expected_outputs, number_specified_outputs, 'outputs')
+    
+    
 class HandleMethodsWithUnits(object):
     ERROR_CODE = MethodWithUnitsDefinition.ERROR_CODE
     NO_UNIT = MethodWithUnitsDefinition.NO_UNIT
@@ -1052,3 +1105,7 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
 
     def get_name_of_current_state(self):
         return self.get_handler('STATE')._current_state.name
+
+class IncorrectMethodDefinition(IncorrectWrappedMethodException):
+    formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
+

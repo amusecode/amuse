@@ -84,6 +84,7 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
     def __init__(self, method, definition):
         self.method = method
         self.definition = definition
+        self.definition.check_wrapped_method(self)
     
     def __call__(self, *list_arguments, **keyword_arguments):
         object = self.precall()
@@ -138,6 +139,9 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
         
 class CodeMethodWrapperDefinition(object):
     
+    def check_wrapped_method(self, method):
+        pass
+        
     def precall(self, method):
         return None
         
@@ -152,3 +156,7 @@ class CodeMethodWrapperDefinition(object):
     
     
         
+
+class IncorrectWrappedMethodException(exceptions.AmuseException):
+    formatstring = "{0}"
+
