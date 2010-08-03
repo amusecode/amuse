@@ -25,6 +25,8 @@ MSun = named('solar mass', 'MSun', 1.98892e30 * kg)
 RSun = named('solar radius', 'RSun', 6.955e8 * m)
 myr = named('million year', 'Myr', 1000000 * yr)
 Myr = myr
+gyr = named('giga (billion) year', 'Gyr', 1000000000 * yr)
+Gyr = gyr
 
 # cgs units
 g = named('gram','g', 1e-3 * kg)
