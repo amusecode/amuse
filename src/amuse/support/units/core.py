@@ -129,10 +129,10 @@ class unit(object):
         >>> from amuse.support.units import units
         >>> N = (units.m * units.kg) / (units.s * units.s)
         >>> N
-        unit<m * kg / s * s>
+        unit<m * kg / (s * s)>
         >>> J = N * units.m
         >>> J
-        unit<m * kg / s * s * m>
+        unit<m * kg / (s * s) * m>
         >>> J.to_simple_form()
         unit<m**2 * kg * s**-2>
         """
@@ -728,7 +728,10 @@ class div_unit(derived_unit):
         self.right_hand = right_hand
         
     def __str__(self):
-        return str(self.left_hand) + ' / ' + str(self.right_hand)+''
+        if isinstance(self.right_hand, derived_unit):
+            return str(self.left_hand) + ' / (' + str(self.right_hand)+')'
+        else:
+            return str(self.left_hand) + ' / ' + str(self.right_hand)+''
         
     def reference_string(self):
         return '(' +  self.left_hand.reference_string() + '/' +  self.right_hand.reference_string() + ')'
