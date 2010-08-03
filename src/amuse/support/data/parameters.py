@@ -44,9 +44,9 @@ class Parameters(object):
             return
     
         definition = self._mapping_from_name_to_definition[name]
-        definition.set_value(self._instance(), value)
         if hasattr(self._instance(), "invoke_state_change"):
             self._instance().invoke_state_change()
+        definition.set_value(self._instance(), value)
 
     def names(self):
         return self._mapping_from_name_to_definition.keys()

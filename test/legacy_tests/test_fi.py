@@ -595,6 +595,7 @@ class TestFiInterface(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.timestep = 0.001 | nbody.time
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        self.assertEquals(instance.parameters.timestep, convert_nbody.to_si(0.001 | nbody.time))
         instance.gas_particles.add_particles(gas)
         instance.dm_particles.add_particles(dark)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
