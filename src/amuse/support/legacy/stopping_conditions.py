@@ -1,4 +1,4 @@
-from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
+from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.units import units
     
 class StoppingConditionInterface(object):

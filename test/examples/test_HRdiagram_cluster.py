@@ -16,7 +16,7 @@ from amuse.legacy.evtwin.interface import EVtwin
 from amuse.legacy.mesa.interface import MESA
 from amuse.legacy.cachedse.interface import CachedStellarEvolution
 
-from amuse.legacy.support.core import is_mpd_running
+from amuse.support.legacy.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results
 
 import numpy

@@ -2,7 +2,7 @@ from amuse.legacy import *
 
 from amuse.support.units import units
 from amuse.support.units import constants
-from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.legacy.lit import LiteratureRefs
 from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.support.interface import CodeInterface
 

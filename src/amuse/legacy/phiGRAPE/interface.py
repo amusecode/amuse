@@ -5,7 +5,7 @@ from amuse.support.units import units
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
-from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.legacy.lit import LiteratureRefs
 
 class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
     """

@@ -1,7 +1,7 @@
 from amuse.support.units import units
 
 from amuse.legacy import *
-from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.legacy.lit import LiteratureRefs
 
 from amuse.support.data.values import Quantity
 from amuse.support.data.core import Particles, ParticlesSubset

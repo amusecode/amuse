@@ -204,9 +204,9 @@ def make_directory(settings):
 if __name__ == "__main__":
     setup_sys_path()
     
-    from amuse.legacy.support import create_c
-    from amuse.legacy.support import create_fortran
-    from amuse.legacy.support import create_dir
+    from amuse.support.legacy import create_c
+    from amuse.support.legacy import create_fortran
+    from amuse.support.legacy import create_dir
     
     uc = ParseCommandLine()
     uc.start()

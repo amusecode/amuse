@@ -155,11 +155,11 @@ class TestCase(unittest.TestCase):
 
 class TestWithMPI(TestCase):
     def setUp(self):
-        from amuse.legacy.support.core import is_mpd_running
+        from amuse.support.legacy.core import is_mpd_running
         self.assertTrue(is_mpd_running(), "MPICH2 mpd deamon process not running, cannot run this test as it requires MPI")
             
     def tearDown(self):
-        from amuse.legacy.support.core import stop_interfaces
+        from amuse.support.legacy.core import stop_interfaces
         stop_interfaces()
     
     def new_instance(self, factory, *arguments, **kwarguments):

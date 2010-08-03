@@ -1,7 +1,7 @@
 import os
 import numpy
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
-from amuse.legacy.support.lit import LiteratureRefs
+from amuse.support.legacy.lit import LiteratureRefs
 from amuse.legacy import *
 
 class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs):   

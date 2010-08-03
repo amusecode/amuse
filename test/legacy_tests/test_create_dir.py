@@ -3,7 +3,7 @@ import os.path
 import shutil
 import subprocess
 
-from amuse.legacy.support import create_dir
+from amuse.support.legacy import create_dir
 
 class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCase):
     

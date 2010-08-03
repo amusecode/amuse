@@ -2,5 +2,5 @@
 Support code for the legacy code interfaces
 ============================================
 
-.. automodule:: amuse.legacy.support.core
+.. automodule:: amuse.support.legacy.core
     :members:

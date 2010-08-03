@@ -1,9 +1,9 @@
-from amuse.legacy.support.core import *
+from amuse.support.legacy.core import *
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.legacy.support import python_code
+from amuse.support.legacy import python_code
 from amuse.support.interface import CodeInterface
 
 from amuse.test.amusetest import TestWithMPI

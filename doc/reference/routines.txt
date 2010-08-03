@@ -2,7 +2,7 @@
 Routines
 =================
 
-.. currentmodule:: amuse.legacy.support.core
+.. currentmodule:: amuse.support.legacy.core
 
 
 .. autosummary::

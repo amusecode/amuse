@@ -9,7 +9,7 @@ from amuse.ext.evrard_test import new_evrard_gas_sphere
 from amuse.support.units import nbody_system as nbody
 from amuse.support.units import units
 from amuse.support.data import core
-from amuse.legacy.support import channel
+from amuse.support.legacy import channel
 
 class TestMPIInterface(TestWithMPI):
 

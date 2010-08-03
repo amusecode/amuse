@@ -7,7 +7,7 @@ from amuse.legacy.evtwin.interface import EVtwin, EVtwinInterface
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.legacy.support import channel
+from amuse.support.legacy import channel
 
 class TestInterface(TestWithMPI):
     

@@ -2,7 +2,7 @@
 Stellar Dynamics Interface Defintion
 """
 
-from amuse.legacy.support.core import legacy_function, LegacyFunctionSpecification
+from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.interface import CodeInterface
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_converter

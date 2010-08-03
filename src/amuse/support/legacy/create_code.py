@@ -1,5 +1,5 @@
 from amuse.support.core import late, print_out
-from amuse.legacy.support.core import legacy_function, legacy_global
+from amuse.support.legacy.core import legacy_function, legacy_global
 
 import numpy
 import sys

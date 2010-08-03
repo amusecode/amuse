@@ -11,9 +11,9 @@ from amuse.support import exceptions
 from amuse.support.core import late
 from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
-from amuse.legacy.support.create_definition import LegacyDocStringProperty
-from amuse.legacy.support.channel import MpiChannel, MultiprocessingMPIChannel
-from amuse.legacy.support.channel import is_mpd_running
+from amuse.support.legacy.create_definition import LegacyDocStringProperty
+from amuse.support.legacy.channel import MpiChannel, MultiprocessingMPIChannel
+from amuse.support.legacy.channel import is_mpd_running
 
 """
 This module implements the code to the define interfaces between python
@@ -238,11 +238,11 @@ class legacy_function(object):
         ...
         >>> x = LegacyExample()
         >>> x.evolve.specification #doctest: +ELLIPSIS
-        <amuse.legacy.support.core.LegacyFunctionSpecification object at 0x...>
+        <amuse.support.legacy.core.LegacyFunctionSpecification object at 0x...>
         >>> LegacyExample.evolve #doctest: +ELLIPSIS
-        <amuse.legacy.support.core.legacy_function object at 0x...>
+        <amuse.support.legacy.core.legacy_function object at 0x...>
         >>> x.evolve #doctest: +ELLIPSIS
-        <amuse.legacy.support.core.LegacyCall object at 0x...>
+        <amuse.support.legacy.core.LegacyCall object at 0x...>
         
                     
         :argument specification_function: The function to be decorated
