@@ -469,3 +469,67 @@ class TestMESA(TestWithMPI):
         self.assertAlmostEquals(instance.particles[0].get_density_profile() / (delta_mass/(4./3.*pi*delta_radius_cubed)), [1]*479|units.none, places=3)
         instance.stop()
         del instance
+    
+    def test7(self):
+        print "Test for obtaining the stellar composition structure"
+        stars = core.Particles(1)
+        stars.mass = 1.0 | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_module_with_current_parameters() 
+        instance.setup_particles(stars)
+        instance.initialize_stars()
+        instance.evolve_model()
+        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
+        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        species_names     = instance.particles[0].get_names_of_species()
+        self.assertEquals(number_of_zones,    479)
+        self.assertEquals(number_of_species,    8)
+        self.assertEquals(len(species_names),  number_of_species)
+        self.assertEquals(len(composition),    number_of_species)
+        self.assertEquals(len(composition[0]), number_of_zones)
+        self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
+        self.assertAlmostEquals(composition[ :1,0].sum(),  0.7 | units.none)
+        self.assertAlmostEquals(composition[1:3,0].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
+        self.assertAlmostEquals(composition[3: ,0].sum(),  instance.parameters.metallicity)
+        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        instance.stop()
+        del instance
+    
+    def slowtest8(self):
+        print "Test for obtaining the stellar composition structure - evolved star with zero metalicity"
+        stars = core.Particles(1)
+        stars.mass = 1.0 | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.parameters.metallicity = 0.0 | units.none
+        instance.initialize_module_with_current_parameters() 
+        instance.setup_particles(stars)
+        instance.initialize_stars()
+        instance.evolve_model(5.85 | units.Gyr)
+        self.assertTrue(instance.particles[0].age >= 5.85 | units.Gyr)
+        self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
+        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
+        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        species_names     = instance.particles[0].get_names_of_species()
+        self.assertEquals(number_of_zones,    578)
+        self.assertEquals(number_of_species,    8)
+        self.assertEquals(len(species_names),  number_of_species)
+        self.assertEquals(len(composition),    number_of_species)
+        self.assertEquals(len(composition[0]), number_of_zones)
+        self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
+        self.assertAlmostEquals(composition[ :1,0].sum(),  0.76 | units.none)
+        self.assertAlmostEquals(composition[1:3,0].sum(),  0.24 | units.none)
+        self.assertAlmostEquals(composition[3: ,0].sum(),  0.00 | units.none)
+        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        self.assertAlmostEquals(composition[ :1,number_of_zones-1].sum(),  0.00 | units.none)
+        self.assertAlmostEquals(composition[1:3,number_of_zones-1].sum(),  1.00 | units.none)
+        self.assertAlmostEquals(composition[3: ,number_of_zones-1].sum(),  0.00 | units.none)
+        instance.stop()
+        del instance

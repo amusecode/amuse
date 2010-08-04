@@ -90,6 +90,7 @@
          if (failed('star_init', ierr)) return
          profile_columns_file = trim(mesa_data_dir) // '/star_data/profile_columns.list'
          log_columns_file = trim(mesa_data_dir) // '/star_data/log_columns.list'
+         call flush()
          initialize_code = 0
       end function initialize_code
 
@@ -107,6 +108,7 @@
          AMUSE_inlist_path, &
          AMUSE_dmass, AMUSE_mlo, AMUSE_mhi, ierr)
       if (failed('AMUSE_do_create_zams', ierr)) return      
+      call flush()
       ierr = 0
    end subroutine new_zams_model
 
@@ -149,6 +151,7 @@
       if (failed('before_evolve', ierr)) return
       call show_terminal_header(AMUSE_id, ierr)
       if (failed('show_terminal_header', ierr)) return
+      call flush()
       new_particle = 0
    end function
 
@@ -564,6 +567,84 @@
          endif
       end function
 
+! Return the current number of chemical abundance variables per zone of the star
+   integer function get_number_of_species(AMUSE_id, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      integer, intent(out) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1
+         get_number_of_species = -1
+      else
+         AMUSE_value = s% nvar_chem
+         get_number_of_species = 0
+      endif
+   end function
+
+! Return the name of chemical abundance variable 'AMUSE_species' of the star
+   integer function get_name_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      use chem_def, only: num_chem_isos, chem_isos
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_species
+      character (len=6), intent(out) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = 'error'
+         get_name_of_species = -1
+      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
+         AMUSE_value = 'error'
+         get_name_of_species = -3
+      else
+         AMUSE_value = chem_isos% name(s% chem_id(AMUSE_species))
+         get_name_of_species = 0
+      endif
+!      do ierr=1,s% nvar
+!         write(*,*) ierr, s% nameofvar(ierr)
+!      end do
+!      do ierr=1,num_chem_isos
+!         write(*,*) ierr, s% net_iso(ierr), chem_isos% name(ierr)
+!      end do
+!      do ierr=1,s% nvar_chem
+!         write(*,*) ierr, s% chem_id(ierr), chem_isos% name(s% chem_id(ierr))
+!      end do
+   end function
+
+! Return the mass fraction of species 'AMUSE_species' at the specified 
+! zone/mesh-cell of the star
+   integer function get_mass_fraction_of_species_at_zone(AMUSE_id, &
+         AMUSE_species, AMUSE_zone, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1.0
+         get_mass_fraction_of_species_at_zone = -1
+      else if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+         AMUSE_value = -1.0
+         get_mass_fraction_of_species_at_zone = -2
+      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
+         AMUSE_value = -1.0
+         get_mass_fraction_of_species_at_zone = -3
+      else
+         AMUSE_value = s% xa(AMUSE_species, AMUSE_zone)
+         get_mass_fraction_of_species_at_zone = 0
+      endif
+   end function
+
 ! Evolve the star for one step
    function evolve(AMUSE_id)
       use star_private_def, only: star_info, get_star_ptr
@@ -625,6 +706,7 @@
          write(*, *) 'saved to ' // trim(save_model_filename)
       end if
       evolve = 0
+      call flush()
    end function
 
 ! Evolve the star until AMUSE_end_time

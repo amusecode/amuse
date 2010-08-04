@@ -556,7 +556,6 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         else:
             number_specified_outputs = 0
         
-        print number_specified_outputs, number_expected_outputs
         if number_expected_outputs == 1 and  number_specified_outputs == 0:
             return#defualt error checks for one output
             
