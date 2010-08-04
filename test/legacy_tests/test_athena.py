@@ -419,20 +419,21 @@ class TestAthena(TestWithMPI):
         result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
-        momentum =  generic_unit_system.mass * generic_unit_system.length / generic_unit_system.time
-
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+    
         grid = core.Grid(10,10,1)
         grid.rho = 0.1 | density
         grid.rhox = 0.0 | momentum
         grid.rhoy = 0.0 | momentum
         grid.rhoz = 0.0 | momentum
-        grid.energy = 0.0 | generic_unit_system.energy
+        grid.energy = 0.0 | energy
         
         self.assertEquals(grid._get_writeable_attribute_names(), set(['rhoz', 'rhoy', 'rhox', 'energy', 'rho']) )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
             
-        result = instance.initialize_grid()   
+        result = instance.initialize_grid()
         
         print instance.grid[1].rho
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
@@ -443,7 +444,7 @@ class TestAthena(TestWithMPI):
         
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
-
+    
         instance.evolve(10.0 | generic_unit_system.time)
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
@@ -462,23 +463,24 @@ class TestAthena(TestWithMPI):
         result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
-        momentum =  generic_unit_system.mass * generic_unit_system.length / generic_unit_system.time
-
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+    
         grid = core.Grid(10,10,1)
         grid.rho = 0.1 | density
         grid.rhox = 0.0 | momentum
         grid.rhoy = 0.0 | momentum
         grid.rhoz = 0.0 | momentum
-        grid.energy = 0.0 | generic_unit_system.energy
+        grid.energy = 0.0 | energy
         
         self.assertEquals(grid._get_writeable_attribute_names(), set(['rhoz', 'rhoy', 'rhox', 'energy', 'rho']) )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         potential_grid = core.Grid(12,12,3)
-        potential_grid.potential = 0.0 | generic_unit_system.energy
+        potential_grid.potential = 0.0 | energy
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
-        result = instance.initialize_grid() 
+        result = instance.initialize_grid()
         
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
@@ -488,7 +490,7 @@ class TestAthena(TestWithMPI):
         
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
-
+    
         instance.evolve(10.0 | generic_unit_system.time)
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
@@ -506,20 +508,21 @@ class TestAthena(TestWithMPI):
         result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
-        momentum =  generic_unit_system.mass * generic_unit_system.length / generic_unit_system.time
-
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+    
         grid = core.Grid(10,10,1)
         grid.rho = 0.1 | density
         grid.rhox = 0.0 | momentum
         grid.rhoy = 0.0 | momentum
         grid.rhoz = 0.0 | momentum
-        grid.energy = 0.0 | generic_unit_system.energy
+        grid.energy = 0.0 | energy
         
         self.assertEquals(grid._get_writeable_attribute_names(), set(['rhoz', 'rhoy', 'rhox', 'energy', 'rho']) )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         potential_grid = core.Grid(12,12,1)
-        potential_grid.potential = 0.0 | generic_unit_system.energy
+        potential_grid.potential = 0.0 | energy
         print instance.potential_grid.shape
         print instance.potential_grid.x[0].number.shape
         print instance.grid.shape
@@ -537,11 +540,11 @@ class TestAthena(TestWithMPI):
                     potential = 0.0
                 if py < 0 or py > 1.0:
                     potential = 0.0
-                instance.potential_grid[i][j][0].potential = generic_unit_system.energy.new_quantity([potential])
+                instance.potential_grid[i][j][0].potential = energy.new_quantity([potential])
         print potential_grid.potential
         #channel = potential_grid.new_channel_to(instance.potential_grid)
         #channel.copy()
-        result = instance.initialize_grid() 
+        result = instance.initialize_grid()
         
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
         for x in instance.grid[1].rho.value_in(density).flatten():
@@ -551,7 +554,7 @@ class TestAthena(TestWithMPI):
         #print instance.grid.rhox
         #z = instance.grid.rho[0][...,...,0]
         #z = instance.potential_grid.potential[0][...,...,0]
-        #z = z.value_in(generic_unit_system.energy)
+        #z = z.value_in(energy)
         #from matplotlib import pyplot
         #pyplot.imshow(z)
         #pyplot.savefig("bla.png")
