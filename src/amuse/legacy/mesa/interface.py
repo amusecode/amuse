@@ -1,6 +1,6 @@
 from amuse.legacy import *
 from amuse.legacy.interface.se import StellarEvolution
-from amuse.support.legacy.lit import LiteratureRefs
+
 from amuse.support.interface import CodeInterface
 import os
 

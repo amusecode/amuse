@@ -1,8 +1,6 @@
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
-from amuse.support.legacy.lit import LiteratureRefs
-from amuse.support.legacy.stopping_conditions import StoppingConditionInterface, StoppingConditions
 
 class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """

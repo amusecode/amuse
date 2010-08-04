@@ -1,7 +1,6 @@
 from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
-from amuse.support.legacy.lit import LiteratureRefs
 
 class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
     """

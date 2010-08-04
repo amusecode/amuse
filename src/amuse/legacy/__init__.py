@@ -1,6 +1,10 @@
 from amuse.support.legacy.core import LegacyInterface, legacy_function, legacy_global
 from amuse.support.legacy.core import LegacyFunctionSpecification, is_mpd_running
 
+from amuse.support.legacy.stopping_conditions import StoppingConditionInterface, StoppingConditions
+
+from amuse.support.legacy.lit import LiteratureRefs
+
 from amuse.support.data import parameters
 from amuse.support.data import attributes
 from amuse.support.units import units

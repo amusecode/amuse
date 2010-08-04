@@ -1,7 +1,6 @@
 import os
 import numpy
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
-from amuse.support.legacy.lit import LiteratureRefs
 from amuse.legacy import *
 
 class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs):
