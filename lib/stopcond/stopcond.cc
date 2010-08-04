@@ -7,6 +7,7 @@ int index_of_particle_in_stopping_condition[MAX_NUMBER_OF_SIMULTANIOS_CONDITIONS
 
 long enabled_conditions = 0;
 long set_conditions = 0;
+long supported_conditions = 0;
 long number_of_stopping_conditions_set = 0;
 
 double timeout_parameter = 4.0;

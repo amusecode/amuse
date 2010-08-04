@@ -37,9 +37,6 @@
 #include <stopcond.h>
 #include <time.h>
 
-// AMUSE STOPPING CONDITIONS SUPPORT
-long supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
-// -----------------------
 
 using namespace std;
 typedef double  real;
@@ -1122,6 +1119,10 @@ int initialize_code()
         return -1;
     }
     cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
+    
+    // AMUSE STOPPING CONDITIONS SUPPORT
+    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
+    // -----------------------
     mpi_setup_stopping_conditions();
     return 0;
 }

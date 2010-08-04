@@ -617,6 +617,7 @@ int set_radius(int id, double radius)
 
 int initialize_code()
 {
+    supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
     return 0;
 }
 
