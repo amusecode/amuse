@@ -362,7 +362,7 @@ class legacy_global(object):
         raise  exceptions.LegacyException("No working crc32 implementation found!")
      
 class ParameterSpecification(object):
-    def __init__(self, name, dtype, direction, description):
+    def __init__(self, name, dtype, direction, description, default = None):
         """Specification of a parameter of a legacy function 
         """
         self.name = name
@@ -371,6 +371,7 @@ class ParameterSpecification(object):
         self.output_index = -1
         self.description = description
         self.datatype = _typecode_to_datatype(dtype)
+        self.default = default
         
     def is_input(self):
         return ( self.direction == LegacyFunctionSpecification.IN 
@@ -381,6 +382,11 @@ class ParameterSpecification(object):
         return ( self.direction == LegacyFunctionSpecification.OUT 
             or self.direction == LegacyFunctionSpecification.INOUT)
                     
+
+    def has_default_value(self):
+        return not self.default is None
+    
+    
 class LegacyFunctionSpecification(object):
     """
     Specification of a legacy function.
@@ -433,7 +439,7 @@ class LegacyFunctionSpecification(object):
         self.must_handle_array = False
         self.result_doc = ''
         
-    def addParameter(self, name, dtype = 'i', direction = IN, description = ""):
+    def addParameter(self, name, dtype = 'i', direction = IN, description = "", default = None):
         """
         Extend the specification with a new parameter.
         
@@ -445,8 +451,9 @@ class LegacyFunctionSpecification(object):
         :argument dtype: Datatype specification string
         :argument direction: Direction of the argument, can be IN, OUT or INOUT
         :argument description: Description of the argument, for documenting purposes
+        :argument default: An optional default value for the parameter
         """
-        parameter = ParameterSpecification(name, dtype, direction, description)
+        parameter = ParameterSpecification(name, dtype, direction, description, default)
         self.parameters.append(parameter)
         
         if parameter.is_input():
@@ -455,6 +462,9 @@ class LegacyFunctionSpecification(object):
             self.add_output_parameter(parameter)
             
     def add_input_parameter(self, parameter):
+        has_default_parameters = any(map(lambda x : x.has_default_value(), self.input_parameters))
+        if has_default_parameters and not parameter.has_default_value():
+            raise exceptions.AmuseException("non default argument '{0}' follows default argument".format(parameter.name))
         self.input_parameters.append(parameter)
         
         parameters = self.dtype_to_input_parameters.get(parameter.datatype, [])
