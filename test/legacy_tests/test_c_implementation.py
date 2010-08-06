@@ -62,6 +62,16 @@ int echo_array_with_result(int * in, int *out, int len) {
     }
     return -1;
 }
+        
+int echo_2_int(int int_in1, int int_in2, int * int_out1, int * int_out2) {
+    *int_out1 = int_in1;
+    *int_out2 = int_in2;
+    if(int_in1 < 0) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -71,7 +81,7 @@ class ForTestingInterface(LegacyInterface):
 
     @legacy_function
     def echo_int():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('int_in', dtype='int32', direction=function.IN)
         function.addParameter('int_out', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
@@ -141,6 +151,18 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'string'
         function.can_handle_array = True
         return function  
+        
+    @legacy_function
+    def echo_2_int():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('int_in1', dtype='int32', direction=function.IN)
+        function.addParameter('int_in2', dtype='int32', direction=function.IN, default = 1)
+        function.addParameter('int_out1', dtype='int32', direction=function.OUT)
+        function.addParameter('int_out2', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function    
+        
 
 class ForTesting(CodeInterface):
     
@@ -165,6 +187,9 @@ class TestInterface(TestWithMPI):
     def c_compile(self, objectname, string):
         root, ext = os.path.splitext(objectname)
         sourcename = root + '.c'
+        
+        if os.path.exists(objectname):
+            os.remove(objectname)
         
         with open(sourcename, "w") as f:
             f.write(string)
@@ -379,5 +404,19 @@ class TestInterface(TestWithMPI):
         instance.legacy_interface.echo_int.specification.id = -9
         self.assertRaises(exceptions.LegacyException, lambda : instance.echo_int(1 | units.m))
         instance.stop()
+    
+    
+
+    def test15(self):
+        instance = ForTesting(self.exefile)
+        output_ints1, output_ints2, result = instance.echo_2_int([1,2],[3,4])
+        output_ints3, output_ints4, result = instance.echo_2_int([1,2,3])
+        instance.stop()
+        self.assertEquals(output_ints1[1], 2)
+        self.assertEquals(output_ints2[0], 3)
+        self.assertEquals(output_ints2[1], 4)
+        for i in range(3):
+            self.assertEquals(output_ints3[i], i + 1)
+            self.assertEquals(output_ints4[i], 1)
     
     

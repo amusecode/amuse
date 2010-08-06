@@ -196,6 +196,12 @@ class LegacyCall(object):
                 values[parameter.input_index] = keyword_arguments[parameter.name]
                 input_parameters_seen.remove(parameter.name)
         
+        for parameter in self.specification.input_parameters:
+            if (parameter.name in input_parameters_seen) and parameter.has_default_value():
+                values = dtype_to_values[parameter.datatype]
+                values[parameter.input_index] = parameter.default
+                input_parameters_seen.remove(parameter.name)
+                
         if input_parameters_seen:
             raise exceptions.LegacyException("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
             
@@ -204,7 +210,7 @@ class LegacyCall(object):
             'float32' : 'floats_in',
             'int32'  : 'ints_in',
             'string'  : 'chars_in',
-        }   
+        }
         call_keyword_arguments = {}
         for dtype, values in dtype_to_values.iteritems():
             keyword = dtype_to_keyword[dtype]
