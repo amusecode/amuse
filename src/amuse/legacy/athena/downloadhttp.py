@@ -9,7 +9,7 @@ import urllib
 class DownloadAthenaFromWebpage(object):
     url_template = "http://www.astro.princeton.edu/~jstone/downloads/athena/athena{version}.tar.gz"
     filename_template = "athena{version}.tar.gz"
-    version = "3.1"
+    version = "4.0"
     
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))
@@ -49,4 +49,6 @@ class DownloadAthenaFromWebpage(object):
     
 if __name__ == '__main__':
     instance = DownloadAthenaFromWebpage()
+    if len(sys.argv) > 1:
+        instance.version = sys.argv[1]
     instance.start()

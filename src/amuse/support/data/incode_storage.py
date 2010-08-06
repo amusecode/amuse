@@ -105,7 +105,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     
     def get_attribute_values(self, storage, attributes_to_return, *indices):
         
-        self.check_arguments(storage, indices, attributes_to_return)  
+        self.check_arguments(storage, indices, attributes_to_return)
         
         return_value = self.method(*indices)
         
@@ -166,7 +166,7 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
     def set_attribute_values(self, attributes, values, *indices):
         list_arguments = list(indices)
         list_arguments.extend(self.convert_attributes_and_values_to_list_arguments(attributes, values))
-        
+        print "SET:", list_arguments
         self.method(*list_arguments)
     
     def convert_attributes_and_values_to_list_arguments(self, attributes, values):

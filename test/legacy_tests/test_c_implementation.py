@@ -63,14 +63,21 @@ int echo_array_with_result(int * in, int *out, int len) {
     return -1;
 }
         
-int echo_2_int(int int_in1, int int_in2, int * int_out1, int * int_out2) {
-    *int_out1 = int_in1;
-    *int_out2 = int_in2;
-    if(int_in1 < 0) {
-        return -1;
-    } else {
-        return 0;
+int echo_2_int(int * int_in1, int * int_in2, int * int_out1, int * int_out2, int len) {
+    int i = 0;
+    for(i = 0; i < len; i++) {
+        int_out1[i] = int_in1[i];
+        int_out2[i] = int_in2[i];
     }
+    
+    return len;
+}
+int echo_3_int(int * i, int * j, int * k, int * l, int * m, int * int_out, int len) {
+    int x = 0;
+    for(x = 0; x < len; x++) {
+        int_out[x] = i;
+    }    
+    return len;
 }
 """
 
@@ -154,16 +161,33 @@ class ForTestingInterface(LegacyInterface):
         
     @legacy_function
     def echo_2_int():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('int_in1', dtype='int32', direction=function.IN)
         function.addParameter('int_in2', dtype='int32', direction=function.IN, default = 1)
         function.addParameter('int_out1', dtype='int32', direction=function.OUT)
         function.addParameter('int_out2', dtype='int32', direction=function.OUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
-        function.can_handle_array = True
+        function.must_handle_array = True
         return function    
         
 
+
+    @legacy_function
+    def echo_3_int():
+        function = LegacyFunctionSpecification()
+        function.addParameter('i', dtype='int32', direction=function.IN)
+        function.addParameter('j', dtype='int32', direction=function.IN)
+        function.addParameter('k', dtype='int32', direction=function.IN)
+        function.addParameter('l', dtype='int32', direction=function.IN, default = 0)
+        function.addParameter('m', dtype='int32', direction=function.IN, default = 1)
+        function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+    
+    
 class ForTesting(CodeInterface):
     
     def __init__(self, exefile, **options):
@@ -411,6 +435,8 @@ class TestInterface(TestWithMPI):
         instance = ForTesting(self.exefile)
         output_ints1, output_ints2, result = instance.echo_2_int([1,2],[3,4])
         output_ints3, output_ints4, result = instance.echo_2_int([1,2,3])
+        output_ints5, output_ints6, result = instance.echo_2_int([5],[0])
+        output_ints7, output_ints8, result = instance.echo_2_int([5])
         instance.stop()
         self.assertEquals(output_ints1[1], 2)
         self.assertEquals(output_ints2[0], 3)
@@ -418,5 +444,9 @@ class TestInterface(TestWithMPI):
         for i in range(3):
             self.assertEquals(output_ints3[i], i + 1)
             self.assertEquals(output_ints4[i], 1)
+        self.assertEquals(output_ints5[0], 5)
+        self.assertEquals(output_ints6[0], 0)
+        self.assertEquals(output_ints7[0], 5)
+        self.assertEquals(output_ints8[0], 1)
     
     

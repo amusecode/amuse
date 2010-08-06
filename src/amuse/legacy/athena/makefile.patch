@@ -1,0 +1,34 @@
+--- Makefile.in.orig	2010-08-06 16:29:01.000000000 +0200
++++ Makefile.in	2010-08-06 16:30:01.000000000 +0200
+@@ -106,12 +106,13 @@
+ 	       rsolvers/two_shock.o
+ 
+ ALL_OBJ = ${CORE_OBJ} ${FFT_OBJ} ${GRAVITY_OBJ} ${INTEGRATORS_OBJ} ${MICROPHYS_OBJ} ${PARTICLES_OBJ} ${RECONSTRUCTION_OBJ} ${RSOLVERS_OBJ}
+-
++LIB_OBJ = $(subst main.o,,${ALL_OBJ})
+ #-------------------  macro definitions  ---------------------------------------
+ 
+ BIN = ${EXEDIR}athena
+ EXEDIR = ../bin/
+ SRC = $(ALL_OBJ:.o=.c)
++LIBFILE = $(EXEDIR)libathena.a
+ 
+ include ../Makeoptions
+ 
+@@ -125,11 +126,15 @@
+ all:	compile
+ 
+ .PHONY: compile
+-compile: ${BIN}
++compile: ${BIN} $(LIBFILE)
+ 
+ ${BIN}: ${ALL_OBJ}
+ 	${LDR} $(OPT) -o ${EXEDIR}athena ${ALL_OBJ} ${LIB}
+ 
++$(LIBFILE): $(LIB_OBJ)
++	ar rv $(LIBFILE) $(LIB_OBJ)
++	ranlib $(LIBFILE)
++	
+ help:
+ 	@echo This is the Athena Makefile
+ 	@echo Type 'make compile' to generate Athena executable

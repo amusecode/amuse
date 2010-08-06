@@ -52,16 +52,20 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         return function
           
     def setup_mesh(self, nmeshx, nmeshy, nmeshz, xlength, ylength, zlength):
-        self.par_seti("grid", "Nx1", "%d", nmeshx, "-")
-        self.par_seti("grid", "Nx2", "%d", nmeshy, "-")
-        self.par_seti("grid", "Nx3", "%d", nmeshz, "-")
+        self.par_seti("job","num_domains", "%d", 1, "-")
+        self.par_seti("domain1", "level", "%d", 0, "-")
+        self.par_seti("domain1", "AutoWithNProc", "%d", self.channel.number_of_workers, "-")
         
-        self.par_setd("grid", "x1min", "%.15e", 0.0, "-")
-        self.par_setd("grid", "x1max", "%.15e", xlength, "-")
-        self.par_setd("grid", "x2min", "%.15e", 0.0, "-")
-        self.par_setd("grid", "x2max", "%.15e", ylength, "-")
-        self.par_setd("grid", "x3min", "%.15e", 0.0, "-")
-        self.par_setd("grid", "x3max", "%.15e", zlength, "-")
+        self.par_seti("domain1", "Nx1", "%d", nmeshx, "-")
+        self.par_seti("domain1", "Nx2", "%d", nmeshy, "-")
+        self.par_seti("domain1", "Nx3", "%d", nmeshz, "-")
+        
+        self.par_setd("domain1", "x1min", "%.15e", 0.0, "-")
+        self.par_setd("domain1", "x1max", "%.15e", xlength, "-")
+        self.par_setd("domain1", "x2min", "%.15e", 0.0, "-")
+        self.par_setd("domain1", "x2max", "%.15e", ylength, "-")
+        self.par_setd("domain1", "x3min", "%.15e", 0.0, "-")
+        self.par_setd("domain1", "x3max", "%.15e", zlength, "-")
         
         return 0
         
@@ -74,9 +78,9 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         The total number of cells in one direction
         is max - min + 1.
         """
-        ni = self.par_geti("grid", "Nx1")
-        nj = self.par_geti("grid", "Nx2")
-        nk = self.par_geti("grid", "Nx3")
+        ni = self.par_geti("domain1", "Nx1")
+        nj = self.par_geti("domain1", "Nx2")
+        nk = self.par_geti("domain1", "Nx3")
         return (0, ni[0]-1, 0 , nj[0]-1 , 0, nk[0]-1)
         
     def get_mesh_indices(self):
@@ -94,6 +98,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         function.can_handle_array = True
         for x in ['i','j','k']:
           function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['level','domain']:
+          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         for x in ['x','y','z']:
           function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -105,6 +111,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         function.can_handle_array = True
         for x in ['x','y','z']:
           function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['level','domain']:
+          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         for x in ['i','j','k']:
           function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -128,6 +136,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['level','domain']:
+          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -143,6 +153,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['level','domain']:
+          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
@@ -155,6 +167,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        for x in ['level','domain']:
+          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         function.result_type = 'i'
         return function
         
@@ -170,12 +184,12 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
     def set_boundary(self, xbound1, xbound2, ybound1, ybound2, zbound1, zbound2):
         map_from_string_to_flag = {"reflective": 1, "outflow":2, "periodic":4}
         
-        self.par_seti("grid", "ibc_x1", "%d", map_from_string_to_flag[xbound1], "-")
-        self.par_seti("grid", "obc_x1", "%d", map_from_string_to_flag[xbound2], "-")
-        self.par_seti("grid", "ibc_x2", "%d", map_from_string_to_flag[ybound1], "-")
-        self.par_seti("grid", "obc_x2", "%d", map_from_string_to_flag[ybound2], "-")
-        self.par_seti("grid", "ibc_x3", "%d", map_from_string_to_flag[zbound1], "-")
-        self.par_seti("grid", "obc_x3", "%d", map_from_string_to_flag[zbound1], "-")
+        self.par_seti("domain1", "bc_ix1", "%d", map_from_string_to_flag[xbound1], "-")
+        self.par_seti("domain1", "bc_ox1", "%d", map_from_string_to_flag[xbound2], "-")
+        self.par_seti("domain1", "bc_ix2", "%d", map_from_string_to_flag[ybound1], "-")
+        self.par_seti("domain1", "bc_ox2", "%d", map_from_string_to_flag[ybound2], "-")
+        self.par_seti("domain1", "bc_ix3", "%d", map_from_string_to_flag[zbound1], "-")
+        self.par_seti("domain1", "bc_ox3", "%d", map_from_string_to_flag[zbound1], "-")
     
     def set_parallel(self, nx, ny, nz):
         self.par_seti("parallel", "NGrid_x1", "%d", nx, "-")
@@ -345,7 +359,7 @@ class Athena(CodeInterface):
         )
         object.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX,),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (length, length, length, object.ERROR_CODE,)
         )
         
@@ -356,12 +370,13 @@ class Athena(CodeInterface):
         object.add_method(
             'fill_grid_state_mpi',
             (object.INDEX, object.INDEX, object.INDEX,
-            density, momentum, momentum, momentum, energy),
+            density, momentum, momentum, momentum, energy,
+            object.INDEX, object.INDEX),
             (object.ERROR_CODE,)
         )
         object.add_method(
             'get_grid_state_mpi',
-            (object.INDEX, object.INDEX, object.INDEX,),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (density, momentum, momentum, momentum, energy,
             object.ERROR_CODE,)
         )

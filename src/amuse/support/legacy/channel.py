@@ -642,6 +642,8 @@ class MpiChannel(MessageChannel):
         
         
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+    
+        
         if self.is_inuse():
             raise exceptions.LegacyException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.intercomm is None:
@@ -659,9 +661,9 @@ class MpiChannel(MessageChannel):
             message.ints = pack_array(ints_in, message.length, 'int32')
             message.strings = pack_array(chars_in, message.length, 'string')
         else:
-            message.doubles = doubles_in
-            message.floats = floats_in
-            message.ints = ints_in
+            message.doubles = pack_array( doubles_in, message.length, 'float64')
+            message.floats = pack_array(floats_in, message.length, 'float32')
+            message.ints = pack_array(ints_in, message.length, 'int32')
             message.strings = chars_in
         message.send(self.intercomm)
         self._is_inuse = True
@@ -872,7 +874,7 @@ m.run_mpi_channel('{3}')"""
          
     def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         self._send(self.client_socket, ('send_message',(tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length),))
-        result = self._recv(self.client_socket) 
+        result = self._recv(self.client_socket)
         return result
             
     def recv_message(self, tag, handle_as_array):
