@@ -192,6 +192,25 @@ class Quantity(object):
         10 km
         """
         return new_quantity(-self.number, self.unit)
+    
+    def __lt__(self, other):
+        return self.value_in(self.unit) < other.value_in(self.unit)
+    
+    def __gt__(self, other):
+        return self.value_in(self.unit) > other.value_in(self.unit)
+    
+    def __eq__(self, other):
+        return self.value_in(self.unit) == other.value_in(self.unit)
+    
+    def __ne__(self, other):
+        return self.value_in(self.unit) != other.value_in(self.unit)
+    
+    def __le__(self, other):
+        return self.value_in(self.unit) <= other.value_in(self.unit)
+    
+    def __ge__(self, other):
+        return self.value_in(self.unit) >= other.value_in(self.unit)
+    
 
 class ScalarQuantity(Quantity):
     """
@@ -230,30 +249,6 @@ class ScalarQuantity(Quantity):
         else:
             return str(self.number)
                                 
-    def __lt__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number < other_in_my_units.number
-        
-    def __gt__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number > other_in_my_units.number
-        
-    def __eq__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number == other_in_my_units.number
-        
-    def __neq__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number != other_in_my_units.number
-
-    def __le__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number <= other_in_my_units.number
-
-    def __ge__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number >= other_in_my_units.number
-            
     def copy(self):
         return new_quantity(self.number, self.unit)
 
@@ -461,39 +456,6 @@ class VectorQuantity(Quantity):
             return array_str
             
 
-    def __lt__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number < other_in_my_units.number
-
-    def __le__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number <= other_in_my_units.number
-        
-    def __gt__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number > other_in_my_units.number
-        
-        
-    def __ge__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number >= other_in_my_units.number
-        
-    def __eq__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        if not len(self.number) == len(other_in_my_units.number):
-            return False
-            
-        return all(
-            map(
-                lambda x,y : x == y, 
-                self.number, 
-                other_in_my_units.number
-                )
-            )
-        
-    def __neq__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
-        return self.number != other_in_my_units.number   
         
     def indices(self):
         for x in len(self._number):
@@ -737,11 +699,6 @@ class NonNumericQuantity(Quantity):
         
     def __repr__(self):
         return 'quantity<'+str(self.value)+ ' - ' +str(self)+'>'
-        
-    def __eq__(self, other):
-        if not other.unit == self.unit:
-            return False
-        return self.value == other.value
         
     
     def as_vector_with_length(self, length):

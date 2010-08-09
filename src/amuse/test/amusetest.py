@@ -14,6 +14,38 @@ class SkipTest(exceptions.AmuseException):
 class TestCase(unittest.TestCase):
     PRECISION = int(round(numpy.log10(2.0/(numpy.finfo(numpy.double).eps))))-1
     
+    def _convert_to(self, in_units, first, second):
+        if in_units:
+            return (first.as_quantity_in(in_units), second.as_quantity_in(in_units))
+        else:
+            return (first, second)
+    
+    def _check_comparable(self, first, second):
+        if isinstance(first, values.Quantity) is not isinstance(second, values.Quantity):
+            raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
+                if isinstance(first, values.Quantity) else (second,first)))
+    
+    def _check_different(self, first, second):
+        if isinstance(first, values.Quantity):
+            different = (first.value_in(second.unit) != second.value_in(second.unit))
+        else:
+            different = (first != second)
+        return numpy.array(different).flatten()
+    
+    def failUnlessEqual(self, first, second, msg=None, in_units=None):
+        self._check_comparable(first, second)
+        first, second = self._convert_to(in_units, first, second)
+        unequal       = self._check_different(first, second)
+        if len(unequal) == 1:
+            if unequal[0]:
+                raise self.failureException,(msg or '%r != %r' % (first, second))
+        elif any(unequal):
+            err_list = ["@%i, %r != %r" % (i,first[i], second[i]) for (i,b) in enumerate(unequal) if b]
+            err = '\n'.join(err_list)
+            raise self.failureException,(msg or err)
+    assertEqual = failUnlessEqual
+    assertEquals = failUnlessEqual
+    
     def failUnlessAlmostEqual(self, first, second, places=7, msg=None, in_units=None):                             
         """Fail if the two objects are unequal as determined by their                                
            difference rounded to the given number of decimal places                                  
@@ -28,12 +60,8 @@ class TestCase(unittest.TestCase):
            If the base unit for the test (in_units) is not supplied, the
            difference of the two objects is evaluated in units of [second.unit].
         """
-        if hasattr(first, 'unit') is not hasattr(second, 'unit'):
-            raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
-                if hasattr(first,'unit') else (second,first)))
-        if in_units:
-            first = first.as_quantity_in(in_units)
-            second = second.as_quantity_in(in_units)
+        self._check_comparable(first, second)
+        first, second = self._convert_to(in_units, first, second)
         delta = second-first  
         
         if isinstance(delta, values.Quantity):

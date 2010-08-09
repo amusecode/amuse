@@ -1413,6 +1413,8 @@ class Particle(object):
         
     def __eq__(self, other):
         return isinstance(other, type(self)) and other.key == self.key
+    def __ne__(self, other):
+        return not (isinstance(other, type(self)) and other.key == self.key)
         
         
     def set_default(self, attribute, quantity):

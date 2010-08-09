@@ -166,7 +166,7 @@ class unit(object):
         return True
                         
     def conversion_factor_from(self, x):
-        if self.base == x.base:
+        if self.base == x.base or isinstance(x, values.ZeroQuantity):
             this_factor = self.factor * 1.0
             other_factor = x.factor
             return this_factor / other_factor

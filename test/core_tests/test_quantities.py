@@ -75,8 +75,70 @@ class TestQuantities(amusetest.TestCase):
         
     def test9(self):
         converter = nbody_system.nbody_to_si(1 | si.kg, 2 | si.s)
+        self.assertEquals(0.0 | units.none, converter.to_nbody(zero))
         self.assertEquals(converter.to_nbody(zero), 0.0 | units.none)
-        
-        
+    
+    def test10(self):
+        self.assertEquals(1 | units.m, 1 | units.m)
+        self.assertTrue (1 | units.m == 1 | units.m)
+        self.assertFalse(1 | units.m == 2 | units.m)
+        self.assertTrue (1 | units.m != 2 | units.m)
+        self.assertFalse(1 | units.m != 1 | units.m)
+        self.assertTrue (1 | units.m >= 1 | units.m)
+        self.assertFalse(1 | units.m >= 2 | units.m)
+        self.assertTrue (1 | units.m <= 1 | units.m)
+        self.assertFalse(1 | units.m <= 0 | units.m)
+        self.assertTrue (1 | units.m >  0 | units.m)
+        self.assertFalse(1 | units.m >  1 | units.m)
+        self.assertTrue (1 | units.m <  3 | units.m)
+        self.assertFalse(1 | units.m <  0 | units.m)
+    
+    def test11(self):
+        self.assertEquals([1] | units.m, [1] | units.m)
+        self.assertTrue ([1] | units.m == [1] | units.m)
+        self.assertFalse([1] | units.m == [2] | units.m)
+        self.assertTrue ([1] | units.m != [2] | units.m)
+        self.assertFalse([1] | units.m != [1] | units.m)
+        self.assertTrue ([1] | units.m >= [1] | units.m)
+        self.assertFalse([1] | units.m >= [2] | units.m)
+        self.assertTrue ([1] | units.m <= [1] | units.m)
+        self.assertFalse([1] | units.m <= [0] | units.m)
+        self.assertTrue ([1] | units.m >  [0] | units.m)
+        self.assertFalse([1] | units.m >  [1] | units.m)
+        self.assertTrue ([1] | units.m <  [3] | units.m)
+        self.assertFalse([1] | units.m <  [0] | units.m)
+    
+    def test12(self):
+        self.assertEquals(zero, zero)
+        self.assertTrue (zero == zero)
+        self.assertFalse(zero == zero + (1 | units.m))
+        self.assertFalse(zero + (1 | units.m) == zero)
+        self.assertTrue (zero != zero + (1 | units.m))
+        self.assertFalse(zero != zero)
+        self.assertTrue (zero >= zero)
+        self.assertFalse(zero >= zero + (1 | units.m))
+        self.assertTrue (zero <= zero + (1 | units.m))
+        self.assertFalse(zero <= zero - (1 | units.m))
+        self.assertTrue (zero >  zero - (1 | units.m))
+        self.assertFalse(zero >  zero)
+        self.assertTrue (zero <  zero + (1 | units.m))
+        self.assertFalse(zero <  zero - (1 | units.m))
+        self.assertTrue (zero == 0 | units.m)
+    
+    def test13(self):
+        self.assertEquals('a' | units.string, 'a' | units.string)
+        self.assertTrue ('a' | units.string == 'a' | units.string)
+        self.assertFalse('a' | units.string == 'ab' | units.string)
+        self.assertTrue ('a' | units.string != 'A' | units.string)
+        self.assertFalse('a' | units.string != 'a' | units.string)
+        self.assertTrue ('b' | units.string >= 'a' | units.string)
+        self.assertFalse('B' | units.string >= 'a' | units.string)
+        self.assertTrue ('a' | units.string <= 'ab' | units.string)
+        self.assertFalse('a' | units.string <= 'A' | units.string)
+        self.assertTrue ('a' | units.string >  'A' | units.string)
+        self.assertFalse('a' | units.string >  'a' | units.string)
+        self.assertTrue ('a' | units.string <  'b' | units.string)
+        self.assertFalse('a' | units.string <  'B' | units.string)
+       
         
         
