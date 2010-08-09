@@ -296,6 +296,28 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         return function
     
     @legacy_function   
+    def get_id_of_species():
+        """
+        Retrieve the chem_ID of the chemical abundance variable of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('species', dtype='int32', direction=function.IN
+            , description="The species of the star to get the name of")
+        function.addParameter('species_id', dtype='int32', direction=function.OUT
+            , description="The chem_ID of the chemical abundance variable of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+    
+    @legacy_function   
     def get_mass_fraction_of_species_at_zone():
         """
         Retrieve the fractional chemical abundance variable at the specified zone/mesh-cell of the star.
@@ -792,6 +814,7 @@ class MESA(CodeInterface):
         object.add_method('particles', 'get_luminosity_profile')
         object.add_method('particles', 'get_number_of_species')
         object.add_method('particles', 'get_names_of_species')
+        object.add_method('particles', 'get_IDs_of_species')
         object.add_method('particles', 'get_chemical_abundance_profiles')
         object.add_method('particles', 'evolve', 'evolve_one_step')
     
@@ -892,6 +915,11 @@ class MESA(CodeInterface):
         object.add_method(
             "get_name_of_species", 
             (object.INDEX,units.none,), 
+            (units.string, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_id_of_species", 
+            (object.INDEX,units.none,), 
             (units.none, object.ERROR_CODE,)
         )
         object.add_method(
@@ -963,6 +991,16 @@ class MESA(CodeInterface):
             indices_of_the_stars = indices_of_the_stars[0]
         number_of_species = self.get_number_of_species(indices_of_the_stars).number
         return list(self.get_name_of_species(
+            [indices_of_the_stars]*number_of_species, 
+            range(1,number_of_species+1) | units.none
+        ).value_in(units.string))
+    def get_IDs_of_species(self, indices_of_the_stars):
+        if hasattr(indices_of_the_stars, '__iter__'):
+            if len(indices_of_the_stars) > 1:
+                raise Exception("Querying chemical abundance IDs of more than one particle at a time is not supported.")
+            indices_of_the_stars = indices_of_the_stars[0]
+        number_of_species = self.get_number_of_species(indices_of_the_stars).number
+        return list(self.get_id_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none
         ).value_in(units.none))
