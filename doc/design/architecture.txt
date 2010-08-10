@@ -278,7 +278,72 @@ prone) and easier to couple with other codes.
         "Code Interface" -> "Units"[lhead=cluster2, ltail=cluster0]; 
     }
 
-The design of the *object-oriented* interface is based on the adaptor 
+Model of a legacy code
+~~~~~~~~~~~~~~~~~~~~~~
+
+The legacy codes of every module in all physical domains are modelled using
+the same template. The template consists of attributes and wrappers. **Attributes**
+provide a common interface for sub-parts of the code, for example the *particles*
+attribute provides an interface to add, update and remove the particles in
+a code. Attributes combine several functions in a legacy interface into
+one object.  **Wrappers** are defined on top of the legacy functions and
+add functionality to existing methods. For example for every method 
+the units of the arguments and return values can be defined in a filter.
+Wrappers add functionality to individual methods.
+
+
+Attributes
+++++++++++
+The template divides the interface object of a code into
+a number of attributes. Each attribute refers to an object implementing
+a specific sub-interface of the code. For example a code can have a
+*parameter* attribute, this attribute implements the *ParameterSet* 
+sub-interface. The *ParameterSet* sub-interface defines how to
+interact with the parameters of a code (in this case each parameter
+can be set or queried from the set by name using normal python attribute access).
+
+The *template* for all codes is divided into the following sub-interfaces:
+
+parameters
+    Parameters influence how the code works. Parameters are usually
+    set just after creating a code. Parameters should be read-write
+    or write-only.
+    
+properties
+    Properties inform the user about the state of the code. The
+    current model time is a property. Properties are always read-only.
+
+particle sets
+    Particle sets provide a common interface for a set of particles
+    in the code. A code can have multiple particle sets defined under
+    different names (for example gas, stars and dark matter)
+
+grids
+    Grids provide access to multi-dimensional data. A code can
+    have multiple grids defined in a hierarchy (for AMR or SMR codes)
+
+
+Wrappers
++++++++
+
+Wrappers decorate a method. Wrappers can do pre- and post-processing of
+the arguments or decide if a method can savely be called.
+
+units and error code
+    Defines a unit for each argument of the wrapped method. When called
+    the arguments will be converted to numbers in the correct unit. The
+    return values will be converted to quantities (numbers with a unit).
+    
+state
+    The state of a code determines which functions are valid to call
+    and how the code can transfer from one state into another. A code
+    might give incorrect answers if the potential energy is requested before
+    the particles are entered into the code.
+    
+Implementation
+++++++++++++++
+
+The implementation of the *object-oriented* interface is based on the adaptor 
 pattern. A *Legacy interface* class is adapted to create a
 class which provides *"parameters"*, *"particle sets/gridpoints"* , 
 *"methods with units"* , *"properties with units"* , 
