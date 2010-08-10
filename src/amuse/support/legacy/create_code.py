@@ -37,7 +37,7 @@ class MakeCodeStringOfAClassWithLegacyFunctions(MakeCodeString):
             if x.startswith('__'):
                 continue
             value = getattr(self.class_with_legacy_functions, x)
-            if isinstance(value, legacy_function):
+            if isinstance(value, legacy_function) and self.handle_legacy_function(x, value):
                 legacy_functions.append(value)
         
         legacy_functions.sort(key= lambda x: x.specification.id)
@@ -123,7 +123,8 @@ class MakeCodeStringOfAClassWithLegacyFunctions(MakeCodeString):
         if hasattr(self.class_with_legacy_functions, 'extra_content'):
             self.out.n() + self.class_with_legacy_functions.extra_content
     
-            
+    def handle_legacy_function(self, name_of_the_function, function):
+        return True
     
     
 class DTypeToSpecDictionary(object):

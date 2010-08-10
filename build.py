@@ -89,6 +89,12 @@ class ParseCommandLine(object):
             default="-",
             dest="output",
             help="Name of the OUTPUT file. Use - for standard out. ")
+        self.parser.add_option(
+            "-i",
+            "--ignore",
+            default="",
+            dest="ignore",
+            help="Name of the classes to ignore, functions defined on these classes will not generate code. Comma separated list")
         
         
         self.options = None
@@ -96,6 +102,10 @@ class ParseCommandLine(object):
         
     def parse_options(self):
         (self.options, self.arguments) = self.parser.parse_args()
+        if self.options.ignore:
+            self.options.ignore_classes = list(self.parse_ignore_classe())
+        else:
+            self.options.ignore_classes = []
         
     def parse_arguments(self):
         if self.options.mode == 'dir':
@@ -111,7 +121,18 @@ class ParseCommandLine(object):
                 self.options.name_of_class = self.arguments[1]
             except Exception as exception:
                 self.show_error_and_exit(exception)
+    
+    def parse_ignore_classe(self):
+        names = self.options.ignore.split(',')
+        for name in names:
+            index_of_module_classname_split = name.rfind('.')
+            modulename = name[:index_of_module_classname_split]
+            classname = name[index_of_module_classname_split+1:]
             
+            __import__(modulename)
+            class_to_ignore = getattr(sys.modules[modulename], classname)
+            yield class_to_ignore
+        
     
     def start(self):
         self.parse_options()
@@ -170,6 +191,7 @@ def make_file(settings):
     try:
         builder = usecases[(settings.type, settings.mode)]()
         builder.class_with_legacy_functions = class_with_legacy_functions
+        builder.ignore_functions_from = settings.ignore_classes
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
         

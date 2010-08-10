@@ -11,7 +11,7 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
 
     .. [#] Hut, P., Makino, J. & McMillan, S., *Astrophysical Journal Letters* , **443**, L93-L96 (1995)
     """
-    include_headers = ['worker_code.h']
+    include_headers = ['worker_code.h', 'stopcond.h']
 
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)

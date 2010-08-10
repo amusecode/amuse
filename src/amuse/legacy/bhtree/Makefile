@@ -13,8 +13,8 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-SCLIBS ?= -L../../../../lib/stopcond -lstopcond
-SCINC ?= -I../../../../lib/stopcond
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 CODELIB = $(BHTCDIR)/libbhtree.a
 
@@ -37,10 +37,10 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BHTreeInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H interface.py BHTreeInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	mpicxx $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
+	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 

@@ -6,7 +6,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
-    include_headers = ['bhtree_code.h', 'worker_code.h']
+    include_headers = ['bhtree_code.h', 'worker_code.h', 'stopcond.h']
     
     def __init__(self, convert_nbody = None, **kwargs):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **kwargs)

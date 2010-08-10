@@ -661,13 +661,23 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
     (MakeCodeStringOfAClassWithLegacyFunctions):
 
     @late
+    def ignore_functions_from(self):
+        return []
+        
+    @late
     def dtype_to_spec(self):
         return dtype_to_spec
         
     @late
     def make_extern_c(self):
         return True
-
+    
+    def handle_legacy_function(self, name_of_the_function, function):
+        for cls in self.ignore_functions_from:
+            if hasattr(cls, name_of_the_function):
+                return False
+        return True
+        
     def make_legacy_function(self):
         return MakeACHeaderDefinitionStringOfALegacyFunctionSpecification()
         
