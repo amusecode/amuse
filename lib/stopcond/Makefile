@@ -10,14 +10,14 @@ CFLAGS += -O2
 $(LIBNAME): $(OBJS)
 	ar -r  $(LIBNAME) $(OBJS)
 	ranlib $(LIBNAME)
-	
+
 $(LIBNAMEMPI): $(OBJSMPI)
 	ar -r  $(LIBNAMEMPI) $(OBJSMPI)
 	ranlib $(LIBNAMEMPI)
 
 
-%.mo: %.cc
-	mpicxx $(CXXFLAGS) -DMPILIB  -c -o $@ $< 
+%.mo: %.c
+	mpicc $(CXXFLAGS) -DMPILIB  -c -fno-leading-underscore -o $@ $< 
 
 
 clean:
