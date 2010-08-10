@@ -280,6 +280,9 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
         self.writable_attributes = set([])
         for x in self.setters:
             self.writable_attributes |= set(x.attribute_names)
+            
+        
+        self.extra_keyword_arguments_for_getters_and_setters = {}
         
     
     def select_getters_for(self, attributes):
@@ -359,6 +362,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         self._get_number_of_particles = number_of_particles_method
         self.delete_particle_method = delete_particle_method
         self.new_particle_method = new_particle_method
+        
         
                     
     def __len__(self):
