@@ -8,8 +8,8 @@ The AMUSE architecture is based on a layered design with 3 layers.
 The highest layer is a python script, written for a single problem
 or set of problems. The next layer contains the AMUSE code, this layer
 provides a library of objects and function to use in the python script. 
-The last layer contains all the existing codes. In this layer the 
-physical models are implemented.
+The last layer contains all the existing or legacy codes. In this layer
+the physical models are implemented.
 
 Each layer builds upon a lower layer, adding functionality or ease of
 use to the previous layer:
@@ -60,21 +60,23 @@ Each layer has a different role in the AMUSE architecture:
 1. **User Script layer**. The code in this layer implements a specific 
    physical problem or sets of problems. This layer contains the 
    example scripts and scripts written by the user. This layer is 
-   conceptually comparable to a User Interface layer.
+   conceptually comparable to a User Interface layer in applications 
+   with a GUI. Coupling two or more codes happens in this layer (with
+   the help of support classes from the *Code Layer*.
 
 2. **AMUSE Code layer**. This layer provides an object oriented 
-   interface on top of the legacy codes and provides a library
+   interface on top of the legacy codes. It also provides a library
    of functionalities, such as unit handling and data conversion.
-   This role of this layer is very generic, it is not specific 
+   The role of this layer is very generic, it is not specific 
    for one problem or for one physical domain.
    
-3. **Legacy Codes layer**.  This layer interfaces to the legacy codes 
-   and contains the existing codes. It provides process management
-   for the legacy codes and functional interfaces to the codes. 
-   The code in this layer is generic in respect to problems, but 
-   speficic for different physical domains.
+3. **Legacy Codes layer**.  This layer defines the interfaces
+   to the legacy codes and contains the existing codes. It provides 
+   process management for the legacy codes and functional
+   interfaces to the codes. The code in this layer is generic in 
+   respect to problems, but specific for different physical domains.
 
-The following sections contain a detailed explaination of the layers
+The following sections contain a detailed explanation of the layers,
 starting with the lowest layer to the highest. Some details are further
 worked out in other chapters or in the reference manual.
 
@@ -84,11 +86,15 @@ Legacy codes layer
 The **Legacy Codes layer** contains the existing applications and 
 the functionality to interface with these applications. This
 layer exposes every legacy code as a set of functions. These 
-functions are grouped in one class per code. 
+functions are grouped in one class per code.
 
 The AMUSE framework code and the legacy codes are designed to be run 
-as separate applications. Function calls into the legacy codes 
-will be send via a *message passing framework* to the codes.
+as separate applications. The AMUSE framework code consists of a python
+script and the AMUSE library. The legacy codes consists of 
+the original code-base extended with a new main application that
+handles messages send to it from the python library. 
+Function calls into the legacy codes are send via a *message passing framework* 
+to the actual running codes. 
 
 .. raw:: latex
 
@@ -99,7 +105,7 @@ will be send via a *message passing framework* to the codes.
    digraph layers4 {
       fontsize=10.0;
         rankdir="LR";
-        node [shape=box, style=filled, fillcolor=lightyellow];
+        node [fontsize=10.0, shape=box, style=filled, fillcolor=lightyellow];
         subgraph cluster0 {
             style=filled;
             color=azure2;
@@ -126,6 +132,82 @@ will be send via a *message passing framework* to the codes.
    \caption{The AMUSE script and legacy codes are separate applications.}
    \end{figure} 
 
+The number of applications started and the machines on which these
+run can all be set dynamically in AMUSE. Depending on the problem
+a researcher can run all of AMUSE on a single desktop computer
+or in a mixed environment with clusters of computers. Every AMUSE run
+starts with one python script. This script can in turn start
+a number of different legacy codes (as separate applications). The
+legacy codes run on 1 single computer or on a cluster of computers.
+A complete run can consist of multiple applications running in parallel
+or sequence and managed by one python script. 
+
+
+.. graphviz::
+
+   digraph multiples {
+      fontsize=8.0;
+        rankdir="LR";
+        node [fontsize=8.0,shape=box, style=filled, fillcolor=lightyellow];
+        subgraph cluster0 {
+            style=filled;
+            color=azure2;
+            label="Application";
+            
+            "Python Script";
+        }
+        subgraph cluster1 {
+            style=filled;
+            color=azure2;
+            label="Application, running on a GPU";
+            "Gravitational Dynamics";
+        }
+        subgraph cluster2 {
+            style=filled;
+            color=azure2;
+            label="Application, running on a cluster";
+            "Hydrodynamics";
+            "Hydrodynamics 1";
+            "Hydrodynamics 2";
+            "Hydrodynamics 3";
+            "Hydrodynamics 4";
+            "Hydrodynamics" -> "Hydrodynamics 1"
+            "Hydrodynamics" -> "Hydrodynamics 2"
+            "Hydrodynamics" -> "Hydrodynamics 3"
+            "Hydrodynamics" -> "Hydrodynamics 4"
+        }
+        subgraph cluster3 {
+            style=filled;
+            color=azure2;
+            label="Application";
+            "Stellar Evolution 1";
+        }
+        subgraph cluster4 {
+            style=filled;
+            color=azure2;
+            label="Application";
+            "Stellar Evolution 2";
+        }
+        subgraph cluster5 {
+            style=filled;
+            color=azure2;
+            label="Application";
+            "Stellar Evolution 3";
+        }
+        subgraph cluster6 {
+            style=filled;
+            color=azure2;
+            label="Application";
+            "Stellar Evolution 4";
+        }
+        "Python Script" -> "Gravitational Dynamics";
+        "Python Script" -> "Hydrodynamics";
+        "Python Script" -> "Stellar Evolution 1";
+        "Python Script" -> "Stellar Evolution 2";
+        "Python Script" -> "Stellar Evolution 3";
+        "Python Script" -> "Stellar Evolution 4";
+        
+    }
 
 Message passing
 ~~~~~~~~~~~~~~~
@@ -143,12 +225,18 @@ using a similar message.
 AMUSE Code layer
 ****************
 
-The **AMUSE Code layer** is responsible for providing an object
+The **Code layer** is responsible for providing an object
 oriented interface to the legacy codes. It also provides extra 
 functionality to help write a user script, such as file input 
 and output of common file formats and unit conversions. These
-extra functionalities can be used indepented of the legacy codes.
+extra functionalities can be used independent of the legacy codes.
 
+Every legacy code has a *low-level* interface (defined in the legacy
+interface layer) and an *object-oriented* interface. The *low-level*
+interface is defined as as set of functions. The *object-oriented* interface
+uses these functions and combines these with models for state-transitions,
+units and data sets to provide an interface that is easier to use (less error
+prone) and easier to couple with other codes.
 
 .. graphviz::
 
@@ -157,7 +245,7 @@ extra functionalities can be used indepented of the legacy codes.
         compound=true;
         ranksep=1;
         
-        node [shape=box, style=filled, fillcolor=lightyellow];
+        node [fontsize=10.0,shape=box, style=filled, fillcolor=lightyellow];
         subgraph cluster0 {
             style=filled;
             color=azure2;
@@ -190,13 +278,12 @@ extra functionalities can be used indepented of the legacy codes.
         "Code Interface" -> "Units"[lhead=cluster2, ltail=cluster0]; 
     }
 
-The **AMUSE code layer** classes build upon the low level
-classes provided by the **legacy codes layer**. The design is based
-on the adaptor patter to provide an object oriented interface with 
-more functionality. A *Legacy interface* class is adapted to create a
+The design of the *object-oriented* interface is based on the adaptor 
+pattern. A *Legacy interface* class is adapted to create a
 class which provides *"parameters"*, *"particle sets/gridpoints"* , 
 *"methods with units"* , *"properties with units"* , 
 *"state control"* and *"Unit conversions for incompatible unit systems"*. 
+Each functionality has the same interface for all codes in the system.
 
 .. raw:: latex
 
@@ -209,7 +296,7 @@ class which provides *"parameters"*, *"particle sets/gridpoints"* ,
         compound=true;
         ranksep=1.0;
         rankdir="LR";
-        node [shape=box, style=filled, fillcolor=lightyellow];
+        node [fontsize=10.0,shape=box, style=filled, fillcolor=lightyellow];
         subgraph cluster1 {
             style=filled;
             color=azure2;
