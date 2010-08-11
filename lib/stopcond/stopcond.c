@@ -35,6 +35,7 @@ int set_supported_conditions_(int *type) {
 }
 
 int is_condition_enabled(){
+  return 0;
 }
 
 int get_number_of_stopping_conditions_set(int * result)
@@ -136,9 +137,17 @@ int reset_stopping_conditions() {
     set_conditions = 0;
 }
 
+int reset_stopping_conditions_() {
+  reset_stopping_conditions();    
+}
+
 int next_index_for_stopping_condition() {
     number_of_stopping_conditions_set++;
     return number_of_stopping_conditions_set - 1;
+}
+
+int next_index_for_stopping_condition_() {
+  return next_index_for_stopping_condition();
 }
 
 int set_stopping_condition_info(int index, int type) {
@@ -153,6 +162,10 @@ int set_stopping_condition_info(int index, int type) {
 
 }
 
+int set_stopping_condition_info_(int *index, int *type) {
+  return set_stopping_condition_info(*index, *type);
+}
+
 int set_stopping_condition_particle_index(int index, int index_in_the_condition, int index_of_the_particle) {
     if(index >= number_of_stopping_conditions_set) {
 	return -1;
@@ -165,6 +178,9 @@ int set_stopping_condition_particle_index(int index, int index_in_the_condition,
     return 0;
 }
 
+int set_stopping_condition_particle_index_(int *index, int *index_in_the_condition, int *index_of_the_particle){
+  return set_stopping_condition_particle_index(*index, *index_in_the_condition, *index_of_the_particle);
+}
 
 int set_stopping_condition_timeout_parameter(double value) {
     if(timeout_parameter < 0.0) {
@@ -174,11 +190,18 @@ int set_stopping_condition_timeout_parameter(double value) {
     return 0;
 }
 
-int get_stopping_condition_timeout_parameter(double * value){
+int set_stopping_condition_timeout_parameter_(double *value) {
+  return set_stopping_condition_timeout_parameter(*value);
+}
+
+int get_stopping_condition_timeout_parameter(double * value) {
     *value = timeout_parameter;
     return 0;
 }
 
+int get_stopping_condition_timeout_parameter_(double * value) {
+  return get_stopping_condition_timeout_parameter(value);
+}
 
 #ifdef MPILIB
 
