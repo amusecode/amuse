@@ -688,7 +688,10 @@ class pow_unit(derived_unit):
         self.local_unit = unit
         
     def __str__(self):
-        return str(self.local_unit) + '**' + str(self.power)
+        if isinstance(self.local_unit, derived_unit):
+            return '(' + str(self.local_unit) + ')**' + str(self.power)
+        else:
+            return str(self.local_unit) + '**' + str(self.power)
     
     
     def reference_string(self):
