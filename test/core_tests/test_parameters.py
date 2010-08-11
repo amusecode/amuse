@@ -8,69 +8,69 @@ from amuse.support import exceptions
 
 class TestAttributeParameterDefintions(amusetest.TestCase):
     def test1(self):
-        x = parameters.ModuleAttributeParameterDefinition("test", "test_name", "a test parameter", units.m, 0.1 | units.m)
-        self.assertEqual(x.name,'test_name')
         class TestModule(object):
             def __init__(self):
                 self.legacy_interface = self
                 self.test = 123
         o = TestModule()
-        value = x.get_value(o)
+        set = parameters.Parameters([parameters.ModuleAttributeParameterDefinition("test", "test_name", "a test parameter", units.m, 0.1 | units.m)], o)
+        x = set.get_parameter("test_name")
+        value = x.get_value()
         self.assertTrue(value.unit.has_same_base_as(units.m))
         self.assertEqual(value.value_in(units.m), 123)
 
     def test2(self):
-        x = parameters.ModuleAttributeParameterDefinition(
+        class TestModule(object):
+            def __init__(self):
+                self.legacy_interface = self
+                self.test = 123
+    
+        o = TestModule()
+        set = parameters.Parameters([parameters.ModuleAttributeParameterDefinition(
             "test",
             "test_name",
             "a test parameter",
             nbody_system.length,
             0.1 | nbody_system.length
-        )
-        self.assertEqual(x.name,'test_name')
-        class TestModule(object):
-            def __init__(self):
-                self.legacy_interface = self
-                self.test = 123
-
-        o = TestModule()
-        value = x.get_value(o)
+        )], o)
+        x = set.get_parameter("test_name")
+        value = x.get_value()
         self.assertEquals(value.value_in(nbody_system.length), 123.0)
         self.assertTrue(value.unit.has_same_base_as(nbody_system.length))
 
     def test3(self):
-        x = parameters.ModuleAttributeParameterDefinition(
-            "test",
-            "test_name",
-            "a test parameter",
-            units.m, 0.1 | units.m
-        )
-        self.assertEqual(x.name,'test_name')
         class TestModule(object):
             def __init__(self):
                 self.legacy_interface = self
                 self.test = 123
-
         o = TestModule()
-        value = x.set_value(o, 5 | units.km)
+        set = parameters.Parameters([parameters.ModuleAttributeParameterDefinition(
+            "test",
+            "test_name",
+            "a test parameter",
+            units.m, 0.1 | units.m
+        )], o)
+        x = set.get_parameter("test_name")
+        value = x.set_value(5 | units.km)
         self.assertEqual(o.test, 5000)
 
 
     def test4(self):
-        x = parameters.ModuleAttributeParameterDefinition(
+        class TestModule(object):
+            def __init__(self):
+                self.legacy_interface = self
+                self.test = 123
+    
+        o = TestModule()
+        set = parameters.Parameters([parameters.ModuleAttributeParameterDefinition(
             "test",
             "test_name",
             "a test parameter",
             nbody_system.length,
             0.1 | nbody_system.length
-        )
-        class TestModule(object):
-            def __init__(self):
-                self.legacy_interface = self
-                self.test = 123
-
-        o = TestModule()
-        value = x.set_value(o, 2 | (10.0 * nbody_system.length) )
+        )], o)
+        x = set.get_parameter("test_name")
+        value = x.set_value(2 | (10.0 * nbody_system.length) )
         self.assertAlmostEqual(o.test, 20.0, 10)
 
     def test5(self):
@@ -85,7 +85,7 @@ class TestAttributeParameterDefintions(amusetest.TestCase):
             def __init__(self):
                 self.legacy_interface = self
                 self.test = 123
-
+    
         o = TestModule()
         x = parameters.Parameters([definition], o)
         value = x.test_name
@@ -96,25 +96,25 @@ class TestAttributeParameterDefintions(amusetest.TestCase):
 
 class TestMethodParameterDefintions(amusetest.TestCase):
     def test1(self):
-        x = parameters.ModuleMethodParameterDefinition_Next(
+        class TestModule(object):
+            def get_test(self):
+                return 123,0
+    
+        o = TestModule()
+        set = parameters.Parameters([parameters.ModuleMethodParameterDefinition_Next(
             "get_test",
             "set_test",
             "test_name",
             "a test parameter",
             units.m,
-            0.1 | units.m)
-
-        class TestModule(object):
-            def get_test(self):
-                return 123,0
-
-        o = TestModule()
-        value = x.get_value(o)
+            0.1 | units.m)], o)
+        x = set.get_parameter("test_name")
+        value = x.get_value()
         self.assertTrue(value.unit.has_same_base_as(units.m))
         self.assertEqual(value.value_in(units.m), 123)
 
     def test2(self):
-        x = parameters.ModuleMethodParameterDefinition_Next(
+        definition = parameters.ModuleMethodParameterDefinition_Next(
             "get_test",
             "set_test",
             "test_name",
@@ -127,16 +127,17 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             def set_test(self, value):
                 self.x = value
                 return 0
-
         o = TestModule()
-        x.set_value(o, 10|units.m)
+        set = parameters.Parameters([definition,], o)
+        x = set.get_parameter("test_name")
+        x.set_value(10|units.m)
         self.assertEqual(o.x, 10)
-        value = x.get_value(o)
+        value = x.get_value()
         self.assertTrue(value.value_in(units.m), 10)
 
 
     def test3(self):
-        x = parameters.ModuleMethodParameterDefinition_Next(
+        definition = parameters.ModuleMethodParameterDefinition_Next(
             "get_test",
             "set_test",
             "test_name",
@@ -149,11 +150,13 @@ class TestMethodParameterDefintions(amusetest.TestCase):
             def set_test(self, value):
                 self.x = value
                 return 0
-
+    
         o = TestModule()
-        x.set_value(o, 10|units.none)
+        set = parameters.Parameters([definition,], o)
+        x = set.get_parameter("test_name")
+        x.set_value(10|units.none)
         self.assertEqual(o.x, 10)
-        value = x.get_value(o)
+        value = x.get_value()
         self.assertTrue(value.value_in(units.none), 10)
 
     def test4(self):
@@ -272,40 +275,42 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         self.assertEquals("bla" , instance.x)
 
     def test7(self):
-        x = parameters.ModuleMethodParameterDefinition_Next(
+        definition = parameters.ModuleMethodParameterDefinition_Next(
             "get_test",
             "set_test",
             "test_name",
             "a test parameter",
             units.m,
             0.1 | units.m)
-
+    
         class TestModule(object):
             def get_test(self):
                 return (self.x, self.errorcode)
             def set_test(self, value):
                 self.x = value
                 return self.errorcode
-
+    
         o = TestModule()
+        set = parameters.Parameters([definition,], o)
+        x = set.get_parameter("test_name")
         o.errorcode = 0
-        x.set_value(o, 10 | units.m)
+        x.set_value(10 | units.m)
         self.assertEqual(o.x, 10)
-        value = x.get_value(o)
+        value = x.get_value()
         self.assertTrue(value.value_in(units.m), 10)
-
+    
         o.errorcode = -1
         try:
-            x.set_value(o, 10 | units.m)
+            x.set_value(10 | units.m)
             self.fail("Setting the value should result in an exception as the errorcode is set")
         except parameters.ParameterException as ex:
             self.assertEquals(-1, ex.errorcode)
             self.assertEquals("test_name", ex.parameter_name)
             self.assertEquals("Could not set value for parameter 'test_name' of a 'TestModule' object, got errorcode <-1>", str(ex))
-
+    
         o.errorcode = -2
         try:
-            x.get_value(o)
+            x.get_value()
             self.fail("Gettting the value should result in an exception as the errorcode is set")
         except parameters.ParameterException as ex:
             self.assertEquals(-2, ex.errorcode)

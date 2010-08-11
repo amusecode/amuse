@@ -251,3 +251,35 @@ class TestGrids(amusetest.TestCase):
         print code.storage[0][0]
         self.assertTrue(numpy.all(code.storage[0][0] == [11.0, 12.0, 13.0, 14.0, 15.0]))
         
+
+    def test4(self):
+        class Code(object):
+            def get_range(self):
+                return (1,10,2,5,3,6)
+                
+            def get_ijk(self,i,j,k, d, l):
+                return units.m(d), units.m(l), units.m(k)
+        
+        code = Code()
+        
+        storage = InCodeGridAttributeStorage(
+            code,
+            code.get_range,
+            [],
+            [ParticleGetAttributesMethod(code.get_ijk,("i","j","k")),],
+            extra_keyword_arguments_for_getters_and_setters = {'d':1, 'l':2},
+        )
+        
+        self.assertEquals(storage.storage_shape(), (10, 4, 4))
+        self.assertEquals(storage._get_attribute_names(), set(["i","j","k"]))
+        
+        values = storage._get_values((0,1,1), ("i",))
+        self.assertEquals(len(values), 1)
+        self.assertEquals(values[0], 1 | units.m)
+        
+        values = storage._get_values((0,1,1), ("k","j","i",))
+        self.assertEquals(values[0], 4 | units.m)
+        self.assertEquals(values[1], 2 | units.m)
+        self.assertEquals(values[2], 1 | units.m)
+    
+    

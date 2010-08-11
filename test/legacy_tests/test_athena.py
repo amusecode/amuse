@@ -694,3 +694,17 @@ class TestAthena(TestWithMPI):
             self.assertNotEquals(x, 0.1)
     
     
+
+    def test5(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.0 | generic_unit_system.speed)
+        instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
+        self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.1 | generic_unit_system.speed)
+        self.assertAlmostRelativeEquals(instance.parameters.gamma, 1.66666666667 | units.none)
+        instance.parameters.gamma = 0.1 | units.none
+        self.assertAlmostRelativeEquals(instance.parameters.gama, 0.1 | units.none)
+        print instance.parameters
+        instance.stop()
+    
+    

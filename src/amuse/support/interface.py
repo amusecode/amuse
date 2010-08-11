@@ -702,14 +702,15 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         )
         self.definitions.append(definition)
 
-    def add_method_parameter(self, get_method, set_method, name, description, unit, default_value = None):
+    def add_method_parameter(self, get_method, set_method, name, description, unit, default_value = None,must_set_before_get = False):
         definition = parameters.ModuleMethodParameterDefinition_Next(
             get_method,
             set_method,
             name,
             description,
             unit,
-            default_value
+            default_value,
+            must_set_before_get = must_set_before_get
         )
         self.definitions.append(definition)
 
@@ -1107,4 +1108,17 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
 
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
+
+
+class PropertyDefinition(object):
+
+    def __init__(self, handler, functionname, publicname, keyword_arguments = {}):
+        self.functionname = functionname
+        self.publicname = publicname
+        self.handler = handler
+        self.keyword_arguments = {}
+
+    def get_value(self, original):
+        method = getattr(self.handler.interface, self.functionname)
+        return method(**self.keyword_arguments)
 

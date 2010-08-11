@@ -107,7 +107,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         
         self.check_arguments(storage, indices, attributes_to_return)
         
-        return_value = self.method(*indices)
+        return_value = self.method(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
         
         return self.convert_return_value(return_value, storage, attributes_to_return)
     
@@ -163,11 +163,10 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
             result[name] = index
         return result
         
-    def set_attribute_values(self, attributes, values, *indices):
+    def set_attribute_values(self, storage, attributes, values, *indices):
         list_arguments = list(indices)
         list_arguments.extend(self.convert_attributes_and_values_to_list_arguments(attributes, values))
-        print "SET:", list_arguments
-        self.method(*list_arguments)
+        self.method(*list_arguments, **storage.extra_keyword_arguments_for_getters_and_setters)
     
     def convert_attributes_and_values_to_list_arguments(self, attributes, values):
         list_arguments = [0] * (len(self.attribute_names))
@@ -264,7 +263,8 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
             code_interface, 
             setters,
             getters,
-    ):
+            extra_keyword_arguments_for_getters_and_setters = {},
+):
         
         self.code_interface = code_interface
         
@@ -282,7 +282,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
             self.writable_attributes |= set(x.attribute_names)
             
         
-        self.extra_keyword_arguments_for_getters_and_setters = {}
+        self.extra_keyword_arguments_for_getters_and_setters = extra_keyword_arguments_for_getters_and_setters
         
     
     def select_getters_for(self, attributes):
@@ -435,7 +435,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             return
             
         for setter in self.select_setters_for(attributes):
-            setter.set_attribute_values(attributes, values, indices_in_the_code)
+            setter.set_attribute_values(self, attributes, values, indices_in_the_code)
     
     def _remove_particles(self, keys):
         indices_in_the_code = self.get_indices_of(keys)
@@ -474,8 +474,9 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             get_range_method,
             setters,
             getters,
+            extra_keyword_arguments_for_getters_and_setters = {},
     ):
-        AbstractInCodeAttributeStorage.__init__(self, code_interface, setters, getters)
+        AbstractInCodeAttributeStorage.__init__(self, code_interface, setters, getters, extra_keyword_arguments_for_getters_and_setters)
         self.get_range_method = get_range_method
             
     def storage_shape(self):
@@ -518,7 +519,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         i,j,k = self._to_arrays_of_indices(indices)
         one_dimensional_values = [x.reshape(-1) for x in quantities]
         for setter in self.select_setters_for(attributes):
-            setter.set_attribute_values(attributes, one_dimensional_values, i.reshape(-1), j.reshape(-1),k.reshape(-1))
+            setter.set_attribute_values(self, attributes, one_dimensional_values, i.reshape(-1), j.reshape(-1),k.reshape(-1))
      
         
     def _has_key(self, key):

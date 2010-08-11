@@ -173,10 +173,12 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         return function
         
     def set_isocsound(self, value):
-        self.par_setd("problem", "iso_csound", "%.15e", value, "") 
+        self.par_setd("problem", "iso_csound", "%.15e", value, "")
+        return 0 
         
     def set_gamma(self, value):
         self.par_setd("problem", "gamma", "%.15e", value, "-") 
+        return 0 
     
     def set_courant_friedrichs_lewy_number(self, value):
         self.par_setd("time", "cour_no", "%.15e", value, "-") 
@@ -343,6 +345,21 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
 
         
     
+
+    def get_isocsound(self):
+        return self.par_getd("problem", "iso_csound"), 0
+    
+    
+
+    def get_gamma(self):
+        return self.par_getd("problem", "gamma"), 0
+    
+    
+
+    def get_courant_friedrichs_lewy_number(self):
+        return self.par_setd("time", "cour_no"), 0
+    
+    
 class Athena(CodeInterface):
 
     def __init__(self, **options):
@@ -408,3 +425,26 @@ class Athena(CodeInterface):
         object.add_setter('potential_grid', 'set_potential', names=('potential', ))
         
         
+
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_isocsound", 
+            "set_isocsound",
+            "isothermal_sound_speed", 
+            "isothermal sound speed, only used for isothermal EOS", 
+            length / time, 
+            0.0 | length / time,
+            must_set_before_get = True
+        )
+        
+        object.add_method_parameter(
+            "get_gamma", 
+            "set_gamma",
+            "gamma", 
+            "ratio of specific heats used in equation of state", 
+            units.none, 
+            1.6666666666666667 | units.none,
+            must_set_before_get = True
+        )
+    
+    

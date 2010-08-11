@@ -26,34 +26,34 @@ class Parameters(object):
         object.__setattr__(self, '_instance', weakref.ref(instance))
         object.__setattr__(self, '_definitions', definitions)
         object.__setattr__(self, '_mapping_from_name_to_definition', {})
-
+        object.__setattr__(self, '_mapping_from_name_to_parameter', {})
+    
         for x in definitions:
             self._mapping_from_name_to_definition[x.name] = x
 
     def __getattr__(self, name):
         if not name in self._mapping_from_name_to_definition:
             raise exceptions.CoreException("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
-    
-    
-        definition = self._mapping_from_name_to_definition[name]
-        return definition.get_value(self._instance())
+            
+        return self.get_parameter(name).get_value()
 
     def __setattr__(self, name, value):
         if not name in self._mapping_from_name_to_definition:
             warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
             return
-    
-        definition = self._mapping_from_name_to_definition[name]
+        
         if hasattr(self._instance(), "invoke_state_change"):
             self._instance().invoke_state_change()
-        definition.set_value(self._instance(), value)
+            
+        return self.get_parameter(name).set_value(value)
 
     def names(self):
         return self._mapping_from_name_to_definition.keys()
 
     def set_defaults(self):
-        for parameter_definition in self._definitions:
-            parameter_definition.set_default_value(self._instance())
+        for name in self.names():
+            parameter = self.get_parameter(name)
+            parameter.set_default_value()
 
     def __dir__(self):
         result = []
@@ -79,6 +79,18 @@ class Parameters(object):
         return output
 
 
+
+    def get_parameter(self, name):
+        if not name in self._mapping_from_name_to_definition:
+            raise exceptions.AmuseException("{0!r} not defined as parameter")
+        
+        if not name in self._mapping_from_name_to_parameter:
+            definition = self._mapping_from_name_to_definition[name]
+            self._mapping_from_name_to_parameter[name] = Parameter(definition, self)
+            
+        return self._mapping_from_name_to_parameter[name]
+    
+    
 class ParametersWithUnitsConverted(object):
 
     __doc__ = ParameterDocumentation()
@@ -124,43 +136,48 @@ class ParametersWithUnitsConverted(object):
         return output
 
 class ParameterDefinition(object):
-    def __init__(self, name, description, unit, default_value = None):
+    def __init__(self, name, description, unit, default_value, must_set_before_get = False):
         self.name = name
         self.description = description
         self.unit = unit
         self.default_value = default_value
+        self.must_set_before_get = must_set_before_get
 
 
-    def get_value(self, object):
+    def get_value(self, parameter, object):
+        if self.must_set_before_get and not parameter.is_set:
+            self.set_default_value(parameter, object)
+    
+            
         result = self.unit.new_quantity(self.get_legacy_value(object))
         #if nbody_system.is_nbody_unit(self.unit):
         #    return object.convert_nbody.to_si(result)
         return result
 
-    def set_value(self, object, quantity):
+    def set_value(self, parameter, object, quantity):
         if self.unit.is_non_numeric() or len(self.unit.base) == 0:
             if not isinstance(quantity, values.Quantity):
                 quantity = quantity | self.unit
-
-        #if nbody_system.is_nbody_unit(self.unit):
-        #    quantity = object.convert_nbody.to_nbody(quantity)
+        
         self.set_legacy_value(object, quantity.value_in(self.unit))
+        
+        parameter.is_set = True
 
-    def set_default_value(self, object):
+    def set_default_value(self, parameter, object):
         if self.default_value is None :
             return None
-
+    
         if self.is_readonly():
             return None
-
-        self.set_value(object, self.default_value)
+    
+        self.set_value(parameter, object, self.default_value)
 
     def is_readonly(self):
         return False
 
 class ModuleAttributeParameterDefinition(ParameterDefinition):
-    def __init__(self, attribute_name, name, description, unit, default_value = None):
-        ParameterDefinition.__init__(self, name, description, unit, default_value)
+    def __init__(self, attribute_name, name, description, unit, default_value = None, must_set_before_get = False):
+        ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get)
         self.attribute_name = attribute_name
 
     def get_legacy_value(self, object):
@@ -184,8 +201,8 @@ class ParameterException(AttributeError):
 
 
 class ModuleMethodParameterDefinition_Next(ParameterDefinition):
-    def __init__(self, get_method, set_method, name, description, unit, default_value = None):
-        ParameterDefinition.__init__(self, name, description, unit, default_value)
+    def __init__(self, get_method, set_method, name, description, unit, default_value = None, must_set_before_get = False):
+        ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get)
         self.get_method = get_method
         self.set_method = set_method
         self.stored_value = None
@@ -219,16 +236,16 @@ class ModuleMethodParameterDefinition_Next(ParameterDefinition):
 
 
 class ModuleBooleanParameterDefinition(ParameterDefinition):
-    def __init__(self, get_method, set_method, name, description, default_value = None):
-        ParameterDefinition.__init__(self, name, description, None, default_value)
+    def __init__(self, get_method, set_method, name, description, default_value = None, must_set_before_get = False):
+        ParameterDefinition.__init__(self, name, description, None, default_value, must_set_before_get)
         self.get_method = get_method
         self.set_method = set_method
         self.stored_value = None
 
-    def get_value(self, object):
+    def get_value(self, parameter, object):
         return True if self.get_legacy_value(object) else False
 
-    def set_value(self, object, bool):
+    def set_value(self, parameter, object, bool):
         self.set_legacy_value(object, 1 if bool else 0)
 
     def get_legacy_value(self, object):
@@ -257,8 +274,8 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
 
 
 class ModuleCachingParameterDefinition(ParameterDefinition):
-    def __init__(self, parameter_name, name, description, unit, default_value = None):
-        ParameterDefinition.__init__(self, name, description, unit, default_value)
+    def __init__(self, parameter_name, name, description, unit, default_value = None, must_set_before_get = False):
+        ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get)
         self.stored_value = None
         self.parameter_name = parameter_name
 
@@ -276,3 +293,25 @@ class ModuleCachingParameterDefinition(ParameterDefinition):
             object._parameters[self.name] = number
         else:
             object._parameters = {self.name: number}
+
+class Parameter(object):
+
+    def __init__(self, definition, parameter_set):
+        self.parameter_set = parameter_set
+        self.definition = definition
+        self.is_set = False
+        
+    
+    def get_value(self):
+        return self.definition.get_value(self, self.parameter_set._instance())
+    
+    def set_value(self, quantity):
+        return self.definition.set_value(self, self.parameter_set._instance(), quantity)
+
+    def set_default_value(self):
+        self.definition.set_default_value(self, self.parameter_set._instance())
+         
+    def is_readonly(self):
+        return self.definition.is_readonly()
+    
+    
