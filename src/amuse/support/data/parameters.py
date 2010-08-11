@@ -91,6 +91,36 @@ class Parameters(object):
         return self._mapping_from_name_to_parameter[name]
     
     
+
+    def send_cached_parametes_to_code(self):
+        cached_parameters = [x for x in self.iter_parameters() if x.definition.is_cached]
+        for x in cached_parameters:
+            if not x.is_set:
+                x.set_default_value()
+        
+        functions = {}
+        for x in cached_parameters:
+            definition = x.definition
+            if not definition.functionname in functions:
+                functions[definition.functionname] = []
+            functions[definition.functionname].append(x)
+        
+        for functionname, parameters in functions.iteritems():
+            object = self._instance()
+            method = getattr(object, functionname)
+            keyword_arguments = {}
+            for parameter in parameters:
+                keyword_arguments[parameter.definition.parameter_name] = parameter.get_cached_value()
+            print functionname, keyword_arguments
+            errorcode = method(**keyword_arguments)
+    
+    
+
+    def iter_parameters(self):
+        for name in self.names():
+            yield self.get_parameter(name)
+    
+    
 class ParametersWithUnitsConverted(object):
 
     __doc__ = ParameterDocumentation()
@@ -147,11 +177,8 @@ class ParameterDefinition(object):
     def get_value(self, parameter, object):
         if self.must_set_before_get and not parameter.is_set:
             self.set_default_value(parameter, object)
-    
             
-        result = self.unit.new_quantity(self.get_legacy_value(object))
-        #if nbody_system.is_nbody_unit(self.unit):
-        #    return object.convert_nbody.to_si(result)
+        result = self.unit.new_quantity(self.get_legacy_value(parameter, object))
         return result
 
     def set_value(self, parameter, object, quantity):
@@ -159,7 +186,7 @@ class ParameterDefinition(object):
             if not isinstance(quantity, values.Quantity):
                 quantity = quantity | self.unit
         
-        self.set_legacy_value(object, quantity.value_in(self.unit))
+        self.set_legacy_value(parameter, object, quantity.value_in(self.unit))
         
         parameter.is_set = True
 
@@ -175,15 +202,20 @@ class ParameterDefinition(object):
     def is_readonly(self):
         return False
 
+
+    def is_cached(self):
+        return False
+    
+    
 class ModuleAttributeParameterDefinition(ParameterDefinition):
     def __init__(self, attribute_name, name, description, unit, default_value = None, must_set_before_get = False):
         ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get)
         self.attribute_name = attribute_name
 
-    def get_legacy_value(self, object):
+    def get_legacy_value(self, parameter, object):
         return getattr(object.legacy_interface, self.attribute_name)
 
-    def set_legacy_value(self, object, number):
+    def set_legacy_value(self,  parameter, object, number):
         setattr(object.legacy_interface, self.attribute_name, number)
 
 class ParameterException(AttributeError):
@@ -208,7 +240,7 @@ class ModuleMethodParameterDefinition_Next(ParameterDefinition):
         self.stored_value = None
 
 
-    def get_legacy_value(self, object):
+    def get_legacy_value(self, parameter, object):
         if self.get_method is None:
             return self.stored_value
         else:
@@ -218,7 +250,7 @@ class ModuleMethodParameterDefinition_Next(ParameterDefinition):
             else:
                 return result
 
-    def set_legacy_value(self, object, number):
+    def set_legacy_value(self, parameter, object, number):
         if self.set_method is None:
             raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
     
@@ -243,12 +275,12 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
         self.stored_value = None
 
     def get_value(self, parameter, object):
-        return True if self.get_legacy_value(object) else False
+        return True if self.get_legacy_value(parameter, object) else False
 
     def set_value(self, parameter, object, bool):
-        self.set_legacy_value(object, 1 if bool else 0)
+        self.set_legacy_value(parameter, object, 1 if bool else 0)
 
-    def get_legacy_value(self, object):
+    def get_legacy_value(self,  parameter, object):
         if self.get_method is None:
             return self.stored_value
         else:
@@ -258,7 +290,7 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
             else:
                 return result
 
-    def set_legacy_value(self, object, number):
+    def set_legacy_value(self,  parameter, object, number):
         if self.set_method is None:
             raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
     
@@ -274,26 +306,23 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
 
 
 class ModuleCachingParameterDefinition(ParameterDefinition):
-    def __init__(self, parameter_name, name, description, unit, default_value = None, must_set_before_get = False):
-        ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get)
+    def __init__(self, functionname, parameter_name, name, description, unit, default_value = None):
+        ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get = True)
         self.stored_value = None
         self.parameter_name = parameter_name
+        self.functionname = functionname
 
-    def get_legacy_value(self, object):
-        if hasattr(object, "_parameters"):
-            if self.name in object._parameters:
-                return object._parameters[self.name]
-            else:
-                return self.stored_value
-        else:
-            return self.stored_value
+    def get_legacy_value(self, parameter, object):
+        return parameter.cached_value
 
-    def set_legacy_value(self, object, number):
-        if hasattr(object, "_parameters"):
-            object._parameters[self.name] = number
-        else:
-            object._parameters = {self.name: number}
+    def set_legacy_value(self, parameter, object, number):
+        parameter.cached_value = number
 
+
+    def is_cached(self):
+        return True
+    
+    
 class Parameter(object):
 
     def __init__(self, definition, parameter_set):
@@ -313,5 +342,10 @@ class Parameter(object):
          
     def is_readonly(self):
         return self.definition.is_readonly()
+    
+    
+
+    def get_cached_value(self):
+        return self.definition.get_legacy_value(self, self.parameter_set._instance())
     
     

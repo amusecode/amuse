@@ -682,12 +682,16 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         self.property_definitions = {}
         self.interface = interface
         self.definitions = []
+        self.parameters = None
 
     def supports(self, name, was_found):
         return name == 'parameters'
 
     def get_attribute(self, name, value):
-        return parameters.Parameters(self.definitions, self.interface)
+        if not self.parameters:
+            self.parameters =  parameters.Parameters(self.definitions, self.interface)
+       
+        return self.parameters
 
     def attribute_names(self):
         return set(['parameters'])
@@ -715,8 +719,9 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         self.definitions.append(definition)
 
 
-    def add_caching_parameter(self, parameter_name, name, description, unit, default_value = None):
+    def add_caching_parameter(self, function_name, parameter_name, name, description, unit, default_value = None):
         definition = parameters.ModuleCachingParameterDefinition(
+            function_name,
             parameter_name,
             name,
             description,

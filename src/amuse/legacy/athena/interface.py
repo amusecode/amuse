@@ -181,7 +181,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         return 0 
     
     def set_courant_friedrichs_lewy_number(self, value):
-        self.par_setd("time", "cour_no", "%.15e", value, "-") 
+        self.par_setd("time", "cour_no", "%.15e", value, "-")
+        return 0 
         
     def set_boundary(self, xbound1, xbound2, ybound1, ybound2, zbound1, zbound2):
         map_from_string_to_flag = {"reflective": 1, "outflow":2, "periodic":4}
@@ -341,23 +342,14 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
         function.result_type = 'i'
         return function
 
-    
-
-        
-    
-
     def get_isocsound(self):
         return self.par_getd("problem", "iso_csound"), 0
-    
-    
 
     def get_gamma(self):
         return self.par_getd("problem", "gamma"), 0
     
-    
-
     def get_courant_friedrichs_lewy_number(self):
-        return self.par_setd("time", "cour_no"), 0
+        return self.par_getd("time", "cour_no") , 0
     
     
 class Athena(CodeInterface):
@@ -444,6 +436,16 @@ class Athena(CodeInterface):
             "ratio of specific heats used in equation of state", 
             units.none, 
             1.6666666666666667 | units.none,
+            must_set_before_get = True
+        )
+        
+        object.add_method_parameter(
+            "get_courant_friedrichs_lewy_number", 
+            "set_courant_friedrichs_lewy_number",
+            "courant_number", 
+            "CFL number", 
+            units.none, 
+            0.3 | units.none,
             must_set_before_get = True
         )
     

@@ -7,10 +7,10 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.athena.interface import AthenaInterface, Athena
 
 from amuse.support.units import generic_unit_system
+from amuse.support.units import units
 from amuse.support.data import core
 
 from mpi4py import MPI
-
 
 class TestAthenaInterface(TestWithMPI):
     
@@ -701,9 +701,13 @@ class TestAthena(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.0 | generic_unit_system.speed)
         instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
         self.assertAlmostRelativeEquals(instance.parameters.isothermal_sound_speed, 0.1 | generic_unit_system.speed)
-        self.assertAlmostRelativeEquals(instance.parameters.gamma, 1.66666666667 | units.none)
+        self.assertAlmostRelativeEquals(instance.parameters.gamma, 1.66666666666666667 | units.none)
         instance.parameters.gamma = 0.1 | units.none
-        self.assertAlmostRelativeEquals(instance.parameters.gama, 0.1 | units.none)
+        self.assertAlmostRelativeEquals(instance.parameters.gamma, 0.1 | units.none)
+        self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.3 | units.none)
+        instance.parameters.courant_number = 0.1 | units.none
+        self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.1 | units.none)
+        
         print instance.parameters
         instance.stop()
     

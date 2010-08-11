@@ -233,9 +233,10 @@ class BSE(CodeInterface):
         
     
     def define_parameters(self, object):
-        
+    
         object.add_caching_parameter(
-            "metallicity",
+            "initialize",
+            "z_in",
             "metallicity",
             "Metallicity of all stars",
             units.none,
@@ -243,7 +244,8 @@ class BSE(CodeInterface):
         )
                 
         object.add_caching_parameter(
-            "neta",
+            "initialize",
+            "neta_in",
             "reimers_mass_loss_coefficient",
             "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
             units.none,
@@ -251,7 +253,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "bwind",
+            "initialize",
+            "bwind_in",
             "binary_enhanced_mass_loss_parameter",
             "The binary enhanced mass loss parameter (inactive for single).",
             units.none,
@@ -259,7 +262,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "hewind",
+            "initialize",
+            "hewind_in",
             "helium_star_mass_loss_factor",
             "Helium star mass loss factor",
             units.none,
@@ -267,7 +271,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "alpha1",
+            "initialize",
+            "alpha1_in",
             "common_envelope_efficiency",
             "The common-envelope efficiency parameter",
             units.none,
@@ -275,7 +280,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "CElambda",
+            "initialize",
+            "CElambda_in",
             "common_envelope_binding_energy_factor",
             "The binding energy factor for common envelope evolution",
             units.none,
@@ -283,7 +289,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "ceflag",
+            "initialize",
+            "ceflag_in",
             "common_envelope_model_flag", 
             "ceflag > 0 activates spin-energy correction in common-envelope. ceflag = 3 activates de Kool common-envelope model (0).",
             units.none, 
@@ -291,7 +298,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "tflag",
+            "initialize",
+            "tflag_in",
             "tidal_circularisation_flag", 
             "tflag > 0 activates tidal circularisation (1).",
             units.none, 
@@ -299,7 +307,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "ifflag",
+            "initialize",
+            "ifflag_in",
             "white_dwarf_IFMR_flag", 
             "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
             units.none, 
@@ -307,7 +316,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "wdflag",
+            "initialize",
+            "wdflag_in",
             "white_dwarf_cooling_flag", 
             "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
             units.none, 
@@ -315,7 +325,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "bhflag",
+            "initialize",
+            "bhflag_in",
             "black_hole_kick_flag",
             "bhflag > 0 allows velocity kick at BH formation (0).",
             units.none,
@@ -323,7 +334,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "nsflag",
+            "initialize",
+            "nsflag_in",
             "neutron_star_mass_flag",
             "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
             units.none,
@@ -331,7 +343,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "mxns",
+            "initialize",
+            "mxns_in",
             "maximum_neutron_star_mass",
             "The maximum neutron star mass (1.8, nsflag=0; 3.0, nsflag=1).",
             units.MSun,
@@ -339,7 +352,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "idum",
+            "initialize",
+            "idum_in",
             "SN_kick_random_seed", 
             "The random number seed used in the kick routine.",
             units.none, 
@@ -347,7 +361,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "pts1",
+            "initialize",
+            "pts1_in",
             "fractional_time_step_1", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
             units.none, 
@@ -355,7 +370,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "pts2",
+            "initialize",
+            "pts2_in",
             "fractional_time_step_2", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
             units.none, 
@@ -363,7 +379,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "pts3",
+            "initialize",
+            "pts3_in",
             "fractional_time_step_3", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
             units.none, 
@@ -371,7 +388,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "sigma",
+            "initialize",
+            "sigma_in",
             "SN_kick_speed_dispersion",
             "The dispersion in the Maxwellian for the SN kick speed (190 km/s).",
             units.km / units.s,
@@ -379,7 +397,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "beta",
+            "initialize",
+            "beta_in",
             "wind_velocity_factor",
             "The wind velocity factor: proportional to vwind**2 (1/8).",
             units.none,
@@ -387,7 +406,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "xi",
+            "initialize",
+            "xi_in",
             "wind_accretion_efficiency",
             "The wind accretion efficiency factor (1.0).",
             units.none,
@@ -395,7 +415,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "acc2",
+            "initialize",
+            "acc2_in",
             "wind_accretion_factor",
             "The Bondi-Hoyle wind accretion factor (3/2).",
             units.none,
@@ -403,7 +424,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "epsnov",
+            "initialize",
+            "epsnov_in",
             "nova_retained_accreted_matter_fraction",
             "The fraction of accreted matter retained in nova eruption (0.001).",
             units.none,
@@ -411,7 +433,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "eddfac",
+            "initialize",
+            "eddfac_in",
             "Eddington_mass_transfer_limit_factor",
             "The Eddington limit factor for mass transfer (1.0).",
             units.none,
@@ -419,7 +442,8 @@ class BSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "gamma",
+            "initialize",
+            "gamma_in",
             "Roche_angular_momentum_factor",
             "The angular momentum factor for mass lost during Roche (-1.0). ",
             units.none,
@@ -584,30 +608,7 @@ class BSE(CodeInterface):
         
     
     def initialize_module_with_current_parameters(self):
-        status = self.initialize(self.parameters.metallicity.value_in(units.none),
-            self.parameters.reimers_mass_loss_coefficient.value_in(units.none) ,
-            self.parameters.binary_enhanced_mass_loss_parameter.value_in(units.none) ,
-            self.parameters.helium_star_mass_loss_factor.value_in(units.none) ,
-            self.parameters.common_envelope_efficiency.value_in(units.none) ,
-            self.parameters.common_envelope_binding_energy_factor.value_in(units.none) ,
-            self.parameters.common_envelope_model_flag.value_in(units.none) ,
-            self.parameters.tidal_circularisation_flag.value_in(units.none) ,
-            self.parameters.white_dwarf_IFMR_flag.value_in(units.none) ,
-            self.parameters.white_dwarf_cooling_flag.value_in(units.none) ,
-            self.parameters.black_hole_kick_flag.value_in(units.none) ,
-            self.parameters.neutron_star_mass_flag.value_in(units.none) ,
-            self.parameters.maximum_neutron_star_mass.value_in(units.MSun),
-            self.parameters.SN_kick_random_seed.value_in(units.none) ,
-            self.parameters.fractional_time_step_1.value_in(units.none) ,
-            self.parameters.fractional_time_step_2.value_in(units.none) ,
-            self.parameters.fractional_time_step_3.value_in(units.none),
-            self.parameters.SN_kick_speed_dispersion.value_in(units.km / units.s),
-            self.parameters.wind_velocity_factor.value_in(units.none) ,
-            self.parameters.wind_accretion_efficiency.value_in(units.none) ,
-            self.parameters.wind_accretion_factor.value_in(units.none) ,
-            self.parameters.nova_retained_accreted_matter_fraction.value_in(units.none) ,
-            self.parameters.Eddington_mass_transfer_limit_factor.value_in(units.none) ,
-            self.parameters.Roche_angular_momentum_factor.value_in(units.none))
+        self.parameters.send_cached_parametes_to_code()
         
     def initialize_module_with_default_parameters(self):
         """

@@ -645,3 +645,97 @@ class TestParameters(amusetest.TestCase):
             )
         self.assertEquals(getattr(y,"string_par_name"), "1230.0" | units.string)
         self.assertAlmostEquals(getattr(y,"nbody_par_name"), 246.0 | units.m)
+
+    def test7(self):
+        parameter_definition1 = parameters.ModuleCachingParameterDefinition(
+            "initialize_vars",
+            "arg1",
+            "test_par1",
+            "a test parameter (1)",
+            units.m,
+            11.0 | units.m
+        )
+    
+        parameter_definition2 = parameters.ModuleCachingParameterDefinition(
+            "initialize_vars",
+            "arg2",
+            "test_par2",
+            "a test parameter (2)",
+            units.m,
+            12.0 | units.m
+        )
+    
+        class TestModule(object):
+            x = 123
+            y = 456
+    
+            def initialize_vars(self, arg1, arg2):
+                self.x = arg1
+                self.y = arg2
+                return 0
+    
+    
+        o = TestModule()
+        x = parameters.Parameters([parameter_definition1, parameter_definition2], o)
+        x.test_par1 = 20 | units.m
+        print x.test_par2
+        self.assertEquals(o.x, 123)
+        self.assertEquals(o.y, 456)
+        x.send_cached_parametes_to_code()
+        self.assertEquals(o.x, 20)
+        self.assertEquals(o.y, 12)
+    
+    
+
+    def test8(self):
+        parameter_definition1 = parameters.ModuleCachingParameterDefinition(
+            "initialize_vars",
+            "arg1",
+            "test_par1",
+            "a test parameter (1)",
+            units.m,
+            11.0 | units.m
+        )
+    
+        parameter_definition2 = parameters.ModuleCachingParameterDefinition(
+            "initialize_vars",
+            "arg2",
+            "test_par2",
+            "a test parameter (2)",
+            units.m,
+            12.0 | units.m
+        )
+    
+        parameter_definition3 = parameters.ModuleCachingParameterDefinition(
+            "initialize_vars2",
+            "arg1",
+            "test_par3",
+            "a test parameter (3)",
+            units.m,
+            14.0 | units.m
+        )
+    
+        class TestModule(object):
+            x = 123
+            y = 456
+            z = 100
+    
+            def initialize_vars(self, arg1, arg2):
+                self.x = arg1
+                self.y = arg2
+                return 0
+    
+            def initialize_vars2(self, arg1):
+                self.z = arg1
+                return 0
+    
+    
+        o = TestModule()
+        x = parameters.Parameters([parameter_definition1, parameter_definition2, parameter_definition3], o)
+        
+        x.send_cached_parametes_to_code()
+        self.assertEquals(o.x, 11)
+        self.assertEquals(o.y, 12)
+        self.assertEquals(o.z, 14)
+    
+    

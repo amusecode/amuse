@@ -153,7 +153,8 @@ class SSE(CodeInterface):
     def define_parameters(self, object):
     
         object.add_caching_parameter(
-            "metallicity",
+            "initialize",
+            "z_in",
             "metallicity",
             "Metallicity of all stars",
             units.none,
@@ -161,7 +162,8 @@ class SSE(CodeInterface):
         )
                 
         object.add_caching_parameter(
-            "neta",
+            "initialize",
+            "neta_in",
             "reimers_mass_loss_coefficient",
             "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
             units.none,
@@ -169,7 +171,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "bwind",
+            "initialize",
+            "bwind_in",
             "binary_enhanced_mass_loss_parameter",
             "The binary enhanced mass loss parameter (inactive for single).",
             units.none,
@@ -177,7 +180,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "hewind",
+            "initialize",
+            "hewind_in",
             "helium_star_mass_loss_factor",
             "Helium star mass loss factor",
             units.none,
@@ -185,7 +189,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "sigma",
+            "initialize",
+            "sigma_in",
             "SN_kick_speed_dispersion",
             "The dispersion in the Maxwellian for the SN kick speed (190 km/s).",
             units.km / units.s,
@@ -193,7 +198,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "ifflag",
+            "initialize",
+            "ifflag_in",
             "white_dwarf_IFMR_flag", 
             "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
             units.none, 
@@ -201,7 +207,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "wdflag",
+            "initialize",
+            "wdflag_in",
             "white_dwarf_cooling_flag", 
             "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
             units.none, 
@@ -209,7 +216,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "bhflag",
+            "initialize",
+            "bhflag_in",
             "black_hole_kick_flag",
             "bhflag > 0 allows velocity kick at BH formation (0).",
             units.none,
@@ -217,7 +225,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "nsflag",
+            "initialize",
+            "nsflag_in",
             "neutron_star_mass_flag",
             "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
             units.none,
@@ -225,7 +234,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "mxns",
+            "initialize",
+            "mxns_in",
             "maximum_neutron_star_mass",
             "The maximum neutron star mass (1.8, nsflag=0; 3.0, nsflag=1).",
             units.MSun,
@@ -233,7 +243,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "pts1",
+            "initialize",
+            "pts1_in",
             "fractional_time_step_1", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
             units.none, 
@@ -241,7 +252,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "pts2",
+            "initialize",
+            "pts2_in",
             "fractional_time_step_2", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
             units.none, 
@@ -249,7 +261,8 @@ class SSE(CodeInterface):
         )
         
         object.add_caching_parameter(
-            "pts3",
+            "initialize",
+            "pts3_in",
             "fractional_time_step_3", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
             units.none, 
@@ -387,19 +400,7 @@ class SSE(CodeInterface):
         pass
     
     def initialize_module_with_current_parameters(self):
-        status = self.initialize(self.parameters.metallicity.value_in(units.none),
-            self.parameters.reimers_mass_loss_coefficient.value_in(units.none), 
-            self.parameters.binary_enhanced_mass_loss_parameter.value_in(units.none), 
-            self.parameters.helium_star_mass_loss_factor.value_in(units.none), 
-            self.parameters.SN_kick_speed_dispersion.value_in(units.km / units.s),
-            self.parameters.white_dwarf_IFMR_flag.value_in(units.none), 
-            self.parameters.white_dwarf_cooling_flag.value_in(units.none), 
-            self.parameters.black_hole_kick_flag.value_in(units.none), 
-            self.parameters.neutron_star_mass_flag.value_in(units.none), 
-            self.parameters.maximum_neutron_star_mass.value_in(units.MSun),
-            self.parameters.fractional_time_step_1.value_in(units.none), 
-            self.parameters.fractional_time_step_2.value_in(units.none), 
-            self.parameters.fractional_time_step_3.value_in(units.none))
+        self.parameters.send_cached_parametes_to_code()
         
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
