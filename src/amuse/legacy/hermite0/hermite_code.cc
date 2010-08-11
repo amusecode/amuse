@@ -678,7 +678,8 @@ int evolve_system(real t_end)
     time(&starttime);
 
     int timeout_detection;
-    is_stopping_condition_enabled(TIMEOUT_DETECTION_BITMAP, &timeout_detection);
+    //
+    is_stopping_condition_enabled(TIMEOUT_DETECTION, &timeout_detection);
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
@@ -704,8 +705,8 @@ int evolve_system(real t_end)
 	  
 	  // AMUSE STOPPING CONDITIONS
 	  // put expression in lib-fctn
-	  // is_stopping_condition_set(TIMEOUT_DETECTION_BITMAP, timeout_detection)
-	  //if(TIMEOUT_DETECTION_BITMAP & enabled_conditions)
+	  // is_stopping_condition_set(TIMEOUT_DETECTION, timeout_detection)
+	  // 
 	  if(timeout_detection) {
 	    time(&currenttime);
 	    cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
