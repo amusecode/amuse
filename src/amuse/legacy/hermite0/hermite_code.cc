@@ -676,67 +676,65 @@ int evolve_system(real t_end)
     // AMUSE STOPPING CONDITIONS
     time_t starttime, currenttime;
     time(&starttime);
+
+    int timeout_detection;
+    is_stopping_condition_enabled(TIMEOUT_DETECTION_BITMAP, &timeout_detection);
     // AMUSE STOPPING CONDITIONS
     
-    while (true)
-      {
-
-        while (t < t_dia && t+dt <= t_end)
-          {
-            dt = calculate_step(coll_time);
-            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
-            evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
-            
-            if (test_mode)
-              {
-                real E = 0.0;
-                nest_err = get_kinetic_energy(&E);
-                E += epot;
-                if (!init_flag)
-                  {
-                    einit = E;
-                    init_flag = true;
-                  }
-                cout << t << " " << pos[0][0] << " " << pos[0][1]
-                     << " " << E - einit << endl;
-              }
-            nsteps++;
-
-            // compute_nn();
-        
-            // AMUSE STOPPING CONDITIONS
-            if(TIMEOUT_DETECTION_BITMAP & enabled_conditions) {
-                time(&currenttime);
-                cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
-                if((currenttime - starttime) > timeout_parameter) {
-                    int stopping_index  = next_index_for_stopping_condition();
-                    set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
-                }
-            }
-            // AMUSE STOPPING CONDITIONS
-        
-            if(set_conditions & enabled_conditions) {
-                break;
-            }
-          }
-
-        if (t >= t_dia)
-          {
-            write_diagnostics(epot, *sout);
-            t_dia += dt_dia;
-          }
-          
-        
-        if (set_conditions & enabled_conditions)
-          {
-            break;
-          }
-        if (t+dt > t_end)
-          {
-            break;
-          }
-      }
-
+    while (true) {
+        while (t < t_dia && t+dt <= t_end) {
+	  dt = calculate_step(coll_time);
+	  MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+	  evolve_step(dt, &epot, &coll_time);        // sets t, t_evolve
+	  
+	  if (test_mode) {
+	    real E = 0.0;
+	    nest_err = get_kinetic_energy(&E);
+	    E += epot;
+	    if (!init_flag) {
+	      einit = E;
+	      init_flag = true;
+	    }
+	    cout << t << " " << pos[0][0] << " " << pos[0][1]
+		 << " " << E - einit << endl;
+	  }
+	  nsteps++;
+	  
+	  // compute_nn();
+	  
+	  // AMUSE STOPPING CONDITIONS
+	  // put expression in lib-fctn
+	  // is_stopping_condition_set(TIMEOUT_DETECTION_BITMAP, timeout_detection)
+	  //if(TIMEOUT_DETECTION_BITMAP & enabled_conditions)
+	  if(timeout_detection) {
+	    time(&currenttime);
+	    cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
+	    if((currenttime - starttime) > timeout_parameter) {
+	      int stopping_index  = next_index_for_stopping_condition();
+	      set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
+	    }
+	  }
+	  // AMUSE STOPPING CONDITIONS
+	  
+	  if(set_conditions & enabled_conditions) {
+	    break;
+	  }
+	}
+	
+        if (t >= t_dia) {
+	  write_diagnostics(epot, *sout);
+	  t_dia += dt_dia;
+	}
+	
+        //is_stopping_condition_set???
+        if (set_conditions & enabled_conditions) {
+	  break;
+	}
+        if (t+dt > t_end) {
+	  break;
+	}
+    }
+    
     if (!(set_conditions & enabled_conditions))
       {
         MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
@@ -870,7 +868,7 @@ int get_state(int id, double *_mass, double *_radius, double *x, double *y, doub
 // cello, proj1 changed return type void-->int, only OK no errors yet?
 // todo: replace find fction.
 {
-    if(mpi_rank) {return 0;}
+  if(mpi_rank) {return 0;}
   //*id_out = -1;
 
   //unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
@@ -902,9 +900,9 @@ int set_state(int id, double _mass, double _radius, double x, double y, double z
               double vx, double vy, double vz)
 //cello, proj1,
 {
-    if(mpi_rank) {return 0;}
+  if(mpi_rank) {return 0;}
   unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
-
+  
   if (i < ident.size())
     {
       mass[i] = _mass;
