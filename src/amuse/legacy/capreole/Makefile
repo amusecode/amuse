@@ -38,9 +38,9 @@ FFLAGS+= $(OMPFLAGS)
 
 FFLAGS2= -I./src/
 
-CLASSNAME=Capreole
+CLASSNAME=CapreoleInterface
 
-GLCLASSNAME=GLCapreole
+GLCLASSNAME=GLCapreoleInterface
 
 all: worker
 

@@ -3,25 +3,24 @@ import sys
 import numpy
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.legacy.capreole.interface import Capreole
-
+from amuse.legacy.capreole.interface import CapreoleInterface
 
 class TestMPIInterface(TestWithMPI):
     
     def test0(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.stop()
         
     
     def test1(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         instance.stop()
     
     def test2(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         instance.fill_grid_state(1,1,1,1.,0.,0.,0.,1.)
@@ -34,7 +33,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         x,y,z=numpy.indices( (50,50,50) )
@@ -56,7 +55,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
     
     def test4(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         x,y,z=numpy.indices( (50,50,50) )
@@ -73,7 +72,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
     
     def test5(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.setup_mesh(40,40,40,1.,1.,1.)
         x,y,z=numpy.indices( (40,40,40) )
@@ -108,7 +107,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
     
     def test6(self):
-        instance=Capreole(number_of_workers=1)
+        instance=CapreoleInterface(number_of_workers=1)
         instance.setup_module()
         instance.setup_mesh(150,10,30,1.,1.,1.)
         x,y,z=numpy.indices( (150,10,30) )
@@ -132,7 +131,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
 
     def test7(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         err=instance.set_gravity_field(1,2,3,1.,0.5,0.25)
@@ -144,23 +143,23 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
 
     def test8(self):
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         err=instance.set_boundary("periodic","reflective",
         "periodic","reflective",
         "periodic","reflective")
         self.assertEqual(err,-1)
         instance.stop
-
-        instance=Capreole()
+    
+        instance=CapreoleInterface()
         instance.setup_module()
         err=instance.set_boundary("reflective","periodic",
         "periodic","reflective",
         "periodic","reflective")
         self.assertEqual(err,-2)
         instance.stop
-
-        instance=Capreole()
+    
+        instance=CapreoleInterface()
         instance.setup_module()
         err=instance.set_boundary("periodic","periodic",
         "periodic","periodic",
@@ -176,7 +175,7 @@ class TestSodShocktube(TestWithMPI):
         g=(gamma-1)/(gamma+1)
         b=(gamma-1)/2/gamma
         
-        instance=Capreole()
+        instance=CapreoleInterface()
         instance.setup_module()
         instance.setup_mesh(N,N/10,N/10,1.,0.1,0.1)
         x,y,z=numpy.indices( (N,N/10,N/10) )
@@ -190,7 +189,7 @@ class TestSodShocktube(TestWithMPI):
         rhvz=0.*numpy.ones_like(x)
         en=(0.1/(gamma-1))*numpy.ones_like(x)
         instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
-
+    
         x,y,z=numpy.indices( (N/2,N/10,N/10) )
         x=x.flatten()+1
         y=y.flatten()+1
@@ -203,7 +202,7 @@ class TestSodShocktube(TestWithMPI):
         instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
         instance.initialize_grid(0.0)
         instance.evolve(0.2)
-
+    
         x=numpy.array([0.1,0.9,0.6,0.8])
         y=0.05*numpy.ones_like(x)
         z=0.05*numpy.ones_like(x)
