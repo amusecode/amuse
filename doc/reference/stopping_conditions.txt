@@ -323,8 +323,9 @@ Access in FORTRAN through:
 
 .. code-block:: fortran
 
-    INTEGER:: enabled_conditions
-    enabled_conditions = get_enabled_conditions()
+    INCLUDE "../../lib/stopcond/stopcond.inc"
+    INTEGER:: is_stopping_condition_enabled, result
+    result = is_stopping_condition_enabled(COLLISION_DETECTION)
 
 .. c:var:: long set_conditions
 
@@ -334,10 +335,12 @@ this bitmap). Access in FORTRAN:
 
 .. code-block:: fortran
 
-    INTEGER:: set_conditions
-    set_conditions = get_set_conditions()
+    INCLUDE "../../lib/stopcond/stopcond.inc"
+    INTEGER:: is_stopping_condition_set, result
+    result = is_stopping_condition_set(COLLISION_DETECTION)
 
 .. c:var:: long supported_conditions
+
 .. code-block:: fortran
 
      set_supported_conditions()
