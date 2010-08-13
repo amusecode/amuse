@@ -20,20 +20,20 @@ loop.
       node [fontsize=10.0,shape=box, style=filled, fillcolor=lightyellow, width=1.5];
       subgraph cluster0 {
       fontsize=10.0;
-	    style=filled;
-	    color=azure2;
-	    labeljust="l";
-	    label="AMUSE Script";
-	    "script loop";
+            style=filled;
+            color=azure2;
+            labeljust="l";
+            label="AMUSE Script";
+            "script loop";
       }
       subgraph cluster1 {
       fontsize=10.0;
-	    style=filled;
-	    color=azure2;
-	    labeljust="l";
-	    label="Legacy Code";
-	    "outer loop";
-	    "inner loop";
+            style=filled;
+            color=azure2;
+            labeljust="l";
+            label="Legacy Code";
+            "outer loop";
+            "inner loop";
       }
       "script loop" -> "outer loop"[minlen=2];
       "outer loop" -> "inner loop";
@@ -53,14 +53,14 @@ This process is shown in the following code example.
     // example outer loop
     void outer_loop(double end_time)
     {
-	while(model_time < end_time)
-	{
-	    ...
-	    inner_loop()
-	    ...
-	    model_time += delta_time_for_this_step
-	}
-	return
+        while(model_time < end_time)
+        {
+            ...
+            inner_loop()
+            ...
+            model_time += delta_time_for_this_step
+        }
+        return
     }
 
 The model time is often enough to control the loop but some
@@ -75,22 +75,22 @@ shows how these conditions might work in a C code.
     // example outer loop with stopping conditions
     void outer_loop(double end_time)
     {
-	int special_condition_was_met = 0;
+        int special_condition_was_met = 0;
 
-	while(model_time < end_time)
-	{
-	    ...
-	    inner_loop()
-	    ...
-	    check_if_special_conditions_are_met();
-	    ...
-	    model_time += delta_time_for_this_step
-	    ...
-	    if(special_condition_was_met) {
-		break;
-	    }
-	}
-	return
+        while(model_time < end_time)
+        {
+            ...
+            inner_loop()
+            ...
+            check_if_special_conditions_are_met();
+            ...
+            model_time += delta_time_for_this_step
+            ...
+            if(special_condition_was_met) {
+                break;
+            }
+        }
+        return
     }
 
 For example, a code might be able to detect a collision
@@ -214,7 +214,7 @@ all the functions defined in the interface:
 .. code-block:: python
 
     class MyCodeInterface(LegacyInterface, StoppingConditionInterface):
-	...
+        ...
 
 This :class:`StoppingConditionInterface` interface models the interface to a
 simple data model, best described as two tables:
@@ -227,7 +227,7 @@ Defined stopping conditions table
     ======  ========= ========
     type    supported enabled
     int     int       int
-	    read only read/write
+            read only read/write
     ======  ========= ========
     0       0         0
     1       1         0
@@ -236,15 +236,15 @@ Defined stopping conditions table
     ======  ========= ========
 
     type
-	The type of the stopping condition, integer between
-	0 and N. defined by the framework
+        The type of the stopping condition, integer between
+        0 and N. defined by the framework
     supported
-	1 if the stopping condition is supported, 0 otherwise.
-	Needs to be set by the implementor
+        1 if the stopping condition is supported, 0 otherwise.
+        Needs to be set by the implementor
     enabled
-	1 if enabled by the user, 0 otherwise.
-	Implementor must provide a mechanism to set and unset
-	this field.
+        1 if enabled by the user, 0 otherwise.
+        Implementor must provide a mechanism to set and unset
+        this field.
 
 Set stopping conditions table
     This table has a row for each stopping condition
@@ -266,11 +266,11 @@ Set stopping conditions table
     ======  =========== =========== ======= ============
 
     type
-	The type of the stopping condition, integer between
-	0 and N. defined by the framework. Set by the code
+        The type of the stopping condition, integer between
+        0 and N. defined by the framework. Set by the code
     particle(0...n)
-	Index of the particle involved in the stopping condition.
-	The index of the last particle must be -1
+        Index of the particle involved in the stopping condition.
+        The index of the last particle must be -1
 
 .. autoclass:: amuse.support.legacy.stopping_conditions.StoppingConditionInterface
     :members:
@@ -351,13 +351,16 @@ be defined in c as:
 
     .. code-block:: c
 
-	supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
+        set_support_for_condition(COLLISION_DETECTION);
+        set_support_for_condition(PAIR_DETECTION);
 
 or in FORTRAN as:
     .. code-block:: fortran
 
-	INCLUDE "../../lib/stopcond/stopcond.inc"
-	set_supported_conditions(COLLISION_DETECTION_BITMAP + TIMEOUT_DETECTION_BITMAP)
+        INCLUDE "../../lib/stopcond/stopcond.inc"
+        
+        set_support_for_condition(COLLISION_DETECTION);
+        set_support_for_condition(PAIR_DETECTION);
 
 To refer to the type of a stopping condition, the library defines the
 following macros:
@@ -381,14 +384,14 @@ the stopping conditions.
 
     .. code-block:: c
 
-	void outer_loop(double end_time)
-	{
-	    reset_stopping_conditions()
-	    while(model_time < end_time)
-	    {
-		...
-	    }
-	}
+        void outer_loop(double end_time)
+        {
+            reset_stopping_conditions()
+            while(model_time < end_time)
+            {
+                ...
+            }
+        }
 
 .. c:function:: int next_index_for_stopping_condition()
 
@@ -398,11 +401,11 @@ the stopping conditions.
 
     .. code-block:: c
 
-	if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
-	    int row = next_index_for_stopping_condition();
-	    set_stopping_condition_info(row, COLLISION_DETECTION);
-	    ...
-	}
+        if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
+            int row = next_index_for_stopping_condition();
+            set_stopping_condition_info(row, COLLISION_DETECTION);
+            ...
+        }
 
 .. c:function:: int set_stopping_condition_info(int index, int type)
 
@@ -412,7 +415,7 @@ the stopping conditions.
 
     .. code-block:: c
 
-	set_stopping_condition_info(row, COLLISION_DETECTION);
+        set_stopping_condition_info(row, COLLISION_DETECTION);
 
 
 .. c:function:: int set_stopping_condition_particle_index(int index, int column_index, int index_of_particle)
@@ -422,9 +425,9 @@ the stopping conditions.
 
     .. code-block:: c
 
-	set_stopping_condition_info(row, COLLISION_DETECTION);
-	set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
-	set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
+        set_stopping_condition_info(row, COLLISION_DETECTION);
+        set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
+        set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
 
 
 For MPI enabled codes, the stopping conditions must be distributed
@@ -462,11 +465,11 @@ the following steps.
     of the legacy code must be changed. The following compiler flags
     need to be added::
 
-	-I$(AMUSE_DIR)/lib/stopcond
+        -I$(AMUSE_DIR)/lib/stopcond
 
     For the link step the following linker flags are needed::
 
-	-L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+        -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 
 2.  Include the header file and defining the globals
 
@@ -476,7 +479,7 @@ the following steps.
 
     .. code-block:: c
 
-	#include <stopcond.h>
+        #include <stopcond.h>
 
     The legacy code should take care of the setting
     of the :c:data:`supported_conditions` bitmap
@@ -484,65 +487,76 @@ the following steps.
 
     .. code-block:: c
 
-	supported_conditions = COLLISION_DETECTION_BITMAP
+        set_support_for_condition(COLLISION_DETECTION);
+        set_support_for_condition(PAIR_DETECTION);
 
     In FORTRAN include "stopcond.inc" in subroutines that
     require the constants.
+    
+    .. code-block:: fortran
+    
+        INCLUDE "../../lib/stopcond/stopcond.inc"
+        set_support_for_condition(COLLISION_DETECTION);
+        set_support_for_condition(PAIR_DETECTION);
 
 3.  Check for a condition when it is enabled and set the condition
     if found. In c:
 
     .. code-block:: c
 
-	if(COLLISION_DETECTION_BITMAP & enabled_conditions)
-	{
-	    real sum_of_the_radii = radius_of_star[i] + radius_of_star[j];
-	    if (distance_between_stars <= sum_of_the_radii)
-	    {
-		int stopping_index  = next_index_for_stopping_condition();
-		set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
-		set_stopping_condition_particle_index(
-		    stopping_index,
-		    0,
-		    identifier_of_star[i]
-		);
-		set_stopping_condition_particle_index(
-		    stopping_index,
-		    1,
-		    identifier_of_star[j]
-		);
-	    }
-	}
+    int is_collistion_detection_enabled;
+    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collistion_detection_enabled);
+    
+        if(is_collistion_detection_enabled)
+        {
+            real sum_of_the_radii = radius_of_star[i] + radius_of_star[j];
+            if (distance_between_stars <= sum_of_the_radii)
+            {
+                int stopping_index  = next_index_for_stopping_condition();
+                set_stopping_condition_info(stopping_index, COLLISION_DETECTION);
+                set_stopping_condition_particle_index(
+                    stopping_index,
+                    0,
+                    identifier_of_star[i]
+                );
+                set_stopping_condition_particle_index(
+                    stopping_index,
+                    1,
+                    identifier_of_star[j]
+                );
+            }
+        }
 
     and in FORTRAN:
 
     .. code-block:: fortran
 
-	INCLUDE "../../lib/stopcond/stopcond.inc"
-        INTEGER::enabled_conditions, stopping_index
-	INTEGER::error
-	enabled_conditions = get_enabled_conditions()
-	!...
-	IF IAND(COLLISION_DETECTION_BITMAP, enabled_conditions) THEN
-	  IF there_is_a_collision THEN
-	    stopping_index = next_index_for_stopping_conditions()
-	    error = set_stopping_condition_info(stopping_index, COLLISION_DETECTION)
-	    !...
-	  ENDIF
-	ENDIF	  
+        INCLUDE "../../lib/stopcond/stopcond.inc"
+        INTEGER::is_collistion_detection_enabled, stopping_index
+        INTEGER::error
+        
+        is_stopping_condition_enabled(COLLISION_DETECTION, is_collistion_detection_enabled)
+        !...
+        IF is_collistion_detection_enabled.EQ.1 THEN
+          IF there_is_a_collision THEN
+            stopping_index = next_index_for_stopping_conditions()
+            error = set_stopping_condition_info(stopping_index, COLLISION_DETECTION)
+            !...
+          ENDIF
+        ENDIF          
 
 4.  Break the outer loop when any condition is set. The
     :c:data:`set_conditions` can be tested:
 
     .. code-block:: c
 
-	while(...) {
-	    ...
-	    if(set_conditions)
-	    {
-		break;
-	    }
-	}
+        while(...) {
+            ...
+            if(set_conditions)
+            {
+                break;
+            }
+        }
 
     .. code-block:: fortran
 
@@ -552,7 +566,7 @@ the following steps.
           set_conditions = get_set_conditions()
           IF (set_conditions.GT.0) EXIT
           
-	END DO 
+        END DO 
 
 
 A good example of a code implementing the stopping conditions
