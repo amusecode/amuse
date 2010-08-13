@@ -357,7 +357,7 @@ class VectorQuantity(Quantity):
         >>> v1.lengths_squared()
         quantity<[25.0, 21.0] m**2>
         """
-        return (self * self).sum(1)
+        return (self.unit**2).new_quantity((self.number * self.number).sum(self.number.ndim - 1))
         
     def __getitem__(self, index):
         """Return the "index" component as a quantity.
@@ -570,6 +570,11 @@ class VectorQuantity(Quantity):
     
     def reshape(self, shape):
         return VectorQuantity(self.number.reshape(shape), self.unit)
+    
+
+    def mean(self):
+        return self.unit.new_quantity(self.number.mean())
+    
     
 class ZeroQuantity(Quantity):
     """

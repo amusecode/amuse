@@ -18,6 +18,7 @@ class TestGrids(amusetest.TestCase):
         grid = core.Grid(5,4,3)
         grid.mass = 2.0 | units.kg
         self.assertEquals(grid.mass[0][1][2], 2.0 | units.kg)
+        self.assertEquals(grid[0][1][2].mass, 2.0 | units.kg)
         self.assertEquals(len(grid.mass), 5)
         
     def test2(self):
@@ -121,6 +122,34 @@ class TestGrids(amusetest.TestCase):
         
 
         
+
+    def test9(self):
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        print grid.x
+        self.assertEquals(grid[0][0][0].x, 0.1 | units.m)
+        self.assertEquals(grid[0][0][0].y, 0.125 | units.m)
+        self.assertEquals(grid[0][0][0].z, 0.25 | units.m)
+        self.assertEquals(grid[...,0,0].x, [0.1,0.3,0.5,0.7,0.9] | units.m)
+        self.assertEquals(grid[0,0,...].z, [0.25, 0.75] | units.m)
+        
+        cellsize = grid.cellsize()
+        self.assertAlmostRelativeEquals(cellsize[0], 0.2 | units.m)
+        self.assertAlmostRelativeEquals(cellsize[1], 0.25 | units.m)
+        self.assertAlmostRelativeEquals(cellsize[2], 0.5 | units.m)
+    
+    
+
+    def test11(self):
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        iarray,jarray,karray = grid.indices()
+        for i in range(5):
+            for j in range(4):
+                for k in range(2):
+                    self.assertEquals(iarray[i][j][k], i)
+                    self.assertEquals(jarray[i][j][k], j)
+                    self.assertEquals(karray[i][j][k], k)
+    
+    
 class TestIndexing(amusetest.TestCase):
     def test1(self):
         self.assertEquals(2, number_of_dimensions_after_index(3, 1))

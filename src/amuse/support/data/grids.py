@@ -2,6 +2,7 @@ from amuse.support.data import values
 from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
 from amuse.support.units import units
+from amuse.support.units import generic_unit_system
 from amuse.support.core import CompositeDictionary
 
 from amuse.support import exceptions
@@ -51,6 +52,22 @@ class Grid(AbstractGrid):
         else:
             self._private.attribute_storage = storage
             
+    @classmethod
+    def create(cls, shape, lengths):
+        """Returns a grid with cells between 0 and lengths.
+        """
+        result = cls(shape[0], shape[1], shape[2])
+        ix,iy,iz=(numpy.indices(shape)+0.5)
+        
+        def positions(indices, length, n):
+            return length * (indices/n)
+    
+        result.x = positions(ix, lengths[0], shape[0])
+        result.y = positions(iy, lengths[1], shape[1])
+        result.z = positions(iz, lengths[2], shape[2])
+        
+        return result
+            
     def _get_values(self, indices, attributes):
         result = self._private.attribute_storage._get_values(indices, attributes)
         return result
@@ -85,6 +102,11 @@ class Grid(AbstractGrid):
         return self._private.attribute_storage.storage_shape()
         
         
+
+    def indices(self):
+        return numpy.indices(self.shape)
+    
+    
 class SubGrid(AbstractGrid):
     def __init__(self, grid, indices):
         AbstractGrid.__init__(self, grid)
@@ -94,10 +116,6 @@ class SubGrid(AbstractGrid):
     
     def _original_set(self):
         return self._private.grid
-        
-    
-    def _get_keys(self):
-        return self._private.indices
         
     def _get_values(self, indices, attributes):
         combined_index = indexing.combine_indices(self._private.indices, indices)
@@ -130,6 +148,11 @@ class SubGrid(AbstractGrid):
     
         
 
+
+    def indices(self):
+        return self._original_set().indices()[self._private.indices]
+    
+    
 class GridPoint(object):
 
     def __init__(self, index, grid):
@@ -178,3 +201,29 @@ class GridInformationChannel(object):
     
     
         
+
+@Grid.function_for_set
+def cellsize(grid, dimensions = 3):
+    """Returns the lenght of each direction in the grid, assumes 3d grid
+    """
+    cell1 = grid[0][0][0]
+    cell2 = grid[1][0][0]
+    dx = cell2.x - cell1.x
+    
+    result = [0.0,0.0,0.0] | dx.unit
+    result[0] = dx
+   
+    if dimensions > 1:
+        cell2 = grid[0][1][0]
+        result[1] = cell2.y - cell1.y
+    else:
+        return result[0:1]
+        
+    if dimensions > 2:
+        cell2 = grid[0][0][1]
+        result[2] = cell2.z - cell1.z
+        return result
+    else:
+        return result[0:2]
+
+

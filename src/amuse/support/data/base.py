@@ -132,8 +132,10 @@ class VectorAttribute(DerivedAttribute):
             if unit_of_the_values is None:
                 unit_of_the_values = quantity.unit
             results.append(quantity.value_in(unit_of_the_values))
-            
-        results = numpy.dstack(results)[0]
+        
+        results = numpy.array(results)
+        for i in range(len(results.shape) - 1, 0, -1):
+            results = numpy.swapaxes(results,0,i)
         return unit_of_the_values.new_quantity(results)
 
     def set_values_for_entities(self, instance, value):
@@ -997,5 +999,12 @@ class AbstractSet(object):
         if new_set.has_duplicates():
             raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
         return new_set
+    
+    
+
+    @classmethod
+    def function_for_set(cls, function):
+        cls.add_global_function_attribute(function.__name__, function)
+        return function
     
     
