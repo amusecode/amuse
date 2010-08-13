@@ -504,8 +504,8 @@ the following steps.
 
     .. code-block:: c
 
-    int is_collistion_detection_enabled;
-    is_stopping_condition_enabled(COLLISION_DETECTION, &is_collistion_detection_enabled);
+        int is_collistion_detection_enabled;
+        is_stopping_condition_enabled(COLLISION_DETECTION, &is_collistion_detection_enabled);
     
         if(is_collistion_detection_enabled)
         {
