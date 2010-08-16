@@ -653,7 +653,6 @@ class TestAthena(TestWithMPI):
         grid.rhovz = 0.0 | momentum
         grid.energy = 0.0 | energy
         
-        self.assertEquals(grid._get_writeable_attribute_names(), set(['rhoz', 'rhoy', 'rhox', 'energy', 'rho']) )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         potential_grid = core.Grid(12,12,1)
