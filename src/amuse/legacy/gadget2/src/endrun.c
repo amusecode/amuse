@@ -22,7 +22,19 @@
  *   MPI is gracefully cleaned up, but this requires that all processors
  *   call endrun().
  */
+
+// adapted for AMUSE:
 void endrun(int ierr)
+{
+  if(ierr)
+    {
+      printf("task %d: endrun called with an error level of %d\n\n\n", ThisTask, ierr);
+      fflush(stdout);
+    }
+  exit(0);
+}
+
+void original_endrun(int ierr)
 {
   if(ierr)
     {
