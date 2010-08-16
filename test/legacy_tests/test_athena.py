@@ -173,6 +173,10 @@ class TestAthenaInterface(TestWithMPI):
         result = instance.commit_parameters()
         self.assertEquals(result, 0)
         
+        time, error = instance.get_time()
+        self.assertEquals(error,0)
+        self.assertEquals(time, 0.0)
+        
         error = instance.fill_grid_state_mpi(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5,0,0)
         self.assertEquals(error, 0)
         
@@ -553,12 +557,11 @@ class TestAthena(TestWithMPI):
     
         grid = core.Grid(10,10,1)
         grid.rho = 0.1 | density
-        grid.rhox = 0.0 | momentum
-        grid.rhoy = 0.0 | momentum
-        grid.rhoz = 0.0 | momentum
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
         grid.energy = 0.0 | energy
         
-        self.assertEquals(grid._get_writeable_attribute_names(), set(['rhoz', 'rhoy', 'rhox', 'energy', 'rho']) )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
             
@@ -598,12 +601,12 @@ class TestAthena(TestWithMPI):
     
         grid = core.Grid(10,10,1)
         grid.rho = 0.1 | density
-        grid.rhox = 0.0 | momentum
-        grid.rhoy = 0.0 | momentum
-        grid.rhoz = 0.0 | momentum
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
         grid.energy = 0.0 | energy
         
-        self.assertEquals(grid._get_writeable_attribute_names(), set(['rhoz', 'rhoy', 'rhox', 'energy', 'rho']) )
+        self.assertEquals(grid._get_writeable_attribute_names(), set(['rhovz', 'rhovy', 'rhovx', 'energy', 'rho']) )
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         potential_grid = core.Grid(12,12,1)
@@ -645,9 +648,9 @@ class TestAthena(TestWithMPI):
     
         grid = core.Grid(10,10,1)
         grid.rho = 0.1 | density
-        grid.rhox = 0.0 | momentum
-        grid.rhoy = 0.0 | momentum
-        grid.rhoz = 0.0 | momentum
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
         grid.energy = 0.0 | energy
         
         self.assertEquals(grid._get_writeable_attribute_names(), set(['rhoz', 'rhoy', 'rhox', 'energy', 'rho']) )
@@ -709,6 +712,36 @@ class TestAthena(TestWithMPI):
         self.assertAlmostRelativeEquals(instance.parameters.courant_number, 0.1 | units.none)
         
         print instance.parameters
+        instance.stop()
+    
+    
+
+    def test6(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.set_gamma(1.6666666666666667)
+        instance.set_courant_friedrichs_lewy_number(0.3)
+        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
+        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        result = instance.commit_parameters()
+        
+        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        grid = core.Grid.create((10,10,10), [10.0, 10.0, 10.0] | units.m)
+        
+        grid.rho = 0.4 | density
+        grid.rhovx = 0.1 | momentum
+        grid.rhovy = 0.2 | momentum
+        grid.rhovz = 0.3 | momentum
+        grid.energy = 0.5 | energy
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+        self.assertEquals(instance.grid[0][0][0].rho, 0.4 | density)
+        self.assertEquals(instance.grid.rho.number.ndim, 3)
+        
         instance.stop()
     
     

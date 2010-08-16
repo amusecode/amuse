@@ -492,8 +492,10 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     def _to_arrays_of_indices(self, index):
         imin, imax, jmin, jmax, kmin, kmax = self.get_range_method()
         indices = numpy.mgrid[slice(imin, imax+1),slice(jmin, jmax+1),slice(kmin, kmax+1)]
-        indices = [x[index] for x in indices]
-        return indices
+        if index is None:
+            return indices
+        else:
+            return [x[index] for x in indices]
         
     def _get_values(self, indices, attributes):
         i,j,k = self._to_arrays_of_indices(indices)

@@ -407,9 +407,9 @@ class Athena(CodeInterface):
         object.define_grid('grid')
         object.set_grid_range('grid', 'get_index_range_inclusive')
         object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
-        object.add_getter('grid', 'get_grid_state_mpi', names=('rho', 'rhox','rhoy','rhoz','energy'))
-        object.add_setter('grid', 'fill_grid_state_mpi', names=('rho', 'rhox','rhoy','rhoz','energy'))
-
+        object.add_getter('grid', 'get_grid_state_mpi', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        object.add_setter('grid', 'fill_grid_state_mpi', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+    
         object.define_grid('potential_grid')
         object.set_grid_range('potential_grid', 'get_index_range_for_potential')
         object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))

@@ -1082,6 +1082,7 @@ int fill_grid_linearwave_1d(int wave_flag, double amp, double vflow, int wave_di
 
 int get_time(double * value){
     *value = mesh.time;
+    return 0;
 }
 
 int evolve(double tlim) {
@@ -1091,103 +1092,105 @@ int evolve(double tlim) {
     par_setd("time","tlim", "%.15e", tlim, "-");
     
     while (mesh.time < tlim) {
-    
-/*--- Step 9b. ---------------------------------------------------------------*/
-/* operator-split explicit diffusion: thermal conduction, viscosity, resistivity
- * Done first since CFL constraint is applied which may change dt  */
+        
+    /*--- Step 9b. ---------------------------------------------------------------*/
+    /* operator-split explicit diffusion: thermal conduction, viscosity, resistivity
+     * Done first since CFL constraint is applied which may change dt  */
 
 #if defined(RESISTIVITY) || defined(VISCOSITY) || defined(THERMAL_CONDUCTION)
-        integrate_diff(&mesh);
+            integrate_diff(&mesh);
+            for (nl=0; nl<(mesh.NLevels); nl++){ 
+              for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){  
+                if (mesh.Domain[nl][nd].Grid != NULL){
+                  bvals_mhd(&(mesh.Domain[nl][nd]));
+                }
+              }
+            }
+#endif
+
+    /*--- Step 9c. ---------------------------------------------------------------*/
+    /* Loop over all Domains and call Integrator */
+
         for (nl=0; nl<(mesh.NLevels); nl++){ 
           for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){  
             if (mesh.Domain[nl][nd].Grid != NULL){
-              bvals_mhd(&(mesh.Domain[nl][nd]));
+              (*Integrate)(&(mesh.Domain[nl][nd]));
+
+#ifdef FARGO
+              Fargo(&(mesh.Domain[nl][nd]));
+#ifdef PARTICLES
+              advect_particles(&level0_Grid, &level0_Domain);
+#endif
+#endif /* FARGO */
+            }
+          }
+        }
+
+    /*--- Step 9d. ---------------------------------------------------------------*/
+    /* With SMR, restrict solution from Child --> Parent grids  */
+
+#ifdef STATIC_MESH_REFINEMENT
+        RestrictCorrect(&mesh);
+#endif
+
+    /*--- Step 9e. ---------------------------------------------------------------*/
+    /* User work (defined in problem()) */
+
+        Userwork_in_loop(&mesh);
+
+    /*--- Step 9f. ---------------------------------------------------------------*/
+    /* Compute gravitational potential using new density, and add second-order
+     * correction to fluxes for accelerations due to self-gravity. */
+
+#ifdef SELF_GRAVITY
+        for (nl=0; nl<(mesh.NLevels); nl++){ 
+          for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){  
+            if (mesh.Domain[nl][nd].Grid != NULL){
+              (*SelfGrav)(&(mesh.Domain[nl][nd]));
+              bvals_grav(&(mesh.Domain[nl][nd]));
+              selfg_fc(&(mesh.Domain[nl][nd]));
             }
           }
         }
 #endif
 
-/*--- Step 9c. ---------------------------------------------------------------*/
-/* Loop over all Domains and call Integrator */
+    /*--- Step 9g. ---------------------------------------------------------------*/
+    /* Update mesh time, and time in all Grid's.  Compute new dt */
 
-    for (nl=0; nl<(mesh.NLevels); nl++){ 
-      for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){  
-        if (mesh.Domain[nl][nd].Grid != NULL){
-          (*Integrate)(&(mesh.Domain[nl][nd]));
-
-#ifdef FARGO
-          Fargo(&(mesh.Domain[nl][nd]));
-#ifdef PARTICLES
-          advect_particles(&level0_Grid, &level0_Domain);
-#endif
-#endif /* FARGO */
+        mesh.nstep++;
+        mesh.time += mesh.dt;
+        for (nl=0; nl<(mesh.NLevels); nl++){
+          for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+            if (mesh.Domain[nl][nd].Grid != NULL){
+              mesh.Domain[nl][nd].Grid->time = mesh.time;
+            }
+          }
         }
-      }
-    }
 
-/*--- Step 9d. ---------------------------------------------------------------*/
-/* With SMR, restrict solution from Child --> Parent grids  */
+        dt_done = mesh.dt;
+        new_dt(&mesh);
+
+    /*--- Step 9h. ---------------------------------------------------------------*/
+    /* Boundary values must be set after time is updated for t-dependent BCs.
+     * With SMR, ghost zones at internal fine/coarse boundaries set by Prolongate */
+
+        for (nl=0; nl<(mesh.NLevels); nl++){ 
+          for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){  
+            if (mesh.Domain[nl][nd].Grid != NULL){
+              bvals_mhd(&(mesh.Domain[nl][nd]));
+#ifdef PARTICLES
+              bvals_particle(&level0_Grid, &level0_Domain);
+#endif
+            }
+          }
+        }
 
 #ifdef STATIC_MESH_REFINEMENT
-    RestrictCorrect(&mesh);
-#endif
-
-/*--- Step 9e. ---------------------------------------------------------------*/
-/* User work (defined in problem()) */
-
-    Userwork_in_loop(&mesh);
-
-/*--- Step 9f. ---------------------------------------------------------------*/
-/* Compute gravitational potential using new density, and add second-order
- * correction to fluxes for accelerations due to self-gravity. */
-
-#ifdef SELF_GRAVITY
-    for (nl=0; nl<(mesh.NLevels); nl++){ 
-      for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){  
-        if (mesh.Domain[nl][nd].Grid != NULL){
-          (*SelfGrav)(&(mesh.Domain[nl][nd]));
-          bvals_grav(&(mesh.Domain[nl][nd]));
-          selfg_fc(&(mesh.Domain[nl][nd]));
-        }
-      }
-    }
-#endif
-
-/*--- Step 9g. ---------------------------------------------------------------*/
-/* Update mesh time, and time in all Grid's.  Compute new dt */
-
-    mesh.nstep++;
-    mesh.time += mesh.dt;
-    for (nl=0; nl<(mesh.NLevels); nl++){
-      for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-        if (mesh.Domain[nl][nd].Grid != NULL){
-          mesh.Domain[nl][nd].Grid->time = mesh.time;
-        }
-      }
-    }
-
-    dt_done = mesh.dt;
-    new_dt(&mesh);
-
-/*--- Step 9h. ---------------------------------------------------------------*/
-/* Boundary values must be set after time is updated for t-dependent BCs.
- * With SMR, ghost zones at internal fine/coarse boundaries set by Prolongate */
-
-    for (nl=0; nl<(mesh.NLevels); nl++){ 
-      for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){  
-        if (mesh.Domain[nl][nd].Grid != NULL){
-          bvals_mhd(&(mesh.Domain[nl][nd]));
-#ifdef PARTICLES
-          bvals_particle(&level0_Grid, &level0_Domain);
-#endif
-        }
-      }
-    }
-
-#ifdef STATIC_MESH_REFINEMENT
-    Prolongate(&mesh);
+        Prolongate(&mesh);
 #endif
 
     }
+    
+    return 0;
 }
 
