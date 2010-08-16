@@ -6,6 +6,7 @@ from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
+from amuse.ext.plummer import new_plummer_sphere
 
 from amuse.test.amusetest import TestWithMPI
 
@@ -462,3 +463,35 @@ class TestCodeInterface(TestWithMPI):
         instance.cleanup_module()
         
         instance.stop()
+
+    def test10(self):
+        instance = PhiGRAPE()
+        instance.initialize_code()
+    
+        instance.parameters.epsilon_squared = 0.0 | nbody_system.length**2
+        
+        stars = new_plummer_sphere(100)
+        stars.radius = 0 | nbody_system.length
+        
+        instance.particles.add_particles(stars)
+        channel = stars.new_channel_to(instance.particles)
+        
+        instance.evolve_model(0.001 | nbody_system.time)
+    
+        e0 = instance.kinetic_energy + instance.potential_energy
+        
+        stars.mass *= 0.9
+        
+        instance.synchronize_model()
+        
+        e1 = instance.kinetic_energy + instance.potential_energy
+        
+        delta_e = e1 - e0
+        
+        
+        self.assertTrue(e1 < e0)
+        
+        
+        instance.stop()
+    
+    
