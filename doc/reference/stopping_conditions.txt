@@ -535,10 +535,11 @@ the following steps.
     .. code-block:: fortran
 
         INCLUDE "../../lib/stopcond/stopcond.inc"
+	INTEGER::is_stopping_conditions_enabled
         INTEGER::is_collistion_detection_enabled, stopping_index
         INTEGER::error
         
-        is_stopping_condition_enabled(COLLISION_DETECTION, is_collistion_detection_enabled)
+        error = is_stopping_condition_enabled(COLLISION_DETECTION, is_collistion_detection_enabled)
         !...
         IF is_collistion_detection_enabled.EQ.1 THEN
           IF there_is_a_collision THEN
@@ -563,11 +564,11 @@ the following steps.
 
     .. code-block:: fortran
 
-        INTEGER::set_conditions
+        INCLUDE "../../lib/stopcond/stopcond.inc"
+        INTEGER::is_any_condition_set
         DO WHILE ()
           !...   
-          set_conditions = get_set_conditions()
-          IF (set_conditions.GT.0) EXIT
+          IF (is_any_condition_set().EQ.1) EXIT
           
         END DO 
 
