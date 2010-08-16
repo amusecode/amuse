@@ -4,24 +4,29 @@ import numpy
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.capreole.interface import CapreoleInterface
+from amuse.legacy.capreole.interface import Capreole
 
 class TestMPIInterface(TestWithMPI):
     
     def test0(self):
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.stop()
         
     
     def test1(self):
         instance=CapreoleInterface()
-        instance.setup_module()
-        instance.setup_mesh(50,50,50,1.,1.,1.)
+        instance.initialize_code()
+        instance.setup_mesh(50,40,30,1.,1.,1.)
+        nx,ny,nz, error = instance.get_mesh_size()
+        self.assertEquals(nx, 50)
+        self.assertEquals(ny, 40)
+        self.assertEquals(nz, 30)
         instance.stop()
     
     def test2(self):
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         instance.fill_grid_state(1,1,1,1.,0.,0.,0.,1.)
         rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(1,1,1)
@@ -34,7 +39,7 @@ class TestMPIInterface(TestWithMPI):
     
     def test3(self):
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         x,y,z=numpy.indices( (50,50,50) )
         x=x.flatten()+1
@@ -56,7 +61,7 @@ class TestMPIInterface(TestWithMPI):
     
     def test4(self):
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         x,y,z=numpy.indices( (50,50,50) )
         x=x.flatten()+1
@@ -73,7 +78,7 @@ class TestMPIInterface(TestWithMPI):
     
     def test5(self):
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.setup_mesh(40,40,40,1.,1.,1.)
         x,y,z=numpy.indices( (40,40,40) )
         x=x.flatten()+1
@@ -108,7 +113,7 @@ class TestMPIInterface(TestWithMPI):
     
     def test6(self):
         instance=CapreoleInterface(number_of_workers=1)
-        instance.setup_module()
+        instance.initialize_code()
         instance.setup_mesh(150,10,30,1.,1.,1.)
         x,y,z=numpy.indices( (150,10,30) )
         x=x.flatten()+1
@@ -132,7 +137,7 @@ class TestMPIInterface(TestWithMPI):
 
     def test7(self):
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         err=instance.set_gravity_field(1,2,3,1.,0.5,0.25)
         self.assertEqual(err,0)
@@ -144,7 +149,7 @@ class TestMPIInterface(TestWithMPI):
 
     def test8(self):
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         err=instance.set_boundary("periodic","reflective",
         "periodic","reflective",
         "periodic","reflective")
@@ -176,7 +181,7 @@ class TestSodShocktube(TestWithMPI):
         b=(gamma-1)/2/gamma
         
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.setup_mesh(N,N/10,N/10,1.,0.1,0.1)
         x,y,z=numpy.indices( (N,N/10,N/10) )
         x=x.flatten()+1
@@ -220,3 +225,11 @@ class TestSodShocktube(TestWithMPI):
         for i in range(len(rho)):
           self.assertAlmostEqual(rhoexp[i],rho[i],2)
     
+
+class TestCapreole(TestWithMPI):
+    
+    def test0(self):
+        instance=self.new_instance(Capreole)
+        instance.initialize_code()
+        instance.stop()
+

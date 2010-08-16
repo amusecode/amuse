@@ -61,6 +61,17 @@ module amuse_helpers
     write(unit=log_unit,fmt=*) "Local mesh: ",sx,ex,sy,ey,sz,ez
     ret=0
   end function
+  
+  
+  function amuse_get_mesh(nx,ny,nz) result(ret)
+    integer :: ret,nx,ny,nz
+    
+    nx = meshx
+    ny = meshy
+    nz = meshz
+    
+    ret=0
+  end function
 
   function amuse_init_coords(xlen,ylen,zlen) result(ret)
     integer :: ret,i,j,k

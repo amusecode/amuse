@@ -1,4 +1,4 @@
-function setup_module() result(ret)
+function initialize_code() result(ret)
   use amuse_helpers
   integer :: ret
   character(len=10), parameter :: default="reflective"
@@ -26,6 +26,15 @@ function setup_mesh(mx,my,mz,xlen,ylen,zlen) result(ret)
   if(ret.NE.0) return
   ret=amuse_init_hydro()  
   if(ret.NE.0) return
+  
+end function
+
+
+function get_mesh_size(mx,my,mz) result(ret)
+  use amuse_helpers
+  integer :: ret,mx,my,mz
+  
+  ret = amuse_get_mesh(mx,my,mz)
   
 end function
   
