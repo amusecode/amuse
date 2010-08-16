@@ -573,7 +573,7 @@ class VectorQuantity(Quantity):
     
 
     def mean(self):
-        return self.unit.new_quantity(self.number.mean())
+        return ScalarQuantity(self._number.mean(), self.unit)
     
     
 class ZeroQuantity(Quantity):

@@ -59,6 +59,18 @@ def fill_grid_with_spherical_cloud(
     position = subgrid.position
     centers = center - grid.position[selection]
     
+    subgrid_rho = rho * numpy.ones_like(subgrid.x)
+    subgrid_rhovx = rhovx * numpy.ones_like(subgrid.x)
+    subgrid_rhovy = rhovy * numpy.ones_like(subgrid.x)
+    subgrid_rhovz = rhovz * numpy.ones_like(subgrid.x) 
+    subgrid_energy = energy * numpy.ones_like(subgrid.x)
+    
+    update_grid_rho = grid.rho[selection]
+    update_grid_rhovx = grid.rhovx[selection]
+    update_grid_rhovy = grid.rhovy[selection]
+    update_grid_rhovz = grid.rhovz[selection]
+    update_grid_energy = grid.energy[selection]
+    
     for i in range(len(x_indices)):
         x_index = x_indices[i]
         y_index = y_indices[i]
@@ -67,26 +79,32 @@ def fill_grid_with_spherical_cloud(
         center_of_cloud_for_subgrid = centers[i]
         radii = (position - center_of_cloud_for_subgrid).lengths()
          
-        cell = grid[x_index,y_index,z_index]
         
-        subgrid.rho = cell.rho
-        subgrid.rhovx = cell.rhovx
-        subgrid.rhovy = cell.rhovy
-        subgrid.rhovz = cell.rhovz
-        subgrid.energy = cell.energy
+        subgrid_rho[...] = update_grid_rho[i]
+        subgrid_rhovx[...] = update_grid_rhovx[i]
+        subgrid_rhovy[...] = update_grid_rhovy[i]
+        subgrid_rhovz[...] = update_grid_rhovz[i]
+        subgrid_energy[...] = update_grid_energy[i]
         
         subgrid_selection = radii <= radius
         
-        subgrid.rho[subgrid_selection] = rho
-        subgrid.rhovx[subgrid_selection] = rhovx
-        subgrid.rhovy[subgrid_selection] = rhovy
-        subgrid.rhovz[subgrid_selection] = rhovz
-        subgrid.energy[subgrid_selection] = energy
+        subgrid_rho[subgrid_selection] = rho
+        subgrid_rhovx[subgrid_selection] = rhovx
+        subgrid_rhovy[subgrid_selection] = rhovy
+        subgrid_rhovz[subgrid_selection] = rhovz
+        subgrid_energy[subgrid_selection] = energy
         
-        cell.rho = subgrid.rho.mean()
-        cell.rhovx = subgrid.rhovx.mean()
-        cell.rhovy = subgrid.rhovy.mean()
-        cell.rhovz = subgrid.rhovz.mean()
-        cell.energy = subgrid.energy.mean()
+        update_grid_rho[i] =  subgrid_rho.mean()
+        update_grid_rhovx[i] = subgrid_rhovx.mean()
+        update_grid_rhovy[i] = subgrid_rhovy.mean()
+        update_grid_rhovz[i] = subgrid_rhovz.mean()
+        update_grid_energy[i] = subgrid_energy.mean()
+
+    
+    grid.rho[selection] = update_grid_rho
+    grid.rhovx[selection] = update_grid_rhovx
+    grid.rhovy[selection] = update_grid_rhovy
+    grid.rhovz[selection] = update_grid_rhovz
+    grid.energy[selection] = update_grid_energy
 
 
