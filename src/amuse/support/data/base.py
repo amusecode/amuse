@@ -1008,3 +1008,32 @@ class AbstractSet(object):
         return function
     
     
+
+    def empty_copy(self):
+        """
+        Creates a new in memory set and copies the particles to it.
+        The attributes and values are not copied.The history
+        of the set is not copied over.
+
+        >>> from amuse.support.data.core import Particles
+        >>> from amuse.support.units import units
+        >>> original = Particles(2)
+        >>> original.mass = 0 | units.m
+        >>> print hasattr(original, "mass")
+        True
+        >>> print len(original)
+        2
+        >>> copy = original.empty_copy()
+        >>> print hasattr(copy, "mass")
+        False
+        >>> print len(copy)
+        2
+
+        """
+        keys = self._get_keys()
+        result = self._set_factory()()
+        result._add_particles(keys, [],[])
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+        return result
+    
+    

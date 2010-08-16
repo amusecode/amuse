@@ -1275,6 +1275,37 @@ class ParticleInformationChannel(object):
     
 
         
+
+    def copy_attribute(self, name, target_name = None):
+        """ Copy the values of one attribute from the source set to the target set.
+        The copied attribute can have a different name in the target set.
+        
+        :argument name: name of the attribute in the source set
+        :argument target_name: name of the attribute in the target set, when None (default) the target_name
+           will be set equal to the name
+        
+        >>> from amuse.support.data.core import Particles
+        >>> from amuse.support.units import units
+        >>> particles1 = Particles(2)
+        >>> particles2 = particles1.copy()
+        >>> particles1.mass = 1 | units.m
+        >>> particles2.mass = 3 | units.m
+        >>> channel = particles1.new_channel_to(particles2)
+        >>> channel.copy_attribute("mass", "mass_from_p2")
+        >>> print particles2.mass_from_p2
+        [1.0, 1.0] m
+        >>> print particles2.mass - particles2.mass_from_p2
+        [2.0, 2.0] m
+        
+        """
+        if target_name is None:
+            target_name = name
+            
+        self._reindex()
+        data = self.from_particles._get_values(self.keys, [name,])
+        self.to_particles._set_values(self.keys, [target_name,], data)
+    
+    
 class Stars(Particles):
 
     def __init__(self, size = 0):
