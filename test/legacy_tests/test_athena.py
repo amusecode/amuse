@@ -661,8 +661,8 @@ class TestAthena(TestWithMPI):
         print instance.potential_grid.x[0].number.shape
         print instance.grid.shape
         print instance.grid.x[0].number.shape
-        x = instance.potential_grid.x[0]
-        y = instance.potential_grid.y[0]
+        x = instance.potential_grid.x
+        y = instance.potential_grid.y
         
         
         for i in range(12):
@@ -686,8 +686,8 @@ class TestAthena(TestWithMPI):
             
         instance.evolve(1.0 | generic_unit_system.time)
         #print instance.grid.rhox
-        z = instance.grid.rho[0][...,...,0]
-        z = instance.potential_grid.potential[0][...,...,0]
+        z = instance.grid.rho[...,...,0]
+        z = instance.potential_grid.potential[...,...,0]
         z = z.value_in(energy)
         #from matplotlib import pyplot
         #pyplot.imshow(z)
