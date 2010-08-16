@@ -608,7 +608,7 @@ class BSE(CodeInterface):
         
     
     def initialize_module_with_current_parameters(self):
-        self.parameters.send_cached_parametes_to_code()
+        self.parameters.send_cached_parameters_to_code()
         
     def initialize_module_with_default_parameters(self):
         """

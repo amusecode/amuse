@@ -681,7 +681,7 @@ class TestParameters(amusetest.TestCase):
         print x.test_par2
         self.assertEquals(o.x, 123)
         self.assertEquals(o.y, 456)
-        x.send_cached_parametes_to_code()
+        x.send_cached_parameters_to_code()
         self.assertEquals(o.x, 20)
         self.assertEquals(o.y, 12)
     
@@ -733,7 +733,7 @@ class TestParameters(amusetest.TestCase):
         o = TestModule()
         x = parameters.Parameters([parameter_definition1, parameter_definition2, parameter_definition3], o)
         
-        x.send_cached_parametes_to_code()
+        x.send_cached_parameters_to_code()
         self.assertEquals(o.x, 11)
         self.assertEquals(o.y, 12)
         self.assertEquals(o.z, 14)

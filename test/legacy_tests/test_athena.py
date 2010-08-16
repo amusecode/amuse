@@ -494,7 +494,12 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
+        instance.parameters.nx = 10
+        instance.parameters.ny = 20
+        instance.parameters.nz = 40
+        instance.parameters.length_x = 1 | generic_unit_system.length
+        instance.parameters.length_y = 2 | generic_unit_system.length
+        instance.parameters.length_z = 3 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
         
@@ -527,7 +532,12 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
+        instance.parameters.nx = 10
+        instance.parameters.ny = 20
+        instance.parameters.nz = 40
+        instance.parameters.length_x = 1 | generic_unit_system.length
+        instance.parameters.length_y = 2 | generic_unit_system.length
+        instance.parameters.length_z = 3 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
                 
@@ -548,6 +558,12 @@ class TestAthena(TestWithMPI):
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.setup_mesh(10, 10, 1, 1.0, 1.0, 0.0)
+        instance.parameters.nx = 10
+        instance.parameters.ny = 10
+        instance.parameters.nz = 1
+        instance.parameters.length_x = 1.0 | generic_unit_system.length
+        instance.parameters.length_y = 1.0 | generic_unit_system.length
+        instance.parameters.length_z = 0.0 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         result = instance.commit_parameters()
         
@@ -589,7 +605,12 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10, 10, 1, 1.0, 1.0, 0.0)
+        instance.parameters.nx = 10
+        instance.parameters.ny = 10
+        instance.parameters.nz = 1
+        instance.parameters.length_x = 1.0 | generic_unit_system.length
+        instance.parameters.length_y = 1.0 | generic_unit_system.length
+        instance.parameters.length_z = 0.0 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         instance.set_has_external_gravitational_potential(1)
         
@@ -636,7 +657,12 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10, 10, 1, 1.0, 1.0, 0.0)
+        instance.parameters.nx = 10
+        instance.parameters.ny = 10
+        instance.parameters.nz = 1
+        instance.parameters.length_x = 1.0 | generic_unit_system.length
+        instance.parameters.length_y = 1.0 | generic_unit_system.length
+        instance.parameters.length_z = 0.0 | generic_unit_system.length
         instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
         instance.set_has_external_gravitational_potential(1)
         
@@ -741,6 +767,38 @@ class TestAthena(TestWithMPI):
         self.assertEquals(instance.grid[0][0][0].rho, 0.4 | density)
         self.assertEquals(instance.grid.rho.number.ndim, 3)
         
+        instance.stop()
+    
+    
+
+    def test7(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.parameters.isothermal_sound_speed = 0.1 | generic_unit_system.speed
+        instance.parameters.gamma = 0.1 | units.none
+        instance.parameters.courant_number = 0.1 | units.none
+       
+        instance.parameters.nx = 10
+        instance.parameters.ny = 20
+        instance.parameters.nz = 40
+        
+        instance.parameters.length_x = 10 | generic_unit_system.length
+        instance.parameters.length_y = 20 | generic_unit_system.length
+        instance.parameters.length_z = 30 | generic_unit_system.length
+        
+        print instance.parameters
+        instance.commit_parameters()
+        
+        mini,maxi, minj,maxj, mink,maxk = instance.get_index_range_inclusive()
+        
+        self.assertEquals(mini, 0)
+        self.assertEquals(maxi, 9)
+        self.assertEquals(minj, 0)
+        self.assertEquals(maxj, 19)
+        self.assertEquals(mink, 0)
+        self.assertEquals(maxk, 39)
+        
+        print instance.parameters
         instance.stop()
     
     

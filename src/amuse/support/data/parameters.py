@@ -92,8 +92,14 @@ class Parameters(object):
     
     
 
-    def send_cached_parametes_to_code(self):
-        cached_parameters = [x for x in self.iter_parameters() if x.definition.is_cached]
+    def iter_parameters(self):
+        for name in self.names():
+            yield self.get_parameter(name)
+    
+    
+
+    def send_cached_parameters_to_code(self):
+        cached_parameters = [x for x in self.iter_parameters() if x.definition.is_cached()]
         for x in cached_parameters:
             if not x.is_set:
                 x.set_default_value()
@@ -104,7 +110,7 @@ class Parameters(object):
             if not definition.functionname in functions:
                 functions[definition.functionname] = []
             functions[definition.functionname].append(x)
-        
+            
         for functionname, parameters in functions.iteritems():
             object = self._instance()
             method = getattr(object, functionname)
@@ -113,12 +119,6 @@ class Parameters(object):
                 keyword_arguments[parameter.definition.parameter_name] = parameter.get_cached_value()
             print functionname, keyword_arguments
             errorcode = method(**keyword_arguments)
-    
-    
-
-    def iter_parameters(self):
-        for name in self.names():
-            yield self.get_parameter(name)
     
     
 class ParametersWithUnitsConverted(object):
