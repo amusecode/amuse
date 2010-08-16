@@ -54,7 +54,6 @@ def fill_grid_with_spherical_cloud(
     x_indices = x_indices[selection]
     y_indices = y_indices[selection]
     z_indices = z_indices[selection]
-    print len(x_indices)
     
     position = subgrid.position
     centers = center - grid.position[selection]
@@ -106,5 +105,44 @@ def fill_grid_with_spherical_cloud(
     grid.rhovy[selection] = update_grid_rhovy
     grid.rhovz[selection] = update_grid_rhovz
     grid.energy[selection] = update_grid_energy
+
+
+
+def fill_grid_with_cloud_shock(
+        grid, 
+        center = None,
+        radius = None,
+        ratio_densities = 10.0,
+        velocity_scale_for_medium = 10.0,
+        gamma = 5.0/3.0,
+        subgridsize = 4,
+    ):
+    
+    velocity_unit = generic_unit_system.length / generic_unit_system.time
+    momentum_unit = generic_unit_system.mass / (generic_unit_system.time * generic_unit_system.length**2)
+    density_unit =  generic_unit_system.mass / generic_unit_system.length**3
+    energy_unit = generic_unit_system.mass / (generic_unit_system.time**2 * generic_unit_system.length)
+    
+    velocity_of_medium = (numpy.sqrt(gamma*(gamma-1.0)*ratio_densities) * velocity_scale_for_medium) | velocity_unit
+    
+    rho_in_cloud = 1.0 | density_unit
+    rhovx_in_cloud = 0.0 | momentum_unit
+    rhovy_in_cloud = 0.0 | momentum_unit
+    rhovz_in_cloud = 0.0 | momentum_unit
+    energy_in_cloud = 1.0 | energy_unit
+    
+    rho_in_medium = 1.0 / ratio_densities | density_unit
+    rhovx_in_medium = 0.0 | momentum_unit
+    rhovy_in_medium =  rho_in_medium * velocity_of_medium
+    rhovz_in_medium = 0.0 | momentum_unit
+    energy_in_medium = (ratio_densities | energy_unit) + (rho_in_medium * velocity_of_medium**2)
+    
+    grid.rho = rho_in_medium
+    grid.rhovx = rhovx_in_medium
+    grid.rhovy = rhovy_in_medium
+    grid.rhovz = rhovz_in_medium
+    grid.energy = energy_in_medium
+    
+    fill_grid_with_spherical_cloud(grid, center, radius, rho_in_cloud, rhovx_in_cloud, rhovy_in_cloud, rhovz_in_cloud, energy_in_cloud, subgridsize)
 
 

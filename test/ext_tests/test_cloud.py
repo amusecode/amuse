@@ -4,6 +4,7 @@ import numpy
 
 from amuse.test import amusetest
 from amuse.support.units import units
+from amuse.support.units import generic_unit_system
 from amuse.ext import cloud
 
 from amuse.support.data import core
@@ -35,19 +36,32 @@ class CloudTests(amusetest.TestCase):
         self.assertEquals(grid.shape, (10,10,10))
         self.assertEquals(grid.rho[5][5][5], 1.0 | units.kg / units.m**3)
         
-    
-        from mpl_toolkits.axes_grid1 import ImageGrid
-        from matplotlib import pyplot
-        figure = pyplot.figure()
-        grids = ImageGrid(figure, 111, nrows_ncols = (2, 2), axes_pad=0.1)
-        for i in range(4):
-            z = grid.rho[i+2].value_in( units.kg / units.m**3,)
-            grids[i].imshow(z)
-        
-        figure.savefig('ax.png')
+        #from mpl_toolkits.axes_grid1 import ImageGrid
+        #from matplotlib import pyplot
+        #figure = pyplot.figure()
+        #grids = ImageGrid(figure, 111, nrows_ncols = (2, 2), axes_pad=0.1)
+        #for i in range(4):
+        #    z = grid.rho[i+2].value_in( units.kg / units.m**3,)
+        #    grids[i].imshow(z)
+        #figure.savefig('ax.png')
         
         self.assertEquals(grid.rho[5][6][5], 0.828125| units.kg / units.m**3)
         self.assertEquals(grid.rho[5][3][5], 0.828125| units.kg / units.m**3)
         self.assertEquals(grid.rho[5][5][6], 0.828125| units.kg / units.m**3)
         self.assertEquals(grid.rho[5][5][3], 0.828125| units.kg / units.m**3)
 
+
+    def test2(self):
+        n = 10
+        grid = core.Grid.create((n,n,n), [10.0, 10.0, 10.0] | generic_unit_system.length)
+        core.Grid.add_global_vector_attribute("position", ["x","y","z"])
+        
+        cloud.fill_grid_with_cloud_shock(
+            grid, 
+            center = [5.0, 5.0, 5.0] | generic_unit_system.length,
+            radius = 1.0 | generic_unit_system.length,
+        )
+        
+        self.assertAlmostRelativeEquals(grid.rho[5][4][4], 0.5921875 | generic_unit_system.mass / generic_unit_system.length**3)
+    
+    
