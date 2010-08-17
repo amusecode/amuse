@@ -503,6 +503,18 @@ class Athena(CodeInterface):
             length, 
             10 | length,
         )
+        
+        object.add_vector_parameter(
+            "mesh_size",
+            "number of cells in the x, y and z directions",
+            ("nx", "ny", "nz")
+        )
+        
+        object.add_vector_parameter(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z")
+        )
     
     
 

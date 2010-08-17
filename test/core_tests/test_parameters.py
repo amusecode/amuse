@@ -409,6 +409,54 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         else:
             self.fail("Should raise readonly exception")
 
+
+    def test11(self):
+        parameter_definition1 = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            "set_test",
+            "test_name",
+            "a test parameter",
+            units.m,
+            11.0 | units.m
+        )
+        
+        parameter_definition2 = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test1",
+            "set_test1",
+            "test_name2",
+            "a test parameter",
+            units.m,
+            12.0 | units.m
+        )
+    
+        class TestModule(object):
+            def get_test(self):
+                return (self.x,0)
+            def set_test(self, value):
+                self.x = value
+                return 0
+            def get_test1(self):
+                return (self.y,0)
+            def set_test1(self, value):
+                self.y = value
+                return 0
+    
+    
+        instance = TestModule()
+    
+        p = parameters.Parameters([parameter_definition1, parameter_definition2], instance)
+        instance.x = 1
+        instance.y = 2
+        self.assertEquals(p.test_name , 1 | units.m)
+        self.assertEquals(p.test_name2 , 2 | units.m)
+        
+        p.test_name = 20 | units.m
+        p.send_not_set_parameters_to_code()
+        
+        self.assertEquals(instance.x, 20)
+        self.assertEquals(instance.y, 12)
+    
+    
 class TestParameters(amusetest.TestCase):
     def test1(self):
         parameter_definition = parameters.ModuleMethodParameterDefinition_Next(
@@ -737,5 +785,56 @@ class TestParameters(amusetest.TestCase):
         self.assertEquals(o.x, 11)
         self.assertEquals(o.y, 12)
         self.assertEquals(o.z, 14)
+    
+    
+
+    def test9(self):
+        parameter_definition1 = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test",
+            "set_test",
+            "test_name",
+            "a test parameter",
+            units.m,
+            11.0 | units.m
+        )
+        
+        parameter_definition2 = parameters.ModuleMethodParameterDefinition_Next(
+            "get_test1",
+            "set_test1",
+            "test_name2",
+            "a test parameter",
+            units.m,
+            12.0 | units.m
+        )
+    
+        paramer_definition3 = parameters.VectorParameterDefinition(
+            "test_vector",
+            "vector of parameters",
+            ["test_name", "test_name2"]
+        )
+        
+        class TestModule(object):
+            def get_test(self):
+                return (self.x,0)
+            def set_test(self, value):
+                self.x = value
+                return 0
+            def get_test1(self):
+                return (self.y,0)
+            def set_test1(self, value):
+                self.y = value
+                return 0
+    
+    
+        instance = TestModule()
+        instance.x = 1
+        instance.y = 2
+        
+        p = parameters.Parameters([parameter_definition1, parameter_definition2, paramer_definition3], instance)
+       
+        self.assertEquals(p.test_vector , (1,2) | units.m)
+        p.test_vector = (3,4) | units.m
+        self.assertEquals(instance.x, 3)
+        self.assertEquals(instance.y, 4)
     
     

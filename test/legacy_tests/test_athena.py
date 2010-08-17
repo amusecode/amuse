@@ -558,9 +558,7 @@ class TestAthena(TestWithMPI):
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
         instance.setup_mesh(10, 10, 1, 1.0, 1.0, 0.0)
-        instance.parameters.nx = 10
-        instance.parameters.ny = 10
-        instance.parameters.nz = 1
+        instance.parameters.mesh_size = (10,10,1)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
@@ -797,7 +795,7 @@ class TestAthena(TestWithMPI):
         self.assertEquals(maxj, 19)
         self.assertEquals(mink, 0)
         self.assertEquals(maxk, 39)
-        
+        self.assertEquals(instance.parameters.mesh_size, (10,20,40) | units.none)
         print instance.parameters
         instance.stop()
     

@@ -82,7 +82,7 @@ class Parameters(object):
 
     def get_parameter(self, name):
         if not name in self._mapping_from_name_to_definition:
-            raise exceptions.AmuseException("{0!r} not defined as parameter")
+            raise exceptions.AmuseException("{0!r} not defined as parameter".format(name))
         
         if not name in self._mapping_from_name_to_parameter:
             definition = self._mapping_from_name_to_definition[name]
@@ -119,6 +119,13 @@ class Parameters(object):
                 keyword_arguments[parameter.definition.parameter_name] = parameter.get_cached_value()
             print functionname, keyword_arguments
             errorcode = method(**keyword_arguments)
+    
+    
+
+    def send_not_set_parameters_to_code(self):
+        parameters = [x for x in self.iter_parameters() if x.must_set_to_default()]
+        for x in parameters:
+            x.set_default_value()
     
     
 class ParametersWithUnitsConverted(object):
@@ -165,10 +172,35 @@ class ParametersWithUnitsConverted(object):
 
         return output
 
-class ParameterDefinition(object):
-    def __init__(self, name, description, unit, default_value, must_set_before_get = False):
+class AbstractParameterDefinition(object):
+    def __init__(self, name, description):
         self.name = name
         self.description = description
+
+    def get_value(self, parameter, object):
+        raise AmuseException("not implemented")
+
+    def set_value(self, parameter, object, quantity):
+        raise AmuseException("not implemented")
+
+    def set_default_value(self, parameter, object):
+        pass
+
+    def is_readonly(self):
+        return False
+        
+    def is_cached(self):
+        return False
+
+
+
+    def must_set_to_default_if_not_set(self):
+        return True
+    
+    
+class ParameterDefinition(AbstractParameterDefinition):
+    def __init__(self, name, description, unit, default_value, must_set_before_get = False):
+        AbstractParameterDefinition.__init__(self, name, description)
         self.unit = unit
         self.default_value = default_value
         self.must_set_before_get = must_set_before_get
@@ -343,9 +375,54 @@ class Parameter(object):
     def is_readonly(self):
         return self.definition.is_readonly()
     
-    
+    def must_set_to_default(self):
+        if self.definition.is_cached():
+            return False
+            
+        return (not self.is_set) and self.definition.must_set_to_default_if_not_set()
 
     def get_cached_value(self):
         return self.definition.get_legacy_value(self, self.parameter_set._instance())
+    
+    
+
+class VectorParameterDefinition(AbstractParameterDefinition):
+    def __init__(self, name, description, names_of_parameters):
+        AbstractParameterDefinition.__init__(self, name, description)
+        self.names_of_parameters = names_of_parameters
+
+    def get_value(self, parameter, object):
+        all_parameters = parameter.parameter_set
+        result = []
+        unit = None
+        for name in self.names_of_parameters:
+            parameter = all_parameters.get_parameter(name)
+            element = parameter.get_value()
+            if unit is None and hasattr(element, 'unit'):
+                unit = element.unit
+                
+            result.append(element.value_in(unit))
+        return unit.new_quantity(result)
+        
+    def set_value(self, parameter, object, quantity):
+        all_parameters = parameter.parameter_set
+        for index,name in enumerate(self.names_of_parameters):
+            parameter = all_parameters.get_parameter(name)
+            parameter.set_value(quantity[index])
+
+
+    def must_set_to_default_if_not_set(self):
+        return False
+    
+    
+
+    def get_unit(self, parameter):
+        result = None
+        all_parameters = parameter.parameter_set
+        for index,name in enumerate(self.names_of_parameters):
+            parameter = all_parameters.get_parameter(name)
+            if hasattr(parameter.definition, "unit"):
+                result = parameter.definition.unit
+        return result
     
     

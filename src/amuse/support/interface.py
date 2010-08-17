@@ -747,6 +747,16 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
         object.define_parameters(self)
 
 
+
+    def add_vector_parameter(self, name, description, parameter_names):
+        definition = parameters.VectorParameterDefinition(
+            name,
+            description,
+            parameter_names,
+        )
+        self.definitions.append(definition)
+    
+    
 class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.error_codes = {}
