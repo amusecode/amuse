@@ -487,6 +487,7 @@ class TestMESA(TestWithMPI):
         composition       = instance.particles[0].get_chemical_abundance_profiles()
         species_names     = instance.particles[0].get_names_of_species()
         species_IDs       = instance.particles[0].get_IDs_of_species()
+        species_masses    = instance.particles[0].get_masses_of_species()
         self.assertEquals(number_of_zones,    479)
         self.assertEquals(number_of_species,    8)
         self.assertEquals(len(species_names),  number_of_species)
@@ -494,6 +495,8 @@ class TestMESA(TestWithMPI):
         self.assertEquals(len(composition[0]), number_of_zones)
         self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
         self.assertEquals(species_IDs,   [2,    5,     6,     38,    51,    69,    114,    168])
+        self.assertAlmostEquals(species_masses, [1.0078250, 3.0160293, 4.0026032, 12.0, 
+                                14.0030740, 15.9949146, 19.9924401, 23.9850417] | units.amu, places=5)
         self.assertAlmostEquals(composition[ :1,0].sum(),  0.7 | units.none)
         self.assertAlmostEquals(composition[1:3,0].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
         self.assertAlmostEquals(composition[3: ,0].sum(),  instance.parameters.metallicity)

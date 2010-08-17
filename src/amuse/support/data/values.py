@@ -571,7 +571,9 @@ class VectorQuantity(Quantity):
     def reshape(self, shape):
         return VectorQuantity(self.number.reshape(shape), self.unit)
     
-
+    def transpose(self, axes=None):
+        return VectorQuantity(self.number.transpose(axes), self.unit)
+    
     def mean(self):
         return ScalarQuantity(self._number.mean(), self.unit)
     

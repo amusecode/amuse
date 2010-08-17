@@ -640,6 +640,31 @@
       endif
    end function
 
+! Return the mass number of chemical abundance variable 'AMUSE_species' of the star
+   integer function get_mass_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      use chem_def, only: chem_isos
+      use const_def, only: mev_to_ergs, clight, amu
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_species
+      double precision, intent(out) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         AMUSE_value = -1.0
+         get_mass_of_species = -1
+      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
+         AMUSE_value = -1.0
+         get_mass_of_species = -3
+      else
+         AMUSE_value = chem_isos% A(s% chem_id(AMUSE_species)) + &
+            chem_isos% mass_excess(s% chem_id(AMUSE_species))*mev_to_ergs/(clight*clight*amu)
+         get_mass_of_species = 0
+      endif
+   end function
+
 ! Return the mass fraction of species 'AMUSE_species' at the specified 
 ! zone/mesh-cell of the star
    integer function get_mass_fraction_of_species_at_zone(AMUSE_id, &

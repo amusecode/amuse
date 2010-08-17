@@ -25,6 +25,7 @@ eV=named('electron volt','eV', e*V)
 MeV=named('mega electron volt','eV', 1e6*eV)
 GeV=named('giga electron volt','GeV', 1e9*eV)
 E_h = named('hartree energy','E_h', 4.35974394e-18 * J)
+amu = named('atomic mass unit','amu', 1.660538782e-27 * kg)
 
 # handy definitions
 one = 1 | none
