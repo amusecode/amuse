@@ -206,7 +206,10 @@ class StoppingCondition(object):
         for index, type in zip(indices, types):
             if type == self.type:
                 selected.append(index)
-        return self.conditions.code.particles.get_stopping_condition_particle_index(selected, [index_in_the_contition]*len(selected))
+        if len(selected) == 0:
+            return []
+        else:
+            return self.conditions.code.particles.get_stopping_condition_particle_index(selected, [index_in_the_contition]*len(selected))
     
     
         
