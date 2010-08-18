@@ -450,3 +450,11 @@ class TestInterface(TestWithMPI):
         self.assertEquals(output_ints8[0], 1)
     
     
+
+    def test16(self):
+        instance = ForTesting(self.exefile)
+        
+        #self.assertRaises(exceptions.AmuseException, lambda : instance.echo_int([]))
+        instance.stop()
+    
+    

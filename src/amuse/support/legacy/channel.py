@@ -201,20 +201,11 @@ class Message(object):
     def send_strings(self, comm, array):
         if len(array) > 0:
             
-            offsets = numpy.zeros(len(array), dtype='i')
-            offset = 0
-            index = 0
-            
-            for string in array:
-                offset += len(string)
-                offsets[index] = offset
-                offset += 1
-                index += 1
-                
+            offsets = self.string_offsets(array)
             self.mpi_send(comm, [offsets, MPI.INT])
-           
+            
             bytes = []
-            for string in self.strings:
+            for string in array:
                 bytes.extend([ord(ch) for ch in string])
                 bytes.append(0)
               
@@ -230,6 +221,21 @@ class Message(object):
     def mpi_send(self, comm, array):
         comm.Send(array, dest=0, tag = 999)
 
+
+    def string_offsets(self, array):
+        offsets = numpy.zeros(len(array), dtype='i')
+        offset = 0
+        index = 0
+        
+        for string in array:
+            offset += len(string)
+            offsets[index] = offset
+            offset += 1
+            index += 1
+        
+        return offsets
+    
+    
 class ServerSideMessage(Message):
     
     
@@ -341,7 +347,7 @@ class MessageChannel(OptionalAttributes):
                 found = True
         return full_name_of_the_worker
 
-    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
         pass
         
     def recv_message(self, tag, handle_as_array = False):
@@ -641,7 +647,7 @@ class MpiChannel(MessageChannel):
         return max(1, max(lengths))
         
         
-    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
     
         
         if self.is_inuse():
@@ -652,23 +658,22 @@ class MpiChannel(MessageChannel):
         length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in)
         
         if length > self.max_message_length:
-            self.split_message(tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length)
+            self.split_message(tag, id, doubles_in, ints_in, floats_in, chars_in, length)
             return
         message = ServerSideMessage(tag,length)
+        message.doubles = pack_array( doubles_in, message.length, 'float64')
+        message.floats = pack_array(floats_in, message.length, 'float32')
+        message.ints = pack_array(ints_in, message.length, 'int32')
+        
         if message.length > 1:
-            message.doubles = pack_array( doubles_in, message.length, 'float64')
-            message.floats = pack_array(floats_in, message.length, 'float32')
-            message.ints = pack_array(ints_in, message.length, 'int32')
             message.strings = pack_array(chars_in, message.length, 'string')
         else:
-            message.doubles = pack_array( doubles_in, message.length, 'float64')
-            message.floats = pack_array(floats_in, message.length, 'float32')
-            message.ints = pack_array(ints_in, message.length, 'int32')
             message.strings = chars_in
+    
         message.send(self.intercomm)
         self._is_inuse = True
         
-    def split_message(self, tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length):
+    def split_message(self, tag, id, doubles_in, ints_in, floats_in, chars_in, length):
         doubles_result=[]
         ints_result=[]
         floats_result=[]
@@ -691,7 +696,7 @@ class MpiChannel(MessageChannel):
         
         for i in range(1+(length-1)/self.max_message_length):
             (doubles, ints, floats, chars) = map(split_input_array,[doubles_in, ints_in, floats_in, chars_in])
-            self.send_message(tag, id, int_arg1, int_arg2, doubles, ints, floats, chars, min(length,self.max_message_length))
+            self.send_message(tag, id, doubles, ints, floats, chars, min(length,self.max_message_length))
             next_part = self.recv_message(id, True)
             map(append_results,(doubles_result,ints_result,floats_result,strings_result),next_part,
                 ('float64','int32','float32','string'))
@@ -872,8 +877,8 @@ m.run_mpi_channel('{3}')"""
         finally:
             socket.close()
          
-    def send_message(self, tag, id=0, int_arg1=0, int_arg2=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
-        self._send(self.client_socket, ('send_message',(tag, id, int_arg1, int_arg2, doubles_in, ints_in, floats_in, chars_in, length),))
+    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+        self._send(self.client_socket, ('send_message',(tag, id, doubles_in, ints_in, floats_in, chars_in, length),))
         result = self._recv(self.client_socket)
         return result
             
