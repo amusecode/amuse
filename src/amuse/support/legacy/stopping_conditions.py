@@ -210,8 +210,6 @@ class StoppingCondition(object):
             return []
         else:
             return self.conditions.code.particles.get_stopping_condition_particle_index(selected, [index_in_the_contition]*len(selected))
-    
-    
         
 class StoppingConditions():
 

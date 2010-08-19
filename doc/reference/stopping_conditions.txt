@@ -324,8 +324,10 @@ Access in FORTRAN through:
 .. code-block:: fortran
 
     INCLUDE "../../lib/stopcond/stopcond.inc"
-    INTEGER:: is_stopping_condition_enabled, result
-    result = is_stopping_condition_enabled(COLLISION_DETECTION)
+    INTEGER:: is_stopping_condition_enabled
+    INTEGER:: is_collision_detection_enabled
+    INTEGER:: error
+    error = is_stopping_condition_enabled(COLLISION_DETECTION, is_collision_detection_enabled)
 
 .. c:var:: long set_conditions
 
@@ -336,8 +338,10 @@ this bitmap). Access in FORTRAN:
 .. code-block:: fortran
 
     INCLUDE "../../lib/stopcond/stopcond.inc"
-    INTEGER:: is_stopping_condition_set, result
-    result = is_stopping_condition_set(COLLISION_DETECTION)
+    INTEGER:: is_stopping_condition_set
+    INTEGER:: is_collision_detection_set
+    INTEGER:: error
+    error = is_stopping_condition_set(COLLISION_DETECTION, is_collision_detection_set)
 
 .. c:var:: long supported_conditions
 
@@ -362,8 +366,8 @@ or in FORTRAN as:
 
         INCLUDE "../../lib/stopcond/stopcond.inc"
         
-        set_support_for_condition(COLLISION_DETECTION);
-        set_support_for_condition(PAIR_DETECTION);
+        set_support_for_condition(COLLISION_DETECTION)
+        set_support_for_condition(PAIR_DETECTION)
 
 To refer to the type of a stopping condition, the library defines the
 following macros:
@@ -499,18 +503,18 @@ the following steps.
     .. code-block:: fortran
     
         INCLUDE "../../lib/stopcond/stopcond.inc"
-        set_support_for_condition(COLLISION_DETECTION);
-        set_support_for_condition(PAIR_DETECTION);
+        set_support_for_condition(COLLISION_DETECTION)
+        set_support_for_condition(PAIR_DETECTION)
 
 3.  Check for a condition when it is enabled and set the condition
     if found. In c:
 
     .. code-block:: c
 
-        int is_collistion_detection_enabled;
-        is_stopping_condition_enabled(COLLISION_DETECTION, &is_collistion_detection_enabled);
+        int is_collision_detection_enabled;
+        is_stopping_condition_enabled(COLLISION_DETECTION, &is_collision_detection_enabled);
     
-        if(is_collistion_detection_enabled)
+        if(is_collision_detection_enabled)
         {
             real sum_of_the_radii = radius_of_star[i] + radius_of_star[j];
             if (distance_between_stars <= sum_of_the_radii)
@@ -536,16 +540,16 @@ the following steps.
 
         INCLUDE "../../lib/stopcond/stopcond.inc"
 	INTEGER::is_stopping_conditions_enabled
-        INTEGER::is_collistion_detection_enabled, stopping_index
+        INTEGER::is_collision_detection_enabled, stopping_index
         INTEGER::error
         
-        error = is_stopping_condition_enabled(COLLISION_DETECTION, is_collistion_detection_enabled)
+        error = is_stopping_condition_enabled(COLLISION_DETECTION, is_collision_detection_enabled)
         !...
-        IF is_collistion_detection_enabled.EQ.1 THEN
+        IF is_collision_detection_enabled.EQ.1 THEN
           IF there_is_a_collision THEN
             stopping_index = next_index_for_stopping_conditions()
             error = set_stopping_condition_info(stopping_index, COLLISION_DETECTION)
-            !...
+        !...
           ENDIF
         ENDIF          
 
@@ -567,7 +571,7 @@ the following steps.
         INCLUDE "../../lib/stopcond/stopcond.inc"
         INTEGER::is_any_condition_set
         DO WHILE ()
-          !...   
+        !...   
           IF (is_any_condition_set().EQ.1) EXIT
           
         END DO 

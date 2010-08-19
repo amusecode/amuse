@@ -7,6 +7,8 @@ AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
+AMUSE_DIR?=../../../../../
+
 SOURCEF = \
 allgather_ap.F      cmcorr.F        corrector.F     cputime.F		\
 energy.F       	    get_min_t.F     gravity.F       initgrape.F		\
@@ -18,6 +20,8 @@ sendinpdata.F       sumforces.F	    sync.F				\
 timestep.F          update_grape.F  update_loc_p.F  writebh.F		\
 writerestartfile.F predict_potential.F
 
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 SOURCEC = wtimef.c
 
@@ -36,7 +40,7 @@ G6LIBS ?= -L../../../../../lib/g6 -lg6
 
 LIBS     = -lm
 
-LIBRARIES= $(LLIBSDIR) $(LIBS) $(G6LIBS)
+LIBRARIES= $(LLIBSDIR) $(LIBS) $(G6LIBS) $(SCLIBS)
 
 GLINCLUDE ?= -I/usr/include/GL \
 -I/data/pelupes/libraries/f90gl-1.2.11/include/GL/
@@ -66,7 +70,13 @@ OBJECTS = $(SOURCEF:.F=.o) $(SOURCE:.f=.o) $(SOURCEC:.c=.o)
 CODEOBJS = $(OBJECTS)
 SAO     = $(SAF:.F=.o)
 
-all: phiGRAPE $(CODELIB)
+all: debuginfo phiGRAPE $(CODELIB)
+
+debuginfo:
+	@echo "enetered phigrape source makefile"
+	@echo "OBJECTS  = " $(OBJECTS)
+	@echo "CODEOBJS = " $(CODEOBJS)
+	@echo $(SCLIBS)
 
 gl: start_viewer.o viewer.o libpt.a fthread.o
 

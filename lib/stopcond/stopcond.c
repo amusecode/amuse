@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "stopcond.h"
 #include <string.h>
 
@@ -65,7 +66,7 @@ int get_number_of_stopping_conditions_set(int * result) {
 }
 
 int get_number_of_stopping_conditions_set_(int *result) {
-    return get_number_of_stopping_conditions_set_(result);
+    return get_number_of_stopping_conditions_set(result);
 }
 
 int is_stopping_condition_set(int type, int * result) {
@@ -160,10 +161,11 @@ int get_stopping_condition_particle_index_(
 int reset_stopping_conditions() {
     number_of_stopping_conditions_set = 0;
     set_conditions = 0;
+    return 0;
 }
 
 int reset_stopping_conditions_() {
-    reset_stopping_conditions();
+    return reset_stopping_conditions();
 }
 
 int next_index_for_stopping_condition() {
@@ -202,7 +204,7 @@ int set_stopping_condition_particle_index(int index, int index_in_the_condition,
     return 0;
 }
 
-int set_stopping_condition_particle_index_(int *index, int *index_in_the_condition, int *index_of_the_particle){
+int set_stopping_condition_particle_index_(int *index, int *index_in_the_condition, int *index_of_the_particle) {
     return set_stopping_condition_particle_index(*index, *index_in_the_condition, *index_of_the_particle);
 }
 

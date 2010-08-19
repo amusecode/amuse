@@ -13,6 +13,8 @@ CODELIB=$(SRCDIR)/libphigrape.a
 
 GLOBJECTS=src/fthread.o src/viewer.o src/start_viewer.o src/libpt.a
 
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
 CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
@@ -49,14 +51,18 @@ CFLAGS += -g  $(OPTS)
 FFLAGS += -g $(OPTS)
 FFLAGS += -I./src/
 
-all: worker_code 
 
+all: debuginfo worker_code 
+
+debuginfo:
+	@echo "making phigrape..; some debugging info follows:"
+	@echo $(SCLIBS)
 
 $(CODELIB):
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 
 worker_code: worker_code.f90 phigrape_code.o $(CODELIB)
-	mpif90 $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES)
+	mpif90 $(FFLAGS) $^ $(CODELIB) $(SCINC) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
 
 glworker_code: glworker_code.f90 phigrape_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
@@ -99,10 +105,10 @@ __init__.py:
 	$(FC) $(FFLAGS) -c $<
 
 .f.o:
-	$(FC) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) $(SCINC) -c $<
 
 .c.o:
 	$(CC) $(CFLAGS) -c $<
 
 .F.o:
-	$(FC) $(FFLAGS) -c $<
+	$(FC) $(FFLAGS) $(SCINC) -c $<

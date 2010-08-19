@@ -227,7 +227,6 @@ C---  get array address
       get_potential_at_point = 0
       END
 
-
       FUNCTION get_velocity()
       IMPLICIT NONE
 #include "src/general.inc"
@@ -235,11 +234,26 @@ C---  get array address
       get_velocity = -2
       END
 
-      FUNCTION get_position()
+      FUNCTION get_position(id, rx, ry, rz)
       IMPLICIT NONE
 #include "src/general.inc"
+      INTEGER id, ip
       INTEGER get_position
-      get_position = -2
+      DOUBLE PRECISION rx, ry, rz
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'set_particle: No such particle exists',
+     $           ' use add_particle'
+         get_position = -1
+         GOTO 999
+      ENDIF
+
+      rx = x(1,ip)
+      ry = x(2,ip)
+      rz = x(3,ip)
+      get_position = 0
+  999 CONTINUE
+      RETURN
       END
 
       FUNCTION set_velocity(id, vx, vy, vz)
@@ -581,8 +595,13 @@ C====================================================================
       FUNCTION initialize_code()
       IMPLICIT NONE
 #include "src/general.inc"
+#include "../../lib/stopcond/stopcond.inc"
       INTEGER i,initialize_code
-      
+      INTEGER set_support_for_condition, error
+C     AMUSE STOPPING CONDITION SUPPORT
+      error = set_support_for_condition(COLLISION_DETECTION)
+C omming up:  error = set_support_for_condition(PAIR_DETECTION)
+
       g_init_once = 0
       g_initialized = 0
       
@@ -608,7 +627,7 @@ C--------------------------------------------------------------------
       FUNCTION commit_particles()
       IMPLICIT NONE
 #include "src/general.inc"
-      
+      INTEGER is_any_condition_set
       INTEGER commit_particles
       DOUBLE PRECISION time
       INTEGER i
@@ -679,6 +698,9 @@ C---  get local forces on all PE's
 C---  (as this is the first call set ifirst to 1 in this call)
 C--------------------------------------------------------------------
       CALL gravity(time_cur,1)
+C     IF (is_any_condition_set().GT.0) THEN
+C         print*, "stopping condition met during commit particles"
+C     ENDIF
 C          -------
 
 C--------------------------------------------------------------------
@@ -1262,11 +1284,13 @@ C            ----------------------
 C---  isync removed      
       IMPLICIT NONE 
 #include "src/general.inc"
-
+#include "../../../../lib/stopcond/stopcond.inc"
 C---  local vars
       INTEGER          evolve
       DOUBLE PRECISION tend
 
+      INTEGER is_any_condition_set
+      INTEGER reset_stopping_conditions, error
 C (re)start grape (fip)
 C  update local particles on grape
       CALL amuse_init_grape
@@ -1274,15 +1298,17 @@ C  update local particles on grape
 
       t_end      = tend
 
+      error = reset_stopping_conditions()
+
 C--------------------------------------------------------------------
 C---  main loop begins here
 C--------------------------------------------------------------------
  100  IF (time_cur.GE.t_end) GOTO 900
 
+C--- obsolete, use stopcond library instead..
          icollision  = -1       ! no collision yet
          idprimary   = -1       ! hence no ids for
          idsecondary = -1       ! collided particles
-
 
 C---------------------------------------------------------------
 C---  get the global minimum timestep 
@@ -1345,11 +1371,10 @@ C             ------------
          CALL gather_collisions
 
 C---  break if collision occured
-         IF (icollision.EQ.1) GOTO 900
-
+C--      IF (icollision.EQ.1) GOTO 900
+         IF (is_any_condition_set().GT.0) GOTO 900
          GOTO 100   
  900  CONTINUE                  ! end of main loop
-      
 
 C--------------------------------------------------------------------
 C---  synchronize system if flag is set

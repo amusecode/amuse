@@ -691,6 +691,7 @@ class TestAmuseInterface(TestWithMPI):
         p0 =  instance.stopping_conditions.collision_detection.particles(0)[0]
         p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
         self.assertNotEquals(p0, p1)
+        print p0, p1
         print p0.x, p1.x
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
        

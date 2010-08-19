@@ -7,7 +7,7 @@ from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
 
-class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
+class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2007, New Astronomy, 12, 357
     """
@@ -33,6 +33,8 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
 
     def setup_module(self):
         return self.initialize_code()
+        self.commit_parameters()
+        self.commit_particles()
 
     def cleanup_module(self):
         return self.cleanup_code()
@@ -43,9 +45,6 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
 
     def reinitialize_particles():
         return self.recommit_particles()
-
-
-
 
     @legacy_function
     def get_time_step():
@@ -204,13 +203,14 @@ class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
 
 class PhiGRAPE(GravitationalDynamics):
 
-
     def __init__(self, convert_nbody = None, mode = PhiGRAPEInterface.MODE_G6LIB, use_gl = False, **options):
         nbody_interface = None
         if use_gl:
             nbody_interface = PhiGRAPEInterfaceGL(mode, **options)
         else:
             nbody_interface = PhiGRAPEInterface(mode, **options)
+
+        self.stopping_conditions = StoppingConditions(self)
 
         GravitationalDynamics.__init__(
             self,
@@ -256,8 +256,6 @@ class PhiGRAPE(GravitationalDynamics):
             0 |  units.none
         )
 
-
-
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
 
@@ -272,8 +270,13 @@ class PhiGRAPE(GravitationalDynamics):
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.potential, object.ERROR_CODE)
         )
+
+        self.stopping_conditions.define_methods(object)
+
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object, 'particles')
         
-    
     def stop(self):
         self.cleanup_code()
         self.overridden().stop()
