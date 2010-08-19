@@ -199,18 +199,19 @@ class Message(object):
             self.mpi_send(comm, [buffer, MPI.FLOAT])
             
     def send_strings(self, comm, array):
-        if len(array) > 0:
+        if len(array) == 0:
+            return
             
-            offsets = self.string_offsets(array)
-            self.mpi_send(comm, [offsets, MPI.INT])
-            
-            bytes = []
-            for string in array:
-                bytes.extend([ord(ch) for ch in string])
-                bytes.append(0)
-              
-            chars = numpy.array(bytes, dtype=numpy.uint8)
-            self.mpi_send(comm, [chars, MPI.CHARACTER])
+        offsets = self.string_offsets(array)
+        self.mpi_send(comm, [offsets, MPI.INT])
+        
+        bytes = []
+        for string in array:
+            bytes.extend([ord(ch) for ch in string])
+            bytes.append(0)
+          
+        chars = numpy.array(bytes, dtype=numpy.uint8)
+        self.mpi_send(comm, [chars, MPI.CHARACTER])
             
             
     
