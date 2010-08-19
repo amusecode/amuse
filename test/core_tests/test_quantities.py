@@ -5,6 +5,7 @@ import sys
 
 from amuse.support.units import si, units, nbody_system
 from amuse.support.data import core
+from amuse.support.exceptions import AmuseException
 from amuse.support.data.values import *
 
 class TestQuantities(amusetest.TestCase):
@@ -139,6 +140,52 @@ class TestQuantities(amusetest.TestCase):
         self.assertFalse('a' | units.string >  'a' | units.string)
         self.assertTrue ('a' | units.string <  'b' | units.string)
         self.assertFalse('a' | units.string <  'B' | units.string)
-       
-        
-        
+    
+    def test14(self):
+        # Tests for 'is_quantity'
+        self.assertTrue( is_quantity(0 | units.kg) )
+        self.assertTrue( is_quantity(1 | units.none) )
+        self.assertTrue( is_quantity([1.0, 2.0, 3.0] | units.m) )
+        self.assertFalse( is_quantity(1) )
+        self.assertFalse( is_quantity(1.0) )
+        self.assertFalse( is_quantity("string") )
+    
+    def test15(self):
+        # Tests for 'to_quantity'
+        self.assertTrue( is_quantity(to_quantity(0 | units.kg)) )
+        self.assertTrue( is_quantity(to_quantity(1 | units.none)) )
+        self.assertTrue( is_quantity(to_quantity([1.0, 2.0, 3.0] | units.m)) )
+        self.assertTrue( is_quantity(to_quantity(1)) )
+        self.assertTrue( is_quantity(to_quantity(1.0)) )
+        masses = [1, 2, 3] | units.kg
+        self.assertTrue( to_quantity(masses) is masses )
+        numbers = [1, 2, 3]
+        self.assertFalse(          to_quantity(numbers) is numbers | units.none )
+        self.assertTrue( numpy.all(to_quantity(numbers) == numbers | units.none) )
+    
+    def test16(self):
+        # Tests for add/sub of quantity (with none unit) and number
+        self.assertEquals( (2.0 | units.none) + 1.0,  3.0 | units.none )
+        self.assertEquals( (2.0 | units.none) - 1.0,  1.0 | units.none )
+        self.assertEquals( 1.0 + (2.0 | units.none),  3.0 | units.none )
+        self.assertEquals( 1.0 - (2.0 | units.none), -1.0 | units.none )
+    
+    def test17(self):
+        # Tests for add/sub of quantity (with other unit) and number
+        number = 1.0
+        quantity = 2.0 | units.m
+        self.assertTrue( number.__add__(quantity) is NotImplemented)
+        self.assertRaises(AmuseException, quantity.__radd__, number)
+        self.assertTrue( number.__radd__(quantity) is NotImplemented)
+        self.assertRaises(AmuseException, quantity.__add__, number)
+        self.assertTrue( number.__sub__(quantity) is NotImplemented)
+        self.assertRaises(AmuseException, quantity.__rsub__, number)
+        self.assertTrue( number.__rsub__(quantity) is NotImplemented)
+        self.assertRaises(AmuseException, quantity.__sub__, number)
+        # in other words...
+        try:
+            1.0 + (2.0 | units.m)
+            self.fail("Should never get here!")
+        except AmuseException as ex:
+            self.assertEquals("Cannot express none in m, the units do not have the same bases", str(ex))
+    

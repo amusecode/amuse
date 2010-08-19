@@ -84,14 +84,18 @@ class Quantity(object):
         return 'quantity<'+str(self)+'>'
 
     def __add__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
+        other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
         return new_quantity(self.number + other_in_my_units.number , self.unit)
-        
+    __radd__ = __add__
+    
     def __sub__(self, other):
-        other_in_my_units = other.as_quantity_in(self.unit)
+        other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
         return new_quantity(self.number - other_in_my_units.number , self.unit)
-        
-
+    
+    def __rsub__(self, other):
+        other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
+        return new_quantity(other_in_my_units.number - self.number , self.unit)
+    
     def __mul__(self, other):
         if hasattr(other, "unit"):
             return new_quantity(self.number * other.number , (self.unit * other.unit).to_simple_form())
@@ -783,5 +787,14 @@ def new_quantity(value, unit):
 #        return value
     return ScalarQuantity(value, unit)
     
+def is_quantity(input):
+    return hasattr(input, "is_quantity")
+    
+def to_quantity(input):
+    if is_quantity(input):
+        return input
+    else:
+        from amuse.support.units.units import none
+        return new_quantity(input, none)
     
 

@@ -5,7 +5,7 @@ import os
 import inspect
 
 from amuse.support import exceptions
-from amuse.support.data import values
+from amuse.support.data.values import Quantity
 from amuse.support.units.si import no_unit
 
 class SkipTest(exceptions.AmuseException):
@@ -21,12 +21,12 @@ class TestCase(unittest.TestCase):
             return (first, second)
     
     def _check_comparable(self, first, second):
-        if isinstance(first, values.Quantity) is not isinstance(second, values.Quantity):
+        if isinstance(first, Quantity) is not isinstance(second, Quantity):
             raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
-                if isinstance(first, values.Quantity) else (second,first)))
+                if isinstance(first, Quantity) else (second,first)))
     
     def _check_different(self, first, second):
-        if isinstance(first, values.Quantity):
+        if isinstance(first, Quantity):
             different = (first.value_in(second.unit) != second.value_in(second.unit))
         else:
             different = (first != second)
@@ -64,7 +64,7 @@ class TestCase(unittest.TestCase):
         first, second = self._convert_to(in_units, first, second)
         delta = second-first  
         
-        if isinstance(delta, values.Quantity):
+        if isinstance(delta, Quantity):
             absdif = abs(delta.value_in(delta.unit))
         else:             
             absdif = abs(delta) 
@@ -109,7 +109,7 @@ class TestCase(unittest.TestCase):
     
     def assertIsOfOrder(self, first, second, msg=None):
         ratio = first/second
-        if isinstance(ratio, values.Quantity):
+        if isinstance(ratio, Quantity):
             if ratio.unit.base:
                 raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
             ratio = ratio.value_in(no_unit)
