@@ -97,24 +97,16 @@ class Quantity(object):
         return new_quantity(other_in_my_units.number - self.number , self.unit)
     
     def __mul__(self, other):
-        if hasattr(other, "unit"):
-            return new_quantity(self.number * other.number , (self.unit * other.unit).to_simple_form())
-        else:
-            return new_quantity(self.number * other , self.unit.to_simple_form())
-        
+        other = to_quantity(other)
+        return new_quantity(self.number * other.number , (self.unit * other.unit).to_simple_form())
+    __rmul__ = __mul__
     
     def __pow__(self, other):
         return new_quantity(self.number ** other , self.unit ** other)
-        
-    def __rmul__(self, other):
-        return self.__mul__(other)
-        
-      
+    
     def __div__(self, other):
-        if hasattr(other, "unit"):
-            return new_quantity(self.number / other.number , (self.unit / other.unit).to_simple_form())
-        else:
-            return new_quantity(self.number / other , self.unit.to_simple_form())
+        other = to_quantity(other)
+        return new_quantity(self.number / other.number , (self.unit / other.unit).to_simple_form())
     
     def __rdiv__(self, other):
         return new_quantity(other / self.number , (1.0 / self.unit).to_simple_form())
