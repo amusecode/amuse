@@ -464,7 +464,7 @@ class TestCodeInterface(TestWithMPI):
         
         instance.stop()
 
-    def xtest10(self):
+    def test10(self):
         instance = PhiGRAPE()
         instance.initialize_code()
     
@@ -481,6 +481,7 @@ class TestCodeInterface(TestWithMPI):
         e0 = instance.kinetic_energy + instance.potential_energy
         
         stars.mass *= 0.9
+        channel.copy()
         
         instance.synchronize_model()
         
@@ -488,9 +489,7 @@ class TestCodeInterface(TestWithMPI):
         
         delta_e = e1 - e0
         
-        
-        self.assertTrue(e1 < e0)
-        
+        self.assertTrue(e1 != e0)
         
         instance.stop()
 
