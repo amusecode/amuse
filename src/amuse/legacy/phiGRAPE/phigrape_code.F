@@ -600,6 +600,7 @@ C====================================================================
       INTEGER set_support_for_condition, error
 C     AMUSE STOPPING CONDITION SUPPORT
       error = set_support_for_condition(COLLISION_DETECTION)
+      error = set_support_for_condition(PAIR_DETECTION)
 C omming up:  error = set_support_for_condition(PAIR_DETECTION)
 
       g_init_once = 0

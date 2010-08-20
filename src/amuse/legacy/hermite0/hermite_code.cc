@@ -347,6 +347,10 @@ inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll
 void get_acc_jerk_pot_coll(real *epot, real *coll_time)
 {
     int n = 0;
+    int error;
+    int is_collision_detection_enabled;
+    int is_pair_detection_enabled;
+
     if(mpi_rank == 0){
         n = ident.size();
     }
@@ -378,6 +382,11 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
     int istart = 0 + mpi_rank;
     int iend = n ; //(mpi_rank + 1) * npart;
     
+    error = is_stopping_condition_enabled(COLLISION_DETECTION, 
+					  &is_collision_detection_enabled);
+    error = is_stopping_condition_enabled(PAIR_DETECTION, 
+					  &is_pair_detection_enabled);
+    
     for (int i = istart; i < iend ; i+= mpi_size)
       {
         for (int j = i+1; j < n ; j++)             // rji[] is the vector from
@@ -400,7 +409,8 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
               }
             rv_r2 /= r2;
 
-            if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
+            //if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
+	    if(is_collision_detection_enabled) {  
               real rsum = radius[i] + radius[j];
               if (r2 <= rsum*rsum) {
                 int stopping_index  = next_index_for_stopping_condition();
@@ -409,7 +419,8 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                 set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
               }
             }
-            if(PAIR_DETECTION_BITMAP & enabled_conditions) {
+            //if(PAIR_DETECTION_BITMAP & enabled_conditions) {
+	    if(is_pair_detection_enabled) {
               //fprintf(stdout, 'doing pairdetection\n');
               real rsum = radius[i] + radius[j];
               if (r2 <= rsum*rsum * pair_detect_factor) {

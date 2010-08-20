@@ -62,7 +62,7 @@ $(CODELIB):
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 
 worker_code: worker_code.f90 phigrape_code.o $(CODELIB)
-	mpif90 $(FFLAGS) $^ $(CODELIB) $(SCINC) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
+	mpif90 $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
 
 glworker_code: glworker_code.f90 phigrape_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"

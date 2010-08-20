@@ -6,6 +6,7 @@ C===  calc the grav for the active particles in first step
 
       INTEGER is_stopping_condition_enabled
       INTEGER is_collision_detection_enabled
+      INTEGER is_pair_detection_enabled
       INTEGER next_index_for_stopping_condition
       INTEGER set_stopping_condition_info
       INTEGER set_stopping_condition_particle_index
@@ -58,6 +59,8 @@ C---  n_act is all active particles and on all nodes the same
 
       error = is_stopping_condition_enabled(COLLISION_DETECTION,
      $        is_collision_detection_enabled)
+      error = is_stopping_condition_enabled(PAIR_DETECTION,
+     $        is_pair_detection_enabled)
 
 C---  define the local phi, a, adot for these active particles
       DO i=0,ni-1,npipe
@@ -113,8 +116,8 @@ C---  now get forces based on a (hopefully) good guess from a previous force cal
      $       nn_i)
 
 
-C--     IF (icollision.LE.0) THEN
-        IF (is_collision_detection_enabled.GT.0) THEN 
+        IF (is_collision_detection_enabled.GT.0
+     $      .OR.is_pair_detection_enabled.GT.0) THEN 
             DO ii=1,nn
 
                 iii   = ii+i
@@ -143,12 +146,7 @@ C---  now compute sqaure of radius
 C---  test for collision + bound? (fip)
                 IF (hsum2.GE.r2) THEN
                     dv2=0
-C                 DO k=1,NDIM
-C                  dv2=dv2+(v_loc(k,ip2)+a_loc(k,ip2)*dttmp-v_i(k,ii))**2
-C                 ENDDO
-C                print*,(m_act(iii)+m_loc(ip2))/sqrt(r2+eps2),0.5*dv2
-C                 IF((m_act(iii)+m_loc(ip2))/sqrt(r2+eps2)
-C     &                                    .GT.0.5*dv2) THEN
+         
                     icollision  = 1 ! collision detected
 
 C ELLO-- implement this according top stopcond lib C
@@ -159,25 +157,57 @@ C ELLO-- implement this according top stopcond lib C
                         idprimary   = id2
                         idsecondary = id1
                     ENDIF
+            
+                    IF (is_collision_detection_enabled.GT.0) THEN
+                        stopping_index = 
+     $                  next_index_for_stopping_condition()
+                        error = 
+     $                  set_stopping_condition_info(stopping_index,
+     $                          COLLISION_DETECTION)
                     
-                    stopping_index = next_index_for_stopping_condition()
-                    error = set_stopping_condition_info(stopping_index,
-     $                      COLLISION_DETECTION)
-                    
-                    error = set_stopping_condition_particle_index(
-     $                      stopping_index,
-     $                      0,
-     $                      id1)
+                        error = set_stopping_condition_particle_index(
+     $                          stopping_index,
+     $                          0,
+     $                          id1)
                         
-                    error = set_stopping_condition_particle_index(
-     $                      stopping_index,
-     $                      1,
-     $                      id2)
-                        
-                        
-                    GOTO 110    
+                        error = set_stopping_condition_particle_index(
+     $                          stopping_index,
+     $                          1,
+     $                          id2)
+                    ENDIF
+                    IF (is_pair_detection_enabled.GT.0) THEN
+                        DO k=1,NDIM
+                            dv2=dv2+
+     $                          (v_loc(k,ip2)+
+     $                          a_loc(k,ip2)*dttmp-v_i(k,ii))**2
+                        ENDDO
+C--                        print*,(m_act(iii)+m_loc(ip2))/sqrt(r2+eps2),
+C--     $                         0.5*dv2
+                        IF((m_act(iii)+m_loc(ip2))/sqrt(r2+eps2)
+     $                                    .GT.0.5*dv2) THEN
+                            stopping_index = 
+     $                      next_index_for_stopping_condition()
 
-C-- it was GOTO 110, but that does not break out of the DO LOOP
+                            error = 
+     $                      set_stopping_condition_info(stopping_index,
+     $                              PAIR_DETECTION)
+                    
+                            error = 
+     $                      set_stopping_condition_particle_index(
+     $                              stopping_index,
+     $                              0,
+     $                              id1)
+                        
+                            error = 
+     $                      set_stopping_condition_particle_index(
+     $                              stopping_index,
+     $                              1,
+     $                              id2)
+                        ENDIF
+                    ENDIF
+C--                    GOTO 110    
+C-- there was a GOTO 110 to prevent double detection of same collision, 
+C-- but that is handled by the HL code now!
 
                 ENDIF
             ENDDO

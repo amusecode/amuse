@@ -308,7 +308,6 @@ class TestCodeInterface(TestWithMPI):
 
         
         particles = core.Particles(2)
-        #print particles
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -353,7 +352,6 @@ class TestCodeInterface(TestWithMPI):
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
         instance.initialize_particles(0.0)
-        #print instance.particles[0].mass
         copyof = instance.particles.copy()
         
         self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
@@ -368,7 +366,6 @@ class TestCodeInterface(TestWithMPI):
 
         
         particles = core.Particles(2)
-        #print particles
         particles.mass = [1.0, 1.0] | nbody_system.mass
         particles.radius =  [0.0001, 0.0001] | nbody_system.length
         particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
@@ -379,7 +376,6 @@ class TestCodeInterface(TestWithMPI):
         
         zero = [0.0, 0.0, 0.0] | nbody_system.length
         fx, fy, fz = instance.get_gravity_at_point(zero, [0.5, 1.0, 1.5] | nbody_system.length, zero, zero)
-        #print fx, fy
         self.assertAlmostRelativeEqual(fx[0], -3.55555555556 | nbody_system.acceleration, 5)
         self.assertAlmostRelativeEqual(fy[0], 0.0 | nbody_system.acceleration, 3)
         self.assertAlmostRelativeEqual(fz[0], 0.0 | nbody_system.acceleration, 3)
@@ -393,9 +389,7 @@ class TestCodeInterface(TestWithMPI):
         n = 512
         x = nbody_system.length.new_quantity(numpy.linspace(0.1, 1.9, n))
         zero = nbody_system.length.new_quantity(numpy.zeros(n))
-        #print x
         fx, fy, fz = instance.get_gravity_at_point(zero, x , zero, zero)
-        #print fx
         for i in range(n/2):
             self.assertAlmostRelativeEqual(fx[i] , - fx[n - 1 - i], 5)
         
@@ -516,15 +510,40 @@ class TestCodeInterface(TestWithMPI):
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.collision_detection.enable()
         instance.evolve_model(0.5 | nbody_system.time)
-        #print instance.model_time
         self.assertTrue(instance.stopping_conditions.collision_detection.is_set())
-        #print instance.stopping_conditions.collision_detection.particles(0).key
-        #print instance.stopping_conditions.collision_detection.particles(1).key
-        #print len(instance.stopping_conditions.collision_detection.particles(0))
         self.assertEquals(len(instance.stopping_conditions.collision_detection.particles(0)), 2 )
         p0 =  instance.stopping_conditions.collision_detection.particles(0)[0]
         p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
         self.assertNotEquals(p0, p1)
-        #print p0.x, p1.x
+        self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+
+    def test12(self):
+        particles = core.Particles(2)
+        particles.x = [
+            0.0,1.0, 
+            #5,7,
+            #10,12,
+            #15,17,
+            #20,22
+        ] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.75 | nbody_system.length
+        particles.vx =  0 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+       
+        instance = PhiGRAPE()
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.pair_detection.enable()
+        instance.evolve_model(1.5 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
+        self.assertEquals(len(instance.stopping_conditions.pair_detection.particles(0)), 2 )
+        p0 =  instance.stopping_conditions.pair_detection.particles(0)[0]
+        p1 =  instance.stopping_conditions.pair_detection.particles(1)[0]
+        self.assertNotEquals(p0, p1)
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
 

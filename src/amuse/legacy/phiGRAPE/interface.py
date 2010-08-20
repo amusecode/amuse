@@ -33,8 +33,6 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
 
     def setup_module(self):
         return self.initialize_code()
-        self.commit_parameters()
-        self.commit_particles()
 
     def cleanup_module(self):
         return self.cleanup_code()
