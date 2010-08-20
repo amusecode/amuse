@@ -3,6 +3,20 @@
 import urllib
 import sys
 
+from subprocess import Popen, PIPE
+from xml.dom.minidom import parseString
+
+USERNAME = 'svn'
+PASSWORD = 'xxx'
+SERVER = 'http://www.amusecode.org/review/'
+
+def get_first_element_with_tag(parent, name):
+    for node in parent.childNodes:
+        if hasattr(node, 'tagName') and (name == "*" or node.tagName == name):
+            return node
+    return None
+    
+    
 def send_revision_to_server(revision):
     parameters = urllib.urlencode({'rev': revision})
     port = 9075
@@ -12,6 +26,28 @@ def send_revision_to_server(revision):
     finally:
         f.close()
 
+
+def run_command(arguments):
+    print "running :" + ' '.join(arguments)
+    process = Popen(arguments, stdout = PIPE, stderr = PIPE)
+    stdoutstr, stderrstr = process.communicate()
+    print stderrstr
+    return stdoutstr
+    
+def svn_log(repos, revision):
+    arguments = ['svn', 'log', repos,  '-r', str(revision), '--xml']
+    xmlstring = run_command(arguments)
+    print xmlstring
+    dom = parseString(xmlstring)
+    logentries = dom.getElementsByTagName('logentry')
+    if not logentries:
+        return None
+    for entry in logentries:
+        author  =  get_first_element_with_tag(entry, "author").firstChild.data
+        date_string = get_first_element_with_tag(entry, "date").firstChild.data
+        msg_string = get_first_element_with_tag(entry, "msg").firstChild.data
+        return (author, date_string, msg_string)
+        
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print "Usage: {0} REPOS REV".format(argv[0])
@@ -21,10 +57,26 @@ if __name__ == "__main__":
     revision = sys.argv[2]
     
     try:
-        print send_revision_to_server(revision)
+        # send_revision_to_server(revision)
+        pass
     except:
         print "error, tracker may be offline"
         sys.exit(1)
+        
+    svnloginfo = svn_log(repository, revision)
+    if svnloginfo:
+        author, date_string, msg_string = svnloginfo
+        
+        repository_url =  '' #'--repository-url=file://' + repository
+        password = '--password=' + PASSWORD
+        username = '--username=' + USERNAME
+        description = "--description=(In [%s]) %s" % (revision, msg_string)
+        submitas = '--submit-as=' + author
+        revision = '--revision-range=%s:%s' % (int(revision)-1, revision)
+        server = '--server=' + SERVER
+        print run_command(['post-review', repository_url, password, username, description, submitas, revision, server])
+
+    
     
     
     
