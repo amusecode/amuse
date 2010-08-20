@@ -3,6 +3,9 @@
 import urllib
 import sys
 
+import os.path
+import os
+
 import re
 
 from subprocess import Popen, PIPE
@@ -58,9 +61,10 @@ if __name__ == "__main__":
     repository = sys.argv[1]
     revision = sys.argv[2]
     
+    repository = os.path.normpath(repository)
+    
     try:
-        # send_revision_to_server(revision)
-        pass
+        send_revision_to_server(revision)
     except:
         print "error, tracker may be offline"
         sys.exit(1)
@@ -98,6 +102,7 @@ if __name__ == "__main__":
         
         arguments = ['post-review', repository_url, password, username, submitas, revision, server, reviewid, publish]
         
+        os.environ['HOME']='/tmp'
         if len(reviewid) == 0:
             arguments += [summary, description]
             
