@@ -3,6 +3,8 @@
 import urllib
 import sys
 
+import re
+
 from subprocess import Popen, PIPE
 from xml.dom.minidom import parseString
 
@@ -63,18 +65,43 @@ if __name__ == "__main__":
         print "error, tracker may be offline"
         sys.exit(1)
         
-    svnloginfo = svn_log(repository, revision)
+    repository_url = 'file://' + repository
+    svnloginfo = svn_log(repository_url, revision)
     if svnloginfo:
         author, date_string, msg_string = svnloginfo
         
-        repository_url =  '' #'--repository-url=file://' + repository
+         # check for update to existing review
+        m = re.search(r'update(?: )?review:([0-9]+)', msg_string, re.M | re.I)
+        if m:
+            reviewid = '--review-request-id=' + m.group(1)
+        else:
+            reviewid = ''
+        
+        # check whether to publish or leave review as draft
+        if re.search(r'draft(?: )?review', msg_string, re.M | re.I):
+            publish = ''
+        else:
+            publish = '-p'
+        
+        # summary is log up to first period+space / first new line / first 250 chars
+        # (whichever comes first)
+        summary = '--summary=' + msg_string[:250].splitlines().pop(0).split('. ').pop(0)
+
+
+        repository_url =  '--repository-url=' + repository_url
         password = '--password=' + PASSWORD
         username = '--username=' + USERNAME
         description = "--description=(In [%s]) %s" % (revision, msg_string)
         submitas = '--submit-as=' + author
         revision = '--revision-range=%s:%s' % (int(revision)-1, revision)
         server = '--server=' + SERVER
-        print run_command(['post-review', repository_url, password, username, description, submitas, revision, server])
+        
+        arguments = ['post-review', repository_url, password, username, submitas, revision, server, reviewid, publish]
+        
+        if len(reviewid) == 0:
+            arguments += [summary, description]
+            
+        print run_command(arguments)
 
     
     
