@@ -156,7 +156,7 @@ class StoppingConditionInterface(object):
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
-        -1 - ERROR
+        -1 - Value out of range
         """
         return function
         
@@ -168,6 +168,36 @@ class StoppingConditionInterface(object):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = False 
         function.addParameter('value', dtype='float64', direction=function.OUT, description = "Current value of avaible wallclock time in seconds")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - ERROR
+        """
+        return function
+
+    @legacy_function
+    def set_stopping_condition_steps_parameter():
+        """
+        Set max inner loop evaluations.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('value', dtype='int32', direction=function.IN, description = "Available inner loop evaluations")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - Value out of range
+        """
+        return function
+
+    @legacy_function
+    def get_stopping_condition_steps_parameter():
+        """
+        Retrieve max inner loop evaluations.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = False 
+        function.addParameter('value', dtype='int32', direction=function.OUT, description = "Current number of avaible inner loop evaluations")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -233,7 +263,12 @@ class StoppingConditions():
         self.timeout_detection = StoppingCondition(
             self, 
             3, 
-            "If enabled, the code will stop at the end of the inner loop when the computer time is abouve a set timeout"
+            "If enabled, the code will stop at the end of the inner loop when the computer time is above a set timeout"
+        )
+        self.steps_detection = StoppingCondition(
+            self,
+            4,
+            "If enabled, the code will stop at the end of the inner loop when the number of evaluations reached the set max number"
         )
         
     
@@ -280,6 +315,15 @@ class StoppingConditions():
             "max wallclock time available for the evolve step", 
             units.s, 
             4.0 |  units.s
+        )
+
+        object.add_method_parameter(
+            "get_stopping_condition_steps_parameter",
+            "set_stopping_condition_steps_parameter", 
+            "stopping_conditions_steps", 
+            "max inner loop evals", 
+            units.none, 
+            1.0 |  units.none
         )
         
     def define_methods(self, object):

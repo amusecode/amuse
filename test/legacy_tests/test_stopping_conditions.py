@@ -93,7 +93,6 @@ class ForTestingInterface(LegacyInterface, stopping_conditions.StoppingCondition
         function.result_type = 'int32'
         function.can_handle_array = True
         return function  
-         
 
 class ForTesting(CodeInterface):
     def __init__(self, exefile, **options):
@@ -158,11 +157,12 @@ class TestInterface(TestWithMPI):
         uc.make_extern_c = True
         uc.ignore_functions_from = [stopping_conditions.StoppingConditionInterface]
         header =  uc.result
-        
+
         uc = create_c.MakeACStringOfAClassWithLegacyFunctions()
+
         uc.class_with_legacy_functions = ForTestingInterface
         code =  uc.result
-        
+
         string = '\n\n'.join([header, code])
         
         #print string

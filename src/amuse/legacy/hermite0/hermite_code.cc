@@ -386,7 +386,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
 					  &is_collision_detection_enabled);
     error = is_stopping_condition_enabled(PAIR_DETECTION, 
 					  &is_pair_detection_enabled);
-    
+
     for (int i = istart; i < iend ; i+= mpi_size)
       {
         for (int j = i+1; j < n ; j++)             // rji[] is the vector from
@@ -408,8 +408,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                 rv_r2 += rji[k] * vji[k];
               }
             rv_r2 /= r2;
-
-            //if(COLLISION_DETECTION_BITMAP & enabled_conditions) {
+	    
 	    if(is_collision_detection_enabled) {  
               real rsum = radius[i] + radius[j];
               if (r2 <= rsum*rsum) {
@@ -419,7 +418,6 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
                 set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
               }
             }
-            //if(PAIR_DETECTION_BITMAP & enabled_conditions) {
 	    if(is_pair_detection_enabled) {
               //fprintf(stdout, 'doing pairdetection\n');
               real rsum = radius[i] + radius[j];
@@ -661,6 +659,12 @@ int evolve_system(real t_end)
     real coll_time;                // collision (close encounter) time scale
     int nest_err;               // error of subprocedure
     int must_run = 1;
+
+    int is_steps_detection_enabled;
+    int iterations_innerloop = 0;
+    int max_iterations;
+    int error;
+    
     // May be overkill to compute acc and jerk at start and end of
     // this routine, as usually the stars won't have changed on
     // return.  This way, however, we can guarantee that the particles
@@ -690,7 +694,11 @@ int evolve_system(real t_end)
 
     int timeout_detection;
     //
-    is_stopping_condition_enabled(TIMEOUT_DETECTION, &timeout_detection);
+    error = is_stopping_condition_enabled(TIMEOUT_DETECTION, &timeout_detection);
+    error = is_stopping_condition_enabled(STEPS_DETECTION, 
+					  &is_steps_detection_enabled);
+    get_stopping_condition_steps_parameter(&max_iterations);    
+
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
@@ -726,6 +734,14 @@ int evolve_system(real t_end)
 	      set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
 	    }
 	  }
+	  if(is_steps_detection_enabled) {
+	    iterations_innerloop++;
+	    if (iterations_innerloop > max_iterations) {
+	      int stopping_index  = next_index_for_stopping_condition();
+	      set_stopping_condition_info(stopping_index, STEPS_DETECTION);
+	    }
+	  }
+
 	  // AMUSE STOPPING CONDITIONS
 	  
 	  if(set_conditions & enabled_conditions) {
@@ -1131,7 +1147,7 @@ int initialize_code()
     cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
     
     // AMUSE STOPPING CONDITIONS SUPPORT
-    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
+    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP | STEPS_DETECTION_BITMAP;
     // -----------------------
     mpi_setup_stopping_conditions();
     return 0;

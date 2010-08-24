@@ -420,3 +420,25 @@ class TestAmuseInterface(TestWithMPI):
         
         instance.stop()
         
+    def test10(self):
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+
+        instance = Hermite(convert_nbody)
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.0 | units.AU**2
+        instance.parameters.stopping_conditions_steps = 10 
+        self.assertEquals(instance.parameters.stopping_conditions_steps,10|units.none)
+
+        stars = self.new_system_of_sun_and_earth()
+        earth = stars[1]
+                
+        instance.particles.add_particles(stars)
+        instance.stopping_conditions.steps_detection.enable()
+        instance.evolve_model(365.0 | units.day)
+        self.assertTrue(instance.stopping_conditions.steps_detection.is_set())
+        instance.update_particles(stars)
+        
+        instance.cleanup_module()
+        
+        instance.stop()
+        
