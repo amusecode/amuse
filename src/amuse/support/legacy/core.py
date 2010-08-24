@@ -11,6 +11,7 @@ from amuse.support import exceptions
 from amuse.support.core import late
 from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
+from amuse.support.options import OptionalAttributes, option
 from amuse.support.legacy.create_definition import LegacyDocStringProperty
 from amuse.support.legacy.channel import MpiChannel, MultiprocessingMPIChannel
 from amuse.support.legacy.channel import is_mpd_running
@@ -566,7 +567,7 @@ def stop_interfaces():
 
 atexit.register(stop_interfaces)
 
-class LegacyInterface(object):
+class LegacyInterface(OptionalAttributes):
     """
     Abstract base class for all interfaces to legacy codes.
     
@@ -576,7 +577,6 @@ class LegacyInterface(object):
     of the instantiated object.
     """
     instances = []
-    channel_factory = MpiChannel
     
     def __init__(self, name_of_the_worker = 'worker_code', **options):
         """
@@ -595,6 +595,8 @@ class LegacyInterface(object):
         :argument debug_with_gdb: Start the worker(s) in a gdb session in a separate xterm
         :argument hostname: Start the worker on the node with this name
         """
+        OptionalAttributes.__init__(self, **options)
+            
         self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
         self._check_if_worker_is_up_to_date()
         self.channel.start()
@@ -652,6 +654,23 @@ Please do a 'make clean; make' in the root directory.
         pass
         
 
+
+    @option(choices=['mpi','remote'], sections=("channel",))
+    def channel_type(self):
+        return 'mpi'
+    
+    
+
+    @late
+    def channel_factory(self):
+        if self.channel_type == 'mpi':
+            return MpiChannel
+        elif self.channel_type == 'remote':
+            return MultiprocessingMPIChannel
+        else:
+            raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
+    
+    
 class LegacyPythonInterface(LegacyInterface):
     """
     Base class for codes having a python implementation

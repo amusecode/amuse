@@ -834,13 +834,12 @@ class MultiprocessingMPIChannel(MessageChannel):
         else:
             environment['PYTHONPATH'] =  self._extra_path_item(__file__)
             
-        template = """from amuse.legacy.support import core
-m = core.MultiprocessingMPIChannel('{0}',{1},None,{2})
-m.run_mpi_channel('{3}')"""
+        template = """from amuse.support.legacy import channel
+m = channel.MultiprocessingMPIChannel('{0}',number_of_workers = {1})
+m.run_mpi_channel('{2}')"""
         code_string = template.format(
             self.full_name_of_the_worker, 
             self.number_of_workers, 
-            self.debug_with_gdb, 
             self.name_of_the_socket
         )
         self.process =  Popen([sys.executable, "-c", code_string], env = environment)
@@ -859,7 +858,7 @@ m.run_mpi_channel('{3}')"""
         self.process = None
         
     def run_mpi_channel(self, name_of_the_socket):
-        channel = MpiChannel(self.full_name_of_the_worker, self.number_of_workers, None, self.debug_with_gdb)
+        channel = MpiChannel(self.full_name_of_the_worker, number_of_workers = self.number_of_workers)
         channel.start()
         socket = self._createAClientUNIXSocket(name_of_the_socket)
         try:

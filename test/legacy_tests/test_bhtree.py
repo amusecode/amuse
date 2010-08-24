@@ -139,6 +139,26 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
 
 
+
+    def test7(self):
+        interface = BHTreeInterface(channel_type="remote")
+        interface.initialize_code()
+        
+        interface.commit_parameters()
+        interface.new_particle([10,20],[1,1],[0,0],[0,0], [0,0], [0,0], [0,0], [0,0])
+        interface.commit_particles()
+        retrieved_state = interface.get_state(1)
+        
+        self.assertEquals(10.0,  retrieved_state['mass'])
+        self.assertEquals(1, retrieved_state['radius'])
+    
+        retrieved_state = interface.get_state([1,2])
+        self.assertEquals(20.0,  retrieved_state['mass'][1])
+        self.assertEquals(interface.get_number_of_particles()['number_of_particles'], 2)
+        interface.cleanup_code()
+        interface.stop()
+    
+    
 class TestAmuseInterface(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)

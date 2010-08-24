@@ -212,7 +212,7 @@ class OptionalAttributes(object):
     For the following configuration file the **number_of_tries** 
     attribute will be 10 as the *mysection* section is searched first.
     
-    .. code-block:: ini
+    :: ini
     
         [mysection]
         number_of_tries = 10
@@ -222,7 +222,7 @@ class OptionalAttributes(object):
     The value of the option can be overriden by specifying it when
     creating an object of the class.
     
-    .. code-block:: python
+    :: python
         
         x = MyInterface(number_of_tries = 15)
         print x.number_of_tries
