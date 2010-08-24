@@ -227,10 +227,11 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         self._do_automatic_state_transitions = True
         self.states = {}
         self.interface = interface
+        self._is_enabled = True
 
 
     def supports(self, name, was_found):
-        return name in self._mapping_from_name_to_state_method
+        return self._is_enabled and (name in self._mapping_from_name_to_state_method)
 
     def get_attribute(self, name, value):
         return self._mapping_from_name_to_state_method[name].new_method(value)
@@ -373,6 +374,21 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
 
 
 
+
+    def is_enabled(self):
+        return self._is_enabled
+    
+    
+
+    def enable(self):
+        self._is_enabled = True
+    
+    
+
+    def disable(self):
+        self._is_enabled = False
+    
+    
 class MethodWithUnits(CodeMethodWrapper):
 
     def __init__(self, original_method, definition):
@@ -1121,6 +1137,21 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
     def get_name_of_current_state(self):
         return self.get_handler('STATE')._current_state.name
 
+
+    def enable_state_engine(self):
+        self.get_handler('STATE').enable()
+    
+    
+
+    def disable_state_engine(self):
+        self.get_handler('STATE').disable()
+    
+    
+
+    def is_state_engine_enabled(self):
+        return self.get_handler('STATE').is_enabled()
+    
+    
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
 

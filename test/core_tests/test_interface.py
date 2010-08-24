@@ -393,7 +393,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         except Exception, ex:
             print ex
         
-    def test8(self):
+    def test9(self):
         original = self.TestClass()
         
         instance = interface.CodeInterface(original)
@@ -425,6 +425,34 @@ class CodeInterfaceTests(amusetest.TestCase):
         
 
 
+
+    def test10(self):
+        original = self.TestClass()
+        
+        instance = interface.CodeInterface(original)
+        
+        handler = instance.get_handler('STATE')
+        handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
+        handler.add_transition('ONE', 'TWO', 'move_to_state_2')
+        handler.add_transition('THREE', 'ONE', 'move_to_state_1')
+        handler.add_transition('TWO', 'THREE', 'move_to_state_1')
+        
+        
+        handler.add_method('ONE', 'returns_1')
+        handler.add_method('TWO', 'returns_2')
+        handler.add_method('THREE', 'returns_3')
+        handler.set_initial_state('ZERO')
+        
+        self.assertTrue(instance.is_state_engine_enabled())
+        self.assertEquals(handler._current_state.name, 'ZERO')
+        instance.move_to_state_1()
+        self.assertEquals(handler._current_state.name, 'ONE')
+        instance.disable_state_engine()
+        self.assertFalse(instance.is_state_engine_enabled())
+        instance.move_to_state_2()
+        self.assertEquals(handler._current_state.name, 'ONE')
+    
+    
 class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     class TestClass(object):
        
