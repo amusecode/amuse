@@ -226,7 +226,6 @@ class TestInterface(TestWithMPI):
         self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
         instance.stop()
 
-
 class TestInterfaceF(TestWithMPI):
     def f90_compile(self, objectname, string):
         root, ext = os.path.splitext(objectname)

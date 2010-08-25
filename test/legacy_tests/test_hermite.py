@@ -426,16 +426,16 @@ class TestAmuseInterface(TestWithMPI):
         instance = Hermite(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.parameters.stopping_conditions_steps = 10 
-        self.assertEquals(instance.parameters.stopping_conditions_steps,10|units.none)
+        instance.parameters.stopping_conditions_number_of_steps = 10 
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10|units.none)
 
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
                 
         instance.particles.add_particles(stars)
-        instance.stopping_conditions.steps_detection.enable()
+        instance.stopping_conditions.number_of_steps_detection.enable()
         instance.evolve_model(365.0 | units.day)
-        self.assertTrue(instance.stopping_conditions.steps_detection.is_set())
+        self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         instance.update_particles(stars)
         
         instance.cleanup_module()

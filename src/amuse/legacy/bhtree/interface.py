@@ -221,8 +221,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         return function
     
 class BHTree(GravitationalDynamics):
-    
-    
+
     def __init__(self, convert_nbody = None, **options):
         self.stopping_conditions = StoppingConditions(self)
         
@@ -284,6 +283,8 @@ class BHTree(GravitationalDynamics):
             nbody_system.time,
             1.0 | nbody_system.time
         )
+
+        self.stopping_conditions.define_parameters(object)
         
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
@@ -310,3 +311,4 @@ class BHTree(GravitationalDynamics):
         GravitationalDynamics.define_particle_sets(self, object)
         self.stopping_conditions.define_particle_set(object, 'particles')
 
+    

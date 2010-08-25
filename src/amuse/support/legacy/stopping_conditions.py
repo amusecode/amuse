@@ -176,7 +176,7 @@ class StoppingConditionInterface(object):
         return function
 
     @legacy_function
-    def set_stopping_condition_steps_parameter():
+    def set_stopping_condition_number_of_steps_parameter():
         """
         Set max inner loop evaluations.
         """
@@ -191,7 +191,7 @@ class StoppingConditionInterface(object):
         return function
 
     @legacy_function
-    def get_stopping_condition_steps_parameter():
+    def get_stopping_condition_number_of_steps_parameter():
         """
         Retrieve max inner loop evaluations.
         """
@@ -265,7 +265,7 @@ class StoppingConditions():
             3, 
             "If enabled, the code will stop at the end of the inner loop when the computer time is above a set timeout"
         )
-        self.steps_detection = StoppingCondition(
+        self.number_of_steps_detection = StoppingCondition(
             self,
             4,
             "If enabled, the code will stop at the end of the inner loop when the number of evaluations reached the set max number"
@@ -318,9 +318,9 @@ class StoppingConditions():
         )
 
         object.add_method_parameter(
-            "get_stopping_condition_steps_parameter",
-            "set_stopping_condition_steps_parameter", 
-            "stopping_conditions_steps", 
+            "get_stopping_condition_number_of_steps_parameter",
+            "set_stopping_condition_number_of_steps_parameter", 
+            "stopping_conditions_number_of_steps", 
             "max inner loop evals", 
             units.none, 
             1.0 |  units.none

@@ -660,9 +660,9 @@ int evolve_system(real t_end)
     int nest_err;               // error of subprocedure
     int must_run = 1;
 
-    int is_steps_detection_enabled;
-    int iterations_innerloop = 0;
-    int max_iterations;
+    int is_number_of_steps_detection_enabled;
+    int number_of_steps_innerloop = 0;
+    int max_number_of_steps;
     int error;
     
     // May be overkill to compute acc and jerk at start and end of
@@ -695,9 +695,9 @@ int evolve_system(real t_end)
     int timeout_detection;
     //
     error = is_stopping_condition_enabled(TIMEOUT_DETECTION, &timeout_detection);
-    error = is_stopping_condition_enabled(STEPS_DETECTION, 
-					  &is_steps_detection_enabled);
-    get_stopping_condition_steps_parameter(&max_iterations);    
+    error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
+					  &is_number_of_steps_detection_enabled);
+    get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
 
     // AMUSE STOPPING CONDITIONS
     
@@ -734,11 +734,11 @@ int evolve_system(real t_end)
 	      set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
 	    }
 	  }
-	  if(is_steps_detection_enabled) {
-	    iterations_innerloop++;
-	    if (iterations_innerloop > max_iterations) {
+	  if(is_number_of_steps_detection_enabled) {
+	    number_of_steps_innerloop++;
+	    if (number_of_steps_innerloop > max_number_of_steps) {
 	      int stopping_index  = next_index_for_stopping_condition();
-	      set_stopping_condition_info(stopping_index, STEPS_DETECTION);
+	      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
 	    }
 	  }
 
@@ -1147,7 +1147,7 @@ int initialize_code()
     cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
     
     // AMUSE STOPPING CONDITIONS SUPPORT
-    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP | STEPS_DETECTION_BITMAP;
+    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP | NUMBER_OF_STEPS_DETECTION_BITMAP;
     // -----------------------
     mpi_setup_stopping_conditions();
     return 0;

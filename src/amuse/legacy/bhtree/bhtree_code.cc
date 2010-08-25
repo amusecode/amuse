@@ -247,8 +247,16 @@ int evolve(real t_end)                // default sync = 0
       }
 
      // AMUSE STOPPING CONDITIONS
+    int is_timeout_detection_enabled;
+    int is_number_of_steps_detection_enabled;
+    int max_number_of_steps;
+    int number_of_steps_innerloop = 0;
+    int error;
     time_t starttime, currenttime;
     time(&starttime);
+    error = is_stopping_condition_enabled(TIMEOUT_DETECTION, &is_timeout_detection_enabled);
+    error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, &is_number_of_steps_detection_enabled);
+    get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
     // AMUSE STOPPING CONDITIONS
     
     while( bhtcs.time<t_end)
@@ -265,7 +273,7 @@ int evolve(real t_end)                // default sync = 0
         bhtcs.time += dt;                
 
         // AMUSE STOPPING CONDITIONS
-        if(TIMEOUT_DETECTION_BITMAP & enabled_conditions) {
+        if(is_timeout_detection_enabled) {
             time(&currenttime);
             cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
             if((currenttime - starttime) > timeout_parameter) {
@@ -273,7 +281,15 @@ int evolve(real t_end)                // default sync = 0
                 set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
             }
         }
-        // AMUSE STOPPING CONDITIONS
+	if(is_number_of_steps_detection_enabled) {
+	    number_of_steps_innerloop++;
+	    if(number_of_steps_innerloop > max_number_of_steps) {
+	      int stopping_index  = next_index_for_stopping_condition();
+	      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+	    }
+	}
+
+	// AMUSE STOPPING CONDITIONS
 
         if (set_conditions & enabled_conditions)
         {
@@ -617,7 +633,10 @@ int set_radius(int id, double radius)
 
 int initialize_code()
 {
-    supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
+  //    supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP | NUMBER_OF_STEPS_DETECTION_BITMAP;
+    set_support_for_condition(COLLISION_DETECTION);
+    set_support_for_condition(TIMEOUT_DETECTION);
+    set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
     return 0;
 }
 
