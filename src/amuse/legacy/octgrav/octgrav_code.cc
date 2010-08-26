@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <string>
 #include <map>
+//AMUSE STOPPING CONDITIONS SUPPORT
+#include <stopcond.h>
+#include <time.h>
 
 using namespace std;
 
@@ -128,15 +131,31 @@ int evolve(double t_end)
   system.set_softening(eps);
   system.set_opening_angle(theta);
 
+  //AMUSE STOPPING CONDITIONS
+  int is_number_of_steps_detection_enabled;
+  int number_of_steps_innerloop = 0;
+  int max_number_of_steps;
+  int error;
+  int iterate;
+  
+  error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
+					&is_number_of_steps_detection_enabled);
+  get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
+
   fprintf(stdout, "eps:%f theta:%f ", eps, theta);
   fflush(stdout);
 
+  //stop @ nsteps or max_number_of_steps whichever is smallest
+  if (max_number_of_steps <= nsteps) {
+      nsteps = max_number_of_steps;
+      int stopping_index  = next_index_for_stopping_condition();
+      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+  }
 
-  for (int i = 0; i < nsteps; i++)
-    {
+  for (int i = 0; i < nsteps ; i++) {
       leapfrog(dtime, bodies_pos, bodies_vel, bodies_grav, system);
-    }
-  
+  }
+
   return 0;
 }
 

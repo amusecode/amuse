@@ -2,13 +2,13 @@ from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
 
-class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface):
+class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Gaburov, Nitadori, Harfst, Portegies Zwart & Makino,"A gravitational tree code on graphics processing units:
                Implementation in CUDA", in preparetion; and main MUSE paper, arXiv/0807.1996
     """
 
-    include_headers = ['octgrav_code.h', 'parameters.h', 'worker_code.h', 'local.h']
+    include_headers = ['octgrav_code.h', 'parameters.h', 'worker_code.h', 'local.h', 'stopcond.h']
 
     def __init__(self, convert_nbody = None, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
@@ -85,6 +85,7 @@ class Octgrav(GravitationalDynamics):
 
     def __init__(self, convert_nbody = None, **options):
         legacy_interface = OctgravInterface(**options)
+        self.stopping_conditions = StoppingConditions(self)
 
         GravitationalDynamics.__init__(
             self,
@@ -118,3 +119,15 @@ class Octgrav(GravitationalDynamics):
             units.none,
             0.8 | units.none
         )
+
+        self.stopping_conditions.define_parameters(object)
+
+    def define_methods(self, object):
+        GravitationalDynamics.define_methods(self, object)
+
+        self.stopping_conditions.define_methods(object)
+        
+    
+    def define_particle_sets(self, object):
+        GravitationalDynamics.define_particle_sets(self, object)
+        self.stopping_conditions.define_particle_set(object, 'particles')
