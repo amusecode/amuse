@@ -52,23 +52,9 @@ def svn_log(repos, revision):
         date_string = get_first_element_with_tag(entry, "date").firstChild.data
         msg_string = get_first_element_with_tag(entry, "msg").firstChild.data
         return (author, date_string, msg_string)
-        
-if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print "Usage: {0} REPOS REV".format(argv[0])
-        sys.exit(1)
-        
-    repository = sys.argv[1]
-    revision = sys.argv[2]
-    
-    repository = os.path.normpath(repository)
-    
-    try:
-        send_revision_to_server(revision)
-    except:
-        print "error, tracker may be offline"
-        sys.exit(1)
-        
+
+
+def send_review_to_server(repository, revision):
     repository_url = 'file://' + repository
     svnloginfo = svn_log(repository_url, revision)
     if svnloginfo:
@@ -107,6 +93,28 @@ if __name__ == "__main__":
             arguments += [summary, description]
             
         print run_command(arguments)
+        
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print "Usage: {0} REPOS REV".format(argv[0])
+        sys.exit(1)
+        
+    repository = sys.argv[1]
+    revision = sys.argv[2]
+    
+    repository = os.path.normpath(repository)
+    
+    try:
+        send_revision_to_server(revision)
+    except:
+        print "error, tracker may be offline"
+        sys.exit(1)
+        
+    if not repository == 'none':
+        send_review_to_server(repository, revision)
+        
+    
+    
 
     
     
