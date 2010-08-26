@@ -1291,6 +1291,14 @@ C---  local vars
       DOUBLE PRECISION tend
 
       INTEGER is_any_condition_set
+      INTEGER is_stopping_condition_enabled
+      INTEGER is_number_of_steps_detection_enabled
+      INTEGER get_stopping_condition_number_of_steps_parameter
+      INTEGER max_number_of_steps
+      INTEGER number_of_steps_innerloop
+      INTEGER next_index_for_stopping_condition
+      INTEGER set_stopping_condition_info
+      INTEGER stopping_index
       INTEGER reset_stopping_conditions, error
 C (re)start grape (fip)
 C  update local particles on grape
@@ -1300,6 +1308,7 @@ C  update local particles on grape
       t_end      = tend
 
       error = reset_stopping_conditions()
+      number_of_steps_innerloop = 0
 
 C--------------------------------------------------------------------
 C---  main loop begins here
@@ -1369,6 +1378,23 @@ C             ------------
       
          time_cur   = min_t
 
+C timeout and number of steps detection goes here i quess...
+         error = is_stopping_condition_enabled(
+     $               NUMBER_OF_STEPS_DETECTION, 
+     $               is_number_of_steps_detection_enabled)
+         error = get_stopping_condition_number_of_steps_parameter(
+     $               max_number_of_steps)
+
+         IF (is_number_of_steps_detection_enabled.GT.0) THEN
+             number_of_steps_innerloop = 
+     $           number_of_steps_innerloop + 1
+             IF (number_of_steps_innerloop.GT.max_number_of_steps) THEN
+                 stopping_index = next_index_for_stopping_condition()
+                 error = set_stopping_condition_info(stopping_index, 
+     $                       NUMBER_OF_STEPS_DETECTION);
+             ENDIF
+
+         ENDIF
          CALL gather_collisions
 
 C---  break if collision occured
