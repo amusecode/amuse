@@ -5,13 +5,13 @@ subroutine maketree
   call setbox('all ')
   call loadtree5('all ',0)
   incellsg=incells
-  ttree=tpos
+  treestatecount=ppropcount+pordercount
 end subroutine
 	
 subroutine makesphtree
   include 'globals.h'
 
-  if(nsph.NE.nbodies.OR.ttree.NE.tpos) then
+  if(nsph.NE.nbodies.OR.treestatecount.NE.ppropcount+pordercount) then
     call setbox('sph ')
     call loadtree5('sph ',0)
   else

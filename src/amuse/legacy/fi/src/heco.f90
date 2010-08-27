@@ -10,7 +10,7 @@ subroutine heattabel
 
   if(verbosity.GT.0) print*,' ...InitElements...'
   call InitElements(metallicity)
-  print*,'  > compiled metallicity:', zQ()/solarzQ()
+  if(verbosity.GT.0) print*,'  > compiled metallicity:', zQ()/solarzQ()
   if(nstar.GT.0) then
     if(verbosity.GT.0)print*,' ...InitStars...'
     call InitStars(datadir,zQ())

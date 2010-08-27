@@ -237,10 +237,12 @@ subroutine readbods(filenaam)
  tstarform=tnow
  tsnfeedback=tnow
  tbh=tnow
- ttree=tpos-1.
  if(rhead(25).NE.0) eps=rhead(25) 
 
  input(1:nphead)=phead(1:nphead)
+
+ pordercount=pordercount+1
+ ppropcount=ppropcount+1
 
  IF(phead(1).EQ.1) READ(ubodsin) (mass(p),p=1,nbodies)
  IF(phead(2).EQ.1) READ(ubodsin) (pos(p,1),p=1,nbodies)
@@ -374,7 +376,7 @@ write(uboddump) n
       write(uboddump)  nttot,ntmin,ntmax,ntavg,nttotfuv,ntminfuv,        &
    ntmaxfuv,ntavgfuv
       write(uboddump)  nstot,nsmin,nsmax,nsavg
-      write(uboddump)  tnow,tpos,ttree
+      write(uboddump)  tnow,tpos
       write(uboddump)  tiny
       write(uboddump)  mtot,etot,ektot,eptot,mstar,mgas,snheat,esofttot, &
    enerror,amvec,cmpos,cmvel
@@ -482,7 +484,7 @@ read(uboddump) n
       read(uboddump)  nttot,ntmin,ntmax,ntavg,nttotfuv,ntminfuv,        &
    ntmaxfuv,ntavgfuv
       read(uboddump)  nstot,nsmin,nsmax,nsavg
-      read(uboddump)  tnow,tpos,ttree
+      read(uboddump)  tnow,tpos
       read(uboddump)  tiny
       read(uboddump)  mtot,etot,ektot,eptot,mstar,mgas,snheat,esofttot, &
    enerror,amvec,cmpos,cmvel

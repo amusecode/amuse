@@ -1,10 +1,8 @@
 ## makefile for treesph code
 
-FC?=mpif90
+FC?=ifort
 F2PY=f2py
 PIC=
-#-fPIC
-
 
 OMPFLAGS= # -openmp -openmp_report0 
 
@@ -14,7 +12,7 @@ OMPFLAGS= # -openmp -openmp_report0
 # ifort flags
 
 
-FFLAGS2= -r8 -O -ip -u -p $(PIC)
+FFLAGS2= -r8 -O2 -ip -u  $(PIC)
 
 FFLAGS= $(FFLAGS2) $(OMPFLAGS)
 

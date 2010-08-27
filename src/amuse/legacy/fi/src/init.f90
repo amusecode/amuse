@@ -9,14 +9,14 @@ subroutine initdump(n)
   include 'globals.h' 
   integer n
 
+  pordercount=pordercount+1
+  ppropcount=ppropcount+1
   call readdump(n)
   call set_parameters(1)
   call initfixedhalo(poshalo,trim(datadir)//halofile)
   if(masshalo.NE.fixedhalomass) call terror('halo reinit error')
 
   call heattabel
-
-  call InitStars(datadir,zQ())
 
   if(usepm) then
     if(verbosity.GT.0) print*,' ...initPM...'

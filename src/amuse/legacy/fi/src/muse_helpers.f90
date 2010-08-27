@@ -7,60 +7,7 @@ subroutine muse_start
   
   if(firstcall) then
     firstcall=.FALSE.
-
     call initmem(nbodsmax,nsphmax,ncells)
-
-    print*,' '
-
-    print*,' compiled with:'
-
-    if(periodic) then
-      print*,' > periodic boundary'
-    else
-      print*,' > vacuum boundary'
-    endif
-
-    if(sortpart) then
-      print*,' > particle sorting'
-    else
-      print*,' > no particle sorting'
-    endif
-
-    if(H2cooling) then
-      print*,' > h2 cooling'
-    else
-      print*,' > no h2 cooling'
-    endif
-
-    if(ionCool) then
-      print*,' > variable ionization'
-    else
-      print*,' > fixed ionization'
-    endif
-
-    if(simpleeff) then
-      print*,' > simple heating efficiency'
-    else
-      print*,' > full heating efficiency'
-    endif
-
-    if(cosmrayheat) then
-      print*,' > cosmic ray heating'
-    else
-      print*,' > no cosmic ray heating'
-    endif
-
-    if(usepm) then
-      print*,' > pm gravity'
-    else
-      print*,' > no pm gravity'
-    endif
-
-    print*,' > compiled constraints:'
-    print*,'    no. of particles: ',nbodsmax
-    print*,'    no. of sph part:  ',nsphmax
-    print*,'    no. of cells:     ',ncells
-    print*,' '
   endif
 
   call set_parameters_to_defaults
@@ -113,7 +60,7 @@ function amuse_synchronize_model() result(ret)
 ! muse_energies does coorpos if called (1,..)
   call muse_energies(1,dum1,dum2,dum3)
   ret=0
-end function    
+end function
 
 function muse_reinitialize() result(ret)
   include 'globals.h'
@@ -124,21 +71,24 @@ function muse_reinitialize() result(ret)
     return
   endif  
   call partremoval
-  call initstep
-  call zeroacc
-  call zeropot
-  acc(1:nbodies,4)=0.
-  call gravity('both')
-  call makesphtree
-  call densnhsmooth
+!  if(sortpart) call mortonsort
+!  call initstep
+!  call zeroacc
+!  call zeropot
+!  acc(1:nbodies,4)=0.
+!  call gravity('both')
+!  call makesphtree
+!  call densnhsmooth
 ! call tree_reduction(root,incells,'sph ')
-  if(uentropy) then
-    csound(1:nsph)=sqrt(gamma*rho(1:nsph)**gamma1*entropy(1:nsph)) !cosmof3
-  else
-    csound(1:nsph)=sqrt(gamma*gamma1*ethermal(1:nsph))
-  endif
-  if(input(34).EQ.0) call starevolv
-  if(sortpart) call mortonsort
+!  if(uentropy) then
+!    csound(1:nsph)=sqrt(gamma*rho(1:nsph)**gamma1*entropy(1:nsph)) !cosmof3
+!  else
+!    csound(1:nsph)=sqrt(gamma*gamma1*ethermal(1:nsph))
+!  endif
+!  if(input(34).EQ.0) call starevolv
+!  tvel(1:nbodies)=tnow
+  call postprocessread
+
   call initpos
   print*,' **warning: check results reinit**' 
   ret=0
@@ -147,6 +97,7 @@ end function
 subroutine muse_reset(time)
  include 'globals.h'
  real time
+ integer dum,dumm(2),muse_find_particle
 
  nbodies=0
  nsph=0
@@ -174,8 +125,13 @@ subroutine muse_reset(time)
  tstarform=tnow
  tsnfeedback=tnow
  tbh=tnow
- ttree=tnow-1.
  eps=0. 
+
+ syncflag=0
+ treestatecount=-1
+ ppropcount=0
+ pordercount=0
+ dum=muse_find_particle(dum, -1,-1,-1,dumm)
 
  input=0
  input(1:4)=1  ! mass+pos+vel+eps
@@ -205,7 +161,6 @@ subroutine muse_set_time(time)
  tstarform=tnow
  tsnfeedback=tnow
  tbh=tnow
- ttree=tnow-1.
    
 end subroutine
 
@@ -256,7 +211,6 @@ subroutine muse_add_particle_star(id,m,x,y,z,vx,vy,vz,e,tf,npart)
  epsgrav(p:p+npart-1)=e(1:npart)
  tform(p:p+npart-1)=tf(1:npart)
  nbexist(p:p+npart-1)=id(1:npart)
-write(*,*) tform(p:p+npart-1)
 end subroutine
 
 
@@ -293,25 +247,25 @@ function muse_get_nsph() result(n)
  include 'globals.h'
  integer :: n
  n=nsph
-end function 
+end function
 
 function muse_get_nstar() result(n)
  include 'globals.h'
  integer :: n
  n=nstar
-end function 
+end function
 
 function muse_get_ndm() result(n)
  include 'globals.h'
  integer :: n
  n=nbodies-nsph-nstar
-end function 
+end function
 
 function muse_get_time_step() result(dt)
  include 'globals.h'
  real :: dt
  dt=dtime
-end function 
+end function
 
 subroutine muse_stepsys(tend,sync)
  include 'globals.h'
@@ -334,7 +288,7 @@ subroutine muse_get_gravity(epsin,x,y,z,ax,ay,az,n)
  real :: ax(n),ay(n),az(n)
  real :: ppos(3),peps, pacc(3),pphi
 
- if(tnow.NE.ttree) call maketree 
+ if(treestatecount.NE.ppropcount+pordercount) call maketree 
  do i=1,n
   peps=epsin(i)
   ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
@@ -350,7 +304,7 @@ subroutine muse_get_tidalfield(epsin,x,y,z,tide,n)
  real :: tide(6,n)
  real :: ppos(3),peps, ptide(6)
 
- if(tnow.NE.ttree) call maketree 
+ if(treestatecount.NE.ppropcount+pordercount) call maketree 
  do i=1,n
   peps=epsin(i)
   ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
@@ -367,7 +321,7 @@ subroutine muse_get_pot(epsin,x,y,z,pot,n)
  real :: pot(n)
  real :: ppos(3),peps, pacc(3),pphi
 
- if(tnow.NE.ttree) call maketree 
+ if(treestatecount.NE.ppropcount+pordercount) call maketree 
  do i=1,n
   peps=epsin(i)
   ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
@@ -452,53 +406,34 @@ subroutine muse_energies(mode,ek,ep,eth)
  ep=eptot
  eth=ethtot
  
-end subroutine 
+end subroutine
 
 function muse_get_time() result(t)
  include 'globals.h'
  real :: t
  t=tnow
-end function 
+end function
 
 function muse_get_dynamical_time_scale() result(dt)
  include 'globals.h'
  real dt
  dt=(-0.5*mtot*mtot/eptot) / sqrt(2*ektot/mtot)
-end function 
- 
-
-function muse_find(id,n,ids,order) result(p)
- integer id,p,n,ids(n),order(n),low,high,k
-
- low=1
- high=n
- do while(low.LT.high)
-   k=low+((high-low)/2)   
-   if(ids(order(k)).LT.id) then
-      low=k+1
-   else
-      high=k
-   endif 
- enddo
- if(low.LT.n+1.AND.ids(order(low)).EQ.id) then
-   p=order(low)
- else
-   p=-1
- endif   
 end function
-
-function muse_find_particle(tnow,id,n,ids) result(p)
+ 
+function muse_find_particle(count,id,n,ids) result(p)
   use hashMod
   integer :: id,n,p,ids(*)
-  real*8 :: tnow
-  real*8, save :: tstate=-999999.
+  integer :: count
+  integer, save :: statecount=-1
   
-  if(tstate.NE.tnow) then
-    call initHash(n/2+1,n,ids) 
-    tstate=tnow
+  p=-1
+  
+  if(statecount.NE.count) then
+    if(n.GT.0) call initHash(n/2+1,n,ids) 
+    statecount=count
   endif  
    
-  p=find(id,ids)
+  if(n.GT.0) p=find(id,ids)
    
 end function
 
@@ -515,7 +450,7 @@ function amuse_get_state(id,m,x,y,z,vx,vy,vz,e) result(ret)
   integer :: id,ret,p,muse_find_particle
   real*8 :: m,x,y,z,vx,vy,vz,e
 
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -541,7 +476,7 @@ function amuse_get_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   integer :: id,ret,p,muse_find_particle
   real*8 :: m,x,y,z,vx,vy,vz,e,u
 
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -568,7 +503,7 @@ function amuse_get_state_star(id,m,x,y,z,vx,vy,vz,e,tf) result(ret)
   integer :: id,ret,p,muse_find_particle
   real*8 :: m,x,y,z,vx,vy,vz,e,tf
 
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -595,7 +530,7 @@ function amuse_set_state(id,m,x,y,z,vx,vy,vz,e) result(ret)
   integer :: id,p,ret,muse_find_particle
   real*8 :: m,x,y,z,vx,vy,vz,e
 
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -617,7 +552,7 @@ function amuse_set_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   integer :: id,p,ret,muse_find_particle
   real*8 :: m,x,y,z,vx,vy,vz,e,u
 
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -644,7 +579,7 @@ function amuse_set_state_star(id,m,x,y,z,vx,vy,vz,e,tf) result(ret)
   integer :: id,p,ret,muse_find_particle
   real*8 :: m,x,y,z,vx,vy,vz,e,tf
 
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -670,7 +605,7 @@ function amuse_get_mass(id,m) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
   real*8 :: m
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -683,7 +618,7 @@ function amuse_get_radius(id,e) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
   real*8 :: e
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -696,8 +631,12 @@ function amuse_get_position(id,x,y,z) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
   real*8 :: x,y,z
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
+    print*, id,nbodies
+    print*
+    print*,nbexist(1:nbodies)
+    stop
     ret=-1
     return
   endif 
@@ -711,7 +650,7 @@ function amuse_get_velocity(id,vx,vy,vz) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
   real*8 :: vx,vy,vz
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -726,7 +665,7 @@ function amuse_get_internal_energy(id,u) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
   real*8 :: u
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -743,7 +682,7 @@ function amuse_get_star_tform(id,tf) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
   real*8 :: tf
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -761,7 +700,7 @@ function amuse_set_mass(id,m) result(ret)
   include 'globals.h'
   integer :: id,p,ret,muse_find_particle
   real*8 :: m
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -774,7 +713,7 @@ function amuse_set_radius(id,e) result(ret)
   include 'globals.h'
   integer :: id,p,ret,muse_find_particle
   real*8 :: e
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -787,7 +726,7 @@ function amuse_set_position(id,x,y,z) result(ret)
   include 'globals.h'
   integer :: id,p,ret,muse_find_particle
   real*8 :: x,y,z
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -802,7 +741,7 @@ function amuse_set_velocity(id,vx,vy,vz) result(ret)
   include 'globals.h'
   integer :: id,p,ret,muse_find_particle
   real*8 :: vx,vy,vz
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -817,7 +756,7 @@ function amuse_set_internal_energy(id,u) result(ret)
   include 'globals.h'
   integer :: id,p,ret,muse_find_particle
   real*8 :: u
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -834,7 +773,7 @@ function amuse_set_star_tform(id,tf) result(ret)
   include 'globals.h'
   integer :: id,p,ret,muse_find_particle
   real*8 :: tf
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -857,7 +796,7 @@ function muse_remove_particle(id) result(ret)
     ret=-2
     return
   endif  
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return
@@ -886,7 +825,7 @@ function muse_index_of_next_particle(id,id1) result(ret)
     ret=-1
     return
   endif
-  p=muse_find_particle(tnow,id,nbodies,nbexist)
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
   if(p.EQ.0) then
     ret=-1
     return

@@ -27,8 +27,6 @@ subroutine postprocessread
 !  massres=MINVAL(mass(1:nsph))/8.*nsmooth
       massres=MAXVAL(mass(1:nsph))/8.*nsmooth
     endif
-    removgas=removgas*8.*massres/nsmooth
-    if(removgas.LT.tiny) call terror(' input error: removgas or massres')
   endif
 
   if(input(2).EQ.0) call terror(' input error: need positions')

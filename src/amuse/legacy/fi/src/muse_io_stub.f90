@@ -8,4 +8,5 @@ subroutine outenrgy
 end subroutine
 
 subroutine outlog(istep)
+  integer istep
 end subroutine

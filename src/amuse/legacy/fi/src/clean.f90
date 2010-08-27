@@ -109,6 +109,8 @@ subroutine partremoval
   integer i,lastsph,lastdm,laststar,lastbh 
   integer onsph,onstar,onbh,onbodies
   i=1
+
+  pordercount=pordercount+1
   
   lastsph=nsph
   lastdm=nbodies-nstar
@@ -232,6 +234,8 @@ function addspace_bh(n) result(p)
 
   if(nbodies+n.GT.nbodsmax) call terror('add_bh: exceed nbodsmax')
 
+  pordercount=pordercount+1
+
   p=nbodies+1
   call zeropart(p,n)
   nbodies=nbodies+n
@@ -245,6 +249,8 @@ function addspace_star(n) result(p)
   integer i,p,n
 
   if(nbodies+n.GT.nbodsmax) call terror('add_star: exceed nbodsmax')
+
+  pordercount=pordercount+1
 
   do i=1,min(n,nbh)
     call copypart(nbodies-nbh+i,nbodies+n-min(n,nbh)+i)
@@ -261,6 +267,8 @@ function addspace_dm(n) result(p)
   integer i,p,n
 
   if(nbodies+n.GT.nbodsmax) call terror('add_dm: exceed nbodsmax')
+
+  pordercount=pordercount+1
 
   do i=1,min(n,nbh)
     call copypart(nbodies-nbh+i,nbodies+n-min(n,nbh)+i)
@@ -281,6 +289,8 @@ function addspace_gas(n) result(p)
 
   if(nbodies+n.GT.nbodsmax.OR.nsph+n.GT.nsphmax) &
     call terror('add_gas: exceed nbodsmax')
+
+  pordercount=pordercount+1
 
   do i=1,min(n,nbh)
     call copypart(nbodies-nbh+i,nbodies+n-min(n,nbh)+i)

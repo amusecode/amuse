@@ -4,7 +4,7 @@ subroutine mortonsort
   
  call maketree
 
- ttree=tnow-1. ! because tree is not valid after sorting
+ pordercount=pordercount+1
     
  jg=0
  js=0

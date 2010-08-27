@@ -19,6 +19,8 @@ subroutine corrpos(ctimestp,rc)
     if(verbosity.GT.0) print*,'<corrpos> desync'
   endif
 
+  ppropcount=ppropcount+1
+
   if(.not.periodic) then
     do k=1,ndim
       do i=1,npactive
@@ -45,6 +47,8 @@ subroutine steppos
   integer i,ib,p,k,nkeep
   real acceff,distance,csdtime
 
+  ppropcount=ppropcount+1
+
   if(.not.periodic) then
 
     do k=1,ndim
@@ -70,6 +74,7 @@ subroutine stepvel
   include 'globals.h'
   integer p,k,i
   real acceff,vfac1now,vfac2now,dt,go,maxacc
+
 ! adhoc acc limiter
   k=0
   if(usesph) then

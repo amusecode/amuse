@@ -44,8 +44,10 @@ include 'globals.h'
   integer nform,nstable,p,i,ib,nforced,ioerror
   character*4 option         
   integer, allocatable :: forced(:)
-  real fthresh
+  real fthresh,minmass
   parameter(fthresh=0.5)
+
+  minmass=removgas*8.*massres/nsmooth
 
   allocate(forced(nsph))
    newstarmass=sfeff*8.*massres/nsmooth  
@@ -171,6 +173,7 @@ include 'globals.h'
 
 ! shift bh to end
   if(nform.GT.0) then
+    pordercount=pordercount+1
     do i=nbodies+nform,nbodies+nform-nbh+1,-1
       p=i-nform
       mass(i)=mass(p)
@@ -209,7 +212,7 @@ include 'globals.h'
       if(sfmode.EQ.'gerritsen'.OR.sfmode.EQ.'molecular') &
         mass(p)=sfeff*mass(ib)
       if(sfmode.EQ.'molecular2') mass(p)=h2frac(ib)*mass(ib)
-      if(mass(ib)-mass(p).lt.removgas.OR.forced(i).EQ.1) &
+      if(mass(ib)-mass(p).lt.minmass.OR.forced(i).EQ.1) &
         mass(p)=mass(ib)
       pos(p,1)=pos(ib,1)
       pos(p,2)=pos(ib,2)
