@@ -118,6 +118,7 @@ int evolve(double t_end)
   double delta_t = t_end - t_now;
   int nsteps;
   //  dtime = timestep;
+  nsteps = (int) (delta_t/timestep)+1;
   double dtime = delta_t/nsteps;
 
   /* 2. Calculate energies */
@@ -143,7 +144,7 @@ int evolve(double t_end)
   get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
 
   //stop @ nsteps or max_number_of_steps whichever is smallest
-  nsteps = (int) (delta_t/timestep)+1;
+
   number_of_steps_detection = 0; //false
   if (is_number_of_steps_detection_enabled) {
       if (max_number_of_steps<=nsteps) {
