@@ -116,7 +116,7 @@ int evolve(double t_end)
   /* 1. Create equal-sized time steps by adjusting timestep */
 
   double delta_t = t_end - t_now;
-  int nsteps = (int) (delta_t/timestep)+1;
+  int nsteps;
   //  dtime = timestep;
   double dtime = delta_t/nsteps;
 
@@ -136,24 +136,32 @@ int evolve(double t_end)
   int number_of_steps_innerloop = 0;
   int max_number_of_steps;
   int error;
-  int iterate;
+  int number_of_steps_detection;
   
   error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
 					&is_number_of_steps_detection_enabled);
   get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
 
+  //stop @ nsteps or max_number_of_steps whichever is smallest
+  nsteps = (int) (delta_t/timestep)+1;
+  number_of_steps_detection = 0; //false
+  if (is_number_of_steps_detection_enabled) {
+      if (max_number_of_steps<=nsteps) {
+	  nsteps = max_number_of_steps;
+	  number_of_steps_detection =1;
+      }
+  }
+
   fprintf(stdout, "eps:%f theta:%f ", eps, theta);
   fflush(stdout);
 
-  //stop @ nsteps or max_number_of_steps whichever is smallest
-  if (max_number_of_steps <= nsteps) {
-      nsteps = max_number_of_steps;
-      int stopping_index  = next_index_for_stopping_condition();
-      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
-  }
-
   for (int i = 0; i < nsteps ; i++) {
       leapfrog(dtime, bodies_pos, bodies_vel, bodies_grav, system);
+  }
+
+  if (number_of_steps_detection) {
+      int stopping_index  = next_index_for_stopping_condition();
+      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
   }
 
   return 0;
@@ -690,5 +698,6 @@ int cleanup_code()
 
 int initialize_code()
 {
-  return 0;
+    set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
+    return 0;
 }
