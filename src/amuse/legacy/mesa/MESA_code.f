@@ -567,6 +567,30 @@
          endif
       end function
 
+! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
+      integer function get_mu_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_mu_at_zone = -1
+         else
+            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+                AMUSE_value = -1.0
+                get_mu_at_zone = -2
+            else
+                AMUSE_value = s% mu(AMUSE_zone)
+                get_mu_at_zone = 0
+            endif
+         endif
+      end function
+
 ! Return the current number of chemical abundance variables per zone of the star
    integer function get_number_of_species(AMUSE_id, AMUSE_value)
       use star_private_def, only: star_info, get_star_ptr
