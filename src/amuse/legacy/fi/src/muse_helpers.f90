@@ -336,8 +336,9 @@ subroutine muse_get_hydro_state(x,y,z,state,n)
   integer :: n,i,nneigh
   real :: x(n),y(n),z(n),state(5,n)
   real :: ppos(3),rh,rhv(3),rhe,rhv2,h,dum
-  logical :: vdisp_included=.TRUE.
+  logical :: vdisp_included
 
+  vdisp_included=.NOT.isotherm
   if(sphtreecount.NE.ppropcount+pordercount) call makesphtree
   do i=1,n
     ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
