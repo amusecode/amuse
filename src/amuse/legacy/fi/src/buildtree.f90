@@ -2,21 +2,27 @@ subroutine maketree
   include 'globals.h'
   integer i
 
+  if(treestatecount.EQ.ppropcount+pordercount) return
   call setbox('all ')
   call loadtree5('all ',0)
   incellsg=incells
   treestatecount=ppropcount+pordercount
+  sphtreecount=sphtreecount-1
 end subroutine
 	
 subroutine makesphtree
   include 'globals.h'
 
-  if(nsph.NE.nbodies.OR.treestatecount.NE.ppropcount+pordercount) then
+  if(sphtreecount.EQ.ppropcount+pordercount) return
+  if(nsph.EQ.nbodies.AND. &
+     treestatecount.EQ.ppropcount+pordercount) then
+     call tree_reduction(root,incells,'sph ')
+  else
     call setbox('sph ')
     call loadtree5('sph ',0)
-  else
-    call tree_reduction(root,incells,'sph ')
   endif
+  sphtreecount=ppropcount+pordercount
+  treestatecount=treestatecount-1
 end subroutine
 
 subroutine startree

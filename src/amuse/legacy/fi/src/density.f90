@@ -387,6 +387,49 @@ subroutine gatterdens(n,spos,hsearch,dens,ddensdh)
   enddo   
 end subroutine 
 
+subroutine gatter_hydro_state(n,spos,hsearch,dens,rhov,rhov2,rhoe)
+  include 'globals.h' 
+  integer,intent(in) :: n
+  real,dimension(3),intent(in) :: spos
+  real,intent(in) :: hsearch
+  real,intent(inout) :: dens,rhov(3),rhoe,rhov2
+  integer :: i,p,iwsm
+  real :: dx,dy,dz,wnorm,distnorm,hsminv,dr2p,drw,tmass,dr2,wsm
+  real :: dwmass,dwsm,dwmnbi,dwnorm,wmass
+  dens=0.
+  rhov=0.
+  rhoe=0.
+  rhov2=0.
+  hsminv=1./hsearch
+  wnorm=piinv*hsminv*hsminv*hsminv
+  dwnorm=piinv*hsminv**2*hsminv**2*hsminv
+  distnorm=hsminv**2*deldr2i      
+  do i=1,n
+    p=srlist(i)
+    dx=spos(1)-pos(p,1)
+    dy=spos(2)-pos(p,2)
+    dz=spos(3)-pos(p,3)
+    if(dx.GE.hboxsize.AND.periodic) dx=dx-pboxsize
+    if(dx.LT.-hboxsize.AND.periodic) dx=dx+pboxsize
+    if(dy.GE.hboxsize.AND.periodic) dy=dy-pboxsize
+    if(dy.LT.-hboxsize.AND.periodic) dy=dy+pboxsize
+    if(dz.GE.hboxsize.AND.periodic) dz=dz-pboxsize
+    if(dz.LT.-hboxsize.AND.periodic) dz=dz+pboxsize
+    dr2=dx*dx+dy*dy+dz*dz
+    dr2p=dr2*distnorm
+    if(ninterp.GT.dr2p) then
+      iwsm=INT(dr2p)
+      drw=dr2p-iwsm
+      wsm=(1.-drw)*wsmooth(iwsm)+drw*wsmooth(1+iwsm)
+      wmass=wnorm*wsm
+      dens=dens+mass(p)*wmass
+      rhov=rhov+mass(p)*vel(p,1:3)*wmass
+      rhov2=rhov2+mass(p)*sum(vel(p,1:3)**2)*wmass
+      rhoe=rhoe+mass(p)*ethermal(p)*wmass
+    endif
+  enddo   
+end subroutine 
+
 subroutine hsmdenspos2(ppos,h,dens,ddensdh,nneigh)
   include 'globals.h'
   integer nneigh,i,j

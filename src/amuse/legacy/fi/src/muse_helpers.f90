@@ -129,6 +129,7 @@ subroutine muse_reset(time)
 
  syncflag=0
  treestatecount=-1
+ sphtreecount=-1
  ppropcount=0
  pordercount=0
  dum=muse_find_particle(dum, -1,-1,-1,dumm)
@@ -330,6 +331,31 @@ subroutine muse_get_pot(epsin,x,y,z,pot,n)
  enddo
 end subroutine
 
+subroutine muse_get_hydro_state(x,y,z,state,n)
+  include 'globals.h'
+  integer :: n,i,nneigh
+  real :: x(n),y(n),z(n),state(5,n)
+  real :: ppos(3),rh,rhv(3),rhe,rhv2,h,dum
+  logical :: vdisp_included=.TRUE.
+
+  if(sphtreecount.NE.ppropcount+pordercount) call makesphtree
+  do i=1,n
+    ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
+    call hsmdenspos2(ppos,h,rh,dum,nneigh)
+    call gatter_hydro_state(nneigh,ppos,h,rh,rhv,rhv2,rhe)
+    state(1,i)=rh
+    state(2,i)=rhv(1)
+    state(3,i)=rhv(2)
+    state(4,i)=rhv(3)
+    if(vdisp_included) then
+      state(5,i)=rhe+rhv2
+    else
+      state(5,i)=0.
+      if(rh.GT.0) state(5,i)=rhe+sqrt(sum(rhv**2))/rh
+    endif
+  enddo
+  
+end subroutine
 
 subroutine external_gravity(option)
  include 'globals.h'

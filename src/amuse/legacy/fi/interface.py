@@ -325,6 +325,17 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         return function
 
     @legacy_function    
+    def get_hydro_state_at_point():
+        function = LegacyFunctionSpecification()  
+        for x in ['eps','x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i' 
+        function.can_handle_array = True
+        return function
+
+    @legacy_function    
     def synchronize_model():
         """ synchronize the model """
         function = LegacyFunctionSpecification()  

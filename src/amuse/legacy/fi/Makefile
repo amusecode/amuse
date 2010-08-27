@@ -36,7 +36,7 @@ endif
 
 ifeq  ($(FORTRAN), ifort)
 # ifort flags
-FFLAGS= -r8 -O -ip -p -u $(PIC)
+FFLAGS= -r8 -O -ip -u $(PIC)
 endif
 
 #FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)

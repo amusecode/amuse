@@ -295,6 +295,20 @@ function get_potential_at_point(eps, x, y, z, phi) result(ret)
   ret=0  
 end function
 
+function get_hydro_state_at_point(eps, x, y, z, rho, rhovx, rhovy, rhovz, rhoe) result(ret)
+  real*8 :: eps,x, y, z, rho, rhovx, rhovy, rhovz, rhoe
+  real*8 :: state(5)
+  integer :: ret
+  call muse_get_hydro_state(x,y,z,state,1)
+  rho=state(1)
+  rhovx=state(2)
+  rhovy=state(3)
+  rhovz=state(4)
+  rhoe=state(5)
+  ret=0  
+end function
+
+
 ! setting/ getting parameters
 
 function set_use_hydro(flag) result(ret)

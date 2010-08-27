@@ -30,7 +30,7 @@ private :: ndim,nsubcell
 
 !$omp threadprivate(bodlist,srlist,tempvect)
 
-  integer :: ppropcount, pordercount, treestatecount
+  integer :: ppropcount, pordercount, treestatecount, sphtreecount
       ! ppropcount -> +1 if particle prop changed
       ! (mass,pos,epsgrav,starfuv,hsmooth)
       ! pordercount -> +1 particle order changed
@@ -115,6 +115,7 @@ private :: ndim,nsubcell
  ppropcount=0
  pordercount=0
  treestatecount=-1
+ sphtreecount=-1
  
  end subroutine
  
