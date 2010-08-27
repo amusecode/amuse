@@ -1011,7 +1011,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise exceptions.LegacyException("Querying mass profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_zones is None: number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
     
     def get_density_profile(self, indices_of_the_stars, number_of_zones = None):
@@ -1019,7 +1020,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying density profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_zones is None: number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
     
     def get_radius_profile(self, indices_of_the_stars, number_of_zones = None):
@@ -1027,7 +1029,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying radius profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_zones is None: number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
     
     def get_temperature_profile(self, indices_of_the_stars, number_of_zones = None):
@@ -1035,7 +1038,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying temperature profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_zones is None: number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
     
     def get_luminosity_profile(self, indices_of_the_stars, number_of_zones = None):
@@ -1043,7 +1047,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying luminosity profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_zones is None: number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
     
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
@@ -1051,7 +1056,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying mean-molecular-weight profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_zones is None: number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
     
     
@@ -1060,7 +1066,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying chemical abundance names of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_species is None: number_of_species = self.get_number_of_species(indices_of_the_stars).number
+        if number_of_species is None:
+            number_of_species = self.get_number_of_species(indices_of_the_stars).number
         return list(self.get_name_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none
@@ -1071,7 +1078,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying chemical abundance IDs of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_species is None: number_of_species = self.get_number_of_species(indices_of_the_stars).number
+        if number_of_species is None:
+            number_of_species = self.get_number_of_species(indices_of_the_stars).number
         return list(self.get_id_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none
@@ -1082,7 +1090,8 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying chemical abundance mass numbers of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_species is None: number_of_species = self.get_number_of_species(indices_of_the_stars).number
+        if number_of_species is None:
+            number_of_species = self.get_number_of_species(indices_of_the_stars).number
         return self.get_mass_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none
@@ -1094,8 +1103,10 @@ class MESA(CodeInterface):
             if len(indices_of_the_stars) > 1:
                 raise Exception("Querying chemical abundance profiles of more than one particle at a time is not supported.")
             indices_of_the_stars = indices_of_the_stars[0]
-        if number_of_zones is None: number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
-        if number_of_species is None: number_of_species = self.get_number_of_species(indices_of_the_stars).number
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_species is None:
+            number_of_species = self.get_number_of_species(indices_of_the_stars).number
         grid = numpy.indices((number_of_species, number_of_zones)) + 1
         return self.get_mass_fraction_of_species_at_zone(
             [indices_of_the_stars] * number_of_zones * number_of_species, 
