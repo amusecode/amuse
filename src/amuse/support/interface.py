@@ -11,6 +11,7 @@ from amuse.support.methods import CodeMethodWrapper, CodeMethodWrapperDefinition
 
 from amuse.support.core import late
 from amuse.support import exceptions
+from amuse.support import state
 
 import inspect
 
@@ -150,8 +151,9 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
             return x
 
 class StateMethodDefinition(CodeMethodWrapperDefinition):
-    def __init__(self, handler, from_state, to_state, function_name):
+    def __init__(self, handler, interface, from_state, to_state, function_name):
         self.handler = handler
+        self.interface = interface
         self.transitions = []
         self.add_transition(from_state, to_state)
         self.function_name = function_name
@@ -161,7 +163,7 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
 
     def new_method(self, method = None):
         if method == None:
-            method = getattr(self.handler.interface, self.function_name)
+            method = getattr(self.interface, self.function_name)
         return CodeMethodWrapper(method, self)
 
     def precall(self, method):
@@ -194,117 +196,37 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
 
 
 class HandleState(HandleCodeInterfaceAttributeAccess):
-    class State(object):
-        def __init__(self, handler, name):
-            self.handler = handler
-            self.name = name
-            self.from_transitions = []
-            self.to_transitions = []
-
-        def __str__(self):
-            return "state '{0}'".format(self.name)
-
-    class StateTransition(object):
-        def __init__(self, handler, from_state, to_state, method = None, is_auto = True):
-            self.method = method
-            self.to_state = to_state
-            self.from_state = from_state
-            self.is_auto = is_auto
-            self.handler = handler
-
-        def __str__(self):
-            return "transition from {0} to {1}".format(self.from_state, self.to_state)
-
-        def do(self):
-            if self.method is None:
-                self.handler.current_state = self.to_state
-            else:
-                self.method.new_method()()
 
     def __init__(self, interface):
         self._mapping_from_name_to_state_method = {}
-        self._current_state = None
-        self._do_automatic_state_transitions = True
-        self.states = {}
         self.interface = interface
-        self._is_enabled = True
+        self._state_machine = state.StateMachine(interface)
 
 
     def supports(self, name, was_found):
-        return self._is_enabled and (name in self._mapping_from_name_to_state_method)
+        if name == 'state_machine':
+            return True
+        else:
+            return self._state_machine.is_enabled() and (name in self._mapping_from_name_to_state_method)
 
-    def get_attribute(self, name, value):
-        return self._mapping_from_name_to_state_method[name].new_method(value)
+    def get_attribute(self, name, value): 
+        if name == 'state_machine':
+            return self._state_machine
+        else:
+            return self._mapping_from_name_to_state_method[name].new_method(value)
 
 
     def attribute_names(self):
-        return set(self._mapping_from_name_to_state_method.keys())
+        result = set(self._mapping_from_name_to_state_method.keys())
+        result.add('state_machine')
+        return result
 
     def define_state(self, name):
-        if name in self.states:
-            return
-        self.states[name] = self.State(self, name)
-
-    def _do_state_transition_to(self, state):
-        transitions = self._get_transitions_path_from_to(self._current_state, state)
-        if transitions is None:
-            raise Exception("No transition from current state {0} to {1} possible".format(self._current_state, state))
-    
-        transitions_with_methods = filter(lambda x : not x.method is None,transitions)
-        if not self._do_automatic_state_transitions and len(transitions_with_methods) > 0:
-            lines = []
-            lines.append("Interface is not in {0}, should transition from {1} to {0} first.\n". format(state, self._current_state))
-            for x in transitions:
-                if x.method is None:
-                    lines.append("{0}, automatic". format(x))
-                else:
-                    lines.append("{0}, calling '{1}'". format(x, x.method.function_name))
-            exception = exceptions.AmuseException('\n'.join(lines))
-            exception.transitions = transitions
-            raise exception
-    
-        for transition in transitions:
-            transition.do()
-
-
-    def _get_transitions_path_from_to(self, from_state, to_state):
-        transitions = filter(lambda x : x.is_auto, to_state.to_transitions)
-
-        paths = map(lambda x : [x], transitions)
-
-        def has_no_circle(path):
-            seen_states = set([])
-            for transition in path:
-                if transition.to_state in seen_states:
-                    return False
-                seen_states.add(transition.to_state)
-            return True
-
-
-        while paths:
-            current = paths.pop()
-            first = current[0]
-            if first.from_state == from_state:
-                return current
-            elif first.from_state is None:
-                return current
-            else:
-                transitions = filter(lambda x : x.is_auto, first.from_state.to_transitions)
-                new_paths = map(lambda x : [x], transitions)
-
-                for new_path in new_paths:
-                    new_path.extend(current)
-
-                new_paths = filter(has_no_circle, new_paths)
-
-                paths.extend(new_paths)
-
-
-        return None
+        self._state_machine.new_state(name)
 
     def _add_state_method(self, from_state, to_state, function_name):
         if not function_name in self._mapping_from_name_to_state_method:
-            state_method = StateMethodDefinition(self, from_state, to_state, function_name)
+            state_method = StateMethodDefinition(self._state_machine, self.interface, from_state, to_state, function_name)
             self._mapping_from_name_to_state_method[function_name] = state_method
         else:
             state_method = self._mapping_from_name_to_state_method[function_name]
@@ -317,27 +239,18 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         Define a method that can run when the interface is in the
         provided state.
         """
-        self.define_state(state_name)
-
-        state = self.states[state_name]
-
-        self._add_state_method( state, None, function_name)
+        self._add_state_method( self._state_machine.new_state(state_name), None, function_name)
 
 
     def add_transition(self, from_name, to_name, function_name, is_auto = True):
-        self.define_state(from_name)
-        self.define_state(to_name)
-
-        from_state = self.states[from_name]
-        to_state   = self.states[to_name]
-        definition = StateMethodDefinition(self, from_state, to_state, function_name)
-
-        transition = self.StateTransition(self, from_state, to_state, definition, is_auto)
-
-        from_state.from_transitions.append(transition)
-        to_state.to_transitions.append(transition)
-
-        self._add_state_method(from_state, to_state, function_name)
+    
+        transition = self._state_machine.new_transition(from_name, to_name, is_auto)
+    
+        definition = StateMethodDefinition(self._state_machine, self.interface, transition.from_state, transition.to_state, function_name)
+    
+        transition.method = definition
+    
+        self._add_state_method(transition.from_state, transition.to_state, function_name)
 
 
     def add_transition_to_method(self, state_name, function_name, is_auto = True):
@@ -345,24 +258,21 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
         Define a method that can run in any state and will transition the interface
         to the provided state.
         """
-        self.define_state(state_name)
-
-        state = self.states[state_name]
-
-        definition = StateMethodDefinition(self, None, state, function_name)
-        transition = self.StateTransition(self, None, state, definition, is_auto)
-
-        state.to_transitions.append(transition)
-
-        self._add_state_method(None, state, function_name)
+        
+        transition = self._state_machine.new_transition(None, state_name, is_auto)
+        
+    
+        definition = StateMethodDefinition(self._state_machine, self.interface, transition.from_state, transition.to_state, function_name)
+        transition.method = definition
+    
+        self._add_state_method(None, transition.to_state, function_name)
 
 
     def do_automatic_state_transitions(self, boolean):
-        self._do_automatic_state_transitions = boolean
+        self._state_machine._do_automatic_state_transitions = boolean
 
     def set_initial_state(self, name):
-        self.define_state(name)
-        self._current_state = self.states[name]
+        self._state_machine.set_initial_state(name)
 
 
     def setup(self, object):
@@ -375,18 +285,8 @@ class HandleState(HandleCodeInterfaceAttributeAccess):
 
 
 
-    def is_enabled(self):
-        return self._is_enabled
-    
-    
-
-    def enable(self):
-        self._is_enabled = True
-    
-    
-
-    def disable(self):
-        self._is_enabled = False
+    def get_name_of_current_state(self):
+        return self._state_machine.get_name_of_current_state()
     
     
 class MethodWithUnits(CodeMethodWrapper):
@@ -1135,24 +1035,10 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
         return OverriddenCodeInterface(self)
 
     def get_name_of_current_state(self):
-        return self.get_handler('STATE')._current_state.name
+        return self.state_machine.get_name_of_current_state()
 
 
-    def enable_state_engine(self):
-        self.get_handler('STATE').enable()
-    
-    
-
-    def disable_state_engine(self):
-        self.get_handler('STATE').disable()
-    
-    
-
-    def is_state_engine_enabled(self):
-        return self.get_handler('STATE').is_enabled()
-    
-    
-class IncorrectMethodDefinition(IncorrectWrappedMethodException):
+    class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
 
 
