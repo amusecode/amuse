@@ -151,8 +151,8 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
             return x
 
 class StateMethodDefinition(CodeMethodWrapperDefinition):
-    def __init__(self, handler, interface, from_state, to_state, function_name):
-        self.handler = handler
+    def __init__(self, state_machine, interface, from_state, to_state, function_name):
+        self.state_machine = state_machine
         self.interface = interface
         self.transitions = []
         self.add_transition(from_state, to_state)
@@ -171,28 +171,28 @@ class StateMethodDefinition(CodeMethodWrapperDefinition):
         for from_state, to_state in self.transitions:
             if from_state is None:
                 return to_state
-            elif from_state == self.handler._current_state:
+            elif from_state == self.state_machine._current_state:
                 return to_state
             else:
                 stored_transitions.append((from_state, to_state))
 
         for from_state, to_state  in stored_transitions:
             try:
-                self.handler._do_state_transition_to(from_state)
+                self.state_machine._do_state_transition_to(from_state)
                 return to_state
             except Exception, ex:
                 pass
 
         # do again to get an exception.
-        self.handler._do_state_transition_to(stored_transitions[0][0])
+        self.state_machine._do_state_transition_to(stored_transitions[0][0])
 
     def postcall(self, method, to_state):
         if to_state is None:
             return
-        elif to_state == self.handler._current_state:
+        elif to_state == self.state_machine._current_state:
             return
         else:
-            self.handler._current_state = to_state
+            self.state_machine._current_state = to_state
 
 
 class HandleState(HandleCodeInterfaceAttributeAccess):
@@ -1038,7 +1038,7 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
         return self.state_machine.get_name_of_current_state()
 
 
-    class IncorrectMethodDefinition(IncorrectWrappedMethodException):
+class IncorrectMethodDefinition(IncorrectWrappedMethodException):
     formatstring = "Incorrect definition of method '{0}' of class '{1}', the number of {4} do not match, expected {2}, actual {3}."
 
 
