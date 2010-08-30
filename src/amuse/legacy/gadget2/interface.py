@@ -3,7 +3,7 @@ import numpy
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 from amuse.legacy import *
 
-class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs):
+class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs, StoppingConditionInterface):
     """
     GADGET-2 computes gravitational forces with a hierarchical tree 
     algorithm (optionally in combination with a particle-mesh 
@@ -23,7 +23,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         .. [#] Springel V., 2005, MNRAS, 364, 1105  (GADGET-2)
         .. [#] Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1)
     """
-    include_headers = ['gadget_code.h', 'worker_code.h']
+    include_headers = ['gadget_code.h', 'worker_code.h', 'stopcond.h']
     
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker = 'worker_code', **options)
@@ -444,6 +444,9 @@ class Gadget2(GravitationalDynamics):
                 3.085678e21 | units.cm,   # 1.0 kpc
                 1.989e43 | units.g,       # 1.0e10 solar masses
                 1e5 | units.cm / units.s)# 1 km/sec
+
+        self.stopping_conditions = StoppingConditions(self)
+
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
@@ -664,6 +667,8 @@ class Gadget2(GravitationalDynamics):
             "" | units.string
         )
         
+        self.stopping_conditions.define_parameters(object)        
+        
     
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['dm_particles','gas_particles'], 
@@ -696,6 +701,10 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_acceleration')
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
+
+        #what are we going to do with this?...
+        self.stopping_conditions.define_particle_set(object, 'dm_particles')
+        self.stopping_conditions.define_particle_set(object, 'gas_particles')
     
     def define_methods(self, object):
         #GravitationalDynamics.define_methods(self, object)
@@ -949,5 +958,5 @@ class Gadget2(GravitationalDynamics):
             (generic_unit_system.potential, object.ERROR_CODE)
         )
         
-    
+        self.stopping_conditions.define_methods(object)
 

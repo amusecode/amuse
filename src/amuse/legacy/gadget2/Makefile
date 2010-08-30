@@ -35,11 +35,11 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c $^ Gadget2Interface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H $^ Gadget2Interface -o $@
+	$(CODE_GENERATOR) --type=H $^ -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_options
-	mpicxx $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS) -lgsl -lgslcblas
+	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS) -lgsl -lgslcblas
 
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
-	mpicxx $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc
+	mpicxx $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc $(SCLIBS)
 

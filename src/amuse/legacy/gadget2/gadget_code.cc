@@ -5,6 +5,8 @@
 #include <math.h>
 #include "gadget_code.h"
 #include "worker_code.h"
+//AMUSE STOPPING CONDITIONS
+#include "stopcond.h"
 
 //#include <stdio.h>
 //#include <stdlib.h>
@@ -98,6 +100,10 @@ int initialize_code(){
     t1 = second();
     CPUThisRun += timediff(t0, t1);
     All.CPU_Total += timediff(t0, t1);
+
+    //AMUSE STOPPING CONDITIONS SUPPORT
+    set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
+    
     return 0;
 }
 
@@ -319,6 +325,18 @@ int evolve(double t_end){
     bool done;
     double t0, t1;
     int Ti_end, stopflag = 0;
+    // AMUSE STOPPING CONDITIONS
+    int is_number_of_steps_detection_enabled;
+    int max_number_of_steps;
+    int number_of_steps_innerloop = 0;
+    int error;
+
+    error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
+					  &is_number_of_steps_detection_enabled);
+    get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
+
+    // .......
+
     Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
     if (Ti_end >= All.Ti_Current){
         global_quantities_of_system_up_to_date = false;
@@ -354,6 +372,15 @@ int evolve(double t_end){
             t1 = second();
             All.CPU_Total += timediff(t0, t1);
             CPUThisRun += timediff(t0, t1);
+	    //
+	    if(is_number_of_steps_detection_enabled) {
+	      number_of_steps_innerloop++;
+	      if(number_of_steps_innerloop > max_number_of_steps) {
+		int stopping_index  = next_index_for_stopping_condition();
+		set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+	      }
+	}
+	    
         }
     } else {return -1;}
     return 0;

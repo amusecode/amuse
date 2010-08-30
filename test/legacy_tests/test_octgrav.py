@@ -113,7 +113,7 @@ class TestAmuseInterface(TestWithMPI):
         instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
         instance.particles.add_particles(stars)
 
-        instance.evolve_model(1 | units.day)
+        instance.evolve_model(5 | units.day)
         energy_total_init = instance.potential_energy + instance.kinetic_energy
         instance.evolve_model(100 | units.day)
         energy_total_final = instance.potential_energy + instance.kinetic_energy

@@ -11,6 +11,8 @@ from amuse.support.units import units
 from amuse.support.data import core
 from amuse.support.legacy import channel
 
+import numpy
+
 default_options = dict()#redirection = "null")
 #default_options = dict(debugger = "none")
 
@@ -184,8 +186,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals(0, instance.evolve(0.0004))
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
-    
-
+   
 class TestGadget2(TestWithMPI):
 
     UnitLength = 3.085678e21 | units.cm     # 1.0 kpc
@@ -193,7 +194,7 @@ class TestGadget2(TestWithMPI):
     UnitVelocity = 1e5 | units.cm / units.s # 1 km/sec
     default_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
     default_convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
-    
+
     def test1(self):
         print "Testing Gadget initialization"
         instance = Gadget2(self.default_converter, **default_options)
@@ -374,4 +375,13 @@ class TestGadget2(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
+
+    def test11(self):
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_number_of_steps = 10
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10|units.none)        
+
+        #do some testing...
+        instance.stop()
     
