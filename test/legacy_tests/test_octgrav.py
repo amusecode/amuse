@@ -124,7 +124,7 @@ class TestAmuseInterface(TestWithMPI):
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = Octgrav(convert_nbody)
+        instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
         instance.parameters.stopping_conditions_number_of_steps = 1 
