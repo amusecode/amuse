@@ -1,5 +1,5 @@
 CFLAGS   += -Isrc/include -Isrc/include/star
-CXXFLAGS += $(CFLAGS) 
+CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -Lsrc/node -lnode -Lsrc/std -lstd -lm
 
 AMUSE_OBJS = interface.o
@@ -11,7 +11,7 @@ AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_SVN = ./downloadsvn.py
 
-all: worker_code 
+all: worker_code
 
 src:
 ifdef DO_INSTALL_SEBA
@@ -31,14 +31,14 @@ else
 endif
 
 clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
+	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ worker_code
-	
+
 SEBAclean: clean
 	@-make -C src clean
-	
+
 distclean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
+	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h
 	$(RM) *~ worker_code
 	$(RM) -Rf src
 
@@ -56,6 +56,4 @@ worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	mpicxx $(CXXFLAGS) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
 
 .cc.o: $<
-	$(CXX) $(CXXFLAGS) -c -o $@ $< 
-	
-	
+	$(CXX) $(CXXFLAGS) -c -o $@ $<

@@ -34,7 +34,7 @@ else
 		@echo ""
 		@echo "DO_INSTALL_ATHENA is not set. Athena will not be downloaded and build."
 		@echo "If you do want Athena, set DO_INSTALL_ATHENA  to 1."
-		@echo "bash> export DO_INSTALL_ATHENA = 1"
+		@echo "bash> export DO_INSTALL_ATHENA=1"
 		@echo "csh> setenv DO_INSTALL_ATHENA  1"
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -47,10 +47,10 @@ clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code
 	$(RM) -f $(CODELIB)
-	
+
 codeclean: clean
 	make -C $(ATHENA_DIR) clean
-	
+
 distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code
@@ -60,8 +60,8 @@ $(CODELIB): $(ATHENA_DIR)
 	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
 	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
 	cd $(ATHENA_DIR); make all CFLAGS=-g CC=mpicc LDR=mpicc
-	
-     
+
+
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
 
@@ -73,5 +73,5 @@ worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 
 .c.o: $<
 	$(CC) $(CXXFLAGS) -c -o $@ $< 
-	
-	
+
+
