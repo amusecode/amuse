@@ -21,6 +21,9 @@ FFTWLIB = -lfftw3 -lfftw3_threads
 
 THREADLIB = -L. -lpthread src/libpt.a
 
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
+
 OMPFLAGS= # -openmp -openmp_report0 
 PIC=#-fPIC
 
@@ -68,14 +71,14 @@ all: worker
 
 $(SRC)/libfi.a: $(FILES) Makefile
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-        
+
 worker: worker.f90 interface.o $(SRC)/libfi.a
-	$(FC) $(FFLAGS) worker.f90 interface.o -o $@ $(LIBS)
+	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
 
 glworker: glworker.f90 interface.o $(SRC)/libfi.a
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
+	$(FC) $(FFLAGS) $(SCINC) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
+	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
 
 worker.f90: interface.py __init__.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@

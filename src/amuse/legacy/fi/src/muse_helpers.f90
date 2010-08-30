@@ -270,12 +270,33 @@ end function
 
 subroutine muse_stepsys(tend,sync)
  include 'globals.h'
+ include '../../../../../lib/stopcond/stopcond.inc'
  real :: tend
  integer :: sync
+ integer :: is_stopping_condition_enabled
+ integer :: is_number_of_steps_detection_enabled
+ integer :: max_number_of_steps
+ integer :: number_of_steps_innerloop
+ integer :: stopping_index
+ integer :: next_index_for_stopping_condition
+ integer :: set_stopping_condition_info
+ integer :: reset_stopping_conditions, error
  integer,save :: n=0
+ 
+ number_of_steps_innerloop = 0
+
+ error = reset_stopping_conditions()
+ error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
  call corrpos(itimestp,'desync')
  do while(tnow<tend)
    call step
+   if (is_number_of_steps_detection_enabled.GT.0) then
+      number_of_steps_innerloop = number_of_steps_innerloop +1
+      if (number_of_steps_innerloop.GT.max_number_of_steps) then
+         stopping_index = next_index_for_stopping_condition()
+         error = set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+      endif
+   endif
    n=n+1
  enddo
  call outstate(n)

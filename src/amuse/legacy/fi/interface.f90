@@ -1,7 +1,10 @@
 function initialize_code() result(ret)
+#include "../../lib/stopcond/stopcond.inc"
   integer :: ret
+  integer :: set_support_for_condition, error
   call muse_start
   call muse_reset
+  error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
   ret=0
 end function
 

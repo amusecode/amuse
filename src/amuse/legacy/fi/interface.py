@@ -3,7 +3,7 @@ import numpy
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 from amuse.legacy import *
 
-class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs):   
+class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs, StoppingConditionInterface):   
     """
     FI is a parallel TreeSPH code for galaxy simulations. Extensively 
     rewritten, extended and parallelized it is a development from code from 
@@ -1471,7 +1471,9 @@ class Fi(GravitationalDynamics):
         
         #if convert_nbody is None:
         #    convert_nbody=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
-        
+
+        self.stopping_conditions = StoppingConditions(self)
+
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
@@ -2125,7 +2127,8 @@ class Fi(GravitationalDynamics):
             units.string,
             "" | units.string
         )
-        
+
+        self.stopping_conditions.define_parameters(object)        
     
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['dm_particles','gas_particles','star_particles'], 
@@ -2176,6 +2179,11 @@ class Fi(GravitationalDynamics):
         object.add_getter('star_particles', 'get_velocity')
         object.add_setter('star_particles', 'set_star_tform')
         object.add_getter('star_particles', 'get_star_tform')
+
+        self.stopping_conditions.define_particle_set(object, 'dm_particles')
+        self.stopping_conditions.define_particle_set(object, 'gas_particles')
+        self.stopping_conditions.define_particle_set(object, 'star_particles')
+
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
@@ -2382,5 +2390,5 @@ class Fi(GravitationalDynamics):
             (nbody_system.potential, object.ERROR_CODE)
         )
         
-            
+        self.stopping_conditions.define_methods(object)            
 

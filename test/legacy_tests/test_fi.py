@@ -611,3 +611,11 @@ class TestFiInterface(TestWithMPI):
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
     
+    def test13(self):
+        convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
+        instance = Fi(convert_nbody)
+        instance.parameters.timestep = 0.001 | nbody.time
+        #instance.stopping_conditions.number_of_steps_detection.enable()
+        instance.parameters.stopping_conditions_number_of_steps = 10
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10|units.none)        
+        instance.stop()

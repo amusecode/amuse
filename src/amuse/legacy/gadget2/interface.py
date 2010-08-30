@@ -702,7 +702,6 @@ class Gadget2(GravitationalDynamics):
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
 
-        #what are we going to do with this?...
         self.stopping_conditions.define_particle_set(object, 'dm_particles')
         self.stopping_conditions.define_particle_set(object, 'gas_particles')
     
