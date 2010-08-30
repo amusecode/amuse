@@ -6,7 +6,7 @@ OBJS = interface.o
 
 CODELIB = src/libhop.a
 
-AMUSE_DIR?=..
+AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
