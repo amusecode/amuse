@@ -1,6 +1,7 @@
 from amuse.support import io
 from amuse.support.io import base
 from amuse.test import amusetest
+from amuse.support.exceptions import AmuseException
 from amuse.support.units import nbody_system, units
 from amuse.support.data import core
 
@@ -70,26 +71,17 @@ class FrameworkTests(amusetest.TestCase):
         self.assertEquals(default, False)
     
     def test5(self):
-        try:
-            y = io.read_set_from_file("non_existent","test")
-            self.fail("Should never get here.")
-        except Exception as ex:
-            self.assertEqual("IO exception: Error: file 'non_existent' does not exist.", str(ex))
+        self.assertRaises(AmuseException, io.read_set_from_file, "non_existent","test", 
+            expected_message = "IO exception: Error: file 'non_existent' does not exist.")
         
         processor = base.FileFormatProcessor(format="test")
-        try:
-            processor.store()
-            self.fail("Should never get here.")
-        except base.CannotSaveException as ex:
-            self.assertEqual("You tried to save a file with fileformat 'test', but"
-                " this format is not supported for writing files", str(ex))
+        self.assertRaises(base.CannotSaveException, processor.store, 
+            expected_message = "You tried to save a file with fileformat 'test', but"
+                " this format is not supported for writing files")
         
-        try:
-            processor.load()
-            self.fail("Should never get here.")
-        except base.CannotLoadException as ex:
-            self.assertEqual("You tried to load a file with fileformat 'test', but"
-                " this format is not supported for reading files", str(ex))
+        self.assertRaises(base.CannotLoadException, processor.load, 
+            expected_message = "You tried to load a file with fileformat 'test', but"
+                " this format is not supported for reading files")
     
 
 class FormatTests(amusetest.TestCase):
@@ -123,12 +115,9 @@ class FormatTests(amusetest.TestCase):
         self.assertAlmostEquals(x.mass, y.mass, 8)
         self.assertAlmostEquals(x.position, y.position,8)
         self.assertAlmostEquals(x.velocity, y.velocity,8)
-        try:
-            print y.radius
-            self.fail("Should never get here: starlab file format does not support storage of radii.")
-        except Exception as ex:
-            self.assertEqual("You tried to access attribute 'radius' but this "
-                "attribute is not defined for this set.", str(ex))
+        self.assertRaises(AttributeError, lambda: y.radius, 
+            expected_message = "You tried to access attribute 'radius' but this "
+                "attribute is not defined for this set.")
         
         os.remove("test.dyn")
         
@@ -145,12 +134,9 @@ class FormatTests(amusetest.TestCase):
         self.assertAlmostEquals(x.mass, y.mass, 8)
         self.assertAlmostEquals(x.position, y.position,8)
         self.assertAlmostEquals(x.velocity, y.velocity,8)
-        try:
-            print y.radius
-            self.fail("Should never get here: starlab file format does not support storage of radii.")
-        except Exception as ex:
-            self.assertEqual("You tried to access attribute 'radius' but this "
-                "attribute is not defined for this set.", str(ex))
+        self.assertRaises(AttributeError, lambda: y.radius, 
+            expected_message = "You tried to access attribute 'radius' but this "
+                "attribute is not defined for this set.")
         
         os.remove("test_unit.dyn")
         
@@ -169,12 +155,9 @@ class FormatTests(amusetest.TestCase):
         self.assertAlmostEquals(x.mass, y.mass, 8)
         self.assertAlmostEquals(x.position, y.position,8)
         self.assertAlmostEquals(x.velocity, y.velocity,8)
-        try:
-            print y.radius
-            self.fail("Should never get here: NEMO file format does not support storage of radii.")
-        except Exception as ex:
-            self.assertEqual("You tried to access attribute 'radius' but this "
-                "attribute is not defined for this set.", str(ex))
+        self.assertRaises(AttributeError, lambda: y.radius, 
+            expected_message = "You tried to access attribute 'radius' but this "
+                "attribute is not defined for this set.")
         
         os.remove("test_unit.tsf")
     
@@ -259,12 +242,9 @@ class FormatTests(amusetest.TestCase):
     def test9(self):
         x = core.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
-        try:
-            io.write_set_to_file(x, "test_unit.bogus","bogus")
-            self.fail("Should never get here.")
-        except Exception as ex:
-            self.assertEqual("You tried to load or save a file with fileformat 'bogus'"
-                ", but this format is not in the supported formats list", str(ex))
+        self.assertRaises(AmuseException, io.write_set_to_file, x, "test_unit.bogus", "bogus", 
+            expected_message = "You tried to load or save a file with fileformat 'bogus'"
+                ", but this format is not in the supported formats list")
     
     def test10(self):
         print "Testing saving/loading timestamp in Starlab"

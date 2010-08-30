@@ -14,35 +14,53 @@ class SkipTest(exceptions.AmuseException):
 class TestCase(unittest.TestCase):
     PRECISION = int(round(numpy.log10(2.0/(numpy.finfo(numpy.double).eps))))-1
     
-    def _convert_to(self, in_units, first, second):
-        if in_units:
-            return (first.as_quantity_in(in_units), second.as_quantity_in(in_units))
-        else:
-            return (first, second)
-    
     def _check_comparable(self, first, second):
         if isinstance(first, Quantity) is not isinstance(second, Quantity):
             raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
                 if isinstance(first, Quantity) else (second,first)))
     
-    def _check_different(self, first, second):
-        if isinstance(first, Quantity):
-            different = (first.value_in(second.unit) != second.value_in(second.unit))
+    def _convert_to_numeric(self, first, second, in_units):
+        if in_units:
+            return (first.value_in(in_units), second.value_in(in_units))
+        elif isinstance(first, Quantity):
+            return (first.value_in(second.unit), second.value_in(second.unit))
         else:
-            different = (first != second)
-        return numpy.array(different).flatten()
+            return (first, second)
     
-    def failUnlessEqual(self, first, second, msg=None, in_units=None):
-        self._check_comparable(first, second)
-        first, second = self._convert_to(in_units, first, second)
-        unequal       = self._check_different(first, second)
-        if len(unequal) == 1:
-            if unequal[0]:
-                raise self.failureException,(msg or '%r != %r' % (first, second))
-        elif any(unequal):
-            err_list = ["@%i, %r != %r" % (i,first[i], second[i]) for (i,b) in enumerate(unequal) if b]
+    def _convert_to_vectors(self, length, *vectors_or_scalars):
+        result = []
+        for x in vectors_or_scalars:
+            if hasattr(x, "as_vector_with_length"):
+                result.append(x.as_vector_with_length(length))
+            elif hasattr(x, "__len__"):
+                if x.__len__() == 1:
+                    result.append(list(x)*length)
+                elif x.__len__() == length:
+                    result.append(x)
+                else:
+                    raise TypeError("Cannot convert {0} to vector with length {1}.".format(x, length))
+            else:
+                result.append([x]*length)
+        return result
+    
+    def _raise_exceptions_if_any(self, failures, first, second, err_fmt_string, msg, *args):
+        if len(failures) == 1:
+            if failures[0]:
+                raise self.failureException(msg or err_fmt_string.format(first, second, *args))
+        elif any(failures):
+            first, second = self._convert_to_vectors(len(failures), first, second)
+            err_list =  [("@{index}, "+err_fmt_string).format(first[i], second[i], *args, index=i)
+                            for (i,b) in enumerate(failures) if b]
             err = '\n'.join(err_list)
-            raise self.failureException,(msg or err)
+            raise self.failureException(msg or err)
+    
+    
+    def failUnlessEqual(self, first, second, msg = None, in_units = None):
+        self._check_comparable(first, second)
+        first_num, second_num = self._convert_to_numeric(first, second, in_units)
+        failures = numpy.array(first_num != second_num).flatten()
+        self._raise_exceptions_if_any(failures, first, second, '{0} != {1}', msg)
+        
     assertEqual = failUnlessEqual
     assertEquals = failUnlessEqual
     
@@ -61,66 +79,53 @@ class TestCase(unittest.TestCase):
            difference of the two objects is evaluated in units of [second.unit].
         """
         self._check_comparable(first, second)
-        first, second = self._convert_to(in_units, first, second)
-        delta = second-first  
+        first_num, second_num = self._convert_to_numeric(first, second, in_units)
+        failures = numpy.array(numpy.round(second_num - first_num, places) != 0).flatten()
+        self._raise_exceptions_if_any(failures, first, second, '{0} != {1} within {2} places', msg, places)
         
-        if isinstance(delta, Quantity):
-            absdif = abs(delta.value_in(delta.unit))
-        else:             
-            absdif = abs(delta) 
-               
-        tmp = numpy.array(numpy.round(absdif, places) != 0).flatten()
-
-        if len(tmp) == 1:
-            if tmp[0]:
-                raise self.failureException,(msg or '%r != %r within %r places' % (first, second, places))                     
-        elif any(tmp):
-            err_list = ["@%i, %r != %r within %r places" % (i,first[i], second[i], places) for (i,b) in enumerate(tmp) if b]
-            err = '\n'.join(err_list)
-            raise self.failureException,(msg or err)                     
-                                                                                                     
     assertAlmostEqual =  failUnlessAlmostEqual                                                    
     assertAlmostEquals =  failUnlessAlmostEqual
     
     
     def failUnlessAlmostRelativeEqual(self, first, second, places=None, msg=None):
+        self._check_comparable(first, second)
+        first_num, second_num = self._convert_to_numeric(first, second, None)
+        
         if places is None:
             places = self.PRECISION
             
         if places <= 0:
             places = self.PRECISION + places
-            
-        if abs(first) > abs(second):
-            relativeError = abs((second-first) / first)
-        else:
-            relativeError = abs((first-second) / second)
         
-        try:   
-            maxRelativeError = (relativeError/relativeError) * (0.1 ** places)
-        except ZeroDivisionError:
-            return
+        maxRelativeError = 0.1 ** places
+        relativeError = abs((second_num - first_num) / first_num)
             
-        if relativeError >= maxRelativeError:
-            raise self.failureException,(msg or "{0!r} != {1!r} within {2!r} places".format(first, second, places))        
-
-           
+        failures = numpy.array(relativeError >= maxRelativeError).flatten()
+        self._raise_exceptions_if_any(failures, first, second, "{0!r} != {1!r} within {2!r} places", msg, places)
+        
     assertAlmostRelativeEqual = failUnlessAlmostRelativeEqual
     assertAlmostRelativeEquals = failUnlessAlmostRelativeEqual
     
     def assertIsOfOrder(self, first, second, msg=None):
-        ratio = first/second
+        ratio = first*1.0/second
         if isinstance(ratio, Quantity):
             if ratio.unit.base:
                 raise self.failureException,(msg or "Units of {0!r} and {1!r} do not match.".format(first, second))
             ratio = ratio.value_in(no_unit)
-        tmp = numpy.array(numpy.round(numpy.log10(ratio)) != 0).flatten()
-        if len(tmp) == 1:
-            if tmp[0]:
-                raise self.failureException,(msg or '%r is not of order %r' % (first, second))                     
-        elif any(tmp):
-            err_list = ["@%i, %r is not of order %r" % (i,first[i], second[i]) for (i,b) in enumerate(tmp) if b]
-            err = '\n'.join(err_list)
-            raise self.failureException,(msg or err)                     
+        failures = numpy.array(numpy.round(numpy.log10(ratio)) != 0).flatten()
+        self._raise_exceptions_if_any(failures, first, second, '{0} is not of order {1}', msg)
+    
+    def assertRaises(self, exception, callable, *list_args, **keyword_args):
+        if 'expected_message' in keyword_args:
+            exception_message = keyword_args.pop('expected_message')
+            try:
+                callable(*list_args, **keyword_args)
+            except exception as ex:
+                self.assertEqual(str(ex), exception_message)
+            else:
+                raise self.failureException("Exception '{0}' was not raised.".format(exception))
+        else:
+            unittest.TestCase.assertRaises(self, exception, callable, *list_args, **keyword_args)
     
     def run(self, result=None):
         if result is None:

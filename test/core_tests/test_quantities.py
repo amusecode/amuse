@@ -183,9 +183,12 @@ class TestQuantities(amusetest.TestCase):
         self.assertTrue( number.__rsub__(quantity) is NotImplemented)
         self.assertRaises(AmuseException, quantity.__sub__, number)
         # in other words...
-        try:
-            1.0 + (2.0 | units.m)
-            self.fail("Should never get here!")
-        except AmuseException as ex:
-            self.assertEquals("Cannot express none in m, the units do not have the same bases", str(ex))
+        self.assertRaises(AmuseException, lambda: number + quantity, 
+            expected_message = "Cannot express none in m, the units do not have the same bases")
+        self.assertRaises(AmuseException, lambda: quantity + number, 
+            expected_message = "Cannot express none in m, the units do not have the same bases")
+        self.assertRaises(AmuseException, lambda: number - quantity, 
+            expected_message = "Cannot express none in m, the units do not have the same bases")
+        self.assertRaises(AmuseException, lambda: quantity - number, 
+            expected_message = "Cannot express none in m, the units do not have the same bases")
     

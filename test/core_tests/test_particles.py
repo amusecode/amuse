@@ -1,5 +1,6 @@
 from amuse.test import amusetest
 
+from amuse.support.exceptions import AmuseException
 from amuse.support.units import units
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
@@ -724,31 +725,15 @@ class TestAddParticles(amusetest.TestCase):
         set = core.Particles(2)
         particle = core.Particle()
         set = core.ParticlesSuperset([set, particle.as_set()])
-        print "Should not be able to add the same particle twice... ",
-        try:
-            incorrect_set = core.ParticlesSuperset([set, particle.as_set()])
-            print "oops!"
-            self.fail("Should not be able to add the same particle twice.")
-        except Exception as ex:
-            self.assertEquals("Unable to add a particle, because it was "
-                "already part of this set.", str(ex))
-            print "ok!"
+        self.assertRaises(AmuseException, core.ParticlesSuperset, [set, particle.as_set()], 
+            expected_message = "Unable to add a particle, because it was already part of this set.")
         self.assertEqual(len(set),3)
         other_set = core.Particles(2)
         other_set = core.ParticlesSuperset([other_set, particle.as_set()])
-        print "The particle is now a member of both sets, and thus the sets "
-        print "can't be combined anymore... ",
-        try:
-            incorrect_set = core.ParticlesSuperset([set, other_set])
-            print "oops!"
-            self.fail("Should not be able to add the same particle twice.")
-        except Exception as ex:
-            self.assertEquals("Unable to add a particle, because it was "
-                "already part of this set.", str(ex))
-            print "ok!"
+        self.assertRaises(AmuseException, core.ParticlesSuperset, [set, other_set], 
+            expected_message = "Unable to add a particle, because it was already part of this set.")
     
     def test5(self):
-        print
         print "Test5: recursive addition, create a new superset from supersets."
         particle = core.Particle()
         set1 = core.Particles(2)
@@ -763,30 +748,18 @@ class TestAddParticles(amusetest.TestCase):
             self.assertEqual(len(supersuperset),len(superset1)+numpy.size(x.key))
     
     def test6(self):
-        print
         print "Test6: check if the particle belongs to the same particle set as self."
         set1 = core.Particles(2)
         set2 = core.Particles(2)
         particle = set2[0]
-        print "Should not be able to create a subset from particles " \
-            "belonging to separate particle sets.. ",
-        try:
-            incorrect_set = set1 + set2
-            print "oops!"
-            self.fail("Should not be able to create this subset.")
-        except Exception as ex:
-            self.assertEquals("Can't create new subset from particles belonging to "
-                "separate particle sets. Try creating a superset instead.", str(ex))
-            print "ok!"
-        try:
-            incorrect_set = set1 + particle
-            self.fail("Should not be able to create this subset.")
-        except Exception as ex:
-            self.assertEquals("Can't create new subset from particles belonging to "
-                "separate particle sets. Try creating a superset instead.", str(ex))
+        self.assertRaises(AmuseException, lambda: set1 + set2, 
+            expected_message = "Can't create new subset from particles belonging to "
+            "separate particle sets. Try creating a superset instead.")
+        self.assertRaises(AmuseException, lambda: set1 + particle, 
+            expected_message = "Can't create new subset from particles belonging to "
+            "separate particle sets. Try creating a superset instead.")
     
     def test7(self):
-        print
         print "Test7: add a particle (set) to a particle."
         original_set = core.Particles(4)
         particle1 = original_set[0]
@@ -840,22 +813,13 @@ class TestSubtractParticles(amusetest.TestCase):
         self.assertEqual(set1.x, ([1.0, 2.0, 3.0, 4.0]|units.m))
     
     def test3(self):
-        print
         print "Test3: check if the particle is actually part of the set."
         set = core.Particles(2)
         particle = core.Particle()
-        print "Should not be able to subtract a particle that is not in the set... ",
-        try:
-            incorrect_set = set - particle
-            print "oops!"
-            self.fail("Should not be able to subtract a particle that is not in the set.")
-        except Exception as ex:
-            self.assertEquals("Unable to subtract a particle, because "
-                "it is not part of this set.", str(ex))
-            print "ok!"
+        self.assertRaises(AmuseException, lambda: set - particle, 
+            expected_message = "Unable to subtract a particle, because it is not part of this set.")
     
     def test4(self):
-        print
         print "Test4: recursive subtraction, remove particles until the set is empty."
         set = core.Particles(10)
         self.assertEqual(len(set), 10)
@@ -864,23 +828,13 @@ class TestSubtractParticles(amusetest.TestCase):
         self.assertEqual(len(set), 0)
     
     def test5(self):
-        print
         print "Test5: check if it's possible to subtract particle(s) from a particle."
         particle = core.Particle()
-        print "Should not be able to subtract particle(s) from a particle... ",
-        try:
-            incorrect_set = particle - particle
-            print "oops!"
-            self.fail("Should not be able to subtract particle(s) from a particle.")
-        except Exception as ex:
-            self.assertEquals("Cannot subtract particle(s) from a particle.", str(ex))
-            print "ok!"
+        self.assertRaises(AmuseException, lambda: particle - particle, 
+            expected_message = "Cannot subtract particle(s) from a particle.")
         particle2 = core.Particle()
-        try:
-            incorrect_set = particle - particle2
-            self.fail("Should not be able to subtract particle(s) from a particle.")
-        except Exception as ex:
-            self.assertEquals("Cannot subtract particle(s) from a particle.", str(ex))
+        self.assertRaises(AmuseException, lambda: particle - particle2, 
+            expected_message = "Cannot subtract particle(s) from a particle.")
     
 
 class TestIterateOverParticles(amusetest.TestCase):

@@ -24,12 +24,8 @@ class TestAttributeError(amusetest.TestCase):
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
             self.assertEquals(len(x.as_set()), lengths[i])
-            try:
-                print x.bogus
-                self.fail("Should never get here!")
-            except AttributeError as ex:
-                self.assertEquals("You tried to access attribute 'bogus'"
-                    " but this attribute is not defined for this set.", str(ex))
+            self.assertRaises(AttributeError, lambda: x.bogus, expected_message = 
+                "You tried to access attribute 'bogus' but this attribute is not defined for this set.")
                 
     def test2(self):
         print "Test2: Should get error when accessing non-existent attributes (in Legacy code storage)."
@@ -53,12 +49,8 @@ class TestAttributeError(amusetest.TestCase):
             gravity.initialize_code()
             if isinstance(x, Particle): x = x.as_set()
             gravity.particles.add_particles(x)
-            try:
-                print gravity.particles.bogus
-                self.fail("Should never get here!")
-            except AttributeError as ex:
-                self.assertEquals("You tried to access attribute 'bogus'"
-                    " but this attribute is not defined for this set.", str(ex))
+            self.assertRaises(AttributeError, lambda: gravity.particles.bogus, expected_message = 
+                "You tried to access attribute 'bogus' but this attribute is not defined for this set.")
             gravity.stop()
     
     def test3(self):
@@ -84,14 +76,13 @@ class TestAttributeError(amusetest.TestCase):
             x.model_time = 2.0 | units.s
             HDFstorage.store(x)
             loaded_particles = HDFstorage.load()
-            try:
-                print loaded_particles.bogus
-                self.fail("Should never get here!")
-            except AttributeError as ex:
-                self.assertEquals("You tried to access attribute 'bogus'"
-                    " but this attribute is not defined for this set.", str(ex))
+            self.assertRaises(AttributeError, lambda: loaded_particles.bogus, expected_message = 
+                "You tried to access attribute 'bogus' but this attribute is not defined for this set.")
             HDFstorage.close()
             del HDFstorage
+    
+    def bogus_func(self, x):
+        x.mass = 1.0
     
     def test4(self):
         print "Test4: Should get error when setting attributes with non-quantities (InMemoryAttributeStorage)."
@@ -106,12 +97,8 @@ class TestAttributeError(amusetest.TestCase):
         for i, x in enumerate(instances):
             self.assertTrue(isinstance(x, classes[i]))
             self.assertEquals(len(x.as_set()), lengths[i])
-            try:
-                x.mass = 1.0
-                self.fail("Should never get here!")
-            except AttributeError as ex:
-                self.assertEquals("Can only assign quantities or other particles"
-                    " to an attribute.", str(ex))
+            self.assertRaises(AttributeError, self.bogus_func, x, expected_message = 
+                "Can only assign quantities or other particles to an attribute.")
     
     def test5(self):
         print "Test5: Should get error when setting attributes with non-quantities (in Legacy code storage)."
@@ -135,12 +122,8 @@ class TestAttributeError(amusetest.TestCase):
             gravity.initialize_code()
             if isinstance(x, Particle): x = x.as_set()
             gravity.particles.add_particles(x)
-            try:
-                gravity.particles.mass = 1.0
-                self.fail("Should never get here!")
-            except AttributeError as ex:
-                self.assertEquals("Can only assign quantities or other particles"
-                    " to an attribute.", str(ex))
+            self.assertRaises(AttributeError, self.bogus_func, gravity.particles, expected_message = 
+                "Can only assign quantities or other particles to an attribute.")
             gravity.stop()
     
     def test6(self):
@@ -165,12 +148,8 @@ class TestAttributeError(amusetest.TestCase):
             x.model_time = 2.0 | units.s
             HDFstorage.store(x)
             loaded_particles = HDFstorage.load()
-            try:
-                loaded_particles.mass = 1.0
-                self.fail("Should never get here!")
-            except AttributeError as ex:
-                self.assertEquals("Can only assign quantities or other particles"
-                    " to an attribute.", str(ex))
+            self.assertRaises(AttributeError, self.bogus_func, loaded_particles, expected_message = 
+                "Can only assign quantities or other particles to an attribute.")
             HDFstorage.close()
             del HDFstorage
     

@@ -68,10 +68,10 @@ class TestGenericUnits(amusetest.TestCase):
 
     def test5(self):
        
-        try:
-            convert_generic = ConvertBetweenGenericAndSiUnits(1 | units.km, 2 | units.s, 3 | units.km / units.s)
-            self.fail("units were not checked correctly")
-        except UnitsNotOrtogonalException as ex:
-            self.assertEquals(str(ex), 'The number of orthoganal units is incorrect, expected 3 but found 2. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)')
+        self.assertRaises(UnitsNotOrtogonalException, ConvertBetweenGenericAndSiUnits, 1 | units.km, 2 | units.s, 
+            3 | units.km / units.s, expected_message = "The number of orthoganal units is incorrect, expected 3 "
+            "but found 2. To convert between S.I. units and another system of units a set of quantities with "
+            "orthogonal units is needed. These can be quantities with a single unit (such as length or time) "
+            "or quantities with a derived units (such as velocity or force)")
     
     

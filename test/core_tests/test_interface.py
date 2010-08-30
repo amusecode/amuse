@@ -1,4 +1,5 @@
 from amuse.support import interface
+from amuse.support.exceptions import AmuseException
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 from amuse.support.data.binding import *
@@ -178,12 +179,8 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('get_state_error', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
         
-        try:
-            result = instance.get_state_error(1)
-            self.fail("should raise an exception")
-        except:
-            
-            pass
+        self.assertRaises(AmuseException, instance.get_state_error, 1, 
+            expected_message = "Error when calling 'get_state_error' of a 'CodeInterface', errorcode is -1.0")
             
 class CodeInterfaceTests(amusetest.TestCase):
     class TestClass(object):
@@ -387,11 +384,8 @@ class CodeInterfaceTests(amusetest.TestCase):
         
         self.assertEquals(instance.get_name_of_current_state(), 'ZERO')
         self.assertEquals(instance.returns_2(), 2)
-        try:
-            self.assertEquals(instance.returns_3(), 3)
-            self.fail("No transition to state 3 possible, function should error")
-        except Exception, ex:
-            print ex
+        self.assertRaises(Exception, instance.returns_3, 
+            expected_message = "No transition from current state state 'TWO' to state 'THREE' possible")
         
     def test9(self):
         original = self.TestClass()
@@ -540,21 +534,13 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
         handler.add_errorcode(-3, "not available")
         
         self.assertEquals(instance.get_mass(), 10.0 | units.m)
-        try:
-            original.errorcode = -2
-            instance.get_mass()
-        except Exception, ex:
-            self.assertEquals("Error when calling 'get_mass' of a 'CodeInterface', errorcode is -2, error is 'no such method'",str(ex))
-        else:
-            self.fail("should raise an exception")
+        original.errorcode = -2
+        self.assertRaises(AmuseException, instance.get_mass, expected_message = 
+            "Error when calling 'get_mass' of a 'CodeInterface', errorcode is -2, error is 'no such method'")
             
-        try:
-            original.errorcode = -1
-            instance.get_mass()
-        except Exception, ex:
-            self.assertEquals("Error when calling 'get_mass' of a 'CodeInterface', errorcode is -1", str(ex))
-        else:
-            self.fail("should raise an exception")
+        original.errorcode = -1
+        self.assertRaises(AmuseException, instance.get_mass, expected_message = 
+            "Error when calling 'get_mass' of a 'CodeInterface', errorcode is -1")
             
 
 class CodeInterfaceWithParticlesTests(amusetest.TestCase):
@@ -907,21 +893,17 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
         
         
         handler = instance.get_handler('METHOD')
-        try:
-            handler.add_method('echo_inputs', (units.m, units.s), (units.s, handler.ERROR_CODE))
-            instance.echo_inputs
-            self.fail("should fail as the input is not correct")
-        except exceptions.AmuseException as ex:
-            self.assertEquals(str(ex), "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', the number of outputs do not match, expected 3, actual 2.")
+        handler.add_method('echo_inputs', (units.m, units.s), (units.s, handler.ERROR_CODE))
+        self.assertRaises(exceptions.AmuseException, lambda: instance.echo_inputs, 
+            expected_message = "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', "
+            "the number of outputs do not match, expected 3, actual 2.")
             
         instance = interface.CodeInterface(original)
         handler = instance.get_handler('METHOD')
-        try:
-            handler.add_method('echo_inputs', (units.m, units.s), (units.s, units.m, units.s, handler.ERROR_CODE))
-            instance.echo_inputs
-            self.fail("should fail as the input is not correct")
-        except exceptions.AmuseException as ex:
-            self.assertEquals(str(ex), "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', the number of outputs do not match, expected 3, actual 4.")
+        handler.add_method('echo_inputs', (units.m, units.s), (units.s, units.m, units.s, handler.ERROR_CODE))
+        self.assertRaises(exceptions.AmuseException, lambda: instance.echo_inputs, 
+            expected_message = "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', "
+            "the number of outputs do not match, expected 3, actual 4.")
 
 
     def test2(self):
@@ -943,13 +925,9 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
         
         
         handler = instance.get_handler('METHOD')
-        try:
-            handler.add_method('echo_inputs', (units.m), (units.s, units.m, handler.ERROR_CODE), )
-            instance.echo_inputs
-            
-            self.fail("should fail as the input is not correct")
-        except exceptions.AmuseException as ex:
-            print type(ex)
-            self.assertEquals(str(ex), "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', the number of inputs do not match, expected 2, actual 1.")
+        handler.add_method('echo_inputs', (units.m), (units.s, units.m, handler.ERROR_CODE), )
+        self.assertRaises(exceptions.AmuseException, lambda: instance.echo_inputs, 
+            expected_message = "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', "
+            "the number of inputs do not match, expected 2, actual 1.")
     
     

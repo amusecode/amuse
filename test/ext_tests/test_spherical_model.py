@@ -58,12 +58,8 @@ class TestUniformSphericalDistribution(TestCase):
         numpy.random.seed(12345)
         theta = numpy.arccos(numpy.random.uniform(-1.0, 1.0))
         phi   = numpy.random.uniform(0.0, 2.0*numpy.pi)
-        try:
-            instance = UniformSphericalDistribution(1234, type="bcc", rotate=(theta, phi))
-            self.fail()
-        except AmuseWarning as warn:
-            pass
-        self.assertEqual(str(warn), "rotate is not yet supported")
+        self.assertRaises(AmuseWarning, UniformSphericalDistribution, 1234, type="bcc", rotate=(theta, phi), 
+            expected_message = "rotate is not yet supported")
     
     def test6(self):
         print "Test new_uniform_spherical_particle_distribution"

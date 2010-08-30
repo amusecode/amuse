@@ -1,4 +1,5 @@
 from amuse.test import amusetest
+from amuse.support.exceptions import AmuseException
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data import parameters
@@ -366,11 +367,8 @@ class TestMethodParameterDefintions(amusetest.TestCase):
 
         p = parameters.Parameters([parameter_definition], instance)
 
-        try:
-            p.unknown
-            self.fail("Gettting the value of an unknown parameter should result in an exception")
-        except Exception as ex:
-            self.assertEquals("tried to get unknown parameter 'unknown' for a 'TestModule' object", str(ex))
+        self.assertRaises(AmuseException, lambda: p.unknown, 
+            expected_message = "tried to get unknown parameter 'unknown' for a 'TestModule' object")
 
         with warnings.catch_warnings(record=True) as w:
 
@@ -401,13 +399,12 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         p = parameters.Parameters([parameter_definition], instance)
         instance.x = 1
         self.assertEquals(p.test_name , 1 | units.m)
-    
-        try:
-            p.test_name = 2 | units.m
-        except exceptions.CoreException, e:
-            self.assertEquals("Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only", str(e))
-        else:
-            self.fail("Should raise readonly exception")
+        
+        def try_set_read_only_parameter(parameter_set):
+            parameter_set.test_name = 2 | units.m
+        
+        self.assertRaises(AmuseException, try_set_read_only_parameter, p, 
+            expected_message = "Could not set value for parameter 'test_name' of a 'TestModule' object, parameter is read-only")
 
 
     def test11(self):

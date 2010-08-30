@@ -4,6 +4,7 @@ import os.path
 
 from amuse.legacy.evtwin.interface import EVtwin, EVtwinInterface
 
+from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
@@ -388,12 +389,9 @@ class TestInterfaceBinding(TestWithMPI):
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertTrue(stars[i].time_step <= max_age)
                 
-        try:
-            instance.evolve_model(end_time = 2*max_age)
-            self.fail("Should not be able to evolve beyond maximum age.")
-        except Exception as ex:
-            self.assertEquals("Error when calling 'evolve' of a 'EVtwin', errorcode "
-                "is 2, error is 'BACKUP -- tstep reduced below limit; quit'", str(ex))
+        self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
+            expected_message = "Error when calling 'evolve' of a 'EVtwin', errorcode "
+                "is 2, error is 'BACKUP -- tstep reduced below limit; quit'")
 
         instance.stop()
         

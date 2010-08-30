@@ -3,6 +3,7 @@ from amuse.legacy.gadget2.interface import Gadget2Interface, Gadget2
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
 
+from amuse.support.exceptions import AmuseException
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_converter
 from amuse.support.units import generic_unit_system 
@@ -306,12 +307,11 @@ class TestGadget2(TestWithMPI):
                             ('code_velocity_unit', self.default_converter.to_si(generic_unit_system.speed)),
                             ('polytropic_index_gamma', (5.0/3) | units.none)]:
             self.assertEquals(value, eval("instance.parameters."+par))
-            try:
+            def try_set_parameter(par, value, instance):
                 exec("instance.parameters."+par+" = value")
-                self.fail("Should not be able to set read-only parameters.")
-            except Exception as ex:
-                self.assertEquals("Could not set value for parameter '"+par+"' of a 'Gadget2' object, "
-                    "parameter is read-only", str(ex))
+            self.assertRaises(AmuseException, try_set_parameter, par, value, instance, 
+                expected_message = "Could not set value for parameter '"+par+"' of a 'Gadget2' object, "
+                    "parameter is read-only")
         instance.stop()
     
     def test9(self):

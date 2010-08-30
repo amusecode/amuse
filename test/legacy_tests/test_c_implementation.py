@@ -415,11 +415,8 @@ class TestInterface(TestWithMPI):
 
     def test13(self):
         instance = ForTesting(self.exefile)
-        try:
-            output_ints = instance.echo_int([-1 , -2]| units.m)
-        except Exception as ex:
-            self.assertEquals(str(ex), "Error when calling 'echo_int' of a 'ForTesting', errorcode is -1")
-            
+        self.assertRaises(exceptions.AmuseException, instance.echo_int, [-1 , -2]| units.m, 
+            expected_message = "Error when calling 'echo_int' of a 'ForTesting', errorcode is -1")
         instance.stop()
 
     def test14(self):

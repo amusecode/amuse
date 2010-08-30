@@ -6,6 +6,7 @@ import numpy
 import math
 
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
+from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
 from amuse.support.data import values
 from amuse.support.data import particle_attributes
@@ -365,11 +366,8 @@ class TestAmuseInterface(TestWithMPI):
         self.assertEquals(instance.get_mass(indices[0]), 15.0| units.kg)
         self.assertEquals(instance.get_mass(indices)[0], 15.0| units.kg)
         
-        try:
-            instance.get_mass([4,5])
-            self.fail("Should raise error, invalid index")
-        except Exception, ex:
-            self.assertEquals(str(ex), "Error when calling 'get_mass' of a 'BHTree', errorcode is -1")
+        self.assertRaises(AmuseException, instance.get_mass, [4,5], 
+            expected_message = "Error when calling 'get_mass' of a 'BHTree', errorcode is -1")
 
         
     

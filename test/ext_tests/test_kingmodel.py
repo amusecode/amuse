@@ -1,6 +1,7 @@
 from amuse.test import amusetest
 
 from amuse.ext.kingmodel import new_king_model
+from amuse.support.exceptions import AmuseException
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 
@@ -32,15 +33,9 @@ class TestKingModel(amusetest.TestCase):
     def test4(self):
         print "Testing maximal/minimal value of King dimensionless depth W0."
         number_of_particles = 10
-        try:
-            particles = new_king_model(number_of_particles, W0 = 16.5)
-            self.fail("Should not be able to create models with King dimensionless depth W0 >= 16.")
-        except Exception as ex:
-            self.assertEquals("makeking: must specify w0 < 16", str(ex))
+        self.assertRaises(AmuseException, new_king_model, number_of_particles, W0 = 16.5, 
+            expected_message = "makeking: must specify w0 < 16")
         
-        try:
-            particles = new_king_model(number_of_particles, W0 = 0.)
-            self.fail("Should not be able to create models with King dimensionless depth W0 = 0.")
-        except Exception as ex:
-            self.assertEquals("float division", str(ex))
+        self.assertRaises(ZeroDivisionError, new_king_model, number_of_particles, W0 = 0.0, 
+            expected_message = "float division")
     

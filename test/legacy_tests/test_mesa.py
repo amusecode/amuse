@@ -5,6 +5,7 @@ from numpy import pi
 
 from amuse.legacy.mesa.interface import MESA, MESAInterface
 
+from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
 from amuse.support.units import units
 from amuse.support.legacy import channel
@@ -425,14 +426,10 @@ class TestMESA(TestWithMPI):
             self.assertTrue(stars[i].age <= max_age)
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertTrue(stars[i].age+stars[i].time_step <= max_age)
-        try:
-            instance.evolve_model(end_time = 2*max_age)
-            print 2*max_age
-            print stars
-            self.fail("Should not be able to evolve beyond maximum age.")
-        except Exception as ex:
-            self.assertEquals("Error when calling 'evolve' of a 'MESA', "
-                "errorcode is -12, error is 'Evolve terminated: Maximum age reached.'", str(ex))
+        
+        self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
+            expected_message = "Error when calling 'evolve' of a 'MESA', "
+                "errorcode is -12, error is 'Evolve terminated: Maximum age reached.'")
         instance.stop()
         del instance
     
@@ -451,11 +448,8 @@ class TestMESA(TestWithMPI):
         self.assertEquals(instance.particles.get_number_of_zones(), [479, 985] | units.none)
         self.assertEquals(len(instance.particles[0].get_mass_profile()), 479)
         self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0 | units.none)
-        try:
-            print instance.particles.get_mass_profile()
-            self.fail("Should not be able to get profiles of more than one star at a time.")
-        except Exception as ex:
-            self.assertEquals("Querying mass profiles of more than one particle at a time is not supported.", str(ex))
+        self.assertRaises(AmuseException, instance.particles.get_mass_profile, 
+            expected_message = "Querying mass profiles of more than one particle at a time is not supported.")
         print instance.particles
         self.assertEquals(len(instance.particles[1].get_density_profile()), 985)
         self.assertIsOfOrder(instance.particles[0].get_radius_profile()[0],          1.0 | units.RSun)

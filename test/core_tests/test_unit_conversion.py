@@ -1,6 +1,7 @@
 from amuse.test import amusetest
 import numpy
 
+from amuse.support.exceptions import AmuseException
 from amuse.support.units import core
 from amuse.support.units.units import *
 from amuse.support.units.constants import *
@@ -81,21 +82,16 @@ class TestUnitConversions(amusetest.TestCase):
     
 
     def test11(self):
-        try:
-            vel1 = 1 | m / s
-            vel1.as_quantity_in(s / m)
-            self.fail("units are incompatible, exception expected")
-        except core.IncompatibleUnitsException as ex:
-            self.assertEquals(str(ex),'Cannot express m / s in s / m, the units do not have the same bases')
+        vel1 = 1 | m / s
+        self.assertRaises(core.IncompatibleUnitsException, vel1.as_quantity_in, s / m, 
+            expected_message = "Cannot express m / s in s / m, the units do not have the same bases")
     
     
 class TestNonNumericUnits(amusetest.TestCase):
     def test1(self):
-        try:
-            x = units.string.as_quantity_in(m)
-            self.fail("Should not be able to convert a string unit into a numeric unit")
-        except:
-            pass
+        string1 = "string" | string
+        self.assertRaises(AmuseException, string1.as_quantity_in, m, 
+            expected_message = "Cannot convert non-numeric quantities in to another unit")
 
     def test2(self):
         x = "test" | string
@@ -111,19 +107,13 @@ class TestNonNumericUnits(amusetest.TestCase):
         x = 1 | test_unit
         self.assertEquals(1, x.value_in(test_unit))    
         self.assertEquals("one", str(x))  
-        try:
-            x = 4 | test_unit
-            self.fail("Should not be able to make a quantity outside the enumerated range")
-        except Exception as ex:
-            self.assertEquals("<4> is not a valid value for unit<test>", str(ex))
+        self.assertRaises(Exception, lambda: 4 | test_unit, 
+            expected_message = "<4> is not a valid value for unit<test>")
     
     def test4(self):
-        try:
-            x = 1 | string
-            self.fail("Should not be able to make a quantity with a string from an integer")
-        except Exception as ex:
-            self.assertEquals("<1> is not a valid value for unit<string>", str(ex))
-            
+        self.assertRaises(Exception, lambda: 1 | string, 
+            expected_message = "<1> is not a valid value for unit<string>")
+        
     def test5(self):
         test_unit = core.enumeration_unit(
             "test", 
