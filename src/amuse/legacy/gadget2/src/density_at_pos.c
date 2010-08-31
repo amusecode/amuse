@@ -217,7 +217,7 @@ static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3],
   *rhov2_out+=rhov2;
   *dhsml_out+=dhsmlrho;
   *numngb+=weighted_numngb;
-  rhov_out[0]+=rhov[0]
-  rhov_out[1]+=rhov[1]
-  rhov_out[2]+=rhov[2]
+  rhov_out[0]+=rhov[0];
+  rhov_out[1]+=rhov[1];
+  rhov_out[2]+=rhov[2];
 }
