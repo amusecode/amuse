@@ -19,8 +19,8 @@
 #include <mpi.h>
 #endif
 
-
 #include <math.h>
+#include <stopcond.h>
 
 static MeshS mesh;
 static VDFun_t Integrate;
@@ -150,6 +150,9 @@ int initialize_code(){
   is_restart = 0;
   show_config_par();   /* Add the configure block to the parameter database */
   
+
+  // AMUSE STOPPING CONDITIONS SUPPORT
+  set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
   
 #ifdef MPI_PARALLEL
     /* Get my task id (rank in MPI) */
@@ -1088,9 +1091,18 @@ int get_time(double * value){
 int evolve(double tlim) {
     int nl, nd;
     Real dt_done;
-    
+    //AMUSE STOPPING CONDITIONS
+    int is_number_of_steps_detection_enabled;
+    int number_of_steps_innerloop = 0;
+    int max_number_of_steps;
+    int error;
+
     par_setd("time","tlim", "%.15e", tlim, "-");
     
+    error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
+					  &is_number_of_steps_detection_enabled);
+    get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
+
     while (mesh.time < tlim) {
         
     /*--- Step 9b. ---------------------------------------------------------------*/
@@ -1189,7 +1201,17 @@ int evolve(double tlim) {
         Prolongate(&mesh);
 #endif
 
+	//SC
+	if (is_number_of_steps_detection_enabled) {
+	    number_of_steps_innerloop++;
+	    if (number_of_steps_innerloop > max_number_of_steps) {
+		int stopping_index  = next_index_for_stopping_condition();
+		set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+	    }
+	}
+	
     }
+
     
     return 0;
 }

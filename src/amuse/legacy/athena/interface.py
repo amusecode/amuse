@@ -5,9 +5,9 @@ from amuse.support.units.generic_unit_system import *
 
 import numpy
 
-class AthenaInterface(LegacyInterface, CommonCodeInterface):
+class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInterface):
     
-    include_headers = ['worker_code.h']
+    include_headers = ['worker_code.h', 'stopcond.h']
     
     def __init__(self, **options):
         LegacyInterface.__init__(self, **options)
@@ -355,8 +355,9 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface):
 class Athena(CodeInterface):
 
     def __init__(self, **options):
+        self.stopping_conditions = StoppingConditions(self)
         CodeInterface.__init__(self,  AthenaInterface(**options), **options)
-    
+        
     def define_properties(self, object):
         object.add_property('get_time', time, "model_time")
         
@@ -402,6 +403,8 @@ class Athena(CodeInterface):
             (energy,
             object.ERROR_CODE,)
         )
+
+        self.stopping_conditions.define_methods(object)
     
     def define_particle_sets(self, object):
         object.define_grid('grid')
@@ -415,8 +418,6 @@ class Athena(CodeInterface):
         object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
         object.add_getter('potential_grid', 'get_potential', names=('potential',))
         object.add_setter('potential_grid', 'set_potential', names=('potential', ))
-        
-        
 
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -516,7 +517,7 @@ class Athena(CodeInterface):
             ("length_x", "length_y", "length_z")
         )
     
-    
+        self.stopping_conditions.define_parameters(object)
 
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()

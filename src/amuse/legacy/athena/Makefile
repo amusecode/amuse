@@ -16,11 +16,10 @@ AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
 
-
+SCLIBS ?= -L../../../../lib/stopcond -lstopcond
+SCINC ?= -I../../../../lib/stopcond
 
 ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o $(ATHENA_DIR)/src/*/*.o))
-
-
 
 all: worker_code 
 
@@ -66,12 +65,12 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=h interface.py AthenaInterface -o $@
+	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	mpicxx $(CXXFLAGS) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
+	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
 
 .c.o: $<
-	$(CC) $(CXXFLAGS) -c -o $@ $< 
+	$(CC) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
 
 

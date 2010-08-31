@@ -799,4 +799,11 @@ class TestAthena(TestWithMPI):
         print instance.parameters
         instance.stop()
     
+    def test8(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_number_of_steps = 10
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 10|units.none)
+        instance.stop()
+        
     

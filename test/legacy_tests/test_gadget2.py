@@ -11,8 +11,6 @@ from amuse.support.units import units
 from amuse.support.data import core
 from amuse.support.legacy import channel
 
-import numpy
-
 default_options = dict()#redirection = "null")
 #default_options = dict(debugger = "none")
 

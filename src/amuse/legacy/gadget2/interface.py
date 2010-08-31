@@ -446,6 +446,7 @@ class Gadget2(GravitationalDynamics):
                 1e5 | units.cm / units.s)# 1 km/sec
 
         self.stopping_conditions = StoppingConditions(self)
+        print self.stoppind_conditions
 
         GravitationalDynamics.__init__(
             self,

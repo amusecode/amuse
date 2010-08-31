@@ -254,6 +254,8 @@ class PhiGRAPE(GravitationalDynamics):
             0 |  units.none
         )
 
+        self.stopping_conditions.define_parameters(object)
+
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
 
