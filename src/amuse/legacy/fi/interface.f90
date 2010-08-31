@@ -1,5 +1,5 @@
 function initialize_code() result(ret)
-#include "../../lib/stopcond/stopcond.inc"
+  include "../../../../lib/stopcond/stopcond.inc"
   integer :: ret
   integer :: set_support_for_condition, error
   call muse_start
