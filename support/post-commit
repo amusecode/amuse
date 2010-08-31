@@ -3,24 +3,6 @@
 import urllib
 import sys
 
-import os.path
-import os
-
-import re
-
-from subprocess import Popen, PIPE
-from xml.dom.minidom import parseString
-
-USERNAME = 'svn'
-PASSWORD = 'xxx'
-SERVER = 'http://www.amusecode.org/review/'
-
-def get_first_element_with_tag(parent, name):
-    for node in parent.childNodes:
-        if hasattr(node, 'tagName') and (name == "*" or node.tagName == name):
-            return node
-    return None
-    
     
 def send_revision_to_server(revision):
     parameters = urllib.urlencode({'rev': revision})
@@ -32,68 +14,6 @@ def send_revision_to_server(revision):
         f.close()
 
 
-def run_command(arguments):
-    print "running :" + ' '.join(arguments)
-    process = Popen(arguments, stdout = PIPE, stderr = PIPE)
-    stdoutstr, stderrstr = process.communicate()
-    print stderrstr
-    return stdoutstr
-    
-def svn_log(repos, revision):
-    arguments = ['svn', 'log', repos,  '-r', str(revision), '--xml']
-    xmlstring = run_command(arguments)
-    print xmlstring
-    dom = parseString(xmlstring)
-    logentries = dom.getElementsByTagName('logentry')
-    if not logentries:
-        return None
-    for entry in logentries:
-        author  =  get_first_element_with_tag(entry, "author").firstChild.data
-        date_string = get_first_element_with_tag(entry, "date").firstChild.data
-        msg_string = get_first_element_with_tag(entry, "msg").firstChild.data
-        return (author, date_string, msg_string)
-
-
-def send_review_to_server(repository, revision):
-    repository_url = 'file://' + repository
-    svnloginfo = svn_log(repository_url, revision)
-    if svnloginfo:
-        author, date_string, msg_string = svnloginfo
-        
-         # check for update to existing review
-        m = re.search(r'update(?: )?review:([0-9]+)', msg_string, re.M | re.I)
-        if m:
-            reviewid = '--review-request-id=' + m.group(1)
-        else:
-            reviewid = ''
-        
-        # check whether to publish or leave review as draft
-        if re.search(r'draft(?: )?review', msg_string, re.M | re.I):
-            publish = ''
-        else:
-            publish = '-p'
-        
-        # summary is log up to first period+space / first new line / first 250 chars
-        # (whichever comes first)
-        summary = '--summary=' + msg_string[:250].splitlines().pop(0).split('. ').pop(0)
-
-
-        repository_url =  '--repository-url=' + repository_url
-        password = '--password=' + PASSWORD
-        username = '--username=' + USERNAME
-        description = "--description=(In [%s]) %s" % (revision, msg_string)
-        submitas = '--submit-as=' + author
-        revision = '--revision-range=%s:%s' % (int(revision)-1, revision)
-        server = '--server=' + SERVER
-        
-        arguments = ['post-review', repository_url, password, username, submitas, revision, server, reviewid, publish]
-        
-        os.environ['HOME']='/tmp'
-        if len(reviewid) == 0:
-            arguments += [summary, description]
-            
-        print run_command(arguments)
-        
 if __name__ == "__main__":
     if len(sys.argv) != 3:
         print "Usage: {0} REPOS REV".format(argv[0])
@@ -102,18 +22,11 @@ if __name__ == "__main__":
     repository = sys.argv[1]
     revision = sys.argv[2]
     
-    repository = os.path.normpath(repository)
-    
     try:
         send_revision_to_server(revision)
     except:
         print "error, tracker may be offline"
         sys.exit(1)
-        
-    if not repository == 'none':
-        send_review_to_server(repository, revision)
-        
-    
     
 
     

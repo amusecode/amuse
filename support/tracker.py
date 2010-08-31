@@ -8,6 +8,7 @@ import json
 import os.path
 import os
 import sys
+import re
 
 import webbrowser
 
@@ -88,8 +89,7 @@ def get_first_element_with_tag(parent, name):
             (name == "*" or node.tagName == name):
             return node
     return None
-
-
+    
 header = """\
 Dear {name},
 
@@ -141,6 +141,105 @@ errored_email_subject = """Found {number_of_errors} error(s) in revision {revisi
 success_email_subject = """For revision revision {revision}, all {number_of_tests} tests were successful!"""
 
 
+def run_command(arguments):
+    print "running :" + ' '.join(arguments)
+    process = subprocess.Popen(arguments, stdout = subprocess.PIPE, stderr = subprocess.PIPE)
+    stdoutstr, stderrstr = process.communicate()
+    print stderrstr
+    return stdoutstr
+
+class RequestACodeReview(object):
+    
+    def __init__(self, **keyword_arguments):
+        if len(keyword_arguments) > 0:
+            for key, value in keyword_arguments.iteritems():
+                setattr(self, key, value)
+                self.start()
+
+    def start(self):
+        if not self.log_string:
+            pass
+        
+        revision = self.revision
+        
+        repository_url =  '--repository-url=' + self.svn_repository_url
+        password = '--password=' + self.reviewboard_password
+        username = '--username=' + self.reviewboard_username
+        description = "--description=(In [%s]) %s" % (revision, self.log_string)
+        submitas = '--submit-as=' + self.author
+        revision = '--revision-range=%s:%s' % (int(revision)-1, revision)
+        server = '--server=' + self.reviewboard_url
+        
+        arguments = [
+            'post-review',
+            repository_url,
+            password,
+            username,
+            submitas,
+            revision,
+            server,
+            self.review_identifier_argument,
+            self.publish_argument,
+            self.testing_done_argument
+        ]
+        
+        if len(self.review_identifier_argument) == 0:
+            arguments += [self.summary_argument, description]
+        print run_command(arguments)
+        
+    @late
+    def svn_repository_url(self):
+        return 'http://www.amusecode.org/svn/'
+    
+    @late
+    def reviewboard_url(self):
+        return 'http://www.amusecode.org/review/'
+        
+    @late
+    def reviewboard_username(self):
+        return 'svn'
+        
+    @late
+    def reviewboard_password(self):
+        return os.environ['RVPW']
+
+    @late
+    def author(self):
+        return 'unknown'
+    
+    @late
+    def log_string(self):
+        return ''
+    
+    @late
+    def review_identifier_argument(self):
+        m = re.search(r'update(?: )?review:([0-9]+)', self.log_string, re.M | re.I)
+        if m:
+            return '--review-request-id=' + m.group(1)
+        else:
+            return ''
+            
+    @late
+    def publish_argument(self):
+        if re.search(r'draft(?: )?review', self.log_string, re.M | re.I):
+            return ''
+        else:
+            return '-p'
+    
+    @late
+    def summary_argument(self):
+        return '--summary=' + self.log_string[:250].splitlines().pop(0).split('. ').pop(0)
+    
+    @late
+    def testing_done_argument(self):
+        if self.test_report:
+            return '--testing-done=' + self.test_report
+        else:
+            return ''
+
+
+
+            
 class RunAllTestsOnASvnCommit(object):
     DEFAULT = None
     
@@ -211,9 +310,23 @@ class RunAllTestsOnASvnCommit(object):
         background_test.RunTests.WORKING_DIRECTORY = self.working_directory
         return background_test.RunTests.instance.run_tests(None)
         
-    def send_report_as_email_to(self, report, recipient):
+    def send_report_as_email_to(self, report, mail_content_string, recipient):
         uc = SendAnEmail()
-               
+        uc.mail_contents = mail_content_string
+        
+        if report["number_of_errors"] > 0:
+            uc.subject = errored_email_subject.format(**report)
+        else:
+            uc.subject = success_email_subject.format(**report)
+        
+        if not recipient is None:
+            uc.recipients = [recipient]
+            uc.start()
+        
+        uc.recipients = [self.admin_email_address]
+        uc.start()
+        
+    def new_mail_content_string(self, report):
         contents = []
         contents.append(header.format(**report))
         
@@ -250,34 +363,23 @@ class RunAllTestsOnASvnCommit(object):
                 
         contents.append(footer.format(**report))
         
-        uc.mail_contents = '\n'.join(contents)
-        
-        if report["number_of_errors"] > 0:
-            uc.subject = errored_email_subject.format(**report)
-        else:
-            uc.subject = success_email_subject.format(**report)
-        
-        if not recipient is None:
-            uc.recipients = [recipient]
-            uc.start()
-        
-        uc.recipients = [self.admin_email_address]
-        uc.start()
-        
+        return '\n'.join(contents)
         
     def check_svn_commit(self,revision):
         
         self.cleanup_compiled_python_files()
-        self.update_from_svn(revision)
-        self.build_code()
         
-        test_report = self.run_all_tests()
         
         author, date, msg = self.get_author_date_and_msg_for(revision)
         if author in self.mapping_from_author_to_email:
             name, email = self.mapping_from_author_to_email[author]
         else:
             name, email = 'Admin', None
+        
+        self.update_from_svn(revision)
+        self.build_code()
+        
+        test_report = self.run_all_tests()
         
         report = {}
         report['author'] = author
@@ -326,8 +428,15 @@ class RunAllTestsOnASvnCommit(object):
         self.mapping_from_revision_to_report[int(revision)] = report
         self.dump_revision_reports()
         
+        content = self.new_mail_content_string(report)
+        self.send_report_as_email_to(report, content,  email)
         
-        self.send_report_as_email_to(report, email)
+        requestACodeReview = RequestACodeReview()
+        requestACodeReview.log_string = msg
+        requestACodeReview.author = author
+        requestACodeReview.revision = revision
+        requestACodeReview.test_report = content
+        requestACodeReview.start()
         
         
     @late
@@ -445,10 +554,12 @@ if __name__ == '__main__':
     print "starting server on port: ", options.serverport
       
     server = ContinuosTestWebServer(options.serverport)
+    
     if options.admin_email:
         server.tracker.admin_email_address = options.admin_email
     else:
         parser.error("Must set the admin e-mail address using -a")
+        
     server.tracker.start()
     server.start()
 
@@ -459,4 +570,5 @@ if __name__ == '__main__':
         
 
 
+    
     
