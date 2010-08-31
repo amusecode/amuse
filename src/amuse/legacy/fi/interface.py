@@ -327,7 +327,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     @legacy_function    
     def get_hydro_state_at_point():
         function = LegacyFunctionSpecification()  
-        for x in ['eps','x','y','z']:
+        for x in ['eps','x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
             function.addParameter(x, dtype='d', direction=function.OUT)
