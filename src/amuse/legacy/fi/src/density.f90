@@ -387,10 +387,10 @@ subroutine gatterdens(n,spos,hsearch,dens,ddensdh)
   enddo   
 end subroutine 
 
-subroutine gatter_hydro_state(n,spos,hsearch,dens,rhov,rhov2,rhoe)
+subroutine gatter_hydro_state(n,spos,svel,hsearch,dens,rhov,rhov2,rhoe)
   include 'globals.h' 
   integer,intent(in) :: n
-  real,dimension(3),intent(in) :: spos
+  real,dimension(3),intent(in) :: spos, svel
   real,intent(in) :: hsearch
   real,intent(inout) :: dens,rhov(3),rhoe,rhov2
   integer :: i,p,iwsm
@@ -423,8 +423,8 @@ subroutine gatter_hydro_state(n,spos,hsearch,dens,rhov,rhov2,rhoe)
       wsm=(1.-drw)*wsmooth(iwsm)+drw*wsmooth(1+iwsm)
       wmass=wnorm*wsm
       dens=dens+mass(p)*wmass
-      rhov=rhov+mass(p)*vel(p,1:3)*wmass
-      rhov2=rhov2+mass(p)*sum(vel(p,1:3)**2)*wmass
+      rhov=rhov+mass(p)*(vel(p,1:3)-svel(1:3))*wmass
+      rhov2=rhov2+mass(p)*sum((vel(p,1:3)-svel(1:3))**2)*wmass
       rhoe=rhoe+mass(p)*ethermal(p)*wmass
     endif
   enddo   

@@ -352,28 +352,35 @@ subroutine muse_get_pot(epsin,x,y,z,pot,n)
  enddo
 end subroutine
 
-subroutine muse_get_hydro_state(x,y,z,state,n)
+subroutine muse_get_hydro_state(x,y,z,vx,vy,vz,state,n)
   include 'globals.h'
   integer :: n,i,nneigh
-  real :: x(n),y(n),z(n),state(5,n)
-  real :: ppos(3),rh,rhv(3),rhe,rhv2,h,dum
+  real :: x(n),y(n),z(n),vx(n),vy(n),vz(n),state(5,n)
+  real :: ppos(3),pvel(3),rh,rhv(3),rhe,rhv2,h,dum,ethtoent
   logical :: vdisp_included
 
   vdisp_included=.NOT.isotherm
   if(sphtreecount.NE.ppropcount+pordercount) call makesphtree
   do i=1,n
     ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
+    pvel(1)=vx(i);pvel(2)=vy(i);pvel(3)=vz(i)  
     call hsmdenspos2(ppos,h,rh,dum,nneigh)
-    call gatter_hydro_state(nneigh,ppos,h,rh,rhv,rhv2,rhe)
+    call gatter_hydro_state(nneigh,ppos,pvel,h,rh,rhv,rhv2,rhe)
+    if(uentropy) then
+      ethtoent=gamma1/rh**gamma1
+    else
+      ethtoent=1
+    endif
     state(1,i)=rh
     state(2,i)=rhv(1)
     state(3,i)=rhv(2)
     state(4,i)=rhv(3)
+    rhe=rhe/ethtoent
     if(vdisp_included) then
       state(5,i)=rhe+rhv2
     else
       state(5,i)=0.
-      if(rh.GT.0) state(5,i)=rhe+sqrt(sum(rhv**2))/rh
+      if(rh.GT.0) state(5,i)=rhe+sum(rhv**2)/rh
     endif
   enddo
   
