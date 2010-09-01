@@ -411,7 +411,7 @@ class TestFi(TestWithMPI):
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.0500 | nbody.energy)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),     -1.3337 | nbody.energy, 3)
         
-        instance.evolve_model(1.0 | units.yr)
+        instance.evolve_model(1.113988| units.yr)
         instance.synchronize_model()
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.0033 | nbody.energy, 3)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.8203 | nbody.energy, 3)
