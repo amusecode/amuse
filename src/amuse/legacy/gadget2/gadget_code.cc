@@ -338,17 +338,17 @@ int evolve(double t_end){
     // .......
 
     Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
-    if (Ti_end >= All.Ti_Current){
-        global_quantities_of_system_up_to_date = false;
+    if (Ti_end >= All.Ti_Current) {
+	global_quantities_of_system_up_to_date = false;
         done = drift_to_t_end(Ti_end); /* find next synchronization point and drift particles to MIN(this time, t_end). */
-        while (!done && All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax){
+        while (!done && All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax) {
             t0 = second();
             every_timestep_stuff();	/* write some info to log-files */
             domain_Decomposition();	/* do domain decomposition if needed */
             compute_accelerations(0);	/* compute accelerations for 
                         * the particles that are to be advanced  */
             /* check whether we want a full energy statistics */
-            if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics){
+            if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics) {
 #ifdef COMPUTE_POTENTIAL_ENERGY
                 compute_potential();
 #endif
@@ -362,7 +362,7 @@ int evolve(double t_end){
             All.NumCurrentTiStep++;
             
             /* Check whether we need to interrupt the run */
-            if(ThisTask == 0){
+            if(ThisTask == 0) {
                 /* are we running out of CPU-time ? If yes, interrupt run. */
                 if(CPUThisRun > 0.85 * All.TimeLimitCPU){printf("reaching time-limit. stopping.\n"); stopflag = 2;}
             }
@@ -374,17 +374,20 @@ int evolve(double t_end){
             CPUThisRun += timediff(t0, t1);
 	    //
 	    if(is_number_of_steps_detection_enabled) {
-	      number_of_steps_innerloop++;
-	      if(number_of_steps_innerloop > max_number_of_steps) {
-		int stopping_index  = next_index_for_stopping_condition();
-		set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
-	      }
-	}
-	    
+		number_of_steps_innerloop++;
+		if(number_of_steps_innerloop > max_number_of_steps) {
+		    int stopping_index  = next_index_for_stopping_condition();
+		    set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+		}
+	    }
+	    if (set_conditions & enabled_conditions) {
+		break;
+	    }
         }
     } else {return -1;}
     return 0;
 }
+
 int synchronize_model() {
     return 0;
 }

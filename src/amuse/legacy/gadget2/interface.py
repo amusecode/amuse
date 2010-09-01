@@ -440,7 +440,7 @@ class Gadget2(GravitationalDynamics):
     def __init__(self, unit_converter = None, **options):
         legacy_interface = Gadget2Interface(**options)
         if unit_converter is None:
-            unit_converter = ConvertBetweenGenericAndSi(
+            unit_converter = ConvertBetweenGenericAndSiUnits(
                 3.085678e21 | units.cm,   # 1.0 kpc
                 1.989e43 | units.g,       # 1.0e10 solar masses
                 1e5 | units.cm / units.s)# 1 km/sec

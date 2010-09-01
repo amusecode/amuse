@@ -109,13 +109,13 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     Real potential0 = Potentials[kk][jj][ii];
     Real potential1 = potential0;
     if(ii < i) {
-	potential1 = Potentials[kk][jj][ii + 1];
+        potential1 = Potentials[kk][jj][ii + 1];
     } else if(jj < j) {
-	potential1 = Potentials[kk][jj + 1][ii];
+        potential1 = Potentials[kk][jj + 1][ii];
     } else if(kk < k) {
-	potential1 = Potentials[kk + 1][jj][ii];
+        potential1 = Potentials[kk + 1][jj][ii];
     } else {
-	potential1 = potential0;
+        potential1 = potential0;
     }
 
     return (potential0 + potential1) / 2.0;
@@ -158,11 +158,11 @@ int initialize_code(){
     /* Get my task id (rank in MPI) */
     if(MPI_SUCCESS != MPI_Comm_rank(MPI_COMM_WORLD,&myID_Comm_world))
     {
-	ath_error("Error on calling MPI_Comm_rank\n");
+        ath_error("Error on calling MPI_Comm_rank\n");
     }
     if(MPI_SUCCESS != MPI_Comm_size(MPI_COMM_WORLD,&(mpi_comm_size)))
     {
-	ath_error("Error on calling MPI_Comm_size\n");
+        ath_error("Error on calling MPI_Comm_size\n");
     }
 #else
     myID_Comm_world = 0;
@@ -257,11 +257,11 @@ int initialize_grid()
   for (nl=0; nl<(mesh.NLevels); nl++){
     for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
       if (mesh.Domain[nl][nd].Grid != NULL){
-	bvals_mhd(&(mesh.Domain[nl][nd]));
+        bvals_mhd(&(mesh.Domain[nl][nd]));
 #ifdef PARTICLES
-	bvals_particle(&(Mesh.Domain[nl][nd]));
+        bvals_particle(&(Mesh.Domain[nl][nd]));
 #ifdef FEEDBACK
-	exchange_feedback_init(&(Mesh.Domain[nl][nd]));
+        exchange_feedback_init(&(Mesh.Domain[nl][nd]));
 #endif
 #endif
       }
@@ -286,8 +286,8 @@ int initialize_grid()
   for (nl=0; nl<(mesh.NLevels); nl++){
     for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
       ifmesh.Domain[nl][nd].Grid != NULL){
-	(*SelfGrav)(&(mesh.Domain[nl][nd]));
-	bvals_grav(&(mesh.Domain[nl][nd]));
+        (*SelfGrav)(&(mesh.Domain[nl][nd]));
+        bvals_grav(&(mesh.Domain[nl][nd]));
       }
     }
   }
@@ -304,76 +304,76 @@ int get_position_of_index(int i, int j, int k, int level, int domain, double * x
     double pos[4] = {0,0,0,0};
 
     if (mesh.NLevels == 0) {
-	return -1;
+        return -1;
     }
 
     if (level >= mesh.NLevels){
-	return -2;
+        return -2;
     }
 
     if (domain >= mesh.DomainsPerLevel[level]){
-	return -3;
+        return -3;
     }
     DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
 
     if(dom->Grid == NULL)
     {
-	pos[0] = 0.0;
-	pos[1] = 0.0;
-	pos[2] = 0.0;
-	pos[3] = 1;
+        pos[0] = 0.0;
+        pos[1] = 0.0;
+        pos[2] = 0.0;
+        pos[3] = 1;
     }
     else
     {
-	GridS * grid = dom->Grid;
-	//fprintf(stderr, "%d, %d, %d, %d\n", grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
+        GridS * grid = dom->Grid;
+        //fprintf(stderr, "%d, %d, %d, %d\n", grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
 
-	if (grid->Nx[0] > 1 && ( (grid->Disp[0] > 0 && i < (grid->Disp[0]))  || (((grid->Disp[0] + grid->Nx[0]) < dom->Nx[0]) && i >= (grid->Disp[0] + grid->Nx[0]))))
-	{
-	    pos[0] = 0.0;
-	    pos[1] = 0.0;
-	    pos[2] = 0.0;
-	    pos[3] = 1;
-	}
-	else if (grid->Nx[1] > 1 && ((grid->Disp[1] > 0 && j < (grid->Disp[1]))  || (((grid->Disp[1] + grid->Nx[1]) < dom->Nx[1]) &&j >= (grid->Disp[1] + grid->Nx[1]))))
-	{
-	    pos[0] = 0.0;
-	    pos[1] = 0.0;
-	    pos[2] = 0.0;
-	    pos[3] = 1;
-	}
-	else if (grid->Nx[2] > 1 && ((grid->Disp[2] > 0 && k < (grid->Disp[2]))  || (((grid->Disp[2] + grid->Nx[2]) < dom->Nx[2]) &&k >= (grid->Disp[2] + grid->Nx[2]))))
-	{
-	    pos[0] = 0.0;
-	    pos[1] = 0.0;
-	    pos[2] = 0.0;
-	    pos[3] = 1;
-	}
-	else
-	{
-	    cc_pos(
-		grid,
-		i + grid->is - grid->Disp[0],
-		j + grid->js - grid->Disp[1],
-		k + grid->ks - grid->Disp[2],
-		&pos[0] ,
-		&pos[1] ,
-		&pos[2]
-	    );
-	    pos[3] = 0;
-	}
+        if (grid->Nx[0] > 1 && ( (grid->Disp[0] > 0 && i < (grid->Disp[0]))  || (((grid->Disp[0] + grid->Nx[0]) < dom->Nx[0]) && i >= (grid->Disp[0] + grid->Nx[0]))))
+        {
+            pos[0] = 0.0;
+            pos[1] = 0.0;
+            pos[2] = 0.0;
+            pos[3] = 1;
+        }
+        else if (grid->Nx[1] > 1 && ((grid->Disp[1] > 0 && j < (grid->Disp[1]))  || (((grid->Disp[1] + grid->Nx[1]) < dom->Nx[1]) &&j >= (grid->Disp[1] + grid->Nx[1]))))
+        {
+            pos[0] = 0.0;
+            pos[1] = 0.0;
+            pos[2] = 0.0;
+            pos[3] = 1;
+        }
+        else if (grid->Nx[2] > 1 && ((grid->Disp[2] > 0 && k < (grid->Disp[2]))  || (((grid->Disp[2] + grid->Nx[2]) < dom->Nx[2]) &&k >= (grid->Disp[2] + grid->Nx[2]))))
+        {
+            pos[0] = 0.0;
+            pos[1] = 0.0;
+            pos[2] = 0.0;
+            pos[3] = 1;
+        }
+        else
+        {
+            cc_pos(
+                grid,
+                i + grid->is - grid->Disp[0],
+                j + grid->js - grid->Disp[1],
+                k + grid->ks - grid->Disp[2],
+                &pos[0] ,
+                &pos[1] ,
+                &pos[2]
+            );
+            pos[3] = 0;
+        }
     }
 
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-	MPI_Reduce(pos, NULL, 4, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(pos, NULL, 4, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-	MPI_Reduce(MPI_IN_PLACE, pos, 4, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, pos, 4, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
     if(pos[3] == mpi_comm_size) {
-	return -4;
+        return -4;
     }
     *x = pos[0];
     *y = pos[1];
@@ -384,7 +384,7 @@ int get_position_of_index(int i, int j, int k, int level, int domain, double * x
 
 int get_interpolated_gravitational_potential(double x, double y, double z,   double * potential) {
     if (Potentials == NULL) {
-	return -1;
+        return -1;
     }
 
 
@@ -401,37 +401,37 @@ int get_index_of_position(double x, double y,
     double pos[3] = {0,0,0};
 
     if (mesh.NLevels == 0) {
-	return -1;
+        return -1;
     }
 
     if (level >= mesh.NLevels){
-	return -2;
+        return -2;
     }
 
     if (domain >= mesh.DomainsPerLevel[level]){
-	return -3;
+        return -3;
     }
     DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
 
     if(dom->Grid == NULL)
     {
-	pos[0] = 0.0;
-	pos[1] = 0.0;
-	pos[2] = 0.0;
+        pos[0] = 0.0;
+        pos[1] = 0.0;
+        pos[2] = 0.0;
     }
     else
     {
-	GridS * grid = dom->Grid;
-	ijk_pos(grid, x, y, z, &pos[0], &pos[1], &pos[2]);
+        GridS * grid = dom->Grid;
+        ijk_pos(grid, x, y, z, &pos[0], &pos[1], &pos[2]);
     }
 
 
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-	MPI_Reduce(pos, NULL, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(pos, NULL, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-	MPI_Reduce(MPI_IN_PLACE, pos, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, pos, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
 
@@ -467,92 +467,92 @@ int get_grid_state_mpi(
     int domain = 0;
 
     if (mesh.NLevels == 0) {
-	return -1;
+        return -1;
     }
     for(l=0; l < number_of_points; l++) {
-	i0 = i[l];
-	j0 = j[l];
-	k0 = k[l];
-	level = levels[l];
-	domain = domains[l];
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        level = levels[l];
+        domain = domains[l];
 
-	rho[l] = rhovx[l] = rhovy[l]= rhovz[l] = en[l] = 0.0;
+        rho[l] = rhovx[l] = rhovy[l]= rhovz[l] = en[l] = 0.0;
 
-	if (level >= mesh.NLevels){
-	    continue;
-	}
+        if (level >= mesh.NLevels){
+            continue;
+        }
 
-	if (domain >= mesh.DomainsPerLevel[level]){
-	    continue;
-	}
+        if (domain >= mesh.DomainsPerLevel[level]){
+            continue;
+        }
 
-	DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
 
-	if(dom->Grid == NULL)
-	{
-	    continue;
-	}
-	else
-	{
-	    GridS * grid = dom->Grid;
-	    if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
-	    {
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            {
 
-	    }
-	    else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-	    {
+            }
+            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+            {
 
-	    }
-	    else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-	    {
-	    }
-	    else
-	    {
+            }
+            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+            {
+            }
+            else
+            {
 
-		i0 -= grid->Disp[0] - grid->is;
-		if(grid->Nx[1] > 1)
-		{
-		    j0 -= grid->Disp[1] - grid->js;
-		}
-		else
-		{
-		    j0 = 0;
-		}
-		if(grid->Nx[2] > 1)
-		{
-		    k0 -= grid->Disp[2] - grid->ks;
-		}
-		else
-		{
-		    k0 = 0;
-		}
+                i0 -= grid->Disp[0] - grid->is;
+                if(grid->Nx[1] > 1)
+                {
+                    j0 -= grid->Disp[1] - grid->js;
+                }
+                else
+                {
+                    j0 = 0;
+                }
+                if(grid->Nx[2] > 1)
+                {
+                    k0 -= grid->Disp[2] - grid->ks;
+                }
+                else
+                {
+                    k0 = 0;
+                }
 
 
-		rho[l] = grid->U[k0][j0][i0].d;
-		rhovx[l] = grid->U[k0][j0][i0].M1;
-		rhovy[l] = grid->U[k0][j0][i0].M2;
-		rhovz[l] = grid->U[k0][j0][i0].M3;
-		en[l] = grid->U[k0][j0][i0].E;
-	    }
+                rho[l] = grid->U[k0][j0][i0].d;
+                rhovx[l] = grid->U[k0][j0][i0].M1;
+                rhovy[l] = grid->U[k0][j0][i0].M2;
+                rhovz[l] = grid->U[k0][j0][i0].M3;
+                en[l] = grid->U[k0][j0][i0].E;
+            }
 
-	}
+        }
     }
 
 
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-	MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-	MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
 
@@ -578,77 +578,77 @@ int fill_grid_state_mpi(
     int domain = 0;
 
     if (mesh.NLevels == 0) {
-	return -1;
+        return -1;
     }
     for(l=0; l < number_of_points; l++) {
-	i0 = i[l];
-	j0 = j[l];
-	k0 = k[l];
-	level = levels[l];
-	domain = domains[l];
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        level = levels[l];
+        domain = domains[l];
 
-	if (level >= mesh.NLevels){
-	    continue;
-	}
+        if (level >= mesh.NLevels){
+            continue;
+        }
 
-	if (domain >= mesh.DomainsPerLevel[level]){
-	    continue;
-	}
+        if (domain >= mesh.DomainsPerLevel[level]){
+            continue;
+        }
 
-	DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
 
-	if(dom->Grid == NULL)
-	{
-	    continue;
-	}
-	else
-	{
-	    GridS * grid = dom->Grid;
-	    if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
-	    {
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            {
 
-	    }
-	    else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-	    {
+            }
+            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+            {
 
-	    }
-	    else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-	    {
-	    }
-	    else
-	    {
-		if(grid->Nx[0] > 1)
-		{
-		    i0 -= grid->Disp[0] - grid->is;
-		}
-		else
-		{
-		    i0 = 0;
-		}
-		if(grid->Nx[1] > 1)
-		{
-		    j0 -= grid->Disp[1] - grid->js;
-		}
-		else
-		{
-		    j0 = 0;
-		}
-		if(grid->Nx[2] > 1)
-		{
-		    k0 -= grid->Disp[2] - grid->ks;
-		}
-		else
-		{
-		    k0 = 0;
-		}
-		grid->U[k0][j0][i0].d = rho[l];
-		grid->U[k0][j0][i0].M1 = rhovx[l];
-		grid->U[k0][j0][i0].M2 = rhovy[l];
-		grid->U[k0][j0][i0].M3 = rhovz[l];
-		grid->U[k0][j0][i0].E = en[l];
-	    }
+            }
+            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+            {
+            }
+            else
+            {
+                if(grid->Nx[0] > 1)
+                {
+                    i0 -= grid->Disp[0] - grid->is;
+                }
+                else
+                {
+                    i0 = 0;
+                }
+                if(grid->Nx[1] > 1)
+                {
+                    j0 -= grid->Disp[1] - grid->js;
+                }
+                else
+                {
+                    j0 = 0;
+                }
+                if(grid->Nx[2] > 1)
+                {
+                    k0 -= grid->Disp[2] - grid->ks;
+                }
+                else
+                {
+                    k0 = 0;
+                }
+                grid->U[k0][j0][i0].d = rho[l];
+                grid->U[k0][j0][i0].M1 = rhovx[l];
+                grid->U[k0][j0][i0].M2 = rhovy[l];
+                grid->U[k0][j0][i0].M3 = rhovz[l];
+                grid->U[k0][j0][i0].E = en[l];
+            }
 
-	}
+        }
     }
 
     return 0;
@@ -663,10 +663,10 @@ int get_potential(
     int number_of_points)
 {
     if (mesh.NLevels == 0) {
-	return -1;
+        return -1;
     }
     if (Potentials == NULL) {
-	return -2;
+        return -2;
     }
 
     int imin = 0;
@@ -674,52 +674,52 @@ int get_potential(
     int jmin, jmax;
     if (mesh.Nx[1] > 1)
     {
-	jmin = 0;
-	jmax = mesh.Nx[1]+nghost;
+        jmin = 0;
+        jmax = mesh.Nx[1]+nghost;
     }
     else
     {
-	jmin = jmax = 0;
+        jmin = jmax = 0;
     }
     int kmin, kmax;
     if (mesh.Nx[2] > 1)
     {
-	kmin = 0;
-	kmax = mesh.Nx[2]+nghost;
+        kmin = 0;
+        kmax = mesh.Nx[2]+nghost;
     }
     else
     {
-	kmin = kmax = 0;
+        kmin = kmax = 0;
     }
     int l=0;
     int i0,j0,k0 = 0;
 
     for(l=0; l < number_of_points; l++)
     {
-	i0 = i[l] + nghost;
-	j0 = j[l];
-	k0 = k[l];
-	potential[l] = 0.0;
+        i0 = i[l] + nghost;
+        j0 = j[l];
+        k0 = k[l];
+        potential[l] = 0.0;
 
-	if(mesh.Nx[1] > 1) {j0 += nghost;}
-	if(mesh.Nx[2] > 1) {k0 += nghost;}
+        if(mesh.Nx[1] > 1) {j0 += nghost;}
+        if(mesh.Nx[2] > 1) {k0 += nghost;}
 
-	if (
-	    (i0 >= imin && i0 <= imax) &&
-	    (j0 >= jmin && j0 <= jmax) &&
-	    (k0 >= kmin && k0 <= kmax)
-	)
-	{
-	    potential[l] = Potentials[k0][j0][i0];
-	}
+        if (
+            (i0 >= imin && i0 <= imax) &&
+            (j0 >= jmin && j0 <= jmax) &&
+            (k0 >= kmin && k0 <= kmax)
+        )
+        {
+            potential[l] = Potentials[k0][j0][i0];
+        }
     }
 
 
 #ifdef MPI_PARALLEL
     if(myID_Comm_world) {
-	MPI_Reduce(potential, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(potential, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-	MPI_Reduce(MPI_IN_PLACE, potential, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, potential, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
 
@@ -734,10 +734,10 @@ int set_potential(
 {
 
     if (mesh.NLevels == 0) {
-	return -1;
+        return -1;
     }
     if (Potentials == NULL) {
-	return -2;
+        return -2;
     }
 
     int imin = 0;
@@ -745,43 +745,43 @@ int set_potential(
     int jmin, jmax;
     if (mesh.Nx[1] > 1)
     {
-	jmin = 0;
-	jmax = mesh.Nx[1] + nghost;
+        jmin = 0;
+        jmax = mesh.Nx[1] + nghost;
     }
     else
     {
-	jmin = jmax = 0;
+        jmin = jmax = 0;
     }
     int kmin, kmax;
     if (mesh.Nx[2] > 1)
     {
-	kmin = 0;
-	kmax = mesh.Nx[2] + nghost;
+        kmin = 0;
+        kmax = mesh.Nx[2] + nghost;
     }
     else
     {
-	kmin = kmax = 0;
+        kmin = kmax = 0;
     }
     int l=0;
     int i0,j0,k0 = 0;
 
     for(l=0; l < number_of_points; l++)
     {
-	i0 = i[l] + nghost;
-	j0 = j[l];
-	k0 = k[l];
+        i0 = i[l] + nghost;
+        j0 = j[l];
+        k0 = k[l];
 
-	if(mesh.Nx[1] > 1) {j0 += nghost;}
-	if(mesh.Nx[2] > 1) {k0 += nghost;}
+        if(mesh.Nx[1] > 1) {j0 += nghost;}
+        if(mesh.Nx[2] > 1) {k0 += nghost;}
 
-	if (
-	    (i0 >= imin && i0 <= imax) &&
-	    (j0 >= jmin && j0 <= jmax) &&
-	    (k0 >= kmin && k0 <= kmax)
-	)
-	{
-	    Potentials[k0][j0][i0] = potential[l];
-	}
+        if (
+            (i0 >= imin && i0 <= imax) &&
+            (j0 >= jmin && j0 <= jmax) &&
+            (k0 >= kmin && k0 <= kmax)
+        )
+        {
+            Potentials[k0][j0][i0] = potential[l];
+        }
     }
 
     return 0;
@@ -883,7 +883,7 @@ void _fill_grid_linearwave_1d(GridS *pGrid, DomainS *pDomain, int wave_flag, dou
   ath_pout(0,"Ux + Cf = %e, %e\n",ev[5],rem[5][wave_flag]);
 #else
   h0 = ((p0/Gamma_1+0.5*(bx0*bx0+by0*by0+bz0*bz0)+0.5*d0*(u0*u0+v0*v0+w0*w0))
-	       + (p0+0.5*(bx0*bx0+by0*by0+bz0*bz0)))/d0;
+               + (p0+0.5*(bx0*bx0+by0*by0+bz0*bz0)))/d0;
   esys_roe_adb_mhd(d0,u0,v0,w0,h0,bx0,by0,bz0,xfact,yfact,ev,rem,lem);
   ath_pout(0,"Ux - Cf = %e, %e\n",ev[0],rem[0][wave_flag]);
   ath_pout(0,"Ux - Ca = %e, %e\n",ev[1],rem[1][wave_flag]);
@@ -936,7 +936,7 @@ void _fill_grid_linearwave_1d(GridS *pGrid, DomainS *pDomain, int wave_flag, dou
 #endif /* MHD */
 #if (NSCALARS > 0)
       for (n=0; n<NSCALARS; n++)
-	Soln[k][j][i].s[n] = amp*(1.0 + sin(2.0*PI*x1));
+        Soln[k][j][i].s[n] = amp*(1.0 + sin(2.0*PI*x1));
 #endif
       break;
 
@@ -960,7 +960,7 @@ void _fill_grid_linearwave_1d(GridS *pGrid, DomainS *pDomain, int wave_flag, dou
 #endif /* MHD */
 #if (NSCALARS > 0)
       for (n=0; n<NSCALARS; n++)
-	Soln[k][j][i].s[n] = amp*(1.0 + sin(2.0*PI*x2));
+        Soln[k][j][i].s[n] = amp*(1.0 + sin(2.0*PI*x2));
 #endif
       break;
 
@@ -984,7 +984,7 @@ void _fill_grid_linearwave_1d(GridS *pGrid, DomainS *pDomain, int wave_flag, dou
 #endif /* MHD */
 #if (NSCALARS > 0)
       for (n=0; n<NSCALARS; n++)
-	Soln[k][j][i].s[n] = amp*(1.0 + sin(2.0*PI*x3));
+        Soln[k][j][i].s[n] = amp*(1.0 + sin(2.0*PI*x3));
 #endif
       break;
     default:
@@ -1014,7 +1014,7 @@ void _fill_grid_linearwave_1d(GridS *pGrid, DomainS *pDomain, int wave_flag, dou
 #endif /* MHD */
 #if (NSCALARS > 0)
       for (n=0; n<NSCALARS; n++)
-	pGrid->U[k][j][i].s[n] = Soln[k][j][i].s[n];
+        pGrid->U[k][j][i].s[n] = Soln[k][j][i].s[n];
 #endif
   }}}
 #ifdef MHD
@@ -1026,14 +1026,14 @@ void _fill_grid_linearwave_1d(GridS *pGrid, DomainS *pDomain, int wave_flag, dou
   if (pGrid->Nx[1] > 1) {
     for (k=ks; k<=ke; k++) {
       for (i=is; i<=ie; i++) {
-	pGrid->B2i[k][je+1][i] = pGrid->B2i[k][je][i];
+        pGrid->B2i[k][je+1][i] = pGrid->B2i[k][je][i];
       }
     }
   }
   if (pGrid->Nx[2] > 1) {
     for (j=js; j<=je; j++) {
       for (i=is; i<=ie; i++) {
-	pGrid->B3i[ke+1][j][i] = pGrid->B3i[ke][j][i];
+        pGrid->B3i[ke+1][j][i] = pGrid->B3i[ke][j][i];
       }
     }
   }
@@ -1071,13 +1071,13 @@ int fill_grid_linearwave_1d(int wave_flag, double amp, double vflow, int wave_di
     int domain = 0;
     for(level = 0 ; level < mesh.NLevels; level++)
     {
-	for(domain = 0; domain < mesh.DomainsPerLevel[level]; domain++)
-	{
-	    if(!(mesh.Domain[level][domain].Grid == NULL))
-	    {
-		_fill_grid_linearwave_1d( mesh.Domain[level][domain].Grid,&mesh.Domain[level][domain], wave_flag, amp, vflow, wave_dir);
-	    }
-	}
+        for(domain = 0; domain < mesh.DomainsPerLevel[level]; domain++)
+        {
+            if(!(mesh.Domain[level][domain].Grid == NULL))
+            {
+                _fill_grid_linearwave_1d( mesh.Domain[level][domain].Grid,&mesh.Domain[level][domain], wave_flag, amp, vflow, wave_dir);
+            }
+        }
     }
     return 0;
 
@@ -1100,7 +1100,7 @@ int evolve(double tlim) {
     par_setd("time","tlim", "%.15e", tlim, "-");
 
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
-					  &is_number_of_steps_detection_enabled);
+                                          &is_number_of_steps_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
 
     while (mesh.time < tlim) {
@@ -1110,108 +1110,108 @@ int evolve(double tlim) {
      * Done first since CFL constraint is applied which may change dt  */
 
 #if defined(RESISTIVITY) || defined(VISCOSITY) || defined(THERMAL_CONDUCTION)
-	    integrate_diff(&mesh);
-	    for (nl=0; nl<(mesh.NLevels); nl++){
-	      for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-		if (mesh.Domain[nl][nd].Grid != NULL){
-		  bvals_mhd(&(mesh.Domain[nl][nd]));
-		}
-	      }
-	    }
+            integrate_diff(&mesh);
+            for (nl=0; nl<(mesh.NLevels); nl++){
+              for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+                if (mesh.Domain[nl][nd].Grid != NULL){
+                  bvals_mhd(&(mesh.Domain[nl][nd]));
+                }
+              }
+            }
 #endif
 
     /*--- Step 9c. ---------------------------------------------------------------*/
     /* Loop over all Domains and call Integrator */
 
-	for (nl=0; nl<(mesh.NLevels); nl++){
-	  for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-	    if (mesh.Domain[nl][nd].Grid != NULL){
-	      (*Integrate)(&(mesh.Domain[nl][nd]));
+        for (nl=0; nl<(mesh.NLevels); nl++){
+          for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+            if (mesh.Domain[nl][nd].Grid != NULL){
+              (*Integrate)(&(mesh.Domain[nl][nd]));
 
 #ifdef FARGO
-	      Fargo(&(mesh.Domain[nl][nd]));
+              Fargo(&(mesh.Domain[nl][nd]));
 #ifdef PARTICLES
-	      advect_particles(&level0_Grid, &level0_Domain);
+              advect_particles(&level0_Grid, &level0_Domain);
 #endif
 #endif /* FARGO */
-	    }
-	  }
-	}
+            }
+          }
+        }
 
     /*--- Step 9d. ---------------------------------------------------------------*/
     /* With SMR, restrict solution from Child --> Parent grids  */
 
 #ifdef STATIC_MESH_REFINEMENT
-	RestrictCorrect(&mesh);
+        RestrictCorrect(&mesh);
 #endif
 
     /*--- Step 9e. ---------------------------------------------------------------*/
     /* User work (defined in problem()) */
 
-	Userwork_in_loop(&mesh);
+        Userwork_in_loop(&mesh);
 
     /*--- Step 9f. ---------------------------------------------------------------*/
     /* Compute gravitational potential using new density, and add second-order
      * correction to fluxes for accelerations due to self-gravity. */
 
 #ifdef SELF_GRAVITY
-	for (nl=0; nl<(mesh.NLevels); nl++){
-	  for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-	    if (mesh.Domain[nl][nd].Grid != NULL){
-	      (*SelfGrav)(&(mesh.Domain[nl][nd]));
-	      bvals_grav(&(mesh.Domain[nl][nd]));
-	      selfg_fc(&(mesh.Domain[nl][nd]));
-	    }
-	  }
-	}
+        for (nl=0; nl<(mesh.NLevels); nl++){
+          for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+            if (mesh.Domain[nl][nd].Grid != NULL){
+              (*SelfGrav)(&(mesh.Domain[nl][nd]));
+              bvals_grav(&(mesh.Domain[nl][nd]));
+              selfg_fc(&(mesh.Domain[nl][nd]));
+            }
+          }
+        }
 #endif
 
     /*--- Step 9g. ---------------------------------------------------------------*/
     /* Update mesh time, and time in all Grid's.  Compute new dt */
 
-	mesh.nstep++;
-	mesh.time += mesh.dt;
-	for (nl=0; nl<(mesh.NLevels); nl++){
-	  for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-	    if (mesh.Domain[nl][nd].Grid != NULL){
-	      mesh.Domain[nl][nd].Grid->time = mesh.time;
-	    }
-	  }
-	}
+        mesh.nstep++;
+        mesh.time += mesh.dt;
+        for (nl=0; nl<(mesh.NLevels); nl++){
+          for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+            if (mesh.Domain[nl][nd].Grid != NULL){
+              mesh.Domain[nl][nd].Grid->time = mesh.time;
+            }
+          }
+        }
 
-	dt_done = mesh.dt;
-	new_dt(&mesh);
+        dt_done = mesh.dt;
+        new_dt(&mesh);
 
     /*--- Step 9h. ---------------------------------------------------------------*/
     /* Boundary values must be set after time is updated for t-dependent BCs.
      * With SMR, ghost zones at internal fine/coarse boundaries set by Prolongate */
 
-	for (nl=0; nl<(mesh.NLevels); nl++){
-	  for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-	    if (mesh.Domain[nl][nd].Grid != NULL){
-	      bvals_mhd(&(mesh.Domain[nl][nd]));
+        for (nl=0; nl<(mesh.NLevels); nl++){
+          for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
+            if (mesh.Domain[nl][nd].Grid != NULL){
+              bvals_mhd(&(mesh.Domain[nl][nd]));
 #ifdef PARTICLES
-	      bvals_particle(&level0_Grid, &level0_Domain);
+              bvals_particle(&level0_Grid, &level0_Domain);
 #endif
-	    }
-	  }
-	}
+            }
+          }
+        }
 
 #ifdef STATIC_MESH_REFINEMENT
-	Prolongate(&mesh);
+        Prolongate(&mesh);
 #endif
 
-	//AMUSE STOPPING CONDITIONS SUPPORT
-	if (is_number_of_steps_detection_enabled) {
-	    number_of_steps_innerloop++;
-	    if (number_of_steps_innerloop > max_number_of_steps) {
-		int stopping_index  = next_index_for_stopping_condition();
-		set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
-	    }
-	}
+        //AMUSE STOPPING CONDITIONS SUPPORT
+        if (is_number_of_steps_detection_enabled) {
+            number_of_steps_innerloop++;
+            if (number_of_steps_innerloop > max_number_of_steps) {
+                int stopping_index  = next_index_for_stopping_condition();
+                set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+            }
+        }
 
     }
 
-
+    
     return 0;
 }

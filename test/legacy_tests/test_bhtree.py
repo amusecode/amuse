@@ -22,7 +22,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
-class TestMPIInterface(TestWithMPI):
+class TestBHTreeInterface(TestWithMPI):
 
     def test0(self):
         instance = BHTreeInterface()
@@ -160,7 +160,7 @@ class TestMPIInterface(TestWithMPI):
         interface.stop()
     
     
-class TestAmuseInterface(TestWithMPI):
+class TestBHTree(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = core.Stars(2)
         sun = stars[0]
@@ -730,35 +730,24 @@ class TestAmuseInterface(TestWithMPI):
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
        
     def test18(self):
-        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
-        instance = BHTree(convert_nbody)
+        particles = core.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+       
+        instance = BHTree()
         instance.initialize_code()
-        instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.parameters.stopping_conditions_number_of_steps = 10 
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10|units.none)
-
-        stars = self.new_system_of_sun_and_earth()
-        earth = stars[1]
-                
-        instance.particles.add_particles(stars)
+        instance.parameters.stopping_conditions_number_of_steps = 2
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()
-        instance.evolve_model(365.0 | units.day)
+        instance.evolve_model(10 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
-        instance.update_particles(stars)
-        
-        instance.cleanup_module()
-        
+        self.assertTrue(instance.model_time < 10 | nbody_system.time)
         instance.stop()
-        
-
-        
-    
-
-
-
-
-
-
-
-

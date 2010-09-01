@@ -17,7 +17,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
-class TestMPIInterface(TestWithMPI):
+class TestHermiteInterface(TestWithMPI):
 
     def test0(self):
         instance = HermiteInterface()
@@ -106,7 +106,7 @@ class TestMPIInterface(TestWithMPI):
         hermite.cleanup_module()
        
 
-class TestAmuseInterface(TestWithMPI):
+class TestHermite(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = core.Stars(2)
         sun = stars[0]
@@ -441,4 +441,26 @@ class TestAmuseInterface(TestWithMPI):
         instance.cleanup_module()
         
         instance.stop()
+
+    def test11(self):
+        particles = core.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+       
+        instance = Hermite()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_number_of_steps = 2
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        instance.evolve_model(10 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
+        self.assertTrue(instance.model_time < 10 | nbody_system.time)
         
+        instance.stop()

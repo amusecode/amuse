@@ -516,6 +516,7 @@ class TestCodeInterface(TestWithMPI):
         p1 =  instance.stopping_conditions.collision_detection.particles(1)[0]
         self.assertNotEquals(p0, p1)
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+        instance.stop()
 
     def test12(self):
         particles = core.Particles(2)
@@ -546,6 +547,7 @@ class TestCodeInterface(TestWithMPI):
         p1 =  instance.stopping_conditions.pair_detection.particles(1)[0]
         self.assertNotEquals(p0, p1)
         self.assertTrue(p1.x - p0.x < 1.5| nbody_system.length)
+        instance.stop()
 
     def test13(self):
         particles = core.Particles(2)
@@ -561,11 +563,12 @@ class TestCodeInterface(TestWithMPI):
         instance = PhiGRAPE()
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2 | units.none)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.number_of_steps_detection.enable()
-        instance.evolve_model(1.5 | nbody_system.time)
+        instance.evolve_model(10 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
-        self.assertTrue(instance.model_time < 1.5 | nbody_system.time)
+        self.assertTrue(instance.model_time < 10 | nbody_system.time)
 
+        instance.stop()

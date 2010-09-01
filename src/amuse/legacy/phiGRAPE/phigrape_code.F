@@ -603,7 +603,6 @@ C     AMUSE STOPPING CONDITION SUPPORT
       error = set_support_for_condition(PAIR_DETECTION)
       error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
 
-
       g_init_once = 0
       g_initialized = 0
       

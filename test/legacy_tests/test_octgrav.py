@@ -140,4 +140,26 @@ class TestAmuseInterface(TestWithMPI):
         instance.cleanup_module()
         instance.stop()
         
+    def test3(self):
+        particles = core.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+       
+        instance = self.new_instance_of_an_optional_code(Octgrav)
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_number_of_steps = 20
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 20|units.none)
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        instance.evolve_model(10 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
+        self.assertTrue(instance.model_time < 10 | nbody_system.time)
+        instance.stop()
 

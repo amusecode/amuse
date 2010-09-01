@@ -290,10 +290,8 @@ int evolve(real t_end)                // default sync = 0
 	}
 
 	// AMUSE STOPPING CONDITIONS
-
-        if (set_conditions & enabled_conditions)
-        {
-            break;
+        if (set_conditions & enabled_conditions) {
+	    break;
         }
 #if 0
         real KE = bhtcs.kinetic_energy();
@@ -633,7 +631,6 @@ int set_radius(int id, double radius)
 
 int initialize_code()
 {
-  //    supported_conditions = COLLISION_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP | NUMBER_OF_STEPS_DETECTION_BITMAP;
     set_support_for_condition(COLLISION_DETECTION);
     set_support_for_condition(TIMEOUT_DETECTION);
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);

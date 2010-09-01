@@ -13,6 +13,7 @@ subroutine muse_start
   call set_parameters_to_defaults
 
 ! use internal energy integration until things are consistent...
+
   uentropy=.FALSE.
 end subroutine
 
@@ -273,6 +274,7 @@ subroutine muse_stepsys(tend,sync)
  include '../../../../../lib/stopcond/stopcond.inc'
  real :: tend
  integer :: sync
+ integer :: is_any_condition_set
  integer :: is_stopping_condition_enabled
  integer :: is_number_of_steps_detection_enabled
  integer :: max_number_of_steps
@@ -297,6 +299,7 @@ subroutine muse_stepsys(tend,sync)
          error = set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
       endif
    endif
+   if (is_any_condition_set().GT.0) exit
    n=n+1
  enddo
  call outstate(n)

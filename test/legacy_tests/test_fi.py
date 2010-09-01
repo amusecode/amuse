@@ -11,7 +11,7 @@ from amuse.support.units import units
 from amuse.support.data import core
 from amuse.support.legacy import channel
 
-class TestMPIInterface(TestWithMPI):
+class TestFInterface(TestWithMPI):
 
     def test1(self):
         instance=FiInterface()
@@ -174,7 +174,7 @@ class TestEvrard(TestWithMPI):
         nb.stop()
         
 
-class TestFiInterface(TestWithMPI):
+class TestFi(TestWithMPI):
 
     def test0(self):
         instance=Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
@@ -496,7 +496,6 @@ class TestFiInterface(TestWithMPI):
         self.assertAlmostEqual(instance.star_particles[1].x, -1.0 | units.AU,2)
         instance.evolve_model(1.0 | units.yr)
         self.assertAlmostEqual(instance.star_particles[1].x, 1.0 | units.AU,3)
-
         self.assertAlmostEqual(instance.kinetic_energy, 2.6493e+33|units.J, 3, in_units=1e+33*units.J)
         
         instance.cleanup_code()
@@ -612,10 +611,25 @@ class TestFiInterface(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'END')
     
     def test13(self):
-        convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
-        instance = Fi(convert_nbody)
-        instance.parameters.timestep = 0.001 | nbody.time
-        #instance.stopping_conditions.number_of_steps_detection.enable()
-        instance.parameters.stopping_conditions_number_of_steps = 10
-        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10|units.none)        
+        particles = core.Particles(2)
+        particles.x = [0.0,10.0] | nbody.length
+        particles.y = 0 | nbody.length
+        particles.z = 0 | nbody.length
+        particles.radius = 0.005 | nbody.length
+        particles.vx =  0 | nbody.speed
+        particles.vy =  0 | nbody.speed
+        particles.vz =  0 | nbody.speed
+        particles.mass = 1.0 | nbody.mass
+
+        instance = Fi()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_number_of_steps = 2
+        self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
+        instance.parameters.epsilon_squared = (0.01 | nbody.length)**2
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.number_of_steps_detection.enable()
+        instance.evolve_model(10 | nbody.time)
+        self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
+        self.assertTrue(instance.model_time < 10 | nbody.time)
+
         instance.stop()
