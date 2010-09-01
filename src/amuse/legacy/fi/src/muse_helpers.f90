@@ -290,7 +290,7 @@ subroutine muse_stepsys(tend,sync)
  error = reset_stopping_conditions()
  error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
  call corrpos(itimestp,'desync')
- do while(tnow<tend)
+ do while(tnow<tend-dtime/2)
    call step
    if (is_number_of_steps_detection_enabled.GT.0) then
       number_of_steps_innerloop = number_of_steps_innerloop +1
