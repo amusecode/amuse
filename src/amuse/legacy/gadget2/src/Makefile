@@ -220,12 +220,12 @@ LIBOBJS = run.o  predict.o begrun.o endrun.o global.o  \
 	 accel.o   read_ic.o  ngb.o  \
 	 system.o  allocate.o  density.o  \
 	 gravtree.o hydra.o  driftfac.o  \
-	 domain.o  allvars.o potential.o  \
+	 domain.o   potential.o  \
      forcetree.o   peano.o gravtree_forcetest.o \
 	 pm_periodic.o pm_nonperiodic.o longrange.o \
 	 density_at_pos.o
 
-OBJS   = main.o $(LIBOBJS)
+OBJS   = main.o allvars.o $(LIBOBJS)
 
 INCL   = allvars.h  proto.h  tags.h  Makefile
 

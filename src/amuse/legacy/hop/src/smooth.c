@@ -16,7 +16,9 @@ the case of equal mass particles. */
 			     Tiny bug fix in regroup.c */
 
 #include <stdio.h>
+#if !defined(__APPLE__)
 #include <malloc.h>
+#endif
 #include <math.h>
 #include <assert.h>
 #include "smooth.h"

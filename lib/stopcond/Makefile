@@ -17,8 +17,8 @@ $(LIBNAMEMPI): $(OBJSMPI)
 
 
 %.mo: %.c
-	mpicc $(CXXFLAGS) -DMPILIB  -c -fno-leading-underscore -o $@ $< 
+	mpicc $(CFLAGS) -DMPILIB  -c -o $@ $< 
 
 
 clean:
-	rm -Rf *.o *.lo *.a
+	rm -Rf *.o *.lo *.a *.mo

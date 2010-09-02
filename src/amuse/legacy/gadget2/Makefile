@@ -10,6 +10,9 @@ SCLIBS ?= -L../../../../lib/stopcond -lstopcond
 SCINC ?= -I../../../../lib/stopcond
 
 CODELIB = $(SRCDIR)/libgadget.a
+
+ALLVARS = $(SRCDIR)/allvars.o
+
 LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 	$(SRCDIR)/endrun.c  $(SRCDIR)/global.c  $(SRCDIR)/timestep.c  \
 	$(SRCDIR)/init.c  $(SRCDIR)/restart.c  $(SRCDIR)/io.c  \
@@ -39,7 +42,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_options
-	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS) -lgsl -lgslcblas
+	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
 	mpicxx $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc $(SCLIBS)
