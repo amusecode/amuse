@@ -958,7 +958,7 @@ int get_gravity_at_point(double eps, double x, double y, double z, double *force
 int get_potential_at_point(double eps, double x, double y, double z, double * phi){
     return -1;
 }
-int get_hydro_state_at_point(double eps, double x, double y, double z, double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
+int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz, double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
     double pos[3], vel[3];
     double h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
     int error;
@@ -968,11 +968,10 @@ int get_hydro_state_at_point(double eps, double x, double y, double z, double * 
     pos[0] = x;
     pos[1] = y;
     pos[2] = z;
-    vel[0] = 0.0;
-    vel[1] = 0.0;
-    vel[2] = 0.0;
+    vel[0] = vx;
+    vel[1] = vy;
+    vel[2] = vz;
     hydro_state_at_point(pos, vel, &h_out, &ngb_out, &dhsml_out, &rho_out, rhov_out, &rhov2_out, &rhoe_out);
-    if (debug) cout << ngb_out << endl;
     *rho   = rho_out;
     *rhovx = rhov_out[0];
     *rhovy = rhov_out[1];

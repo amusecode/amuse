@@ -458,7 +458,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     def get_hydro_state_at_point():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
-        for x in ['eps','x','y','z']:
+        for x in ['x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
             function.addParameter(x, dtype='d', direction=function.OUT)
@@ -1019,7 +1019,8 @@ class Gadget2(GravitationalDynamics):
         
         object.add_method(
             'get_hydro_state_at_point',
-            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length),
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,
+                generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
                 generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
         )
