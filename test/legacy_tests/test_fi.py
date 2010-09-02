@@ -129,6 +129,47 @@ class TestFiInterface(TestWithMPI):
         
         instance.cleanup_module()
         instance.stop()
+    
+    def test6(self):
+        print "Testing FiInterface get_hydro_state_at_point"
+        number_sph_particles = 10000
+        length = 1.0 | units.kpc
+        mass = 1.0e9 | units.MSun
+        
+        gas = new_uniform_spherical_particle_distribution(number_sph_particles, length, mass, seed = 1234)
+        mass = [1.0 / number_sph_particles] * number_sph_particles
+        h    = [0.01] * number_sph_particles
+        x, y, z = gas.x.value_in(units.kpc), gas.y.value_in(units.kpc), gas.z.value_in(units.kpc)
+        vx, vy, vz = [[0.0] * number_sph_particles] * 3
+        u = [0.05] * number_sph_particles
+        indices = range(1,number_sph_particles+1)
+        
+        instance=FiInterface()
+        instance.initialize_code()
+        instance.set_unitl_in_kpc(1.0)
+        instance.set_unitm_in_msun(1.e9)
+        instance.set_nsmooth(64)
+        instance.set_nsmtol(0.2)
+        instance.commit_parameters()
+        instance.new_sph_particle(mass, h, x, y, z, vx, vy, vz, u)
+        instance.commit_particles()
+#        instance.synchronize_model()
+
+        print "h:"
+        print instance.get_smoothing_length(indices)['h_smooth']
+        print "state:"
+        print instance.get_hydro_state_at_point(0, 0, 0, 0, 0, 0)
+        expected = [ 3.5469e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     8.6426e-10 | units.kg * units.m**-1 * units.s**-2]
+#        for value, expect in zip(expected, expected):
+#            self.assertAlmostRelativeEqual(value, expect, places=3)
+        
+        print "dens:"
+        print 1.0 / (4.0/3.0 * numpy.pi * 1.0**3)
+        instance.stop()
 
 class TestEvrard(TestWithMPI):
 

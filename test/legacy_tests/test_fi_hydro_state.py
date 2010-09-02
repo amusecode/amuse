@@ -37,7 +37,7 @@ def test15():
                             0.0 | units.kg * units.m**-2 / units.s, 
                      9.9316e-10 | units.kg * units.m**-1 * units.s**-2]
         
-        print ((1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)).as_quantity_in(units.kg/units.m**3)
+        print ((1.0e9 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)).as_quantity_in(units.kg/units.m**3)
         instance.stop()
     
 if __name__ == '__main__':
