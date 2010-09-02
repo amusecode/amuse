@@ -402,7 +402,6 @@ subroutine gatter_hydro_state(n,spos,svel,hsearch,dens,rhov,rhov2,rhoe)
   rhov2=0.
   hsminv=1./hsearch
   wnorm=piinv*hsminv*hsminv*hsminv
-  dwnorm=piinv*hsminv**2*hsminv**2*hsminv
   distnorm=hsminv**2*deldr2i      
   do i=1,n
     p=srlist(i)
