@@ -1,7 +1,9 @@
+import numpy
 from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.gadget2.interface import Gadget2Interface, Gadget2
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
+from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 
 from amuse.support.exceptions import AmuseException
 from amuse.support.units import nbody_system
@@ -187,7 +189,7 @@ class TestGadget2Interface(TestWithMPI):
 
 class TestGadget2(TestWithMPI):
 
-    UnitLength = 3.085678e21 | units.cm     # 1.0 kpc
+    UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc
     UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
     UnitVelocity = 1e5 | units.cm / units.s # 1 km/sec
     default_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
@@ -280,7 +282,7 @@ class TestGadget2(TestWithMPI):
         instance.parameters.gadget_cell_opening_flag = False
         self.assertEquals(False, instance.parameters.gadget_cell_opening_flag)
 
-        for par, value in [('n_neighbour_tol',0.1),('nsmooth',50),('opening_angle',0.5),('gadget_cell_opening_constant',0.005),
+        for par, value in [('n_smooth_tol',0.1),('n_smooth',50),('opening_angle',0.5),('gadget_cell_opening_constant',0.005),
             ('artificial_viscosity_alpha',0.5),('courant',0.3)]:
             self.assertEquals(value | units.none, eval("instance.parameters."+par))
             exec("instance.parameters."+par+" = 1 | units.none")
@@ -398,3 +400,93 @@ class TestGadget2(TestWithMPI):
         self.assertTrue(instance.model_time < 1.0e15 | units.s)
         
         instance.stop()
+    
+    def test12(self):
+        print "Testing Gadget get_hydro_state_at_point"
+        number_sph_particles = 100
+        gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.parameters.n_smooth     =   64 | units.none
+        instance.parameters.n_smooth_tol = 0.01 | units.none
+        instance.gas_particles.add_particles(gas)
+        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
+        coords = 0.0 | units.kpc
+        hydro_state = instance.get_hydro_state_at_point(coords, coords, coords, coords)
+        expected = [ 3.5469e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     8.6426e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, expect, places=3)
+        
+        coords2 = 0.1 | units.kpc
+        hydro_state = instance.get_hydro_state_at_point(coords, coords2, coords2, coords2)
+        expected = [ 4.1456e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     9.9316e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, expect, places=3)
+        
+#        coords = units.kpc.new_quantity(numpy.arange(0.0,1.0,0.1))
+#        hydro_states = instance.get_hydro_state_at_point(coords, coords, coords, coords)
+        instance.stop()
+    
+    def test13(self):
+        print "Testing Gadget get_hydro_state_at_point II: uniform sphere"
+        number_sph_particles = 100
+        gas = new_uniform_spherical_particle_distribution(number_sph_particles, self.UnitLength, self.UnitMass, seed = 1234)
+        gas.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+        gas.u = 0.05 | generic_unit_system.specific_energy
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.parameters.n_smooth     =   64 | units.none
+        instance.parameters.n_smooth_tol = 0.2 | units.none
+        instance.gas_particles.add_particles(gas)
+        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
+        coords = 0.0 | units.kpc
+        hydro_state = instance.get_hydro_state_at_point(coords, coords, coords, coords)
+        print hydro_state
+        expected = [ 3.5469e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     8.6426e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, value, places=3)
+        
+        coords2 = 0.1 | units.kpc
+        hydro_state = instance.get_hydro_state_at_point(coords, coords2, coords2, coords2)
+        print hydro_state
+        expected = [ 4.1456e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     9.9316e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, value, places=3)
+        instance.stop()
+    
+    def test14(self):
+        print "Testing Gadget SPH particle properties"
+        number_sph_particles = 1000
+        gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.gas_particles.add_particles(gas)
+        self.assertEqual(instance.gas_particles.num_neighbours >= 
+            instance.parameters.n_smooth*(1-instance.parameters.n_smooth_tol), True)
+        self.assertEqual(instance.gas_particles.num_neighbours <= 
+            instance.parameters.n_smooth*(1+instance.parameters.n_smooth_tol), True)
+        self.assertIsOfOrder(instance.gas_particles.h_smooth, 
+            self.default_convert_nbody.to_si(1.0 | nbody_system.length) * 
+            (instance.parameters.n_smooth*1.0/number_sph_particles)**(1.0/3))
+        self.assertAlmostRelativeEqual(instance.gas_particles.u, 
+            self.default_convert_nbody.to_si(0.05 | nbody_system.specific_energy))
+        
+        # the density of the cloud scales with 1/r:
+        r_sort, rho_sort = instance.gas_particles.position.lengths().sorted_with(instance.gas_particles.rho)
+        mean_density = self.default_convert_nbody.to_si(3.0/(4.0*numpy.pi) | nbody_system.density)
+        select = slice(number_sph_particles/2) # select 50% particles closest to center to avoid boundaries
+        self.assertIsOfOrder(rho_sort[select]/mean_density, r_sort.mean()/r_sort[select])
+    

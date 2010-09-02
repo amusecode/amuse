@@ -69,7 +69,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','u']:
+        for x in ['mass','h_smooth','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -99,7 +99,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','u']:
+        for x in ['mass','h_smooth','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -139,7 +139,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','u']:
+        for x in ['mass','h_smooth','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -184,6 +184,14 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         function.addParameter('u', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    @legacy_function    
+    def get_smoothing_length():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('h_smooth', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
     @legacy_function    
@@ -237,6 +245,15 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         function.addParameter('u', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
+    @legacy_function    
+    def set_smoothing_length():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('h_smooth', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
     @legacy_function    
     def set_star_tform():
         function = LegacyFunctionSpecification()   
@@ -327,7 +344,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     @legacy_function    
     def get_hydro_state_at_point():
         function = LegacyFunctionSpecification()  
-        for x in ['eps','x','y','z','vx','vy','vz']:
+        for x in ['x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
             function.addParameter(x, dtype='d', direction=function.OUT)
@@ -1510,6 +1527,7 @@ class Fi(GravitationalDynamics):
         object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
+        object.add_method('RUN', 'get_smoothing_length')
         object.add_method('RUN', 'get_star_tform')
         object.add_method('RUN', 'get_state_sph')
         object.add_method('RUN', 'get_state_star')
@@ -1523,6 +1541,7 @@ class Fi(GravitationalDynamics):
         object.add_method('RUN', 'get_center_of_mass_velocity')
         object.add_method('RUN', 'get_total_mass')
         object.add_method('RUN', 'get_time')
+        object.add_method('RUN', 'get_hydro_state_at_point')
     
 # this should be checked!
         object.add_method('EDIT', 'get_gravity_at_point')
@@ -1761,7 +1780,7 @@ class Fi(GravitationalDynamics):
         object.add_method_parameter(
             "get_nsmooth", 
             "set_nsmooth",
-            "nsmooth", 
+            "n_smooth", 
             "The target number of SPH neighbours.", 
             units.none,
             64 | units.none
@@ -1951,8 +1970,8 @@ class Fi(GravitationalDynamics):
         object.add_method_parameter(
             "get_nsmtol", 
             "set_nsmtol",
-            "n_neighbour_tol", 
-            "tolerance in number of SPH neighbours", 
+            "n_smooth_tol", 
+            "fractional tolerance in number of SPH neighbours", 
             units.none,
             0.1 | units.none
         )
@@ -2157,12 +2176,12 @@ class Fi(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_mass', names = ('mass',))
         object.add_setter('gas_particles', 'set_position')
         object.add_getter('gas_particles', 'get_position')
-        object.add_setter('gas_particles', 'set_radius')
-        object.add_getter('gas_particles', 'get_radius')
         object.add_setter('gas_particles', 'set_velocity')
         object.add_getter('gas_particles', 'get_velocity')
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
+        object.add_setter('gas_particles', 'set_smoothing_length')
+        object.add_getter('gas_particles', 'get_smoothing_length')
         
         object.define_set('star_particles', 'id')
         object.set_new('star_particles', 'new_star_particle')
@@ -2302,6 +2321,16 @@ class Fi(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+        object.add_method(
+            "set_smoothing_length",
+            (object.INDEX, nbody_system.length),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_smoothing_length",
+            (object.INDEX,),
+            (nbody_system.length, object.ERROR_CODE)
+        )
         
         object.add_method(
             "new_star_particle",
@@ -2388,6 +2417,14 @@ class Fi(GravitationalDynamics):
             'get_potential_at_point',
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.potential, object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'get_hydro_state_at_point',
+            (nbody_system.length, nbody_system.length, nbody_system.length,
+                nbody_system.speed, nbody_system.speed, nbody_system.speed),
+            (nbody_system.density, nbody_system.momentum_density, nbody_system.momentum_density, 
+                nbody_system.momentum_density, nbody_system.energy_density, object.ERROR_CODE)
         )
         
         self.stopping_conditions.define_methods(object)            

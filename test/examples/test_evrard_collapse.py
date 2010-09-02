@@ -41,7 +41,7 @@ def run_evrard(
     n_steps = 100
     
     gas = new_evrard_gas_sphere(number_of_particles, convert_nbody_units, do_scale = True, seed = random_seed)
-    gas.radius = 0.01 | units.kpc # Fi uses radius as smoothing length. Like Gadget2, we use 0.01 | generic length
+    gas.h_smooth = 0.01 | units.kpc
     
     try:
         hydro_legacy_code.parameters.timestep = t_end / n_steps

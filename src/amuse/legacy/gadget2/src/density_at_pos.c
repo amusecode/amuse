@@ -30,96 +30,118 @@ static double boxSize_Z, boxHalf_Z;
 #endif
 #endif
 
-static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], 
-  FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT
-  *rhoe_out);
+const int debug = 1;
+
+static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], FLOAT *numngb, 
+    FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT
+    *rhoe_out);
 
 void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out, FLOAT *ngb_out, 
-  FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT *rhoe_out)
+    FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT *rhoe_out)
 {
-  double low,up,low_ngb,up_ngb,h,ngb,dhsml;
-  double rho,rhov[3],rhov2,rhoe;
-  int iter;
+    double low, up, h, dhsml, low_ngb, up_ngb, ngb;
+    double rho, rhov[3], rhov2, rhoe;
+    int i, iter;
 
 #ifdef PERIODIC
-  boxSize = All.BoxSize;
-  boxHalf = 0.5 * All.BoxSize;
+    boxSize = All.BoxSize;
+    boxHalf = 0.5 * All.BoxSize;
 #ifdef LONG_X
-  boxHalf_X = boxHalf * LONG_X;
-  boxSize_X = boxSize * LONG_X;
+    boxHalf_X = boxHalf * LONG_X;
+    boxSize_X = boxSize * LONG_X;
 #endif
 #ifdef LONG_Y
-  boxHalf_Y = boxHalf * LONG_Y;
-  boxSize_Y = boxSize * LONG_Y;
+    boxHalf_Y = boxHalf * LONG_Y;
+    boxSize_Y = boxSize * LONG_Y;
 #endif
 #ifdef LONG_Z
-  boxHalf_Z = boxHalf * LONG_Z;
-  boxSize_Z = boxSize * LONG_Z;
+    boxHalf_Z = boxHalf * LONG_Z;
+    boxSize_Z = boxSize * LONG_Z;
 #endif
 #endif
 
-  if(h<=All.MinGasHsml) h=All.MinGasHsml;
-
-  low=h;
-  up=h;
-  low_ngb=All.DesNumNgb*2;
-  up_ngb=All.DesNumNgb/2;
-  iter=0;
-  do
-  {
-    if(low_ngb>All.DesNumNgb) low/=1.26;
-    if(up_ngb<All.DesNumNgb) up*=1.26;
-    hydro_state_evaluate(low, pos, vel, &low_ngb, &dhsml,&rho,rhov,&rhov2,&rhoe);
-    MPI_AllReduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-    hydro_state_evaluate(up, pos, vel, &up_ngb, &dhsml,&rho,rhov,&rhov2,&rhoe);
-    MPI_AllReduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-    if( iter > MAXITER) enrun(3211);
-  } while(low_ngb>All.DesNumNgb || up_ngb<All.DesNumNgb)
-
-  iter=0;
-  while(up-low > 1.e-3 * up)
-  {
-    h=(low+up)/2
-    if(h <=All.MinGasHsml ) break;
-    hydro_state_evaluate(h, pos, vel, &ngb, &dhsml,&rho,rhov,&rhov2,&rhoe)
-    MPI_AllReduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
+    up = low = SphP[0].Hsml;
+    for(i = 1; i < N_gas; i++){
+        if (low > SphP[i].Hsml)
+            low = SphP[i].Hsml;
+        else if (up < SphP[i].Hsml)
+            up = SphP[i].Hsml;
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &low, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &up,  1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+    low *= 1.26;
+    up /= 1.26;
     
-    if(ngb>All.DesNumNgb)
-      up=h;
-    else
-      low=h;
+    iter = 0;
+    do {
+        low /= 1.26;
+        hydro_state_evaluate(low, pos, vel, &low_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+        MPI_Allreduce(MPI_IN_PLACE, &low_ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        if (iter > MAXITER)
+            endrun(3210);
+        if (debug) printf("%d - Searching for lower h boundary: %f (ngb: %f)\n",iter, low, low_ngb);
+        iter++;
+    } while (low_ngb > All.DesNumNgb);
+    iter = 0;
+    do {
+        up *= 1.26;
+        hydro_state_evaluate(up, pos, vel, &up_ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+        MPI_Allreduce(MPI_IN_PLACE, &up_ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+        if (iter > MAXITER)
+            endrun(3211);
+        if (debug) printf("%d - Searching for upper h boundary: %f (ngb: %f)\n",iter, up, up_ngb);
+        iter++;
+    } while (up_ngb < All.DesNumNgb);
     
-    if( iter > MAXITER) endrun(3212);
-  }
-
-  h=(low+up)/2
-  if(h <=All.MinGasHsml ) h=All.MinGasHsml;
-
-  ngb=dhsml=rho=rhov2=rhoe=rhov[0]=rhov[1]=rhov[2]=0;
-  hydro_state_evaluate(h, pos, vel, &ngb, &dhsml,&rho,rhov,&rhov2,&rhoe)
-  MPI_AllReduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-  MPI_AllReduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-  MPI_AllReduce(MPI_IN_PLACE, &rho, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-  MPI_AllReduce(MPI_IN_PLACE, &rhov, 3, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-  MPI_AllReduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-  MPI_AllReduce(MPI_IN_PLACE, &rhoe, 1, MPI_DOUBLE,MPI_SUM,MPI_COMM_WORLD);
-  *h_out=h;
-  *ngb_out=ngb;
-  *dhsml_out=dhsml;
-  *rho_out=rho;
-  *rhov2_out=rhov2;
-  *rhoe_out=rhoe;
-  rhov_out[0]=rhov[0];
-  rhov_out[1]=rhov[1];
-  rhov_out[2]=rhov[2];
+    iter = 0;
+    ngb = All.DesNumNgb + 2*All.MaxNumNgbDeviation; // Makes sure first evaluation of condition is true:
+    while (fabs(All.DesNumNgb - ngb) > All.MaxNumNgbDeviation) {
+        h = pow(0.5 * (pow(low, 3) + pow(up, 3)), 1.0 / 3);
+        hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+        MPI_Allreduce(MPI_IN_PLACE, &ngb, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    
+        if (ngb > All.DesNumNgb){
+            up = h;
+            if (up <= All.MinGasHsml)
+                break;
+        } else
+            low = h;
+    
+        if(iter > MAXITER)
+            endrun(3212);
+        if (debug) printf("%d - Searching for h: %f (ngb: %f)\n",iter, h, ngb);
+        iter++;
+    }
+    
+    if (h <= All.MinGasHsml)
+        h = All.MinGasHsml;
+    
+//    ngb = dhsml = rho = rhov2 = rhoe = rhov[0] = rhov[1] = rhov[2] = 0;
+    hydro_state_evaluate(h, pos, vel, &ngb, &dhsml, &rho, rhov, &rhov2, &rhoe);
+    MPI_Allreduce(MPI_IN_PLACE, &ngb,   1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &dhsml, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rho,   1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rhov,  3, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rhov2, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(MPI_IN_PLACE, &rhoe,  1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+    
+    *h_out      = h;
+    *ngb_out    = ngb;
+    *dhsml_out  = dhsml;
+    *rho_out    = rho;
+    *rhov2_out  = rhov2;
+    *rhoe_out   = rhoe;
+    rhov_out[0] = rhov[0];
+    rhov_out[1] = rhov[1];
+    rhov_out[2] = rhov[2];
 }
 
 static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], 
-  FLOAT *numngb, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, 
-  FLOAT *rhov2_out, FLOAT *rhoe_out)
+    FLOAT *numngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, 
+    FLOAT *rhov2_out, FLOAT *rhoe_out)
 {
   int j, n, startnode, numngb, numngb_inbox;
-  double h, h2, fac, hinv, hinv3, hinv4;
+  double h2, fac, hinv, hinv3, hinv4;
   double rho, rhov[3], rhov2, rhoe, wk, dwk;
   double dx, dy, dz, r, r2, u, mass_j;
   double dvx, dvy, dvz;
@@ -189,7 +211,7 @@ static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3],
 
 	      mass_j = P[j].Mass;
 
-              fac = mass_j * wk;
+            fac = mass_j * wk;
 	      rho += fac;
 
 	      weighted_numngb += NORM_COEFF * wk / hinv3;
@@ -198,26 +220,26 @@ static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3],
 
               dvx = vel[0] - SphP[j].VelPred[0];
               dvy = vel[1] - SphP[j].VelPred[1];
-	      dvz = vel[2] - SphP[j].VelPred[2];
+              dvz = vel[2] - SphP[j].VelPred[2];
  
-              rhovx[0]-= fac*dvx;
-              rhovx[1]-= fac*dvy;
-              rhovx[2]-= fac*dvz;
+              rhov[0] -= fac * dvx;
+              rhov[1] -= fac * dvy;
+              rhov[2] -= fac * dvz;
 
-              rhoe+= fac*SphP[j].Entropy;
+              rhoe  += fac * SphP[j].Entropy;
                   
-              rhov2+= fac * (dvx * dvx + dvy * dvy + dvz * dvz);                   
+              rhov2 += fac * (dvx*dvx + dvy*dvy + dvz*dvz);                   
 	    }
 	}
     }
   while(startnode >= 0);
 
-  *rho_out+=rho;
-  *rhoe_out+=rhoe;
-  *rhov2_out+=rhov2;
-  *dhsml_out+=dhsmlrho;
-  *numngb+=weighted_numngb;
-  rhov_out[0]+=rhov[0];
-  rhov_out[1]+=rhov[1];
-  rhov_out[2]+=rhov[2];
+  *rho_out    = rho;
+  *rhoe_out   = rhoe;
+  *rhov2_out  = rhov2;
+  *dhsml_out  = dhsmlrho;
+  *numngb_out = weighted_numngb;
+  rhov_out[0] = rhov[0];
+  rhov_out[1] = rhov[1];
+  rhov_out[2] = rhov[2];
 }

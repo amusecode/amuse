@@ -167,6 +167,33 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         return function
     
     @legacy_function
+    def get_smoothing_length():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('h_smooth', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_density():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('rho', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_n_neighbours():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('num_neighbours', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def get_thermal_energy():
         function = LegacyFunctionSpecification()
         function.addParameter('thermal_energy', dtype='float64', direction=function.OUT)
@@ -427,6 +454,17 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function.result_type = 'i'
         return function;
     
+    @legacy_function    
+    def get_hydro_state_at_point():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        for x in ['eps','x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i' 
+        return function
+    
 
 class Gadget2Doc(object):
 
@@ -483,6 +521,9 @@ class Gadget2(GravitationalDynamics):
         object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
+        object.add_method('RUN', 'get_smoothing_length')
+        object.add_method('RUN', 'get_density')
+        object.add_method('RUN', 'get_n_neighbours')
         
         object.add_method('RUN', 'get_kinetic_energy')
         object.add_method('RUN', 'get_potential_energy')
@@ -492,6 +533,7 @@ class Gadget2(GravitationalDynamics):
         object.add_method('RUN', 'get_center_of_mass_velocity')
         object.add_method('RUN', 'get_total_mass')
         object.add_method('RUN', 'get_time')
+        object.add_method('RUN', 'get_hydro_state_at_point')
     
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -550,7 +592,7 @@ class Gadget2(GravitationalDynamics):
         object.add_method_parameter(
             "get_nsmooth", 
             "set_nsmooth",
-            "nsmooth", 
+            "n_smooth", 
             "The target number of SPH neighbours.", 
             units.none,
             50 | units.none
@@ -652,7 +694,7 @@ class Gadget2(GravitationalDynamics):
         object.add_method_parameter(
             "get_nsmtol", 
             "set_nsmtol",
-            "n_neighbour_tol", 
+            "n_smooth_tol", 
             "fractional tolerance in number of SPH neighbours", 
             units.none,
             0.1 | units.none
@@ -701,6 +743,9 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_acceleration')
         object.add_setter('gas_particles', 'set_internal_energy')
         object.add_getter('gas_particles', 'get_internal_energy')
+        object.add_getter('gas_particles', 'get_smoothing_length')
+        object.add_getter('gas_particles', 'get_density')
+        object.add_getter('gas_particles', 'get_n_neighbours')
 
         self.stopping_conditions.define_particle_set(object, 'dm_particles')
         self.stopping_conditions.define_particle_set(object, 'gas_particles')
@@ -944,6 +989,21 @@ class Gadget2(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+        object.add_method(
+            "get_smoothing_length",
+            (object.INDEX,),
+            (generic_unit_system.length, object.ERROR_CODE)
+        )
+        object.add_method(
+            "get_density",
+            (object.INDEX,),
+            (generic_unit_system.density, object.ERROR_CODE)
+        )
+        object.add_method(
+            "get_n_neighbours",
+            (object.INDEX,),
+            (units.none, object.ERROR_CODE)
+        )
         
         object.add_method(
             'get_gravity_at_point',
@@ -955,6 +1015,13 @@ class Gadget2(GravitationalDynamics):
             'get_potential_at_point',
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length),
             (generic_unit_system.potential, object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'get_hydro_state_at_point',
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length),
+            (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
+                generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
         )
         
         self.stopping_conditions.define_methods(object)

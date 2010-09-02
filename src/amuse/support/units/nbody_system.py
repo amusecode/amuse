@@ -35,6 +35,10 @@ potential = (length ** 2) / (time ** 2)
 energy = mass * potential
 specific_energy = potential
 speed = length / time
+volume = (length ** 3)
+density = mass / volume
+momentum_density = density * speed
+energy_density = density * specific_energy
 G = 1 | (length**3) / (mass * (time**2))
 
 def is_nbody_unit(unit):

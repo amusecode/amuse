@@ -21,6 +21,7 @@ bool particles_initialized = false;
 bool outfiles_opened = false;
 bool global_quantities_of_system_up_to_date = false;
 bool potential_energy_also_up_to_date = false;
+bool density_up_to_date = false;
 int particles_counter = 0;
 vector<dynamics_state> ds;        // for initialization only
 vector<sph_state> sph_ds;         // for initialization only
@@ -338,8 +339,8 @@ int evolve(double t_end){
     // .......
 
     Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
-    if (Ti_end >= All.Ti_Current) {
-	global_quantities_of_system_up_to_date = false;
+    if (Ti_end >= All.Ti_Current){
+        global_quantities_of_system_up_to_date = density_up_to_date = false;
         done = drift_to_t_end(Ti_end); /* find next synchronization point and drift particles to MIN(this time, t_end). */
         while (!done && All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax) {
             t0 = second();
@@ -389,6 +390,23 @@ int evolve(double t_end){
 }
 
 int synchronize_model() {
+    return 0;
+}
+int contruct_tree_if_needed(void){
+    double tstart, tend;
+    if (!particles_initialized)
+        return -1;
+    tstart = second();
+    if (TreeReconstructFlag){
+        if(ThisTask == 0)
+            printf("Tree construction.\n");
+        force_treebuild(NumPart);
+        TreeReconstructFlag = 0;
+        if(ThisTask == 0)
+            printf("Tree construction done.\n");
+    }
+    tend = second();
+    All.CPU_TreeConstruction += timediff(tstart, tend);
     return 0;
 }
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
@@ -816,6 +834,42 @@ int set_internal_energy(int index, double internal_energy){
     }
     return -1;
 }
+int get_smoothing_length(int index, double *smoothing_length){
+    struct sph_particle_data Pcurrent;
+    if (!(find_sph_particle(index, &Pcurrent))){
+        if (!density_up_to_date){
+            density();
+            density_up_to_date = true;
+        }
+        *smoothing_length = Pcurrent.Hsml;
+        return 0;
+    }
+    return -1;
+}
+int get_density(int index, double *density_out){
+    struct sph_particle_data Pcurrent;
+    if (!(find_sph_particle(index, &Pcurrent))){
+        if (!density_up_to_date){
+            density();
+            density_up_to_date = true;
+        }
+        *density_out = Pcurrent.Density;
+        return 0;
+    }
+    return -1;
+}
+int get_n_neighbours(int index, double *n_neighbours){
+    struct sph_particle_data Pcurrent;
+    if (!(find_sph_particle(index, &Pcurrent))){
+        if (!density_up_to_date){
+            density();
+            density_up_to_date = true;
+        }
+        *n_neighbours = Pcurrent.NumNgb;
+        return 0;
+    }
+    return -1;
+}
 
 
 
@@ -898,11 +952,37 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
     *vz = SysState.Momentum[2]/SysState.Mass;
     return 0;
 }
-int get_gravity_at_point(double eps, double x, double y, double z,  double *forcex, double *forcey, double *forcez){
+int get_gravity_at_point(double eps, double x, double y, double z, double *forcex, double *forcey, double *forcez){
     return -1;
 }
 int get_potential_at_point(double eps, double x, double y, double z, double * phi){
     return -1;
+}
+int get_hydro_state_at_point(double eps, double x, double y, double z, double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
+    double pos[3], vel[3];
+    double h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
+    int error;
+    error = contruct_tree_if_needed();
+    if (error)
+        return error;
+    pos[0] = x;
+    pos[1] = y;
+    pos[2] = z;
+    vel[0] = 0.0;
+    vel[1] = 0.0;
+    vel[2] = 0.0;
+    hydro_state_at_point(pos, vel, &h_out, &ngb_out, &dhsml_out, &rho_out, rhov_out, &rhov2_out, &rhoe_out);
+    if (debug) cout << ngb_out << endl;
+    *rho   = rho_out;
+    *rhovx = rhov_out[0];
+    *rhovy = rhov_out[1];
+    *rhovz = rhov_out[2];
+#ifdef ISOTHERM_EQS
+    *rhoe = rhoe_out + (rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
+#else
+    *rhoe = rhoe_out + rhov2_out;
+#endif
+    return 0;
 }
 
 

@@ -5,13 +5,13 @@ from amuse.test.amusetest import TestWithMPI
 
 from amuse.legacy.fi.interface import FiInterface, Fi
 from amuse.ext.evrard_test import new_evrard_gas_sphere
-
+from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 from amuse.support.units import nbody_system as nbody
 from amuse.support.units import units
 from amuse.support.data import core
 from amuse.support.legacy import channel
 
-class TestFInterface(TestWithMPI):
+class TestFiInterface(TestWithMPI):
 
     def test1(self):
         instance=FiInterface()
@@ -128,6 +128,45 @@ class TestFInterface(TestWithMPI):
         self.assertAlmostEqual( Ep, -0.5,10)
         
         instance.cleanup_module()
+        instance.stop()
+    
+    def test6(self):
+        print "Testing Fi get_hydro_state_at_point II: uniform sphere"
+        number_sph_particles = 10000
+        convert_nbody = nbody.nbody_to_si(1.0 | units.kpc, 1.0e10 | units.MSun)
+        gas = new_uniform_spherical_particle_distribution(number_sph_particles, 1.0 | units.kpc, 1.0e10 | units.MSun, seed = 1234)
+        gas.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+        gas.h_smooth = 0.01 | nbody.length
+        gas.u = 0.05 | nbody.specific_energy
+        instance = Fi(convert_nbody)
+        instance.parameters.n_smooth     =   64 | units.none
+        instance.parameters.n_smooth_tol = 0.2 | units.none
+        instance.gas_particles.add_particles(gas)
+        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
+        coords = 0.0 | units.kpc
+        speeds = [0.0 | units.m / units.s]*3
+        hydro_state = instance.get_hydro_state_at_point(coords, coords, coords, coords, *speeds)
+        print hydro_state
+        expected = [ 3.5469e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     8.6426e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, value, places=3)
+        
+        coords2 = 0.1 | units.kpc
+        hydro_state = instance.get_hydro_state_at_point(coords, coords2, coords2, coords2, *speeds)
+        print hydro_state
+        expected = [ 4.1456e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     9.9316e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, value, places=3)
+        
+        print ((1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)).as_quantity_in(units.kg/units.m**3)
         instance.stop()
 
 class TestEvrard(TestWithMPI):
@@ -306,7 +345,7 @@ class TestFi(TestWithMPI):
         
         for int_par, value in [('first_snapshot',0),('output_interval',5),('log_interval',5),
             ('maximum_time_bin',4096),('minimum_part_per_bin',1),('targetnn',32),
-            ('verbosity',0),('nsmooth',64)]:
+            ('verbosity',0),('n_smooth',64)]:
             self.assertEquals(value | units.none, eval("instance.parameters."+int_par))
             exec("instance.parameters."+int_par+" = 1 | units.none")
             self.assertEquals(1 | units.none, eval("instance.parameters."+int_par))
@@ -324,7 +363,7 @@ class TestFi(TestWithMPI):
             'free_timestep_crit_constant_a','free_timestep_crit_constant_vexp',
             'free_timestep_crit_constant_aexp','opening_angle','gadget_cell_opening_constant',
             'nn_tol','gas_epsilon','gamma','artificial_viscosity_alpha','beta','sph_artificial_viscosity_eps','courant',
-            'min_gas_part_mass','sph_h_const','n_neighbour_tol','grain_heat_eff','zeta_cr_ion_rate',
+            'min_gas_part_mass','sph_h_const','n_smooth_tol','grain_heat_eff','zeta_cr_ion_rate',
             'heat_par1','heat_par2','cool_par','optical_depth','star_form_delay_fac','star_form_mass_crit',
             'star_form_eff','supernova_duration','supernova_eff','t_supernova_start','max_density']
         defaults=[0.0 | nbody.length * nbody.length, 1.0 | nbody.time, 300.0 | nbody.length, 
@@ -360,7 +399,7 @@ class TestFi(TestWithMPI):
         print "Test 7: testing Fi SPH particles"
         target_number_of_particles = 1000
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
-        gas.radius = 0.0 | nbody.length
+        gas.h_smooth = 0.0 | nbody.length
         
         convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         instance = Fi(convert_nbody)
@@ -388,7 +427,7 @@ class TestFi(TestWithMPI):
         print "Test 8: testing Fi dark matter + SPH particles"
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
-        gas.radius = 0.0 | nbody.length
+        gas.h_smooth = 0.0 | nbody.length
         
         dark = core.Particles(2)
         dark.mass = [1.0, 3.0e-6] | units.MSun
@@ -425,7 +464,7 @@ class TestFi(TestWithMPI):
         print "Test 9: testing Fi dark matter + SPH + star particles"
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
-        gas.radius = 0.0 | nbody.length
+        gas.h_smooth = 0.0 | nbody.length
         
         dark = core.Particles(2)
         dark.mass = [0.4, 0.4] | nbody.mass
@@ -505,7 +544,7 @@ class TestFi(TestWithMPI):
         print "Test 11: testing Fi (dm+sph+star) particles Superset"
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
-        gas.radius = 0.0 | nbody.length
+        gas.h_smooth = 0.0 | nbody.length
         number_sph_particles = len(gas)
         
         dark = core.Particles(2)
@@ -543,7 +582,8 @@ class TestFi(TestWithMPI):
         print "'>>> print instance.particles' only prints those particle attributes the subsets have in common."
         string_produced_by_print = instance.particles.__str__()
         self.assertTrue("mass" in string_produced_by_print)
-        self.assertTrue("radius" in string_produced_by_print)
+        self.assertTrue("vx" in string_produced_by_print)
+        self.assertFalse("radius" in string_produced_by_print) # Fi gas particles have no radius, only h_smooth
         self.assertFalse("tform" in string_produced_by_print)
         
         instance.synchronize_model()
@@ -563,7 +603,7 @@ class TestFi(TestWithMPI):
         print "Testing Fi states"
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
-        gas.radius = 0.0 | nbody.length
+        gas.h_smooth = 0.0 | nbody.length
         dark = core.Particles(2)
         dark.mass = [0.4, 0.4] | nbody.mass
         dark.position = [[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]] | nbody.length
@@ -633,3 +673,76 @@ class TestFi(TestWithMPI):
         self.assertTrue(instance.model_time < 10 | nbody.time)
 
         instance.stop()
+    
+    def test14(self):
+        print "Testing Fi get_hydro_state_at_point"
+        number_sph_particles = 100
+        convert_nbody = nbody.nbody_to_si(1.0 | units.kpc, 1.0e10 | units.MSun)
+        gas = new_evrard_gas_sphere(number_sph_particles, convert_nbody, seed = 1234)
+        gas.h_smooth = 0.01 | nbody.length
+        instance = Fi(convert_nbody)
+        instance.parameters.n_smooth     =   64 | units.none
+        instance.parameters.n_smooth_tol = 0.01 | units.none
+        instance.gas_particles.add_particles(gas)
+        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
+        coords = 0.0 | units.kpc
+        speeds = [0.0 | units.m / units.s]*3
+        hydro_state = instance.get_hydro_state_at_point(coords, coords, coords, coords, *speeds)
+        expected = [ 7.3876e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     1.5890e-09 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, expect, places=3)
+        
+        coords2 = 0.1 | units.kpc
+        hydro_state = instance.get_hydro_state_at_point(coords, coords2, coords2, coords2, *speeds)
+        expected = [ 9.1273e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     1.9633e-09 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, expect, places=3)
+        instance.stop()
+    
+    def test15(self):
+        print "Testing Fi get_hydro_state_at_point II: uniform sphere"
+        number_sph_particles = 10000
+        convert_nbody = nbody.nbody_to_si(1.0 | units.kpc, 1.0e10 | units.MSun)
+        gas = new_uniform_spherical_particle_distribution(number_sph_particles, 1.0 | units.kpc, 1.0e10 | units.MSun, seed = 1234)
+        gas.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+        gas.h_smooth = 0.01 | nbody.length
+        gas.u = 0.05 | nbody.specific_energy
+        instance = Fi(convert_nbody)
+        instance.parameters.n_smooth     =   64 | units.none
+        instance.parameters.n_smooth_tol = 0.2 | units.none
+        instance.gas_particles.add_particles(gas)
+        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
+        coords = 0.0 | units.kpc
+        speeds = [0.0 | units.m / units.s]*3
+        hydro_state = instance.get_hydro_state_at_point(coords, coords, coords, *speeds)
+        print hydro_state
+        expected = [ 3.5469e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     8.6426e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, value, places=3)
+        
+        coords2 = 0.1 | units.kpc
+        hydro_state = instance.get_hydro_state_at_point(coords2, coords2, coords2, *speeds)
+        print hydro_state
+        expected = [ 4.1456e-19 | units.kg * units.m**-3, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                            0.0 | units.kg * units.m**-2 / units.s, 
+                     9.9316e-10 | units.kg * units.m**-1 * units.s**-2]
+        for value, expect in zip(hydro_state, expected):
+            self.assertAlmostRelativeEqual(value, value, places=3)
+        
+        print ((1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)).as_quantity_in(units.kg/units.m**3)
+        instance.stop()
+    
