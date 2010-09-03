@@ -24,11 +24,14 @@ an initially-cold adiabatic gas cloud, with a radial density
 profile proportional to 1/r.
 """
 
+labels = [['K', 'V', 'U', 'E'], ['K', 'V', 'U', 'E']]
+fi_gadget_labels = [['K_fi', 'V_fi', 'U_fi', 'E_fi'], ['K_gadget', 'V_gadget', 'U_gadget', 'E_gadget']]
+
 convert_generic_units = ConvertBetweenGenericAndSiUnits(1.0 | units.kpc, 1.0e10 | units.MSun, constants.G)
 convert_nbody_units   = nbody_system.nbody_to_si(       1.0 | units.kpc, 1.0e10 | units.MSun)
 
 def run_evrard(
-        hydro_legacy_code, 
+        hydro_legacy_codes, 
         number_of_particles, 
         random_seed = None, 
         name_of_the_figure = "evrard_collapse_test.png"):
@@ -43,37 +46,46 @@ def run_evrard(
     gas = new_evrard_gas_sphere(number_of_particles, convert_nbody_units, do_scale = True, seed = random_seed)
     gas.h_smooth = 0.01 | units.kpc
     
-    try:
-        hydro_legacy_code.parameters.timestep = t_end / n_steps
-    except Exception as exc:
-        if not "parameter is read-only" in str(exc): raise
-    hydro_legacy_code.gas_particles.add_particles(gas)
-    
     times = [] | units.Myr
-    kinetic_energies =   [] | units.J
-    potential_energies = [] | units.J
-    thermal_energies =   [] | units.J
+    kinetic_energies =   []
+    potential_energies = []
+    thermal_energies =   []
+    
+    for hydro_legacy_code in hydro_legacy_codes:
+        try:
+            hydro_legacy_code.parameters.timestep = t_end / n_steps
+        except Exception as exc:
+            if not "parameter is read-only" in str(exc): raise
+        
+        hydro_legacy_code.gas_particles.add_particles(gas)
+        
+        kinetic_energies.append([] | units.J)
+        potential_energies.append([] | units.J)
+        thermal_energies.append([] | units.J)
+    
     for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
-        hydro_legacy_code.evolve_model(time)
+        for i, hydro_legacy_code in enumerate(hydro_legacy_codes):
+            hydro_legacy_code.evolve_model(time)
+            kinetic_energies[i].append(   hydro_legacy_code.kinetic_energy)
+            potential_energies[i].append( hydro_legacy_code.potential_energy)
+            thermal_energies[i].append(   hydro_legacy_code.thermal_energy)
         times.append(time)
-        kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
-        potential_energies.append( hydro_legacy_code.potential_energy)
-        thermal_energies.append(   hydro_legacy_code.thermal_energy)
     hydro_legacy_code.stop()
     energy_plot(times, kinetic_energies, potential_energies, thermal_energies, name_of_the_figure)
     print "All done!\n"
 
-def energy_plot(time, E_kin, E_pot, E_therm, figname):
+def energy_plot(time, E_kin_list, E_pot_list, E_therm_list, figname):
     if not HAS_MATPLOTLIB:
         return
     pyplot.figure(figsize = (5, 5))
-    plot(time, E_kin.as_quantity_in(units.erg), label='E_kin')
-    plot(time, E_pot, label='E_pot')
-    plot(time, E_therm, label='E_therm')
-    plot(time, E_kin+E_pot+E_therm, label='E_total')
+    for i, (E_kin, E_pot, E_therm) in enumerate(zip(E_kin_list, E_pot_list, E_therm_list)):
+        plot(time, E_kin.as_quantity_in(units.erg), label=labels[i][0])
+        plot(time, E_pot, label=labels[i][1])
+        plot(time, E_therm, label=labels[i][2])
+        plot(time, E_kin+E_pot+E_therm, label=labels[i][3])
     xlabel('Time')
     ylabel('Energy')
-    pyplot.legend(loc=3)
+    pyplot.legend(prop={'size':"x-small"}, loc=3)
     pyplot.savefig(figname)
     print "\nPlot of energy evolution was saved to: ", figname
     pyplot.close()
@@ -98,7 +110,7 @@ def new_code(name_of_the_code):
 def test_evrard_fi_short():
     assert is_mpd_running()
     run_evrard(
-        new_code("fi"),
+        [new_code("fi")],
         100,
         random_seed = 12345, 
         name_of_the_figure = os.path.join(get_path_to_results(), "evrard_test_fi_100.png")
@@ -107,16 +119,27 @@ def test_evrard_fi_short():
 def test_evrard_gadget_short():
     assert is_mpd_running()
     run_evrard(
-        new_code("gadget"),
+        [new_code("gadget")],
         100,
         random_seed = 12345, 
         name_of_the_figure = os.path.join(get_path_to_results(), "evrard_test_gadget_100.png")
     )
 
+def test_evrard_compare_short():
+    assert is_mpd_running()
+    global labels
+    labels = fi_gadget_labels
+    run_evrard(
+        [new_code("fi"), new_code("gadget")],
+        100,
+        random_seed = 12345, 
+        name_of_the_figure = os.path.join(get_path_to_results(), "evrard_test_compare_100.png")
+    )
+
 def slowtest_evrard_fi():
     assert is_mpd_running()
     run_evrard(
-        new_code("fi"),
+        [new_code("fi")],
         10000,
         random_seed = 12345, 
         name_of_the_figure = os.path.join(get_path_to_results(), "evrard_test_fi_10000.png")
@@ -125,10 +148,21 @@ def slowtest_evrard_fi():
 def slowtest_evrard_gadget():
     assert is_mpd_running()
     run_evrard(
-        new_code("gadget"),
+        [new_code("gadget")],
         10000,
         random_seed = 12345, 
         name_of_the_figure = os.path.join(get_path_to_results(), "evrard_test_gadget_10000.png")
+    )
+
+def slowtest_evrard_compare():
+    assert is_mpd_running()
+    global labels
+    labels = fi_gadget_labels
+    run_evrard(
+        [new_code("fi"), new_code("gadget")],
+        10000,
+        random_seed = 12345, 
+        name_of_the_figure = os.path.join(get_path_to_results(), "evrard_test_compare_10000.png")
     )
 
 def new_commandline_option_parser():
@@ -141,6 +175,15 @@ def new_commandline_option_parser():
         dest="code",
         metavar="CODE",
         help="CODE to use for hydrodynamics"
+    )
+    result.add_option(
+        "-a",
+        "--all_codes",
+        default=False,
+        action="store_true",
+        dest="all_codes",
+        metavar="ALLCODE",
+        help="ALLCODES flag to use all hydrodynamics solvers"
     )
     result.add_option(
         "-n",
@@ -177,7 +220,11 @@ if __name__ == '__main__':
     if arguments:
         parser.error("unknown arguments '{0}'".format(arguments))
     
-    code = new_code(options.code)
+    if options.all_codes:
+        code = [new_code("fi"), new_code("gadget")]
+        labels = fi_gadget_labels
+    else:
+        code = [new_code(options.code)]
     run_evrard(
         code,
         options.number_of_particles,
