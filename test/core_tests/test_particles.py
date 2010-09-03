@@ -872,7 +872,7 @@ class TestIterateOverParticles(amusetest.TestCase):
         
         print dt1, dt0, dt1 / dt0
     
-        self.assertTrue((dt1 / dt0) < 7)
+        self.assertTrue((dt1 / dt0) < 10)
 
     def iterate_over_particles1(self, particles):
         for x in particles:

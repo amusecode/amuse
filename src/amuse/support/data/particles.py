@@ -912,7 +912,11 @@ class ParticlesSuperset(AbstractParticleSet):
                 offset = offset + len(x)
                 
         else:  
-            keys_array = numpy.array(keys)
+            if isinstance(keys, set):
+                keys_array = numpy.array(list(keys))
+            else:
+                keys_array = numpy.array(keys)
+                
             indices_array = numpy.arange(len(keys_array))
             for setindex, x in enumerate(self._private.particle_sets):
                 mask = numpy.in1d(keys_array, x._get_keys(), True)
@@ -1265,7 +1269,8 @@ class ParticleInformationChannel(object):
     
     def intersecting_keys(self):
         from_keys = self.from_particles._get_keys()
-        return filter(lambda x : self.to_particles._has_key(x), from_keys)
+        to_keys = self.to_particles._get_keys()
+        return numpy.intersect1d(from_keys,to_keys) #filter(lambda x : self.to_particles._has_key(x), from_keys)
         
     def copy_attributes(self, attributes):
         self._reindex()
