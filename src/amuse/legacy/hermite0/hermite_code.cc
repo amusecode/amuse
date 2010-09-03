@@ -780,10 +780,6 @@ int evolve_system(real t_end)
     must_run = 0;
     MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
     
-    if(set_conditions & enabled_conditions) {
-        return 1; // stop condition met
-    }
-
     return nest_err;
 }
 

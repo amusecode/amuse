@@ -766,8 +766,6 @@ class TestAthena(TestWithMPI):
         self.assertEquals(instance.grid.rho.number.ndim, 3)
         
         instance.stop()
-    
-    
 
     def test7(self):
         instance=self.new_instance(Athena)
@@ -805,5 +803,3 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 10
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 10|units.none)
         instance.stop()
-        
-    

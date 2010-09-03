@@ -91,7 +91,7 @@ int is_stopping_condition_enabled_(int *type, int *result) {
 }
 
 int is_any_condition_set() {
-    if (set_conditions > 0) {
+    if (set_conditions & enabled_conditions) {
         return 1;
     }
     else {

@@ -126,12 +126,15 @@ pair_detection
     The outer loop breaks when two stars pair, possibly
     creating a binary star.
 escaper_detection
-    The outer loops breaks when a star escapes the
+    The outer loop breaks when a star escapes the
     simulation (is no longer gravitationally bound
     to the other stars)
 timeout_detection
-    The outer loops breaks when a certain amount
+    The outer loop breaks when a certain amount
     of computer (wall-clock) time has elapsed.
+number_of_steps_detection
+    The outer loop breaks when a certain amount
+    of steps (iterations) is reached.
 
 .. note ::
 
@@ -281,7 +284,7 @@ interface, AMUSE provides a C library that does most of the
 table management, this library is described in the next section.
 
 Using the stopping conditions library
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------------
 The stopping conditions tables are implemented as a
 static C library. This library is part of the AMUSE distribution
 and can be found in the ```lib/stopcond``` directory.
@@ -309,6 +312,8 @@ macros:
 .. data:: ESCAPER_DETECTION_BITMAP
 
 .. data:: TIMEOUT_DETECTION_BITMAP
+
+.. data:: NUMBER_OF_STEPS_BITMAP
 
 The three variables are not accessible directly from FORTRAN
 codes. The stopping condition library has special functions
@@ -380,6 +385,7 @@ following macros:
 
 .. data:: TIMEOUT_DETECTION
 
+.. data:: NUMBER_OF_STEPS_DETECTION
 
 The following four functions can be used to set and reset
 the stopping conditions.
@@ -436,6 +442,29 @@ the stopping conditions.
         set_stopping_condition_particle_index(stopping_index, 0, ident[i]);
         set_stopping_condition_particle_index(stopping_index, 1, ident[j]);
 
+Stopping condtions with parameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *timeout* and *number of steps* stopping conditions are parameter
+based, i.e. the conditions are met if the outer loop took a certain time
+or a reached a certain number of steps (iterations). The parameters are
+accessed through the following procedures:
+
+.. c:function:: int set_stopping_condition_timeout_parameter(double value); 
+
+    Sets the computer (wall-clock) time parameter.
+
+.. c:function:: get_stopping_condition_timeout_parameter(double *value);
+
+    Gets the computer (wall-clock) time parameter.
+
+.. c:function:: int set_stopping_condition_number_of_steps_parameter(int value);
+
+    Sets the number of steps parameter.
+
+.. c:function:: int get_stopping_condition_number_of_steps_parameter(int *value);
+
+    Gets the number of steps parameter.
 
 For MPI enabled codes, the stopping conditions must be distributed
 and collected. The following three functions can be used to

@@ -17,7 +17,7 @@ $(LIBNAMEMPI): $(OBJSMPI)
 
 
 %.mo: %.c
-	mpicc $(CFLAGS) -DMPILIB  -c -o $@ $< 
+	mpicc $(CFLAGS) -DMPILIB  -c -o $@ $<
 
 
 clean:

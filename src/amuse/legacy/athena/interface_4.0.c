@@ -1210,6 +1210,9 @@ int evolve(double tlim) {
             }
         }
 
+	if(set_conditions & enabled_conditions) {
+	    break;
+	}
     }
 
     

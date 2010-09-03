@@ -398,8 +398,6 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         function.result_doc = """
         0 - OK
             Evolved until time, no collision happened
-        1 - COLLISION DETECTED
-            Stopped after a collision
         -1 - ERROR
             Model did not converge
         -2 - ERROR
