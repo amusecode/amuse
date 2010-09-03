@@ -78,7 +78,6 @@ class StateMachine(object):
     
 
     def set_initial_state(self, name):
-        print name
         self._current_state = self.new_state(name)
     
     

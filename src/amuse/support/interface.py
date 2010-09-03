@@ -109,6 +109,8 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         return result
 
     def convert_and_iterate(self, iterable):
+        
+            
         for x in iterable:
             yield self.converter.from_target_to_source(x)
 
@@ -145,6 +147,11 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
     def from_target_to_source(self, x):
         if isinstance(x, values.Quantity):
             return self.converter.from_target_to_source(x)
+        elif hasattr(x, '__len__'):
+            if len(x) > 200:
+                return x
+            else:
+                return list(self.convert_and_iterate(x))
         elif hasattr(x, '__iter__'):
             return list(self.convert_and_iterate(x))
         else:

@@ -1,4 +1,12 @@
+"""
+Runs several tests to determine how fast common operations
+are in AMUSE.
 
+to profile (in the amuse root directory):
+
+./amuse.sh -m cProfile -s cumulative test/reports/speed_report.py 10000 speed_copy_to_set > profile.txt
+
+"""
 
 
 
