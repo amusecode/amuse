@@ -383,7 +383,18 @@ class RunSpeedTests(object):
         channel2 = empty_particles.new_channel_to(particles_all)
         self.start_measurement()
         channel1.copy_attributes(["x","y","z"])
-        #channel2.copy_attributes(["x","y","z"])
+        channel2.copy_attributes(["x","y","z"])
+        self.end_measurement()
+    
+    def speed_copy_to_set(self):
+        particles_all = new_plummer_sphere(self.total_number_of_points * 2)
+        empty_particles = particles_all.empty_copy()
+        
+        channel1 = particles_all.new_channel_to(empty_particles)
+        channel2 = empty_particles.new_channel_to(particles_all)
+        self.start_measurement()
+        channel1.copy_attributes(["x","y","z"])
+        channel2.copy_attributes(["x","y","z"])
         self.end_measurement()
         
         
