@@ -30,7 +30,7 @@ static double boxSize_Z, boxHalf_Z;
 #endif
 #endif
 
-const int debug = 1;
+const int debug = 0;
 
 static void hydro_state_evaluate(FLOAT h, FLOAT pos[3], FLOAT vel[3], FLOAT *numngb, 
     FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out, FLOAT *rhov2_out, FLOAT

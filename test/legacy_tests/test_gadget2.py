@@ -409,7 +409,7 @@ class TestGadget2(TestWithMPI):
         instance.parameters.n_smooth     =   64 | units.none
         instance.parameters.n_smooth_tol = 0.01 | units.none
         instance.gas_particles.add_particles(gas)
-        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
+        
         coords = [0.0 | units.kpc]*3
         speeds = [0.0 | units.m / units.s]*3
         hydro_state = instance.get_hydro_state_at_point(*(coords+speeds))
@@ -417,7 +417,7 @@ class TestGadget2(TestWithMPI):
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     8.6426e-10 | units.kg * units.m**-1 * units.s**-2]
+                     8.4252e-10 | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         
@@ -428,47 +428,43 @@ class TestGadget2(TestWithMPI):
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     9.9316e-10 | units.kg * units.m**-1 * units.s**-2]
+                     1.0742e-09 | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         
-#        coords = units.kpc.new_quantity(numpy.arange(0.0,1.0,0.1))
-#        hydro_states = instance.get_hydro_state_at_point(coords, coords, coords, coords)
         instance.stop()
     
     def test13(self):
         print "Testing Gadget get_hydro_state_at_point II: uniform sphere"
-        number_sph_particles = 100
+        number_sph_particles = 1000
         gas = new_uniform_spherical_particle_distribution(number_sph_particles, self.UnitLength, self.UnitMass, seed = 1234)
-        gas.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+        gas.velocity = [10.0, 20.0, 30.0] | units.km / units.s
         gas.u = 0.05 | generic_unit_system.specific_energy
+        density = (1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)
+        
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.n_smooth     =   64 | units.none
-        instance.parameters.n_smooth_tol = 0.2 | units.none
+        instance.parameters.n_smooth_tol = 0.01 | units.none
         instance.gas_particles.add_particles(gas)
-        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
+        
         coords = [0.0 | units.kpc]*3
         speeds = [0.0 | units.m / units.s]*3
-        hydro_state = instance.get_hydro_state_at_point(*(coords+speeds))
-        print hydro_state
-        expected = [ 3.5469e-19 | units.kg * units.m**-3, 
-                            0.0 | units.kg * units.m**-2 / units.s, 
-                            0.0 | units.kg * units.m**-2 / units.s, 
-                            0.0 | units.kg * units.m**-2 / units.s, 
-                     8.6426e-10 | units.kg * units.m**-1 * units.s**-2]
-        for value, expect in zip(hydro_state, expected):
-            self.assertAlmostRelativeEqual(value, value, places=3)
+        rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
+        self.assertAlmostRelativeEqual(rho,   density,                              places=3)
+        self.assertAlmostRelativeEqual(rhovx, density*instance.gas_particles[0].vx, places=3)
+        self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
+        self.assertAlmostRelativeEqual(rhovz, density*instance.gas_particles[0].vz, places=3)
+        self.assertAlmostRelativeEqual(rhoe,  density * (instance.gas_particles[0].u + 
+            instance.gas_particles[0].velocity.length_squared()),  places=3)
         
         coords = [0.1 | units.kpc]*3
-        hydro_state = instance.get_hydro_state_at_point(*(coords+speeds))
-        print hydro_state
-        expected = [ 4.1456e-19 | units.kg * units.m**-3, 
-                            0.0 | units.kg * units.m**-2 / units.s, 
-                            0.0 | units.kg * units.m**-2 / units.s, 
-                            0.0 | units.kg * units.m**-2 / units.s, 
-                     9.9316e-10 | units.kg * units.m**-1 * units.s**-2]
-        for value, expect in zip(hydro_state, expected):
-            self.assertAlmostRelativeEqual(value, value, places=3)
+        rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
+        self.assertAlmostRelativeEqual(rho,   density,                              places=3)
+        self.assertAlmostRelativeEqual(rhovx, density*instance.gas_particles[0].vx, places=3)
+        self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
+        self.assertAlmostRelativeEqual(rhovz, density*instance.gas_particles[0].vz, places=3)
+        self.assertAlmostRelativeEqual(rhoe,  density * (instance.gas_particles[0].u + 
+            instance.gas_particles[0].velocity.length_squared()),  places=3)
         instance.stop()
     
     def test14(self):

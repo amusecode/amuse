@@ -958,8 +958,9 @@ int get_gravity_at_point(double eps, double x, double y, double z, double *force
 int get_potential_at_point(double eps, double x, double y, double z, double * phi){
     return -1;
 }
-int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz, double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
-    double pos[3], vel[3];
+int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz, 
+        double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
+    double pos[3], vel[3], a3;
     double h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
     int error;
     error = contruct_tree_if_needed();
@@ -979,7 +980,8 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
 #ifdef ISOTHERM_EQS
     *rhoe = rhoe_out + (rhov_out[0]*rhov_out[0] + rhov_out[1]*rhov_out[1] + rhov_out[2]*rhov_out[2]) / rho_out;
 #else
-    *rhoe = rhoe_out + rhov2_out;
+    if (All.ComovingIntegrationOn) {a3 = All.Time * All.Time * All.Time;} else {a3 = 1;}
+    *rhoe = rhoe_out * (pow(rho_out / a3, GAMMA_MINUS1) / GAMMA_MINUS1) + rhov2_out;
 #endif
     return 0;
 }

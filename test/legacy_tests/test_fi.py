@@ -673,37 +673,38 @@ class TestFi(TestWithMPI):
 
         instance.stop()
     
-    def notyettest14(self):
+    def test14(self):
         print "Testing Fi get_hydro_state_at_point"
         number_sph_particles = 100
         convert_nbody = nbody.nbody_to_si(1.0 | units.kpc, 1.0e10 | units.MSun)
         gas = new_evrard_gas_sphere(number_sph_particles, convert_nbody, seed = 1234)
         gas.h_smooth = 0.01 | nbody.length
+        
         instance = Fi(convert_nbody)
         instance.parameters.n_smooth     =   64 | units.none
         instance.parameters.n_smooth_tol = 0.01 | units.none
         instance.gas_particles.add_particles(gas)
-        print instance.gas_particles.h_smooth.as_quantity_in(units.kpc)
-        coords = 0.0 | units.kpc
+        instance.synchronize_model()
+        
+        coords = [0.0 | units.kpc]*3
         speeds = [0.0 | units.m / units.s]*3
-        hydro_state = instance.get_hydro_state_at_point(coords, coords, coords, *speeds)
-        print hydro_state
-        expected = [ 7.3876e-19 | units.kg * units.m**-3, 
+        hydro_state = instance.get_hydro_state_at_point(*(coords + speeds))
+        expected = [ 3.5540e-19 | units.kg * units.m**-3, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     1.5890e-09 | units.kg * units.m**-1 * units.s**-2]
+                     7.6447e-10 | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         
-        coords2 = 0.1 | units.kpc
-        hydro_state = instance.get_hydro_state_at_point(coords2, coords2, coords2, *speeds)
-        print hydro_state
-        expected = [ 9.1273e-19 | units.kg * units.m**-3, 
+        coords = [0.1 | units.kpc]*3
+        speeds = [0.0 | units.m / units.s]*3
+        hydro_state = instance.get_hydro_state_at_point(*(coords + speeds))
+        expected = [ 4.1789e-19 | units.kg * units.m**-3, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     1.9633e-09 | units.kg * units.m**-1 * units.s**-2]
+                     8.9889e-10 | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         instance.stop()
@@ -713,14 +714,14 @@ class TestFi(TestWithMPI):
         number_sph_particles = 1000
         convert_nbody = nbody.nbody_to_si(1.0 | units.kpc, 1.0e10 | units.MSun)
         gas = new_uniform_spherical_particle_distribution(number_sph_particles, 1.0 | units.kpc, 1.0e10 | units.MSun, seed = 1234)
-        gas.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+        gas.velocity = [10.0, 20.0, 30.0] | units.km / units.s
         gas.h_smooth = 0.01 | nbody.length
         gas.u = 0.05 | nbody.specific_energy
         density = (1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)
         
         instance = Fi(convert_nbody)
         instance.parameters.n_smooth     =  64 | units.none
-        instance.parameters.n_smooth_tol = 0.2 | units.none
+        instance.parameters.n_smooth_tol = 0.01 | units.none
         instance.gas_particles.add_particles(gas)
         instance.synchronize_model()
         
@@ -728,18 +729,19 @@ class TestFi(TestWithMPI):
         speeds = [0.0 | units.m / units.s]*3
         rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
         self.assertAlmostRelativeEqual(rho,   density, places=3)
-        self.assertAlmostEqual(rhovx, 0 | units.kg * units.m**-2 * units.s**-1, places=3)
-        self.assertAlmostEqual(rhovy, 0 | units.kg * units.m**-2 * units.s**-1, places=3)
-        self.assertAlmostEqual(rhovz, 0 | units.kg * units.m**-2 * units.s**-1, places=3)
-        self.assertAlmostRelativeEqual(rhoe, density*instance.gas_particles[0].u, places=3)
+        self.assertAlmostRelativeEqual(rhovx, density*instance.gas_particles[0].vx, places=3)
+        self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
+        self.assertAlmostRelativeEqual(rhovz, density*instance.gas_particles[0].vz, places=3)
+        self.assertAlmostRelativeEqual(rhoe,  density * (instance.gas_particles[0].u + 
+            instance.gas_particles[0].velocity.length_squared()),  places=3)
         
         coords = [0.1 | units.kpc]*3
         rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
         self.assertAlmostRelativeEqual(rho,   density, places=3)
-        self.assertAlmostEqual(rhovx, 0 | units.kg * units.m**-2 * units.s**-1, places=3)
-        self.assertAlmostEqual(rhovy, 0 | units.kg * units.m**-2 * units.s**-1, places=3)
-        self.assertAlmostEqual(rhovz, 0 | units.kg * units.m**-2 * units.s**-1, places=3)
-        self.assertAlmostRelativeEqual(rhoe, density*instance.gas_particles[0].u, places=3)
-        
+        self.assertAlmostRelativeEqual(rhovx, density*instance.gas_particles[0].vx, places=3)
+        self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
+        self.assertAlmostRelativeEqual(rhovz, density*instance.gas_particles[0].vz, places=3)
+        self.assertAlmostRelativeEqual(rhoe,  density * (instance.gas_particles[0].u + 
+            instance.gas_particles[0].velocity.length_squared()),  places=3)
         instance.stop()
     
