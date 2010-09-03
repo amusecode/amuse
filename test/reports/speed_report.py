@@ -5,7 +5,9 @@
 
 
 from amuse.lab import *
+from amuse.support.data.core import ParticlesSuperset
 
+import traceback
 
 import subprocess
 import os
@@ -13,6 +15,7 @@ import numpy
 import time
 import sys
 import signal
+
 
 from mpi4py import MPI
 
@@ -51,8 +54,9 @@ class RunSpeedTests(object):
         name = name.replace('_', ' ')
         return name
         
-    def __init__(self, total_number_of_points):
+    def __init__(self, total_number_of_points, name_of_the_method = None):
         self.total_number_of_points = total_number_of_points
+        self.name_of_the_method = name_of_the_method
     
     def handle_timeout(self, signum, frame):
         self.t1=-1
@@ -75,6 +79,9 @@ class RunSpeedTests(object):
         self.total_time = 0.0
     
         for x in self.names_of_testing_methods():
+            if not self.name_of_the_method is None:
+                if x != self.name_of_the_method:
+                    continue
             method = getattr(self, x)
             print >> sys.stderr , self.row_formatters[0](method), '...',
             try:        
@@ -87,6 +94,7 @@ class RunSpeedTests(object):
                 continue
             except Exception, ex:
                 print ex
+                traceback.print_exc()
                 self.t1=-1
                 self.t0=0
                 pass
@@ -311,6 +319,75 @@ class RunSpeedTests(object):
             Particle(x)
         self.end_measurement()
     
+    def speed_copy_attributes_from_code(self):
+        code = BHTree()
+        particles = new_plummer_sphere(self.total_number_of_points)
+        particles.radius = 0| nbody.length
+        code.particles.add_particles(particles)
+        channel = code.particles.new_channel_to(particles)
+        self.start_measurement()
+        channel.copy()
+        self.end_measurement()
+        code.stop()
+        
+    def speed_copy_attributes_from_code_to_empty(self):
+        code = BHTree()
+        particles = new_plummer_sphere(self.total_number_of_points)
+        particles.radius = 0| nbody.length
+        empty_particles = particles.empty_copy()
+        
+        code.particles.add_particles(particles)
+        channel = code.particles.new_channel_to(empty_particles)
+        self.start_measurement()
+        channel.copy()
+        self.end_measurement()
+        code.stop()
+        
+    def speed_copy_mass_attribute_from_code_to_empty(self):
+        code = BHTree()
+        particles = new_plummer_sphere(self.total_number_of_points)
+        particles.radius = 0| nbody.length
+        empty_particles = particles.empty_copy()
+        
+        code.particles.add_particles(particles)
+        channel = code.particles.new_channel_to(empty_particles)
+        self.start_measurement()
+        channel.copy_attribute("mass","zmass")
+        self.end_measurement()
+        code.stop()
+    
+    def speed_copy_position_and_velocity_attributes_from_code_to_empty(self):
+        code = BHTree()
+        particles = new_plummer_sphere(self.total_number_of_points)
+        particles.radius = 0| nbody.length
+        empty_particles = particles.empty_copy()
+        
+        code.particles.add_particles(particles)
+        channel1 = code.particles.new_channel_to(empty_particles)
+        channel2 = empty_particles.new_channel_to(code.particles)
+        self.start_measurement()
+        channel1.copy_attributes(["x","y","z", "vx","vy","vz"])
+        channel2.copy_attributes(["x","y","z"])
+        self.end_measurement()
+        code.stop()
+        
+    
+    def speed_copy_to_superset(self):
+        particles1 = new_plummer_sphere(self.total_number_of_points)
+        particles2 = new_plummer_sphere(self.total_number_of_points)
+        particles_all = ParticlesSuperset([particles1, particles2])
+        
+        empty_particles = particles_all.empty_copy()
+        
+        channel1 = particles_all.new_channel_to(empty_particles)
+        channel2 = empty_particles.new_channel_to(particles_all)
+        self.start_measurement()
+        channel1.copy_attributes(["x","y","z"])
+        #channel2.copy_attributes(["x","y","z"])
+        self.end_measurement()
+        
+        
+    
     
 if __name__ == '__main__':
     #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
@@ -318,8 +395,13 @@ if __name__ == '__main__':
         n = int(sys.argv[1])
     else:
         n = 100
+    
+    if len(sys.argv) > 2:
+        name_of_the_method = sys.argv[2]
+    else:
+        name_of_the_method = None
         
-    x = RunSpeedTests(n)
+    x = RunSpeedTests(n, name_of_the_method)
     x.run()
 
 

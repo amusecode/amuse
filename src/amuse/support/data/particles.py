@@ -897,6 +897,7 @@ class ParticlesSuperset(AbstractParticleSet):
                 return set[index - offset]
             offset += length
     
+        
     def _split_keys_over_sets(self, keys):
         split_sets = [ [] for x in self._private.particle_sets ]
         split_indices = [ [] for x in self._private.particle_sets ]
@@ -905,17 +906,18 @@ class ParticlesSuperset(AbstractParticleSet):
         if keys is None:
             offset = 0
             
-            for setindex, set in enumerate(self._private.particle_sets):
-                split_sets[setindex].extend(set._get_keys())
-                split_indices[setindex].extend(range(offset, offset + len(set)))
-                offset = offset + len(set)
+            for setindex, x in enumerate(self._private.particle_sets):
+                split_sets[setindex].extend(x._get_keys())
+                split_indices[setindex].extend(range(offset, offset + len(x)))
+                offset = offset + len(x)
                 
-        else:
-            for index, key in enumerate(keys):
-                for setindex, set in enumerate(self._private.particle_sets):
-                    if set._has_key(key):
-                        split_sets[setindex].append(key)
-                        split_indices[setindex].append(index)
+        else:  
+            keys_array = numpy.array(keys)
+            indices_array = numpy.arange(len(keys_array))
+            for setindex, x in enumerate(self._private.particle_sets):
+                mask = numpy.in1d(keys_array, x._get_keys(), True)
+                split_sets[setindex] =  keys_array[mask]
+                split_indices[setindex] = indices_array[mask]
         
         return split_sets, split_indices
                     
@@ -938,9 +940,9 @@ class ParticlesSuperset(AbstractParticleSet):
         indices_and_values = []
         
         for keys_for_set, indices_for_set, set in zip(split_sets, split_indices, self._private.particle_sets):
-            if keys_for_set:
+            if len(keys_for_set) > 0:
                 values_for_set = set._get_values(keys_for_set, attributes)
-                indices_and_values.append( (indices_for_set,values_for_set) )
+                indices_and_values.append( (indices_for_set, values_for_set) )
         
         if keys is None:
             resultlength = len(self)
@@ -955,13 +957,11 @@ class ParticlesSuperset(AbstractParticleSet):
                 if resultvalue is None:
                     resultvalue = numpy.zeros(resultlength ,dtype=quantity.number.dtype)
                     values[valueindex] = resultvalue
-                    
                     units[valueindex] = quantity.unit
                     
                 resultunit = units[valueindex]
                 
                 numpy.put(resultvalue, indices, quantity.value_in(resultunit))
-                
             
         return map(lambda u,v : u.new_quantity(v), units, values)
         
@@ -970,9 +970,12 @@ class ParticlesSuperset(AbstractParticleSet):
         
         for keys_for_set, indices_for_set, set in zip(split_sets, split_indices, self._private.particle_sets):
             quantities = [None] * len(attributes)
+            
             for valueindex, quantity in enumerate(values):
-                if numpy.size(quantity) < len(keys):
-                    numbers = numpy.take([quantity.number]*len(keys), indices_for_set)
+                if quantity.is_scalar():
+                    numbers = [quantity.number]*len(indices_for_set)
+                elif quantity.is_vector() and len(quantity) < len(keys):
+                    numbers = numpy.take([quantity.number]*len(keys),indices_for_set)
                 else:
                     numbers = numpy.take(quantity.number, indices_for_set)
                 quantities[valueindex] = quantity.unit.new_quantity(numbers)
