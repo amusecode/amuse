@@ -99,7 +99,7 @@ subroutine pp_feedback(dt,tnu)
 !$omp enddo nowait
  call cpu_time(time2)
 
-if(.NOT.endstep.AND.nsphact.GT.0) then
+if(nsphact.GT.0) then
   p_acc(1:pactive(1)-1,1:3)=0.
   do i=2,nsphact
    if(pactive(i-1).GE.pactive(i)) then
@@ -293,7 +293,7 @@ subroutine randomvelfeedback(dt,tnu)
    real sn_activity,lsnheat,mc2fac
    real, allocatable :: p_vel(:,:)
    
-   if(endstep.OR.dt.eq.0)return
+   if(nsphact.EQ.0.OR.dt.eq.0)return
    npp=0   
    mc2fac=(lightspeed/velscale)**2
 
@@ -343,14 +343,14 @@ subroutine randomvelfeedback(dt,tnu)
 
 ! p_vel is calculated with sn_energy rate, scales with sqrt(t)
 ! (maintain independence of timestep)
- if(.NOT.endstep.AND.nsphact.GT.0) then
+ if(nsphact.GT.0) then
   p_vel(1:pactive(1)-1,1:3)=0.
-  p_vel(pactive(1),1:3)=p_vel(pactive(1),1:3)*SQRT(dtime/itimestp(pactive(1)))
+  p_vel(pactive(1),1:3)=p_vel(pactive(1),1:3)*SQRT(dtime/2**(itimestp(pactive(1))-1))
   do i=2,nsphact
    do p=pactive(i-1)+1,pactive(i)-1
     p_vel(p,1:3)=0.
    enddo
-   p_vel(pactive(i),1:3)=p_vel(pactive(i),1:3)*SQRT(dtime/itimestp(pactive(i)))
+  p_vel(pactive(i),1:3)=p_vel(pactive(i),1:3)*SQRT(dtime/2**(itimestp(pactive(i))-1))
   enddo
   p_vel(pactive(nsphact)+1:nsph,1:3)=0.
 
@@ -486,7 +486,7 @@ subroutine energyfeedback(dt,tnu)
  enddo
 !$omp enddo nowait
 
- if(.NOT.endstep.AND.nsphact.GT.0) then
+ if(nsphact.GT.0) then
   p_eth(1:pactive(1)-1)=0.
   do i=2,nsphact
    do p=pactive(i-1)+1,pactive(i)-1
@@ -572,7 +572,7 @@ subroutine heatingfeedback(dt,tnu)
    
    npp=0
    mc2fac=(lightspeed/velscale)**2
-   if(endstep.OR.dt.eq.0)return
+   if(nsphact.GT.0.OR.dt.eq.0)return
 
 ! be careful: 
    do i=1,nsphact
@@ -614,7 +614,7 @@ subroutine heatingfeedback(dt,tnu)
  enddo
 !$omp enddo nowait
 
- if(.NOT.endstep.AND.nsphact.GT.0) then
+ if(nsphact.GT.0) then
   pesn(1:pactive(1)-1)=0.
   do i=2,nsphact
    do p=pactive(i-1)+1,pactive(i)-1

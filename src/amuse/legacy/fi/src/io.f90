@@ -133,19 +133,13 @@ subroutine outlog(istep)
   if(usesph) then
     tstepbin(1:20)=0
     do p=1,nsph
-      tistep=itimestp(p)
-      tistep=0.5+LOG(tistep)/LOG(2.)
-      ibin=INT(tistep)+1
-      tstepbin(ibin)=tstepbin(ibin)+1
+      tstepbin(itimestp(p))=tstepbin(itimestp(p))+1
     enddo
     write(ulog,'("timestep distribution SPH = ",20i9)') tstepbin(1:20)
   endif
   tstepbin(1:20)=0
   do p=nsph+1,nbodies
-    tistep=itimestp(p)
-    tistep=0.5+LOG(tistep)/LOG(2.)
-    ibin=INT(tistep)+1
-    tstepbin(ibin)=tstepbin(ibin)+1
+      tstepbin(itimestp(p))=tstepbin(itimestp(p))+1
   enddo
   write(ulog,'("timestep distribution non-SPH = ",20i9)') tstepbin(1:20)
   write(ulog,*)

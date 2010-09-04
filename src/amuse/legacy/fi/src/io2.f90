@@ -297,6 +297,7 @@ ENDIF
  IF(phead(40).EQ.1) READ(ubodsin) (phi(p),p=1,nbodies)
  IF(phead(41).EQ.1) READ(ubodsin) (phiext(p),p=1,nbodies)
  IF(phead(42).EQ.1) READ(ubodsin) (nbexist(p),p=1,nbodies)
+ IF(phead(43).EQ.1) READ(ubodsin) (itimestp(p),p=1,nbodies)
 
  close(ubodsin)
  
@@ -382,7 +383,7 @@ write(uboddump) n
    enerror,amvec,cmpos,cmvel
       write(uboddump)  input
       write(uboddump)  npactive,nsphact
-      write(uboddump)  etol,stime,tsteppos,upbin,endstep
+      write(uboddump)  etol,dummy,tsteppos,active_bin
       write(uboddump)  syncflag,entropyflag
       write(uboddump)  teth,ethtot
       write(uboddump)  symmetry
@@ -490,7 +491,7 @@ read(uboddump) n
    enerror,amvec,cmpos,cmvel
       read(uboddump)  input
       read(uboddump)  npactive,nsphact
-      read(uboddump)  etol,stime,tsteppos,upbin,endstep
+      read(uboddump)  etol,dummy,tsteppos,active_bin
       read(uboddump)  syncflag,entropyflag
       read(uboddump)  teth,ethtot
       read(uboddump)  symmetry

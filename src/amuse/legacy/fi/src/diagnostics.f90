@@ -141,6 +141,8 @@ subroutine outstate(n)
   if(MOD(n,steplog).EQ.0.OR.MOD(n,stepout).EQ.0.OR. &
         sstatus.EQ.1.OR.sstatus.EQ.2) then
 
+    call activateparts
+
     testcrit=MOD(n,stepout).EQ.0.OR.n.EQ.0.OR.sstatus.EQ.1.OR.sstatus.EQ.2
     call corrpos(itimestp,'sync')
     if(n.NE.0) then

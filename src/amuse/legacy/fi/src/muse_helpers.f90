@@ -48,7 +48,9 @@ subroutine muse_finalize_init
  call postprocessread
 	
  call initpos
-	        		
+	     
+ call inittimestep
+                		
  call outstate(0)
 
 
@@ -91,6 +93,9 @@ function muse_reinitialize() result(ret)
   call postprocessread
 
   call initpos
+  
+  call inittimestep
+  
   print*,' **warning: check results reinit**' 
   ret=0
 end function
@@ -457,6 +462,7 @@ subroutine muse_energies(mode,ek,ep,eth)
  integer :: mode
  
  if(mode.NE.0) then
+  call activateparts
   call corrpos(itimestp,'sync')
   call zeropot
   call gravity('pot ')

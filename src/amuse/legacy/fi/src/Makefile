@@ -1,6 +1,6 @@
 ## makefile for treesph code
 
-FC?=ifort
+FC=ifort
 F2PY=f2py
 PIC=
 

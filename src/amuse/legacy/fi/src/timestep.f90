@@ -99,28 +99,17 @@ function log2(i) ! integer log base 2 rounded down
  enddo
 end function 
 
-subroutine timestep
+subroutine refresh_itimestp
  include 'globals.h'
- integer :: i,p,pbin,active_bin,largest_bin
+ integer :: p,pbin,npcheck
  real :: dt
- logical, parameter :: pos_correct=.TRUE.
- integer :: maxbin
- integer, save :: itime=0
  real :: courant_timestep,sqrtacc_timestep,acc_timestep,freeform_timestep
  integer :: log2
- 
- maxbin=log2(2*max_tbin)
- active_bin=log2(2*upbin)
- if(upbin.EQ.0) active_bin=0
- do p=1,nbodies
-  itimestp(p)=log2(2*itimestp(p))
- enddo
 
- npactive=0
+ npcheck=0
  do p=1,nbodies
    if(itimestp(p).GT.active_bin) then
-      npactive=npactive+1
-      pactive(npactive)=p
+      npcheck=npcheck+1
 
       dt=dtime
       if(usesph)   dt=MIN(dt,courant_timestep(p))
@@ -129,40 +118,56 @@ subroutine timestep
       if(freetstp) dt=MIN(dt,freeform_timestep(p))
       
       if(dt.GE.dtime) then
-        tempvect(npactive)=dtime
-	templist(npactive)=1
+        tempvect(npcheck)=dtime
+	templist(npcheck)=1
       else
-        tempvect(npactive)=dt
-	if(dtime/tempvect(npactive).GT.2**30) &
+        tempvect(npcheck)=dt
+	if(dtime/tempvect(npcheck).GT.2**30) &
                    call terror('timestep way too small') 
-	templist(npactive)=INT(dtime/tempvect(npactive))+1
+	templist(npcheck)=INT(dtime/tempvect(npcheck))+1
       endif
    endif
  enddo 
 
- call mrgrnk(npactive,tempvect,bodlist)
+ call mrgrnk(npcheck,tempvect,bodlist)
  
- if(npactive.GE.nsmooth+1) then 
+ if(npcheck.GE.nsmooth+1) then 
    if(templist(bodlist(nsmooth+1)).GT.max_tbin) & 
                  call terror(' timestep too small')
  endif
  
  if(minppbin.GT.1) then
-  call promote_bins(minppbin,npactive,templist,bodlist) 
+  call promote_bins(minppbin,npcheck,templist,bodlist) 
  else
-  if(verbosity.GT.0) print*,'<timestep> checked:',npactive
+  if(verbosity.GT.0) print*,'<timestep> checked:',npcheck
  endif
  
- do i=1,npactive
-   pbin=active_bin+1   
-   do while(2**(pbin-1).LT.templist(i).AND.pbin.LT.maxbin)
-      pbin=pbin+1
-   enddo
-!  pbin=log2_ru(templist(i))+1
-   p=pactive(i)
-   itimestp(p)=max(itimestp(p)-1,pbin)
-!   itimestp(p)=min(log2(2*max_tbin), itimestp(p))
+ npcheck=0
+ do p=1,nbodies
+   if(itimestp(p).GT.active_bin) then
+      npcheck=npcheck+1
+      pbin=active_bin+1   
+      do while(2**(pbin-1).LT.templist(npcheck).AND.2**(pbin-1).LT.max_tbin)
+        pbin=pbin+1
+      enddo
+      itimestp(p)=max(itimestp(p)-1,pbin)
+   endif   
  enddo         
+
+end subroutine
+
+subroutine timestep(itime)
+ include 'globals.h'
+ integer :: itime
+ integer :: i,p,pbin,largest_bin
+ real :: dt
+ integer :: maxbin
+ real :: courant_timestep,sqrtacc_timestep,acc_timestep,freeform_timestep
+ integer :: log2
+ 
+ maxbin=log2(2*max_tbin)
+
+ call refresh_itimestp()
 
  largest_bin=maxval(itimestp(1:nbodies))
  
@@ -175,26 +180,15 @@ subroutine timestep
 
  tsteppos=dtime/2**largest_bin
 
+ npactive=0
+ nsphact=0
+
  if(active_bin.EQ.0) then
    if(itime.NE.2**maxbin) then    
       print*,itime,maxbin,2**maxbin
       call terror('itime inconsistent')
    endif
-   itime=0
-   npactive=nbodies
-   do i=1,npactive
-      pactive(i)=i
-   enddo
-   nsphact=nsph
-   endstep=.TRUE.
-   if(verbosity.GT.0) &
-    print*, '<timestep> smallest, current,npactive:', largest_bin, active_bin,0
-   if(verbosity.GT.0) print*, '<timestep> endstep'
- else
-   endstep=.FALSE.
-
-   npactive=0
-   nsphact=0
+  else
    do p=1,nbodies
     if(itimestp(p).EQ.active_bin) then
       npactive=npactive+1
@@ -202,21 +196,18 @@ subroutine timestep
       pactive(npactive)=p
     endif
    enddo
-
-   if(verbosity.GT.0) &
-    print*, '<timestep> smallest, current,npactive:', largest_bin,active_bin,npactive
-
  endif
 
- upbin=2**(active_bin-1)
- if(active_bin.EQ.0) upbin=0
- do p=1,nbodies
-  itimestp(p)=2**(itimestp(p)-1)
- enddo
+ if(verbosity.GT.0) &
+   print*, '<timestep> smallest, current,npactive:', largest_bin,active_bin,npactive
 
- call corrpos(otimestp,'sync')
- call corrpos(itimestp,'desync')
- otimestp(pactive(1:npactive))=itimestp(pactive(1:npactive))
+ if(active_bin.EQ.0.AND.verbosity.GT.0) print*, '<timestep> endstep'
 
+ if(npactive.GT.0) then 
+   call corrpos(otimestp,'sync')
+   call corrpos(itimestp,'desync')
+   otimestp(pactive(1:npactive))=itimestp(pactive(1:npactive))
+ endif
+ 
 end subroutine
 

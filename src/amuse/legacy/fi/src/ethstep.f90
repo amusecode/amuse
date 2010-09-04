@@ -95,19 +95,32 @@ subroutine exstepp(p,totaldt,eth,deth,drad,lerad,lhe,imax,jmax)
  imax=max(i,imax)
 end subroutine
 
-subroutine extrapeth   ! extrapolate rho, etc??
+subroutine extrapethrho   ! extrapolate rho, etc??
  include 'globals.h'
  real dt
  dt=tnow-teth
  if(.NOT.isotherm) then
-  call exstep(dt)
+  call extrapeth(dt)
   if(radiate) call temperature
+ else
+  call extraprho(dt)
  endif
  estar=estar+sum(starfuv(nbodies-nstar+1:nbodies))*dt
  teth=tnow
 end subroutine
 
-subroutine exstep(dt)
+subroutine extraprho(dt)
+  include 'globals.h'
+  real dt
+  integer p
+!$ omp parallel do shared(dt) private(p)
+  do p=1,nsph
+    rho(p)=rho(p)*exp(-hsmdivv(p)/hsmooth(p)*dt)
+    hsmooth(p)=hsmooth(p)*exp(hsmdivv(p)/hsmooth(p)*dt/3)
+  enddo
+end subroutine
+
+subroutine extrapeth(dt)
 !  extrapolate eth to current tnow
 !  using old dethdt
 !  take eth/ ent step (isochoric approx.) by explicit integration
@@ -147,6 +160,15 @@ subroutine exstep(dt)
    deth=dethdt(p)/ethtoent
    drad=derad(p)
    call exstepp(p,dt,eth,deth,drad,lerad,lhe,imax,jmax)
+
+   rho(p)=rho(p)*exp(-hsmdivv(p)/hsmooth(p)*dt)
+   hsmooth(p)=hsmooth(p)*exp(hsmdivv(p)/hsmooth(p)*dt/3)
+   if(uentropy) then
+    ethtoent=gamma1/rho(p)**gamma1
+   else
+    ethtoent=1
+   endif  
+
    ethermal(p)=eth*ethtoent
    csound(p)=SQRT(gamma*gamma1*eth)
    derad(p)=drad  
@@ -204,7 +226,7 @@ subroutine exstep2(pc)
    eth=ethold(p)/ethtoent
    deth=dethdt(p)/ethtoent ! note: no cosmo correction
    drad=derad(p)
-   dt=dtime/itimestp(p)/2
+   dt=dtime/2**itimestp(p)
 !   if(dt.NE.tnow-tvel(p)) print*,'TE',p,dt,tnow-tvel(p) ! should be the same 
    call exstepp(p,dt,eth,deth,drad,lerad,lhe,imax,jmax)
    if(pc.EQ.1.OR.pc.EQ.2) then

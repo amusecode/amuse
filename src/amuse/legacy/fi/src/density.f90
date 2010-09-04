@@ -286,12 +286,14 @@ subroutine densnhsmooth
   integer, parameter :: nbuf=32
   integer :: ib,buf(nbuf),todo(nbuf),ntodo,totalsearches
   real :: time1,time2,mintime,maxtime,tottime,utime1,utime2
-
+  real oldrho, drhosum
+ 
   if(nsphact.EQ.0) return
   imax=0
   jtot=0
   nnmin=nbodies;nnmax=0;nntot=0
   mintime=1.e10; maxtime=0.; tottime=0
+  drhosum=0
 
   maxthread=1
   nchunk=1
@@ -299,9 +301,9 @@ subroutine densnhsmooth
 !$  nchunk=MAX(MIN(10*maxthread,nsphact/nbuf),maxthread)
   totalsearches=0
 !$omp parallel shared(nchunk) &
-!$omp private(i,j,p,k,nneigh,kmin,kmax, buf,todo,ntodo,ib,chunk) &
+!$omp private(i,j,p,k,nneigh,kmin,kmax, buf,todo,ntodo,ib,chunk,oldrho) &
 !$omp reduction( max : imax,nnmax,maxtime) &
-!$omp reduction(+ : jtot,nntot,tottime,totalsearches) &
+!$omp reduction(+ : jtot,nntot,tottime,totalsearches, drhosum) &
 !$omp reduction( min : nnmin,mintime) 
   call cpu_time(time1)
   ncalls=0;nsearches=0
@@ -318,7 +320,9 @@ subroutine densnhsmooth
         p=todo(ib)
         call phsm(p,i,j)  
         call pcond_srch(root,p,nneigh,srlist)
+        oldrho=rho(p)
         call pdensity(p,nneigh)
+        if(oldrho.NE.0) drhosum=drhosum+(rho(p)-oldrho)**2/oldrho**2
         nnmin=MIN(nnmin,nneigh)
         nnmax=MAX(nnmax,nneigh)
         nntot=nntot+nneigh
@@ -342,6 +346,9 @@ subroutine densnhsmooth
     write(*,'(" <densnhsmooth> time:", 3f8.2)') maxtime,mintime,tottime
     print*,'<densnhsmooth> max iter, fails:',imax,jtot
   endif
+  
+  if(drhosum/npactive.GT.0.0001) &
+    print*,' *** drho warning *** ',drhosum/npactive
 end subroutine
 
 subroutine gatterdens(n,spos,hsearch,dens,ddensdh)
@@ -437,4 +444,3 @@ subroutine hsmdenspos2(ppos,h,dens,ddensdh,nneigh)
   call cond_srch(ppos,h,root,nneigh,srlist)
   call gatterdens(nneigh,ppos,h,dens,ddensdh)
 end subroutine
-

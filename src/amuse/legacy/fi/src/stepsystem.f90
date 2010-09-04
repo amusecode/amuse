@@ -25,7 +25,7 @@ subroutine corrpos(ctimestp,rc)
     do k=1,ndim
       do i=1,npactive
         p=pactive(i)
-        dt2=(dtime/ctimestp(p))**2
+        dt2=(dtime/2**(ctimestp(p)-1))**2
         pos(p,k)=pos(p,k)+rcsign*acc(p,k)*dt2/8.
       enddo
     enddo
@@ -33,7 +33,7 @@ subroutine corrpos(ctimestp,rc)
     do k=1,ndim
       do i=1,npactive
         p=pactive(i)
-        dt2=(dtime/ctimestp(p))**2
+        dt2=(dtime/2**(ctimestp(p)-1))**2
         pos(p,k)=pos(p,k)+rcsign*acc(p,k)*dt2/8.
         if(pos(p,k).GE.hboxsize) pos(p,k)=pos(p,k)-pboxsize
         if(pos(p,k).LT.-hboxsize) pos(p,k)=pos(p,k)+pboxsize
@@ -81,7 +81,7 @@ subroutine stepvel
     do i=1,nsphact
       p=pactive(i)
       acceff=sqrt(sum(acc(p,1:3)**2))
-      maxacc=tstepcrit**2*hsmooth(p)*(itimestp(p)/dtime)**2
+      maxacc=tstepcrit**2*hsmooth(p)*(2**(itimestp(p)-1)/dtime)**2
       if(acceff.GT.maxacc) then
         k=k+1
         acc(p,1:3)=acc(p,1:3)/acceff*maxacc
@@ -95,13 +95,13 @@ subroutine stepvel
   do k=1,ndim
     do i=1,npactive
       p=pactive(i)
-      vel(p,k)=vel(p,k)+acc(p,k)*dtime/itimestp(p)
+      vel(p,k)=vel(p,k)+acc(p,k)*dtime/2**(itimestp(p)-1)
     enddo
   enddo  
   do i=1,npactive
     p=pactive(i)
-    tvel(p)=tvel(p)+dtime/itimestp(p)
-    if(ABS(tvel(p)-tnow).gt.dtime/itimestp(p)) then
+    tvel(p)=tvel(p)+dtime/2**(itimestp(p)-1)
+    if(ABS(tvel(p)-tnow).gt.dtime/2**(itimestp(p)-1)) then
       print*,p,tvel(p),tnow,itimestp(p),npactive
       call terror(' stepvel error: tvel mismatch') 
     endif
@@ -224,7 +224,7 @@ subroutine stepsph
   if(nbh.GT.0) call blackholes
   if(nstar+nbh.GT.0) call mech_feedback
         
-  if(endstep.OR.nsphact.EQ.0) return
+  if(nsphact.EQ.0) return
 
   if(.NOT.isotherm) then 
     if(.NOT.uentropy) then
@@ -247,8 +247,11 @@ end subroutine
 
 subroutine step
   include 'globals.h'
-
-  do
+  integer itime
+  
+  itime=0
+  do while(itime.LT.2*max_tbin)
+  
     call setrnd()
 
     if(starform.and.nsph.gt.0) then 
@@ -265,7 +268,7 @@ subroutine step
     call partremoval
 
     if(verbosity.GT.0) print*,'<stepsys> timestep..'
-    call timestep
+    call timestep(itime)
 
     if(verbosity.GT.0) print*,'<stepsys> steppos..'
     call steppos
@@ -283,10 +286,10 @@ subroutine step
     if(usesph) then
       if(verbosity.GT.0) print*,'<stepsys> extrapolate..'
       call vextrap
-      call extrapeth
+      call extrapethrho
     endif
     
-    if(npactive.gt.0.and.(.not.endstep)) then
+    if(npactive.gt.0) then
       if(verbosity.GT.0) print*,'<stepsys> gravity..'
       call zeroacc
       call gravity('acc ')
@@ -297,7 +300,7 @@ subroutine step
       call starevolv
     endif
     
-    if(usesph.and.nsphact.gt.0.and.(.not.endstep).and.radiate) then
+    if(usesph.and.nsphact.gt.0.and.radiate) then
       if(verbosity.GT.0) print*,'<stepsys> fuvflux..'
       call zerofuv
       call fuvflux
@@ -313,13 +316,12 @@ subroutine step
       call stepsph
     endif 
 
-    if(.not.endstep) then
+    if(npactive.GT.0) then
       if(verbosity.GT.0) print*,'<stepsys> stepvel..'
 !    if(sphfiltr.and.usesph.and.nsphact.gt.0) call vfilter tbd
       call stepvel
     endif
     
-    if(endstep) exit
   enddo
 
   if(verbosity.GT.0) print*,'<stepsys> partremoval2...'

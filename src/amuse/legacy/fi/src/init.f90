@@ -188,54 +188,33 @@ end subroutine
 
 subroutine initpos
   include 'globals.h'
+  integer i
+
+  call activateparts
   call corrpos(itimestp,'desync')
+  otimestp(pactive(1:npactive))=itimestp(pactive(1:npactive))
 end subroutine
 
 subroutine smoothall
   include 'globals.h'
-  real temp(nsphmax)
-  integer i,j
 
   call terror(' TBD smoothing')
-
-  do i=1,3
-    do j=1,nsph
-      temp(j)=vel(j,i)
-    enddo
-!    call omp_smooth(temp)
-    do j=1,nsph
-      veltpos(j,i)=vel(j,i)
-      vel(j,i)=temp(j)
-    enddo
-  enddo
-
-  do j=1,nsph
-    temp(j)=ethermal(j)
-  enddo
-!  call omp_smooth(temp)
-  do j=1,nsph
-    ethold(j)=ethermal(j)
-    ethermal(j)=temp(j) 
-  enddo  
     
 end subroutine
 
-subroutine initstep
+subroutine inittimestep
+  include 'globals.h'
+  active_bin=0
+  npactive=0
+  nsphact=0
+end subroutine
+
+subroutine activateparts
   include 'globals.h'
   integer i
 
-  do i=1,nbodies
-    itimestp(i)=1
-    otimestp(i)=1
-  enddo
-
-!  upbin=max_tbin
-  upbin=0
-  stime=0.0
-  endstep=.TRUE.
+  active_bin=0
   npactive=nbodies
-  tsteppos=0.
-
   do i=1,npactive
     pactive(i)=i
   enddo
@@ -277,6 +256,8 @@ subroutine initsys
   call postprocessread
 
   call initpos
+
+  call inittimestep
                           
   call outstate(0)
 

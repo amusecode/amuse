@@ -56,7 +56,7 @@ subroutine postprocessread
 
   tvel(1:nbodies)=tnow
 
-  call initstep
+  call activateparts
 
   call zeroacc
   call zeropot
@@ -183,6 +183,11 @@ subroutine postprocessread
 
     if(nbh+nstar.GT.0) CALL mech_feedback
     
+  endif
+
+  if(input(43).EQ.0) then
+    itimestp(1:nbodies)=1
+    call refresh_itimestp
   endif
    
   if(sortpart) call mortonsort

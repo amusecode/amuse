@@ -151,12 +151,11 @@
       
       INTEGER output,input
       
-      INTEGER npactive,minppbin,nsphact,max_tbin,upbin
-      LOGICAL endstep
-      REAL etol,stime,tsteppos
+      INTEGER npactive,minppbin,nsphact,max_tbin,active_bin
+      REAL etol,tsteppos
       
       COMMON/actcom/ npactive,nsphact
-      COMMON/stepcom/ etol,stime,tsteppos,upbin,endstep
+      COMMON/stepcom/ etol,tsteppos,active_bin
       
       INTEGER syncflag, entropyflag
       COMMON/statecom/ syncflag, entropyflag
