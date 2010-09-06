@@ -582,7 +582,7 @@ class TestFi(TestWithMPI):
         string_produced_by_print = instance.particles.__str__()
         self.assertTrue("mass" in string_produced_by_print)
         self.assertTrue("vx" in string_produced_by_print)
-        self.assertFalse("radius" in string_produced_by_print) # Fi gas particles have no radius, only h_smooth
+        self.assertTrue("radius" in string_produced_by_print)
         self.assertFalse("tform" in string_produced_by_print)
         
         instance.synchronize_model()
