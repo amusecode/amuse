@@ -50,6 +50,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         This function is optional.
         """
         function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to be removed. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.result_type = 'int32'

@@ -31,6 +31,7 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     @legacy_function
     def delete_particle():
         function = LegacyFunctionSpecification()
+        function.can_handle_array = True
         function.addParameter('index_of_particle', dtype='int32', direction=function.IN,
             description = "Index of particle to delete")
         function.result_type = 'int32'
