@@ -7,6 +7,8 @@ import os.path
 import Queue as queue
 import subprocess
 import threading
+import tempfile
+import shutil
 
 from mpi4py import MPI
 
@@ -16,6 +18,7 @@ from nose.plugins.skip import Skip, SkipTest
 from nose.plugins.doctests import Doctest
 
 from multiprocessing import Process, Queue
+from Queue import Empty
 
 from StringIO import StringIO
 
@@ -555,11 +558,25 @@ class RunTests(object):
                     result_queue, 
                     argument
                 ))
+            
+            previous_output = sys.stdout
+            previous_error = sys.stderr
+            
+            temp_stdout = tempfile.NamedTemporaryFile('w')
+            temp_stderr = temp_stdout
+            
+            print temp_stdout.name
+            
+            sys.stdout = temp_stdout
+            sys.stderr = temp_stderr
+            
             process.start()
             
+            sys.stdout = previous_output
+            sys.stderr = previous_error
             last_message = None
             while True:
-                message = result_queue.get()
+                message = result_queue.get(True, 60)
                 if message is None:
                     break;
                 if message[0] == 'unit-report':
@@ -570,7 +587,18 @@ class RunTests(object):
                     print message[1]
                 last_message = message
             result = last_message 
+        except Empty:
+            print "No message recieved from process for 60 seconds"
+            report = MakeAReportOfATestRun()
+            report.start_time = report.end_time = time.time()
+            result = 'failed', report
+            temp_stdout.flush()
+            
+            shutil.copyfile(temp_stdout.name, "test_output.txt")
+            
+            process.terminate()
         finally:
+            temp_stdout.close()
             self.test_is_running = False
             self.clear_reports_queue()
             

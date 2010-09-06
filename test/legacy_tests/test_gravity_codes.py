@@ -13,6 +13,7 @@ from amuse.support.units import nbody_system
 from amuse.ext.plummer import new_plummer_sphere
 
 import numpy
+import time
 
 class TestGravityCodes(TestWithMPI):
     
@@ -98,26 +99,22 @@ class TestGravityCodes(TestWithMPI):
 
 
 class TestBHTreeGravityCode(TestGravityCodes):
-    pass
     
     def gravity_code_factory(self):
         return BHTree
 
 
 class TestHermiteGravityCode(TestGravityCodes):
-    pass
     
     def gravity_code_factory(self):
         return Hermite
         
 class TestPhiGRAPEGravityCode(TestGravityCodes):
-    pass
     
     def gravity_code_factory(self):
         return PhiGRAPE
 
 class TestFiGravityCode(TestGravityCodes):
-    pass
     
     def gravity_code_factory(self):
         return Fi
