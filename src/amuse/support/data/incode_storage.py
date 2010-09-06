@@ -439,6 +439,10 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     
     def _remove_particles(self, keys):
         indices_in_the_code = self.get_indices_of(keys)
+        
+        if not indices_in_the_code:
+            return
+        
         self.delete_particle_method(indices_in_the_code)
         
         d = self.mapping_from_particle_key_to_index_in_the_code

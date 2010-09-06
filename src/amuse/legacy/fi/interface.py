@@ -301,7 +301,8 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
 
     @legacy_function          
     def delete_particle():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
         function.result_type = 'i'
         return function    

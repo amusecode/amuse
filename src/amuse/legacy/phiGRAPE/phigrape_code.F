@@ -227,11 +227,28 @@ C---  get array address
       get_potential_at_point = 0
       END
 
-      FUNCTION get_velocity()
+      FUNCTION get_velocity(id, vxout, vyout, vzout)
       IMPLICIT NONE
 #include "src/general.inc"
-      INTEGER get_velocity      
-      get_velocity = -2
+      INTEGER get_velocity
+      INTEGER          id,ip
+      DOUBLE PRECISION vxout, vyout, vzout
+      ip = myind(id)
+      IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
+         PRINT*, 'get_velocity: No such particle exists',
+     $           ' use add_particle'
+         get_velocity = -1
+         GOTO 999
+      ENDIF
+      
+
+      vxout = v(1,ip)
+      vyout = v(2,ip)
+      vzout = v(3,ip)
+      get_velocity = 0
+      
+  999 CONTINUE
+      RETURN
       END
 
       FUNCTION get_position(id, rx, ry, rz)
@@ -995,13 +1012,14 @@ C---  setting particle
       RETURN
       END
 
-      FUNCTION get_radius(id)
+      FUNCTION get_radius(id, value)
       IMPLICIT NONE 
 #include "src/general.inc"
 
 C---  local vars
       INTEGER          id,ip
-      DOUBLE PRECISION get_radius
+      INTEGER          get_radius
+      DOUBLE PRECISION value
 
 
 C---  get array address
@@ -1011,8 +1029,8 @@ C---  get array address
          get_radius = -1.d0
          GOTO 999
       ENDIF
-
-      get_radius = h(ip)
+      get_radius = 0
+      value = h(ip)
  999  CONTINUE
       RETURN
       END

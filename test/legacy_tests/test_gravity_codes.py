@@ -35,6 +35,7 @@ class TestGravityCodes(TestWithMPI):
         self.assertTrue(len(outer) < 100)
         instance.synchronize_model()
         instance.particles.remove_particles(outer)
+        instance.recommit_particles()
         self.assertEquals(len(instance.particles), 100-len(outer))
         number_of_particles_in_module = instance.legacy_interface.get_number_of_particles()['number_of_particles']
         self.assertEquals(number_of_particles_in_module, 100-len(outer))
@@ -90,6 +91,7 @@ class TestGravityCodes(TestWithMPI):
             self.assertEquals(number_of_particles_in_module, 150)
             instance.synchronize_model()
             instance.particles.remove_particles(particles)
+            instance.recommit_particles()
             number_of_particles_in_module = instance.legacy_interface.get_number_of_particles()['number_of_particles']
             self.assertEquals(len(instance.particles), 50)
             self.assertEquals(number_of_particles_in_module, 50) 
