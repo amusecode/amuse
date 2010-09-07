@@ -222,14 +222,14 @@ function set_mass(id,mass) result(ret)
   ret=amuse_set_mass(id,mass)
 end function
 function set_radius(id,r) result(ret)
-  integer id,ret,amuse_set_radius
+  integer id,ret,amuse_set_epsgrav
   real*8 :: r
-  ret=amuse_set_radius(id,r)
+  ret=amuse_set_epsgrav(id,r)
 end function
 function set_smoothing_length(id,eps) result(ret)
-  integer id,ret,amuse_set_radius
+  integer id,ret,amuse_set_hsmooth
   real*8 eps
-  ret=amuse_set_radius(id,eps)
+  ret=amuse_set_hsmooth(id,eps)
 end function
 function set_position(id,x,y,z) result(ret)
   integer id,ret,amuse_set_position
@@ -258,14 +258,14 @@ function get_mass(id,mass) result(ret)
   ret=amuse_get_mass(id,mass)
 end function
 function get_radius(id,eps) result(ret)
-  integer id,ret,amuse_get_radius
+  integer id,ret,amuse_get_epsgrav
   real*8 :: eps
-  ret=amuse_get_radius(id,eps)
+  ret=amuse_get_epsgrav(id,eps)
 end function
 function get_smoothing_length(id,eps) result(ret)
-  integer :: id,ret,amuse_get_radius
+  integer :: id,ret,amuse_get_hsmooth
   real*8 :: eps
-  ret=amuse_get_radius(id,eps)
+  ret=amuse_get_hsmooth(id,eps)
 end function
 function get_position(id,x,y,z) result(ret)
   integer :: id,ret,amuse_get_position

@@ -677,7 +677,7 @@ function amuse_get_mass(id,m) result(ret)
   m=mass(p)
   ret=0 
 end function
-function amuse_get_radius(id,e) result(ret)
+function amuse_get_epsgrav(id,e) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
   real*8 :: e
@@ -688,6 +688,19 @@ function amuse_get_radius(id,e) result(ret)
   endif 
   if(nbexist(p).NE.id) call terror("id error 2")
   e=epsgrav(p)
+  ret=0 
+end function
+function amuse_get_hsmooth(id,h) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: h
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(nbexist(p).NE.id) call terror("id error 2")
+  h=hsmooth(p)
   ret=0 
 end function
 function amuse_get_position(id,x,y,z) result(ret)
@@ -772,7 +785,7 @@ function amuse_set_mass(id,m) result(ret)
   mass(p)=m
   ret=0 
 end function
-function amuse_set_radius(id,e) result(ret)
+function amuse_set_epsgrav(id,e) result(ret)
   include 'globals.h'
   integer :: id,p,ret,muse_find_particle
   real*8 :: e
@@ -783,6 +796,19 @@ function amuse_set_radius(id,e) result(ret)
   endif
   if(nbexist(p).NE.id) call terror("id error 2")
   epsgrav(p)=e
+  ret=0 
+end function
+function amuse_set_hsmooth(id,h) result(ret)
+  include 'globals.h'
+  integer :: id,p,ret,muse_find_particle
+  real*8 :: h
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif
+  if(nbexist(p).NE.id) call terror("id error 2")
+  hsmooth(p)=h
   ret=0 
 end function
 function amuse_set_position(id,x,y,z) result(ret)
