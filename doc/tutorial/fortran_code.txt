@@ -270,7 +270,7 @@ Go to the **src** directory and create a **code.f90** file, open this
 file in your favorite editor and:
     
 .. literalinclude:: nearestneighbor/code.f90
-    :language: c++
+    :language: fortran
     
 
 .. note::
