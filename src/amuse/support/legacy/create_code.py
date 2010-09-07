@@ -109,6 +109,7 @@ class MakeCodeStringOfAClassWithLegacyFunctions(MakeCodeString):
             uc.specification = x.specification
             uc.out = self.out
             uc.start()
+            self.out.lf()
     
     def output_legacy_globals(self):
         for x in self.legacy_globals:

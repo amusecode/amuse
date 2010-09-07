@@ -621,7 +621,9 @@ class MakeAFortranInterfaceStringOfAClassWithLegacyFunctions\
         return dtype_to_spec
   
     def make_legacy_function(self):
-        return create_definition.CreateFortranStub()
+        result = create_definition.CreateFortranStub()
+        result.output_definition_only = False
+        return result
         
     def start(self):  
     

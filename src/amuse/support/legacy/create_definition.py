@@ -132,12 +132,21 @@ class CreateFortranStub(object):
     def start(self):
         self.output_subprogram_start()
         self.output_parameter_type_definiton_lines()
+        
+        
+        if not self.output_definition_only:
+            self.output_subprogram_content()
+
         self.output_subprogram_end()
     
     @late 
     def specification_is_for_function(self):
         return not self.specification.result_type is None
     
+    @late
+    def output_definition_only(self):
+        return True
+        
     @late 
     def subprogram_string(self):
         if self.specification_is_for_function:
@@ -195,17 +204,20 @@ class CreateFortranStub(object):
             self.out + typestring + ' :: '
             
             for parameter in parameters:
-                if first:
-                    first = False
-                else:
-                    self.out + ', '
+                
               
                 length_of_the_argument_statement = len(parameter.name)
                 new_length_of_the_line = self.out.number_of_characters_on_current_line + length_of_the_argument_statement
                 if new_length_of_the_line > 74:
+                    first = True
                     self.out.lf()
                     self.out + typestring + ' :: '
                 
+                if first:
+                    first = False
+                else:
+                    self.out + ', '
+                    
                 self.out + parameter.name 
     
     def output_function_type(self):
@@ -219,6 +231,19 @@ class CreateFortranStub(object):
         self.out.lf()
         self.out + 'END ' + self.subprogram_string
 
+    def output_subprogram_content(self):
+        if not self.specification.result_type is None:
+            self.out.lf()
+            self.out +  self.specification.name + '=' + self.dtype_to_returnvalue[self.specification.result_type]
+        
+    @late
+    def dtype_to_returnvalue(self):
+        return {
+            'int32':'0' , 
+            'float64':'0.0' , 
+            'float32':'0.0' ,
+            'string':'0',
+        }
         
 
 class CreateCStub(object):
