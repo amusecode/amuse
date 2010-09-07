@@ -530,11 +530,7 @@ function amuse_get_state(id,m,x,y,z,vx,vy,vz,e) result(ret)
   vx=vel(p,1)
   vy=vel(p,2)
   vz=vel(p,3)
-  if(p.LE.nsph) then 
-    e=hsmooth(p)
-  else
-    e=epsgrav(p)
-  endif
+  e=epsgrav(p)
   ret=0 
 end function
 
@@ -560,7 +556,7 @@ function amuse_get_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   vx=vel(p,1)
   vy=vel(p,2)
   vz=vel(p,3)
-  e=hsmooth(p)
+  e=epsgrav(p)
   u=ethermal(p)
   ret=0 
 end function
@@ -691,7 +687,7 @@ function amuse_get_radius(id,e) result(ret)
     return
   endif 
   if(nbexist(p).NE.id) call terror("id error 2")
-  e=hsmooth(p)
+  e=epsgrav(p)
   ret=0 
 end function
 function amuse_get_position(id,x,y,z) result(ret)
