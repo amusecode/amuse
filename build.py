@@ -209,8 +209,8 @@ def make_file(settings):
 def make_directory(settings):
 
     usecases = {
-        ('c','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForALegacyCode,    
-        ('f90','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForALegacyCode, 
+        ('c','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForACLegacyCode,    
+        ('f90','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranLegacyCode, 
     }
     
     try:

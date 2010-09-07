@@ -31,7 +31,7 @@ class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_cod
     
 """
 
-makefile_template = """\
+makefile_template_cxx = """\
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -67,7 +67,7 @@ worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 \t$(CXX) $(CXXFLAGS) -c -o $@ $< 
 """
 
-code_makefile_template = """\
+code_makefile_template_cxx = """\
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -95,7 +95,7 @@ $(CODELIB): $(CODEOBJS)
 \t$(CXX) $(CXXFLAGS) -c -o $@ $< 
 """
 
-code_examplefile_template = """\
+code_examplefile_template_cxx = """\
 /*
  * Example function for a code
  */
@@ -104,7 +104,7 @@ int echo(int input){
 }
 """
 
-interface_examplefile_template = """\
+interface_examplefile_template_cxx = """\
 extern int echo(int input);
 
 /*
@@ -174,10 +174,11 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         
     @late
     def path_of_the_code_examplefile(self):
-        return os.path.join(self.path_of_the_source_code, 'test.cc')
+        raise NotImplementedException()
+        
     @late
     def path_of_the_interface_examplefile(self):
-        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_interface_code + '.cc')
+        raise NotImplementedException()
         
     @late
     def path_of_amuse(self):
@@ -219,22 +220,149 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
             f.write(string)
         
     def make_makefile(self):
+        pass
+            
+    def make_example_files(self):
+        pass
+        
+        
+class CreateADirectoryAndPopulateItWithFilesForACLegacyCode(CreateADirectoryAndPopulateItWithFilesForALegacyCode):
+   
+    @late
+    def path_of_the_code_examplefile(self):
+        return os.path.join(self.path_of_the_source_code, 'test.cc')
+        
+    @late
+    def path_of_the_interface_examplefile(self):
+        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_interface_code + '.cc')
+            
+    def make_makefile(self):
         
         with open(self.path_of_the_makefile, "w") as f:
-            string = makefile_template.format(self)
+            string = makefile_template_cxx.format(self)
             f.write(string)
             
     def make_example_files(self):
         with open(self.path_of_the_code_makefile, "w") as f:
-            string = code_makefile_template.format(self)
+            string = code_makefile_template_cxx.format(self)
             f.write(string)
             
         with open(self.path_of_the_code_examplefile, "w") as f:
-            string = code_examplefile_template
+            string = code_examplefile_template_cxx
             f.write(string)
         
         with open(self.path_of_the_interface_examplefile, "w") as f:
-            string = interface_examplefile_template
+            string = interface_examplefile_template_cxx
+            f.write(string)
+
+
+
+makefile_template_fortran = """\
+FC = mpif90
+
+FFLAGS   += -Wall -g
+LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+
+OBJS = {0.name_of_the_interface_code}.o
+
+CODELIB = src/lib{0.name_of_the_legacy_code}.a
+
+AMUSE_DIR?={0.reference_to_amuse_path}
+
+CODE_GENERATOR = $(AMUSE_DIR)/build.py
+
+all: worker_code 
+
+clean:
+\t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
+\t$(RM) *~ worker_code
+\tmake -C src clean
+
+$(CODELIB):
+\tmake -C src all
+
+worker_code.f90: {0.name_of_the_python_module}
+\t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_legacy_interface_class} -o $@
+
+worker_code: worker_code.f90 $(CODELIB) $(OBJS)
+\tmpif90 $(CXXFLAGS) $@.f90 $(OBJS) $(CODELIB) -o $@
+
+%.o: %.f90
+\t$(FC) $(FFLAGS) -c -o $@ $<
+"""
+
+code_makefile_template_fortran = """\
+FC = mpif90
+
+FFLAGS   += -Wall -g
+LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+
+CODELIB = lib{0.name_of_the_legacy_code}.a
+
+CODEOBJS = test.o
+
+AR = ar ruv
+RANLIB = ranlib
+RM = rm
+
+all: $(CODELIB) 
+
+clean:
+\t$(RM) -f *.o *.a
+
+$(CODELIB): $(CODEOBJS)
+\t$(RM) -f $@
+\t$(AR) $@ $(CODEOBJS)
+\t$(RANLIB) $@
+
+%.o: %.f90
+\t$(FC) $(FFLAGS) -c -o $@ $<
+
+"""
+
+code_examplefile_template_fortran = """\
+FUNCTION echo(input)
+    INTEGER echo, input
+    echo = input
+END FUNCTION
+"""
+
+interface_examplefile_template_fortran = """\
+FUNCTION echo_int(input, output)
+    INTEGER echo
+    INTEGER echo_int
+    INTEGER input, output
+    output = echo(input)
+    echo_int = 0
+END FUNCTION
+
+"""
+class CreateADirectoryAndPopulateItWithFilesForAFortranLegacyCode(CreateADirectoryAndPopulateItWithFilesForALegacyCode):
+   
+    @late
+    def path_of_the_code_examplefile(self):
+        return os.path.join(self.path_of_the_source_code, 'test.f90')
+        
+    @late
+    def path_of_the_interface_examplefile(self):
+        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_interface_code + '.f90')
+            
+    def make_makefile(self):
+        
+        with open(self.path_of_the_makefile, "w") as f:
+            string = makefile_template_fortran.format(self)
+            f.write(string)
+            
+    def make_example_files(self):
+        with open(self.path_of_the_code_makefile, "w") as f:
+            string = code_makefile_template_fortran.format(self)
+            f.write(string)
+            
+        with open(self.path_of_the_code_examplefile, "w") as f:
+            string = code_examplefile_template_fortran
             f.write(string)
         
-        
+        with open(self.path_of_the_interface_examplefile, "w") as f:
+            string = interface_examplefile_template_fortran
+            f.write(string)
+
