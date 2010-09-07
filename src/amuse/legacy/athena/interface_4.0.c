@@ -20,7 +20,10 @@
 #endif
 
 #include <math.h>
+
+//AMUSE STOPPING CONDITIONS SUPPORT
 #include <stopcond.h>
+#include <time.h>
 
 static MeshS mesh;
 static VDFun_t Integrate;
@@ -153,6 +156,7 @@ int initialize_code(){
 
   // AMUSE STOPPING CONDITIONS SUPPORT
   set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
+  set_support_for_condition(TIMEOUT_DETECTION);
 
 #ifdef MPI_PARALLEL
     /* Get my task id (rank in MPI) */
@@ -1093,16 +1097,24 @@ int evolve(double tlim) {
     Real dt_done;
     //AMUSE STOPPING CONDITIONS
     int is_number_of_steps_detection_enabled;
+    int is_timeout_detection_enabled;
     int number_of_steps_innerloop = 0;
     int max_number_of_steps;
+    int timeout;
+    time_t clock_current, clock_init;
     int error;
 
     par_setd("time","tlim", "%.15e", tlim, "-");
 
+    //AMUSE STOPPING CONDITIONS SUPPORT
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
                                           &is_number_of_steps_detection_enabled);
+    error = is_stopping_condition_enabled(TIMEOUT_DETECTION, 
+					  &is_timeout_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
-
+    get_stopping_condition_timeout_parameter(&timeout);    
+    time(&clock_init);
+    
     while (mesh.time < tlim) {
 
     /*--- Step 9b. ---------------------------------------------------------------*/
@@ -1207,6 +1219,13 @@ int evolve(double tlim) {
             if (number_of_steps_innerloop > max_number_of_steps) {
                 int stopping_index  = next_index_for_stopping_condition();
                 set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+            }
+        }
+        if (is_timeout_detection_enabled) {
+	    time(&clock_current);
+	    if ((clock_current - clock_init) > timeout) {
+                int stopping_index  = next_index_for_stopping_condition();
+                set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);
             }
         }
 

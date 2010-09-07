@@ -672,6 +672,31 @@ class TestFi(TestWithMPI):
         self.assertTrue(instance.model_time < 10 | nbody.time)
 
         instance.stop()
+
+    def test13a(self):
+        particles = core.Particles(2)
+        particles.x = [0.0,10.0] | nbody.length
+        particles.y = 0 | nbody.length
+        particles.z = 0 | nbody.length
+        particles.radius = 0.005 | nbody.length
+        particles.vx =  0 | nbody.speed
+        particles.vy =  0 | nbody.speed
+        particles.vz =  0 | nbody.speed
+        particles.mass = 1.0 | nbody.mass
+
+        instance = Fi()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_timeout = 0.1 | units.s
+        self.assertEquals(instance.parameters.stopping_conditions_timeout, 0.1 | units.s)
+        instance.parameters.epsilon_squared = (0.01 | nbody.length)**2
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.timeout_detection.enable()
+        instance.evolve_model(10 | nbody.time)
+        self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
+        self.assertTrue(instance.model_time < 10 | nbody.time)
+
+        instance.stop()
+
     
     def test14(self):
         print "Testing Fi get_hydro_state_at_point"

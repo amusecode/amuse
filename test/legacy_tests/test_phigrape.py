@@ -175,7 +175,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
         
 
-class TestCodeInterface(TestWithMPI):
+class TestPhigrape(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = core.Stars(2)
         sun = stars[0]
@@ -570,5 +570,29 @@ class TestCodeInterface(TestWithMPI):
         instance.evolve_model(10 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         self.assertTrue(instance.model_time < 10 | nbody_system.time)
+
+        instance.stop()
+
+    def test14(self):
+        particles = core.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0 | nbody_system.length
+        particles.z = 0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0 | nbody_system.speed
+        particles.vy =  0 | nbody_system.speed
+        particles.vz =  0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+       
+        instance = PhiGRAPE()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_timeout = 1 | units.s
+        self.assertEquals(instance.parameters.stopping_conditions_timeout, 1 | units.s)
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.timeout_detection.enable()
+        instance.evolve_model(1000 | nbody_system.time)
+        self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
+        self.assertTrue(instance.model_time < 1000 | nbody_system.time)
 
         instance.stop()

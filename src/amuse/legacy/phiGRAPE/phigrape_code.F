@@ -619,6 +619,7 @@ C     AMUSE STOPPING CONDITION SUPPORT
       error = set_support_for_condition(COLLISION_DETECTION)
       error = set_support_for_condition(PAIR_DETECTION)
       error = set_support_for_condition(NUMBER_OF_STEPS_DETECTION)
+      error = set_support_for_condition(TIMEOUT_DETECTION)
 
       g_init_once = 0
       g_initialized = 0
@@ -1308,11 +1309,16 @@ C---  local vars
       INTEGER          evolve
       DOUBLE PRECISION tend
 
+      INTEGER clock_init, clock_current
+      INTEGER count_rate, count_max
       INTEGER is_any_condition_set
       INTEGER is_stopping_condition_enabled
       INTEGER is_number_of_steps_detection_enabled
-      INTEGER get_stopping_condition_number_of_steps_parameter
+      INTEGER is_timeout_detection_enabled
+      INTEGER get_stopping_condition_number_of_steps_parameter 
+      INTEGER get_stopping_condition_timeout_parameter 
       INTEGER max_number_of_steps
+      DOUBLE PRECISION timeout
       INTEGER number_of_steps_innerloop
       INTEGER next_index_for_stopping_condition
       INTEGER set_stopping_condition_info
@@ -1331,6 +1337,21 @@ C  update local particles on grape
 C--------------------------------------------------------------------
 C---  main loop begins here
 C--------------------------------------------------------------------
+      CALL SYSTEM_CLOCK(clock_init, count_rate, count_max)
+
+      error = is_stopping_condition_enabled(
+     $               NUMBER_OF_STEPS_DETECTION, 
+     $               is_number_of_steps_detection_enabled)
+      error = is_stopping_condition_enabled(
+     $               TIMEOUT_DETECTION,
+     $               is_timeout_detection_enabled)
+      error = get_stopping_condition_number_of_steps_parameter(
+     $               max_number_of_steps)
+      error = get_stopping_condition_timeout_parameter(
+     $               timeout)
+
+
+
  100  IF (time_cur.GE.t_end) GOTO 900
 
 C--- obsolete, use stopcond library instead..
@@ -1397,11 +1418,6 @@ C             ------------
          time_cur   = min_t
 
 C timeout and number of steps detection goes here i quess...
-         error = is_stopping_condition_enabled(
-     $               NUMBER_OF_STEPS_DETECTION, 
-     $               is_number_of_steps_detection_enabled)
-         error = get_stopping_condition_number_of_steps_parameter(
-     $               max_number_of_steps)
 
          IF (is_number_of_steps_detection_enabled.GT.0) THEN
              number_of_steps_innerloop = 
@@ -1412,6 +1428,15 @@ C timeout and number of steps detection goes here i quess...
      $                       NUMBER_OF_STEPS_DETECTION);
              ENDIF
 
+         ENDIF
+
+         IF (is_timeout_detection_enabled.GT.0) THEN
+             CALL SYSTEM_CLOCK(clock_current, count_rate, count_max)
+             IF ((clock_current-clock_init).GT.timeout) THEN
+                 stopping_index = next_index_for_stopping_condition()
+                 error = set_stopping_condition_info(stopping_index,
+     $                       TIMEOUT_DETECTION)
+             ENDIF
          ENDIF
          CALL gather_collisions
 

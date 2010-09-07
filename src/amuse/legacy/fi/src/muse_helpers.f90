@@ -282,7 +282,12 @@ subroutine muse_stepsys(tend,sync)
  integer :: is_any_condition_set
  integer :: is_stopping_condition_enabled
  integer :: is_number_of_steps_detection_enabled
+ integer :: is_timeout_detection_enabled
+ integer :: get_stopping_condition_number_of_steps_parameter 
+ integer :: get_stopping_condition_timeout_parameter 
+ integer :: clock_init, clock_current, count_rate, count_max
  integer :: max_number_of_steps
+ integer :: timeout
  integer :: number_of_steps_innerloop
  integer :: stopping_index
  integer :: next_index_for_stopping_condition
@@ -294,16 +299,30 @@ subroutine muse_stepsys(tend,sync)
 
  error = reset_stopping_conditions()
  error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
+ error = is_stopping_condition_enabled(TIMEOUT_DETECTION, is_timeout_detection_enabled)
+ error = get_stopping_condition_number_of_steps_parameter(max_number_of_steps)
+ error = get_stopping_condition_timeout_parameter(timeout)
+ call SYSTEM_CLOCK(clock_init, count_rate, count_max)
+
  call corrpos(itimestp,'desync')
+
  do while(tnow<tend-dtime/2)
    call step
    if (is_number_of_steps_detection_enabled.GT.0) then
       number_of_steps_innerloop = number_of_steps_innerloop +1
       if (number_of_steps_innerloop.GT.max_number_of_steps) then
          stopping_index = next_index_for_stopping_condition()
-         error = set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+         error = set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION)
       endif
    endif
+   if (is_timeout_detection_enabled.GT.0) then
+      call SYSTEM_CLOCK(clock_current, count_rate, count_max)
+      if ((clock_current-clock_init).GT.timeout) then
+         stopping_index = next_index_for_stopping_condition()
+         error = set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION)
+      endif
+   endif
+
    if (is_any_condition_set().GT.0) exit
    n=n+1
  enddo

@@ -803,3 +803,10 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_number_of_steps = 10
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 10|units.none)
         instance.stop()
+
+    def test8a(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_timeout = 10 | units.s
+        self.assertEquals(instance.parameters.stopping_conditions_timeout, 10|units.s)
+        instance.stop()

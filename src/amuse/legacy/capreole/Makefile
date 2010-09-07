@@ -20,6 +20,9 @@ X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
 
 THREADLIB = -L. -lpthread src/libpt.a
 
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
+
 OMPFLAGS= # -openmp -openmp_report0 
 PIC=#-fPIC
 
@@ -45,22 +48,22 @@ GLCLASSNAME=GLCapreoleInterface
 all: worker
 
 %.o: %.f90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2)  -c -o $@ $< 
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC)  -c -o $@ $< 
 
 %.o: %.F90 Makefile
-	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
-        
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) -c -o $@ $< 
+
 worker: worker.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(NOMPILIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
 
 worker_mpi: FFLAGS2+=$(MPI_FLAGS)
 worker_mpi: worker_mpi.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(MPILIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(MPILIBS)$(SCLIBS)
 
 glworker: glworker.f90 interface.o
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
-	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS)
+	$(FC) $(FFLAGS) $(SCINC) $^ -o $@  $(GLOBJECTS) \
+	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS) $(SCLIBS)
 
 worker.f90: interface.py 
 	make -C src amuse_interface F90FLAGS1="$(FFLAGS)" FC="$(FC)"
