@@ -31,6 +31,24 @@ class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_cod
     
 """
 
+test_file_template = """\
+from amuse.legacy import *
+from amuse.test.amusetest import TestWithMPI
+
+from {0.name_for_import_of_the_interface_module} import {0.name_of_the_legacy_interface_class}
+from {0.name_for_import_of_the_interface_module} import {0.name_of_the_code_interface_class}
+
+class {0.name_of_the_legacy_interface_class}Tests(TestWithMPI):
+    
+    def test1(self):
+        instance = {0.name_of_the_legacy_interface_class}()
+        result,error = instance.echo_int(12)
+        self.assertEquals(error, 0)
+        self.assertEquals(result, 12)
+        instance.stop()
+    
+"""
+
 makefile_template_cxx = """\
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
@@ -131,6 +149,10 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
     @late
     def name_of_the_python_module(self):
         return 'interface.py'
+        
+    @late
+    def name_of_the_test_module(self):
+        return 'test_{0}.py'.format(self.name_of_the_legacy_code)
     
     @late
     def name_of_the_interface_code(self):
@@ -149,6 +171,10 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         return 'src'
     
     @late
+    def name_for_import_of_the_interface_module(self):
+        return '.' + self.name_of_the_python_module[:-3]
+        
+    @late
     def path_of_the_legacy_code(self):
         return os.path.join(self.path_of_the_root_directory, self.name_of_the_legacy_code)
         
@@ -163,6 +189,10 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
     @late
     def path_of_the_interface_file(self):
         return os.path.join(self.path_of_the_legacy_code, self.name_of_the_python_module)
+    
+    @late
+    def path_of_the_test_file(self):
+        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_test_module)
         
     @late
     def path_of_the_makefile(self):
@@ -217,6 +247,10 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         
         with open(self.path_of_the_interface_file, "w") as f:
             string = interface_file_template.format(self)
+            f.write(string)
+        
+        with open(self.path_of_the_test_file, "w") as f:
+            string = test_file_template.format(self)
             f.write(string)
         
     def make_makefile(self):
