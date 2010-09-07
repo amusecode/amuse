@@ -11,6 +11,7 @@ long supported_conditions = 0;
 long number_of_stopping_conditions_set = 0;
 
 double timeout_parameter = 4.0;
+double out_of_box_parameter = 0.0;
 long number_of_steps_parameter = 1;
 
 int enable_stopping_condition(int type) {
@@ -250,6 +251,24 @@ int get_stopping_condition_number_of_steps_parameter(int *value) {
 
 int get_stopping_condition_number_of_steps_parameter_(int *value) {
     return get_stopping_condition_number_of_steps_parameter(value);
+}
+
+int set_stopping_condition_out_of_box_parameter(double value) {
+    out_of_box_parameter = value;
+    return 0;
+}
+
+int set_stopping_condition_out_of_box_parameter_(double *value) {
+    return set_stopping_condition_out_of_box_parameter(*value);
+}
+
+int get_stopping_condition_out_of_box_parameter(double *value) {
+    *value = out_of_box_parameter;
+    return 0;
+}
+
+int get_stopping_condition_out_of_box_parameter_(double *value) {
+    return get_stopping_condition_out_of_box_parameter(value);
 }
 
 #ifdef MPILIB

@@ -205,6 +205,35 @@ class StoppingConditionInterface(object):
         """
         return function
 
+    @legacy_function
+    def set_stopping_condition_out_of_box_parameter():
+        """
+        Set size of box.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('value', dtype='float64', direction=function.IN, description = "Size of box")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - Value out of range
+        """
+        return function
+
+    @legacy_function
+    def get_stopping_condition_out_of_box_parameter():
+        """
+        Get size of box
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = False
+        function.addParameter('value', dtype='float64', direction=function.OUT, description = "Size of box")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+        -1 - Value out of range
+        """
+        return function
     
 class StoppingCondition(object):
     
@@ -270,8 +299,13 @@ class StoppingConditions():
             4,
             "If enabled, the code will stop at the end of the inner loop when the number of evaluations reached the set max number"
         )
-        
-    
+
+        self.out_of_box_detection = StoppingCondition(
+            self,
+            5,
+            "If enabled, the code will stop if a particle escapes the box of size out_of_box_size"
+        )
+
     def all_conditions(self):
         for name in dir(self):
             if name.startswith("_"):
@@ -324,6 +358,15 @@ class StoppingConditions():
             "max inner loop evals", 
             units.none, 
             1.0 |  units.none
+        )
+
+        object.add_method_parameter(
+            "get_stopping_condition_out_of_box_parameter",
+            "set_stopping_condition_out_of_box_parameter", 
+            "stopping_conditions_out_of_box_size", 
+            "size of cube", 
+            units.AU, 
+            1.0 |  units.AU
         )
         
     def define_methods(self, object):
@@ -405,6 +448,3 @@ class StoppingConditions():
         
     def define_particle_set(self, object, name_of_the_set = 'particles'):
         object.add_query(name_of_the_set, 'get_stopping_condition_particle_index')
-    
-        
-        

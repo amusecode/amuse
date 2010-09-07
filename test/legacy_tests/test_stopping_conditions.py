@@ -25,7 +25,7 @@ int initialize_code()
 {
     
     // AMUSE STOPPING CONDITIONS SUPPORT
-    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP;
+    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP | OUT_OF_BOX_DETECTION_BITMAP;
     // -----------------------
     return 0;
 }
@@ -225,6 +225,14 @@ class TestInterface(TestWithMPI):
         self.assertEquals(11, instance.get_stopping_condition_particle_index(next, 0))
         self.assertEquals(12, instance.get_stopping_condition_particle_index(next, 1))
         instance.stop()
+
+    def xtest6(self):
+        instance = ForTesting(self.exefile)
+        instance.reset_stopping_conditions()
+        instance.set_stopping_condition_info(next,instance.stopping_conditions.out_of_box_detection.type)
+        self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
+        instance.stop()
+
 
 class TestInterfaceF(TestWithMPI):
     def f90_compile(self, objectname, string):
