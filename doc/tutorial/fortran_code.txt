@@ -2,24 +2,62 @@
 Integrate a Fortran 90 code
 ===========================
 
-In this tutorial we will add create an AMUSE interface to 
-a fortran 90 code. We will first define the legacy interface,
-then implement the code and finally build an object
-oriented interface on top of the code. The legacy code
-will be a very simple and naive implementation to find
-3 nearest neighbors of a particle.
+In this tutorial we will create an AMUSE interface to 
+a fortran 90 code. We will first define the
+legacy interface, then implement the code and
+finally build an object oriented interface on top of the legacy interface.
+
 
 The legacy code interface supports methods that tranfer values
 to and from the code. The values do not have any units and
-no error handling is provided by the interface. We can add 
-these and more functions to the legacy interface by 
-defining a CodeInterface.
+no error handling is provided by the interface. We can error handling, unit handling
+and more functions to the legacy interface by defining a CodeInterface (this is the 
+objected oriented interface).
 
-The suggested procedure for creating the new interface is
-as follow:
+.. graphviz::
+
+   digraph layers4 {
+      fontsize=10.0;
+        rankdir="LR";
+        node [fontsize=10.0, shape=box, style=filled, fillcolor=lightyellow];
+        
+        "Legacy Code" -> "Legacy Interface" -> "Object Oriented Interface" -> "Script";
+    }
+
+
+The legacy code in this tutorial will be a very simple and naive
+implementation to find 3 nearest neighbors of a particle.
+
+Two paths
+---------
+When defining the interface will walk 2 paths:
+
+1. Management of particles or grids in AMUSE (python)
+2. Management of particles or grids in the code (C or Fortran)
+
+The first path makes sense for legacy codes that perform a
+transformation on the particles, or analyse the particles state
+or do not store any internal state between function calls (all data is external).
+For every function of the code, data of every particle is send to the code. If we 
+expect multiple calls the code would incur a high communication overhead and we are better 
+of choosing path 2.
+
+The second path makes sense for codes that already have management of a 
+particles (or grid) or were we want to call multiple functions of the code
+and need to send the complete model to code for every function call. The
+code is first given the data, then calls are made to the code to evolve
+it's model or perform reduction steps on the data, finally the updated data is 
+retrieved from the code. 
+
+Procedure
+---------
+
+The suggested procedure for creating a new interface is
+as follows:
 
 0. **Legacy Interface.** Start with creating the legacy 
-   interface.
+   interface. Define functions on the interface to input and
+   output relevant data.
    The CodeInterface code depends on the legacy interface code.   
 1. **Make a Class.** Create a subclass of the CodeInterface class
 2. **Define methods.** In the legacy interface we have defined functions
@@ -27,25 +65,24 @@ as follow:
    units of the parameters and if a parameter or return value
    is used as an errorcode.
 3. **Define properties.** Some functions in the legacy interface can
-   be better described as a property of the code.
+   be better described as a property of the code. These are read only 
+   variables, like the current model time.
 4. **Define parameters.** Some functions in the legacy interface provide
    access to parameters of the code. Units and default values
-   can be defined for the parameters in this step
-5. **Define sets.** A code usually handles objects or gridpoints with
+   need to be defined for the parameters in this step
+5. **Define sets or grids.** A code usually handles objects or gridpoints with
    attributes. In this step a generic interface is defined for these
    objects so that the interopability between codes increases.
-6. **Define a Unit Converter.** This step is only needed for codes
-   that have units which are incompatible with SI units. For example
-   if a code uses nbody units, a converter is needed to convert
-   between nbody and si units.
 
+Before we start
+---------------
 
-Environment variables
----------------------
 This tutorial asumes you have a working amuse environment. Please ensure
 that amuse is setup correctly by running 'nosetests' in the amuse
 directory.
 
+Environment variables
+~~~~~~~~~~~~~~~~~~~~~
 To simplify the work in the coming sections, we first 
 define the environment variable 'AMUSEDIR'. This environment variable
 must point to the root directory of AMUSE (this is the directory
@@ -88,12 +125,12 @@ or in a c shell:
     
     
 The name of our project
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 We will be writing a code to find the nearest neighbors of a particle, 
 so let's call our project 'NearestNeighbor'.
 
-Setting up the project
-----------------------
+Creating the initial directory structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 First we need to create a directory for our project and put
 some files in it to help build the code. This is described in
 the *"Create an Interface to a Legacy Code"* tutorial. The fastest
@@ -104,7 +141,7 @@ method to setup the directory is by using the build.py script.
     > $AMUSEDIR/build.py --type=f90 --mode=dir NearestNeighbor
 
 The script will generate a directory with all the files needed
-to start our project. It has also genertases a very small legacy
+to start our project. It has also generates a very small legacy
 code with only one function ```echo_int```. We can build
 and test our new module::
 
@@ -127,6 +164,88 @@ and test our new module::
     parameter, like so::
 
         > $AMUSEDIR/build.py --help
+
+The Legacy Code
+---------------
+Normally the legacy code already exists and our task is limited to
+defining and implementing an interface so that AMUSE scripts can
+access the code. For this tutorial we will implement our legacy code.
+
+When a legacy code is integrated all interface code is put in 
+one directory and all the legacy code is put in a **src** directory
+placed under this directory. The build.py script created a 
+**src** directory for us, and we will put the nearest neighbor algorithm
+in this directory.
+
+Go to the **src** directory and create a **code.f90** file, open this
+file in your favorite editor and copy and paste this code into it:
+    
+.. literalinclude:: nearestneighbor/code.f90
+    :language: fortran
+    
+
+.. note::
+
+    This algorithm is un-optimized and has N*N order. It is not meant
+    as very efficient code but as a readable example.
+
+Before we can continue we also need to alter the **Makefile** in the
+**src** directory, so that our **code.cc** file is included in the
+build. To do so, open an editor on the Makefile and change 
+the line::
+
+    CODEOBJS = test.o
+
+to::
+
+    CODEOBJS = test.o code.o
+    
+
+Test if the code builds. As we have not coupled our algorithm to the 
+interface we (we have not even defined an interface) we do not have any new
+functionality. In the legacy interface directory (not the **src** directory) do:
+
+.. code-block:: bash
+
+    > make all
+    > nosetests
+    .
+    ----------------------------------------------------------------------
+    Ran 1 test in 0.427s
+
+    OK
+
+
+Path 1
+------
+
+Defining the legacy interface
+-----------------------------
+We will first define a legacy interface to be able to call the 
+**find_nearest_neighbors** function. AMUSE can interact with
+2 classes of functions:
+
+1. A function with all scalar input and output variables. All variables
+   are simple, non-composite variables (like INTEGER or DOUBLE PRECISION).
+   For example:
+   
+   .. code-block:: fortran
+    
+        FUNCTION example1(input, output)
+            IMPLICIT NONE
+            INTEGER example1
+            DOUBLE PRECISION input, output
+            output = input
+            example1 = 0
+        END FUNCTION
+        
+2. A function with all vector (or list) input and output variables and
+   a length variable. The return value is a scalar value.
+
+
+
+Path 2
+------
 
 Defining the legacy interface
 -----------------------------
@@ -253,57 +372,6 @@ We need to rebuild the code, and after building run the tests.
     OK
 
 The are tests work again! Only, we do not have any real working legacy code.
-
-Writing the legacy code
------------------------
-Normally the legacy code already exists and our task is limited to
-defining and implementing an interface so that AMUSE scripts can
-access the code. For this tutorial we will implement our legacy code.
-
-When a legacy code is integrated all interface code is put in 
-one directory and all the legacy code is put in a **src** directory
-placed under this directory. Our example legacy code also contains 
-a **src** directory and we will put the nearest neighbor algorithm
-in this directory.
-
-Go to the **src** directory and create a **code.f90** file, open this
-file in your favorite editor and:
-    
-.. literalinclude:: nearestneighbor/code.f90
-    :language: fortran
-    
-
-.. note::
-
-    This algorithm is un-optimized and has N*N order. It is not meant
-    as very efficient code but as a readable example.
-
-Before we can continue we also need to alter the **Makefile** in the
-**src** directory, so that our **code.cc** file is included in the
-build. To do so, open an editor on the Makefile and change 
-the line::
-
-    CODEOBJS = test.o
-
-to::
-
-    CODEOBJS = code.o
-    
-
-Test if the code builds. As we have not coupled our algorithm to the 
-interface we do not have any new functionality. In the legacy interface
-directory (not the **src** directory) do:
-
-.. code-block:: bash
-
-    > make all
-    > nosetests
-    .
-    ----------------------------------------------------------------------
-    Ran 1 test in 0.427s
-
-    OK
-
 Filling the stubs
 -----------------
 The implementation of the algorithm does not match the interface

@@ -178,6 +178,8 @@ class CreateFortranStub(object):
         self.out + '('
         self.out.indent()
         self.out.indent()
+        if not self.output_definition_only:
+            self.out + 'IMPLICIT NONE'
         first = True
         for parameter in self.specification.parameters:
             if first:
