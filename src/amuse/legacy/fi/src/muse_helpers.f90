@@ -277,12 +277,14 @@ end function
 subroutine muse_stepsys(tend,sync)
  include 'globals.h'
  include '../../../../../lib/stopcond/stopcond.inc'
- real :: tend
+ real :: tend, stop_boxsize
+ integer :: i,p
  integer :: sync
  integer :: is_any_condition_set
  integer :: is_stopping_condition_enabled
  integer :: is_number_of_steps_detection_enabled
  integer :: is_timeout_detection_enabled
+ integer :: is_out_of_box_detection_enabled
  integer :: get_stopping_condition_number_of_steps_parameter 
  integer :: get_stopping_condition_timeout_parameter 
  integer :: clock_init, clock_current, count_rate, count_max
@@ -292,7 +294,9 @@ subroutine muse_stepsys(tend,sync)
  integer :: stopping_index
  integer :: next_index_for_stopping_condition
  integer :: set_stopping_condition_info
+ integer :: set_stopping_condition_particle_index
  integer :: reset_stopping_conditions, error
+ real :: get_stopping_condition_out_of_box_parameter
  integer,save :: n=0
  
  number_of_steps_innerloop = 0
@@ -300,8 +304,10 @@ subroutine muse_stepsys(tend,sync)
  error = reset_stopping_conditions()
  error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, is_number_of_steps_detection_enabled)
  error = is_stopping_condition_enabled(TIMEOUT_DETECTION, is_timeout_detection_enabled)
+ error = is_stopping_condition_enabled(OUT_OF_BOX_DETECTION, is_out_of_box_detection_enabled)
  error = get_stopping_condition_number_of_steps_parameter(max_number_of_steps)
  error = get_stopping_condition_timeout_parameter(timeout)
+ error = get_stopping_condition_out_of_box_parameter(stop_boxsize)
  call SYSTEM_CLOCK(clock_init, count_rate, count_max)
 
  call corrpos(itimestp,'desync')
@@ -321,6 +327,17 @@ subroutine muse_stepsys(tend,sync)
          stopping_index = next_index_for_stopping_condition()
          error = set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION)
       endif
+   endif
+   if (is_out_of_box_detection_enabled.GT.0) then
+      i=0
+      do p=1,nbodies
+      if(sum(pos(p,1:3)**2).GT.stop_boxsize**2) then
+         i=i+1
+         stopping_index = next_index_for_stopping_condition()
+         error = set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION)
+         error = set_stopping_condition_particle_index(stopping_index, i, p)
+      endif
+      enddo
    endif
 
    if (is_any_condition_set().GT.0) exit

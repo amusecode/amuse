@@ -2176,6 +2176,7 @@ class Fi(GravitationalDynamics):
         object.add_setter('gas_particles', 'set_mass')
         object.add_getter('gas_particles', 'get_mass', names = ('mass',))
         object.add_getter('gas_particles', 'get_radius')
+        object.add_getter('gas_particles', 'set_radius')
         object.add_setter('gas_particles', 'set_position')
         object.add_getter('gas_particles', 'get_position')
         object.add_setter('gas_particles', 'set_velocity')
