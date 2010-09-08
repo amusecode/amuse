@@ -1,5 +1,6 @@
 from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.units import units
+from amuse.support.units import nbody_system as nbody
     
 class StoppingConditionInterface(object):
 
@@ -365,8 +366,8 @@ class StoppingConditions():
             "set_stopping_condition_out_of_box_parameter", 
             "stopping_conditions_out_of_box_size", 
             "size of cube", 
-            units.AU, 
-            1.0 |  units.AU
+            nbody.length, 
+            1.0 |  nbody.length
         )
         
     def define_methods(self, object):

@@ -661,8 +661,10 @@ int evolve_system(real t_end)
     int must_run = 1;
 
     int is_number_of_steps_detection_enabled;
+    int is_out_of_box_detection_enabled;
     int number_of_steps_innerloop = 0;
     int max_number_of_steps;
+    double out_of_box_detection_box_size;
     int error;
     
     // May be overkill to compute acc and jerk at start and end of
@@ -694,11 +696,14 @@ int evolve_system(real t_end)
 
     int timeout_detection;
     //
-    error = is_stopping_condition_enabled(TIMEOUT_DETECTION, &timeout_detection);
+    error = is_stopping_condition_enabled(TIMEOUT_DETECTION, 
+					  &timeout_detection);
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
 					  &is_number_of_steps_detection_enabled);
+    error = is_stopping_condition_enabled(OUT_OF_BOX_DETECTION,
+					  &is_out_of_box_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
-
+    get_stopping_condition_out_of_box_parameter(&out_of_box_detection_box_size);    
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
@@ -741,7 +746,9 @@ int evolve_system(real t_end)
 	      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
 	    }
 	  }
-
+	  if(is_out_of_box_detection_enabled) {
+	    //out_of_box_detection_box_size
+	  }
 	  // AMUSE STOPPING CONDITIONS
 	  
 	  if(set_conditions & enabled_conditions) {
@@ -1143,7 +1150,11 @@ int initialize_code()
     cerr <<"mpi rank: "<<mpi_rank<<", mpi size: "<<mpi_size<<endl;
     
     // AMUSE STOPPING CONDITIONS SUPPORT
-    supported_conditions = COLLISION_DETECTION_BITMAP | PAIR_DETECTION_BITMAP | TIMEOUT_DETECTION_BITMAP | NUMBER_OF_STEPS_DETECTION_BITMAP;
+    set_support_for_condition(COLLISION_DETECTION);
+    set_support_for_condition(PAIR_DETECTION);
+    set_support_for_condition(TIMEOUT_DETECTION);
+    set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
+    set_support_for_condition(OUT_OF_BOX_DETECTION);
     // -----------------------
     mpi_setup_stopping_conditions();
     return 0;
