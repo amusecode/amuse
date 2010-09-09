@@ -262,3 +262,159 @@ class InMemoryGridAttributeStorage(object):
 
 
 
+
+class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
+
+    
+
+    def __init__(self):
+        InMemoryAttributeStorage.__init__(self)
+        self.mapping_from_particle_to_index = {}
+
+    
+
+    def append_to_storage(self, keys, attributes, values):
+        for attribute, values_to_set in zip(attributes, values):
+            if attribute in self.mapping_from_attribute_to_quantities:
+                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+            else:
+                attribute_values = VectorQuantity.zeros(
+                    len(self.particle_keys),
+                    values_to_set.unit,
+                )
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+
+            attribute_values.extend(values_to_set)
+
+
+        old_length = len(self.particle_keys)
+        for attribute_values in self.mapping_from_attribute_to_quantities.values():
+            if len(attribute_values) == old_length:
+                zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
+                attribute_values.extend(zeros_for_concatenation)
+
+        index = len(self.particle_keys)
+        self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
+
+        
+
+        for particle_key in keys:
+            self.mapping_from_particle_to_index[particle_key] = index
+            index += 1
+
+            
+
+    
+
+    def _has_key(self, key):
+        return key in self.mapping_from_particle_to_index
+
+    def copy(self):
+        copy = InMemoryAttributeStorage()
+        copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
+        copy.particle_keys = self.particle_keys.copy()
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+            copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
+        return copy
+
+    def get_value_of(self, particle_key, attribute):
+        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+        index = self.mapping_from_particle_to_index[particle_key]
+        return attribute_values[index]
+
+    def get_indices_of(self, particles):
+        if particles is None:
+             return numpy.arange(0,len(self.particle_keys))
+    
+        mapping_from_particle_to_index = self.mapping_from_particle_to_index
+        result = numpy.zeros(len(particles),dtype='int32')
+        index = 0
+        for index, particle_key in enumerate(particles):
+            result[index] = mapping_from_particle_to_index[particle_key]
+            index += 1
+        
+        return result
+
+    def reindex(self):
+        new_index = {}
+        index = 0
+        for particle_key in self.particle_keys:
+            new_index[particle_key] = index
+            index += 1
+        
+        self.mapping_from_particle_to_index = new_index
+
+
+class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
+    
+    def __init__(self):
+        InMemoryAttributeStorage.__init__(self)
+        
+        self.sorted_keys = []
+        self.sorted_indices = []
+        self.keys_set = set([])
+    
+    def append_to_storage(self, keys, attributes, values):
+        for attribute, values_to_set in zip(attributes, values):
+            if attribute in self.mapping_from_attribute_to_quantities:
+                attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+            else:
+                attribute_values = VectorQuantity.zeros(
+                    len(self.particle_keys),
+                    values_to_set.unit,
+                )
+            
+                self.mapping_from_attribute_to_quantities[attribute] = attribute_values
+            attribute_values.extend(values_to_set)
+        
+        old_length = len(self.particle_keys)
+        for attribute_values in self.mapping_from_attribute_to_quantities.values():
+            if len(attribute_values) == old_length:
+                zeros_for_concatenation = VectorQuantity.zeros(len(keys), attribute_values.unit)
+                attribute_values.extend(zeros_for_concatenation)
+                
+        self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
+        self.reindex()
+            
+    
+    def _has_key(self, key):
+        return key in self.keys_set
+        
+    def copy(self):
+        copy = InMemoryAttributeStorage()
+        copy.sorted_keys = self.sorted_keys.copy()
+        copy.sorted_indices = self.sorted_indices.copy()
+        copy.keys_set = self.keys_set.copy()
+        copy.particle_keys = self.particle_keys.copy()
+        for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
+            copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
+        return copy
+        
+    def get_value_of(self, particle_key, attribute):
+        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+        
+        index = self.get_indices_of(particle_key)
+        
+        return attribute_values[index]
+   
+    def get_indices_of(self, particles):
+        if particles is None:
+            return numpy.arange(0,len(self.particle_keys))
+        
+        
+        indices = numpy.searchsorted(self.sorted_keys, particles)
+        return self.sorted_indices[indices]
+        
+        
+    def reindex(self):
+        self.sorted_indices = numpy.argsort(self.particle_keys, kind='mergesort')
+        self.sorted_keys = self.particle_keys[self.sorted_indices]       
+        self.keys_set = set(self.particle_keys)
+        
+
+        
+    def _get_value(self, particle_key, attribute):
+        attribute_values = self.mapping_from_attribute_to_quantities[attribute]
+        index = self.get_indices_of(particle_key)
+        return attribute_values[index]
+

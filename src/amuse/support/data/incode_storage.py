@@ -107,8 +107,11 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
         
         self.check_arguments(storage, indices, attributes_to_return)
         
-        return_value = self.method(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
-        
+        try:
+            return_value = self.method(*indices, **storage.extra_keyword_arguments_for_getters_and_setters)
+        except:
+            print self.method
+            raise
         return self.convert_return_value(return_value, storage, attributes_to_return)
     
 class ParticleSetAttributesMethod(ParticleMappingMethod):

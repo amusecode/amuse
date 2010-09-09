@@ -137,6 +137,11 @@ class CodeMethodWrapper(AbstractCodeMethodWrapper):
     def postcall(self, object):
         self.definition.postcall(self, object)
         
+
+    def __str__(self):
+        return 'wrapped<{0}>'.format(self.method)
+    
+    
 class CodeMethodWrapperDefinition(object):
     
     def check_wrapped_method(self, method):
