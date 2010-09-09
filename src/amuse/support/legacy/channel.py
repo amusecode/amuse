@@ -833,16 +833,24 @@ class MultiprocessingMPIChannel(MessageChannel):
             environment['PYTHONPATH'] = environment['PYTHONPATH'] + ':' +  self._extra_path_item(__file__)
         else:
             environment['PYTHONPATH'] =  self._extra_path_item(__file__)
-            
+         
+         
+        all_options = {}
+        for x in self.iter_options():
+            all_options[x.name] = getattr(self, x.name)
+        print repr(all_options)
+        
+          
         template = """from {3} import {4}
-m = channel.MultiprocessingMPIChannel('{0}',number_of_workers = {1})
+o = {1!r}
+m = channel.MultiprocessingMPIChannel('{0}',**o)
 m.run_mpi_channel('{2}')"""
         modulename = type(self).__module__
         packagagename, thismodulename = modulename.rsplit('.', 1)
         
         code_string = template.format(
             self.full_name_of_the_worker, 
-            self.number_of_workers, 
+            all_options, 
             self.name_of_the_socket,
             packagagename,
             thismodulename,
@@ -863,7 +871,7 @@ m.run_mpi_channel('{2}')"""
         self.process = None
         
     def run_mpi_channel(self, name_of_the_socket):
-        channel = MpiChannel(self.full_name_of_the_worker, number_of_workers = self.number_of_workers)
+        channel = MpiChannel(self.full_name_of_the_worker, **self._local_options)
         channel.start()
         socket = self._createAClientUNIXSocket(name_of_the_socket)
         try:
@@ -956,3 +964,16 @@ m.run_mpi_channel('{2}')"""
         
             
 
+
+    @option(choices=MessageChannel.DEBUGGERS.keys(), sections=("channel",))
+    def debugger(self):
+        """Name of the debugger to use when starting the code"""
+        return "none"
+    
+    
+
+    @option(type="boolean")
+    def check_mpi(self):
+        return True
+    
+    
