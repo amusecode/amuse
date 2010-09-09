@@ -664,9 +664,12 @@ int evolve_system(real t_end)
     int is_out_of_box_detection_enabled;
     int number_of_steps_innerloop = 0;
     int max_number_of_steps;
-    double out_of_box_detection_box_size;
+    double box_size;
+    double sqr_distance_wrt_origin;
     int error;
-    
+    int n = ident.size();//no particles
+    int n_particles_out_of_box = 0;
+    int i, k; 
     // May be overkill to compute acc and jerk at start and end of
     // this routine, as usually the stars won't have changed on
     // return.  This way, however, we can guarantee that the particles
@@ -703,7 +706,7 @@ int evolve_system(real t_end)
     error = is_stopping_condition_enabled(OUT_OF_BOX_DETECTION,
 					  &is_out_of_box_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);    
-    get_stopping_condition_out_of_box_parameter(&out_of_box_detection_box_size);    
+    get_stopping_condition_out_of_box_parameter(&box_size);    
     // AMUSE STOPPING CONDITIONS
     
     while (true) {
@@ -728,9 +731,6 @@ int evolve_system(real t_end)
 	  // compute_nn();
 	  
 	  // AMUSE STOPPING CONDITIONS
-	  // put expression in lib-fctn
-	  // is_stopping_condition_set(TIMEOUT_DETECTION, timeout_detection)
-	  // 
 	  if(timeout_detection) {
 	    time(&currenttime);
 	    cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
@@ -743,14 +743,32 @@ int evolve_system(real t_end)
 	    number_of_steps_innerloop++;
 	    if (number_of_steps_innerloop > max_number_of_steps) {
 	      int stopping_index  = next_index_for_stopping_condition();
-	      set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+	      set_stopping_condition_info(stopping_index, 
+					  NUMBER_OF_STEPS_DETECTION);
 	    }
 	  }
-	  if(is_out_of_box_detection_enabled) {
-	    //out_of_box_detection_box_size
+	  if (is_out_of_box_detection_enabled) {
+	    for (i = 0; i < n; i++) {
+		sqr_distance_wrt_origin = 0.0;
+		for (k = 0; k < NDIM; k++) {
+		    sqr_distance_wrt_origin += pos[i][k]*pos[i][k];
+		}
+		if ( sqr_distance_wrt_origin > box_size*box_size) {
+		    int stopping_index = next_index_for_stopping_condition();
+		    set_stopping_condition_info(stopping_index, 
+						OUT_OF_BOX_DETECTION);
+		    if (n_particles_out_of_box < 10) {
+			set_stopping_condition_particle_index(stopping_index,
+							      n_particles_out_of_box,
+							      ident[i]);
+			n_particles_out_of_box++;
+		    }
+		    else {
+			printf("Run out of storable out of box events\n");
+		    }
+		}
+	    }
 	  }
-	  // AMUSE STOPPING CONDITIONS
-	  
 	  if(set_conditions & enabled_conditions) {
 	    break;
 	  }

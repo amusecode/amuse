@@ -717,6 +717,7 @@ class TestFi(TestWithMPI):
         instance.stopping_conditions.out_of_box_detection.enable()
         instance.evolve_model(10 | nbody.time)
         self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
+        print instance.stopping_conditions.out_of_box_detection.particles
         self.assertTrue(instance.model_time < 10 | nbody.time)
 
         instance.stop()
