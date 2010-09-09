@@ -834,13 +834,18 @@ class MultiprocessingMPIChannel(MessageChannel):
         else:
             environment['PYTHONPATH'] =  self._extra_path_item(__file__)
             
-        template = """from amuse.support.legacy import channel
+        template = """from {3} import {4}
 m = channel.MultiprocessingMPIChannel('{0}',number_of_workers = {1})
 m.run_mpi_channel('{2}')"""
+        modulename = type(self).__module__
+        packagagename, thismodulename = modulename.rsplit('.', 1)
+        
         code_string = template.format(
             self.full_name_of_the_worker, 
             self.number_of_workers, 
-            self.name_of_the_socket
+            self.name_of_the_socket,
+            packagagename,
+            thismodulename,
         )
         self.process =  Popen([sys.executable, "-c", code_string], env = environment)
         self.client_socket, undef = self.server_socket.accept()
