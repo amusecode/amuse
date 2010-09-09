@@ -7,6 +7,9 @@ C===  particles previouisly selected are sync'd by a full GRAPE integration
       DOUBLE PRECISION dtcmax,ttmp
 
 !      IF (n_act_loc.LE.0) RETURN ! no sync'ing needed
+      IF (time_cur.EQ.0) RETURN 
+      ! no syncing needed, for ticket #147
+      ! log(0) is infinity and power fails
 
 C--------------------------------------------------------------------
 C---  predictor (for local active particles)

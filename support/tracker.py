@@ -292,7 +292,7 @@ class RunAllTestsOnASvnCommit(object):
     def get_author_date_and_msg_for(self, revision):
         process = subprocess.Popen(['svn','log', '-r', revision, '--xml'], cwd = self.working_directory, stdout = subprocess.PIPE)
         result, ignore = process.communicate()
-        
+        print result
         if not process.returncode == 0:
             raise Exception("could not retrieve log for revision {0}" + revision)
             
