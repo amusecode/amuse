@@ -1,6 +1,7 @@
 import ConfigParser
 import os.path
 import os
+from StringIO import StringIO
 
 from amuse.support.core import late
 from amuse.support import exceptions
@@ -77,6 +78,19 @@ class GlobalOptions(object):
                 return option.get_value(instance, x, self.config)
         return option.get_defaultvalue(instance)
         
+
+    def to_ini_string(self):
+        file = StringIO()
+        self.config.write(file)
+        return file.getvalue()
+    
+    
+
+    def read_from_ini_string(self, string):
+        file = StringIO(string)
+        self.config.readfp(file)
+    
+    
 class option(object):
     """Decorator to define an option
     

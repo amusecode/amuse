@@ -237,3 +237,13 @@ class OptionsTests(amusetest.TestCase):
                 
         instance = DecoratedMethods()
         self.assertEquals(instance.int_option, "1")
+
+    def test12(self):
+        global_options = options.GlobalOptions()
+        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        print global_options.to_ini_string()
+        ini_string = global_options.to_ini_string()
+        
+        self.assertTrue(ini_string.contains("= a string"))
+    
+    
