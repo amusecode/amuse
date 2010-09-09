@@ -259,3 +259,16 @@ class OptionalAttributes(object):
     def _local_options(self):
         return {}
     
+
+    
+
+    def iter_options(self):
+        cls = type(self)
+        for x in dir(cls):
+            if x.startswith('_'):
+                continue
+            value = getattr(cls,x)
+            if isinstance(value, option):
+                yield value
+    
+    

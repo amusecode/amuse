@@ -237,10 +237,13 @@ class OptionsTests(amusetest.TestCase):
                 
         instance = DecoratedMethods()
         self.assertEquals(instance.int_option, "1")
+        all_options = list(instance.iter_options())
+        self.assertEquals(len(all_options), 1)
+        self.assertEquals(all_options[0].name , "int_option")
 
     def test12(self):
         global_options = options.GlobalOptions()
-        global_options.config.readfp(StringIO.StringIO(self.ini_contents))
+        global_options.read_from_ini_string(self.ini_contents)
         print global_options.to_ini_string()
         ini_string = global_options.to_ini_string()
         
