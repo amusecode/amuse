@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy
+import time
 from amuse.test.amusetest import TestWithMPI
 
 from amuse.legacy.fi.interface import FiInterface, Fi
@@ -539,7 +540,7 @@ class TestFi(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def test11(self):
+    def xtest11(self):
         print "Test 11: testing Fi (dm+sph+star) particles Superset"
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)
@@ -684,16 +685,21 @@ class TestFi(TestWithMPI):
         particles.vz =  0 | nbody.speed
         particles.mass = 1.0 | nbody.mass
 
+        very_short_time_to_evolve = 1 | units.s
+        very_long_time_to_evolve = 1e9 | nbody.time
+
         instance = Fi()
         instance.initialize_code()
-        instance.parameters.stopping_conditions_timeout = 0.1 | units.s
-        self.assertEquals(instance.parameters.stopping_conditions_timeout, 0.1 | units.s)
+        instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve
+        self.assertEquals(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
         instance.parameters.epsilon_squared = (0.01 | nbody.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.timeout_detection.enable()
-        instance.evolve_model(10 | nbody.time)
+        start = time.time()
+        instance.evolve_model(very_long_time_to_evolve)
+        end = time.time()
         self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
-        self.assertTrue(instance.model_time < 10 | nbody.time)
+        self.assertTrue((end-start)<very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
 
         instance.stop()
 
@@ -759,7 +765,7 @@ class TestFi(TestWithMPI):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         instance.stop()
     
-    def test15(self):
+    def xtest15(self):
         print "Testing Fi get_hydro_state_at_point II: uniform sphere"
         number_sph_particles = 1000
         convert_nbody = nbody.nbody_to_si(1.0 | units.kpc, 1.0e10 | units.MSun)

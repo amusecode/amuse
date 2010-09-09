@@ -1,8 +1,10 @@
+
 # -*- coding: utf-8 -*-
 from amuse.test.amusetest import TestWithMPI
 import os
 import sys
 import numpy
+import time
 import math
 
 from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
@@ -750,4 +752,32 @@ class TestBHTree(TestWithMPI):
         instance.evolve_model(10 | nbody_system.time)
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         self.assertTrue(instance.model_time < 10 | nbody_system.time)
+        instance.stop()
+
+    def test19(self):
+        particles = core.Particles(2)
+        particles.x = [0.0,10.0] | nbody_system.length
+        particles.y = 0.0 | nbody_system.length
+        particles.z = 0.0 | nbody_system.length
+        particles.radius = 0.005 | nbody_system.length
+        particles.vx =  0.0 | nbody_system.speed
+        particles.vy =  0.0 | nbody_system.speed
+        particles.vz =  0.0 | nbody_system.speed
+        particles.mass = 1.0 | nbody_system.mass
+
+        very_short_time_to_evolve = 1 | units.s
+        very_long_time_to_evolve = 1e9 | nbody_system.time
+       
+        instance = BHTree()
+        instance.initialize_code()
+        instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve 
+        self.assertEquals(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
+        instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
+        instance.particles.add_particles(particles) 
+        instance.stopping_conditions.timeout_detection.enable()
+        start = time.time()
+        instance.evolve_model(very_long_time_to_evolve)
+        end = time.time()
+        self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
+        self.assertTrue((end-start) < very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
         instance.stop()

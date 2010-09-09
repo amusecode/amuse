@@ -253,7 +253,9 @@ int evolve(real t_end)                // default sync = 0
     int number_of_steps_innerloop = 0;
     int error;
     time_t starttime, currenttime;
+
     time(&starttime);
+
     error = is_stopping_condition_enabled(TIMEOUT_DETECTION, &is_timeout_detection_enabled);
     error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, &is_number_of_steps_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
@@ -275,7 +277,7 @@ int evolve(real t_end)                // default sync = 0
         // AMUSE STOPPING CONDITIONS
         if(is_timeout_detection_enabled) {
             time(&currenttime);
-            cerr << currenttime << " : " << starttime << " : " << timeout_parameter << " : " << (currenttime - starttime) << endl;
+            //cerr << currenttime << endl;
             if((currenttime - starttime) > timeout_parameter) {
                 int stopping_index  = next_index_for_stopping_condition();
                 set_stopping_condition_info(stopping_index, TIMEOUT_DETECTION);

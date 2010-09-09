@@ -1,6 +1,6 @@
 import os
 import sys
-
+import time
 from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 
 from amuse.support.data import core
@@ -583,16 +583,21 @@ class TestPhigrape(TestWithMPI):
         particles.vy =  0 | nbody_system.speed
         particles.vz =  0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
-       
+
+        very_short_time_to_evolve = 1 | units.s
+        very_long_time_to_evolve = 1e9 | nbody_system.time
+
         instance = PhiGRAPE()
         instance.initialize_code()
-        instance.parameters.stopping_conditions_timeout = 1 | units.s
-        self.assertEquals(instance.parameters.stopping_conditions_timeout, 1 | units.s)
+        instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve
+        self.assertEquals(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
         instance.stopping_conditions.timeout_detection.enable()
-        instance.evolve_model(1000 | nbody_system.time)
+        start = time.time()
+        instance.evolve_model(very_long_time_to_evolve)
+        end = time.time()
         self.assertTrue(instance.stopping_conditions.timeout_detection.is_set())
-        self.assertTrue(instance.model_time < 1000 | nbody_system.time)
+        self.assertTrue((end-start)<very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
 
         instance.stop()

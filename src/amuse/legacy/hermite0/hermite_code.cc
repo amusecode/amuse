@@ -753,7 +753,7 @@ int evolve_system(real t_end)
 		for (k = 0; k < NDIM; k++) {
 		    sqr_distance_wrt_origin += pos[i][k]*pos[i][k];
 		}
-		if ( sqr_distance_wrt_origin > box_size*box_size) {
+		if (sqr_distance_wrt_origin > box_size*box_size) {
 		    int stopping_index = next_index_for_stopping_condition();
 		    set_stopping_condition_info(stopping_index, 
 						OUT_OF_BOX_DETECTION);
