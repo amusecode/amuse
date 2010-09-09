@@ -2176,7 +2176,7 @@ class Fi(GravitationalDynamics):
         object.add_setter('gas_particles', 'set_mass')
         object.add_getter('gas_particles', 'get_mass', names = ('mass',))
         object.add_getter('gas_particles', 'get_radius')
-        object.add_getter('gas_particles', 'set_radius')
+        object.add_setter('gas_particles', 'set_radius')
         object.add_setter('gas_particles', 'set_position')
         object.add_getter('gas_particles', 'get_position')
         object.add_setter('gas_particles', 'set_velocity')
@@ -2201,7 +2201,7 @@ class Fi(GravitationalDynamics):
         object.add_getter('star_particles', 'get_velocity')
         object.add_setter('star_particles', 'set_star_tform')
         object.add_getter('star_particles', 'get_star_tform')
-
+    
         #self.stopping_conditions.define_particle_set(object, 'dm_particles')
         #self.stopping_conditions.define_particle_set(object, 'gas_particles')
         self.stopping_conditions.define_particle_set(object, 'star_particles')
