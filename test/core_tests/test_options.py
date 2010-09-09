@@ -244,6 +244,6 @@ class OptionsTests(amusetest.TestCase):
         print global_options.to_ini_string()
         ini_string = global_options.to_ini_string()
         
-        self.assertTrue(ini_string.contains("= a string"))
+        self.assertTrue(ini_string.find("= a string") > 0)
     
     
