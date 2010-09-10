@@ -2,17 +2,16 @@
 Integrate a Fortran 90 code
 ===========================
 
-In this tutorial we will create an AMUSE interface to 
-a fortran 90 code. We will first define the
-legacy interface, then implement the code and
-finally build an object oriented interface on top of the legacy interface.
+In this tutorial we will create an AMUSE interface to a fortran 90 
+code. We will first define the legacy interface, then implement the 
+code and finally build an object oriented interface on top of the 
+legacy interface.
 
-
-The legacy code interface supports methods that tranfer values
-to and from the code. The values do not have any units and
-no error handling is provided by the interface. We can error handling, unit handling
-and more functions to the legacy interface by defining a CodeInterface (this is the 
-objected oriented interface).
+The legacy code interface supports methods that transfer values to 
+and from the code. The values do not have any units and no error 
+handling is provided by the interface. We can add error handling, unit 
+handling and more functions to the legacy interface by defining a 
+subclass of a CodeInterface (this is the objected oriented interface).
 
 .. graphviz::
 
@@ -24,7 +23,6 @@ objected oriented interface).
         "Legacy Code" -> "Legacy Interface" -> "Object Oriented Interface" -> "Script";
     }
 
-
 The legacy code in this tutorial will be a very simple and naive
 implementation to find 3 nearest neighbors of a particle.
 
@@ -32,28 +30,27 @@ Two paths
 ---------
 When defining the interface will walk 2 paths:
 
-1. Management of particles or grids in AMUSE (python)
-2. Management of particles or grids in the code (C or Fortran)
+1. Management of particles in AMUSE (python)
+2. Management of particles in the code (C or Fortran)
 
-The first path makes sense for legacy codes that perform a
-transformation on the particles, or analyse the particles state
-or do not store any internal state between function calls (all data is external).
-For every function of the code, data of every particle is send to the code. If we 
-expect multiple calls the code would incur a high communication overhead and we are better 
-of choosing path 2.
+The first path makes sense for legacy codes that perform a 
+transformation on the particles, or analyse the particles state or 
+do not store any internal state between function calls (all data is 
+external). For every function of the code, data of every particle is 
+send to the code. If we expect multiple calls, the code would incur a 
+high communication overhead and we are better of choosing path 2.
 
-The second path makes sense for codes that already have management of a 
-particles (or grid) or were we want to call multiple functions of the code
-and need to send the complete model to code for every function call. The
-code is first given the data, then calls are made to the code to evolve
-it's model or perform reduction steps on the data, finally the updated data is 
-retrieved from the code. 
+The second path makes sense for codes that already have management 
+of a particles (or grid) or were we want to call multiple functions 
+of the code and need to send the complete model to code for every 
+function call. The code is first given the data, then calls are made 
+to the code to evolve it's model or perform reduction steps on the 
+data, finally the updated data is retrieved from the code. 
 
 Procedure
 ---------
 
-The suggested procedure for creating a new interface is
-as follows:
+The suggested procedure for creating a new interface is as follows:
 
 0. **Legacy Interface.** Start with creating the legacy 
    interface. Define functions on the interface to input and
@@ -77,15 +74,15 @@ as follows:
 Before we start
 ---------------
 
-This tutorial asumes you have a working amuse environment. Please ensure
-that amuse is setup correctly by running 'nosetests' in the amuse
-directory.
+This tutorial asumes you have a working amuse environment. Please 
+ensure that amuse is setup correctly by running 'nosetests' in the 
+amuse directory.
 
 Environment variables
 ~~~~~~~~~~~~~~~~~~~~~
-To simplify the work in the coming sections, we first 
-define the environment variable 'AMUSEDIR'. This environment variable
-must point to the root directory of AMUSE (this is the directory
+To simplify the work in the coming sections, we first define the 
+environment variable 'AMUSEDIR'. This environment variable must 
+point to the root directory of AMUSE (this is the directory 
 containing the build.py script).
 
 .. code-block:: bash
@@ -98,9 +95,9 @@ or in a c shell:
 
     > setenv AMUSEDIR <path to the amuse root directory>
 
-After building the code, we want to run and test the code. 
-Check if amuse is available in your python path by running the 
-following code on the command line.
+After building the code, we want to run and test the code. Check if 
+amuse is available in your python path by running the following code 
+on the command line.
 
 .. code-block:: bash
 
@@ -109,9 +106,9 @@ following code on the command line.
     File "<string>", line 1, in <module>
     ImportError: No module named amuse
     
-If this code ends in a "ImportError" as shown in the example, the
-PYTHONPATH environment variable must be extended with the AMUSEDIR. We can do
-so by using one of the following commands.
+If this code ends in a "ImportError" as shown in the example, the 
+PYTHONPATH environment variable must be extended with the AMUSEDIR. 
+We can do so by using one of the following commands.
 
 .. code-block:: bash
 
@@ -131,19 +128,18 @@ so let's call our project 'NearestNeighbor'.
 
 Creating the initial directory structure
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-First we need to create a directory for our project and put
-some files in it to help build the code. This is described in
-the *"Create an Interface to a Legacy Code"* tutorial. The fastest
-method to setup the directory is by using the build.py script.
+First we need to create a directory for our project and put some 
+files in it to help build the code. The fastest method to setup the 
+directory is by using the build.py script.
 
 .. code-block:: bash
 
     > $AMUSEDIR/build.py --type=f90 --mode=dir NearestNeighbor
 
-The script will generate a directory with all the files needed
-to start our project. It has also generates a very small legacy
-code with only one function ```echo_int```. We can build
-and test our new module::
+The script will generate a directory with all the files needed to 
+start our project. It has also generates a very small legacy code 
+with only one function ```echo_int```. We can build and test our new 
+module::
 
     > cd nearestneighbor/
     > make all
@@ -167,18 +163,19 @@ and test our new module::
 
 The Legacy Code
 ---------------
-Normally the legacy code already exists and our task is limited to
-defining and implementing an interface so that AMUSE scripts can
+Normally the legacy code already exists and our task is limited to 
+defining and implementing an interface so that AMUSE scripts can 
 access the code. For this tutorial we will implement our legacy code.
 
-When a legacy code is integrated all interface code is put in 
-one directory and all the legacy code is put in a **src** directory
-placed under this directory. The build.py script created a 
-**src** directory for us, and we will put the nearest neighbor algorithm
-in this directory.
+When a legacy code is integrated all interface code is put in one 
+directory and all the legacy code is put in a **src** directory 
+placed under this directory. The build.py script created a **src** 
+directory for us, and we will put the nearest neighbor algorithm in 
+this directory.
 
-Go to the **src** directory and create a **code.f90** file, open this
-file in your favorite editor and copy and paste this code into it:
+Go to the **src** directory and create a **code.f90** file, open 
+this file in your favorite editor and copy and paste this code into 
+it:
     
 .. literalinclude:: nearestneighbor/code.f90
     :language: fortran
@@ -189,10 +186,9 @@ file in your favorite editor and copy and paste this code into it:
     This algorithm is un-optimized and has N*N order. It is not meant
     as very efficient code but as a readable example.
 
-Before we can continue we also need to alter the **Makefile** in the
-**src** directory, so that our **code.cc** file is included in the
-build. To do so, open an editor on the Makefile and change 
-the line::
+Before we can continue we also need to alter the **Makefile** in the 
+**src** directory, so that our **code.cc** file is included in the 
+build. To do so, open an editor on the Makefile and change the line::
 
     CODEOBJS = test.o
 
@@ -202,8 +198,9 @@ to::
     
 
 Test if the code builds. As we have not coupled our algorithm to the 
-interface we (we have not even defined an interface) we do not have any new
-functionality. In the legacy interface directory (not the **src** directory) do:
+interface we (we have not even defined an interface) we do not have 
+any new functionality. In the legacy interface directory (not the 
+**src** directory) do:
 
 .. code-block:: bash
 
@@ -215,15 +212,17 @@ functionality. In the legacy interface directory (not the **src** directory) do:
 
     OK
 
+It works, if the test fails for any reason please check that the fortran
+code is correct and that ``worker_code`` exists in your directory.
 
 Path 1
 ------
 
 Defining the legacy interface
------------------------------
-We will first define a legacy interface to be able to call the 
-**find_nearest_neighbors** function. AMUSE can interact with
-2 classes of functions:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+We will first define a legacy interface so that we can call the 
+**find_nearest_neighbors** function from python. AMUSE can interact 
+with 2 classes of functions:
 
 1. A function with all scalar input and output variables. All variables
    are simple, non-composite variables (like INTEGER or DOUBLE PRECISION).
@@ -241,7 +240,117 @@ We will first define a legacy interface to be able to call the
         
 2. A function with all vector (or list) input and output variables and
    a length variable. The return value is a scalar value.
+   For example:
+   
+   .. code-block:: fortran
+    
+        FUNCTION example2(input, output, N)
+            IMPLICIT NONE
+            INTEGER example2, N, i
+            DOUBLE PRECISION input(N), output(N)
+            DO i = 1, N
+                output(i) = input(i)
+            END DO
+            example2 = 0
+        END FUNCTION
 
+If you have functions that don't follow this pattern you need to 
+define a convert function in fortran that provides an interface 
+following one of the two patterns supported by AMUSE.
+
+In our case the **find_nearest_neighbors** complies to pattern 2 and
+we do not have to write any code in fortran to convert the function
+to a compliant interface. We only have to specify the function in 
+python. We do so by adding a **find_nearest_neighbors** method to
+the **NearestNeighborInterface** class in the **interface.py** file.
+Open and editor on the interfaces.py file and add the following method
+to the NearestNeighborInterface class:
+
+
+.. code-block:: python
+
+    class NearestNeighborInterface(LegacyInterface):    
+        #...
+        
+        @legacy_function
+        def find_nearest_neighbors():
+            function = LegacyFunctionSpecification()  
+            function.must_handle_array = True 
+            function.addParameter('npoints', dtype='int32', direction=function.LENGTH)
+            function.addParameter('x', dtype='float64', direction=function.IN)
+            function.addParameter('y', dtype='float64', direction=function.IN)
+            function.addParameter('z', dtype='float64', direction=function.IN)
+            function.addParameter('n0', dtype='int32', direction=function.OUT)
+            function.addParameter('n1', dtype='int32', direction=function.OUT)
+            function.addParameter('n2', dtype='int32', direction=function.OUT)
+            function.result_type = 'int32'
+            return function
+            
+In the *find_nearest_neighbors* method we specify every parameter of 
+the fortran function and the result type. For each parameter we need 
+to define a name, data type and wether we will input, output (or 
+input and output) data using this parameter. AMUSE knows only a 
+limited amount of data types for parameters: float64, float32, int32 
+and string. We also have a special parameter, with LENGTH as 
+direction. This parameter is needed for all functions that follow 
+pattern 2, it will be filled with the length of the input arrays. We 
+also must specify that the function follows pattern 2 by setting 
+```function.must_handle_array = True```.
+
+Save the file and recompile the code.
+
+.. code-block:: bash
+
+    > make clean
+    > make all
+    > nosetests
+    .
+    ----------------------------------------------------------------------
+    Ran 1 test in 0.427s
+
+    OK
+
+It works! But, how do we know the find_nearest_neighbors method really works?
+Let's write a test and find out. Open an editor on the *test_nearestneighbor.py*
+file and add the following method to the **NearestNeighborInterfaceTests** class:
+
+.. code-block:: python
+
+    def test2(self):
+        instance = NearestNeighborInterface()
+        x = [0.0, 1.0, 4.0, 7.5]
+        y = [0.0] * len(x)
+        z = [0.0] * len(x)
+        
+        n0, n1, n2, error = instance.find_nearest_neighbors(x,y,z)
+        
+        self.assertEquals(error[0], 0)
+        self.assertEquals(n0, [2,1,2,3])
+        self.assertEquals(n1, [3,3,4,2])
+        self.assertEquals(n2, [4,4,1,1])
+        
+        instance.stop()
+
+This test calls the *find_nearest_neighbors* method with 4 positions
+and checks if the nearest neighbors are determined correctly.
+Let's run the test, and see if everything is working:
+
+.. code-block:: bash
+
+    > nosetests
+    ..
+    ----------------------------------------------------------------------
+    Ran 2 test in 0.491s
+
+    OK
+
+We now have a simple interface that works, but we have to do our own 
+indexing after the call and we could send data of any unit to the
+method, also we have to do our own error checking after the method. Let's
+define a object oriented interface to solve these problems
+
+Defining the Object Oriented Interface
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 Path 2
