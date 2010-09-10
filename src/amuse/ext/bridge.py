@@ -86,6 +86,7 @@
 
 from amuse.support.units import units
 from amuse.support.data import core
+from amuse.support.data import values
 import threading
 
 def potential_energy(system, get_potential):
@@ -109,9 +110,10 @@ class bridge(object):
     self.systems=set()
     self.partners=dict()
     self.time_offsets=dict()
-    self.time=0. | units.s
+    self.time=values.zero
     self.do_sync=dict()
     self.verbose=verbose
+    self.timestep=None
   
   def add_system(self, interface,  partners=set(),do_sync=True):
     """
@@ -134,7 +136,11 @@ class bridge(object):
     evolve combined system to tend, timestep fixes timestep
     """
     if timestep is None:
-      timestep=tend-self.time
+      if self.timestep is None:
+        timestep=tend-self.time
+      else:
+        timestep = self.timestep
+        
     while self.time < tend:    
       dt=min(timestep,tend-self.time)
       self.kick_systems(dt/2)   
@@ -179,7 +185,7 @@ class bridge(object):
     
   @property
   def potential_energy(self):
-    Ep=0. | units.kg* (units.m/units.s)**2
+    Ep=values.zero
     for x in self.systems:
       Ep+=x.potential_energy
       if hasattr(x,"particles"):
@@ -189,7 +195,7 @@ class bridge(object):
   
   @property
   def kinetic_energy(self):  
-    Ek=0. | units.kg* (units.m/units.s)**2
+    Ek=values.zero
     for x in self.systems:
       Ek+=x.kinetic_energy
     return Ek
