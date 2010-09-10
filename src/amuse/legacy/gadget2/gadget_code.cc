@@ -236,32 +236,32 @@ int commit_particles(){
     return 0;
 }
 int recommit_particles(){
-    struct particle_data Pcurrent;
-    struct sph_particle_data SphPcurrent;
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
     double a3;
     if (particles_initialized){
         for (vector<dynamics_state>::iterator state_iter = ds.begin(); state_iter != ds.end(); state_iter++){
             if(!(find_particle((*state_iter).id, &Pcurrent))){
-                (*state_iter).mass = Pcurrent.Mass;
-                (*state_iter).x = Pcurrent.Pos[0];
-                (*state_iter).y = Pcurrent.Pos[1];
-                (*state_iter).z = Pcurrent.Pos[2];
-                (*state_iter).vx = Pcurrent.Vel[0];
-                (*state_iter).vy = Pcurrent.Vel[1];
-                (*state_iter).vz = Pcurrent.Vel[2];
+                (*state_iter).mass = Pcurrent->Mass;
+                (*state_iter).x = Pcurrent->Pos[0];
+                (*state_iter).y = Pcurrent->Pos[1];
+                (*state_iter).z = Pcurrent->Pos[2];
+                (*state_iter).vx = Pcurrent->Vel[0];
+                (*state_iter).vy = Pcurrent->Vel[1];
+                (*state_iter).vz = Pcurrent->Vel[2];
             }
         }
         if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
         for (vector<sph_state>::iterator state_iter = sph_ds.begin(); state_iter != sph_ds.end(); state_iter++){
             if(!(find_particle((*state_iter).id, &Pcurrent)) && !(find_sph_particle((*state_iter).id, &SphPcurrent))){
-                (*state_iter).mass = Pcurrent.Mass;
-                (*state_iter).x = Pcurrent.Pos[0];
-                (*state_iter).y = Pcurrent.Pos[1];
-                (*state_iter).z = Pcurrent.Pos[2];
-                (*state_iter).vx = Pcurrent.Vel[0];
-                (*state_iter).vy = Pcurrent.Vel[1];
-                (*state_iter).vz = Pcurrent.Vel[2];
-                (*state_iter).u = SphPcurrent.Entropy * pow(SphPcurrent.Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+                (*state_iter).mass = Pcurrent->Mass;
+                (*state_iter).x = Pcurrent->Pos[0];
+                (*state_iter).y = Pcurrent->Pos[1];
+                (*state_iter).z = Pcurrent->Pos[2];
+                (*state_iter).vx = Pcurrent->Vel[0];
+                (*state_iter).vy = Pcurrent->Vel[1];
+                (*state_iter).vz = Pcurrent->Vel[2];
+                (*state_iter).u = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
             }
         }
         free_memory();
@@ -630,14 +630,14 @@ int get_index_of_first_particle(int *index_of_the_particle){
     return get_index_of_next_particle(0, index_of_the_particle);
 }
 int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next_particle){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     bool found = false;
     for (int i = index_of_the_particle+1; i <= particles_counter; i++){
         if (!(find_particle(i, &Pcurrent))) {
             if (found){
                 return 0;
             } else {
-                *index_of_the_next_particle = Pcurrent.ID;
+                *index_of_the_next_particle = Pcurrent->ID;
                 found = true;
             }
         }
@@ -645,36 +645,36 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
     if (found) return 1; // This was the last particle.
     return -1; // No particle found.
 }
-int find_particle(int index_of_the_particle, struct particle_data *Pfound){
+int find_particle(int index_of_the_particle, struct particle_data **Pfound){
     for(int i = 0; i < All.TotNumPart; i++){
         if(P[i].ID == (unsigned int) index_of_the_particle){
-            *Pfound = P[i];
+            *Pfound = &P[i];
             return 0;
         }
     }
     return -1;
 }
-int find_sph_particle(int index_of_the_particle, struct sph_particle_data *SphPfound){
+int find_sph_particle(int index_of_the_particle, struct sph_particle_data **SphPfound){
     for(int i = 0; i < All.TotN_gas; i++){
         if(P[i].ID == (unsigned int) index_of_the_particle){
-            *SphPfound = SphP[i];
+            *SphPfound = &SphP[i];
             return 0;
         }
     }
     return -1;
 }
 int get_mass(int index, double *mass){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        *mass = Pcurrent.Mass;
+        *mass = Pcurrent->Mass;
         return 0;
     }
     return -1;
 }
 int set_mass(int index, double mass){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        Pcurrent.Mass = mass;
+        Pcurrent->Mass = mass;
         return 0;
     }
     return -1;
@@ -686,125 +686,125 @@ int set_radius(int index, double radius){
     return -1;
 }
 int get_position(int index, double *x, double *y, double *z){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        *x = Pcurrent.Pos[0];
-        *y = Pcurrent.Pos[1];
-        *z = Pcurrent.Pos[2];
+        *x = Pcurrent->Pos[0];
+        *y = Pcurrent->Pos[1];
+        *z = Pcurrent->Pos[2];
         return 0;
     }
     return -1;
 }
 int set_position(int index, double x, double y, double z){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        Pcurrent.Pos[0] = x;
-        Pcurrent.Pos[1] = y;
-        Pcurrent.Pos[2] = z;
+        Pcurrent->Pos[0] = x;
+        Pcurrent->Pos[1] = y;
+        Pcurrent->Pos[2] = z;
         return 0;
     }
     return -1;
 }
 int get_velocity(int index, double *vx, double *vy, double *vz){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        *vx = Pcurrent.Vel[0];
-        *vy = Pcurrent.Vel[1];
-        *vz = Pcurrent.Vel[2];
+        *vx = Pcurrent->Vel[0];
+        *vy = Pcurrent->Vel[1];
+        *vz = Pcurrent->Vel[2];
         return 0;
     }
   return -1;
 }
 int set_velocity(int index, double vx, double vy, double vz){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        Pcurrent.Vel[0] = vx;
-        Pcurrent.Vel[1] = vy;
-        Pcurrent.Vel[2] = vz;
+        Pcurrent->Vel[0] = vx;
+        Pcurrent->Vel[1] = vy;
+        Pcurrent->Vel[2] = vz;
         return 0;
     }
     return -1;
 }
 int get_state(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz) {
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        *mass = Pcurrent.Mass;
-        *x = Pcurrent.Pos[0];
-        *y = Pcurrent.Pos[1];
-        *z = Pcurrent.Pos[2];
-        *vx = Pcurrent.Vel[0];
-        *vy = Pcurrent.Vel[1];
-        *vz = Pcurrent.Vel[2];
+        *mass = Pcurrent->Mass;
+        *x = Pcurrent->Pos[0];
+        *y = Pcurrent->Pos[1];
+        *z = Pcurrent->Pos[2];
+        *vx = Pcurrent->Vel[0];
+        *vy = Pcurrent->Vel[1];
+        *vz = Pcurrent->Vel[2];
         return 0;
     }
     return -1;
 }
 int set_state(int index, double mass, double x, double y, double z, double vx, double vy, double vz){
-    struct particle_data Pcurrent;
+    struct particle_data *Pcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        Pcurrent.Mass = mass;
-        Pcurrent.Pos[0] = x;
-        Pcurrent.Pos[1] = y;
-        Pcurrent.Pos[2] = z;
-        Pcurrent.Vel[0] = vx;
-        Pcurrent.Vel[1] = vy;
-        Pcurrent.Vel[2] = vz;
+        Pcurrent->Mass = mass;
+        Pcurrent->Pos[0] = x;
+        Pcurrent->Pos[1] = y;
+        Pcurrent->Pos[2] = z;
+        Pcurrent->Vel[0] = vx;
+        Pcurrent->Vel[1] = vy;
+        Pcurrent->Vel[2] = vz;
         return 0;
     }
     return -1;
 }
 int get_state_sph(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy) {
-    struct particle_data Pcurrent;
-    struct sph_particle_data SphPcurrent;
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
     double a3;
     if(!(find_sph_particle(index, &SphPcurrent))){
         if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        *internal_energy = SphPcurrent.Entropy * pow(SphPcurrent.Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+        *internal_energy = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
         if(!(find_particle(index, &Pcurrent))){
-            *mass = Pcurrent.Mass;
-            *x = Pcurrent.Pos[0];
-            *y = Pcurrent.Pos[1];
-            *z = Pcurrent.Pos[2];
-            *vx = Pcurrent.Vel[0];
-            *vy = Pcurrent.Vel[1];
-            *vz = Pcurrent.Vel[2];
+            *mass = Pcurrent->Mass;
+            *x = Pcurrent->Pos[0];
+            *y = Pcurrent->Pos[1];
+            *z = Pcurrent->Pos[2];
+            *vx = Pcurrent->Vel[0];
+            *vy = Pcurrent->Vel[1];
+            *vz = Pcurrent->Vel[2];
             return 0;
         }
     }
     return -1;
 }
 int set_state_sph(int index, double mass, double x, double y, double z, double vx, double vy, double vz, double internal_energy){
-    struct particle_data Pcurrent;
-    struct sph_particle_data SphPcurrent;
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
     double a3;
     if(!(find_sph_particle(index, &SphPcurrent))){
         if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        SphPcurrent.Entropy = GAMMA_MINUS1 * internal_energy / pow(SphPcurrent.Density / a3, GAMMA_MINUS1);
+        SphPcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(SphPcurrent->Density / a3, GAMMA_MINUS1);
         if(!(find_particle(index, &Pcurrent))){
-            Pcurrent.Mass = mass;
-            Pcurrent.Pos[0] = x;
-            Pcurrent.Pos[1] = y;
-            Pcurrent.Pos[2] = z;
-            Pcurrent.Vel[0] = vx;
-            Pcurrent.Vel[1] = vy;
-            Pcurrent.Vel[2] = vz;
+            Pcurrent->Mass = mass;
+            Pcurrent->Pos[0] = x;
+            Pcurrent->Pos[1] = y;
+            Pcurrent->Pos[2] = z;
+            Pcurrent->Vel[0] = vx;
+            Pcurrent->Vel[1] = vy;
+            Pcurrent->Vel[2] = vz;
             return 0;
         }
     }
     return -1;
 }
 int get_acceleration(int index, double * ax, double * ay, double * az){
-    struct particle_data Pcurrent;
-    struct sph_particle_data SphPcurrent;
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
     if(!(find_particle(index, &Pcurrent))){
-        *ax = Pcurrent.GravAccel[0];
-        *ay = Pcurrent.GravAccel[1];
-        *az = Pcurrent.GravAccel[2];
-        if(Pcurrent.Type == 0){
+        *ax = Pcurrent->GravAccel[0];
+        *ay = Pcurrent->GravAccel[1];
+        *az = Pcurrent->GravAccel[2];
+        if(Pcurrent->Type == 0){
             if(!(find_sph_particle(index, &SphPcurrent))){
-                *ax += SphPcurrent.HydroAccel[0];
-                *ay += SphPcurrent.HydroAccel[1];
-                *az += SphPcurrent.HydroAccel[2];
+                *ax += SphPcurrent->HydroAccel[0];
+                *ay += SphPcurrent->HydroAccel[1];
+                *az += SphPcurrent->HydroAccel[2];
             }
         }
         return 0;
@@ -815,57 +815,57 @@ int set_acceleration(int index, double ax, double ay, double az){
     return -1;
 }
 int get_internal_energy(int index, double *internal_energy){
-    struct sph_particle_data Pcurrent;
+    struct sph_particle_data *Pcurrent;
     double a3;
     if(!(find_sph_particle(index, &Pcurrent))){
         if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        *internal_energy = Pcurrent.Entropy * pow(Pcurrent.Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+        *internal_energy = Pcurrent->Entropy * pow(Pcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
         return 0;
     }
     return -1;
 }
 int set_internal_energy(int index, double internal_energy){
-    struct sph_particle_data Pcurrent;
+    struct sph_particle_data *Pcurrent;
     double a3;
     if(!(find_sph_particle(index, &Pcurrent))){
         if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        Pcurrent.Entropy = GAMMA_MINUS1 * internal_energy / pow(Pcurrent.Density / a3, GAMMA_MINUS1);
+        Pcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(Pcurrent->Density / a3, GAMMA_MINUS1);
         return 0;
     }
     return -1;
 }
 int get_smoothing_length(int index, double *smoothing_length){
-    struct sph_particle_data Pcurrent;
+    struct sph_particle_data *Pcurrent;
     if (!(find_sph_particle(index, &Pcurrent))){
         if (!density_up_to_date){
             density();
             density_up_to_date = true;
         }
-        *smoothing_length = Pcurrent.Hsml;
+        *smoothing_length = Pcurrent->Hsml;
         return 0;
     }
     return -1;
 }
 int get_density(int index, double *density_out){
-    struct sph_particle_data Pcurrent;
+    struct sph_particle_data *Pcurrent;
     if (!(find_sph_particle(index, &Pcurrent))){
         if (!density_up_to_date){
             density();
             density_up_to_date = true;
         }
-        *density_out = Pcurrent.Density;
+        *density_out = Pcurrent->Density;
         return 0;
     }
     return -1;
 }
 int get_n_neighbours(int index, double *n_neighbours){
-    struct sph_particle_data Pcurrent;
+    struct sph_particle_data *Pcurrent;
     if (!(find_sph_particle(index, &Pcurrent))){
         if (!density_up_to_date){
             density();
             density_up_to_date = true;
         }
-        *n_neighbours = Pcurrent.NumNgb;
+        *n_neighbours = Pcurrent->NumNgb;
         return 0;
     }
     return -1;

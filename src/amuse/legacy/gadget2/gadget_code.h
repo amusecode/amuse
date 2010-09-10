@@ -24,8 +24,8 @@ typedef struct {
 extern "C" void   begrun(void);
 extern "C" double second(void);
 
-int find_particle(int index_of_the_particle, struct particle_data *Pfound);
-int find_sph_particle(int index_of_the_particle, struct sph_particle_data *SphPfound);
+int find_particle(int index_of_the_particle, struct particle_data **Pfound);
+int find_sph_particle(int index_of_the_particle, struct sph_particle_data **SphPfound);
 
 extern "C" void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out,
   FLOAT *ngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out,

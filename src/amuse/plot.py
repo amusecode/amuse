@@ -52,6 +52,27 @@ def plot(*args, **kwargs):
     native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
     native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
 
+def semilogx(*args, **kwargs):
+    UnitlessArgs.strip(*args, **kwargs)
+    args = UnitlessArgs.stripped_args
+    native_plot.semilogx(*args, **kwargs)
+    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
+    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+
+def semilogy(*args, **kwargs):
+    UnitlessArgs.strip(*args, **kwargs)
+    args = UnitlessArgs.stripped_args
+    native_plot.semilogy(*args, **kwargs)
+    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
+    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+
+def loglog(*args, **kwargs):
+    UnitlessArgs.strip(*args, **kwargs)
+    args = UnitlessArgs.stripped_args
+    native_plot.loglog(*args, **kwargs)
+    native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
+    native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+
 def scatter(x, y, s=20, c='b', marker='o', cmap=None, norm=None, vmin=None, vmax=None, alpha=1.0, linewidths=None, faceted=True, verts=None, hold=None, **kwargs):
     UnitlessArgs.strip(x,y)
     args = UnitlessArgs.stripped_args

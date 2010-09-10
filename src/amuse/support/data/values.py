@@ -570,8 +570,11 @@ class VectorQuantity(Quantity):
     def transpose(self, axes=None):
         return VectorQuantity(self.number.transpose(axes), self.unit)
     
-    def mean(self):
-        return ScalarQuantity(self._number.mean(), self.unit)
+    def mean(self, **kwargs):
+        return new_quantity(self.number.mean(**kwargs), self.unit)
+    
+    def median(self, **kwargs):
+        return new_quantity(numpy.median(self.number, **kwargs), self.unit)
     
     
 class ZeroQuantity(Quantity):

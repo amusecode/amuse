@@ -133,19 +133,21 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     def get_state_sph():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         for x in ['mass','x','y','z','vx','vy','vz','u']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.result_type = 'i'
+            function.addParameter(x, dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
         return function
     @legacy_function    
     def set_state_sph():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         for x in ['mass','x','y','z','vx','vy','vz','u']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.result_type = 'i'
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
         return function
     
     @legacy_function
@@ -518,7 +520,6 @@ class Gadget2(GravitationalDynamics):
         object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
         object.add_method('EDIT', 'new_sph_particle')
         object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
-        object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
         object.add_method('RUN', 'get_smoothing_length')
@@ -899,6 +900,18 @@ class Gadget2(GravitationalDynamics):
                 generic_unit_system.speed,
                 generic_unit_system.speed,
                 generic_unit_system.speed,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_acceleration",
+            (
+                object.INDEX,
+            ),
+            (
+                generic_unit_system.acceleration,
+                generic_unit_system.acceleration,
+                generic_unit_system.acceleration,
                 object.ERROR_CODE
             )
         )

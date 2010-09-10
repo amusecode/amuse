@@ -3,12 +3,12 @@ from amuse.test.amusetest import get_path_to_results, TestWithMPI
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
-    from amuse.plot import plot, xlabel, ylabel
+    from amuse.plot import plot, semilogy, xlabel, ylabel
 except ImportError:
     HAS_MATPLOTLIB = False
 
 from amuse.support.data.core import Particles, Particle
-from amuse.support.units import units, generic_unit_system, nbody_system
+from amuse.support.units import units, generic_unit_system, nbody_system, constants
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.legacy.mesa.interface import MESA
 from amuse.legacy.gadget2.interface import Gadget2
@@ -253,18 +253,21 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed=12345
         )
+        temperature = stellar_evolution.particles[0].get_temperature_profile()
+        mu          = stellar_evolution.particles[0].get_mu_profile()
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
         stellar_evolution.stop()
         sph_midpoints = sph_particles.position.lengths()
         
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "test_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_9_composition_h1.png")
         )
         composition_comparison_plot(
             midpoints, composition[2], 
             sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "test_composition_he4.png")
+            os.path.join(get_path_to_results(), "star2sph_test_9_composition_he4.png")
         )
         
         
@@ -279,12 +282,17 @@ class TestStellarModel2SPH(TestWithMPI):
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "test_relaxed_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_9_relaxed_composition_h1.png")
         )
         composition_comparison_plot(
             midpoints, composition[2], 
             sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "test_relaxed_composition_he4.png")
+            os.path.join(get_path_to_results(), "star2sph_test_9_relaxed_composition_he4.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, sph_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_9_relaxed_composition_u.png")
         )
     
     def slowtest10(self):
@@ -310,18 +318,21 @@ class TestStellarModel2SPH(TestWithMPI):
             seed=12345, 
             mode = "random sampling"
         )
+        temperature = stellar_evolution.particles[0].get_temperature_profile()
+        mu          = stellar_evolution.particles[0].get_mu_profile()
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
         stellar_evolution.stop()
         sph_midpoints = sph_particles.position.lengths()
         
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "test_rs_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_rs_composition_h1.png")
         )
         composition_comparison_plot(
             midpoints, composition[2], 
             sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "test_rs_composition_he4.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_rs_composition_he4.png")
         )
         
         
@@ -336,12 +347,17 @@ class TestStellarModel2SPH(TestWithMPI):
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "test_rs_relaxed_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_rs_relaxed_composition_h1.png")
         )
         composition_comparison_plot(
             midpoints, composition[2], 
             sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "test_rs_relaxed_composition_he4.png")
+            os.path.join(get_path_to_results(), "star2sph_test_10_rs_relaxed_composition_he4.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, sph_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_10_rs_relaxed_composition_u.png")
         )
         
         
@@ -356,28 +372,33 @@ class TestStellarModel2SPH(TestWithMPI):
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.setup_particles(stars)
         stellar_evolution.initialize_stars()
-        number_of_sph_particles = 1000
+        stellar_evolution.evolve_model(10.0 | units.Gyr)
+        
+        composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
+        outer_radii = stellar_evolution.particles[0].get_radius_profile()
+        outer_radii.append(0.0 | units.m)
+        midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
+        temperature = stellar_evolution.particles[0].get_temperature_profile()
+        mu          = stellar_evolution.particles[0].get_mu_profile()
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
+        
+        number_of_sph_particles = 10000
         print "Creating initial conditions from a MESA stellar evolution model:"
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
         gas = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
-            seed=12345
+            seed=12345,
+            mode = "scaling method"
         )
         stellar_evolution.stop()
         
-        t_end = 1000.0 | units.s
+        t_end = 1.0e4 | units.s
         print "Evolving to:", t_end
         n_steps = 100
         
-        gas.radius = 0.01 | units.RSun # Fi uses radius as smoothing length. Like Gadget2, we use 0.01 | generic length
-        
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
         hydro_legacy_code = Gadget2(unit_converter)
-        try:
-            hydro_legacy_code.parameters.timestep = t_end / n_steps
-        except Exception as exc:
-            if not "parameter is read-only" in str(exc): raise
         hydro_legacy_code.gas_particles.add_particles(gas)
         
         times = [] | units.Myr
@@ -390,9 +411,26 @@ class TestStellarModel2SPH(TestWithMPI):
             kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
             potential_energies.append( hydro_legacy_code.potential_energy)
             thermal_energies.append(   hydro_legacy_code.thermal_energy)
-        hydro_legacy_code.stop()
+        
+        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "test_gadget_star2sph.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_energy_evolution.png"))
+        composition_comparison_plot(
+            midpoints, composition[0], 
+            sph_midpoints, gas.h1, 
+            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_composition_h1.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, gas.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_original_u.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, hydro_legacy_code.gas_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_new_u.png")
+        )
+        hydro_legacy_code.stop()
         print "All done!\n"
          
     def slowtest12(self):
@@ -416,12 +454,12 @@ class TestStellarModel2SPH(TestWithMPI):
         )
         stellar_evolution.stop()
         
-        t_end = 10.0 | units.s
+        t_end = 1000.0 | units.s
         n_steps = 100
         
         print "Evolving to:", t_end
         
-        gas.radius = 0.01 | units.RSun # Fi uses radius as smoothing length. Like Gadget2, we use 0.01 | generic length
+        gas.h_smooth = 0.01 | units.RSun
         
         unit_converter = nbody_system.nbody_to_si(1000.0 | units.s, 1.0 | units.RSun)
         hydro_legacy_code = Fi(unit_converter)
@@ -443,7 +481,132 @@ class TestStellarModel2SPH(TestWithMPI):
             thermal_energies.append(   hydro_legacy_code.thermal_energy)
         hydro_legacy_code.stop()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "test_fi_star2sph.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_12_fi_star2sph.png"))
+        print "All done!\n"
+    
+    def slowtest13(self):
+        print "Test convert_stellar_model_to_SPH with scaling method and relaxation"
+        stellar_evolution = self.new_instance(MESA)
+        if stellar_evolution is None:
+            print "MESA was not built. Skipping test."
+            return
+        stars =  Particles(1)
+        stars.mass = 1.0 | units.MSun
+        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.setup_particles(stars)
+        stellar_evolution.initialize_stars()
+        stellar_evolution.evolve_model(10.0 | units.Gyr)
+        composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
+        outer_radii = stellar_evolution.particles[0].get_radius_profile()
+        outer_radii.append(0.0 | units.m)
+        midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
+        temperature = stellar_evolution.particles[0].get_temperature_profile()
+        mu          = stellar_evolution.particles[0].get_mu_profile()
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
+        
+        number_of_sph_particles = 10000 # only few particles for test speed-up
+        print "Creating initial conditions from a MESA stellar evolution model:"
+        print stars.mass[0], "star consisting of", number_of_sph_particles, "particles, with relaxation turned ON."
+        sph_particles = convert_stellar_model_to_SPH(
+            stellar_evolution.particles[0], 
+            number_of_sph_particles, 
+            seed = 12345,
+            mode = "scaling method",
+            do_relax = True
+        )
+        sph_midpoints = sph_particles.position.lengths()
+        
+        composition_comparison_plot(
+            midpoints, composition[0], 
+            sph_midpoints, sph_particles.h1, 
+            os.path.join(get_path_to_results(), "star2sph_test_13_relax_h1.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, sph_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_13_relax_u.png")
+        )
+    
+    def slowtest14(self):
+        print "Test convert_stellar_model_to_SPH with scaling method and relaxation, and subsequently relax with Gadget2"
+        stellar_evolution = self.new_instance(MESA)
+        if stellar_evolution is None:
+            print "MESA was not built. Skipping test."
+            return
+        stars =  Particles(1)
+        stars.mass = 1.0 | units.MSun
+        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.setup_particles(stars)
+        stellar_evolution.initialize_stars()
+        stellar_evolution.evolve_model(10.0 | units.Gyr)
+        composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
+        outer_radii = stellar_evolution.particles[0].get_radius_profile()
+        outer_radii.append(0.0 | units.m)
+        midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
+        temperature = stellar_evolution.particles[0].get_temperature_profile()
+        mu          = stellar_evolution.particles[0].get_mu_profile()
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
+        
+        number_of_sph_particles = 10000 # only few particles for test speed-up
+        print "Creating initial conditions from a MESA stellar evolution model:"
+        print stars.mass[0], "star consisting of", number_of_sph_particles, "particles, with relaxation turned ON."
+        sph_particles = convert_stellar_model_to_SPH(
+            stellar_evolution.particles[0], 
+            number_of_sph_particles, 
+            seed = 12345,
+            mode = "scaling method",
+            do_relax = True
+        )
+        sph_midpoints = sph_particles.position.lengths()
+        
+        composition_comparison_plot(
+            midpoints, composition[0], 
+            sph_midpoints, sph_particles.h1, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_before_h1.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, sph_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_before_u.png")
+        )
+        t_end = 1.0e4 | units.s
+        print "Evolving to:", t_end
+        n_steps = 100
+        
+        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
+        hydro_legacy_code = Gadget2(unit_converter)
+        hydro_legacy_code.gas_particles.add_particles(sph_particles)
+        
+        times = [] | units.Myr
+        kinetic_energies =   [] | units.J
+        potential_energies = [] | units.J
+        thermal_energies =   [] | units.J
+        for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
+            hydro_legacy_code.evolve_model(time)
+            times.append(time)
+            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
+            potential_energies.append( hydro_legacy_code.potential_energy)
+            thermal_energies.append(   hydro_legacy_code.thermal_energy)
+        
+        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
+        energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_energy_evolution.png"))
+        composition_comparison_plot(
+            midpoints, composition[0], 
+            sph_midpoints, sph_particles.h1, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_h1.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, sph_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_original_u.png")
+        )
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, hydro_legacy_code.gas_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_new_u.png")
+        )
+        hydro_legacy_code.stop()
         print "All done!\n"
     
 
@@ -459,6 +622,20 @@ def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname)
     pyplot.legend()
     pyplot.savefig(figname)
     print "\nPlot of composition profiles was saved to: ", figname
+    pyplot.close()
+
+def internal_energy_comparison_plot(radii_SE, u_SE, radii_SPH, u_SPH, figname):
+    if not HAS_MATPLOTLIB:
+        return
+    pyplot.figure(figsize = (7, 5))
+    semilogy(radii_SE.as_quantity_in(units.RSun), u_SE, 
+        label='stellar evolution model')
+    semilogy(radii_SPH, u_SPH, 'go', label='SPH model')
+    xlabel('radius')
+    ylabel('internal energy')
+    pyplot.legend()
+    pyplot.savefig(figname)
+    print "\nPlot of internal energy profiles was saved to: ", figname
     pyplot.close()
 
 def energy_plot(time, E_kin, E_pot, E_therm, figname):

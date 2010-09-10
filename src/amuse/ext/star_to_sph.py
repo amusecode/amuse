@@ -3,16 +3,23 @@ from amuse.support.data.core import Particles
 from amuse.support.units import units, constants
 from amuse.support.exceptions import AmuseWarning, AmuseException
 from amuse.ext.spherical_model import new_spherical_particle_distribution
+from amuse.legacy.gadget2.interface import Gadget2
+from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 
 
 class StellarModel2SPH(object):
-    def __init__(self, particle, number_of_sph_particles, seed = None, mode = "scaling method"):
+    def __init__(self, particle, number_of_sph_particles, seed = None, mode = "scaling method", 
+            do_relax = False, sph_legacy_code = Gadget2, compatible_converter = ConvertBetweenGenericAndSiUnits):
         self.particle = particle
         self.number_of_sph_particles = number_of_sph_particles
         self.zone_index = None
         self.delta      = None
         numpy.random.seed(seed)
         self.mode = mode  # "random sampling" or "scaling method"
+        
+        self.do_relax = do_relax
+        self.sph_legacy_code = sph_legacy_code # used to relax the SPH model
+        self.compatible_converter = compatible_converter
     
     def retrieve_stellar_structure(self):
         self.number_of_zones   = self.particle.get_number_of_zones().number
@@ -132,10 +139,50 @@ class StellarModel2SPH(object):
         sph_particles.composition = composition
         return sph_particles
     
+    def relax(self, particles):
+        num_iterations = 40
+        max_delta = 0.005  # maximum change to particle positions relative to its smoothing length
+        
+        result = []
+        previous_acc = 0 | units.m / units.s**2
+        unit_converter = self.compatible_converter(self.particle.radius, self.particle.mass, 1.0e-3 | units.s)
+        hydro_legacy_code = self.sph_legacy_code(unit_converter)
+        hydro_legacy_code.gas_particles.add_particles(particles)
+        
+        for i in range(1, num_iterations+1):
+            hydro_legacy_code.evolve_model(i * (1.0e-5 | units.s))
+            accelerations     = hydro_legacy_code.gas_particles.acceleration
+            acc_correlated = (previous_acc * accelerations).sum() / (accelerations * accelerations).sum()
+            if (acc_correlated < 0.5 | units.none and i > 2):
+                break
+            
+            previous_acc = accelerations
+            internal_energies = hydro_legacy_code.gas_particles.u
+            smoothing_lengths = hydro_legacy_code.gas_particles.h_smooth
+            factor = numpy.minimum((max_delta * internal_energies / (accelerations.lengths() * smoothing_lengths)).value_in(units.none), 0.5)
+            result.append(str(i) + ": Accelerations correlated: " + str(acc_correlated) + ", median factor: " + str(numpy.median(factor)))
+            
+            particles.position += accelerations * ((smoothing_lengths * smoothing_lengths * factor) / 
+                internal_energies).reshape((self.number_of_sph_particles, 1))
+            hydro_legacy_code.gas_particles.position = particles.position
+            hydro_legacy_code.gas_particles.velocity = particles.velocity
+        
+        particles.u = hydro_legacy_code.gas_particles.u
+        hydro_legacy_code.stop()
+        if i == num_iterations:
+            print "\nUnable to converge to stable SPH model within {0} iterations.".format(num_iterations)
+        else:
+            print "\nSuccessfully converged to stable SPH model within {0} iterations.".format(i-1)
+        return result
+    
     @property
     def result(self):
         self.retrieve_stellar_structure()
-        return self.convert_to_SPH()
+        sph_particles = self.convert_to_SPH()
+        if self.do_relax:
+            for result_string in self.relax(sph_particles):
+                print result_string
+        return sph_particles
     
 
 """

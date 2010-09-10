@@ -186,6 +186,55 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals(0, instance.evolve(0.0004))
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
+    
+    def test8(self):
+        instance = Gadget2Interface(**default_options)
+        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEquals(0, instance.commit_parameters())
+        for i in range(1,10):
+            self.assertEquals([i, 0], instance.new_dm_particle(i*0.01,  i, -i, 0,  -i*10, i*10, 0).values())
+        self.assertEquals(0, instance.commit_particles())
+        
+        for i in range(1,10):
+            mass, result = instance.get_mass(i)
+            self.assertAlmostEquals(0.01*i,mass)
+            self.assertEquals(0,result)
+            
+            x, y, z, result = instance.get_position(i)
+            self.assertAlmostEquals(i, x)
+            self.assertAlmostEquals(-i, y)
+            self.assertAlmostEquals(0, z)
+            self.assertEquals(0,result)
+            
+            vx, vy, vz, result = instance.get_velocity(i)
+            self.assertAlmostEquals(-i*10, vx)
+            self.assertAlmostEquals(i*10, vy)
+            self.assertAlmostEquals(0, vz)
+            self.assertEquals(0,result)
+            
+            self.assertEquals(0, instance.set_mass(i, i*0.1))
+            mass, result = instance.get_mass(i)
+            self.assertAlmostEquals(0.1*i,mass)
+            self.assertEquals(0,result)
+            
+            self.assertEquals(0, instance.set_position(i, 2*i, -2*i, 0))
+            x, y, z, result = instance.get_position(i)
+            self.assertAlmostEquals(2*i, x)
+            self.assertAlmostEquals(-2*i, y)
+            self.assertAlmostEquals(0, z)
+            self.assertEquals(0,result)
+            
+            self.assertEquals(0, instance.set_velocity(i, -i*20, i*20, 0))
+            vx, vy, vz, result = instance.get_velocity(i)
+            self.assertAlmostEquals(-i*20, vx)
+            self.assertAlmostEquals(i*20, vy)
+            self.assertAlmostEquals(0, vz)
+            self.assertEquals(0,result)
+        
+        self.assertEquals(0, instance.cleanup_code())
+        instance.stop()
 
 class TestGadget2(TestWithMPI):
 
