@@ -486,7 +486,7 @@ class TestGadget2(TestWithMPI):
     def test13(self):
         print "Testing Gadget get_hydro_state_at_point II: uniform sphere"
         number_sph_particles = 1000
-        gas = new_uniform_spherical_particle_distribution(number_sph_particles, self.UnitLength, self.UnitMass, seed = 1234)
+        gas = new_uniform_spherical_particle_distribution(number_sph_particles, self.UnitLength, self.UnitMass)
         gas.velocity = [10.0, 20.0, 30.0] | units.km / units.s
         gas.u = 0.05 | generic_unit_system.specific_energy
         density = (1.0e10 | units.MSun) / (4.0/3.0 * numpy.pi * (1.0 | units.kpc)**3)

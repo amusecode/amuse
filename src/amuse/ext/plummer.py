@@ -108,19 +108,19 @@ class MakePlummerModel(object):
         return result
         
     
-"""
-Create a plummer sphere with the given number of particles. Returns
-a set of stars with equal mass and positions and velocities distributed
-to fit a plummer star distribution model. The model is centered around the 
-origin. Positions and velocities are optionally scaled such that the kinetic and 
-potential energies are 0.25 and -0.5 in nbody-units, respectively.
-
-:argument number_of_particles: Number of particles to include in the plummer sphere
-:argument convert_nbody:  When given will convert the resulting set to SI units
-:argument radius_cutoff: Cutoff value for the radius (defaults to 22.8042468)
-:argument mass_cutoff: Mass percentage inside radius of 1
-:argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
-"""
 def new_plummer_sphere(number_of_particles, *list_arguments, **keyword_arguments):
+    """
+    Create a plummer sphere with the given number of particles. Returns
+    a set of stars with equal mass and positions and velocities distributed
+    to fit a plummer star distribution model. The model is centered around the 
+    origin. Positions and velocities are optionally scaled such that the kinetic and 
+    potential energies are 0.25 and -0.5 in nbody-units, respectively.
+    
+    :argument number_of_particles: Number of particles to include in the plummer sphere
+    :argument convert_nbody:  When given will convert the resulting set to SI units
+    :argument radius_cutoff: Cutoff value for the radius (defaults to 22.8042468)
+    :argument mass_cutoff: Mass percentage inside radius of 1
+    :argument do_scale: scale the result to exact nbody units (M=1, K=0.25, U=-0.5)
+    """
     uc = MakePlummerModel(number_of_particles, *list_arguments, **keyword_arguments)
     return uc.result

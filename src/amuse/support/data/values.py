@@ -493,6 +493,20 @@ class VectorQuantity(Quantity):
         """
         self._number = numpy.concatenate((self._number, vector_quantity.value_in(self.unit)))
     
+    def prepend(self, scalar_quantity):
+        """
+        Prepend the scalar quantity before this vector.
+        If the units differ, the scalar_quantity argument
+        is converted to the units of this vector.
+
+        >>> from amuse.support.units import units
+        >>> vector1 = [1.0, 2.0, 3.0] | units.kg
+        >>> vector1.prepend(0.0 | units.kg)
+        >>> print vector1
+        [0.0, 1.0, 2.0, 3.0] kg
+        """
+        self._number = numpy.concatenate(([scalar_quantity.value_in(self.unit)], self._number))
+    
     def min(self, other):
         """
         Return the minimum of self and the argument.

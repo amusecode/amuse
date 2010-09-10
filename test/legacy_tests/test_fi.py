@@ -137,7 +137,7 @@ class TestFiInterface(TestWithMPI):
         length = 1.0 | units.kpc
         mass = 1.0e9 | units.MSun
         
-        gas = new_uniform_spherical_particle_distribution(number_sph_particles, length, mass, seed = 1234)
+        gas = new_uniform_spherical_particle_distribution(number_sph_particles, length, mass)
         mass = [1.0 / number_sph_particles] * number_sph_particles
         h    = [0.01] * number_sph_particles
         x, y, z = gas.x.value_in(units.kpc), gas.y.value_in(units.kpc), gas.z.value_in(units.kpc)
