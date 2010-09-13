@@ -9,7 +9,7 @@ class generic_unit(core.base_unit):
         self.unit_in_si = unit_in_si
 
     def __str__(self):
-        return 'generic '+self.unit_in_si.quantity
+        return self.unit_in_si.quantity
 
 
     def is_generic(self):

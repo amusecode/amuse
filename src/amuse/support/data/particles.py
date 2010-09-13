@@ -185,8 +185,9 @@ class AbstractParticleSet(AbstractSet):
             yield Particle(key,original_set)
 
     def __getitem__(self, index):
-        if isinstance(index, slice):
-            return self._subset(self._get_keys()[index])
+        keys = self._get_keys()[index]
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
         else:
             return Particle(self._get_keys()[index], self._original_set())
         
@@ -1141,12 +1142,12 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     ...     convert_nbody.as_converter_from_si_to_nbody())
     ...
     >>> print particles_nbody.x
-    [10.0, 20.0] nbody length
+    [10.0, 20.0] length
     >>> print particles_si.x
     [50.0, 100.0] m
     >>> particles_si.x = [200.0, 400.0] | units.m
     >>> print particles_nbody.x
-    [40.0, 80.0] nbody length
+    [40.0, 80.0] length
 
     
     """

@@ -550,7 +550,7 @@ class TestParameters(amusetest.TestCase):
         self.assertTrue("test_name" in x.__doc__)
         self.assertTrue("a test parameter" in x.__doc__)
         self.assertTrue("default" in x.__doc__)
-        self.assertTrue("11.0 nbody length" in x.__doc__)
+        self.assertTrue("11.0 length" in x.__doc__)
 
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
         y = parameters.ParametersWithUnitsConverted(
@@ -587,7 +587,7 @@ class TestParameters(amusetest.TestCase):
 
 
         self.assertTrue("test_name" in str(x))
-        self.assertTrue("123.0 nbody length" in str(x))
+        self.assertTrue("123.0 length" in str(x))
 
         convert_nbody = nbody_system.nbody_to_si(2.0 | units.m, 4.0 | units.kg)
         y = parameters.ParametersWithUnitsConverted(
@@ -629,7 +629,7 @@ class TestParameters(amusetest.TestCase):
         x = parameters.Parameters([phys_parameter_definition, nbody_parameter_definition], o)
 
         self.assertTrue("nbody_test_name" in str(x))
-        self.assertTrue("123.0 nbody length" in str(x))
+        self.assertTrue("123.0 length" in str(x))
         self.assertTrue("phys_test_name" in str(x))
         self.assertTrue("123.0 m" in str(x))
 
@@ -679,7 +679,7 @@ class TestParameters(amusetest.TestCase):
 
 
         self.assertTrue("nbody_par_name" in str(x))
-        self.assertTrue("123.0 nbody length" in str(x))
+        self.assertTrue("123.0 length" in str(x))
         self.assertTrue("string_par_name" in str(x))
         self.assertTrue("1230.0" in str(x))
 
