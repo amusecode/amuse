@@ -415,6 +415,8 @@ class TestStellarModel2SPH(TestWithMPI):
         sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_energy_evolution.png"))
+        thermal_energy_plot(times, thermal_energies, 
+            os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_thermal_energy_evolution.png"))
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, gas.h1, 
@@ -591,6 +593,8 @@ class TestStellarModel2SPH(TestWithMPI):
         sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_energy_evolution.png"))
+        thermal_energy_plot(times, thermal_energies, 
+            os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_thermal_energy_evolution.png"))
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, sph_particles.h1, 
@@ -651,5 +655,17 @@ def energy_plot(time, E_kin, E_pot, E_therm, figname):
     pyplot.legend(loc=3)
     pyplot.savefig(figname)
     print "\nPlot of energy evolution was saved to: ", figname
+    pyplot.close()
+
+def thermal_energy_plot(time, E_therm, figname):
+    if not HAS_MATPLOTLIB:
+        return
+    pyplot.figure(figsize = (5, 5))
+    plot(time, E_therm.as_quantity_in(units.erg), label='E_therm')
+    xlabel('Time')
+    ylabel('Energy')
+    pyplot.legend(loc=3)
+    pyplot.savefig(figname)
+    print "\nPlot of thermal energy evolution was saved to: ", figname
     pyplot.close()
     
