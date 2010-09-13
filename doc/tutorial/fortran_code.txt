@@ -107,7 +107,8 @@ on the command line.
     ImportError: No module named amuse
     
 If this code ends in a "ImportError" as shown in the example, the 
-PYTHONPATH environment variable must be extended with the AMUSEDIR. 
+PYTHONPATH environment variable must be extended with the src directory
+in AMUSEDIR. 
 We can do so by using one of the following commands.
 
 .. code-block:: bash
@@ -351,6 +352,274 @@ define a object oriented interface to solve these problems
 
 Defining the Object Oriented Interface
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The object oriented interface sits on top of the legacy interface.
+It decorates this interface with sets, unit handling, state engine
+and more. We start creating the object oriented interfacy by inheriting
+from CodeInterface and writing the __init__ function. The build script
+has added this class to the interface.py file for us. Open an editor
+on interface.py and make sure this code is in the file (at the end
+of the file):
+
+.. code-block:: python
+
+    
+    class NearestNeighbor(CodeInterface):
+
+        def __init__(self):
+            CodeInterface.__init__(self,  NearestNeighborInterface())
+
+Configuring the handlers
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+We configure the object oriented interfacy by implementing several 
+methods. The object oriented interface is implement by several 
+"handlers". Each handler provides support for a specific aspect of 
+the interface. AMUSE defines a handler for the unit conversion, a 
+handler for the interfacing with sets of particles, a handler to 
+ensure the methods are called in the right order, etc. Each handler 
+is very generic and needs to be configured before use. The handler 
+are configured using the "Visitor" pattern. The following 
+pseudo-code shows how the handlers are configured
+
+.. code-block:: python
+
+    class CodeInterface(object):
+        #...
+        
+        def configure_handlers(self):
+            #...
+            for handler in self.get_all_handlers():
+                handler.configure(self)
+        
+        def define_converter(self, handler):
+            """ configure the units converter handler """
+            
+            handler.set_nbody_converter(...)
+            
+        def define_particle_sets(self, handler):
+            """ configure sets of particles """
+            
+            handler.define_incode_particle_set(...)
+            handler.set_getter(...)
+            
+    class HandleConvertUnits(AbstractHandler):
+        #...
+        
+        def configure(self, interface):
+            interface.define_converter(self)
+            
+    class HandleParticles(AbstractHandler):
+        #...
+        
+        def configure(self, interface):
+            interface.define_particle_sets(self)
+            
+            
+Configuration of the handlers is optional, we only have to define
+those handler that we need in our interface. In our example we need
+to configure the "HandleMethodsWithUnits" handler (to define units and
+error handling) and the "HandleParticles" to define a particle set.
+
+Defining methods with units
++++++++++++++++++++++++++++
+
+We first want to add units and error handling to the 
+**find_nearest_neighbors**. We do this by creating a **define_methods**
+function on the **NearestNeighbor** class. Open an editor on
+ *particles.py* and add this method to the class:
+
+.. code-block:: python
+
+    def define_methods(self, handler):
+        
+        handler.add_method(
+            "find_nearest_neighbors",
+            (
+                generic_unit_system.length,
+                generic_unit_system.length,
+                generic_unit_system.length,
+            ),
+            (
+                handler.INDEX,
+                handler.INDEX,
+                handler.INDEX,
+                handler.ERROR_CODE
+            )
+        )
+        
+The **add_method** call expects the name of the function in the
+legacy interface as it's first, next it expects a list of the units
+of the input parameters and a list of the units of the output parameters.
+The return value of a function is always the last item in the list
+of output parameters. We specify a **generic_unit_system.length** unit
+for the x, y and z parameters. The output parameters are indices and 
+an errorcode. The errorcode will be handled by the AMUSE interface (0
+means success and < 0 means raise an exception).
+
+Let's write a test to see if it works, open an editor on the 
+test_nearestneighbor.py class and add this method:
+
+.. code-block:: python
+
+    def test3(self):
+        instance = NearestNeighbor()
+        x = [0.0, 1.0, 4.0, 7.5] | generic_unit_system.length
+        y = [0.0] * len(x) | generic_unit_system.length
+        z = [0.0] * len(x) | generic_unit_system.length
+        
+        n0, n1, n2 = instance.find_nearest_neighbors(x,y,z)
+        
+        self.assertEquals(n0, [2,1,2,3])
+        self.assertEquals(n1, [3,3,4,2])
+        self.assertEquals(n2, [4,4,1,1])
+        
+        instance.stop()
+
+.. note::
+    This test looks a lot like test2, but we now have to
+    define a unit and we do not need to handle the errorcode.
+    
+Now build and test the code:
+
+.. code-block:: bash
+    
+    > make clean; make all
+    > nosetests
+    ...
+    ----------------------------------------------------------------------
+    Ran 3 tests in 0.650s
+
+    OK
+    
+.. note::
+    
+    Although we only edited python code we still need to run make. The
+    code will check if the "worker_code" executable is up to date on 
+    every run. It cannot detect if the update broke the code but it
+    will still demand that the code is rebuilt.
+    
+
+Defining the particle set
++++++++++++++++++++++++++
+
+Partcle sets in AMUSE can be handled by python (we call these 
+"inmemory") and by the legacy code (we call these "incode"). In our 
+case the code does not handle the particles and we need to 
+configure the particles handler to manage an inmemory particle set. 
+Open an editor on *particles.py* and add this method to the 
+**NearestNeighbor** class:
+
+.. code-block:: python
+
+    def define_particle_sets(self, object):
+        object.define_inmemory_set('particles')
+
+That's all we now have a "particles" attribute on the class and 
+we can add, remove, delete particles from this set. But we are
+still missing a connection between the particles and the nearest 
+neighbors. AMUSE provides no handler for this, instead, we 
+will write a method to run the find_nearest_neighbors function and
+set the indices on the particles set.
+
+Open an editor on *particles.py* and add this method to the 
+**NearestNeighbor** class:
+
+.. code-block:: python
+
+    
+    def run(self):
+        indices0, indices1, indices2 = self.find_nearest_neighbors(
+            self.particles.x,
+            self.particles.y,
+            self.particles.z
+        )
+        self.particles.neighbor0 = self.particles[indices0 - 1]
+        self.particles.neighbor1 = self.particles[indices1 - 1]
+        self.particles.neighbor2 = self.particles[indices2 - 1]
+        
+This function gets the "x", "y" and "z" attributes from the particles
+set and sends these to the "find_nearest_neighbors" method. This methods
+returns 3 lists of indices and we need to find the particles with
+these indices. As this is fortran code (indices start with 1) and we use
+python (indices start with 0) we need to subtract 1 from the array of
+indices and use this to find the particles.
+
+.. note::
+    
+    Particle sets have no given sequence, deletion and addition of 
+    particles will change the order of the particles in the set. It
+    is therefor never a good idea to use th index of the particle in the
+    set as a reference to that particle. However, in the "run" method
+    we "own" the particle set, it cannot change between the find_nearest_neighbor
+    call and the moment we find the particles in the set by index (using
+    self.particles[indices0-1]), and in this case it is save to use
+    index as a valid reference.
+
+Let's write a test and see if it works, open an editor on the 
+test_nearestneighbor.py class and add this method:
+    
+    def test4(self):
+        instance = NearestNeighbor()
+        
+        particles = core.Particles(4)
+        particles.x = [0.0, 1.0, 4.0, 7.5] | generic_unit_system.length
+        particles.y = 0.0 | generic_unit_system.length
+        particles.z = 0.0 | generic_unit_system.length
+        
+        instance.particles.add_particles(particles)
+        instance.run()
+        
+        self.assertEqual(instance.particles[0].neighbor0, instance.particles[1])
+        self.assertEqual(instance.particles[1].neighbor0, instance.particles[0])
+        self.assertEqual(instance.particles[2].neighbor0, instance.particles[1])
+        self.assertEqual(instance.particles[3].neighbor0, instance.particles[2])
+        
+        instance.stop()
+
+Now, make and run the tests:
+
+    > make clean; make all
+    > nosetests
+    ....
+    ----------------------------------------------------------------------
+    Ran 4 tests in 0.797s
+
+    OK
+ 
+We are done, we have defined an object oriented interface on the
+legacy interface. Only, if we look at our tests, the code seems
+to be more rather than less complex. But, remember we now
+have units and we are compatible with other parts of amuse. And
+we can make more complex scripts easier.
+
+Let's make a plummer model and find the nearest neighbors in this model.
+
+First make a file with the following contents, let's call this file
+**plummer2.py**:
+
+.. literalinclude:: nearestneighbor/plummer2.py
+    :language: python
+    
+We can run this file with python::
+
+    $AMUSEDIR/amuse.sh plummer2.py
+    
+It will create an **output.txt** file and we can show this file
+with gnuplot.
+
+.. code-block:: gnuplot
+
+    gnuplot> splot 'output.txt' using 1:2:3:4:5:6 with vectors nohead, 'output.txt' using 1:2:3
+    gnuplot> #we can zoom into the center
+    gnuplot> set xr[-0.5:0.5]
+    gnuplot> set yr[-0.5:0.5]
+    gnuplot> set zr[-0.5:0.5]
+    gnuplot> splot 'output.txt' using 1:2:3:4:5:6 with vectors nohead, 'output.txt' using 1:2:3
+    
+
+.. image:: nearestneighbor/plummer1.png
+
 
 
 Path 2
