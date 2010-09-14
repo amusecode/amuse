@@ -7,7 +7,7 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.data.core import Particles, Particle
+from amuse.support.data.core import Particles, Particle, ParticlesSuperset
 from amuse.support.units import units, generic_unit_system, nbody_system, constants
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.legacy.mesa.interface import MESA
@@ -20,8 +20,9 @@ class TestStellarModel2SPH(TestWithMPI):
     
     class StarParticleWithStructure(Particle):
     
-        def __init__(self, **keyword_arguments):
+        def __init__(self, number_of_species = 3, **keyword_arguments):
             Particle.__init__(self, **keyword_arguments)
+            self.number_of_species = number_of_species | units.none
             self.mass = 4.0/3.0 * numpy.pi * (9.0 / 8.0) | units.MSun
             self.radius = 1.0 | units.RSun
         
@@ -29,16 +30,16 @@ class TestStellarModel2SPH(TestWithMPI):
             return 4 | units.none
         
         def get_number_of_species(self):
-            return 3 | units.none
+            return self.number_of_species
         
         def get_names_of_species(self, number_of_species = None):
-            return ['h1', 'he3', 'he4']
+            return (['h1', 'he3', 'he4', 'c12'])[:int(self.number_of_species.number)]
         
         def get_IDs_of_species(self, number_of_species = None):
-            return [2,    5,     6]
+            return ([2,    5,     6,     38])[:int(self.number_of_species.number)]
         
         def get_masses_of_species(self, number_of_species = None):
-            return [1.0078250, 3.0160293, 4.0026032] | units.amu
+            return ([1.0078250, 3.0160293, 4.0026032, 12.0] | units.amu)
         
         def get_mass_profile(self, number_of_zones = None):
             return ([448.0, 112.0, 14.0, 2.0] | units.none) / sum([448.0, 112.0, 14.0, 2.0])
@@ -59,7 +60,8 @@ class TestStellarModel2SPH(TestWithMPI):
             return [1.3, 0.6, 0.6, 0.8] | units.amu
         
         def get_chemical_abundance_profiles(self, number_of_zones = None, number_of_species = None):
-            return [[0.7, 0.7, 0.7, 0.0], [0.01, 0.01, 0.01, 0.05], [0.29, 0.29, 0.29, 0.95]] | units.none
+            return ([[0.7, 0.7, 0.7, 0.0], [0.01, 0.01, 0.01, 0.05], [0.29, 0.29, 0.29, 0.95], 
+                [0.0, 0.0, 0.0, 0.0]] | units.none)[:int(self.number_of_species.number)]
     
     def test1(self):
         star = self.StarParticleWithStructure()
@@ -612,6 +614,49 @@ class TestStellarModel2SPH(TestWithMPI):
         )
         hydro_legacy_code.stop()
         print "All done!\n"
+     
+    def test15(self):
+        print "Test convert_stellar_model_to_SPH with two stars"
+        star = self.StarParticleWithStructure()
+        number_of_sph_particles = 100 # only few particles for test speed-up
+        some_sph_particles = convert_stellar_model_to_SPH(
+            star, 
+            number_of_sph_particles, 
+            seed = 12345,
+            mode = "scaling method"
+        )
+        
+        another_star = self.StarParticleWithStructure(number_of_species = 4)
+        more_sph_particles = convert_stellar_model_to_SPH(
+            another_star, 
+            number_of_sph_particles, 
+            seed = 12345,
+            mode = "scaling method"
+        )
+        more_sph_particles.x += 100.0 | units.RSun
+        
+        sph_particles = ParticlesSuperset([some_sph_particles, more_sph_particles])
+        string_produced_by_print = sph_particles.__str__()
+        self.assertTrue("he3" in string_produced_by_print)
+        self.assertFalse("c12" in string_produced_by_print)
+        
+        self.assertEqual(len(sph_particles), 2 * number_of_sph_particles)
+        self.assertAlmostEqual(sph_particles.mass.sum(), 2 * star.mass)
+        self.assertIsOfOrder(max(sph_particles.x), (100.0 | units.RSun) + another_star.radius)
+        self.assertIsOfOrder(min(sph_particles.x), -star.radius)
+        
+        self.assertEqual(len(some_sph_particles.composition), number_of_sph_particles)
+        self.assertEqual(len(some_sph_particles[0].composition), 3)
+        self.assertEqual(len(more_sph_particles[0].composition), 4)
+        self.assertRaises(AttributeError, getattr, sph_particles, "composition", 
+            expected_message = "You tried to access attribute 'composition' but this attribute is not defined for this set.")
+        
+        
+        self.assertAlmostEqual(some_sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
+        self.assertAlmostEqual(more_sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
+        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
     
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):

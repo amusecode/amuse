@@ -119,7 +119,6 @@ class StellarModel2SPH(object):
         return result, comp.transpose()
     
     def convert_to_SPH(self):
-        Particles.add_global_vector_attribute("composition", self.species_names)
         if self.mode == "scaling method":
             sph_particles = new_spherical_particle_distribution(
                 self.number_of_sph_particles, 
@@ -136,6 +135,7 @@ class StellarModel2SPH(object):
         sph_particles.velocity = [0,0,0] | units.m/units.s
         (specific_internal_energy,), composition = self.interpolate_hydro_quantities(sph_particles.position.lengths())
         sph_particles.u = specific_internal_energy
+        sph_particles.add_vector_attribute("composition", self.species_names)
         sph_particles.composition = composition
         return sph_particles
     
