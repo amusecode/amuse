@@ -366,8 +366,8 @@ of the file):
     
     class NearestNeighbor(CodeInterface):
 
-        def __init__(self):
-            CodeInterface.__init__(self,  NearestNeighborInterface())
+        def __init__(self, **options):
+            CodeInterface.__init__(self,  NearestNeighborInterface(), **options)
 
 Configuring the handlers
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -558,7 +558,9 @@ indices and use this to find the particles.
 
 Let's write a test and see if it works, open an editor on the 
 test_nearestneighbor.py class and add this method:
-    
+
+.. code-block:: python
+
     def test4(self):
         instance = NearestNeighbor()
         
@@ -578,6 +580,8 @@ test_nearestneighbor.py class and add this method:
         instance.stop()
 
 Now, make and run the tests:
+
+.. code-block:: bash
 
     > make clean; make all
     > nosetests
@@ -602,6 +606,8 @@ First make a file with the following contents, let's call this file
     :language: python
     
 We can run this file with python::
+
+.. code-block:: bash
 
     $AMUSEDIR/amuse.sh plummer2.py
     
@@ -634,21 +640,36 @@ algorithm and retrieve the ids of the nearest neighbors.
 To define the interface, open interface.py with your favorite
 editor and replace the contents of this file with:
 
-.. literalinclude:: nearestneighbor/nn1.py
+.. literalinclude:: nearestneighbor/nn2.py
 
 We can generate a stub from the interface code with::
 
     > $AMUSEDIR/build.py --type=f90 --mode=stub interface.py NearestNeighborInterface -o interface.f90
 
 The generated **interface.f90** replaces the original file generated in
-the previous section.
+the previous section. 
 
-The code still builds, but does not have any functionality yet::
+We will be implementing the interface.f90 file as a module and we 
+need to add the module definition to this file. We do 
+this by adding a ```MODULE NN``` line to the beginning of the file 
+and a ```END MODULE``` line to the end of the file. To do so open 
+the interface.90 file and append/prepend the following code:
+
+.. code-block:: fortran
+
+    MODULE NN
+
+    CONTAINS
+
+    !.. original code
+    
+    END MODULE
+    
+
+The code builds, but does not have any functionality yet::
 
     > make clean
     > make all
-    > $AMUSEDIR/amuse.sh -c 'from interface import NearestNeighbor; print NearestNeighbor().find_nearest_neighbors()' 
-    0
     
 .. note::
     
@@ -750,6 +771,7 @@ We need to rebuild the code, and after building run the tests.
     OK
 
 The are tests work again! Only, we do not have any real working legacy code.
+
 Filling the stubs
 -----------------
 The implementation of the algorithm does not match the interface
@@ -757,11 +779,11 @@ we defined and created. We need to write some glue code to
 connect the code with the interface. To do so we fill in the
 stubs generated earlier.
 
-Open the **interface.cc** file in your favorite editor and
+Open the **interface.f90** file in your favorite editor and
 change its contents to:
 
-.. literalinclude:: nearestneighbor/interface1.cc
-    :language: c++
+.. literalinclude:: nearestneighbor/interface1.f90
+    :language: fortran
 
 Test if the code builds and try it out. In the legacy interface
 directory do::
@@ -769,67 +791,69 @@ directory do::
     > make clean
     > make all
     
-We can now start playing with the interface, to start an interactive
-python session do::
-
-    > $AMUSEDIR/amuse.sh
-    
-.. note::
-
-    If you have IPython installed you can also run an interactive
-    IPython session like so::
-        
-        > $AMUSEDIR/iamuse.sh
-        
-In the python session we can load our code and do some testing:
+The tests will still fail as we need to set the 
+"maximum_number_of_particles" before allocating any new particles.
+Let's update the test, open an editor on test_nearestneighbor.py 
+file and update the test1 method to:
 
 .. code-block:: python
 
-    >>> from interface import NearestNeighbor
-    >>> nn = NearestNeighbor()
-    >>> value, error = nn.get_number_of_particles()
-    >>> print "number of particles:", value
-    number of particles: 0
-    >>> all_ids = []
-    >>> id, error = nn.new_particle(0.0, 0.0, 0.0)
-    >>> print "id of first particle:", id
-    id of first particle: 0
-    >>> all_ids.append(id)
-    >>> for i in range(1,6):
-    ...    id, error = nn.new_particle(i*i, 0, 0)
-    ...    all_ids.append(id)
-    ...
-    >>> value, error = nn.get_number_of_particles()
-    >>> print "number of particles:", value
-    number of particles: 6
-    >>> nn.find_nearest_neighbors()
-    0
-    >>> for i in all_ids:
-    ...    print "particle with id", i
-    ...    index, distance, error = nn.get_nearest_neighbor(i)
-    ...    print "nearest neigbor", index, "has distance", distance
-    ...    index0, index1, index2, error = nn.get_close_neighbors(i)
-    ...    print "nearest neigbors are:", index0, index1, index2 
-    ...
-    particle with id 0
-    nearest neigbor 1.0 has distance 1.0
-    nearest neigbors are: 1.0 2.0 3.0
-    particle with id 1
-    nearest neigbor 0.0 has distance 1.0
-    nearest neigbors are: 0.0 2.0 3.0
-    particle with id 2
-    nearest neigbor 1.0 has distance 3.0
-    nearest neigbors are: 1.0 0.0 3.0
-    particle with id 3
-    nearest neigbor 2.0 has distance 5.0
-    nearest neigbors are: 2.0 4.0 1.0
-    particle with id 4
-    nearest neigbor 3.0 has distance 7.0
-    nearest neigbors are: 3.0 5.0 2.0
-    particle with id 5
-    nearest neigbor 4.0 has distance 9.0
-    nearest neigbors are: 4.0 3.0 2.0
+    def test1(self):
+        instance = NearestNeighborInterface()
+        instance.set_maximum_number_of_particles(100)
+        instance.commit_parameters()
+        result,error = instance.new_particle(1.0, 1.0, 2.0)
+        self.assertEquals(error, 0)
+        self.assertEquals(result, 1)
+        instance.stop()
+
+Now the tests should succeed:
+
+.. code-block:: bash
+
+    > nosetests
+    .
+    ----------------------------------------------------------------------
+    Ran 1 test in 0.311s
+
+    OK
     
+Let's check some more functionaly by adding another test
+
+.. code-block:: python
+
+    def test2(self):
+        instance = NearestNeighborInterface()
+        instance.set_maximum_number_of_particles(2)
+        instance.commit_parameters()
+        result,error = instance.new_particle(1.0, 1.0, 2.0)
+        self.assertEquals(error, 0)
+        self.assertEquals(result, 1)
+        result,error = instance.new_particle(2.0, 3.0, 2.0)
+        self.assertEquals(error, 0)
+        self.assertEquals(result, 2)
+        result,error = instance.new_particle(2.0, 3.0, 2.0)
+        self.assertEquals(error, -1)
+        error = instance.delete_particle(1)
+        self.assertEquals(error, 0)
+        result,error = instance.new_particle(2.0, 3.0, 2.0)
+        self.assertEquals(error, 0)
+        self.assertEquals(result, 1)
+        instance.stop()
+        
+
+Now the tests should succeed:
+
+.. code-block:: bash
+
+    > nosetests
+    ..
+    ----------------------------------------------------------------------
+    Ran 2 tests in 0.448s
+
+    OK
+
+
 We now have done everything in Step 0 *Legacy Interface*. We have
 a legacy code and can access it in our python script. But, our
 interface is not very friendly to work with. We have to think about
@@ -846,23 +870,23 @@ seek this code (at the end of the file)::
 
     class NearestNeighbor(CodeInterface):
 
-        def __init__(self):
-            CodeInterface.__init__(self,  NearestNeighborInterface())
+        def __init__(self, **options):
+            CodeInterface.__init__(self,  NearestNeighborInterface(), **options)
             
 We will start by defining methods, we will do this by implementing
 the **define_methods** function, like so::
 
-     class NearestNeighbor(CodeInterface):
+    class NearestNeighbor(CodeInterface):
 
-        def __init__(self):
-            CodeInterface.__init__(self,  NearestNeighborInterface())
+        def __init__(self, **options):
+            CodeInterface.__init__(self,  NearestNeighborInterface(), **options)
             
         
         def define_methods(self, builder):
             
             builder.add_method(
                 "new_particle", 
-                (units.m, units.m, units.m,),
+                (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,),
                 (builder.INDEX, builder.ERROR_CODE)
             )
             
@@ -875,19 +899,19 @@ the **define_methods** function, like so::
             builder.add_method(
                 "get_state", 
                 (builder.INDEX,),
-                (units.m, units.m, units.m, builder.ERROR_CODE),
+                (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, builder.ERROR_CODE),
                 public_name = "get_position"
             )
             
             builder.add_method(
                 "set_state", 
-                (builder.INDEX, units.m, units.m, units.m,),
+                (builder.INDEX, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,),
                 (builder.ERROR_CODE),
                 public_name = "set_position"
             )
             
             builder.add_method(
-                "find_nearest_neighbors", 
+                "run", 
                 (),
                 (builder.ERROR_CODE),
             )
@@ -901,7 +925,7 @@ the **define_methods** function, like so::
             builder.add_method(
                 "get_nearest_neighbor", 
                 (builder.INDEX,),
-                (builder.INDEX, units.m, builder.ERROR_CODE),
+                (builder.INDEX, generic_unit_system.length, builder.ERROR_CODE),
             )
             
             builder.add_method(
@@ -909,6 +933,7 @@ the **define_methods** function, like so::
                 (),
                 (builder.NO_UNIT, builder.ERROR_CODE),
             )
+
         
 With this code, we define the methods and specify how to interpret the
 arguments and return values. We get a special object (the **builder**
@@ -943,50 +968,40 @@ directory do::
     > make clean
     > make all
 
-Let's start an interactive python session and play with the code::
+Let's add another test::
 
-    >>> from interface import NearestNeighbor
-    >>> from amuse.support.units import units
-    >>> nn = NearestNeighbor()
-    >>> print "number of particles:", nn.get_number_of_particles()
-    number of particles: 0
-    >>> all_ids = []
-    >>> id = nn.new_particle(0.0 | units.km , 0.0 | units.km , 0.0 | units.km)
-    >>> print "id of the particle:", id
-    id of the particle: 0
-    >>> all_ids.append(id)
-    >>> for i in range(1,6):
-    ...     id = nn.new_particle(i*i | units.km, 0 | units.km, 0 | units.km)
-    ...     all_ids.append(id)
-    ... 
-    >>> print "number of particles:", nn.get_number_of_particles()
-    number of particles: 6
-    >>> nn.find_nearest_neighbors()
-    >>> for i in all_ids:
-    ...     print "particle with id", i
-    ...     index, distance = nn.get_nearest_neighbor(i)
-    ...     print "nearest neigbor", index, "has distance", distance
-    ...     index0, index1, index2 = nn.get_close_neighbors(i)
-    ...     print "nearest neigbors are:", index0, index1, index2
-    ... 
-    particle with id 0
-    nearest neigbor 1.0 has distance 1000.0 m
-    nearest neigbors are: 1.0 2.0 3.0
-    particle with id 1
-    nearest neigbor 0.0 has distance 1000.0 m
-    nearest neigbors are: 0.0 2.0 3.0
-    particle with id 2
-    nearest neigbor 1.0 has distance 3000.0 m
-    nearest neigbors are: 1.0 0.0 3.0
-    particle with id 3
-    nearest neigbor 2.0 has distance 5000.0 m
-    nearest neigbors are: 2.0 4.0 1.0
-    particle with id 4
-    nearest neigbor 3.0 has distance 7000.0 m
-    nearest neigbors are: 3.0 5.0 2.0
-    particle with id 5
-    nearest neigbor 4.0 has distance 9000.0 m
-    nearest neigbors are: 4.0 3.0 2.0
+    def test3(self):
+        instance = NearestNeighbor()
+        instance.set_maximum_number_of_particles(2)
+        instance.commit_parameters()
+        result = instance.new_particle(
+            1.0 | generic_unit_system.length, 
+            2.0 | generic_unit_system.length, 
+            3.0 | generic_unit_system.length
+        )
+        self.assertEquals(result, 1)
+        result = instance.new_particle(
+            1.0 | generic_unit_system.length, 
+            1.0 | generic_unit_system.length, 
+            2.0 | generic_unit_system.length
+        )
+        self.assertEquals(result, 2)
+        x,y,z = instance.get_position(1)
+        self.assertEquals(1.0 | generic_unit_system.length, x)
+        self.assertEquals(2.0 | generic_unit_system.length, y)
+        self.assertEquals(3.0 | generic_unit_system.length, z)
+        instance.stop()
+
+And run the tests:
+
+.. code-block:: bash
+
+    > nosetests
+    ...
+    ----------------------------------------------------------------------
+    Ran 3 tests in 0.664s
+
+    OK
 
 As you can see our script is now a little simpler and we support units.
 We do not have to think about the errorcodes in this script, AMUSE will
@@ -1017,8 +1032,8 @@ function on our **NearestNeighbor** class like so::
 
     class NearestNeighbor(CodeInterface):
 
-        def __init__(self):
-            CodeInterface.__init__(self,  NearestNeighborInterface())
+        def __init__(self, **options):
+            CodeInterface.__init__(self,  NearestNeighborInterface(), **options)
             
         
         def define_methods(self, builder):
@@ -1030,7 +1045,7 @@ function on our **NearestNeighbor** class like so::
             builder.set_delete('particles', 'delete_particle')
             builder.add_setter('particles', 'set_position')
             builder.add_getter('particles', 'get_position')
-            builder.add_getter('particles', 'get_close_neighbors', names=('neighbor1', 'neighbor2', 'neighbor3') )
+            builder.add_getter('particles', 'get_close_neighbors', names=('neighbor0', 'neighbor1', 'neighbor2') )
 
 
 That's all, we now have defined a set called **particles**. Again, we 
@@ -1053,44 +1068,44 @@ directory do::
     > make clean
     > make all
 
-We start an interactive python session and play with the code again:
-
-    >>> from interface import NearestNeighbor
-    >>> from amuse.support.units import units
-    >>> from amuse.support.data import core
-    >>> nn = NearestNeighbor()
-    >>> print "number of particles:", len(nn.particles)
-    number of particles: 0
-    >>> particle = core.Particle()
-    >>> particle.position = (0.0, 0.0, 0.0 ) | units.km
-    >>> nn.particles.add_particle(particle)
-    >>> for i in range(1,6):
-    ...     particle = core.Particle()
-    ...     particle.position = (i*i, 0.0, 0.0 ) | units.km
-    ...     nn.particles.add_particle(particle)
-    ... 
-    >>> print "number of particles:", len(nn.particles)
-    number of particles: 6
-    >>> nn.find_nearest_neighbors()
-    >>> for particle in nn.particles:
-    ...     print particle
-    ...     print particle.x, particle.neighbor.x
-    Particle(...)
-    0.0 m 1000.0 m
+Let's add another test::
+    
+    def test4(self):
+        instance = NearestNeighbor()
+        instance.set_maximum_number_of_particles(100)
+        instance.commit_parameters()
+        
+        particles = core.Particles(4)
+        particles.x = [0.0, 1.0, 4.0, 7.5] | generic_unit_system.length
+        particles.y = 0.0 | generic_unit_system.length
+        particles.z = 0.0 | generic_unit_system.length
+        
+        instance.particles.add_particles(particles)
+        instance.run()
+        
+        self.assertEqual(instance.particles[0].neighbor0, instance.particles[1])
+        self.assertEqual(instance.particles[1].neighbor0, instance.particles[0])
+        self.assertEqual(instance.particles[2].neighbor0, instance.particles[1])
+        self.assertEqual(instance.particles[3].neighbor0, instance.particles[2])
+        
+        instance.stop()
+    
     
 The support for a particle set means we can now also interact
-with other parts of AMUSE. Let's make a plummer model and 
-find the nearest neighbors in this model.
+with other parts of AMUSE. Let's make a plummer
+model and find the nearest neighbors in this model.
 
 First make a file with the following contents, let's call this file
-**plummer1.py**:
+**plummer2.py**:
 
-.. literalinclude:: nearestneighbor/plummer1.py
+.. literalinclude:: nearestneighbor/plummer2.py
     :language: python
-
+    
 We can run this file with python::
 
-    $AMUSEDIR/amuse.sh plummer1.py
+.. code-block:: bash
+
+    $AMUSEDIR/amuse.sh plummer2.py
     
 It will create an **output.txt** file and we can show this file
 with gnuplot.
@@ -1106,9 +1121,6 @@ with gnuplot.
     
 
 .. image:: nearestneighbor/plummer1.png
-
-You can extend this example by showing the second or third nearest neighbors, or
-simply increase the number of particles in the plummer model.
 
     
 
