@@ -23,7 +23,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
             return length + 10.0
     
     def test1(self):
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
         
         original = self.TestClass()
         
@@ -43,7 +43,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         
         
     def test2(self):
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
         
         original = self.TestClass()
         
@@ -63,7 +63,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         
         
     def test3(self):
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
         
         original = self.TestClass()
         instance = interface.CodeInterface(original)
@@ -521,7 +521,7 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
             
     
     def test1(self):
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
         
         original = self.TestClass()
         
@@ -553,7 +553,7 @@ class CodeInterfaceWithParticlesTests(amusetest.TestCase):
             return length + 10.0
     
     def test1(self):
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
         
         original = self.TestClass()
         
@@ -797,7 +797,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler.add_getter('particles', 'get_mass', names = ('mass',))
         
         
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg , 5.0 | units.m )
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
         
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
@@ -810,7 +810,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         self.assertEquals(len(original.masses), 4)
         self.assertAlmostEquals(original.masses[0], 0.3, 5)
-        self.assertAlmostEquals(original.masses[3], 0.6 , 5)
+        self.assertAlmostEquals(original.masses[3], 0.6, 5)
         
         self.assertEquals(len(instance.particles), 4)
         self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)

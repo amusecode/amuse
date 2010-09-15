@@ -203,7 +203,7 @@ class LegacyCommand(Command):
 
     
     def get_special_targets(self, directory, environment):
-        process = Popen(['make','-qp' , '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
+        process = Popen(['make','-qp', '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         lines = stdoutstring.splitlines()
         result = []
@@ -281,7 +281,7 @@ class BuildLegacy(LegacyCommand):
         print "============================="
         sorted_keys = sorted(self.environment_notset.keys())
         for x in sorted_keys:
-            print "%s\t%s" % (x , self.environment_notset[x] )
+            print "%s\t%s" % (x, self.environment_notset[x] )
         print
         print
         if not_build or not_build_special:
@@ -290,16 +290,16 @@ class BuildLegacy(LegacyCommand):
             print "Legacy codes not build (because of errors):"
             print "==========================================="
             for x in not_build:
-                print '*' , x 
+                print '*', x 
             for x in not_build_special:
-                print '*' , x, '** optional, needs special libraries or hardware to compile **'
+                print '*', x, '** optional, needs special libraries or hardware to compile **'
         if build:
             print
             print
             print "Legacy codes build"
             print "=================="
             for x in build:
-                print '*' , x
+                print '*', x
         
         
  

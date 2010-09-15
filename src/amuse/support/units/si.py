@@ -6,7 +6,7 @@ system = core.system('S.I.')
 
 m = core.base_unit('length', 'meter', 'm', system)
 kg = core.base_unit('mass', 'kilogram', 'kg', system)
-s = core.base_unit('time', 'second', 's' , system)
+s = core.base_unit('time', 'second', 's', system)
 A = core.base_unit('electric current', 'ampere', 'A', system)
 K = core.base_unit('thermodynamic temperature ', 'kelvin', 'K', system)
 mol = core.base_unit('amount of substance', 'mole', 'mol', system)

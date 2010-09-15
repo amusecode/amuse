@@ -41,11 +41,11 @@ class TestParticles(amusetest.TestCase):
             particles.savepoint((i + 1) * 1.0 | units.s)
         
         state0 = particles.get_state_at_timestamp(2.0 | units.s)
-        self.assertEquals(state0[0].mass , 2.0 | units.kg)
+        self.assertEquals(state0[0].mass, 2.0 | units.kg)
         state0 = particles.get_state_at_timestamp(2.4 | units.s)
-        self.assertEquals(state0[0].mass , 2.0 | units.kg)
+        self.assertEquals(state0[0].mass, 2.0 | units.kg)
         state0 = particles.get_state_at_timestamp(2.6 | units.s)
-        self.assertEquals(state0[0].mass , 4.0 | units.kg)
+        self.assertEquals(state0[0].mass, 4.0 | units.kg)
         
     
     def test4(self):
@@ -60,12 +60,12 @@ class TestParticles(amusetest.TestCase):
         particles.z = 0.0 | units.m
         self.assertEquals(particles.kinetic_energy(), 1.0 | units.J)
         self.assertEquals(particles.potential_energy(), -1.0 * constants.G * (1.0 | units.kg ** 2 / units.m))
-        self.assertEquals(particles.center_of_mass().x , 0.5 | units.m)
-        self.assertEquals(particles.center_of_mass().y , 0.0 | units.m)
-        self.assertEquals(particles.center_of_mass().z , 0.0 | units.m)
-        self.assertEquals(particles.center_of_mass_velocity().x , 0.0 | units.m / units.s)
-        self.assertEquals(particles.center_of_mass_velocity().y , 1.0 | units.m / units.s)
-        self.assertEquals(particles.center_of_mass_velocity().z , 0.0 | units.m / units.s)
+        self.assertEquals(particles.center_of_mass().x, 0.5 | units.m)
+        self.assertEquals(particles.center_of_mass().y, 0.0 | units.m)
+        self.assertEquals(particles.center_of_mass().z, 0.0 | units.m)
+        self.assertEquals(particles.center_of_mass_velocity().x, 0.0 | units.m / units.s)
+        self.assertEquals(particles.center_of_mass_velocity().y, 1.0 | units.m / units.s)
+        self.assertEquals(particles.center_of_mass_velocity().z, 0.0 | units.m / units.s)
         
     def test5(self):
         
@@ -408,7 +408,7 @@ class TestParticlesWithUnitsConverted(amusetest.TestCase):
         
     
     def test2(self):
-        convert_nbody = nbody_system.nbody_to_si(10 | units.kg , 5 | units.m )
+        convert_nbody = nbody_system.nbody_to_si(10 | units.kg, 5 | units.m )
         
         stars = core.Stars(1)
         stars[0].mass = 10 | nbody_system.mass
@@ -484,19 +484,19 @@ class TestParticlesWithChildren(amusetest.TestCase):
         code1.legacy_interface.set_mass([0], [10000.0])
         code2.legacy_interface.set_mass([0], [9000.0])
         
-        self.assertEquals(parent.mass , 4.0 | units.kg)
-        self.assertEquals(child1.mass , 3.0 | units.kg)
+        self.assertEquals(parent.mass, 4.0 | units.kg)
+        self.assertEquals(child1.mass, 3.0 | units.kg)
         
         code1.particles.copy_values_of_state_attributes_to(all)
         
-        self.assertEquals(parent.mass , 10.0 | units.kg)
-        self.assertEquals(child1.mass , 3.0 | units.kg)
+        self.assertEquals(parent.mass, 10.0 | units.kg)
+        self.assertEquals(child1.mass, 3.0 | units.kg)
         
         
         code2.particles.copy_values_of_state_attributes_to(all)
         
-        self.assertEquals(parent.mass , 10.0 | units.kg)
-        self.assertEquals(child1.mass , 9.0 | units.kg)
+        self.assertEquals(parent.mass, 10.0 | units.kg)
+        self.assertEquals(child1.mass, 9.0 | units.kg)
         
         
     
@@ -529,7 +529,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         
     def test4(self):
         all = core.Particles(5)
-        all.mass = [1.0, 2.0, 3.0, 4.0 , 5.0] | units.kg
+        all.mass = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
         parent = all[0]
         child1 = all[1]
         child2 = all[2]
@@ -549,7 +549,7 @@ class TestParticlesWithChildren(amusetest.TestCase):
         
     def test5(self):
         all = core.Particles(5)
-        all.mass = [1.0, 2.0, 3.0, 4.0 , 5.0] | units.kg
+        all.mass = [1.0, 2.0, 3.0, 4.0, 5.0] | units.kg
         parent = all[0]
         child1 = all[1]
         child2 = all[2]

@@ -42,7 +42,7 @@ class TestNbodyUnits(amusetest.TestCase):
        
 
     def test6(self):
-       convert_nbody = nbody_to_si(10 | units.kg , 5 | units.m / units. s )
+       convert_nbody = nbody_to_si(10 | units.kg, 5 | units.m / units. s )
        y = 5 | units.m / units.s
        y_in_nbody = convert_nbody.to_nbody(y) 
        self.assertEqual(str(y_in_nbody.unit), 'length * time**-1')
@@ -51,7 +51,7 @@ class TestNbodyUnits(amusetest.TestCase):
        self.assertAlmostEqual(y_in_si.number, 5.0, 3)
        
     def test7(self):
-       convert_nbody = nbody_to_si(1 | units.kg , 1 | units.m / units. s )
+       convert_nbody = nbody_to_si(1 | units.kg, 1 | units.m / units. s )
        y = 1 | time
        y_in_si = convert_nbody.to_si(y) 
        self.assertEqual(str(y_in_si.unit), 's')
@@ -63,12 +63,12 @@ class TestNbodyUnits(amusetest.TestCase):
         
         
     def test9(self):
-       convert_nbody = nbody_to_si(1 | units.kg , 1 | units.m / units. s )
+       convert_nbody = nbody_to_si(1 | units.kg, 1 | units.m / units. s )
        y = 1.0 | units.none
        y_in_nbody = convert_nbody.to_nbody(y) 
        y_in_si = convert_nbody.to_si(y) 
-       self.assertEqual(y_in_nbody , 1.0 | units.none)
-       self.assertEqual(y_in_si , 1.0 | units.none)
+       self.assertEqual(y_in_nbody, 1.0 | units.none)
+       self.assertEqual(y_in_si, 1.0 | units.none)
     
     
         

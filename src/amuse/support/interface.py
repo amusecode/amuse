@@ -396,7 +396,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
                 return result
 
 
-    def convert_arguments(self, method , list_arguments, keyword_arguments):
+    def convert_arguments(self, method, list_arguments, keyword_arguments):
         result = {}
         input_parameters = method.method_input_argument_names
 

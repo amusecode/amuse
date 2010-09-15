@@ -194,8 +194,8 @@ class TestMethodParameterDefintions(amusetest.TestCase):
 
         instance.parameters.test_name = 1 | units.km
 
-        self.assertEquals(1 | units.km , instance.parameters.test_name)
-        self.assertEquals(1000 , instance.x)
+        self.assertEquals(1 | units.km, instance.parameters.test_name)
+        self.assertEquals(1000, instance.x)
 
 
     def test5(self):
@@ -232,8 +232,8 @@ class TestMethodParameterDefintions(amusetest.TestCase):
 
         instance.parameters.test_name = 1 | units.km
 
-        self.assertEquals(1 | units.km , instance.parameters.test_name)
-        self.assertEquals(1000 , instance.x)
+        self.assertEquals(1 | units.km, instance.parameters.test_name)
+        self.assertEquals(1000, instance.x)
 
 
 
@@ -270,10 +270,10 @@ class TestMethodParameterDefintions(amusetest.TestCase):
 
         instance.parameters.test_name = "bla" | units.string
 
-        self.assertEquals("bla" , instance.x)
+        self.assertEquals("bla", instance.x)
 
         instance.parameters.test_name = "bla"
-        self.assertEquals("bla" , instance.x)
+        self.assertEquals("bla", instance.x)
 
     def test7(self):
         definition = parameters.ModuleMethodParameterDefinition_Next(
@@ -342,7 +342,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
 
         p.set_defaults()
 
-        self.assertEquals(11.0 , instance.x)
+        self.assertEquals(11.0, instance.x)
 
 
     def test9(self):
@@ -398,7 +398,7 @@ class TestMethodParameterDefintions(amusetest.TestCase):
     
         p = parameters.Parameters([parameter_definition], instance)
         instance.x = 1
-        self.assertEquals(p.test_name , 1 | units.m)
+        self.assertEquals(p.test_name, 1 | units.m)
         
         def try_set_read_only_parameter(parameter_set):
             parameter_set.test_name = 2 | units.m
@@ -444,8 +444,8 @@ class TestMethodParameterDefintions(amusetest.TestCase):
         p = parameters.Parameters([parameter_definition1, parameter_definition2], instance)
         instance.x = 1
         instance.y = 2
-        self.assertEquals(p.test_name , 1 | units.m)
-        self.assertEquals(p.test_name2 , 2 | units.m)
+        self.assertEquals(p.test_name, 1 | units.m)
+        self.assertEquals(p.test_name2, 2 | units.m)
         
         p.test_name = 20 | units.m
         p.send_not_set_parameters_to_code()
@@ -829,7 +829,7 @@ class TestParameters(amusetest.TestCase):
         
         p = parameters.Parameters([parameter_definition1, parameter_definition2, paramer_definition3], instance)
        
-        self.assertEquals(p.test_vector , (1,2) | units.m)
+        self.assertEquals(p.test_vector, (1,2) | units.m)
         p.test_vector = (3,4) | units.m
         self.assertEquals(instance.x, 3)
         self.assertEquals(instance.y, 4)

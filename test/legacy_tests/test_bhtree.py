@@ -397,8 +397,8 @@ class TestBHTree(TestWithMPI):
         self.assertEquals(len(instance.particles), 2)
         
         
-        self.assertAlmostRelativeEquals(instance.particles.mass[1] , 30.0 | units.kg)
-        self.assertAlmostRelativeEquals(instance.particles.position[1][2] , 60.0 | units.m)   
+        self.assertAlmostRelativeEquals(instance.particles.mass[1], 30.0 | units.kg)
+        self.assertAlmostRelativeEquals(instance.particles.position[1][2], 60.0 | units.m)   
         
     def test8(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
@@ -469,7 +469,7 @@ class TestBHTree(TestWithMPI):
         particles = core.Particles(6)
         particles.mass = 1.0 | nbody_system.mass
         particles.radius =   0.00001 | nbody_system.length
-        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0] ,[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
+        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
         instance.commit_particles()

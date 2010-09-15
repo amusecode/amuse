@@ -28,7 +28,7 @@ mapping_from_command_name_to_command_class = {
     'clean_python':clean,
     'clean': Clean,
     'tests':run_tests, 
-    'config': config ,
+    'config': config,
     'generate_main': generate_main,
 }
    

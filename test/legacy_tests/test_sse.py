@@ -125,19 +125,19 @@ class TestMPIInterface(TestWithMPI):
         
          
         expected = {
-            'zams_mass': '0x1.0000000000000p+0' ,
-            'mass': '0x1.0000000000000p+0' ,
-            'radius': '0x1.c6c8a1c793bcep-1' ,
-            'luminosity': '0x1.653b1b2d0333bp-1' ,
-            'core_mass': '0x0.0p+0' ,
-            'core_radius': '0x0.0p+0' ,
-            'envelope_mass': '0x1.0d6fc100ab510p-5' ,
-            'envelope_radius': '0x1.db27631ba0e5ap-3' ,
-            'spin': '0x1.07413b0522d63p+10' ,
-            'epoch': '0x0.0p+0' ,
-            't_ms': '0x1.57d90abe54643p+13' ,
-            'sse_age': '0x1.0c6f7a0b5ed8dp-20' ,
-            'age': '0x1.0c6f7a0b5ed8dp-20' ,
+            'zams_mass': '0x1.0000000000000p+0',
+            'mass': '0x1.0000000000000p+0',
+            'radius': '0x1.c6c8a1c793bcep-1',
+            'luminosity': '0x1.653b1b2d0333bp-1',
+            'core_mass': '0x0.0p+0',
+            'core_radius': '0x0.0p+0',
+            'envelope_mass': '0x1.0d6fc100ab510p-5',
+            'envelope_radius': '0x1.db27631ba0e5ap-3',
+            'spin': '0x1.07413b0522d63p+10',
+            'epoch': '0x0.0p+0',
+            't_ms': '0x1.57d90abe54643p+13',
+            'sse_age': '0x1.0c6f7a0b5ed8dp-20',
+            'age': '0x1.0c6f7a0b5ed8dp-20',
         };    
 
 

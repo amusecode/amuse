@@ -91,14 +91,14 @@ class RunSpeedTests(object):
                 if x != self.name_of_the_method:
                     continue
             method = getattr(self, x)
-            print >> sys.stderr , self.row_formatters[0](method), '...',
+            print >> sys.stderr, self.row_formatters[0](method), '...',
             try:        
                 method()
             except TimeoutException, ex:
-                print >> sys.stderr , "timed out,", ex
+                print >> sys.stderr, "timed out,", ex
                 continue
             except SkipException, ex:
-                print >> sys.stderr , "skipped,", ex
+                print >> sys.stderr, "skipped,", ex
                 continue
             except Exception, ex:
                 print ex
@@ -108,7 +108,7 @@ class RunSpeedTests(object):
                 pass
             delta_time = self.t1-self.t0
             self.total_time = self.total_time + delta_time
-            print >> sys.stderr , self.row_formatters[1](delta_time)
+            print >> sys.stderr, self.row_formatters[1](delta_time)
             self.report_lines.append((method,delta_time))
         
         lines = []

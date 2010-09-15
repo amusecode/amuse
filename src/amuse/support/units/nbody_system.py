@@ -55,7 +55,7 @@ def is_nbody_unit(unit):
     
     
 class nbody_to_si(generic_unit_converter.ConvertBetweenGenericAndSiUnits): 
-    def __init__(self, value1 , value2):
+    def __init__(self, value1, value2):
         generic_unit_converter.ConvertBetweenGenericAndSiUnits.__init__(self,constants.G, value1, value2)
         
     def to_nbody(self, value):

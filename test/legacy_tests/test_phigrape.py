@@ -348,7 +348,7 @@ class TestPhigrape(TestWithMPI):
         particles = core.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
-        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0] ,[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
+        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
         instance.particles.add_particles(particles)
         instance.initialize_particles(0.0)
@@ -389,9 +389,9 @@ class TestPhigrape(TestWithMPI):
         n = 512
         x = nbody_system.length.new_quantity(numpy.linspace(0.1, 1.9, n))
         zero = nbody_system.length.new_quantity(numpy.zeros(n))
-        fx, fy, fz = instance.get_gravity_at_point(zero, x , zero, zero)
+        fx, fy, fz = instance.get_gravity_at_point(zero, x, zero, zero)
         for i in range(n/2):
-            self.assertAlmostRelativeEqual(fx[i] , - fx[n - 1 - i], 5)
+            self.assertAlmostRelativeEqual(fx[i], - fx[n - 1 - i], 5)
         
         instance.stop()
         
@@ -399,7 +399,7 @@ class TestPhigrape(TestWithMPI):
         particles = core.Particles(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
-        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0] ,[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
+        particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
         particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
         
         for current_mode in ['g6lib','gpu','grape','pg']:

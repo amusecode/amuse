@@ -232,7 +232,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_eta1",
             "timestep_parameter",
             "timestep parameter",
-            units.none ,
+            units.none,
             0.02 |  units.none
         )
 
@@ -241,7 +241,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_eta_s",
             "initial_timestep_parameter",
             "parameter to determine the initial timestep",
-            units.none ,
+            units.none,
             0.01 |  units.none
         )
         
@@ -250,7 +250,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_initialize_once",
             "initialize_gpu_once",
             "set to 1 if the gpu must only be initialized once, 0 if it can be initialized for every call\nIf you want to run multiple instances of the code on the same gpu this parameter needs to be 0 (default)",
-            units.none ,
+            units.none,
             0 |  units.none
         )
 

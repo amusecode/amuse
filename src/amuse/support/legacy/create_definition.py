@@ -166,9 +166,9 @@ class CreateFortranStub(object):
     @late
     def dtype_to_fortantype(self):
         return {
-            'int32':'INTEGER' , 
-            'float64':'DOUBLE PRECISION' , 
-            'float32':'REAL' ,
+            'int32':'INTEGER', 
+            'float64':'DOUBLE PRECISION', 
+            'float32':'REAL',
             'string':'CHARACTER(LEN=*)',
         }
         
@@ -241,9 +241,9 @@ class CreateFortranStub(object):
     @late
     def dtype_to_returnvalue(self):
         return {
-            'int32':'0' , 
-            'float64':'0.0' , 
-            'float32':'0.0' ,
+            'int32':'0', 
+            'float64':'0.0', 
+            'float32':'0.0',
             'string':'0',
         }
         
@@ -326,24 +326,24 @@ class CreateCStub(object):
     def dtype_to_ctype(self):
         if self.convert_datatypes:
             return {
-                'int32':'int' , 
-                'float64':'double' , 
-                'float32':'float' ,
+                'int32':'int', 
+                'float64':'double', 
+                'float32':'float',
                 'string':'char *',
             }
         else:
             return {
-                'int32':'int32' , 
-                'float64':'float64' , 
-                'float32':'float32' ,
+                'int32':'int32', 
+                'float64':'float64', 
+                'float32':'float32',
                 'string':'char *',
             }
     @late
     def dtype_to_returnvalue(self):
         return {
-            'int32':'0' , 
-            'float64':'0.0' , 
-            'float32':'0.0' ,
+            'int32':'0', 
+            'float64':'0.0', 
+            'float32':'0.0',
             'string':'0',
         }
             

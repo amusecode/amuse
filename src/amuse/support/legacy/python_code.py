@@ -94,7 +94,7 @@ class PythonImplementation(object):
             except TypeError:
                 result = method(*list(keyword_arguments))
                 
-            self.fill_output_message(output_message, index , result, keyword_arguments, specification)
+            self.fill_output_message(output_message, index, result, keyword_arguments, specification)
         
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             array = getattr(output_message, attribute)

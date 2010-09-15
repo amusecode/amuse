@@ -515,7 +515,7 @@ class TestAthena(TestWithMPI):
                 self.assertEquals(allx[j][k], firstx)
         
         print instance.grid[0][0].rho
-        self.assertEquals(instance.grid[0][0][0].rho , 0.0 |generic_unit_system.mass / generic_unit_system.length ** 3)
+        self.assertEquals(instance.grid[0][0][0].rho, 0.0 |generic_unit_system.mass / generic_unit_system.length ** 3)
         
         
         potential_grid = core.Grid(12,22,42)

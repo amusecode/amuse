@@ -255,9 +255,9 @@ class TestInterfaceBinding(TestWithMPI):
         
         instance.parameters.set_defaults()
         
-        self.assertEquals(10.0 | units.no_unit , instance.parameters.maximum_number_of_stars)
+        self.assertEquals(10.0 | units.no_unit, instance.parameters.maximum_number_of_stars)
         instance.parameters.maximum_number_of_stars = 12 | units.no_unit
-        self.assertEquals(12.0 | units.no_unit , instance.parameters.maximum_number_of_stars)
+        self.assertEquals(12.0 | units.no_unit, instance.parameters.maximum_number_of_stars)
         instance.stop()
     
     def test2(self):
@@ -279,7 +279,7 @@ class TestInterfaceBinding(TestWithMPI):
         instance.update_particles(stars)
         
         self.assertEquals(stars[0].mass, 10 | units.MSun)
-        self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302 , 6)
+        self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302, 6)
         instance.stop()
     
     def xtest3(self):

@@ -106,8 +106,8 @@ class SSEParticles(Particles):
             "core_radius": 0 | units.RSun,
             "envelope_mass": 0 | units.MSun,
             "envelope_radius": 0 | units.RSun,
-            "epoch": 0 | units.Myr ,
-            "spin": 0 | units.none ,
+            "epoch": 0 | units.Myr,
+            "spin": 0 | units.none,
             "main_sequence_lifetime": 0 | units.Myr,
             "age": 0 | units.Myr
         }

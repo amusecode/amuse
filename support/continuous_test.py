@@ -44,7 +44,7 @@ class MakeSVNStatusReport(object):
     from xml.dom import minidom 
     
     def start(self):
-        process = Popen(['svn','info' , '--xml'], stdout = PIPE, stderr = PIPE)
+        process = Popen(['svn','info', '--xml'], stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         doc = self.minidom.parseString(stdoutstring)
         commit_node = list(doc.getElementsByTagName('commit'))[0]

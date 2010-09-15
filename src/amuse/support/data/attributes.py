@@ -28,42 +28,42 @@ class DomainMetaclass(type):
         
 class Domain(object):
     __metaclass__ = DomainMetaclass
-    time = 0.0 | si.s , "model time"
+    time = 0.0 | si.s, "model time"
     
 class Gravity(Domain):
-    mass = 0.0 | si.kg , "the mass of a star"
-    position = [0.0, 0.0, 0.0] | si.m , "the position vector of a star"
-    velocity = [0.0, 0.0, 0.0] | si.m / si.s , "the velocity vector of a star"
-    radius = 0.0 | si.m , "the radius of a star"
+    mass = 0.0 | si.kg, "the mass of a star"
+    position = [0.0, 0.0, 0.0] | si.m, "the position vector of a star"
+    velocity = [0.0, 0.0, 0.0] | si.m / si.s, "the velocity vector of a star"
+    radius = 0.0 | si.m, "the radius of a star"
     acceleration = [0.0, 0.0, 0.0] | si.m / (si.s ** 2), "the acceleraration vector of a star"
 
 class Hydrodynamics(Domain):
-    pressure = 0.0 | units.Pa , "the pressure in a region of space"
+    pressure = 0.0 | units.Pa, "the pressure in a region of space"
     density = 0.0 | si.kg / (si.m ** 3), "the density of molecules or solid matter"
-    temperature = 0.0 | si.K , "the temperature of the gas"
+    temperature = 0.0 | si.K, "the temperature of the gas"
     magnetic_field = 0.0 | units.tesla, "magnetic field created by gas and stars"
-    velovity_field = 0.0 | si.m / si.s  , "velocity of the gas"
-    gravity_potential = 0.0 | si.no_unit  , "gravity forces from stars and gas"
+    velovity_field = 0.0 | si.m / si.s, "velocity of the gas"
+    gravity_potential = 0.0 | si.no_unit, "gravity forces from stars and gas"
     viscosity = 0.0 | si.no_unit, "viscosity of the gas cloud"
     
 class RadiativeTransfer(Domain):
-    temperature_gas = 0.0 | si.K , "the temperature of the gas"
-    temperature_dust = 0.0 | si.K , "the temperature of the dust"
-    temperature_background = 0.0 | si.K , "the temperature of the background"
+    temperature_gas = 0.0 | si.K, "the temperature of the gas"
+    temperature_dust = 0.0 | si.K, "the temperature of the dust"
+    temperature_background = 0.0 | si.K, "the temperature of the background"
     density = 0.0 | si.mol / (si.m**3), "modulecular density"
     magnetic_field = 0.0 | units.tesla, "magnetic field created by gas and stars"
-    velovity_field = 0.0 | si.m / si.s  , "velocity of the gas"
+    velovity_field = 0.0 | si.m / si.s, "velocity of the gas"
     
     
     
 class StellarEvolution(Domain):
-    mass = 0.0 | si.kg , "the mass of a star"
-    radius = 0.0 | si.m , "the radius of a star"
-    age = 0.0 | si.s , "the age of a star, time evolved since star formation"
+    mass = 0.0 | si.kg, "the mass of a star"
+    radius = 0.0 | si.m, "the radius of a star"
+    age = 0.0 | si.s, "the age of a star, time evolved since star formation"
 
 
 class SseCode(StellarEvolution):
-    zams_mass = 0.0 | si.kg , "the mass of a star after formation"
+    zams_mass = 0.0 | si.kg, "the mass of a star after formation"
     type = 0 | si.no_unit, "stars evolve through typical stages, during each stage one can classify a star as belonging to a specific type"
     luminosity = 0.0 | si.cd / (si.m ** 2), "brightness of a star"
     radius = 0.0 | si.m, "total radius of a star"

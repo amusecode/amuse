@@ -45,7 +45,7 @@ def fill_grid_with_spherical_cloud(
     if subgridsize <= 1:
         return
     
-    selection = numpy.logical_and( radii >= (radius-dr) , radii <= (radius+dr))
+    selection = numpy.logical_and( radii >= (radius-dr), radii <= (radius+dr))
     subgrid = core.Grid.create((subgridsize, subgridsize, subgridsize), grid.cellsize())
     subgrid.x -= grid.cellsize()[0] / 2.0
     subgrid.y -= grid.cellsize()[1] / 2.0

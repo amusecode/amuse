@@ -103,7 +103,7 @@ class TableFormattedText(base.FileFormatProcessor):
     def attribute_types(self):
         "list of the types of the attributes to store"
         if self.set is None:
-            return map(lambda x : units.none , self.attribute_names)
+            return map(lambda x : units.none, self.attribute_names)
         else:
             quantities = self.quantities
             return map(lambda x : x.unit, quantities)

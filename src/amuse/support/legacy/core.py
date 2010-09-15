@@ -74,7 +74,7 @@ class LegacyCall(object):
         
         if not self.owner is None:
             logging.getLogger("legacy").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
-        self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
+        self.interface.channel.send_message(self.specification.id, **keyword_arguments_for_the_mpi_channel)
         
         if not self.owner is None:
             logging.getLogger("legacy").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
@@ -90,7 +90,7 @@ class LegacyCall(object):
         
         handle_as_array = self.must_handle_as_array(keyword_arguments_for_the_mpi_channel)
               
-        self.interface.channel.send_message(self.specification.id , **keyword_arguments_for_the_mpi_channel)
+        self.interface.channel.send_message(self.specification.id, **keyword_arguments_for_the_mpi_channel)
         
         request = self.interface.channel.nonblocking_recv_message(self.specification.id, handle_as_array)
         
@@ -308,7 +308,7 @@ class legacy_function(object):
 class legacy_global(object):
     """ deprecated! """
     
-    def __init__(self, name , id = None, dtype = 'i'):
+    def __init__(self, name, id = None, dtype = 'i'):
         """
         Decorator for legacy globals.
         
@@ -678,7 +678,7 @@ class LegacyPythonInterface(LegacyInterface):
     :argument implementation_factory: Class of the python implementation
     """
     
-    def __init__(self, implementation_factory = None, name_of_the_worker = None , **options):
+    def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
         if name_of_the_worker is None:
             if implementation_factory is None:
                 raise exceptions.LegacyException("Must provide the name of a worker script or the implementation_factory class")

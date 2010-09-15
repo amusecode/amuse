@@ -86,7 +86,7 @@ class StoreHDF(object):
     def __init__(self, filename, append_to_file=True):
         if not append_to_file and os.path.exists(filename):
             os.remove(filename)
-        self.hdf5file = h5py.File(filename ,'a')
+        self.hdf5file = h5py.File(filename,'a')
         
     def store(self, particles):
         particles_group = self.particles_group()

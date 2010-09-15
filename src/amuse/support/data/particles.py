@@ -960,7 +960,7 @@ class ParticlesSuperset(AbstractParticleSet):
             for valueindex, quantity in enumerate(values_for_set):
                 resultvalue = values[valueindex]
                 if resultvalue is None:
-                    resultvalue = numpy.zeros(resultlength ,dtype=quantity.number.dtype)
+                    resultvalue = numpy.zeros(resultlength,dtype=quantity.number.dtype)
                     values[valueindex] = resultvalue
                     units[valueindex] = quantity.unit
                     

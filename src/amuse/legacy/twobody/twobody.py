@@ -189,14 +189,14 @@ class TwoBodyImplementation(object):
       return -1
     self.particles.append( 
         {
-        'mass': mass , 
-        'radius' : radius , 
-        'x' : x , 
-        'y' : y , 
-        'z' : z ,
-        'vx' : vx ,
-        'vy' : vy ,
-        'vz' : vz ,
+        'mass': mass, 
+        'radius' : radius, 
+        'x' : x, 
+        'y' : y, 
+        'z' : z,
+        'vx' : vx,
+        'vy' : vy,
+        'vz' : vz,
         }
     )
     

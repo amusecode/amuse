@@ -275,6 +275,6 @@ class Capreole(CodeInterface):
         is max - min + 1.
         """
         nx, ny, nz = self.get_mesh_Size()
-        return (1, nx, 1 , ny , 1, nz)
+        return (1, nx, 1, ny, 1, nz)
     
     

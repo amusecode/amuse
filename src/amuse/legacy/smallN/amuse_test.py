@@ -46,7 +46,7 @@ if __name__ == "__main__":
         for k in range(0,2):
             print "==> Dump of Particle %d" % (k+1)
             print mult.particles[k]
-        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
+        print "==> Total Energy is ", mult.total_energy.as_quantity_in(units.J)
         mult.report_multiples(level=1)
 
         print "==> Particles set up.  Evolving until a stable regime is reached."
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         for k in range(0,2):
             print "==> Dump of Particle %d" % (k+1)
             print mult.particles[k]
-        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
+        print "==> Total Energy is ", mult.total_energy.as_quantity_in(units.J)
         mult.report_multiples(level=1)
         print "==> Interaction took %.2f years" % mult.get_time().value_in(units.yr)
         time_in_nbody = myunits.to_nbody(mult.get_time())
@@ -101,8 +101,8 @@ if __name__ == "__main__":
         for k in range(0,2):
             print "==> Dump of Particle %d" % (k+1)
             print mult.particles[k]
-        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
-        print "==> Total Energy is " , mult.get_total_energy()
+        print "==> Total Energy is ", mult.total_energy.as_quantity_in(units.J)
+        print "==> Total Energy is ", mult.get_total_energy()
         mult.report_multiples(level=1)
 
         print "==> Particles set up.  Evolving until a stable regime is reached."
@@ -118,7 +118,7 @@ if __name__ == "__main__":
         for k in range(0,2):
             print "==> Dump of Particle %d" % (k+1)
             print mult.particles[k]
-        print "==> Total Energy is " , mult.total_energy.as_quantity_in(units.J)
+        print "==> Total Energy is ", mult.total_energy.as_quantity_in(units.J)
         mult.report_multiples(level=1)
         print "==> Interaction took %.2f years" % mult.get_time().value_in(units.yr)
         time_in_nbody = myunits.to_nbody(mult.get_time())

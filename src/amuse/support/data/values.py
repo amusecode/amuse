@@ -85,31 +85,31 @@ class Quantity(object):
 
     def __add__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity(self.number + other_in_my_units.number , self.unit)
+        return new_quantity(self.number + other_in_my_units.number, self.unit)
     __radd__ = __add__
     
     def __sub__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity(self.number - other_in_my_units.number , self.unit)
+        return new_quantity(self.number - other_in_my_units.number, self.unit)
     
     def __rsub__(self, other):
         other_in_my_units = to_quantity(other).as_quantity_in(self.unit)
-        return new_quantity(other_in_my_units.number - self.number , self.unit)
+        return new_quantity(other_in_my_units.number - self.number, self.unit)
     
     def __mul__(self, other):
         other = to_quantity(other)
-        return new_quantity(self.number * other.number , (self.unit * other.unit).to_simple_form())
+        return new_quantity(self.number * other.number, (self.unit * other.unit).to_simple_form())
     __rmul__ = __mul__
     
     def __pow__(self, other):
-        return new_quantity(self.number ** other , self.unit ** other)
+        return new_quantity(self.number ** other, self.unit ** other)
     
     def __div__(self, other):
         other = to_quantity(other)
-        return new_quantity(self.number / other.number , (self.unit / other.unit).to_simple_form())
+        return new_quantity(self.number / other.number, (self.unit / other.unit).to_simple_form())
     
     def __rdiv__(self, other):
-        return new_quantity(other / self.number , (1.0 / self.unit).to_simple_form())
+        return new_quantity(other / self.number, (1.0 / self.unit).to_simple_form())
             
     def in_(self, x):
         return self.as_quantity_in(x)
@@ -372,7 +372,7 @@ class VectorQuantity(Quantity):
         [0.0, 2.0] kg
         """
         
-        return new_quantity( self._number[index] , self.unit )
+        return new_quantity( self._number[index], self.unit )
     
     def take(self, indices):
         return VectorQuantity(self._number.take(indices), self.unit)

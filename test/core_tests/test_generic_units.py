@@ -61,7 +61,7 @@ class TestGenericUnits(amusetest.TestCase):
         T_in_si = convert_generic.to_si(T)
         L_in_si = convert_generic.to_si(L)
     
-        self.assertAlmostEqual(M_in_si, [1.989e40   , 2*1.989e40   ] | units.kg, 3, in_units=1.0e10*units.MSun)
+        self.assertAlmostEqual(M_in_si, [1.989e40, 2*1.989e40   ] | units.kg, 3, in_units=1.0e10*units.MSun)
         self.assertAlmostEqual(T_in_si, [3.085678e16, 2*3.085678e16] | units.s, 3, in_units=units.s*units.kpc/units.km)
         self.assertAlmostEqual(L_in_si, [3.085678e19, 2*3.085678e19] | units.m, 3, in_units=3.085678e19*units.m)
     

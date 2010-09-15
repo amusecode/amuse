@@ -11,7 +11,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
     def test1(self):
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACLegacyCode()
         instance.name_of_the_code_interface_class = 'TestCode'
-        self.assertEquals(instance.name_of_the_legacy_code , 'testcode')
+        self.assertEquals(instance.name_of_the_legacy_code, 'testcode')
         self.assertTrue(instance.path_of_the_legacy_code.endswith('testcode'))
     
     def test2(self):
@@ -26,7 +26,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACLegacyCode()
         instance.name_of_the_code_interface_class = 'TestCode'
         instance.path_of_the_root_directory = root
-        self.assertEquals(instance.reference_to_amuse_path ,'../..')
+        self.assertEquals(instance.reference_to_amuse_path,'../..')
         
         instance.start()
         
@@ -93,7 +93,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         instance = create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranLegacyCode()
         instance.name_of_the_code_interface_class = 'TestCodeF'
         instance.path_of_the_root_directory = root
-        self.assertEquals(instance.reference_to_amuse_path ,'../..')
+        self.assertEquals(instance.reference_to_amuse_path,'../..')
         
         instance.start()
         

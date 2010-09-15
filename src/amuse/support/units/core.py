@@ -598,7 +598,7 @@ class factor_unit(derived_unit):
     quantity<3600.0 s>
     
     """
-    def __init__(self, factor , unit, name = None, symbol = None):
+    def __init__(self, factor, unit, name = None, symbol = None):
         self.name = name
         self.symbol = symbol
         self.local_factor = factor
@@ -640,7 +640,7 @@ class mul_unit(derived_unit):
     quantity<10000.0 m * m>
     
     """
-    def __init__(self, left_hand , right_hand):
+    def __init__(self, left_hand, right_hand):
         self.left_hand = left_hand
         self.right_hand = right_hand
         
@@ -683,7 +683,7 @@ class pow_unit(derived_unit):
     quantity<10000.0 m**2>
     
     """
-    def __init__(self, power , unit):
+    def __init__(self, power, unit):
         self.power = power
         self.local_unit = unit
         
@@ -726,7 +726,7 @@ class div_unit(derived_unit):
     quantity<1.0 m * s**-1>
     
     """
-    def __init__(self, left_hand , right_hand):
+    def __init__(self, left_hand, right_hand):
         self.left_hand = left_hand
         self.right_hand = right_hand
         

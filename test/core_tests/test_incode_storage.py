@@ -42,7 +42,7 @@ class TestParticles(amusetest.TestCase):
         code = Code()
         storage = InCodeAttributeStorage(
             code,
-            NewParticleMethod(code.new_particle ,("x","y","z")),
+            NewParticleMethod(code.new_particle,("x","y","z")),
             None,
             code.get_number_of_particles,
             [],
@@ -112,7 +112,7 @@ class TestParticles(amusetest.TestCase):
         code = Code()
         storage = InCodeAttributeStorage(
             code,
-            NewParticleMethod(code.new_particle ,("x","y","z","mass")),
+            NewParticleMethod(code.new_particle,("x","y","z","mass")),
             None,
             code.get_number_of_particles,
             [],

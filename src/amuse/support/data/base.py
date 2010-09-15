@@ -315,7 +315,7 @@ class AbstractSet(object):
         if isinstance(x, Quantity):
             return x 
         else:
-            return new_quantity( map(lambda y : (-1 if y is None else y.key) , x) , units.object_key)
+            return new_quantity( map(lambda y : (-1 if y is None else y.key), x), units.object_key)
         
     #
     # Particle storage interface

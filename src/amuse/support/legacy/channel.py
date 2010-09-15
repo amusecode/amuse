@@ -337,7 +337,7 @@ class MessageChannel(OptionalAttributes):
         current_type=type
         while not found:
             directory_of_this_module = os.path.dirname(inspect.getfile(current_type))
-            full_name_of_the_worker = os.path.join(directory_of_this_module , self.name_of_the_worker)
+            full_name_of_the_worker = os.path.join(directory_of_this_module, self.name_of_the_worker)
             found = os.path.exists(full_name_of_the_worker)
             if not found:
                 tried_workers.append(full_name_of_the_worker)
@@ -420,7 +420,7 @@ class RunStandardStreamsRedirection(object):
         
     def setup(self):
         self.fd_stdin_r, self.fd_stdin_w = os.pipe()
-        self.fd_stdout_r , self.fd_stdout_w= os.pipe()
+        self.fd_stdout_r, self.fd_stdout_w= os.pipe()
         self.fd_stderr_r, self.fd_stderr_w = os.pipe()
     
     def before_spawn(self):

@@ -40,7 +40,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_input_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name , self.method.specification.input_parameters)
+            return map(lambda x : x.name, self.method.specification.input_parameters)
         else:
             args = inspect.getargspec(self.method).args
             if args:
@@ -53,7 +53,7 @@ class AbstractCodeMethodWrapper(object):
         if self.method_is_code:
             return self.method.method_output_argument_names
         elif self.method_is_legacy:
-            return map(lambda x : x.name , self.method.specification.output_parameters)
+            return map(lambda x : x.name, self.method.specification.output_parameters)
         else:
             return ()
            

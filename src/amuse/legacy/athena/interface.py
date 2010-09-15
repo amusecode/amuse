@@ -81,7 +81,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInt
         ni = self.par_geti("domain1", "Nx1")
         nj = self.par_geti("domain1", "Nx2")
         nk = self.par_geti("domain1", "Nx3")
-        return (0, ni[0]-1, 0 , nj[0]-1 , 0, nk[0]-1)
+        return (0, ni[0]-1, 0, nj[0]-1, 0, nk[0]-1)
         
     def get_mesh_indices(self):
         """
@@ -349,7 +349,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInt
         return self.par_getd("problem", "gamma"), 0
     
     def get_courant_friedrichs_lewy_number(self):
-        return self.par_getd("time", "cour_no") , 0
+        return self.par_getd("time", "cour_no"), 0
     
     
 class Athena(CodeInterface):

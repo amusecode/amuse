@@ -78,8 +78,8 @@ def print_log(time, gravity, particles, total_energy_at_t0, total_energy_at_this
     print total_energy_at_t0.as_quantity_in(units.J), total_energy_at_this_time.as_quantity_in(units.J), (total_energy_at_this_time - total_energy_at_t0) / total_energy_at_t0
     #print "KE:" , particles.kinetic_energy().as_quantity_in(units.J)
     #print "PE:" , particles.potential_energy(gravity.parameters.epsilon_squared)
-    print  "center of mass:" , particles.center_of_mass()
-    print  "center of mass velocity:" , particles.center_of_mass_velocity()
+    print  "center of mass:", particles.center_of_mass()
+    print  "center of mass velocity:", particles.center_of_mass_velocity()
     
 def simulate_small_cluster(number_of_stars, end_time = 40 | units.Myr, name_of_the_figure = "test-2.svg"):
     #numpy.random.seed(1)

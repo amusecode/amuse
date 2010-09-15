@@ -239,7 +239,7 @@ class OptionsTests(amusetest.TestCase):
         self.assertEquals(instance.int_option, "1")
         all_options = list(instance.iter_options())
         self.assertEquals(len(all_options), 1)
-        self.assertEquals(all_options[0].name , "int_option")
+        self.assertEquals(all_options[0].name, "int_option")
 
     def test12(self):
         global_options = options.GlobalOptions()

@@ -121,7 +121,7 @@ class TestNonNumericUnits(amusetest.TestCase):
             [1,2,3],
             ["one", "two", "three"]
         )
-        self.assertEquals(3 , len(list(test_unit.quantities())))  
+        self.assertEquals(3, len(list(test_unit.quantities())))  
         for x, y in  zip(test_unit.quantities(), ["one", "two", "three"]):
             self.assertEquals(str(x), y)
     
@@ -132,7 +132,7 @@ class TestNonNumericUnits(amusetest.TestCase):
             "test",
             [1,4,7]
         )
-        self.assertEquals(3 , len(list(test_unit.quantities())))  
+        self.assertEquals(3, len(list(test_unit.quantities())))  
         for x, y in  zip(test_unit.quantities(), ["1", "4", "7"]):
             self.assertEquals(str(x), y)
     
@@ -142,7 +142,7 @@ class TestNonNumericUnits(amusetest.TestCase):
             "test",
             range(5)
         )
-        self.assertEquals(5 , len(list(test_unit.quantities())))
+        self.assertEquals(5, len(list(test_unit.quantities())))
         self.assertEquals(1 | test_unit, 1 | test_unit)
         self.assertTrue (1 | test_unit == 1 | test_unit)
         self.assertFalse(1 | test_unit == 2 | test_unit)

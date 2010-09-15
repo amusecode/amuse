@@ -390,7 +390,7 @@ class MakeAReportOfATestRun(object):
         result = self.to_information_dict()
         
         for x in [ 
-            'errors', 'failures', 'tests' , 
+            'errors', 'failures', 'tests', 
             'start_time', 'end_time', 'skipped',
             ]:
             result[x] = getattr(self, x)
@@ -465,7 +465,7 @@ class RunTests(object):
             report = MakeAReportOfATestRun(previous_report, results_queue)
             doctest = Doctest()
             doctest.enabled = True
-            plugins = [doctest, report , Skip(), Capture()] 
+            plugins = [doctest, report, Skip(), Capture()] 
             argv = ['nose', '-v']
             old_working_directory = os.getcwd()
             if not self.WORKING_DIRECTORY is None:
