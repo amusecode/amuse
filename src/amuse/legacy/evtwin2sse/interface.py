@@ -128,8 +128,8 @@ class EVtwin2SSE:
                 for evtwin_star, sse_track in zip(self._EVtwin.particles, self._SSETimeseries.particles):
                     self._SSE_rms_search(evtwin_star, sse_track)
                     # TODO: Add ModelSwitchFailed exception when RMS statistics is above some threshold?
-                    print "Evtwin2SSE switch parameters: %s %s %s %s" %  
-                            (sse_track.SSEIndexAtSwitch, sse_track.SSENextStateIndex, sse_track.SSEAgeAtSwitch, sse_track.RMSErrorAtSwitch)
+                    print ("Evtwin2SSE switch parameters: %s %s %s %s" %  
+                            (sse_track.SSEIndexAtSwitch, sse_track.SSENextStateIndex, sse_track.SSEAgeAtSwitch, sse_track.RMSErrorAtSwitch))
 
                 self._evolve_model_SSE()
 
@@ -171,9 +171,9 @@ class EVtwin2SSE:
             rel_diff_radius = (sse_track.radius[i] - evtwin_star.radius) / evtwin_star.radius
             rel_diff_luminosity = (sse_track.luminosity[i] - evtwin_star.luminosity) / evtwin_star.luminosity
 
-            rms = (rel_diff_mass.value_in(units.none))**2  
-                    + (rel_diff_radius.value_in(units.none))**2  
-                    + (rel_diff_luminosity.value_in(units.none))**2 
+            rms = ((rel_diff_mass.value_in(units.none))**2  \
+                    + (rel_diff_radius.value_in(units.none))**2  \
+                    + (rel_diff_luminosity.value_in(units.none))**2)
 
             if (rms < sse_track.RMSErrorAtSwitch):
                 sse_track.SSEIndexAtSwitch = i
@@ -210,8 +210,8 @@ class EVtwin2SSE:
 
 def _sse_search_endpoint_reached(stars):
     for star in stars:
-        if (0 <= star.stellar_type.value_in(units.stellar_type) and  
-                star.stellar_type.value_in(units.stellar_type) <= 9) or  
+        if (0 <= star.stellar_type.value_in(units.stellar_type) and \
+                star.stellar_type.value_in(units.stellar_type) <= 9) or  \
                 star.stellar_type.value_in(units.stellar_type) == 16:
             return False
     return True

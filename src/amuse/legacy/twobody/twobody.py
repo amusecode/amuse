@@ -49,13 +49,13 @@ def lagrange_dgdxi(xi,r0,vr0,smu,alpha):
 
 def universal_kepler(xi,r0,vr0,smu,alpha):
     z=alpha*xi**2
-    return r0*vr0*xi**2*stumpff_C(z)/smu+  
-           (1-alpha*r0)*xi**3*stumpff_S(z)+r0*xi
+    return (r0*vr0*xi**2*stumpff_C(z)/smu+  
+           (1-alpha*r0)*xi**3*stumpff_S(z)+r0*xi)
 
 def universal_kepler_dxi(xi,r0,vr0,smu,alpha):
     z=alpha*xi**2
-    return r0*vr0*xi*(1-alpha*xi**2*stumpff_S(z))/smu +  
-           (1-alpha*r0)*xi**2*stumpff_C(z)+r0  
+    return (r0*vr0*xi*(1-alpha*xi**2*stumpff_S(z))/smu +  
+           (1-alpha*r0)*xi**2*stumpff_C(z)+r0)
 
 def universal_kepler_dxidxi(xi,r0,vr0,smu,alpha):
     z=alpha*xi**2
@@ -150,7 +150,7 @@ def universal_solver(mu,pos0,vel0,dt):
     
     pos=pos0*lagrange_f(xi,r0,vr0,smu,alpha)+vel0*lagrange_g(xi,r0,vr0,smu,alpha)
     r=math.sqrt(reduce(lambda x,y: x+ y**2,pos,0))
-    vel=pos0*smu/r*lagrange_dfdxi(xi,r0,vr0,smu,alpha)+ 
+    vel=pos0*smu/r*lagrange_dfdxi(xi,r0,vr0,smu,alpha)+ \
         vel0*smu/r*lagrange_dgdxi(xi,r0,vr0,smu,alpha)
     return pos,vel
 

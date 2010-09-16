@@ -155,14 +155,14 @@ def interpolate_trilinear(x,y,z,farray):
     q222 = farray[xint1, yint1, zint1]
     q122 = farray[xint, yint1, zint1]
 
-    return q222* fx*fy*fz +  
+    return (q222* fx*fy*fz +  
       q122* (1-fx)*fy*fz +  
       q212* fx*(1-fy)*fz +  
       q112* (1-fx)*(1-fy)*fz +  
       q221* fx*fy*(1-fz) +  
       q121* (1-fx)*fy*(1-fz) +  
       q211* fx*(1-fy)*(1-fz) +  
-      q111* (1-fx)*(1-fy)*(1-fz)
+      q111* (1-fx)*(1-fy)*(1-fz))
 
 class molecular_cloud(object):
     def __init__(self,nf=32,power=-3.,targetN=10000, ethep_ratio=0.01,

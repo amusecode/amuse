@@ -42,13 +42,13 @@ def simulate_stellar_evolution(
     Finally, a Hertzsprung-Russell diagram will be produced for the final state of the 
     simulation.
     """
-    print "The evolution of", str(number_of_stars), "stars will be ",  
+    print "The evolution of", str(number_of_stars), "stars will be ",  \
             "simulated until t =", str(end_time), "..."
     
     stellar_evolution.initialize_module_with_current_parameters()
     
-    print "Deriving a set of", str(number_of_stars), "random masses",  
-            "following a Salpeter IMF between 0.1 and 125 MSun (alpha = -2.35)."
+    print ("Deriving a set of", str(number_of_stars), "random masses",  
+            "following a Salpeter IMF between 0.1 and 125 MSun (alpha = -2.35).")
     
     initial_mass_function = SalpeterIMF()
     total_mass, salpeter_masses = initial_mass_function.next_set(number_of_stars)

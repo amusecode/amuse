@@ -69,7 +69,7 @@ def planetplot():
         time=time+8
         err=instance.evolve(time)
         for p in solarsystem:
-            mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=  
+            mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=  \
               instance.get_orbiter_state(ids[p[0]])
             xpos[p[0]].append(x)
             ypos[p[0]].append(y)
