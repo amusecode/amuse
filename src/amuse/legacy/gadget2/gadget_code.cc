@@ -870,6 +870,18 @@ int get_n_neighbours(int index, double *n_neighbours){
     }
     return -1;
 }
+int get_epsilon_dm_part(int index, double *epsilon){
+    *epsilon = All.SofteningHalo;
+    return 0;
+}
+int get_epsilon_gas_part(int index, double *epsilon){
+#if defined(ADAPTIVE_GRAVSOFT_FORGAS) &&  defined(UNEQUALSOFTENINGS)
+    return get_smoothing_length(index, epsilon)
+#else
+    *epsilon = All.SofteningGas;
+    return 0;
+#endif
+}
 
 
 

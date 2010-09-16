@@ -202,6 +202,24 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def get_epsilon_dm_part():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('radius', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_epsilon_gas_part():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('radius', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
     
     
 # setting/ getting parameters
@@ -729,6 +747,7 @@ class Gadget2(GravitationalDynamics):
         object.add_setter('dm_particles', 'set_velocity')
         object.add_getter('dm_particles', 'get_velocity')
         object.add_getter('dm_particles', 'get_acceleration')
+        object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('radius','epsilon','eps'))
         
         object.define_set('gas_particles', 'index_of_the_particle')
         object.set_new('gas_particles', 'new_sph_particle')
@@ -747,6 +766,7 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_smoothing_length')
         object.add_getter('gas_particles', 'get_density')
         object.add_getter('gas_particles', 'get_n_neighbours')
+        object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius','epsilon','eps'))
 
         self.stopping_conditions.define_particle_set(object, 'dm_particles')
         self.stopping_conditions.define_particle_set(object, 'gas_particles')
@@ -1016,6 +1036,16 @@ class Gadget2(GravitationalDynamics):
             "get_n_neighbours",
             (object.INDEX,),
             (units.none, object.ERROR_CODE)
+        )
+        object.add_method(
+            "get_epsilon_dm_part",
+            (object.INDEX,),
+            (generic_unit_system.length, object.ERROR_CODE)
+        )
+        object.add_method(
+            "get_epsilon_gas_part",
+            (object.INDEX,),
+            (generic_unit_system.length, object.ERROR_CODE)
         )
         
         object.add_method(
