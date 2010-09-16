@@ -1,6 +1,12 @@
 from math import *
 import numpy
 
+from amuse.support.data import core
+from amuse.support.units import nbody_system
+from amuse.support.units import units
+from amuse.support.units import constants
+
+
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import uniform_unit_sphere
 
@@ -166,10 +172,11 @@ def interpolate_trilinear(x,y,z,farray):
 
 class molecular_cloud(object):
     def __init__(self,nf=32,power=-3.,targetN=10000, ethep_ratio=0.01,
-                   ekep_ratio=1.,seed=None,base_grid=None):
+                   convert_nbody=None,ekep_ratio=1.,seed=None,base_grid=None):
         self.nf=nf
         self.power=power
         self.targetN=targetN
+        self.convert_nbody=convert_nbody
         self.seed=seed
         self.base_grid=base_grid
         self.ethep_ratio=ethep_ratio
@@ -208,12 +215,39 @@ class molecular_cloud(object):
       
         return (mass,x,y,z,vx,vy,vz,internal_energy)
 
+    @property
+    def result(self):
+        mass,x,y,z,vx,vy,vz,u = self.new_model()
+        result = core.Particles(self.actualN)
+        result.mass = nbody_system.mass.new_quantity(mass)
+        result.x = nbody_system.length.new_quantity(x)
+        result.y = nbody_system.length.new_quantity(y)
+        result.z = nbody_system.length.new_quantity(z)
+        result.vx = nbody_system.speed.new_quantity(vx)
+        result.vy = nbody_system.speed.new_quantity(vy)
+        result.vz = nbody_system.speed.new_quantity(vz)
+        result.u = (nbody_system.speed**2).new_quantity(u)
+
+        if not self.convert_nbody is None:
+            result = core.ParticlesWithUnitsConverted(result, self.convert_nbody.as_converter_from_si_to_nbody())
+            result = result.copy_to_memory()
+
+        return result
 
 if __name__=="__main__":
-    cloud=molecular_cloud()
-    m,x,y,z,vx,vy,vz,e=cloud.new_model()
+    convert_nbody = nbody_system.nbody_to_si(10000. | units.MSun, 1. | units.parsec)
+    cloud=molecular_cloud(convert_nbody=convert_nbody)
+    parts=cloud.result
+    print parts[0].u**0.5
+    print len(parts)*parts[0].mass.in_(units.MSun)
 
+    mu=1.4 | units.amu
+    gamma1=1.6667-1
+    print 'Temp:', (gamma1*min(parts.u)*mu/constants.kB).in_(units.K)
 
+    total_mass=10000. | units.MSun
+    radius=1. | units.parsec
+    print 'dens:',(total_mass*3/4./3.1415/radius**3).in_(units.amu/units.cm**3) 
   
   
   
