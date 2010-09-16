@@ -8,70 +8,70 @@ from amuse.support.data.core import Particles, ParticlesWithUnitsConverted
 initial conditions for the SPH evrard collapse test
 """
 class uniform_random_unit_cube(object):
-  def __init__(self,targetN):
-    self.targetN=targetN
-    self.par=long(targetN)
-  def make_xyz(self):
-    x=numpy.random.uniform(-1.,1.,self.par)
-    y=numpy.random.uniform(-1.,1.,self.par)
-    z=numpy.random.uniform(-1.,1.,self.par)
-    return x,y,z
+    def __init__(self,targetN):
+        self.targetN=targetN
+        self.par=long(targetN)
+    def make_xyz(self):
+        x=numpy.random.uniform(-1.,1.,self.par)
+        y=numpy.random.uniform(-1.,1.,self.par)
+        z=numpy.random.uniform(-1.,1.,self.par)
+        return x,y,z
 
 class regular_grid_unit_cube(object):
-  def __init__(self,targetN):
-    self.targetN=targetN
-    self.par=long(float(targetN)**(1./3.)+1.5) 
-  def make_xyz(self):
-    nf=self.par
-    x,y,z=numpy.mgrid[-1.:1.:nf*1j,-1.:1.:nf*1j,-1.:1.:nf*1j] 
-    x=x.flatten()
-    y=y.flatten()
-    z=z.flatten()
-    return x,y,z
+    def __init__(self,targetN):
+        self.targetN=targetN
+        self.par=long(float(targetN)**(1./3.)+1.5) 
+    def make_xyz(self):
+        nf=self.par
+        x,y,z=numpy.mgrid[-1.:1.:nf*1j,-1.:1.:nf*1j,-1.:1.:nf*1j] 
+        x=x.flatten()
+        y=y.flatten()
+        z=z.flatten()
+        return x,y,z
 
 class body_centered_grid_unit_cube(object):
-  def __init__(self,targetN):
-    self.targetN=targetN
-    self.par=long(float(targetN/2.)**(1./3.)+1.5) 
+    def __init__(self,targetN):
+        self.targetN=targetN
+        self.par=long(float(targetN/2.)**(1./3.)+1.5)   
 
-  def make_xyz(self):
-    nf=self.par
-    x1,y1,z1=numpy.mgrid[-1.:1.:nf*1j,-1.:1.:nf*1j,-1.:1.:nf*1j] 
-    x2,y2,z2=numpy.mgrid[-1.+1./2/nf:1.-1./2/nf:(nf-1)*1j, \
-      -1.+1./2/nf:1.-1./2/nf:(nf-1)*1j,-1.+1./2/nf:1.-1./2/nf:(nf-1)*1j]                        
-    x=numpy.concatenate( (x1.flatten(),x2.flatten()) )
-    y=numpy.concatenate( (y1.flatten(),y2.flatten()) )
-    z=numpy.concatenate( (z1.flatten(),z2.flatten()) )
-    return x,y,z
+    def make_xyz(self):
+        nf=self.par
+        x1,y1,z1=numpy.mgrid[-1.:1.:nf*1j,-1.:1.:nf*1j,-1.:1.:nf*1j] 
+        x2,y2,z2=numpy.mgrid[-1.+1./2/nf:1.-1./2/nf:(nf-1)*1j,  
+          -1.+1./2/nf:1.-1./2/nf:(nf-1)*1j,-1.+1./2/nf:1.-1./2/nf:(nf-1)*1j]                        
+        x=numpy.concatenate( (x1.flatten(),x2.flatten()) )
+        y=numpy.concatenate( (y1.flatten(),y2.flatten()) )
+        z=numpy.concatenate( (z1.flatten(),z2.flatten()) )
+        return x,y,z
 
 class uniform_unit_sphere(object):
-  def __init__(self,targetN, base_grid=None):
-    cube_sphere_ratio=4/3.*numpy.pi*0.5**3
-    self.targetN=targetN
-    self.estimatedN=targetN/cube_sphere_ratio
-    if base_grid is None:
-      self.base_grid=uniform_random_unit_cube
-    else:
-      self.base_grid=base_grid
- 
-  def cutout_sphere(self,x,y,z):
-    r=x**2+y**2+z**2
-    selection=r < numpy.ones_like(r)        
-    x=x.compress(selection)
-    y=y.compress(selection)
-    z=z.compress(selection)
-    return x,y,z
+    def __init__(self,targetN, base_grid=None):
+        cube_sphere_ratio=4/3.*numpy.pi*0.5**3
+        self.targetN=targetN
+        self.estimatedN=targetN/cube_sphere_ratio
+        if base_grid is None:
+            self.base_grid=uniform_random_unit_cube
+        else:
+            self.base_grid=base_grid
+   
+    def cutout_sphere(self,x,y,z):
+        r=x**2+y**2+z**2
+        selection=r < numpy.ones_like(r)        
+        x=x.compress(selection)
+        y=y.compress(selection)
+        z=z.compress(selection)
+        return x,y,z
 
-  def make_xyz(self):
-    if(self.base_grid==uniform_random_unit_cube):
-      estimatedN=self.estimatedN
-      x=[]
-      while len(x) < self.targetN:
-        estimadedN=estimatedN*1.1+1
-        x,y,z=self.cutout_sphere(*(self.base_grid(estimatedN)).make_xyz())
-      return x[0:self.targetN],y[0:self.targetN],z[0:self.targetN]  
-    else:
-      return self.cutout_sphere(*(self.base_grid(self.estimatedN)).make_xyz())
+    def make_xyz(self):
+        if(self.base_grid==uniform_random_unit_cube):
+            estimatedN=self.estimatedN
+            x=[]
+            while len(x) < self.targetN:
+                estimadedN=estimatedN*1.1+1
+                x,y,z=self.cutout_sphere(*(self.base_grid(estimatedN)).make_xyz())
+            return x[0:self.targetN],y[0:self.targetN],z[0:self.targetN]  
+        else:
+            return self.cutout_sphere(*(self.base_grid(self.estimatedN)).make_xyz())
         
 class MakeEvrardTest(object):
     def __init__(self, targetN, base_grid=None, size=1.,
@@ -168,5 +168,5 @@ def new_evrard_gas_sphere(target_number_of_particles, *list_arguments, **keyword
 
 
 if __name__=="__main__":
-  x,y,z=uniform_unit_sphere(10000).make_xyz()
-  print len(x)
+    x,y,z=uniform_unit_sphere(10000).make_xyz()
+    print len(x)

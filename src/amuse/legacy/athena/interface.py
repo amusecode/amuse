@@ -97,11 +97,11 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInt
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         for x in ['i','j','k']:
-          function.addParameter(x, dtype='i', direction=function.IN)
+            function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['level','domain']:
-          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         for x in ['x','y','z']:
-          function.addParameter(x, dtype='d', direction=function.OUT)
+            function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
         
@@ -110,11 +110,11 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInt
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         for x in ['x','y','z']:
-          function.addParameter(x, dtype='d', direction=function.IN)
+            function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['level','domain']:
-          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         for x in ['i','j','k']:
-          function.addParameter(x, dtype='d', direction=function.OUT)
+            function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
     
@@ -137,7 +137,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInt
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['level','domain']:
-          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -154,7 +154,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInt
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['level','domain']:
-          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
@@ -168,7 +168,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInt
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         for x in ['level','domain']:
-          function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
         function.result_type = 'i'
         return function
         

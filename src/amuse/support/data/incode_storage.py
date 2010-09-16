@@ -221,8 +221,8 @@ class ParticleSpecificSelectMethod(object):
         
         lists_of_keys = []
         for indices in lists_of_indices:
-                keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)        
-                lists_of_keys.append(keys)
+            keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)        
+            lists_of_keys.append(keys)
         
         result = []
         for keys in zip(list_of_keys):
@@ -408,9 +408,9 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         
         keys_set = set(keys)
         for index in range(len(self.particle_keys)):
-           key = self.particle_keys[index]
-           if key in keys_set:
-               result.append(index)
+            key = self.particle_keys[index]
+            if key in keys_set:
+                result.append(index)
           
         return result
          

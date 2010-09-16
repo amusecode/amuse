@@ -963,10 +963,10 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         return function;
 
     def set_eps2(self,eps2):
-      return self.set_eps(eps2**0.5)
+        return self.set_eps(eps2**0.5)
     def get_eps2(self):
-      eps,err=self.get_eps()
-      return eps**2, err
+        eps,err=self.get_eps()
+        return eps**2, err
 
     @legacy_function
     def set_gdgtol():
@@ -1482,9 +1482,9 @@ class Fi(GravitationalDynamics):
     def __init__(self, convert_nbody = None, use_gl = False, **options):
                 
         if(use_gl):
-          legacy_interface = GlFiInterface(**options)
+            legacy_interface = GlFiInterface(**options)
         else:
-          legacy_interface = FiInterface(**options)            
+            legacy_interface = FiInterface(**options)            
         self.legacy_doc = legacy_interface.__doc__
         
         #if convert_nbody is None:

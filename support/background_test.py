@@ -72,18 +72,18 @@ def extract_tb(tb, limit = None):
         if '__file__' in f.f_globals:
             for global_name, x in f.f_globals.iteritems():
                 if global_name.startswith('_'):
-                   continue
+                    continue
                    
                 if inspect.isfunction(x):
                     if global_name == name and x.func_code == co:
                         args, varargs, varkw, defaults = inspect.getargspec(x)
                         name += inspect.formatargspec(args, varargs, varkw, defaults)
                 elif inspect.isclass(x):
-                        method = find_method_in_class(name,co,x)
-                        if not method is None:
-                            args, varargs, varkw, defaults = inspect.getargspec(method)
-                            name += inspect.formatargspec(args, varargs, varkw, defaults)
-                            name = x.__name__ + '.' + name
+                    method = find_method_in_class(name,co,x)
+                    if not method is None:
+                        args, varargs, varkw, defaults = inspect.getargspec(method)
+                        name += inspect.formatargspec(args, varargs, varkw, defaults)
+                        name = x.__name__ + '.' + name
                             
         if line:
             line = line.strip()
@@ -307,9 +307,9 @@ class MakeAReportOfATestRun(object):
 
     def startTest(self, test):
         if self.is_test_able_to_run(test):
-           return
+            return
         else:
-           raise SkipTest
+            raise SkipTest
 
     def is_test_able_to_run(self, test):
         report = self.get_report(test)
@@ -431,12 +431,12 @@ class SelectOneTestAndStoreOutput(object):
             
     def startTest(self, test):
         if test.address() == self.address:
-           self.stdout = sys.stdout
-           self.capture_stdout = StringIO()
-           sys.stdout = self.capture_stdout 
-           return
+            self.stdout = sys.stdout
+            self.capture_stdout = StringIO()
+            sys.stdout = self.capture_stdout 
+            return
         else:
-           raise SkipTest
+            raise SkipTest
         
     @property
     def buffer(self):

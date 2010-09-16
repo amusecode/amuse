@@ -109,9 +109,9 @@ class LegacyCall(object):
     def must_handle_as_array(self, keyword_arguments):
         result = False
         for x in keyword_arguments.values():
-           if x and hasattr(x[0],"__len__"):
-              result = len(x[0]) > 0
-              break
+            if x and hasattr(x[0],"__len__"):
+                result = len(x[0]) > 0
+                break
         return result
         
     """

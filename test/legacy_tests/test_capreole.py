@@ -223,7 +223,7 @@ class TestSodShocktube(TestWithMPI):
         rhoexp[3]=rho[1]*(pres[3]+g*pres[1])/(pres[1]+g*pres[3])
         
         for i in range(len(rho)):
-          self.assertAlmostEqual(rhoexp[i],rho[i],2)
+            self.assertAlmostEqual(rhoexp[i],rho[i],2)
     
 
 class TestCapreole(TestWithMPI):

@@ -37,7 +37,7 @@ def combine_indices(index0, index1):
         
     if isinstance(index0, tuple):
         if len(index0) == 1:
-           index0 = index0[0]
+            index0 = index0[0]
         else:
             result = []
             result.extend(index0[:-1])

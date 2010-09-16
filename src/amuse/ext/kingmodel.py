@@ -382,8 +382,8 @@ class MakeKingModel(object):
         if not (len(zm) == nprof+1 and len(d) == nprof+1 and 
             len(rr) == nprof+1 and len(v2) == nprof+1 and 
             len(psi) == nprof+1):
-                print len(zm), len(d), len(rr), len(v2), len(psi), nprof+1
-                raise exceptions.AmuseException("Error in result of Poisson")
+            print len(zm), len(d), len(rr), len(v2), len(psi), nprof+1
+            raise exceptions.AmuseException("Error in result of Poisson")
         #    // Determine statistics and characteristic scales of the King model.
         rho0 = 1 / zm[nprof]#	 // Central density for total mass = 1
         #    // Unit of velocity = sig, where rc^2 = 9 sig^2 / (4 pi G rho0)

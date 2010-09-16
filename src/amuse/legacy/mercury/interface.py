@@ -95,7 +95,7 @@ class Mercury(LegacyInterface):
     def get_central_oblateness():
         function = LegacyFunctionSpecification()   
         for x in ['j2','j4','j6']:
-          function.addParameter(x, dtype='d', direction=function.OUT)
+            function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 
@@ -103,7 +103,7 @@ class Mercury(LegacyInterface):
     def set_central_oblateness():
         function = LegacyFunctionSpecification()   
         for x in ['j2','j4','j6']:
-          function.addParameter(x, dtype='d', direction=function.IN)
+            function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -111,7 +111,7 @@ class Mercury(LegacyInterface):
     def get_central_spin():
         function = LegacyFunctionSpecification()   
         for x in ['lx','ly','lz']:
-          function.addParameter(x, dtype='d', direction=function.OUT)
+            function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 
@@ -119,7 +119,7 @@ class Mercury(LegacyInterface):
     def set_central_spin():
         function = LegacyFunctionSpecification()   
         for x in ['lx','ly','lz']:
-          function.addParameter(x, dtype='d', direction=function.IN)
+            function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 

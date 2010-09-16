@@ -272,7 +272,7 @@ class RunAllTestsOnASvnCommit(object):
     
     def cleanup_compiled_python_files(self):
         for path in self.find_pyc_files(self.working_directory):
-          os.remove(path)
+            os.remove(path)
 
     def find_pyc_files(self, rootname):
         for dirname, subdirectories, files in os.walk(rootname):
@@ -475,7 +475,7 @@ class RunAllTestsOnASvnCommit(object):
         path = os.path.dirname(__file__)
         path = os.path.join(path, "reports.map")
         with open(path, 'w') as f:
-          pickle.dump(self.mapping_from_revision_to_report, f)
+            pickle.dump(self.mapping_from_revision_to_report, f)
     
     @late
     def mapping_from_revision_to_report(self):

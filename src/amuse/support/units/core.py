@@ -230,7 +230,7 @@ class unit(object):
             if not found:
                 result[unit1.index] =  n1, 0, unit1
         for n2, unit2 in base2:
-                result[unit2.index] = 0, n2, unit2
+            result[unit2.index] = 0, n2, unit2
         for x in result:
             if not x is None:
                 yield x

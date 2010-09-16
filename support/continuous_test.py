@@ -24,9 +24,9 @@ background_test.RunTests.instance = background_test.RunTests()
 
 
 def number_str(number, singular, plural = None):
-        if plural == None:
-            plural = singular + 's'
-        return str(number) + ' ' + (singular if number == 1 else plural)
+    if plural == None:
+        plural = singular + 's'
+    return str(number) + ' ' + (singular if number == 1 else plural)
 
 
 def _run_the_tests(directory):

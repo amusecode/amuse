@@ -49,7 +49,7 @@ tp16
 ."""
 
 class TestData(amusetest.TestCase):
-   pass
+    pass
    
 class TestPlummer(TestData):
     def test1(self):

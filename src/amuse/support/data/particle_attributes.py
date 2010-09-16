@@ -166,18 +166,18 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     sum_of_energies = zero
     
     for i in range(len(particles) - 1):
-       x = x_vector[i]
-       y = y_vector[i]
-       z = z_vector[i]
-       dx = x - x_vector[i+1:]
-       dy = y - y_vector[i+1:]
-       dz = z - z_vector[i+1:]
-       dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
-       dr = (dr_squared+smoothing_length_squared).sqrt()
-       m_m = mass[i] * mass[i+1:]
-       
-       energy_of_this_particle = (m_m / dr).sum()
-       sum_of_energies -= energy_of_this_particle
+        x = x_vector[i]
+        y = y_vector[i]
+        z = z_vector[i]
+        dx = x - x_vector[i+1:]
+        dy = y - y_vector[i+1:]
+        dz = z - z_vector[i+1:]
+        dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+        dr = (dr_squared+smoothing_length_squared).sqrt()
+        m_m = mass[i] * mass[i+1:]
+        
+        energy_of_this_particle = (m_m / dr).sum()
+        sum_of_energies -= energy_of_this_particle
         
     return G * sum_of_energies 
 
@@ -246,16 +246,16 @@ def virial_radius(particles):
     z_vector = particles.z
     
     for i in range(len(particles) - 1):
-       x = x_vector[i]
-       y = y_vector[i]
-       z = z_vector[i]
-       dx = x - x_vector[i+1:]
-       dy = y - y_vector[i+1:]
-       dz = z - z_vector[i+1:]
-       dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
-       dr = (dr_squared).sqrt()
-       m_m = mass[i] * mass[i+1:]
-       partial_sum += (m_m / dr).sum()
+        x = x_vector[i]
+        y = y_vector[i]
+        z = z_vector[i]
+        dx = x - x_vector[i+1:]
+        dy = y - y_vector[i+1:]
+        dz = z - z_vector[i+1:]
+        dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+        dr = (dr_squared).sqrt()
+        m_m = mass[i] * mass[i+1:]
+        partial_sum += (m_m / dr).sum()
     return (mass.sum()**2) / (2 * partial_sum)
 
 def total_mass(particles):

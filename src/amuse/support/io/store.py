@@ -53,11 +53,11 @@ class HDF5AttributeStorage(AttributeStorage):
             
         results = []
         for attribute in attributes:
-             values_vector = self.attributesgroup[attribute]
-             selection = h5py.selections.PointSelection(values_vector.shape)
-             selection.set(numpy.transpose([indices,]))
-             selected_values = values_vector[selection]
-             results.append(self.get_unit_of(attribute).new_quantity(selected_values))
+            values_vector = self.attributesgroup[attribute]
+            selection = h5py.selections.PointSelection(values_vector.shape)
+            selection.set(numpy.transpose([indices,]))
+            selected_values = values_vector[selection]
+            results.append(self.get_unit_of(attribute).new_quantity(selected_values))
         
         return results
         

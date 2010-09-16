@@ -92,8 +92,8 @@ class TestParticles(amusetest.TestCase):
         Ek=0. | units.J
         Ep=0. | units.J
         for x in particles:
-          Ek+=x.mass*x.specific_kinetic_energy()
-          Ep+=x.mass*x.potential()/2
+            Ek+=x.mass*x.specific_kinetic_energy()
+            Ep+=x.mass*x.potential()/2
         self.assertEquals(particles.kinetic_energy(), Ek)
         self.assertEquals(particles.potential_energy(), Ep)
 

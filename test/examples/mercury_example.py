@@ -31,10 +31,10 @@ xx=[x]
 yy=[y]
 
 while time<t_end:
-  time=time+800
-  err=instance.evolve(time)
-  mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=instance.get_orbiter_state(pid)
-  xx.append(x)
-  yy.append(y)
+    time=time+800
+    err=instance.evolve(time)
+    mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=instance.get_orbiter_state(pid)
+    xx.append(x)
+    yy.append(y)
 
 instance.stop()

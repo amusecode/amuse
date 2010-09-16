@@ -324,7 +324,7 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
 
     def get_indices_of(self, particles):
         if particles is None:
-             return numpy.arange(0,len(self.particle_keys))
+            return numpy.arange(0,len(self.particle_keys))
     
         mapping_from_particle_to_index = self.mapping_from_particle_to_index
         result = numpy.zeros(len(particles),dtype='int32')

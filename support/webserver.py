@@ -78,8 +78,8 @@ class HandleRequest(BaseHTTPServer.BaseHTTPRequestHandler):
         path = self.parsed_path.path[1:]
         method_name = 'do_' + path
         if hasattr(self, method_name):
-           method = getattr(self,method_name)
-           string, content_type =  method()
+            method = getattr(self,method_name)
+            string, content_type =  method()
         else:
             if path.endswith(".js"):
                 string, content_type = self.javascript_file(path)

@@ -46,76 +46,76 @@ solarsystem= \
   0., 0., 0.]]
 
 def planetplot():
-  instance=Mercury()
-  instance.initialize_code()
-  ids=dict()
-  xpos=dict()
-  ypos=dict()
-  for x in solarsystem:
-    pid,err=instance.new_orbiter(x[1],x[3], \
-     x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11],x[12],x[2])
-    ids[x[0]]=pid
-    xpos[x[0]]=[]
-    ypos[x[0]]=[]
-    xpos[x[0]].append( x[4])
-    ypos[x[0]].append( x[5])
+    instance=Mercury()
+    instance.initialize_code()
+    ids=dict()
+    xpos=dict()
+    ypos=dict()
+    for x in solarsystem:
+        pid,err=instance.new_orbiter(x[1],x[3],  
+         x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11],x[12],x[2])
+        ids[x[0]]=pid
+        xpos[x[0]]=[]
+        ypos[x[0]]=[]
+        xpos[x[0]].append( x[4])
+        ypos[x[0]].append( x[5])
 
-  instance.commit_particles()
+    instance.commit_particles()
 
-  t_end=365.25*20
-  time=0
+    t_end=365.25*20
+    time=0
 
-  while time<t_end:
-    time=time+8
-    err=instance.evolve(time)
-    for p in solarsystem:
-      mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err= \
-        instance.get_orbiter_state(ids[p[0]])
-      xpos[p[0]].append(x)
-      ypos[p[0]].append(y)
+    while time<t_end:
+        time=time+8
+        err=instance.evolve(time)
+        for p in solarsystem:
+            mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=  
+              instance.get_orbiter_state(ids[p[0]])
+            xpos[p[0]].append(x)
+            ypos[p[0]].append(y)
 
-  instance.stop()
+    instance.stop()
 
-  pyplot.plot(xpos['MERCURY'],ypos['MERCURY'])
-  pyplot.plot(xpos['VENUS'],ypos['VENUS'])
-  pyplot.plot(xpos['EARTHMOO'],ypos['EARTHMOO'])
-  pyplot.plot(xpos['MARS'],ypos['MARS'])
-  pyplot.plot(xpos['JUPITER'],ypos['JUPITER'])
-  pyplot.xlim(-6.0, 6.0)
-  pyplot.ylim(-6.0, 6.0)
-  pyplot.savefig('solarsytem.png')
+    pyplot.plot(xpos['MERCURY'],ypos['MERCURY'])
+    pyplot.plot(xpos['VENUS'],ypos['VENUS'])
+    pyplot.plot(xpos['EARTHMOO'],ypos['EARTHMOO'])
+    pyplot.plot(xpos['MARS'],ypos['MARS'])
+    pyplot.plot(xpos['JUPITER'],ypos['JUPITER'])
+    pyplot.xlim(-6.0, 6.0)
+    pyplot.ylim(-6.0, 6.0)
+    pyplot.savefig('solarsytem.png')
 
 def energyplot():
-  instance=Mercury()
-  instance.initialize_code()
-  for x in solarsystem:
-    pid,err=instance.new_orbiter(x[1],x[3], \
-     x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11],x[12],x[2])
-  instance.commit_particles()
+    instance=Mercury()
+    instance.initialize_code()
+    for x in solarsystem:
+        pid,err=instance.new_orbiter(x[1],x[3],  
+         x[4],x[5],x[6],x[7],x[8],x[9],x[10],x[11],x[12],x[2])
+    instance.commit_particles()
 
-  t_end=365.25*1000000
-  time=0
+    t_end=365.25*1000000
+    time=0
 
-  e0,err=instance.get_total_energy()
-  energy=[0.]
-  times=[0.]
-  while time<t_end:
-    time=time+8*10000.
-    err=instance.evolve(time)
-    if(err!=0):
-      print "err:", err
-    e,err=instance.get_total_energy()
-    t,err=instance.get_time()
-    energy.append((e0-e)/e0)
-    times.append(t/365.25)
-  
-  instance.stop()
+    e0,err=instance.get_total_energy()
+    energy=[0.]
+    times=[0.]
+    while time<t_end:
+        time=time+8*10000.
+        err=instance.evolve(time)
+        if(err!=0):
+            print "err:", err
+        e,err=instance.get_total_energy()
+        t,err=instance.get_time()
+        energy.append((e0-e)/e0)
+        times.append(t/365.25)
+    
+    instance.stop()
 
-  pyplot.plot(times,energy)
-  pyplot.xlim(0,t_end/365.25)
-  pyplot.ylim(-1.e-6,1.e-6)
-  pyplot.savefig('solarsytem_energy.png')
+    pyplot.plot(times,energy)
+    pyplot.xlim(0,t_end/365.25)
+    pyplot.ylim(-1.e-6,1.e-6)
+    pyplot.savefig('solarsytem_energy.png')
   
 if __name__=='__main__':
-  print "this may take a while.."
-  energyplot()
+    print "this may take a while.."
+    energyplot()
