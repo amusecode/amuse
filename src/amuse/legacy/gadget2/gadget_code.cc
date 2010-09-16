@@ -466,11 +466,13 @@ int set_time_step(double timestep){
     return 0;
 }
 int get_epsilon(double *epsilon){
-    *epsilon = All.SofteningHalo;
+    set_softenings();
+    *epsilon = All.SofteningTable[1];
     return 0;
 }
 int set_epsilon(double epsilon){
     All.SofteningHalo = epsilon;
+    set_softenings();
     return 0;
 }
 int get_eps2(double *epsilon_squared){
@@ -480,11 +482,13 @@ int set_eps2(double epsilon_squared){
     return -2;
 }
 int get_epsgas(double *gas_epsilon){
-    *gas_epsilon = All.SofteningGas;
+    set_softenings();
+    *gas_epsilon = All.SofteningTable[0];
     return 0;
 }
 int set_epsgas(double gas_epsilon){
     All.SofteningGas = gas_epsilon;
+    set_softenings();
     return 0;
 }
 int get_unit_mass(double *code_mass_unit){
@@ -871,14 +875,16 @@ int get_n_neighbours(int index, double *n_neighbours){
     return -1;
 }
 int get_epsilon_dm_part(int index, double *epsilon){
-    *epsilon = All.SofteningHalo;
+    set_softenings();
+    *epsilon = All.SofteningTable[1];
     return 0;
 }
 int get_epsilon_gas_part(int index, double *epsilon){
 #if defined(ADAPTIVE_GRAVSOFT_FORGAS) &&  defined(UNEQUALSOFTENINGS)
     return get_smoothing_length(index, epsilon);
 #else
-    *epsilon = All.SofteningGas;
+    set_softenings();
+    *epsilon = All.SofteningTable[0];
     return 0;
 #endif
 }
