@@ -747,7 +747,8 @@ class Gadget2(GravitationalDynamics):
         object.add_setter('dm_particles', 'set_velocity')
         object.add_getter('dm_particles', 'get_velocity')
         object.add_getter('dm_particles', 'get_acceleration')
-        object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('radius','epsilon','eps'))
+        object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('radius',))
+        object.add_getter('dm_particles', 'get_epsilon_dm_part', names = ('epsilon',))
         
         object.define_set('gas_particles', 'index_of_the_particle')
         object.set_new('gas_particles', 'new_sph_particle')
@@ -766,7 +767,8 @@ class Gadget2(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_smoothing_length')
         object.add_getter('gas_particles', 'get_density')
         object.add_getter('gas_particles', 'get_n_neighbours')
-        object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius','epsilon','eps'))
+        object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('radius',))
+        object.add_getter('gas_particles', 'get_epsilon_gas_part', names = ('epsilon',))
 
         self.stopping_conditions.define_particle_set(object, 'dm_particles')
         self.stopping_conditions.define_particle_set(object, 'gas_particles')
