@@ -876,7 +876,7 @@ int get_epsilon_dm_part(int index, double *epsilon){
 }
 int get_epsilon_gas_part(int index, double *epsilon){
 #if defined(ADAPTIVE_GRAVSOFT_FORGAS) &&  defined(UNEQUALSOFTENINGS)
-    return get_smoothing_length(index, epsilon)
+    return get_smoothing_length(index, epsilon);
 #else
     *epsilon = All.SofteningGas;
     return 0;
