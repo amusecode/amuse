@@ -461,11 +461,11 @@
             AMUSE_value = -1.0
             get_mass_fraction_at_zone = -1
          else
-            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
                 AMUSE_value = -1.0
                 get_mass_fraction_at_zone = -2
             else
-                AMUSE_value = s% dq(AMUSE_zone)
+                AMUSE_value = s% dq(s% nz - AMUSE_zone)
                 get_mass_fraction_at_zone = 0
             endif
          endif
@@ -485,11 +485,11 @@
             AMUSE_value = -1.0
             get_temperature_at_zone = -1
          else
-            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
                 AMUSE_value = -1.0
                 get_temperature_at_zone = -2
             else
-                AMUSE_value = exp(s% xs(s% i_lnT, AMUSE_zone))
+                AMUSE_value = exp(s% xs(s% i_lnT, s% nz - AMUSE_zone))
                 get_temperature_at_zone = 0
             endif
          endif
@@ -509,11 +509,11 @@
             AMUSE_value = -1.0
             get_density_at_zone = -1
          else
-            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
                 AMUSE_value = -1.0
                 get_density_at_zone = -2
             else
-                AMUSE_value = exp(s% xs(s% i_lnd, AMUSE_zone))
+                AMUSE_value = exp(s% xs(s% i_lnd, s% nz - AMUSE_zone))
                 get_density_at_zone = 0
             endif
          endif
@@ -533,11 +533,11 @@
             AMUSE_value = -1.0
             get_radius_at_zone = -1
          else
-            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
                 AMUSE_value = -1.0
                 get_radius_at_zone = -2
             else
-                AMUSE_value = exp(s% xs(s% i_lnR, AMUSE_zone))
+                AMUSE_value = exp(s% xs(s% i_lnR, s% nz - AMUSE_zone))
                 get_radius_at_zone = 0
             endif
          endif
@@ -557,11 +557,11 @@
             AMUSE_value = -1.0
             get_luminosity_at_zone = -1
          else
-            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
                 AMUSE_value = -1.0
                 get_luminosity_at_zone = -2
             else
-                AMUSE_value = s% xs(s% i_lum, AMUSE_zone)
+                AMUSE_value = s% xs(s% i_lum, s% nz - AMUSE_zone)
                 get_luminosity_at_zone = 0
             endif
          endif
@@ -581,11 +581,11 @@
             AMUSE_value = -1.0
             get_mu_at_zone = -1
          else
-            if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
                 AMUSE_value = -1.0
                 get_mu_at_zone = -2
             else
-                AMUSE_value = s% mu(AMUSE_zone)
+                AMUSE_value = s% mu(s% nz - AMUSE_zone)
                 get_mu_at_zone = 0
             endif
          endif
@@ -704,14 +704,14 @@
       if (failed('get_star_ptr', ierr)) then
          AMUSE_value = -1.0
          get_mass_fraction_of_species_at_zone = -1
-      else if (AMUSE_zone > s% nz .or. AMUSE_zone < 1) then
+      else if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
          AMUSE_value = -1.0
          get_mass_fraction_of_species_at_zone = -2
       else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
          AMUSE_value = -1.0
          get_mass_fraction_of_species_at_zone = -3
       else
-         AMUSE_value = s% xa(AMUSE_species, AMUSE_zone)
+         AMUSE_value = s% xa(AMUSE_species, s% nz - AMUSE_zone)
          get_mass_fraction_of_species_at_zone = 0
       endif
    end function

@@ -1012,7 +1012,7 @@ class MESA(CodeInterface):
             indices_of_the_stars = indices_of_the_stars[0]
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
-        return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
+        return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_density_profile(self, indices_of_the_stars, number_of_zones = None):
         if hasattr(indices_of_the_stars, '__iter__'):
@@ -1021,7 +1021,7 @@ class MESA(CodeInterface):
             indices_of_the_stars = indices_of_the_stars[0]
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
-        return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
+        return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_radius_profile(self, indices_of_the_stars, number_of_zones = None):
         if hasattr(indices_of_the_stars, '__iter__'):
@@ -1030,7 +1030,7 @@ class MESA(CodeInterface):
             indices_of_the_stars = indices_of_the_stars[0]
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
-        return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
+        return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_temperature_profile(self, indices_of_the_stars, number_of_zones = None):
         if hasattr(indices_of_the_stars, '__iter__'):
@@ -1039,7 +1039,7 @@ class MESA(CodeInterface):
             indices_of_the_stars = indices_of_the_stars[0]
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
-        return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
+        return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_luminosity_profile(self, indices_of_the_stars, number_of_zones = None):
         if hasattr(indices_of_the_stars, '__iter__'):
@@ -1048,7 +1048,7 @@ class MESA(CodeInterface):
             indices_of_the_stars = indices_of_the_stars[0]
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
-        return self.get_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
+        return self.get_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
         if hasattr(indices_of_the_stars, '__iter__'):
@@ -1057,7 +1057,7 @@ class MESA(CodeInterface):
             indices_of_the_stars = indices_of_the_stars[0]
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
-        return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, range(1,number_of_zones+1) | units.none)
+        return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     
     def get_names_of_species(self, indices_of_the_stars, number_of_species = None):
@@ -1106,10 +1106,10 @@ class MESA(CodeInterface):
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         if number_of_species is None:
             number_of_species = self.get_number_of_species(indices_of_the_stars).number
-        grid = numpy.indices((number_of_species, number_of_zones)) + 1
+        grid = numpy.indices((number_of_species, number_of_zones))
         return self.get_mass_fraction_of_species_at_zone(
             [indices_of_the_stars] * number_of_zones * number_of_species, 
-            units.none.new_quantity(grid[0].flatten()), 
+            units.none.new_quantity(grid[0].flatten()+1), 
             units.none.new_quantity(grid[1].flatten())
         ).reshape((number_of_species, number_of_zones))
     

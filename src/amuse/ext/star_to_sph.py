@@ -15,7 +15,10 @@ class StellarModel2SPH(object):
         self.zone_index = None
         self.delta      = None
         numpy.random.seed(seed)
-        self.mode = mode  # "random sampling" or "scaling method"
+        if mode in ["random sampling", "scaling method"]:
+            self.mode = mode  # "random sampling" or "scaling method"
+        else:
+            raise AmuseException("Unknown mode: {0}. Mode can be 'scaling method' or 'random sampling'.".format(mode))
         
         self.do_relax = do_relax
         self.sph_legacy_code = sph_legacy_code # used to relax the SPH model
@@ -34,6 +37,12 @@ class StellarModel2SPH(object):
         self.composition = self.particle.get_chemical_abundance_profiles(
             number_of_zones = self.number_of_zones, number_of_species = self.number_of_species)
         self.specific_internal_energy = (1.5 * constants.kB * self.temperature / self.mu).as_quantity_in(units.m**2/units.s**2)
+        # Note: self.radius is in increasing order; from center to surface
+        radius_profile = [0] | units.m
+        radius_profile.extend(self.radius) # outer radius of each mesh zone
+        self.midpoints = -(radius_profile[1:2])/2                           # dummy element to handle boundaries correctly
+        self.midpoints.extend((radius_profile[1:] + radius_profile[:-1])/2) # real midpoints of each mesh zone
+        self.midpoints.append(2*self.midpoints[-1] - self.midpoints[-2])   # dummy element to handle boundaries correctly
     
     def coordinates_from_spherical(self, radius, theta, phi):
         result  =      radius * numpy.sin( theta ) * numpy.cos( phi )   # x
@@ -77,79 +86,64 @@ class StellarModel2SPH(object):
     def new_positions(self):
         return self.coordinates_from_spherical(*self.new_positions_spherical_coordinates())
     
-    def get_index(self, radius, midpoints):
-        index = 1
-        while radius < midpoints[index]: index += 1
-        return index - 1
+    def get_index(self, value, sorted_vector):
+        if not sorted_vector[0] <= value <= sorted_vector[-1]:
+            raise AmuseException("Can't find a valid index. {0} is not in "
+                "the range [{1}, {2}].".format(value, sorted_vector[0], sorted_vector[-1]))
+        index = numpy.searchsorted(sorted_vector, value)
+        return max(index - 1, 0)
     
-    def interpolate_hydro_quantities(self, radial_positions):
-        if self.mode == "scaling method":
-            # Note: self.radius is in decreasing order; from surface to center
-            radius_profile = self.radius # outer radius of each mesh zone
-            radius_profile.append(0|units.m)
-            midpoints = (3*radius_profile[0:1] - radius_profile[1:2])/2    # dummy element to handle boundaries correctly
-            midpoints.extend((radius_profile[1:] + radius_profile[:-1])/2) # real midpoints of each mesh zone
-            midpoints.append(-midpoints[-1])                               # dummy element to handle boundaries correctly
-            indices = numpy.array([self.get_index(r, midpoints) for r in radial_positions])
-            delta2 = (midpoints[indices+1] - radial_positions) / (midpoints[indices+1] - midpoints[indices])
-        elif self.mode == "random sampling":
-            delta2 = self.delta - 0.5
-            indices = self.zone_index + 1
-            neg = numpy.where(delta2 < (0|units.none))[0]
-            delta2[neg] = delta2[neg] + 1
-            indices[neg] = indices[neg] + 1
+    def calculate_interpolation_coefficients(self, radial_positions):
+        indices = numpy.array([self.get_index(r, self.midpoints) for r in radial_positions])
+        delta = (self.midpoints[indices+1] - radial_positions) / (self.midpoints[indices+1] - self.midpoints[indices])
+        return indices, delta
+    
+    def interpolate_internal_energy(self, radial_positions, do_composition_too = True):
+        indices, delta = self.calculate_interpolation_coefficients(radial_positions)
+        one_minus_delta = 1 - delta
+        
+        extended = self.specific_internal_energy[:1]
+        extended.extend(self.specific_internal_energy)
+        extended.append(self.specific_internal_energy[-1])
+        interpolated_energies = delta*extended[indices] + one_minus_delta*extended[indices+1]
+        
+        if do_composition_too:
+            comp = [] | units.none
+            for species in self.composition:
+                extended = species[:1]
+                extended.extend(species)
+                extended.append(species[-1])
+                comp.append(delta*extended[indices] + one_minus_delta*extended[indices+1])
+            return interpolated_energies, comp.transpose()
         else:
-            raise AmuseException("Unknown mode: {0}. Mode can be 'scaling method' or 'random sampling'.".format(self.mode))
-        one_minus_delta2 = 1 - delta2
-        
-        hydro_quantities = [self.specific_internal_energy] #, self.temperature, self.luminosity, self.density]
-        result = []
-        for hydro_quantity in hydro_quantities:
-            extended = hydro_quantity[:1]
-            extended.extend(hydro_quantity)
-            extended.append(hydro_quantity[-1])
-            result.append(delta2*extended[indices] + one_minus_delta2*extended[indices+1])
-        
-        comp = [] | units.none
-        for hydro_quantity in self.composition:
-            extended = hydro_quantity[:1]
-            extended.extend(hydro_quantity)
-            extended.append(hydro_quantity[-1])
-            comp.append(delta2*extended[indices] + one_minus_delta2*extended[indices+1])
-        return result, comp.transpose()
+            return interpolated_energies
     
     def convert_to_SPH(self):
         if self.mode == "scaling method":
             sph_particles = new_spherical_particle_distribution(
                 self.number_of_sph_particles, 
                 radii = self.radius, densities = self.density)
-        elif self.mode == "random sampling":
+        else:
             sph_particles = Particles(self.number_of_sph_particles)
             sph_particles.position = self.new_positions()
-            sph_particles.rands = units.none.new_quantity(self.rands)
-            sph_particles.int = self.delta + self.zone_index
-        else:
-            raise AmuseException("Unknown mode: {0}. Mode can be 'scaling method' or 'random sampling'.".format(self.mode))
         sph_particles.mass = (self.particle.mass.number * 1.0 / 
             self.number_of_sph_particles) | self.particle.mass.unit
         sph_particles.velocity = [0,0,0] | units.m/units.s
-        (specific_internal_energy,), composition = self.interpolate_hydro_quantities(sph_particles.position.lengths())
-        sph_particles.u = specific_internal_energy
-        sph_particles.add_vector_attribute("composition", self.species_names)
-        sph_particles.composition = composition
         return sph_particles
     
     def relax(self, particles):
-        num_iterations = 40
-        max_delta = 0.005  # maximum change to particle positions relative to its smoothing length
+        num_iterations = 20
+        max_delta = 0.01  # maximum change to particle positions relative to its smoothing length
         
         result = []
         previous_acc = 0 | units.m / units.s**2
         unit_converter = self.compatible_converter(self.particle.radius, self.particle.mass, 1.0e-3 | units.s)
         hydro_legacy_code = self.sph_legacy_code(unit_converter)
+        particles.u = 1.0 | (units.m / units.s)**2
         hydro_legacy_code.gas_particles.add_particles(particles)
         
         for i in range(1, num_iterations+1):
+            hydro_legacy_code.gas_particles.u = self.interpolate_internal_energy(particles.position.lengths(), do_composition_too = False)
             hydro_legacy_code.evolve_model(i * (1.0e-5 | units.s))
             accelerations     = hydro_legacy_code.gas_particles.acceleration
             acc_correlated = (previous_acc * accelerations).sum() / (accelerations * accelerations).sum()
@@ -182,6 +176,11 @@ class StellarModel2SPH(object):
         if self.do_relax:
             for result_string in self.relax(sph_particles):
                 print result_string
+        
+        sph_particles.add_vector_attribute("composition", self.species_names)
+        specific_internal_energy, composition = self.interpolate_internal_energy(sph_particles.position.lengths())
+        sph_particles.u = specific_internal_energy
+        sph_particles.composition = composition
         return sph_particles
     
 
