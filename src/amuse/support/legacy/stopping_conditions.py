@@ -122,6 +122,7 @@ class StoppingConditionInterface(object):
         function.can_handle_array = True 
         function.addParameter('index', dtype='int32', direction=function.IN, description = "Index in the array[0,number_of_stopping_conditions_set>")
         function.addParameter('type', dtype='int32', direction=function.OUT, description = "Kind of the condition, can be used to retrieve specific information")
+        function.addParameter('number_of_particles', dtype='int32', direction=function.OUT, description = "Number of particles that met this condition")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -258,20 +259,27 @@ class StoppingCondition(object):
 
     def is_set(self):
         return self.conditions.code.is_stopping_condition_set(self.type) == 1
-        
-    def particles(self, index_in_the_contition):
+
+    def number_of_particles(self):
+        types, number_of_particles = self.conditions.code.get_stopping_condition_info(indices)
+        return number_of_particles
+
+    def particles(self, index_in_the_contition, particle_name="particles"):
         indices = list(range(self.conditions.code.get_number_of_stopping_conditions_set()))
-        types = self.conditions.code.get_stopping_condition_info(indices)
+        types, number_of_particles = self.conditions.code.get_stopping_condition_info(indices)
+        
         selected = []
-        for index, type in zip(indices, types):
+        for index, type, max_number_of_particles in zip(indices, types, number_of_particles):
             if type == self.type:
-                selected.append(index)
+                if index_in_the_contition < max_number_of_particles:
+                    selected.append(index)
+
         if len(selected) == 0:
             return []
         else:
-            return self.conditions.code.particles.get_stopping_condition_particle_index(selected, [index_in_the_contition]*len(selected))
+            return self.conditions.code.__getattr__(particle_name).get_stopping_condition_particle_index(selected, [index_in_the_contition]*len(selected))
         
-class StoppingConditions():
+class StoppingConditions(object):
 
     def __init__(self, code):
         self.code = code
@@ -419,6 +427,7 @@ class StoppingConditions():
                 object.NO_UNIT,
             ),
             (
+                object.NO_UNIT,
                 object.NO_UNIT,
                 object.ERROR_CODE,
             )

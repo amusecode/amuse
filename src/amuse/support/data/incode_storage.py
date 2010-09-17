@@ -201,9 +201,7 @@ class ParticleQueryMethod(object):
 
     def apply(self, particles, *args, **kwargs):
         indices = self.method(*args, **kwargs)
-        
         keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)
-        
         return particles._subset(keys)
         
 
@@ -375,7 +373,6 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     def _add_particles(self, keys, attributes = [], values = []):
         
         indices = self.new_particle_method.add_entities(attributes, values)
-        
         
         if len(self.particle_keys) > 0:
             self.particle_keys = numpy.concatenate((self.particle_keys, numpy.array(list(keys))))

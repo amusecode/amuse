@@ -10,7 +10,7 @@ int is_stopping_condition_set(int type, int * result);
 int is_stopping_condition_enabled(int type, int * result);
 int disable_stopping_condition(int type);
 int has_stopping_condition(int type, int * result);
-int get_stopping_condition_info(int index, int * index_of_the_condition);
+int get_stopping_condition_info(int index, int * index_of_the_condition, int *number_of_particles);
 int get_stopping_condition_particle_index(int index, int index_in_the_condition, int * index_of_particle);
 int set_stopping_condition_timeout_parameter(double value);
 int get_stopping_condition_timeout_parameter(double * value);

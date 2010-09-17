@@ -2203,9 +2203,8 @@ class Fi(GravitationalDynamics):
         object.add_getter('star_particles', 'get_star_tform')
     
         self.stopping_conditions.define_particle_set(object, 'dm_particles')
-        self.stopping_conditions.define_particle_set(object, 'gas_particles')
-        self.stopping_conditions.define_particle_set(object, 'star_particles')
-
+        #self.stopping_conditions.define_particle_set(object, 'gas_particles')
+        #self.stopping_conditions.define_particle_set(object, 'star_particles')
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)

@@ -124,18 +124,22 @@ int has_stopping_condition_(int *type, int *result) {
     return has_stopping_condition(*type, result);
 }
 
-int get_stopping_condition_info(int index, int * type) {
+int get_stopping_condition_info(int index, int * type, int *number_of_particles) {
+    int i=0;
+
     if(index >= number_of_stopping_conditions_set) {
         return -1;
     }
     
     *type = type_of_stopping_condition_set[index];
+    while (*(index_of_particle_in_stopping_condition + index + i++) > -1);
+    *number_of_particles = i-1;
     return 0;
 }
 
-int get_stopping_condition_info_(int *index, int *type)
+int get_stopping_condition_info_(int *index, int *type, int *number_of_particles)
 {
-    return get_stopping_condition_info(*index, type);
+  return get_stopping_condition_info(*index, type, number_of_particles);
 }
 
 int get_stopping_condition_particle_index(

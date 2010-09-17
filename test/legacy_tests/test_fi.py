@@ -719,11 +719,13 @@ class TestFi(TestWithMPI):
         instance.parameters.stopping_conditions_out_of_box_size = 1e-3 | nbody.length
         self.assertEquals(instance.parameters.stopping_conditions_out_of_box_size,  1e-3| nbody.length)
         instance.parameters.epsilon_squared = (0.01 | nbody.length)**2
-        instance.particles.add_particles(particles) 
+        instance.dm_particles.add_particles(particles) 
         instance.stopping_conditions.out_of_box_detection.enable()
         instance.evolve_model(10 | nbody.time)
         self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
-        print instance.stopping_conditions.out_of_box_detection.particles
+        print instance.stopping_conditions.out_of_box_detection.particles(0, 'dm_particles')
+        print instance.stopping_conditions.out_of_box_detection.particles(1, 'dm_particles')
+        print instance.stopping_conditions.out_of_box_detection.particles(2, 'dm_particles')
         self.assertTrue(instance.model_time < 10 | nbody.time)
 
         instance.stop()
@@ -765,11 +767,11 @@ class TestFi(TestWithMPI):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         instance.stop()
     
-    def xtest15(self):
+    def test15(self):
         print "Testing Fi get_hydro_state_at_point II: uniform sphere"
         number_sph_particles = 1000
         convert_nbody = nbody.nbody_to_si(1.0 | units.kpc, 1.0e10 | units.MSun)
-        gas = new_uniform_spherical_particle_distribution(number_sph_particles, 1.0 | units.kpc, 1.0e10 | units.MSun, seed = 1234)
+        gas = new_uniform_spherical_particle_distribution(number_sph_particles, 1.0 | units.kpc, 1.0e10 | units.MSun)
         gas.velocity = [10.0, 20.0, 30.0] | units.km / units.s
         gas.h_smooth = 0.01 | nbody.length
         gas.u = 0.05 | nbody.specific_energy

@@ -332,10 +332,14 @@ subroutine muse_stepsys(tend,sync)
       i=0
       do p=1,nbodies
       if(sum(pos(p,1:3)**2).GT.stop_boxsize**2) then
+         if(i.EQ.0) then
+            stopping_index = next_index_for_stopping_condition()
+            error = set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION)
+         endif
+         if (i.LT.10) then
+            error = set_stopping_condition_particle_index(stopping_index, i, p)
+         endif
          i=i+1
-         stopping_index = next_index_for_stopping_condition()
-         error = set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION)
-         error = set_stopping_condition_particle_index(stopping_index, i, p)
       endif
       enddo
    endif
