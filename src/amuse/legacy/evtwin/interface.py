@@ -808,8 +808,7 @@ class EVtwin(CodeInterface):
     def initialize_module_with_current_parameters(self):
         self.initialize_code()
         
-    def setup_particles(self, particles):
-        self.particles.add_particles(particles)
+    
         
     def evolve_model(self, end_time = None):
         if end_time is None:

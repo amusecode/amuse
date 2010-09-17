@@ -257,27 +257,27 @@ class TestFi(TestWithMPI):
         
         instance.evolve_model(365.0 | units.day)
         
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         postion_after_full_rotation = earth.position.x
         
         self.assertAlmostRelativeEqual(postion_at_start, postion_after_full_rotation, 4)
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         postion_after_half_a_rotation = earth.position.x
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         postion_after_half_a_rotation = earth.position.x
         self.assertAlmostRelativeEqual(-postion_at_start, postion_after_half_a_rotation, 3)
         
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         postion_after_half_a_rotation = earth.position.y
         

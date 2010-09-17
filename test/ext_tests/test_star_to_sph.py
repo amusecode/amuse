@@ -177,7 +177,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         number_of_sph_particles = 1000 # only few particles for test speed-up
         sph_particles = convert_stellar_model_to_SPH(
@@ -209,7 +209,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         number_of_sph_particles = 1000 # only few particles for test speed-up
         sph_particles = convert_stellar_model_to_SPH(
@@ -242,7 +242,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         stellar_evolution.evolve_model(5.0 | units.Gyr)
         number_of_sph_particles = 10000 # only few particles for test speed-up
@@ -306,7 +306,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         stellar_evolution.evolve_model(5.0 | units.Gyr)
         number_of_sph_particles = 10000 # only few particles for test speed-up
@@ -372,7 +372,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
         
@@ -446,7 +446,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         number_of_sph_particles = 10000
         print "Creating initial conditions from a MESA stellar evolution model:"
@@ -497,7 +497,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
@@ -540,7 +540,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.setup_particles(stars)
+        stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()

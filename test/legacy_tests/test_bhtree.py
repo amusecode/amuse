@@ -205,7 +205,7 @@ class TestBHTree(TestWithMPI):
         postion_at_start = earth.position.value_in(units.AU)[0]
         
         instance.evolve_model(365.0 | units.day)
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         postion_after_full_rotation = earth.position.value_in(units.AU)[0]
        
@@ -213,7 +213,7 @@ class TestBHTree(TestWithMPI):
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         postion_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-postion_at_start, postion_after_half_a_rotation, 2)
@@ -221,7 +221,7 @@ class TestBHTree(TestWithMPI):
         
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
          
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         postion_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         
@@ -258,7 +258,7 @@ class TestBHTree(TestWithMPI):
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
-            instance.update_particles(stars)
+            instance.particles.copy_values_of_state_attributes_to(stars)
             stars.savepoint()
             
         if HAS_MATPLOTLIB:
@@ -314,7 +314,7 @@ class TestBHTree(TestWithMPI):
     
         for x in range(1,200,1):
             instance.evolve_model(x | units.day)
-            instance.update_particles(stars)
+            instance.particles.copy_values_of_state_attributes_to(stars)
             #instance.get_indices_of_colliding_particles()
             #print stars[0].position-stars[1].position
             stars.savepoint()

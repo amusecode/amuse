@@ -274,9 +274,9 @@ class TestInterfaceBinding(TestWithMPI):
         stars = core.Stars(1)
         stars[0].mass = 10 | units.MSun
         
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
-        instance.update_particles(stars)
+        instance.particles.copy_values_of_state_attributes_to(stars)
         
         self.assertEquals(stars[0].mass, 10 | units.MSun)
         self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302, 6)
@@ -373,7 +373,7 @@ class TestInterfaceBinding(TestWithMPI):
         self.assertEqual(instance.parameters.max_age_stop_condition, 2e6 | units.Myr)
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
 #       Let the code perform initialization actions after all particles have been created. 
         instance.initialize_stars()
         
@@ -416,7 +416,7 @@ class TestInterfaceBinding(TestWithMPI):
         stars.add_particles(stars2)
         self.assertEquals(stars._get_keys()[1], key2)
         self.assertEquals(len(instance.particles), 0) # before creation
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
         indices_in_the_code = instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())
         for i in range(len(instance.particles)):

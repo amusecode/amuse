@@ -317,7 +317,7 @@ class TestMESA(TestWithMPI):
         stars = core.Stars(1)
         mass = 10. | units.MSun
         stars.mass = mass
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
@@ -414,7 +414,7 @@ class TestMESA(TestWithMPI):
         self.assertEqual(instance.parameters.max_age_stop_condition, 1e6 | units.Myr)
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
@@ -442,7 +442,7 @@ class TestMESA(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.initialize_module_with_current_parameters() 
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
         instance.evolve_model()
         self.assertEquals(instance.particles.get_number_of_zones(), [479, 985] | units.none)
@@ -473,7 +473,7 @@ class TestMESA(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.initialize_module_with_current_parameters() 
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
         instance.evolve_model()
         number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
@@ -508,7 +508,7 @@ class TestMESA(TestWithMPI):
             return
         instance.parameters.metallicity = 0.0 | units.none
         instance.initialize_module_with_current_parameters() 
-        instance.setup_particles(stars)
+        instance.particles.add_particles(stars)
         instance.initialize_stars()
         instance.evolve_model(5.85 | units.Gyr)
         self.assertTrue(instance.particles[0].age >= 5.85 | units.Gyr)
