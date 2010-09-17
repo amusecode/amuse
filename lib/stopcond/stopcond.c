@@ -27,7 +27,7 @@ int enable_stopping_condition_(int *type) {
 }
 
 //fortran only
-//but obsolete, use 
+//but obsolete, use
 //  set_support_for_condition()
 //  is_stopping_condition_enabled()
 //  is_stopping_condition_set()
@@ -93,12 +93,12 @@ int is_stopping_condition_enabled_(int *type, int *result) {
 
 int is_any_condition_set() {
     if (set_conditions & enabled_conditions) {
-        return 1;
+	return 1;
     }
     else {
-        return 0;
+	return 0;
     }
-}        
+}
 
 int is_any_condition_set_() {
     return is_any_condition_set();
@@ -128,9 +128,9 @@ int get_stopping_condition_info(int index, int * type, int *number_of_particles)
     int i=0;
 
     if(index >= number_of_stopping_conditions_set) {
-        return -1;
+	return -1;
     }
-    
+
     *type = type_of_stopping_condition_set[index];
     while (*(index_of_particle_in_stopping_condition + index + i++) > -1);
     *number_of_particles = i-1;
@@ -139,7 +139,7 @@ int get_stopping_condition_info(int index, int * type, int *number_of_particles)
 
 int get_stopping_condition_info_(int *index, int *type, int *number_of_particles)
 {
-  return get_stopping_condition_info(*index, type, number_of_particles);
+    return get_stopping_condition_info(*index, type, number_of_particles);
 }
 
 int get_stopping_condition_particle_index(
@@ -147,10 +147,10 @@ int get_stopping_condition_particle_index(
     int index_in_the_condition,
     int * index_of_particle) {
     if(index >= number_of_stopping_conditions_set) {
-        return -1;
+	return -1;
     }
     if(index_in_the_condition >= MAX_NUMBER_OF_PARTICLES_PER_INDEX) {
-        return -1;
+	return -1;
     }
     *index_of_particle = index_of_particle_in_stopping_condition[index * MAX_NUMBER_OF_PARTICLES_PER_INDEX + index_in_the_condition];
 
@@ -185,11 +185,11 @@ int next_index_for_stopping_condition_() {
 
 int set_stopping_condition_info(int index, int type) {
     if(index >= number_of_stopping_conditions_set) {
-        return -1;
+	return -1;
     }
     long mask =  1l << type;
     set_conditions |= mask;
-    
+
     type_of_stopping_condition_set[index] = type;
     return 0;
 }
@@ -200,10 +200,10 @@ int set_stopping_condition_info_(int *index, int *type) {
 
 int set_stopping_condition_particle_index(int index, int index_in_the_condition, int index_of_the_particle) {
     if(index >= number_of_stopping_conditions_set) {
-        return -1;
+	return -1;
     }
     if(index_in_the_condition >= MAX_NUMBER_OF_PARTICLES_PER_INDEX -1 ) {
-        return -1;
+	return -1;
     }
     index_of_particle_in_stopping_condition[index * MAX_NUMBER_OF_PARTICLES_PER_INDEX + index_in_the_condition] = index_of_the_particle;
     index_of_particle_in_stopping_condition[index * MAX_NUMBER_OF_PARTICLES_PER_INDEX + index_in_the_condition + 1] = -1;
@@ -216,7 +216,7 @@ int set_stopping_condition_particle_index_(int *index, int *index_in_the_conditi
 
 int set_stopping_condition_timeout_parameter(double value) {
     if(value < 0.0) {
-        return -1;
+	return -1;
     }
     timeout_parameter = value;
     return 0;
@@ -237,11 +237,11 @@ int get_stopping_condition_timeout_parameter_(double * value) {
 
 int set_stopping_condition_number_of_steps_parameter(int value) {
     if (value<1) {
-        return -1;
+	return -1;
     }
     number_of_steps_parameter = value;
     return 0;
-}    
+}
 
 int set_stopping_condition_number_of_steps_parameter_(int *value) {
     return set_stopping_condition_number_of_steps_parameter(*value);
@@ -285,18 +285,18 @@ int mpi_setup_stopping_conditions() {
     int error;
     error = MPI_Comm_rank(MPI_COMM_WORLD, &sc_mpi_rank);
     if(error) {
-        return -1;
+	return -1;
     }
     error = MPI_Comm_size(MPI_COMM_WORLD, &sc_mpi_size);
     if(error) {
-        return -1;
+	return -1;
     }
     return 0;
 }
 
 int mpi_distribute_stopping_conditions() {
     if(sc_mpi_size <= 1) {
-        return 0;
+	return 0;
     }
     if(!enabled_conditions) {return 0;}
 }
@@ -316,45 +316,45 @@ int mpi_collect_stopping_conditions() {
     set_conditions = set;
     MPI_Gather(&number_of_stopping_conditions_set, 1, MPI_INTEGER, counts, 1, MPI_INT, 0, MPI_COMM_WORLD);
     if(sc_mpi_rank == 0) {
-        number_of_stopping_conditions_set = 0;
-        for(i = 0; i < sc_mpi_size; i++) {
-            number_of_stopping_conditions_set += counts[i];
-        }
+	number_of_stopping_conditions_set = 0;
+	for(i = 0; i < sc_mpi_size; i++) {
+	    number_of_stopping_conditions_set += counts[i];
+	}
     }
     if(sc_mpi_rank == 0) {
-        int x = 0;
-        for(i = 0; i < sc_mpi_size; i++) {
-            displs[i] = x;
-            x += counts[i];
-        }
+	int x = 0;
+	for(i = 0; i < sc_mpi_size; i++) {
+	    displs[i] = x;
+	    x += counts[i];
+	}
     }
-    
+
     MPI_Gatherv(
-        type_of_stopping_condition_set, number_of_stopping_conditions_set, MPI_INTEGER,
-        local_type_of_stopping_condition_set, counts, displs, MPI_INTEGER,
-        0, MPI_COMM_WORLD);
-    
+	type_of_stopping_condition_set, number_of_stopping_conditions_set, MPI_INTEGER,
+	local_type_of_stopping_condition_set, counts, displs, MPI_INTEGER,
+	0, MPI_COMM_WORLD);
+
     if(sc_mpi_rank == 0) {
-        int x = 0;
-        for(i = 0; i < sc_mpi_size; i++) {
-            displs[i] = x;
-            counts[i] *= MAX_NUMBER_OF_PARTICLES_PER_INDEX;
-            x += counts[i];
-        }
+	int x = 0;
+	for(i = 0; i < sc_mpi_size; i++) {
+	    displs[i] = x;
+	    counts[i] *= MAX_NUMBER_OF_PARTICLES_PER_INDEX;
+	    x += counts[i];
+	}
     }
-    
+
     MPI_Gatherv(
-        index_of_particle_in_stopping_condition,
-        number_of_stopping_conditions_set*MAX_NUMBER_OF_PARTICLES_PER_INDEX,
-        MPI_INTEGER,
-        local_index_of_particle_in_stopping_condition,
-        counts, displs,
-        MPI_INTEGER,
-        0, MPI_COMM_WORLD);
-    
+	index_of_particle_in_stopping_condition,
+	number_of_stopping_conditions_set*MAX_NUMBER_OF_PARTICLES_PER_INDEX,
+	MPI_INTEGER,
+	local_index_of_particle_in_stopping_condition,
+	counts, displs,
+	MPI_INTEGER,
+	0, MPI_COMM_WORLD);
+
     if(sc_mpi_rank == 0) {
-        memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, sizeof(index_of_particle_in_stopping_condition));
-        memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, sizeof(type_of_stopping_condition_set));
+	memcpy(index_of_particle_in_stopping_condition, local_index_of_particle_in_stopping_condition, sizeof(index_of_particle_in_stopping_condition));
+	memcpy(type_of_stopping_condition_set, local_type_of_stopping_condition_set, sizeof(type_of_stopping_condition_set));
     }
 }
 
