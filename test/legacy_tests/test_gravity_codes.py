@@ -15,7 +15,7 @@ from amuse.ext.plummer import new_plummer_sphere
 import numpy
 import time
 
-class TestGravityCodes(TestWithMPI):
+class _TestGravityCodes(TestWithMPI):
     
     def gravity_code_factory(self):
         self.skip("abstract test")
@@ -100,23 +100,23 @@ class TestGravityCodes(TestWithMPI):
     
 
 
-class TestBHTreeGravityCode(TestGravityCodes):
+class TestBHTreeGravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
         return BHTree
 
 
-class TestHermiteGravityCode(TestGravityCodes):
+class TestHermiteGravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
         return Hermite
         
-class TestPhiGRAPEGravityCode(TestGravityCodes):
+class TestPhiGRAPEGravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
         return PhiGRAPE
 
-class TestFiGravityCode(TestGravityCodes):
+class TestFiGravityCode(_TestGravityCodes):
     
     def gravity_code_factory(self):
         return Fi
