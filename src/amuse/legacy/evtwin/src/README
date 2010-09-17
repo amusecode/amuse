@@ -23,16 +23,58 @@ code, such usage include:
  * differential rotation and rotational mixing (experimental)
  * semiconvection
  * anything involving pair production/pair instability
+ * using the radiative levitation option in the code
 
 Contact one of us if in doubt.
 
-INSTALLING
-----------
+INSTALLING - CMAKE
+------------------
 To install this code you need a FORTRAN-90 compatible FORTRAN compiler. A
 plain FORTRAN 77 compiler will NOT work.
-The Makefile is designed to pass the proper compiler options to a number
-of "supported" compilers. We recommend that you do NOT edit the Makefile unless
-the defautl settings do not work for you or your compiler is not in the list.
+There is an old Makefile that probably still works, although if at all
+possible you should use the CMake option instead.
+
+The CMake script understands options for the ifort and GNU (gfortran)
+compilers. If you want to use a different compiler, you'll need to edit the
+compiler definitionsin cmake/CompilerFlags.cmake.
+
+a) Preparations
+---------------
+Make sure you have CMake version 2.4 (or newer) installed on your machine.
+You can test this by typing
+ $ cmake --version
+If you do not have CMake, download it from http://cmake.org/ or install it
+using your system package manager (or get your friendly sysadmin to do it
+for you).
+It is generally best to keep the source tree "clean" and do a so-called
+"out of source" build. Run
+ $ mkdir Build
+ $ cd Build
+from the top-level stars/ directory.
+
+b) Configuring
+--------------
+From the build directory, run
+ $ ccmake ..
+to launch the CMake interactive setup tool. Set the options you want (or
+leave things at their default), then hit c (configure), g (generate).
+Alternatively, type
+ $ cmake ..
+if you don't want to change any of the options and just want to accept the
+default.
+
+c) Compiling
+------------
+Again from the Build/ directory, run
+ $ make
+and wait for everything to compile.
+If there are no problems, the executable "ev" should be placed in the
+stars/code/ directory.
+
+INSTALLING - LEGACY INSTRUCTIONS
+--------------------------------
+If you do not wish to use CMake, the following instructions are for the
+plain static Makefile build system.
 
 a) Preparations
 ---------------
@@ -96,7 +138,7 @@ The following Makefile targets are available:
 
 RUNNING THE CODE
 ----------------
-Let us assume that you have "ev" in your path somewhare. In order to run,
+Let us assume that you have "ev" in your path somewhere. In order to run,
 ev needs to know three things: where to find its input files, what metallicity
 to use (for the opacity tables and ZAMS library) and what basename to use for
 your output. The easiest way to do this is to pass this information directly to
@@ -118,6 +160,8 @@ format can be found in the stars_standards/ tree. The code will accept either,
 but some options can only be changed from their defaults with the new format.
 For a description of the various parameters, see doc/iomanual.pdf or the Utrecht
 STARS code Wiki (http://www.phys.uu.nl/~glebbeek/starswiki/bin/view).
+The new format init files should include comments that describe the
+different options.
 
 THE TWIN CODE LIBRARY
 ---------------------

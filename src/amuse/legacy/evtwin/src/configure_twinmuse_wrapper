@@ -20,7 +20,7 @@ if (not (-e "$path/$so_name")) {
 # Determine FORTRAN name mangling for both module functions and functions
 # in the global namespace, since compilers may do these differently
 my ($f_prefix, $f_suffix) = get_fortran_fixes($find_string, $find_section);
-$so_name = "pic_cfuncs.o";
+$so_name = "pic_stars_structure.o";
 my ($fg_prefix, $fg_suffix) = get_fortran_fixes($find_g_string, $find_section);
 my ($c_prefix, $c_suffix) = get_c_fixes();
 

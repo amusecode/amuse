@@ -1,55 +1,54 @@
 
 FORTRAN ?= gfortran
+FC ?= $(FORTRAN)
+export FC
+CMAKE_Fortran_COMPILER ?= $(FORTRAN)
+export CMAKE_Fortran_COMPILER
+
 AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBDIR=src/lib
-OBJDIR=src/obj
-
-LIBTWINA=$(LIBDIR)/libtwin.a
-OBJ=$(OBJDIR)/twinmuse.o 
-OBJ_EVT=obj/twinmuse.o 
+SRCDIR=src/code
 MODDIR=src/modules
-EVTWINLIB=src/lib/libtwin.a
+
+CMAKE_DEPS=src/CMakeLists.txt src/cmake/CompilerFlags.cmake src/cmake/FileList.cmake
+
+SRC=$(SRCDIR)/library_v2.f90
+EVTWINLIB=$(LIBDIR)/libtwin.a
  
+
 FLIB= -L/software/local/intel64/compiler91/lib -lifcore -lifport
+LD = ld
+AR = ar ruv
+RANLIB = ranlib
 
-all:    src/makefile.dep src/makefile.sys worker_code
+all:    create_Makefile worker_code
 
-src/makefile.dep: src/Makefile
-	@echo -building makefile.dep
-	@cd src && perl depend.pl code/*.f > makefile.dep
-	@echo done
-	
+create_Makefile: $(CMAKE_DEPS)
+	mkdir -p $(MODDIR)
+	cd $(MODDIR) && cmake ..
 
-src/makefile.sys: src/Makefile
-	@echo running configure
-	@cd src && perl configure.pl > configure.out
-	@echo done	
-	
-	
 clean:
-	make -s -C src clean
-	/bin/rm -f *.pyc make.log
-	/bin/rm -f mpi_code.f90 worker_code twin_library_v2.mod mesh.mod
-	/bin/rm -f src/makefile.dep src/makefile.sys
+	make -C $(MODDIR) clean
+	rm -f *.pyc make.log
+	rm -f mpi_code.f90 worker_code twin_library_v2.mod mesh.mod
+	rm -f $(MODDIR)/CMakeCache.txt
+	rm -rf $(MODDIR)/CMakeFiles
 
 distclean:
 	make -C src distclean
 	/bin/rm -f *.pyc
 
-worker_code: mpi_code.f90 src/makefile.sys src/makefile.dep
-	@-mkdir -p src/modules
-	@-mkdir -p src/obj
-	@-mkdir -p src/lib
-	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
-	@cp $(MODDIR)/twin_library_v2.mod .
-	@cp $(MODDIR)/mesh.mod .
+worker_code: mpi_code.f90 $(SRC)
+	@-mkdir -p $(LIBDIR)
+#	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
+	make -s --no-print-directory -C $(MODDIR)
+	cp $(MODDIR)/twin_library_v2.mod .
+	cp $(MODDIR)/mesh.mod .
 	mpif90 $< -o $@ $(EVTWINLIB)
 
 mpi_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
 	
-.f.o: $<
-	$(FORTRAN) $(FFLAGS) -c -o $@ $< 

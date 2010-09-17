@@ -8,9 +8,10 @@ for the meaning of some of these variables you can set
  
  IP2     =          16,  IM2     =           1
  
- KPT     =        2000,  KP      =         200
+ KPT     =          -1,  KP      =         200
 
- STARTFILE = ''
+ STARTFILE  = ''
+ STARTFILE2 = ''
  
  ML1     =  0.00E+00,  DML     =  0.30E+00,  KML     =  1
  QL1     =  5.00E-02,  DQL     =  5.00E-02,  KQL     =  1
@@ -19,7 +20,7 @@ for the meaning of some of these variables you can set
  ROT     =  1.0,          KR      =  1
  EX      =  0.0
 
- SM      =  1.0
+ SM      = -1.0
  DTY     = -1.0
  AGE     =  0.0
  PER     = -1.0

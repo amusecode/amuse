@@ -2,6 +2,8 @@
 #Configure sript for the TWIN stellar evolution code and library
 use strict;
 
+my %platform_options;
+
 # First: detect the name of the system
 print "Determining system name... ";
 my $uname;
@@ -11,7 +13,38 @@ chomp $uname;
 close UNAME;
 print "$uname\n";
 
-my %platform_options;
+# Find the FORTRAN compiler
+print "Looking for FORTRAN compiler...";
+my $fort;
+$fort = $ENV{'FORT'} if (defined $ENV{'FORT'});
+if (!defined $fort) {
+   foreach ( qw/ gfortran ifort /) {
+# Test if compiler works
+      my $result = system "$_ --version 2>&1 > /dev/null";
+      if ($result != -1) {
+         $fort = $_;
+         last;
+      }
+   }
+}
+if (!$fort) {
+   die "Error: no FORTRAN compiler found";
+}
+print "$fort\n";
+$platform_options{'FORTRAN'} = $fort;
+
+$platform_options{'FFLAGS'} = "";
+if ($fort eq 'ifort') {
+   my $version = `ifort --version`;
+   $version =~ s/ifort \(IFORT\) (\d+\.\d+) .*/$1/;
+   $version *= 1;
+   print "Compiler version: $version\n";
+   if ($version >= 11.0) {
+      $platform_options{'FFLAGS'} = "-axSSE4.2,SSSE3";
+   } elsif ($version < 10.0) {
+      $platform_options{'FFLAGS'} = "-axP -msse3";
+   }
+}
 
 if ($uname =~ /Darwin/i) {
    $platform_options{'LDFLAGS'} = "-Wl,-single_module -dynamiclib -Wl,-flat_namespace -Wl,-undefined -Wl,suppress";

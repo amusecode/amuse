@@ -1,93 +1,102 @@
 &INIT_DAT
- KH2   =  199
- JCH   =    2
- KL    =    1
+! -------------------------------------------------------------------------
+! This file contains parameters that change the numerics or physics options
+! in the code.
+! -------------------------------------------------------------------------
+
+ KH2   =  199        ! Number of meshpoints
+ JCH   =    2        ! Remeshing options, typically 2, 3 or 4 (see manual)
+ KL    =    1        ! Solve surface-to-centre (0) or centre-to-surface(1)
  JH    =    3*0
 
  USE_SMOOTH_REMESHER = FALSE
  RELAX_LOADED_MODEL = TRUE
 
- KT1   =  100
- KT2   =    2    
- KT3   =    0    
- KT4   =    1 
- KT5   =    5
- KSV   =  100
+ KT1   =  100        ! How often to output a structure model (for plotting)
+ KT2   =    2        ! Plot every KT2'th meshpoint (in .out1 file)
+ KT3   =    0        ! How many pages of model details in .out1 (0 - 3)
+ KT4   =    1        ! How often to output to .plt1 and print summary in out1
+ KT5   =    5        ! Show iteration info after KT5 iterations
+ KSV   =  100        ! How often to write a model to .mod
 
- KTH   = 1 
- KX    = 1 
- KY    = 1 
- KZ    = 1
+ KTH   = 1           ! Thermal ebergy term on/off
+ KX    = 1           ! Composition change due to H burning on/off
+ KY    = 1           ! Composition change due to He burning on/off
+ KZ    = 1           ! Composition change in later burning phase on/off
 
- KCL   = 1
- KION  = 5
- KAM   = 1
- KOP   = 4
- KCC   = 0
- KNUC  = 0
- KCN   = 0
+ KCL   = 1           ! Coulomb corrections on/off
+ KION  = 5           ! Number of species to calculate partial ionisation for
+ KAM   = 1           ! Unused?
+ KOP   = 4           ! Opacity tables to use: standard (1) or CO-enhanced (4)
+ KCC   = 0           ! Unused
+ KNUC  = 0           ! Unused
+ KCN   = 0           ! standard nuclear network (0) or force CNO equilibrium (1)
 
- KR1   = 20
- KR2   = 5
+ KR1   = 20          ! Iterations for first timestep
+ KR2   = 5           ! Iterations for later timesteps
 
- EPS   = 1.00E-006
- DEL   = 1.00E-002
- DH0   = 1.00E-007
+ EPS   = 1.00E-006   ! Desired accuracy for solver (lower window bound)
+ DEL   = 1.00E-002   ! Convergence/scaling parameter (see manual)
+ DH0   = 1.00E-007   ! Relative variation when calculating derivatives
 
- USE_QUADRATIC_PREDICTIONS = TRUE
+ STORE_CHANGES = FALSE              ! Save changes (DH) in the .mod and .last? files
+ USE_QUADRATIC_PREDICTIONS = TRUE   ! Quadratic extrapolation of timestep
+ USE_LINESEARCH = FALSE             ! Line search algorithm, (NR 2nd ed. 9.7)
 
- WANTED_EPS             = 1.00E-008
- ALLOW_EXTENSION        = FALSE
+ WANTED_EPS             = 1.00E-008 ! Upper bound of accuracy window
  ALLOW_UNDERRELAXATION  = TRUE
  ALLOW_OVERRELAXATION   = TRUE
- ALLOW_EGENRELAXATION   = TRUE
  ALLOW_MDOTRELAXATION   = TRUE
  ALLOW_AVMURELAXATION   = FALSE
  USE_PREVIOUS_MU        = TRUE
  OFF_CENTRE_WEIGHT      = 1.0D16
 
- CDC_MS    = 0.04
- CDC_EMS   = 0.15
- CDC_HG    = 3.00
- CDC_1DUP  = 0.10
- CDC_HEC   = 0.0625
- CDC_HES   = 0.25
- CDC_DBLSH = 1.00
- CDC_RLOF  = 0.05
+ CDC_MS    = 0.04    ! Base timestep control parameter (MS)
+ CDC_EMS   = 0.15    ! Second timestep control parameter (end MS)
+ CDC_HG    = 3.00    ! Second timestep control parameter (Hertzsprung gap)
+ CDC_1DUP  = 0.10    ! Second timestep control parameter (First dredge-up)
+ CDC_HEC   = 0.0625  ! Second timestep control parameter (He core burning)
+ CDC_HES   = 0.25    ! Second timestep control parameter (He shell burning)
+ CDC_DBLSH = 1.00    ! Second timestep control parameter (Double shell burning)
+ CDC_RLOF  = 0.05    ! Second timestep control parameter (close to RLOF)
  CDC_RLOF_REDUCE  = 0.25
 
  CT1   =  0.8
  CT2   =  1.2
  CT3   =  0.3
 
- KE1   =  6
- KE2   =  6
- KE3   =  0
- KBC   =  4
- KEV   =  2
- KFN   = 52 
+ KE1   =  6          ! First order/structure equations
+ KE2   =  6          ! Second order/composition diffusion equations
+ KE3   =  0          ! Third order equations; doesn't work?
+ KBC   =  4          ! Number of central boundary conditions
+ KEV   =  2          ! Number of "eigen values"
 
  KP_VAR  =  7  8  4 12  5  3  9 10 11 16  1  2  6 13    26*0
  KP_EQN  =  1  2  3  4  5 13  6  7  8  9 10 11          28*0
  KP_BC   =  1  2  3  4  5 13  6  7  8 10  6  7  8  9    26*0
 
- CH    = -1.0
- CC    =  0.176E+000
- CN    =  5.200E-002
- CO    =  0.502E+000
- CNE   =  9.200E-002
- CMG   =  3.400E-002
- CSI   =  7.200E-002
- CFE   =  7.200E-002
+ CH    = -1.0        ! H abundance fraction, by mass (-1 to use default)
+ CC    =  0.176E+000 ! C abundance, as fraction of Z (Anders & Grevesse)
+ CN    =  5.200E-002 ! N abundance, as fraction of Z (Anders & Grevesse)
+ CO    =  0.502E+000 ! O abundance, as fraction of Z (Anders & Grevesse)
+ CNE   =  9.200E-002 ! Ne abundance, as fraction of Z (Anders & Grevesse)
+ CMG   =  3.400E-002 ! Mg abundance, as fraction of Z (Anders & Grevesse)
+ CSI   =  7.200E-002 ! Si abundance, as fraction of Z (Anders & Grevesse)
+ CFE   =  7.200E-002 ! Fe abundance, as fraction of Z (Anders & Grevesse)
 
- CC  = 0.1733E+000
- CN  = 0.0532E+000
- CO  = 0.4823E+000
- CNE = 0.0987E+000
- CMG = 0.0376E+000
- CFE = 0.0718E+000
- CSI = 0.0831E+000
+ CC  = 0.1733E+000   ! C abundance, as fraction of Z (Grevesse & Noels)
+ CN  = 0.0532E+000   ! N abundance, as fraction of Z (Grevesse & Noels)
+ CO  = 0.4823E+000   ! O abundance, as fraction of Z (Grevesse & Noels)
+ CNE = 0.0987E+000   ! Ne abundance, as fraction of Z (Grevesse & Noels)
+ CMG = 0.0376E+000   ! Mg abundance, as fraction of Z (Grevesse & Noels)
+ CFE = 0.0718E+000   ! Si abundance, as fraction of Z (Grevesse & Noels)
+ CSI = 0.0831E+000   ! Fe abundance, as fraction of Z (Grevesse & Noels)
 
+ ! Mesh spacing function:
+ ! Q = CT(4)*log(P) + CT(5)*log(P+CT(9)) +
+ !     CT(7)*log(T) - CT(7)*log(T + CT(10)) -
+ !     CT(3)*log(1 + R**2 / CT(8)) +
+ !     log( CT(6) * Mc**(2/3) / (CT(6)*Mc**(2/3) + M**(2/3)) )
  CT    =  0.000000000000000E+000, 0.000000000000000E+000,
           5.000000000000000E-002, 5.000000000000000E-002,
           0.150000000000000E+000, 2.000000000000000E-002,
@@ -95,65 +104,78 @@
           1.000000000000000E+015, 2.000000000000000E+004
 
  CONVECTION_SCHEME = 1
- CONVECTION_LEDOUX = 0
- CALP  =  2.000E+000
- CU    =  0.100E+000
- COS   =  0.120E+000
- CPS   =  0.120E+000
- CRD   =  1.000E-002
- CSMC  =  4.000E-002
- CXB   =  0.150E+000
- CGR   =  1.000E-003
- CTH   =  1.000E+000
- CGRS  =  0.000E+000
- CCAC  =  0.000E+000
+ CONVECTION_LEDOUX = 0  ! Schwarzschild (0) or Ledoux (1) convections
+ CALP  =  2.000E+000    ! Mixinglength-to-scaleheight ratio ("alpha")
+ CU    =  0.100E+000    ! Convective overshoot parameter
+ COS   =  0.120E+000    ! Convective overshoot parameter, H rich
+ CPS   =  0.120E+000    ! Convective overshoot parameter, H exhausted
+ CRD   =  1.000E-002    ! Convective mixing efficiency
+ CSMC  =  4.000E-002    ! Semi convection mixing efficiency ("alpha_sc")
+ CSMCE =  0.000e+000    ! Energy transport due to semi-convection on/off
+ CXB   =  0.150E+000    ! Abundance fraction for core boundary (output only)
+ CGR   =  1.000E-003    ! Boundary for convection and semiconvection (output)
+ CTH   =  1.000E+000    ! Efficiency of thermohaline mixing (0, 1.0 or 1.0e2)
+ CTHE  =  0.000E+000    ! Energy transport due to thermohaline mixing on/off
+ CGRS  =  0.000E+000    ! Gravitational settling on/off (1 or 0)
+ GRS_BURGERS = .FALSE.  ! Use Burgers formalism (Thoul & al. 1994; Hu & al. 2009) or trace approximation (Aller & Chapman 1960)
+ CCAC  =  0.000E+000    ! Composition accretion on/off (1 or 0)
 
- ARTMIX = 0.0
+ ! Set proper location for the OPCD data files (for accelerations)
+ op_data_path = 'mono/'
 
- CDSI  =  0.000E+000
- CSHI  =  0.000E+000
- CSSI  =  0.000E+000
- CESC  =  0.000E+000
- CGSF  =  0.000E+000
+ ! When to calculate radiative accelerations
+ ! Use the current values (0) or the values from the previous timestep (-1).
+ ! Using current values means the accelerations are recalculated for each
+ ! iteration of the solver, which is *very* slow.
+ ! (Technical note: in the code, this value is tested against JI in funcs1)
+ rlev_update = -1
+
+ ARTMIX = 0.0           ! Artificial mixing coefficient
+
+ CDSI  =  0.000E+000    ! Dynamical shear mixing
+ CSHI  =  0.000E+000    ! Solberg-Hoiland mixing
+ CSSI  =  0.000E+000    ! Secular shear mixing
+ CESC  =  0.000E+000    ! Eddington-Sweet Circulation
+ CGSF  =  0.000E+000    ! Goldreich-Schubert-Fricke instability
 
  CEA   =  1.000000000000000E+002
  CET   =  1.000000000000000E-008
 
- CMI_MODE = 1
- ZSCALING_MDOT = 0.8
+ CMI_MODE = 1           ! Exponential (1) or linear (2) artificial accretion
+ ZSCALING_MDOT = 0.8    ! Metallicity scaling for wind
  
- SMART_MASS_LOSS = 1.0
+ SMART_MASS_LOSS = 1.0  ! Elaborate mass loss routine on or off
  CMT   =  0.000000000000000E+000
  CMTEL =  0.000000000000000E+000
  CMTWL =  0.000000000000000E+000
  CMS   =  0.000000000000000E+000
  CMI   =  0.000000000000000E+000
- CMR   =  0.0
- CMRR  =  0.0
- CMSC  =  1.0
- CMVW  =  0.0
- CMW   =  1.0
- CMAL  =  0.0
- CMJ   =  1.0
- CMV   =  1.0
- CMK   =  0.0
- CMNL  =  1.0
+ CMR   =  0.0           ! Reimers-like wind (RGB/AGB)
+ CMRR  =  0.0           ! Real Reimers wind (RGB/AGB)
+ CMSC  =  1.0           ! Schroeder & Cuntz wind (RGB/AGB)
+ CMVW  =  0.0           ! Vasiliadis & Wood (AGB)
+ CMW   =  1.0           ! Wachter & al. (AGB)
+ CMAL  =  0.0           ! Achmad & al. (yellow supergiant)
+ CMJ   =  1.0           ! de Jager & al. (luminous stars)
+ CMV   =  1.0           ! Vink & al. (O/B stars)
+ CMK   =  0.0           ! Kudritzki 2002 (very luminous O stars)
+ CMNL  =  1.0           ! Nugis & Lamers (Wolf-Rayet)           
  CML   =  0.000000000000000E+000
  CHL   =  0.000000000000000E+000
  CTF   =  0.000000000000000E+000
  CLT   =  0.000000000000000E+000
 
- CMDOTROT_HLW = 0.0
- CMDOTROT_MM  = 0.0
+ CMDOTROT_HLW = 0.0     ! Rotation enhanced mass loss (Heger, Langer & Woosley)
+ CMDOTROT_MM  = 0.0     ! Rotation enhanced mass loss (Maeder & Meynet)
 
- CPA   =  0.000000000000000E+000
- CBR   =  0.000000000000000E+000
- CSU   =  0.000000000000000E+000
- CSD   =  0.000000000000000E+000
- CDF   =  1.000000000000000E-002
- CGW   =  1.000000000000000E+000
- CSO   =  1.000000000000000E+000
- CMB   =  0.000000000000000E+000
+ CPA   =  0.000000000000000E+000    ! Partial accretion: the fraction of one star's wind that is accreted by the other                
+ CBR   =  0.000000000000000E+000    ! Bipolar re-emission: the fraction of material accreted by a star that is ejected in bipolar jets
+ CSU   =  0.000000000000000E+000    ! Spin-up of the gainer due to accretion							      
+ CSD   =  0.000000000000000E+000    ! Spin-down of the loser due to accretion							      
+ CDF   =  1.000000000000000E-002    ! Describes 'smoothed' step function							      
+ CGW   =  1.000000000000000E+000    ! Turn on/off gravitational waves								      
+ CSO   =  1.000000000000000E+000    ! Turn on/off spin-orbit coupling								      
+ CMB   =  0.000000000000000E+000    ! Multiplier for Verbunt & Zwaan magnetic braking						      
 
  KN      = 12
  KJN     =  1   2   3   5   6   7  25  26  27  29  30  31, 28*0
@@ -176,4 +198,49 @@
    X16AC = 0.502E-004
    X20AC = 9.200E-006
    X24AC = 3.400E-006
+/
+
+&ABUND
+   CXD     = 2.406e-03
+   CXHE3   = 1.468e-03
+   CXLI7   = 4.687e-07
+   CXBE7   = 0.000e+00
+   CXB11   = 2.368e-07
+   CXC12   = 1.764e-01
+   CXC13   = 1.829e-03
+   CXC14   = 0.000e+00
+   CXN14   = 5.212e-02
+   CXN15   = 2.186e-04
+   CXO16   = 5.031e-01
+   CXO18   = 1.086e-03
+   CXO17   = 1.948e-04
+   CXF19   = 2.030e-05
+   CXNE21  = 2.068e-04
+   CXNE20  = 9.221e-02
+   CXNE22  = 6.525e-03
+   CXNA22  = 0.000e+00
+   CXNA23  = 1.673e-03
+   CXMG24  = 2.580e-02
+   CXMG25  = 3.391e-03
+   CXMG26  = 3.889e-03
+   CXAL26M = 0.000e+00
+   CXAL27  = 2.906e-03
+   CXAL26G = 0.000e+00
+   CXSI28  = 3.272e-02
+   CXSI30  = 1.179e-03
+   CXSI29  = 1.717e-03
+   CXP31   = 4.087e-03
+   CXS33   = 1.615e-04
+   CXS32   = 1.984e-02
+   CXS34   = 9.351e-04
+   CXFE57  = 1.431e-03
+   CXFE60  = 0.000e+00
+   CXFE56  = 5.858e-02
+   CXFE58  = 1.853e-04
+   CXFE59  = 0.000e+00
+   CXCO59  = 1.683e-04
+   CXNI61  = 4.307e-05
+   CXNI59  = 0.000e+00
+   CXNI58  = 2.478e-03
+   CXNI60  = 9.812e-04
 /

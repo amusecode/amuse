@@ -15,64 +15,47 @@ SONAME = so
 
 # Destination directory for the MUSE plugin
 TWINMUSEDIR = muse
-PYTHON_INCLUDE_DIR = /usr/include/python2.5
-
-# Default FORTRAN compiler if FORT variable not defined. It is better to
-# set FORT from the shell login script than to change the default here.
-ifndef FORT
-   FORT=ifort
-endif
+PYTHON_INCLUDE_DIR = 
 
 # Other tools
 LD = ld
 AR = ar ruv
 RANLIB = ranlib
 
-# Actually, just use the compiler to pass information to the loader. This
-# works better because the compiler will also include the proper library
-# dependancies.
-LD = $(FORT)
-LDFLAGS += -shared
-LIBS = -lm
-
 # C compiler options, for the SWIG C wrapper for the MUSE plugin
-CC ?= gcc
-CFLAGS += -O3 -fomit-frame-pointer -fPIC
+CC = gcc
+CFLAGS = -O3 -fomit-frame-pointer -fPIC
 
 # SWIG
 SWIG = swig
 
+include makefile.sys
+
+# Default FORTRAN compiler if FORT variable not defined. It is best
+# set FORT from the shell login script.
+ifndef FORT
+   FORT=$(FORTRAN)
+endif
+
 # Determine appropriate compiler settings for different compilers
 # Compiler flags for the PortlandGroup compiler
-ifeq ($(notdir $(FORT)),pgf95)
+ifeq ($(FORT),pgf95)
    FFLAGS += -O2 -Mextend
    FFLAGS += -module $(MODDIR) -I$(MODDIR)
 endif
 
 # Compiler flags for the g95 compiler
-ifeq ($(notdir $(FORT)),g95)
+ifeq ($(FORT),g95)
    FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -fmod=$(MODDIR)
    FFLAGS += -fzero -O -finline -pipe
 	FLIB = -lg95
 endif
 
 # Compiler flags for the gfortran compiler
-ifeq ($(notdir $(FORT)),gfortran)
-   FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -J$(MODDIR)
-   #FFLAGS += -ffpe-trap=zero,invalid -fsignaling-nans
-   FFLAGS += -O2
-   FLIB = -lgfortran
-
-ifdef OPENMP
-   FFLAGS += -fopenmp
-endif
-endif
-# Compiler flags for the gfortran compiler
-
-ifeq ($(notdir $(FORT)),f95)
-   FFLAGS += -ffixed-line-length-132 -I$(MODDIR) -J$(MODDIR)
-   #FFLAGS += -ffpe-trap=zero,invalid -fsignaling-nans
-   FFLAGS += -O2
+ifeq ($(FORT),gfortran)
+   #FFLAGS += -ffixed-line-length-132 
+   FFLAGS += -I$(MODDIR) -J$(MODDIR)
+   FFLAGS += -O2 -Wall  
    FLIB = -lgfortran
 
 ifdef OPENMP
@@ -81,56 +64,76 @@ endif
 endif
 
 # Compiler flags for the Lahey compiler
-ifeq ($(notdir $(FORT)),lf95)
+ifeq ($(FORT),lf95)
    FFLAGS += -O --wide -I$(MODDIR) -M$(MODDIR)
 endif
 
+
 # Compiler flags for the Intel compiler
-ifeq ($(notdir $(FORT)),ifort)
+ifeq ($(FORT),ifort)
    #FFLAGS += -fltconsistency
    FFLAGS += -fpconstant
    FFLAGS += -extend_source
    FFLAGS += -align all
    FFLAGS += -module $(MODDIR) -I$(MODDIR)
    FFLAGS += -ip
+   FFLAGS += -traceback
 
-ifdef OPTIMISE_MORE
-   FFLAGS += -O3
-#   FFLAGS += -no-inline-factor
-else
-   FFLAGS += -O2
-endif
+   ifdef OPTIMISE_MORE
+      FFLAGS += -O3
+      ifeq ($(FORT), ifort)
+         FFLAGS += -unroll-agressive -vec-guard-write
+      endif
+#      FFLAGS += -no-inline-factor
+   else
 
-   FFLAGS += -axSSE4.2,SSSE3,SSE2
+      ifdef RUNTIME_CHECKS
+         FFLAGS += -O0 -warn all -check all -check noarg_temp_created
+      else
+         FFLAGS += -O2 -warn all  
+      endif
 
-ifdef AS_FAST_AS_POSSIBLE
-   #FFLAGS += -fp-model fast=2 -no-prec-div -fast-transcendentals #-fast
-   FFLAGS += -no-prec-div -no-prec-sqrt -fast-transcendentals -fast
-else
-   FFLAGS += -fp-model strict
-endif
+   endif
 
-ifdef GLOBAL_OPTIMISATION
-   FFLAGS += -ipo
-endif
+   ifdef AS_FAST_AS_POSSIBLE
+      #FFLAGS += -fp-model fast=2 -no-prec-div -fast-transcendentals #-fast
+      FFLAGS += -no-prec-div -no-prec-sqrt -fast-transcendentals -fast
+   else
+      FFLAGS += -fp-model strict
+   endif
 
-ifdef PARALLEL
-   FFLAGS += -parallel
-endif
+   ifdef GLOBAL_OPTIMISATION
+      FFLAGS += -ipo
+   endif
 
-ifdef STATICLINK
-   FFLAGS += -static
-endif
+   ifdef PARALLEL
+      FFLAGS += -parallel
+   endif
+
+   ifdef STATICLINK
+      FFLAGS += -static
+   endif
 
    #FLIB = -lifcoremt -lifcore -lguide
-	#FLIB = -limf -lifcore -lifport -lguide
+   #FLIB = -limf -lifcore -lifport -lguide
+endif
+#End ifort
+
+
+# Compiler flags for the NAG compiler
+ifeq ($(FORT),nagfor)
+   FFLAGS += -O0 -I$(MODDIR) -mdir $(MODDIR)
 endif
 
-DEBUGMODE=1
+
+
 ifdef DEBUGMODE
    FFLAGS += -g 
    ifeq ($(FORT),ifort)
       FFLAGS += -fpe0 -fpstkchk
+   endif
+   ifeq ($(FORT),gfortran)
+      FFLAGS += -ffpe-trap=zero,invalid -fsignaling-nans
    endif
 endif
 
@@ -138,22 +141,28 @@ ifdef PROFILEMODE
    FFLAGS += -g -pg
 endif
 
-include makefile.sys
-
 # Set architecture flag
 FFLAGS += $(ARCHITECTURE_FLAG)
 CFLAGS += $(ARCHITECTURE_FLAG)
 
 # Main source
-SHARED_SRC = initdat.f initrun.f nremesh.f extrapolate_dh.f mesh.f control.f xtraelem.f fcompare.f consts.f menc.f plotvars.f bbegin.f cfuncs.f estate.f massloss.f file_exists.f positron_fdirac.f printb.f fgb2hb_comp.f nucleosynthesis.f
-SHARED_SRC += dsolve.f 
-RAWSRC = aamain.f $(SHARED_SRC)
-LIBSRC = library_v2.f $(SHARED_SRC) prtoft.f export.f
-#LIBSRC = library_v2.f library.f $(SHARED_SRC) prtoft.f import.f export.f
+SHARED_SRC = initdat.f90 initrun.f90 nremesh.f90 extrapolate_dh.f90 mesh.f90 control.f90 extra_elements.f90 fcompare.f90 constants.f90 
+SHARED_SRC += menc.f90 ms2bss.f90 plotvariables.f90 begin.f90 update.f90 output_input_model.f90 stars_structure.f90 remesh.f90 eostate.f90 
+SHARED_SRC += opacity.f90 opacity_co.f90 massloss.f90 file_exists.f90 positron_fdirac.f90 output_properties.f90 fgb2hb.f90 fgb2hb_comp.f90 
+SHARED_SRC += nucleosynthesis.f90 semi_implicit.f90 interpolate.f90 diffusion.f90 step.f90 extra_solver.f90 eostate_cache.f90 pruner.f90 
+SHARED_SRC += lt2ubv.f90 load_star_model.f90 svn_version.f90 neutrinos.f90 settings.f90 diffusion_coefficients.f90 test_variables.f90 
+SHARED_SRC += atomic_data.f90 reaction_rate_data.f90 eostate_types.f90 funcs1_interface.f90 current_model_properties.f90 structure_variables.f90 
+SHARED_SRC += binary_history.f90 accretion_abundances.f90 starting_values.f90 real_kind.f90 solver.f90
+RAWSRC = ev_main.f90 $(SHARED_SRC)
+LIBSRC = library.f90 $(SHARED_SRC) prtoft.f90 import.f90 export.f90
+
+SRC = $(addprefix $(SRCDIR)/, $(LIBSRC) ev_main.f90)
 
 # Target object files
-OBJS = $(addprefix $(OBJDIR)/,$(RAWSRC:.f=.o))
-FPIC_OBJS = $(addprefix $(OBJDIR)/pic_,$(LIBSRC:.f=.o))
+OBJS1 = $(addprefix $(OBJDIR)/,$(RAWSRC:.f=.o ))
+OBJS = $(OBJS1:.f90=.o)			# Hack
+FPIC_OBJS1 = $(addprefix $(OBJDIR)/pic_,$(LIBSRC:.f=.o))
+FPIC_OBJS = $(FPIC_OBJS1:.f90=.o)	# Hack
 TWINMUSEOBJS = $(OBJDIR)/twinmuse.o $(OBJDIR)/twinmuse_wrap.o
 
 EV = $(EXEDIR)/ev
@@ -175,9 +184,9 @@ makefile.dep: Makefile
 	@echo "Please run 'make depend' before running make"
 	@exit
 
-depend:
+depend: $(SRCDIR)/svn_version.f90
 	@echo Generating dependencies...
-	@perl depend.pl code/*.f > makefile.dep
+	@perl depend.pl $(SRC) > makefile.dep
 	@echo Done!
 
 DEPRULE = $(foreach src, $(RAWSRC), "$(addprefix $(OBJDIR)/,$(src:.f=.o)):$(addprefix $(SRCDIR)/,$(src))\n\t\$$(FORT) \$$(FFLAGS) -c $(addprefix \$$(SRCDIR)/,$(src)) -o $(addprefix \$$(OBJDIR)/,$(src:.f=.o))\n\n")
@@ -207,18 +216,18 @@ $(MODDIR):
 $(HOME)/bin/:
 	mkdir $@
 
-include makefile.dep
+$(SRCDIR)/svn_version.f90:
+	@perl detect_svn_version.pl
 
-.f.o:
-	$(FORT) $(FFLAGS) -c $?
+include makefile.dep
 
 # Executable and library targets
 $(EV): $(OBJS)
 	$(FORT) $(FFLAGS) -o $@ $(OBJS)
+	@rm $(SRCDIR)/svn_version.f90
 
 $(LIBTWIN): $(FPIC_OBJS)
 	$(AR) $@ $(FPIC_OBJS)
-	$(RANLIB) $@
 
 $(LIBTWINSO): $(FPIC_OBJS)
 	$(LD) $(LDFLAGS) -o $@ $(FPIC_OBJS)
@@ -265,9 +274,10 @@ clean:
 	rm -f $(MODDIR)/*.mod
 	rm -f core core.*
 	rm -f $(EV)
+	rm -f $(SRCDIR)/svn_version.f90
 
 distclean: clean
 
 veryclean: distclean
 	rm -f makefile.dep
-	
+
