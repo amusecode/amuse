@@ -17,13 +17,10 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
 
-    def setup_module(self):
-        self.commit_parameters()
-        self.commit_particles()
+    
 
 
-    def cleanup_module(self):
-        self.cleanup_code
+    
 
     def reinitialize_particles(self):
         self.recommit_particles()

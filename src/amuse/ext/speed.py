@@ -14,10 +14,10 @@ def calculate_speed(range_of_number_of_particles):
     result = []
     for n in range_of_number_of_particles: #range(8000,20000, 1000):
         hermite1 = HermiteInterface()
-        hermite1.setup_module()
+        hermite1.initialize_code()
         
         hermite2 = HermiteInterface()
-        hermite2.setup_module()
+        hermite2.initialize_code()
         
         ids = [i for i in range(1,n)]
         values = [1.0 * i for i in range(1,n)]
@@ -49,8 +49,8 @@ def calculate_speed(range_of_number_of_particles):
         d2 = t1 - t0
         result.append((n, d1, d2, d2/d1))
                     
-        hermite1.cleanup_module()
-        hermite2.cleanup_module()
+        hermite1.cleanup_code()
+        hermite2.cleanup_code()
         
         del hermite1
         del hermite2

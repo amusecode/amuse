@@ -162,8 +162,7 @@ class TwoBodyImplementation(object):
         self.particles=[]
         self.tnow=0.0
       
-    def setup_module(self):
-        pass
+    
       
     def initialize_code(self):
         return 0

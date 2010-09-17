@@ -45,11 +45,9 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         """
         return os.path.join(get_amuse_root_dir(), 'data', 'fi', 'output')
     
-    def setup_module(self):
-        return self.initialize_code()
+    
         
-    def cleanup_module(self):
-        return self.cleanup_code()
+    
        
     def new_particle(self, mass, radius, x, y, z, vx, vy, vz):
         return self.new_dm_particle(mass, radius, x, y, z, vx, vy, vz)

@@ -26,22 +26,22 @@ class TestHermiteInterface(TestWithMPI):
     def test1(self):
         instance = HermiteInterface()
         instance.initialize_code()
-
+    
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
         res2 = instance.new_particle(mass = 21.0, radius = 5.0, x = 10.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
         
         self.assertEquals(0, res1['index_of_the_particle'])
         self.assertEquals(1, res2['index_of_the_particle'])
-
+    
         retrieved_state1 = instance.get_state(0)
         retrieved_state2 = instance.get_state(1)
-
+    
         self.assertEquals(11.0,  retrieved_state1['mass'])
         self.assertEquals(21.0,  retrieved_state2['mass'])
         self.assertEquals(0.0,  retrieved_state1['x'])
         self.assertEquals(10.0,  retrieved_state2['x'])
-
-        instance.cleanup_module()
+    
+        instance.cleanup_code()
         del instance
 
     def test2(self):
@@ -88,11 +88,11 @@ class TestHermiteInterface(TestWithMPI):
         
         self.assertEquals(10.0,  retrieved_state['mass'])
         self.assertEquals(1, retrieved_state['radius'])
-
+    
         retrieved_state = hermite.get_state([0,1])
         self.assertEquals(20.0,  retrieved_state['mass'][1])
         self.assertEquals(hermite.get_number_of_particles()['number_of_particles'], 2)
-        hermite.cleanup_module() 
+        hermite.cleanup_code() 
 
     def test6(self):
         hermite = HermiteInterface()
@@ -103,7 +103,7 @@ class TestHermiteInterface(TestWithMPI):
         
         retr = hermite.get_potential_at_point(0.01, 0,0,0)
         self.assertEqual(retr['phi'], -20.0)
-        hermite.cleanup_module()
+        hermite.cleanup_code()
        
 
 class TestHermite(TestWithMPI):
@@ -126,7 +126,7 @@ class TestHermite(TestWithMPI):
     
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
+    
         hermite = Hermite(convert_nbody)
         hermite.initialize_code()
         hermite.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -156,14 +156,14 @@ class TestHermite(TestWithMPI):
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
         
-        hermite.cleanup_module()
+        hermite.cleanup_code()
         
         hermite.stop()
         
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
+    
         instance = Hermite(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -200,7 +200,7 @@ class TestHermite(TestWithMPI):
         
         
         
-        instance.cleanup_module()
+        instance.cleanup_code()
         del instance
 
     def test3(self):
@@ -393,7 +393,7 @@ class TestHermite(TestWithMPI):
         
     def test9(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
+    
         instance = Hermite(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
@@ -410,25 +410,25 @@ class TestHermite(TestWithMPI):
         position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
-
+    
         print instance.model_time
         
         print instance.stopping_conditions.pair_detection.particles(0).key
         print instance.stopping_conditions.pair_detection.particles(1).key
         
-        instance.cleanup_module()
+        instance.cleanup_code()
         
         instance.stop()
         
     def test10(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
+    
         instance = Hermite(convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.parameters.stopping_conditions_number_of_steps = 10 
+        instance.parameters.stopping_conditions_number_of_steps = 10
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,10|units.none)
-
+    
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
                 
@@ -438,7 +438,7 @@ class TestHermite(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
         instance.update_particles(stars)
         
-        instance.cleanup_module()
+        instance.cleanup_code()
         
         instance.stop()
 

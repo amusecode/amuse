@@ -6,7 +6,7 @@ function initialize_code() result(ret)
   
 end function
 
-function cleanup_module() result(ret)
+function cleanup_code() result(ret)
   use amuse_helpers
   integer :: ret
   

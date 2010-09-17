@@ -39,7 +39,7 @@ def run_evrard(x):
     smooth=numpy.zeros_like(mass)
 
     nb = interface.FiInterface(redirection="none")
-    nb.setup_module()
+    nb.initialize_code()
 
 #  nb.set_stepout(99999)
 #  nb.set_steplog(99999)

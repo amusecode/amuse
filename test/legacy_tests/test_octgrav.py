@@ -16,18 +16,18 @@ from amuse.test.amusetest import TestWithMPI
 class TestMPIInterface(TestWithMPI):
 
     def test1(self):
-
+    
         instance = self.new_instance_of_an_optional_code(OctgravInterface)
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
         self.assertEquals(2.0, retrieved_state['radius'])
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
-        instance.cleanup_module()
+        instance.cleanup_code()
         instance.stop()
 
     def test2(self):
-
+    
         instance = self.new_instance_of_an_optional_code(OctgravInterface)
         instance.initialize_code()
         instance.new_particle(
@@ -39,21 +39,21 @@ class TestMPIInterface(TestWithMPI):
             [6,15,105],
             [7,16,106],
             [8,17,107])
-
+    
         particle1_state = instance.get_state(1)
         self.assertEquals(1,   particle1_state['mass'])
-
+    
         particle2_state = instance.get_state(2)
         self.assertEquals(10,  particle2_state['mass'])
-
+    
         instance.delete_particle(1)
-
+    
         size_result = instance.get_number_of_particles()
         self.assertEquals(2, size_result['number_of_particles'])
-
+    
         new_particle1_state = instance.get_state(1)
         self.assertEquals(10,  new_particle1_state['mass'])
-
+    
         new_particle_result = instance.new_particle(
                                   1000,
                                   1001,
@@ -64,11 +64,11 @@ class TestMPIInterface(TestWithMPI):
                                   1006,
                                   1007)
         self.assertEquals(4, new_particle_result['index_of_the_particle'],4)
-
+    
         new_particle4_state = instance.get_state(4)
         self.assertEquals(1000,  new_particle4_state['mass'])
-
-        instance.cleanup_module()
+    
+        instance.cleanup_code()
         instance.stop()
 
 class TestAmuseInterface(TestWithMPI):
@@ -123,13 +123,13 @@ class TestAmuseInterface(TestWithMPI):
 
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-
+    
         instance = self.new_instance_of_an_optional_code(Octgrav, convert_nbody)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.0 | units.AU**2
-        instance.parameters.stopping_conditions_number_of_steps = 1 
+        instance.parameters.stopping_conditions_number_of_steps = 1
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps,1|units.none)
-
+    
         stars = self.new_system_of_sun_and_earth()
         earth = stars[1]
                 
@@ -137,7 +137,7 @@ class TestAmuseInterface(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         instance.evolve_model(365.0 | units.day)
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
-        instance.cleanup_module()
+        instance.cleanup_code()
         instance.stop()
         
     def test3(self):

@@ -31,11 +31,9 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         elif mode == self.MODE_PG:
             return 'worker_code_phantom_grape'
 
-    def setup_module(self):
-        return self.initialize_code()
+    
 
-    def cleanup_module(self):
-        return self.cleanup_code()
+    
 
 
     def initialize_particles(self, time):

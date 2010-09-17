@@ -157,7 +157,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop
     
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         err=instance.set_boundary("reflective","periodic",
         "periodic","reflective",
         "periodic","reflective")
@@ -165,7 +165,7 @@ class TestMPIInterface(TestWithMPI):
         instance.stop
     
         instance=CapreoleInterface()
-        instance.setup_module()
+        instance.initialize_code()
         err=instance.set_boundary("periodic","periodic",
         "periodic","periodic",
         "periodic","periodic")

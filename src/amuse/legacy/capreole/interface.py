@@ -6,17 +6,9 @@ class CapreoleInterface(LegacyInterface):
     def __init__(self,name_of_the_worker = 'worker',**args):
         LegacyInterface.__init__(self, name_of_the_worker,**args)
 
-    @legacy_function   
-    def setup_module():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+    
 
-    @legacy_function   
-    def cleanup_module():
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
-        return function
+    
 
     @legacy_function   
     def setup_mesh():
@@ -198,9 +190,18 @@ class CapreoleInterface(LegacyInterface):
     
     
 
-    def setup_module(self):
-        self.initialize_code()
     
+    
+    
+
+    @legacy_function
+    def cleanup_code():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'i'
+        return function
+    
+    
+
     
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):

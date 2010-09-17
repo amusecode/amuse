@@ -16,12 +16,12 @@ class TestFiInterface(TestWithMPI):
 
     def test1(self):
         instance=FiInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.stop()
     
     def test2(self):
         instance=FiInterface()
-        instance.setup_module()
+        instance.initialize_code()
         
         for x,l in [('use_hydro',1),('radiate',0),('starform',0),('cosmo',1),
                     ('sqrttstp',0),('acc_tstp',1),('freetstp',0),('usequad',0),
@@ -76,28 +76,28 @@ class TestFiInterface(TestWithMPI):
     
     def test3(self):
         instance=FiInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
         self.assertEquals(2.0, retrieved_state['radius'])
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
-        instance.cleanup_module()
+        instance.cleanup_code()
         instance.stop()
     
     def test4(self):
         instance=FiInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         instance.set_time_step(2.0)
         retrieved_state = instance.get_time_step()
         self.assertEquals(2.0, retrieved_state['time_step'])
-        instance.cleanup_module()
+        instance.cleanup_code()
         instance.stop()
     
     def test5(self):
         instance=FiInterface()
-        instance.setup_module()
+        instance.initialize_code()
         instance.set_eps(0.001)
         instance.set_directsum(1)
         instance.commit_parameters()
@@ -128,7 +128,7 @@ class TestFiInterface(TestWithMPI):
         self.assertAlmostEqual( Ek, 0.,10)
         self.assertAlmostEqual( Ep, -0.5,10)
         
-        instance.cleanup_module()
+        instance.cleanup_code()
         instance.stop()
     
     def test6(self):
@@ -176,7 +176,7 @@ class TestEvrard(TestWithMPI):
         mass,x,y,z,vx,vy,vz,u=evrard.new_model()
         smooth=numpy.zeros_like(mass)
         nb = FiInterface()
-        nb.setup_module()
+        nb.initialize_code()
         
         nb.set_stepout(99999)
         nb.set_steplog(99999)

@@ -19,13 +19,9 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
         """
         LiteratureRefs.__init__(self)
 
-    def setup_module(self):
-        self.initialize_code()
-        self.commit_parameters()
-        self.commit_particles()
+    
        
-    def cleanup_module(self):
-        self.cleanup_code()
+    
     
     @legacy_function  
     def reinitialize_particles():
