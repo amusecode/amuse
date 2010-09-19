@@ -310,6 +310,7 @@ subroutine muse_stepsys(tend,sync)
  error = get_stopping_condition_out_of_box_parameter(stop_boxsize)
  call SYSTEM_CLOCK(clock_init, count_rate, count_max)
 
+ call activateparts
  call corrpos(itimestp,'desync')
 
  do while(tnow<tend-dtime/2)
@@ -331,7 +332,7 @@ subroutine muse_stepsys(tend,sync)
    if (is_out_of_box_detection_enabled.GT.0) then
       i=0
       do p=1,nbodies
-      if(sum(pos(p,1:3)**2).GT.stop_boxsize**2) then
+      if(sum(pos(p,1:3)**2).GE.stop_boxsize**2) then
          if(i.EQ.0) then
             stopping_index = next_index_for_stopping_condition()
             error = set_stopping_condition_info(stopping_index, OUT_OF_BOX_DETECTION)
@@ -348,7 +349,10 @@ subroutine muse_stepsys(tend,sync)
    n=n+1
  enddo
  call outstate(n)
- if(sync.EQ.1) call corrpos(itimestp,'sync')
+ if(sync.EQ.1) then 
+   call activateparts
+   call corrpos(itimestp,'sync')
+ endif  
 end subroutine
 
 subroutine muse_get_gravity(epsin,x,y,z,ax,ay,az,n)
@@ -512,7 +516,6 @@ subroutine muse_energies(mode,ek,ep,eth)
  ek=ektot
  ep=eptot
  eth=ethtot
- 
 end subroutine
 
 function muse_get_time() result(t)
