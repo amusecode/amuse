@@ -301,7 +301,7 @@ class BuildLegacy(LegacyCommand):
         if not_build or not_build_special:
             print
             print
-            print "Legacy codes not build (because of errors):"
+            print "Legacy codes not built (because of errors):"
             print "==========================================="
             for x in not_build:
                 print '*', x 
@@ -310,7 +310,7 @@ class BuildLegacy(LegacyCommand):
         if build:
             print
             print
-            print "Legacy codes build"
+            print "Legacy codes built"
             print "=================="
             for x in build:
                 print '*', x
