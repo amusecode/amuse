@@ -1,8 +1,9 @@
 from amuse.legacy import *
 
 from amuse.support.units.generic_unit_system import *
+from amuse.legacy.interface.common import CommonCodeInterface
 
-class CapreoleInterface(LegacyInterface):
+class CapreoleInterface(LegacyInterface, CommonCodeInterface):
     def __init__(self,name_of_the_worker = 'worker',**args):
         LegacyInterface.__init__(self, name_of_the_worker,**args)
 
@@ -180,25 +181,6 @@ class CapreoleInterface(LegacyInterface):
         function.result_type = 'i'
         return function
     
-    
-
-    @legacy_function
-    def initialize_code():
-        function = LegacyFunctionSpecification()
-        function.result_type = 'i'
-        return function
-    
-    
-
-    
-    
-    
-
-    @legacy_function
-    def cleanup_code():
-        function = LegacyFunctionSpecification()
-        function.result_type = 'i'
-        return function
     
     
 

@@ -12,6 +12,19 @@ function cleanup_code() result(ret)
   
   ret=free_grid()
 end function  
+
+function commit_parameters() result(ret)
+  use amuse_helpers
+  integer :: ret
+  ret = amuse_commit_parameters()
+end function  
+
+function recommit_parameters() result(ret)
+  use amuse_helpers
+  integer :: ret
+  
+  ret=-1
+end function  
   
 function setup_mesh(mx,my,mz,xlen,ylen,zlen) result(ret)
   use amuse_helpers
@@ -23,8 +36,6 @@ function setup_mesh(mx,my,mz,xlen,ylen,zlen) result(ret)
   ret=amuse_init_mesh(mx,my,mz)
   if(ret.NE.0) return
   ret=amuse_init_coords(xlen,ylen,zlen)
-  if(ret.NE.0) return
-  ret=amuse_init_hydro()  
   if(ret.NE.0) return
   
 end function

@@ -89,13 +89,7 @@ module amuse_helpers
     meshy=ny
     meshz=nz
 
-    write(unit=log_unit,fmt="(2/,A,/)") "----- Mesh -----"
-    write(unit=log_unit,fmt="(A,3I5)") "1) Number of mesh points: ", &
-      meshx,meshy,meshz
-
-    call fnd3ddecomp()
-
-    write(unit=log_unit,fmt=*) "Local mesh: ",sx,ex,sy,ey,sz,ez
+    
     ret=0
   end function
   
@@ -118,13 +112,29 @@ module amuse_helpers
     xlength=xlen
     ylength=ylen
     zlength=zlen
+    
+    ret=0
 
-    write (unit=log_unit,fmt="(a,3(e10.3),a)") & 
+  end function
+
+  function amuse_commit_parameters() result(ret)
+    ret = 0
+    write(unit=log_unit,fmt="(2/,A,/)") "----- Mesh -----"
+    write(unit=log_unit,fmt="(A,3I5)") "1) Number of mesh points: ", &
+      meshx,meshy,meshz
+
+    call fnd3ddecomp()
+
+    write(unit=log_unit,fmt=*) "Local mesh: ",sx,ex,sy,ey,sz,ez
+    write(unit=log_unit,fmt="(a,3(e10.3),a)") & 
       "2) Size of grid box : ", &
       xlength,ylength,zlength,str_length_unit
 
     call init_grid()
-
+    
+    ret=amuse_init_hydro()  
+    if(RET.NE.0) return
+    
     xlength=xlength/scleng
     ylength=ylength/scleng
     zlength=zlength/scleng
@@ -146,26 +156,50 @@ module amuse_helpers
     xedge(1:2)=1.0
     yedge(1:2)=1.0
     zedge(1:2)=1.0
-
-    ret=0
-
+    
+    if (domainboundaryconditions(1,1).eq.PROBLEM_DEF) then
+        innerxpressure=amuse_get_pressure(innerxstate)
+    endif
+    
+    if (domainboundaryconditions(1,2).eq.PROBLEM_DEF) then
+        outerxpressure=amuse_get_pressure(outerxstate)
+    endif
+    
+    if (domainboundaryconditions(2,1).eq.PROBLEM_DEF) then
+        innerypressure=amuse_get_pressure(innerystate)
+    endif
+    if (domainboundaryconditions(2,2).eq.PROBLEM_DEF) then
+        outerypressure=amuse_get_pressure(outerystate)
+    endif
+    if (domainboundaryconditions(3,1).eq.PROBLEM_DEF) then
+        innerzpressure=amuse_get_pressure(innerzstate)
+    endif
+    if (domainboundaryconditions(3,2).eq.PROBLEM_DEF) then
+        outerzpressure=amuse_get_pressure(outerzstate)
+    endif
+    
   end function
-
+  
   function amuse_init_hydro() result(ret)
     integer :: ret
     call init_hydro()
     ret=0
   end function
 
+  function amuse_get_pressure(istate) result(ret)
+    real*8 :: ret
+    real*8 :: istate(neq)    
+    ret = gamma1*(istate(EN)- &
+      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
+      
+  end function  
+  
   function amuse_set_boundary_innerxstate(istate) result(ret)
     integer :: ret
     real*8 :: istate(neq)    
     ret=0
-    innerxstate=istate  
-    innerxpressure=gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
-    if(innerxpressure.LE.0) ret=-1
-    ret=0
+    innerxstate=istate 
+    if(amuse_get_pressure(istate).LE.0) ret=-1
   end function  
 
   function amuse_set_boundary_innerystate(istate) result(ret)
@@ -173,10 +207,8 @@ module amuse_helpers
     real*8 :: istate(neq)    
     ret=0
     innerystate=istate  
-    innerypressure=gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
-    if(innerypressure.LE.0) ret=-1
-    ret=0
+    innerypressure=amuse_get_pressure(innerystate)
+    if(amuse_get_pressure(istate).LE.0) ret=-1
   end function  
 
   function amuse_set_boundary_innerzstate(istate) result(ret)
@@ -184,10 +216,8 @@ module amuse_helpers
     real*8 :: istate(neq)    
     ret=0
     innerzstate=istate  
-    innerzpressure=gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
-    if(innerzpressure.LE.0) ret=-1
-    ret=0
+    innerzpressure=amuse_get_pressure(innerzstate)
+    if(amuse_get_pressure(istate).LE.0) ret=-1
   end function  
 
   function amuse_set_boundary_outerxstate(istate) result(ret)
@@ -195,21 +225,17 @@ module amuse_helpers
     real*8 :: istate(neq)    
     ret=0
     outerxstate=istate  
-    outerxpressure=gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
-    if(outerxpressure.LE.0) ret=-1
     ret=0
+    if(amuse_get_pressure(istate).LE.0) ret=-1
   end function  
 
   function amuse_set_boundary_outerystate(istate) result(ret)
     integer :: ret
     real*8 :: istate(neq)    
-    ret=0
     outerystate=istate  
-    outerypressure=gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
-    if(outerypressure.LE.0) ret=-1
+    outerypressure=amuse_get_pressure(outerystate)
     ret=0
+    if(amuse_get_pressure(istate).LE.0) ret=-1
   end function  
 
   function amuse_set_boundary_outerzstate(istate) result(ret)
@@ -217,10 +243,8 @@ module amuse_helpers
     real*8 :: istate(neq)    
     ret=0
     outerzstate=istate  
-    outerzpressure=gamma1*(istate(EN)- &
-      (istate(RHVX)**2+istate(RHVY)**2+istate(RHVZ)**2)/istate(RHO))
-    if(outerzpressure.LE.0) ret=-1
-    ret=0
+    outerzpressure=amuse_get_pressure(outerzstate)
+    if(amuse_get_pressure(istate).LE.0) ret=-1
   end function  
 
   function amuse_set_boundary(lowx,highx,lowy,highy,lowz,highz) result(ret)
