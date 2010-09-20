@@ -1,6 +1,10 @@
 #! /bin/bash
 # Detects available hardware and various settings to provide help for
 # setting up GPGPU with CUDA, required for executing code on a GPU.
+
+# Note that nvidia-settings may not exist in all implementations
+# (e.g. with the standard install on MacOS).
+
 echo
 echo "Welcome to the AMUSE self-help for setting up GPGPU with CUDA."
 echo
