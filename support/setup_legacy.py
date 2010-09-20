@@ -230,6 +230,13 @@ class BuildLegacy(LegacyCommand):
 
     description = "build interfaces to legacy codes"
     
+    def run_make_on_directory(self, codename, directory, target, environment):
+        buildlog = "{0}-{1}-build.log".format(codename, target)
+        with open(buildlog, "w") as output:
+            process = Popen(['make','-C', directory, target], env = environment, stdout = output, stderr = output)
+            process.wait()
+            return process.poll(), buildlog
+    
     def run (self):
         not_build = []
         not_build_special = []
@@ -240,34 +247,41 @@ class BuildLegacy(LegacyCommand):
         
         for x in self.makefile_libpaths():
             
-            self.announce("building library " + x)
-            shortname = x[len(self.lib_dir) + 1:] + '(library)'
-            returncode = call(['make','-C', x, 'all'], env = environment)
+            shortname = x[len(self.lib_dir) + 1:] + '-library'
+            self.announce("building {0}".format(shortname), level =  log.INFO)
+            returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
+        
             if returncode == 2:
+                self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level =  log.INFO)
                 not_build.append(shortname)
             else:
+                self.announce("building {0}, succeeded".format(shortname), level =  log.INFO)
                 build.append(shortname)
             
         #environment.update(self.environment)
         makefile_paths = list(self.makefile_paths())
         
         for x in makefile_paths:
-            self.announce("building " + x)
             shortname = x[len(self.legacy_dir) + 1:]
-            returncode = call(['make','-C', x, 'all'], env = environment)
+            self.announce("building {0}".format(shortname), level =  log.INFO)
+            returncode = self.run_make_on_directory(shortname, x, 'all', environment)
             if returncode == 2:
                 not_build.append(shortname)
+                self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level =  log.INFO)
             else:
                 build.append(shortname)
+                self.announce("building {0}, succeeded".format(shortname), level =  log.INFO)
             
             special_targets = self.get_special_targets(x, environment)
             for target,target_name in special_targets:
-                self.announce("building " + x + " version: " + target_name)
-                returncode = call(['make','-C', x, target], env = environment)
+                self.announce("building " + x + " version: " + target_name, level =  log.INFO)
+                returncode, buildlog = self.run_make_on_directory(shortname, x, target, environment)
                 if returncode == 2:
                     not_build_special.append(shortname + " - " + target_name)
+                    self.announce("building {0} - {1}, failed, see {2!r} for error log".format(shortname, target_name, buildlog), level =  log.INFO)
                 else:
                     build.append(shortname + " - " + target_name)
+                    self.announce("building {0} - {1}, succeeded".format(shortname, target_name), level =  log.INFO)
                 
         
         print
