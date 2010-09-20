@@ -1,3 +1,5 @@
+MPICC ?= mpicc
+
 LIBNAME = libstopcond.a
 LIBNAMEMPI = libstopcondmpi.a
 OBJS = stopcond.o
@@ -17,7 +19,7 @@ $(LIBNAMEMPI): $(OBJSMPI)
 
 
 %.mo: %.c
-	mpicc $(CFLAGS) -DMPILIB  -c -o $@ $<
+	$(MPICC) $(CFLAGS) -DMPILIB  -c -o $@ $<
 
 
 clean:

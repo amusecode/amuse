@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+
 SRCDIR		= src
 include $(SRCDIR)/makefile_options
 CXXFLAGS += -Wall -g -DTOOLBOX $(OPT)
@@ -42,8 +44,8 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_options
-	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
-	mpicxx $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc $(SCLIBS)
 

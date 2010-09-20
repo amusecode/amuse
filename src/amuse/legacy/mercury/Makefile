@@ -1,4 +1,7 @@
-FC = mpif90
+
+MPIF90 ?= mpif90
+
+FC = $(MPIF90)
 SRC=src
 
 AMUSE_DIR?=../../../..

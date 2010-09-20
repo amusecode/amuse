@@ -1,8 +1,11 @@
+MPICXX ?= mpicxx
+MPICC ?= mpicc
+
 VERSION = 4.0
 
 ATHENA_DIR = src/athena$(VERSION)
 
-CC = mpicc
+CC = $(MPICC)
 CFLAGS   += -g -I$(ATHENA_DIR)/src 
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -ldl -lm
@@ -58,7 +61,9 @@ distclean:
 $(CODELIB): $(ATHENA_DIR) 
 	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
 	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
-	cd $(ATHENA_DIR); make all CFLAGS=-g CC=mpicc LDR=mpicc
+	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	rm -f $(CODELIB)
+	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
 
 
 worker_code.cc: interface.py
@@ -68,7 +73,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
 
 .c.o: $<
 	$(CC) $(CXXFLAGS) $(SCINC) -c -o $@ $< 

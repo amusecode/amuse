@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+MPICC ?= mpicc
 
 #----------------------------------------------------------------------
 # From the list below, please activate/deactivate the options that     
@@ -84,7 +86,7 @@ include makefile_options
 
 #--------------------------------------- Select some defaults
 
-CC       =  mpicc  # sets the C-compiler
+CC       =  $(MPICC)  # sets the C-compiler
 OPTIMIZE =  -O2 -Wall -g # sets optimization and warning flags
 MPICHLIB =  -lmpich
 

@@ -1,5 +1,7 @@
+
+MPIF90 ?= mpif90
 FORTRAN ?= gfortran
-FC = mpif90
+FC = $(MPIF90)
 
 SRC=src
 

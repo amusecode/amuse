@@ -1,3 +1,5 @@
+
+MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 FC      ?= $(FORTRAN)
 export FC
@@ -55,7 +57,7 @@ distclean: clean
 	$(RM) -Rf ./src/
 
 worker_code:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
-	mpif90 $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
+	$(MPIF90) $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@

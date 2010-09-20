@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+
 CFLAGS   += -Isrc/include -Isrc/include/star
 CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -Lsrc/node -lnode -Lsrc/std -lstd -lm
@@ -53,7 +55,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py SebaInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	mpicxx $(CXXFLAGS) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
+	$(MPICXX) $(CXXFLAGS) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

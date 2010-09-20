@@ -1,3 +1,4 @@
+MPICXX ?= mpicxx
 
 CODEPATH = src/octgrav_v1.7d
 CODELIB = $(CODEPATH)/liboctgrav.a 
@@ -68,7 +69,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface interface.py OctgravInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(OBJS)
-	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(LIBS) $(CODELIB) -o $@ $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(LIBS) $(CODELIB) -o $@ $(SCLIBS)
 
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h

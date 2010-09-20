@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+MPICC ?= mpicc
 ifdef STARLAB_INSTALL_PATH
     export STARLAB_INSTALL_PATH
     TARGS = .compile
@@ -80,9 +82,9 @@ clean:
 
 muse_worker_starlab:        muse_dynamics_mpi.py $(OBJS)
 	$(CODE_GENERATOR) --type=c muse_dynamics_mpi.py SmallNInterface -o $@.cc
-	mpicxx $(CXXFLAGS)  $@.cc $(OBJS) $(LDLIBS) -o $@ 
+	$(MPICXX) $(CXXFLAGS)  $@.cc $(OBJS) $(LDLIBS) -o $@ 
 
 %.o: %.cc
 ifdef STARLAB_INSTALL_PATH
-	mpicxx $(CXXFLAGS) -c -o $@ $<
+	$(MPICXX) $(CXXFLAGS) -c -o $@ $<
 endif

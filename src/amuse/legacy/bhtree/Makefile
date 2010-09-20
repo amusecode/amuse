@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+
 CFLAGS   += -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -40,7 +42,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 

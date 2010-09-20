@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+
 CC = mpic
 CXX = mpicxx
 
@@ -27,7 +29,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@
 
 worker_code:	worker_code.cc worker_code.h $(A_OBJS)
-	mpicxx $(CXXFLAGS) $(SCINC) $@.cc $(A_OBJS) -o $@ $(SCLIBS) 
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(A_OBJS) -o $@ $(SCLIBS) 
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 

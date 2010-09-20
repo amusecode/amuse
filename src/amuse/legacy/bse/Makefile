@@ -1,4 +1,5 @@
 
+MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 AMUSE_DIR ?=../../../..
 
@@ -22,7 +23,7 @@ clean:
 
 worker_code:	worker_code.f90  BSE_code.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
-	mpif90 $(FFLAGS) $^ -o $@ 
+	$(MPIF90) $(FFLAGS) $^ -o $@ 
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py BSEInterface -o $@

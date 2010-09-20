@@ -1,3 +1,5 @@
+MPICXX ?= mpicxx
+
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -27,7 +29,7 @@ worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py HopInterface -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	mpicxx $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@
+	$(MPICXX) $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 

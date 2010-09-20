@@ -1,4 +1,6 @@
 
+MPIF90 ?= mpif90
+
 FORTRAN ?= gfortran
 AMUSE_DIR ?= ../../../..
 
@@ -16,7 +18,7 @@ clean:
 
 worker_code:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN)
-	mpif90 $^ -o $@ 
+	$(MPIF90) $^ -o $@ 
 
 
 worker_code.f90: interface.py

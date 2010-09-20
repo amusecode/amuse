@@ -1,4 +1,5 @@
 
+MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
 export FC
@@ -47,7 +48,7 @@ worker_code: mpi_code.f90 $(SRC)
 	make -s --no-print-directory -C $(MODDIR)
 	cp $(MODDIR)/twin_library_v2.mod .
 	cp $(MODDIR)/mesh.mod .
-	mpif90 $< -o $@ $(EVTWINLIB)
+	$(MPIF90) $< -o $@ $(EVTWINLIB)
 
 mpi_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
