@@ -96,7 +96,7 @@ class CheckPythonSystem(object):
         self.check_version_of(
             name = 'numpy',
             actual_version_string = numpy.__version__,
-            minimal_version_string = '1.3.0'
+            minimal_version_string = '1.4.0'
         )
     
     def check_zlib(self):
