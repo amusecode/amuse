@@ -503,7 +503,7 @@ class TestFi(TestWithMPI):
         print convert_nbody.to_nbody(instance.thermal_energy)
         print convert_nbody.to_nbody(instance.total_energy)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.5057 | nbody.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.286 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.282 | nbody.energy, 3)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.147 | nbody.energy, 3)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),      0.3666 | nbody.energy, 3)
         
