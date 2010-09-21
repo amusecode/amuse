@@ -88,7 +88,7 @@ include makefile_options
 
 CC       =  $(MPICC)  # sets the C-compiler
 OPTIMIZE =  -O2 -Wall -g # sets optimization and warning flags
-MPICHLIB =  -lmpich
+MPICHLIB =  # will be included by the linker -lmpich
 
 
 #--------------------------------------- Select target computer
