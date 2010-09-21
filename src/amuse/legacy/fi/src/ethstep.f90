@@ -113,7 +113,7 @@ subroutine extraprho(dt)
   include 'globals.h'
   real dt
   integer p
-!$ omp parallel do shared(dt) private(p)
+!$omp parallel do shared(dt) private(p)
   do p=1,nsph
     rho(p)=rho(p)*exp(-hsmdivv(p)/hsmooth(p)*dt)
     hsmooth(p)=hsmooth(p)*exp(hsmdivv(p)/hsmooth(p)*dt/3)

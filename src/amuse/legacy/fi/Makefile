@@ -26,7 +26,7 @@ THREADLIB = -L. -lpthread src/libpt.a
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
-OMPFLAGS= # -openmp -openmp_report0 
+OMPFLAGS=# -openmp -openmp_report0 
 PIC=#-fPIC
 
 # gfortran flags
@@ -40,7 +40,7 @@ ifeq ($(findstring f95, $(notdir $(FORTRAN))), f95)
 FFLAGS = -fdefault-real-8 -O3 -ffree-line-length-256 -frecord-marker=4 $(PIC)
 endif
 
-ifeq ($(findstring ifort, $(notdir $(FORTRAN))), f95)
+ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 # ifort flags
 FFLAGS= -r8 -O -ip -u $(PIC)
 endif

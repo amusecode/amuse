@@ -293,30 +293,31 @@ function delete_particle(id) result(ret)
   ret=muse_remove_particle(id)
 end function
 
-function get_gravity_at_point(eps, x, y, z, ax, ay, az) result(ret)
-  real*8 :: eps, x, y, z, ax, ay, az
-  integer :: ret  
+function get_gravity_at_point(eps, x, y, z, ax, ay, az, n) result(ret)
+  integer :: ret,n  
+  real*8 :: eps(n), x(n), y(n), z(n), ax(n), ay(n), az(n)
   ax=0;ay=0;az=0
-  call muse_get_gravity(eps,x,y,z,ax,ay,az,1)
+  call muse_get_gravity(eps,x,y,z,ax,ay,az,n)
   ret=0
 end function
 
-function get_potential_at_point(eps, x, y, z, phi) result(ret)
-  real*8 :: eps,x, y, z, phi
-  integer :: ret
-  call muse_get_pot(eps,x,y,z,phi,1)
+function get_potential_at_point(eps, x, y, z, phi, n) result(ret)
+  integer :: ret,n
+  real*8 :: eps(n),x(n), y(n), z(n), phi(n)
+  call muse_get_pot(eps,x,y,z,phi,n)
   ret=0  
 end function
 
-function get_hydro_state_at_point(x, y, z, vx, vy, vz, rho, rhovx, rhovy, rhovz, rhoe) result(ret)
-  real*8 :: eps,x, y, z, vx,vy,vz,rho, rhovx, rhovy, rhovz, rhoe
-  integer :: ret
+function get_hydro_state_at_point(x, y, z, vx, vy, vz, rho, rhovx, rhovy, rhovz, rhoe,n) result(ret)
+  integer :: ret,n
+  real*8 :: x(n), y(n), z(n), vx(n), vy(n), vz(n), rho(n), rhovx(n), &
+    rhovy(n), rhovz(n), rhoe(n)
   rho=0.
   rhovx=0.
   rhovy=0.
   rhovz=0.
   rhoe=0.  
-  call muse_get_hydro_state(x,y,z,vx,vy,vz,rho,rhovx,rhovy,rhovz,rhoe,1)
+  call muse_get_hydro_state(x,y,z,vx,vy,vz,rho,rhovx,rhovy,rhovz,rhoe,n)
   ret=0  
 end function
 

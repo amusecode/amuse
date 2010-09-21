@@ -363,6 +363,7 @@ subroutine muse_get_gravity(epsin,x,y,z,ax,ay,az,n)
  real :: ppos(3),peps, pacc(3),pphi
 
  if(treestatecount.NE.ppropcount+pordercount) call maketree 
+!$omp parallel do private(i,peps,ppos,pacc,pphi) shared(epsin,x,y,z,ax,ay,az,n)
  do i=1,n
   peps=epsin(i)
   ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
@@ -379,6 +380,7 @@ subroutine muse_get_tidalfield(epsin,x,y,z,tide,n)
  real :: ppos(3),peps, ptide(6)
 
  if(treestatecount.NE.ppropcount+pordercount) call maketree 
+!$omp parallel do private(i,peps,ppos,ptide) shared(epsin,x,y,z,tide,n)
  do i=1,n
   peps=epsin(i)
   ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
@@ -396,6 +398,7 @@ subroutine muse_get_pot(epsin,x,y,z,pot,n)
  real :: ppos(3),peps, pacc(3),pphi
 
  if(treestatecount.NE.ppropcount+pordercount) call maketree 
+!$omp parallel do private(i,peps,ppos,pacc,pphi) shared(epsin,x,y,z,pot,n)
  do i=1,n
   peps=epsin(i)
   ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
@@ -415,6 +418,8 @@ subroutine muse_get_hydro_state(x,y,z,vx,vy,vz, &
 
   vdisp_included=.NOT.isotherm
   if(sphtreecount.NE.ppropcount+pordercount) call makesphtree
+!$omp parallel do private(i,ppos,pvel,rh,rhv,rhe,rhv2,h,dum,ethtoent,nneigh) &
+!$omp shared(x,y,z,vx,vy,vz,rh_out,rhvx_out,rhvy_out,rhvz_out,rhe_out,n,vdisp_included)
   do i=1,n
     ppos(1)=x(i);ppos(2)=y(i);ppos(3)=z(i)  
     pvel(1)=vx(i);pvel(2)=vy(i);pvel(3)=vz(i)  

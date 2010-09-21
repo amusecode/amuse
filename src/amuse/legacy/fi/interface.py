@@ -326,8 +326,9 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['ax','ay','az']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
         function.result_type = 'i' 
-        function.can_handle_array = True
+        function.must_handle_array = True
         return function
 
     @legacy_function    
@@ -336,8 +337,9 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
         for x in ['eps','x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.addParameter('phi', dtype='d', direction=function.OUT)
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
         function.result_type = 'i' 
-        function.can_handle_array = True
+        function.must_handle_array = True
         return function
 
     @legacy_function    
@@ -347,8 +349,9 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
             function.addParameter(x, dtype='d', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','rhoe']:
             function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('npoints', dtype='i', direction=function.LENGTH)
         function.result_type = 'i' 
-        function.can_handle_array = True
+        function.must_handle_array = True
         return function
 
     @legacy_function    
