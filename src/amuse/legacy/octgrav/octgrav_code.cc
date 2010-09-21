@@ -216,10 +216,52 @@ int get_kinetic_energy(double *kinetic_energy)
   return 0;
 }
 
-int get_gravity_at_point(double eps, double x, double y, double z,  double *forcex, double *forcey, double *forcez)
+
+int get_gravity_at_points(int n, double *x, double *y, double *z,  double *forcex, double *forcey, double *forcez, double *pot)
 {
-  return -2;
+  int i;
+  if(n_bodies <=0 ) return -1;
+  bodies_pos.resize(n_bodies+n);
+  bodies_vel.resize(n_bodies+n);
+  bodies_grav.resize(n_bodies+n);
+  for(i=0;i<n;i++){
+    bodies_pos[n_bodies+i].x = *(x+i);
+    bodies_pos[n_bodies+i].y = *(y+i);
+    bodies_pos[n_bodies+i].z = *(z+i);
+    bodies_pos[n_bodies+i].w = 0.;
+  }
+
+  {
+    octgrav system;
+    system.set_softening(eps);
+    system.set_opening_angle(theta);
+    system.evaluate_gravity(bodies_pos, bodies_grav);
+  }
+  for(i=0;i<n;i++)
+  {
+    *(forcex+i)=bodies_grav[n_bodies+i].x;
+    *(forcey+i)=bodies_grav[n_bodies+i].y;
+    *(forcez+i)=bodies_grav[n_bodies+i].z;
+    *(pot+i)=bodies_grav[n_bodies+i].w;
+  }
+  bodies_pos.resize(n_bodies);
+  bodies_vel.resize(n_bodies);
+  bodies_grav.resize(n_bodies);
+  return 0;
 }
+
+int get_gravity_at_point(double *eps, double *x, double *y, double *z,  double *forcex, double *forcey, double *forcez,int n)
+{
+  double dum;
+  return get_gravity_at_points(n, x,y,z, forcex,forcey,forcez, &dum);
+}
+
+int get_potential_at_point(double *eps, double *x, double *y, double *z, double *pot, int n)
+{
+  double dum1,dum2,dum3;
+  return get_gravity_at_points(n, x,y,z, &dum1, &dum2,&dum3,pot);
+}
+
 
 double get_dynamical_time_scale()
 {
@@ -688,7 +730,8 @@ int recommit_parameters()
 
 int commit_particles()
 {
-  //tree setup
+  //tree setup 
+  initialize_particles();
   return 0;
 }
 

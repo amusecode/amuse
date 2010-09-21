@@ -163,3 +163,32 @@ class TestAmuseInterface(TestWithMPI):
         self.assertTrue(instance.model_time < 10 | nbody_system.time)
         instance.stop()
 
+    def test4(self):
+        plummer_size = 500
+        plummer =  MakePlummerModel(plummer_size)
+        stars = plummer.result
+        stars.radius=0|nbody_system.length
+
+        instance = self.new_instance_of_an_optional_code(Octgrav)
+        instance.particles.add_particles(stars)
+
+        instance.synchronize_model()
+
+        ax,ay,az=instance.get_gravity_at_point(0. | nbody_system.length,
+                0. | nbody_system.length, 
+                100. | nbody_system.length,
+                0. | nbody_system.length)
+
+        self.assertAlmostEqual(ax.number,0., 3)
+        self.assertAlmostRelativeEqual(ay.number,-1./100**2, 3)
+        self.assertAlmostEqual(az.number,0., 3)
+
+
+        pot=instance.get_potential_at_point([0.,0.]|nbody_system.length,
+                [0.,100] | nbody_system.length, 
+                [100.,0.] | nbody_system.length,
+                [0.,0.] | nbody_system.length)
+
+        self.assertAlmostRelativeEqual(pot.number,[-1/100.,-1/100.], 3)
+
+        instance.stop()
