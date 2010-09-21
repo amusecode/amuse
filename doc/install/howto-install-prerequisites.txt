@@ -17,9 +17,9 @@ These are the packages AMUSE needs:
 * MPI (OpenMPI or MPICH2)
 * mpi4py (version >= 1.0)
 * nose (version >= 0.11)
+* docutils (version >= 0.6)
 * FFTW (version >= 3.0)
 * GSL
-
 
 In the first two sections (compilers_ and installation_scripts_) we explain how to use the two
 installation scripts to install AMUSE. In the last section (manual_) 
@@ -102,7 +102,7 @@ To start the installation do:
 You should now be able to install AMUSE.
 
 Using the installation scripts on OS X
----------------------------------------
+--------------------------------------
 
 When installing the code on OS.X all steps are the same.The only difference 
 is in setting the PATH variable. The PATH must be extended like this:
@@ -117,7 +117,7 @@ Manually installing the prerequisites
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Python
--------
+------
 Python is probably already installed on your system. To check the version of python do:
 
 .. code-block:: sh
@@ -128,7 +128,7 @@ Python is probably already installed on your system. To check the version of pyt
 You can download python from http://www.python.org. 
 
 Numpy
--------
+-----
 To check if numpy is installed on your system do:
 
 .. code-block:: sh
@@ -168,6 +168,18 @@ To check if the h5py library is installed on your system do:
 
 If this fails with an error or a version before 1.2.0 you need to install h5py.
 You can download h5py from http://code.google.com/p/h5py/. 
+
+docutils
+--------
+To check if the python docutils are installed on your system do:
+
+.. code-block:: sh
+
+        > python -c 'import docutils; print docutils.__version__'
+        0.6
+
+If this fails with an error or a version before 0.6 you need to install docutils.
+You can download docutils from http://docutils.sourceforge.net/
 
 MPI
 ---
@@ -226,7 +238,7 @@ If this fails with an error or a version before 1.0 you need to install mpi4py.
 You can download mpi4py from http://code.google.com/p/mpi4py/. 
 
 Nose
------
+----
 Nose is an extension of the python testing framework. It is used for all
 unit testing in AMUSE.
 
@@ -243,7 +255,7 @@ If this fails with an error or a version before 0.11 you need to install nose.
 You can download nose from http://somethingaboutorange.com/mrl/projects/nose/. 
 
 FFTW
--------
+----
 FFTW is a C subroutine library for computing discrete Fourier transforms. To 
 check for the availability of fftw on your system, you can use ``fftw-wisdom``:
 
@@ -323,7 +335,7 @@ with HDF5 version 1.6.6. To install it, do::
     > sudo apt-get install libhdf5-serial-dev hdf5-tools 
 
 FFTW
--------
+----
 On Ubuntu, FFTW can be installed with::
 
     > sudo apt-get install libfftw3 libfftw3-dev libfftw3-doc

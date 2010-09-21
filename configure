@@ -111,6 +111,7 @@ class CheckPythonSystem(object):
         self.check_module("h5py", lambda module : module.version.version, '1.1.0')
         self.check_module("mpi4py", lambda module : module.__version__, '1.1.0')
         self.check_module("nose", lambda module : module.__version__, '0.11')
+        self.check_module("docutils", lambda module: module.__version__, '0.6')
         self.check_zlib()
         
         if not self.are_all_checks_ok:
