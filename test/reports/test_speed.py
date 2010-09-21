@@ -274,32 +274,49 @@ class RunSpeedTests(object):
     
     def __init__(self):
         self.number_of_gridpoints = [8]
-        
+     
+    def get_mpicc_name(self):
+        return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+    
+    def get_mpicxx_name(self):
+        return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+    
     def c_compile(self, objectname, string):
+        if os.path.exists(objectname):
+            os.remove(objectname)
+
+    
         process = subprocess.Popen(
-            ["mpicxx", "-g", "-x", "c++", "-c",  "-o", objectname, "-",],
+            [self.get_mpicc_name(), "-g", "-x", "c++", "-c",  "-o", objectname, "-",],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate(string)
-        if process.returncode != 0:
+        if process.returncode != 0 or not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     def cxx_compile(self, objectname, string):
+        if os.path.exists(objectname):
+            os.remove(objectname)
+
         process = subprocess.Popen(
-            ["mpicxx", "-g","-x","c++", "-c",  "-o", objectname, "-",],
+            [self.get_mpicxx_name(), "-g","-x","c++", "-c",  "-o", objectname, "-",],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate(string)
-        if process.returncode != 0:
+        if process.returncode != 0 or not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     
     def c_build(self, exename, objectnames):
-        arguments = ["mpicxx"]
+    
+        if os.path.exists(exename):
+            os.remove(exename)
+            
+        arguments = [self.get_mpicxx_name()]
         arguments.extend(objectnames)
         arguments.append("-g")
         arguments.append("-o")
@@ -312,7 +329,7 @@ class RunSpeedTests(object):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        if process.returncode != 0:
+        if process.returncode != 0 or not os.path.exists(exename):
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     
     def build_worker(self):
