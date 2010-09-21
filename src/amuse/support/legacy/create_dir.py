@@ -50,6 +50,8 @@ class {0.name_of_the_legacy_interface_class}Tests(TestWithMPI):
 """
 
 makefile_template_cxx = """\
+MPICXX   ?= mpicxx
+
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -79,7 +81,7 @@ worker_code.h: {0.name_of_the_python_module}
 \t$(CODE_GENERATOR) --type=H interface.py {0.name_of_the_legacy_interface_class} -o $@
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-\tmpicxx $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@
+\t$(MPICXX) $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
 \t$(CXX) $(CXXFLAGS) -c -o $@ $< 
@@ -292,7 +294,8 @@ class CreateADirectoryAndPopulateItWithFilesForACLegacyCode(CreateADirectoryAndP
 
 
 makefile_template_fortran = """\
-FC = mpif90
+MPIF90 ?= mpif90
+FC      = $(MPIF90)
 
 FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
@@ -319,14 +322,15 @@ worker_code.f90: {0.name_of_the_python_module}
 \t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_legacy_interface_class} -o $@
 
 worker_code: worker_code.f90 $(CODELIB) $(OBJS)
-\tmpif90 $(CXXFLAGS) $@.f90 $(OBJS) $(CODELIB) -o $@
+\t$(MPIF90) $(CXXFLAGS) $@.f90 $(OBJS) $(CODELIB) -o $@
 
 %.o: %.f90
 \t$(FC) $(FFLAGS) -c -o $@ $<
 """
 
 code_makefile_template_fortran = """\
-FC = mpif90
+MPIF90 ?= mpif90
+FC      = $(MPIF90)
 
 FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)

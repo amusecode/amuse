@@ -198,6 +198,9 @@ class ForTestingInterface(LegacyInterface):
 
 class TestInterface(TestWithMPI):
     
+    def get_mpif90_name(self):
+        return os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
+    
     def fortran_compile(self, objectname, string):
         if os.path.exists(objectname):
             os.remove(objectname)
@@ -209,7 +212,7 @@ class TestInterface(TestWithMPI):
             f.write(string)
             
         process = subprocess.Popen(
-            ["mpif90", "-g", "-c",  "-o", objectname, sourcename],
+            [self.get_mpif90_name(), "-g", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
@@ -221,7 +224,7 @@ class TestInterface(TestWithMPI):
             
     
     def fortran_build(self, exename, objectnames):
-        arguments = ["mpif90"]
+        arguments = [self.get_mpif90_name()]
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)

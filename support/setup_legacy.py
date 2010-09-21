@@ -72,14 +72,16 @@ class LegacyCommand(Command):
             self.environment['FORTRAN'] = os.environ['F90']
             return
             
-        process = Popen(['mpif90','-show'], stdout = PIPE, stderr = PIPE)
+        mpif90 = os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
+        
+        process = Popen([mpif90,'-show'], stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         if process.returncode == 0:
             parts = stdoutstring.split()
             self.environment['FORTRAN']  = parts[0]
             return
-            
-        process = Popen(['mpif90','--showme '], stdout = PIPE, stderr = PIPE)
+        
+        process = Popen([mpif90,'--showme '], stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         if process.returncode == 0:
             parts = stdoutstring.split()
@@ -216,13 +218,11 @@ class LegacyCommand(Command):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     name = line[len('muse_worker_'):index_of_the_colon]
-                    print name
                     result.append((line[:index_of_the_colon], name,))
             elif line.startswith('worker_code_'):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
                     name = line[len('worker_code_'):index_of_the_colon]
-                    print name
                     result.append((line[:index_of_the_colon], name,))
         return result
         
@@ -234,13 +234,12 @@ class BuildLegacy(LegacyCommand):
         buildlog = "{0}-{1}-build.log".format(codename, target)
         with open(buildlog, "w") as output:
             process = Popen(['make','-C', directory, target], env = environment, stdout = output, stderr = output)
-            process.wait()
-            return process.poll(), buildlog
+            return process.wait(), buildlog
     
     def run (self):
-        not_build = []
-        not_build_special = []
-        build = []
+        not_build = list()
+        not_build_special = list()
+        build = list()
         environment = self.environment
         environment.update(os.environ)
         
@@ -250,7 +249,7 @@ class BuildLegacy(LegacyCommand):
             shortname = x[len(self.lib_dir) + 1:] + '-library'
             self.announce("building {0}".format(shortname), level =  log.INFO)
             returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
-        
+            
             if returncode == 2:
                 self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level =  log.INFO)
                 not_build.append(shortname)
@@ -264,8 +263,8 @@ class BuildLegacy(LegacyCommand):
         for x in makefile_paths:
             shortname = x[len(self.legacy_dir) + 1:]
             self.announce("building {0}".format(shortname), level =  log.INFO)
-            returncode = self.run_make_on_directory(shortname, x, 'all', environment)
-            if returncode == 2:
+            returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
+            if returncode > 0:
                 not_build.append(shortname)
                 self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level =  log.INFO)
             else:
@@ -276,7 +275,7 @@ class BuildLegacy(LegacyCommand):
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name, level =  log.INFO)
                 returncode, buildlog = self.run_make_on_directory(shortname, x, target, environment)
-                if returncode == 2:
+                if returncode > 0:
                     not_build_special.append(shortname + " - " + target_name)
                     self.announce("building {0} - {1}, failed, see {2!r} for error log".format(shortname, target_name, buildlog), level =  log.INFO)
                 else:

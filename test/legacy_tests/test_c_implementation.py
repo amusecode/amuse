@@ -218,6 +218,7 @@ class TestInterface(TestWithMPI):
         with open(sourcename, "w") as f:
             f.write(string)
             
+        mpicc = os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
         process = subprocess.Popen(
             ["mpicc", "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
@@ -225,7 +226,6 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        
         if not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
     
@@ -233,22 +233,28 @@ class TestInterface(TestWithMPI):
         root, ext = os.path.splitext(objectname)
         sourcename = root + '.cc'
         
+        if os.path.exists(objectname):
+            os.remove(objectname)
+            
         with open(sourcename, "w") as f:
             f.write(string)
             
+        mpicxx = os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
         process = subprocess.Popen(
-            ["mpicxx", "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
+            [mpicxx, "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        
         if not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     def c_build(self, exename, objectnames):
-        arguments = ["mpicxx"]
+        mpicxx = os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+        arguments = [mpicxx]
+        if os.path.exists(exename):
+            os.remove(exename)
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
@@ -260,7 +266,7 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        if process.returncode != 0:
+        if process.returncode != 0 or not os.path.exists(exename):
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     
     def build_worker(self):

@@ -1,4 +1,4 @@
-PYTHON=python
+PYTHON=python2.6
 
 export PYTHONPATH := $(PWD)/src:$(PWD)/test
 

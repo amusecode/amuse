@@ -104,6 +104,18 @@ class ForTesting(CodeInterface):
 
         
 class TestInterface(TestWithMPI):
+    
+    def get_mpif90_name(self):
+        return os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
+    
+    def get_mpicc_name(self):
+        return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+    
+    def get_mpicxx_name(self):
+        return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+    
+
+    
     def cxx_compile(self, objectname, string):
   
         root, ext = os.path.splitext(objectname)
@@ -114,7 +126,7 @@ class TestInterface(TestWithMPI):
             f.write(string)
         
         rootdir = self.get_amuse_root_dir()
-        arguments = ["mpicxx", "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
+        arguments = [self.get_mpicxx_name(), "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
         process = subprocess.Popen(
             arguments,
             stdin = subprocess.PIPE,
@@ -128,7 +140,7 @@ class TestInterface(TestWithMPI):
     def c_build(self, exename, objectnames):
         rootdir = self.get_amuse_root_dir()
         
-        arguments = ["mpicxx"]
+        arguments = [self.get_mpicxx_name()]
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
@@ -236,6 +248,10 @@ class TestInterface(TestWithMPI):
 
 
 class TestInterfaceF(TestWithMPI):
+    def get_mpif90_name(self):
+        return os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
+    
+
     def f90_compile(self, objectname, string):
         root, ext = os.path.splitext(objectname)
         sourcename = root + '.f90'
@@ -245,7 +261,7 @@ class TestInterfaceF(TestWithMPI):
             f.write(string)
         
         rootdir = self.get_amuse_root_dir()
-        arguments = ["mpif90", "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
+        arguments = [self.get_mpif90_name(), "-I",rootdir + "/lib/stopcond", "-c",  "-o", objectname, sourcename]
         process = subprocess.Popen(
             arguments,
             stdin = subprocess.PIPE,
@@ -259,7 +275,7 @@ class TestInterfaceF(TestWithMPI):
     def f90_build(self, exename, objectnames):
         rootdir = self.get_amuse_root_dir()
         
-        arguments = ["mpif90"]
+        arguments = [self.get_mpif90_name()]
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)

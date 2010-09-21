@@ -1,7 +1,8 @@
 MPICXX ?= mpicxx
+MPICC ?= mpicc
 
-CC = mpic
-CXX = mpicxx
+CC = $(MPICC)
+CXX = $(MPICXX)
 
 CFLAGS ?= -O3 -Wall -DTOOLBOX  $(MUSE_INCLUDE_DIR) 
 CXXFLAGS ?= $(CFLAGS) 
