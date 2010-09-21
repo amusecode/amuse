@@ -43,9 +43,17 @@ C---  also get total number of active particles
 C---  allgather global indices of all active particles
 C---  NOTE: Gatherv + Bcast is equivalent to Allgatherv but no extra 
 C---        memory is needed 
-      CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INT, ind_act, n_act_v,
+      if(myRank .eq. rootRank) then
+        CALL MPI_Gatherv(MPI_IN_PLACE, n_act_loc,MPI_INT, ind_act,n_act_v,
      $                 disp_act_v, MPI_INT,rootRank,
      $                                           MPI_COMM_WORLD,ierr)
+      else           
+        CALL MPI_Gatherv(ind_act, n_act_loc, MPI_INT, ind_act, n_act_v,
+     $                 disp_act_v, MPI_INT,rootRank,
+     $                                           MPI_COMM_WORLD,ierr)
+      endif
+      
+      
       CALL MPI_Bcast(ind_act, n_act, MPI_INT, rootRank,
      $                                           MPI_COMM_WORLD,ierr)
 
