@@ -96,9 +96,9 @@ class TestAmuseInterface(TestWithMPI):
         instance.parameters.epsilon_squared = 0.05 | units.AU**2
         self.assertAlmostRelativeEqual(0.05, instance.parameters.epsilon_squared.value_in(units.AU**2), 6)
        
-        self.assertAlmostEqual(0.8|units.none, instance.parameters.openings_angle, 6)#default
-        instance.parameters.openings_angle = 0.5
-        self.assertAlmostEqual(0.5|units.none, instance.parameters.openings_angle, 6)
+        self.assertAlmostEqual(0.8|units.none, instance.parameters.opening_angle, 6)#default
+        instance.parameters.opening_angle = 0.5
+        self.assertAlmostEqual(0.5|units.none, instance.parameters.opening_angle, 6)
         instance.parameters.timestep = 1.0 |units.s
         self.assertEqual(1.0|units.s, instance.parameters.timestep)
         instance.stop()

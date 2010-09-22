@@ -31,8 +31,8 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('openings_angle', dtype='float64', direction=function.OUT,
-            description = "openings_angle")
+        function.addParameter('opening_angle', dtype='float64', direction=function.OUT,
+            description = "opening_angle")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -48,8 +48,8 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         
         """
         function = LegacyFunctionSpecification()  
-        function.addParameter('openings_angle', dtype='float64', direction=function.IN,
-            description = "openings_angle")
+        function.addParameter('opening_angle', dtype='float64', direction=function.IN,
+            description = "opening_angle")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -163,8 +163,8 @@ class Octgrav(GravitationalDynamics):
         object.add_method_parameter(
             "get_theta_for_tree",
             "set_theta_for_tree",
-            "openings_angle",
-            "openings angle for building the tree between 0 and 1", 
+            "opening_angle",
+            "opening angle for building the tree between 0 and 1", 
             units.none,
             0.8 | units.none
         )
@@ -175,6 +175,14 @@ class Octgrav(GravitationalDynamics):
         GravitationalDynamics.define_methods(self, object)
 
         self.stopping_conditions.define_methods(object)
+
+
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        
+# this should be checked!
+        object.add_method('EDIT', 'get_gravity_at_point')
+        object.add_method('EDIT', 'get_potential_at_point')
         
     
     def define_particle_sets(self, object):

@@ -199,11 +199,6 @@ int get_potential(double x, double y, double z, double *V)
   return -2;
 }
 
-int get_potential_at_point(double eps, double x, double y, double z, double * phi)
-{
-    return -2;
-}
-
 int get_potential_energy(double *potential_energy)
 {
   *potential_energy = calcEpot(bodies_pos,bodies_grav);
@@ -239,10 +234,10 @@ int get_gravity_at_points(int n, double *x, double *y, double *z,  double *force
   }
   for(i=0;i<n;i++)
   {
-    *(forcex+i)=bodies_grav[n_bodies+i].x;
-    *(forcey+i)=bodies_grav[n_bodies+i].y;
-    *(forcez+i)=bodies_grav[n_bodies+i].z;
-    *(pot+i)=bodies_grav[n_bodies+i].w;
+    if(forcex != NULL) *(forcex+i)=bodies_grav[n_bodies+i].x;
+    if(forcey != NULL) *(forcey+i)=bodies_grav[n_bodies+i].y;
+    if(forcez != NULL) *(forcez+i)=bodies_grav[n_bodies+i].z;
+    if(pot != NULL)*(pot+i)=bodies_grav[n_bodies+i].w;
   }
   bodies_pos.resize(n_bodies);
   bodies_vel.resize(n_bodies);
@@ -252,14 +247,12 @@ int get_gravity_at_points(int n, double *x, double *y, double *z,  double *force
 
 int get_gravity_at_point(double *eps, double *x, double *y, double *z,  double *forcex, double *forcey, double *forcez,int n)
 {
-  double dum;
-  return get_gravity_at_points(n, x,y,z, forcex,forcey,forcez, &dum);
+  return get_gravity_at_points(n, x,y,z, forcex,forcey,forcez, NULL);
 }
 
 int get_potential_at_point(double *eps, double *x, double *y, double *z, double *pot, int n)
 {
-  double dum1,dum2,dum3;
-  return get_gravity_at_points(n, x,y,z, &dum1, &dum2,&dum3,pot);
+  return get_gravity_at_points(n, x,y,z, NULL, NULL,NULL,pot);
 }
 
 
