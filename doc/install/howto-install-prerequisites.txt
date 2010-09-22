@@ -634,6 +634,8 @@ we will use gcc44.
     
         port uninstall py26-docutils py26-nose py26-mpi4py py26-h5py py26-numpy hdf5-18 fftw-3 gsl openmpi python26
     
+    To make a clean install of MacPorts, please read the guide at:
+    http://guide.macports.org/
     
 Cleaning old versions
 ---------------------
@@ -702,7 +704,7 @@ GSL is used to build Gadget2, GSL can be installed with::
 Python packages
 ---------------
 By this point all libraries and frameworks are installed. We can now
-install python packages (some depend on the installed libraries).
+install python packages (some depend on the installed libraries)::
 
     > sudo port install py26-numpy py26-h5py py26-mpi4py py26-nose py26-docutils +gcc44
     
