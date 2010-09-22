@@ -108,7 +108,7 @@ end function
 
 
 
-function echo_inout_array_with_result(inout, len) 
+function echo_inout_array_with_result(inout, N) 
     implicit none
     integer, intent(in) :: N
     integer :: inout(N)

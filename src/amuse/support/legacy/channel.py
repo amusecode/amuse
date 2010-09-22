@@ -32,7 +32,7 @@ class ASyncRequest(object):
     def wait(self):
         if self.is_finished:
             return
-            
+    
         self.request.Wait()
         self.is_finished = True
     

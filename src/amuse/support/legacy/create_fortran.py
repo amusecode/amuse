@@ -33,13 +33,13 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
     def dtype_to_spec(self):
         return dtype_to_spec
         
-    def index_string(self, index):
-        if self.specification.must_handle_array:
+    def index_string(self, index, must_copy_in_to_out = False):
+        if self.specification.must_handle_array and not must_copy_in_to_out:
             if index == 0:
                 return '1'
             else:
                 return '( %d * len_in) + 1' % (index )
-        elif self.specification.can_handle_array:
+        elif self.specification.can_handle_array or (self.specification.must_handle_array and must_copy_in_to_out):
             if index == 0:
                 return 'i'
             else:
@@ -143,11 +143,18 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
             spec = self.dtype_to_spec[parameter.datatype]
             
             if parameter.direction == LegacyFunctionSpecification.INOUT:
+                if self.specification.must_handle_array:
+                    self.out.lf() + 'DO i = 1, len_in'
+                    self.out.indent() 
+                    
                 self.out.n() + spec.output_var_name 
-                self.out + '(' + self.index_string(parameter.output_index)  + ')' 
+                self.out + '(' + self.index_string(parameter.output_index, must_copy_in_to_out = True)  + ')' 
                 self.out + ' = ' 
-                self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index) + ')'
+                self.out + spec.input_var_name + '(' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ')'
         
+                if self.specification.must_handle_array:
+                    self.out.dedent() 
+                    self.out.lf() + 'END DO'
     
     def output_lines_before_with_clear_out_variables(self):
         for parameter in self.specification.parameters:

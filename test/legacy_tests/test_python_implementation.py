@@ -349,8 +349,8 @@ class TestInterface(TestWithMPI):
     def test15(self):
         x = ForTestingInterface()
         y = ForTestingInterface()
-        request1 = x.sleep.async(0.2)
-        request2 = y.sleep.async(0.4)
+        request1 = x.sleep.async(0.5)
+        request2 = y.sleep.async(1.0)
         self.assertFalse(request1.is_result_available())
         self.assertFalse(request2.is_result_available())
         request2.wait()
@@ -377,7 +377,6 @@ class TestInterface(TestWithMPI):
     def test17(self):
         x = ForTesting()
         self.assertTrue(x.sleep.is_async_supported)
-        
         request= x.sleep.async(0.2 | units.s)
         request.wait()
         result = request.result()
