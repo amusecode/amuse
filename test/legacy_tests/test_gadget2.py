@@ -104,7 +104,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals([0 for i in range(number_of_particles)], list(results))
         self.assertEquals([i+1 for i in range(number_of_particles)], list(indices))
         self.assertEquals(0, instance.commit_particles())
-        self.assertEquals(0, instance.evolve(0.001))
+        self.assertEquals(0, instance.evolve(0.00005))
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
@@ -141,7 +141,7 @@ class TestGadget2Interface(TestWithMPI):
             self.assertEquals(0, result)
             self.assertAlmostEquals(mass_list[i], mass)
 
-        self.assertEquals(0, instance.evolve(0.001))
+        self.assertEquals(0, instance.evolve(0.0001))
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
@@ -161,8 +161,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals([number_of_particles+1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
         self.assertEquals([number_of_particles+2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
         self.assertEquals(0, instance.commit_particles())
-        self.assertEquals(0, instance.evolve(0.0001))
-        self.assertEquals(0, instance.evolve(0.0002))
+        self.assertEquals(0, instance.evolve(0.00005))
         self.assertEquals(0, instance.delete_particle(number_of_particles-1))
         self.assertEquals(0, instance.delete_particle(number_of_particles+1))
         self.assertEquals(-1, instance.delete_particle(number_of_particles-1))
@@ -182,8 +181,7 @@ class TestGadget2Interface(TestWithMPI):
             self.assertEquals(0, result)
             self.assertAlmostEquals(mass_list[i], mass)
 
-        self.assertEquals(0, instance.evolve(0.0003))
-        self.assertEquals(0, instance.evolve(0.0004))
+        self.assertEquals(0, instance.evolve(0.00008))
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
     

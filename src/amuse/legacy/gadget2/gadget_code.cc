@@ -22,9 +22,11 @@ bool outfiles_opened = false;
 bool global_quantities_of_system_up_to_date = false;
 bool potential_energy_also_up_to_date = false;
 bool density_up_to_date = false;
+bool particle_map_up_to_date = false;
 int particles_counter = 0;
 vector<dynamics_state> ds;        // for initialization only
 vector<sph_state> sph_ds;         // for initialization only
+int *particle_map;
 
 // global static parameters
 
@@ -170,7 +172,9 @@ int commit_particles(){
         P[i].Vel[2] = ds.at(j).vz;
         P[i].Type = 1; // dark matter particles (SPH particles have type 0)
     }
+    All.TimeBegin += All.Ti_Current * All.Timebase_interval;
     All.Ti_Current = 0;
+    All.Time = All.TimeBegin;
     set_softenings();
     for(i = 0; i < NumPart; i++){	/*  start-up initialization */
         for(j = 0; j < 3; j++)
@@ -208,6 +212,8 @@ int commit_particles(){
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
     Flag_FullStep = 1;		/* to ensure that Peano-Hilber order is done */
     domain_Decomposition();	/* do initial domain decomposition (gives equal numbers of particles) */
+    particle_map = (int*) calloc(particles_counter+2, sizeof(int));
+    particle_map_up_to_date = false;
     ngb_treebuild();		/* will build tree */
     setup_smoothinglengths();
     TreeReconstructFlag = 1;
@@ -249,7 +255,7 @@ int recommit_particles(){
                 (*state_iter).vx = Pcurrent->Vel[0];
                 (*state_iter).vy = Pcurrent->Vel[1];
                 (*state_iter).vz = Pcurrent->Vel[2];
-            }
+            } else {break;}
         }
         if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
         for (vector<sph_state>::iterator state_iter = sph_ds.begin(); state_iter != sph_ds.end(); state_iter++){
@@ -262,8 +268,9 @@ int recommit_particles(){
                 (*state_iter).vy = Pcurrent->Vel[1];
                 (*state_iter).vz = Pcurrent->Vel[2];
                 (*state_iter).u = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
-            }
+            } else {break;}
         }
+        free(particle_map);
         free_memory();
     }
     return commit_particles();
@@ -346,6 +353,7 @@ int evolve(double t_end){
             t0 = second();
             every_timestep_stuff();	/* write some info to log-files */
             domain_Decomposition();	/* do domain decomposition if needed */
+            particle_map_up_to_date = false;
             compute_accelerations(0);	/* compute accelerations for 
                         * the particles that are to be advanced  */
             /* check whether we want a full energy statistics */
@@ -636,6 +644,8 @@ int get_index_of_first_particle(int *index_of_the_particle){
 int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next_particle){
     struct particle_data *Pcurrent;
     bool found = false;
+    if (!particles_initialized)
+        return -1;
     for (int i = index_of_the_particle+1; i <= particles_counter; i++){
         if (!(find_particle(i, &Pcurrent))) {
             if (found){
@@ -649,21 +659,30 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
     if (found) return 1; // This was the last particle.
     return -1; // No particle found.
 }
+void update_particle_map(void){
+    for(int i = 0; i < All.TotNumPart; i++)
+        particle_map[P[i].ID] = i;
+    particle_map_up_to_date = true;
+}
 int find_particle(int index_of_the_particle, struct particle_data **Pfound){
-    for(int i = 0; i < All.TotNumPart; i++){
-        if(P[i].ID == (unsigned int) index_of_the_particle){
-            *Pfound = &P[i];
-            return 0;
-        }
+    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > particles_counter)
+        return -1;
+    if (!particle_map_up_to_date)
+        update_particle_map();
+    if(P[particle_map[index_of_the_particle]].ID == (unsigned int) index_of_the_particle){
+        *Pfound = &P[particle_map[index_of_the_particle]];
+        return 0;
     }
     return -1;
 }
 int find_sph_particle(int index_of_the_particle, struct sph_particle_data **SphPfound){
-    for(int i = 0; i < All.TotN_gas; i++){
-        if(P[i].ID == (unsigned int) index_of_the_particle){
-            *SphPfound = &SphP[i];
-            return 0;
-        }
+    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > particles_counter)
+        return -1;
+    if (!particle_map_up_to_date)
+        update_particle_map();
+    if(P[particle_map[index_of_the_particle]].ID == (unsigned int) index_of_the_particle){
+        *SphPfound = &SphP[particle_map[index_of_the_particle]];
+        return 0;
     }
     return -1;
 }
