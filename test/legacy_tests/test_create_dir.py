@@ -13,7 +13,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         instance.name_of_the_code_interface_class = 'TestCode'
         self.assertEquals(instance.name_of_the_legacy_code, 'testcode')
         self.assertTrue(instance.path_of_the_legacy_code.endswith('testcode'))
-    
+            
     def test2(self):
         root = self.get_path_to_results()
         working_dir = os.path.join(root, 'testcode')
@@ -80,6 +80,8 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
     
         self.assertEquals(call.returncode, 0)
         
+        if os.path.exists(working_dir):
+            shutil.rmtree(working_dir)
         
     def test3(self):
         root = self.get_path_to_results()
@@ -148,6 +150,8 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         self.assertEquals(call.returncode, 0)
         
         
+        if os.path.exists(working_dir):
+            shutil.rmtree(working_dir)
         
         
             

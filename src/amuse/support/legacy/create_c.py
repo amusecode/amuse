@@ -88,13 +88,13 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
         self.out.dedent()
         self._result = self.out.string
     
-    def index_string(self, index):
-        if self.specification.must_handle_array:
+    def index_string(self, index, must_copy_in_to_out = False):
+        if self.specification.must_handle_array and not must_copy_in_to_out:
             if index == 0:
                 return '0'
             else:
                 return '( %d * request_header.len)' % index
-        elif self.specification.can_handle_array:
+        elif self.specification.can_handle_array or (self.specification.must_handle_array and must_copy_in_to_out):
             if index == 0:
                 return 'i'
             else:
@@ -166,13 +166,21 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
     def output_lines_with_inout_variables(self):
         for parameter in self.specification.parameters:
             spec = self.dtype_to_spec[parameter.datatype]
-        
+            
             if parameter.direction == LegacyFunctionSpecification.INOUT:
+                if self.specification.must_handle_array:
+                    self.out.lf() + 'for (int i = 0 ; i < request_header.len; i++){'
+                    self.out.indent()
+
                 self.out.n() + spec.output_var_name
-                self.out + '[' + self.index_string(parameter.output_index) + ']'
+                self.out + '[' + self.index_string(parameter.output_index, must_copy_in_to_out = True) + ']'
                 self.out + ' = '
-                self.out + spec.input_var_name + '[' + self.index_string(parameter.input_index) + ']'+';'
-                
+                self.out + spec.input_var_name + '[' + self.index_string(parameter.input_index, must_copy_in_to_out = True) + ']'+';'
+            
+                if self.specification.must_handle_array:
+                    self.out.dedent()
+                    self.out.lf() + '}'
+                                
     def output_lines_with_number_of_outputs(self):
         dtype_to_count = {}
         
@@ -647,6 +655,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.indent().lf() 
         #self.out.lf() + 'int provided;'
         self.out.lf() + 'MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);'
+        #self.out.lf() + 'MPI::Init(argc, argv);'
         self.out.lf() + 'atexit(onexit);'
         self.out.lf().lf() + 'run_loop();'
         self.out.lf().lf() + 'MPI_Finalize();'

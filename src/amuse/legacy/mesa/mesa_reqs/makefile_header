@@ -219,7 +219,7 @@ LOAD_PGPLOT =
 #LOAD_PGPLOT = -L/Users/bpaxton/pgplot/lib -lpgplot -L/usr/X11R6/lib -lX11 -lpng
 
 else
-ifeq ($(FC),gfortran)
+ifeq ($(findstring gfortran, $(notdir $(FC))), gfortran)
 
 USE_PGSTAR = NO
 LOAD_PGPLOT = 
@@ -256,7 +256,7 @@ LOAD_MATRIX = -lmtx $(LOAD_SUPERLU) $(LOAD_LAPACK) $(LOAD_BLAS)
 # It simply defines things for use by the module makefiles.
 
 
-ifeq ($(FC),ifort)
+ifeq ($(findstring ifort, $(notdir $(FC))), ifort)
 
 FCbasic = $(SPECIAL_FC_FLAGS) -vec-report0 -traceback -error-limit 6 \
    -Wl,-stack_size,0xee6b000 
@@ -280,7 +280,7 @@ FCstatic = -Bstatic -static-intel
 # BTW: -Bstatic -static-intel makes it possible to use the executable stand-alone
 
 else
-ifeq ($(FC),gfortran)
+ifeq ($(findstring gfortran, $(notdir $(FC))), gfortran)
 
 FCbasic = -fno-range-check $(SPECIAL_FC_FLAGS)
 FCimpno = -fimplicit-none  

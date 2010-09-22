@@ -105,6 +105,22 @@ function echo_array_with_result(int_in, int_out, N)
     
     echo_array_with_result = -1
 end function
+
+
+
+function echo_inout_array_with_result(inout, len) 
+    implicit none
+    integer, intent(in) :: N
+    integer :: inout(N)
+    integer :: echo_inout_array_with_result,  i
+    
+    do i = 1, N
+     inout(i) = inout(i) + 10
+    end do
+    
+    echo_inout_array_with_result = 11;
+end function
+
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -191,7 +207,16 @@ class ForTestingInterface(LegacyInterface):
         function.addParameter('len', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.must_handle_array = True
-        return function    
+        return function
+            
+    @legacy_function
+    def echo_inout_array_with_result():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('in_out', dtype='int32', direction=function.INOUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function   
     
 
 
@@ -385,5 +410,19 @@ class TestInterface(TestWithMPI):
             instance.stop()
             self.assertEquals(int_out, 10)
             self.assertEquals(error, 0)
+            
+    def test15(self):
+        instance = ForTestingInterface(self.exefile)
+        (output_ints, error) = instance.echo_inout_array_with_result([4,5,6])
+        instance.stop()
+        self.assertEquals(output_ints[0], 14)
+        self.assertEquals(output_ints[1], 15)
+        self.assertEquals(output_ints[2], 16)
+        
+        self.assertEquals(error[0], 11)
+        self.assertEquals(error[1], 11)
+        self.assertEquals(error[2], 11)
+
+
     
 

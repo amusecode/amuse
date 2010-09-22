@@ -79,6 +79,16 @@ int echo_3_int(int * i, int * j, int * k, int * l, int * m, int * int_out, int l
     }    
     return len;
 }
+
+
+int echo_inout_array_with_result(int * inout, int len) {
+    int i = 0;
+    for(i = 0; i < len; i++) {
+        inout[i] = inout[i] + 10;
+    }
+    return 11;
+}
+
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -149,7 +159,7 @@ class ForTestingInterface(LegacyInterface):
         function.addParameter('len', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.must_handle_array = True
-        return function    
+        return function   
     
     #@legacy_function
     def return_string():
@@ -185,7 +195,16 @@ class ForTestingInterface(LegacyInterface):
         function.addParameter('len', dtype='int32', direction=function.LENGTH)
         function.result_type = 'int32'
         function.must_handle_array = True
-        return function
+        return function  
+        
+    @legacy_function
+    def echo_inout_array_with_result():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('in_out', dtype='int32', direction=function.INOUT)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function   
     
     
 class ForTesting(CodeInterface):
@@ -418,7 +437,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error[0], -1)
         self.assertEquals(error[1], -1)
         self.assertEquals(error[2], -1)
-
+        
     def test13(self):
         instance = ForTesting(self.exefile)
         self.assertRaises(exceptions.AmuseException, instance.echo_int, [-1, -2]| units.m, 
@@ -459,5 +478,18 @@ class TestInterface(TestWithMPI):
         
         #self.assertRaises(exceptions.AmuseException, lambda : instance.echo_int([]))
         instance.stop()
+        
+    def test17(self):
+        instance = ForTestingInterface(self.exefile)
+        (output_ints, error) = instance.echo_inout_array_with_result([4,5,6])
+        instance.stop()
+        self.assertEquals(output_ints[0], 14)
+        self.assertEquals(output_ints[1], 15)
+        self.assertEquals(output_ints[2], 16)
+        
+        self.assertEquals(error[0], 11)
+        self.assertEquals(error[1], 11)
+        self.assertEquals(error[2], 11)
+
     
     
