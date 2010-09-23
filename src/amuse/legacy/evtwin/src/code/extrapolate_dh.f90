@@ -26,9 +26,71 @@ module extrapolate_dh
    real(double), allocatable :: previous_h(:, :, :)
    real(double), allocatable :: previous_age(:)
    real(double), allocatable :: previous_timestep(:)
+   
+   
+   type extrapolate_dh_data
+        sequence
+        integer :: last_stored_model = 0
+        integer :: buffer_calls = 0
+        logical :: can_backup_one_model  
+        integer :: number_of_meshpoints = 0      ! KH
+        integer :: number_of_variables = 0       ! KVB
+        
+        real(double), allocatable :: previous_h(:, :, :)
+        real(double), allocatable :: previous_age(:)
+        real(double), allocatable :: previous_timestep(:)
+   end type extrapolate_dh_data
 
 contains
 
+    subroutine push_extrapolate_data(dataout)
+        implicit none
+        type(extrapolate_dh_data), intent(out) :: dataout
+        
+        print *, "PUSH"
+        dataout%last_stored_model = last_stored_model
+        dataout%buffer_calls = buffer_calls
+        dataout%can_backup_one_model = can_backup_one_model
+        dataout%number_of_meshpoints = number_of_meshpoints
+        dataout%number_of_variables = number_of_variables
+        
+        if (allocated(dataout%previous_h)) deallocate(dataout%previous_h);
+        if (allocated(dataout%previous_age)) deallocate(dataout%previous_age);
+        if (allocated(dataout%previous_timestep)) deallocate(dataout%previous_timestep);
+        
+        allocate (dataout%previous_h(0:num_stored_models, number_of_meshpoints, number_of_variables))
+        allocate (dataout%previous_age(0:num_stored_models))
+        allocate (dataout%previous_timestep(0:num_stored_models))
+        
+        dataout%previous_h = previous_h
+        dataout%previous_age = previous_age
+        dataout%previous_timestep = previous_timestep
+    end subroutine
+    
+    subroutine pop_extrapolate_data(datain)
+        implicit none
+        type(extrapolate_dh_data), intent(in) :: datain
+        logical changed_size
+        
+        print *, "POP"
+        changed_size = (datain%number_of_meshpoints .ne. number_of_meshpoints) .or. &
+        &  (datain%number_of_variables .ne. number_of_variables)
+        
+        if (changed_size) then
+            call initlse_parabola_storage_space(number_of_meshpoints, number_of_variables)
+        end if
+        
+        last_stored_model = datain%last_stored_model
+        buffer_calls = datain%buffer_calls
+        can_backup_one_model = datain%can_backup_one_model
+        number_of_meshpoints = datain%number_of_meshpoints
+        number_of_variables = datain%number_of_variables
+        
+        previous_h = datain%previous_h
+        previous_age = datain%previous_age
+        previous_timestep = datain%previous_timestep
+    end subroutine
+    
    ! initlse_parabola_storage_space:
    ! Initialise the storage space for the various models. This function only
    ! allocates enough space for the number of variables and the number of

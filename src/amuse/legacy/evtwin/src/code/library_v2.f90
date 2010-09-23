@@ -3,6 +3,7 @@
 module twin_library_v2
    use real_kind
    use mesh
+   use extrapolate_dh
 
    ! Datastructure for storing all the information for one star
    ! These need to be swapped into and out off the TWIN global variables
@@ -12,6 +13,7 @@ module twin_library_v2
       ! Flag to indicate wether this star still needs some initialisation
       logical :: virgin
          
+      ! Flag that tells whether this star still exists (i.e. it has not been removed)
       ! Flag that tells whether this star still exists (i.e. it has not been removed)
       logical :: star_exists
 
@@ -59,6 +61,9 @@ module twin_library_v2
       !real(double) :: ht(4, nvar)    ! Used in nucleosynthesis code
       !real(double) :: ms(9999)    ! Mass loss history of primary, non-TWIN mode
       !real(double) :: st(9999)    ! Mass loss history of primary, non-TWIN mode
+      
+      type(extrapolate_dh_data) :: stored_extrapolate_dh_data
+      
    end type twin_star_t
 
 
@@ -307,6 +312,7 @@ contains
       use init_run
       use init_dat
       use current_model_properties
+      use control
       
       implicit none
       integer :: initialise_twin
@@ -482,7 +488,13 @@ contains
          initialise_twin = -2
          return
       end if
-
+      
+      
+      PRINT *, "use_quadratic_predictions", use_quadratic_predictions
+      if(use_quadratic_predictions) then
+        call initlse_parabola_storage_space(kh2, ke1+ke2+kev)
+      end if
+      
       ! Initialise some more variables
       if ( isb.eq.1 ) ktw = 1
       jb = 1
@@ -500,7 +512,7 @@ contains
       if (allocated(star_list)) deallocate(star_list);
       allocate(star_list(1:max_stars))
       if (verbose) print *, 'allocated memory for ',max_stars, 'stars'
-
+ 
       ! We're not writing any output directly from the library functions
       ! Report success
       initialise_twin = 0;
@@ -534,6 +546,7 @@ contains
       use constants
       use settings
       use current_model_properties
+      use control
       
       implicit none
       type(twin_star_t), pointer :: star
@@ -623,6 +636,10 @@ contains
 
       star%startup_iter = kr1
       star%normal_iter = kr2
+      
+      if (use_quadratic_predictions) then
+        call push_extrapolate_data(star%stored_extrapolate_dh_data)
+      end if
 
       ! Binary orbital parameters
       if (per1>0) star%per = per1
@@ -1346,6 +1363,7 @@ contains
       use test_variables
       use current_model_properties
       use binary_history, only: hpr
+      use control
       
       implicit none
       integer, intent(in) :: star_id
@@ -1438,10 +1456,16 @@ contains
 
       prev(:) = star%prev(:)
       pprev(:) = star%pprev(:)
+      
+      
       jhold = star%jhold
       jm2 = star%jm2
       jm1 = star%jm1
 
+      if (use_quadratic_predictions) then
+        call pop_extrapolate_data(star%stored_extrapolate_dh_data)
+      end if
+      
       ! COMMON block SOLV. We need to retrieve the typical size of the different
       ! variables. It's not a good idea to leak this information to other stars
       if (allocated(er)) er(1:nvar) = star%er(1:nvar)
@@ -1511,6 +1535,7 @@ contains
       use test_variables
       use current_model_properties
       use binary_history, only: hpr
+      use control
       
       implicit none
       integer, intent(in) :: star_id
@@ -1596,6 +1621,10 @@ contains
       star%tct = tct
 
 
+      if (use_quadratic_predictions) then
+        call push_extrapolate_data(star%stored_extrapolate_dh_data)
+      end if
+      
       star%prev(:) = prev(:)
       star%pprev(:) = pprev(:)
       star%jhold = jhold
