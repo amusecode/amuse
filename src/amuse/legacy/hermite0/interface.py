@@ -2,7 +2,10 @@ from amuse.legacy import *
 from amuse.legacy.interface.gd import GravitationalDynamicsInterface
 from amuse.legacy.interface.gd import GravitationalDynamics
 
-class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
+class HermiteInterface(LegacyInterface,
+                       LiteratureRefs,
+                       GravitationalDynamicsInterface,
+                       StoppingConditionInterface):
     """
     N-body integration module with shared but variable time step
     (the same for all particles but its size changing in time),
@@ -13,14 +16,11 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     """
     include_headers = ['worker_code.h', 'stopcond.h']
 
+
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
+        LegacyInterface.__init__(self, name_of_the_worker="worker_code",
+                                 **options)
         LiteratureRefs.__init__(self)
-
-    
-
-
-    
 
     def reinitialize_particles(self):
         self.recommit_particles()
@@ -29,10 +29,11 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     def delete_particle():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_particle', dtype='int32', direction=function.IN,
+        function.addParameter('index_of_particle', dtype='int32',
+                              direction=function.IN,
             description = "Index of particle to delete")
         function.result_type = 'int32'
-        function.resutl_doc = """
+        function.result_doc = """
         0 - OK
            The particle was deleted
         """
@@ -44,8 +45,9 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Get the time interval between diagnostics output.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_dia', dtype='float64', direction=function.OUT,
-            description = "the time interval between diagnostics output")
+        function.addParameter('dt_dia', dtype='float64',
+                              direction=function.OUT,
+            description = "time interval between diagnostic outputs")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -61,7 +63,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Set the time interval between diagnostics output.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_dia', dtype='float64', direction=function.IN,
+        function.addParameter('dt_dia', dtype='float64',
+                              direction=function.IN,
             description = "the time interval between diagnostics output")
         function.result_type = 'int32'
         function.result_doc = """
@@ -78,7 +81,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Get the timestep scaling factor.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_dia', dtype='float64', direction=function.OUT,
+        function.addParameter('dt_dia', dtype='float64',
+                              direction=function.OUT,
             description = "the timestep scaling factor")
         function.result_type = 'int32'
         function.result_doc = """
@@ -95,7 +99,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Set the timestep scaling factor.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('dt_dia', dtype='float64', direction=function.IN,
+        function.addParameter('dt_dia', dtype='float64',
+                              direction=function.IN,
             description = "the timestep scaling factor")
         function.result_type = 'int32'
         function.result_doc = """
@@ -112,7 +117,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Get the current simulation time.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('time', dtype='float64', direction=function.OUT,
+        function.addParameter('time', dtype='float64',
+                              direction=function.OUT,
             description = "the current simulation time")
         function.result_type = 'int32'
         function.result_doc = """
@@ -129,7 +135,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Set the current simulation time.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('time', dtype='float64', direction=function.IN,
+        function.addParameter('time', dtype='float64',
+                              direction=function.IN,
             description = "the current simulation time")
         function.result_type = 'int32'
         function.result_doc = """
@@ -146,7 +153,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Get pair detection sphere radius factor (units particle radius).
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('pair_detect_factor', dtype='float64', direction=function.OUT,
+        function.addParameter('pair_detect_factor', dtype='float64',
+                              direction=function.OUT,
             description = "pair detection radius ")
         function.result_type = 'int32'
         function.result_doc = """
@@ -163,7 +171,8 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         Set pair detection sphere radius factor (units particle radius).
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('pair_detect_factor', dtype='float64', direction=function.IN,
+        function.addParameter('pair_detect_factor', dtype='float64',
+                              direction=function.IN,
             description = "pair detection radius ")
         function.result_type = 'int32'
         function.result_doc = """
@@ -175,11 +184,11 @@ class HermiteInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
         return function
     
 
-
 class HermiteDoc(object):
 
     def __get__(self, instance, owner):
         return instance.legacy_doc+"\n\n"+instance.parameters.__doc__
+
 
 class Hermite(GravitationalDynamics):
 
@@ -247,14 +256,17 @@ class Hermite(GravitationalDynamics):
 
         object.add_method(
             'get_potential_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
+            (nbody_system.length, nbody_system.length,
+             nbody_system.length, nbody_system.length),
             (nbody_system.potential, object.ERROR_CODE)
         )
 
         object.add_method(
             'get_gravity_at_point',
-            (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
-            (nbody_system.acceleration, nbody_system.acceleration, nbody_system.acceleration, object.ERROR_CODE)
+            (nbody_system.length, nbody_system.length,
+             nbody_system.length, nbody_system.length),
+            (nbody_system.acceleration, nbody_system.acceleration,
+             nbody_system.acceleration, object.ERROR_CODE)
         )
         
         self.stopping_conditions.define_methods(object)
