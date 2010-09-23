@@ -68,6 +68,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         
         del sys.path[0]
         
+        self.assertTrue(os.path.exists(os.path.join(working_dir,'worker_code.cc')))
         call = subprocess.Popen(
             ['make', 'clean'],
             cwd=working_dir, 
@@ -77,6 +78,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         outputstring, errorstring = call.communicate()
         
         print errorstring
+        self.assertFalse(os.path.exists(os.path.join(working_dir,'worker_code.cc')))
     
         self.assertEquals(call.returncode, 0)
         
@@ -136,6 +138,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         
         del sys.path[0]
         
+        self.assertTrue(os.path.exists(os.path.join(working_dir,'worker_code.f90')))
         
         call = subprocess.Popen(
             ['make', 'clean'],
@@ -144,8 +147,9 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
             stderr=subprocess.PIPE
         )
         outputstring, errorstring = call.communicate()
-        
         print errorstring
+        
+        self.assertFalse(os.path.exists(os.path.join(working_dir,'worker_code.f90')))
     
         self.assertEquals(call.returncode, 0)
         

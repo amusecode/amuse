@@ -68,7 +68,7 @@ all: worker_code
 
 clean:
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-\t$(RM) *~ worker_code
+\t$(RM) *~ worker_code worker_code.cc
 \tmake -C src clean
 
 $(CODELIB):
@@ -312,7 +312,7 @@ all: worker_code
 
 clean:
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-\t$(RM) *~ worker_code
+\t$(RM) *~ worker_code worker_code.f90
 \tmake -C src clean
 
 $(CODELIB):
