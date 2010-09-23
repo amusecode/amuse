@@ -491,7 +491,6 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
               }
           }
       }
-    
     mpi_collect_data(n, epot, &coll_time_q, coll_time_q);
     
                                                  // from q for quartic back
@@ -1600,16 +1599,28 @@ int commit_parameters(){
 int synchronize_model() {
     real epot;                  // potential energy of the n-body system
     real coll_time;             // collision (close encounter) time scale
+    
     if (set_conditions & enabled_conditions) {
         return 0;
     }
-    if (t_evolve < t_wanted)
-    {
-        evolve_step(t_wanted-t_evolve, &epot, &coll_time);
-        nsteps++;
+     if(mpi_rank)     {
+        evolve_not_on_root();
+    } else {
+        int must_run = 0;
+        if (t_evolve < t_wanted)
+        {
+            must_run = 1;
+            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+            evolve_step(t_wanted-t_evolve, &epot, &coll_time);
+            nsteps++;
 
-        get_acc_jerk_pot_coll(&epot, &coll_time);
-        t_evolve = t_wanted;
+            MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
+            get_acc_jerk_pot_coll(&epot, &coll_time);
+            
+            t_evolve = t_wanted;
+        } 
+        must_run = 0;
+        MPI_Bcast(&must_run, 1, MPI_INTEGER, 0, MPI_COMM_WORLD);
     }
     return 0;
 }
