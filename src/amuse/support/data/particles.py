@@ -1,5 +1,5 @@
 from amuse.support.data import values
-from amuse.support.data.values import Quantity, new_quantity, zero
+from amuse.support.data.values import Quantity, new_quantity, zero, AdaptingVectorQuantity
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
@@ -131,9 +131,15 @@ class AbstractParticleSet(AbstractSet):
         AbstractSet.__init__(self, original)
     
     
-    def check_attribute(self, name_of_the_attribute, value):
+    def check_attribute(self, value):
         if not (isinstance(value, Quantity) or isinstance(value, Particle) or isinstance(value, AbstractParticleSet)):
+            if hasattr(value, "__iter__"):
+                result = AdaptingVectorQuantity()
+                for subvalue in value:
+                    result.append(self.check_attribute(subvalue))
+                return result
             raise AttributeError("Can only assign quantities or other particles to an attribute.")
+        return value
             
     #
     # Particle storage interface

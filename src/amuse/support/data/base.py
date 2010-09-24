@@ -1,5 +1,5 @@
 from amuse.support.data import values
-from amuse.support.data.values import Quantity, new_quantity, zero
+from amuse.support.data.values import Quantity, new_quantity, zero, AdaptingVectorQuantity
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
@@ -276,12 +276,18 @@ class AbstractSet(object):
                 raise AttributeError("You tried to access attribute '{0}'"
                     " but this attribute is not defined for this set.".format(name_of_the_attribute))
     
-    def check_attribute(self, name_of_the_attribute, value):
+    def check_attribute(self, value):
         if not isinstance(value, Quantity):
+            if hasattr(value, "__iter__"):
+                result = AdaptingVectorQuantity()
+                for subvalue in value:
+                    result.append(self.check_attribute(subvalue))
+                return result
             raise AttributeError("Can only assign quantities or other particles to an attribute.")
+        return value
             
     def __setattr__(self, name_of_the_attribute, value):
-        self.check_attribute(name_of_the_attribute, value)
+        value = self.check_attribute(value)
         if name_of_the_attribute in self._derived_attributes:
             self._derived_attributes[name_of_the_attribute].set_values_for_entities(self, value)
         else:
