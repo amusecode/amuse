@@ -33,20 +33,35 @@ def scale_to_standard(particles, convert_nbody = None,
         particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_nbody_to_si())
         if not smoothing_length_squared is zero:
             smoothing_length_squared = convert_nbody.to_nbody(smoothing_length_squared)
-    
+
+    # Proper order is to scale mass, then length, then velocities.
+    # Simple length scaling for the potential works only in the
+    # unsoftened case.  In general, it may not be possible to force
+    # the potential to -0.5, so perhaps best to stop after the simple
+    # scaling.  We can always scale the velocities to get the correct
+    # virial ratio (and hence virial equilibrium).
+
     total_mass = particles.mass.sum()
     scale_factor = ((1 | total_mass.unit) / total_mass)
     particles.mass *= scale_factor
     
+    potential_energy \
+        = particles.potential_energy(G=nbody_system.G,
+                         smoothing_length_squared = smoothing_length_squared)
+    target_energy = -0.5 | nbody_system.energy
+    scale_factor = (potential_energy / target_energy)	# unsoftened only...
+    particles.position *= scale_factor
+    if smoothing_length_squared == zero:
+        potential_energy = target_energy
+    else:
+        potential_energy \
+            = particles.potential_energy(G=nbody_system.G,
+                         smoothing_length_squared = smoothing_length_squared)
+
     kinetic_energy = particles.kinetic_energy()
-    target_energy =  0.25 | nbody_system.energy
+    target_energy =  -0.5*potential_energy
     scale_factor = (target_energy / kinetic_energy).sqrt()
     particles.velocity *= scale_factor
-    
-    potential_energy = particles.potential_energy(G=nbody_system.G)
-    target_energy = -0.5 | nbody_system.energy
-    scale_factor = (potential_energy / target_energy)
-    particles.position *= scale_factor 
     
 
 def center_of_mass(particles):
