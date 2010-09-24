@@ -239,6 +239,27 @@
          get_mass = 0
       endif
    end function
+! Set the current mass of the star
+   function set_mass(AMUSE_id, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use const_def, only: msol
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(in) :: AMUSE_value
+      integer :: set_mass, ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         set_mass = -1
+      else
+         s% mstar = AMUSE_value * msol
+         s% mstar_old = AMUSE_value * msol
+         s% mstar_older = AMUSE_value * msol
+         s% star_mass = AMUSE_value
+         set_mass = 0
+      endif
+   end function
 
 ! Return the current temperature of the star
    function get_temperature(AMUSE_id, AMUSE_value)
@@ -470,6 +491,27 @@
             endif
          endif
       end function
+! Set the mass fraction at the specified zone/mesh-cell of the star
+      integer function set_mass_fraction_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(in) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            set_mass_fraction_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                set_mass_fraction_at_zone = -2
+            else
+                s% dq(s% nz - AMUSE_zone) = AMUSE_value
+                set_mass_fraction_at_zone = 0
+            endif
+         endif
+      end function
 
 ! Return the temperature at the specified zone/mesh-cell of the star
       integer function get_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
@@ -491,6 +533,27 @@
             else
                 AMUSE_value = exp(s% xs(s% i_lnT, s% nz - AMUSE_zone))
                 get_temperature_at_zone = 0
+            endif
+         endif
+      end function
+! Set the temperature at the specified zone/mesh-cell of the star
+      integer function set_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(in) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            set_temperature_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                set_temperature_at_zone = -2
+            else
+                s% xs(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
+                set_temperature_at_zone = 0
             endif
          endif
       end function
@@ -518,6 +581,33 @@
             endif
          endif
       end function
+! Set the density at the specified zone/mesh-cell of the star
+      integer function set_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(in) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            set_density_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+               set_density_at_zone = -2
+            else
+               s% xs(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
+               if (s%generations >= 2) then
+                  s% xs_old(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
+                  if (s%generations == 3) then
+                     s% xs_older(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
+                  endif
+               endif
+               set_density_at_zone = 0
+            endif
+         endif
+      end function
 
 ! Return the radius at the specified zone/mesh-cell of the star
       integer function get_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
@@ -542,6 +632,27 @@
             endif
          endif
       end function
+! Set the radius at the specified zone/mesh-cell of the star
+      integer function set_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(in) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            set_radius_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                set_radius_at_zone = -2
+            else
+                s% xs(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
+                set_radius_at_zone = 0
+            endif
+         endif
+      end function
 
 ! Return the luminosity at the specified zone/mesh-cell of the star
       integer function get_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
@@ -563,6 +674,27 @@
             else
                 AMUSE_value = s% xs(s% i_lum, s% nz - AMUSE_zone)
                 get_luminosity_at_zone = 0
+            endif
+         endif
+      end function
+! Set the luminosity at the specified zone/mesh-cell of the star
+      integer function set_luminosity_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(in) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            set_luminosity_at_zone = -1
+         else
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                set_luminosity_at_zone = -2
+            else
+                s% xs(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
+                set_luminosity_at_zone = 0
             endif
          endif
       end function
@@ -713,6 +845,36 @@
       else
          AMUSE_value = s% xa(AMUSE_species, s% nz - AMUSE_zone)
          get_mass_fraction_of_species_at_zone = 0
+      endif
+   end function
+! Set the mass fraction of species 'AMUSE_species' at the specified 
+! zone/mesh-cell of the star
+   integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
+         AMUSE_species, AMUSE_zone, AMUSE_value)
+      use star_private_def, only: star_info, get_star_ptr
+      use amuse_support, only: failed
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
+      double precision, intent(in) :: AMUSE_value
+      integer :: ierr
+      type (star_info), pointer :: s
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (failed('get_star_ptr', ierr)) then
+         set_mass_fraction_of_species_at_zone = -1
+      else if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+         set_mass_fraction_of_species_at_zone = -2
+      else if (AMUSE_species > s% nvar_chem .or. AMUSE_species < 1) then
+         set_mass_fraction_of_species_at_zone = -3
+      else
+         s% xa(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
+         if (s%generations >= 2) then
+            s% xa_old(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
+            if (s%generations == 3) then
+               s% xa_older(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
+            endif
+         endif
+         s% xa_pre_hydro(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
+         set_mass_fraction_of_species_at_zone = 0
       endif
    end function
 

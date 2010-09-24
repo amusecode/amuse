@@ -525,12 +525,85 @@ class TestMESA(TestWithMPI):
         self.assertEquals(len(composition[0]), number_of_zones)
         self.assertEquals(species_names, ['h1', 'he3', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24'])
         self.assertEquals(species_IDs,   [2,    5,     6,     38,    51,    69,    114,    168])
-        self.assertAlmostEquals(composition[ :1,0].sum(),  0.76 | units.none)
-        self.assertAlmostEquals(composition[1:3,0].sum(),  0.24 | units.none)
-        self.assertAlmostEquals(composition[3: ,0].sum(),  0.00 | units.none)
-        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
-        self.assertAlmostEquals(composition[ :1,number_of_zones-1].sum(),  0.00 | units.none)
-        self.assertAlmostEquals(composition[1:3,number_of_zones-1].sum(),  1.00 | units.none)
+        self.assertAlmostEquals(composition[ :1,number_of_zones-1].sum(),  0.76 | units.none)
+        self.assertAlmostEquals(composition[1:3,number_of_zones-1].sum(),  0.24 | units.none)
         self.assertAlmostEquals(composition[3: ,number_of_zones-1].sum(),  0.00 | units.none)
+        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        self.assertAlmostEquals(composition[ :1,0].sum(),  0.00 | units.none)
+        self.assertAlmostEquals(composition[1:3,0].sum(),  1.00 | units.none)
+        self.assertAlmostEquals(composition[3: ,0].sum(),  0.00 | units.none)
+        instance.stop()
+        del instance
+    
+    def test9(self):
+        print "Test for changing the stellar structure model"
+        star = core.Particles(1)
+        star.mass = 1.0 | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_module_with_current_parameters() 
+        instance.particles.add_particles(star)
+        instance.initialize_stars()
+        instance.evolve_model()
+
+        density_profile = instance.particles[0].get_density_profile()
+        
+        self.assertRaises(AmuseException, instance.particles[0].set_density_profile, density_profile[2:], 
+            expected_message = "The length of the supplied vector (477) does not match the number of "
+            "mesh zones of the star (479).")
+        
+        mass_factor = 1.1
+        instance.particles[0].set_density_profile(mass_factor*density_profile)
+        self.assertAlmostRelativeEqual(instance.particles[0].get_density_profile(), density_profile*mass_factor, places=10)
+        instance.particles.mass *= mass_factor
+        instance.evolve_model()
+        
+        outer_radius = instance.particles[0].get_radius_profile()
+        inner_radius = outer_radius[:-1]
+        inner_radius.prepend(0|units.m)
+        delta_radius_cubed = (outer_radius**3 - inner_radius**3)
+        integrated_mass = (4./3.*pi*delta_radius_cubed*instance.particles[0].get_density_profile()).sum()
+        self.assertAlmostRelativeEqual(integrated_mass, star.mass*mass_factor, places = 3)
+        instance.stop()
+        del instance
+    
+    def test10(self):
+        print "Test for changing the stellar composition"
+        star = core.Particles(1)
+        star.mass = 1.0 | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_module_with_current_parameters() 
+        instance.particles.add_particles(star)
+        instance.initialize_stars()
+        instance.evolve_model()
+        
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        h1_profile = composition[0] * 1
+        he4_profile = composition[2] * 1
+        k_surface = -1 # index to the outer mesh cell (surface)
+        
+        self.assertAlmostEquals(composition[ :1, k_surface].sum(),  0.7 | units.none)
+        self.assertAlmostEquals(composition[1:3, k_surface].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
+        self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
+        
+        composition[0] = he4_profile
+        composition[2] = h1_profile
+        instance.particles[0].set_chemical_abundance_profiles(composition)
+        instance.evolve_model()
+        
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        self.assertAlmostEquals(composition[ :2, k_surface].sum(),  (0.3 | units.none) - instance.parameters.metallicity)
+        self.assertAlmostEquals(composition[2:3, k_surface].sum(),  0.7 | units.none)
+        self.assertAlmostEquals(composition[3: , k_surface].sum(),  instance.parameters.metallicity)
+        self.assertAlmostEquals(composition.sum(axis=0), 1.0 | units.none)
+        
+        self.assertRaises(AmuseException, instance.particles[0].set_chemical_abundance_profiles, composition[:7], 
+            expected_message = "The length of the supplied vector (7) does not match the number of "
+            "chemical species of the star (8).")
         instance.stop()
         del instance

@@ -85,7 +85,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function     
+    @legacy_function
     def evolve_to():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
@@ -94,13 +94,13 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         function.addParameter('end_time', dtype='float64', direction=function.IN)
         return function
         
-    @legacy_function     
+    @legacy_function
     def new_zams_model():
         function = LegacyFunctionSpecification()  
         function.addParameter('status', dtype='int32', direction=function.OUT)
         return function
         
-    @legacy_function      
+    @legacy_function
     def get_time_step():
         function = LegacyFunctionSpecification() 
         function.can_handle_array = True
@@ -117,7 +117,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
         
-    @legacy_function   
+    @legacy_function
     def get_number_of_zones():
         """
         Retrieve the current number of zones/mesh-cells of the star.
@@ -137,7 +137,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function   
+    @legacy_function
     def get_mass_fraction_at_zone():
         """
         Retrieve the mass fraction at the specified zone/mesh-cell of the star.
@@ -160,7 +160,32 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             A zone with the given index was not found.
         """
         return function
-    @legacy_function   
+    
+    @legacy_function
+    def set_mass_fraction_at_zone():
+        """
+        Set the mass fraction at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to set the value of")
+        function.addParameter('dq_i', dtype='float64', direction=function.IN
+            , description="The mass fraction at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was set.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
     def get_temperature_at_zone():
         """
         Retrieve the temperature at the specified zone/mesh-cell of the star.
@@ -183,7 +208,32 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             A zone with the given index was not found.
         """
         return function
-    @legacy_function   
+    
+    @legacy_function
+    def set_temperature_at_zone():
+        """
+        Set the temperature at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to set the value of")
+        function.addParameter('T_i', dtype='float64', direction=function.IN
+            , description="The temperature at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was set.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
     def get_density_at_zone():
         """
         Retrieve the density at the specified zone/mesh-cell of the star.
@@ -206,7 +256,52 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             A zone with the given index was not found.
         """
         return function
+    
+    @legacy_function
+    def set_density_at_zone():
+        """
+        Set the density at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to set the value of")
+        function.addParameter('rho_i', dtype='float64', direction=function.IN
+            , description="The density at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was set.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
     @legacy_function   
+    def set_mass():
+        """
+        Set the current mass of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('mass', dtype='float64', direction=function.IN
+            , description="The current mass of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
     def get_radius_at_zone():
         """
         Retrieve the radius at the specified zone/mesh-cell of the star.
@@ -229,7 +324,32 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             A zone with the given index was not found.
         """
         return function
-    @legacy_function   
+    
+    @legacy_function
+    def set_radius_at_zone():
+        """
+        Set the radius at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to set the value of")
+        function.addParameter('R_i', dtype='float64', direction=function.IN
+            , description="The radius at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was set.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
     def get_luminosity_at_zone():
         """
         Retrieve the luminosity at the specified zone/mesh-cell of the star.
@@ -252,7 +372,32 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             A zone with the given index was not found.
         """
         return function
-    @legacy_function   
+    
+    @legacy_function
+    def set_luminosity_at_zone():
+        """
+        Set the luminosity at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to set the value of")
+        function.addParameter('lum_i', dtype='float64', direction=function.IN
+            , description="The luminosity at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was set.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
     def get_mu_at_zone():
         """
         Retrieve the mean molecular weight per particle (ions + free electrons)
@@ -277,7 +422,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function   
+    @legacy_function
     def get_number_of_species():
         """
         Retrieve the current number of chemical abundance variables per zone of the star.
@@ -297,7 +442,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function   
+    @legacy_function
     def get_name_of_species():
         """
         Retrieve the name of the chemical abundance variable of the star.
@@ -319,7 +464,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function   
+    @legacy_function
     def get_id_of_species():
         """
         Retrieve the chem_ID of the chemical abundance variable of the star.
@@ -341,7 +486,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function   
+    @legacy_function
     def get_mass_of_species():
         """
         Retrieve the mass number of the chemical abundance variable of the star.
@@ -363,7 +508,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         """
         return function
     
-    @legacy_function   
+    @legacy_function
     def get_mass_fraction_of_species_at_zone():
         """
         Retrieve the fractional chemical abundance variable at the specified zone/mesh-cell of the star.
@@ -382,6 +527,30 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         function.result_doc = """
         0 - OK
             The value was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
+    def set_mass_fraction_of_species_at_zone():
+        """
+        Set the fractional chemical abundance variable at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to set the value of")
+        function.addParameter('species', dtype='int32', direction=function.IN
+            , description="The species of the star to set the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to set the value of")
+        function.addParameter('Xj_i', dtype='float64', direction=function.IN
+            , description="The fractional chemical abundance variable at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was set.
         -1 - ERROR
             A star with the given index was not found.
         """
@@ -847,6 +1016,7 @@ class MESA(CodeInterface):
         object.add_getter('particles', 'get_radius', names = ('radius',))
         object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
         object.add_getter('particles', 'get_mass', names = ('mass',))
+        object.add_setter('particles', 'set_mass', names = ('mass',))
         object.add_getter('particles', 'get_age', names = ('age',))
         object.add_getter('particles', 'get_time_step', names = ('time_step',))
         object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
@@ -854,16 +1024,22 @@ class MESA(CodeInterface):
         
         object.add_method('particles', 'get_number_of_zones')
         object.add_method('particles', 'get_mass_profile')
+        object.add_method('particles', 'set_mass_profile')
         object.add_method('particles', 'get_density_profile')
+        object.add_method('particles', 'set_density_profile')
         object.add_method('particles', 'get_radius_profile')
+        object.add_method('particles', 'set_radius_profile')
         object.add_method('particles', 'get_temperature_profile')
+        object.add_method('particles', 'set_temperature_profile')
         object.add_method('particles', 'get_luminosity_profile')
+        object.add_method('particles', 'set_luminosity_profile')
         object.add_method('particles', 'get_mu_profile')
         object.add_method('particles', 'get_number_of_species')
         object.add_method('particles', 'get_names_of_species')
         object.add_method('particles', 'get_IDs_of_species')
         object.add_method('particles', 'get_masses_of_species')
         object.add_method('particles', 'get_chemical_abundance_profiles')
+        object.add_method('particles', 'set_chemical_abundance_profiles')
         object.add_method('particles', 'evolve', 'evolve_one_step')
     
     def define_errorcodes(self, object):
@@ -894,6 +1070,11 @@ class MESA(CodeInterface):
             "get_mass",
             (object.INDEX,),
             (units.MSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_mass",
+            (object.INDEX, units.MSun,),
+            (object.ERROR_CODE,)
         )
         object.add_method(
             "get_radius",
@@ -936,9 +1117,19 @@ class MESA(CodeInterface):
             (units.none, object.ERROR_CODE,)
         )
         object.add_method(
+            "set_mass_fraction_at_zone", 
+            (object.INDEX, units.none, units.none,), 
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_temperature_at_zone", 
             (object.INDEX,units.none,), 
             (units.K, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_temperature_at_zone", 
+            (object.INDEX, units.none, units.K,), 
+            (object.ERROR_CODE,)
         )
         object.add_method(
             "get_density_at_zone", 
@@ -946,14 +1137,29 @@ class MESA(CodeInterface):
             (units.g/units.cm**3, object.ERROR_CODE,)
         )
         object.add_method(
+            "set_density_at_zone", 
+            (object.INDEX, units.none, units.g/units.cm**3,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_radius_at_zone", 
             (object.INDEX,units.none,), 
             (units.cm, object.ERROR_CODE,)
         )
         object.add_method(
+            "set_radius_at_zone", 
+            (object.INDEX, units.none, units.cm,), 
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_luminosity_at_zone", 
             (object.INDEX,units.none,), 
             (units.erg/units.s, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_luminosity_at_zone", 
+            (object.INDEX, units.none, units.erg/units.s,), 
+            (object.ERROR_CODE,)
         )
         object.add_method(
             "get_mu_at_zone", 
@@ -985,6 +1191,11 @@ class MESA(CodeInterface):
             (object.INDEX,units.none,units.none,), 
             (units.none, object.ERROR_CODE,)
         )
+        object.add_method(
+            "set_mass_fraction_of_species_at_zone", 
+            (object.INDEX, units.none, units.none, units.none,), 
+            (object.ERROR_CODE,)
+        )
         
     
     def initialize_module_with_default_parameters(self):
@@ -1005,66 +1216,92 @@ class MESA(CodeInterface):
             while particle.age < end_time:
                 particle.evolve_one_step()
     
-    def get_mass_profile(self, indices_of_the_stars, number_of_zones = None):
+    def check_supplied_values(self, number_of_values, expected_number, type_string = "mesh zones"):
+        if number_of_values != expected_number:
+            raise exceptions.LegacyException(("The length of the supplied vector ({0}) does not match the number of "
+                +type_string+" of the star ({1}).").format(number_of_values, expected_number))
+    
+    def check_number_of_indices(self, indices_of_the_stars, action_string = "Querying/setting profiles"):
         if hasattr(indices_of_the_stars, '__iter__'):
             if len(indices_of_the_stars) > 1:
-                raise exceptions.LegacyException("Querying mass profiles of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+                raise exceptions.LegacyException(action_string+" of more than one particle at a time is not supported.")
+            return indices_of_the_stars[0]
+        return indices_of_the_stars
+    
+    def get_mass_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying mass profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
+    def set_mass_profile(self, indices_of_the_stars, values, number_of_zones = None):
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Setting mass profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        self.check_supplied_values(len(values), number_of_zones)
+        self.set_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+    
     def get_density_profile(self, indices_of_the_stars, number_of_zones = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying density profiles of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying density profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
+    def set_density_profile(self, indices_of_the_stars, values, number_of_zones = None):
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Setting density profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        self.check_supplied_values(len(values), number_of_zones)
+        self.set_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+    
     def get_radius_profile(self, indices_of_the_stars, number_of_zones = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying radius profiles of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying radius profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
+    def set_radius_profile(self, indices_of_the_stars, values, number_of_zones = None):
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Setting radius profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        self.check_supplied_values(len(values), number_of_zones)
+        self.set_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+    
     def get_temperature_profile(self, indices_of_the_stars, number_of_zones = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying temperature profiles of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying temperature profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
+    def set_temperature_profile(self, indices_of_the_stars, values, number_of_zones = None):
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Setting temperature profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        self.check_supplied_values(len(values), number_of_zones)
+        self.set_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+    
     def get_luminosity_profile(self, indices_of_the_stars, number_of_zones = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying luminosity profiles of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying luminosity profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
+    def set_luminosity_profile(self, indices_of_the_stars, values, number_of_zones = None):
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Setting luminosity profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        self.check_supplied_values(len(values), number_of_zones)
+        self.set_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
+    
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying mean-molecular-weight profiles of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying mean-molecular-weight profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     
     def get_names_of_species(self, indices_of_the_stars, number_of_species = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying chemical abundance names of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance names")
         if number_of_species is None:
             number_of_species = self.get_number_of_species(indices_of_the_stars).number
         return list(self.get_name_of_species(
@@ -1073,10 +1310,7 @@ class MESA(CodeInterface):
         ).value_in(units.string))
     
     def get_IDs_of_species(self, indices_of_the_stars, number_of_species = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying chemical abundance IDs of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")
         if number_of_species is None:
             number_of_species = self.get_number_of_species(indices_of_the_stars).number
         return list(self.get_id_of_species(
@@ -1085,10 +1319,7 @@ class MESA(CodeInterface):
         ).value_in(units.none))
     
     def get_masses_of_species(self, indices_of_the_stars, number_of_species = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying chemical abundance mass numbers of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance mass numbers")
         if number_of_species is None:
             number_of_species = self.get_number_of_species(indices_of_the_stars).number
         return self.get_mass_of_species(
@@ -1098,10 +1329,7 @@ class MESA(CodeInterface):
     
     
     def get_chemical_abundance_profiles(self, indices_of_the_stars, number_of_zones = None, number_of_species = None):
-        if hasattr(indices_of_the_stars, '__iter__'):
-            if len(indices_of_the_stars) > 1:
-                raise Exception("Querying chemical abundance profiles of more than one particle at a time is not supported.")
-            indices_of_the_stars = indices_of_the_stars[0]
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance profiles")
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         if number_of_species is None:
@@ -1112,4 +1340,20 @@ class MESA(CodeInterface):
             units.none.new_quantity(grid[0].flatten()+1), 
             units.none.new_quantity(grid[1].flatten())
         ).reshape((number_of_species, number_of_zones))
+    
+    def set_chemical_abundance_profiles(self, indices_of_the_stars, values, number_of_zones = None, number_of_species = None):
+        indices_of_the_stars = self.check_number_of_indices(indices_of_the_stars, action_string = "Setting chemical abundance profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        if number_of_species is None:
+            number_of_species = self.get_number_of_species(indices_of_the_stars).number
+        self.check_supplied_values(len(values), number_of_species, type_string = "chemical species")
+        self.check_supplied_values(len(values[0]), number_of_zones)
+        grid = numpy.indices((number_of_species, number_of_zones))
+        self.set_mass_fraction_of_species_at_zone(
+            [indices_of_the_stars] * number_of_zones * number_of_species, 
+            units.none.new_quantity(grid[0].flatten()+1), 
+            units.none.new_quantity(grid[1].flatten()),
+            values.reshape((number_of_species*number_of_zones, ))
+        )
     
