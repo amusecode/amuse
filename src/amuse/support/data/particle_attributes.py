@@ -16,7 +16,9 @@ def move_to_center(particles):
     particles.position -= particles.center_of_mass()
     particles.velocity -= particles.center_of_mass_velocity()
     
-def scale_to_standard(particles, convert_nbody = None, smoothing_length_squared = zero):
+
+def scale_to_standard(particles, convert_nbody = None,
+                      smoothing_length_squared = zero):
     """
     Scale the particles to a standard NBODY model with
     **total mass=1**, **kinetic energy=0.25** and 
@@ -33,21 +35,19 @@ def scale_to_standard(particles, convert_nbody = None, smoothing_length_squared 
             smoothing_length_squared = convert_nbody.to_nbody(smoothing_length_squared)
     
     total_mass = particles.mass.sum()
-    particles.mass *= ((1 | total_mass.unit) / total_mass)
+    scale_factor = ((1 | total_mass.unit) / total_mass)
+    particles.mass *= scale_factor
     
     kinetic_energy = particles.kinetic_energy()
     target_energy =  0.25 | nbody_system.energy
     scale_factor = (target_energy / kinetic_energy).sqrt()
-    
     particles.velocity *= scale_factor
     
     potential_energy = particles.potential_energy(G=nbody_system.G)
     target_energy = -0.5 | nbody_system.energy
     scale_factor = (potential_energy / target_energy)
-    
     particles.position *= scale_factor 
     
-
 
 def center_of_mass(particles):
     """
