@@ -1,0 +1,76 @@
+===============
+Obtaining AMUSE
+===============
+
+Download
+--------
+
+Go to the `downloads <http://www.amusecode.org/trac/wiki/releases>`_ page.
+
+Getting started
+---------------
+
+The first step in getting AMUSE to work is obtaining the AMUSE
+source code. We advice you to do this even before installation of the 
+prerequisite software (:ref:`prerequisite-label`). In the following installation
+instructions we assume that you will install AMUSE in a 
+directory ``/amuse``. 
+
+Releases
+--------
+
+For the official releases we provide tarballs and subversion 
+repository access (you need an account for the latter).
+
+Need an account?
+~~~~~~~~~~~~~~~~
+You can find us on google groups, http://groups.google.com/group/amusecode 
+or on IRC at the #amuse channel on irc.freenode.net. 
+
+Tarball
+~~~~~~~
+Obtain the tarball (e.g. amuse-2.4.tar.gz) from the download-site and unpack it 
+in the amuse directory using:
+
+.. code-block:: sh
+
+    > tar -xf amuse-2.4.tar.gz
+
+this will make an amuse sub-directory ``amuse-2.4``, which we will be referring to as
+the AMUSE root directory, e.g.:
+
+.. code-block:: sh
+    
+    ./amuse
+    └── amuse-2.4
+        ├── bin
+     	├── build.py
+    	├── configure
+    	├── cuda_self_help
+   	├── data
+    	├── doc
+    	├── lib
+    	├── Makefile
+    	├── MANIFEST.in
+    	├── README.txt
+    	├── sandbox
+    	├── setup.py
+    	├── slowtests
+    	├── src
+    	├── support
+    	├── test
+    	└── test_results
+
+From here proceed by reading the  :ref:`prerequisite-label` section.
+
+Bleeding edge
+-------------
+
+The current development version is available via subversion repository access 
+by issuing the following command:
+
+.. code-block:: sh
+
+    > svn co http://www.amusecode.org/svn/trunk amuse-svn
+
+This will make an AMUSE root directory with the name "amuse-svn".  

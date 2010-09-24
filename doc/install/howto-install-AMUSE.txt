@@ -1,6 +1,6 @@
-===================================
+==================================
 Installation of the AMUSE software
-===================================
+==================================
 
 Before installing AMUSE the prerequisite software must be downloaded and
 installed, see :ref:`prerequisite-label`.
@@ -9,7 +9,6 @@ In the current stage of development AMUSE will not be installed in
 the python ``site-packages`` library. Instead, all code is build 
 in the AMUSE source directories. With this setup we can easily edit
 the code and run it, without the need for an extra installation step.
-
 
 Configuring the code
 --------------------

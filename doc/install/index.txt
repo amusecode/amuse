@@ -5,6 +5,7 @@ Installation
    :maxdepth: 2
    :glob:
    
+   howto-obtain-AMUSE
    howto-install-prerequisites
    howto-install-AMUSE
    getting-started
