@@ -148,12 +148,14 @@ int set_time(double _t)
 
 //-----------------------------------------------------------------------------
 //  write_diagnostics  --  writes diagnostics on the output stream cout:
-//                         current time; number of integration steps so far;
-//                         kinetic, potential, and total energy; absolute and
-//                         relative energy errors since the start of the run.
-//                         If x_flag (x for eXtra data) is true, all internal
-//                         data are dumped for each particle (mass, position,
-//                         velocity, acceleration, and jerk).
+//                         current time; total mass; number of
+//                         integration steps so far; kinetic,
+//                         potential, and total energy; absolute and
+//                         relative energy errors since the start of
+//                         the run.  If x_flag (x for eXtra data) is
+//                         true, all internal data are dumped for each
+//                         particle (mass, position, velocity,
+//                         acceleration, and jerk).
 //
 //  Note: the kinetic energy is calculated here, while the potential
 //  energy is calculated in the function get_acc_jerk_pot_coll().
@@ -162,10 +164,13 @@ int set_time(double _t)
 void write_diagnostics(real epot, ostream& s = cout)
 {
     int n = ident.size();
+    real total_mass = 0;
     real ekin = 0;                        // kinetic energy
-    for (int i = 0; i < n ; i++)
+    for (int i = 0; i < n ; i++) {
+	total_mass += mass[i];
         for (int k = 0; k < NDIM ; k++)
             ekin += 0.5 * mass[i] * vel[i][k] * vel[i][k];
+    }
 
     real etot = ekin + epot;                // total energy
 
@@ -177,17 +182,19 @@ void write_diagnostics(real epot, ostream& s = cout)
       }
 
     s << "    internal diagnostics at time t = " << t
-         << " after " << nsteps << " steps"
-         << endl
-         << "        E_kin = " << ekin
-         << "  E_pot = " << epot
-         << "  E_tot = " << etot << endl;
+      << " after " << nsteps << " steps"
+      << endl
+      << "        total mass = " << total_mass
+      << "  initial energy E_init = " << einit << endl
+      << "        E_kin = " << ekin
+      << "  E_pot = " << epot
+      << "  E_tot = " << etot << endl;
     s << "        "
-         << "absolute energy error  E_tot - E_init = "
-         << etot - einit << endl;
+      << "absolute energy error  E_tot - E_init = "
+      << etot - einit << endl;
     s << "        "
-         << "relative energy error  (E_tot - E_init) / E_init = "
-         << (etot - einit) / einit << endl;
+      << "relative energy error  (E_tot - E_init) / E_init = "
+      << (etot - einit) / einit << endl;
 
     if (x_flag)
       {
@@ -195,7 +202,7 @@ void write_diagnostics(real epot, ostream& s = cout)
         for (int i = 0; i < n ; i++)
           {
             s << "        data for particle " << ident[i]
-                 << ": " << endl;
+	      << ": " << endl;
             s << "            "; s << mass[i] << endl;
             s << "            "; s << radius[i] << endl;
             s << "           ";
@@ -654,9 +661,9 @@ void compute_nn()
 
 int evolve_system(real t_end)
 {
-    real epot;                        // potential energy of the n-body system
+    real epot;                     // potential energy of the n-body system
     real coll_time;                // collision (close encounter) time scale
-    int nest_err;               // error of subprocedure
+    int nest_err = 0;              // error of subprocedure
     int must_run = 1;
 
     int is_number_of_steps_detection_enabled;
@@ -1387,7 +1394,7 @@ int get_center_of_mass_position(double *x, double *y, double *z)
         return 0;
     }
     int n = ident.size();
-    double M;
+    double M = 0;
 
     *x=0; *y=0; *z=0;
 
@@ -1413,7 +1420,7 @@ int get_center_of_mass_velocity(double *vx, double *vy,double *vz)
         return 0;
     }
     int n = ident.size();
-    double M;
+    double M = 0;
 
     *vx=0; *vy=0; *vz=0;
 
