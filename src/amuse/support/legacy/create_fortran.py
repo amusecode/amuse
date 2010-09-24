@@ -17,6 +17,8 @@ dtype_to_spec = DTypeToSpecDictionary({
                     'number_of_floats', 'real', 'MPI_REAL'),
     'string' : DTypeSpec('strings_in', 'strings_out',
                     'number_of_strings', 'integer', 'MPI_INTEGER'),
+    'bool' : DTypeSpec('bools_in', 'bools_out',
+                    'number_of_bools', 'logical', 'MPI_LOGICAL'),
 })
         
         
@@ -404,7 +406,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.n() + 'character (len=100000) :: input_characters'
         
         self.out.n() + 'integer mpiStatus(MPI_STATUS_SIZE,4)'
-        self.out.lf().lf() + 'integer header(' 
+        self.out.lf().lf() + 'integer header('
         self.out + self.length_of_the_header + ')'
         self.out.lf().lf() + 'integer :: tag_in, tag_out'
         self.out.lf().lf() + 'integer :: len_in, len_out'
@@ -413,22 +415,22 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.output_legacy_functions_declarations()
         
         for dtype_spec in self.dtype_to_spec.values():
-            self.out.lf() + dtype_spec.type 
-            self.out + ', DIMENSION(:), ALLOCATABLE :: ' 
-            self.out + dtype_spec.input_var_name 
+            self.out.lf() + dtype_spec.type
+            self.out + ', DIMENSION(:), ALLOCATABLE :: '
+            self.out + dtype_spec.input_var_name
             
-            self.out.lf() + dtype_spec.type 
-            self.out + ', DIMENSION(:), ALLOCATABLE :: ' 
-            self.out + dtype_spec.output_var_name 
+            self.out.lf() + dtype_spec.type
+            self.out + ', DIMENSION(:), ALLOCATABLE :: '
+            self.out + dtype_spec.output_var_name
             
-            self.out.lf() + 'integer ::' + ' ' 
-            self.out + dtype_spec.counter_name + '_out' 
+            self.out.lf() + 'integer ::' + ' '
+            self.out + dtype_spec.counter_name + '_out'
             self.out + ', ' + dtype_spec.counter_name + '_in'
             
         
         self.out.lf()
         self.output_allocate_arrays()
-        self.out.lf() 
+        self.out.lf()
         self.out.lf().lf() + 'call MPI_COMM_GET_PARENT(parent, ioerror)'
         self.out.lf()      + 'call MPI_COMM_RANK(parent, rank, ioerror)'
         self.out.lf().lf() + 'must_run_loop = 1'
@@ -447,7 +449,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
-            self.out.lf() + spec.counter_name + '_in' + ' =  ' 
+            self.out.lf() + spec.counter_name + '_in' + ' =  '
             self.out + 'header(' + (i+3) + ')'
         
         self.out.lf().lf() + 'tag_out = tag_in'
@@ -457,7 +459,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
-            self.out.lf() + spec.counter_name + '_out' + ' =  0' 
+            self.out.lf() + spec.counter_name + '_out' + ' =  0'
         self.out.lf()
         
         
@@ -468,41 +470,35 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.output_allocate_arrays()
         self.out.dedent()
         self.out.lf() + 'END IF'
-
+    
         
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
-            self.out.lf() + 'if (' + spec.counter_name + '_in' 
+            self.out.lf() + 'if (' + spec.counter_name + '_in'
             self.out + ' .gt. 0) then'
-
+    
             self.out.indent().lf() + 'call MPI_BCast('
-            self.out + spec.input_var_name + ', ' 
-            self.out + spec.counter_name + '_in' 
+            self.out + spec.input_var_name + ', '
+            self.out + spec.counter_name + '_in'
             self.out + ' * ' + 'len_in'
             self.out + ', &'
-
+    
             self.out.indent().n() + spec.mpi_type
             self.out + ', 0, parent,&'
             self.out.n() + 'ioError);'
             if dtype == 'string':
             
                 self.out.dedent()
-
-                #self.out.lf() + 'DEALLOCATE(characters)'
-                #self.out.lf()
-                #self.out + 'IF (' 
-                #self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1'
-                #self.out +') .gt. 100000) THEN'
-                #self.out
                 
                 self.out.lf() + 'call MPI_BCast('
-                self.out + 'characters' + ', ' 
-                self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1' 
+                self.out + 'characters' + ', '
+                self.out + spec.input_var_name + '('+spec.counter_name + '_in' + '* len_in' +') + 1'
                 self.out + ', &'
-
+    
                 self.out.indent().n() + 'MPI_CHARACTER'
                 self.out + ', 0, parent,&'
                 self.out.n() + 'ioError);'
+                
             self.out.dedent().dedent().lf()
             self.out + 'end if'
          
@@ -532,18 +528,17 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
             self.out + ' = ' + spec.counter_name + '_out'
         
         self.out.lf().lf() + 'call MPI_SEND(header, '
-        self.out + self.length_of_the_header 
+        self.out + self.length_of_the_header
         self.out + ', MPI_INTEGER,'
         self.out + ' 0, 999, &'
         self.out.indent().lf() + 'parent, ioerror);'
         self.out.dedent().lf()
-        
         for i, dtype in enumerate(dtypes):
             spec = self.dtype_to_spec[dtype]
             
             self.out.lf() + 'if (' + spec.counter_name + '_out'
             self.out + ' .gt. 0) then'
-            self.out.indent().lf() 
+            self.out.indent().lf()
             if dtype == 'string':
                 self.out.lf() + 'offset = 1'
                 self.out.lf() + 'DO i = 1, '+spec.counter_name + '_out * len_out' + ',1'
@@ -555,14 +550,15 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
                 self.out.lf() + 'offset = offset + 2'
                 self.out.dedent().lf() + 'END DO'
                 
-                self.out.lf() + 'call MPI_SEND(' 
+                self.out.lf() + 'call MPI_SEND('
                 self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
                 self.out + ' * len_out'
                 self.out + ', &'
                 self.out.indent().lf() + spec.mpi_type + ', 0, 999, &'
                 self.out.lf() + 'parent, ioerror)'
+                self.out.dedent()
                 
-                self.out.lf() + 'call MPI_SEND(' 
+                self.out.lf() + 'call MPI_SEND('
                 self.out + 'output_characters' + ', ' + 'offset -1'
                 self.out + ', &'
                 self.out.indent().lf() + 'MPI_CHARACTER' + ', 0, 999, &'
@@ -570,7 +566,8 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
                 
                 
             else:
-                self.out + 'call MPI_SEND(' 
+                self.out.lf()
+                self.out + 'call MPI_SEND('
                 self.out + spec.output_var_name + ', ' +  spec.counter_name + '_out'
                 self.out + ' * len_out'
                 self.out + ', &'

@@ -15,6 +15,8 @@ dtype_to_spec = DTypeToSpecDictionary({
                     'number_of_floats', 'float', 'MPI_FLOAT'),
     'string' : DTypeSpec('strings_in', 'strings_out',
                     'number_of_strings', 'int', 'MPI_INTEGER'),
+    'bool' : DTypeSpec('bools_in', 'bools_out',
+                    'number_of_bools', 'int', 'MPI_INTEGER'),
 })
 
 

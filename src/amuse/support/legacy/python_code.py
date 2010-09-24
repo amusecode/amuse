@@ -27,6 +27,7 @@ class PythonImplementation(object):
         'float64' : 'doubles',
         'float32' : 'floats',
         'string' : 'strings', 
+        'bool' : 'booleans',
     }
     
     def __init__(self, implementation, interface):

@@ -121,6 +121,18 @@ function echo_inout_array_with_result(inout, N)
     echo_inout_array_with_result = 11;
 end function
 
+
+function echo_logical(input, output)
+    implicit none
+    logical :: input, output
+    integer :: echo_logical
+    
+    output = input
+    print *, "INPUT=", input
+    
+    echo_logical = 0
+end function
+
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -221,6 +233,17 @@ class ForTestingInterface(LegacyInterface):
 
 
 
+
+    @legacy_function
+    def echo_logical():
+        function = LegacyFunctionSpecification()
+        function.addParameter('input', dtype='bool', direction=function.IN)
+        function.addParameter('output', dtype='bool', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+    
+    
 class TestInterface(TestWithMPI):
     
     def get_mpif90_name(self):
@@ -426,3 +449,15 @@ class TestInterface(TestWithMPI):
 
     
 
+
+    def test16(self):
+        instance = ForTestingInterface(self.exefile)
+        (output1, error1) = instance.echo_logical(True)
+        (output2, error2) = instance.echo_logical(False)
+        instance.stop()
+        self.assertEquals(error1, 0)
+        self.assertEquals(error2, 0)
+        self.assertTrue(output1)
+        self.assertFalse(output2)
+    
+    

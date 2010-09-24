@@ -75,9 +75,7 @@ class TestInterface(TestWithMPI):
     def test5(self):
         print "Testing basic operations (new_particle, evolve etc.)..."
         #code/library_v2.f:602
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
         instance = EVtwinInterface()
-        #channel.MessageChannel.DEBUGGER = None
         
         error = instance.set_ev_path(instance.get_data_directory())
         self.assertEquals(0, error)      
@@ -366,7 +364,7 @@ class TestInterfaceBinding(TestWithMPI):
             star.radius = 0.0 | units.RSun
 
 #       Initialize stellar evolution code
-        instance = EVtwin()
+        instance = EVtwin() #debugger="xterm")
         instance.initialize_module_with_default_parameters() 
         if instance.get_maximum_number_of_stars() < number_of_stars:
             instance.set_maximum_number_of_stars(number_of_stars)

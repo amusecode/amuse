@@ -37,6 +37,7 @@ def _typecode_to_datatype(typecode):
         'i':'int32',
         'f':'float32',
         's':'string',
+        'b':'bool',
     }
     if typecode in mapping:
         return mapping[typecode]
@@ -80,10 +81,10 @@ class LegacyCall(object):
             logging.getLogger("legacy").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
         
         try:
-            (doubles, ints, floats, strings) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
+            (doubles, ints, floats, strings, booleans) = self.interface.channel.recv_message(self.specification.id, handle_as_array)
         except Exception, ex:
             raise exceptions.LegacyException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
-        return self.converted_results(doubles, ints, floats, strings, handle_as_array)
+        return self.converted_results(doubles, ints, floats, strings, booleans, handle_as_array)
     
     def async(self, *arguments_list, **keyword_arguments):
         keyword_arguments_for_the_mpi_channel = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)
@@ -96,10 +97,10 @@ class LegacyCall(object):
         
         def handle_result(function):
             try:
-                (doubles, ints, floats, strings) = function()
+                (doubles, ints, floats, strings, booleans) = function()
             except Exception, ex:
                 raise exceptions.LegacyException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
-            return self.converted_results(doubles, ints, floats, strings, handle_as_array)
+            return self.converted_results(doubles, ints, floats, strings, booleans, handle_as_array)
             
         request.add_result_handler(handle_result)
         return request
@@ -117,7 +118,7 @@ class LegacyCall(object):
     """
     Convert results from an MPI message to a return value.
     """
-    def converted_results(self, doubles, ints, floats, strings, must_handle_as_array):
+    def converted_results(self, doubles, ints, floats, strings, booleans, must_handle_as_array):
         
         number_of_outputs = len(self.specification.output_parameters)
         
@@ -126,13 +127,16 @@ class LegacyCall(object):
                 return None
                 
             if self.specification.result_type == 'int32':
-                return ints[0]       
+                return ints[0]
             if self.specification.result_type == 'float64':
-                return doubles[0] 
+                return doubles[0]
             if self.specification.result_type == 'float32':
-                return floats[0] 
+                return floats[0]
             if self.specification.result_type == 'string':
-                return strings[0] 
+                return strings[0]
+            if self.specification.result_type == 'bool':
+                return booleans[0]
+                
         
         if number_of_outputs == 1 \
             and self.specification.result_type is None:
@@ -145,6 +149,8 @@ class LegacyCall(object):
                     return floats
                 if len(strings) == 1:
                     return strings
+                if len(booleans) == 1:
+                    return booleans
             else:
                 if len(ints) == 1:
                     return ints[0]
@@ -154,6 +160,8 @@ class LegacyCall(object):
                     return floats[0]
                 if len(strings) == 1:
                     return strings[0]
+                if len(booleans) == 1:
+                    return booleans[0]
                 
             
         result = OrderedDictionary()
@@ -162,6 +170,7 @@ class LegacyCall(object):
             'int32' : list(reversed(ints)),
             'float32' : list(reversed(floats)),
             'string' : list(reversed(strings)),
+            'bool' : list(reversed(booleans)),
         }
         
         if not self.specification.result_type is None:
@@ -205,12 +214,13 @@ class LegacyCall(object):
                 
         if input_parameters_seen:
             raise exceptions.LegacyException("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
-            
+         
         dtype_to_keyword = {
             'float64' : 'doubles_in',
             'float32' : 'floats_in',
             'int32'  : 'ints_in',
             'string'  : 'chars_in',
+            'bool'  : 'bools_in',
         }
         call_keyword_arguments = {}
         for dtype, values in dtype_to_values.iteritems():

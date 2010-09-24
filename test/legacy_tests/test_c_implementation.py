@@ -89,6 +89,13 @@ int echo_inout_array_with_result(int * inout, int len) {
     return 11;
 }
 
+
+int echo_logical(int in, int * out) {
+    *out = in;
+    return 0;
+}
+
+
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -205,6 +212,17 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'int32'
         function.must_handle_array = True
         return function   
+    
+    
+
+    @legacy_function
+    def echo_logical():
+        function = LegacyFunctionSpecification()
+        function.addParameter('input', dtype='bool', direction=function.IN)
+        function.addParameter('output', dtype='bool', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
     
     
 class ForTesting(CodeInterface):
@@ -491,5 +509,14 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error[1], 11)
         self.assertEquals(error[2], 11)
 
+    
+    
+
+    def test18(self):
+        instance = ForTestingInterface(self.exefile)
+        out, error = instance.echo_logical([True, False, True])
+        instance.stop()
+        self.assertEquals(out, [True, False, True])
+        self.assertEquals(error, 0)
     
     

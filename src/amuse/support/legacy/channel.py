@@ -87,9 +87,10 @@ class Message(object):
         self.doubles = []
         self.floats = []
         self.strings = []
+        self.booleans = []
         
     def recieve(self, comm):
-        header = numpy.zeros(6,  dtype='i')
+        header = numpy.zeros(7,  dtype='i')
         
         self.mpi_recieve(comm, [header, MPI.INT])
     
@@ -103,14 +104,16 @@ class Message(object):
         number_of_ints = header[3]
         number_of_floats = header[4]
         number_of_strings = header[5]
+        number_of_booleans = header[6]
         
         self.doubles = self.recieve_doubles(comm, self.length, number_of_doubles)
         self.ints = self.recieve_ints(comm, self.length, number_of_ints)
         self.floats = self.recieve_floats(comm, self.length, number_of_floats)
         self.strings = self.recieve_strings(comm, self.length, number_of_strings)
+        self.booleans = self.recieve_booleans(comm, self.length, number_of_booleans)
         
     def nonblocking_recieve(self, comm):
-        header = numpy.zeros(6,  dtype='i')
+        header = numpy.zeros(7,  dtype='i')
         
         request = self.mpi_nonblocking_recieve(comm, [header, MPI.INT])
         
@@ -139,6 +142,15 @@ class Message(object):
             result = numpy.empty(total * length,  dtype='f')
             self.mpi_recieve(comm,[result, MPI.FLOAT])
             return result
+        else:
+            return []
+            
+    
+    def recieve_booleans(self, comm, length, total):
+        if total > 0:
+            result = numpy.empty(total * length,  dtype='int32')
+            self.mpi_recieve(comm,[result, MPI.LOGICAL])
+            return result == 1
         else:
             return []
     
@@ -171,7 +183,8 @@ class Message(object):
             len(self.doubles) / self.length, 
             len(self.ints) / self.length, 
             len(self.floats) / self.length, 
-            len(self.strings) / self.length
+            len(self.strings) / self.length,
+            len(self.booleans) / self.length,
         ], dtype='i')
         
         self.mpi_send(comm, [header, MPI.INT])
@@ -181,6 +194,7 @@ class Message(object):
         self.send_ints(comm, self.ints)
         self.send_floats(comm, self.floats)
         self.send_strings(comm, self.strings)
+        self.send_booleans(comm, self.booleans)
         
     
     def send_doubles(self, comm, array):
@@ -212,6 +226,11 @@ class Message(object):
           
         chars = numpy.array(bytes, dtype=numpy.uint8)
         self.mpi_send(comm, [chars, MPI.CHARACTER])
+        
+    def send_booleans(self, comm, array):
+        if len(array) > 0:
+            buffer = numpy.array(array,  dtype='int32')
+            self.mpi_send(comm, [buffer, MPI.LOGICAL])
             
             
     
@@ -260,7 +279,6 @@ def pack_array(array, length,  dtype):
         return result
     else:
         total_length = length * len(array)
-        
         if dtype in MAPPING:
             result = MAPPING.dtype
             if len(result) != total_length:
@@ -348,7 +366,7 @@ class MessageChannel(OptionalAttributes):
                 found = True
         return full_name_of_the_worker
 
-    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], bools_in=[], length = 1):
         pass
         
     def recv_message(self, tag, handle_as_array = False):
@@ -634,7 +652,7 @@ class MpiChannel(MessageChannel):
                 
             self.intercomm = None
     
-    def determine_length_from_data(self, doubles_in, ints_in, floats_in, chars_in):
+    def determine_length_from_data(self, *arguments):
         def get_length(x):
             if x:
                 try:
@@ -643,12 +661,12 @@ class MpiChannel(MessageChannel):
                 except:
                     return -1
                
-        lengths = map(get_length, (doubles_in, ints_in, floats_in, chars_in))
+        lengths = map(get_length, arguments)
         
         return max(1, max(lengths))
         
         
-    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
+    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], bools_in = [], length = 1):
     
         
         if self.is_inuse():
@@ -656,15 +674,16 @@ class MpiChannel(MessageChannel):
         if self.intercomm is None:
             raise exceptions.LegacyException("You've tried to send a message to a code that is not running")
         
-        length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in)
+        length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in, bools_in)
         
         if length > self.max_message_length:
-            self.split_message(tag, id, doubles_in, ints_in, floats_in, chars_in, length)
+            self.split_message(tag, id, doubles_in, ints_in, floats_in, chars_in, bools_in, length)
             return
         message = ServerSideMessage(tag,length)
         message.doubles = pack_array( doubles_in, message.length, 'float64')
         message.floats = pack_array(floats_in, message.length, 'float32')
         message.ints = pack_array(ints_in, message.length, 'int32')
+        message.booleans = pack_array(bools_in, message.length, 'bool')
         
         if message.length > 1:
             message.strings = pack_array(chars_in, message.length, 'string')
@@ -674,11 +693,12 @@ class MpiChannel(MessageChannel):
         message.send(self.intercomm)
         self._is_inuse = True
         
-    def split_message(self, tag, id, doubles_in, ints_in, floats_in, chars_in, length):
+    def split_message(self, tag, id, doubles_in, ints_in, floats_in, chars_in, bools_in, length):
         doubles_result=[]
         ints_result=[]
         floats_result=[]
         strings_result=[]
+        bools_result=[]
         
         def append_results(arr, values, datatype):
             for j, subarr in enumerate(values):
@@ -697,14 +717,14 @@ class MpiChannel(MessageChannel):
         
         for i in range(1+(length-1)/self.max_message_length):
             (doubles, ints, floats, chars) = map(split_input_array,[doubles_in, ints_in, floats_in, chars_in])
-            self.send_message(tag, id, doubles, ints, floats, chars, min(length,self.max_message_length))
+            self.send_message(tag, id, doubles, ints, floats, chars, bools_in, min(length,self.max_message_length))
             next_part = self.recv_message(id, True)
-            map(append_results,(doubles_result,ints_result,floats_result,strings_result),next_part,
-                ('float64','int32','float32','string'))
+            map(append_results,(doubles_result,ints_result,floats_result,strings_result, bools_result),next_part,
+                ('float64','int32','float32','string', 'bool'))
             length -= self.max_message_length
         
         self._communicated_splitted_message = True
-        self._merged_results_splitted_message = (doubles_result,ints_result,floats_result,strings_result)
+        self._merged_results_splitted_message = (doubles_result,ints_result,floats_result,strings_result, bools_result)
     
     def recv_message(self, tag, handle_as_array):
         
@@ -736,13 +756,15 @@ class MpiChannel(MessageChannel):
             floats_result = unpack_array(message.floats, message.length, 'float32')
             ints_result = unpack_array(message.ints, message.length, 'int32')
             strings_result = unpack_array(message.strings, message.length, 'string')
+            boolean_result = unpack_array(message.booleans, message.length, 'bool')
         else:
             doubles_result = message.doubles
             floats_result = message.floats
             ints_result = message.ints
             strings_result = message.strings
+            boolean_result = message.booleans
         
-        return (doubles_result, ints_result, floats_result, strings_result)
+        return (doubles_result, ints_result, floats_result, strings_result, boolean_result)
         
     def nonblocking_recv_message(self, tag, handle_as_array):
         request = ServerSideMessage().nonblocking_recieve(self.intercomm)
@@ -760,13 +782,15 @@ class MpiChannel(MessageChannel):
                 floats_result = unpack_array(message.floats, message.length, 'float32')
                 ints_result = unpack_array(message.ints, message.length, 'int32')
                 strings_result = unpack_array(message.strings, message.length, 'string')
+                boolean_result = unpack_array(message.booleans, message.length, 'bool')
             else:
                 doubles_result = message.doubles
                 floats_result = message.floats
                 ints_result = message.ints
                 strings_result = message.strings
+                boolean_result = message.booleans
             
-            return (doubles_result, ints_result, floats_result, strings_result)
+            return (doubles_result, ints_result, floats_result, strings_result, boolean_result)
     
         request.add_result_handler(handle_result)
         
@@ -890,8 +914,8 @@ m.run_mpi_channel('{2}')"""
         finally:
             socket.close()
          
-    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], length = 1):
-        self._send(self.client_socket, ('send_message',(tag, id, doubles_in, ints_in, floats_in, chars_in, length),))
+    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], bools_in=[], length = 1):
+        self._send(self.client_socket, ('send_message',(tag, id, doubles_in, ints_in, floats_in, chars_in, bools_in, length),))
         result = self._recv(self.client_socket)
         return result
             
