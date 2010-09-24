@@ -153,3 +153,22 @@ class TestAttributeError(amusetest.TestCase):
             HDFstorage.close()
             del HDFstorage
     
+    def test7(self):
+        print "Test7: Assigning a list of quantities to a set attribute should work."
+        particles = Particles(10)
+        
+        # List of scalar quantities:
+        masses = [i | nbody_system.mass for i in range(10)]
+        particles.mass = masses
+        self.assertEqual(particles.mass, range(10) | nbody_system.mass)
+        
+        # List of vector quantities:
+        positions = [(i, 2*i, 3*i) | units.m for i in range(10)]
+        particles.position = positions
+        self.assertEqual(particles.position, [(i, 2*i, 3*i) for i in range(10)] | units.m)
+        
+        # Even lists of tuples of quantities work:
+        positions = [(i | units.m, i | units.cm, i | units.km) for i in range(10)]
+        particles.position = positions
+        self.assertEqual(particles.position, [(i, 0.01*i, 1000*i) for i in range(10)] | units.m)
+    
