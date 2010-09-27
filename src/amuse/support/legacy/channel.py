@@ -16,6 +16,7 @@ from subprocess import Popen, PIPE
 from amuse.support.options import OptionalAttributes, option
 from amuse.support.core import late
 from amuse.support import exceptions
+#from amuse.support.legacy import datatypes
 
 class ASyncRequest(object):
         
@@ -88,6 +89,7 @@ class Message(object):
         self.floats = []
         self.strings = []
         self.booleans = []
+        
         
     def recieve(self, comm):
         header = numpy.zeros(7,  dtype='i')
@@ -366,7 +368,7 @@ class MessageChannel(OptionalAttributes):
                 found = True
         return full_name_of_the_worker
 
-    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], bools_in=[], length = 1):
+    def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
         pass
         
     def recv_message(self, tag, handle_as_array = False):
@@ -652,79 +654,100 @@ class MpiChannel(MessageChannel):
                 
             self.intercomm = None
     
-    def determine_length_from_data(self, *arguments):
+    def determine_length_from_data(self, dtype_to_arguments):
         def get_length(x):
             if x:
                 try:
                     if not isinstance(x[0], str):
                         return len(x[0])
                 except:
-                    return -1
+                    return 1
                
-        lengths = map(get_length, arguments)
+               
         
+        lengths = map(get_length, dtype_to_arguments.values())
+        if len(lengths) == 0:
+            return 1
+            
         return max(1, max(lengths))
         
         
-    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], bools_in = [], length = 1):
-    
-        
+    def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
+
         if self.is_inuse():
             raise exceptions.LegacyException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.intercomm is None:
             raise exceptions.LegacyException("You've tried to send a message to a code that is not running")
         
-        length = self.determine_length_from_data(doubles_in, ints_in, floats_in, chars_in, bools_in)
+        length = self.determine_length_from_data(dtype_to_arguments)
         
         if length > self.max_message_length:
-            self.split_message(tag, id, doubles_in, ints_in, floats_in, chars_in, bools_in, length)
+            self.split_message(tag, id, dtype_to_arguments, length)
             return
-        message = ServerSideMessage(tag,length)
-        message.doubles = pack_array( doubles_in, message.length, 'float64')
-        message.floats = pack_array(floats_in, message.length, 'float32')
-        message.ints = pack_array(ints_in, message.length, 'int32')
-        message.booleans = pack_array(bools_in, message.length, 'bool')
+            
+        message = ServerSideMessage(tag, length)
+        for dtype, attrname in (
+                ('float64', 'doubles'),
+                ('float32', 'floats'),
+                ('int32', 'ints'),
+                ('bool', 'booleans'),
+            ):
+                if dtype in dtype_to_arguments:
+                    array = pack_array( dtype_to_arguments[dtype], message.length, dtype)
+                    setattr(message, attrname, array)
         
-        if message.length > 1:
-            message.strings = pack_array(chars_in, message.length, 'string')
-        else:
-            message.strings = chars_in
+        if 'string' in dtype_to_arguments:
+            if message.length > 1:
+                message.strings = pack_array( dtype_to_arguments['string'], message.length, 'string')
+            else:
+                message.strings = dtype_to_arguments['string']
     
         message.send(self.intercomm)
         self._is_inuse = True
         
-    def split_message(self, tag, id, doubles_in, ints_in, floats_in, chars_in, bools_in, length):
-        doubles_result=[]
-        ints_result=[]
-        floats_result=[]
-        strings_result=[]
-        bools_result=[]
+    def split_message(self, tag, id, dtype_to_arguments, length):
         
-        def append_results(arr, values, datatype):
-            for j, subarr in enumerate(values):
-                if datatype == 'string':
-                    if not i: arr.append(subarr)
-                    else: arr[j].extend(subarr)
-                else:
-                    if not i: arr.append(numpy.empty([length], dtype=datatype))
-                    arr[j][i*self.max_message_length:(i+1)*self.max_message_length]=subarr
-        
-        def split_input_array(arr_in):
+        def split_input_array(i, arr_in):
             if length == 1:
                 return [tmp[i*self.max_message_length] for tmp in arr_in]
             else:
                 return [tmp[i*self.max_message_length:(i+1)*self.max_message_length] for tmp in arr_in]
         
+        dtype_to_result = {}
+        
         for i in range(1+(length-1)/self.max_message_length):
-            (doubles, ints, floats, chars) = map(split_input_array,[doubles_in, ints_in, floats_in, chars_in])
-            self.send_message(tag, id, doubles, ints, floats, chars, bools_in, min(length,self.max_message_length))
-            next_part = self.recv_message(id, True)
-            map(append_results,(doubles_result,ints_result,floats_result,strings_result, bools_result),next_part,
-                ('float64','int32','float32','string', 'bool'))
+            split_dtype_to_argument = {}
+            for key, value in dtype_to_arguments.iteritems():
+                split_dtype_to_argument[key] = split_input_array(i, value)
+                
+            self.send_message(
+                tag, 
+                id, 
+                split_dtype_to_argument, 
+                min(length,self.max_message_length)
+            )
+            
+            partial_dtype_to_result = self.recv_message(id, True)
+            for datatype, value in partial_dtype_to_result.iteritems():
+                if not datatype in dtype_to_result:
+                    dtype_to_result[datatype] = [] 
+                    for j, element in enumerate(value):
+                        if datatype == 'string':
+                            dtype_to_result[datatype].append([])
+                        else:
+                            dtype_to_result[datatype].append(numpy.zeros((length,), dtype=datatype))
+                            
+                for j, element in enumerate(value):
+                    if datatype == 'string':
+                        dtype_to_result[datatype][j].extend(element)
+                    else:
+                        dtype_to_result[datatype][j][i*self.max_message_length:(i+1)*self.max_message_length] = element
+                
+            #print partial_dtype_to_result
             length -= self.max_message_length
         
         self._communicated_splitted_message = True
-        self._merged_results_splitted_message = (doubles_result,ints_result,floats_result,strings_result, bools_result)
+        self._merged_results_splitted_message = dtype_to_result
     
     def recv_message(self, tag, handle_as_array):
         
@@ -748,23 +771,25 @@ class MpiChannel(MessageChannel):
         elif message.tag == -2:
             self.stop()
             raise exceptions.LegacyException("Fatal error in code, code has exited")
-                
-            
-            
-        if message.length > 1 or handle_as_array:
-            doubles_result = unpack_array(message.doubles, message.length, 'float64')
-            floats_result = unpack_array(message.floats, message.length, 'float32')
-            ints_result = unpack_array(message.ints, message.length, 'int32')
-            strings_result = unpack_array(message.strings, message.length, 'string')
-            boolean_result = unpack_array(message.booleans, message.length, 'bool')
-        else:
-            doubles_result = message.doubles
-            floats_result = message.floats
-            ints_result = message.ints
-            strings_result = message.strings
-            boolean_result = message.booleans
         
-        return (doubles_result, ints_result, floats_result, strings_result, boolean_result)
+        return self.convert_message_to_result(message, handle_as_array)
+        
+    def convert_message_to_result(self, message, handle_as_array):
+        dtype_to_result = {}
+        for dtype, attrname in (
+                ('float64', 'doubles'),
+                ('float32', 'floats'),
+                ('int32', 'ints'),
+                ('bool', 'booleans'),
+                ('string', 'strings'),
+            ):
+                result = getattr(message, attrname)
+                if message.length > 1 or handle_as_array:
+                    dtype_to_result[dtype] = unpack_array(result , message.length, dtype)
+                else:
+                    dtype_to_result[dtype] = result
+                    
+        return dtype_to_result
         
     def nonblocking_recv_message(self, tag, handle_as_array):
         request = ServerSideMessage().nonblocking_recieve(self.intercomm)
@@ -777,20 +802,7 @@ class MpiChannel(MessageChannel):
             if message.tag < 0:
                 raise exceptions.LegacyException("Not a valid message, message is not understood by legacy code")
                 
-            if message.length > 1 or handle_as_array:
-                doubles_result = unpack_array(message.doubles, message.length, 'float64')
-                floats_result = unpack_array(message.floats, message.length, 'float32')
-                ints_result = unpack_array(message.ints, message.length, 'int32')
-                strings_result = unpack_array(message.strings, message.length, 'string')
-                boolean_result = unpack_array(message.booleans, message.length, 'bool')
-            else:
-                doubles_result = message.doubles
-                floats_result = message.floats
-                ints_result = message.ints
-                strings_result = message.strings
-                boolean_result = message.booleans
-            
-            return (doubles_result, ints_result, floats_result, strings_result, boolean_result)
+            return self.convert_message_to_result(message, handle_as_array)
     
         request.add_result_handler(handle_result)
         
@@ -914,8 +926,8 @@ m.run_mpi_channel('{2}')"""
         finally:
             socket.close()
          
-    def send_message(self, tag, id=0, doubles_in=[], ints_in=[], floats_in=[], chars_in=[], bools_in=[], length = 1):
-        self._send(self.client_socket, ('send_message',(tag, id, doubles_in, ints_in, floats_in, chars_in, bools_in, length),))
+    def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
+        self._send(self.client_socket, ('send_message',(tag, id, dtype_to_arguments, length),))
         result = self._recv(self.client_socket)
         return result
             
