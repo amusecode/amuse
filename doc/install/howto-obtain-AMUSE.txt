@@ -12,8 +12,8 @@ Getting started
 
 The first step in getting AMUSE to work is obtaining the AMUSE
 source code. We advice you to do this even before installation of the 
-prerequisite software (:ref:`prerequisite-label`). In the following installation
-instructions we assume that you will install AMUSE in a 
+prerequisite software (:ref:`prerequisite-label`). In the following 
+installation instructions we assume that you will install AMUSE in a 
 directory ``/amuse``. 
 
 Releases
