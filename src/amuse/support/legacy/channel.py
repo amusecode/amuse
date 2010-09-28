@@ -275,7 +275,7 @@ MAPPING = {}
 
 def pack_array(array, length,  dtype):
     if dtype == 'string':
-        if length == 1:
+        if length == 1 and len(array) > 0 and isinstance(array[0], str):
             return array
         else:
             result = []
