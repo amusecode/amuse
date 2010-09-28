@@ -77,6 +77,14 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         """
         return False
     
+    @base.format_option
+    def is_initial_conditions_format(self):
+        """Set to true if the file contains
+        initial conditions. An initial conditions
+        gadget file contains less data.
+        """
+        return True
+        
     @late
     def header_size(self):
         return struct.calcsize(self.header_format)
@@ -145,18 +153,28 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         self.positions = self.read_fortran_block_float_vectors(file)
         self.velocities = self.read_fortran_block_float_vectors(file)
         self.ids = self.read_fortran_block_ints(file)
-        
+        print self.total_number_of_particles_with_vairable_masses
         if self.total_number_of_particles_with_vairable_masses > 0:
             self.masses = self.read_fortran_block_floats(file)
         else:
             self.masses = None
-            
+        print len(self.masses)
         if self.number_of_gas_particles > 0:
             self.u = self.read_fortran_block_floats(file)
-            #self.density = self.read_fortran_block_floats(file)
-            self.density  = None
-            #self.hsml = self.read_fortran_block_floats(file)
+        
+        if self.is_initial_conditions_format:
+            self.density = None
+            self.u = None
             self.hsml = None
+            self.pot = None
+            self.acc = None
+            self.da_dt = None
+            self.dt = None
+            return
+        
+        if self.number_of_gas_particles > 0:
+            self.density = self.read_fortran_block_floats(file)
+            self.hsml = self.read_fortran_block_floats(file)
         else:
             self.u = None
             self.density  = None
@@ -240,6 +258,8 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
     def read_fortran_block(self, file):
         format = self.endianness+'I'
         bytes = file.read(4)
+        if not bytes:
+            return None
         length_of_block = struct.unpack(format, bytes)[0]
         result = file.read(length_of_block)
         bytes = file.read(4)
