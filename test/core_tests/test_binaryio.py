@@ -1,5 +1,6 @@
 from amuse.support.io import gadget
 from amuse.support.io import nemobin
+from amuse.support import io
 from amuse.support.units import nbody_system
 from amuse.test import amusetest
 from StringIO import StringIO
@@ -49,18 +50,23 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(x.header_struct.FlagAge, 0)
         self.assertEquals(x.header_struct.HubbleParam, 0)
         
-    def xtest2(self):
-        # turned of as it needs a large file, will make a 
-        # small file for testing
-        header = ''.join(self.header_parts)
+    def test2(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'gadget_snapshot')
         x = gadget.GadgetFileFormatProcessor()
-        file = open('/data2/vanelteren/develop/python/wolk/tureluur/gadget_snapshot','rb')
-        x.load_header(file)
-        positions = x.read_fortran_block_float_vectors(file)
+        file = open(filename,'rb')
+        result = x.load_file(file)
         file.close()
-        print x.total_number_of_particles 
-        print positions
-        self.assertEquals(x.total_number_of_particles, len(positions))
+        self.assertEquals(len(result[0]), 1000)
+        self.assertEquals(len(result[1]), 10000)
+        
+    def test3(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'gadget_snapshot')
+        x = gadget.GadgetFileFormatProcessor()
+        result = io.read_set_from_file(filename, format='gadget')
+        self.assertEquals(len(result[0]), 1000)
+        self.assertEquals(len(result[1]), 10000)
         
 
 class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):

@@ -275,10 +275,13 @@ MAPPING = {}
 
 def pack_array(array, length,  dtype):
     if dtype == 'string':
-        result = []
-        for x in array:
-            result.extend(x)
-        return result
+        if length == 1:
+            return array
+        else:
+            result = []
+            for x in array:
+                result.extend(x)
+            return result
     else:
         total_length = length * len(array)
         if dtype in MAPPING:
@@ -690,18 +693,13 @@ class MpiChannel(MessageChannel):
                 ('float64', 'doubles'),
                 ('float32', 'floats'),
                 ('int32', 'ints'),
+                ('string', 'strings'),
                 ('bool', 'booleans'),
             ):
                 if dtype in dtype_to_arguments:
                     array = pack_array( dtype_to_arguments[dtype], message.length, dtype)
                     setattr(message, attrname, array)
         
-        if 'string' in dtype_to_arguments:
-            if message.length > 1:
-                message.strings = pack_array( dtype_to_arguments['string'], message.length, 'string')
-            else:
-                message.strings = dtype_to_arguments['string']
-    
         message.send(self.intercomm)
         self._is_inuse = True
         

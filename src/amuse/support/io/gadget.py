@@ -122,7 +122,7 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         return result
     @late
     def number_of_gas_particles(self):
-        return self.header_struct.NPart[self.GAS]
+        return self.header_struct.Npart[self.GAS]
         
     def collect_values(self, values):
         offset = 0
@@ -153,8 +153,10 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
             
         if self.number_of_gas_particles > 0:
             self.u = self.read_fortran_block_floats(file)
-            self.density = self.read_fortran_block_floats(file)
-            self.hsml = self.read_fortran_block_floats(file)
+            #self.density = self.read_fortran_block_floats(file)
+            self.density  = None
+            #self.hsml = self.read_fortran_block_floats(file)
+            self.hsml = None
         else:
             self.u = None
             self.density  = None
@@ -188,23 +190,28 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
             offset += x
             
         sets = [core.Particles(len(x), keys=x) for x in ids_per_set]
-        
+        offset = 0
         for x in sets:
             length = len(x)
-            x.position = nbody_system.length.new_quatity(self.positions[offset:offset+length])
-            x.velocity = nbody_system.speed.new_quatity(self.velocities[offset:offset+length])
+            if length == 0:
+                continue
+            print offset,offset+length, self.positions[offset:(offset+length)]
+            x.position = nbody_system.length.new_quantity(self.positions[offset:offset+length])
+            x.velocity = nbody_system.speed.new_quantity(self.velocities[offset:offset+length])
             if not self.pot is None:
-                x.potential_energy = nbody_system.energy.new_quatity(self.pot[offset:offset+length])
+                x.potential_energy = nbody_system.energy.new_quantity(self.pot[offset:offset+length])
             if not self.acc is None:
-                x.acceleration = nbody_system.acceleration.new_quatity(self.acc[offset:offset+length])
+                x.acceleration = nbody_system.acceleration.new_quantity(self.acc[offset:offset+length])
             if not self.dt is None:
-                x.timestep = nbody_system.time.new_quatity(self.dt[offset:offset+length])
+                x.timestep = nbody_system.time.new_quantity(self.dt[offset:offset+length])
             offset += length
         
         offset = 0
         for x, mass in zip(sets, self.header_struct.Massarr):
+            length = len(x)
+            if length == 0:
+                continue
             if mass == 0.0:
-                length = len(x)
                 x.mass = nbody_system.mass.new_quantity(self.masses[offset:offset+length])
                 offset += length
             else:
@@ -214,9 +221,11 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
             gas_set = sets[self.GAS]
             unit = nbody_system.length / nbody_system.time ** 2
             gas_set.internal_energy = unit.new_quantity(self.u)
-            unit = self.nbody_system.mass / self.nbody_system.length ** 3
-            gas_set.rho = unit.new_quantity(self.density)
-            gas_set.smoothing_length = nbody_system.length.new_quantity(self.hsml)
+            unit = nbody_system.mass / nbody_system.length ** 3
+            if not self.density is None:
+                gas_set.rho = unit.new_quantity(self.density)
+            if not self.hsml is None:
+                gas_set.smoothing_length = nbody_system.length.new_quantity(self.hsml)
             
         
         return sets
@@ -225,7 +234,7 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         
     def load_file(self, file):
         self.load_header(file)
-        self.load_body()
+        self.load_body(file)
         return self.new_sets_from_arrays()
         
     def read_fortran_block(self, file):
