@@ -68,6 +68,14 @@ class GadgetFileFormatProcessorTests(amusetest.TestCase):
         self.assertEquals(len(result[0]), 1000)
         self.assertEquals(len(result[1]), 10000)
         
+    def test4(self):
+        directory_name = os.path.dirname(__file__)
+        filename = os.path.join(directory_name, 'gassphere_littleendian.dat')
+        x = gadget.GadgetFileFormatProcessor()
+        result = io.read_set_from_file(filename, format='gadget')
+        self.assertEquals(len(result[0]), 1472)
+        self.assertEquals(len(result[1]), 0)
+        
 
 class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
     
@@ -102,7 +110,6 @@ class NemoBinaryFileFormatProcessorTests(amusetest.TestCase):
         nemofile = nemobin.NemoBinaryFile(file)
         data = nemofile.read()
         file.close()
-        print data
         self.assertEquals(len(data), 3)
         tags = list(data.keys())
         self.assertEquals(tags[0], 'Headline')
