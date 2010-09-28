@@ -20,6 +20,7 @@ These are the packages AMUSE needs:
 * docutils (version >= 0.6)
 * FFTW (version >= 3.0)
 * GSL
+* CMake (version >= 2.4)
 
 In the first two sections (compilers_ and installation_scripts_) we explain how to use the two
 installation scripts to install AMUSE. In the last section (manual_) 
@@ -281,6 +282,23 @@ To check for the availability of GSL on your system, you can use ``gsl-config``:
 
 You can download GSL from http://www.gnu.org/software/gsl/. 
 
+CMake
+-------
+CMake is a cross-platform, open-source build system. CMake is used to control 
+the software compilation process using simple platform and compiler independent
+configuration files. CMake generates native makefiles and workspaces that can 
+be used in the compiler environment of your choice.
+CMake is used to build EVTwin. 
+To check whether you have CMake installed on your system:
+
+.. code-block:: sh
+
+   > cmake --version
+   cmake version 2.8.2
+
+
+You can download CMake from http://www.cmake.org/cmake/resources/software.html. 
+
 
 Installing on Ubuntu 9.04
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -345,6 +363,12 @@ GSL
 On Ubuntu, GSL can be installed with::
 
     > sudo apt-get install libgsl0 libgsl0-dev
+
+CMake
+-------
+CMake is used to build EVTwin. On Ubuntu, CMake can be installed with::
+
+    > sudo apt-get install cmake
 
 Python packages in Ubuntu
 -------------------------
@@ -445,6 +469,12 @@ GSL
 On Fedora, GSL can be installed with::
 
     > sudo yum install gsl gsl-devel
+
+CMake
+-------
+CMake is used to build EVTwin. On Fedora, CMake can be installed with::
+
+    > sudo yum install cmake
 
 Python packages in Fedora
 -------------------------
@@ -583,6 +613,12 @@ On OpenSuse (10.2 and newer), GSL can be installed with::
 
     > sudo zypper install gsl gsl-devel
 
+CMake
+-------
+CMake is used to build EVTwin. On OpenSuse, CMake can be installed with::
+
+    > sudo zypper install cmake
+
 Python packages in Fedora
 -------------------------
 Fedora comes with python packages for numpy. You also need 
@@ -700,6 +736,12 @@ GSL
 GSL is used to build Gadget2, GSL can be installed with::
 
     > sudo port install gsl +gcc44
+
+CMake
+---
+CMake is used to build EVTwin, CMake can be installed with::
+
+    > sudo port install cmake
 
 Python packages
 ---------------

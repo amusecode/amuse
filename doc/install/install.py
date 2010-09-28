@@ -112,6 +112,14 @@ class InstallPrerequisites(object):
             'http://ftp.gnu.org/gnu/gsl/', #download url, filename is appended
             self.fftw_build            #method to use for building - same as for FFTW should work
           ) ,
+          (
+            'cmake' ,                   #name to refer by
+            [],                         #names of prerequisites (unused)
+            '2.8.2' ,                   #version string
+            'cmake-', '.tar.gz',        #pre- and postfix for filename
+            'http://www.cmake.org/files/v2.8/', #download url, filename is appended
+            self.fftw_build             #method to use for building - same as for FFTW should work
+          ) ,
         ]
         
     @late
