@@ -305,7 +305,7 @@ class VectorQuantity(Quantity):
     def __len__(self):
         return len(self._number)
     
-    def sum(self, axis = None):
+    def sum(self, axis=None, dtype=None, out=None):
         """Calculate the sum of the vector components
 
         >>> from amuse.support.units import units
@@ -313,7 +313,7 @@ class VectorQuantity(Quantity):
         >>> v1.sum()
         quantity<3.0 kg>
         """
-        return new_quantity(numpy.sum(self.number, axis = axis), self.unit)
+        return new_quantity(self.number.sum(axis, dtype, out), self.unit)
     
     def length_squared(self):
         """Calculate the squared length of the vector.
@@ -584,11 +584,14 @@ class VectorQuantity(Quantity):
     def transpose(self, axes=None):
         return VectorQuantity(self.number.transpose(axes), self.unit)
     
-    def mean(self, **kwargs):
-        return new_quantity(self.number.mean(**kwargs), self.unit)
+    def mean(self, axis=None, dtype=None, out=None):
+        return new_quantity(self.number.mean(axis, dtype, out), self.unit)
     
     def median(self, **kwargs):
         return new_quantity(numpy.median(self.number, **kwargs), self.unit)
+    
+    def std(self, axis=None, dtype=None, out=None, ddof=0):
+        return new_quantity(self.number.std(axis, dtype, out, ddof), self.unit)
     
     
 class ZeroQuantity(Quantity):
