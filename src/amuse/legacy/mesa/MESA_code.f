@@ -486,8 +486,12 @@
                 AMUSE_value = -1.0
                 get_mass_fraction_at_zone = -2
             else
-                AMUSE_value = s% dq(s% nz - AMUSE_zone)
-                get_mass_fraction_at_zone = 0
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = s% dq_old(s% nz - AMUSE_zone)
+               else
+                  AMUSE_value = s% dq(s% nz - AMUSE_zone)
+               endif
+               get_mass_fraction_at_zone = 0
             endif
          endif
       end function
@@ -531,8 +535,12 @@
                 AMUSE_value = -1.0
                 get_temperature_at_zone = -2
             else
-                AMUSE_value = exp(s% xs(s% i_lnT, s% nz - AMUSE_zone))
-                get_temperature_at_zone = 0
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = exp(s% xs_old(s% i_lnT, s% nz - AMUSE_zone))
+               else
+                  AMUSE_value = exp(s% xs(s% i_lnT, s% nz - AMUSE_zone))
+               endif
+               get_temperature_at_zone = 0
             endif
          endif
       end function
@@ -573,11 +581,15 @@
             get_density_at_zone = -1
          else
             if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-                AMUSE_value = -1.0
-                get_density_at_zone = -2
+               AMUSE_value = -1.0
+               get_density_at_zone = -2
             else
-                AMUSE_value = exp(s% xs(s% i_lnd, s% nz - AMUSE_zone))
-                get_density_at_zone = 0
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = exp(s% xs_old(s% i_lnd, s% nz - AMUSE_zone))
+               else
+                  AMUSE_value = exp(s% xs(s% i_lnd, s% nz - AMUSE_zone))
+               endif
+               get_density_at_zone = 0
             endif
          endif
       end function
@@ -627,8 +639,12 @@
                 AMUSE_value = -1.0
                 get_radius_at_zone = -2
             else
-                AMUSE_value = exp(s% xs(s% i_lnR, s% nz - AMUSE_zone))
-                get_radius_at_zone = 0
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = exp(s% xs_old(s% i_lnR, s% nz - AMUSE_zone))
+               else
+                  AMUSE_value = exp(s% xs(s% i_lnR, s% nz - AMUSE_zone))
+               endif
+               get_radius_at_zone = 0
             endif
          endif
       end function
@@ -672,8 +688,12 @@
                 AMUSE_value = -1.0
                 get_luminosity_at_zone = -2
             else
-                AMUSE_value = s% xs(s% i_lum, s% nz - AMUSE_zone)
-                get_luminosity_at_zone = 0
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  AMUSE_value = s% xs_old(s% i_lum, s% nz - AMUSE_zone)
+               else
+                  AMUSE_value = s% xs(s% i_lum, s% nz - AMUSE_zone)
+               endif
+               get_luminosity_at_zone = 0
             endif
          endif
       end function
@@ -702,12 +722,21 @@
 ! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
       integer function get_mu_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
+         use micro, only: do_eos_for_cell
+         use chem_def, only: ih1, ihe3, ihe4
+         
+         use eos_lib, only: eosDT_get
+         use eos_def, only: num_eos_basic_results, i_mu
+         use const_def, only: ln10
          use amuse_support, only: failed
          implicit none
          integer, intent(in) :: AMUSE_id, AMUSE_zone
          double precision, intent(out) :: AMUSE_value
-         integer :: ierr
+         integer, pointer :: net_iso(:)
+         integer :: ierr, k
          type (star_info), pointer :: s
+         double precision, dimension(num_eos_basic_results) :: res, d_dlnd, d_dlnT
+         double precision :: z, xh, xhe, abar, zbar
          call get_star_ptr(AMUSE_id, s, ierr)
          if (failed('get_star_ptr', ierr)) then
             AMUSE_value = -1.0
@@ -717,10 +746,42 @@
                 AMUSE_value = -1.0
                 get_mu_at_zone = -2
             else
-                AMUSE_value = s% mu(s% nz - AMUSE_zone)
-                get_mu_at_zone = 0
+               k = s% nz - AMUSE_zone
+               if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+                  call get_abar_zbar(s, k, abar, zbar)
+                  net_iso => s% net_iso
+                  xh = s% xa_old(net_iso(ih1),k)
+                  xhe = s% xa_old(net_iso(ihe3),k) + s% xa_old(net_iso(ihe4),k)
+                  z = max(0d0,1d0-(xh+xhe))
+                  call eosDT_get( &
+                     s% eos_handle, z, xh, abar, zbar, &
+                     exp(s% xs_old(s% i_lnd, k)), s% xs_old(s% i_lnd, k)/ln10, &
+                     exp(s% xs_old(s% i_lnT, k)), s% xs_old(s% i_lnT, k)/ln10, &
+                     res, d_dlnd, d_dlnT, ierr)
+                  if (failed('eosDT_get', ierr)) then
+                     write (*,*) res(i_mu)
+                  endif
+                  s% mu(k) = res(i_mu)
+               endif
+               AMUSE_value = s% mu(k)
+               get_mu_at_zone = 0
             endif
          endif
+         
+         contains
+         
+         subroutine get_abar_zbar(s, k, abar, zbar)
+            use chem_lib, only: composition_info
+            type (star_info), pointer :: s
+            integer, intent(in) :: k
+            double precision, intent(out) :: abar, zbar
+            double precision :: z2bar, ye, xsum, dabar_dx(s% species), dzbar_dx(s% species)
+            integer :: species
+            species = s% species
+            call composition_info(species, s% chem_id, s% xa_old(1:species,k), &
+                abar, zbar, z2bar, ye, xsum, dabar_dx, dzbar_dx)
+         end subroutine get_abar_zbar
+         
       end function
 
 ! Return the current number of chemical abundance variables per zone of the star
@@ -843,7 +904,11 @@
          AMUSE_value = -1.0
          get_mass_fraction_of_species_at_zone = -3
       else
-         AMUSE_value = s% xa(AMUSE_species, s% nz - AMUSE_zone)
+         if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+            AMUSE_value = s% xa_old(AMUSE_species, s% nz - AMUSE_zone)
+         else
+            AMUSE_value = s% xa(AMUSE_species, s% nz - AMUSE_zone)
+         endif
          get_mass_fraction_of_species_at_zone = 0
       endif
    end function

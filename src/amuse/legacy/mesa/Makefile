@@ -1,7 +1,7 @@
 
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
-FC      ?= $(FORTRAN)
+FC      = $(FORTRAN)
 export FC
 
 AMUSE_DIR ?=../../../..

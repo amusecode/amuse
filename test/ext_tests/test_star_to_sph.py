@@ -3,7 +3,7 @@ from amuse.test.amusetest import get_path_to_results, TestWithMPI
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
-    from amuse.plot import plot, semilogy, xlabel, ylabel
+    from amuse.plot import plot, semilogy, xlabel, ylabel, loglog
 except ImportError:
     HAS_MATPLOTLIB = False
 
@@ -750,16 +750,17 @@ class TestStellarModel2SPH(TestWithMPI):
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
+        original_outer_radii = stellar_evolution.particles.get_radius_profile().as_quantity_in(units.RSun)
+        original_density = stellar_evolution.particles.get_density_profile()
         try:
             while True:
-                print (stellar_evolution.particles[0].stellar_type, "radius:",
-                    stellar_evolution.particles[0].radius.as_quantity_in(units.RSun), "age:", stellar_evolution.particles[0].age)
                 stellar_evolution.evolve_model()
         except AmuseException as ex:
             self.assertEqual(str(ex), "Error when calling 'evolve' of a 'MESA', errorcode is -14, error "
-                "is 'Evolve terminated: Maximum number of backups reached.'")
-            
+            "is 'Evolve terminated: Maximum number of backups reached.'")
+        
         composition = stellar_evolution.particles.get_chemical_abundance_profiles()
+        density = stellar_evolution.particles.get_density_profile()
         outer_radii = stellar_evolution.particles.get_radius_profile()
         outer_radii.prepend(0.0 | units.m)
         midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
@@ -767,7 +768,18 @@ class TestStellarModel2SPH(TestWithMPI):
         mu          = stellar_evolution.particles.get_mu_profile()
         specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg)
         
-        number_of_sph_particles = 100000
+        pyplot.figure(figsize = (5, 5))
+        loglog(original_outer_radii, original_density, label = "t = "+str(0|units.Myr))
+        loglog(outer_radii[1:], density, label = "t = "+str(stellar_evolution.particles[0].age.as_quantity_in(units.Myr)))
+        xlabel('radius')
+        ylabel('density')
+        pyplot.legend(loc=3)
+        figname = os.path.join(get_path_to_results(), "star2sph_test_17_density_2.png")
+        pyplot.savefig(figname)
+        print "\nPlot of density profile was saved to: ", figname
+        pyplot.close()
+        
+        number_of_sph_particles = 10000
         print "Creating initial conditions from a MESA stellar evolution model:"
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
         gas = convert_stellar_model_to_SPH(
@@ -776,6 +788,7 @@ class TestStellarModel2SPH(TestWithMPI):
             mode = "scaling method"
         )
         stellar_evolution.stop()
+        return
         
         t_end = 1.0e1 | units.s
         print "Evolving to:", t_end
