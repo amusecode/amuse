@@ -718,27 +718,27 @@ class ParticleSetDefinition(AbstracParticleSetDefinition):
         self.particles_factory = core.Particles
 
     def new_storage(self, interface):
-
+    
         if self.is_inmemory:
-            return core.InMemoryAttributeStorage()
-
+            return core.get_in_memory_attribute_storage_factory()()
+    
         setters = []
         for name, names in self.setters:
             x = incode_storage.ParticleSetAttributesMethod(getattr(interface, name), names)
             setters.append(x)
-
+    
         getters = []
         for name, names in self.getters:
             x = incode_storage.ParticleGetAttributesMethod(getattr(interface, name), names)
             getters.append(x)
-
-
+    
+    
         name, names = self.new_particle_method
         new_particle_method = incode_storage.NewParticleMethod(getattr(interface, name), names)
-
+    
         delete_particle_method = getattr(interface, self.name_of_delete_particle_method)
-        number_of_particles_method = None #getattr(interface, self.name_of_number_of_particles_method)
-
+        number_of_particles_method = None#getattr(interface, self.name_of_number_of_particles_method)
+    
         return incode_storage.InCodeAttributeStorage(
             interface,
             new_particle_method,

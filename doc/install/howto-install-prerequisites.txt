@@ -661,7 +661,7 @@ we will use gcc44.
 .. note::
 
     Make sure you have a recent MacPorts installation. You need at least
-    an up to date MacPorts 1.8.6 or later.
+    an up to date MacPorts 1.8.6 or later. 
     
 .. note::
     
@@ -672,9 +672,6 @@ we will use gcc44.
     
     To make a clean install of MacPorts, please read the guide at:
     http://guide.macports.org/
-    
-Cleaning old versions
----------------------
 
 
 GCC

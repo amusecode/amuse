@@ -1,8 +1,8 @@
 from amuse.test import amusetest
 import numpy
 
-from amuse.support.data.memory_storage import InMemoryAttributeStorage
 from amuse.support.data.memory_storage import InMemoryGridAttributeStorage
+from amuse.support.data.memory_storage import get_in_memory_attribute_storage_factory
 
 from amuse.support.units  import units
 
@@ -10,13 +10,13 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
     
     def test1(self):
         particles = [0,1,2]
-        attributes = "a", "b"        
+        attributes = "a", "b"    
         values = [
             units.m.new_quantity(numpy.array([1.0,2.0,3.0])), 
             units.g.new_quantity(numpy.array([4.0,5.0,6.0]))
         ]
         
-        instance = InMemoryAttributeStorage()
+        instance = get_in_memory_attribute_storage_factory()()
         instance._add_particles(particles, attributes, values)
         
         self.assertEquals(2.0 | units.m, instance.get_value_of(particles[1], "a"))
@@ -30,7 +30,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
             units.g.new_quantity(numpy.array([4.0,5.0,6.0]))
         ]
         
-        instance = InMemoryAttributeStorage()
+        instance = get_in_memory_attribute_storage_factory()()
         instance._add_particles(particles, attributes, values)
         
         indices = instance.get_indices_of([
@@ -60,7 +60,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
             units.g.new_quantity(numpy.array([4.0,5.0,6.0]))
         ]
         
-        instance = InMemoryAttributeStorage()
+        instance = get_in_memory_attribute_storage_factory()()
         instance._add_particles(particles, attributes, values)
         self.assertEquals(values[0][0], 1.0 | units.m)
         
@@ -87,7 +87,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
             units.g.new_quantity(numpy.array([4.0,5.0,6.0,7.0]))
         ]
         
-        instance = InMemoryAttributeStorage()
+        instance = get_in_memory_attribute_storage_factory()()
         instance._add_particles(particles, attributes, values)
         
         instance._remove_particles([particles[0], particles[2]])
@@ -111,7 +111,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
             units.g.new_quantity(numpy.array([4.0,5.0,6.0,7.0]))
         ]
         
-        instance = InMemoryAttributeStorage()
+        instance = get_in_memory_attribute_storage_factory()()
         instance._add_particles(particles, attributes, values)
         
         self.assertEquals(len(instance), 4)

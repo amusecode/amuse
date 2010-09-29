@@ -117,7 +117,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         return len(self.particle_keys)
         
     def copy(self):
-        copy = InMemoryAttributeStorage()
+        copy = get_in_memory_attribute_storage_factory()()
         copy.sorted_keys = self.sorted_keys.copy()
         copy.sorted_indices = self.sorted_indices.copy()
         copy.keys_set = self.keys_set.copy()
@@ -310,7 +310,7 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
         return key in self.mapping_from_particle_to_index
 
     def copy(self):
-        copy = InMemoryAttributeStorage()
+        copy = type(self)()
         copy.mapping_from_particle_to_index = self.mapping_from_particle_to_index.copy()
         copy.particle_keys = self.particle_keys.copy()
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
@@ -381,7 +381,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         return key in self.keys_set
         
     def copy(self):
-        copy = InMemoryAttributeStorage()
+        copy = type(self)()
         copy.sorted_keys = self.sorted_keys.copy()
         copy.sorted_indices = self.sorted_indices.copy()
         copy.keys_set = self.keys_set.copy()
@@ -417,4 +417,12 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         attribute_values = self.mapping_from_attribute_to_quantities[attribute]
         index = self.get_indices_of(particle_key)
         return attribute_values[index]
+
+
+def get_in_memory_attribute_storage_factory():
+    if False:
+        return InMemoryAttributeStorageUseDictionaryForKeySet
+    else:
+        return InMemoryAttributeStorageUseSortedKeys
+
 

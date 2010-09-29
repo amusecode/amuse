@@ -728,7 +728,7 @@ class Particles(AbstractParticleSet):
         AbstractParticleSet.__init__(self)
         
         if storage is None:
-            self._private.attribute_storage = InMemoryAttributeStorage()
+            self._private.attribute_storage = get_in_memory_attribute_storage_factory()()
         else:
             self._private.attribute_storage = storage
     
@@ -926,7 +926,7 @@ class ParticlesSuperset(AbstractParticleSet):
                 
             indices_array = numpy.arange(len(keys_array))
             for setindex, x in enumerate(self._private.particle_sets):
-                mask = numpy.in1d(keys_array, x._get_keys(), True)
+                mask = self.in1d(keys_array, x._get_keys(), True)
                 split_sets[setindex] =  keys_array[mask]
                 split_indices[setindex] = indices_array[mask]
         
@@ -1025,6 +1025,28 @@ class ParticlesSuperset(AbstractParticleSet):
 
 
 
+
+    def in1d(self, ar1, ar2, assume_unique=False):
+        """
+        copied from numpy.in1d (nump 1.4), to be compatible with numpy 1.3.0
+        """
+        if not assume_unique:
+            ar1, rev_idx = numpy.unique(ar1, return_inverse=True)
+            ar2 = numpy.unique(ar2)
+    
+        ar = numpy.concatenate( (ar1, ar2) )
+        order = ar.argsort(kind='mergesort')
+        sar = ar[order]
+        equal_adj = (sar[1:] == sar[:-1])
+        flag = numpy.concatenate( (equal_adj, [False] ) )
+        indx = order.argsort(kind='mergesort')[:len( ar1 )]
+    
+        if assume_unique:
+            return flag[indx]
+        else:
+            return flag[indx][rev_idx]
+    
+    
 class ParticlesSubset(AbstractParticleSet):
     """A subset of particles. Attribute values are not
     stored by the subset. The subset provides a limited view

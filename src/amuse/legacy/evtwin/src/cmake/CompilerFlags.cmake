@@ -8,15 +8,21 @@ get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 
 if (Fortran_COMPILER_NAME STREQUAL "gfortran")
 
-   set (CMAKE_Fortran_FLAGS "-O2 -finit-local-zero")
+   if(APPLE)
+      set (CMAKE_Fortran_FLAGS "-O2")
+   else (APPLE)
+      set (CMAKE_Fortran_FLAGS "-O2 -finit-local-zero")
+   endif (APPLE)
    set (CMAKE_Fortran_FLAGS_RELEASE "-pipe -funroll-all-loops")
    set (CMAKE_Fortran_FLAGS_DEBUG "-g -ffpe-trap=zero,invalid -fsignaling-nans")
    set (CMAKE_Fortran_FLAGS_PROFILE "-g -gp")
 
-   if(WANT_SSE42)
-      set (SSE_FLAGS "-msse4.2")
-   endif(WANT_SSE42)
-
+   if(NOT APPLE)
+    if(WANT_SSE42)
+         set (SSE_FLAGS "-msse4.2")
+    endif(WANT_SSE42)
+   endif(NOT APPLE)
+   
    if (WANT_OPENMP)
       set (OPENMP_FLAGS "-fopenmp")
    endif (WANT_OPENMP)
