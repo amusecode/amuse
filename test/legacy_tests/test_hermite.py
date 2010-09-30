@@ -10,6 +10,8 @@ from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 
+from amuse.ext import plummer
+
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -486,3 +488,33 @@ class TestHermite(TestWithMPI):
         self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
         self.assertAlmostEqual(instance.stopping_conditions.out_of_box_detection.particles(0).x, 1.0 |nbody_system.length, 3)
         instance.stop()
+
+    def test13(self):
+        particles = plummer.new_plummer_sphere(31)
+       
+        instance = Hermite(number_of_workers=1)
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
+        instance.particles.add_particles(particles)
+        
+        instance.evolve_model(0.1 | nbody_system.time)
+        instance.synchronize_model()
+        expected_positions = instance.particles.position
+        instance.stop()
+        positions_per_workers = []
+        for n in [2,3,4,5]:
+            instance = Hermite(number_of_workers=n)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
+            instance.particles.add_particles(particles)
+            
+            instance.evolve_model(0.1 | nbody_system.time)
+            instance.synchronize_model()
+            positions_per_workers.append(instance.particles.position)
+            instance.stop()
+         
+         
+        for index, n in enumerate([2,3,4,5]):
+            self.assertAlmostRelativeEqual(expected_positions, positions_per_workers[index])
+    
+    
