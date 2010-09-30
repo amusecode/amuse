@@ -42,24 +42,24 @@ the AMUSE root directory, e.g.:
 .. code-block:: sh
     
     ./amuse
-    └── amuse-2.4
-        ├── bin
-     	├── build.py
-    	├── configure
-    	├── cuda_self_help
-   	├── data
-    	├── doc
-    	├── lib
-    	├── Makefile
-    	├── MANIFEST.in
-    	├── README.txt
-    	├── sandbox
-    	├── setup.py
-    	├── slowtests
-    	├── src
-    	├── support
-    	├── test
-    	└── test_results
+    +-- amuse-2.4
+        |-- bin
+     	|-- build.py
+    	|-- configure
+    	|-- cuda_self_help
+   	+-- data
+    	|-- doc
+    	|-- lib
+    	|-- Makefile
+    	|-- MANIFEST.in
+    	|-- README.txt
+    	|-- sandbox
+    	|-- setup.py
+    	|-- slowtests
+    	|-- src
+    	|-- support
+    	|-- test
+    	|-- test_results
 
 From here proceed by reading the  :ref:`prerequisite-label` section.
 
