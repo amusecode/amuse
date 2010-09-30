@@ -29,6 +29,11 @@ class system(object):
     def get(cls, name):
         return cls.ALL[name]
         
+
+    def __reduce__(self):
+        return (get_system_with_name, (self.name,))
+    
+    
 class unit(object):
     """
     Abstract base class for unit objects.
@@ -323,6 +328,11 @@ class base_unit(unit):
     def reference_string(self):
         return '{0}.base({1!r})'.format(self.system.reference_string(), self.quantity)
 
+
+    def __reduce__(self):
+        return (get_base_unit_with_name, (self.system, self.quantity,))
+    
+    
 class no_system(object):
     ALL = {}
     
@@ -806,4 +816,14 @@ class UnitException(exceptions.AmuseException):
 
 class IncompatibleUnitsException(exceptions.AmuseException):
     formatstring = "Cannot express {1} in {0}, the units do not have the same bases"
+
+
+def get_system_with_name(name):
+    return system.get(name)
+
+
+
+def get_base_unit_with_name(system, name):
+    return system.base(name)
+
 

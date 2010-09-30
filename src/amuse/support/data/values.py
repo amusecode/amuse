@@ -252,6 +252,17 @@ class ScalarQuantity(Quantity):
         in_base=self.in_base()
         return in_base.number * in_base.unit
             
+
+    def __getstate__(self):
+        return (self.unit, self.number)
+    
+    
+
+    def __setstate__(self, tuple):
+        self.unit = tuple[0]
+        self.number = tuple[1]
+    
+    
 class VectorQuantity(Quantity):
     """
     A VectorQuantity object represents a physical vector 
@@ -592,6 +603,13 @@ class VectorQuantity(Quantity):
     
     def std(self, axis=None, dtype=None, out=None, ddof=0):
         return new_quantity(self.number.std(axis, dtype, out, ddof), self.unit)
+        
+    def __getstate__(self):
+        return (self.unit, self.number)
+    
+    def __setstate__(self, tuple):
+        self.unit = tuple[0]
+        self._number = tuple[1]
     
     
 class ZeroQuantity(Quantity):
