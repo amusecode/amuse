@@ -740,7 +740,7 @@ class TestStellarModel2SPH(TestWithMPI):
         print "All done!\n"
         
     def slowtest17(self):
-        print "Super giant model in SPH -- still some problems, probably caused by extreme density contrasts"
+        print "Super giant model in SPH"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
@@ -774,7 +774,7 @@ class TestStellarModel2SPH(TestWithMPI):
         xlabel('radius')
         ylabel('density')
         pyplot.legend(loc=3)
-        figname = os.path.join(get_path_to_results(), "star2sph_test_17_density_2.png")
+        figname = os.path.join(get_path_to_results(), "star2sph_test_17_density.png")
         pyplot.savefig(figname)
         print "\nPlot of density profile was saved to: ", figname
         pyplot.close()
@@ -811,23 +811,23 @@ class TestStellarModel2SPH(TestWithMPI):
         
         sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e5_after_t1e1_gadget_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e5_after_t1e1_gadget_thermal_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_thermal_energy_evolution.png"))
         composition_comparison_plot(
             midpoints, composition[0], 
             sph_midpoints, gas.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e5_after_t1e1_gadget_composition_h1.png")
+            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_composition_h1.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, gas.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e5_after_t1e1_gadget_original_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_original_u.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
             sph_midpoints, hydro_legacy_code.gas_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_17_n1e5_after_t1e1_gadget_new_u.png")
+            os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_new_u.png")
         )
         hydro_legacy_code.stop()
         print "All done!\n"

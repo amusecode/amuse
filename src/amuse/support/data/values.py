@@ -2,6 +2,7 @@ from math import sqrt
 import numpy
 from amuse.support.core import late
 from amuse.support import exceptions
+from amuse.support.data import console
 
 """
 """
@@ -62,6 +63,9 @@ class Quantity(object):
     def __init__(self, unit):
         self.unit = unit
         
+    def __str__(self):
+        return console.current_printing_stategy.quantity_to_string(self)
+    
     def is_quantity(self):
         """
         True for all quantities.
@@ -237,14 +241,7 @@ class ScalarQuantity(Quantity):
             return self
         else:
             raise exceptions.AmuseException("ScalarQuantity does not support indexing")
-            
-    def __str__(self):
-        unit_str = str(self.unit)
-        if unit_str:
-            return str(self.number) + ' ' + unit_str
-        else:
-            return str(self.number)
-                                
+    
     def copy(self):
         return new_quantity(self.number, self.unit)
 
@@ -453,17 +450,7 @@ class VectorQuantity(Quantity):
         3.0 kg
         """
         return self[2]
-        
-    def __str__(self):
-        unit_str = str(self.unit)
-        array_str = '[' + ', '.join([str(x) for x in self._number]) + ']'
-        if unit_str:
-            return array_str + ' ' + unit_str
-        else:
-            return array_str
-            
-
-        
+    
     def indices(self):
         for x in len(self._number):
             yield x
