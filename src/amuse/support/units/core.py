@@ -273,11 +273,15 @@ class unit(object):
     def is_non_numeric(self):
         return False
     
-    def isnone(self):
-        return False
+    
         
 
     def is_generic(self):
+        return False
+    
+    
+
+    def is_none(self):
         return False
     
     
@@ -365,9 +369,13 @@ class none_unit(unit):
     def base(self):
         return ()
         
-    def isnone(self):
-        return True
+    
         
+
+    def is_none(self):
+        return True
+    
+    
 class key_unit(none_unit):
     
     def iskey(self):
