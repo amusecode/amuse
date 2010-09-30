@@ -788,9 +788,9 @@ class TestStellarModel2SPH(TestWithMPI):
             mode = "scaling method"
         )
         stellar_evolution.stop()
-        return
         
-        t_end = 1.0e1 | units.s
+        
+        t_end = 1.0e3 | units.s
         print "Evolving to:", t_end
         n_steps = 100
         

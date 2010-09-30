@@ -509,10 +509,17 @@
             set_mass_fraction_at_zone = -1
          else
             if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-                set_mass_fraction_at_zone = -2
+               set_mass_fraction_at_zone = -2
             else
-                s% dq(s% nz - AMUSE_zone) = AMUSE_value
-                set_mass_fraction_at_zone = 0
+               s% dq(s% nz - AMUSE_zone) = AMUSE_value
+               select case (s%generations)
+                  case (2)
+                     s% dq_old(s% nz - AMUSE_zone) = AMUSE_value
+                  case (3)
+                     s% dq_old(s% nz - AMUSE_zone) = AMUSE_value
+                     s% dq_older(s% nz - AMUSE_zone) = AMUSE_value
+               end select
+               set_mass_fraction_at_zone = 0
             endif
          endif
       end function
@@ -558,10 +565,17 @@
             set_temperature_at_zone = -1
          else
             if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-                set_temperature_at_zone = -2
+               set_temperature_at_zone = -2
             else
-                s% xs(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
-                set_temperature_at_zone = 0
+               s% xs(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
+               select case (s%generations)
+                  case (2)
+                     s% xs_old(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
+                  case (3)
+                     s% xs_old(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
+                     s% xs_older(s% i_lnT, s% nz - AMUSE_zone) = log(AMUSE_value)
+               end select
+               set_temperature_at_zone = 0
             endif
          endif
       end function
@@ -610,12 +624,13 @@
                set_density_at_zone = -2
             else
                s% xs(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-               if (s%generations >= 2) then
-                  s% xs_old(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-                  if (s%generations == 3) then
+               select case (s%generations)
+                  case (2)
+                     s% xs_old(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
+                  case (3)
+                     s% xs_old(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
                      s% xs_older(s% i_lnd, s% nz - AMUSE_zone) = log(AMUSE_value)
-                  endif
-               endif
+               end select
                set_density_at_zone = 0
             endif
          endif
@@ -662,10 +677,17 @@
             set_radius_at_zone = -1
          else
             if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-                set_radius_at_zone = -2
+               set_radius_at_zone = -2
             else
-                s% xs(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
-                set_radius_at_zone = 0
+               s% xs(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
+               select case (s%generations)
+                  case (2)
+                     s% xs_old(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
+                  case (3)
+                     s% xs_old(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
+                     s% xs_older(s% i_lnR, s% nz - AMUSE_zone) = log(AMUSE_value)
+               end select
+               set_radius_at_zone = 0
             endif
          endif
       end function
@@ -711,10 +733,17 @@
             set_luminosity_at_zone = -1
          else
             if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
-                set_luminosity_at_zone = -2
+               set_luminosity_at_zone = -2
             else
-                s% xs(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
-                set_luminosity_at_zone = 0
+               s% xs(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
+               select case (s%generations)
+                  case (2)
+                     s% xs_old(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
+                  case (3)
+                     s% xs_old(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
+                     s% xs_older(s% i_lum, s% nz - AMUSE_zone) = AMUSE_value
+               end select
+               set_luminosity_at_zone = 0
             endif
          endif
       end function
@@ -759,7 +788,9 @@
                      exp(s% xs_old(s% i_lnT, k)), s% xs_old(s% i_lnT, k)/ln10, &
                      res, d_dlnd, d_dlnT, ierr)
                   if (failed('eosDT_get', ierr)) then
-                     write (*,*) res(i_mu)
+                     AMUSE_value = -1.0
+                     get_mu_at_zone = -4
+                     return
                   endif
                   s% mu(k) = res(i_mu)
                endif
@@ -932,12 +963,13 @@
          set_mass_fraction_of_species_at_zone = -3
       else
          s% xa(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-         if (s%generations >= 2) then
-            s% xa_old(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-            if (s%generations == 3) then
+         select case (s%generations)
+            case (2)
+               s% xa_old(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
+            case (3)
+               s% xa_old(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
                s% xa_older(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
-            endif
-         endif
+         end select
          s% xa_pre_hydro(AMUSE_species, s% nz - AMUSE_zone) = AMUSE_value
          set_mass_fraction_of_species_at_zone = 0
       endif
