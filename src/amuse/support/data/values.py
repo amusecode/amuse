@@ -64,7 +64,7 @@ class Quantity(object):
         self.unit = unit
         
     def __str__(self):
-        return console.current_printing_stategy.quantity_to_string(self)
+        return console.current_printing_strategy.quantity_to_string(self)
     
     def is_quantity(self):
         """

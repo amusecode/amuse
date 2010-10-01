@@ -158,7 +158,9 @@ class unit(object):
         return result
     
     def are_bases_equal(self, other):
-        for n1, unit1 in sort(self.base, key=lambda x: x[1].index):
+        if len(self.base) != len(other.base):
+            return False
+        for n1, unit1 in sorted(self.base, key=lambda x: x[1].index):
             found = False
             for n2, unit2 in other.base:
                 if unit1 == unit2:
