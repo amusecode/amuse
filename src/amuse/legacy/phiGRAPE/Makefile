@@ -84,9 +84,6 @@ glworker_code_gpu: glworker_code.f90 phigrape_code.o $(CODELIB)
 worker_code_grape: worker_code.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SCLIBS)
 
-worker_code_phantom_grape: worker_code.f90 phigrape_code.o $(CODELIB)
-	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(PGLIBS) $(SCLIBS)
-
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py PhiGRAPEInterface -o $@
 
