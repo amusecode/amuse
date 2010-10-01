@@ -153,12 +153,12 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         self.positions = self.read_fortran_block_float_vectors(file)
         self.velocities = self.read_fortran_block_float_vectors(file)
         self.ids = self.read_fortran_block_ints(file)
-        print self.total_number_of_particles_with_vairable_masses
+    
         if self.total_number_of_particles_with_vairable_masses > 0:
             self.masses = self.read_fortran_block_floats(file)
         else:
             self.masses = None
-        print len(self.masses)
+    
         if self.number_of_gas_particles > 0:
             self.u = self.read_fortran_block_floats(file)
         

@@ -5,6 +5,7 @@ from amuse.support import exceptions
 import warnings
 
 import atexit
+import sys
 
 ClassWithLiteratureReferences = namedtuple(\
     "ClassWithLiteratureReferences", 
@@ -20,6 +21,8 @@ class TracLiteratureReferences(object):
     
     def __init__(self):
         self.registered_classes = set([])
+        self.must_show_literature_references_atexit = True
+        self.original_excepthook = None
     
     @classmethod
     def default(cls):
@@ -29,16 +32,28 @@ class TracLiteratureReferences(object):
         return cls.INSTANCE
     
     def register(self):
+        self.original_excepthook = sys.excepthook
+        sys.excepthook = self.exception_hook
+        
         atexit.register(self.atexit_hook)
         
     def register_class(self, cls):
         self.registered_classes.add(cls)
+    
+    def exception_hook(self, *arguments):
+        self.original_excepthook(*arguments)
+        self.must_show_literature_references_atexit = False
         
     def atexit_hook(self):
-        string = self.all_literature_references_string()
-        if string:
-            prefix = "\n\nYou have used the following codes, which contain literature references:\n"
-            warnings.warn(prefix + self.all_literature_references_string(), exceptions.AmuseWarning)
+        if not self.original_excepthook is None:
+            sys.excepthook = self.original_excepthook
+        self.original_excepthook = None
+        
+        if self.must_show_literature_references_atexit:
+            string = self.all_literature_references_string()
+            if string:
+                prefix = "\n\nYou have used the following codes, which contain literature references:\n"
+                warnings.warn(prefix + self.all_literature_references_string(), exceptions.AmuseWarning)
         
     
     def get_literature_list_of_class(self, cls):

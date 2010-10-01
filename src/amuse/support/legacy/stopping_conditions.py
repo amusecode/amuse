@@ -263,16 +263,16 @@ class StoppingCondition(object):
     def get_set_conditions_info(self, index_in_the_condition = None):
         indices = list(range(self.conditions.code.get_number_of_stopping_conditions_set()))
         types, number_of_particles = self.conditions.code.get_stopping_condition_info(indices)
-
-        return_val =[]
+    
+        result =[]
         for index, type, number_of_stored_particles in zip(indices, types, number_of_particles):
             if type == self.type:
                 if index_in_the_condition == None:
-                    return_val.append(number_of_stored_particles)
+                    result.append(number_of_stored_particles)
                 elif index_in_the_condition < number_of_stored_particles:
-                    return_val.append(index)
-
-        return return_val
+                    result.append(index)
+    
+        return result
     
     def number_of_particles(self):
         return self.get_set_conditions_info()
