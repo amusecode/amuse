@@ -550,7 +550,87 @@ class Athena(CodeInterface):
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z")
         )
-    
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "xbound1",
+            "xbound1", 
+            "boundary conditions on first (inner, left) X boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "xbound2",
+            "xbound2", 
+            "boundary conditions on second (outer, right) X boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "ybound1",
+            "ybound1", 
+            "boundary conditions on first (inner, front) Y boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "ybound2",
+            "ybound2", 
+            "boundary conditions on second (outer, back) Y boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "zbound1",
+            "zbound1", 
+            "boundary conditions on first (inner, bottom) Z boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "zbound2",
+            "zbound2", 
+            "boundary conditions on second (outer, top) Z boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        
+        object.add_vector_parameter(
+            "x_boundary_conditions",
+            "boundary conditions for the X directorion",
+            ("xbound1", "xbound2")
+        )
+        
+        
+        object.add_vector_parameter(
+            "y_boundary_conditions",
+            "boundary conditions for the Y directorion",
+            ("ybound1", "ybound2")
+        )
+        
+        
+        object.add_vector_parameter(
+            "z_boundary_conditions",
+            "boundary conditions for the Z directorion",
+            ("zbound1", "zbound2")
+        )
+        
         self.stopping_conditions.define_parameters(object)
 
     def commit_parameters(self):

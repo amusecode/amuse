@@ -70,13 +70,13 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     
     def check_arguments(self, storage, attributes_to_return, *indices):
         if len(indices[0]) > 1: 
-            if self.method_is_legacy and not self.method.specification.can_handle_array:
+            if self.method_is_legacy and not (self.method.specification.can_handle_array or self.method.specification.must_handle_array):
                 raise Exception(
                     "getter method {0} cannot handle arrays".format(self.method)
                 )
             elif self.method_is_code:
                 if not self.method.legacy_specification is None:
-                    if not self.method.legacy_specification.can_handle_array:
+                    if not (self.method.legacy_specification.can_handle_array or self.method.legacy_specification.must_handle_array):
                         raise exceptions.AmuseException(
                             "getter method {0} cannot handle arrays".format(self.method)
                         )

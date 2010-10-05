@@ -255,7 +255,73 @@ class Capreole(CodeInterface):
         
 
     def define_parameters(self, object):
-        pass
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshx",
+            "nx", 
+            "number of cells in the x direction", 
+            units.none, 
+            10 | units.none,
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshy",
+            "ny", 
+            "number of cells in the y direction", 
+            units.none, 
+            10 | units.none,
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshz",
+            "nz", 
+            "number of cells in the z direction", 
+            units.none, 
+            10 | units.none,
+        )
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "xlength",
+            "length_x", 
+            "length of model in the x direction", 
+            length, 
+            10 | length,
+        )
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "ylength",
+            "length_y", 
+            "length of model in the x direction", 
+            length, 
+            10 | length,
+        )
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "zlength",
+            "length_z", 
+            "length of model in the z direction", 
+            length, 
+            10 | length,
+        )
+        
+        object.add_vector_parameter(
+            "mesh_size",
+            "number of cells in the x, y and z directions",
+            ("nx", "ny", "nz")
+        )
+        
+        object.add_vector_parameter(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z")
+        )
 
 
     def get_index_range_inclusive(self):

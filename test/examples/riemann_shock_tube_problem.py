@@ -1,0 +1,272 @@
+"""
+In this script we simulate the riemann shock tube problem in 3d.
+
+.. quote:
+    The test set-up consists of two fluids of different densities 
+    and pressures separated by a membrane that is then removed. The 
+    resulting solution shows all three types of fluid 
+    discontinuties; a shock wave moving from the high density fluid 
+    to the low density one, a rarefraction (sound) wave moving in 
+    the opposite direction and a contact discontinuity which marks 
+    the current location of the interface between the two fluids.
+
+We follow the directions in the paper:
+
+:title:     A test suite for quantitative comparison of hydrodynamic 
+            codes in astrophyics
+:authors:   Elizabeth J. Tasker, Riccardo Brunino, Nigel L. Mitchell, 
+            Dolf Michielsen, Stephen Hopton, Frazer R. Pearce, Greg L. Bryan,
+            Tom Theuns
+:journal:   Monthly Notices of the Royal Astronomical Society
+:issue:     Volume 390, Issue 3, pages 1267-1281, November 2008
+:doi:       DOI: 10.1111/j.1365-2966.2008.13836.x
+
+See also:
+
+:site:      http://www.astro.ufl.edu/~tasker/codecomparison2/codecomparison_riemann.html
+
+Exact solution is based on fortran code from Frank Timmer (who based it
+on code from Bruce Fryxell), see:
+
+http://cococubed.asu.edu/code_pages/exact_riemann.shtml
+"""
+
+from amuse.support.core import late
+from amuse.support.data.values import VectorQuantity
+from amuse.support.data.core import Grid
+
+from amuse.support.units.generic_unit_system import *
+
+from amuse.legacy.athena.interface import Athena
+from amuse.legacy.capreole.interface import Capreole
+
+from amuse import plot
+from matplotlib import pyplot
+
+from numpy import sqrt, arange
+
+class CalculateExactSolutionIn1D(object):
+    number_of_points = 1000
+    
+    rho1 = 4.0 | density
+    p1 = 1.0 | mass / (length * (time**2))
+    u1 = 0.0 | speed
+    
+    rho5 = 1.0 | density
+    p5 = 0.1795 | mass / (length * (time**2))
+    u5 = 0.0 | speed
+    
+    
+    gamma = 5.0/3.0
+    
+    def get_post_shock_pressure_p4(self, maximum_number_of_iterations = 20, maxium_allowable_relative_error = 1e-5):
+        """solve for post-shock pressure by secant method"""
+        p40 = self.p1
+        p41 = self.p5
+        p4  = p41
+        
+        f0  = self.calculate_p4_from_previous_value(p40)
+        for x in range(maximum_number_of_iterations):
+            f1 = self.calculate_p4_from_previous_value(p41)
+            if (f1 == f0):
+                return p4
+
+            p4 = p41 - (p41 - p40) * f1 / (f1 - f0)
+
+            error = abs (p4 - p41) / p41
+            if (error.value_in(units.none) < maxium_allowable_relative_error):
+                return p4
+
+            p40 = p41
+            p41 = p4
+            f0  = f1
+        
+        raise Exception("solution did not converge in less than {0!r} steps.".format(maximum_number_of_iterations))
+        
+    def get_post_shock_density_and_velocity_and_shock_speed(self, p4):
+        z  = (p4 / self.p5 - 1.0)
+        c5 = (self.gamma * self.p5 / self.rho5).sqrt()
+        gm1 = self.gamma - 1.0
+        gp1 = self.gamma + 1.0
+        gmfac1 = 0.5 * gm1 / self.gamma
+        gmfac2 = 0.5 * gp1 / self.gamma
+
+        fact = sqrt (1. + gmfac2 * z)
+
+        u4 = c5 * z / (self.gamma * fact)
+        rho4 = self.rho5 * (1.0 + gmfac2 * z) / (1.0 + gmfac1 * z)
+        return u4, rho4, c5 * fact
+        
+        
+    def calculate_p4_from_previous_value(self, p4):
+        c1 = sqrt(self.gamma * self.p1 / self.rho1)
+        c5 = sqrt(self.gamma * self.p5 / self.rho5)
+
+        gm1 = self.gamma - 1.0
+        gp1 = self.gamma + 1.0
+        g2  = 2.0 * self.gamma
+        
+        z= (p4 / self.p5 - 1.0)
+        fact = gm1 / g2 * (c5 / c1) * z / sqrt (1. + gp1 / g2 * z)
+        fact = (1. - fact) ** (g2 / gm1)
+
+        return self.p1 * fact - p4
+        
+    
+    def get_solution_at_time(self, t):
+        p4 = self.get_post_shock_pressure_p4()
+        u4, rho4, w = self.get_post_shock_density_and_velocity_and_shock_speed(p4)
+        
+        #compute values at foot of rarefaction
+        p3 = p4
+        u3 = u4
+        rho3 = self.rho1 * (p3 / self.p1)**(1. /self.gamma)
+        
+        c1 = sqrt (self.gamma * self.p1 / self.rho1)
+        c3 = sqrt (self.gamma * p3 / rho3)
+        
+        xi = 0.5 | length
+        xr = 1.0 | length
+        xl = 0.0 | length
+        
+        xsh = xi + w * t
+        xcd = xi + u3 * t
+        xft = xi + (u3 - c3) * t
+        xhd = xi - c1 * t
+        
+        gm1 = self.gamma - 1.0
+        gp1 = self.gamma + 1.0
+        
+        dx = (xr - xl) / (self.number_of_points - 1)
+        x = xl + dx * arange(self.number_of_points)
+        
+        rho = VectorQuantity.zeros(self.number_of_points, density)
+        p = VectorQuantity.zeros(self.number_of_points, mass / (length * time**2))
+        u = VectorQuantity.zeros(self.number_of_points, speed)
+        
+        for i in range(self.number_of_points):
+            if x[i] < xhd:
+                rho[i] = self.rho1
+                p[i]   = self.p1
+                u[i]   = self.u1
+            elif x[i] < xft:
+                u[i]   = 2. / (self.gamma + 1.0) * (c1 + (x[i] - xi) / t)
+                fact   = 1. - 0.5 * gm1 * u[i] / c1
+                rho[i] = self.rho1 * fact ** (2. / gm1)
+                p[i]   = self.p1 * fact ** (2. * self.gamma / gm1)
+            elif x[i] < xcd:
+                rho[i] = rho3
+                p[i]   = p3
+                u[i]   = u3
+            elif x[i] < xsh:
+                rho[i] = rho4
+                p[i]   = p4
+                u[i]   = u4
+            else:
+                rho[i] = self.rho5
+                p[i]   = self.p5
+                u[i]   = self.u5
+                
+        return x, rho,p,u
+
+class CalculateSolutionIn3D(object):
+    number_of_workers = 1
+    number_of_grid_points = 128
+    gamma = 5.0/3.0
+    
+    def __init__(self):
+        pass
+        
+    def new_instance_of_code(self):
+        result=Athena(number_of_workers=self.number_of_workers)
+        result.initialize_code()
+        result.parameters.gamma = self.gamma
+        result.parameters.courant_number=0.3
+        return result
+        
+    def set_parameters(self, instance):
+        
+        instance.parameters.nx = self.number_of_grid_points
+        instance.parameters.ny = self.number_of_grid_points
+        instance.parameters.nz = self.number_of_grid_points
+        
+        instance.parameters.length_x = 1 | length
+        instance.parameters.length_y = 1 | length
+        instance.parameters.length_z = 1 | length
+        
+        instance.x_boundary_conditions = ("periodic","periodic")
+        instance.y_boundary_conditions = ("periodic","periodic")
+        instance.z_boundary_conditions = ("periodic","periodic")
+        
+        result = instance.commit_parameters()
+    
+    def new_grid(self):
+        
+        density = mass / length**3
+        
+        density = density
+        momentum =  speed * density
+        energy =  mass / (time**2 * length)
+        
+        grid = Grid(self.number_of_grid_points,self.number_of_grid_points,self.number_of_grid_points)
+        
+        grid.rho =  0.0 | density
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
+        grid.energy = 0.0 | energy
+    
+        return grid
+    
+    def initialize_grid_with_shock(self, grid):
+        energy =  mass / (time**2 * length)
+        
+        halfway = self.number_of_grid_points/2 - 1
+        
+        grid[:halfway].rho = 4.0  | density
+        grid[:halfway].energy = (1.0 | energy)/ (self.gamma - 1)
+        grid[halfway:].rho = 1.0  | density
+        grid[halfway:].energy = (0.1795 | energy)/ (self.gamma - 1)
+        
+    def get_solution_at_time(self, time):
+        instance=self.new_instance_of_code()
+        self.set_parameters(instance)
+        
+        grid = self.new_grid()
+        self.initialize_grid_with_shock(grid)
+        
+        from_model_to_code = grid.new_channel_to(instance.grid)
+        from_code_to_model = instance.grid.new_channel_to(grid)
+        
+        from_model_to_code.copy()
+        instance.initialize_grid()
+        instance.evolve(time)
+        
+        print "copying results"
+        from_code_to_model.copy()
+        from_code_to_model.copy_attributes(("x","y","z",))
+        
+        return grid
+
+def main():
+    
+    print "calculating shock using exact solution"
+    exact = CalculateExactSolutionIn1D()
+    x, rho, p, u = exact.get_solution_at_time(0.12 | time)
+    
+    print "calculating shock using code"
+    model = CalculateSolutionIn3D()
+    grid = model.get_solution_at_time(0.12 | time)
+    
+    print "plotting solution"
+    plot.plot(x,rho)
+    plot.plot(grid.x[...,0,0], grid.rho[...,0,0])
+    
+    pyplot.xlim(0.3,0.7)
+    pyplot.ylim(0.5,4.5)
+    pyplot.savefig("rho.png")
+    
+    
+
+if __name__ == "__main__":
+    main()

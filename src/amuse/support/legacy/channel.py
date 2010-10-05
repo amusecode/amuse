@@ -709,7 +709,13 @@ class MpiChannel(MessageChannel):
             if length == 1:
                 return [tmp[i*self.max_message_length] for tmp in arr_in]
             else:
-                return [tmp[i*self.max_message_length:(i+1)*self.max_message_length] for tmp in arr_in]
+                result = []
+                for x in arr_in:
+                    if hasattr(x, '__iter__'):
+                        result.append(x[i*self.max_message_length:(i+1)*self.max_message_length])
+                    else:
+                        result.append(x)
+                return result
         
         dtype_to_result = {}
         

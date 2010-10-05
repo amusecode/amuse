@@ -186,7 +186,7 @@ class TableFormattedText(base.FileFormatProcessor):
         
             
         for x in numbers:
-            columns.append(map(str, x))
+            columns.append(map(self.convert_number_to_string, x))
         
         rows = []
         for i in range(len(columns[0])):
@@ -228,6 +228,27 @@ class TableFormattedText(base.FileFormatProcessor):
 
 
         
+
+    def convert_number_to_string(self, number):
+        return str(number)
+    
+    
+
+    
+
+    @base.format_option
+    def float_format_string(self):
+        "format specification string to convert numbers to strings, see format_spec in python documentation"
+        return ".{0}e".format(self.precision_of_number_output)
+    
+    
+
+    @base.format_option
+    def precision_of_number_output(self):
+        "The precision is a decimal number indicating how many digits should be displayed after the decimal point"
+        return 12
+    
+    
 class CsvFileText(TableFormattedText):
     """Process comma separated files
     

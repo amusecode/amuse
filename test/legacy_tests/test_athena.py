@@ -538,7 +538,9 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1 | generic_unit_system.length
         instance.parameters.length_y = 2 | generic_unit_system.length
         instance.parameters.length_z = 3 | generic_unit_system.length
-        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.parameters.x_boundary_conditions = "periodic","periodic"
+        instance.parameters.y_boundary_conditions = "periodic","periodic"
+        instance.parameters.z_boundary_conditions = "periodic","periodic"
         result = instance.commit_parameters()
                 
         firstx = instance.potential_grid[0][0][0].x
@@ -810,3 +812,78 @@ class TestAthena(TestWithMPI):
         instance.parameters.stopping_conditions_timeout = 10 | units.s
         self.assertEquals(instance.parameters.stopping_conditions_timeout, 10|units.s)
         instance.stop()
+
+    def test9(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.parameters.x_boundary_conditions = "periodic","periodic"
+        instance.parameters.y_boundary_conditions = "periodic","periodic"
+        instance.parameters.z_boundary_conditions = "periodic","periodic"
+        self.assertEquals(instance.parameters.xbound1, "periodic" | units.string)
+        instance.stop()
+    
+    
+
+    def xtest10(self):
+        instance=self.new_instance(Athena)
+        instance.initialize_code()
+        instance.parameters.gamma = 5/3.0
+        instance.parameters.courant_number=0.3
+        
+        n = 100
+        
+        instance.parameters.nx = n
+        instance.parameters.ny = n
+        instance.parameters.nz = n
+        
+        instance.parameters.length_x = 1 | generic_unit_system.length
+        instance.parameters.length_y = 1 | generic_unit_system.length
+        instance.parameters.length_z = 1 | generic_unit_system.length
+        
+        instance.x_boundary_conditions = ("periodic","periodic")
+        instance.y_boundary_conditions = ("periodic","periodic")
+        instance.z_boundary_conditions = ("periodic","periodic")
+        
+        result = instance.commit_parameters()
+         
+        density = generic_unit_system.mass / (generic_unit_system.length**3)
+        
+        density = generic_unit_system.density
+        momentum =  generic_unit_system.speed * generic_unit_system.density
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        grid = core.Grid(n,n,n)
+        grid.rho =  0.0 | generic_unit_system.density
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
+        grid.energy = 0.0 | energy
+        
+        halfway = n/2 - 1
+        grid[:halfway].rho = 4.0  | generic_unit_system.density
+        grid[:halfway].energy = (1.0 | energy)/ (instance.parameters.gamma - 1)
+        grid[halfway:].rho = 1.0  | generic_unit_system.density
+        grid[halfway:].energy = (0.1795 | energy)/ (instance.parameters.gamma - 1)
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+    
+        #from amuse import plot
+        #from matplotlib import pyplot
+        #print grid.rho[...,0,0]
+        #plot.plot(instance.grid.x[...,0,0], grid.rho[...,0,0])
+        #pyplot.savefig("bla1.png")
+        
+        error = instance.initialize_grid()
+        
+        instance.evolve(0.12 | generic_unit_system.time)
+        
+        
+        channel = instance.grid.new_channel_to(grid)
+        channel.copy()
+        
+        #print grid.rho[...,0,0]
+        #plot.plot(instance.grid.x[...,0,0], grid.rho[...,0,0])
+        #pyplot.savefig("bla2.png")
+    
+    
