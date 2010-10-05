@@ -3,14 +3,23 @@ from amuse.legacy import *
 from amuse.support.units.generic_unit_system import *
 from amuse.legacy.interface.common import CommonCodeInterface
 
-class CapreoleInterface(LegacyInterface, CommonCodeInterface):
+class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
+    """
+    Capreole is a grid-based astrophysical hydrodynamics code developed by Garrelt Mellema. 
+    It works in one, two dimensions, and three spatial dimensions and is programmed in 
+    Fortran 90. It is parallelized with MPI. For the hydrodynamics it relies on the 
+    Roe-Eulderink-Mellema (REM) solver, which is an approximate Riemann solver for arbitrary
+    metrics. It can solve different hydrodynamics problems. Capreole has run on single 
+    processors, but also on massively parallel systems (e.g. 512 processors on a BlueGene/L).
+    
+    The reference for Capreole (original version):
+        .. [#] Mellema, Eulderink & Icke 1991, A&A 252, 718
+    """
+    
     def __init__(self,name_of_the_worker = 'worker',**args):
         LegacyInterface.__init__(self, name_of_the_worker,**args)
-
+        LiteratureRefs.__init__(self)
     
-
-    
-
     @legacy_function   
     def setup_mesh():
         function = LegacyFunctionSpecification()  

@@ -346,14 +346,73 @@ mesa
 
 The software project MESA (Modules for Experiments in Stellar Astrophysics, `<http://mesa.sourceforge.net/>`_), aims to provide state-of-the-art, robust, and efficient open source modules, usable singly or in combination for a wide range of applications in stellar astrophysics. Since the package is rather big (about 800 MB download, >2 GB built), this legacy code is optional and does not install automatically. Set the environment variable DO_INSTALL_MESA and run `make` to download and install it. The AMUSE interface to MESA can create and evolve stars using the MESA/STAR module. If you order a metallicity you haven't used before, starting models will be computed automatically and saved in the `mesa/src/data/star_data/starting_models` directory (please be patient...). All metallicities are supported, even the interesting case of Z=0. The supported stellar mass range is from about 0.1 to 100 Msun.
 
+References:
+
+* Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2010, ApJS submitted, arXiv:1009.1622
+* `<http://mesa.sourceforge.net/>`_
+
 
 .. _Hydrodynamics:
 
 Hydrodynamics
 ~~~~~~~~~~~~~
 
-* fi_ (N-body/SPH code)
+* athena_ (grid code)
 * capreole_ (grid code)
+* fi_ (N-body/SPH code)
+* gadget2_ (N-body/SPH code)
+
+
+.. _athena:
+
+athena
+--------
+
+Athena is a grid-based code for astrophysical hydrodynamics. Athena can solve magnetohydrodynamics (MHD) as well, but this is currently not supported from AMUSE. It was developed primarily for studies of the interstellar medium, star formation, and accretion flows.
+
+The current version (Athena v4.0) implements algorithms for the following physics:
+  * compressible hydrodynamics and MHD in 1D, 2D, and 3D,
+  * ideal gas equation of state with arbitrary γ (including γ = 1, an isothermal EOS),
+  * an arbitrary number of passive scalars advected with the flow,
+  * self-gravity, and/or a static gravitational potential,
+  * Ohmic resistivity, ambipolar diffusion, and the Hall effect,
+  * both Navier-Stokes and anisotropic (Braginskii) viscosity,
+  * both isotropic and anisotropic thermal conduction,
+  * optically-thin radiative cooling. 
+
+In addition, Athena allows for the following grid and parallelization options:
+  * Cartesian or cylindrical coordinates,
+  * static (fixed) mesh refinement,
+  * shearing-box source terms, and an orbital advection algorithm for MHD,
+  * parallelization using domain decomposition and  MPI. 
+
+A variety of choices are also available for the numerical algorithms, such as different Riemann solvers and spatial reconstruction methods.
+
+The relevant references are:
+
+* Gardiner & Stone 2005, JCP, 205, 509  (2D JCP Method)
+* Gardiner & Stone 2007, JCP, 227, 4123 (3D JCP Method)
+* Stone et al. 2008, ApJS, 178, 137 (Method)
+* Stone & Gardiner 2009, NewA, 14, 139 (van Leer Integrator)
+* Skinner & Ostriker 2010, ApJ, 188, 290 (Cylindrical Integrator)
+* Stone & Gardiner 2010, ApJS, 189, 142 (Shearing Box Method)
+
+
+.. _capreole:
+
+capreole
+--------
+
+Capreole is a grid-based astrophysical hydrodynamics code developed by Garrelt Mellema. 
+It works in one, two dimensions, and three spatial dimensions and is programmed in 
+Fortran 90. It is parallelized with MPI. For the hydrodynamics it relies on the 
+Roe-Eulderink-Mellema (REM) solver, which is an approximate Riemann solver for arbitrary
+metrics. It can solve different hydrodynamics problems. Capreole has run on single 
+processors, but also on massively parallel systems (e.g. 512 processors on a BlueGene/L).
+
+The reference for Capreole (original version):
+
+* Mellema, Eulderink & Icke 1991, A&A 252, 718
 
 
 .. _fi:
@@ -369,17 +428,33 @@ The relevant references are:
 
 * Hernquist \& Katz 1989, ApJS 70, 419
 * Gerritsen \& Icke 1997, A&A 325, 972
-* Pelupessy, van der Werf & Icke A&A 422, 55
+* Pelupessy, van der Werf & Icke 2004, A&A 422, 55
 * Pelupessy, PhD thesis 2005, Leiden Observatory
 
 
-.. _capreole:
+.. _gadget2:
 
-capreole
---------
+gadget2
+-------
 
-Capreole is a grid hydrocode based on Roe's Riemann solver made by Garrelt 
-Mellema.
+GADGET-2 computes gravitational forces with a hierarchical tree 
+algorithm (optionally in combination with a particle-mesh 
+scheme for long-range gravitational forces, currently not 
+supported from the AMUSE interface) and represents fluids by 
+means of smoothed particle hydrodynamics (SPH). The code can 
+be used for studies of isolated systems, or for simulations 
+that include the cosmological expansion of space, both with 
+or without periodic boundary conditions. In all these types 
+of simulations, GADGET follows the evolution of a self-
+gravitating collisionless N-body system, and allows gas 
+dynamics to be optionally included. Both the force computation 
+and the time stepping of GADGET are fully adaptive, with a 
+dynamic range which is, in principle, unlimited. 
+
+The relevant references are:
+
+* Springel V., 2005, MNRAS, 364, 1105  (GADGET-2)
+* Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1)
 
 
 .. _Radiative-Transfer:

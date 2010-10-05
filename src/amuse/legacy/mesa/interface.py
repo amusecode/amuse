@@ -18,8 +18,9 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
     interesting case of Z=0. The supported stellar mass range is from 
     about 0.1 to 100 Msun.
     
-        .. [#] Please acknowledge the use of MESA in your papers. More details
-        .. [#] ... on MESA can be found at: http://mesa.sourceforge.net/.
+    References:
+        .. [#] Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2010, ApJS submitted, arXiv:1009.1622
+        .. [#] http://mesa.sourceforge.net/
     """
     def __init__(self, **options):
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)

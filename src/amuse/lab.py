@@ -35,6 +35,8 @@ from amuse.legacy.twobody.twobody import TwoBody, TwoBodyInterface
 
 from amuse.legacy.fi.interface import Fi, FiInterface
 from amuse.legacy.gadget2.interface import Gadget2, Gadget2Interface
+from amuse.legacy.athena.interface import Athena, AthenaInterface
+from amuse.legacy.capreole.interface import Capreole, CapreoleInterface
 
 from amuse.legacy.sse.interface import SSE, SSEInterface
 from amuse.legacy.bse.interface import BSE, BSEInterface

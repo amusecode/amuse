@@ -5,13 +5,47 @@ from amuse.support.units.generic_unit_system import *
 
 import numpy
 
-class AthenaInterface(LegacyInterface, CommonCodeInterface, StoppingConditionInterface):
+class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, StoppingConditionInterface):
+    """
+    Athena is a grid-based code for astrophysical hydrodynamics. Athena can solve 
+    magnetohydrodynamics (MHD) as well, but this is currently not supported from 
+    AMUSE. It was developed primarily for studies of the interstellar medium, 
+    star formation, and accretion flows.
+    
+    The current version (Athena v4.0) implements algorithms for the following physics:
+    * compressible hydrodynamics and MHD in 1D, 2D, and 3D,
+    * ideal gas equation of state with arbitrary gamma (including gamma = 1, an isothermal EOS),
+    * an arbitrary number of passive scalars advected with the flow,
+    * self-gravity, and/or a static gravitational potential,
+    * Ohmic resistivity, ambipolar diffusion, and the Hall effect,
+    * both Navier-Stokes and anisotropic (Braginskii) viscosity,
+    * both isotropic and anisotropic thermal conduction,
+    * optically-thin radiative cooling. 
+    
+    In addition, Athena allows for the following grid and parallelization options:
+    * Cartesian or cylindrical coordinates,
+    * static (fixed) mesh refinement,
+    * shearing-box source terms, and an orbital advection algorithm for MHD,
+    * parallelization using domain decomposition and  MPI. 
+    
+    A variety of choices are also available for the numerical algorithms, such as 
+    different Riemann solvers and spatial reconstruction methods.
+    
+    The relevant references are:
+        .. [#] Gardiner & Stone 2005, JCP, 205, 509  (2D JCP Method)
+        .. [#] Gardiner & Stone 2007, JCP, 227, 4123 (3D JCP Method)
+        .. [#] Stone et al. 2008, ApJS, 178, 137 (Method)
+        .. [#] Stone & Gardiner 2009, NewA, 14, 139 (van Leer Integrator)
+        .. [#] Skinner & Ostriker 2010, ApJ, 188, 290 (Cylindrical Integrator)
+        .. [#] Stone & Gardiner 2010, ApJS, 189, 142 (Shearing Box Method)
+    """
     
     include_headers = ['worker_code.h', 'stopcond.h']
     
     def __init__(self, **options):
         LegacyInterface.__init__(self, **options)
         self.set_auto_decomposition(1)
+        LiteratureRefs.__init__(self)
         
     @legacy_function
     def par_seti():
