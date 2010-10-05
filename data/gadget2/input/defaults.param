@@ -103,7 +103,7 @@ GravityConstantInternal  0
 
 % Softening lengths
 
-MinGasHsmlFractional 0.25
+MinGasHsmlFractional 0.0
 
 SofteningGas       0.01
 SofteningHalo      0.01

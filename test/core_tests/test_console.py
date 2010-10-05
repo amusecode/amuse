@@ -153,4 +153,56 @@ class TestPrintingStrategy(amusetest.TestCase):
         self.assertEqual(str(acc), "9.8 parsec * Myr**-2")
         set_printing_strategy("default")
     
+    def test8(self):
+        print "Testing SI printing strategy"
+        mass     = 2.0 | 0.5 * units.MSun
+        acc      = 0.0098 | nbody_system.length / units.Myr**2
+        position = [0.1, 0.2, 0.3] | nbody_system.length
+        energy   = 1e8 | units.erg
+        temperature = 5000 | units.milli(units.K)
+        pi       = 3.14 | units.none
+        converter = nbody_system.nbody_to_si(1.0 | units.kg, 1.0 | units.kpc)
+        
+        set_printing_strategy("SI", nbody_converter = converter)
+        self.assertEqual(str(mass), "1.98892e+30 kg")
+        self.assertEqual(str(acc), "3.03659755643e-10 m * s**-2")
+        self.assertEqual(str(position), "[3.08567758128e+18, 6.17135516256e+18, 9.25703274384e+18] m")
+        self.assertEqual(str(energy), "10.0 kg * m**2 * s**-2")
+        self.assertEqual(str(constants.G), "6.67428e-11 m**3 * kg**-1 * s**-2")
+        self.assertEqual(str(temperature), "5.0 K")
+        self.assertEqual(str(pi), "3.14 none")
+        
+        set_printing_strategy("SI", nbody_converter = converter, print_units = False)
+        self.assertEqual(str(mass), "1.98892e+30")
+        self.assertEqual(str(acc), "3.03659755643e-10")
+        self.assertEqual(str(position), "[3.08567758128e+18, 6.17135516256e+18, 9.25703274384e+18]")
+        self.assertEqual(str(energy), "10.0")
+        self.assertEqual(str(constants.G), "6.67428e-11")
+        self.assertEqual(str(temperature), "5.0")
+        self.assertEqual(str(pi), "3.14")
+        set_printing_strategy("default")
+    
+    def test9(self):
+        print "Testing custom printing strategy"
+        mass     = 2.0 | 0.5 * units.MSun
+        acc      = (0.0098 | nbody_system.length) * (1 | units.Myr**-2).as_quantity_in(units.s**-2)
+        position = [0.1, 0.2, 0.3] | nbody_system.length
+        power   = 10 | units.W
+        temperature = 5000 | units.K
+        pi       = 3.14 | units.none
+        converter = nbody_system.nbody_to_si(1.0 | units.kg, 1.0 | units.kpc)
+        
+        set_printing_strategy("custom", nbody_converter = converter, preferred_units = 
+            [units.amu, units.AU, units.minute, units.milli(units.K), units.erg], digits = 3, 
+            prefix = "(> ", separator = " <|> ", suffix = " <)")
+        self.assertEqual(str(mass), "(> 1.2e+57 <|> amu <)")
+        self.assertEqual(str(acc), "(> 7.31e-18 <|> AU * min**-2 <)")
+        self.assertEqual(str(position), "(> [2.06e+07, 4.13e+07, 6.19e+07] <|> AU <)")
+        self.assertEqual(str(power), "(> 6e+09 <|> erg / min <)")
+        self.assertEqual(str(constants.G), "(> 1.19e-67 <|> AU**3 * amu**-1 * min**-2 <)")
+        self.assertEqual(str(constants.kB), "(> 1.38e-19 <|> erg * mK**-1 <)")
+        self.assertEqual(str(temperature), "(> 5e+06 <|> mK <)")
+        self.assertEqual(str(pi), "(> 3.14 <|> none <)")
+        set_printing_strategy("default")
+    
 

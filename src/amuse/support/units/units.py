@@ -3,10 +3,10 @@ from amuse.support.units.si import *
 from amuse.support.units.derivedsi import *
 
 # misc every day
-minute = 60 * s
-hour = 60 * minute
-day = 24 * hour
-yr =   named('year', 'yr', 365.242199 * day)
+minute = named('minute', 'min', 60 * s)
+hour   = named('hour',   'hr',  60 * minute)
+day    = named('day',    'day', 24 * hour)
+yr     = named('year',   'yr',  365.242199 * day)
 julianyr = named('julian yr','julianyr',365.25* day)
 ms = named('meter per seconds', 'ms', m / s)
 kms = named('kilometer per seconds', 'kms', km / s)
