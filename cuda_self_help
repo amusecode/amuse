@@ -12,14 +12,15 @@ echo -n "Checking whether you have the NVIDIA graphics driver... "
 which nvidia-settings >& /dev/null
 if [ $? -eq 0 ]; then
     echo "ok"
+    echo -n "Checking the NVIDIA graphics driver version... "
+    echo `nvidia-settings -q NvidiaDriverVersion | gawk '{ORS = " " ; print $4}'`
 else
     echo "no"
     echo "    Couldn't find the nvidia-settings utility (used to configure "
     echo "    the NVIDIA graphics driver). Do you have an NVIDIA GPU card?"
-    exit 1
+    echo " "
+    echo " "
 fi
-echo -n "Checking the NVIDIA graphics driver version... "
-echo `nvidia-settings -q NvidiaDriverVersion | gawk '{ORS = " " ; print $4}'`
 echo -n "Checking 32/64 bit... "
 uname -i | grep '64' >& /dev/null
 if [ $? -eq 0 ]; then
