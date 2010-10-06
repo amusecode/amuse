@@ -193,7 +193,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         converter = nbody_system.nbody_to_si(1.0 | units.kg, 1.0 | units.kpc)
         
         set_printing_strategy("custom", nbody_converter = converter, preferred_units = 
-            [units.amu, units.AU, units.minute, units.milli(units.K), units.erg], digits = 3, 
+            [units.amu, units.AU, units.minute, units.milli(units.K), units.erg], precision = 3, 
             prefix = "(> ", separator = " <|> ", suffix = " <)")
         self.assertEqual(str(mass), "(> 1.2e+57 <|> amu <)")
         self.assertEqual(str(acc), "(> 7.31e-18 <|> AU * min**-2 <)")

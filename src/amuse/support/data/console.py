@@ -16,11 +16,17 @@ class PrintingStrategy(object):
     def __init__(self):
         pass
     
+    def convert_quantity(self, quantity):
+        return quantity
+    
     def quantity_to_string(self, quantity):
+        quantity = self.convert_quantity(quantity)
         result = self.string_prefix()
         result += self.string_number(quantity)
-        result += self.string_separator()
-        result += self.string_unit(quantity)
+        string_of_unit = self.string_unit(quantity)
+        if string_of_unit:
+            result += self.string_separator()
+        result += string_of_unit
         result += self.string_suffix()
         return result
     
@@ -31,7 +37,7 @@ class PrintingStrategy(object):
         return ""
         
     def string_separator(self):
-        return ""
+        return " "
     
     def string_unit(self, quantity):
         return ""
@@ -39,10 +45,17 @@ class PrintingStrategy(object):
     def string_suffix(self):
         return ""
     
-    def default_string_converter_for_numbers(self, number):
+    def old_numbers_to_string(self, number):
         if hasattr(number, "__iter__"):
             return '[' + ', '.join([str(x) for x in number]) + ']'
         return str(number)
+    
+    def numbers_to_string(self, quantity, format = "%s"):
+        if quantity.is_vector():
+            return '[' + ', '.join([format % x for x in quantity.number]) + ']'
+        if quantity.is_scalar():
+            return format % quantity.number
+        return format % quantity.number
     
     @classmethod
     def register(cls):
@@ -60,12 +73,10 @@ class DefaultPrintingStrategy(PrintingStrategy):
     provided_strategy_names = ['default', 'with_units']
     
     def string_number(self, quantity):
-        return self.default_string_converter_for_numbers(quantity.number)
+        return self.numbers_to_string(quantity)
     
     def string_unit(self, quantity):
-        result = str(quantity.unit)
-        if result:
-            return " " + result
+        return str(quantity.unit)
     
 
 
@@ -74,7 +85,7 @@ class NoUnitsPrintingStrategy(PrintingStrategy):
     provided_strategy_names = ['no_unit', 'no_units']
     
     def string_number(self, quantity):
-        return self.default_string_converter_for_numbers(quantity.number)
+        return self.numbers_to_string(quantity)
     
 
 
@@ -86,7 +97,7 @@ class FormalPrintingStrategy(PrintingStrategy):
         return "<quantity "
     
     def string_number(self, quantity):
-        return self.default_string_converter_for_numbers(quantity.number)
+        return self.numbers_to_string(quantity)
     
     def string_separator(self):
         return " | "
@@ -106,24 +117,43 @@ class NBodyPrintingStrategy(PrintingStrategy):
     def __init__(self, nbody_converter = None):
         self.nbody_converter = nbody_converter
     
-    def is_not_nbody_unit(self, unit):
-        for factor, x in unit.base:
-            if not x.is_generic():
-                return True
-        return False
-    
-    def string_number(self, quantity):
-        if self.is_not_nbody_unit(quantity.unit):
+    def convert_quantity(self, quantity):
+        if is_not_nbody_unit(quantity.unit):
             if self.nbody_converter:
-                quantity = self.nbody_converter.to_nbody(quantity)
+                return self.nbody_converter.to_nbody(quantity)
             else:
                 raise AmuseException("Unable to convert {0} to N-body units. No "
                     "nbody_converter given".format(quantity.unit))
-        return self.default_string_converter_for_numbers(quantity.number)
+        return quantity
+    
+    def string_number(self, quantity):
+        return self.numbers_to_string(quantity)
     
 
 
-class AstroPrintingStrategy(PrintingStrategy):
+class PrintingStrategyWithPreferredUnits(PrintingStrategy):
+    
+    def convert_quantity(self, quantity):
+        if has_nbody_unit(quantity.unit):
+            if self.nbody_converter:
+                return _quantity_in_preferred_units(self.preferred_units, self.nbody_converter.to_si(quantity))
+            else:
+                raise AmuseException("Unable to convert {0} to SI units. No "
+                    "nbody_converter given".format(quantity.unit))
+        return _quantity_in_preferred_units(self.preferred_units, quantity)
+    
+    def string_number(self, quantity):
+        return self.numbers_to_string(quantity)
+    
+    def string_unit(self, quantity):
+        if self.print_units:
+            return str(quantity.unit)
+        else:
+            return ""
+    
+
+
+class AstroPrintingStrategy(PrintingStrategyWithPreferredUnits):
     
     provided_strategy_names = ['astro',]
     
@@ -131,35 +161,11 @@ class AstroPrintingStrategy(PrintingStrategy):
         self.nbody_converter = nbody_converter
         self.print_units = print_units
         from amuse.support.units import units
-        self.supported_units = [units.MSun, units.Myr, units.parsec, units.J]
-    
-    def has_nbody_unit(self, unit):
-        for factor, x in unit.base:
-            if x.is_generic():
-                return True
-        return False
-    
-    def string_number(self, quantity):
-        if self.has_nbody_unit(quantity.unit):
-            if self.nbody_converter:
-                quantity = self.nbody_converter.to_si(quantity)
-            else:
-                raise AmuseException("Unable to convert {0} to SI units. No "
-                    "nbody_converter given".format(quantity.unit))
-        return self.default_string_converter_for_numbers(
-            _number_in_preferred_units(self.supported_units, quantity))
-    
-    def string_unit(self, quantity):
-        if self.print_units:
-            if self.has_nbody_unit(quantity.unit):
-                quantity = self.nbody_converter.to_si(quantity)
-            return " " + str(_unit_in_preferred_units(self.supported_units, quantity))
-        else:
-            return ""
+        self.preferred_units = [units.MSun, units.Myr, units.parsec, units.J]
     
 
 
-class SIPrintingStrategy(PrintingStrategy):
+class SIPrintingStrategy(PrintingStrategyWithPreferredUnits):
     
     provided_strategy_names = ['SI', 'si']
     
@@ -167,135 +173,76 @@ class SIPrintingStrategy(PrintingStrategy):
         self.nbody_converter = nbody_converter
         self.print_units = print_units
         from amuse.support.units import units
-        self.supported_units = [units.m, units.kg, units.s, units.A, units.K, units.mol, units.cd]
-    
-    def has_nbody_unit(self, unit):
-        for factor, x in unit.base:
-            if x.is_generic():
-                return True
-        return False
-    
-    def string_number(self, quantity):
-        if self.has_nbody_unit(quantity.unit):
-            if self.nbody_converter:
-                quantity = self.nbody_converter.to_si(quantity)
-            else:
-                raise AmuseException("Unable to convert {0} to SI units. No "
-                    "nbody_converter given".format(quantity.unit))
-        return self.default_string_converter_for_numbers(
-            _number_in_preferred_units(self.supported_units, quantity))
-    
-    def string_unit(self, quantity):
-        if self.print_units:
-            if self.has_nbody_unit(quantity.unit):
-                quantity = self.nbody_converter.to_si(quantity)
-            return " " + str(_unit_in_preferred_units(self.supported_units, quantity))
-        else:
-            return ""
+        self.preferred_units = [units.m, units.kg, units.s, units.A, units.K, units.mol, units.cd]
     
 
 
-class CustomPrintingStrategy(PrintingStrategy):
+class CustomPrintingStrategy(PrintingStrategyWithPreferredUnits):
     
     provided_strategy_names = ['custom',]
     
-    def __init__(self, nbody_converter = None, print_units = True, preferred_units = [], digits = None,
+    def __init__(self, nbody_converter = None, print_units = True, preferred_units = [], precision = None,
             prefix = "", separator = " ", suffix = ""):
         self.nbody_converter = nbody_converter
         self.print_units = print_units
         self.preferred_units = preferred_units
-        self.digits = digits
+        if precision:
+            self.format = "%." + str(precision) + "g"
+        else:
+            self.format = "%s"
         self.prefix = prefix
         self.separator = separator
         self.suffix = suffix
-    
-    def has_nbody_unit(self, unit):
-        for factor, x in unit.base:
-            if x.is_generic():
-                return True
-        return False
-    
-    def custom_string_converter_for_numbers(self, number, digits = None):
-        if digits:
-            format = "%." + str(digits) + "g"
-        else:
-            format = "%s"
-        if hasattr(number, "__iter__"):
-            return '[' + ', '.join([format % x for x in number]) + ']'
-        return format % number
     
     def string_prefix(self):
         return self.prefix
     
     def string_number(self, quantity):
-        if self.has_nbody_unit(quantity.unit):
-            if self.nbody_converter:
-                quantity = self.nbody_converter.to_si(quantity)
-            else:
-                raise AmuseException("Unable to convert {0} to SI units. No "
-                    "nbody_converter given".format(quantity.unit))
-        return self.custom_string_converter_for_numbers(
-            _number_in_preferred_units(self.preferred_units, quantity), digits = self.digits)
+        return self.numbers_to_string(quantity, format = self.format)
     
     def string_separator(self):
         return self.separator
-    
-    def string_unit(self, quantity):
-        if self.print_units:
-            if self.has_nbody_unit(quantity.unit):
-                quantity = self.nbody_converter.to_si(quantity)
-            return str(_unit_in_preferred_units(self.preferred_units, quantity))
-        else:
-            return ""
     
     def string_suffix(self):
         return self.suffix
 
 
-def _number_in_preferred_units(preferred_units, quantity):
+def _quantity_in_preferred_units(preferred_units, quantity):
     if quantity.unit in preferred_units:
-        return quantity.number
-    for supported_unit in preferred_units:
-        if quantity.unit.are_bases_equal(supported_unit):
-            return quantity.as_quantity_in(supported_unit).number
+        return quantity
+    for preferred_unit in preferred_units:
+        if quantity.unit.has_same_base_as(preferred_unit):
+            return quantity.as_quantity_in(preferred_unit)
     if "factor_unit" in str(quantity.unit.__class__):
-        return (quantity.number * quantity.unit.local_factor * 
-            _number_in_preferred_units(preferred_units, quantity.unit.local_unit(1.0)))
+        local = _quantity_in_preferred_units(preferred_units, quantity.unit.local_unit(1.0))
+        return local.unit.new_quantity(quantity.number * quantity.unit.local_factor * local.number)
     if "mul_unit" in str(quantity.unit.__class__):
-        return (quantity.number * 
-            _number_in_preferred_units(preferred_units, quantity.unit.left_hand(1.0)) * 
-            _number_in_preferred_units(preferred_units, quantity.unit.right_hand(1.0)))
+        left  = _quantity_in_preferred_units(preferred_units, quantity.unit.left_hand(1.0))
+        right = _quantity_in_preferred_units(preferred_units, quantity.unit.right_hand(1.0))
+        return (left.unit * right.unit).new_quantity(quantity.number * left.number * right.number)
     if "div_unit" in str(quantity.unit.__class__):
-        return (quantity.number * 
-            _number_in_preferred_units(preferred_units, quantity.unit.left_hand(1.0)) / 
-            _number_in_preferred_units(preferred_units, quantity.unit.right_hand(1.0)))
+        left  = _quantity_in_preferred_units(preferred_units, quantity.unit.left_hand(1.0))
+        right = _quantity_in_preferred_units(preferred_units, quantity.unit.right_hand(1.0))
+        return (left.unit / right.unit).new_quantity(quantity.number * left.number / right.number)
     if "pow_unit" in str(quantity.unit.__class__):
-        return quantity.number * _number_in_preferred_units(preferred_units, 
-            quantity.unit.local_unit(1.0))**quantity.unit.power
+        local = _quantity_in_preferred_units(preferred_units, quantity.unit.local_unit(1.0))**quantity.unit.power
+        return local.unit.new_quantity(quantity.number * local.number)
     if "named_unit" in str(quantity.unit.__class__):
-        return quantity.number * _number_in_preferred_units(preferred_units, 
-            quantity.unit.local_unit(1.0))
-    return quantity.number
+        local = _quantity_in_preferred_units(preferred_units, quantity.unit.local_unit(1.0))
+        return local.unit.new_quantity(quantity.number * local.number)
+    return quantity
 
-def _unit_in_preferred_units(preferred_units, quantity):
-    if quantity.unit in preferred_units:
-        return quantity.unit
-    for supported_unit in preferred_units:
-        if quantity.unit.are_bases_equal(supported_unit):
-            return supported_unit
-    if "factor_unit" in str(quantity.unit.__class__):
-        return _unit_in_preferred_units(preferred_units, quantity.unit.local_unit(1.0))
-    if "mul_unit" in str(quantity.unit.__class__):
-        return (_unit_in_preferred_units(preferred_units, quantity.unit.left_hand(1.0)) * 
-            _unit_in_preferred_units(preferred_units, quantity.unit.right_hand(1.0)))
-    if "div_unit" in str(quantity.unit.__class__):
-        return (_unit_in_preferred_units(preferred_units, quantity.unit.left_hand(1.0)) / 
-            _unit_in_preferred_units(preferred_units, quantity.unit.right_hand(1.0)))
-    if "pow_unit" in str(quantity.unit.__class__):
-        return _unit_in_preferred_units(preferred_units, quantity.unit.local_unit(1.0))**quantity.unit.power
-    if "named_unit" in str(quantity.unit.__class__):
-        return _unit_in_preferred_units(preferred_units, quantity.unit.local_unit(1.0))
-    return quantity.unit
+def has_nbody_unit(unit):
+    for factor, x in unit.base:
+        if x.is_generic():
+            return True
+    return False
+
+def is_not_nbody_unit(unit):
+    for factor, x in unit.base:
+        if not x.is_generic():
+            return True
+    return False
 
 
 def set_printing_strategy(strategy, **kwargs):
