@@ -33,10 +33,10 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
         return function
 
 
-    @legacy_function    
+    @legacy_function
     def initialize_grid():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('time', dtype='d', direction=function.IN)
+        function = LegacyFunctionSpecification()
+        #function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -194,6 +194,12 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
     
 
     
+
+    def get_index_range_inclusive(self):
+        ni,nj,nk,error = self.get_mesh_size()
+        return (1, ni, 1, nj, 1, nk)
+    
+    
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):
         LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
@@ -220,7 +226,7 @@ class Capreole(CodeInterface):
         )
         object.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX,),
             (length, length, length, object.ERROR_CODE,)
         )
         
@@ -232,12 +238,12 @@ class Capreole(CodeInterface):
             'fill_grid_state',
             (object.INDEX, object.INDEX, object.INDEX,
             density, momentum, momentum, momentum, energy,
-            object.INDEX, object.INDEX),
+            ),
             (object.ERROR_CODE,)
         )
         object.add_method(
             'get_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX),
             (density, momentum, momentum, momentum, energy,
             object.ERROR_CODE,)
         )
@@ -322,6 +328,85 @@ class Capreole(CodeInterface):
             "length of the model in the x, y and z directions",
             ("length_x", "length_y", "length_z")
         )
+    
+        object.add_caching_parameter(
+            "set_boundary", 
+            "xbound1",
+            "xbound1", 
+            "boundary conditions on first (inner, left) X boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "xbound2",
+            "xbound2", 
+            "boundary conditions on second (outer, right) X boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "ybound1",
+            "ybound1", 
+            "boundary conditions on first (inner, front) Y boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "ybound2",
+            "ybound2", 
+            "boundary conditions on second (outer, back) Y boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "zbound1",
+            "zbound1", 
+            "boundary conditions on first (inner, bottom) Z boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "zbound2",
+            "zbound2", 
+            "boundary conditions on second (outer, top) Z boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        
+        object.add_vector_parameter(
+            "x_boundary_conditions",
+            "boundary conditions for the X directorion",
+            ("xbound1", "xbound2")
+        )
+        
+        
+        object.add_vector_parameter(
+            "y_boundary_conditions",
+            "boundary conditions for the Y directorion",
+            ("ybound1", "ybound2")
+        )
+        
+        
+        object.add_vector_parameter(
+            "z_boundary_conditions",
+            "boundary conditions for the Z directorion",
+            ("zbound1", "zbound2")
+        )
 
 
     def get_index_range_inclusive(self):
@@ -332,7 +417,13 @@ class Capreole(CodeInterface):
         The total number of cells in one direction
         is max - min + 1.
         """
-        nx, ny, nz = self.get_mesh_Size()
+        nx, ny, nz, error = self.get_mesh_size()
         return (1, nx, 1, ny, 1, nz)
+    
+    
+
+    def commit_parameters(self):
+        self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
     
     

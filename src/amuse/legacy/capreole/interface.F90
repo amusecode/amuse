@@ -49,12 +49,13 @@ function get_mesh_size(mx,my,mz) result(ret)
   
 end function
   
-function initialize_grid(t0) result(ret)
+function initialize_grid() result(ret)
   use amuse_helpers
   integer :: ret
   real*8 :: t0
   
-  ret=amuse_initialize_grid(t0)
+  t0  = 0.
+  ret = amuse_initialize_grid(t0)
   
 end function  
 

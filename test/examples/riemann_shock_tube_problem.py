@@ -171,17 +171,27 @@ class CalculateExactSolutionIn1D(object):
 
 class CalculateSolutionIn3D(object):
     number_of_workers = 1
-    number_of_grid_points = 128
+    number_of_grid_points = 10 # 100
     gamma = 5.0/3.0
+    name_of_the_code = "capreole"
     
     def __init__(self):
         pass
         
     def new_instance_of_code(self):
+        attribute = "new_instance_of_{0}_code".format(self.name_of_the_code.lower())
+        return getattr(self,attribute)()
+        
+    def new_instance_of_athena_code(self):
         result=Athena(number_of_workers=self.number_of_workers)
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.3
+        return result
+        
+    def new_instance_of_capreole_code(self):
+        result=Capreole(number_of_workers=self.number_of_workers, debugger="xterm")
+        result.initialize_code()
         return result
         
     def set_parameters(self, instance):
@@ -240,6 +250,8 @@ class CalculateSolutionIn3D(object):
         
         from_model_to_code.copy()
         instance.initialize_grid()
+        
+        print "start evolve"
         instance.evolve(time)
         
         print "copying results"

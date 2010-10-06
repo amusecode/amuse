@@ -483,8 +483,12 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         self.get_range_method = get_range_method
             
     def storage_shape(self):
-        imin, imax, jmin, jmax, kmin, kmax = self.get_range_method()
-        return (imax - imin + 1, jmax - jmin + 1, kmax - kmin + 1)
+        try:
+            imin, imax, jmin, jmax, kmin, kmax = self.get_range_method()
+            return (imax - imin + 1, jmax - jmin + 1, kmax - kmin + 1)
+        except:
+            import traceback
+            traceback.print_exc()
         
     def _add_particles(self, keys, attributes = [], quantities = []):
         raise exceptions.AmuseException("adding points to the grid is not implemented")

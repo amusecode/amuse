@@ -122,7 +122,12 @@ module amuse_helpers
     write(unit=log_unit,fmt="(2/,A,/)") "----- Mesh -----"
     write(unit=log_unit,fmt="(A,3I5)") "1) Number of mesh points: ", &
       meshx,meshy,meshz
-
+     
+    write(*,fmt="(A,3I5)") "1) Number of mesh points: ", &
+      meshx,meshy,meshz
+    write(*,fmt="(a,3(e10.3),a)") & 
+      "2) Size of grid box : ", &
+      xlength,ylength,zlength,str_length_unit
     call fnd3ddecomp()
 
     write(unit=log_unit,fmt=*) "Local mesh: ",sx,ex,sy,ey,sz,ez

@@ -2,6 +2,9 @@ import os
 import sys
 import numpy
 
+from amuse.support.units import generic_unit_system
+from amuse.support.data import core
+
 from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.capreole.interface import CapreoleInterface
 from amuse.legacy.capreole.interface import Capreole
@@ -76,7 +79,7 @@ class TestMPIInterface(TestWithMPI):
         rhvz=0.*numpy.ones_like(x)
         en=0.1*numpy.ones_like(x)
         instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
-        instance.initialize_grid(0.0)
+        instance.initialize_grid()
         instance.stop()
     
     def test5(self):
@@ -94,7 +97,7 @@ class TestMPIInterface(TestWithMPI):
         rhvz=0.*numpy.ones_like(x)
         en=0.1*numpy.ones_like(x)
         instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
-        instance.initialize_grid(0.0)
+        instance.initialize_grid()
         instance.evolve(0.01)
         tnow,err=instance.get_time()
         self.assertAlmostEqual(tnow,0.01,15)
@@ -130,7 +133,7 @@ class TestMPIInterface(TestWithMPI):
         rhvz=0.*numpy.ones_like(x)
         en=0.1*numpy.ones_like(x)
         instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
-        instance.initialize_grid(0.0)
+        instance.initialize_grid()
         instance.evolve(0.01)
         x,y,z,err=instance.get_position_of_index(15,5,20)
         self.assertAlmostEqual(x,15/150.-1/300.,15)
@@ -212,7 +215,7 @@ class TestSodShocktube(TestWithMPI):
         rhvz=0.*numpy.ones_like(x)
         en=(1./(gamma-1))*numpy.ones_like(x)
         instance.fill_grid_state(x,y,z,rho,rhvx,rhvy,rhvz,en)
-        instance.initialize_grid(0.0)
+        instance.initialize_grid()
         instance.evolve(0.2)
     
         x=numpy.array([0.1,0.9,0.6,0.8])
@@ -238,5 +241,49 @@ class TestCapreole(TestWithMPI):
     def test0(self):
         instance=self.new_instance(Capreole)
         instance.initialize_code()
+        instance.stop()
+        
+    def test1(self):
+        instance=self.new_instance(Capreole)
+        instance.initialize_code()
+        instance.parameters.mesh_size = (10,10,1)
+        instance.parameters.length_x = 1.0 | generic_unit_system.length
+        instance.parameters.length_y = 1.0 | generic_unit_system.length
+        instance.parameters.length_z = 0.0 | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = "periodic","periodic"
+        instance.parameters.y_boundary_conditions = "periodic","periodic"
+        instance.parameters.z_boundary_conditions = "periodic","periodic"
+        
+        instance.commit_parameters()
+        
+        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+    
+        grid = core.Grid(10,10,1)
+        grid.rho = 0.1 | density
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
+        grid.energy = 0.0 | energy
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+            
+        result = instance.initialize_grid()
+        
+        print instance.grid[1].rho
+        self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
+        for x in instance.grid[1].rho.value_in(density).flatten():
+            self.assertEquals(x, 0.1)
+            
+        #instance.evolve(1.0 | generic_unit_system.time)
+        
+        #for x in instance.grid.rho.value_in(density).flatten():
+        #    self.assertEquals(x, 0.1)
+    
+        #instance.evolve(10.0 | generic_unit_system.time)
+        #for x in instance.grid.rho.value_in(density).flatten():
+        #    self.assertEquals(x, 0.1)
         instance.stop()
 
