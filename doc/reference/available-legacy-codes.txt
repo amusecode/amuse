@@ -7,10 +7,10 @@ Currently supported Legacy Codes
 Introduction
 ~~~~~~~~~~~~
 
-Here we provide an overview of all currently supported legacy codes in AMUSE, 
-along with a concise explanation of how each code works. 
-This document serves as an initial guide in finding the code with the highest 
-applicability to a specific astrophysical problem. The supported legacy codes 
+Here we provide an overview of all currently supported legacy codes in AMUSE,
+along with a concise explanation of how each code works.
+This document serves as an initial guide in finding the code with the highest
+applicability to a specific astrophysical problem. The supported legacy codes
 have been sorted according to their astrophysical domain:
 
 * :ref:`Dynamics`
@@ -18,50 +18,159 @@ have been sorted according to their astrophysical domain:
 * :ref:`Hydrodynamics`
 * :ref:`Radiative-Transfer`
 
-
-
 .. _Dynamics:
 
 Stellar Dynamics
 ~~~~~~~~~~~~~~~~
 
-* bhtree_
+* BHtree_
 * hermite0_
 * phiGRAPE_
 * twobody_
 * smallN_
+* octgrav_
 
 
 General
 -------
-The general parameters and methods for the gravitational dynamics are described in 
-:doc:`../tutorial/code_interface`. 
+
+The general parameters and methods for the gravitational dynamics are described in
+:doc:`../tutorial/code_interface`.
 Here we describe the exceptions for the specific codes under "Specifics".
 
-.. _bhtree:
+Code comparison table
+---------------------
 
-bhtree
+Note: holds for AMUSE implementation.
+
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+ 
+|name     |approximation scheme |timestep scheme  |CPU     |GPU     |GRAPE |language |stopcond [*]_ |parallel [*]_|
+|         |                     |                 |        |        |      |         |              |             |
++=========+=====================+=================+========+========+======+=========+==============+=============+
+|bhtree   |tree                 |shared?          |Y       |N       |N     |C++      |CNT           |N            |
+|         |                     |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|phigrape |direct               |block            |Y g6    |Y       |Y     | FORTRAN |CNPT          |N            | 
+|         |                     |                 |        |sapporo |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|octgrav  |tree                 |shared           |N       |Y       |N     |C++      |N             |N            | 
+|         |                     |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|hermite  |direct               |shared/variable  |Y       |N       |N     |C        |CNOPT         |Y            |
+|         |                     |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|twobody  |universal variables, |none, exact      |Y       |N       |N     | Python  |              |N            |
+|         |Kepler eq.           |                 |        |        |      |         |              |             |
+|         |                     |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|smallN   |direct Hermite 4th   |shared?          |Y       |N       |N     |C++      |              |N            |
+|         |order                |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|fi       |tree                 |shared/variable? |Y       |N       |N     | FORTRAN |N             |N            |
+|         |                     |                 |        |        |      |         |              |             |
+|         |                     |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|gadget   |tree                 |individual       |Y       |N       |N     |C        |N             |N            |
+|         |                     |                 |        |        |      |         |              |             |
+|         |                     |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+
+.. [*] parallel in the following sense: AMUSE uses MPI to communicate with legacy codes, but
+        for some codes it can be used to parallelize the calculations. Some legacy codes (GPU) 
+        are already parallel, however in this table we *do not* refer to that.
+  
+        Codes designated *Y* for parallel can set the number of (parallel) workers, e.g. to set
+        10 workers for hermite do:
+
+        .. code-block:: python
+
+           >>> instance = Hermite(number_of_workers=10)
+
+.. [*] stopping conditions
+
+       ==== ==========================
+       code name of stopping condition
+       ==== ========================== 
+       C    Collision detection
+       E    Escaper detection
+       N    Number of steps detection
+       O    Out of box detection
+       P    Pair detection
+       T    Timeout detection
+       ==== ==========================
+
+.. _BHtree:
+
+BHtree
 ------
 
-N-body integration module. An implementation of the Barnes & Hut tree code [#]_ 
-by Jun Makino  `BHTree <http://www.artcompsci.org/~makino/softwares/C++tree/index.html>`_. 
+N-body integration module. An implementation of the Barnes & Hut tree code [#bh]_
+by Jun Makino  `BHTree-code <http://www.artcompsci.org/~makino/softwares/C++tree/index.html>`_.
 
 Specifics
 #########
 
 Parameters
 ^^^^^^^^^^
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  |unit           |description        |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++====================================+===============+===============+===================+
+|use_self_gravity                    |1              |none           |flag for usage of  |
+|                                    |               |               |self gravity, 1 or |
+|                                    |               |               |0 (true or false)  |
++------------------------------------+---------------+---------------+-------------------+
+|timestep                            |0.015625       |time           |time step          |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|epsilon squared                     |0.125          |length*length  |smoothing parameter|
+|                                    |               |               |for gravity        |
+|                                    |               |               |calculations       |
+|                                    |               |               |>0!                |
++------------------------------------+---------------+---------------+-------------------+
+|ncrit_for_tree                      |1024           |none           |maximum number of p|
+|                                    |               |               |articles sharing an|
+|                                    |               |               |interaction list   |
++------------------------------------+---------------+---------------+-------------------+
+|opening_angle                       |0.75           |none           |opening angle,     |
+|                                    |               |               |theta, for building|
+|                                    |               |               |the tree: between 0|
+|                                    |               |               |and 1              |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_number_of_steps |1              |none           |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_timeout         |4.0            |seconds        |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_out_of_box_size |0.0            |length         |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|time                                |0.0            |time           |current            |
+|                                    |               |               |simulation         |
+|                                    |               |               |time               |
++------------------------------------+---------------+---------------+-------------------+
+|dt_dia                              | 1.0           | time          |time interval      |
+|                                    |               |               |between            |
+|                                    |               |               |diagnostics        |
+|                                    |               |               |output             |
++------------------------------------+---------------+---------------+-------------------+
 
 * Openings angle for building the tree, between 0 and 1::
-    
+
       openings_angle
 
 * Smoothing parameter, must be > 0
-      
+
       attribute::
-        
+
           epsilon_squared, e.g.
-    
+
       example
 
       .. code-block:: python
@@ -72,18 +181,18 @@ Parameters
         >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
 
 * constant timestep for iteration::
- 
+
       timestep
 
 Methods
 ^^^^^^^
 
-* set_time_step. 
+* set_time_step.
     Note that all codes have get_time_step.::
 
       set_time_step()
 
-.. [#] Barnes, J. & Hut, P. 1986. *Nature* **324**, 446.
+.. [#bh] Barnes, J. & Hut, P. 1986. *Nature* **324**, 446.
 
 .. _hermite0:
 
@@ -92,7 +201,7 @@ hermite0
 
 Time-symmetric N-body integration module with shared but variable time step
 (the same for all particles but its size changing in time),
-using the Hermite integration scheme [#]_. See also : `ACS <http://www.artcompsci.org/>`_
+using the Hermite integration scheme [#hutmakino]_. See also : `ACS <http://www.artcompsci.org/>`_
 
 Specifics
 #########
@@ -100,9 +209,60 @@ Specifics
 Parameters
 ^^^^^^^^^^
 
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  | unit          | description       |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++====================================+===============+===============+===================+
+|pair factor                         |1.0            | none          |radius factor      |
+|                                    |               |               |for pair detec     |
+|                                    |               |               |tion               |
++------------------------------------+---------------+---------------+-------------------+
+|dt_param                            |0.03           |none           |timestep           |
+|                                    |               |               |scaling factor     |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|epsilon squared                     |0.0            |length*length  |smoothing parameter|
+|                                    |               |               |for gravity        |
+|                                    |               |               |calculations       |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_number_of_steps |1              |none           |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_timeout         |4.0            |seconds        |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_out_of_box_size |0.0            |length         |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|time                                |0.0            |time           |current            |
+|                                    |               |               |simulation         |
+|                                    |               |               |time               |
++------------------------------------+---------------+---------------+-------------------+
+|dt_dia                              | 1.0           | time          |time interval      |
+|                                    |               |               |between            |
+|                                    |               |               |diagnostics        |
+|                                    |               |               |output             |
++------------------------------------+---------------+---------------+-------------------+
+
+pair_factor  1.0 none:
+dt_param: 0.03 none
+epsilon_squared: 0.0 length * length
+stopping_conditions_number_of_steps: 1 none
+time: 0.0 time
+dt_dia: 1.0 time
+stopping_conditions_timeout: 4.0 s
+stopping_conditions_out_of_box_size: 0.0 length
+
+
 .. automodule:: amuse.legacy.hermite0.interface
 
     .. autoclass:: Hermite
+
         .. automethod:: parameters
 
 * smoothing parameter for gravity calculations, can be 0.::
@@ -116,10 +276,10 @@ Parameters
 Methods
 ^^^^^^^
 
-* set_time_step. 
+* set_time_step.
     Note that all codes have get_time_step.
 
-.. [#] Hut, P., Makino, J. & McMillan, S., 1995, *ApJL* **443**, L93.
+.. [#hutmakino] Hut, P., Makino, J. & McMillan, S., 1995, *ApJL* **443**, L93.
 
 .. _phiGRAPE:
 
@@ -127,22 +287,24 @@ phiGRAPE
 --------
 
 phiGRAPE is a direct N-body code optimized for running on a parallel
-GRAPE cluster. See Harfst et al. [#]_ for more details.  The
+GRAPE cluster. See Harfst et al. [#harfst]_ for more details.  The
 Amusean version is capable of working on other platforms as well by
 using interfaces that mimic GRAPE hardware.
 
 * Sapporo
     Sapporo is a library that mimics the behaviour of
-    GRAPE hardware and uses the GPU to execute the force calculations [#]_. 
+    GRAPE hardware and uses the GPU to execute the force calculations [#gaburov]_.
+
+* Sapporo-light
+    This version of Sapporo is without
+    multi-threading support and does not need
+    C++. This makes it easier to integrate into
+    fortran codes, but beware, it can only use one
+    GPU device per application!
 
 * g6
     Library which mimics the behavior of GRAPE and uses the
-    CPU. Lowest on hw requirements. 
-
-* phantom GRAPE
-    Library which mimicks the behavior of GRAPE and uses the
-    CPU. Fine tuned for x86_64 [#]_. `phantom Grape <http://grape.mtk.nao.ac.jp/~nitadori/phantom/>`_
-    
+    CPU. Lowest on hw requirements.
 
 Specifics
 #########
@@ -172,35 +334,80 @@ module the preferred mode can be selected whith the mode parameter:
 
 The default is **MODE_G6LIB**.
 
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  | unit          | description       |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++====================================+===============+===============+===================+
+|initialize_gpu_once                 |0              |none           |set to 1 if the gpu|
+|                                    |               |               |must only be       |
+|                                    |               |               |initialized once, 0|
+|                                    |               |               |if it can be       |
+|                                    |               |               |initialized for    |
+|                                    |               |               |every call\nIf you |
+|                                    |               |               |want to run        |
+|                                    |               |               |multiple instances |
+|                                    |               |               |of the code on the |
+|                                    |               |               |same gpu this      |
+|                                    |               |               |parameter needs to |
+|                                    |               |               |be 0 (default)     |
++------------------------------------+---------------+---------------+-------------------+
+|initial_timestep_parameter          |0.0            |none           |parameter to       |
+|                                    |               |               |determine the      |
+|                                    |               |               |initial timestep   |
++------------------------------------+---------------+---------------+-------------------+
+|timestep_parameter                  |0.0            |none           |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|epsilon squared                     |0.0            |length*length  |smoothing parameter|
+|                                    |               |               |for gravity        |
+|                                    |               |               |calculations       |
+|                                    |               |               |>0!                |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_number_of_steps |1              |none           |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_timeout         |4.0            |seconds        |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_out_of_box_size |0.0            |length         |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+	      
+
 * timestep parameter::
-       
+
       timestep_parameter
 
   .. code-block:: python
-         
+
       >>> instance.timestep_parameter = 0.1 |nbody_system.time
 
   etc...
 
 * parameter to determine the initial timestep::
-   
-      initial_timestep_parameter      
 
- 
+      initial_timestep_parameter
+
+
 Methods
 ^^^^^^^
 
-.. [#]  Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2006, *NewAstron.* **12**, 357-377. 
-.. [#]  Gaburov, E., Harfst, S., Portegies Zwart, S. 2009, *NewAstron.* **14** 630-637.
-.. [#]  Nitadori, K, Makino, J., Hut, P. 2006, *NewAstron.* **12** 169-181.
+.. [#harfst]  Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2006, *NewAstron.* **12**, 357-377.
+.. [#gaburov]  Gaburov, E., Harfst, S., Portegies Zwart, S. 2009, *NewAstron.* **14** 630-637.
+.. [#nitadori]  Nitadori, K, Makino, J., Hut, P. 2006, *NewAstron.* **12** 169-181.
 
 .. _twobody:
 
 twobody
 -------
 
-Semi analytical code based on Kepler [#]_. The particle set provided has length one or two. If one particle is given, the mass is assigned to 
-a particle in the origin and the phase-coordinates are assigned to the other particle. This is usefull when *m1* >> *m2*. 
+Semi analytical code based on Kepler [#bate]_. The particle set provided has length one or two. If one particle is given, the mass is assigned to
+a particle in the origin and the phase-coordinates are assigned to the other particle. This is usefull when *m1* >> *m2*.
 
 Specifics
 #########
@@ -211,7 +418,7 @@ Parameters
 Methods
 ^^^^^^^
 
-.. [#]  Bate, R.R, Mueller, D.D., White, J.E. "FUNDAMENTALS OF ASTRODYNAMICS" *Dover* 0-486-60061-0
+.. [#bate]  Bate, R.R, Mueller, D.D., White, J.E. "FUNDAMENTALS OF ASTRODYNAMICS" *Dover* 0-486-60061-0
 
 .. _smallN:
 
@@ -223,15 +430,18 @@ Starlab.  http://www.ids.ias.edu/~starlab/
 
 You will need to download Starlab from the above site, make it, install
 it, and then set the STARLAB_INSTALL_PATH variable to be equal to the
-installation directory (typically something like ~/starlab/usr). 
-        
+installation directory (typically something like ~/starlab/usr).
+
 Starlab is available under the GNU General Public Licence (version 2),
 and is developed by:
+
     * Piet Hut
     * Steve McMillan
     * Jun Makino
     * Simon Portegies Zwart
+
 Other Starlab Contributors:
+
     * Douglas Heggie
     * Kimberly Engle
     * Peter Teuben
@@ -243,12 +453,59 @@ Parameters
 ^^^^^^^^^^
 
 * The number of particles being managed by the SmallN module::
-  
+
     number_of_particles
 
 
 Methods
 ^^^^^^^
+
+.. _octgrav:
+
+Octgrav
+-------
+
+Tree-code which runs on GPUs with NVIDIA CUDA architecture. [#oct]_
+
+Specifics
+#########
+
+Parameters
+^^^^^^^^^^
+
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  | unit          | description       |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|opening_angle                       |0.8            |none           |opening angle for  |
+|                                    |               |               |building the tree  |
+|                                    |               |               |between 0 and 1    |
++------------------------------------+---------------+---------------+-------------------+
+|timestep                            |0.01           |time           |constant timestep  |
+|                                    |               |               |for iteration      |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|epsilon squared                     |0.01           |length*length  |smoothing parameter|
+|                                    |               |               |for gravity        |
+|                                    |               |               |calculations       |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_number_of_steps |1              |none           |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_timeout         |4.0            |seconds        |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_out_of_box_size |0.0            |length         |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+
+.. [#oct] Gaburov, E., Bedorf, J., Portegies Zwart S., 2010, "Gravitational tree-code on graphics processing units: implementations in CUDA", *ICCS*
 
 .. _Evolution:
 
@@ -275,8 +532,8 @@ Stellar evolution is performed by the **rapid** single-star evolution (SSE) algo
 =========== ====== ==== =========================
 ..           min    max  unit
 =========== ====== ==== =========================
-Mass        0.1    100  Msun 
-Metallicity 0.0001 0.03 fraction (0.02 is solar) 
+Mass        0.1    100  Msun
+Metallicity 0.0001 0.03 fraction (0.02 is solar)
 =========== ====== ==== =========================
 
 
@@ -296,8 +553,8 @@ Binary evolution is performed by the **rapid** binary-star evolution (BSE) algor
 ============ ====== ==== =========================
 ..           min    max  unit
 ============ ====== ==== =========================
-Mass         0.1    100  Msun 
-Metallicity  0.0001 0.03 fraction (0.02 is solar) 
+Mass         0.1    100  Msun
+Metallicity  0.0001 0.03 fraction (0.02 is solar)
 Period       all    all
 Eccentricity 0.0    1.0
 ============ ====== ==== =========================
@@ -315,28 +572,28 @@ Relevant papers:
 
 * "The evolution of low mass stars"
    Eggleton, P.P. 1971, MNRAS, 151, 351
-* "Composition changes during stellar evolution" 
+* "Composition changes during stellar evolution"
    Eggleton, P.P. 1972, MNRAS, 156, 361
-* "A numerical treatment of double shell source stars" 
+* "A numerical treatment of double shell source stars"
    Eggleton, P.P. 1973, MNRAS, 163, 279
-* "An Approximate Equation of State for Stellar Material" 
+* "An Approximate Equation of State for Stellar Material"
    Eggleton, P.P., Faulkner, J., & Flannery, B.P. 1973, A&A, 23, 325
 * "A Possible Criterion for Envelope Ejection in Asymptotic Giant Branch or First Giant Branch Stars"
    Han, Z., Podsiadlowski, P., & Eggleton, P.P. 1994, MNRAS, 270, 121
-* "Approximate input physics for stellar modelling" 
+* "Approximate input physics for stellar modelling"
    Pols, O.R., Tout, C.A., Eggleton, P.P., & Han, Z. 1995, MNRAS, 274, 964
 * "The Braking of Wind"
    Eggleton, P.P. 2001, Evolution of Binary and Multiple Star Systems, 229, 157
-* "A Complete Survey of Case A Binary Evolution with Comparison to Observed Algol-type Systems" 
-   Nelson, C.A., & Eggleton, P.P. 2001, ApJ, 552, 664 
-* "The Evolution of Cool Algols" 
-   Eggleton, P.P., & Kiseleva-Eggleton, L. 2002, ApJ, 575, 461 
+* "A Complete Survey of Case A Binary Evolution with Comparison to Observed Algol-type Systems"
+   Nelson, C.A., & Eggleton, P.P. 2001, ApJ, 552, 664
+* "The Evolution of Cool Algols"
+   Eggleton, P.P., & Kiseleva-Eggleton, L. 2002, ApJ, 575, 461
 * For thermohaline mixing:
    Stancliffe, Glebbeek, Izzard & Pols, 2007 A&A
 * For the OPAL 1996 opacity tables:
    Eldridge & Tout, 2004 MNRAS 348
 * For enhancements to the solver:
-   Glebbeek, Pols & Hurley, 2008 A&A 
+   Glebbeek, Pols & Hurley, 2008 A&A
 
 
 .. _mesa:
@@ -420,9 +677,9 @@ The reference for Capreole (original version):
 fi
 --
 
-FI is a parallel TreeSPH code for galaxy simulations. Extensively 
-rewritten, extended and parallelized, it is a development from code from 
-Jeroen Gerritsen and Roelof Bottema, which itself goes back to Treesph. 
+FI is a parallel TreeSPH code for galaxy simulations. Extensively
+rewritten, extended and parallelized, it is a development from code from
+Jeroen Gerritsen and Roelof Bottema, which itself goes back to Treesph.
 
 The relevant references are:
 
