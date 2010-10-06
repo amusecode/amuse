@@ -34,7 +34,7 @@ $(CODELIB): $(LIBFILES) $(SRCDIR)/Makefile $(SRCDIR)/makefile_options
 	make -C $(SRCDIR) all
 
 clean:
-	rm -f *.o *.pyc worker_code.cc worker_code.h worker_code
+	rm -f *.o *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
 	make -C $(SRCDIR) clean
 
 worker_code.cc: interface.py
@@ -45,6 +45,12 @@ worker_code.h: interface.py
 
 worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	
+worker_code_periodic: worker_code.cc worker_code.h $(OBJS) $(SRCDIR)/makefile_options
+	make -C $(SRCDIR) clean 
+	make -C $(SRCDIR) all OPT="-DPERIODIC -DUNEQUALSOFTENINGS -DPEANOHILBERT -DWALLCLOCK -DDOUBLEPRECISION -DSYNCHRONIZATION" 
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) worker_code.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	make -C $(SRCDIR) clean 
 
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options
 	$(MPICXX) $(CXXFLAGS) $(SCINC) -c -o $@ gadget_code.cc $(SCLIBS)
