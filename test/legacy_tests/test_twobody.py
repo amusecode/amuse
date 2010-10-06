@@ -87,7 +87,7 @@ class TwoBodyInterfaceTests(TestWithMPI):
         position = instance.particles[0].position
         self.assertAlmostEqual(((position.x**2+position.y**2+position.z**2)/(7.1e6)**2).value_in(units.m**2),1.,7)
 
-    def test3(self):
+    def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
         instance = twobody.TwoBody(convert_nbody)
         

@@ -415,9 +415,8 @@ class TwoBody(GravitationalDynamics):
             convert_nbody,
             **options
         )     
-            
-  
-           
-
-
+    
+    def define_parameters(self, object):
+        pass
+    
 
