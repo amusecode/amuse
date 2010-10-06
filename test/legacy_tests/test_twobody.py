@@ -40,8 +40,6 @@ class TwoBodyInterfaceTests(TestWithMPI):
         self.assertEquals(10.0,  retrieved_state2['x'])
 
         del instance
-
-
         
     def test2(self):
         convert_nbody = nbody_system.nbody_to_si(5.9742e24 | units.kg, 1e6| units.m)
@@ -109,3 +107,40 @@ class TwoBodyInterfaceTests(TestWithMPI):
         instance.particles[0].mass=0.8*5.9742e24 | units.kg
         instance.evolve_model(4000.0 | units.s)
         self.assertEqual(instance.particles.mass[0],0.8*5.9742e24 | units.kg)
+
+    def test5(self):
+        #from: Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd edition
+        instance = twobody.TwoBody()
+        p = core.Particle()
+
+        p.mass = 1.0 | nbody_system.mass
+        p.radius = 0.001 | nbody_system.length
+        p.position = [1.0, 0.1, -0.1] | nbody_system.length
+        p.velocity = [-0.1, 2.0, -0.2] | nbody_system.speed
+
+        instance.particles.add_particle(p)
+        instance.evolve_model(1.0|nbody_system.time)
+        self.assertAlmostEqual(instance.particles.x, 0.611238439231|nbody_system.length, 7)
+        self.assertAlmostEqual(instance.particles.y, 1.92873971354574|nbody_system.length, 7)
+        self.assertAlmostEqual(instance.particles.z, -0.2562478900031234|nbody_system.length, 7)
+
+    def test6(self):
+        #from: Fundamentals of Celestial Mechanics, J.M.A. Danby 2nd edition
+        instance = twobody.TwoBody()
+        p = core.Particles(2)
+
+        p.mass = [1, 0.0] | nbody_system.mass
+        p.radius = 0.001 | nbody_system.length
+        p.x = [1.0,  0.0] | nbody_system.length
+        p.y = [0.1,  0.0] | nbody_system.length
+        p.z = [-0.1, 0.0] | nbody_system.length
+
+        p.vx = [-0.1, 0.0] | nbody_system.speed
+        p.vy = [2.0, 0.0] | nbody_system.speed
+        p.vz = [-0.2, 0.0] | nbody_system.speed
+
+        instance.particles.add_particles(p)
+        instance.evolve_model(1.0|nbody_system.time)
+        self.assertAlmostEqual(instance.particles.x[0] - instance.particles.x[1], 0.611238439231|nbody_system.length, 7)
+        self.assertAlmostEqual(instance.particles.y[0] - instance.particles.y[1], 1.92873971354574|nbody_system.length, 7)
+        self.assertAlmostEqual(instance.particles.z[0] - instance.particles.z[1], -0.2562478900031234|nbody_system.length, 7)
