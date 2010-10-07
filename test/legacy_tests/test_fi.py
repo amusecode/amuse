@@ -743,26 +743,26 @@ class TestFi(TestWithMPI):
         particles.y = 0 | nbody.length
         particles.z = 0 | nbody.length
         particles.radius = 0.001 | nbody.length
-        particles.vx =  [-0.5,1.] | nbody.speed
+        particles.vx =  [-1,1.] | nbody.speed
         particles.vy =  0 | nbody.speed
         particles.vz =  0 | nbody.speed
         particles.mass = 1.0 | nbody.mass
-
+    
         instance = Fi()
         instance.initialize_code()
         instance.parameters.stopping_conditions_out_of_box_size = 1. | nbody.length
         instance.parameters.self_gravity_flag=False
-        instance.parameters.timestep=0.25 | nbody.time 
+        instance.parameters.timestep=0.25 | nbody.time
         self.assertEquals(instance.parameters.stopping_conditions_out_of_box_size,  1.| nbody.length)
         instance.parameters.epsilon_squared = (0.001 | nbody.length)**2
-        instance.dm_particles.add_particles(particles) 
+        instance.dm_particles.add_particles(particles)
         instance.stopping_conditions.out_of_box_detection.enable()
         instance.evolve_model(2 | nbody.time)
         self.assertEquals(instance.stopping_conditions.out_of_box_detection.number_of_particles()[0],2)
         print instance.stopping_conditions.out_of_box_detection.particles(0, 'dm_particles')
         print instance.stopping_conditions.out_of_box_detection.particles(1, 'dm_particles')
         self.assertEquals(instance.stopping_conditions.out_of_box_detection.particles(2, 'dm_particles'),[])
-
+    
         self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
         self.assertAlmostEqual(instance.model_time.number ,1.,3)
         

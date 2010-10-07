@@ -152,59 +152,14 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.result_type = 'i'
         return function
     
-    @legacy_function    
-    def fill_grid_state():
-        function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
+    
         
     
-    @legacy_function    
-    def get_grid_state_mpi():
-        function = LegacyFunctionSpecification()  
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        
-        return function
-        
-    @legacy_function    
-    def fill_grid_state_mpi():
-        function = LegacyFunctionSpecification()  
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
     
-    @legacy_function    
-    def get_grid_state():
-        function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        function.result_type = 'i'
-        return function
+        
+    
+    
+    
         
     def set_isocsound(self, value):
         self.par_setd("problem", "iso_csound", "%.15e", value, "")
@@ -386,6 +341,87 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         return self.par_getd("time", "cour_no"), 0
     
     
+
+    @legacy_function
+    def get_density():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['level','domain']:
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        for x in ['rho',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    
+
+    @legacy_function
+    def get_energy_density():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['level','domain']:
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        for x in ['en',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    
+
+    @legacy_function
+    def get_momentum_density():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['level','domain']:
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        for x in ['rhovx', 'rhovy', 'rhovz',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    
+
+    @legacy_function
+    def get_grid_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['level','domain']:
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        
+        return function
+    
+    
+
+    @legacy_function
+    def fill_grid_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        for x in ['level','domain']:
+            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    
 class Athena(CodeInterface):
 
     def __init__(self, **options):
@@ -412,16 +448,34 @@ class Athena(CodeInterface):
         energy =  mass / ((time**2) * length)
         
         object.add_method(
-            'fill_grid_state_mpi',
+            'fill_grid_state',
             (object.INDEX, object.INDEX, object.INDEX,
             density, momentum, momentum, momentum, energy,
             object.INDEX, object.INDEX),
             (object.ERROR_CODE,)
         )
         object.add_method(
-            'get_grid_state_mpi',
+            'get_grid_state',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (density, momentum, momentum, momentum, energy,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_energy_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            ( energy,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (density,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_momentum_denisty',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            ( momentum, momentum, momentum, 
             object.ERROR_CODE,)
         )
     
@@ -437,15 +491,19 @@ class Athena(CodeInterface):
             (energy,
             object.ERROR_CODE,)
         )
-
+    
         self.stopping_conditions.define_methods(object)
     
     def define_particle_sets(self, object):
         object.define_grid('grid')
         object.set_grid_range('grid', 'get_index_range_inclusive')
         object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
-        object.add_getter('grid', 'get_grid_state_mpi', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        object.add_setter('grid', 'fill_grid_state_mpi', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        object.add_setter('grid', 'fill_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
+        object.add_getter('grid', 'get_energy_density', names=('energy',))
+        object.add_setter('grid', 'fill_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        
     
         object.define_grid('potential_grid')
         object.set_grid_range('potential_grid', 'get_index_range_for_potential')

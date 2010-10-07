@@ -200,6 +200,96 @@ function get_grid_state(i,j,k,rho_out,rhvx_out,rhvy_out,rhvz_out,en_out) result(
   ret=0
 end function
 
+
+
+function get_momentum_density(i,j,k,rhvx_out,rhvy_out,rhvz_out) result(ret)
+  use amuse_helpers
+  integer :: ret,i,j,k
+  real*8 :: rhvx_out,rhvy_out,rhvz_out
+  real*8 :: lstate(neq)
+#ifdef MPI
+  integer retsum,ierr
+  real*8 :: tmp(neq)
+#endif
+  
+  ret=retrieve_grid(i,j,k,lstate)
+#ifdef MPI
+  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
+  ret=1
+  if(retsum.NE.1) ret=-1
+#endif
+  if(ret.NE.1) then
+    return
+  endif  
+#ifdef MPI
+  tmp=lstate
+  call MPI_REDUCE(tmp,lstate,neq,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
+#endif
+  rhvx_out=lstate(RHVX)
+  rhvy_out=lstate(RHVY)
+  rhvz_out=lstate(RHVZ)
+  ret=0
+end function
+
+
+function get_energy_density(i,j,k,en_out) result(ret)
+  use amuse_helpers
+  integer :: ret,i,j,k
+  real*8 :: en_out
+  real*8 :: lstate(neq)
+#ifdef MPI
+  integer retsum,ierr
+  real*8 :: tmp(neq)
+#endif
+  
+  ret=retrieve_grid(i,j,k,lstate)
+#ifdef MPI
+  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
+  ret=1
+  if(retsum.NE.1) ret=-1
+#endif
+  if(ret.NE.1) then
+    return
+  endif  
+#ifdef MPI
+  tmp=lstate
+  call MPI_REDUCE(tmp,lstate,neq,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
+#endif
+  en_out=lstate(EN)
+  ret=0
+end function
+
+
+function get_density(i,j,k,rho_out) result(ret)
+  use amuse_helpers
+  integer :: ret,i,j,k
+  real*8 :: rho_out
+  real*8 :: lstate(neq)
+#ifdef MPI
+  integer retsum,ierr
+  real*8 :: tmp(neq)
+#endif
+  
+  ret=retrieve_grid(i,j,k,lstate)
+#ifdef MPI
+  call MPI_ALLREDUCE(ret,retsum,1,MPI_INTEGER,MPI_SUM,MPI_COMM_NEW,ierr)
+  ret=1
+  if(retsum.NE.1) ret=-1
+#endif
+  if(ret.NE.1) then
+    return
+  endif  
+#ifdef MPI
+  tmp=lstate
+  call MPI_REDUCE(tmp,lstate,neq,MPI_DOUBLE_PRECISION,MPI_SUM,0.,MPI_COMM_NEW,ierr)
+#endif
+  rho_out=lstate(RHO)
+  ret=0
+end function
+
+
+
+
 function set_gravity_field(i,j,k,fx,fy,fz) result(ret)
   use amuse_helpers
   integer :: ret,i,j,k

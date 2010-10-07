@@ -450,14 +450,7 @@ int test() {
     return 1;
 }
 
-int fill_grid_state(
-  int i, int j, int k,
-  double rho, double rhovx, double rhovy, double rhovz,
-  double en){
-  return -1;
-}
-
-int get_grid_state_mpi(
+int get_grid_state(
     int * i, int * j, int * k,
     int * levels, int * domains,
     double * rho,
@@ -564,7 +557,293 @@ int get_grid_state_mpi(
 }
 
 
-int fill_grid_state_mpi(
+int get_density(
+    int * i, int * j, int * k,
+    int * levels, int * domains,
+    double * rho,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int level = 0;
+    int domain = 0;
+
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        level = levels[l];
+        domain = domains[l];
+
+        rho[l] = 0.0;
+
+        if (level >= mesh.NLevels){
+            continue;
+        }
+
+        if (domain >= mesh.DomainsPerLevel[level]){
+            continue;
+        }
+
+        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            {
+
+            }
+            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+            {
+
+            }
+            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+            {
+            }
+            else
+            {
+
+                i0 -= grid->Disp[0] - grid->is;
+                if(grid->Nx[1] > 1)
+                {
+                    j0 -= grid->Disp[1] - grid->js;
+                }
+                else
+                {
+                    j0 = 0;
+                }
+                if(grid->Nx[2] > 1)
+                {
+                    k0 -= grid->Disp[2] - grid->ks;
+                }
+                else
+                {
+                    k0 = 0;
+                }
+
+
+                rho[l] = grid->U[k0][j0][i0].d;
+            }
+
+        }
+    }
+
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(rho, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, rho, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
+
+int get_momentum_density(
+    int * i, int * j, int * k,
+    int * levels, int * domains,
+    double * rhovx, double * rhovy, double * rhovz,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int level = 0;
+    int domain = 0;
+
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        level = levels[l];
+        domain = domains[l];
+
+        rhovx[l] = rhovy[l]= rhovz[l] = 0.0;
+
+        if (level >= mesh.NLevels){
+            continue;
+        }
+
+        if (domain >= mesh.DomainsPerLevel[level]){
+            continue;
+        }
+
+        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            {
+
+            }
+            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+            {
+
+            }
+            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+            {
+            }
+            else
+            {
+
+                i0 -= grid->Disp[0] - grid->is;
+                if(grid->Nx[1] > 1)
+                {
+                    j0 -= grid->Disp[1] - grid->js;
+                }
+                else
+                {
+                    j0 = 0;
+                }
+                if(grid->Nx[2] > 1)
+                {
+                    k0 -= grid->Disp[2] - grid->ks;
+                }
+                else
+                {
+                    k0 = 0;
+                }
+
+
+                rhovx[l] = grid->U[k0][j0][i0].M1;
+                rhovy[l] = grid->U[k0][j0][i0].M2;
+                rhovz[l] = grid->U[k0][j0][i0].M3;
+            }
+
+        }
+    }
+
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(rhovx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(rhovz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, rhovx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, rhovz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
+int get_energy_density(
+    int * i, int * j, int * k,
+    int * levels, int * domains,
+    double * en,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int level = 0;
+    int domain = 0;
+
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        level = levels[l];
+        domain = domains[l];
+
+        en[l] = 0.0;
+
+        if (level >= mesh.NLevels){
+            continue;
+        }
+
+        if (domain >= mesh.DomainsPerLevel[level]){
+            continue;
+        }
+
+        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            {
+
+            }
+            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+            {
+
+            }
+            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+            {
+            }
+            else
+            {
+
+                i0 -= grid->Disp[0] - grid->is;
+                if(grid->Nx[1] > 1)
+                {
+                    j0 -= grid->Disp[1] - grid->js;
+                }
+                else
+                {
+                    j0 = 0;
+                }
+                if(grid->Nx[2] > 1)
+                {
+                    k0 -= grid->Disp[2] - grid->ks;
+                }
+                else
+                {
+                    k0 = 0;
+                }
+
+
+                en[l] = grid->U[k0][j0][i0].E;
+            }
+
+        }
+    }
+
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(en, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, en, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+    return 0;
+}
+
+
+
+
+int fill_grid_state(
     int * i,
     int * j,
     int * k,
@@ -789,15 +1068,6 @@ int set_potential(
     }
 
     return 0;
-}
-
-
-int get_grid_state(
-  int i, int j, int k,
-  double * rho, double * rhovx, double * rhovy, double * rhovz,
-  double * en){
-
-  return -2;
 }
 
 int esys_roe_adb_hydro(int * index, double * u, double * v, double * w,

@@ -200,6 +200,51 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
         return (1, ni, 1, nj, 1, nk)
     
     
+
+    
+
+    
+
+    @legacy_function
+    def get_momentum_density():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rhovx','rhovy','rhovz']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    
+
+    
+
+    @legacy_function
+    def get_density():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    
+
+    @legacy_function
+    def get_energy_density():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['energy']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):
         LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
@@ -231,20 +276,41 @@ class Capreole(CodeInterface):
         )
         
         density = mass / (length**3)
-        momentum =  mass / (time * (length**2))
-        energy =  mass / ((time**2) * length)
+        momentum_density =  mass / (time * (length**2))
+        energy_density =  mass / ((time**2) * length)
         
         object.add_method(
             'fill_grid_state',
             (object.INDEX, object.INDEX, object.INDEX,
-            density, momentum, momentum, momentum, energy,
+            density, momentum_density, momentum_density, momentum_density, energy_density,
             ),
             (object.ERROR_CODE,)
         )
         object.add_method(
             'get_grid_state',
             (object.INDEX, object.INDEX, object.INDEX),
-            (density, momentum, momentum, momentum, energy,
+            (density, momentum_density, momentum_density, momentum_density, energy_density,
+            object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_density',
+            (object.INDEX, object.INDEX, object.INDEX),
+            (density,
+            object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_momentum_density',
+            (object.INDEX, object.INDEX, object.INDEX),
+            (momentum_density, momentum_density, momentum_density,
+            object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_energy_density',
+            (object.INDEX, object.INDEX, object.INDEX),
+            (energy_density,
             object.ERROR_CODE,)
         )
     
@@ -255,6 +321,9 @@ class Capreole(CodeInterface):
         object.set_grid_range('grid', 'get_index_range_inclusive')
         object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
         object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        object.add_getter('grid', 'get_density', names=('rho',))
+        object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
+        object.add_getter('grid', 'get_energy_density', names=('energy',))
         object.add_setter('grid', 'fill_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
     
         

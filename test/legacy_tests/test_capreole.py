@@ -32,12 +32,20 @@ class TestMPIInterface(TestWithMPI):
         instance.initialize_code()
         instance.setup_mesh(50,50,50,1.,1.,1.)
         instance.commit_parameters()
-        instance.fill_grid_state(1,1,1,1.,0.,0.,0.,1.)
+        instance.fill_grid_state(1,1,1,1.,0.1,0.1,0.1,1.)
+        rho, err=instance.get_density(1,1,1)
+        self.assertEqual(rho,1.)
+        rhovx,rhovy,rhovz,err=instance.get_momentum_density(1,1,1)
+        self.assertEqual(rhovx,0.1)
+        self.assertEqual(rhovy,0.1)
+        self.assertEqual(rhovz,0.1)
+        en,err=instance.get_energy_density(1,1,1)
+        self.assertEqual(en,1.)
         rho,rhovx,rhovy,rhovz,en,err=instance.get_grid_state(1,1,1)
         self.assertEqual(rho,1.)
-        self.assertEqual(rhovx,0.)
-        self.assertEqual(rhovy,0.)
-        self.assertEqual(rhovz,0.)
+        self.assertEqual(rhovx,0.1)
+        self.assertEqual(rhovy,0.1)
+        self.assertEqual(rhovz,0.1)
         self.assertEqual(en,1.)
         instance.stop()
     
@@ -255,26 +263,25 @@ class TestCapreole(TestWithMPI):
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         
         instance.commit_parameters()
-        
-        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
-        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
-        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
     
         grid = core.Grid(10,10,1)
-        grid.rho = 0.1 | density
-        grid.rhovx = 0.0 | momentum
-        grid.rhovy = 0.0 | momentum
-        grid.rhovz = 0.0 | momentum
-        grid.energy = 0.0 | energy
+        grid.rho = 0.1 | generic_unit_system.density
+        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid.rhovy = 0.0 |  generic_unit_system.momentum_density
+        grid.rhovz = 0.0 |  generic_unit_system.momentum_density
+        grid.energy = 0.0 | generic_unit_system.energy_density
         
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
             
         result = instance.initialize_grid()
         
-        print instance.grid[1].rho
-        self.assertEquals(instance.grid[1][1][0].rho, 0.1 | density)
-        for x in instance.grid[1].rho.value_in(density).flatten():
+        
+        channel = instance.grid.new_channel_to(grid)
+        channel.copy()
+        
+        self.assertEquals(grid[1][1][0].rho, 0.1 | generic_unit_system.density)
+        for x in grid[1].rho.value_in(generic_unit_system.density).flatten():
             self.assertEquals(x, 0.1)
             
         #instance.evolve(1.0 | generic_unit_system.time)
@@ -287,3 +294,45 @@ class TestCapreole(TestWithMPI):
         #    self.assertEquals(x, 0.1)
         instance.stop()
 
+
+    def test2(self):
+        instance=self.new_instance(Capreole)
+        instance.initialize_code()
+        instance.parameters.mesh_size = (10,10,1)
+        instance.parameters.length_x = 1.0 | generic_unit_system.length
+        instance.parameters.length_y = 1.0 | generic_unit_system.length
+        instance.parameters.length_z = 0.0 | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = "periodic","periodic"
+        instance.parameters.y_boundary_conditions = "periodic","periodic"
+        instance.parameters.z_boundary_conditions = "periodic","periodic"
+        
+        instance.commit_parameters()
+    
+        grid = core.Grid(10,10,1)
+        grid.rho = 0.1 | generic_unit_system.density
+        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid.rhovy = 0.0 |  generic_unit_system.momentum_density
+        grid.rhovz = 0.0 |  generic_unit_system.momentum_density
+        grid.energy = 0.0 | generic_unit_system.energy_density
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+            
+        result = instance.initialize_grid()
+        
+        print instance.grid[1].rho
+        self.assertEquals(instance.grid[1][1][0].rho, 0.1 | generic_unit_system.density)
+        for x in instance.grid[1].rho.value_in(generic_unit_system.density).flatten():
+            self.assertEquals(x, 0.1)
+            
+        #instance.evolve(1.0 | generic_unit_system.time)
+        
+        #for x in instance.grid.rho.value_in(density).flatten():
+        #    self.assertEquals(x, 0.1)
+    
+        #instance.evolve(10.0 | generic_unit_system.time)
+        #for x in instance.grid.rho.value_in(density).flatten():
+        #    self.assertEquals(x, 0.1)
+        instance.stop()
+    
+    

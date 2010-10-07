@@ -180,7 +180,7 @@ class TestAthenaInterface(TestWithMPI):
         error = instance.fill_grid_state_mpi(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5,0,0)
         self.assertEquals(error, 0)
         
-        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state_mpi(1,1,1)
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,1)
         
         self.assertEquals(error, 0)
         self.assertEquals(rho, 0.1)
@@ -189,7 +189,25 @@ class TestAthenaInterface(TestWithMPI):
         self.assertEquals(rhovz, 0.4)
         self.assertEquals(energy, 0.5)
         
-        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state_mpi([1],[1],[1])
+        rhovx, rhovy, rhovz, error = instance.get_momentum_density(1,1,1)
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(rhovx, 0.2)
+        self.assertEquals(rhovy, 0.3)
+        self.assertEquals(rhovz, 0.4)
+        
+        rho, error = instance.get_density(1,1,1)
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(rho, 0.1)
+        
+        energy, error = instance.get_energy_density(1,1,1)
+        
+        self.assertEquals(error, 0)
+        self.assertEquals(energy, 0.5)
+        
+        
+        rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state([1],[1],[1])
         self.assertEquals(error[0], 0)
         self.assertEquals(rho[0], 0.1)
         error = instance.initialize_grid()
