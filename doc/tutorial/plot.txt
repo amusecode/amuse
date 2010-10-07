@@ -1,0 +1,103 @@
+===================
+Plotting with amuse
+===================
+
+matplotlib
+==========
+
+If matplotlib is installed, AMUSE provides extended plot functionality.
+If a plot is made, axis labels will be made automatically yielding 
+the concerning units.
+
+.. code-block:: python
+
+    >>> from amuse.plot import *
+
+The native matplotlib plot functions are still available in the native_plot namespace, e.g.:
+
+.. code-block:: python
+
+    >>> native_plot.subplot(2,2,1)
+
+LaTeX support
+=============
+
+Latex support for labels can be enabled by issuing:
+
+.. code-block:: python
+
+    >>> latex_support()
+
+This command will temporarily change the matplotlibrc settings:
+
+.. code-block:: python
+
+    rc('text', usetex=False)
+
+Supported functions
+-------------------
+
+* plot
+* semilogx
+* semilogy
+* loglog
+* scatter
+* hist
+* xlabel
+* ylabel
+
+Example code
+============
+
+.. code-block:: python
+
+    from amuse.lab import *
+    from amuse.plot import *
+    import numpy as np
+
+    latex_support()
+
+    x = np.pi/20.0 * (range(-10,10) | units.m)
+    y1 = units.m.new_quantity(np.sin(x.number))
+    y2 = x
+    native_plot.subplot(2,2,1)
+    plot(x, y1, label='data')
+    scatter(x, y2, label='model')
+    xlabel('x')
+    ylabel('y')
+    native_plot.legend(loc=2)
+    
+    x = range(50) | units.Myr
+    y1 = values.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
+    y2 = -(1e43 | units.J) - y1
+    native_plot.subplot(2,2,2)
+    plot(x, y1, label='$E_kin$')
+    plot(x, y2, label='$E_pot$')
+    xlabel('t')
+    ylabel('E')
+    native_plot.legend()
+    
+    x = range(7) | units.day
+    y1 = [0, 4, 2, 3, 2, 5, 1]
+    y2 = [3, 0, 2, 2, 3, 0, 4]
+    native_plot.subplot(2,2,3)
+    plot(x, y1, 'ks', label='coffee')
+    plot(x, y2, 'yo', label='tea')
+    xlabel('time')
+    ylabel('consumption / day')
+    native_plot.legend()
+    
+    y1 = units.N.new_quantity(np.random.normal(0.,1.,100))
+    x = (units.g * units.cm * units.s**-2).new_quantity(np.arange(-3.0e5, 3.0e5, 0.1e5))
+    y2 = np.exp(-np.arange(-3., 3., 0.1)**2)/np.sqrt(np.pi)
+    native_plot.subplot(2,2,4)
+    hist(y1, bins=12, range=(-3,3), normed=True, label='data')
+    plot(x, y2, 'y--', label='model')
+    xlabel('force')
+    ylabel('pdf')
+    native_plot.legend()
+    native_plot.show()
+
+.. image:: plots/plot1.png
+   :width: 22cm
+   :align: left
