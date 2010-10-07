@@ -44,13 +44,13 @@ Code comparison table
 Note: holds for AMUSE implementation.
 
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+ 
-|name     |approximation scheme |timestep scheme  |CPU     |GPU     |GRAPE |language |stopcond [*]_ |parallel [*]_|
+|name     |approximation scheme |timestep scheme  |CPU     |GPU     |GRAPE |language |stopcond (1)  |parallel (2) |
 |         |                     |                 |        |        |      |         |              |             |
 +=========+=====================+=================+========+========+======+=========+==============+=============+
-|bhtree   |tree                 |shared?          |Y       |N       |N     |C++      |CNT           |N            |
+|bhtree   |tree                 |shared/fixed     |Y       |N       |N     |C++      |CNT           |N            |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|phigrape |direct               |block            |Y g6    |Y       |Y     | FORTRAN |CNPT          |N            | 
+|phigrape |direct               |block/variable   |Y g6    |Y       |Y     | FORTRAN |CNPT          |N            | 
 |         |                     |                 |        |sapporo |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
 |octgrav  |tree                 |shared           |N       |Y       |N     |C++      |N             |N            | 
@@ -59,14 +59,14 @@ Note: holds for AMUSE implementation.
 |hermite  |direct               |shared/variable  |Y       |N       |N     |C        |CNOPT         |Y            |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|twobody  |universal variables, |none, exact      |Y       |N       |N     | Python  |              |N            |
+|twobody  |universal variables, |none, exact      |Y       |N       |N     |Python   |              |N            |
 |         |Kepler eq.           |                 |        |        |      |         |              |             |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|smallN   |direct Hermite 4th   |shared?          |Y       |N       |N     |C++      |              |N            |
+|smallN   |direct Hermite 4th   |shared           |Y       |N       |N     |C++      |              |N            |
 |         |order                |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|fi       |tree                 |shared/variable? |Y       |N       |N     | FORTRAN |N             |N            |
+|fi       |tree                 |block/variable   |Y       |N       |N     |FORTRAN  |N             |N            |
 |         |                     |                 |        |        |      |         |              |             |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
@@ -75,29 +75,29 @@ Note: holds for AMUSE implementation.
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
 
-.. [*] parallel in the following sense: AMUSE uses MPI to communicate with legacy codes, but
-        for some codes it can be used to parallelize the calculations. Some legacy codes (GPU) 
-        are already parallel, however in this table we *do not* refer to that.
+(1) Parallel in the following sense: AMUSE uses MPI to communicate with legacy codes, but
+    for some codes it can be used to parallelize the calculations. Some legacy codes (GPU) 
+    are already parallel, however in this table we *do not* refer to that.
   
-        Codes designated *Y* for parallel can set the number of (parallel) workers, e.g. to set
-        10 workers for hermite do:
+    Codes designated *Y* for parallel can set the number of (parallel) workers, e.g. to set
+    10 workers for hermite do:
 
-        .. code-block:: python
+    .. code-block:: python
 
-           >>> instance = Hermite(number_of_workers=10)
+       >>> instance = Hermite(number_of_workers=10)
 
-.. [*] stopping conditions
-
-       ==== ==========================
-       code name of stopping condition
-       ==== ========================== 
-       C    Collision detection
-       E    Escaper detection
-       N    Number of steps detection
-       O    Out of box detection
-       P    Pair detection
-       T    Timeout detection
-       ==== ==========================
+(2) stopping conditions
+   
+    ==== ==========================
+    code name of stopping condition
+    ==== ========================== 
+    C    Collision detection
+    E    Escaper detection
+    N    Number of steps detection
+    O    Out of box detection
+    P    Pair detection
+    T    Timeout detection
+    ==== ==========================
 
 .. _BHtree:
 
@@ -112,9 +112,9 @@ Specifics
 
 Parameters
 ^^^^^^^^^^
+
 +------------------------------------+---------------+---------------+-------------------+
 |name                                |default value  |unit           |description        |
-|                                    |               |               |                   |
 |                                    |               |               |                   |
 +====================================+===============+===============+===================+
 |use_self_gravity                    |1              |none           |flag for usage of  |
@@ -155,7 +155,7 @@ Parameters
 |                                    |               |               |simulation         |
 |                                    |               |               |time               |
 +------------------------------------+---------------+---------------+-------------------+
-|dt_dia                              | 1.0           | time          |time interval      |
+|dt_dia                              | 1.0           |time           |time interval      |
 |                                    |               |               |between            |
 |                                    |               |               |diagnostics        |
 |                                    |               |               |output             |
@@ -243,21 +243,11 @@ Parameters
 |                                    |               |               |simulation         |
 |                                    |               |               |time               |
 +------------------------------------+---------------+---------------+-------------------+
-|dt_dia                              | 1.0           | time          |time interval      |
+|dt_dia                              | 1.0           |time           |time interval      |
 |                                    |               |               |between            |
 |                                    |               |               |diagnostics        |
 |                                    |               |               |output             |
 +------------------------------------+---------------+---------------+-------------------+
-
-pair_factor  1.0 none:
-dt_param: 0.03 none
-epsilon_squared: 0.0 length * length
-stopping_conditions_number_of_steps: 1 none
-time: 0.0 time
-dt_dia: 1.0 time
-stopping_conditions_timeout: 4.0 s
-stopping_conditions_out_of_box_size: 0.0 length
-
 
 .. automodule:: amuse.legacy.hermite0.interface
 
@@ -377,7 +367,6 @@ The default is **MODE_G6LIB**.
 |                                    |               |               |                   |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
-	      
 
 * timestep parameter::
 
@@ -477,7 +466,7 @@ Parameters
 |name                                |default value  | unit          | description       |
 |                                    |               |               |                   |
 |                                    |               |               |                   |
-+------------------------------------+---------------+---------------+-------------------+
++====================================+===============+===============+===================+
 |opening_angle                       |0.8            |none           |opening angle for  |
 |                                    |               |               |building the tree  |
 |                                    |               |               |between 0 and 1    |
