@@ -32,7 +32,7 @@
       ! hard limits on maximum number of particles: all & sph
       
       LOGICAL periodic
-      PARAMETER (periodic=.True.)
+      PARAMETER (periodic=.FALSE.)
       ! periodic boundary conditions
             
       LOGICAL usepm
