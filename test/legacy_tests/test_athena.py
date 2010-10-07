@@ -177,7 +177,7 @@ class TestAthenaInterface(TestWithMPI):
         self.assertEquals(error,0)
         self.assertEquals(time, 0.0)
         
-        error = instance.fill_grid_state_mpi(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5,0,0)
+        error = instance.fill_grid_state(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5,0,0)
         self.assertEquals(error, 0)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,1)
@@ -235,11 +235,11 @@ class TestAthenaInterface(TestWithMPI):
             
             nghost, error = instance.get_nghost()
             self.assertEquals(4, nghost)
-            instance.fill_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128),0.1, 0.2, 0.3, 0.4, 0.5)
+            instance.fill_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128),0.1, 0.2, 0.3, 0.4, 0.5)
             error = instance.initialize_grid()
             self.assertEquals(error, 0)
             
-            result = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+            result = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
             results.append(list(result))
             
             
@@ -267,15 +267,15 @@ class TestAthenaInterface(TestWithMPI):
         error = instance.initialize_grid()
         self.assertEquals(error, 0)
         
-        print instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+        print instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
         
         timestep, error =  instance.get_timestep()
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEqual(timestep,  0.006249991, 5)
         
-        rho0, rhovx0, rhovy0, rhovz0, energy0, error0  = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+        rho0, rhovx0, rhovy0, rhovz0, energy0, error0  = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
         instance.evolve(5.0)
-        rho, rhovx, rhovy, rhovz, energy, error  = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+        rho, rhovx, rhovy, rhovz, energy, error  = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
         
         error_rho = numpy.sum(numpy.abs(rho - rho0))
         error_rhovx =  numpy.sum(numpy.abs(rhovx - rhovx0))
@@ -309,7 +309,7 @@ class TestAthenaInterface(TestWithMPI):
             self.assertEquals(error, 0)
             instance.evolve(5.0)
         
-            result = instance.get_grid_state_mpi(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
+            result = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
             results.append(list(result))
             
             

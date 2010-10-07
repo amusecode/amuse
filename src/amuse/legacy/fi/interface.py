@@ -26,11 +26,25 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     get_potential=None
     set_acceleration=None
     get_acceleration=None
-                
-    def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker = 'worker', **options)
+    
+    
+    MODE_NORMAL = 'normal'
+    MODE_PERIODIC_BOUNDARIES   = 'periodic'
+    
+    def __init__(self, mode = MODE_NORMAL,  **options):
+        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureRefs.__init__(self)
                      
+    
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_NORMAL:
+            return 'worker'
+        elif mode == self.MODE_PERIODIC_BOUNDARIES:
+            return 'worker_code_periodic'
+        else:
+            return 'worker'
+        
+            
     def get_data_directory(self):
         """
         Returns the root name of the directory for the Fi

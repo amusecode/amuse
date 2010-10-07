@@ -203,6 +203,41 @@ class TestFiInterface(TestWithMPI):
         instance.stop()
 
 
+
+    def test7(self):
+        instance=FiInterface(mode=FiInterface.MODE_PERIODIC_BOUNDARIES)
+        instance.initialize_code()
+        #instance.set_periodic(1)
+        instance.set_use_hydro(0)
+        instance.set_selfgrav(0)
+        instance.set_pboxsize(2.)
+        instance.set_dtime(0.1)
+        instance.commit_parameters()
+        ids,err=instance.new_particle( 
+           [1.0,1.0,1.0],
+           [0.0,0.0,0.0],
+           [0.5,0.0,0.0],
+           [0.0,-0.5,0.0],
+           [0.0,0.0,0.5],
+           [1.0,0.0,0.0],
+           [0.0,-1.0,0.0],
+           [0.0,0.0,1.0])
+        instance.commit_particles()
+        
+        instance.evolve(0.1)
+        m,r,x,y,z,vx,vy,vz,err=instance.get_state(ids)
+        self.assertAlmostEqual(x, [0.6,0.,0.], places=7)
+        self.assertAlmostEqual(y, [0.,-0.6,0.], places=7)
+        self.assertAlmostEqual(z, [0.,0.,0.6], places=7)
+        instance.evolve(1.0)
+        m,r,x,y,z,vx,vy,vz,err=instance.get_state(ids)
+        self.assertAlmostEqual(x, [-0.5,0.,0.], places=7)
+        self.assertAlmostEqual(y, [0.,0.5,0.], places=7)
+        self.assertAlmostEqual(z, [0.,0.,-0.5], places=7)
+        instance.cleanup_code()
+        instance.stop()
+    
+    
 class TestEvrard(TestWithMPI):
 
     def xtest0(self):

@@ -90,6 +90,16 @@ glworker.f90: interface.py __init__.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
 
 
+worker_code_periodic: worker.f90 interface.o $(SRC)/libfi.a
+	make -C src purge
+	./patch_globals_dot_h.py --periodic
+	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
+	
+	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
+	./patch_globals_dot_h.py
+	make -C src purge
+
+
 __init__.py:
 	touch $@
 
