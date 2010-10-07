@@ -635,6 +635,30 @@ int set_nsmtol(double n_neighbour_tol){
     return 0;
 }
 
+int get_box_size(double value)
+{
+    value = All.BoxSize;
+    return 0;
+}
+
+int set_box_size(double value)
+{
+    All.BoxSize = value;
+    return 0;
+}
+
+int get_periodic_boundaries_flag(int value)
+{
+    value = All.PeriodicBoundariesOn;
+    return 0;
+}
+
+int set_periodic_boundaries_flag(int value)
+{
+    All.PeriodicBoundariesOn = value;
+    return 0;
+}
+
 
 // particle property getters/setters: (will only work after commit_particles() is called)
 
@@ -1022,5 +1046,6 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
 #endif
     return 0;
 }
+
 
 

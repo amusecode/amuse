@@ -234,6 +234,45 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
+
+    def test9(self):
+        instance=Gadget2Interface(mode=Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile_for_periodic))
+        instance.initialize_code()
+        instance.set_gadget_output_directory(instance.get_output_directory())
+        instance.set_box_size(2.)
+        instance.commit_parameters()
+        ids,err=instance.new_particle( 
+           [1.0,1.0,1.0],
+           [0.5,0.0,0.0],
+           [0.0,-0.5,0.0],
+           [0.0,0.0,0.5],
+           [-1.0,0.0,0.0],
+           [0.0,1.0,0.0],
+           [0.0,0.0,-1.0])
+        instance.commit_particles()
+        print "X"
+        m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
+        print x,y,z
+        self.assertAlmostEqual(x, [0.5,0.,0.], places=6)
+        self.assertAlmostEqual(y, [0.,1.5,0.], places=6)
+        self.assertAlmostEqual(z, [0.,0.,0.5], places=6)
+        instance.evolve(0.1)
+        m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
+        print x,y,z
+        self.assertAlmostEqual(x, [0.4,0.,0.], places=6)
+        self.assertAlmostEqual(y, [0.,1.6,0.], places=6)
+        self.assertAlmostEqual(z, [0.,0.,0.4], places=6)
+        
+        instance.evolve(1.0)
+        m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
+        self.assertAlmostEqual(x, [1.5,0.,0.], places=6)
+        self.assertAlmostEqual(y, [0.,0.5,0.], places=6)
+        self.assertAlmostEqual(z, [0.,0.,1.5], places=6)
+        instance.cleanup_code()
+        instance.stop()
+    
+    
 class TestGadget2(TestWithMPI):
 
     UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc

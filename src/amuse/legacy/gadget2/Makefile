@@ -48,7 +48,7 @@ worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_
 	
 worker_code_periodic: worker_code.cc worker_code.h $(OBJS) $(SRCDIR)/makefile_options
 	make -C $(SRCDIR) clean 
-	make -C $(SRCDIR) all OPT="-DPERIODIC -DUNEQUALSOFTENINGS -DPEANOHILBERT -DWALLCLOCK -DDOUBLEPRECISION -DSYNCHRONIZATION" 
+	make -C $(SRCDIR) all OPT="-DPERIODIC -DNOGRAVITY -DUNEQUALSOFTENINGS -DPEANOHILBERT -DWALLCLOCK -DDOUBLEPRECISION -DSYNCHRONIZATION" 
 	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) worker_code.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 	make -C $(SRCDIR) clean 
 

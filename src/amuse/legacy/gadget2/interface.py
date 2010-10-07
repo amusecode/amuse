@@ -25,9 +25,20 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     """
     include_headers = ['gadget_code.h', 'worker_code.h', 'stopcond.h']
     
-    def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker = 'worker_code', **options)
+    MODE_NORMAL = 'normal'
+    MODE_PERIODIC_BOUNDARIES   = 'periodic'
+    
+    def __init__(self, mode = MODE_NORMAL,  **options):
+        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureRefs.__init__(self)
+        
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_NORMAL:
+            return 'worker_code'
+        elif mode == self.MODE_PERIODIC_BOUNDARIES:
+            return 'worker_code_periodic'
+        else:
+            return 'worker_code'
     
     def get_data_directory(self):
         """
@@ -46,6 +57,10 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @property
     def default_path_to_parameterfile(self):
         return os.path.join(self.get_data_directory(), 'defaults.param')
+        
+    @property
+    def default_path_to_parameterfile_for_periodic(self):
+        return os.path.join(self.get_data_directory(), 'defaults-periodic.param')
     
     @legacy_function
     def set_parameterfile_path():
@@ -231,6 +246,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The current model timestep")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def get_epsilon():
         """Get epsilon, a softening parameter for gravitational potentials with point particles."""
@@ -239,6 +255,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "epsilon, a softening parameter for gravitational potentials with point particles")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_epsilon():
         """Set epsilon, a softening parameter for gravitational potentials with point particles."""
@@ -247,25 +264,30 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "epsilon, a softening parameter for gravitational potentials with point particles")
         function.result_type = 'int32'
         return function
+        
     def set_epsilon_squared(self,epsilon_squared):
         return self.set_epsilon(epsilon_squared**0.5)
+        
     def get_epsilon_squared(self):
         epsilon, err = self.get_epsilon()
         return epsilon**2, err
+        
     @legacy_function
     def get_gadget_output_directory():
         function = LegacyFunctionSpecification()
         function.addParameter('gadget_output_directory', dtype='string', direction=function.OUT,
             description = "The path to the Gadget-2 OutputDir.")
         function.result_type = 'int32'
-        return function;
+        return function
+        
     @legacy_function
     def set_gadget_output_directory():
         function = LegacyFunctionSpecification()
         function.addParameter('gadget_output_directory', dtype='string', direction=function.IN,
             description = "The path to the Gadget-2 OutputDir.")
         function.result_type = 'int32'
-        return function;
+        return function
+    
     @legacy_function
     def get_unit_mass():
         """Get the code mass unit (in g/h, default: 1.989e43 g = 10^10 MSun)."""
@@ -274,6 +296,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code mass unit (in g/h, default: 1.989e43 g = 10^10 MSun).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_unit_mass():
         """Set the code mass unit (in g/h, default: 1.989e43 g = 10^10 MSun)."""
@@ -282,6 +305,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code mass unit (in g/h, default: 1.989e43 g = 10^10 MSun).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def get_unit_length():
         """Get the code length unit (in cm/h, default: 3.085678e21 cm = 1 kpc)."""
@@ -290,6 +314,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code length unit (in cm/h, default: 3.085678e21 cm = 1 kpc).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_unit_length():
         """Set the code length unit (in cm/h, default: 3.085678e21 cm = 1 kpc)."""
@@ -298,6 +323,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code length unit (in cm/h, default: 3.085678e21 cm = 1 kpc).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def get_unit_time():
         """Get the code time unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr). Implicitly changes velocity unit."""
@@ -306,6 +332,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code time unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_unit_time():
         """Set the code time unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr)."""
@@ -314,6 +341,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code time unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def get_unit_velocity():
         """Get the code velocity unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr)."""
@@ -322,6 +350,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code velocity unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def set_unit_velocity():
         """Set the code velocity unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr)."""
@@ -330,6 +359,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             description = "The code velocity unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr).")
         function.result_type = 'int32'
         return function
+        
     @legacy_function
     def get_nogravity():
         """ get_nogravity(): get no-gravity flag. True means: gravitational forces are switched of for all particles
@@ -337,35 +367,40 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function = LegacyFunctionSpecification()
         function.addParameter('no_gravity_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_gdgop():
         """ set_gdgop([0,1]): use of gadget cell opening criterion if 1 """
         function = LegacyFunctionSpecification()
         function.addParameter('gadget_cell_opening_flag', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def get_gdgop():
         """ get_gdgop(): use of gadget cell opening criterion if 1 """
         function = LegacyFunctionSpecification()
         function.addParameter('gadget_cell_opening_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_epsgas():
         """ gas grav smoothing eps"""
         function = LegacyFunctionSpecification()
         function.addParameter('gas_epsilon', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def get_epsgas():
         """ gas grav smoothing eps"""
         function = LegacyFunctionSpecification()
         function.addParameter('gas_epsilon', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def get_isotherm():
         """(default: False)
@@ -374,105 +409,147 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function = LegacyFunctionSpecification()
         function.addParameter('isothermal_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def get_eps_is_h():
         """ get_eps_is_h(): gas particles grav. eps to SPH h if 1"""
         function = LegacyFunctionSpecification()
         function.addParameter('eps_is_h_flag', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_nsmooth():
         """ target number of SPH neighbours"""
         function = LegacyFunctionSpecification()
         function.addParameter('nsmooth', dtype='i', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def get_nsmooth():
         """ target number of SPH neighbours"""
         function = LegacyFunctionSpecification()
         function.addParameter('nsmooth', dtype='i', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_bh_tol():
         """ Barnes Hut opening angle parameter (unitless, 0.5) """
         function = LegacyFunctionSpecification()
         function.addParameter('bh_tol', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def get_bh_tol():
         """ Barnes Hut opening angle parameter (unitless, 0.5) """
         function = LegacyFunctionSpecification()
         function.addParameter('bh_tol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_gdgtol():
         """ Gadget cell openings criterion parameter  (unitless, .005) """
         function = LegacyFunctionSpecification()
         function.addParameter('gdgtol', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def get_gdgtol():
         """ Gadget cell openings criterion parameter  (unitless, .005) """
         function = LegacyFunctionSpecification()
         function.addParameter('gdgtol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function   
     def get_gamma():
         """ gas polytropic index (1.666667) """        
         function = LegacyFunctionSpecification()  
         function.addParameter('gamma', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_alpha():
         """ SPH artificial viscosity alpha parameter (0.5) """        
         function = LegacyFunctionSpecification()  
         function.addParameter('alpha', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function   
     def get_alpha():
         """ SPH artificial viscosity alpha parameter (0.5) """        
         function = LegacyFunctionSpecification()  
         function.addParameter('alpha', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_courant():
         """ SPH courant condition parameter (0.3) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('courant', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function   
     def get_courant():
         """ SPH courant condition parameter (0.3) """            
         function = LegacyFunctionSpecification()  
         function.addParameter('courant', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function
     def set_nsmtol():
         """ fractional tolerance in number of SPH neighbours """            
         function = LegacyFunctionSpecification()  
         function.addParameter('n_neighbour_tol', dtype='d', direction=function.IN)
         function.result_type = 'i'
-        return function;
+        return function
+        
     @legacy_function   
     def get_nsmtol():
         """ fractional tolerance in number of SPH neighbours """            
         function = LegacyFunctionSpecification()  
         function.addParameter('n_neighbour_tol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
-        return function;
+        return function
+        
+    @legacy_function
+    def set_periodic_boundaries_flag():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='bool', direction=function.IN)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def get_periodic_boundaries_flag():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='bool', direction=function.IN)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def set_box_size():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def get_box_size():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'i'
+        return function
     
     @legacy_function    
     def get_hydro_state_at_point():
@@ -495,16 +572,16 @@ class Gadget2(GravitationalDynamics):
     
     __doc__ = Gadget2Doc()
     
-    def __init__(self, unit_converter = None, **options):
-        legacy_interface = Gadget2Interface(**options)
+    def __init__(self, unit_converter = None, mode = 'normal', **options):
+        legacy_interface = Gadget2Interface(mode = mode, **options)
         if unit_converter is None:
             unit_converter = ConvertBetweenGenericAndSiUnits(
                 3.085678e21 | units.cm,   # 1.0 kpc
                 1.989e43 | units.g,       # 1.0e10 solar masses
                 1e5 | units.cm / units.s)# 1 km/sec
-
+    
         self.stopping_conditions = StoppingConditions(self)
-
+    
         GravitationalDynamics.__init__(
             self,
             legacy_interface,
