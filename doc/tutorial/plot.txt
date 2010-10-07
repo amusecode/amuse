@@ -19,9 +19,9 @@ The native matplotlib plot functions are still available in the native_plot name
 
     >>> native_plot.subplot(2,2,1)
 
-LaTeX support
+Latex support
 =============
-
+  
 Latex support for labels can be enabled by issuing:
 
 .. code-block:: python

@@ -43,7 +43,12 @@ class UnitlessArgs(object):
         cli.stripped_args = []
         cli.arg_units = []
         cli.unitnames_of_args = []
-        
+
+def latex_support():
+    from matplotlib import rc
+    #rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+    #rc('font',**{'family':'serif','serif':['Palatino']})
+    rc('text', usetex=True)
 
 def plot(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
@@ -94,6 +99,9 @@ def ylabel(s, *args, **kwargs):
 
 if __name__ == '__main__':
     import numpy as np
+
+    latex_support()
+
     x = np.pi/20.0 * (range(-10,10) | units.m)
     y1 = units.m.new_quantity(np.sin(x.number))
     y2 = x
@@ -108,8 +116,8 @@ if __name__ == '__main__':
     y1 = values.new_quantity(np.sin(np.arange(0,1.5,0.03)), 1e50*units.erg)
     y2 = -(1e43 | units.J) - y1
     native_plot.subplot(2,2,2)
-    plot(x, y1, label='E_kin')
-    plot(x, y2, label='E_pot')
+    plot(x, y1, label='$E_{kin}$')
+    plot(x, y2, label='$E_{pot}$')
     xlabel('t')
     ylabel('E')
     native_plot.legend()
