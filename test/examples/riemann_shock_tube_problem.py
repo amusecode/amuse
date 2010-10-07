@@ -34,7 +34,8 @@ http://cococubed.asu.edu/code_pages/exact_riemann.shtml
 from amuse.support.core import late
 from amuse.support.data.values import VectorQuantity
 from amuse.support.data.core import Grid
-
+from amuse.support import io
+from amuse.support.io import text
 from amuse.support.units.generic_unit_system import *
 
 from amuse.legacy.athena.interface import Athena
@@ -44,6 +45,8 @@ from amuse import plot
 from matplotlib import pyplot
 
 from numpy import sqrt, arange
+from optparse import OptionParser
+
 
 class CalculateExactSolutionIn1D(object):
     number_of_points = 1000
@@ -171,12 +174,20 @@ class CalculateExactSolutionIn1D(object):
 
 class CalculateSolutionIn3D(object):
     number_of_workers = 1
-    number_of_grid_points = 10 # 100
+    number_of_grid_points = 10
     gamma = 5.0/3.0
     name_of_the_code = "capreole"
     
-    def __init__(self):
-        pass
+    def __init__(self, **keyword_arguments):
+        for x in keyword_arguments:
+            print x, keyword_arguments[x]
+            setattr(self, x, keyword_arguments[x])
+            
+        self.dimensions_of_mesh = (
+            self.number_of_grid_points * 3, 
+            self.number_of_grid_points, 
+            self.number_of_grid_points
+        )
         
     def new_instance_of_code(self):
         attribute = "new_instance_of_{0}_code".format(self.name_of_the_code.lower())
@@ -190,15 +201,13 @@ class CalculateSolutionIn3D(object):
         return result
         
     def new_instance_of_capreole_code(self):
-        result=Capreole(number_of_workers=self.number_of_workers, debugger="xterm")
+        result=Capreole(number_of_workers=self.number_of_workers)
         result.initialize_code()
         return result
         
     def set_parameters(self, instance):
         
-        instance.parameters.nx = self.number_of_grid_points
-        instance.parameters.ny = self.number_of_grid_points
-        instance.parameters.nz = self.number_of_grid_points
+        instance.parameters.mesh_size = self.dimensions_of_mesh
         
         instance.parameters.length_x = 1 | length
         instance.parameters.length_y = 1 | length
@@ -218,7 +227,7 @@ class CalculateSolutionIn3D(object):
         momentum =  speed * density
         energy =  mass / (time**2 * length)
         
-        grid = Grid(self.number_of_grid_points,self.number_of_grid_points,self.number_of_grid_points)
+        grid = Grid(*self.dimensions_of_mesh)
         
         grid.rho =  0.0 | density
         grid.rhovx = 0.0 | momentum
@@ -231,7 +240,7 @@ class CalculateSolutionIn3D(object):
     def initialize_grid_with_shock(self, grid):
         energy =  mass / (time**2 * length)
         
-        halfway = self.number_of_grid_points/2 - 1
+        halfway = self.dimensions_of_mesh[0]/2 - 1
         
         grid[:halfway].rho = 4.0  | density
         grid[:halfway].energy = (1.0 | energy)/ (self.gamma - 1)
@@ -258,27 +267,73 @@ class CalculateSolutionIn3D(object):
         from_code_to_model.copy()
         from_code_to_model.copy_attributes(("x","y","z",))
         
+        
         return grid
 
-def main():
+def store_attributes(x, rho, rhovx, energy, filename):
+    output = text.CsvFileText(filename = filename)
+    output.quantities = (x, rho, rhovx, energy)
+    output.attribute_names = ("x", "rho", "rhovx", "energy")
+    output.store()
+
+
+def store_attributes_of_line(grid, yindex = 0, zindex = 0, **options):
+    store_attributes(
+        grid.x[...,yindex,zindex],
+        grid.rho[...,yindex,zindex],
+        grid.rhovx[...,yindex,zindex],
+        grid.energy[...,yindex,zindex],
+        filename = "riemann_shock_tube_{name_of_the_code}_{number_of_grid_points}_{number_of_workers}.csv".format(**options)
+    )
+def new_option_parser():
+    result = OptionParser()
+    result.add_option(
+        "-n",
+        "--mesh-size", 
+        dest="number_of_grid_points",
+        type="int",
+        default = 10,
+        help="number of grid cells in the x, y and z direction"
+    )
+    result.add_option(
+        "-w",
+        "--workers", 
+        dest="number_of_workers",
+        type="int",
+        default = 1,
+        help="number of parallel workers to start"
+    )
+    result.add_option(
+        "-c",
+        "--code",
+        dest="name_of_the_code",
+        default="athena",
+        help="name of the code to use"
+    )
+    return result
     
+def main(**options):
     print "calculating shock using exact solution"
     exact = CalculateExactSolutionIn1D()
     x, rho, p, u = exact.get_solution_at_time(0.12 | time)
     
+    store_attributes(x,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
+    
     print "calculating shock using code"
-    model = CalculateSolutionIn3D()
+    model = CalculateSolutionIn3D(**options)
     grid = model.get_solution_at_time(0.12 | time)
     
     print "plotting solution"
     plot.plot(x,rho)
     plot.plot(grid.x[...,0,0], grid.rho[...,0,0])
     
+    store_attributes_of_line(grid, **options)
+    
     pyplot.xlim(0.3,0.7)
     pyplot.ylim(0.5,4.5)
     pyplot.savefig("rho.png")
-    
-    
+
 
 if __name__ == "__main__":
-    main()
+    options, arguments  = new_option_parser().parse_args()
+    main(**options.__dict__)

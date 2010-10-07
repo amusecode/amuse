@@ -1,6 +1,7 @@
 from amuse.support import io
 from amuse.support.io import text
 from amuse.support.units import units
+from amuse.support.units import generic_unit_system
 from amuse.support.data import core
 from amuse.test import amusetest
 import StringIO
@@ -66,13 +67,36 @@ class TableFormattedTextTests(amusetest.TestCase):
         x = core.Particles(2)
         x.mass = [1.0, 2.0] | units.MSun
         x.radius = [3.0, 4.0] | units.RSun
-        io.write_set_to_file(x, "test.csv","txt")
+        io.write_set_to_file(x, "test.csv","txt", attribute_types = (units.MSun, units.RSun))
         with open("test.csv", "r") as f:
             contents = f.read()
         self.assertEquals("#mass radius\n#MSun RSun\n1.0 3.0\n2.0 4.0\n", contents)
-
+    
         os.remove("test.csv")
         
+
+    def test4(self):
+        mass = [1.0,2.0,3.0] | generic_unit_system.mass
+        length = [3.0,4.0,5.0] | generic_unit_system.length
+        
+        stream = StringIO.StringIO()
+        output = text.TableFormattedText(stream = stream)
+        output.quantities = (mass, length)
+        output.store()
+        contents = stream.getvalue()
+        self.assertEquals("#col(0) col(1)\n#mass length\n1.0 3.0\n2.0 4.0\n3.0 5.0\n", contents)
+        
+        stream = StringIO.StringIO()
+        output = text.CsvFileText(stream = stream)
+        output.quantities = (mass, length)
+        output.attribute_names = ('M','L')
+        output.store()
+        contents = stream.getvalue()
+        self.assertEquals("#M,L\n#mass,length\n1.0,3.0\n2.0,4.0\n3.0,5.0\n", contents)
+    
+    
+
+    
 class Athena3DTextTests(amusetest.TestCase):
     
     def test1(self):

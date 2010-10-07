@@ -117,7 +117,6 @@ class Parameters(object):
             keyword_arguments = {}
             for parameter in parameters:
                 keyword_arguments[parameter.definition.parameter_name] = parameter.get_cached_value()
-            print functionname, keyword_arguments
             errorcode = method(**keyword_arguments)
     
     

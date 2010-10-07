@@ -95,18 +95,18 @@ class TableFormattedText(base.FileFormatProcessor):
     def attribute_names(self):
         "list of the names of the attributes to load or store"
         if self.set is None:
-            return []
+            return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
         else:
             return self.set.stored_attributes()
         
     @base.format_option
     def attribute_types(self):
         "list of the types of the attributes to store"
-        if self.set is None:
+        quantities = self.quantities
+        if self.quantities:
+            return map(lambda x : x.unit.to_simple_form(), quantities)
+        elif self.set is None:
             return map(lambda x : units.none, self.attribute_names)
-        else:
-            quantities = self.quantities
-            return map(lambda x : x.unit, quantities)
     
     @base.format_option
     def header_prefix_string(self):
@@ -177,14 +177,12 @@ class TableFormattedText(base.FileFormatProcessor):
             self.stream.write('\n')
         
     def write_rows(self):
-        keys = self.set.key
         quantities = self.quantities
         units = self.attribute_types
         numbers = map(lambda quantity, unit : quantity.value_in(unit), quantities, units)
         
         columns = []
         
-            
         for x in numbers:
             columns.append(map(self.convert_number_to_string, x))
         
@@ -208,8 +206,8 @@ class TableFormattedText(base.FileFormatProcessor):
         
     def header_lines(self):
         result = []
-        result.append(' '.join(self.attribute_names))
-        result.append(' '.join(map(str, self.attribute_types)))
+        result.append(self.column_separator.join(self.attribute_names))
+        result.append(self.column_separator.join(map(str, self.attribute_types)))
         return result
         
     def footer_lines(self):
@@ -223,7 +221,10 @@ class TableFormattedText(base.FileFormatProcessor):
         
     @late
     def quantities(self):
-        return map(lambda x:getattr(self.set, x),self.attribute_names)
+        if self.set is None:
+            return []
+        else:
+            return map(lambda x:getattr(self.set, x),self.attribute_names)
 
 
 
@@ -256,6 +257,11 @@ class CsvFileText(TableFormattedText):
     """
     
     provided_formats = ['csv']
+    
+    @base.format_option
+    def column_separator(self):
+        "separator between the columns"
+        return ','
     
 class Athena3DText(TableFormattedText):
     

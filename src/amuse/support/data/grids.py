@@ -187,7 +187,6 @@ class GridInformationChannel(object):
             raise exceptions.AmuseException("The source and target grids do not have the same dimensions, cannot use this channel")
         index = [numpy.s_[0:min(x,y)] for x,y in zip(source_shape, target_shape)]
         index = tuple(index)
-        print index
         
         self.index = index
         
