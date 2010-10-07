@@ -309,7 +309,7 @@ the applicability to *all* particles when multiple legacy codes
 are used. Furthermore, the particle set functions provide a uniform
 way of doing the calculations. Speed might be the downside.
 
-.. automodule:: amuse.support.data.core
+.. automodule:: amuse.support.data.particle_attributes
        
 .. autofunction:: center_of_mass 
 .. autofunction:: center_of_mass_velocity

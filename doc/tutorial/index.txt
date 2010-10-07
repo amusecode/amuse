@@ -6,6 +6,7 @@ Tutorials
 .. toctree::
    :maxdepth: 2
    
+   most_massive_from_salpeter
    particle_sets
    legacy_code
    code_interface
