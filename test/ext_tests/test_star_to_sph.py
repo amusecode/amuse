@@ -10,6 +10,7 @@ except ImportError:
 from amuse.support.data.core import Particles, Particle, ParticlesSuperset
 from amuse.support.units import units, generic_unit_system, nbody_system, constants
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+from amuse.support.exceptions import AmuseException
 from amuse.legacy.mesa.interface import MESA
 from amuse.legacy.gadget2.interface import Gadget2
 from amuse.legacy.fi.interface import Fi
@@ -660,23 +661,17 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
         
     def slowtest16(self):
-        print "Relaxation of red giant model (Gadget2)"
+        print "Test merge two stars"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
-        stars =  Particles(1)
-        stars.mass = 1.0 | units.MSun
+        stars =  Particles(2)
+        stars.mass = [1.0, 1.0] | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.initialize_stars()
-        print stellar_evolution.particles[0].radius.value_in(units.RSun), "age:", stellar_evolution.particles[0].age
-        stellar_evolution.evolve_model(11.666 | units.Gyr) # 1.0 | units.MSun
-        print (stellar_evolution.particles[0].stellar_type, "radius:",
-            stellar_evolution.particles[0].radius.as_quantity_in(units.RSun), "age:", stellar_evolution.particles[0].age)
-        while stellar_evolution.particles[0].radius < 1.0 | units.RSun:
-            stellar_evolution.evolve_model()
-            print stellar_evolution.particles[0].radius.value_in(units.AU), "age:", stellar_evolution.particles[0].age
+        stellar_evolution.evolve_model(10.0 | units.Gyr)
         
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
         outer_radii = stellar_evolution.particles[0].get_radius_profile()
@@ -684,26 +679,40 @@ class TestStellarModel2SPH(TestWithMPI):
         midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
         temperature = stellar_evolution.particles[0].get_temperature_profile()
         mu          = stellar_evolution.particles[0].get_mu_profile()
-        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg)
         
-        number_of_sph_particles = 100000
+        number_of_sph_particles = 4000
+        n_string = "n4e3"
         print "Creating initial conditions from a MESA stellar evolution model:"
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
-        gas = convert_stellar_model_to_SPH(
+        sph_particles_1 = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             seed=12345,
             mode = "scaling method"
         )
+        print stars.mass[1], "star consisting of", number_of_sph_particles, "particles."
+        sph_particles_2 = convert_stellar_model_to_SPH(
+            stellar_evolution.particles[1], 
+            number_of_sph_particles, 
+            seed=12345,
+            mode = "scaling method"
+        )
         stellar_evolution.stop()
+        initial_separation = 4.0 | units.RSun
+        initial_speed = 100.0 | units.km / units.s
+        sph_particles_2.x  += initial_separation
+        sph_particles_1.vx += initial_speed
+        all_sph_particles = ParticlesSuperset([sph_particles_1, sph_particles_2])
         
-        t_end = 1.0e3 | units.s
+        t_end = 4.0e4 | units.s
+        t_end_string = "t4e4"
         print "Evolving to:", t_end
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
         hydro_legacy_code = Gadget2(unit_converter)
-        hydro_legacy_code.gas_particles.add_particles(gas)
+        hydro_legacy_code.gas_particles.add_particles(all_sph_particles)
         
         times = [] | units.Myr
         kinetic_energies =   [] | units.J
@@ -716,25 +725,31 @@ class TestStellarModel2SPH(TestWithMPI):
             potential_energies.append( hydro_legacy_code.potential_energy)
             thermal_energies.append(   hydro_legacy_code.thermal_energy)
         
-        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_n1e5_after_t1e3_gadget_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_n1e5_after_t1e3_gadget_thermal_energy_evolution.png"))
+            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_thermal_energy_evolution.png"))
+        
+        channel = hydro_legacy_code.gas_particles.new_channel_to(all_sph_particles)
+        channel.copy_attributes(['mass', 'rho', 'x','y','z', 'vx','vy','vz', 'u'])   
+        center_of_mass = all_sph_particles.center_of_mass().as_quantity_in(units.RSun)
+        center_of_mass_velocity = all_sph_particles.center_of_mass_velocity().as_quantity_in(units.km / units.s)
+        print "center_of_mass:", center_of_mass
+        print "center_of_mass_velocity:", center_of_mass_velocity
+        self.assertIsOfOrder(center_of_mass[0], 0.5 * (initial_separation + t_end * initial_speed))
+        self.assertIsOfOrder(center_of_mass_velocity[0], 0.5 * initial_speed)
+        all_sph_particles.position -= center_of_mass
+        sph_midpoints = all_sph_particles.position.lengths()
+        
         composition_comparison_plot(
             midpoints, composition[0], 
-            sph_midpoints, gas.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_n1e5_after_t1e3_gadget_composition_h1.png")
+            sph_midpoints, all_sph_particles.h1, 
+            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_composition_h1.png")
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
-            sph_midpoints, gas.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_n1e5_after_t1e3_gadget_original_u.png")
-        )
-        internal_energy_comparison_plot(
-            midpoints, specific_internal_energy, 
-            sph_midpoints, hydro_legacy_code.gas_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_16_n1e5_after_t1e3_gadget_new_u.png")
+            sph_midpoints, all_sph_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_new_u.png")
         )
         hydro_legacy_code.stop()
         print "All done!\n"
