@@ -12,7 +12,7 @@ subroutine search_d2(node,h,ppos,npnear,nblist,d2list)
   integer :: i,daughter,nstack,cnode,cstack(nsubcell*81)
   real :: dist2,xnode,ynode,znode,dx,dy,dz,hsearch2
 
-  if(periodic.AND.h.GT.rsize/4) call terror('search h>rsize/4')
+  if(periodic.AND.h.GT.rsize/2) call terror('search h>rsize/2')
   hsearch2=h**2
   cstack(1)=node
   nstack=1
@@ -99,7 +99,7 @@ subroutine search(node,h,ppos,npnear,nblist)
   integer, intent(inout)::npnear,nblist(*)
   integer :: i,daughter,nstack,cnode,cstack(nsubcell*81)
   real :: dist2,xnode,ynode,znode,dx,dy,dz,hsearch2
-  if(periodic.AND.h.GT.rsize/4) call terror('search h>rsize/4')
+  if(periodic.AND.h.GT.rsize/2) call terror('search h>rsize/2')
   hsearch2=h**2
   cstack(1)=node
   nstack=1
@@ -193,8 +193,8 @@ subroutine comsearch_d2(node,h,delta,ppos,npnear,nblist,d2list)
   real :: dist2,xnode,ynode,znode,dx,dy,dz,hsearch2
 
   if(periodic.AND. &
-      (2*h.GT.rsize/4.OR.(2*hsmooth(node)+delta).GT.rsize/4)) &
-    call terror('comsearch h>rsize/4')
+      (h.GT.rsize/2.OR.(2*hsmooth(node)+delta).GT.rsize/2)) &
+    call terror('comsearch h>rsize/2')
   hsearch2=h**2
   cstack(1)=node
   nstack=1
@@ -285,8 +285,11 @@ subroutine comsearch(node,h,delta,ppos,npnear,nblist)
   real :: dist2,xnode,ynode,znode,dx,dy,dz,hsearch2
   
   if(periodic.AND. &
-      (2*h.GT.rsize/4.OR.(2*hsmooth(node)+delta).GT.rsize/4)) &
-    call terror('comsearch h>rsize/4')
+      (h.GT.rsize/2.OR.(2*hsmooth(node)+delta).GT.rsize/2)) then
+    print*,h,rsize,hsmooth(node),delta
+    print*,node,ppos
+    call terror('comsearch h>rsize/2')
+  endif  
   hsearch2=h**2
   cstack(1)=node
   nstack=1

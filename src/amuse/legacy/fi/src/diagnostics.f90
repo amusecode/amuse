@@ -32,14 +32,17 @@ subroutine diagnostics
   mgas=sum(mass(1:nsph))
   mstar=sum(mass(nbodies-nstar+1:nbodies))
 
-  if(.not.periodic) then
+  do p=1,nbodies
+    mtot=mtot+mass(p)
+    eptot=eptot+mass(p)*phiext(p)
+  enddo
+
+  if(selfgrav) then
+    if(periodic) call terror('check pot. for periodic')
     do p=1,nbodies
-      mtot=mtot+mass(p)
-      eptot=eptot+.5*mass(p)*phi(p)+mass(p)*phiext(p)
+      eptot=eptot+.5*mass(p)*phi(p)
     enddo
-  else
-    call terror('check pot. for periodic')
-  endif
+  endif  
 
   if(.NOT.isotherm) then
     do p=1,nsph

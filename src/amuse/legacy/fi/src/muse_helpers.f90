@@ -30,7 +30,7 @@ subroutine muse_init
 	
  call inithalo
 
- if(periodic) call initbc
+ if(periodic.and.selfgrav) call initbc
 
  call initnewstar
 

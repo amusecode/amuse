@@ -157,7 +157,7 @@ subroutine initpars
      
   hboxsize=0.5*pboxsize
 
-  if(periodic) then
+  if(periodic.AND.selfgrav) then
     call terror('periodic tb fixed ')
   endif
 
@@ -242,7 +242,7 @@ subroutine initsys
 
   call inithalo
 
-  if(periodic) call initbc
+  if(periodic.and.selfgrav) call initbc
 
   if(radiate) call initnewstar
 
