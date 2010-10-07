@@ -169,6 +169,40 @@ class TestFiInterface(TestWithMPI):
         
         instance.stop()
 
+    def xtest7(self):
+        instance=FiInterface()
+        instance.initialize_code()
+#        instance.set_periodic(1)
+        instance.set_use_hydro(0)
+        instance.set_selfgrav(0)
+        instance.set_pboxsize(2.)
+        instance.set_dtime(0.1)
+        instance.commit_parameters()
+        ids,err=instance.new_particle( 
+           [1.0,1.0,1.0],
+           [0.0,0.0,0.0],
+           [0.5,0.0,0.0],
+           [0.0,-0.5,0.0],
+           [0.0,0.0,0.5],
+           [1.0,0.0,0.0],
+           [0.0,-1.0,0.0],
+           [0.0,0.0,1.0])
+        instance.commit_particles()
+        
+        instance.evolve(0.1)
+        m,r,x,y,z,vx,vy,vz,err=instance.get_state(ids)
+        self.assertAlmostEqual(x, [0.6,0.,0.], places=7)
+        self.assertAlmostEqual(y, [0.,-0.6,0.], places=7)
+        self.assertAlmostEqual(z, [0.,0.,0.6], places=7)
+        instance.evolve(1.0)
+        m,r,x,y,z,vx,vy,vz,err=instance.get_state(ids)
+        self.assertAlmostEqual(x, [-0.5,0.,0.], places=7)
+        self.assertAlmostEqual(y, [0.,0.5,0.], places=7)
+        self.assertAlmostEqual(z, [0.,0.,-0.5], places=7)        
+        instance.cleanup_code()
+        instance.stop()
+
+
 class TestEvrard(TestWithMPI):
 
     def xtest0(self):
@@ -705,30 +739,33 @@ class TestFi(TestWithMPI):
 
     def test13b(self):
         particles = core.Particles(2)
-        particles.x = [0.0,10.0] | nbody.length
+        particles.x = [0.0,0.0] | nbody.length
         particles.y = 0 | nbody.length
         particles.z = 0 | nbody.length
-        particles.radius = 0.005 | nbody.length
-        particles.vx =  0 | nbody.speed
+        particles.radius = 0.001 | nbody.length
+        particles.vx =  [-0.5,1.] | nbody.speed
         particles.vy =  0 | nbody.speed
         particles.vz =  0 | nbody.speed
         particles.mass = 1.0 | nbody.mass
 
         instance = Fi()
         instance.initialize_code()
-        instance.parameters.stopping_conditions_out_of_box_size = 1e-3 | nbody.length
-        self.assertEquals(instance.parameters.stopping_conditions_out_of_box_size,  1e-3| nbody.length)
-        instance.parameters.epsilon_squared = (0.01 | nbody.length)**2
+        instance.parameters.stopping_conditions_out_of_box_size = 1. | nbody.length
+        instance.parameters.self_gravity_flag=False
+        instance.parameters.timestep=0.25 | nbody.time 
+        self.assertEquals(instance.parameters.stopping_conditions_out_of_box_size,  1.| nbody.length)
+        instance.parameters.epsilon_squared = (0.001 | nbody.length)**2
         instance.dm_particles.add_particles(particles) 
         instance.stopping_conditions.out_of_box_detection.enable()
-        instance.evolve_model(10 | nbody.time)
-        self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
+        instance.evolve_model(2 | nbody.time)
         self.assertEquals(instance.stopping_conditions.out_of_box_detection.number_of_particles()[0],2)
         print instance.stopping_conditions.out_of_box_detection.particles(0, 'dm_particles')
         print instance.stopping_conditions.out_of_box_detection.particles(1, 'dm_particles')
         self.assertEquals(instance.stopping_conditions.out_of_box_detection.particles(2, 'dm_particles'),[])
-        self.assertTrue(instance.model_time < 10 | nbody.time)
 
+        self.assertTrue(instance.stopping_conditions.out_of_box_detection.is_set())
+        self.assertAlmostEqual(instance.model_time.number ,1.,3)
+        
         instance.stop()
 
     
