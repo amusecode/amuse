@@ -1,6 +1,6 @@
 PYTHON=python2.6
 
-export PYTHONPATH := $(PYTHONPATH)/:$(PWD)/src:$(PWD)/test
+export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
 all:
 	@-mkdir -p test_results
