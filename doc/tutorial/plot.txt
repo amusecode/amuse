@@ -32,7 +32,7 @@ This command will temporarily change the matplotlibrc settings:
 
 .. code-block:: python
 
-    rc('text', usetex=False)
+    rc('text', usetex=True)
 
 Supported functions
 -------------------
