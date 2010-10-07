@@ -44,8 +44,9 @@ from amuse.legacy.capreole.interface import Capreole
 from amuse import plot
 from matplotlib import pyplot
 
-from numpy import sqrt, arange
+from numpy import sqrt, arange, searchsorted
 from optparse import OptionParser
+
 
 
 class CalculateExactSolutionIn1D(object):
@@ -311,6 +312,26 @@ def new_option_parser():
         help="name of the code to use"
     )
     return result
+
+def test_riemann_shocktube_problem():
+    exact = CalculateExactSolutionIn1D()
+    x, rho, p, u = exact.get_solution_at_time(0.12 | time)
+    
+    model = CalculateSolutionIn3D()
+    model.name_of_the_code = "athena"
+    model.dimensions_of_mesh = (500,1,1)
+    
+    grid = model.get_solution_at_time(0.12 | time)
+    model_x = grid.x[...,0,0]
+    density = grid.rho[...,0,0]
+    
+    index_in_model = searchsorted(model_x.value_in(length), 0.56)
+    index_in_exact = searchsorted(x.value_in(length), 0.56)
+    
+    #store_attributes_of_line(grid, name_of_the_code = "athena-test", number_of_grid_points = 500, number_of_workers = 1)
+    
+    assert abs((rho[index_in_exact] - density[index_in_model])/ density[index_in_model]) < 1.e-3 |units.none
+    
     
 def main(**options):
     print "calculating shock using exact solution"
