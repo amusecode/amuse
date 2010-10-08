@@ -24,6 +24,14 @@ int echo_int(int int_in, int * int_out) {
         return 0;
     }
 }
+int echo_long_long_int(long long int int_in, long long int * int_out) {
+    *int_out = int_in;
+    if(int_in < 0) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
 
 int echo_double(double in, double * out) {
     *out = in;
@@ -108,6 +116,15 @@ class ForTestingInterface(LegacyInterface):
         function = LegacyFunctionSpecification()
         function.addParameter('int_in', dtype='int32', direction=function.IN)
         function.addParameter('int_out', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function 
+            
+    @legacy_function
+    def echo_long_long_int():
+        function = LegacyFunctionSpecification()
+        function.addParameter('in', dtype='int64', direction=function.IN)
+        function.addParameter('out', dtype='int64', direction=function.OUT)
         function.result_type = 'int32'
         function.can_handle_array = True
         return function     
@@ -339,14 +356,14 @@ class TestInterface(TestWithMPI):
     def test1(self):
         instance = ForTestingInterface(self.exefile)
         int_out, error = instance.echo_int(10)
-        del instance
+        instance.stop()
         self.assertEquals(int_out, 10)
         self.assertEquals(error, 0)
         
     def test2(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_double(4.0)
-        del instance
+        instance.stop()
         self.assertEquals(out, 4.0)
         self.assertEquals(error, 0)
         
@@ -355,7 +372,7 @@ class TestInterface(TestWithMPI):
         instance = ForTestingInterface(self.exefile)
         input = [1,2,3,4]
         output, errors = instance.echo_int(input)
-        del instance
+        instance.stop()
         self.assertEquals(len(errors),4)
         for actual, expected in zip(output, input):
             self.assertEquals(actual, expected)
@@ -373,7 +390,7 @@ class TestInterface(TestWithMPI):
     def test5(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_float(4.0)
-        del instance
+        instance.stop()
         self.assertEquals(out, 4.0)
         self.assertEquals(error, 0)
         
@@ -381,14 +398,14 @@ class TestInterface(TestWithMPI):
         
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string("abc")
-        del instance
+        instance.stop()
         self.assertEquals(error, 0)
         self.assertEquals(out[0], "abc")
 
     def test7(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_string(["abc","def"])
-        del instance
+        instance.stop()
         
         self.assertEquals(error[0], 0)
         self.assertEquals(error[1], 0)
@@ -398,7 +415,7 @@ class TestInterface(TestWithMPI):
     def test8(self):
         instance = ForTestingInterface(self.exefile)
         out1, out2, error = instance.echo_strings("abc","def")
-        del instance
+        instance.stop()
         
         self.assertEquals(error, 0)
         self.assertEquals(out1[0], "def")
@@ -407,7 +424,7 @@ class TestInterface(TestWithMPI):
     def test9(self):
         instance = ForTestingInterface(self.exefile)
         str1_out, str2_out, error = instance.echo_strings(["abc", "def"], ["ghi", "jkl"])
-        del instance
+        instance.stop()
         
         self.assertEquals(error[0], 0)
         self.assertEquals(error[1], 0)
@@ -518,5 +535,13 @@ class TestInterface(TestWithMPI):
         instance.stop()
         self.assertEquals(out, [True, False, True])
         self.assertEquals(error, 0)
-    
+        
+    def test19(self):
+        instance = ForTestingInterface(self.exefile)
+        print 3935559000370003845
+        int_out, error = instance.echo_long_long_int(3935559000370003845)
+        instance.stop()
+        self.assertEquals(int_out, 3935559000370003845)
+        self.assertEquals(error, 0)
+        
     

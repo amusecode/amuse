@@ -17,6 +17,8 @@ dtype_to_spec = DTypeToSpecDictionary({
                     'number_of_strings', 'int', 'MPI_INTEGER'),
     'bool' : DTypeSpec('bools_in', 'bools_out',
                     'number_of_bools', 'int', 'MPI_INTEGER'),
+    'int64' : DTypeSpec('longs_in', 'longs_out',
+                    'number_of_longs', 'long long int', 'MPI_LONG_LONG_INT'),
 })
 
 

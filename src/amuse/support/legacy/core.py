@@ -38,6 +38,7 @@ def _typecode_to_datatype(typecode):
         'f':'float32',
         's':'string',
         'b':'bool',
+        'l':'int64',
     }
     if typecode in mapping:
         return mapping[typecode]

@@ -89,10 +89,11 @@ class Message(object):
         self.floats = []
         self.strings = []
         self.booleans = []
+        self.longs = []
         
         
     def recieve(self, comm):
-        header = numpy.zeros(7,  dtype='i')
+        header = numpy.zeros(8,  dtype='i')
         
         self.mpi_recieve(comm, [header, MPI.INT])
     
@@ -107,15 +108,17 @@ class Message(object):
         number_of_floats = header[4]
         number_of_strings = header[5]
         number_of_booleans = header[6]
+        number_of_longs = header[7]
         
         self.doubles = self.recieve_doubles(comm, self.length, number_of_doubles)
         self.ints = self.recieve_ints(comm, self.length, number_of_ints)
         self.floats = self.recieve_floats(comm, self.length, number_of_floats)
         self.strings = self.recieve_strings(comm, self.length, number_of_strings)
         self.booleans = self.recieve_booleans(comm, self.length, number_of_booleans)
+        self.longs = self.recieve_longs(comm, self.length, number_of_longs)
         
     def nonblocking_recieve(self, comm):
-        header = numpy.zeros(7,  dtype='i')
+        header = numpy.zeros(8,  dtype='i')
         
         request = self.mpi_nonblocking_recieve(comm, [header, MPI.INT])
         
@@ -135,6 +138,14 @@ class Message(object):
         if total > 0:
             result = numpy.empty(total * length,  dtype='i')
             self.mpi_recieve(comm,[result, MPI.INT])
+            return result
+        else:
+            return []
+            
+    def recieve_longs(self, comm, length, total):
+        if total > 0:
+            result = numpy.empty(total * length,  dtype='int64')
+            self.mpi_recieve(comm,[result, MPI.INTEGER8])
             return result
         else:
             return []
@@ -187,6 +198,7 @@ class Message(object):
             len(self.floats) / self.length, 
             len(self.strings) / self.length,
             len(self.booleans) / self.length,
+            len(self.longs) / self.length,
         ], dtype='i')
         
         self.mpi_send(comm, [header, MPI.INT])
@@ -197,6 +209,7 @@ class Message(object):
         self.send_floats(comm, self.floats)
         self.send_strings(comm, self.strings)
         self.send_booleans(comm, self.booleans)
+        self.send_longs(comm, self.longs)
         
     
     def send_doubles(self, comm, array):
@@ -234,7 +247,12 @@ class Message(object):
             buffer = numpy.array(array,  dtype='int32')
             self.mpi_send(comm, [buffer, MPI.LOGICAL])
             
-            
+        
+    def send_longs(self, comm, array):
+        if len(array) > 0:
+            buffer = numpy.array(array,  dtype='int64')
+            print buffer
+            self.mpi_send(comm,[buffer, MPI.INTEGER8])    
     
     def mpi_recieve(self, comm, array):
         comm.Bcast(array, root = 0)
@@ -695,6 +713,7 @@ class MpiChannel(MessageChannel):
                 ('int32', 'ints'),
                 ('string', 'strings'),
                 ('bool', 'booleans'),
+                ('int64', 'longs'),
             ):
                 if dtype in dtype_to_arguments:
                     array = pack_array( dtype_to_arguments[dtype], message.length, dtype)
@@ -786,6 +805,7 @@ class MpiChannel(MessageChannel):
                 ('int32', 'ints'),
                 ('bool', 'booleans'),
                 ('string', 'strings'),
+                ('int64', 'longs'),
             ):
                 result = getattr(message, attrname)
                 if message.length > 1 or handle_as_array:

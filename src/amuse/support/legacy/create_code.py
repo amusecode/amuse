@@ -12,7 +12,7 @@ class DTypeSpec(object):
         self.type = type
         self.mpi_type = mpi_type
 
-dtypes = ['float64', 'int32', 'float32', 'string', 'bool']
+dtypes = ['float64', 'int32', 'float32', 'string', 'bool', 'int64']
 
 class MakeCodeString(object):
     def __init__(self):
