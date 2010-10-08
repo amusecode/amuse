@@ -90,11 +90,13 @@ def hist(x, bins=10, range=None, normed=False, weights=None, cumulative=False, b
     UnitlessArgs.unitnames_of_args.append("")
 
 def xlabel(s, *args, **kwargs):
-    s = custom_label.format(s, UnitlessArgs.unitnames_of_args[0])
+    if not '[' in s:
+        s = custom_label.format(s, UnitlessArgs.unitnames_of_args[0])
     native_plot.xlabel(s, *args, **kwargs)
 
 def ylabel(s, *args, **kwargs):
-    s = custom_label.format(s, UnitlessArgs.unitnames_of_args[1])
+    if not '[' in s:
+        s = custom_label.format(s, UnitlessArgs.unitnames_of_args[1])
     native_plot.ylabel(s, *args, **kwargs)
 
 if __name__ == '__main__':
@@ -106,10 +108,10 @@ if __name__ == '__main__':
     y1 = units.m.new_quantity(np.sin(x.number))
     y2 = x
     native_plot.subplot(2,2,1)
-    plot(x, y1, label='data')
-    scatter(x, y2, label='model')
+    plot(x, y1, label='model')
+    scatter(x, y2, label='data')
     xlabel('x')
-    ylabel('y')
+    ylabel('$M_\odot y$')
     native_plot.legend(loc=2)
     
     x = range(50) | units.Myr
