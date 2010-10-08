@@ -388,10 +388,20 @@ Specifics
 
 Parameters
 ^^^^^^^^^^
-
-* The number of particles being managed by the SmallN module::
-
-    number_of_particles
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  | unit          | description       |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|epsilon squared                     |0.0            |length*length  |smoothing parameter|
+|                                    |               |               |for gravity        |
+|                                    |               |               |calculations       |
+|                                    |               |               |>0!                |
++------------------------------------+---------------+---------------+-------------------+
+|number_of_particles                 |0.0            |none           |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
 
 
 Methods
