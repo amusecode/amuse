@@ -490,7 +490,6 @@ contains
       end if
       
       
-      PRINT *, "use_quadratic_predictions", use_quadratic_predictions
       if(use_quadratic_predictions) then
         call initlse_parabola_storage_space(kh2, ke1+ke2+kev)
       end if
