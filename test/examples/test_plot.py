@@ -13,7 +13,7 @@ if __name__ == '__main__':
     plot(x, y2, label='model')
     scatter(x, y1, label='data')
     xlabel('x')
-    ylabel('mass [$M_\odot$]')
+    ylabel('mass [$M_\odot$]')#overrides auto unit!
     native_plot.legend(loc=2)
 
     x = range(50) | units.Myr

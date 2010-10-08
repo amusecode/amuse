@@ -5,36 +5,44 @@ Plotting with amuse
 matplotlib
 ==========
 
-Matplotlib is a python plotting library capable of working with many 
-graphical user interface toolkits. It is not required by AMUSE, but 
-if installed then AMUSE provides extended plot functionality.
-If a plot is made, axis labels will be made automatically yielding 
-the concerning units. 
+`Matplotlib <http://matplotlib.sourceforge.net/index.html>`_ is a
+python plotting library capable of working with many  graphical user
+interface toolkits. It is not required by AMUSE, but  if installed
+then AMUSE provides extended plot functionality.  If a plot is made,
+axis labels will be made automatically yielding  the concerning
+units. 
+
+To use matplotlib within AMUSE with the extended plot functionality
+you need the following import:
 
 .. code-block:: python
 
     >>> from amuse.plot import *
 
-The native matplotlib plot functions are still available in the native_plot namespace, e.g.:
+The native matplotlib plot functions are still available in the
+native_plot namespace, e.g.:
 
 .. code-block:: python
 
     >>> native_plot.subplot(2,2,1)
 
+`matplotlib documentation <http://matplotlib.sourceforge.net/contents.html>`_
+
 install matplotlib
 ------------------
 
-Either use a pre-packaged version or install from source. If you install from 
-source and you have installed the prerequisites in a user directory make sure
-the PATH settings are correct. 
+Either use a pre-packaged version or install from source. If you
+install from  source and you have installed the prerequisites in a
+user directory make sure the ``PATH`` settings are correct. 
 
-The source can be found `here <http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/>`_
+The source can be found `here
+<http://sourceforge.net/projects/matplotlib/files/matplotlib/matplotlib-1.0/>`_
 
-Installation instructions can be found `here <http://matplotlib.sourceforge.net/users/installing.html>`_
-
+Installation instructions can be found `here
+<http://matplotlib.sourceforge.net/users/installing.html>`_
 
 Latex support
-=============
+-------------
  
 Latex support for labels can be enabled by issuing:
 
@@ -49,7 +57,7 @@ This command will temporarily change the matplotlibrc settings:
     rc('text', usetex=True)
 
 Mathtext
---------
+~~~~~~~~
 
 Latex support, while flexible and rich in features, might be slow and
 requires latex, dvipng and Ghostscript to be intsalled. You can use
@@ -71,10 +79,10 @@ Supported functions
 * ylabel
 
 Example code
-============
+------------
 
 .. literalinclude:: ../../test/examples/test_plot.py
 
 .. image:: plots/plot1.png
-   :width: 22cm
+   :width: 18cm
    :align: left

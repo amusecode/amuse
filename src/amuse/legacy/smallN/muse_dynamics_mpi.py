@@ -35,6 +35,7 @@ class SmallNInterface(LegacyInterface):
         self.has_run = False
         self.eps2 = 0.0
         self.time = 0.0
+        self.number_of_particles = 0
 
     @legacy_function
     def report_multiples():
@@ -157,12 +158,9 @@ class SmallNInterface(LegacyInterface):
         
     def commit_particles(self):
         pass
-
-
-        
+       
         
 class SmallN(GravitationalDynamics):
-    
     
     def __init__(self, convert_nbody = None):
         legacy_interface = SmallNInterface()
@@ -181,8 +179,9 @@ class SmallN(GravitationalDynamics):
             nbody_system.length * nbody_system.length, 
             0.0 | nbody_system.length * nbody_system.length
         )
+
         object.add_attribute_parameter(
-             "number_of_particles",
+            "number_of_particles",
             "number_of_particles", 
             "The number of particles being managed by the SmallN module", 
             units.none, 

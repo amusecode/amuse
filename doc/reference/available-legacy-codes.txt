@@ -161,36 +161,14 @@ Parameters
 |                                    |               |               |output             |
 +------------------------------------+---------------+---------------+-------------------+
 
-* Openings angle for building the tree, between 0 and 1::
+example
 
-      openings_angle
+.. code-block:: python
 
-* Smoothing parameter, must be > 0
-
-      attribute::
-
-          epsilon_squared, e.g.
-
-      example
-
-      .. code-block:: python
-
-        >>> from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
-        >>> from amuse.support.units import nbody_system
-        >>> instance = BHTree(BHTree.NBODY)
-        >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
-
-* constant timestep for iteration::
-
-      timestep
-
-Methods
-^^^^^^^
-
-* set_time_step.
-    Note that all codes have get_time_step.::
-
-      set_time_step()
+     >>> from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
+     >>> from amuse.support.units import nbody_system
+     >>> instance = BHTree(BHTree.NBODY)
+     >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
 
 .. [#bh] Barnes, J. & Hut, P. 1986. *Nature* **324**, 446.
 
@@ -254,20 +232,6 @@ Parameters
     .. autoclass:: Hermite
 
         .. automethod:: parameters
-
-* smoothing parameter for gravity calculations, can be 0.::
-
-      epsilon_squared
-
-* constant timestep for iteration.::
-
-      timestep
-
-Methods
-^^^^^^^
-
-* set_time_step.
-    Note that all codes have get_time_step.
 
 .. [#hutmakino] Hut, P., Makino, J. & McMillan, S., 1995, *ApJL* **443**, L93.
 
@@ -368,27 +332,13 @@ The default is **MODE_G6LIB**.
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
 
-* timestep parameter::
+.. code-block:: python
 
-      timestep_parameter
+    >>> instance.timestep_parameter = 0.1 |nbody_system.time
 
-  .. code-block:: python
-
-      >>> instance.timestep_parameter = 0.1 |nbody_system.time
-
-  etc...
-
-* parameter to determine the initial timestep::
-
-      initial_timestep_parameter
-
-
-Methods
-^^^^^^^
 
 .. [#harfst]  Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2006, *NewAstron.* **12**, 357-377.
 .. [#gaburov]  Gaburov, E., Harfst, S., Portegies Zwart, S. 2009, *NewAstron.* **14** 630-637.
-.. [#nitadori]  Nitadori, K, Makino, J., Hut, P. 2006, *NewAstron.* **12** 169-181.
 
 .. _twobody:
 
@@ -404,8 +354,6 @@ Specifics
 Parameters
 ^^^^^^^^^^
 
-Methods
-^^^^^^^
 
 .. [#bate]  Bate, R.R, Mueller, D.D., White, J.E. "FUNDAMENTALS OF ASTRODYNAMICS" *Dover* 0-486-60061-0
 
