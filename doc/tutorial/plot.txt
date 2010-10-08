@@ -60,7 +60,7 @@ Mathtext
 ~~~~~~~~
 
 Latex support, while flexible and rich in features, might be slow and
-requires latex, dvipng and Ghostscript to be intsalled. You can use
+requires latex, dvipng and Ghostscript to be installed. You can use
 matplotlib's builtin TeX expression parser, mathtext instead. This is
 a subset TeX markup usable in any matplotlib text string by placing it
 inside a pair of dollar signs ($).  See `mathtext
