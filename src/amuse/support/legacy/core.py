@@ -534,7 +534,10 @@ def stop_interfaces():
     for reference in LegacyInterface.instances:
         x = reference()
         if not x is None:
-            x._stop()
+            try:
+                x._stop()
+            except:
+                pass
 
 atexit.register(stop_interfaces)
 

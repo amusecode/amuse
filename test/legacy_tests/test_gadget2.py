@@ -271,6 +271,47 @@ class TestGadget2Interface(TestWithMPI):
         self.assertAlmostEqual(z, [0.,0.,1.5], places=6)
         instance.cleanup_code()
         instance.stop()
+        
+    
+    def test10(self):
+        instance = Gadget2Interface()
+        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        self.assertEquals(0, instance.commit_parameters())
+        
+        indices_and_value = []
+        for i in range(10):
+            index, error = instance.new_sph_particle(0.1, i,0,0, 0,0,0, 0.0)
+            self.assertEquals(0, error)
+            indices_and_value.append((index, i))
+            
+        instance.commit_particles()
+        for i, value in indices_and_value:
+            x, y, z, error = instance.get_position(i)
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+            self.assertEquals(y, 0)
+            self.assertEquals(z, 0)
+        
+        
+        self.assertEquals(0, error)
+        for i in range(10,20):
+            index, error = instance.new_sph_particle(0.1, i,0,0, 0,0,0, 0.0)
+            self.assertEquals(0, error)
+            indices_and_value.append((index, i))
+            
+        error = instance.recommit_particles()
+        self.assertEquals(0, error)
+        
+        for i, value in indices_and_value:
+            x, y, z, error = instance.get_position(i)
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+            self.assertEquals(y, 0)
+            self.assertEquals(z, 0)
+            
+        instance.stop()
     
     
 class TestGadget2(TestWithMPI):

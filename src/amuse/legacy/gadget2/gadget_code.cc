@@ -24,6 +24,7 @@ bool potential_energy_also_up_to_date = false;
 bool density_up_to_date = false;
 bool particle_map_up_to_date = false;
 int particles_counter = 0;
+int index_of_highest_mapped_particle = 0;
 vector<dynamics_state> ds;        // for initialization only
 vector<sph_state> sph_ds;         // for initialization only
 int *particle_map;
@@ -130,9 +131,6 @@ int commit_parameters(){
     outfiles_opened = true;
     return 0;
 }
-int recommit_parameters(){
-    return 0;
-}
 
 int commit_particles(){
     double t0, t1, a3;
@@ -214,6 +212,8 @@ int commit_particles(){
     domain_Decomposition();	/* do initial domain decomposition (gives equal numbers of particles) */
     particle_map = (int*) calloc(particles_counter+2, sizeof(int));
     particle_map_up_to_date = false;
+    index_of_highest_mapped_particle = particles_counter;
+    
     ngb_treebuild();		/* will build tree */
     setup_smoothinglengths();
     TreeReconstructFlag = 1;
@@ -239,6 +239,9 @@ int commit_particles(){
     All.CPU_Total += timediff(t0, t1);
     
     particles_initialized = true;
+    return 0;
+}
+int recommit_parameters(){
     return 0;
 }
 int recommit_particles(){
@@ -275,6 +278,7 @@ int recommit_particles(){
     }
     return commit_particles();
 }
+
 bool drift_to_t_end(int ti_end){
     bool done;
     int n, min, min_glob, flag, *temp;
@@ -419,7 +423,8 @@ int contruct_tree_if_needed(void){
 }
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
     dynamics_state state;
-    state.id = ++particles_counter;
+    particles_counter++;
+    state.id = particles_counter;
     state.mass = mass;
     state.x = x;
     state.y = y;
@@ -433,7 +438,8 @@ int new_dm_particle(int *id, double mass, double x, double y, double z, double v
 }
 int new_sph_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double u){
     sph_state state;
-    state.id = ++particles_counter;
+    particles_counter++;
+    state.id = particles_counter;
     state.mass = mass;
     state.x = x;
     state.y = y;
@@ -668,8 +674,9 @@ int get_index_of_first_particle(int *index_of_the_particle){
 int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next_particle){
     struct particle_data *Pcurrent;
     bool found = false;
-    if (!particles_initialized)
+    if (!particles_initialized) {
         return -1;
+    }
     for (int i = index_of_the_particle+1; i <= particles_counter; i++){
         if (!(find_particle(i, &Pcurrent))) {
             if (found){
@@ -684,23 +691,33 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
     return -1; // No particle found.
 }
 void update_particle_map(void){
-    for(int i = 0; i < All.TotNumPart; i++)
+    for(int i = 0; i < All.TotNumPart; i++) {
         particle_map[P[i].ID] = i;
+    }
     particle_map_up_to_date = true;
 }
+
 int find_particle(int index_of_the_particle, struct particle_data **Pfound){
-    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > particles_counter)
+    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > index_of_highest_mapped_particle)
+    {
         return -1;
+    }
+    
     if (!particle_map_up_to_date)
+    {
         update_particle_map();
-    if(P[particle_map[index_of_the_particle]].ID == (unsigned int) index_of_the_particle){
+    }
+    
+    if(P[particle_map[index_of_the_particle]].ID == (unsigned int) index_of_the_particle)
+    {
         *Pfound = &P[particle_map[index_of_the_particle]];
         return 0;
     }
     return -1;
 }
+
 int find_sph_particle(int index_of_the_particle, struct sph_particle_data **SphPfound){
-    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > particles_counter)
+    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > index_of_highest_mapped_particle)
         return -1;
     if (!particle_map_up_to_date)
         update_particle_map();
