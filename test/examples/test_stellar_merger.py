@@ -75,9 +75,9 @@ def head_on_stellar_merger(
         seed=12345,
         mode = "scaling method"
     )
-    stellar_evolution.stop()
-    sph_particles_2.x  += initial_separation
+    sph_particles_2.x  += initial_separation + stellar_evolution.particles.radius.sum()
     sph_particles_1.vx += initial_speed
+    stellar_evolution.stop()
     all_sph_particles = ParticlesSuperset([sph_particles_1, sph_particles_2])
     
     unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, masses.sum(), t_end)

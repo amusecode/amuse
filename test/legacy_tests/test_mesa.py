@@ -607,3 +607,52 @@ class TestMESA(TestWithMPI):
             "chemical species of the star (8).")
         instance.stop()
         del instance
+    
+    def test11(self):
+        print "Test evolve_model optional argument keep_synchronous"
+        stars = core.Particles(3)
+        stars.mass = [1.0, 2.0, 3.0] | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_module_with_current_parameters() 
+        instance.particles.add_particles(stars)
+        instance.initialize_stars()
+        instance.evolve_model()
+        ages_1 = instance.particles.age
+        self.assertAlmostEqual(ages_1, [100000.0, 17677.670, 6415.003] | units.yr, 2)
+        print ages_1
+        
+        instance.evolve_model()
+        ages_2 = instance.particles.age
+        self.assertAlmostEqual(ages_2, [100000.0, 17677.670, 14113.007] | units.yr, 2)
+        print "The new age of the last star is still lower than the previous age of the other stars, so the others keep their ages:"
+        print ages_2
+        self.assertTrue(ages_2[2] < ages_1[0])
+        self.assertEqual(ages_1[0], ages_2[0])
+        self.assertTrue(ages_2[2] < ages_1[1])
+        self.assertEqual(ages_1[1], ages_2[1])
+        
+        instance.evolve_model()
+        ages_3 = instance.particles.age
+        self.assertAlmostEqual(ages_3, [100000.0, 38890.873, 23350.611] | units.yr, 2)
+        print "The new age of the last star is higher than the previous age of the second star, so only the first one keeps its age:"
+        print ages_3
+        self.assertTrue(ages_3[2] < ages_2[0])
+        self.assertEqual(ages_2[0], ages_3[0])
+        self.assertFalse(ages_3[2] < ages_2[1])
+        self.assertFalse(ages_2[1] == ages_3[1])
+        
+        instance.evolve_model(keep_synchronous = False)
+        ages_4 = instance.particles.age
+        self.assertAlmostEqual(ages_4, [220000.0, 64346.717, 34435.736] | units.yr, 2)
+        print "keep_synchronous = False, so all stars age:"
+        print ages_4
+        self.assertTrue(ages_4[0] > ages_3[0])
+        self.assertTrue(ages_4[1] > ages_3[1])
+        self.assertTrue(ages_4[2] > ages_3[2])
+        instance.stop()
+    
+
+

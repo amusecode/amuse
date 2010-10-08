@@ -1,3 +1,4 @@
+from operator import itemgetter
 from amuse.legacy import *
 from amuse.legacy.interface.se import StellarEvolution
 
@@ -811,13 +812,20 @@ class EVtwin(CodeInterface):
     def setup_particles(self, particles):
         self.particles.add_particles(particles)
         
-    def evolve_model(self, end_time = None):
+    def evolve_model(self, end_time = None, keep_synchronous = True):
         if end_time is None:
-            result = self.particles.evolve_one_step()
-            return result
-                   
-        for particle in self.particles:
-            while particle.age < end_time:
-                particle.evolve_one_step()
+            if keep_synchronous:
+                ages = self.particles.age
+                index, min_age = min(enumerate(ages), key=itemgetter(1))
+                self.particles[index].evolve_one_step()
+                new_age = self.particles[index].age
+                for particle in self.particles.select(lambda x : x < new_age, ["age"]):
+                    particle.evolve_one_step()
+            else:
+                self.particles.evolve_one_step()
+        else:
+            for particle in self.particles:
+                while particle.age < end_time:
+                    particle.evolve_one_step()
                 
         

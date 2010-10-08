@@ -1,3 +1,4 @@
+from operator import itemgetter
 from amuse.legacy import *
 
 from amuse.support.units import units
@@ -388,8 +389,15 @@ class SSE(CodeInterface):
         particles._set_values(particles._get_keys(), attributes, result)
         
         
-    def evolve_model(self, end_time = None):
+    def evolve_model(self, end_time = None, keep_synchronous = True):
         if end_time is None:
+            if keep_synchronous:
+                ages = self.particles.age
+                index, min_age = min(enumerate(ages), key=itemgetter(1))
+                new_age = min_age + self.particles[index].time_step
+                selection = self.particles.select(lambda x : x < new_age, ["age"])
+                self._evolve_particles(selection, selection.time_step + selection.age)
+                return
             end_time = self.particles.time_step + self.particles.age
             
         self._evolve_particles(self.particles, end_time)
