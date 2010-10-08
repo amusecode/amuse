@@ -711,7 +711,7 @@ contains
 
     select case (boundarycondition)
     case (PERIODIC)
-       if (sz /= 1 .or. ez /= meshx) then
+       if (sz /= 1 .or. ez /= meshz) then
           write(*,*) "Error, applying periodic boundary conditions in MPI case"
           write(*,*) "Fix mpi.F90"
        endif

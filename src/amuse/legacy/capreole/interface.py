@@ -16,9 +16,16 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
         .. [#] Mellema, Eulderink & Icke 1991, A&A 252, 718
     """
     
-    def __init__(self,name_of_the_worker = 'worker',**args):
-        LegacyInterface.__init__(self, name_of_the_worker,**args)
+    
+    def __init__(self, number_of_workers = 1, **options):
+        LegacyInterface.__init__(self, self.name_of_the_worker(number_of_workers),**options)
         LiteratureRefs.__init__(self)
+    
+    def name_of_the_worker(self, number_of_workers):
+        if number_of_workers > 1:
+            return 'worker_code_mpi'
+        else:
+            return 'worker'
     
     @legacy_function   
     def setup_mesh():

@@ -58,9 +58,9 @@ all: worker
 worker: worker.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
 
-worker_mpi: FFLAGS2+=$(MPI_FLAGS)
-worker_mpi: worker_mpi.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(MPILIBS)$(SCLIBS)
+worker_code_mpi: FFLAGS2+=$(MPI_FLAGS)
+worker_code_mpi: worker_mpi.f90 interface.o
+	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
 
 glworker: glworker.f90 interface.o
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"

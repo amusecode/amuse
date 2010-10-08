@@ -254,7 +254,7 @@ class TestCapreole(TestWithMPI):
     def test1(self):
         instance=self.new_instance(Capreole)
         instance.initialize_code()
-        instance.parameters.mesh_size = (10,10,1)
+        instance.parameters.mesh_size = (10,10,5)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
@@ -264,9 +264,9 @@ class TestCapreole(TestWithMPI):
         
         instance.commit_parameters()
     
-        grid = core.Grid(10,10,1)
-        grid.rho = 0.1 | generic_unit_system.density
-        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid = core.Grid(10,10,10)
+        grid.rho = 0.4 | generic_unit_system.density
+        grid.rhovx = 0.1 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
         grid.rhovz = 0.0 |  generic_unit_system.momentum_density
         grid.energy = 0.0 | generic_unit_system.energy_density
@@ -276,21 +276,20 @@ class TestCapreole(TestWithMPI):
             
         result = instance.initialize_grid()
         
-        
         channel = instance.grid.new_channel_to(grid)
         channel.copy()
         
-        self.assertEquals(grid[1][1][0].rho, 0.1 | generic_unit_system.density)
+        self.assertEquals(grid[1][1][0].rho, 0.4 | generic_unit_system.density)
         for x in grid[1].rho.value_in(generic_unit_system.density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEquals(x, 0.4)
             
-        #instance.evolve(1.0 | generic_unit_system.time)
+        #instance.evolve(0.12 | generic_unit_system.time)
         
-        #for x in instance.grid.rho.value_in(density).flatten():
+        #for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
         #    self.assertEquals(x, 0.1)
     
         #instance.evolve(10.0 | generic_unit_system.time)
-        #for x in instance.grid.rho.value_in(density).flatten():
+        #for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
         #    self.assertEquals(x, 0.1)
         instance.stop()
 
@@ -298,7 +297,7 @@ class TestCapreole(TestWithMPI):
     def test2(self):
         instance=self.new_instance(Capreole)
         instance.initialize_code()
-        instance.parameters.mesh_size = (10,10,1)
+        instance.parameters.mesh_size = (10,10,5)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
@@ -308,7 +307,7 @@ class TestCapreole(TestWithMPI):
         
         instance.commit_parameters()
     
-        grid = core.Grid(10,10,1)
+        grid = core.Grid(10,10,5)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
