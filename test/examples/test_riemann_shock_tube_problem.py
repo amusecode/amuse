@@ -41,9 +41,14 @@ from amuse.support.units.generic_unit_system import *
 from amuse.legacy.athena.interface import Athena
 from amuse.legacy.capreole.interface import Capreole
 
-from amuse import plot
-from matplotlib import pyplot
-
+try:
+    from amuse import plot
+    from matplotlib import pyplot
+    IS_PLOT_AVAILABLE = True
+except ImportError:
+    IS_PLOT_AVAILABLE = False
+    
+    
 from numpy import sqrt, arange, searchsorted
 from optparse import OptionParser
 
@@ -338,21 +343,21 @@ def main(**options):
     exact = CalculateExactSolutionIn1D()
     x, rho, p, u = exact.get_solution_at_time(0.12 | time)
     
-    store_attributes(x,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
-    
     print "calculating shock using code"
     model = CalculateSolutionIn3D(**options)
     grid = model.get_solution_at_time(0.12 | time)
     
-    print "plotting solution"
-    plot.plot(x,rho)
-    plot.plot(grid.x[...,0,0], grid.rho[...,0,0])
-    
+    print "saving data"
+    store_attributes(x,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
     store_attributes_of_line(grid, **options)
     
-    pyplot.xlim(0.3,0.7)
-    pyplot.ylim(0.5,4.5)
-    pyplot.savefig("rho.png")
+    if IS_PLOT_AVAILABLE:
+        print "plotting solution"
+        plot.plot(x,rho)
+        plot.plot(grid.x[...,0,0], grid.rho[...,0,0])
+        pyplot.xlim(0.3,0.7)
+        pyplot.ylim(0.5,4.5)
+        pyplot.savefig("rho.png")
 
 
 if __name__ == "__main__":
