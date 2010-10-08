@@ -47,30 +47,30 @@ Note: holds for AMUSE implementation.
 |name     |approximation scheme |timestep scheme  |CPU     |GPU     |GRAPE |language |stopcond (1)  |parallel (2) |
 |         |                     |                 |        |        |      |         |              |             |
 +=========+=====================+=================+========+========+======+=========+==============+=============+
-|bhtree   |tree                 |shared/fixed     |Y       |N       |N     |C++      |CNT           |N            |
+|bhtree   |tree                 |shared/fixed     |Y       |N       |N     |C/C++    |CST           |N            |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|phigrape |direct               |block/variable   |Y g6    |Y       |Y     | FORTRAN |CNPT          |N            | 
+|phigrape |direct               |block/variable   |Y g6    |Y       |Y     |FORTAN   |CSPT          |N            | 
 |         |                     |                 |        |sapporo |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|octgrav  |tree                 |shared           |N       |Y       |N     |C++      |N             |N            | 
+|octgrav  |tree                 |shared           |N       |Y       |N     |C/C++    |S             |N            | 
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|hermite  |direct               |shared/variable  |Y       |N       |N     |C        |CNOPT         |Y            |
+|hermite  |direct               |shared/variable  |Y       |N       |N     |C/C++    |CSOPT         |Y            |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
 |twobody  |universal variables, |none, exact      |Y       |N       |N     |Python   |              |N            |
 |         |Kepler eq.           |                 |        |        |      |         |              |             |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|smallN   |Hermite 4th order    |individual       |Y       |N       |N     |C++      |              |N            |
+|smallN   |direct Hermite 4th   |individual       |Y       |N       |N     |C/C++    |              |N            |
+|         |order                |                 |        |        |      |         |              |             |
++---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
+|fi       |tree                 |block/variable   |Y       |N       |N     |FORTRAN  |S             |N            |
+|         |                     |                 |        |        |      |         |              |             |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|fi       |tree                 |block/variable   |Y       |N       |N     |FORTRAN  |N             |N            |
-|         |                     |                 |        |        |      |         |              |             |
-|         |                     |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|gadget   |tree                 |individual       |Y       |N       |N     |C        |N             |N            |
+|gadget   |tree                 |individual       |Y       |N       |N     |C/C++    |S             |N            |
 |         |                     |                 |        |        |      |         |              |             |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
@@ -93,7 +93,7 @@ Note: holds for AMUSE implementation.
     ==== ========================== 
     C    Collision detection
     E    Escaper detection
-    N    Number of steps detection
+    S    Number of steps detection
     O    Out of box detection
     P    Pair detection
     T    Timeout detection
