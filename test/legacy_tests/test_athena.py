@@ -177,7 +177,7 @@ class TestAthenaInterface(TestWithMPI):
         self.assertEquals(error,0)
         self.assertEquals(time, 0.0)
         
-        error = instance.fill_grid_state(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5,0,0)
+        error = instance.set_grid_state(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5,0,0)
         self.assertEquals(error, 0)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,1)
@@ -235,7 +235,7 @@ class TestAthenaInterface(TestWithMPI):
             
             nghost, error = instance.get_nghost()
             self.assertEquals(4, nghost)
-            instance.fill_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128),0.1, 0.2, 0.3, 0.4, 0.5)
+            instance.set_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128),0.1, 0.2, 0.3, 0.4, 0.5)
             error = instance.initialize_grid()
             self.assertEquals(error, 0)
             

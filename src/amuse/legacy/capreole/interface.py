@@ -104,7 +104,7 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
         return function
 
     @legacy_function    
-    def fill_grid_state():
+    def set_grid_state():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         for x in ['i','j','k']:
@@ -287,7 +287,7 @@ class Capreole(CodeInterface):
         energy_density =  mass / ((time**2) * length)
         
         object.add_method(
-            'fill_grid_state',
+            'set_grid_state',
             (object.INDEX, object.INDEX, object.INDEX,
             density, momentum_density, momentum_density, momentum_density, energy_density,
             ),
@@ -327,12 +327,18 @@ class Capreole(CodeInterface):
         object.define_grid('grid')
         object.set_grid_range('grid', 'get_index_range_inclusive')
         object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
+    
         object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        object.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        
         object.add_getter('grid', 'get_density', names=('rho',))
         object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
         object.add_getter('grid', 'get_energy_density', names=('energy',))
-        object.add_setter('grid', 'fill_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-    
+        
+        #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
+        #object.add_setter('grid', 'set_density', names=('rho',))
+        #object.add_setter('grid', 'set_energy_density', names=('energy',))
+        
         
         
 

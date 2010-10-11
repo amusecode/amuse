@@ -843,7 +843,7 @@ int get_energy_density(
 
 
 
-int fill_grid_state(
+int set_grid_state(
     int * i,
     int * j,
     int * k,

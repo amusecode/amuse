@@ -44,7 +44,7 @@ by a density, momentum density and energy density. The state can
 be retrieved and updated with the following functions.
 
 .. autoclass:: amuse.legacy.interface.hydro.HydrodynamicsInterface
-   :members: fill_grid_state, get_grid_state
+   :members: set_grid_state, get_grid_state
    
 
 Grid State, Extension Mechanism

@@ -142,7 +142,7 @@ function set_boundary(lowx,highx,lowy,highy,lowz,highz) result(ret)
 end function  
 
 ! this is somewhat inefficient: blocksize=1
-function fill_grid_state(i,j,k,rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
+function set_grid_state(i,j,k,rho_in,rhvx_in,rhvy_in,rhvz_in,en_in) result(ret)
   use amuse_helpers
   integer :: ret,i,j,k
   real*8 :: rho_in,rhvx_in,rhvy_in,rhvz_in,en_in

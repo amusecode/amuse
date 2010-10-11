@@ -311,7 +311,7 @@ class HydrodynamicsInterface(common.CommonCodeInterface):
     
 
     @legacy_function
-    def fill_grid_state():
+    def set_grid_state():
         """
         Sets the densitity, momentum denisity and energy
         density at the given grid-point
