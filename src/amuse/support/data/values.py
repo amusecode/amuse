@@ -194,22 +194,22 @@ class Quantity(object):
         return new_quantity(-self.number, self.unit)
     
     def __lt__(self, other):
-        return self.value_in(self.unit) < other.value_in(self.unit)
+        return self.value_in(self.unit) < to_quantity(other).value_in(self.unit)
     
     def __gt__(self, other):
-        return self.value_in(self.unit) > other.value_in(self.unit)
+        return self.value_in(self.unit) > to_quantity(other).value_in(self.unit)
     
     def __eq__(self, other):
-        return self.value_in(self.unit) == other.value_in(self.unit)
+        return self.value_in(self.unit) == to_quantity(other).value_in(self.unit)
     
     def __ne__(self, other):
-        return self.value_in(self.unit) != other.value_in(self.unit)
+        return self.value_in(self.unit) != to_quantity(other).value_in(self.unit)
     
     def __le__(self, other):
-        return self.value_in(self.unit) <= other.value_in(self.unit)
+        return self.value_in(self.unit) <= to_quantity(other).value_in(self.unit)
     
     def __ge__(self, other):
-        return self.value_in(self.unit) >= other.value_in(self.unit)
+        return self.value_in(self.unit) >= to_quantity(other).value_in(self.unit)
     
 
 class ScalarQuantity(Quantity):
