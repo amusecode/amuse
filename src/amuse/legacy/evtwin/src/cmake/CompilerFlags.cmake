@@ -7,21 +7,26 @@ get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 ##  To see exactly which flags are passed to the compiler, select CMAKE_VERBOSE_MAKEFILE, e.g. with cmake-gui
 
 if (Fortran_COMPILER_NAME STREQUAL "gfortran")
-
-   if(APPLE)
+   EXEC_PROGRAM(${CMAKE_Fortran_COMPILER}
+	ARGS --version
+	OUTPUT_VARIABLE _evtwin_COMPILER_VERSION
+   )
+   STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9] .*" "\\1\\2"
+	_evtwin_COMPILER_VERSION ${_evtwin_COMPILER_VERSION})
+   if(_evtwin_COMPILER_VERSION LESS 43 )
       set (CMAKE_Fortran_FLAGS "-O2")
-   else (APPLE)
+   else (_evtwin_COMPILER_VERSION LESS 43 )
       set (CMAKE_Fortran_FLAGS "-O2 -finit-local-zero")
-   endif (APPLE)
+   endif(_evtwin_COMPILER_VERSION < 43 )
    set (CMAKE_Fortran_FLAGS_RELEASE "-pipe -funroll-all-loops")
    set (CMAKE_Fortran_FLAGS_DEBUG "-g -ffpe-trap=zero,invalid -fsignaling-nans")
    set (CMAKE_Fortran_FLAGS_PROFILE "-g -gp")
 
-   if(NOT APPLE)
+   if(NOT _evtwin_COMPILER_VERSION LESS 43 )
     if(WANT_SSE42)
          set (SSE_FLAGS "-msse4.2")
     endif(WANT_SSE42)
-   endif(NOT APPLE)
+   endif(NOT _evtwin_COMPILER_VERSION LESS 43 )
    
    if (WANT_OPENMP)
       set (OPENMP_FLAGS "-fopenmp")
