@@ -8,16 +8,16 @@ get_filename_component (Fortran_COMPILER_NAME ${CMAKE_Fortran_COMPILER} NAME)
 
 if (Fortran_COMPILER_NAME STREQUAL "gfortran")
    EXEC_PROGRAM(${CMAKE_Fortran_COMPILER}
-	ARGS --version
-	OUTPUT_VARIABLE _evtwin_COMPILER_VERSION
+    ARGS --version
+    OUTPUT_VARIABLE _evtwin_COMPILER_VERSION
    )
    STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9] .*" "\\1\\2"
-	_evtwin_COMPILER_VERSION ${_evtwin_COMPILER_VERSION})
+   _evtwin_COMPILER_VERSION ${_evtwin_COMPILER_VERSION})
    if(_evtwin_COMPILER_VERSION LESS 43 )
       set (CMAKE_Fortran_FLAGS "-O2")
    else (_evtwin_COMPILER_VERSION LESS 43 )
       set (CMAKE_Fortran_FLAGS "-O2 -finit-local-zero")
-   endif(_evtwin_COMPILER_VERSION < 43 )
+   endif(_evtwin_COMPILER_VERSION LESS 43 )
    set (CMAKE_Fortran_FLAGS_RELEASE "-pipe -funroll-all-loops")
    set (CMAKE_Fortran_FLAGS_DEBUG "-g -ffpe-trap=zero,invalid -fsignaling-nans")
    set (CMAKE_Fortran_FLAGS_PROFILE "-g -gp")

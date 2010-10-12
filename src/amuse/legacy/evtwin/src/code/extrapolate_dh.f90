@@ -35,10 +35,11 @@ module extrapolate_dh
         logical :: can_backup_one_model  
         integer :: number_of_meshpoints = 0      ! KH
         integer :: number_of_variables = 0       ! KVB
+        logical :: is_allocated = .FALSE.
         
-        real(double), allocatable :: previous_h(:, :, :)
-        real(double), allocatable :: previous_age(:)
-        real(double), allocatable :: previous_timestep(:)
+        real(double), pointer :: previous_h(:, :, :)
+        real(double), pointer :: previous_age(:)
+        real(double), pointer :: previous_timestep(:)
    end type extrapolate_dh_data
 
 contains
@@ -54,9 +55,11 @@ contains
         dataout%number_of_meshpoints = number_of_meshpoints
         dataout%number_of_variables = number_of_variables
         
-        if (allocated(dataout%previous_h)) deallocate(dataout%previous_h);
-        if (allocated(dataout%previous_age)) deallocate(dataout%previous_age);
-        if (allocated(dataout%previous_timestep)) deallocate(dataout%previous_timestep);
+        if (dataout%is_allocated) then
+            deallocate(dataout%previous_h)
+            deallocate(dataout%previous_age)
+            deallocate(dataout%previous_timestep)
+        end if
         
         allocate (dataout%previous_h(0:num_stored_models, number_of_meshpoints, number_of_variables))
         allocate (dataout%previous_age(0:num_stored_models))
