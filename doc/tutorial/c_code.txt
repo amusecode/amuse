@@ -143,7 +143,7 @@ directory is by using the build.py script.
     > $AMUSEDIR/build.py --type=c --mode=dir NearestNeighbor
 
 The script will generate a directory with all the files needed to 
-start our project. It has also generates a very small legacy code 
+start our project. It also generates a very small example legacy code 
 with only one function ```echo_int```. We can build and test our new 
 module::
 
@@ -162,7 +162,7 @@ module::
 .. note::
 
     The build.py script can be used to generate a range of files. To
-    see what this file can do you can run the script with a --help
+    see what this file can do you can run the script with a ```--help```
     parameter, like so::
 
         > $AMUSEDIR/build.py --help
@@ -179,7 +179,7 @@ placed under this directory. The build.py script created a **src**
 directory for us, and we will put the nearest neighbor algorithm in 
 this directory.
 
-Go to the **src** directory and create a **code.f90** file, open 
+Go to the **src** directory and create a **code.cc** file, open 
 this file in your favorite editor and copy and paste this code into 
 it:
     
@@ -218,7 +218,7 @@ any new functionality. In the legacy interface directory (not the
 
     OK
 
-It works, if the test fails for any reason please check that the fortran
+It works, if the test fails for any reason please check that the C++
 code is correct and that ``worker_code`` exists in your directory.
 
 Path 1
@@ -259,11 +259,11 @@ with 2 classes of functions:
         }
 
 If you have functions that don't follow this pattern you need to 
-define a convert function in fortran that provides an interface 
+define a convert function in C++ that provides an interface 
 following one of the two patterns supported by AMUSE.
 
 In our case the **find_nearest_neighbors** complies to pattern 2 and
-we do not have to write any code in fortran to convert the function
+we do not have to write any code in C++ to convert the function
 to a compliant interface. We only have to specify the function in 
 python. We do so by adding a **find_nearest_neighbors** method to
 the **NearestNeighborInterface** class in the **interface.py** file.
@@ -556,16 +556,14 @@ Open an editor on *particles.py* and add this method to the
             self.particles.y,
             self.particles.z
         )
-        self.particles.neighbor0 = self.particles[indices0 - 1]
-        self.particles.neighbor1 = self.particles[indices1 - 1]
-        self.particles.neighbor2 = self.particles[indices2 - 1]
+        self.particles.neighbor0 = self.particles[indices0]
+        self.particles.neighbor1 = self.particles[indices1]
+        self.particles.neighbor2 = self.particles[indices2]
         
 This function gets the "x", "y" and "z" attributes from the particles
 set and sends these to the "find_nearest_neighbors" method. This methods
 returns 3 lists of indices and we need to find the particles with
-these indices. As this is fortran code (indices start with 1) and we use
-python (indices start with 0) we need to subtract 1 from the array of
-indices and use this to find the particles.
+these indices. 
 
 .. note::
     
@@ -575,7 +573,7 @@ indices and use this to find the particles.
     set as a reference to that particle. However, in the "run" method
     we "own" the particle set, it cannot change between the find_nearest_neighbor
     call and the moment we find the particles in the set by index (using
-    self.particles[indices0-1]), and in this case it is save to use
+    self.particles[indices0]), and in this case it is save to use
     index as a valid reference.
 
 Let's write a test and see if it works, open an editor on the 
@@ -745,7 +743,7 @@ we run the test, it still fails.
 
 When you look closely at the output of the test you see that the result from the
 method is 0 and not the excpeted 1. We need to edit the fortan code to make this 
-test work. Open an editor on interface.f90 and go to the *new_particle* function.
+test work. Open an editor on interface.cc and go to the *new_particle* function.
 
 .. code-block:: c++
 
@@ -792,6 +790,7 @@ Test if the code builds and try it out. In the legacy interface
 directory do:
     
 .. code-block:: bash
+
     > make clean
     > make all
     > nosetests
