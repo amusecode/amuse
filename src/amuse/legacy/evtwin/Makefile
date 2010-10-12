@@ -2,9 +2,7 @@
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 FC ?= $(FORTRAN)
-export FC
 CMAKE_Fortran_COMPILER ?= $(FORTRAN)
-export CMAKE_Fortran_COMPILER
 
 AMUSE_DIR ?= ../../../..
 
@@ -32,11 +30,12 @@ create_Makefile: $(CMAKE_DEPS)
 	cd $(MODDIR) && cmake ..
 
 clean:
-	make -C $(MODDIR) clean
+	-make -C $(MODDIR) clean
 	rm -f *.pyc make.log
 	rm -f mpi_code.f90 worker_code twin_library_v2.mod mesh.mod
 	rm -f $(MODDIR)/CMakeCache.txt
 	rm -rf $(MODDIR)/CMakeFiles
+	rm -rf $(MODDIR)/Makefile
 
 distclean:
 	make -C src distclean
