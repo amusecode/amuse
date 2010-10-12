@@ -1,8 +1,19 @@
-=====================================
-Create an Interface to a Legacy Code
-=====================================
+==============================================
+Create an low-level Interface to a Legacy Code
+==============================================
 
 In this tutorial we will create an interface to a legacy code. 
+
+.. warning::
+    
+    This tutorial does not use the build script provided with 
+    AMUSE. All files and directories need to be created "by hand".
+    Use this tutorial if you want to get a deeper understanding of
+    how the build process works and which steps are involved in
+    creating a low level interface. To learn how to create
+    an interface to a code we recommend :doc:`c_code` and 
+    :doc:`fortran_code`.
+
 
 Work directory
 ~~~~~~~~~~~~~~
@@ -22,6 +33,7 @@ root directory. To create the legacy code directory we then do:
     ../src/amuse/legacy/mycode
     >> ls
     __init__.py
+    
 
 The legacy code
 ~~~~~~~~~~~~~~~
@@ -105,18 +117,18 @@ the build process.
 
     OBJS = code.o
 
-    all: muse_worker
+    all: worker_code
 
     cleanall: clean
-        $(RM) muse_worker *~
+        $(RM) worker_code *~
         
     clean:
-        rm -f *.so *.o *.pyc muse_worker.cc
+        rm -f *.so *.o *.pyc worker_code.cc
 
-    muse_worker.cc: interface.py
+    worker_code.cc: interface.py
         $(CODE_GENERATOR) --type=c interface.py MyCode -o $@
 
-    muse_worker: muse_worker.cc $(OBJS)
+    worker_code: worker_code.cc $(OBJS)
         mpicxx $@.cc $(OBJS) -o $@
 
     .cc.o: $<
@@ -131,16 +143,16 @@ the build process.
     if you copy the above text to a new file.
     
 
-Let's start make and build the ``muse_worker`` application
+Let's start make and build the ``worker_code`` application
 
 .. code-block:: bash
     
     >> make clean
     >> make
     ...
-    mpicxx muse_worker.cc code.o -o muse_worker
+    mpicxx worker_code.cc code.o -o worker_code
     >> ls
-    ... muse_worker ...
+    ... worker_code ...
     
 Running the code
 ~~~~~~~~~~~~~~~~
@@ -163,9 +175,9 @@ We can use ``amuse.sh`` and try the interface.
     
 We have not defined any methods and our interface class is not
 very useful. We can only create an instance of the code. When we 
-create this instance the "muse_worker" application will start 
+create this instance the "worker_code" application will start 
 to handle all the function calls. We can see the application 
-running when we do "ps x | grep muse_worker"
+running when we do "ps x | grep worker_code"
 
 Implementing a method
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -221,7 +233,7 @@ Let's rebuild the code.
     >> make clean
     >> make
     ...
-    mpicxx muse_worker.cc code.o -o muse_worker
+    mpicxx worker_code.cc code.o -o worker_code
 
 We can now start ```amuse.sh``` again and do a simple sum
 

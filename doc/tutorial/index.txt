@@ -8,9 +8,9 @@ Tutorials
    
    most_massive_from_salpeter
    particle_sets
-   legacy_code
-   code_interface
+   c_code
    fortran_code
+   legacy_code
    blender
    plot   
    
