@@ -8,7 +8,6 @@ from support.generate_main import generate_main
 from support.build_latex import build_latex
 from support.setup_legacy import BuildLegacy, CleanLegacy, BuildOneLegacyCode
 from support.run_tests import run_tests
-from support.config import config
 
 #include_dirs.append(sysconfig.get_python_inc())
 
@@ -28,7 +27,6 @@ mapping_from_command_name_to_command_class = {
     'clean_python':clean,
     'clean': Clean,
     'tests':run_tests, 
-    'config': config,
     'generate_main': generate_main,
 }
    

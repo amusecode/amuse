@@ -12,6 +12,10 @@ docclean:
 clean:
 	$(PYTHON) setup.py clean
 
+distclean:
+	rm -f support/config.py
+	rm -f src/amuse/config.py
+
 tests:
 	$(PYTHON) setup.py tests
 

@@ -13,7 +13,7 @@ Tutorials
    fortran_code
    legacy_code
    blender
-   plot   
+   plot
    
    
 

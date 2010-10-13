@@ -310,15 +310,26 @@ int get_position_of_index(int i, int j, int k, int level, int domain, double * x
     if (mesh.NLevels == 0) {
         return -1;
     }
-
     if (level >= mesh.NLevels){
         return -2;
     }
-
-    if (domain >= mesh.DomainsPerLevel[level]){
+    if (mesh.DomainsPerLevel[level] == 0)
+    {
         return -3;
     }
-    DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+    DomainS * dom = 0;
+    int ii = 0;
+    for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+    {
+        dom = (DomainS*)&(mesh.Domain[level][ii]);
+        //printf("get_position_of_index: %d, %d, %d\n", level, dom->InputBlock, domain);
+        if(dom->InputBlock == domain){
+            break;
+        }
+    }
+    if(dom->InputBlock != domain){
+        return -3;
+    }
 
     if(dom->Grid == NULL)
     {
@@ -330,7 +341,7 @@ int get_position_of_index(int i, int j, int k, int level, int domain, double * x
     else
     {
         GridS * grid = dom->Grid;
-        //fprintf(stderr, "%d, %d, %d, %d\n", grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
+        //fprintf(stderr, "i %d: %d, %d, %d, %d\n", i, grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
 
         if (grid->Nx[0] > 1 && ( (grid->Disp[0] > 0 && i < (grid->Disp[0]))  || (((grid->Disp[0] + grid->Nx[0]) < dom->Nx[0]) && i >= (grid->Disp[0] + grid->Nx[0]))))
         {
@@ -412,11 +423,23 @@ int get_index_of_position(double x, double y,
         return -2;
     }
 
-    if (domain >= mesh.DomainsPerLevel[level]){
+    if (mesh.DomainsPerLevel[level] == 0)
+    {
         return -3;
     }
-    DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
-
+    DomainS * dom = 0;
+    int ii = 0;
+    for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+    {
+        dom = (DomainS*)&(mesh.Domain[level][ii]);
+        if(dom->InputBlock == domain){
+            break;
+        }
+    }
+    if(dom->InputBlock != domain){
+        return -3;
+    }
+    
     if(dom->Grid == NULL)
     {
         pos[0] = 0.0;
@@ -462,6 +485,7 @@ int get_grid_state(
     int i0,j0,k0 = 0;
     int level = 0;
     int domain = 0;
+    int ii = 0;
 
     if (mesh.NLevels == 0) {
         return -1;
@@ -479,11 +503,23 @@ int get_grid_state(
             continue;
         }
 
-        if (domain >= mesh.DomainsPerLevel[level]){
-            continue;
+        
+        if (mesh.DomainsPerLevel[level] == 0)
+        {
+           continue;
+        }
+        DomainS * dom = 0;
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->InputBlock == domain){
+                break;
+            }
+        }
+        if(dom->InputBlock != domain){
+           continue;
         }
 
-        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
 
         if(dom->Grid == NULL)
         {
@@ -567,7 +603,8 @@ int get_density(
     int i0,j0,k0 = 0;
     int level = 0;
     int domain = 0;
-
+    int ii = 0;
+    
     if (mesh.NLevels == 0) {
         return -1;
     }
@@ -583,12 +620,22 @@ int get_density(
         if (level >= mesh.NLevels){
             continue;
         }
-
-        if (domain >= mesh.DomainsPerLevel[level]){
-            continue;
+        
+        if (mesh.DomainsPerLevel[level] == 0)
+        {
+           continue;
         }
-
-        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+        DomainS * dom = 0;
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->InputBlock == domain){
+                break;
+            }
+        }
+        if(dom->InputBlock != domain){
+           continue;
+        }
 
         if(dom->Grid == NULL)
         {
@@ -677,11 +724,24 @@ int get_momentum_density(
             continue;
         }
 
-        if (domain >= mesh.DomainsPerLevel[level]){
-            continue;
+        
+        
+        if (mesh.DomainsPerLevel[level] == 0)
+        {
+           continue;
         }
-
-        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+        DomainS * dom = 0;
+        int ii = 0;
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->InputBlock == domain){
+                break;
+            }
+        }
+        if(dom->InputBlock != domain){
+           continue;
+        }
 
         if(dom->Grid == NULL)
         {
@@ -775,11 +835,24 @@ int get_energy_density(
             continue;
         }
 
-        if (domain >= mesh.DomainsPerLevel[level]){
-            continue;
+        
+        
+        if (mesh.DomainsPerLevel[level] == 0)
+        {
+           continue;
         }
-
-        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+        DomainS * dom = 0;
+        int ii = 0;
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->InputBlock == domain){
+                break;
+            }
+        }
+        if(dom->InputBlock != domain){
+           continue;
+        }
 
         if(dom->Grid == NULL)
         {
@@ -874,11 +947,24 @@ int set_grid_state(
             continue;
         }
 
-        if (domain >= mesh.DomainsPerLevel[level]){
-            continue;
+       
+        
+        if (mesh.DomainsPerLevel[level] == 0)
+        {
+           continue;
         }
-
-        DomainS * dom = (DomainS*)&(mesh.Domain[level][domain]);
+        DomainS * dom = 0;
+        int ii = 0;
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->InputBlock == domain){
+                break;
+            }
+        }
+        if(dom->InputBlock != domain){
+           continue;
+        }
 
         if(dom->Grid == NULL)
         {

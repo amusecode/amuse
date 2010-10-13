@@ -394,9 +394,9 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         for index, parameter in enumerate(input_parameters):
             if parameter in keyword_arguments:
                 if self.units[index] == self.NO_UNIT or self.units[index] == self.INDEX:
-                    result[parameter] = keyword_arguments[parameter.name]
+                    result[parameter] = keyword_arguments[parameter]
                 else:
-                    result[parameter] = keyword_arguments[parameter.name].value_in(self.units[index])
+                    result[parameter] = keyword_arguments[parameter].value_in(self.units[index])
 
         for index, argument in enumerate(list_arguments):
             parameter = input_parameters[index]
@@ -825,6 +825,7 @@ class GridDefinition(AbstracParticleSetDefinition):
         self.setters = []
         self.getters = []
         self.particles_factory = core.Grid
+        self.extra_keyword_arguments_for_getters_and_setters = {}
 
     def new_storage(self, interface):
 
@@ -845,8 +846,10 @@ class GridDefinition(AbstracParticleSetDefinition):
             range_method,
             setters,
             getters,
+            self.extra_keyword_arguments_for_getters_and_setters
         )
 
+    
     
     def new_set_instance(self, handler):
         storage = self.new_storage(handler.interface)
@@ -949,8 +952,13 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
             public_name = name
 
         self.mapping_from_name_to_set_definition[name_of_the_set].selects_form_particle.append((name, names, public_name))
+    
+    
+    def define_extra_keywords(self, name_of_the_set, dictionary):
 
-
+        self.mapping_from_name_to_set_definition[name_of_the_set].extra_keyword_arguments_for_getters_and_setters = dictionary
+    
+    
 
 
 class OverriddenCodeInterface(object):

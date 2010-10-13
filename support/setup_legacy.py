@@ -16,6 +16,13 @@ from numpy.distutils import fcompiler
 # check if Python is called on the first line with this expression
 first_line_re = re.compile('^#!.*python[0-9.]*([ \t].*)?$')
 
+try:
+    from . import config
+    is_configured = hasattr(config, 'compilers')
+except ImportError:
+    is_configured = False
+    
+    
 class LegacyCommand(Command):
     user_options = [
         ('legacy-dir=', 'd', "directory containing legacy codes"),
@@ -40,13 +47,13 @@ class LegacyCommand(Command):
         if self.lib_dir is None:
             self.lib_dir = 'lib'
         
-        #self.update_environment_from_cfgfile()
         self.set_fortran_variables()
         
         self.environment['F90'] = self.environment['FORTRAN']
         self.environment['FC'] = self.environment['FORTRAN']
         
         self.set_cuda_variables()
+        self.set_mpi_variables()
         self.set_libdir_variables()
         self.set_libs_variables()
         self.save_cfgfile_if_not_exists()
@@ -58,6 +65,10 @@ class LegacyCommand(Command):
             
         if 'FORTRAN' in os.environ:
             self.environment['FORTRAN'] = os.environ['FORTRAN']
+            return
+            
+        if is_configured:
+            self.environment['FORTRAN'] = config.compilers.f95
             return
         
         if 'FC' in os.environ:
@@ -95,6 +106,14 @@ class LegacyCommand(Command):
     
     def set_cuda_variables(self):
         all_found = True
+        if is_configured and config.cuda.is_enabled:
+            self.found_cuda = True
+            self.environment['CUDA_LIBDIRS'] = '-L'+config.cuda.toolkit_path+'/lib' + ' -L'+config.cuda.toolkit_path+'/lib64'
+            self.environment['CUDA_LIBS'] = '-lcudart'
+            self.environment['CUDA_TK'] = config.cuda.toolkit_path
+            self.environment['CUDA_SDK'] = config.cuda.sdk_path
+            return
+            
         for x in ['CUDA_TK', 'CUDA_SDK']:
             if not x in self.environment:
                 all_found = False
@@ -121,6 +140,12 @@ class LegacyCommand(Command):
         
         self.found_cuda = True
 
+    def set_mpi_variables(self):
+        if is_configured:
+            self.environment['MPICXX'] = config.mpi.mpicxx
+            self.environment['MPICC'] = config.mpi.mpicc
+            self.environment['MPIF90'] = config.mpi.mpif95
+            return
     
     def set_libdir_variables(self):
         for varname in ('SAPPORO_LIBDIRS', 'GRAPE6_LIBDIRS'):
@@ -133,7 +158,7 @@ class LegacyCommand(Command):
                 self.environment_notset[varname] ='-L<directory>'
      
     def set_libs_variables(self):
-        for varname, libname in (('PGLIBS','pg5'),):
+        for varname, libname in []:
             if varname in self.environment:
                 continue
                 

@@ -46,6 +46,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         LegacyInterface.__init__(self, **options)
         self.set_auto_decomposition(1)
         LiteratureRefs.__init__(self)
+        self.number_of_domains = 1
         
     @legacy_function
     def par_seti():
@@ -86,7 +87,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         return function
           
     def setup_mesh(self, nmeshx, nmeshy, nmeshz, xlength, ylength, zlength):
-        self.par_seti("job","num_domains", "%d", 1, "-")
+        self.par_seti("job","num_domains", "%d", self.number_of_domains, "-")
         self.par_seti("domain1", "level", "%d", 0, "-")
         self.par_seti("domain1", "AutoWithNProc", "%d", self.channel.number_of_workers, "-")
         
@@ -100,11 +101,37 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         self.par_setd("domain1", "x2max", "%.15e", ylength, "-")
         self.par_setd("domain1", "x3min", "%.15e", 0.0, "-")
         self.par_setd("domain1", "x3max", "%.15e", zlength, "-")
+        self.par_seti("domain1", "iDisp", "%d", 0, "-")
+        self.par_seti("domain1", "jDisp", "%d", 0, "-")
+        self.par_seti("domain1", "kDisp", "%d", 0, "-")
         
         return 0
+    
+    def define_grid_domain(self, level, nmeshx, nmeshy, nmeshz, i, j, k):
+        """
+        Define a new domain on the given level the number of cells in this 
+        domain is given by nmeshx,  nmeshy, nmeshz. 
+        
+        Each level is twice as dense as in every directory as 
+        the previous level (there are 8 cells per higher level cell).
+        """
+        self.number_of_domains += 1
+        domain = "domain{0}".format(self.number_of_domains)
+        print domain
+        self.par_seti("job","num_domains", "%d", self.number_of_domains, "-")
+        self.par_seti(domain, "level", "%d", level, "-")
+        self.par_seti(domain, "Nx1", "%d", nmeshx, "-")
+        self.par_seti(domain, "Nx2", "%d", nmeshy, "-")
+        self.par_seti(domain, "Nx3", "%d", nmeshz, "-")
+        self.par_seti(domain, "iDisp", "%d", i, "-")
+        self.par_seti(domain, "jDisp", "%d", j, "-")
+        self.par_seti(domain, "kDisp", "%d", k, "-")
+        
+        return self.number_of_domains
+        
         
     
-    def get_index_range_inclusive(self):
+    def get_index_range_inclusive(self, level = 0, domain = 1):
         """
         Returns the min and max values of indices in each
         direction. The range is inclusive, the min index
@@ -112,10 +139,17 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         The total number of cells in one direction
         is max - min + 1.
         """
-        ni = self.par_geti("domain1", "Nx1")
-        nj = self.par_geti("domain1", "Nx2")
-        nk = self.par_geti("domain1", "Nx3")
-        return (0, ni[0]-1, 0, nj[0]-1, 0, nk[0]-1)
+        domainid = "domain{0}".format(domain)
+        
+        ni = self.par_geti(domainid, "Nx1")
+        nj = self.par_geti(domainid, "Nx2")
+        nk = self.par_geti(domainid, "Nx3")
+        idisp = self.par_geti(domainid, "iDisp")[0]
+        jdisp = self.par_geti(domainid, "jDisp")[0]
+        kdisp = self.par_geti(domainid, "kDisp")[0]
+        print level, domain, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
+        
+        return (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
     def get_mesh_indices(self):
         """
@@ -505,6 +539,7 @@ class Athena(CodeInterface):
         object.add_getter('grid', 'get_density', names=('rho',))
         object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
         object.add_getter('grid', 'get_energy_density', names=('energy',))
+        object.define_extra_keywords('grid', {'level':0, 'domain':1})
         
         #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
         #object.add_setter('grid', 'set_density', names=('rho',))
@@ -516,6 +551,19 @@ class Athena(CodeInterface):
         object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
         object.add_getter('potential_grid', 'get_potential', names=('potential',))
         object.add_setter('potential_grid', 'set_potential', names=('potential', ))
+        
+        
+        object.define_grid('grid1')
+        object.set_grid_range('grid1', 'get_index_range_inclusive')
+        object.add_getter('grid1', 'get_position_of_index', names=('x','y','z'))
+        
+        object.add_getter('grid1', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        object.add_setter('grid1', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        
+        object.add_getter('grid1', 'get_density', names=('rho',))
+        object.add_getter('grid1', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
+        object.add_getter('grid1', 'get_energy_density', names=('energy',))
+        object.define_extra_keywords('grid1', {'level':1, 'domain':2})
 
     def define_parameters(self, object):
         object.add_method_parameter(

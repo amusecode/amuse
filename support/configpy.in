@@ -1,0 +1,27 @@
+#
+# @configure_input@
+#
+
+class compilers(object):
+    cxx = '@CXX@' 
+    cc  = '@CC@'
+    f95 = '@FC@'
+    
+    cxx_flags = '@CXXFLAGS@'
+    cc_flags  = '@CCFLAGS@'
+    f95_flags = '@FCFLAGS@'
+
+class mpi(object):
+    mpicxx = '@MPICXX@' 
+    mpicc  = '@MPICC@'
+    mpif95 = '@MPIFC@ '
+
+class cuda(object):
+    is_enabled   = '@WITH_CUDA@'=='yes'
+    compiler     = '@NVCC@'
+    toolkit_path = '@CUDA_TK@'
+    sdk_path     = '@CUDA_SDK@'
+    
+class modules(object):
+    have_matplotlib = @PYTHON_matplotlib@==1
+    have_h5py       = @PYTHON_h5py@==1

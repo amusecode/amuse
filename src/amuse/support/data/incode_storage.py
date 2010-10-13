@@ -484,11 +484,13 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             
     def storage_shape(self):
         try:
-            imin, imax, jmin, jmax, kmin, kmax = self.get_range_method()
+            
+            imin, imax, jmin, jmax, kmin, kmax = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
             return (imax - imin + 1, jmax - jmin + 1, kmax - kmin + 1)
         except:
             import traceback
             traceback.print_exc()
+            raise
         
     def _add_particles(self, keys, attributes = [], quantities = []):
         raise exceptions.AmuseException("adding points to the grid is not implemented")
@@ -497,7 +499,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         raise exceptions.AmuseException("removing points from the grid is not implemented")
     
     def _to_arrays_of_indices(self, index):
-        imin, imax, jmin, jmax, kmin, kmax = self.get_range_method()
+        imin, imax, jmin, jmax, kmin, kmax = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
         indices = numpy.mgrid[slice(imin, imax+1),slice(jmin, jmax+1),slice(kmin, kmax+1)]
         if index is None:
             return indices
