@@ -140,6 +140,44 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         return function
     
     @legacy_function
+    def get_number_of_backups_in_a_row():
+        """
+        Retrieve the number_of_backups_in_a_row of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of number_of_backups_in_a_row")
+        function.addParameter('n_backup', dtype='int32', direction=function.OUT
+            , description="The current number_of_backups_in_a_row of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The number_of_backups_in_a_row was retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
+    def reset_number_of_backups_in_a_row():
+        """
+        Reset number_of_backups_in_a_row of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to reset the value of number_of_backups_in_a_row")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The number_of_backups_in_a_row was reset.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
     def get_mass_fraction_at_zone():
         """
         Retrieve the mass fraction at the specified zone/mesh-cell of the star.
@@ -1042,6 +1080,8 @@ class MESA(CodeInterface):
         object.add_method('particles', 'get_masses_of_species')
         object.add_method('particles', 'get_chemical_abundance_profiles')
         object.add_method('particles', 'set_chemical_abundance_profiles')
+        object.add_method('particles', 'get_number_of_backups_in_a_row')
+        object.add_method('particles', 'reset_number_of_backups_in_a_row')
         object.add_method('particles', 'evolve', 'evolve_one_step')
     
     def define_errorcodes(self, object):
@@ -1112,6 +1152,16 @@ class MESA(CodeInterface):
             "get_number_of_zones", 
             (object.INDEX,), 
             (units.none, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_number_of_backups_in_a_row", 
+            (object.INDEX,), 
+            (units.none, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "reset_number_of_backups_in_a_row", 
+            (object.INDEX,), 
+            (object.ERROR_CODE,)
         )
         object.add_method(
             "get_mass_fraction_at_zone", 

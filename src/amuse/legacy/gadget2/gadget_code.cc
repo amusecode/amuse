@@ -385,17 +385,17 @@ int evolve(double t_end){
             t1 = second();
             All.CPU_Total += timediff(t0, t1);
             CPUThisRun += timediff(t0, t1);
-	    //
-	    if(is_number_of_steps_detection_enabled) {
-		number_of_steps_innerloop++;
-		if(number_of_steps_innerloop > max_number_of_steps) {
-		    int stopping_index  = next_index_for_stopping_condition();
-		    set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
-		}
-	    }
-	    if (set_conditions & enabled_conditions) {
-		break;
-	    }
+            //
+            if(is_number_of_steps_detection_enabled) {
+                number_of_steps_innerloop++;
+                if(number_of_steps_innerloop > max_number_of_steps) {
+                    int stopping_index  = next_index_for_stopping_condition();
+                    set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+                }
+            }
+            if (set_conditions & enabled_conditions) {
+                break;
+            }
         }
     } else {return -1;}
     return 0;

@@ -91,6 +91,8 @@
          profile_columns_file = trim(mesa_data_dir) // '/star_data/profile_columns.list'
          log_columns_file = trim(mesa_data_dir) // '/star_data/log_columns.list'
          call flush()
+         report_backups = .true.
+         report_retries = .true.
          initialize_code = 0
       end function initialize_code
 
@@ -465,6 +467,41 @@
          else
             AMUSE_value = s% nz
             get_number_of_zones = 0
+         endif
+      end function
+
+! Return the number_of_backups_in_a_row of the star
+      integer function get_number_of_backups_in_a_row(AMUSE_id, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer, intent(out) :: AMUSE_value
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            get_number_of_backups_in_a_row = -1
+         else
+            AMUSE_value = s% number_of_backups_in_a_row
+            get_number_of_backups_in_a_row = 0
+         endif
+      end function
+
+! Reset number_of_backups_in_a_row of the star
+      integer function reset_number_of_backups_in_a_row(AMUSE_id)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer :: ierr
+         type (star_info), pointer :: s
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            reset_number_of_backups_in_a_row = -1
+         else
+            s% number_of_backups_in_a_row = 0
+            reset_number_of_backups_in_a_row = 0
          endif
       end function
 
