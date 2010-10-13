@@ -166,8 +166,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.can_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -179,8 +179,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.can_handle_array = True
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
         for x in ['i','j','k']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -310,7 +310,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         return function
         
         
-    def get_index_range_for_potential(self):
+    def get_index_range_for_potential(self, level = 0, domain = 1):
         """
         Returns the min and max values of indices in each
         direction for the potential field, this
@@ -382,8 +382,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
         for x in ['rho',]:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -398,8 +398,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
         for x in ['en',]:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -414,8 +414,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
         for x in ['rhovx', 'rhovy', 'rhovz',]:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -430,8 +430,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -449,8 +449,8 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
+        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
@@ -551,6 +551,7 @@ class Athena(CodeInterface):
         object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
         object.add_getter('potential_grid', 'get_potential', names=('potential',))
         object.add_setter('potential_grid', 'set_potential', names=('potential', ))
+        object.define_extra_keywords('potential_grid', {'level':0, 'domain':1})
         
         
         object.define_grid('grid1')

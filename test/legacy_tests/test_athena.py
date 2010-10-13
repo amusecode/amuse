@@ -53,27 +53,27 @@ class TestAthenaInterface(TestWithMPI):
         error = instance.commit_parameters()
         self.assertEquals(error, 0)
         
-        x,y,z,error = instance.get_position_of_index(0,0,0,0,0)
+        x,y,z,error = instance.get_position_of_index(0,0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.1)
         
-        x,y,z,error = instance.get_position_of_index(1,0,0,0,0)
+        x,y,z,error = instance.get_position_of_index(1,0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.3)
         
-        x,y,z,error = instance.get_position_of_index(2,0,0,0,0)
+        x,y,z,error = instance.get_position_of_index(2,0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.5)
         
-        x,y,z,error = instance.get_position_of_index(3,0,0,0,0)
+        x,y,z,error = instance.get_position_of_index(3,0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.7)
         
-        x,y,z,error = instance.get_position_of_index(4,0,0,0,0)
+        x,y,z,error = instance.get_position_of_index(4,0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.9)
         
-        x,y,z,error = instance.get_position_of_index(5,0,0,0,0)
+        x,y,z,error = instance.get_position_of_index(5,0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 1.1)
         
@@ -128,11 +128,11 @@ class TestAthenaInterface(TestWithMPI):
             result = instance.commit_parameters()
             
             for index in range(100):
-                x,y,z,error = instance.get_position_of_index(index,0,0,0,0)
+                x,y,z,error = instance.get_position_of_index(index,0,0)
                 self.assertEquals(error, 0)
                 self.assertAlmostRelativeEquals(x, index + 0.5)
                 
-                i,j,k,error = instance.get_index_of_position(x,y,z,0,0)
+                i,j,k,error = instance.get_index_of_position(x,y,z)
                 self.assertEquals(error, 0)
                 self.assertAlmostRelativeEquals(i, index)
                 
@@ -150,11 +150,11 @@ class TestAthenaInterface(TestWithMPI):
             result = instance.commit_parameters()
             
             for index in range(100):
-                x,y,z,error = instance.get_position_of_index(0,index,0,0,0)
+                x,y,z,error = instance.get_position_of_index(0,index,0)
                 self.assertEquals(error, 0)
                 self.assertAlmostRelativeEquals(y, index + 0.5)
                 
-                i,j,k,error = instance.get_index_of_position(x,y,z,0,0)
+                i,j,k,error = instance.get_index_of_position(x,y,z)
                 self.assertEquals(error, 0)
                 self.assertAlmostRelativeEquals(j, index)
                 
@@ -177,7 +177,7 @@ class TestAthenaInterface(TestWithMPI):
         self.assertEquals(error,0)
         self.assertEquals(time, 0.0)
         
-        error = instance.set_grid_state(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5,0,0)
+        error = instance.set_grid_state(1,1,1,0.1, 0.2, 0.3, 0.4, 0.5)
         self.assertEquals(error, 0)
         
         rho, rhovx, rhovy, rhovz, energy, error = instance.get_grid_state(1,1,1)
