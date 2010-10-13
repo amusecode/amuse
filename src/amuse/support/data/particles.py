@@ -222,8 +222,8 @@ class AbstractParticleSet(AbstractSet):
         attributes = sorted(self._get_attribute_names())
                 
         format_float = '{0: >11.3e}'.format
-        format_str20 = '{0: >20s}'.format
-        format_str11 = '{0: >11s}'.format
+        format_str20 = '{0: >20}'.format
+        format_str11 = '{0: >11}'.format
 
         columns = map(lambda x : [format_str11(x)], attributes)
         columns.insert(0,[format_str20('key')])
