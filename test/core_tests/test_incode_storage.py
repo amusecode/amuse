@@ -254,7 +254,7 @@ class TestGrids(amusetest.TestCase):
 
     def test4(self):
         class Code(object):
-            def get_range(self):
+            def get_range(self, d, l):
                 return (1,10,2,5,3,6)
                 
             def get_ijk(self,i,j,k, d, l):
