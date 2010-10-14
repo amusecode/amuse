@@ -68,7 +68,7 @@ subroutine postprocessread
     call gravity('both')
   endif
  
-  if(input(34).EQ.0) call starevolv
+  if(input(34).EQ.0.AND.(radiate.OR.starform)) call starevolv
 
   if(input(35).EQ.0) snentropy(nbodies-nstar+1:nbodies)=0
 

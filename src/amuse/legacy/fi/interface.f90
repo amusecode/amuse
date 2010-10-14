@@ -18,7 +18,6 @@ end function
 
 function commit_particles() result(ret)
   integer :: ret
-  call muse_init
   call muse_set_time(0.0)
   call muse_finalize_init 
   ret=0
@@ -32,6 +31,7 @@ end function
 
 function commit_parameters() result(ret)
   integer :: ret
+  call muse_init
   ret=0
 end function
 

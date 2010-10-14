@@ -575,7 +575,7 @@ integer(GLenum) doubleBuffer
 
 logical,save :: show_gas=.TRUE., show_stars=.TRUE., show_halo=.TRUE., &
 	 update_flag=.TRUE.,show_age=.FALSE.,show_temp=.FALSE.,     &
-	 show_fuvheat=.FALSE.
+	 show_fuvheat=.FALSE.,show_div=.FALSE.
 	 
 integer, save :: gas_color,star_color,halo_color	  
 
@@ -640,6 +640,21 @@ if(show_gas) then
 	  alpha_c=.6	  
 	  call glColor4f(red, green, blue,alpha_c)
 	  endif
+	end if
+
+	if(show_div) then
+	
+	  red=0.
+	  blue=0.
+	  green=0.
+	  if(hsmdivv(i).GT.0) then
+          red=1.
+          else
+          blue=1.
+          endif
+          alpha_c=.6
+	  call glColor4f(red, green, blue,alpha_c)
+	
 	end if
 	
 	call glVertex3f(xt,yt,zt)
@@ -948,12 +963,15 @@ case(1)
 show_temp=.FALSE.
 show_age=.FALSE.
 show_fuvheat=.FALSE.
+show_div=.FALSE.
 case(2)
 show_temp=.NOT.show_temp
 case(3)
 show_age=.NOT.show_age
 case(4)
 show_fuvheat=.NOT.show_fuvheat
+case(5)
+show_div=.NOT.show_div
 case default
 
 end select
@@ -1009,6 +1027,7 @@ k=glutCreateMenu(prop_menu)
  call glutaddmenuentry('toggle temperature', 2)
  call glutaddmenuentry('toggle age', 3)
  call glutaddmenuentry('toggle fuvheat', 4)
+ call glutaddmenuentry('toggle divv', 5)
 
 menu= view_modifier_init(starscale())
 

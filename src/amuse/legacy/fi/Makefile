@@ -107,3 +107,5 @@ clean:
 	make -C src purge
 	rm -f __init__.py
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
+	rm -f worker_code_periodic
+

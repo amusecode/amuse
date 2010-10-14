@@ -12,9 +12,6 @@ subroutine muse_start
 
   call set_parameters_to_defaults
 
-! use internal energy integration until things are consistent...
-
-  uentropy=.FALSE.
 end subroutine
 
 subroutine muse_init
@@ -44,7 +41,6 @@ subroutine muse_finalize_init
 	 call initpm 
  endif
  
- tempvect(1:nsph)=ethermal(1:nsph) 
  call postprocessread
 	
  call initpos
@@ -90,6 +86,7 @@ function muse_reinitialize() result(ret)
 !  endif
 !  if(input(34).EQ.0) call starevolv
 !  tvel(1:nbodies)=tnow
+  rho(1:nsph)=0
   call postprocessread
 
   call initpos
@@ -145,7 +142,7 @@ subroutine muse_reset(time)
  input(5)=1    ! tform
  input(42)=1   ! nbexist
 
- input(11)=1   ! ethermal
+ input(19)=1   ! csound 
  input(13)=0   ! hsmooth
  
 end
@@ -191,8 +188,13 @@ subroutine muse_add_particle_sph(id,m,x,y,z,vx,vy,vz,e,u,npart)
  vel(p:p+npart-1,3)=vz(1:npart)
  epsgrav(p:p+npart-1)=e(1:npart)
  hsmooth(p:p+npart-1)=e(1:npart)
- ethermal(p:p+npart-1)=u(1:npart)
- ethold(p:p+npart-1)=u(1:npart)
+! ethermal(p:p+npart-1)=u(1:npart)
+! ethold(p:p+npart-1)=u(1:npart)
+ if(.NOT.isotherm) then
+   csound(p:p+npart-1)=sqrt(gamma*gamma1*u(1:npart))
+ else
+   csound(p:p+npart-1)=sqrt(u(1:npart))   
+ endif
  nbexist(p:p+npart-1)=id(1:npart)
 
 end subroutine
@@ -605,7 +607,11 @@ function amuse_get_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   vy=vel(p,2)
   vz=vel(p,3)
   e=epsgrav(p)
-  u=ethermal(p)
+  if(uentropy) then
+    u=ethermal(p)*gamma1/rho(p)**gamma1
+  else
+    u=ethermal(p)
+  endif
   ret=0 
 end function
 
@@ -681,7 +687,12 @@ function amuse_set_state_sph(id,m,x,y,z,vx,vy,vz,e,u) result(ret)
   vel(p,2)=vy
   vel(p,3)=vz
   epsgrav(p)=e
-  ethermal(p)=u
+! this should set csound (as soon as interface is fixed)
+  if(uentropy) then
+    entropy(p)=u*gamma1/rho(p)**gamma1
+  else
+    ethermal(p)=u
+  endif
   ret=0 
 end function
 
@@ -799,7 +810,11 @@ function amuse_get_internal_energy(id,u) result(ret)
     return
   endif  
   if(nbexist(p).NE.id) call terror("id error 2")
-  u=ethermal(p)
+  if(uentropy) then
+    u=entropy(p)/gamma1*rho(p)**gamma1
+  else
+    u=ethermal(p)
+  endif
   ret=0 
 end function
 function amuse_get_star_tform(id,tf) result(ret)
@@ -903,7 +918,11 @@ function amuse_set_internal_energy(id,u) result(ret)
     return
   endif  
   if(nbexist(p).NE.id) call terror("id error 2")
-  ethermal(p)=u
+  if(uentropy) then
+    entropy(p)=u*gamma1/rho(p)**gamma1
+  else
+    ethermal(p)=u
+  endif
   ret=0 
 end function
 function amuse_set_star_tform(id,tf) result(ret)

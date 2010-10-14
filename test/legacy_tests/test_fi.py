@@ -27,7 +27,7 @@ class TestFiInterface(TestWithMPI):
                     ('sqrttstp',0),('acc_tstp',1),('freetstp',0),('usequad',0),
                     ('directsum',0),('selfgrav',1),('fixthalo',0),
                     ('adaptive_eps',0),('gdgop',1),('smoothinput',0),
-                    ('consph',1),('sphinit',1),('uentropy',0),('isotherm',0),
+                    ('consph',1),('sphinit',1),('uentropy',1),('isotherm',0),
                     ('eps_is_h',1)]:
             result,err=eval("instance.get_"+x)()
             self.assertEquals( (x,result),(x,l))
@@ -77,6 +77,7 @@ class TestFiInterface(TestWithMPI):
     def test3(self):
         instance=FiInterface()
         instance.initialize_code()
+        instance.commit_parameters()        
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         retrieved_state = instance.get_state(1)
         self.assertEquals(11.0,  retrieved_state['mass'])
@@ -88,6 +89,7 @@ class TestFiInterface(TestWithMPI):
     def test4(self):
         instance=FiInterface()
         instance.initialize_code()
+        instance.commit_parameters()
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         instance.set_time_step(2.0)
         retrieved_state = instance.get_time_step()
@@ -151,11 +153,12 @@ class TestFiInterface(TestWithMPI):
         instance.set_unitm_in_msun(1.e9)
         instance.set_nsmooth(64)
         instance.set_nsmtol(0.2)
+        instance.set_uentropy(1)
         instance.commit_parameters()
         instance.new_sph_particle(mass, h, x, y, z, vx, vy, vz, u)
         instance.commit_particles()
         instance.synchronize_model()
-        
+
         h = instance.get_smoothing_length(indices)['h_smooth']
         self.assertIsOfOrder((instance.get_nsmooth()['nsmooth']*1.0 / number_sph_particles)**(1.0/3), h)
         
@@ -362,13 +365,14 @@ class TestFi(TestWithMPI):
         for bool_par in ['radiation_flag','star_formation_flag',
             'square_root_timestep_flag','freeform_timestep_flag','quadrupole_moments_flag',
             'direct_sum_flag','fixed_halo_flag','adaptive_smoothing_flag','smooth_input_flag',
-            'integrate_entropy_flag','isothermal_flag']:
+            'isothermal_flag']:
             self.assertEquals(False, eval("instance.parameters."+bool_par))
             exec("instance.parameters."+bool_par+" = True")
             self.assertEquals(True, eval("instance.parameters."+bool_par))
         
         for bool_par in ['acc_timestep_flag','self_gravity_flag','gadget_cell_opening_flag',
-            'use_hydro_flag','conservative_sph_flag','sph_dens_init_flag','eps_is_h_flag']:
+            'use_hydro_flag','conservative_sph_flag','sph_dens_init_flag',
+            'integrate_entropy_flag','eps_is_h_flag']:
             self.assertEquals(True, eval("instance.parameters."+bool_par))
             exec("instance.parameters."+bool_par+" = False")
             self.assertEquals(False, eval("instance.parameters."+bool_par))
@@ -490,10 +494,10 @@ class TestFi(TestWithMPI):
         
         instance.evolve_model(1.113988| units.yr)
         instance.synchronize_model()
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.00321 | nbody.energy, 2)
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.potential_energy), -1.8387 | nbody.energy, 3)
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.41868 | nbody.energy, 2)
-        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.total_energy),     -1.4167 | nbody.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.kinetic_energy),    0.00394 | nbody.energy, 2)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.potential_energy), -1.818 | nbody.energy, 3)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.402 | nbody.energy, 2)
+        self.assertAlmostRelativeEqual(convert_nbody.to_nbody(instance.total_energy),     -1.412 | nbody.energy, 3)
         
         instance.cleanup_code()
         instance.stop()
@@ -520,7 +524,8 @@ class TestFi(TestWithMPI):
         convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         instance = Fi(convert_nbody)
         self.assertEquals(0, instance.initialize_code())
-        instance.parameters.verbosity = 1
+        instance.parameters.verbosity = 0
+        instance.commit_parameters()
         instance.dm_particles.add_particles(dark)
         instance.star_particles.add_particles(star)
         instance.gas_particles.add_particles(gas)
@@ -542,8 +547,8 @@ class TestFi(TestWithMPI):
         print convert_nbody.to_nbody(instance.total_energy)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.kinetic_energy),    1.5057 | nbody.energy, 3)
         self.assertAlmostEqual(convert_nbody.to_nbody(instance.potential_energy), -1.281 | nbody.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.147 | nbody.energy, 3)
-        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),      0.37178 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.thermal_energy),    0.142 | nbody.energy, 3)
+        self.assertAlmostEqual(convert_nbody.to_nbody(instance.total_energy),      0.3671 | nbody.energy, 3)
         
         instance.cleanup_code()
         instance.stop()
@@ -560,6 +565,7 @@ class TestFi(TestWithMPI):
         instance = Fi(nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU))#, debugger='xterm')
         self.assertEquals(0, instance.initialize_code())
         instance.parameters.timestep = 0.5 | units.day
+        instance.commit_parameters()
         instance.star_particles.add_particles(stars)
         self.assertAlmostEqual(instance.star_particles.tform, [-10.0, -50.0] | units.Myr)
         instance.star_particles.tform = [-100.0, -500.0] | units.Myr
@@ -793,7 +799,7 @@ class TestFi(TestWithMPI):
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     7.6447e-10 | units.kg * units.m**-1 * units.s**-2]
+                     8.445e-10 | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         
@@ -804,7 +810,7 @@ class TestFi(TestWithMPI):
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
                             0.0 | units.kg * units.m**-2 / units.s, 
-                     8.9889e-10 | units.kg * units.m**-1 * units.s**-2]
+                     1.0868e-9 | units.kg * units.m**-1 * units.s**-2]
         for value, expect in zip(hydro_state, expected):
             self.assertAlmostRelativeEqual(value, expect, places=3)
         instance.stop()

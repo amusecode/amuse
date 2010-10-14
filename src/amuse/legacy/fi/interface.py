@@ -1710,7 +1710,7 @@ class Fi(GravitationalDynamics):
             "set_uentropy",
             "integrate_entropy_flag",
             "Integrate-entropy flag. True means: integrate entropy, else: internal energy.",
-            False
+            True
         )
         
         object.add_boolean_parameter(
