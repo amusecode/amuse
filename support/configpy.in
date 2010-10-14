@@ -8,7 +8,7 @@ class compilers(object):
     f95 = '@FC@'
     
     cxx_flags = '@CXXFLAGS@'
-    cc_flags  = '@CCFLAGS@'
+    cc_flags  = '@CFLAGS@'
     f95_flags = '@FCFLAGS@'
 
 class mpi(object):
