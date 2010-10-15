@@ -102,15 +102,15 @@ AS_VERSION_COMPARE([$PYTHON_mpi4py_VERSION], [1.1.0],
 )
 AC_CHECK_PYTHON_MODULE(h5py, version.version)
 AS_VERSION_COMPARE([$PYTHON_h5py_VERSION], [1.1.0],
-        [AC_MSG_ERROR([numpy version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed])]
+        [AC_MSG_ERROR([h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed])]
 )
 AC_CHECK_PYTHON_MODULE(nose, __version__)
 AS_VERSION_COMPARE([$PYTHON_nose_VERSION], [0.11],
-        [AC_MSG_ERROR([numpy version $PYTHON_nose_VERSION found, but at least 0.11 needed])]
+        [AC_MSG_ERROR([nose version $PYTHON_nose_VERSION found, but at least 0.11 needed])]
 )
 AC_CHECK_PYTHON_MODULE(docutils, __version__)
 AS_VERSION_COMPARE([$PYTHON_docutils_VERSION], [0.6],
-        [AC_MSG_ERROR([numpy version $PYTHON_docutils_VERSION found, but at least 0.6 needed])]
+        [AC_MSG_ERROR([docutils version $PYTHON_docutils_VERSION found, but at least 0.6 needed])]
 )
 AC_CHECK_PYTHON_MODULE(zlib, __version__)
 AS_IF([test x"$PYTHON_zlib" != x1],

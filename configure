@@ -5070,8 +5070,8 @@ as_arg_v1=$PYTHON_h5py_VERSION
 as_arg_v2=1.1.0
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in
-1) { { $as_echo "$as_me:$LINENO: error: numpy version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&5
-$as_echo "$as_me: error: numpy version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&2;}
+1) { { $as_echo "$as_me:$LINENO: error: h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&5
+$as_echo "$as_me: error: h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&2;}
    { (exit 1); exit 1; }; }
 ;;
 0) ;;
@@ -5135,8 +5135,8 @@ as_arg_v1=$PYTHON_nose_VERSION
 as_arg_v2=0.11
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in
-1) { { $as_echo "$as_me:$LINENO: error: numpy version $PYTHON_nose_VERSION found, but at least 0.11 needed" >&5
-$as_echo "$as_me: error: numpy version $PYTHON_nose_VERSION found, but at least 0.11 needed" >&2;}
+1) { { $as_echo "$as_me:$LINENO: error: nose version $PYTHON_nose_VERSION found, but at least 0.11 needed" >&5
+$as_echo "$as_me: error: nose version $PYTHON_nose_VERSION found, but at least 0.11 needed" >&2;}
    { (exit 1); exit 1; }; }
 ;;
 0) ;;
@@ -5200,8 +5200,8 @@ as_arg_v1=$PYTHON_docutils_VERSION
 as_arg_v2=0.6
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in
-1) { { $as_echo "$as_me:$LINENO: error: numpy version $PYTHON_docutils_VERSION found, but at least 0.6 needed" >&5
-$as_echo "$as_me: error: numpy version $PYTHON_docutils_VERSION found, but at least 0.6 needed" >&2;}
+1) { { $as_echo "$as_me:$LINENO: error: docutils version $PYTHON_docutils_VERSION found, but at least 0.6 needed" >&5
+$as_echo "$as_me: error: docutils version $PYTHON_docutils_VERSION found, but at least 0.6 needed" >&2;}
    { (exit 1); exit 1; }; }
 ;;
 0) ;;
