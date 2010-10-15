@@ -20,7 +20,6 @@ class TestGadget2Interface(TestWithMPI):
 
     def test1(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -29,7 +28,6 @@ class TestGadget2Interface(TestWithMPI):
 
     def test2(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -41,7 +39,6 @@ class TestGadget2Interface(TestWithMPI):
 
     def test3(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -58,7 +55,6 @@ class TestGadget2Interface(TestWithMPI):
 
     def test4(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -92,7 +88,6 @@ class TestGadget2Interface(TestWithMPI):
 
     def test5(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -110,7 +105,6 @@ class TestGadget2Interface(TestWithMPI):
 
     def test6(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -147,7 +141,6 @@ class TestGadget2Interface(TestWithMPI):
 
     def test7(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -187,7 +180,6 @@ class TestGadget2Interface(TestWithMPI):
     
     def test8(self):
         instance = Gadget2Interface(**default_options)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -236,12 +228,21 @@ class TestGadget2Interface(TestWithMPI):
 
 
     def test9(self):
-        instance=Gadget2Interface(mode=Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile_for_periodic))
+        instance = Gadget2Interface(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
         instance.initialize_code()
+        instance.set_min_size_timestep(1.0)
         instance.set_gadget_output_directory(instance.get_output_directory())
+        
         instance.set_box_size(2.)
-        instance.commit_parameters()
+        value, error = instance.get_box_size()
+        self.assertEqual(error, 0)
+        self.assertEqual(value, 2.)
+        
+        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], False) # default, has to be changed for periodic runs
+        self.assertEqual(instance.commit_parameters(), -1)
+        instance.set_periodic_boundaries_flag(True)
+        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], True)
+        self.assertEqual(instance.recommit_parameters(), 0)
         ids,err=instance.new_particle( 
            [1.0,1.0,1.0],
            [0.5,0.0,0.0],
@@ -251,15 +252,12 @@ class TestGadget2Interface(TestWithMPI):
            [0.0,1.0,0.0],
            [0.0,0.0,-1.0])
         instance.commit_particles()
-        print "X"
         m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
-        print x,y,z
         self.assertAlmostEqual(x, [0.5,0.,0.], places=6)
         self.assertAlmostEqual(y, [0.,1.5,0.], places=6)
         self.assertAlmostEqual(z, [0.,0.,0.5], places=6)
         instance.evolve(0.1)
         m,x,y,z,vx,vy,vz,err=instance.get_state(ids)
-        print x,y,z
         self.assertAlmostEqual(x, [0.4,0.,0.], places=6)
         self.assertAlmostEqual(y, [0.,1.6,0.], places=6)
         self.assertAlmostEqual(z, [0.,0.,0.4], places=6)
@@ -272,10 +270,20 @@ class TestGadget2Interface(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
         
+        instance = Gadget2Interface(mode = Gadget2Interface.MODE_NORMAL) # MODE_NORMAL is default: non-periodic
+        instance.initialize_code()
+        instance.set_gadget_output_directory(instance.get_output_directory())
+        
+        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], False) # default, has to be changed for periodic runs
+        self.assertEqual(instance.commit_parameters(), 0)
+        instance.set_periodic_boundaries_flag(True)
+        self.assertEqual(instance.get_periodic_boundaries_flag()['value'], True)
+        self.assertEqual(instance.recommit_parameters(), -1)
+        instance.stop()
+        
     
     def test10(self):
         instance = Gadget2Interface()
-        self.assertEquals(0, instance.set_parameterfile_path(instance.default_path_to_parameterfile))
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -405,21 +413,52 @@ class TestGadget2(TestWithMPI):
         print "Testing more Gadget parameters"
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(0, instance.initialize_code())
-        self.assertEquals(True, instance.parameters.gadget_cell_opening_flag)
-        instance.parameters.gadget_cell_opening_flag = False
-        self.assertEquals(False, instance.parameters.gadget_cell_opening_flag)
-
-        for par, value in [('n_smooth_tol',0.1),('n_smooth',50),('opening_angle',0.5),('gadget_cell_opening_constant',0.005),
-            ('artificial_viscosity_alpha',0.5),('courant',0.3)]:
+        
+        for par, value in [('gadget_cell_opening_flag', True), 
+                ('comoving_integration_flag', False), 
+                ('periodic_boundaries_flag', False)]:
+            self.assertTrue(value is eval("instance.parameters."+par))
+            exec("instance.parameters."+par+" = not value")
+            self.assertFalse(value is eval("instance.parameters."+par))
+        
+        for par, value in [('time_limit_cpu', 36000 | units.s), 
+                ('hubble_param', 0.7 | 100 * units.km / units.s / units.Mpc),
+                ('min_gas_temp', 0.0 | units.K)]:
+            self.assertEquals(value, eval("instance.parameters."+par))
+            exec("instance.parameters."+par+" = 2 * value")
+            self.assertEquals(2 * value, eval("instance.parameters."+par))
+        
+        for par, value in [('n_smooth_tol',0.1), ('n_smooth',50), ('opening_angle',0.5),
+                ('gadget_cell_opening_constant',0.005), ('artificial_viscosity_alpha',0.5),
+                ('courant',0.3), ('type_of_timestep_criterion',0), ('omega_zero',0.0),
+                ('omega_lambda',0.0), ('omega_baryon',0.0), ('min_gas_hsmooth_fractional',0.0),
+                ('timestep_accuracy_parameter',0.025), ('tree_domain_update_frequency',0.05)]:
             self.assertEquals(value | units.none, eval("instance.parameters."+par))
             exec("instance.parameters."+par+" = 1 | units.none")
             self.assertEquals(1 | units.none, eval("instance.parameters."+par))
-
-        self.assertEquals(instance.unit_converter.to_si(0.01 | generic_unit_system.length),
-            instance.parameters.gas_epsilon)
-        instance.parameters.gas_epsilon = 0.1 | generic_unit_system.length
-        self.assertEquals(instance.unit_converter.to_si(0.1 | generic_unit_system.length),
-            instance.parameters.gas_epsilon)
+        
+        for par, value in [('gas_epsilon', 0.01 | generic_unit_system.length), 
+                ('time_begin', 0.0 | generic_unit_system.time), 
+                ('time_max', 100.0 | generic_unit_system.time), 
+                ('max_size_timestep', 0.01 | generic_unit_system.time), 
+                ('min_size_timestep', 0.0 | generic_unit_system.time), 
+                ('periodic_box_size', 1.0 | generic_unit_system.length),
+                ('time_between_statistics', 0.1 | generic_unit_system.time),
+                ('softening_gas_max_phys', 0.0 | generic_unit_system.length),
+                ('softening_halo_max_phys', 0.0 | generic_unit_system.length)]:
+            self.assertEquals(instance.unit_converter.to_si(value), 
+                eval("instance.parameters."+par))
+            exec("instance.parameters."+par+" = 3.0 | value.unit")
+            self.assertEquals(instance.unit_converter.to_si(3.0 | value.unit),
+                eval("instance.parameters."+par))
+        
+        for par, value in [('energy_file',"energy.txt"),('info_file',"info.txt"),
+                ('timings_file',"timings.txt"),('cpu_file',"cpu.txt")]:
+            self.assertEquals(value | units.string, eval("instance.parameters."+par))
+            exec("instance.parameters."+par+" = 'test.txt' | units.string")
+            self.assertEquals("test.txt" | units.string, eval("instance.parameters."+par))
+        
+        
         instance.stop()
 
     def test8(self):
@@ -616,3 +655,44 @@ class TestGadget2(TestWithMPI):
         select = slice(number_sph_particles/2) # select 50% particles closest to center to avoid boundaries
         self.assertIsOfOrder(rho_sort[select]/mean_density, r_sort.mean()/r_sort[select])
     
+    def test15(self):
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
+        instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length
+        self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
+        instance.parameters.min_size_timestep = 1.0 | generic_unit_system.time
+        
+        particles = core.Particles(3)
+        particles.x = [0.5, 0.0, 0.0] | units.kpc
+        particles.y = [0.0,-0.5, 0.0] | units.kpc
+        particles.z = [0.0, 0.0, 0.5] | units.kpc
+        particles.vx =  [-1.0, 0.0, 0.0] | units.km / units.s
+        particles.vy =  [ 0.0, 1.0, 0.0] | units.km / units.s
+        particles.vz =  [ 0.0, 0.0,-1.0] | units.km / units.s
+        particles.mass = 1.0e10 | units.MSun
+        instance.dm_particles.add_particles(particles)
+        
+        self.assertAlmostEqual(instance.dm_particles.x, [0.5,0.,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.5,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.5] | units.kpc, places=6)
+        
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        self.assertAlmostEqual(instance.dm_particles.x, [0.4,0.,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.6,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.4] | units.kpc, places=6)
+        
+        instance.evolve_model(1.0 | generic_unit_system.time)
+        self.assertAlmostEqual(instance.dm_particles.x, [1.5,0.,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,0.5,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,1.5] | units.kpc, places=6)
+        instance.stop()
+    
+        instance = Gadget2(mode = Gadget2Interface.MODE_NORMAL) # MODE_NORMAL is default: non-periodic
+        instance.initialize_code()
+        
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, False) # default, has to be changed for periodic runs
+        self.assertEqual(instance.commit_parameters(), 0)
+        instance.parameters.periodic_boundaries_flag = True
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
+        self.assertEqual(instance.recommit_parameters(), -1)
+        instance.stop()

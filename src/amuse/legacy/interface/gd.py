@@ -783,6 +783,9 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
             Particle could not be found
         """
         return function
+    
+    def invoke_state_change2(self):
+        pass
 
 class GdAutoDoc(object):
 
@@ -815,8 +818,10 @@ class GravitationalDynamics(common.CommonCode):
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
         object.add_transition('INITIALIZED','EDIT','commit_parameters')
-        object.add_transition('RUN','PARAMETER_CHANGE','invoke_state_change2')
-        object.add_transition('PARAMETER_CHANGE','RUN','recommit_parameters')
+        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
+        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
+        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
+        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
         object.add_method('EDIT', 'new_particle')
         object.add_method('EDIT', 'delete_particle')
         object.add_transition('EDIT', 'RUN', 'commit_particles')

@@ -2,6 +2,8 @@ MPICXX ?= mpicxx
 
 SRCDIR		= src
 include $(SRCDIR)/makefile_options
+PERIODIC_OPT := "$(OPT) -DPERIODIC -DNOGRAVITY"
+
 CXXFLAGS += -Wall -g -DTOOLBOX $(OPT)
 
 AMUSE_DIR?=../../../..
@@ -47,9 +49,12 @@ worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 	
 worker_code_periodic: worker_code.cc worker_code.h $(OBJS) $(SRCDIR)/makefile_options
+	rm -f $(OBJS)
+	make $(OBJS) OPT=$(PERIODIC_OPT)
 	make -C $(SRCDIR) clean 
-	make -C $(SRCDIR) all OPT="-DPERIODIC -DNOGRAVITY -DUNEQUALSOFTENINGS -DPEANOHILBERT -DWALLCLOCK -DDOUBLEPRECISION -DSYNCHRONIZATION" 
+	make -C $(SRCDIR) all OPT=$(PERIODIC_OPT)
 	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) worker_code.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	rm -f $(OBJS)
 	make -C $(SRCDIR) clean 
 
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options

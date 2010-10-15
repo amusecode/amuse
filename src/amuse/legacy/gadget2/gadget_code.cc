@@ -8,14 +8,10 @@
 //AMUSE STOPPING CONDITIONS
 #include "stopcond.h"
 
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-
 
 using namespace std;
 
-const bool debug = true;
+const bool debug = false;
 
 bool particles_initialized = false;
 bool outfiles_opened = false;
@@ -29,28 +25,77 @@ vector<dynamics_state> ds;        // for initialization only
 vector<sph_state> sph_ds;         // for initialization only
 int *particle_map;
 
-// global static parameters
-
-
-
-
-// Interface functions:
-
 
 // general interface functions:
 
-int set_parameterfile_path(char *parameterfile_path){
-    if (strlen(parameterfile_path) >= MAXLEN_FILENAME)
-        return -1;
-    strcpy(ParameterFile, parameterfile_path);
-    if (debug)
-        cout << "Parameters will be read from: " << ParameterFile << endl;
-    return 0;
+void set_default_parameters(){
+    // parameters that can be changed from AMUSE
+    All.TimeLimitCPU = 36000;
+    All.ComovingIntegrationOn = 0;
+    All.TypeOfTimestepCriterion = 0;
+    All.PeriodicBoundariesOn = 0;
+    All.TimeBegin = 0.0;
+    All.TimeMax = 100.0;
+    All.Omega0 = 0;
+    All.OmegaLambda = 0;
+    All.OmegaBaryon = 0;
+    All.HubbleParam = 0.7;
+    All.BoxSize = 1.0;
+    All.TimeBetStatistics = 0.1;
+    All.ErrTolIntAccuracy = 0.025;
+    All.CourantFac = 0.15;
+    All.MaxSizeTimestep = 0.01;
+    All.MinSizeTimestep = 0.0;
+    All.ErrTolTheta = 0.5;
+    All.TypeOfOpeningCriterion = 1;
+    All.ErrTolForceAcc = 0.005;
+    All.TreeDomainUpdateFrequency = 0.05;
+    All.DesNumNgb = 50;
+    All.MaxNumNgbDeviation = 5;
+    All.ArtBulkViscConst = 0.5;
+    All.MinGasTemp = 0;
+    All.UnitLength_in_cm = 3.085678e21;
+    All.UnitMass_in_g = 1.989e43;
+    All.UnitVelocity_in_cm_per_s = 1e5;
+    All.MinGasHsmlFractional = 0.0;
+    All.SofteningGas = 0.01;
+    All.SofteningHalo = 0.01;
+    All.SofteningGasMaxPhys = 0.0;
+    All.SofteningHaloMaxPhys = 0.0;
+    set_softenings();
+    strcpy(All.OutputDir,   ".");
+    strcpy(All.EnergyFile,  "energy.txt");
+    strcpy(All.InfoFile,    "info.txt");
+    strcpy(All.TimingsFile, "timings.txt");
+    strcpy(All.CpuFile,     "cpu.txt");
+    
+    // parameters that are fixed for AMUSE:
+    All.PartAllocFactor = 1.5; // Memory allocation parameter
+    All.TreeAllocFactor = 0.8; // Memory allocation parameter
+    All.BufferSize = 25;       // Memory allocation parameter
+    All.ResubmitOn = 0;              // Keep this turned off!
+    All.OutputListOn = 0;            // Keep this turned off!
+    All.GravityConstantInternal = 0; // Keep this turned off!
+    
+    // parameters that are unused for AMUSE:
+    strcpy(All.InitCondFile, "");
+    strcpy(All.RestartFile, "");
+    strcpy(All.SnapshotFileBase, "");
+    strcpy(All.OutputListFilename, "");
+    strcpy(All.ResubmitCommand, "");
+    All.ICFormat = 1;
+    All.SnapFormat = 1;
+    All.TimeBetSnapshot = 100.0;
+    All.TimeOfFirstSnapshot = 100.0;
+    All.CpuTimeBetRestartFile = 36000.0;
+    All.NumFilesPerSnapshot = 1;
+    All.NumFilesWrittenInParallel = 1;
+    All.InitGasTemp = 0;
+    All.MaxRMSDisplacementFac = 0.2; // parameter for PM; PM is currently not supported
 }
 
 int initialize_code(){
     double t0, t1;
-    char command[200];
     MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
     MPI_Comm_size(MPI_COMM_WORLD, &NTask);
     for(PTask = 0; NTask > (1 << PTask); PTask++);
@@ -65,9 +110,95 @@ int initialize_code(){
         printf("\nThis is Gadget, version `%s'.\n", GADGETVERSION);
         printf("\nRunning on %d processors.\n", NTask);
     }
-    read_parameter_file(ParameterFile);	/* ... read in parameters for this run */
-    sprintf(command, "rm -f %s%s", All.OutputDir, "parameters-usedvalues");
-    system(command);
+    
+    t1 = second();
+    CPUThisRun += timediff(t0, t1);
+    All.CPU_Total += timediff(t0, t1);
+
+    //AMUSE STOPPING CONDITIONS SUPPORT
+    set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
+    
+    set_default_parameters();
+    return 0;
+}
+
+int cleanup_code(){
+    if (outfiles_opened)
+        close_outputfiles();
+    if (particles_initialized)
+        free_memory();
+    return 0;
+}
+
+int check_parameters(){
+    if(sizeof(long long) != 8){
+        if(ThisTask == 0)
+            printf("\nType `long long' is not 64 bit on this platform. Stopping.\n\n");
+        return -1;
+    }
+    if(sizeof(int) != 4){
+        if(ThisTask == 0)
+            printf("\nType `int' is not 32 bit on this platform. Stopping.\n\n");
+        return -1;
+    }
+    if(sizeof(float) != 4){
+        if(ThisTask == 0)
+            printf("\nType `float' is not 32 bit on this platform. Stopping.\n\n");
+        return -1;
+    }
+    if(sizeof(double) != 8){
+        if(ThisTask == 0)
+            printf("\nType `double' is not 64 bit on this platform. Stopping.\n\n");
+        return -1;
+    }
+    MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
+    if(All.NumFilesWrittenInParallel < 1){
+        if(ThisTask == 0)
+            printf("NumFilesWrittenInParallel MUST be at least 1\n");
+        return -1;
+    }
+    if(All.NumFilesWrittenInParallel > NTask){
+        if(ThisTask == 0)
+            printf("NumFilesWrittenInParallel MUST be smaller than number of processors\n");
+        return -1;
+    }
+#ifdef PERIODIC
+    if(All.PeriodicBoundariesOn == 0){
+        if(ThisTask == 0){
+            printf("Code was compiled with periodic boundary conditions switched on.\n");
+            printf("You must set `PeriodicBoundariesOn=1', or recompile the code.\n");
+        }
+        return -1;
+    }
+#else
+    if(All.PeriodicBoundariesOn == 1){
+        if(ThisTask == 0){
+            printf("Code was compiled with periodic boundary conditions switched off.\n");
+            printf("You must set `PeriodicBoundariesOn=0', or recompile the code.\n");
+        }
+        return -1;
+    }
+#endif
+    if(All.TypeOfTimestepCriterion >= 1){
+        if(ThisTask == 0){
+            printf("The specified timestep criterion\n");
+            printf("is not valid\n");
+        }
+        return -1;
+    }
+#if defined(LONG_X) ||  defined(LONG_Y) || defined(LONG_Z)
+#ifndef NOGRAVITY
+    if(ThisTask == 0){
+        printf("Code was compiled with LONG_X/Y/Z, but not with NOGRAVITY.\n");
+        printf("Stretched periodic boxes are not implemented for gravity yet.\n");
+    }
+    return -1;
+#endif
+#endif
+    return 0;
+}
+
+int commit_parameters(){
     allocate_commbuffers();	/* ... allocate buffer-memory for particle 
 				   exchange during force computation */
     set_units();
@@ -80,6 +211,7 @@ int initialize_code(){
     long_range_init();
 #endif
     set_random_numbers();
+    
     for(int i = 0; i < 6; i++)
         All.MassTable[i] = 0;
     All.Time = All.TimeBegin;
@@ -100,36 +232,12 @@ int initialize_code(){
     All.PresentMinStep = TIMEBASE;
 #endif
     All.Ti_nextoutput = -1; // find_next_outputtime(All.Ti_Current);
-    
-    t1 = second();
-    CPUThisRun += timediff(t0, t1);
-    All.CPU_Total += timediff(t0, t1);
-
-    //AMUSE STOPPING CONDITIONS SUPPORT
-    set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
-    
-    return 0;
-}
-
-int cleanup_code(){
-    if (outfiles_opened)
-        close_outputfiles();
-    if (particles_initialized)
-        free_memory();
-    return 0;
-}
-
-int commit_parameters(){
-    char command[200];
-    sprintf(command, "mv -f %s%s %s%s", ParameterFile, "-usedvalues", All.OutputDir, "parameters-usedvalues");
-    if (strlen(command) > 198){
-        cerr << "Error: ParameterFile and/or OutputDir names too long. " << command << endl;
-        return -1;
-    }
-    system(command);
     open_outputfiles();
     outfiles_opened = true;
-    return 0;
+    return check_parameters();
+}
+int recommit_parameters(){
+    return check_parameters();
 }
 
 int commit_particles(){
@@ -239,9 +347,6 @@ int commit_particles(){
     All.CPU_Total += timediff(t0, t1);
     
     particles_initialized = true;
-    return 0;
-}
-int recommit_parameters(){
     return 0;
 }
 int recommit_particles(){
@@ -398,6 +503,7 @@ int evolve(double t_end){
             }
         }
     } else {return -1;}
+    cout << flush;
     return 0;
 }
 
@@ -476,8 +582,7 @@ int get_time_step(double *timestep){
     return 0;
 }
 int set_time_step(double timestep){
-    All.TimeStep = timestep;
-    return 0;
+    return -1;
 }
 int get_epsilon(double *epsilon){
     set_softenings();
@@ -511,7 +616,6 @@ int get_unit_mass(double *code_mass_unit){
 }
 int set_unit_mass(double code_mass_unit){
     All.UnitMass_in_g = code_mass_unit;
-    set_units();
     return 0;
 }
 int get_unit_length(double *code_length_unit){
@@ -520,7 +624,6 @@ int get_unit_length(double *code_length_unit){
 }
 int set_unit_length(double code_length_unit){
     All.UnitLength_in_cm = code_length_unit;
-    set_units();
     return 0;
 }
 int get_unit_time(double *code_time_unit){
@@ -529,7 +632,6 @@ int get_unit_time(double *code_time_unit){
 }
 int set_unit_time(double code_time_unit){
     All.UnitVelocity_in_cm_per_s = All.UnitLength_in_cm / code_time_unit;
-    set_units();
     return 0;
 }
 int get_unit_velocity(double *code_velocity_unit){
@@ -641,9 +743,187 @@ int set_nsmtol(double n_neighbour_tol){
     return 0;
 }
 
-int get_box_size(double value)
+int get_energy_file(char **energy_file){
+    *energy_file = All.EnergyFile;
+    return 0;
+}
+int set_energy_file(char *energy_file){
+    strcpy(All.EnergyFile, energy_file);
+    return 0;
+}
+int get_info_file(char **info_file){
+    *info_file = All.InfoFile;
+    return 0;
+}
+int set_info_file(char *info_file){
+    strcpy(All.InfoFile, info_file);
+    return 0;
+}
+int get_timings_file(char **timings_file){
+    *timings_file = All.TimingsFile;
+    return 0;
+}
+int set_timings_file(char *timings_file){
+    strcpy(All.TimingsFile, timings_file);
+    return 0;
+}
+int get_cpu_file(char **cpu_file){
+    *cpu_file = All.CpuFile;
+    return 0;
+}
+int set_cpu_file(char *cpu_file){
+    strcpy(All.CpuFile, cpu_file);
+    return 0;
+}
+
+int get_time_limit_cpu(double *time_limit_cpu){
+    *time_limit_cpu = All.TimeLimitCPU;
+    return 0;
+}
+int set_time_limit_cpu(double time_limit_cpu){
+    All.TimeLimitCPU = time_limit_cpu;
+    return 0;
+}
+int get_comoving_integration_flag(int *comoving_integration_flag){
+    *comoving_integration_flag = All.ComovingIntegrationOn;
+    return 0;
+}
+int set_comoving_integration_flag(int comoving_integration_flag){
+    All.ComovingIntegrationOn = comoving_integration_flag;
+    return 0;
+}
+int get_type_of_timestep_criterion(int *type_of_timestep_criterion){
+    *type_of_timestep_criterion = All.TypeOfTimestepCriterion;
+    return 0;
+}
+int set_type_of_timestep_criterion(int type_of_timestep_criterion){
+    All.TypeOfTimestepCriterion = type_of_timestep_criterion;
+    return 0;
+}
+int get_time_begin(double *time_begin){
+    *time_begin = All.TimeBegin;
+    return 0;
+}
+int set_time_begin(double time_begin){
+    All.TimeBegin = time_begin;
+    return 0;
+}
+int get_time_max(double *time_max){
+    *time_max = All.TimeMax;
+    return 0;
+}
+int set_time_max(double time_max){
+    All.TimeMax = time_max;
+    return 0;
+}
+int get_omega_zero(double *omega_zero){
+    *omega_zero = All.Omega0;
+    return 0;
+}
+int set_omega_zero(double omega_zero){
+    All.Omega0 = omega_zero;
+    return 0;
+}
+int get_omega_lambda(double *omega_lambda){
+    *omega_lambda = All.OmegaLambda;
+    return 0;
+}
+int set_omega_lambda(double omega_lambda){
+    All.OmegaLambda = omega_lambda;
+    return 0;
+}
+int get_omega_baryon(double *omega_baryon){
+    *omega_baryon = All.OmegaBaryon;
+    return 0;
+}
+int set_omega_baryon(double omega_baryon){
+    All.OmegaBaryon = omega_baryon;
+    return 0;
+}
+int get_hubble_param(double *hubble_param){
+    *hubble_param = All.HubbleParam;
+    return 0;
+}
+int set_hubble_param(double hubble_param){
+    All.HubbleParam = hubble_param;
+    return 0;
+}
+int get_err_tol_int_accuracy(double *err_tol_int_accuracy){
+    *err_tol_int_accuracy = All.ErrTolIntAccuracy;
+    return 0;
+}
+int set_err_tol_int_accuracy(double err_tol_int_accuracy){
+    All.ErrTolIntAccuracy = err_tol_int_accuracy;
+    return 0;
+}
+int get_max_size_timestep(double *max_size_timestep){
+    *max_size_timestep = All.MaxSizeTimestep;
+    return 0;
+}
+int set_max_size_timestep(double max_size_timestep){
+    All.MaxSizeTimestep = max_size_timestep;
+    return 0;
+}
+int get_min_size_timestep(double *min_size_timestep){
+    *min_size_timestep = All.MinSizeTimestep;
+    return 0;
+}
+int set_min_size_timestep(double min_size_timestep){
+    All.MinSizeTimestep = min_size_timestep;
+    return 0;
+}
+int get_tree_domain_update_frequency(double *tree_domain_update_frequency){
+    *tree_domain_update_frequency = All.TreeDomainUpdateFrequency;
+    return 0;
+}
+int set_tree_domain_update_frequency(double tree_domain_update_frequency){
+    All.TreeDomainUpdateFrequency = tree_domain_update_frequency;
+    return 0;
+}
+int get_time_between_statistics(double *time_between_statistics){
+    *time_between_statistics = All.TimeBetStatistics;
+    return 0;
+}
+int set_time_between_statistics(double time_between_statistics){
+    All.TimeBetStatistics = time_between_statistics;
+    return 0;
+}
+int get_min_gas_temp(double *min_gas_temp){
+    *min_gas_temp = All.MinGasTemp;
+    return 0;
+}
+int set_min_gas_temp(double min_gas_temp){
+    All.MinGasTemp = min_gas_temp;
+    return 0;
+}
+int get_min_gas_hsmooth_fractional(double *min_gas_hsmooth_fractional){
+    *min_gas_hsmooth_fractional = All.MinGasHsmlFractional;
+    return 0;
+}
+int set_min_gas_hsmooth_fractional(double min_gas_hsmooth_fractional){
+    All.MinGasHsmlFractional = min_gas_hsmooth_fractional;
+    return 0;
+}
+int get_softening_gas_max_phys(double *softening_gas_max_phys){
+    *softening_gas_max_phys = All.SofteningGasMaxPhys;
+    return 0;
+}
+int set_softening_gas_max_phys(double softening_gas_max_phys){
+    All.SofteningGasMaxPhys = softening_gas_max_phys;
+    return 0;
+}
+int get_softening_halo_max_phys(double *softening_halo_max_phys){
+    *softening_halo_max_phys = All.SofteningHaloMaxPhys;
+    return 0;
+}
+int set_softening_halo_max_phys(double softening_halo_max_phys){
+    All.SofteningHaloMaxPhys = softening_halo_max_phys;
+    return 0;
+}
+
+int get_box_size(double *value)
 {
-    value = All.BoxSize;
+    *value = All.BoxSize;
     return 0;
 }
 
@@ -653,9 +933,9 @@ int set_box_size(double value)
     return 0;
 }
 
-int get_periodic_boundaries_flag(int value)
+int get_periodic_boundaries_flag(int *value)
 {
-    value = All.PeriodicBoundariesOn;
+    *value = All.PeriodicBoundariesOn;
     return 0;
 }
 

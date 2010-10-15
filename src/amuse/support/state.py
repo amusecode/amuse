@@ -35,7 +35,7 @@ class StateMachine(object):
         self.states = {}
         
         self._do_automatic_state_transitions = True
-        self._current_state = None
+        self._current_state = State(self, None)
         self.interface = interface
         self._is_enabled = True
 

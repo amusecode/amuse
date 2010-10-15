@@ -2883,9 +2883,9 @@ void ewald_init(void)
     }
 
 #ifdef DOUBLEPRECISION
-  sprintf(buf, "ewald_spc_table_%d_dbl.dat", EN);
+  sprintf(buf, "%sewald_spc_table_%d_dbl.dat", All.OutputDir, EN);
 #else
-  sprintf(buf, "ewald_spc_table_%d.dat", EN);
+  sprintf(buf, "%sewald_spc_table_%d.dat", All.OutputDir, EN);
 #endif
 
   if((fd = fopen(buf, "r")))

@@ -54,22 +54,6 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         """
         return os.path.join(get_amuse_root_dir(), 'data', 'gadget2', 'output')
     
-    @property
-    def default_path_to_parameterfile(self):
-        return os.path.join(self.get_data_directory(), 'defaults.param')
-        
-    @property
-    def default_path_to_parameterfile_for_periodic(self):
-        return os.path.join(self.get_data_directory(), 'defaults-periodic.param')
-    
-    @legacy_function
-    def set_parameterfile_path():
-        function = LegacyFunctionSpecification()
-        function.addParameter('parameterfile_path', dtype='string', direction=function.IN,
-            description = "The path to the default Gadget-2 Parameterfile.")
-        function.result_type = 'int32'
-        return function;
-    
     @legacy_function
     def new_dm_particle():
         function = LegacyFunctionSpecification()
@@ -144,9 +128,9 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             particle could not be found
         """
         return function
-    @legacy_function    
+    @legacy_function
     def get_state_sph():
-        function = LegacyFunctionSpecification()   
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
@@ -154,9 +138,9 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             function.addParameter(x, dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
-    @legacy_function    
+    @legacy_function
     def set_state_sph():
-        function = LegacyFunctionSpecification()   
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
@@ -467,10 +451,10 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function.result_type = 'i'
         return function
         
-    @legacy_function   
+    @legacy_function
     def get_gamma():
         """ gas polytropic index (1.666667) """        
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('gamma', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -478,15 +462,15 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def set_alpha():
         """ SPH artificial viscosity alpha parameter (0.5) """        
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('alpha', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
         
-    @legacy_function   
+    @legacy_function
     def get_alpha():
         """ SPH artificial viscosity alpha parameter (0.5) """        
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('alpha', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -494,15 +478,15 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def set_courant():
         """ SPH courant condition parameter (0.3) """            
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('courant', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
         
-    @legacy_function   
+    @legacy_function
     def get_courant():
         """ SPH courant condition parameter (0.3) """            
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('courant', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -510,50 +494,380 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def set_nsmtol():
         """ fractional tolerance in number of SPH neighbours """            
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('n_neighbour_tol', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
         
-    @legacy_function   
+    @legacy_function
     def get_nsmtol():
         """ fractional tolerance in number of SPH neighbours """            
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('n_neighbour_tol', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
-        
+    
+    @legacy_function
+    def get_energy_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('energy_file', dtype='string', direction=function.OUT,
+            description = "The path to the Gadget-2 energy statistics output file.")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_energy_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('energy_file', dtype='string', direction=function.IN,
+            description = "The path to the Gadget-2 energy statistics output file.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_info_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('info_file', dtype='string', direction=function.OUT,
+            description = "The path to the Gadget-2 info output file.")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_info_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('info_file', dtype='string', direction=function.IN,
+            description = "The path to the Gadget-2 info output file.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_timings_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('timings_file', dtype='string', direction=function.OUT,
+            description = "The path to the Gadget-2 timings output file.")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_timings_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('timings_file', dtype='string', direction=function.IN,
+            description = "The path to the Gadget-2 timings output file.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_cpu_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('cpu_file', dtype='string', direction=function.OUT,
+            description = "The path to the Gadget-2 cpu statistics output file.")
+        function.result_type = 'int32'
+        return function
+    @legacy_function
+    def set_cpu_file():
+        function = LegacyFunctionSpecification()
+        function.addParameter('cpu_file', dtype='string', direction=function.IN,
+            description = "The path to the Gadget-2 cpu statistics output file.")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_time_limit_cpu():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_limit_cpu', dtype='d', direction=function.OUT,
+            description = "The cpu-time limit. Gadget2 will stop once 85% of this (wall-clock) time has passed.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_time_limit_cpu():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_limit_cpu', dtype='d', direction=function.IN,
+            description = "The cpu-time limit. Gadget2 will stop once 85% of this (wall-clock) time has passed.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_comoving_integration_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('comoving_integration_flag', dtype='bool', direction=function.OUT,
+            description = "Flag to do a cosmological run with comoving coordinates.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_comoving_integration_flag():
+        function = LegacyFunctionSpecification()
+        function.addParameter('comoving_integration_flag', dtype='bool', direction=function.IN,
+            description = "Flag to do a cosmological run with comoving coordinates.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_type_of_timestep_criterion():
+        function = LegacyFunctionSpecification()
+        function.addParameter('type_of_timestep_criterion', dtype='i', direction=function.OUT,
+            description = "Timestep criterion to use. Can only be zero: timestep proportional to acceleration^-0.5")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_type_of_timestep_criterion():
+        function = LegacyFunctionSpecification()
+        function.addParameter('type_of_timestep_criterion', dtype='i', direction=function.IN,
+            description = "Timestep criterion to use. Can only be zero: timestep proportional to acceleration^-0.5")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_time_begin():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_begin', dtype='d', direction=function.OUT,
+            description = "The time at the start of the run.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_time_begin():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_begin', dtype='d', direction=function.IN,
+            description = "The time at the start of the run.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_time_max():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_max', dtype='d', direction=function.OUT,
+            description = "The time at the end of the run.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_time_max():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_max', dtype='d', direction=function.IN,
+            description = "The time at the end of the run.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_omega_zero():
+        function = LegacyFunctionSpecification()
+        function.addParameter('omega_zero', dtype='d', direction=function.OUT,
+            description = "Cosmological matter density parameter in units of the critical density at z=0.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_omega_zero():
+        function = LegacyFunctionSpecification()
+        function.addParameter('omega_zero', dtype='d', direction=function.IN,
+            description = "Cosmological matter density parameter in units of the critical density at z=0.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_omega_lambda():
+        function = LegacyFunctionSpecification()
+        function.addParameter('omega_lambda', dtype='d', direction=function.OUT,
+            description = "Cosmological vacuum energy density parameter in units of the critical density at z=0.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_omega_lambda():
+        function = LegacyFunctionSpecification()
+        function.addParameter('omega_lambda', dtype='d', direction=function.IN,
+            description = "Cosmological vacuum energy density parameter in units of the critical density at z=0.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_omega_baryon():
+        function = LegacyFunctionSpecification()
+        function.addParameter('omega_baryon', dtype='d', direction=function.OUT,
+            description = "Cosmological baryonic density parameter in units of the critical density at z=0.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_omega_baryon():
+        function = LegacyFunctionSpecification()
+        function.addParameter('omega_baryon', dtype='d', direction=function.IN,
+            description = "Cosmological baryonic density parameter in units of the critical density at z=0.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_hubble_param():
+        function = LegacyFunctionSpecification()
+        function.addParameter('hubble_param', dtype='d', direction=function.OUT,
+            description = "The cosmological Hubble parameter.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_hubble_param():
+        function = LegacyFunctionSpecification()
+        function.addParameter('hubble_param', dtype='d', direction=function.IN,
+            description = "The cosmological Hubble parameter.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_err_tol_int_accuracy():
+        function = LegacyFunctionSpecification()
+        function.addParameter('err_tol_int_accuracy', dtype='d', direction=function.OUT,
+            description = "Accuracy parameter used in timestep criterion. Actual timesteps are proportional to err_tol_int_accuracy^0.5")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_err_tol_int_accuracy():
+        function = LegacyFunctionSpecification()
+        function.addParameter('err_tol_int_accuracy', dtype='d', direction=function.IN,
+            description = "Accuracy parameter used in timestep criterion. Actual timesteps are proportional to err_tol_int_accuracy^0.5")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_max_size_timestep():
+        function = LegacyFunctionSpecification()
+        function.addParameter('max_size_timestep', dtype='d', direction=function.OUT,
+            description = "The maximum size of the timestep a particle may take.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_max_size_timestep():
+        function = LegacyFunctionSpecification()
+        function.addParameter('max_size_timestep', dtype='d', direction=function.IN,
+            description = "The maximum size of the timestep a particle may take.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_min_size_timestep():
+        function = LegacyFunctionSpecification()
+        function.addParameter('min_size_timestep', dtype='d', direction=function.OUT,
+            description = "The minimum size of the timestep a particle may take.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_min_size_timestep():
+        function = LegacyFunctionSpecification()
+        function.addParameter('min_size_timestep', dtype='d', direction=function.IN,
+            description = "The minimum size of the timestep a particle may take.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_tree_domain_update_frequency():
+        function = LegacyFunctionSpecification()
+        function.addParameter('tree_domain_update_frequency', dtype='d', direction=function.OUT,
+            description = "The frequency with which the tree and domain decomposition are fully updated, in terms of (# force computations / # particles).")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_tree_domain_update_frequency():
+        function = LegacyFunctionSpecification()
+        function.addParameter('tree_domain_update_frequency', dtype='d', direction=function.IN,
+            description = "The frequency with which the tree and domain decomposition are fully updated, in terms of (# force computations / # particles).")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_time_between_statistics():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_between_statistics', dtype='d', direction=function.OUT,
+            description = "The time between statistics output written to the output files.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_time_between_statistics():
+        function = LegacyFunctionSpecification()
+        function.addParameter('time_between_statistics', dtype='d', direction=function.IN,
+            description = "The time between statistics output written to the output files.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_min_gas_temp():
+        function = LegacyFunctionSpecification()
+        function.addParameter('min_gas_temp', dtype='d', direction=function.OUT,
+            description = "The minimum temperature of gas particles.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_min_gas_temp():
+        function = LegacyFunctionSpecification()
+        function.addParameter('min_gas_temp', dtype='d', direction=function.IN,
+            description = "The minimum temperature of gas particles.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_min_gas_hsmooth_fractional():
+        function = LegacyFunctionSpecification()
+        function.addParameter('min_gas_hsmooth_fractional', dtype='d', direction=function.OUT,
+            description = "The minimum smoothing length of gas particles relative to their softening lengths.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_min_gas_hsmooth_fractional():
+        function = LegacyFunctionSpecification()
+        function.addParameter('min_gas_hsmooth_fractional', dtype='d', direction=function.IN,
+            description = "The minimum smoothing length of gas particles relative to their softening lengths.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_softening_gas_max_phys():
+        function = LegacyFunctionSpecification()
+        function.addParameter('softening_gas_max_phys', dtype='d', direction=function.OUT,
+            description = "The maximum physical softening of gas particles for comoving integrations.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_softening_gas_max_phys():
+        function = LegacyFunctionSpecification()
+        function.addParameter('softening_gas_max_phys', dtype='d', direction=function.IN,
+            description = "The maximum physical softening of gas particles for comoving integrations.")
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_softening_halo_max_phys():
+        function = LegacyFunctionSpecification()
+        function.addParameter('softening_halo_max_phys', dtype='d', direction=function.OUT,
+            description = "The maximum physical softening of dm particles for comoving integrations.")
+        function.result_type = 'i'
+        return function
+    @legacy_function
+    def set_softening_halo_max_phys():
+        function = LegacyFunctionSpecification()
+        function.addParameter('softening_halo_max_phys', dtype='d', direction=function.IN,
+            description = "The maximum physical softening of dm particles for comoving integrations.")
+        function.result_type = 'i'
+        return function
+    
     @legacy_function
     def set_periodic_boundaries_flag():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='bool', direction=function.IN)
         function.result_type = 'i'
         return function
         
     @legacy_function
     def get_periodic_boundaries_flag():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('value', dtype='bool', direction=function.IN)
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='bool', direction=function.OUT)
         function.result_type = 'i'
         return function
         
     @legacy_function
     def set_box_size():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.addParameter('value', dtype='float64', direction=function.IN)
         function.result_type = 'i'
         return function
         
     @legacy_function
     def get_box_size():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('value', dtype='float64', direction=function.IN)
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype='float64', direction=function.OUT)
         function.result_type = 'i'
         return function
     
-    @legacy_function    
+    @legacy_function
     def get_hydro_state_at_point():
-        function = LegacyFunctionSpecification()  
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True
         for x in ['x','y','z','vx','vy','vz']:
             function.addParameter(x, dtype='d', direction=function.IN)
@@ -588,9 +902,11 @@ class Gadget2(GravitationalDynamics):
             unit_converter,
             **options
         )
+        self.parameters.set_defaults()
+        if mode == legacy_interface.MODE_PERIODIC_BOUNDARIES:
+            self.parameters.periodic_boundaries_flag = True
     
     def initialize_code(self):
-        self.set_parameterfile_path(self.default_path_to_parameterfile)
         result = self.overridden().initialize_code()
         self.set_gadget_output_directory(self.get_output_directory())
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
@@ -812,6 +1128,220 @@ class Gadget2(GravitationalDynamics):
             "Name of the Gadget-2 OutputDir", 
             units.string,
             "" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_energy_file", 
+            "set_energy_file",
+            "energy_file", 
+            "The path to the Gadget-2 energy statistics output file.", 
+            units.string,
+            "energy.txt" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_info_file", 
+            "set_info_file",
+            "info_file", 
+            "The path to the Gadget-2 info output file.", 
+            units.string,
+            "info.txt" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_timings_file", 
+            "set_timings_file",
+            "timings_file", 
+            "The path to the Gadget-2 timings output file.", 
+            units.string,
+            "timings.txt" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_cpu_file", 
+            "set_cpu_file",
+            "cpu_file", 
+            "The path to the Gadget-2 cpu statistics output file.", 
+            units.string,
+            "cpu.txt" | units.string
+        )
+        
+        object.add_method_parameter(
+            "get_time_limit_cpu", 
+            "set_time_limit_cpu",
+            "time_limit_cpu", 
+            "The cpu-time limit. Gadget2 will stop once 85% of this (wall-clock) time has passed.", 
+            units.s,
+            36000 | units.s
+        )
+        
+        object.add_boolean_parameter(
+            "get_comoving_integration_flag",
+            "set_comoving_integration_flag",
+            "comoving_integration_flag",
+            "Flag to do a cosmological run with comoving coordinates.",
+            False
+        )
+        
+        object.add_method_parameter(
+            "get_type_of_timestep_criterion", 
+            "set_type_of_timestep_criterion",
+            "type_of_timestep_criterion", 
+            "Timestep criterion to use. Can only be zero: timestep proportional to acceleration^-0.5", 
+            units.none,
+            0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_time_begin", 
+            "set_time_begin",
+            "time_begin", 
+            "The time at the start of the run.", 
+            generic_unit_system.time,
+            0.0 | generic_unit_system.time
+        )
+        
+        object.add_method_parameter(
+            "get_time_max", 
+            "set_time_max",
+            "time_max", 
+            "The time at the end of the run.", 
+            generic_unit_system.time,
+            100.0 | generic_unit_system.time
+        )
+        
+        object.add_method_parameter(
+            "get_omega_zero", 
+            "set_omega_zero",
+            "omega_zero", 
+            "Cosmological matter density parameter in units of the critical density at z=0.", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_omega_lambda", 
+            "set_omega_lambda",
+            "omega_lambda", 
+            "Cosmological vacuum energy density parameter in units of the critical density at z=0.", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_omega_baryon", 
+            "set_omega_baryon",
+            "omega_baryon", 
+            "Cosmological baryonic density parameter in units of the critical density at z=0.", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_hubble_param", 
+            "set_hubble_param",
+            "hubble_param", 
+            "The cosmological Hubble parameter.", 
+            100 * units.km / units.s / units.Mpc,
+            0.7 | 100 * units.km / units.s / units.Mpc
+        )
+        
+        object.add_method_parameter(
+            "get_err_tol_int_accuracy", 
+            "set_err_tol_int_accuracy",
+            "timestep_accuracy_parameter", 
+            "Accuracy parameter used in timestep criterion. Actual timesteps are proportional to err_tol_int_accuracy^0.5", 
+            units.none,
+            0.025 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_max_size_timestep", 
+            "set_max_size_timestep",
+            "max_size_timestep", 
+            "The maximum size of the timestep a particle may take.", 
+            generic_unit_system.time,
+            0.01 | generic_unit_system.time
+        )
+        
+        object.add_method_parameter(
+            "get_min_size_timestep", 
+            "set_min_size_timestep",
+            "min_size_timestep", 
+            "The minimum size of the timestep a particle may take.", 
+            generic_unit_system.time,
+            0.0 | generic_unit_system.time
+        )
+        
+        object.add_method_parameter(
+            "get_tree_domain_update_frequency", 
+            "set_tree_domain_update_frequency",
+            "tree_domain_update_frequency", 
+            "The frequency with which the tree and domain decomposition are fully updated, in terms of (# force computations / # particles).", 
+            units.none,
+            0.05 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_time_between_statistics", 
+            "set_time_between_statistics",
+            "time_between_statistics", 
+            "The time between statistics output written to the output files.", 
+            generic_unit_system.time,
+            0.1 | generic_unit_system.time
+        )
+        
+        object.add_method_parameter(
+            "get_min_gas_temp", 
+            "set_min_gas_temp",
+            "min_gas_temp", 
+            "The minimum temperature of gas particles.", 
+            units.K,
+            0.0 | units.K
+        )
+        
+        object.add_method_parameter(
+            "get_min_gas_hsmooth_fractional", 
+            "set_min_gas_hsmooth_fractional",
+            "min_gas_hsmooth_fractional", 
+            "The minimum smoothing length of gas particles relative to their softening lengths.", 
+            units.none,
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_softening_gas_max_phys", 
+            "set_softening_gas_max_phys",
+            "softening_gas_max_phys", 
+            "The maximum physical softening of gas particles for comoving integrations.", 
+            generic_unit_system.length,
+            0.0 | generic_unit_system.length
+        )
+        
+        object.add_method_parameter(
+            "get_softening_halo_max_phys", 
+            "set_softening_halo_max_phys",
+            "softening_halo_max_phys", 
+            "The maximum physical softening of dm particles for comoving integrations.", 
+            generic_unit_system.length,
+            0.0 | generic_unit_system.length
+        )
+        
+        object.add_method_parameter(
+            "get_box_size", 
+            "set_box_size",
+            "periodic_box_size", 
+            "The size of the box in case of periodic boundary conditions.", 
+            generic_unit_system.length,
+            1.0 | generic_unit_system.length
+        )
+        
+        object.add_boolean_parameter(
+            "get_periodic_boundaries_flag",
+            "set_periodic_boundaries_flag",
+            "periodic_boundaries_flag",
+            "Periodic boundaries flag. True means: use periodic boundary conditions",
+            False
         )
         
         self.stopping_conditions.define_parameters(object)        

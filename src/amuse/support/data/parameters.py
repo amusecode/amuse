@@ -42,8 +42,15 @@ class Parameters(object):
             warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
             return
         
-        if hasattr(self._instance(), "invoke_state_change"):
+        if hasattr(self._instance(), "get_name_of_current_state"):
+            current_state = self._instance().get_name_of_current_state()
+        else:
+            current_state = None
+        if current_state == "UNINITIALIZED" and hasattr(self._instance(), "invoke_state_change"):
             self._instance().invoke_state_change()
+        elif ((current_state == "EDIT" or current_state == "RUN") and 
+                hasattr(self._instance(), "invoke_state_change2")):
+            self._instance().invoke_state_change2()
             
         return self.get_parameter(name).set_value(value)
 
