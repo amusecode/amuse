@@ -11,6 +11,7 @@ Tutorials
    particle_sets
    c_code
    fortran_code
+   gravitational_dynamics_code
    legacy_code
    blender
    plot

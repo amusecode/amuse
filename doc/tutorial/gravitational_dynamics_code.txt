@@ -1,0 +1,132 @@
+====================================
+Adding a Gravitational Dynamics Code
+====================================
+
+In this tutorial we explain the steps to take when integrating
+a new gravitational dynamics code. 
+
+.. warning::
+    
+    This tutorial will show the steps but will not finish in a
+    working product. It will highlight the steps to take, we 
+    recommend you first read these tutorials
+    :doc:`c_code` and :doc:`fortran_code`.
+
+Environment variables
+~~~~~~~~~~~~~~~~~~~~~
+To simplify the work in the coming sections, we first define the 
+environment variable 'AMUSEDIR'. This environment variable must 
+point to the root directory of AMUSE (this is the directory 
+containing the build.py script).
+
+.. code-block:: bash
+
+    > export AMUSEDIR=<path to the amuse root directory>
+    
+or in a c shell:
+
+.. code-block:: csh
+
+    > setenv AMUSEDIR <path to the amuse root directory>
+
+After building the code, we want to run and test the code. Check if 
+amuse is available in your python path by running the following code 
+on the command line.
+
+.. code-block:: bash
+
+    > python -c "import amuse"
+    Traceback (most recent call last):
+    File "<string>", line 1, in <module>
+    ImportError: No module named amuse
+    
+If this code ends in a "ImportError" as shown in the example, the 
+PYTHONPATH environment variable must be extended with the src directory
+in AMUSEDIR. 
+We can do so by using one of the following commands.
+
+.. code-block:: bash
+
+    > export PYTHONPATH=${PYTHONPATH}:${AMUSEDIR}/src
+    
+or in a c shell:
+
+.. code-block:: csh
+
+    > setenv AMUSEDIR ${PYTHONPATH}:${AMUSEDIR}/src
+
+Creating an initial directory structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+First we need to create a directory for our project and put some 
+files in it to help build the code. The fastest method to setup the 
+directory is by using the build.py script.
+
+.. code-block:: bash
+    
+    > # for C/C++ codes:
+    > $AMUSEDIR/build.py --type=c --mode=dir CodeName
+    > # for fortran codes:
+    > $AMUSEDIR/build.py --type=f90 --mode=dir CodeName
+
+.. note::
+
+    The ```CodeName``` should be an unique name for your code. It
+    should follow python rules for class names, start with
+    an uppercase letter and have an uppercase letter for each word 
+    in the name (camelcase).
+    
+This script will create a direcory called ```codename```. The script 
+will populate the directory with a make file (```Makefile```), a python interface 
+definition file (```interface.py```) and a C or fortran stub file 
+(containing methods implementing the definitions in interface.py, 
+```interface.cc``` or ```interface.f90```).
+
+The src directory
+~~~~~~~~~~~~~~~~~
+The build.py script creates a ```src``` directory in the ```codename```
+directory. The ```src``` directory should contain a make file and
+the sources of the code to integrate. (The build.py script also creates
+some files in the ```src``` directory as an example, but you
+can remove and overwrite everything in this directory)
+
+The generated build system will call the make file 
+with the ```all``` target (to build an stand-alone 
+executable, if available) and the ```libcodename.a``` target (to
+build a static library with all necessary object files).
+
+.. note::
+    
+    If your code has a different build system or if the makefile is 
+    not in the main directory of the code you need to edit the 
+    generated make file in the ```codename``` directory. The AMUSE 
+    codebase contains several codes that have a different build 
+    system, please look into the code for ```evtwin```(uses cmake) 
+    or ```athena```(downloads and patches code) for hints.
+    
+If you already have a make file, you might need to add the
+```libcodename.a``` target. You can define this target by
+adding the following code to your make file at the appropraite
+locations in the makefile.
+
+... code-block:: Makefile
+    CODELIB = libcodename.a
+
+    CODEOBJS = ...list of object files...
+
+    AR = ar ruv
+    RANLIB = ranlib
+
+    $(CODELIB): $(CODEOBJS)
+        $(RM) -f $@
+        $(AR) $@ $(CODEOBJS)
+        $(RANLIB) $@
+
+    
+    
+
+
+
+
+
+
+
