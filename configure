@@ -5070,9 +5070,8 @@ as_arg_v1=$PYTHON_h5py_VERSION
 as_arg_v2=1.1.0
 awk "$as_awk_strverscmp" v1="$as_arg_v1" v2="$as_arg_v2" /dev/null
 case $? in
-1) { { $as_echo "$as_me:$LINENO: error: h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&5
-$as_echo "$as_me: error: h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&2;}
-   { (exit 1); exit 1; }; }
+1) { $as_echo "$as_me:$LINENO: WARNING: h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&5
+$as_echo "$as_me: WARNING: h5py version $PYTHON_h5py_VERSION found, but at least 1.1.0 needed" >&2;}
 ;;
 0) ;;
 2) ;;
