@@ -1,12 +1,13 @@
 from operator import itemgetter
 from amuse.legacy import *
 from amuse.legacy.interface.se import StellarEvolution
+from amuse.legacy.interface.common import CommonCodeInterface
 
 from amuse.support.interface import CodeInterface
 
 import os
 
-class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
+class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, CommonCodeInterface):
     """
     Evtwin is based on Peter Eggleton's stellar evolution code, and solves 
     the differential equations that apply to the interior of a star. Therefore 
@@ -804,10 +805,10 @@ class EVtwin(CodeInterface):
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
         self.set_ev_path(self.get_data_directory())
-        self.initialize_code()
+        print self.initialize_code()
         
     def initialize_module_with_current_parameters(self):
-        self.initialize_code()
+        print self.initialize_code()
         
     def setup_particles(self, particles):
         self.particles.add_particles(particles)

@@ -291,6 +291,36 @@ contains
    end function get_number_of_iterations
 
 
+    function open_input_file(inputfilename, inputunit, input_required)
+        use file_exists_module
+        implicit none
+        character(len=500) :: inputfilename, fname
+        integer :: inputunit
+        integer :: input_required
+        integer :: open_input_file
+        
+        open_input_file = 0
+        
+        write (fname, '("fort.",i2)') inputunit
+        if (file_exists(inputfilename) .and. .not. file_exists(fname)) then
+            if (verbose) print *, "opening ",trim(inputfilename)," for ", trim(fname)
+            open(unit = inputunit, action="read", file=inputfilename)
+        end if
+            ! Check if files exist and act appropriately
+            ! If the file is required (INPUT_REQUIRED>0), abort on error
+            ! If the file is optional (INPUT_REQUIRED==0), give a warning
+            ! If the file is probably unneeded (INPUT_REQUIRED<0), do nothing
+        if (.not. (file_exists(inputfilename)) .or. file_exists(fname)) then
+            if (input_required > 0) then
+               write (0, *) 'required input file ', trim(inputfilename), ' (', trim(fname), ') not found'
+               open_input_file = -1
+               return
+            else if (input_required == 0) then
+               write (0, *) 'warning: input file ', trim(inputfilename), ' (', trim(fname), ') not found'
+            end if
+        end if
+
+    end function
 
    ! initialise_twin:
    !  General TWIN initialisation: load physics datafiles and ZAMS libraries.
@@ -319,13 +349,13 @@ contains
       character(len=*), intent(in) ::  evpath, zstr
       integer, intent(in) :: nstars
 
-      integer :: i,ii
+      integer :: ii, i
       
       integer :: ke1,ke2,ke3,kbc,kev,kfn,kl,kp_var(40),kp_eqn(40),kp_bc(40)
       
       logical :: status, override_run, override_dat
       integer, parameter :: n_inp_files = 15
-      character(len=500) :: inputfilenames(n_inp_files), fname
+      character(len=500) :: inputfilenames(n_inp_files)
       integer :: inputunits(n_inp_files)     = (/12, 24, 16, 18, 19, 20, 21, 26, 63, 22, 23, 41, 42, 122, 123/)
       integer :: input_required(n_inp_files) = (/ 0,  0,  1,  1,  1,  0,  1,  1, -1, -1, -1,  0,  1, 1, 1/)
 
@@ -357,7 +387,7 @@ contains
       inputfilenames(6)=trim(evpath)//"/metals/z"//trim(zstr)//"/phys.z"//trim(zstr)
       inputfilenames(7)=trim(evpath)//"/lt2ubv.dat"
       inputfilenames(8)=trim(evpath)//"/nucdata.dat"
-      !INPUTFILENAMES(9)=TRIM(EVPATH)//"/mutate.dat"
+      inputfilenames(9)="" !TRIM(EVPATH)//"/mutate.dat"
       inputfilenames(10)=trim(init_dat_name)
       inputfilenames(11)=trim(init_run_name)
       inputfilenames(12)=trim(evpath)//"/COtables/COtables_z"//trim(zstr)
@@ -369,31 +399,18 @@ contains
       ! init.run and init.dat are present in the current directory.
       override_run = .false.
       override_dat = .false.
-
-      ! Check if all input files exist and open them as needed
-      do i=1, n_inp_files
-         write (fname, '("fort.",i2)') inputunits(i)
-         if (file_exists(inputfilenames(i)) .and. .not. file_exists(fname)) then
-            if (verbose) print *, "opening ",trim(inputfilenames(i))," for ", trim(fname)
-            open(unit = inputunits(i), action="read", file=inputfilenames(i))
-         end if
-         ! Check if files exist and act appropriately
-         ! If the file is required (INPUT_REQUIRED>0), abort on error
-         ! If the file is optional (INPUT_REQUIRED==0), give a warning
-         ! If the file is probably unneeded (INPUT_REQUIRED<0), do nothing
-         if (.not. (file_exists(inputfilenames(i)) .or. file_exists(fname))) then
-            if (input_required(i) > 0) then
-               write (0, *) 'required input file ', trim(inputfilenames(i)), ' (', trim(fname), ') not found'
-               initialise_twin = -1
-               return
-            else if (input_required(i) == 0) then
-               write (0, *) 'warning: input file ', trim(inputfilenames(i)), ' (', trim(fname), ') not found'
+    
+       
+        do i = 1, n_inp_files
+            initialise_twin = open_input_file(inputfilenames(i), inputunits(i), input_required(i))
+            if(initialise_twin.LT.0) then
+                return
             end if
-         end if
-      end do
+        end do
+      
 
-      if ( file_exists(inputfilenames(10)) ) override_dat = .true.
-      if ( file_exists(inputfilenames(11)) ) override_run = .true.
+      if ( file_exists(trim(init_dat_name)) ) override_dat = .true.
+      if ( file_exists(trim(init_run_name)) ) override_run = .true.
 
       ! We need to have a fort.11 - no, we don't, since we're not using star12!
       !WRITE (11, *) 0
@@ -448,6 +465,7 @@ contains
       kp_var(1:40)   = id(11:50)
       kp_eqn(1:40)   = id(51:90)
       kp_bc(1:40)    = id(91:130)
+      
       if (verbose) print *, 'read settings'
       if (verbose) print *, 'using', kh2, 'meshpoints per star'
 
@@ -491,6 +509,7 @@ contains
       
       
       if(use_quadratic_predictions) then
+        
         call initlse_parabola_storage_space(kh2, ke1+ke2+kev)
       end if
       
@@ -637,6 +656,7 @@ contains
       star%normal_iter = kr2
       
       if (use_quadratic_predictions) then
+        print *,'use_quadratic_predictions ',use_quadratic_predictions
         call push_extrapolate_data(star%stored_extrapolate_dh_data)
       end if
 
@@ -1284,7 +1304,27 @@ contains
       integer :: initialize_code
       initialize_code = initialise_twin(ev_path, maximum_number_of_stars, metallicity_str)
    end function
+    
+   function commit_parameters()
+      implicit none
+      integer :: commit_parameters
       
+      
+      commit_parameters = 0
+   end function
+   
+   function recommit_parameters()
+      implicit none
+      integer :: recommit_parameters
+      recommit_parameters = -2
+   end function  
+       
+   function cleanup_code()
+      implicit none
+      integer :: cleanup_code
+      cleanup_code = -2
+   end function  
+       
    function delete_star(star_id)
       implicit none
       integer :: delete_star, star_id
