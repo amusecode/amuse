@@ -7,7 +7,8 @@ AC_CONFIG_FILES([support/config.py:support/configpy.in])
 AC_PROG_CC()
 AC_PROG_CXX()
 AC_PROG_FC([],95)
-AC_PATH_PROG([PYTHON], [python], [])
+AC_ARG_VAR([PYTHON], [Python interpreter])
+AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])
 
 #
