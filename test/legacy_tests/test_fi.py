@@ -7,6 +7,7 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.legacy.fi.interface import FiInterface, Fi
 from amuse.ext.evrard_test import new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
+from amuse.ext.plummer import new_plummer_sphere
 from amuse.support.units import nbody_system as nbody
 from amuse.support.units import units
 from amuse.support.data import core
@@ -208,6 +209,7 @@ class TestFiInterface(TestWithMPI):
         self.assertAlmostEqual(z, [0.,0.,-0.5], places=7)
         instance.cleanup_code()
         instance.stop()
+        
     
     
 class TestEvrard(TestWithMPI):
@@ -850,4 +852,40 @@ class TestFi(TestWithMPI):
         self.assertAlmostRelativeEqual(rhoe,  density * (instance.gas_particles[0].u + 
             instance.gas_particles[0].velocity.length_squared()),  places=3)
         instance.stop()
+        
+    
+    def test16(self):
+        instance = self.new_instance_of_an_optional_code(Fi)
+        try:
+            particles = new_plummer_sphere(100)
+            more_particles = new_plummer_sphere(50)
+          
+            particles.h_smooth = 0.1 | nbody.length 
+            particles.u = 0.1 | nbody.speed**2
+            more_particles.h_smooth = 0.1 | nbody.length 
+            more_particles.u = 0.1 | nbody.speed**2
+            
+            particles.move_to_center()
+            more_particles.move_to_center()
+            
+            instance.gas_particles.add_particles(particles)
+            instance.commit_particles()
+            self.assertEquals(len(instance.particles), 100)
+            instance.synchronize_model()
+            instance.gas_particles.add_particles(more_particles)
+            instance.recommit_particles()
+            self.assertEquals(len(instance.particles), 150)
+            instance.synchronize_model()
+            selected1 = instance.particles.select_array(lambda x: x<0 | nbody.length, ["x",])
+            instance.particles.remove_particles(selected1)
+            self.assertEquals(len(instance.particles), 150 - len(selected1))
+            instance.recommit_particles()
+            instance.synchronize_model()
+            
+            selected2 = instance.particles.select_array(lambda x: x>0 | nbody.length, ["x",])
+            instance.particles.remove_particles(selected2)
+            self.assertEquals(len(instance.particles), 150 - len(selected1) - len(selected2))
+            instance.recommit_particles()
+        finally:
+            instance.stop()
     
