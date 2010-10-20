@@ -114,14 +114,15 @@ class NBodyPrintingStrategy(PrintingStrategy):
     
     provided_strategy_names = ['nbody',]
     
-    def __init__(self, nbody_converter = None):
+    def __init__(self, nbody_converter = None, ignore_converter_exceptions = False):
+        self.ignore_converter_exceptions = ignore_converter_exceptions
         self.nbody_converter = nbody_converter
     
     def convert_quantity(self, quantity):
         if is_not_nbody_unit(quantity.unit):
             if self.nbody_converter:
                 return self.nbody_converter.to_nbody(quantity)
-            else:
+            elif not self.ignore_converter_exceptions:
                 raise AmuseException("Unable to convert {0} to N-body units. No "
                     "nbody_converter given".format(quantity.unit))
         return quantity
@@ -137,7 +138,7 @@ class PrintingStrategyWithPreferredUnits(PrintingStrategy):
         if has_nbody_unit(quantity.unit):
             if self.nbody_converter:
                 return _quantity_in_preferred_units(self.preferred_units, self.nbody_converter.to_si(quantity))
-            else:
+            elif not self.ignore_converter_exceptions:
                 raise AmuseException("Unable to convert {0} to SI units. No "
                     "nbody_converter given".format(quantity.unit))
         return _quantity_in_preferred_units(self.preferred_units, quantity)
@@ -157,7 +158,9 @@ class AstroPrintingStrategy(PrintingStrategyWithPreferredUnits):
     
     provided_strategy_names = ['astro',]
     
-    def __init__(self, nbody_converter = None, print_units = True):
+    def __init__(self, nbody_converter = None, print_units = True, ignore_converter_exceptions = None):
+        self.ignore_converter_exceptions = (print_units if (ignore_converter_exceptions is None) 
+            else ignore_converter_exceptions)
         self.nbody_converter = nbody_converter
         self.print_units = print_units
         from amuse.support.units import units
@@ -169,7 +172,9 @@ class SIPrintingStrategy(PrintingStrategyWithPreferredUnits):
     
     provided_strategy_names = ['SI', 'si']
     
-    def __init__(self, nbody_converter = None, print_units = True):
+    def __init__(self, nbody_converter = None, print_units = True, ignore_converter_exceptions = None):
+        self.ignore_converter_exceptions = (print_units if (ignore_converter_exceptions is None) 
+            else ignore_converter_exceptions)
         self.nbody_converter = nbody_converter
         self.print_units = print_units
         from amuse.support.units import units
@@ -182,7 +187,9 @@ class CustomPrintingStrategy(PrintingStrategyWithPreferredUnits):
     provided_strategy_names = ['custom',]
     
     def __init__(self, nbody_converter = None, print_units = True, preferred_units = [], precision = None,
-            prefix = "", separator = " ", suffix = ""):
+            prefix = "", separator = " ", suffix = "", ignore_converter_exceptions = None):
+        self.ignore_converter_exceptions = (print_units if (ignore_converter_exceptions is None) 
+            else ignore_converter_exceptions)
         self.nbody_converter = nbody_converter
         self.print_units = print_units
         self.preferred_units = preferred_units

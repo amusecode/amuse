@@ -140,8 +140,7 @@ class TestPrintingStrategy(amusetest.TestCase):
         
         set_printing_strategy("astro")
         self.assertEqual(str(mass), "1.0 MSun")
-        self.assertRaises(AmuseException, str, acc, expected_message = 
-            "Unable to convert length * s**-2 to SI units. No nbody_converter given")
+        self.assertEqual(str(acc), "0.0098 length * Myr**-2")
         self.assertEqual(str(converter.to_si(acc)), "9.8 parsec * Myr**-2")
         self.assertEqual(str(converter.to_si(position)), "[100.0, 200.0, 300.0] parsec")
         self.assertEqual(str(energy), "10.0 J")
@@ -151,6 +150,9 @@ class TestPrintingStrategy(amusetest.TestCase):
         
         set_printing_strategy("astro", nbody_converter = converter)
         self.assertEqual(str(acc), "9.8 parsec * Myr**-2")
+        set_printing_strategy("astro", ignore_converter_exceptions = False)
+        self.assertRaises(AmuseException, str, acc, expected_message = 
+            "Unable to convert length * s**-2 to SI units. No nbody_converter given")
         set_printing_strategy("default")
     
     def test8(self):
