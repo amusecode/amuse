@@ -95,3 +95,29 @@ class CommonCode(CodeInterface):
         object.add_method('INITIALIZED', 'invoke_state_change')
         object.add_transition_to_method('END', 'cleanup_code')
         object.add_method('END', 'stop')
+    
+    def define_methods(self, object):
+        object.add_method(
+            'initialize_code',
+            (),
+            (object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'cleanup_code',
+            (),
+            (object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'commit_parameters',
+            (),
+            (object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            'recommit_parameters',
+            (),
+            (object.ERROR_CODE)
+        )
+    

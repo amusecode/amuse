@@ -333,8 +333,7 @@ class TestFi(TestWithMPI):
         print "Test 2: testing Fi data directory"
         convert_nbody = nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Fi(convert_nbody)
-        error = instance.initialize_code()
-        self.assertEquals(0, error)
+        instance.initialize_code()
         self.assertTrue('data/fi/input/' in instance.get_fi_data_directory().fi_data_directory)
         self.assertEquals(instance.get_fi_data_directory().fi_data_directory, 
             instance.get_data_directory()+'/')
@@ -362,7 +361,7 @@ class TestFi(TestWithMPI):
     def test3(self):
         print "Test 3: testing Fi boolean parameters"
         instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         
         for bool_par in ['radiation_flag','star_formation_flag',
             'square_root_timestep_flag','freeform_timestep_flag','quadrupole_moments_flag',
@@ -385,7 +384,7 @@ class TestFi(TestWithMPI):
     def test4(self):
         print "Test 4: testing Fi integer parameters"
         instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         
         for int_par, value in [('first_snapshot',0),('output_interval',5),('log_interval',5),
             ('maximum_time_bin',4096),('minimum_part_per_bin',1),('targetnn',32),
@@ -400,7 +399,7 @@ class TestFi(TestWithMPI):
     def test5(self):
         print "Test 5: testing Fi double precision parameters"
         instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         
         par_names=['epsilon_squared','timestep','pboxsize','code_mass_unit','code_length_unit',
             'sqrt_timestep_crit_constant','acc_timestep_crit_constant','free_timestep_crit_constant_v',
@@ -427,7 +426,7 @@ class TestFi(TestWithMPI):
     def test6(self):
         print "Test 6: testing Fi string parameters"
         instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         
         par_names=['halofile','feedback','star_formation_mode','h_update_method','sph_viscosity','fi_data_directory']
         defaults=['none','fuv','gerritsen','mass','sph',instance.get_data_directory()+'/'] | units.string
@@ -447,7 +446,7 @@ class TestFi(TestWithMPI):
         
         convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         instance = Fi(convert_nbody)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         instance.parameters.timestep = 0.05 | nbody.time
         instance.parameters.integrate_entropy_flag = True
         instance.gas_particles.add_particles(gas)
@@ -481,7 +480,7 @@ class TestFi(TestWithMPI):
         
         convert_nbody = nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Fi(convert_nbody)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         instance.dm_particles.add_particles(dark)
         instance.gas_particles.add_particles(gas)
         
@@ -525,7 +524,7 @@ class TestFi(TestWithMPI):
         
         convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         instance = Fi(convert_nbody)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         instance.parameters.verbosity = 0
         instance.commit_parameters()
         instance.dm_particles.add_particles(dark)
@@ -565,7 +564,7 @@ class TestFi(TestWithMPI):
         stars.tform = [-10.0, -50.0] | units.Myr
         
         instance = Fi(nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU))#, debugger='xterm')
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         instance.parameters.timestep = 0.5 | units.day
         instance.commit_parameters()
         instance.star_particles.add_particles(stars)
@@ -608,7 +607,7 @@ class TestFi(TestWithMPI):
         
         convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         instance = Fi(convert_nbody)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
 
         self.assertEquals(0, len(instance.particles))
         instance.dm_particles.add_particles(dark)
@@ -660,7 +659,7 @@ class TestFi(TestWithMPI):
         convert_nbody = nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         instance = Fi(convert_nbody)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')

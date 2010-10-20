@@ -28,7 +28,8 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 	$(SRCDIR)/pm_periodic.c  $(SRCDIR)/pm_nonperiodic.c  $(SRCDIR)/longrange.c  \
 	$(SRCDIR)/density_at_pos.c
 
-OBJS = gadget_code.o
+INTERFACE_OBJ = gadget_code.o
+INTERFACE_SRC  = $(INTERFACE_OBJ:.o=.cc)
 
 all:	worker_code
 
@@ -45,16 +46,16 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 
-worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+worker_code: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 	
-worker_code_periodic: worker_code.cc worker_code.h $(OBJS) $(SRCDIR)/makefile_options
-	rm -f $(OBJS)
-	make $(OBJS) OPT=$(PERIODIC_OPT)
+worker_code_periodic: worker_code.cc worker_code.h $(INTERFACE_SRC) $(SRCDIR)/makefile_options
+	rm -f $(INTERFACE_OBJ)
+	make $(INTERFACE_OBJ) OPT=$(PERIODIC_OPT)
 	make -C $(SRCDIR) clean 
 	make -C $(SRCDIR) all OPT=$(PERIODIC_OPT)
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) worker_code.cc $(OBJS) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
-	rm -f $(OBJS)
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) worker_code.cc $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	rm -f $(INTERFACE_OBJ)
 	make -C $(SRCDIR) clean 
 
 gadget_code.o: gadget_code.cc $(SRCDIR)/makefile_options

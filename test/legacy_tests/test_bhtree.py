@@ -577,7 +577,7 @@ class TestBHTree(TestWithMPI):
         
         copyof =  instance.particles.copy()
         
-        com = instance.get_center_of_mass_position()
+        com = instance.center_of_mass_position
         self.assertAlmostEqual(com[0], values.new_quantity(0.0, units.m), constants.precision)
     
     def test14(self):

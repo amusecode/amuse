@@ -887,12 +887,13 @@ class Gadget2(GravitationalDynamics):
     __doc__ = Gadget2Doc()
     
     def __init__(self, unit_converter = None, mode = 'normal', **options):
+        self.mode = mode
         legacy_interface = Gadget2Interface(mode = mode, **options)
         if unit_converter is None:
             unit_converter = ConvertBetweenGenericAndSiUnits(
                 3.085678e21 | units.cm,   # 1.0 kpc
                 1.989e43 | units.g,       # 1.0e10 solar masses
-                1e5 | units.cm / units.s)# 1 km/sec
+                1e5 | units.cm / units.s) # 1 km/sec
     
         self.stopping_conditions = StoppingConditions(self)
     
@@ -902,12 +903,12 @@ class Gadget2(GravitationalDynamics):
             unit_converter,
             **options
         )
-        self.parameters.set_defaults()
-        if mode == legacy_interface.MODE_PERIODIC_BOUNDARIES:
-            self.parameters.periodic_boundaries_flag = True
     
     def initialize_code(self):
         result = self.overridden().initialize_code()
+        self.parameters.set_defaults()
+        if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
+            self.parameters.periodic_boundaries_flag = True
         self.set_gadget_output_directory(self.get_output_directory())
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
         self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm))
@@ -1389,8 +1390,16 @@ class Gadget2(GravitationalDynamics):
         self.stopping_conditions.define_particle_set(object, 'dm_particles')
         self.stopping_conditions.define_particle_set(object, 'gas_particles')
     
+    def define_errorcodes(self, object):
+        object.add_errorcode(-1, 'Unspecified, other error.')
+        object.add_errorcode(-2, 'Called function is not implemented.')
+        object.add_errorcode(-3, 'A particle with the given index was not found.')
+        object.add_errorcode(-4, 'Parameter check failed.')
+        object.add_errorcode(-5, 'CPU-time limit reached.')
+        object.add_errorcode(-6, "Can't evolve backwards in time.")
+    
     def define_methods(self, object):
-        #GravitationalDynamics.define_methods(self, object)
+        GravitationalDynamics.define_methods(self, object)
         object.add_method(
             'evolve',
             (generic_unit_system.time,),

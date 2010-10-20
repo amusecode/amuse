@@ -713,7 +713,7 @@ int get_theta_for_tree(double *theta_for_tree)
 
 int commit_parameters()
 {
-  return -2;
+  return 0;
 }
 
 int recommit_parameters()

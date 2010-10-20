@@ -134,33 +134,33 @@ int check_parameters(){
     if(sizeof(long long) != 8){
         if(ThisTask == 0)
             printf("\nType `long long' is not 64 bit on this platform. Stopping.\n\n");
-        return -1;
+        return -4;
     }
     if(sizeof(int) != 4){
         if(ThisTask == 0)
             printf("\nType `int' is not 32 bit on this platform. Stopping.\n\n");
-        return -1;
+        return -4;
     }
     if(sizeof(float) != 4){
         if(ThisTask == 0)
             printf("\nType `float' is not 32 bit on this platform. Stopping.\n\n");
-        return -1;
+        return -4;
     }
     if(sizeof(double) != 8){
         if(ThisTask == 0)
             printf("\nType `double' is not 64 bit on this platform. Stopping.\n\n");
-        return -1;
+        return -4;
     }
     MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
     if(All.NumFilesWrittenInParallel < 1){
         if(ThisTask == 0)
             printf("NumFilesWrittenInParallel MUST be at least 1\n");
-        return -1;
+        return -4;
     }
     if(All.NumFilesWrittenInParallel > NTask){
         if(ThisTask == 0)
             printf("NumFilesWrittenInParallel MUST be smaller than number of processors\n");
-        return -1;
+        return -4;
     }
 #ifdef PERIODIC
     if(All.PeriodicBoundariesOn == 0){
@@ -168,7 +168,7 @@ int check_parameters(){
             printf("Code was compiled with periodic boundary conditions switched on.\n");
             printf("You must set `PeriodicBoundariesOn=1', or recompile the code.\n");
         }
-        return -1;
+        return -4;
     }
 #else
     if(All.PeriodicBoundariesOn == 1){
@@ -176,7 +176,7 @@ int check_parameters(){
             printf("Code was compiled with periodic boundary conditions switched off.\n");
             printf("You must set `PeriodicBoundariesOn=0', or recompile the code.\n");
         }
-        return -1;
+        return -4;
     }
 #endif
     if(All.TypeOfTimestepCriterion >= 1){
@@ -184,7 +184,7 @@ int check_parameters(){
             printf("The specified timestep criterion\n");
             printf("is not valid\n");
         }
-        return -1;
+        return -4;
     }
 #if defined(LONG_X) ||  defined(LONG_Y) || defined(LONG_Z)
 #ifndef NOGRAVITY
@@ -192,9 +192,10 @@ int check_parameters(){
         printf("Code was compiled with LONG_X/Y/Z, but not with NOGRAVITY.\n");
         printf("Stretched periodic boxes are not implemented for gravity yet.\n");
     }
-    return -1;
+    return -4;
 #endif
 #endif
+    cout << "Parameters successfully committed." << endl << flush;
     return 0;
 }
 
@@ -347,6 +348,7 @@ int commit_particles(){
     All.CPU_Total += timediff(t0, t1);
     
     particles_initialized = true;
+    cout << flush;
     return 0;
 }
 int recommit_particles(){
@@ -485,7 +487,7 @@ int evolve(double t_end){
                 if(CPUThisRun > 0.85 * All.TimeLimitCPU){printf("reaching time-limit. stopping.\n"); stopflag = 2;}
             }
             MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            if(stopflag) return -1;
+            if(stopflag) return -5;
             
             t1 = second();
             All.CPU_Total += timediff(t0, t1);
@@ -502,7 +504,7 @@ int evolve(double t_end){
                 break;
             }
         }
-    } else {return -1;}
+    } else {return -6;}
     cout << flush;
     return 0;
 }
@@ -571,7 +573,7 @@ int delete_particle(int id){
             return 0;
         }
     }
-    return -1;
+    return -3;
 }
 
 
@@ -582,7 +584,7 @@ int get_time_step(double *timestep){
     return 0;
 }
 int set_time_step(double timestep){
-    return -1;
+    return -2;
 }
 int get_epsilon(double *epsilon){
     set_softenings();
@@ -1013,7 +1015,7 @@ int get_mass(int index, double *mass){
         *mass = Pcurrent->Mass;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int set_mass(int index, double mass){
     struct particle_data *Pcurrent;
@@ -1021,13 +1023,13 @@ int set_mass(int index, double mass){
         Pcurrent->Mass = mass;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_radius(int index, double *radius){
-    return -1;
+    return -2;
 }
 int set_radius(int index, double radius){
-    return -1;
+    return -2;
 }
 int get_position(int index, double *x, double *y, double *z){
     struct particle_data *Pcurrent;
@@ -1037,7 +1039,7 @@ int get_position(int index, double *x, double *y, double *z){
         *z = Pcurrent->Pos[2];
         return 0;
     }
-    return -1;
+    return -3;
 }
 int set_position(int index, double x, double y, double z){
     struct particle_data *Pcurrent;
@@ -1047,7 +1049,7 @@ int set_position(int index, double x, double y, double z){
         Pcurrent->Pos[2] = z;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_velocity(int index, double *vx, double *vy, double *vz){
     struct particle_data *Pcurrent;
@@ -1057,7 +1059,7 @@ int get_velocity(int index, double *vx, double *vy, double *vz){
         *vz = Pcurrent->Vel[2];
         return 0;
     }
-  return -1;
+  return -3;
 }
 int set_velocity(int index, double vx, double vy, double vz){
     struct particle_data *Pcurrent;
@@ -1067,7 +1069,7 @@ int set_velocity(int index, double vx, double vy, double vz){
         Pcurrent->Vel[2] = vz;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_state(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz) {
     struct particle_data *Pcurrent;
@@ -1081,7 +1083,7 @@ int get_state(int index, double *mass, double *x, double *y, double *z, double *
         *vz = Pcurrent->Vel[2];
         return 0;
     }
-    return -1;
+    return -3;
 }
 int set_state(int index, double mass, double x, double y, double z, double vx, double vy, double vz){
     struct particle_data *Pcurrent;
@@ -1095,7 +1097,7 @@ int set_state(int index, double mass, double x, double y, double z, double vx, d
         Pcurrent->Vel[2] = vz;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_state_sph(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy) {
     struct particle_data *Pcurrent;
@@ -1115,7 +1117,7 @@ int get_state_sph(int index, double *mass, double *x, double *y, double *z, doub
             return 0;
         }
     }
-    return -1;
+    return -3;
 }
 int set_state_sph(int index, double mass, double x, double y, double z, double vx, double vy, double vz, double internal_energy){
     struct particle_data *Pcurrent;
@@ -1135,7 +1137,7 @@ int set_state_sph(int index, double mass, double x, double y, double z, double v
             return 0;
         }
     }
-    return -1;
+    return -3;
 }
 int get_acceleration(int index, double * ax, double * ay, double * az){
     struct particle_data *Pcurrent;
@@ -1153,10 +1155,10 @@ int get_acceleration(int index, double * ax, double * ay, double * az){
         }
         return 0;
     }
-    return -1;
+    return -3;
 }
 int set_acceleration(int index, double ax, double ay, double az){
-    return -1;
+    return -2;
 }
 int get_internal_energy(int index, double *internal_energy){
     struct sph_particle_data *Pcurrent;
@@ -1166,7 +1168,7 @@ int get_internal_energy(int index, double *internal_energy){
         *internal_energy = Pcurrent->Entropy * pow(Pcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int set_internal_energy(int index, double internal_energy){
     struct sph_particle_data *Pcurrent;
@@ -1176,7 +1178,7 @@ int set_internal_energy(int index, double internal_energy){
         Pcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(Pcurrent->Density / a3, GAMMA_MINUS1);
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_smoothing_length(int index, double *smoothing_length){
     struct sph_particle_data *Pcurrent;
@@ -1188,7 +1190,7 @@ int get_smoothing_length(int index, double *smoothing_length){
         *smoothing_length = Pcurrent->Hsml;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_density(int index, double *density_out){
     struct sph_particle_data *Pcurrent;
@@ -1200,7 +1202,7 @@ int get_density(int index, double *density_out){
         *density_out = Pcurrent->Density;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_n_neighbours(int index, double *n_neighbours){
     struct sph_particle_data *Pcurrent;
@@ -1212,7 +1214,7 @@ int get_n_neighbours(int index, double *n_neighbours){
         *n_neighbours = Pcurrent->NumNgb;
         return 0;
     }
-    return -1;
+    return -3;
 }
 int get_epsilon_dm_part(int index, double *epsilon){
     set_softenings();
@@ -1292,7 +1294,7 @@ int get_number_of_particles(int *number_of_particles){
     return 0; 
 }
 int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2){
-    return -1;
+    return -2;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
     if (!global_quantities_of_system_up_to_date)
@@ -1311,10 +1313,10 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
     return 0;
 }
 int get_gravity_at_point(double eps, double x, double y, double z, double *forcex, double *forcey, double *forcez){
-    return -1;
+    return -2;
 }
 int get_potential_at_point(double eps, double x, double y, double z, double * phi){
-    return -1;
+    return -2;
 }
 int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz, 
         double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){

@@ -60,7 +60,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals(0, instance.commit_parameters())
         self.assertEquals([1, 0], instance.new_dm_particle(0.01,  1, 0, 0,  0, 1, 0).values())
         self.assertEquals([2, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
-        self.assertEquals(-1, instance.get_mass(1)['__result'])
+        self.assertEquals(-3, instance.get_mass(1)['__result'])
         self.assertEquals(0, instance.commit_particles())
 
         mass, result = instance.get_mass(1)
@@ -69,7 +69,7 @@ class TestGadget2Interface(TestWithMPI):
         mass, result = instance.get_mass(2)
         self.assertAlmostEquals(0.02,mass)
         self.assertEquals(0,result)
-        self.assertEquals(-1, instance.get_mass(3)['__result'])
+        self.assertEquals(-3, instance.get_mass(3)['__result'])
         for result,expected in zip(instance.get_position(1),[1,0,0, 0]):
             self.assertAlmostEquals(result,expected)
         for result,expected in zip(instance.get_position(2),[-1,0,0, 0]):
@@ -157,7 +157,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals(0, instance.evolve(0.00005))
         self.assertEquals(0, instance.delete_particle(number_of_particles-1))
         self.assertEquals(0, instance.delete_particle(number_of_particles+1))
-        self.assertEquals(-1, instance.delete_particle(number_of_particles-1))
+        self.assertEquals(-3, instance.delete_particle(number_of_particles-1))
         indices, results = instance.new_sph_particle(mass,x,y,z,vx,vy,vz,u)
         self.assertEquals([2*number_of_particles+3, 0], instance.new_dm_particle(0.02, -1, 0, 0,  0,-1, 0).values())
         self.assertEquals(0, instance.recommit_particles())
@@ -239,7 +239,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(value, 2.)
         
         self.assertEqual(instance.get_periodic_boundaries_flag()['value'], False) # default, has to be changed for periodic runs
-        self.assertEqual(instance.commit_parameters(), -1)
+        self.assertEqual(instance.commit_parameters(), -4)
         instance.set_periodic_boundaries_flag(True)
         self.assertEqual(instance.get_periodic_boundaries_flag()['value'], True)
         self.assertEqual(instance.recommit_parameters(), 0)
@@ -278,7 +278,7 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEqual(instance.commit_parameters(), 0)
         instance.set_periodic_boundaries_flag(True)
         self.assertEqual(instance.get_periodic_boundaries_flag()['value'], True)
-        self.assertEqual(instance.recommit_parameters(), -1)
+        self.assertEqual(instance.recommit_parameters(), -4)
         instance.stop()
         
     
@@ -329,11 +329,16 @@ class TestGadget2(TestWithMPI):
     UnitVelocity = 1e5 | units.cm / units.s # 1 km/sec
     default_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(UnitLength, UnitMass, UnitVelocity)
     default_convert_nbody = nbody_system.nbody_to_si(UnitLength, UnitMass)
-
+    
+    three_particles_IC = core.Particles(3)
+    three_particles_IC.position = [[0.5, 0.0, 0.0], [0.0,-0.5, 0.0], [0.0, 0.0, 0.5]] | units.kpc 
+    three_particles_IC.velocity =[[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0,-1.0]] | units.km / units.s
+    three_particles_IC.mass = 1.0e10 | units.MSun
+    
     def test1(self):
         print "Testing Gadget initialization"
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         self.assertTrue("/data/gadget2/output/" in str(instance.parameters.gadget_output_directory))
         instance.commit_parameters()
         instance.cleanup_code()
@@ -342,7 +347,7 @@ class TestGadget2(TestWithMPI):
     def test2(self):
         print "Testing Gadget parameters"
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         self.assertAlmostEquals(instance.parameters.epsilon_squared, (0.01 | units.kpc)**2)
         self.assertAlmostRelativeEquals(instance.parameters.code_mass_unit, self.UnitMass, 7)
         self.assertAlmostRelativeEquals(instance.parameters.code_time_unit, 3.085678e16 | units.s, 7)
@@ -359,7 +364,7 @@ class TestGadget2(TestWithMPI):
     def test3(self):
         print "Testing Gadget, 2 nbody particles"
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
 
         dark = core.Particles(2)
@@ -376,7 +381,7 @@ class TestGadget2(TestWithMPI):
     def test4(self):
         print "Testing Gadget, 100 nbody particles"
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         convert_nbody = nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
         dark = MakePlummerModel(100, convert_nbody).result
         instance.dm_particles.add_particles(dark)
@@ -388,7 +393,7 @@ class TestGadget2(TestWithMPI):
         target_number_sph_particles = 100
         gas = new_evrard_gas_sphere(target_number_sph_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         instance.gas_particles.add_particles(gas)
         instance.evolve_model(0.0001 | generic_unit_system.time)
         instance.stop()
@@ -412,7 +417,7 @@ class TestGadget2(TestWithMPI):
     def test7(self):
         print "Testing more Gadget parameters"
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         
         for par, value in [('gadget_cell_opening_flag', True), 
                 ('comoving_integration_flag', False), 
@@ -464,7 +469,7 @@ class TestGadget2(TestWithMPI):
     def test8(self):
         print "Testing read-only Gadget parameters"
         instance = Gadget2(self.default_converter, **default_options)
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         for par, value in [ ('no_gravity_flag',False),
                             ('isothermal_flag', False),
                             ('eps_is_h_flag',   False),
@@ -509,7 +514,7 @@ class TestGadget2(TestWithMPI):
         print "First do everything manually:"
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.commit_parameters()
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
@@ -527,7 +532,7 @@ class TestGadget2(TestWithMPI):
             "automatically before new_xx_particle(), get_xx(), and stop():"
         instance = Gadget2(self.default_converter, **default_options)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
-        self.assertEquals(0, instance.initialize_code())
+        instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.gas_particles.add_particles(gas)
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
@@ -657,21 +662,15 @@ class TestGadget2(TestWithMPI):
     
     def test15(self):
         instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
+        # 'False' is default, will be changed for periodic runs in initialize_code():
+        instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length # implicitly calls initialize_code()...
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
-        instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length
         self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
         instance.parameters.min_size_timestep = 1.0 | generic_unit_system.time
         
-        particles = core.Particles(3)
-        particles.x = [0.5, 0.0, 0.0] | units.kpc
-        particles.y = [0.0,-0.5, 0.0] | units.kpc
-        particles.z = [0.0, 0.0, 0.5] | units.kpc
-        particles.vx =  [-1.0, 0.0, 0.0] | units.km / units.s
-        particles.vy =  [ 0.0, 1.0, 0.0] | units.km / units.s
-        particles.vz =  [ 0.0, 0.0,-1.0] | units.km / units.s
-        particles.mass = 1.0e10 | units.MSun
-        instance.dm_particles.add_particles(particles)
-        
+        instance.dm_particles.add_particles(self.three_particles_IC)
         self.assertAlmostEqual(instance.dm_particles.x, [0.5,0.,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.y, [0.,1.5,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.5] | units.kpc, places=6)
@@ -686,13 +685,54 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostEqual(instance.dm_particles.y, [0.,0.5,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,1.5] | units.kpc, places=6)
         instance.stop()
-    
-        instance = Gadget2(mode = Gadget2Interface.MODE_NORMAL) # MODE_NORMAL is default: non-periodic
-        instance.initialize_code()
         
-        self.assertEqual(instance.parameters.periodic_boundaries_flag, False) # default, has to be changed for periodic runs
-        self.assertEqual(instance.commit_parameters(), 0)
-        instance.parameters.periodic_boundaries_flag = True
+    def test16(self):
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, False) # 'False' is default
+        instance.initialize_code() # initialize_code() will set periodic_boundaries_flag correctly:
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
-        self.assertEqual(instance.recommit_parameters(), -1)
+        instance.parameters.periodic_boundaries_flag = False # but we are stubborn...
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
+        self.assertRaises(AmuseException, instance.commit_parameters, expected_message = "Error when "
+            "calling 'commit_parameters' of a 'Gadget2', errorcode is -4, error is 'Parameter check failed.'")
+        instance.parameters.periodic_boundaries_flag = True
+        instance.commit_parameters() # Now it's ok again.
+        instance.dm_particles.add_particles(self.three_particles_IC)
+        instance.parameters.periodic_boundaries_flag = False # suppose we are REALLY stubborn...
+        self.assertRaises(AmuseException, instance.evolve_model, 1.0 | generic_unit_system.time, expected_message = "Error when "
+            "calling 'recommit_parameters' of a 'Gadget2', errorcode is -4, error is 'Parameter check failed.'")
+        instance.stop()
+    
+    def test17(self):
+        print "Testing Gadget parameters further"
+        target_number_of_particles = 100
+        gas = new_evrard_gas_sphere(target_number_of_particles, self.default_convert_nbody, seed = 1234)
+        instance = Gadget2(self.default_converter, **default_options)
+        instance.parameters.time_limit_cpu = 0.001 | units.s
+        instance.gas_particles.add_particles(gas)
+        self.assertRaises(AmuseException, instance.evolve_model, 1.0 | generic_unit_system.time, expected_message = 
+            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -5, error is 'CPU-time limit reached.'")
+        instance.parameters.time_limit_cpu = 10.0 | units.s
+        instance.evolve_model(0.0001 | generic_unit_system.time)
+        self.assertRaises(AmuseException, instance.evolve_model, 0.00005 | generic_unit_system.time, expected_message = 
+            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -6, error is 'Can't evolve backwards in time.'")
+        instance.stop()
+    
+    def test18(self):
+        print "Testing Gadget parameters further"
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length # implicitly calls initialize_code()...
+        instance.parameters.time_begin = 10.04 | generic_unit_system.time
+        instance.parameters.time_max = 10.4 | generic_unit_system.time
+        instance.parameters.min_size_timestep = 0.1 | generic_unit_system.time
+        
+        instance.dm_particles.add_particles(self.three_particles_IC)
+        self.assertAlmostEqual(instance.dm_particles.x, [0.5,0.,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.5,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.5] | units.kpc, places=6)
+        
+        instance.evolve_model(10.14 | generic_unit_system.time)
+        self.assertAlmostEqual(instance.dm_particles.x, [0.4,0.,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.,1.6,0.] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.4] | units.kpc, places=6)
         instance.stop()
