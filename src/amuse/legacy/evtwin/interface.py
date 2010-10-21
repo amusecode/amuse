@@ -4,6 +4,7 @@ from amuse.legacy.interface.se import StellarEvolution
 from amuse.legacy.interface.common import CommonCodeInterface
 
 from amuse.support.interface import CodeInterface
+from amuse.support.options import OptionalAttributes, option
 
 import os
 
@@ -39,19 +40,37 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, CommonC
         LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
         LiteratureRefs.__init__(self)
     
+    @option(type="string")
+    def data_directory(self):
+        """
+        The root name of the directory for the EVTwin
+        application data files. This directory should contain the
+        zams data and init.run and init.dat.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'input')
+        
+
+    @option(type="string")
+    def output_directory(self):
+        """
+        The root name of the directory to use by the 
+        application to store it's output / temporary files in.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'output')        
+
     def get_data_directory(self):
         """
         Returns the root name of the directory for the EVTwin
         application data files.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'input')
-    
+        return self.data_directory
+        
     def get_output_directory(self):
         """
         Returns the root name of the directory to use by the 
         application to store it's output / temporary files in.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'evtwin', 'output')
+        return self.output_directory
     
     @property
     def default_path_to_ev_database(self):
@@ -586,10 +605,26 @@ class EVtwin(CodeInterface):
     
     def __init__(self, **options):
         CodeInterface.__init__(self, EVtwinInterface(**options), **options)
-        self.set_ev_path(self.get_data_directory())
-        self.parameters.set_defaults()
-        
+        self.set_ev_path(self.data_directory)        
+        self.set_init_dat_name(self.init_dat_name)        
+        self.set_init_run_name(self.init_run_name)        
     
+    @option(type="string")
+    def init_dat_name(self):
+        """
+        Name of the init.dat file
+        """
+        return os.path.join('init.dat')
+        
+
+    @option(type="string")
+    def init_run_name(self):
+        """
+        Name of the init.run file
+        """
+        return os.path.join('init.run')        
+
+
     def define_parameters(self, object):
               
         object.add_method_parameter(
@@ -803,12 +838,12 @@ class EVtwin(CodeInterface):
         
     
     def initialize_module_with_default_parameters(self):
-        self.parameters.set_defaults()
-        self.set_ev_path(self.get_data_directory())
-        print self.initialize_code()
+        self.initialize_code()
+        #self.parameters.set_defaults()
+        self.commit_parameters()
         
     def initialize_module_with_current_parameters(self):
-        print self.initialize_code()
+        self.commit_parameters()
         
     def setup_particles(self, particles):
         self.particles.add_particles(particles)

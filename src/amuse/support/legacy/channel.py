@@ -479,6 +479,7 @@ class RunStandardStreamsRedirection(object):
     def after_spawn(self):
         if not self.copied_fds:
             return
+            
         if not self.restored_fds:
             os.dup2(self.fd_stdin, 0)
             os.dup2(self.fd_stdout, 1)
@@ -508,9 +509,11 @@ class RunStandardStreamsRedirection(object):
                 if x == self.fd_stdout_r:
                     bytes = os.read(self.fd_stdout_r, 1024)
                     sys.stdout.write(bytes)
+                    sys.stdout.flush()
                 elif x == self.fd_stderr_r:
                     bytes = os.read(self.fd_stderr_r, 1024)
                     sys.stderr.write(bytes)
+                    sys.stdout.flush()
                 else:
                     pass
         
@@ -631,39 +634,14 @@ class MpiChannel(MessageChannel):
             arguments = None
             command = self.full_name_of_the_worker
             
-            RunStandardStreamsRedirection.instance().before_spawn() 
-            if False:
-                if not self.redirection_filenames is None:
-                    input_filename, output_filename, error_filename = self.redirection_filenames
-                    print "redirecting...", self.redirection_filenames
-                    fd_stdin = os.dup(0)
-                    print fd_stdin
-                    zero1 = os.pipe()
-                    os.dup2(zero1.fileno(), 0)
-                    
-                    fd_stdout = os.dup(1)
-                    zero2 = open(output_filename,'a')
-                    os.dup2(zero2.fileno(), 1)
-                    
-                    fd_stderr = os.dup(2)
-                    zero3 = open(error_filename,'a')
-                    os.dup2(zero3.fileno(), 2)
+            if not self.redirection_filenames is None:
+               RunStandardStreamsRedirection.instance().before_spawn() 
             
         try:
             self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
         finally:
-            RunStandardStreamsRedirection.instance().after_spawn() 
-            if False:
-                if not self.redirection_filenames is None and not fd_stdin is None:
-                    os.dup2(fd_stdin, 0)
-                    os.dup2(fd_stdout, 1)
-                    os.dup2(fd_stderr, 2)
-                    os.close(fd_stdin)
-                    os.close(fd_stdout)
-                    os.close(fd_stderr)
-                    zero1.close()
-                    zero2.close()
-                    zero3.close()
+            if not self.redirection_filenames is None:
+               RunStandardStreamsRedirection.instance().after_spawn() 
             
     def stop(self):
         if not self.intercomm is None:

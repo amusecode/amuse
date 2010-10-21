@@ -11,10 +11,9 @@ if (Fortran_COMPILER_NAME STREQUAL "gfortran")
     ARGS --version
     OUTPUT_VARIABLE _evtwin_COMPILER_VERSION
    )
-   STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9] .*" "\\1\\2"
-   _evtwin_COMPILER_VERSION ${_evtwin_COMPILER_VERSION})
+   STRING(REGEX REPLACE ".* ([0-9])\\.([0-9])\\.[0-9].*" "\\1\\2" _evtwin_COMPILER_VERSION ${_evtwin_COMPILER_VERSION})
    if(_evtwin_COMPILER_VERSION LESS 43 )
-      set (CMAKE_Fortran_FLAGS "-O2")
+      set (CMAKE_Fortran_FLAGS "-W -O2")
    else (_evtwin_COMPILER_VERSION LESS 43 )
       set (CMAKE_Fortran_FLAGS "-O2 -finit-local-zero")
    endif(_evtwin_COMPILER_VERSION LESS 43 )

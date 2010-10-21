@@ -294,7 +294,8 @@ contains
     function open_input_file(inputfilename, inputunit, input_required)
         use file_exists_module
         implicit none
-        character(len=500) :: inputfilename, fname
+        character(len=*) :: inputfilename
+        character(len=500) :: fname
         integer :: inputunit
         integer :: input_required
         integer :: open_input_file
@@ -337,10 +338,7 @@ contains
       use real_kind
       use settings
       use extra_elements
-      use file_exists_module
       use constants
-      use init_run
-      use init_dat
       use current_model_properties
       use control
       
@@ -348,28 +346,45 @@ contains
       integer :: initialise_twin
       character(len=*), intent(in) ::  evpath, zstr
       integer, intent(in) :: nstars
-
-      integer :: ii, i
-      
+      integer :: ii
       integer :: ke1,ke2,ke3,kbc,kev,kfn,kl,kp_var(40),kp_eqn(40),kp_bc(40)
       
-      logical :: status, override_run, override_dat
-      integer, parameter :: n_inp_files = 15
-      character(len=500) :: inputfilenames(n_inp_files)
-      integer :: inputunits(n_inp_files)     = (/12, 24, 16, 18, 19, 20, 21, 26, 63, 22, 23, 41, 42, 122, 123/)
-      integer :: input_required(n_inp_files) = (/ 0,  0,  1,  1,  1,  0,  1,  1, -1, -1, -1,  0,  1, 1, 1/)
 
-      ke1            = id(1)
-      ke2            = id(2)
-      ke3            = id(3)
-      kbc            = id(4)
-      kev            = id(5)
-      kfn            = id(6)
-      kl             = id(7)
-      kp_var(1:40)   = id(11:50)
-      kp_eqn(1:40)   = id(51:90)
-      kp_bc(1:40)    = id(91:130)
+     
+      initialise_twin = open_input_file(trim(evpath)//"/zahb"//trim(zstr)//".mod", 12, 0)
+      if(initialise_twin.LT.0) return
 
+      initialise_twin = open_input_file(trim(evpath)//"/zahb"//".dat", 24, 0)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(evpath)//"/zams/zams"//trim(zstr)//".mod", 16, 1)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(evpath)//"/zams/zams"//trim(zstr)//".out", 18, 1)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(evpath)//"/zams/zams"//trim(zstr)//".mas", 19, 1)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(ev_path)//"/mutate.dat", 63, -1)
+      if(initialise_twin.LT.0) return
+
+      
+      initialise_twin = open_input_file(trim(evpath)//"/metals/z"//trim(zstr)//"/phys.z"//trim(zstr), 20, 0)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(evpath)//"/lt2ubv.dat", 21, 1)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(evpath)//"/nucdata.dat", 26, 1)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(evpath)//"/COtables/COtables_z"//trim(zstr), 41, 0)
+      if(initialise_twin.LT.0) return
+
+      initialise_twin = open_input_file(trim(evpath)//"/physinfo.dat", 42, 1)
+      if(initialise_twin.LT.0) return
+   
       max_stars = nstars
       if (verbose) then
          print *, 'twin initialisation.'
@@ -378,83 +393,9 @@ contains
          print *, '           zstr =', zstr
       end if
 
-      ! Setup input file names
-      inputfilenames(1)=trim(evpath)//"/zahb"//trim(zstr)//".mod"
-      inputfilenames(2)=trim(evpath)//"/zahb"//".dat"
-      inputfilenames(3)=trim(evpath)//"/zams/zams"//trim(zstr)//".mod"
-      inputfilenames(4)=trim(evpath)//"/zams/zams"//trim(zstr)//".out"
-      inputfilenames(5)=trim(evpath)//"/zams/zams"//trim(zstr)//".mas"
-      inputfilenames(6)=trim(evpath)//"/metals/z"//trim(zstr)//"/phys.z"//trim(zstr)
-      inputfilenames(7)=trim(evpath)//"/lt2ubv.dat"
-      inputfilenames(8)=trim(evpath)//"/nucdata.dat"
-      inputfilenames(9)="" !TRIM(EVPATH)//"/mutate.dat"
-      inputfilenames(10)=trim(init_dat_name)
-      inputfilenames(11)=trim(init_run_name)
-      inputfilenames(12)=trim(evpath)//"/COtables/COtables_z"//trim(zstr)
-      inputfilenames(13)=trim(evpath)//"/physinfo.dat"
-      inputfilenames(14)=trim(evpath)//"/init/init.dat" ! Sensible defaults
-      inputfilenames(15)=trim(evpath)//"/init/init.run" ! Sensible defaults
-
       ! We want to override the default init.run and init.dat settings if
       ! init.run and init.dat are present in the current directory.
-      override_run = .false.
-      override_dat = .false.
-    
-       
-        do i = 1, n_inp_files
-            initialise_twin = open_input_file(inputfilenames(i), inputunits(i), input_required(i))
-            if(initialise_twin.LT.0) then
-                return
-            end if
-        end do
-      
-
-      if ( file_exists(trim(init_dat_name)) ) override_dat = .true.
-      if ( file_exists(trim(init_run_name)) ) override_run = .true.
-
-      ! We need to have a fort.11 - no, we don't, since we're not using star12!
-      !WRITE (11, *) 0
-      !CLOSE (11)
-
-      ! We need a scratch file for output we don't want or need
-      if (.not. file_exists('fort.25'))&
-           open (unit=25, action='write', status = 'scratch')
-
-      ! Other redundant (for our purposes) output we do not want to save but cannot
-      ! easily avoid: solver output to fort.1 and opacity table output to fort.10
-      open (unit=10, action='write', status = 'scratch')
-      !OPEN (UNIT=1, ACTION='WRITE', STATUS = 'SCRATCH')
-
-      if (verbose) print *, 'files initialised, initialising equation of state'
-      call setsup
-
-      ! Read layout of the ZAMS library
-      read (19, *) mlo, dm, mhi, kdm
-      rewind (19)
-
-      if (verbose) print *, 'initialised equation of state, reading run settings'
-      call read_init_run(123)    ! Load defaults
-      if (override_run) call read_init_run(23)
-      ! Create short (`pruned') summary of ZAMS models from long file
-      ! Are we using this? Not reall, I think...
-      !      CALL PRUNER ( 18, 17, ISB )
-      !      CLOSE (17)
-      !      CLOSE (18)
-
-      ! Read init.dat file
-      !> \todo FIXME: this has an unwanted side effect of resetting options that are not set
-      !! in the override file to their defaults, even if the default file we loaded
-      !! has them set. In other words, we need an "override init.dat" function.
-      !<
-      if (verbose) print *, 'reading numerical and physical settings'
-      status = read_init_dat(122, kh2, kr1, kr2, ksv, kt5, jch)   ! Defaults
-      if (status .and. override_dat)&
-           status = read_init_dat(22, kh2, kr1, kr2, ksv, kt5, jch)
-      if (status .eqv. .false.) then
-         initialise_twin = -1
-         return
-      end if
-      ! this might help...
+     
       ke1            = id(1)
       ke2            = id(2)
       ke3            = id(3)
@@ -468,27 +409,48 @@ contains
       
       if (verbose) print *, 'read settings'
       if (verbose) print *, 'using', kh2, 'meshpoints per star'
+      
+      if (verbose) print *, 'files initialised, initialising equation of state'
+      call setsup
 
-      !     Autodetect if we should solve for Mg24 or not by checking if the
-      !     corresponding equation is in the list of equations
+      ! Read layout of the ZAMS library
+      read (19, *) mlo, dm, mhi, kdm
+      rewind (19)
+
+      
+      ! Create short (`pruned') summary of ZAMS models from long file
+      ! Are we using this? Not reall, I think...
+      !      CALL PRUNER ( 18, 17, ISB )
+      !      CLOSE (17)
+      !      CLOSE (18)
+
+
+      ! Autodetect if we should solve for Mg24 or not by checking if the
+      ! corresponding equation is in the list of equations
       use_mg24_eqn = .false.
-      do ii = 1, 40
-         if (kp_eqn(ii) == emg24 .or. kp_eqn(ii) == esumx) then
+      do ii = 51, 100
+         if (id(ii) == emg24 .or. id(ii) == esumx) then
             use_mg24_eqn = .true.
             exit
          end if
-         if (kp_eqn(ii) == 0) exit   ! Break loop if end of list found
+         if (id(ii) == 0) exit   ! Break loop if end of list found
       end do
 
-      ! Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
-      cmi = cmi/csy
-      cmj = cmj*cmsn/csy
-      cms = cms/csy
-      cmt = cmt*1.0d-11
+       ! Detect whether rotation is treated as solid body rotation or
+       ! whether we consider differential rotation. The switch is on whether
+       ! or not the rotational period (var. 13) is listed as an eigenvalue.
+       rigid_rotation = .true.
+       do ii = 11, 10 + id(1)+id(2)
+          if (id(ii) == 13) then  ! Rotational pertiod not an EV
+             rigid_rotation = .false.
+             exit
+          end if
+       end do
 
       ! Read opacity data and construct splines
       ! KOP (read from init.dat) sets which type of opacity tables
       if (verbose) print *, 'reading opacity tables'
+      
       if (kop<=1) then
          if (verbose) print *, "using opal '92"
          ! Iglesias & Rogers (1992), as implemented by Pols & al. 1995
@@ -498,6 +460,8 @@ contains
          ! Iglesias & Rogers (1996), as implemented by Eldridge & Tout 2003
          call load_opacity_co(41)
       end if
+      
+      
 
       ! Abort if the requested number of meshpoints is larger than the
       ! size of the array
@@ -506,10 +470,11 @@ contains
          initialise_twin = -2
          return
       end if
-      
+      ! Allocate data for nucleosynthesis calculations
+      call allocate_nucleosynthesis_data(kh2)
+
       
       if(use_quadratic_predictions) then
-        
         call initlse_parabola_storage_space(kh2, ke1+ke2+kev)
       end if
       
@@ -565,26 +530,37 @@ contains
       use settings
       use current_model_properties
       use control
+      use starting_values0
       
       implicit none
       type(twin_star_t), pointer :: star
       integer :: load_zams_star, new_id
       real(double), intent(in) :: mass, spin, age
 
-      integer :: im1,kh1,kp1,jmod1,jb1,jn1,jf1,i
+      integer :: im1,kh1,kp1,jmod1,jb1,jn1,jf1
       real(double) :: tnuc
       real(double) :: hnuc(50, nm)
 
       !Common blocks:
       real(double) :: sm1, dty1, age1, per1, bms1, ecc1, p1, enc1
+      real(double) :: tn, perc
 
       
       if (verbose) print *, 'create star with mass', mass, 'and age tag', age
-
+      sm1 = 0
       ml = log10(mass)
-      sm1 = mass
+      !sm1 = mass 
+      !sm1 is not an input, so commented this line out
       im1 = (ml - mlo)/dm + 1.501d0
+        
+      ! input for load star model is 
+      ! 1. the file input number (16 stands for zams star)
+      ! 2. the log10 mass of the star
+      ! mlo, dm are read from evpath/zams/zams/metallicity.mas
+      
       call load_star_model(16,im1, h, dh, hnuc, sm1,dty1,age1,per1,bms1,ecc1,p1,enc1,kh1,kp1,jmod1,jb1,jn1,jf1)
+      
+      
       kh = kh1
 
       ! Special case: a ZAMS star can be loaded even if the library is not
@@ -632,11 +608,16 @@ contains
       jnn = 0
       call swap_out_star(new_id)
 
+
+      xl = 0.5
+      tn = 1.0d10 * h(4, 1)/h(8, 1) * clsn/cmsn
+      perc = sqrt( exp(3.0 * h(7, 1))/(8.157_dbl*h(4, 1)) * cmsn/crsn**3 )
+
+
       ! Estimate nuclear timescale for this star
       tnuc = 1.0d10 * mass**(-2.8)
-      !star%dt = CSY * DTY1
-      !star%dt = 3.0e2*CSY
-      star%dt = ct3*1.0d-4 * tnuc*csy
+      star%dt = (1.0d-4*tn) * csy
+      star%per = perc*10.0_dbl**xl
       if (mass > 1.0 .and. mass < 1.2) star%dt = 1.0d-2*star%dt
       if (verbose) print *, 'setting initial timestep for star',new_id,'to',star%dt,'s'
 
@@ -651,6 +632,7 @@ contains
       star%jmod = 0
       star%jf = jf1
       star%er(:) = 0.0d0
+      star%enc = 0.0d0
 
       star%startup_iter = kr1
       star%normal_iter = kr2
@@ -664,13 +646,18 @@ contains
       if (per1>0) star%per = per1
       if (bms1>0) star%bms = bms1
       if (ecc1>0) star%ecc = ecc1
-
-      ! Determine whether I and phi are computed or not, for OUTPUT
-      star%jf = 0
-      do i = 11, 50
-         if ( id(i)==12 .or. id(i)==14 ) star%jf = star%jf + 1
-      end do
-      if ( star%jf==1 ) star%jf = 0
+      
+      if (t0dty >= 0.0_dbl) star%dt= t0dty * csy
+      if (t0per >= 0.0_dbl) star%per = t0per
+      if (t0bms >= 0.0_dbl) star%bms = t0bms
+      if (t0ecc >= 0.0_dbl) star%ecc = t0ecc
+      if (t0p >= 0.0_dbl)   star%p   = t0p
+      if (t0enc >= 0.0_dbl) star%enc = t0enc
+      
+      ! taken form begin.f90
+      ! this code:if ( jip.eq.13 .or. jip.eq.14 ) dty = ct3*dty
+      star%dt = ct3 * star%dt
+      
 
       ! The star will still need some initialisation (initial timestep, say)
       star%virgin = .true.
@@ -690,6 +677,7 @@ contains
    !  evolve a star for one timestep; essentially star12 without the loop
    !  TODO: ZAHB construction; maybe also for central carbon burning or white dwarfs?
    function evolve(star_id)
+      use constants
       implicit none
       integer :: evolve
       integer, intent(in) :: star_id
@@ -723,6 +711,7 @@ contains
       ! to printb in star12
       ! Actually, we need to pull some data from printb anyway...
 
+      
       jo = 0
       ! Solve for structure, mesh, and major composition variables
       joc = 1
@@ -730,8 +719,9 @@ contains
       dty = dt/csy
       jter = 0
       if (verbose) print *, 'taking timestep ',dty,'yr for star', current_star
-
+      
       call smart_solver ( iter, id, kt5, jo )
+      
       if (verbose) print *, 'did', jter, 'out of', iter, 'iterations'
 
       ! Converged if JO == 0
@@ -1300,18 +1290,87 @@ contains
 
 ! Initialize the code
    function initialize_code()
+      use real_kind
+      use settings
+      use file_exists_module
+      use init_run
+      use init_dat
+      use control
+      use constants
+      use extra_elements
+      use current_model_properties
+      
       implicit none
       integer :: initialize_code
-      initialize_code = initialise_twin(ev_path, maximum_number_of_stars, metallicity_str)
+      logical :: status, override_run,  override_dat
+      
+      initialize_code = 0
+      
+      override_run = .false.
+      override_dat = .false.
+      
+      initialize_code = open_input_file(trim(init_dat_name), 22, -1)
+      if(initialize_code.LT.0) return
+
+      initialize_code = open_input_file(trim(init_run_name), 23, -1)
+      if(initialize_code.LT.0) return
+
+      initialize_code = open_input_file(trim(ev_path)//"/init/init.dat", 122, 1)
+      if(initialize_code.LT.0) return
+
+      initialize_code = open_input_file(trim(ev_path)//"/init/init.run", 123, 1)
+      if(initialize_code.LT.0) return
+             
+
+      if ( file_exists(trim(init_dat_name)) ) override_dat = .true.
+      if ( file_exists(trim(init_run_name)) ) override_run = .true.
+
+      ! We need to have a fort.11 - no, we don't, since we're not using star12!
+      !WRITE (11, *) 0
+      !CLOSE (11)
+
+      ! We need a scratch file for output we don't want or need
+      if (.not. file_exists('fort.25'))&
+           open (unit=25, action='write', status = 'scratch')
+
+      ! Other redundant (for our purposes) output we do not want to save but cannot
+      ! easily avoid: solver output to fort.1 and opacity table output to fort.10
+      open (unit=10, action='write', status = 'scratch')
+
+      if (verbose) print *, 'initialised equation of state, reading run settings'
+      call read_init_run(123)    ! Load defaults
+      if (override_run) call read_init_run(23)
+      ! Read init.dat file
+      !> \todo FIXME: this has an unwanted side effect of resetting options that are not set
+      !! in the override file to their defaults, even if the default file we loaded
+      !! has them set. In other words, we need an "override init.dat" function.
+      !<
+      if (verbose) print *, 'reading numerical and physical settings'
+      status = read_init_dat(122, kh2, kr1, kr2, ksv, kt5, jch)   ! Defaults
+      if (status .and. override_dat)&
+           status = read_init_dat(22, kh2, kr1, kr2, ksv, kt5, jch)
+      if (status .eqv. .false.) then
+         initialize_code = -1
+         return
+      end if
+      ! this might help...
+      
+      ! Convert some things to `cgs' units: 10**11 cm, 10**33 gm, 10**33 erg/s
+      cmi = cmi/csy
+      cmj = cmj*cmsn/csy
+      cms = cms/csy
+      cmt = cmt*1.0d-11
+         
+      
    end function
     
    function commit_parameters()
       implicit none
       integer :: commit_parameters
-      
-      
-      commit_parameters = 0
-   end function
+            
+      commit_parameters = initialise_twin(ev_path, maximum_number_of_stars, metallicity_str)
+    
+    end function
    
    function recommit_parameters()
       implicit none
@@ -1408,7 +1467,7 @@ contains
       integer, intent(in) :: star_id
       type(twin_star_t), pointer :: star
       integer :: n, nv, number_of_variables
-      integer :: jo,it
+      integer :: jo,it, i
       real(double) :: dty,bms,ecc,per,tm,toa
       
       
@@ -1533,13 +1592,27 @@ contains
          dty = dt/csy
          call nextdt ( dty, jo, it )
          ! Do we care about REMESH at this stage? Maybe not!
+         ! well the stand-alone code does...
+         
          bms = cmsn*star%bms
          ecc = star%ecc
          per = star%per
          tm = star%zams_mass * cmsn
          toa = cg1*tm*(bms - tm)*(cg2*per/bms)**c3rd*dsqrt(1.0d0 - ecc*ecc)
+         
          call remesh ( kh2, jch, bms, tm, star%p, ecc, toa, 1, star%jf )
-
+        
+       
+         ! Determine whether I and phi are computed or not, for OUTPUT
+         ! Note, do this afer remesh, jf is used in remesh and remesh
+         ! expects that the jf comes from the load_star_model
+         star%jf = 0
+         do i = 11, 50
+            if ( id(i)==12 .or. id(i)==14 ) star%jf = star%jf + 1
+         end do
+         if ( star%jf==1 ) star%jf = 0
+         
+         flush(6)
          hpr(:,1:kh) = h(:,1:kh)
          dh(:, 1:kh) = 0.0d0
          jhold = 2

@@ -24,6 +24,8 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         error = instance.initialize_code()
         self.assertEquals(0, error)
+        error = instance.commit_parameters()
+        self.assertEquals(0, error)
         instance.stop()
 
         for x in [0.03, 0.01, 0.004, 0.001, 0.0003, 0.0001]:
@@ -36,6 +38,7 @@ class TestInterface(TestWithMPI):
             error = instance.set_ev_path(instance.get_data_directory())
             self.assertEquals(0, error)      
             error = instance.initialize_code()
+            error = instance.commit_parameters()
             if os.path.exists(os.path.join(instance.get_data_directory(),'zams','zams'+str(x)[2:]+'.mod')):
                 self.assertEquals(0, error)
             else:
@@ -83,6 +86,9 @@ class TestInterface(TestWithMPI):
         error = instance.initialize_code()
         self.assertEquals(0, error)      
         
+        error = instance.commit_parameters()
+        self.assertEquals(0, error)
+        
         (index_of_the_star, error) = instance.new_particle(1.05)
         self.assertEquals(0, error)       
         
@@ -116,7 +122,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)      
         error = instance.initialize_code()
         self.assertEquals(0, error)      
-        
+                
         (value, error) = instance.get_max_age_stop_condition()
         self.assertEquals(0, error)
         self.assertEquals(2.0e12, value)
@@ -225,6 +231,9 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         error = instance.initialize_code()
         self.assertEquals(0, error)
+        error = instance.commit_parameters()
+        self.assertEquals(0, error)
+
         
         (index_of_default_star, error) = instance.new_particle(1.05)
         self.assertEquals(0, error)
@@ -281,9 +290,7 @@ class TestInterfaceBinding(TestWithMPI):
         instance.stop()
     
     def xtest3(self):
-        #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD
         instance = EVtwin()
-        #channel.MessageChannel.DEBUGGER = None
         instance.initialize_module_with_default_parameters() 
         stars =  core.Stars(1)
         
@@ -355,7 +362,7 @@ class TestInterfaceBinding(TestWithMPI):
         print "Testing max age stop condition..."
         #masses = [.5, 1.0, 1.5] | units.MSun # Test with fewer particles for speed-up.
         masses = [.5] | units.MSun
-        max_age = 6.0 | units.Myr
+        max_age = 9.0 | units.Myr
 
         number_of_stars=len(masses)
         stars =  core.Stars(number_of_stars)
@@ -365,12 +372,13 @@ class TestInterfaceBinding(TestWithMPI):
 
 #       Initialize stellar evolution code
         instance = EVtwin() #debugger="xterm")
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
         if instance.get_maximum_number_of_stars() < number_of_stars:
             instance.set_maximum_number_of_stars(number_of_stars)
         self.assertEqual(instance.parameters.max_age_stop_condition, 2e6 | units.Myr)
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
+        instance.commit_parameters()
         instance.particles.add_particles(stars)
 #       Let the code perform initialization actions after all particles have been created. 
         instance.initialize_stars()
@@ -378,11 +386,12 @@ class TestInterfaceBinding(TestWithMPI):
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         
-        instance.evolve_model(end_time = 4.0 | units.Myr)
+        instance.evolve_model(end_time = 8.0 | units.Myr)
         from_code_to_model.copy()
         
         for i in range(number_of_stars):
-            self.assertTrue(stars[i].age.value_in(units.Myr) >= 4.0)
+            print stars[i].age.as_quantity_in(units.Myr)
+            self.assertTrue(stars[i].age.value_in(units.Myr) >= 8.0)
             self.assertTrue(stars[i].age <= max_age)
             self.assertTrue(stars[i].mass <= masses[i])
             self.assertTrue(stars[i].time_step <= max_age)
