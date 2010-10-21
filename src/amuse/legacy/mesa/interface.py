@@ -118,6 +118,23 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
             A star with the given index was not found.
         """
         return function
+    
+    @legacy_function
+    def set_time_step():
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('time_step', dtype='float64', direction=function.IN
+            , description="The next timestep for the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
         
     @legacy_function
     def get_number_of_zones():
@@ -1059,6 +1076,7 @@ class MESA(CodeInterface):
         object.add_setter('particles', 'set_mass', names = ('mass',))
         object.add_getter('particles', 'get_age', names = ('age',))
         object.add_getter('particles', 'get_time_step', names = ('time_step',))
+        object.add_setter('particles', 'set_time_step', names = ('time_step',))
         object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
         object.add_getter('particles', 'get_temperature',names = ('temperature',))
         
@@ -1147,6 +1165,11 @@ class MESA(CodeInterface):
             "get_time_step", 
             (object.INDEX,), 
             (units.yr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_time_step", 
+            (object.INDEX, units.yr), 
+            (object.ERROR_CODE,)
         )
         object.add_method(
             "get_number_of_zones", 

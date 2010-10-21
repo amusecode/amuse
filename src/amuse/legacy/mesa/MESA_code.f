@@ -345,6 +345,23 @@
          get_time_step = 0
       end function
 
+! Set the next timestep for the star
+      function set_time_step(AMUSE_id, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use const_def, only: secyer
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         double precision, intent(in) :: AMUSE_value
+         integer :: set_time_step, ierr
+         type (star_info), pointer :: s
+         set_time_step = -1
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) return
+         s% dt_next = AMUSE_value*secyer
+         set_time_step = 0
+      end function
+
 ! Return the current radius of the star
       function get_radius(AMUSE_id, AMUSE_value)
          use star_private_def, only: star_info, get_star_ptr
