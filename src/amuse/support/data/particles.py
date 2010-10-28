@@ -846,6 +846,11 @@ class Particles(AbstractParticleSet):
         return self._private.attribute_storage._get_value(key, attribute)
     
     
+
+    def _set_factory(self):
+        return Particles
+    
+    
 class ParticlesSuperset(AbstractParticleSet):
     """A superset of particles. Attribute values are not
     stored by the superset. The superset provides a view
@@ -1283,6 +1288,8 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
         )
     
 
+
+    
 class ParticleInformationChannel(object):
     
     def __init__(self, from_particles, to_particles):

@@ -1,9 +1,13 @@
+import os
+
 from amuse.legacy.sse import interface as mpi_interface
 
 from amuse.support.data import core
 from amuse.support.units import units
 
 from amuse.test.amusetest import TestWithMPI
+
+from amuse.support import io
 
 class TestMPIInterface(TestWithMPI):
     
@@ -443,4 +447,22 @@ class TestSSE(TestWithMPI):
         stellar_evolution.particles.add_particles(stars)
         self.assertEqual(len(stellar_evolution.particles), number_of_particles)
         stellar_evolution.stop()
+    
+
+    def test10(self):
+        stellar_evolution = mpi_interface.SSE()
+        stellar_evolution.initialize_module_with_default_parameters()
+        stars = core.Stars(10)
+        stars.mass = 1.0 | units.MSun
+        stellar_evolution.particles.add_particles(stars)
+        print  stellar_evolution.particles._set_factory()
+        if os.path.exists('test.h5'):
+            os.remove('test.h5')
+            
+        io.write_set_to_file(stellar_evolution.particles, 'test.h5', 'hdf5')
+        stored_stars = io.read_set_from_file('test.h5', 'hdf5')
+        self.assertEquals(len(stars), len(stored_stars))
+    
+        self.assertAlmostRelativeEquals(stars.mass, stored_stars.mass)
+    
     
