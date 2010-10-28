@@ -45,6 +45,24 @@ in the AMUSE root directory.
 If everything goes well all legacy codes will be build (sse, hermite0, 
 bhtree and phiGRAPE).
 
+In order to use either MESA, SEBA or ATHENA the codes must be
+downloaded additionally. This is done automatically after setting the
+environment variable DOWNLOAD_CODES to 1. Alternatively, instead of a
+plain 'make' like in the example above you could do:
+
+.. code-block:: sh
+
+    > make DOWNLOAD_CODES=1
+
+or
+
+.. code-block:: sh
+
+    > make mesa.code DOWNLOAD_CODES=1
+    > make seba.code DOWNLOAD_CODES=1
+    > make athena.code DOWNLOAD_CODES=1
+
+
 Testing the build
 -----------------
 

@@ -16,16 +16,16 @@ DOWNLOAD_FROM_SVN = ./downloadsvn.py
 all: worker_code
 
 src:
-ifdef DO_INSTALL_SEBA
+ifdef DOWNLOAD_CODES
 		$(DOWNLOAD_FROM_SVN)
 else
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
-		@echo "DO_INSTALL_SEBA is not set. SeBa will not be downloaded and build."
-		@echo "If you do want SeBa, set DO_INSTALL_SEBA to 1."
-		@echo "bash> export DO_INSTALL_SEBA=1"
-		@echo "csh> setenv DO_INSTALL_SEBA 1"
+		@echo "DOWNLOAD_CODES is not set. SeBa will not be downloaded and build."
+		@echo "If you do want SeBa, set DOWNLOAD_CODES to 1."
+		@echo "bash> export DOWNLOAD_CODES=1"
+		@echo "csh> setenv DOWNLOAD_CODES 1"
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""

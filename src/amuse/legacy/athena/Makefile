@@ -27,17 +27,17 @@ ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o
 all: worker_code 
 
 $(ATHENA_DIR):
-ifdef DO_INSTALL_ATHENA
+ifdef DOWNLOAD_CODES
 		$(DOWNLOAD_FROM_WEB) $(VERSION)
 		cd $(ATHENA_DIR)/src;patch Makefile.in < ../../../makefile.patch
 else
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
-		@echo "DO_INSTALL_ATHENA is not set. Athena will not be downloaded and build."
-		@echo "If you do want Athena, set DO_INSTALL_ATHENA  to 1."
-		@echo "bash> export DO_INSTALL_ATHENA=1"
-		@echo "csh> setenv DO_INSTALL_ATHENA  1"
+		@echo "DOWNLOAD_CODES is not set. Athena will not be downloaded and build."
+		@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
+		@echo "bash> export DOWNLOAD_CODES=1"
+		@echo "csh> setenv DOWNLOAD_CODES 1"
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""

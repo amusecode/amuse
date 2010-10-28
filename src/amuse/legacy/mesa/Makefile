@@ -26,17 +26,17 @@ DOWNLOAD_FROM_SVN = ./build_mesa.py download
 all:	worker_code
 
 src:
-ifdef DO_INSTALL_MESA
+ifdef DOWNLOAD_CODES
 		$(DOWNLOAD_FROM_SVN)
 		cd $(MESA_DIR); ./install
 else
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
-		@echo "DO_INSTALL_MESA is not set. MESA will not be downloaded and build."
-		@echo "If you do want MESA, set DO_INSTALL_MESA to 1."
-		@echo "bash> export DO_INSTALL_MESA=1"
-		@echo "csh> setenv DO_INSTALL_MESA 1"
+		@echo "DOWNLOAD_CODES is not set. MESA will not be downloaded and build."
+		@echo "If you do want MESA, set DOWNLOAD_CODES to 1."
+		@echo "bash> export DOWNLOAD_CODES=1"
+		@echo "csh> setenv DOWNLOAD_CODES 1"
 		@echo "Note: MESA is quite large (800 MB downloaded, 2.3 GB built) and"
 		@echo "requires ifort (version >= 11.1) or gfortran (version >= 4.3.0)."
 		@echo ""
