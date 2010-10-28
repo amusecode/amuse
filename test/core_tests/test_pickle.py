@@ -9,6 +9,7 @@ from amuse.support.units import si
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_system
 from amuse.support.units.constants import *
+from amuse.support.data.values import zero
 
 class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
 
@@ -67,6 +68,17 @@ class TestPicklingOfUnitsAndQuantities(amusetest.TestCase):
         print pickled_quantity
         unpickled_quantity = pickle.loads(pickled_quantity)
         self.assertEqual(quantity, unpickled_quantity)
+        self.assertEqual(str(quantity), str(unpickled_quantity))
+    
+    
+
+    def test7(self):
+        quantity = zero
+        pickled_quantity = pickle.dumps(quantity)
+        print pickled_quantity
+        unpickled_quantity = pickle.loads(pickled_quantity)
+        self.assertEqual(quantity, unpickled_quantity)
+        self.assertTrue(quantity is unpickled_quantity)
         self.assertEqual(str(quantity), str(unpickled_quantity))
     
     

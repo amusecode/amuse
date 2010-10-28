@@ -677,6 +677,13 @@ class ZeroQuantity(Quantity):
     def __neg__(self):
         return self
 
+
+    
+
+    def __reduce__(self):
+        return "zero"
+    
+    
 zero = ZeroQuantity()
     
 class NonNumericQuantity(Quantity):
