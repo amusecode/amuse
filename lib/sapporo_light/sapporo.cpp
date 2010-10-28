@@ -6,6 +6,7 @@
 
 sapporo_multi_struct sapporo_multi_data[MAXCUDADEVICES];
 
+
 double get_time() {
   struct timeval Tvalue;
   struct timezone dummy;
@@ -35,12 +36,22 @@ int sapporo::open(int cluster_id) {
   device_id = cluster_id;
   cudaSetDevice(device_id);
   allocate_cuda_memory(device_id);
+  
   return 0;
 }
 
 int sapporo::close(int cluster_id) {
   printf("sapporo::close --- ver 1.5 --- \n");
   free_cuda_memory(device_id);
+  if(address_j.size() > 0) {
+    mapping_from_address_j_to_index_in_update_array.clear();
+    address_j.clear();
+    t_j.clear();
+    pos_j.clear();
+    vel_j.clear();
+    acc_j.clear();
+    jrk_j.clear();
+  }
   return 0;
 }
 
@@ -68,17 +79,34 @@ int sapporo::set_j_particle(int cluster_id,
     exit(-1);
   }
 
-  address_j.push_back(address);
+    DS  Dmass = (DS){mass, INT_AS_FLOAT(id)};
+    map<int,int>::iterator iterator = mapping_from_address_j_to_index_in_update_array.find(address);
+    map<int,int>::iterator end = mapping_from_address_j_to_index_in_update_array.end();
+    
+    if(iterator != end)
+    {
+        int index = (*iterator).first;
+        //printf("found index: %d for address: %d\n", index, address);
+        t_j[index] = (DS2){to_DS(tj), to_DS(dtj)};
+        pos_j[index] = ( (DS4){to_DS(x[0]), to_DS(x[1]), to_DS(x[2]), Dmass} );
+        vel_j[index] = ( (float4){v[0],    v[1],    v[2],    0.0} );
+        acc_j[index] = ( (float4){a2[0]*2, a2[1]*2, a2[2]*2, 0.0} );
+        jrk_j[index] = ( (float4){j6[0]*6, j6[1]*6, j6[2]*6, 0.0} );
+    }
+    else
+    {
+        mapping_from_address_j_to_index_in_update_array[address] = address_j.size();
+        //printf("set index: %d for address: %d\n",  address_j.size(), address);
+        address_j.push_back(address);
 
-  t_j.push_back( (DS2){to_DS(tj), to_DS(dtj)} );
-  
-  DS  Dmass = (DS){mass, INT_AS_FLOAT(id)};
-  pos_j.push_back( (DS4){to_DS(x[0]), to_DS(x[1]), to_DS(x[2]), Dmass} );
-  vel_j.push_back( (float4){v[0],    v[1],    v[2],    0.0} );
-  acc_j.push_back( (float4){a2[0]*2, a2[1]*2, a2[2]*2, 0.0} );
-  jrk_j.push_back( (float4){j6[0]*6, j6[1]*6, j6[2]*6, 0.0} );
-  nj_modified = address_j.size();
+        t_j.push_back( (DS2){to_DS(tj), to_DS(dtj)} );
 
+        pos_j.push_back( (DS4){to_DS(x[0]), to_DS(x[1]), to_DS(x[2]), Dmass} );
+        vel_j.push_back( (float4){v[0],    v[1],    v[2],    0.0} );
+        acc_j.push_back( (float4){a2[0]*2, a2[1]*2, a2[2]*2, 0.0} );
+        jrk_j.push_back( (float4){j6[0]*6, j6[1]*6, j6[2]*6, 0.0} );
+        nj_modified = address_j.size();
+    }
   return 0;
 };
 
@@ -89,6 +117,10 @@ void sapporo::calc_firsthalf(int cluster_id,
                             double aold[][3], double j6old[][3],
                             double phiold[3], 
                             double eps2, double h2[]) {
+                                
+    
+    
+  
   for (int i = 0; i < ni; i++) {
     DS Dmass = (DS){h2[i], INT_AS_FLOAT(id[i])};
     pos_i[i] = (DS4) { to_DS(xi[i][0]),
@@ -106,6 +138,7 @@ void sapporo::calc_firsthalf(int cluster_id,
 
   send_i_particles_to_device(device_id, ni);
   if(address_j.size() > 0) {
+    mapping_from_address_j_to_index_in_update_array.clear();
     address_j.clear();
     t_j.clear();
     pos_j.clear();

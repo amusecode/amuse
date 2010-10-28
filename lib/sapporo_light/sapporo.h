@@ -19,6 +19,8 @@
 #include <builtin_types.h>
 #include <iostream>
 #include <vector>
+#include <map>
+
 #include <math.h>
 using namespace std;
 
@@ -117,7 +119,7 @@ protected:
   vector<float4> vel_j;
   vector<float4> acc_j;
   vector<float4> jrk_j;
-
+  map<int, int>  mapping_from_address_j_to_index_in_update_array;
   
   DS t_i;
   vector<DS4>    pos_i;
@@ -160,6 +162,8 @@ public:
     vel_j.clear();
     acc_j.clear();
     jrk_j.clear();
+    
+    mapping_from_address_j_to_index_in_update_array.clear();
 
     predict = false;
     nj_modified = 0;
