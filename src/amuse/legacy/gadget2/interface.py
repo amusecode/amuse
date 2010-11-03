@@ -909,11 +909,11 @@ class Gadget2(GravitationalDynamics):
         self.parameters.set_defaults()
         if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
             self.parameters.periodic_boundaries_flag = True
-        self.set_gadget_output_directory(self.get_output_directory())
+        self.parameters.gadget_output_directory = self.get_output_directory()
+        # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
         self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm))
-        self.set_unit_velocity(self.unit_converter.to_si(
-            generic_unit_system.length/generic_unit_system.time).value_in(units.cm/units.s))
+        self.set_unit_time(self.unit_converter.to_si(generic_unit_system.time).value_in(units.s))
         return result
     
     def define_properties(self, object):

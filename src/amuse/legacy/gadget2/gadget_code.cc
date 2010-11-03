@@ -57,6 +57,7 @@ void set_default_parameters(){
     All.UnitLength_in_cm = 3.085678e21;
     All.UnitMass_in_g = 1.989e43;
     All.UnitVelocity_in_cm_per_s = 1e5;
+    All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
     All.MinGasHsmlFractional = 0.0;
     All.SofteningGas = 0.01;
     All.SofteningHalo = 0.01;
@@ -634,6 +635,7 @@ int get_unit_time(double *code_time_unit){
 }
 int set_unit_time(double code_time_unit){
     All.UnitVelocity_in_cm_per_s = All.UnitLength_in_cm / code_time_unit;
+    All.UnitTime_in_s = code_time_unit;
     return 0;
 }
 int get_unit_velocity(double *code_velocity_unit){
@@ -642,7 +644,7 @@ int get_unit_velocity(double *code_velocity_unit){
 }
 int set_unit_velocity(double code_velocity_unit){
     All.UnitVelocity_in_cm_per_s = code_velocity_unit;
-    set_units();
+    All.UnitTime_in_s = All.UnitLength_in_cm / All.UnitVelocity_in_cm_per_s;
     return 0;
 }
 

@@ -151,6 +151,9 @@ class ParametersWithUnitsConverted(object):
             return self._converter.from_target_to_source(original_value)
 
     def __setattr__(self, name, value):
+        if not name in self._original._mapping_from_name_to_definition:
+            warnings.warn("tried to set unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__), exceptions.AmuseWarning)
+            return
         default_value = self._original.get_default_value_for(name)
         if not isinstance(default_value,bool) and generic_unit_system.is_generic_unit(default_value.unit):
             setattr(self._original, name, self._converter.from_source_to_target(value))
