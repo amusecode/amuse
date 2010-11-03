@@ -23,7 +23,7 @@ class TestHop(amusetest.TestCase):
         hop = HopInterface()
         n, err = hop.get_number_of_particles()
         for i in range(6):
-            id, err = hop.new_particle(i*i, 0, 0)
+            id, err = hop.new_particle(0, i*i, 0, 0)
             n, err = hop.get_number_of_particles()
             self.assertEquals(n, i+1)
         for i in range(6):

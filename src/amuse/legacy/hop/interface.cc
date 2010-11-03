@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include <assert.h>
 #include <map>
+#include <vector>
 #include "src/kd.h"
 #include "src/kd.c"
 #include "src/smooth.h"
@@ -31,6 +32,9 @@ public:
 
 typedef std::map<int, AmuseParticle *> ParticlesMap;
 typedef std::map<int, AmuseParticle *>::iterator ParticlesMapIterator;
+
+typedef std::vector<AmuseParticle *> ParticlesList;
+typedef std::vector<AmuseParticle *>::iterator ParticlesListIterator;
 
 int highest_index = 0;
 ParticlesMap particlesMap;
@@ -210,6 +214,8 @@ int set_density_method(int value){
 int calculate_densities(){
   KD kd;
   SMX smx;
+  ParticlesList particles_as_list;
+  
   if(InitHop(kd, smx, 1) == -1) return -1;
 
   INFORM("Finding Densities...\n");
@@ -223,12 +229,16 @@ int calculate_densities(){
   int c = 0;
   for (i = particlesMap.begin(); i != particlesMap.end(); i++) {
       AmuseParticle * p = (*i).second;
+      particles_as_list.push_back(p);
+  }
+  
+  for (c = 0; c < particles_as_list.size(); c++) {
+      AmuseParticle * p = particles_as_list[kd->p[c].iOrder];
       p->mass=kd->p[c].fMass;       
       p->x=kd->p[c].r[0]; 
       p->y=kd->p[c].r[1];
       p->z=kd->p[c].r[2];
       p->density = kd->p[c].fDensity;
-      c++;
   }
 
   gkd = kd;
