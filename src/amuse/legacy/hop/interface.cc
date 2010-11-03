@@ -11,6 +11,7 @@
 #include "src/smooth.c"
 #include "src/hop.cc"
 #include "worker_code.h"
+#include <iostream>
 
 #define INFORM(string) printf(string); fflush(stdout)
 
@@ -18,13 +19,13 @@ class AmuseParticle{
 
 public:
     int index;
-    double x,y,z, density;
+    double mass,x,y,z, density;
     int group, neighbor;
     
-    AmuseParticle(int index, double x, double y, double z):index(index), x(x), y(y), z(z), density(-1.0), group(-1), neighbor(-1) {
+    AmuseParticle(int index, double mass, double x, double y, double z):index(index), mass(mass),x(x), y(y), z(z), density(-1.0), group(-1), neighbor(-1) {
     }
     AmuseParticle(const AmuseParticle & original):
-    index(original.index), x(original.x), y(original.y), z(original.z), density(original.density), group(original.group), neighbor(original.neighbor) {
+    index(original.index), mass(original.mass), x(original.x), y(original.y), z(original.z), density(original.density), group(original.group), neighbor(original.neighbor) {
     }
 };
 
@@ -65,6 +66,7 @@ int ReadPositions(KD &kd){
   INFORM("Reading Positions...\n");
   for (i = particlesMap.begin(); i != particlesMap.end(); i++) {
     AmuseParticle * p = (*i).second;
+    kd->p[c].fMass = p->mass; 
     kd->p[c].r[0] = p->x; 
     kd->p[c].r[1] = p->y;
     kd->p[c].r[2] = p->z;
@@ -221,6 +223,10 @@ int calculate_densities(){
   int c = 0;
   for (i = particlesMap.begin(); i != particlesMap.end(); i++) {
       AmuseParticle * p = (*i).second;
+      p->mass=kd->p[c].fMass;       
+      p->x=kd->p[c].r[0]; 
+      p->y=kd->p[c].r[1];
+      p->z=kd->p[c].r[2];
       p->density = kd->p[c].fDensity;
       c++;
   }
@@ -281,9 +287,9 @@ int do_hop(){
   return 0;
 }
 
-int new_particle(int * index_of_the_particle, double x, double y, double z) {
+int new_particle(int * index_of_the_particle, double mass, double x, double y, double z) {
   *index_of_the_particle = highest_index;
-  AmuseParticle * p = new AmuseParticle(highest_index, x, y, z);
+  AmuseParticle * p = new AmuseParticle(highest_index, mass, x, y, z);
   particlesMap[highest_index] = p;
   highest_index++;
   bHopInit = 1;
@@ -334,6 +340,13 @@ int get_position(int index_of_the_particle, double * x, double * y, double * z) 
   *x = p->x;
   *y = p->y;
   *z = p->z;
+  return 0;
+}
+
+int get_mass(int index_of_the_particle, double * mass) {
+  if(index_of_the_particle > highest_index) return -1; 
+  AmuseParticle * p = particlesMap[index_of_the_particle];
+  *mass = p->mass;
   return 0;
 }
 

@@ -34,6 +34,8 @@ class HopInterface(LegacyInterface):
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT,
           description='index of the particle')
+        function.addParameter('mass', dtype='float64', direction=function.IN,
+          description='particle position on x-axis')
         function.addParameter('x', dtype='float64', direction=function.IN,
           description='particle position on x-axis')
         function.addParameter('y', dtype='float64', direction=function.IN,
@@ -75,6 +77,26 @@ class HopInterface(LegacyInterface):
           description = 'particle position on y-axis')
         function.addParameter('z', dtype='float64', direction=function.OUT,
           description = 'particle position on z-axis')
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found and its position returned
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
+    def get_mass():
+        '''
+        Retrieve the position of a particle.
+        '''
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+          description='index of a particle')
+        function.addParameter('mass', dtype='float64', direction=function.OUT,
+          description = 'particle position on x-axis')
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK

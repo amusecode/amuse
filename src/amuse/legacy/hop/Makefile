@@ -1,6 +1,6 @@
 MPICXX ?= mpicxx
 
-CFLAGS   += -Wall -g
+CFLAGS   += -Wall -g -DDIFFERENT_MASSES
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 

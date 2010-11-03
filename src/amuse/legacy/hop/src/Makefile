@@ -1,5 +1,5 @@
 CFLAGS   += -Wall -g
-CXXFLAGS += $(CFLAGS) 
+CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CODELIB = libhop.a
