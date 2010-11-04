@@ -32,6 +32,7 @@ ctags:
 	find src -name "*.py" | xargs ctags
 	find src -name "*.cc" | xargs ctags -a
 	find src -name "*.[cCfFhH]" | xargs ctags -a
+	find src -name "*.cpp" | xargs ctags -a
 
 release:
 	make -C doc release
