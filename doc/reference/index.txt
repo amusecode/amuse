@@ -17,6 +17,7 @@ Reference documentation
    fileformat
    options
    directory-structure
+   cuda-setup
    style_guide
    code_management
    glossary
