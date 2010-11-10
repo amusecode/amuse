@@ -170,7 +170,7 @@ class AstroPrintingStrategy(PrintingStrategyWithPreferredUnits):
 
 class SIPrintingStrategy(PrintingStrategyWithPreferredUnits):
     
-    provided_strategy_names = ['SI', 'si']
+    provided_strategy_names = ['SI', 'si', 'MKS', 'mks']
     
     def __init__(self, nbody_converter = None, print_units = True, ignore_converter_exceptions = None):
         self.ignore_converter_exceptions = (print_units if (ignore_converter_exceptions is None) 
@@ -179,6 +179,20 @@ class SIPrintingStrategy(PrintingStrategyWithPreferredUnits):
         self.print_units = print_units
         from amuse.support.units import units
         self.preferred_units = [units.m, units.kg, units.s, units.A, units.K, units.mol, units.cd]
+    
+
+
+class CGSPrintingStrategy(PrintingStrategyWithPreferredUnits):
+    
+    provided_strategy_names = ['CGS', 'cgs']
+    
+    def __init__(self, nbody_converter = None, print_units = True, ignore_converter_exceptions = None):
+        self.ignore_converter_exceptions = (print_units if (ignore_converter_exceptions is None) 
+            else ignore_converter_exceptions)
+        self.nbody_converter = nbody_converter
+        self.print_units = print_units
+        from amuse.support.units import units
+        self.preferred_units = [units.cm, units.g, units.s, units.A, units.K, units.mol, units.cd]
     
 
 
@@ -286,6 +300,7 @@ FormalPrintingStrategy.register()
 NBodyPrintingStrategy.register()
 AstroPrintingStrategy.register()
 SIPrintingStrategy.register()
+CGSPrintingStrategy.register()
 CustomPrintingStrategy.register()
 
 set_printing_strategy('default')
