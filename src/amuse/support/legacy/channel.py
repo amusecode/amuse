@@ -9,6 +9,7 @@ import sys
 import struct
 import threading
 import select
+import tempfile
 
 from mpi4py import MPI
 from subprocess import Popen, PIPE
@@ -366,6 +367,37 @@ class MessageChannel(OptionalAttributes):
         command = 'xterm'
         return command, arguments
         
+
+    @classmethod
+    def SAVE(cls, full_name_of_the_worker):
+        code = """from mpi4py import rc
+rc.initialize = False
+from mpi4py import MPI
+from subprocess import call
+import sys
+import time
+import signal
+
+def sighandler(s, frame):
+    print "SIGNAL",s
+
+signal.signal(signal.SIGINT, sighandler)
+returncode = call(sys.argv[1:])
+p = MPI.Comm.Get_parent()
+p.Disconnect()"""
+        fd, name = tempfile.mkstemp()
+        with os.fdopen(fd, 'w') as f:
+            f.write(code)
+        
+        arguments = [name , full_name_of_the_worker]
+        #arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', sys.executable, '-c', code, full_name_of_the_worker]
+        command = sys.executable
+        #command = 'xterm'
+
+        print arguments
+        
+        return command, arguments
+        
     
         
     def get_full_name_of_the_worker(self, type):
@@ -402,6 +434,7 @@ MessageChannel.DEBUGGERS = {
     "ddd":MessageChannel.DDD, 
     "xterm":MessageChannel.XTERM,
     "valgrind":MessageChannel.VALGRIND,
+    "save": MessageChannel.SAVE,
 }
 
 #import time

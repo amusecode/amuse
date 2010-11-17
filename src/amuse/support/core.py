@@ -247,6 +247,11 @@ class OrderedDictionary(object):
         for x in self.orderedKeys:
             yield self.mapping[x]
     
+    
+    def iteritems(self):
+        for x in self.orderedKeys:
+            yield x, self.mapping[x]
+    
     def keys(self):
         return self.orderedKeys
     
