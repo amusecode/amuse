@@ -2,18 +2,32 @@ import numpy
 from amuse.support.data.core import Particles
 from amuse.support.units import units, constants
 from amuse.support.exceptions import AmuseWarning, AmuseException
-from amuse.ext.spherical_model import new_spherical_particle_distribution
+from amuse.ext.spherical_model import new_spherical_particle_distribution, get_enclosed_mass_from_tabulated
 from amuse.legacy.gadget2.interface import Gadget2
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+from amuse.support.data.console import set_printing_strategy
 
 
 class StellarModel2SPH(object):
+    """
+    Requests the internal structure of the star from a Stellar Evolution 
+    legacy code and converts it into an SPH model consisting of the 
+    specified number of particles. Useful for merging stars.
+    
+    :argument particle: Star particle to be converted to an SPH model
+    :argument number_of_sph_particles: Number of gas particles in the resulting model
+    :argument with_core_particle: Model the core as a heavy, non-sph particle (only for "scaling method")
+    :argument do_relax: Relax the SPH model - doesn't seem to work satisfactorily yet!
+    """
+    
     def __init__(self, particle, number_of_sph_particles, seed = None, mode = "scaling method", 
-            do_relax = False, sph_legacy_code = Gadget2, compatible_converter = ConvertBetweenGenericAndSiUnits):
+            do_relax = False, sph_legacy_code = Gadget2, compatible_converter = ConvertBetweenGenericAndSiUnits,
+            with_core_particle = False):
         self.particle = particle
         self.number_of_sph_particles = number_of_sph_particles
         self.zone_index = None
         self.delta      = None
+        self.with_core_particle = with_core_particle
         numpy.random.seed(seed)
         if mode in ["random sampling", "scaling method"]:
             self.mode = mode  # "random sampling" or "scaling method"
@@ -43,6 +57,33 @@ class StellarModel2SPH(object):
         self.midpoints = -(radius_profile[1:2])/2                           # dummy element to handle boundaries correctly
         self.midpoints.extend((radius_profile[1:] + radius_profile[:-1])/2) # real midpoints of each mesh zone
         self.midpoints.append(2*self.midpoints[-1] - self.midpoints[-2])   # dummy element to handle boundaries correctly
+        
+        if self.with_core_particle and self.mode == "scaling method":
+            mean_density = 3.0 * self.particle.mass / (4.0 * numpy.pi * self.particle.radius**3)
+            max_density = 1000 * mean_density
+            # We assume reverse(self.density) is in ascending order.
+            index = numpy.searchsorted(self.density[::-1], max_density)
+            if index < self.number_of_zones:
+                print "Will model core as a separate particle."
+                i_core = self.number_of_zones - index
+                self.core_radius = self.radius[i_core] - ((self.radius[i_core] - self.radius[i_core-1]) *
+                    (max_density - self.density[i_core]) / (self.density[i_core-1] - self.density[i_core]))
+                self.core_mass = get_enclosed_mass_from_tabulated(self.core_radius, radii = self.radius, densities = self.density)
+                self.mass = self.particle.mass - self.core_mass
+                print "core mass:", self.core_mass.as_quantity_in(units.MSun)
+                set_printing_strategy("cgs")
+                print self.radius[i_core-1], "<", self.core_radius, "<", self.radius[i_core]
+                print self.density[i_core-1], ">", max_density, ">", self.density[i_core]
+                set_printing_strategy("default")
+                self.radius = self.radius[i_core:]
+                self.density = self.density[i_core:]
+                self.composition = self.composition[i_core:]
+                self.specific_internal_energy = self.specific_internal_energy[i_core:]
+                return
+        
+        self.core_radius = None
+        self.core_mass = None
+        self.mass = self.particle.mass
     
     def coordinates_from_spherical(self, radius, theta, phi):
         result  =      radius * numpy.sin( theta ) * numpy.cos( phi )   # x
@@ -122,12 +163,12 @@ class StellarModel2SPH(object):
         if self.mode == "scaling method":
             sph_particles = new_spherical_particle_distribution(
                 self.number_of_sph_particles, 
-                radii = self.radius, densities = self.density)
+                radii = self.radius, densities = self.density, core_radius = self.core_radius)
         else:
             sph_particles = Particles(self.number_of_sph_particles)
             sph_particles.position = self.new_positions()
-        sph_particles.mass = (self.particle.mass.number * 1.0 / 
-            self.number_of_sph_particles) | self.particle.mass.unit
+        sph_particles.mass = (self.mass.number * 1.0 / 
+            self.number_of_sph_particles) | self.mass.unit
         sph_particles.velocity = [0,0,0] | units.m/units.s
         return sph_particles
     
@@ -181,17 +222,26 @@ class StellarModel2SPH(object):
         specific_internal_energy, composition = self.interpolate_internal_energy(sph_particles.position.lengths())
         sph_particles.u = specific_internal_energy
         sph_particles.composition = composition
+        if self.with_core_particle:
+            if self.core_radius:
+                core_particle = Particles(1)
+                core_particle.mass = self.core_mass
+                core_particle.position = [0.0, 0.0, 0.0] | units.m
+                core_particle.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+                return core_particle, sph_particles, self.core_radius
+            else:
+                return Particles(), sph_particles, None
         return sph_particles
     
 
-"""
-Requests the internal structure of the star from a Stellar Evolution 
-legacy code and converts it into an SPH model consisting of the 
-specified number of particles. Useful for merging stars.
-
-:argument particle: Star particle to be converted to an SPH model
-:argument number_of_sph_particles: Number of gas particles in the resulting model
-"""
 def convert_stellar_model_to_SPH(particle, number_of_sph_particles, **keyword_arguments):
+    """
+    Requests the internal structure of the star from a Stellar Evolution 
+    legacy code and converts it into an SPH model consisting of the 
+    specified number of particles. Useful for merging stars.
+    
+    :argument particle: Star particle to be converted to an SPH model
+    :argument number_of_sph_particles: Number of gas particles in the resulting model
+    """
     converter = StellarModel2SPH(particle, number_of_sph_particles, **keyword_arguments)
     return converter.result

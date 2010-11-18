@@ -39,7 +39,7 @@ def head_on_stellar_merger(
         return
     stars =  Particles(2)
     stars.mass = masses
-    stellar_evolution.initialize_module_with_default_parameters() 
+    stellar_evolution.initialize_module_with_current_parameters() 
     stellar_evolution.particles.add_particles(stars)
     stellar_evolution.initialize_stars()
     

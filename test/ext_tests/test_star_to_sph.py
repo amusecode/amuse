@@ -847,6 +847,96 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_legacy_code.stop()
         print "All done!\n"
     
+    def slowtest18(self):
+        print "SPH model with core (Gadget2)"
+        with_core = True # set to False to do a comparison run without a core
+        stellar_evolution = self.new_instance(MESA)
+        if stellar_evolution is None:
+            print "MESA was not built. Skipping test."
+            return
+        stars =  Particles(1)
+        stars.mass = 1.0 | units.MSun
+        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.particles.add_particles(stars)
+        stellar_evolution.initialize_stars()
+        try:
+            while True:
+                stellar_evolution.evolve_model()
+        except AmuseException as ex:
+            self.assertEqual(str(ex), "Error when calling 'evolve' of a 'MESA', errorcode is -14, error "
+            "is 'Evolve terminated: Maximum number of backups reached.'")
+        
+        outer_radii = stellar_evolution.particles[0].get_radius_profile()
+        outer_radii.prepend(0.0 | units.m)
+        midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
+        temperature = stellar_evolution.particles[0].get_temperature_profile()
+        mu          = stellar_evolution.particles[0].get_mu_profile()
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
+        
+        number_of_sph_particles = 30000
+        print "Creating initial conditions from a MESA stellar evolution model:"
+        print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
+        
+        if with_core:
+            core, gas_without_core, core_radius = convert_stellar_model_to_SPH(
+                stellar_evolution.particles[0], 
+                number_of_sph_particles, 
+                seed = 12345,
+                mode = "scaling method",
+                with_core_particle = True
+            )
+            if len(core):
+                print "Created", len(gas_without_core), "SPH particles and one 'core-particle':\n", core
+                print "Setting gravitational smoothing to:", core_radius
+            else:
+                print "Only SPH particles created."
+        else:
+            gas = convert_stellar_model_to_SPH(
+                stellar_evolution.particles[0], 
+                number_of_sph_particles, 
+                seed = 12345,
+                mode = "scaling method"
+            )
+        stellar_evolution.stop()
+        
+        t_end = 1.0e4 | units.s
+        print "Evolving to:", t_end
+        n_steps = 100
+        
+        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
+        hydro_legacy_code = Gadget2(unit_converter)
+        if with_core:
+            hydro_legacy_code.gas_particles.add_particles(gas_without_core)
+            hydro_legacy_code.dm_particles.add_particles(core)
+            hydro_legacy_code.parameters.epsilon_squared = core_radius**2
+        else:
+            hydro_legacy_code.gas_particles.add_particles(gas)
+        
+        self.assertAlmostRelativeEqual(stars.mass, hydro_legacy_code.total_mass, places=7)
+        
+        times = [] | units.s
+        kinetic_energies =   [] | units.J
+        potential_energies = [] | units.J
+        thermal_energies =   [] | units.J
+        for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
+            hydro_legacy_code.evolve_model(time)
+            times.append(time)
+            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
+            potential_energies.append( hydro_legacy_code.potential_energy)
+            thermal_energies.append(   hydro_legacy_code.thermal_energy)
+        
+        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
+        energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
+            os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_energy_evolution.png"))
+        thermal_energy_plot(times, thermal_energies, 
+            os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_thermal_energy_evolution.png"))
+        internal_energy_comparison_plot(
+            midpoints, specific_internal_energy, 
+            sph_midpoints, hydro_legacy_code.gas_particles.u, 
+            os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_internal_energy.png")
+        )
+        hydro_legacy_code.stop()
+        print "All done!\n"
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):
     if not HAS_MATPLOTLIB:
