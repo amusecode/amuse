@@ -83,7 +83,19 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
         function.addParameter('maximum_number_of_photons', dtype='int32', direction=function.IN) 
         function.result_type = 'int32'
         return function
+    
+    @legacy_function
+    def has_auto_convergence():
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='bool', direction=function.OUT) 
+        function.result_type = 'int32'
+        return function
         
+    @legacy_function
+    def uset_auto_convergence():
+        function = LegacyFunctionSpecification() 
+        function.result_type = 'int32'
+        return function
     
     @legacy_function    
     def get_position_of_index():
@@ -418,6 +430,20 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
             
         function.addParameter('n', dtype='int32', direction=function.LENGTH)
         function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def set_emit_rate_of_photons():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_emit_rate_of_photons():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
         

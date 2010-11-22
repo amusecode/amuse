@@ -212,6 +212,7 @@ CONTAINS
            nPhotons(i) = NphotonsTot/nStars
            deltaE(i) = Lstar(i)/nPhotons(i)
         end do  
+        
     END FUNCTION
 
     FUNCTION commit_grid()
@@ -293,6 +294,21 @@ CONTAINS
         nPhotIncrease  = number_of_photons_increase
         maxPhotons     = maximum_number_of_photons
         setup_auto_convergence = 0
+    END FUNCTION
+
+    FUNCTION has_auto_convergence(value)
+        IMPLICIT NONE
+        LOGICAL , INTENT(OUT) :: value
+        INTEGER :: has_auto_convergence
+        value = lgAutoPackets
+        has_auto_convergence = 0
+    END FUNCTION
+    
+    FUNCTION uset_auto_convergence()
+        IMPLICIT NONE
+        INTEGER :: uset_auto_convergence
+        lgAutoPackets = .false.
+        uset_auto_convergence = 0
     END FUNCTION
 
     FUNCTION get_position_of_index( &
@@ -426,16 +442,20 @@ CONTAINS
 
         TStellar=0.
         Lstar=0.
-        ContShape='blackbody'
-        ContShapeIn='blackbody'
-        spID='blackbody'
+        ContShape='none'
+        ContShapeIn='none'
+        spID='none'
         tStep=0.
         nPhotons=0.
+        deltaE=0.0
 
         do i = 1, nStars
             starPosition(i)%x = x(i)
             starPosition(i)%y = y(i)
             starPosition(i)%z = z(i)
+            ContShape(i)='blackbody'
+            spID='blackbody'
+            ContShapeIn(i)=ContShape(i)
             TStellar(i) = temperature(i)
             Lstar(i) = luminocity(i)
         end do
@@ -752,7 +772,22 @@ CONTAINS
         END DO
         get_grid_active = 0
     END FUNCTION
+    
+    FUNCTION set_emit_rate_of_photons(value)
+        IMPLICIT NONE
+        DOUBLE PRECISION, INTENT(IN) :: value
+        INTEGER set_emit_rate_of_photons
+        LPhot = value
+        set_emit_rate_of_photons = 0
+    END FUNCTION
 
+    FUNCTION get_emit_rate_of_photons(value)
+        IMPLICIT NONE
+        DOUBLE PRECISION, INTENT(OUT) :: value
+        INTEGER get_emit_rate_of_photons
+        value = LPhot
+        get_emit_rate_of_photons = 0
+    END FUNCTION
 END MODULE
 
 
