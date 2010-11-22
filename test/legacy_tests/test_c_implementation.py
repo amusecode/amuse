@@ -102,8 +102,15 @@ int echo_logical(int in, int * out) {
     *out = in;
     return 0;
 }
-
-
+/*
+int echo_string_array(char ** in, char ** out, int len) {
+    int x = 0;
+    for(x = 0; x < len; x++) {
+        out[x] = in[x];
+    }    
+    return len;
+}
+*/
 """
 
 class ForTestingInterface(LegacyInterface):
@@ -240,6 +247,7 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+        
     
     
 class ForTesting(CodeInterface):
@@ -543,5 +551,6 @@ class TestInterface(TestWithMPI):
         instance.stop()
         self.assertEquals(int_out, 3935559000370003845)
         self.assertEquals(error, 0)
+        
         
     

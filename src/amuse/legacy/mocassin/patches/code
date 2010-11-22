@@ -1,0 +1,61 @@
+Index: mocassin/src/mocassin.2.02.64/source/common_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.64/source/common_mod.f90	2010-11-17 12:21:26.000000000 +0100
++++ mocassin/src/mocassin.2.02.64/source/common_mod.f90	2010-11-17 13:10:15.000000000 +0100
+@@ -374,19 +374,19 @@
+     logical            :: lgPlaneIonization! plane parallel ionization?    
+     logical            :: lgSymmetricXYZ   ! symmetric in x, y, and z?
+ 
+-    character(len=50)  :: gridList ! grid list file name
+-    character(len=50), pointer  :: abundanceFIle(:) ! abundance file names
+-    character(len=50), pointer  :: dustSpeciesFIle(:) ! abundance file names
+-    character(len=50)           :: contDiffuse      ! shape of the diffuse ionising spectrum
+-    character(len=50), pointer  :: contShape(:)     ! continuumShape
+-    character(len=50), pointer  :: contShapeIn(:)   ! continuumShape
+-    character(len=50), pointer  :: spID(:)          ! input spectrum generator ID
+-    character(len=50)  :: densityFile      ! density file
+-    character(len=50)  :: dustFile(2)      ! dust files
+-    character(len=50)  :: MdMgFile         ! name of MdMg file
+-    character(len=50)  :: NdustFile        ! name of Ndust file    
+-    character(len=50)  :: home=''          ! home directory if specified    
+-    character(len=50)  :: Qfile            ! name of Qfile 
++    character(len=4096)  :: gridList ! grid list file name
++    character(len=4096), pointer  :: abundanceFIle(:) ! abundance file names
++    character(len=4096), pointer  :: dustSpeciesFIle(:) ! abundance file names
++    character(len=4096)           :: contDiffuse      ! shape of the diffuse ionising spectrum
++    character(len=4096), pointer  :: contShape(:)     ! continuumShape
++    character(len=4096), pointer  :: contShapeIn(:)   ! continuumShape
++    character(len=4096), pointer  :: spID(:)          ! input spectrum generator ID
++    character(len=4096)  :: densityFile      ! density file
++    character(len=4096)  :: dustFile(2)      ! dust files
++    character(len=4096)  :: MdMgFile         ! name of MdMg file
++    character(len=4096)  :: NdustFile        ! name of Ndust file    
++    character(len=4096)  :: home=''          ! home directory if specified    
++    character(len=4096)  :: Qfile            ! name of Qfile 
+     character(len=30),pointer       :: grainLabel(:)    ! name of this species
+ 
+     integer,pointer    :: viewPointPtheta(:), viewPointPphi(:)       ! viewing angles
+Index: mocassin/src/mocassin.2.02.64/source/grid_mod.f90
+===================================================================
+--- mocassin.orig/src/mocassin.2.02.64/source/grid_mod.f90	2010-11-17 16:20:44.000000000 +0100
++++ mocassin/src/mocassin.2.02.64/source/grid_mod.f90	2010-11-17 16:24:40.000000000 +0100
+@@ -1696,12 +1696,15 @@
+ 
+               Lstar(1) = (meanField/1.e36)*grid%xAxis(grid%nx)*grid%zAxis(grid%nz)
+               deltaE(1) = Lstar(1)/nPhotons(1)
++              
++              ! AVE (17-nov-2010) moved this code into the if statement
++              ! Lstar is set just before this statement
++              if (taskid == 0) then
++                print*, 'Total ionizing flux :', Lstar(1)
++                print*, 'deltaE :', deltaE(1)
++              end if
+            end if
+                  
+-           if (taskid == 0) then
+-              print*, 'Total ionizing flux :', Lstar(1)
+-              print*, 'deltaE :', deltaE(1)
+-           end if
+ 
+            print*, 'out setMotherGrid'
+ 
