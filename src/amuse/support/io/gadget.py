@@ -9,7 +9,7 @@ from collections import namedtuple
 import struct
 import numpy
 
-class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
+class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
     provided_formats = ['gadget']
     GAS = 0
     HALO = 1
@@ -48,10 +48,6 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
             ('NallHW', 6, 'd'),
             ('flag_entr_ics', 1, 'i'),
         )
-        
-    @base.format_option
-    def endianness(self):
-        return '@' #native
         
     @base.format_option
     def has_potential_energy(self):
@@ -101,21 +97,7 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         attribute_names = ' '.join(collate)
         return namedtuple(self.struct_class_name, attribute_names)
     
-    @late
-    def float_type(self):
-        result = numpy.dtype(numpy.float32)
-        if self.endianness == '@':
-            return result
-        else:
-            return result.newbyteorder(self.endianness)
     
-    @late
-    def uint_type(self):
-        result = numpy.dtype(numpy.uint32)
-        if self.endianness == '@':
-            return result
-        else:
-            return result.newbyteorder(self.endianness)
     
     @late
     def total_number_of_particles(self):
@@ -152,7 +134,7 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
     def load_body(self, file):
         self.positions = self.read_fortran_block_float_vectors(file)
         self.velocities = self.read_fortran_block_float_vectors(file)
-        self.ids = self.read_fortran_block_ints(file)
+        self.ids = self.read_fortran_block_uints(file)
     
         if self.total_number_of_particles_with_vairable_masses > 0:
             self.masses = self.read_fortran_block_floats(file)
@@ -255,37 +237,7 @@ class GadgetFileFormatProcessor(base.BinaryFileFormatProcessor):
         self.load_body(file)
         return self.new_sets_from_arrays()
         
-    def read_fortran_block(self, file):
-        format = self.endianness+'I'
-        bytes = file.read(4)
-        if not bytes:
-            return None
-        length_of_block = struct.unpack(format, bytes)[0]
-        result = file.read(length_of_block)
-        bytes = file.read(4)
-        length_of_block_after = struct.unpack(format, bytes)[0]
-        if(length_of_block_after != length_of_block):
-            raise base.IoException("Block is mangled sizes don't match before: {0}, after: {1}".format(length_of_block, length_of_block_after))
-        return result
-        
-    def read_fortran_block_floats(self, file):
-        bytes = self.read_fortran_block(file)
-        return numpy.frombuffer(bytes, dtype=self.float_type)
-        
-    def read_fortran_block_ints(self, file):
-        bytes = self.read_fortran_block(file)
-        return numpy.frombuffer(bytes, dtype=self.uint_type)
-        
-    def read_fortran_block_float_vectors(self, file):
-        result = self.read_fortran_block_floats(file)
-        return result.reshape(len(result)/3,3)
-        
-    def write_fortran_block(self, file, bytes):
-        format = self.endianness+'I'
-        length_of_block = len(bytes)
-        file.write(struct.pack(format, length_of_block))
-        file.write(bytes)
-        file.write(struct.pack(format, length_of_block))
+    
         
         
         

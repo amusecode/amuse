@@ -3,6 +3,8 @@ from amuse.support import exceptions
 import os.path
 
 import textwrap
+import struct
+import numpy
 
 
 
@@ -271,7 +273,7 @@ class BinaryFileFormatProcessor(FileFormatProcessor):
     their data by first reading the complete text string
     
     Subclasses need to implement the
-    :func:`store_string` and :func:`load_string` methods.
+    :func:`store_file` and / or :func:`load_file` methods.
     
     """
 
@@ -290,4 +292,83 @@ class BinaryFileFormatProcessor(FileFormatProcessor):
     def load_file(self, string):
         """Return a particle set, read from the binary file"""
         raise CannotLoadException(self.format)
+    
+
+class FortranFileFormatProcessor(BinaryFileFormatProcessor):
+    """
+    Abstract base class of all fileformat processors that process
+    their data by first reading fortran blocks
+    
+    Subclasses need to implement the
+    :func:`store_file` and / or :func:`load_file` methods.
+    
+    """
+    
+    @format_option
+    def endianness(self):
+        return '@' #native
+        
+    @late
+    def float_type(self):
+        result = numpy.dtype(numpy.float32)
+        if self.endianness == '@':
+            return result
+        else:
+            return result.newbyteorder(self.endianness)
+    
+    @late
+    def uint_type(self):
+        result = numpy.dtype(numpy.uint32)
+        if self.endianness == '@':
+            return result
+        else:
+            return result.newbyteorder(self.endianness)
+    
+    @late
+    def int_type(self):
+        result = numpy.dtype(numpy.int32)
+        if self.endianness == '@':
+            return result
+        else:
+            return result.newbyteorder(self.endianness)
+            
+    def read_fortran_block(self, file):
+        """Returns one block read from file. Checks if the 
+        block is consistant. Result is an array of bytes
+        """
+        format = self.endianness+'I'
+        bytes = file.read(4)
+        if not bytes:
+            return None
+        length_of_block = struct.unpack(format, bytes)[0]
+        result = file.read(length_of_block)
+        bytes = file.read(4)
+        length_of_block_after = struct.unpack(format, bytes)[0]
+        if(length_of_block_after != length_of_block):
+            raise base.IoException("Block is mangled sizes don't match before: {0}, after: {1}".format(length_of_block, length_of_block_after))
+        return result
+        
+    def read_fortran_block_floats(self, file):
+        bytes = self.read_fortran_block(file)
+        return numpy.frombuffer(bytes, dtype=self.float_type)
+        
+    def read_fortran_block_uints(self, file):
+        bytes = self.read_fortran_block(file)
+        return numpy.frombuffer(bytes, dtype=self.uint_type)
+        
+    def read_fortran_block_ints(self, file):
+        bytes = self.read_fortran_block(file)
+        return numpy.frombuffer(bytes, dtype=self.int_type)
+        
+    def read_fortran_block_float_vectors(self, file, size = 3):
+        result = self.read_fortran_block_floats(file)
+        return result.reshape(len(result)/size,size)
+        
+    def write_fortran_block(self, file, bytes):
+        format = self.endianness+'I'
+        length_of_block = len(bytes)
+        file.write(struct.pack(format, length_of_block))
+        file.write(bytes)
+        file.write(struct.pack(format, length_of_block))
+    
     
