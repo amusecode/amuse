@@ -19,7 +19,7 @@ class TestMocassinInterface(TestWithMPI):
         instance.initialize_code()
         instance.stop()
         
-    def test1(self):
+    def xtest1(self):
         instance=self.new_instance(MocassinInterface)
         instance.initialize_code()
         instance.redirect_outputs_to("moc-out.txt", "moc-err.txt")
@@ -41,7 +41,7 @@ class TestMocassinInterface(TestWithMPI):
         
         instance.stop()
     
-    def test2(self):
+    def xtest2(self):
         instance=self.new_instance(MocassinInterface) #, debugger = "ddd")
         instance.initialize_code()
         instance.redirect_outputs_to("moc-test2.txt", "moc-test2-err.txt")
@@ -113,9 +113,9 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_convergence_limit(0.09)
         instance.set_number_of_ionisation_stages(6)
         instance.setup_auto_convergence(0.2, 2.0, 1000000000)
-        instance.set_emit_rate_of_photons(1.006e13)
+        #instance.set_emit_rate_of_photons(1.006e13)
         instance.commit_parameters()
-        instance.define_stars(0.0, 0.0, 0.0, 20000.0, 0) #6003.6396)
+        instance.define_stars(0.0, 0.0, 0.0, 20000.0, 6003.6396)
         instance.commit_particles()
         instance.commit_grid()
         
