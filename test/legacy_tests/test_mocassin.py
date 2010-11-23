@@ -91,25 +91,25 @@ class TestMocassinInterface(TestWithMPI):
         
         
     def xtest3(self):
-        instance=self.new_instance(MocassinInterface)#, debugger = "xterm")
+        instance=self.new_instance(MocassinInterface) #, debugger = "ddd")
         instance.initialize_code()
-        instance.redirect_outputs_to("moc-test3.txt", "moc-test3-err.txt")
+        instance.redirect_outputs_to("moc-test3a.txt", "moc-test3a-err.txt")
         instance.set_symmetricXYZ(True)
-        
-      
         instance.setup_mesh(13,13,13,0.95E+19,0.95E+19,0.95E+19)
         instance.setup_abundancies()
+        #instance.set_abundancies_filename(1, 'abunHII20.in')
         instance.set_input_directory(instance.get_default_input_directory())
+        instance.set_input_directory('/data2/vanelteren/amuse/codes/mocassin.2.02.64/')
         instance.set_constant_hydrogen_density(100.0)
         instance.set_initial_nebular_temperature(6000.0)
-        instance.set_maximum_number_of_monte_carlo_iterations(1)
+        instance.set_maximum_number_of_monte_carlo_iterations(20)
         instance.set_minimum_convergence_level(100)
         instance.set_total_number_of_photons(10000000)
         instance.set_total_number_of_points_in_frequency_mesh(600)
-        instance.set_high_limit_of_the_frequency_mesh(15)
+        instance.set_high_limit_of_the_frequency_mesh(15.)
         instance.set_low_limit_of_the_frequency_mesh(1.001e-5)
-        instance.set_inner_radius_of_the_ionised_region(30.e17)
-        instance.set_outer_radius_of_the_ionised_region(0.95E+19)
+        instance.set_inner_radius_of_the_ionised_region(30.0e17)
+        instance.set_outer_radius_of_the_ionised_region(0.95e+19)
         instance.set_convergence_limit(0.09)
         instance.set_number_of_ionisation_stages(6)
         instance.setup_auto_convergence(0.2, 2.0, 1000000000)

@@ -81,9 +81,9 @@ CONTAINS
         densityLaw    = 0.
 
         !multiPhotoSources = "none"
-        !densityFile   = "none"
-        !dustFile      = "none"
-        !gridList      = "none"
+        densityFile   = "none"
+        dustFile      = "none"
+        gridList      = "none"
 
         nu0           = 0.  
         Ldiffuse      = 0. 
@@ -135,6 +135,7 @@ CONTAINS
         IMPLICIT NONE
         include 'mpif.h'
         INTEGER iterate
+        
         call MCIterationDriver(grid3D(1:nGrids))
         iterate=-1
     END FUNCTION
@@ -186,6 +187,7 @@ CONTAINS
         INTEGER commit_parameters, iGrid
         integer             :: err              ! allocation error status
         
+        print *, "nstages ::", nstages
         allocate(lgDataAvailable(3:nElements, 1:nstages), stat=err)
         if (err /= 0) then
            print*, '! commit_parameters: allocation error for lgDataAvailable pointer'
@@ -222,6 +224,8 @@ CONTAINS
         DOUBLE PRECISION test
         Integer :: nxA,nyA,nzA
         
+        
+        
         ! initialize opacities x sections array
         call initXSecArray()
         
@@ -239,6 +243,7 @@ CONTAINS
             starPosition(i)%z = starPosition(i)%z/grid3D(1)%zAxis(nzA)
         end do
         
+        
         call setStarPosition(grid3D(1)%xAxis,grid3D(1)%yAxis,grid3D(1)%zAxis, grid3D(1:nGrids))
         
         if (taskid==0) then
@@ -251,6 +256,15 @@ CONTAINS
         ! prepare atomica data stuff
         if (lgGas) call makeElements()
         print*, 'active elements: ', nElementsUsed
+        
+        ! if grains are included, calculate the dust opacity     
+        if (lgDust) then
+           if (taskid==0) print*, '! mocassin: calling dustDriver'
+           do iGrid = 1, nGrids
+              call dustDriver(grid3D(iGrid))
+           end do
+           if (taskid==0) print*, '! mocassin: dustDriver done'
+        end if
         
         if (Ldiffuse>0.) then
            if (taskid==0) print*, '! mocassin: calling setLdiffuse'
@@ -265,6 +279,7 @@ CONTAINS
               print*, '! mocassin: setLdiffuse done, total Ldiffuse: ', test
            end if
         end if
+        
         
     END FUNCTION
 
@@ -349,7 +364,8 @@ CONTAINS
         INTEGER index, set_abundancies_filename
         
         
-        abundanceFile(index) = TRIM(filename)
+        !abundanceFile(index) = TRIM(filename)
+        abundanceFile = TRIM(filename)
         set_abundancies_filename = 0
     END FUNCTION
 
@@ -447,7 +463,8 @@ CONTAINS
         spID='none'
         tStep=0.
         nPhotons=0.
-        deltaE=0.0
+        deltaE=0.
+        print *, "DELTA E::", deltaE
 
         do i = 1, nStars
             starPosition(i)%x = x(i)

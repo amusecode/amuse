@@ -6,10 +6,78 @@ import sys
 import time
 import urllib
 
+class MyFancyUrlopener(urllib.FancyURLopener):
+    def retrieve(self, url, filename=None, reporthook=None, data=None):
+        """retrieve(url) returns (filename, headers) for a local object
+        or (tempfilename, headers) for a remote object."""
+        url = urllib.unwrap(urllib.toBytes(url))
+        if self.tempcache and url in self.tempcache:
+            return self.tempcache[url]
+        type, url1 = urllib.splittype(url)
+        if filename is None and (not type or type == 'file'):
+            try:
+                fp = self.open_local_file(url1)
+                hdrs = fp.info()
+                del fp
+                return url2pathname(splithost(url1)[1]), hdrs
+            except IOError, msg:
+                pass
+        fp = self.open(url, data)
+        try:
+            headers = fp.info()
+            code = fp.code
+            if filename:
+                tfp = open(filename, 'wb')
+            else:
+                import tempfile
+                garbage, path = splittype(url)
+                garbage, path = splithost(path or "")
+                path, garbage = splitquery(path or "")
+                path, garbage = splitattr(path or "")
+                suffix = os.path.splitext(path)[1]
+                (fd, filename) = tempfile.mkstemp(suffix)
+                self.__tempfiles.append(filename)
+                tfp = os.fdopen(fd, 'wb')
+            try:
+                result = filename, headers, code
+                if self.tempcache is not None:
+                    self.tempcache[url] = result
+                bs = 1024*8
+                size = -1
+                read = 0
+                blocknum = 0
+                if reporthook:
+                    if "content-length" in headers:
+                        size = int(headers["Content-Length"])
+                    reporthook(blocknum, bs, size)
+                while 1:
+                    block = fp.read(bs)
+                    if block == "":
+                        break
+                    read += len(block)
+                    tfp.write(block)
+                    blocknum += 1
+                    if reporthook:
+                        reporthook(blocknum, bs, size)
+            finally:
+                tfp.close()
+        finally:
+            fp.close()
+        del fp
+        del tfp
+
+        # raise exception if actual size does not match content-length header
+        if size >= 0 and read < size:
+            raise ContentTooShortError("retrieval incomplete: got only %i out "
+                                       "of %i bytes" % (read, size), result)
+
+        return result
+    
 class DownloadAthenaFromWebpage(object):
     url_template = "http://www.ast.cam.ac.uk/~be/transit/mocassin.{version}.tar.gz"
+    backup_url_template = "http://www.amusecode.org/codes/mocassin.{version}.tar.gz"
     filename_template = "mocassin.{version}.tar.gz"
-    version = "2.02.64"
+    version = "2.02.66"
     
     def directory(self):
         return os.path.abspath(os.path.dirname(__file__))
@@ -43,7 +111,13 @@ class DownloadAthenaFromWebpage(object):
         url = self.url_template.format(version = self.version)
         filename = self.filename_template.format(version = self.version)
         print "downloading version",self.version,"from", url, "to", filename
-        urllib.urlretrieve(url, filename = os.path.join(self.src_directory(),filename))
+        opener = MyFancyUrlopener()
+        filename, httpmessage, code = opener.retrieve(url, filename = os.path.join(self.src_directory(),filename))
+        if code == 404:
+            os.remove(filename)
+            url = self.backup_url_template.format(version = self.version)
+            filename, httpmessage, code = opener.retrieve(url, filename = os.path.join(self.src_directory(),filename))
+            
         print "downloading finished"
         self.unpack_downloaded_file(filename)
     

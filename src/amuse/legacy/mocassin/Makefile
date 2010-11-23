@@ -9,7 +9,7 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-VERSION = 2.02.64
+VERSION = 2.02.66
 CODEDIR = src/mocassin.$(VERSION)
 CODELIB = $(CODEDIR)/libmocassin.a
 
@@ -26,6 +26,7 @@ OBJECTS = $(SOURCES:.f90=.o)
 
 
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
+PATCH_FILES = ./patch_files.py
 
 
 FFLAGS   += -Wall -g -I$(CODEDIR)/source
@@ -33,16 +34,16 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 all: worker_code 
 
-
 $(CODEDIR):
 ifdef DOWNLOAD_CODES
+	$(RM) -Rf .pc
 	$(DOWNLOAD_FROM_WEB) $(VERSION)
-	./patch_files.py
+	$(PATCH_FILES)
 else
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
-	@echo "DOWNLOAD_CODES is not set. Athena will not be downloaded and build."
+	@echo "DOWNLOAD_CODES is not set. Mocassin will not be downloaded and build."
 	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
 	@echo "bash> export DOWNLOAD_CODES=1"
 	@echo "csh> setenv DOWNLOAD_CODES 1"
@@ -53,13 +54,13 @@ else
 endif
 
 
-
 clean:
 	$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code worker_code.f90
 	make -C $(CODEDIR) clean
 
 $(CODELIB): $(CODEDIR)
+	make -C $(CODEDIR) clean
 	make -C $(CODEDIR) all
 
 worker_code.f90: interface.py
