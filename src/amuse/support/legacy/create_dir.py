@@ -12,7 +12,7 @@ class {0.name_of_the_legacy_interface_class}({0.name_of_the_superclass_for_the_l
     include_headers = ['worker_code.h']
     
     def __init__(self, **keyword_arguments):
-        {0.name_of_the_superclass_for_the_legacy_interface_class}.__init__(self, **keyword_arguments)
+        {0.name_of_the_superclass_for_the_legacy_interface_class}.__init__(self, name_of_the_worker="{0.name_of_the_legacy_code}_worker", **keyword_arguments)
     
     @legacy_function
     def echo_int():
@@ -64,11 +64,11 @@ AMUSE_DIR?={0.reference_to_amuse_path}
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: worker_code 
+all: {0.name_of_the_legacy_code}_worker 
 
 clean:
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-\t$(RM) *~ worker_code worker_code.cc
+\t$(RM) *~ {0.name_of_the_legacy_code}_worker worker_code.cc
 \tmake -C src clean
 
 $(CODELIB):
@@ -80,8 +80,8 @@ worker_code.cc: {0.name_of_the_python_module}
 worker_code.h: {0.name_of_the_python_module}
 \t$(CODE_GENERATOR) --type=H interface.py {0.name_of_the_legacy_interface_class} -o $@
 
-worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-\t$(MPICXX) $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@
+{0.name_of_the_legacy_code}_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
+\t$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
 \t$(CXX) $(CXXFLAGS) -c -o $@ $< 
@@ -308,7 +308,7 @@ AMUSE_DIR?={0.reference_to_amuse_path}
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: worker_code 
+all: {0.name_of_the_legacy_code}_worker 
 
 clean:
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
@@ -321,8 +321,8 @@ $(CODELIB):
 worker_code.f90: {0.name_of_the_python_module}
 \t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_legacy_interface_class} -o $@
 
-worker_code: worker_code.f90 $(CODELIB) $(OBJS)
-\t$(MPIF90) $(CXXFLAGS) $@.f90 $(OBJS) $(CODELIB) -o $@
+{0.name_of_the_legacy_code}_worker: worker_code.f90 $(CODELIB) $(OBJS)
+\t$(MPIF90) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 %.o: %.f90
 \t$(FC) $(FFLAGS) -c -o $@ $<

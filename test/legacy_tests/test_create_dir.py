@@ -48,7 +48,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
     
         self.assertEquals(call.returncode, 0)
         
-        self.assertTrue(os.path.exists(os.path.join(working_dir,'worker_code')))
+        self.assertTrue(os.path.exists(os.path.join(working_dir,'testcode_worker')))
         
         sys.path.insert(0, root)
         
@@ -117,7 +117,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
     
         self.assertEquals(call.returncode, 0)
         
-        self.assertTrue(os.path.exists(os.path.join(working_dir,'worker_code')))
+        self.assertTrue(os.path.exists(os.path.join(working_dir,'testcodef_worker')))
         
         
         sys.path.insert(0, root)
