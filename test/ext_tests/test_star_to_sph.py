@@ -80,7 +80,7 @@ class TestStellarModel2SPH(TestWithMPI):
         number_of_sph_particles = 100 # only few particles for test speed-up
         converter = StellarModel2SPH(star, number_of_sph_particles, seed=12345, mode = "scaling method")
         converter.retrieve_stellar_structure()
-        self.assertAlmostEqual(converter.specific_internal_energy, 
+        self.assertAlmostEqual(converter.specific_internal_energy_profile, 
             [155896.35894, 20786.18119, 2078.61812, 95.93622] | (units.km/units.s)**2, places = 1)
     
     def test3(self):
@@ -96,7 +96,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(inner_radii, [0.0, 0.125, 0.25, 0.5] | units.RSun)
         radial_positions = (outer_radii + inner_radii) / 2
         int_specific_internal_energy, int_composition = converter.interpolate_internal_energy(radial_positions)
-        self.assertEqual( converter.specific_internal_energy, int_specific_internal_energy)
+        self.assertEqual( converter.specific_internal_energy_profile, int_specific_internal_energy)
     
     def test4(self):
         print "Test interpolate_hydro_quantities with random sampling"
@@ -112,8 +112,8 @@ class TestStellarModel2SPH(TestWithMPI):
         int_specific_internal_energy, int_composition = converter.interpolate_internal_energy(radial_positions)
         self.assertEqual(len(int_specific_internal_energy), number_of_sph_particles)
         eps = 1.0e-7
-        self.assertTrue(numpy.all( int_specific_internal_energy >= min(converter.specific_internal_energy)*(1-eps) ))
-        self.assertTrue(numpy.all( int_specific_internal_energy <= max(converter.specific_internal_energy)*(1+eps) ))
+        self.assertTrue(numpy.all( int_specific_internal_energy >= min(converter.specific_internal_energy_profile)*(1-eps) ))
+        self.assertTrue(numpy.all( int_specific_internal_energy <= max(converter.specific_internal_energy_profile)*(1+eps) ))
         sorted_r, sorted_energies = radial_positions.sorted_with(int_specific_internal_energy)
         self.assertTrue(numpy.all( sorted_energies[1:]  - sorted_energies[:-1]  <= eps | (units.m/units.s)**2 ))
     
@@ -873,7 +873,7 @@ class TestStellarModel2SPH(TestWithMPI):
         mu          = stellar_evolution.particles[0].get_mu_profile()
         specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
         
-        number_of_sph_particles = 30000
+        number_of_sph_particles = 3000
         print "Creating initial conditions from a MESA stellar evolution model:"
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
         
@@ -937,6 +937,68 @@ class TestStellarModel2SPH(TestWithMPI):
         )
         hydro_legacy_code.stop()
         print "All done!\n"
+    
+    def test19(self):
+        print "Test pickling of stellar structure"
+        star = self.StarParticleWithStructure()
+        test_pickle_file = os.path.join(get_path_to_results(), "test_star_structure.pkl")
+        if os.path.exists(test_pickle_file):
+            os.remove(test_pickle_file)
+        pickle_stellar_model(star, test_pickle_file)
+        converter = StellarModel2SPH(None, 100, seed=12345, mode = "scaling method", 
+            pickle_file = test_pickle_file)
+        converter.unpickle_stellar_structure()
+        self.assertEqual(converter.mass, numpy.pi * 1.5 | units.MSun)
+        self.assertEqual(converter.radius, 1.0 | units.RSun)
+        self.assertEqual(converter.number_of_zones, 4)
+        self.assertEqual(converter.number_of_species, 3)
+        self.assertEqual(converter.species_names, ['h1', 'he3', 'he4'])
+        self.assertEqual(converter.species_IDs,   [2,    5,     6])
+        self.assertEqual(converter.frac_mass_profile, ([2.0, 14.0, 112.0, 448.0] | units.none) / sum([2.0, 14.0, 112.0, 448.0]))
+        self.assertEqual(converter.density_profile, [2.0, 2.0, 2.0, 1.0] | units.MSun/units.RSun**3)
+        self.assertEqual(converter.radius_profile, [1.0/8.0, 1.0/4.0, 1.0/2.0, 1.0] | units.RSun)
+        self.assertEqual(converter.temperature_profile, [1e7, 1e6, 1e5, 1e4] | units.K)
+        self.assertEqual(converter.mu_profile, [0.8, 0.6, 0.6, 1.3] | units.amu)
+        self.assertEqual(converter.composition_profile, [[0.0, 0.7, 0.7, 0.7], 
+            [0.05, 0.01, 0.01, 0.01], [0.95, 0.29, 0.29, 0.29]] | units.none)
+        self.assertAlmostEqual(converter.specific_internal_energy_profile, 
+            [155896.35894, 20786.18119, 2078.61812, 95.93622] | (units.km/units.s)**2, places = 1)
+        
+        self.assertRaises(AmuseWarning, pickle_stellar_model, star, test_pickle_file, expected_message = 
+            "Incorrect file name '{0}'; directory must exist and file may not exist".format(test_pickle_file))
+        bogus_pickle_file = os.path.join(get_path_to_results(), "bogus.pkl")
+        converter = StellarModel2SPH(None, 100, seed=12345, mode = "scaling method", 
+            pickle_file = bogus_pickle_file)
+        self.assertRaises(AmuseException, converter.unpickle_stellar_structure, expected_message = 
+            "Input pickle file '{0}' does not exist".format(bogus_pickle_file))
+    
+    def test20(self):
+        print "Test convert_stellar_model_to_SPH with pickled stellar structure"
+        star = self.StarParticleWithStructure()
+        test_pickle_file = os.path.join(get_path_to_results(), "test_star_structure.pkl")
+        if os.path.exists(test_pickle_file):
+            os.remove(test_pickle_file)
+        pickle_stellar_model(star, test_pickle_file)
+        
+        number_of_sph_particles = 100 # only few particles for test speed-up
+        sph_particles = convert_stellar_model_to_SPH(
+            None, 
+            number_of_sph_particles, 
+            seed = 12345,
+            mode = "scaling method",
+            pickle_file = test_pickle_file
+        )
+        self.assertEqual(len(sph_particles), number_of_sph_particles)
+        self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
+        self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
+        self.assertIsOfOrder(max(sph_particles.x), star.radius)
+        self.assertAlmostEqual(sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
+        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.h1[1:]  - sph_particles.h1[:-1]  >= -0.0001 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 | units.none ))
+        self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 | units.none ))
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):
     if not HAS_MATPLOTLIB:

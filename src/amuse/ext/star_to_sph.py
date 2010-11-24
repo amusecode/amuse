@@ -1,4 +1,6 @@
 import numpy
+import pickle
+import os.path
 from amuse.support.data.core import Particles
 from amuse.support.units import units, constants
 from amuse.support.exceptions import AmuseWarning, AmuseException
@@ -22,15 +24,17 @@ class StellarModel2SPH(object):
     
     def __init__(self, particle, number_of_sph_particles, seed = None, mode = "scaling method", 
             do_relax = False, sph_legacy_code = Gadget2, compatible_converter = ConvertBetweenGenericAndSiUnits,
-            with_core_particle = False):
+            with_core_particle = False, pickle_file = None):
         self.particle = particle
         self.number_of_sph_particles = number_of_sph_particles
-        self.zone_index = None
-        self.delta      = None
         self.with_core_particle = with_core_particle
-        numpy.random.seed(seed)
+        self.pickle_file = pickle_file
+        if seed:
+            numpy.random.seed(seed)
         if mode in ["random sampling", "scaling method"]:
             self.mode = mode  # "random sampling" or "scaling method"
+            self.zone_index = None
+            self.delta      = None
         else:
             raise AmuseException("Unknown mode: {0}. Mode can be 'scaling method' or 'random sampling'.".format(mode))
         
@@ -43,47 +47,66 @@ class StellarModel2SPH(object):
         self.number_of_species = self.particle.get_number_of_species().number
         self.species_names     = self.particle.get_names_of_species(number_of_species = self.number_of_species)
         self.species_IDs       = self.particle.get_IDs_of_species(number_of_species = self.number_of_species)
-        self.frac_mass   = self.particle.get_mass_profile(number_of_zones = self.number_of_zones)
-        self.density     = self.particle.get_density_profile(number_of_zones = self.number_of_zones)
-        self.radius      = self.particle.get_radius_profile(number_of_zones = self.number_of_zones)
-        self.temperature = self.particle.get_temperature_profile(number_of_zones = self.number_of_zones)
-        self.mu          = self.particle.get_mu_profile(number_of_zones = self.number_of_zones)
-        self.composition = self.particle.get_chemical_abundance_profiles(
+        self.frac_mass_profile   = self.particle.get_mass_profile(number_of_zones = self.number_of_zones)
+        self.density_profile     = self.particle.get_density_profile(number_of_zones = self.number_of_zones)
+        self.radius_profile      = self.particle.get_radius_profile(number_of_zones = self.number_of_zones)
+        self.temperature_profile = self.particle.get_temperature_profile(number_of_zones = self.number_of_zones)
+        self.mu_profile          = self.particle.get_mu_profile(number_of_zones = self.number_of_zones)
+        self.composition_profile = self.particle.get_chemical_abundance_profiles(
             number_of_zones = self.number_of_zones, number_of_species = self.number_of_species)
-        self.specific_internal_energy = (1.5 * constants.kB * self.temperature / self.mu).as_quantity_in(units.m**2/units.s**2)
+        self.specific_internal_energy_profile = (1.5 * constants.kB * self.temperature_profile / self.mu_profile).as_quantity_in(units.m**2/units.s**2)
         # Note: self.radius is in increasing order; from center to surface
         radius_profile = [0] | units.m
-        radius_profile.extend(self.radius) # outer radius of each mesh zone
-        self.midpoints = -(radius_profile[1:2])/2                           # dummy element to handle boundaries correctly
-        self.midpoints.extend((radius_profile[1:] + radius_profile[:-1])/2) # real midpoints of each mesh zone
-        self.midpoints.append(2*self.midpoints[-1] - self.midpoints[-2])   # dummy element to handle boundaries correctly
+        radius_profile.extend(self.radius_profile) # outer radius of each mesh zone
+        self.midpoints_profile = -(radius_profile[1:2])/2                           # dummy element to handle boundaries correctly
+        self.midpoints_profile.extend((radius_profile[1:] + radius_profile[:-1])/2) # real midpoints of each mesh zone
+        self.midpoints_profile.append(2*self.midpoints_profile[-1] - self.midpoints_profile[-2])   # dummy element to handle boundaries correctly
+        
+        self.mass         = self.particle.mass
+        self.radius       = self.particle.radius
+    
+    def unpickle_stellar_structure(self):
+        if os.path.isfile(self.pickle_file):
+            infile = open(self.pickle_file, 'rb')
+        else:
+            raise AmuseException("Input pickle file '{0}' does not exist".format(self.pickle_file))
+        structure = pickle.load(infile)
+        self.mass   = structure['mass']
+        self.radius = structure['radius']
+        self.number_of_zones     = structure['number_of_zones']
+        self.number_of_species   = structure['number_of_species']
+        self.species_names       = structure['species_names']
+        self.species_IDs         = structure['species_IDs']
+        self.frac_mass_profile   = structure['frac_mass_profile']
+        self.density_profile     = structure['density_profile']
+        self.radius_profile      = structure['radius_profile']
+        self.temperature_profile = structure['temperature_profile']
+        self.mu_profile          = structure['mu_profile']
+        self.composition_profile = structure['composition_profile']
+        self.specific_internal_energy_profile = structure['specific_internal_energy_profile']
+        self.midpoints_profile   = structure['midpoints_profile']
+    
+    def setup_core_parameters(self):
+        self.core_radius = None
+        self.core_mass = None
         
         if self.with_core_particle and self.mode == "scaling method":
-            mean_density = 3.0 * self.particle.mass / (4.0 * numpy.pi * self.particle.radius**3)
+            mean_density = 3.0 * self.mass / (4.0 * numpy.pi * self.radius**3)
             max_density = 1000 * mean_density
             # We assume reverse(self.density) is in ascending order.
-            index = numpy.searchsorted(self.density[::-1], max_density)
+            index = numpy.searchsorted(self.density_profile[::-1], max_density)
             if index < self.number_of_zones:
                 print "Will model core as a separate particle."
                 i_core = self.number_of_zones - index
-                self.core_radius = self.radius[i_core] - ((self.radius[i_core] - self.radius[i_core-1]) *
-                    (max_density - self.density[i_core]) / (self.density[i_core-1] - self.density[i_core]))
-                self.core_mass = get_enclosed_mass_from_tabulated(self.core_radius, radii = self.radius, densities = self.density)
-                self.mass = self.particle.mass - self.core_mass
+                self.core_radius = self.radius_profile[i_core] - ((self.radius_profile[i_core] - self.radius_profile[i_core-1]) *
+                    (max_density - self.density_profile[i_core]) / (self.density_profile[i_core-1] - self.density_profile[i_core]))
+                self.core_mass = get_enclosed_mass_from_tabulated(self.core_radius, radii = self.radius_profile, densities = self.density_profile)
+                self.mass = self.mass - self.core_mass
                 print "core mass:", self.core_mass.as_quantity_in(units.MSun)
-                set_printing_strategy("cgs")
-                print self.radius[i_core-1], "<", self.core_radius, "<", self.radius[i_core]
-                print self.density[i_core-1], ">", max_density, ">", self.density[i_core]
-                set_printing_strategy("default")
-                self.radius = self.radius[i_core:]
-                self.density = self.density[i_core:]
-                self.composition = self.composition[i_core:]
-                self.specific_internal_energy = self.specific_internal_energy[i_core:]
-                return
-        
-        self.core_radius = None
-        self.core_mass = None
-        self.mass = self.particle.mass
+                self.radius_profile = self.radius_profile[i_core:]
+                self.density_profile = self.density_profile[i_core:]
+                self.composition_profile = self.composition_profile[i_core:]
+                self.specific_internal_energy_profile = self.specific_internal_energy_profile[i_core:]
     
     def coordinates_from_spherical(self, radius, theta, phi):
         result  =      radius * numpy.sin( theta ) * numpy.cos( phi )   # x
@@ -98,7 +121,7 @@ class StellarModel2SPH(object):
         self.rands = rands
         selection = numpy.arange(self.number_of_sph_particles, dtype='int32') # used for indexing
         enclosed_mass = 1.0 # fractional enclosed mass, at the surface initially
-        for (i, f_mass_i) in enumerate(self.frac_mass.value_in(units.none)):
+        for (i, f_mass_i) in enumerate(self.frac_mass_profile.value_in(units.none)):
             enclosed_mass -= f_mass_i
             found = numpy.where( enclosed_mass < rands[selection])[0]
             self.zone_index[selection[found]] = i
@@ -112,7 +135,7 @@ class StellarModel2SPH(object):
     def new_radial_positions(self):
         if self.zone_index is None:
             self.set_zone_indices_and_interpolation_coeffs()
-        radius_profile = self.radius
+        radius_profile = self.radius_profile
         radius_profile.append(0|units.m)
         radial_positions = (   self.delta    * radius_profile[self.zone_index] + 
                             (1 - self.delta) * radius_profile[self.zone_index+1] )
@@ -135,22 +158,23 @@ class StellarModel2SPH(object):
         return max(index - 1, 0)
     
     def calculate_interpolation_coefficients(self, radial_positions):
-        indices = numpy.array([self.get_index(r, self.midpoints) for r in radial_positions])
-        delta = (self.midpoints[indices+1] - radial_positions) / (self.midpoints[indices+1] - self.midpoints[indices])
+        indices = numpy.array([self.get_index(r, self.midpoints_profile) for r in radial_positions])
+        delta = (self.midpoints_profile[indices+1] - radial_positions) / (
+            self.midpoints_profile[indices+1] - self.midpoints_profile[indices])
         return indices, delta
     
     def interpolate_internal_energy(self, radial_positions, do_composition_too = True):
         indices, delta = self.calculate_interpolation_coefficients(radial_positions)
         one_minus_delta = 1 - delta
         
-        extended = self.specific_internal_energy[:1]
-        extended.extend(self.specific_internal_energy)
-        extended.append(self.specific_internal_energy[-1])
+        extended = self.specific_internal_energy_profile[:1]
+        extended.extend(self.specific_internal_energy_profile)
+        extended.append(self.specific_internal_energy_profile[-1])
         interpolated_energies = delta*extended[indices] + one_minus_delta*extended[indices+1]
         
         if do_composition_too:
             comp = [] | units.none
-            for species in self.composition:
+            for species in self.composition_profile:
                 extended = species[:1]
                 extended.extend(species)
                 extended.append(species[-1])
@@ -163,7 +187,7 @@ class StellarModel2SPH(object):
         if self.mode == "scaling method":
             sph_particles = new_spherical_particle_distribution(
                 self.number_of_sph_particles, 
-                radii = self.radius, densities = self.density, core_radius = self.core_radius)
+                radii = self.radius_profile, densities = self.density_profile, core_radius = self.core_radius)
         else:
             sph_particles = Particles(self.number_of_sph_particles)
             sph_particles.position = self.new_positions()
@@ -178,7 +202,7 @@ class StellarModel2SPH(object):
         
         result = []
         previous_acc = 0 | units.m / units.s**2
-        unit_converter = self.compatible_converter(self.particle.radius, self.particle.mass, 1.0e-3 | units.s)
+        unit_converter = self.compatible_converter(self.radius, self.mass, 1.0e-3 | units.s)
         hydro_legacy_code = self.sph_legacy_code(unit_converter)
         particles.u = 1.0 | (units.m / units.s)**2
         hydro_legacy_code.gas_particles.add_particles(particles)
@@ -212,7 +236,11 @@ class StellarModel2SPH(object):
     
     @property
     def result(self):
-        self.retrieve_stellar_structure()
+        if self.pickle_file is None:
+            self.retrieve_stellar_structure()
+        else:
+            self.unpickle_stellar_structure()
+        self.setup_core_parameters()
         sph_particles = self.convert_to_SPH()
         if self.do_relax:
             for result_string in self.relax(sph_particles):
@@ -245,3 +273,38 @@ def convert_stellar_model_to_SPH(particle, number_of_sph_particles, **keyword_ar
     """
     converter = StellarModel2SPH(particle, number_of_sph_particles, **keyword_arguments)
     return converter.result
+
+def pickle_stellar_model(particle, pickle_file_name):
+    """
+    Requests the internal structure of the star from a Stellar Evolution legacy 
+    code and pickles it (stores it as a *.pkl file), for later use:
+    convert_stellar_model_to_SPH(None, ..., pickle_file = pickle_file_name)
+    Using a pickled stellar model is significantly faster for modelling giants 
+    and other extremely evolved stars.
+    
+    :argument particle: Star particle to be converted to an SPH model later
+    :argument pickle_file_name: Name of the pickle file in which to store the stellar structure
+    """
+    if os.path.isdir(os.path.dirname(pickle_file_name)) and not os.path.exists(pickle_file_name):
+        outfile = open(pickle_file_name, 'wb')
+    else:
+        raise AmuseWarning("Incorrect file name '{0}'; directory must exist and "
+            "file may not exist".format(pickle_file_name))
+    converter = StellarModel2SPH(particle, None)
+    converter.retrieve_stellar_structure()
+    pickle.dump(dict(  
+        mass                = converter.mass,
+        radius              = converter.radius,
+        number_of_zones     = converter.number_of_zones,
+        number_of_species   = converter.number_of_species,
+        species_names       = converter.species_names,
+        species_IDs         = converter.species_IDs,
+        frac_mass_profile   = converter.frac_mass_profile,
+        density_profile     = converter.density_profile,
+        radius_profile      = converter.radius_profile,
+        temperature_profile = converter.temperature_profile,
+        mu_profile          = converter.mu_profile,
+        composition_profile = converter.composition_profile,
+        specific_internal_energy_profile = converter.specific_internal_energy_profile,
+        midpoints_profile   = converter.midpoints_profile
+    ), outfile)
