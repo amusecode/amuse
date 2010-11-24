@@ -96,6 +96,8 @@ def extract_tb(tb, limit = None):
 
 
 class TestCaseReport(object):
+    type = 'unit-report'
+    
     def __init__(self, test):
         self.id = test.id()
         self.address = test.address()
@@ -106,6 +108,7 @@ class TestCaseReport(object):
         self.number_of_runs = 0.0
         
         self.number_of_suite_runs = 0.0
+        self.is_paused = False
         
         
         if hasattr(test.test, "_dt_test"):
@@ -236,8 +239,8 @@ class MakeAReportOfATestRun(object):
         pass
         
     def store_report(self, report):
-        if self.total_number_of_tests() % 5 == 0 or report.failed or report.errored:
-            self._reports_queue.put(('unit-report',report.to_dict(), self.to_information_dict() ))
+        if self.total_number_of_tests() % 1 == 0 or report.failed or report.errored:
+            self._reports_queue.put((report.type,report.to_dict(), self.to_information_dict() ))
         
     
     def prepareTest(self, suite):
@@ -307,13 +310,18 @@ class MakeAReportOfATestRun(object):
 
     def startTest(self, test):
         if self.is_test_able_to_run(test):
+            report = TestCaseStartReport(test)
+            self._queue_report(report)
             return
         else:
             raise SkipTest
 
     def is_test_able_to_run(self, test):
         report = self.get_report(test)
-        time_taken = report.mean_time() 
+        if report.is_paused:
+            return False
+            
+        time_taken = report.mean_time()
         if time_taken < 0.1:
             return True
         if time_taken < 0.25:
@@ -547,9 +555,9 @@ class RunTests(object):
             result_queue = Queue()
             cwd = os.getcwd()
             if self.DIRECTORIES is None:
-                paths = [os.path.abspath(x) for x in project.DIRECTORIES]  
+                paths = [os.path.abspath(x) for x in project.DIRECTORIES]
             else:
-                paths = [os.path.abspath(x) for x in self.DIRECTORIES]  
+                paths = [os.path.abspath(x) for x in self.DIRECTORIES]
         
             process = Process(
                 target=method, 
@@ -583,10 +591,13 @@ class RunTests(object):
                     self.report_info = message[2]
                     if(message[1]['failed'] or message[1]['errored']):
                         self.report_queue.put(message[1])
+                   
                 if message[0] == 'start-report':
                     print message[1]
+                    continue
+                    
                 last_message = message
-            result = last_message 
+            result = last_message
         except Empty:
             print "No message recieved from process for 60 seconds"
             report = MakeAReportOfATestRun()
@@ -633,4 +644,17 @@ class RunTests(object):
             
 
 
+
+
+class TestCaseStartReport(object):
+    type = 'start-report'
+    
+    def __init__(self, test):
+        self.id = test.id()
+        self.address = test.address()
+        self.start_time = time.time()
+            
+    def to_dict(self):
+        result = self.__dict__.copy()
+        return result
 
