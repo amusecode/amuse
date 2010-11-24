@@ -315,6 +315,15 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
             return result
         else:
             return result.newbyteorder(self.endianness)
+
+    @late
+    def double_type(self):
+        result = numpy.dtype(numpy.float64)
+        if self.endianness == '@':
+            return result
+        else:
+            return result.newbyteorder(self.endianness)
+
     
     @late
     def uint_type(self):
@@ -351,6 +360,10 @@ class FortranFileFormatProcessor(BinaryFileFormatProcessor):
     def read_fortran_block_floats(self, file):
         bytes = self.read_fortran_block(file)
         return numpy.frombuffer(bytes, dtype=self.float_type)
+
+    def read_fortran_block_doubles(self, file):
+        bytes = self.read_fortran_block(file)
+        return numpy.frombuffer(bytes, dtype=self.double_type)
         
     def read_fortran_block_uints(self, file):
         bytes = self.read_fortran_block(file)
