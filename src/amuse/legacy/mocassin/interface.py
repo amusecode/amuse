@@ -7,14 +7,14 @@ import os
 import time
 
 class MocassinInterface(LegacyInterface, CommonCodeInterface):
-    
+    MOCASSIN_VERSION = '2.02.66'
     use_modules = ['mocassin_interface',]
     
     def __init__(self, **keyword_arguments):
         LegacyInterface.__init__(self, **keyword_arguments)
     
     def get_default_input_directory(self):
-        return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.2.02.64')) + os.sep
+        return (os.path.join(os.path.join(os.path.dirname(__file__), 'src'), 'mocassin.{0}'.format(self.MOCASSIN_VERSION))) + os.sep
         
     def setup_abundancies(self):
         fd, name = tempfile.mkstemp()

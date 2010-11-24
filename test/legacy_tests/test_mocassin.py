@@ -19,13 +19,14 @@ class TestMocassinInterface(TestWithMPI):
         instance.initialize_code()
         instance.stop()
         
-    def xtest1(self):
-        instance=self.new_instance(MocassinInterface)
+    def test1(self):
+        instance=self.new_instance(MocassinInterface) #, debugger="ddd")
         instance.initialize_code()
         instance.redirect_outputs_to("moc-out.txt", "moc-err.txt")
         
         instance.setup_mesh(11,11,11, 100,100,100)
         instance.setup_abundancies()
+        print instance.get_default_input_directory()
         instance.set_input_directory(instance.get_default_input_directory())
         instance.set_constant_hydrogen_density(900.0)
         instance.commit_parameters()
@@ -41,7 +42,7 @@ class TestMocassinInterface(TestWithMPI):
         
         instance.stop()
     
-    def xtest2(self):
+    def test2(self):
         instance=self.new_instance(MocassinInterface) #, debugger = "ddd")
         instance.initialize_code()
         instance.redirect_outputs_to("moc-test2.txt", "moc-test2-err.txt")
@@ -99,7 +100,6 @@ class TestMocassinInterface(TestWithMPI):
         instance.setup_abundancies()
         #instance.set_abundancies_filename(1, 'abunHII20.in')
         instance.set_input_directory(instance.get_default_input_directory())
-        instance.set_input_directory('/data2/vanelteren/amuse/codes/mocassin.2.02.64/')
         instance.set_constant_hydrogen_density(100.0)
         instance.set_initial_nebular_temperature(6000.0)
         instance.set_maximum_number_of_monte_carlo_iterations(20)
@@ -112,7 +112,7 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_outer_radius_of_the_ionised_region(0.95e+19)
         instance.set_convergence_limit(0.09)
         instance.set_number_of_ionisation_stages(6)
-        instance.setup_auto_convergence(0.2, 2.0, 1000000000)
+        instance.setup_auto_convergence(0.8, 2.0, 1000000000)
         #instance.set_emit_rate_of_photons(1.006e13)
         instance.commit_parameters()
         instance.define_stars(0.0, 0.0, 0.0, 20000.0, 6003.6396)
