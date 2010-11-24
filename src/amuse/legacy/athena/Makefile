@@ -24,7 +24,7 @@ SCINC ?= -I../../../../lib/stopcond
 
 ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o $(ATHENA_DIR)/src/*/*.o))
 
-all: worker_code 
+all: athena_worker 
 
 $(ATHENA_DIR):
 ifdef DOWNLOAD_CODES
@@ -47,7 +47,7 @@ endif
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ worker_code
+	$(RM) -f *~ athena_worker
 	$(RM) -f $(CODELIB)
 
 codeclean: clean
@@ -72,8 +72,8 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface AthenaInterface -o $@
 
-worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
+athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
 
 .c.o: $<
 	$(CC) $(CXXFLAGS) $(SCINC) -c -o $@ $< 

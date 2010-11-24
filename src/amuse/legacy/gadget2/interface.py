@@ -34,11 +34,11 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
-            return 'worker_code'
+            return 'gadget2_worker'
         elif mode == self.MODE_PERIODIC_BOUNDARIES:
-            return 'worker_code_periodic'
+            return 'gadget2_worker_periodic'
         else:
-            return 'worker_code'
+            return 'gadget2_worker'
     
     def get_data_directory(self):
         """

@@ -31,13 +31,14 @@ LIBFILES = $(SRCDIR)/run.c  $(SRCDIR)/predict.c  $(SRCDIR)/begrun.c \
 INTERFACE_OBJ = gadget_code.o
 INTERFACE_SRC  = $(INTERFACE_OBJ:.o=.cc)
 
-all:	worker_code
+all:	gadget2_worker
 
 $(CODELIB): $(LIBFILES) $(SRCDIR)/Makefile $(SRCDIR)/makefile_options
 	make -C $(SRCDIR) all
 
 clean:
 	rm -f *.o *.pyc worker_code.cc worker_code.h worker_code worker_code_periodic
+	rm -f gadget2_worker gadget2_worker_periodic
 	make -C $(SRCDIR) clean
 
 worker_code.cc: interface.py
@@ -46,15 +47,15 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H $^ -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface Gadget2Interface -o $@
 
-worker_code: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+gadget2_worker: worker_code.cc worker_code.h $(CODELIB) $(INTERFACE_OBJ) $(SRCDIR)/makefile_options
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 	
-worker_code_periodic: worker_code.cc worker_code.h $(INTERFACE_SRC) $(SRCDIR)/makefile_options
+gadget2_worker_periodic: worker_code.cc worker_code.h $(INTERFACE_SRC) $(SRCDIR)/makefile_options
 	rm -f $(INTERFACE_OBJ)
 	make $(INTERFACE_OBJ) OPT=$(PERIODIC_OPT)
 	make -C $(SRCDIR) clean 
 	make -C $(SRCDIR) all OPT=$(PERIODIC_OPT)
-	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) worker_code.cc $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
+	$(MPICXX) $(CXXFLAGS) -DPERIODIC $(SCINC) $< $(INTERFACE_OBJ) -o $@  $(CODELIB) $(SCLIBS) -lgsl -lgslcblas $(ALLVARS)
 	rm -f $(INTERFACE_OBJ)
 	make -C $(SRCDIR) clean 
 

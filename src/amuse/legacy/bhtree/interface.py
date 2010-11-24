@@ -9,7 +9,7 @@ class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInte
     include_headers = ['bhtree_code.h', 'worker_code.h', 'stopcond.h']
     
     def __init__(self, convert_nbody = None, **kwargs):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **kwargs)
+        LegacyInterface.__init__(self, name_of_the_worker="bhtree_worker", **kwargs)
         """
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         if convert_nbody is None:

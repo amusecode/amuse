@@ -11,7 +11,7 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     include_headers = ['octgrav_code.h', 'parameters.h', 'worker_code.h', 'local.h', 'stopcond.h']
 
     def __init__(self, convert_nbody = None, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
+        LegacyInterface.__init__(self, name_of_the_worker="octgrav_worker", **options)
         """
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         if convert_nbody is None:

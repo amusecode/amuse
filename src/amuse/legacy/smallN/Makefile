@@ -33,7 +33,7 @@ LIBS	  =	$(STARLAB_INSTALL_PATH)/lib/starlab/libhdyn.a \
 
 #compile:	$(TARGS)
 
-.compile: muse_worker_starlab 
+.compile: smalln_worker 
 
 .warning:
 	@echo ""
@@ -76,11 +76,12 @@ triple:	triple.o amuse_interface.o integrate.o analyze.o
 cleanall: clean
 	$(RM) muse_worker_starlab $(EXE) *~
 	rm -Rf muse_worker_starlab.dSYM/
+	rm -f smalln_worker
 
 clean:
 	rm -f *.so *.o *.pyc muse_worker_starlab.cc
 
-muse_worker_starlab:        muse_dynamics_mpi.py $(OBJS)
+smalln_worker:        muse_dynamics_mpi.py $(OBJS)
 	$(CODE_GENERATOR) --type=c muse_dynamics_mpi.py SmallNInterface -o $@.cc
 	$(MPICXX) $(CXXFLAGS)  $@.cc $(OBJS) $(LDLIBS) -o $@ 
 

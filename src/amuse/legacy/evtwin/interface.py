@@ -37,7 +37,7 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, CommonC
     use_modules = ['twin_library_v2']
     
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
+        LegacyInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
         LiteratureRefs.__init__(self)
     
     @option(type="string")

@@ -18,10 +18,10 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
-all: worker_code
+all: hermite_worker
 
 cleanall: clean 
-	$(RM) muse_worker *~ worker_code
+	$(RM) hermite_worker *~ worker_code
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py HermiteInterface -o $@
@@ -29,8 +29,8 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface interface.py HermiteInterface -o $@
 
-worker_code:	worker_code.cc worker_code.h $(A_OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(A_OBJS) -o $@ $(SCLIBS) 
+hermite_worker:	worker_code.cc worker_code.h $(A_OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(A_OBJS) -o $@ $(SCLIBS) 
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
@@ -40,3 +40,4 @@ worker_code:	worker_code.cc worker_code.h $(A_OBJS)
 
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
+	rm -f hermite_worker

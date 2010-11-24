@@ -20,7 +20,7 @@ SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 CODELIB = $(BHTCDIR)/libbhtree.a
 
-all:	compile worker_code
+all:	compile bhtree_worker
 
 compile: $(BHTC)
 
@@ -32,7 +32,7 @@ $(CODELIB):
 
 clean:
 	rm -f *.so *.o *.pyc muse_worker.cc worker_code.cc worker_code.h 
-	$(RM) muse_worker *~ worker_code *~
+	$(RM) bhtree_worker *~ worker_code *~
 	make -C $(BHTCDIR) clean
 
 worker_code.cc: interface.py
@@ -41,8 +41,8 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
 
-worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
+bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 

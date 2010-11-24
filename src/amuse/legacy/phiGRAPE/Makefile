@@ -55,7 +55,7 @@ FFLAGS += -g $(OPTS)
 FFLAGS += -I./src/
 
 
-all: debuginfo worker_code 
+all: debuginfo phigrape_worker 
 
 debuginfo:
 	@echo "making phigrape..; some debugging info follows:"
@@ -64,24 +64,23 @@ debuginfo:
 $(CODELIB):
 	make -C src all "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 
-worker_code: worker_code.f90 phigrape_code.o $(CODELIB)
+phigrape_worker: worker_code.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) $(SCLIBS)
 
-glworker_code: glworker_code.f90 phigrape_code.o $(CODELIB)
+phigrape_worker_gl: glworker_code.f90 phigrape_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(G6LIBS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
 
-worker_code_gpu: worker_code.f90 phigrape_code.o $(CODELIB)
+phigrape_worker_gpu: worker_code.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GPULIBS) $(SCLIBS)
 
-glworker_code_gpu: glworker_code.f90 phigrape_code.o $(CODELIB)
+phigrape_worker_gl_gpu: glworker_code.f90 phigrape_code.o $(CODELIB)
 	make -C src gl "FC=$(FC)" "OPTS=$(OPTS)" "CC=$(CC)"
 	$(MPIF90) $(FFLAGS) $(SCINC) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) \
 	$(GLOBJECTS) $(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(GPULIBS) $(SCLIBS)
 
-
-worker_code_grape: worker_code.f90 phigrape_code.o $(CODELIB)
+phigrape_worker_grape: worker_code.f90 phigrape_code.o $(CODELIB)
 	$(MPIF90) $(FFLAGS) $^ $(CODELIB) -o $@ $(OBJECTS) $(LIBRARIES) $(GRAPE6LIBS) $(SCLIBS)
 
 worker_code.f90: interface.py
@@ -97,6 +96,7 @@ clean:
 	rm -f worker_code worker_code.f90
 	rm -f glworker_code glworker_code.f90
 	rm -f glworker_code_gpu glworker_code_grape
+	rm -f phigrape_worker phigrape_worker_gl phigrape_worker_gl_gpu phigrape_worker_gpu
 
 __init__.py:
 	touch $@

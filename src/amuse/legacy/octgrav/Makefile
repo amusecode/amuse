@@ -26,7 +26,7 @@ LIBS += $(CUDA_LIBDIRS) $(CUDA_LIBS)
 
 $(warning make does: : $(MAKE))
 
-all:  compile worker_code
+all:  compile octgrav_worker
 
 $(CUDA_TK):
 	@echo ""
@@ -68,12 +68,12 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface interface.py OctgravInterface -o $@
 
-worker_code: worker_code.cc worker_code.h $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $(SCINC) $@.cc $(OBJS) $(LIBS) $(CODELIB) -o $@ $(SCLIBS)
+octgrav_worker: worker_code.cc worker_code.h $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $< $(OBJS) $(LIBS) $(CODELIB) -o $@ $(SCLIBS)
 
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
-	$(RM) worker_code *~
+	$(RM) worker_code *~ octgrav_worker
 	$(MAKE) -C $(CODEPATH) clean	
 
 .cc.o: $<

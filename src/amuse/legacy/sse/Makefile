@@ -10,13 +10,14 @@ OBJ	= src/deltat.o src/evolv1.o src/hrdiag.o src/kick.o \
 	  src/mlwind.o src/mrenv.o src/ran3.o src/star.o \
 	  src/zcnsts.o src/zfuncs.o
 
-all:    worker_code
+all:    sse_worker
 
 
 clean:
-	/bin/rm -f *~ *.so *.o src/*.o src/sse worker_code worker_code.f90
+	rm -f *~ *.so *.o src/*.o src/sse worker_code worker_code.f90
+	rm -f sse_worker
 
-worker_code:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
+sse_worker:	worker_code.f90  SSE_muse_interface.o  $(OBJ)
 	make -C src sse CMPLR=$(FORTRAN)
 	$(MPIF90) $^ -o $@ 
 

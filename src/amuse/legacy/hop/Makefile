@@ -12,11 +12,11 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: worker_code 
+all: hop_worker 
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) *~ worker_code
+	$(RM) -f *~ worker_code hop_worker
 	make -C src clean
 
 $(CODELIB):
@@ -28,8 +28,8 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py HopInterface -o $@
 
-worker_code: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) $@.cc $(OBJS) $(CODELIB) -o $@
+hop_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 

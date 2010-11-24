@@ -1,4 +1,3 @@
-
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 FC      = $(FORTRAN)
@@ -23,7 +22,7 @@ STAR_WORK_OBJS = \
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_SVN = ./build_mesa.py download
 
-all:	worker_code
+all:	mesa_worker
 
 src:
 ifdef DOWNLOAD_CODES
@@ -47,6 +46,7 @@ endif
 
 clean:
 	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90
+	$(RM) -f mesa_worker
 	make -C $(MESA_MAKE_DIR) clean
 
 veryclean:
@@ -56,7 +56,7 @@ veryclean:
 distclean: clean
 	$(RM) -Rf ./src/
 
-worker_code:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
+mesa_worker:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
 	$(MPIF90) $(FFLAGS) $(FCopenmp) $^ -o $@ $(LOAD_MESA_STAR)
 
 worker_code.f90: interface.py

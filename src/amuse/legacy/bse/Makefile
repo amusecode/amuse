@@ -16,12 +16,12 @@ BSEOBJ = src/comenv.o src/corerd.o src/deltat.o src/dgcore.o \
          src/kick.o src/mix.o src/mlwind.o src/mrenv.o \
          src/ran3.o src/rl.o src/star.o src/zcnsts.o src/zfuncs.o
 
-all:    worker_code
+all:    bse_worker
 
 clean:
-	/bin/rm -f *~ *.so *.o src/*.o src/bse worker_code worker_code.f90
+	/bin/rm -f *~ *.so *.o src/*.o src/bse bse_worker worker_code worker_code.f90
 
-worker_code:	worker_code.f90  BSE_code.o  $(BSEOBJ)
+bse_worker:	worker_code.f90  BSE_code.o  $(BSEOBJ)
 	make -C src bse CMPLR=$(FORTRAN) FFLAGS="$(FFLAGS)"
 	$(MPIF90) $(FFLAGS) $^ -o $@ 
 

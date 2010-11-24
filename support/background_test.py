@@ -551,6 +551,7 @@ class RunTests(object):
         self.life_reports = []
         self.clear_reports_queue()
         self.test_is_running = True
+        self.last_test_started = None
         try:
             result_queue = Queue()
             cwd = os.getcwd()
@@ -593,11 +594,12 @@ class RunTests(object):
                         self.report_queue.put(message[1])
                    
                 if message[0] == 'start-report':
-                    print message[1]
+                    self.last_test_started = message[1]
                     continue
                     
                 last_message = message
             result = last_message
+            self.last_test_started = None
         except Empty:
             print "No message recieved from process for 60 seconds"
             report = MakeAReportOfATestRun()

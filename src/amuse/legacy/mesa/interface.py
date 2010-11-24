@@ -24,7 +24,7 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution):
         .. [#] http://mesa.sourceforge.net/
     """
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code", **options)
+        LegacyInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
         LiteratureRefs.__init__(self)
 
     def get_data_directory(self):

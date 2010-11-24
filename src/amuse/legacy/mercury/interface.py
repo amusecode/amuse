@@ -2,7 +2,7 @@ from amuse.legacy import *
 
 class Mercury(LegacyInterface):
     def __init__(self, **args):
-        LegacyInterface.__init__(self, name_of_the_worker = 'worker',**args)
+        LegacyInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
 
     @legacy_function
     def initialize_code():

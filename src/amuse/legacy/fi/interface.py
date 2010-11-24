@@ -38,11 +38,11 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     
     def name_of_the_worker(self, mode):
         if mode == self.MODE_NORMAL:
-            return 'worker'
+            return 'fi_worker'
         elif mode == self.MODE_PERIODIC_BOUNDARIES:
-            return 'worker_code_periodic'
+            return 'fi_worker_periodic'
         else:
-            return 'worker'
+            return 'fi_worker'
         
             
     def get_data_directory(self):

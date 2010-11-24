@@ -43,7 +43,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     include_headers = ['worker_code.h', 'stopcond.h']
     
     def __init__(self, **options):
-        LegacyInterface.__init__(self, **options)
+        LegacyInterface.__init__(self, name_of_the_worker="athena_worker", **options)
         self.set_auto_decomposition(1)
         LiteratureRefs.__init__(self)
         self.number_of_domains = 1

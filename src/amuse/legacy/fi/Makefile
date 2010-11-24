@@ -67,7 +67,7 @@ FILES=$(SRC)/muse_helpers.f90 $(SRC)/mem.f90 $(SRC)/elements.f90 $(SRC)/cooling.
 AMUSE_INTERFACE_DEPS=../interface/gd.py ../interface/common.py ../../support/legacy/core.py ../../support/interface.py
 
 
-all: worker
+all: fi_worker
 
 %.o: %.f90 Makefile
 	$(FC) $(FFLAGS)  -c -o $@ $< 
@@ -75,13 +75,22 @@ all: worker
 $(SRC)/libfi.a: $(FILES) Makefile
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 
-worker: worker.f90 interface.o $(SRC)/libfi.a
+fi_worker: worker.f90 interface.o $(SRC)/libfi.a
 	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
 
-glworker: glworker.f90 interface.o $(SRC)/libfi.a
+fi_worker_gl: glworker.f90 interface.o $(SRC)/libfi.a
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $(SCINC) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
+
+fi_worker_periodic: worker.f90 interface.o $(SRC)/libfi.a
+	make -C src purge
+	./patch_globals_dot_h.py --periodic
+	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
+	
+	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
+	./patch_globals_dot_h.py
+	make -C src purge
 
 worker.f90: interface.py __init__.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
@@ -90,14 +99,6 @@ glworker.f90: interface.py __init__.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
 
 
-worker_code_periodic: worker.f90 interface.o $(SRC)/libfi.a
-	make -C src purge
-	./patch_globals_dot_h.py --periodic
-	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
-	
-	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
-	./patch_globals_dot_h.py
-	make -C src purge
 
 
 __init__.py:
@@ -107,5 +108,6 @@ clean:
 	make -C src purge
 	rm -f __init__.py
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
-	rm -f worker_code_periodic
+	rm -f fi_worker_periodic fi_worker_gl fi_worker
+	rm -f worker_code_periodic worker_code
 

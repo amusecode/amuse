@@ -32,7 +32,7 @@ PATCH_FILES = ./patch_files.py
 FFLAGS   += -Wall -g -I$(CODEDIR)/source
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
-all: worker_code 
+all: mocassin_worker 
 
 $(CODEDIR):
 ifdef DOWNLOAD_CODES
@@ -57,6 +57,7 @@ endif
 clean:
 	$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code worker_code.f90
+	$(RM) mocassin_worker
 	make -C $(CODEDIR) clean
 
 $(CODELIB): $(CODEDIR)
@@ -66,8 +67,8 @@ $(CODELIB): $(CODEDIR)
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MocassinInterface -o $@
 
-worker_code:  $(CODEDIR) worker_code.f90 $(CODELIB) $(OBJS) 
-	$(MPIF90) $(FFLAGS) $@.f90 $(OBJS) $(OBJECTS) -o $@
+mocassin_worker:  $(CODEDIR) worker_code.f90 $(CODELIB) $(OBJS) 
+	$(MPIF90) $(FFLAGS) worker_code.f90 $(OBJS) $(OBJECTS) -o $@
 
 %.mod %.o: %.f90
 	$(FC) $(FFLAGS) -c -o $@ $<

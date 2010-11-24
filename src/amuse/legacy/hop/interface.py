@@ -22,7 +22,7 @@ class HopInterface(LegacyInterface):
     include_headers = ['worker_code.h']
     
     def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self, **keyword_arguments)
+        LegacyInterface.__init__(self, name_of_the_worker="hop_worker", **keyword_arguments)
     
     @legacy_function
     def new_particle():

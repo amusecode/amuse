@@ -3,6 +3,7 @@ __revision__ = "$Id:$"
 import sys, os, re, subprocess
 import ConfigParser
 import os.path
+import datetime
 
 from stat import ST_MODE
 from distutils import sysconfig
@@ -229,7 +230,7 @@ class LegacyCommand(Command):
                 config.write(f)
 
     
-    def get_special_targets(self, directory, environment):
+    def get_special_targets(self, name, directory, environment):
         process = Popen(['make','-qp', '-C', directory], env = environment, stdout = PIPE, stderr = PIPE)
         stdoutstring, stderrstring = process.communicate()
         lines = stdoutstring.splitlines()
@@ -242,13 +243,18 @@ class LegacyCommand(Command):
             elif line.startswith('muse_worker_'):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
-                    name = line[len('muse_worker_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], name,))
+                    targetname = line[len('muse_worker_'):index_of_the_colon]
+                    result.append((line[:index_of_the_colon], targetname,))
             elif line.startswith('worker_code_'):
                 index_of_the_colon = line.index(':')
                 if(index_of_the_colon > 0):
-                    name = line[len('worker_code_'):index_of_the_colon]
-                    result.append((line[:index_of_the_colon], name,))
+                    targetname = line[len('worker_code_'):index_of_the_colon]
+                    result.append((line[:index_of_the_colon], targetname,))
+            elif line.startswith(name + '_worker_'):
+                index_of_the_colon = line.index(':')
+                if(index_of_the_colon > 0):
+                    targetname = line[len(name + '_worker_'):index_of_the_colon]
+                    result.append((line[:index_of_the_colon], targetname,))
         return result
         
 class BuildLegacy(LegacyCommand):
@@ -286,26 +292,30 @@ class BuildLegacy(LegacyCommand):
         makefile_paths = list(self.makefile_paths())
         
         for x in makefile_paths:
-            shortname = x[len(self.legacy_dir) + 1:]
-            self.announce("building {0}".format(shortname), level =  log.INFO)
+            shortname = x[len(self.legacy_dir) + 1:].lower()
+            starttime = datetime.datetime.now()
+            self.announce("[{1:%H:%M:%S}] building {0}".format(shortname, starttime), level =  log.INFO)
             returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
+            endtime = datetime.datetime.now()
             if returncode > 0:
                 not_build.append(shortname)
-                self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level =  log.INFO)
+                self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.INFO)
             else:
                 build.append(shortname)
-                self.announce("building {0}, succeeded".format(shortname), level =  log.INFO)
+                self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.INFO)
             
-            special_targets = self.get_special_targets(x, environment)
+            special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
-                self.announce("building " + x + " version: " + target_name, level =  log.INFO)
+                starttime = datetime.datetime.now()
+                self.announce("[{2:%H:%M:%S}] building {0} - {1}".format(shortname, target_name, starttime), level =  log.INFO)
                 returncode, buildlog = self.run_make_on_directory(shortname, x, target, environment)
+                endtime = datetime.datetime.now()
                 if returncode > 0:
                     not_build_special.append(shortname + " - " + target_name)
-                    self.announce("building {0} - {1}, failed, see {2!r} for error log".format(shortname, target_name, buildlog), level =  log.INFO)
+                    self.announce("[{3:%H:%M:%S}] building {0} - {1}, failed, see {2!r} for error log".format(shortname, target_name, buildlog,endtime), level =  log.INFO)
                 else:
                     build.append(shortname + " - " + target_name)
-                    self.announce("building {0} - {1}, succeeded".format(shortname, target_name), level =  log.INFO)
+                    self.announce("[{2:%H:%M:%S}] building {0} - {1}, succeeded".format(shortname, target_name, endtime), level =  log.INFO)
                 
         
         print
@@ -389,12 +399,14 @@ class BuildOneLegacyCode(LegacyCommand):
         
         results = []
         for x in self.makefile_paths():
+            shortname = x[len(self.legacy_dir) + 1:].lower()
+            
             self.announce("cleaning " + x)
             call(['make','-C', x, 'clean'])
             returncode = call(['make','-C', x, 'all'], env = environment)
             results.append(('default',returncode,))
             
-            special_targets = self.get_special_targets(x, environment)
+            special_targets = self.get_special_targets(shortname, x, environment)
             for target,target_name in special_targets:
                 self.announce("building " + x + " version: " + target_name)
                 returncode = call(['make','-C', x, target], env = environment)

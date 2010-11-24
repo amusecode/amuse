@@ -47,7 +47,7 @@ CLASSNAME=CapreoleInterface
 
 GLCLASSNAME=GLCapreoleInterface
 
-all: worker
+all: capreole_worker
 
 %.o: %.f90 Makefile
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC)  -c -o $@ $< 
@@ -55,33 +55,38 @@ all: worker
 %.o: %.F90 Makefile
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) -c -o $@ $< 
 
-worker: worker.f90 interface.o
+$(MPILIBS):
+	make -C src clean
+	make -C src amuse_interface_mpi F90FLAGS1="$(FFLAGS)" FC="$(FC)"
+	
+$(NOMPILIBS):
+	make -C src clean
+	make -C src amuse_interface F90FLAGS1="$(FFLAGS)" FC="$(FC)"
+	
+capreole_worker: $(NOMPILIBS) worker.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(NOMPILIBS) $(SCLIBS)
 
-worker_code_mpi: FFLAGS2+=$(MPI_FLAGS)
-worker_code_mpi: worker_mpi.f90 interface.o
+capreole_worker_mpi: FFLAGS2+=$(MPI_FLAGS)
+capreole_worker_mpi: $(MPILIBS) worker_mpi.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $(SCINC) $^ -o $@ $(MPILIBS) $(SCLIBS)
 
-glworker: glworker.f90 interface.o
+capreole_worker_gl: $(NOMPILIBS) glworker.f90 interface.o
+	make -C src clean
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $(SCINC) $^ -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(NOMPILIBS) $(SCLIBS)
 
 worker.f90: interface.py 
-	make -C src amuse_interface F90FLAGS1="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
-
 worker_mpi.f90: interface.py 
-	make -C src amuse_interface_mpi F90FLAGS1="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
 glworker.f90: interface.py 
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(GLCLASSNAME) -o $@
 
-
 clean:
 	make -C src clean
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
-	rm -f worker_mpi worker_mpi.f90
+	rm -f capreole_worker capreole_worker_mpi capreole_worker_gl worker_mpi.f90

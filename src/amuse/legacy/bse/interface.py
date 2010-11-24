@@ -31,8 +31,8 @@ class BSEInterface(LegacyInterface, LiteratureRefs):
         .. [#] Hurley J.R., Pols O.R., Tout C.A., 2000, MNRAS, 315, 543:
         .. [#] ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
     """
-    def __init__(self):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code")
+    def __init__(self, **options):
+        LegacyInterface.__init__(self, name_of_the_worker="bse_worker", **options)
         LiteratureRefs.__init__(self)
 
     @legacy_function   

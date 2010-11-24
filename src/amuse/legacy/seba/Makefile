@@ -13,7 +13,7 @@ AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_SVN = ./downloadsvn.py
 
-all: worker_code
+all: seba_worker
 
 src:
 ifdef DOWNLOAD_CODES
@@ -54,8 +54,8 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=H interface.py SebaInterface -o $@
 
-worker_code: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
-	$(MPICXX) $(CXXFLAGS) $@.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
+seba_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
+	$(MPICXX) $(CXXFLAGS) $< $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $<

@@ -19,7 +19,7 @@ CLASSNAME=Mercury
 
 GLCLASSNAME=glMercury
 
-all: worker
+all: mercury_worker
 
 %.o: %.f90 Makefile
 	$(FC) $(FFLAGS) $(FFLAGS2)  -c -o $@ $< 
@@ -27,10 +27,10 @@ all: worker
 %.o: %.F90 Makefile
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
         
-worker: worker.f90 interface.o
+mercury_worker: worker.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS)
 
-glworker: glworker.f90 interface.o
+mercury_worker_gl: glworker.f90 interface.o
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
@@ -50,3 +50,4 @@ clean:
 	make -C src clean
 	rm -f __init__.py
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
+	rm -f mercury_worker mercury_worker_gl

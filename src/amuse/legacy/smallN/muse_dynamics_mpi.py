@@ -30,7 +30,7 @@ class SmallNInterface(LegacyInterface):
    
 
     def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self, name_of_the_worker='muse_worker_starlab')
+        LegacyInterface.__init__(self, name_of_the_worker='smalln_worker')
         
         self.has_run = False
         self.eps2 = 0.0

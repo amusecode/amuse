@@ -23,9 +23,9 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
     
     def name_of_the_worker(self, number_of_workers):
         if number_of_workers > 1:
-            return 'worker_code_mpi'
+            return 'capreole_worker_mpi'
         else:
-            return 'worker'
+            return 'capreole_worker'
     
     @legacy_function   
     def setup_mesh():

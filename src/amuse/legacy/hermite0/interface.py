@@ -18,7 +18,7 @@ class HermiteInterface(LegacyInterface,
 
 
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="worker_code",
+        LegacyInterface.__init__(self, name_of_the_worker="hermite_worker",
                                  **options)
         LiteratureRefs.__init__(self)
 

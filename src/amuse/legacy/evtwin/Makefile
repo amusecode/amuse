@@ -23,7 +23,7 @@ LD = ld
 AR = ar ruv
 RANLIB = ranlib
 
-all:    create_Makefile worker_code
+all:    create_Makefile evtwin_worker
 
 create_Makefile: $(CMAKE_DEPS)
 	mkdir -p $(MODDIR)
@@ -32,7 +32,7 @@ create_Makefile: $(CMAKE_DEPS)
 clean:
 	-make -C $(MODDIR) clean
 	rm -f *.pyc make.log
-	rm -f mpi_code.f90 worker_code twin_library_v2.mod mesh.mod
+	rm -f mpi_code.f90 worker_code evtwin_worker twin_library_v2.mod mesh.mod
 	rm -f $(MODDIR)/CMakeCache.txt
 	rm -rf $(MODDIR)/CMakeFiles
 	rm -rf $(MODDIR)/Makefile
@@ -41,7 +41,7 @@ distclean:
 	make -C src distclean
 	/bin/rm -f *.pyc
 
-worker_code: mpi_code.f90 $(SRC)
+evtwin_worker: mpi_code.f90 $(SRC)
 	@-mkdir -p $(LIBDIR)
 #	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
 	make -s --no-print-directory -C $(MODDIR)
