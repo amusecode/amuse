@@ -89,6 +89,7 @@ class StellarModel2SPH(object):
     def setup_core_parameters(self):
         self.core_radius = None
         self.core_mass = None
+        self.sph_core_radius = None
         
         if self.with_core_particle and self.mode == "scaling method":
             mean_density = 3.0 * self.mass / (4.0 * numpy.pi * self.radius**3)
@@ -100,13 +101,24 @@ class StellarModel2SPH(object):
                 i_core = self.number_of_zones - index
                 self.core_radius = self.radius_profile[i_core] - ((self.radius_profile[i_core] - self.radius_profile[i_core-1]) *
                     (max_density - self.density_profile[i_core]) / (self.density_profile[i_core-1] - self.density_profile[i_core]))
-                self.core_mass = get_enclosed_mass_from_tabulated(self.core_radius, radii = self.radius_profile, densities = self.density_profile)
-                self.mass = self.mass - self.core_mass
+                self.core_mass = get_enclosed_mass_from_tabulated(self.core_radius, 
+                    radii = self.radius_profile, densities = self.density_profile)
                 print "core mass:", self.core_mass.as_quantity_in(units.MSun)
-                self.radius_profile = self.radius_profile[i_core:]
-                self.density_profile = self.density_profile[i_core:]
-                self.composition_profile = self.composition_profile[i_core:]
-                self.specific_internal_energy_profile = self.specific_internal_energy_profile[i_core:]
+                print "core radius:", self.core_radius.as_quantity_in(units.RSun)
+                if True:
+                    self.density_profile[:i_core] = max_density
+                    self.core_mass -= get_enclosed_mass_from_tabulated(self.core_radius, 
+                        radii = self.radius_profile, densities = self.density_profile)
+                    self.sph_core_radius = 0 | units.m
+                    print "core mass in DM particle:", self.core_mass.as_quantity_in(units.MSun)
+                else:
+                    self.radius_profile = self.radius_profile[i_core:]
+                    self.density_profile = self.density_profile[i_core:]
+                    self.composition_profile = self.composition_profile[i_core:]
+                    self.specific_internal_energy_profile = self.specific_internal_energy_profile[i_core:]
+                    self.sph_core_radius = self.core_radius
+                
+                self.mass = self.mass - self.core_mass
     
     def coordinates_from_spherical(self, radius, theta, phi):
         result  =      radius * numpy.sin( theta ) * numpy.cos( phi )   # x
@@ -187,13 +199,15 @@ class StellarModel2SPH(object):
         if self.mode == "scaling method":
             sph_particles = new_spherical_particle_distribution(
                 self.number_of_sph_particles, 
-                radii = self.radius_profile, densities = self.density_profile, core_radius = self.core_radius)
+                radii = self.radius_profile, densities = self.density_profile, core_radius = self.sph_core_radius)
         else:
             sph_particles = Particles(self.number_of_sph_particles)
             sph_particles.position = self.new_positions()
         sph_particles.mass = (self.mass.number * 1.0 / 
             self.number_of_sph_particles) | self.mass.unit
         sph_particles.velocity = [0,0,0] | units.m/units.s
+        # Crude estimate of the smoothing length; the SPH code will calculate the true value itself.
+        sph_particles.h_smooth = self.radius * (self.number_of_sph_particles/50.0)**(-1/3.0)
         return sph_particles
     
     def relax(self, particles):
@@ -256,6 +270,7 @@ class StellarModel2SPH(object):
                 core_particle.mass = self.core_mass
                 core_particle.position = [0.0, 0.0, 0.0] | units.m
                 core_particle.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+                core_particle.radius = 0.0 | units.m
                 return core_particle, sph_particles, self.core_radius
             else:
                 return Particles(), sph_particles, None

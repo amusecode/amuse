@@ -848,8 +848,12 @@ class TestStellarModel2SPH(TestWithMPI):
         print "All done!\n"
     
     def slowtest18(self):
-        print "SPH model with core (Gadget2)"
+        print "SPH model with core"
+        # options:
         with_core = True # set to False to do a comparison run without a core
+        hydro_code = Gadget2 # Fi -or- Gadget2
+        hydro_code_args = dict() # dict() -or- dict(use_gl = True)
+        
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
@@ -903,16 +907,22 @@ class TestStellarModel2SPH(TestWithMPI):
         print "Evolving to:", t_end
         n_steps = 100
         
-        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
-        hydro_legacy_code = Gadget2(unit_converter)
+        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
+        hydro_legacy_code = hydro_code(unit_converter, hydro_code_args)
+        
+        try:
+            hydro_legacy_code.parameters.timestep = t_end / n_steps
+        except Exception as exc:
+            if not "parameter is read-only" in str(exc): raise
+        
         if with_core:
+            hydro_legacy_code.parameters.epsilon_squared = core_radius**2
             hydro_legacy_code.gas_particles.add_particles(gas_without_core)
             hydro_legacy_code.dm_particles.add_particles(core)
-            hydro_legacy_code.parameters.epsilon_squared = core_radius**2
         else:
             hydro_legacy_code.gas_particles.add_particles(gas)
         
-        self.assertAlmostRelativeEqual(stars.mass, hydro_legacy_code.total_mass, places=7)
+        self.assertAlmostRelativeEqual(stars.mass, hydro_legacy_code.particles.total_mass(), places=7)
         
         times = [] | units.s
         kinetic_energies =   [] | units.J
