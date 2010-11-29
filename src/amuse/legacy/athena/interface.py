@@ -46,7 +46,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         LegacyInterface.__init__(self, name_of_the_worker="athena_worker", **options)
         self.set_auto_decomposition(1)
         LiteratureRefs.__init__(self)
-        self.number_of_domains = 1
+        self.number_of_grids = 1
         
     @legacy_function
     def par_seti():
@@ -87,7 +87,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         return function
           
     def setup_mesh(self, nmeshx, nmeshy, nmeshz, xlength, ylength, zlength):
-        self.par_seti("job","num_domains", "%d", self.number_of_domains, "-")
+        self.par_seti("job","num_domains", "%d", self.number_of_grids, "-")
         self.par_seti("domain1", "level", "%d", 0, "-")
         self.par_seti("domain1", "AutoWithNProc", "%d", self.channel.number_of_workers, "-")
         
@@ -107,7 +107,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         
         return 0
     
-    def define_grid_domain(self, level, nmeshx, nmeshy, nmeshz, i, j, k):
+    def define_subgrid(self, level, nmeshx, nmeshy, nmeshz, i, j, k):
         """
         Define a new domain on the given level the number of cells in this 
         domain is given by nmeshx,  nmeshy, nmeshz. 
@@ -115,10 +115,12 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         Each level is twice as dense as in every directory as 
         the previous level (there are 8 cells per higher level cell).
         """
-        self.number_of_domains += 1
-        domain = "domain{0}".format(self.number_of_domains)
-        print domain
-        self.par_seti("job","num_domains", "%d", self.number_of_domains, "-")
+        self.number_of_grids += 1
+        
+        domain = "domain{0}".format(self.number_of_grids)
+        
+        self.par_seti("job","num_domains", "%d", self.number_of_grids, "-")
+        
         self.par_seti(domain, "level", "%d", level, "-")
         self.par_seti(domain, "Nx1", "%d", nmeshx, "-")
         self.par_seti(domain, "Nx2", "%d", nmeshy, "-")
@@ -127,11 +129,11 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         self.par_seti(domain, "jDisp", "%d", j, "-")
         self.par_seti(domain, "kDisp", "%d", k, "-")
         
-        return self.number_of_domains
+        return self.number_of_grids
         
         
     
-    def get_index_range_inclusive(self, level = 0, domain = 1):
+    def get_index_range_inclusive(self, index_of_grid = 1):
         """
         Returns the min and max values of indices in each
         direction. The range is inclusive, the min index
@@ -139,7 +141,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         The total number of cells in one direction
         is max - min + 1.
         """
-        domainid = "domain{0}".format(domain)
+        domainid = "domain{0}".format(index_of_grid)
         
         ni = self.par_geti(domainid, "Nx1")
         nj = self.par_geti(domainid, "Nx2")
@@ -147,7 +149,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         idisp = self.par_geti(domainid, "iDisp")[0]
         jdisp = self.par_geti(domainid, "jDisp")[0]
         kdisp = self.par_geti(domainid, "kDisp")[0]
-        print level, domain, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
+        print index_of_grid, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
         return (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
@@ -166,8 +168,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.can_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
-        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -179,8 +180,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.can_handle_array = True
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
-        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         for x in ['i','j','k']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -310,13 +310,13 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         return function
         
         
-    def get_index_range_for_potential(self, level = 0, domain = 1):
+    def get_index_range_for_potential(self, index_of_grid = 1):
         """
         Returns the min and max values of indices in each
         direction for the potential field, this
         range is 1 cell larger than the normal grid
         in all directions"""
-        imin,imax,jmin,jmax,kmin,kmax = numpy.asarray(self.get_index_range_inclusive())
+        imin,imax,jmin,jmax,kmin,kmax = numpy.asarray(self.get_index_range_inclusive(index_of_grid = index_of_grid))
         imin -= 1
         imax += 1
         if jmin != jmax:
@@ -333,6 +333,9 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
+        
+        #function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        
         function.addParameter('potential', dtype='d', direction=function.IN)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
@@ -344,6 +347,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
+        #function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         function.addParameter('potential', dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
@@ -382,8 +386,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
-        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         for x in ['rho',]:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -398,8 +401,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
-        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         for x in ['en',]:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -414,8 +416,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
-        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         for x in ['rhovx', 'rhovy', 'rhovz',]:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -430,8 +431,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.must_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
-        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.addParameter('number_of_points', 'i', function.LENGTH)
@@ -449,8 +449,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
             function.addParameter(x, dtype='i', direction=function.IN)
         for x in ['rho','rhovx','rhovy','rhovz','en']:
             function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('level', dtype='i', direction=function.IN, default = 0)
-        function.addParameter('domain', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
@@ -473,7 +472,7 @@ class Athena(CodeInterface):
         )
         object.add_method(
             'get_position_of_index',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (length, length, length, object.ERROR_CODE,)
         )
         
@@ -485,30 +484,30 @@ class Athena(CodeInterface):
             'set_grid_state',
             (object.INDEX, object.INDEX, object.INDEX,
             density, momentum, momentum, momentum, energy,
-            object.INDEX, object.INDEX),
+            object.INDEX),
             (object.ERROR_CODE,)
         )
         object.add_method(
             'get_grid_state',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (density, momentum, momentum, momentum, energy,
             object.ERROR_CODE,)
         )
         object.add_method(
             'get_energy_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             ( energy,
             object.ERROR_CODE,)
         )
         object.add_method(
             'get_density',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (density,
             object.ERROR_CODE,)
         )
         object.add_method(
             'get_momentum_denisty',
-            (object.INDEX, object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             ( momentum, momentum, momentum, 
             object.ERROR_CODE,)
         )
@@ -539,7 +538,7 @@ class Athena(CodeInterface):
         object.add_getter('grid', 'get_density', names=('rho',))
         object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
         object.add_getter('grid', 'get_energy_density', names=('energy',))
-        object.define_extra_keywords('grid', {'level':0, 'domain':1})
+        object.define_extra_keywords('grid', {'index_of_grid':1})
         
         #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
         #object.add_setter('grid', 'set_density', names=('rho',))
@@ -551,7 +550,7 @@ class Athena(CodeInterface):
         object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
         object.add_getter('potential_grid', 'get_potential', names=('potential',))
         object.add_setter('potential_grid', 'set_potential', names=('potential', ))
-        object.define_extra_keywords('potential_grid', {'level':0, 'domain':1})
+        object.define_extra_keywords('potential_grid', {'index_of_grid':1})
         
         
         object.define_grid('grid1')
@@ -564,7 +563,7 @@ class Athena(CodeInterface):
         object.add_getter('grid1', 'get_density', names=('rho',))
         object.add_getter('grid1', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
         object.add_getter('grid1', 'get_energy_density', names=('energy',))
-        object.define_extra_keywords('grid1', {'level':1, 'domain':2})
+        object.define_extra_keywords('grid1', {'index_of_grid':2})
 
     def define_parameters(self, object):
         object.add_method_parameter(

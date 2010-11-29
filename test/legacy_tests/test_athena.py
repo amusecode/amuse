@@ -53,27 +53,27 @@ class TestAthenaInterface(TestWithMPI):
         error = instance.commit_parameters()
         self.assertEquals(error, 0)
         
-        x,y,z,error = instance.get_position_of_index(0,0,0,0,1)
+        x,y,z,error = instance.get_position_of_index(0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.1)
         
-        x,y,z,error = instance.get_position_of_index(1,0,0,0,1)
+        x,y,z,error = instance.get_position_of_index(1,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.3)
         
-        x,y,z,error = instance.get_position_of_index(2,0,0,0,1)
+        x,y,z,error = instance.get_position_of_index(2,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.5)
         
-        x,y,z,error = instance.get_position_of_index(3,0,0,0,1)
+        x,y,z,error = instance.get_position_of_index(3,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.7)
         
-        x,y,z,error = instance.get_position_of_index(4,0,0,0,1)
+        x,y,z,error = instance.get_position_of_index(4,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.9)
         
-        x,y,z,error = instance.get_position_of_index(5,0,0,0,1)
+        x,y,z,error = instance.get_position_of_index(5,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 1.1)
         
@@ -103,16 +103,13 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(0.025, y)
         self.assertAlmostRelativeEquals(0.0125, z)
         
-        
-        
         x,y,z, error= instance.get_position_of_index(10,20,40)
         self.assertEquals(error, 0)
         print x,y,z
         self.assertAlmostRelativeEquals(1.05, x)
         self.assertAlmostRelativeEquals(1.025, y)
         self.assertAlmostRelativeEquals(1.0125, z)
-        
-        
+
         instance.stop()
         
     
@@ -839,8 +836,6 @@ class TestAthena(TestWithMPI):
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         self.assertEquals(instance.parameters.xbound1, "periodic" | units.string)
         instance.stop()
-    
-    
 
     def xtest10(self):
         instance=self.new_instance(Athena)

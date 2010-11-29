@@ -72,6 +72,25 @@ static inline void ijk_pos(
   }
 }
 
+static DomainS * get_domain_structure_with_index(int index_of_grid)
+{
+    DomainS * dom = 0;
+    int ii = 0, level = 0;
+    for(level = 0; level < mesh.NLevels; level++)
+    {
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            //printf("get_position_of_index: %d, %d, %d\n", level, dom->InputBlock, domain);
+            if(dom->InputBlock == index_of_grid)
+            {
+                break;
+            }
+        }
+    }
+    return dom;
+}
+
 
 static inline void ijk_pos_dom(
     const Real x1, const Real x2, const Real x3,
@@ -302,7 +321,7 @@ int initialize_grid()
   return 0;
 }
 
-int get_position_of_index(int i, int j, int k, int level, int domain, double * x, double * y,
+int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, double * y,
   double * z){
 
     double pos[4] = {0,0,0,0};
@@ -310,24 +329,9 @@ int get_position_of_index(int i, int j, int k, int level, int domain, double * x
     if (mesh.NLevels == 0) {
         return -1;
     }
-    if (level >= mesh.NLevels){
-        return -2;
-    }
-    if (mesh.DomainsPerLevel[level] == 0)
-    {
-        return -3;
-    }
-    DomainS * dom = 0;
-    int ii = 0;
-    for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
-    {
-        dom = (DomainS*)&(mesh.Domain[level][ii]);
-        //printf("get_position_of_index: %d, %d, %d\n", level, dom->InputBlock, domain);
-        if(dom->InputBlock == domain){
-            break;
-        }
-    }
-    if(dom->InputBlock != domain){
+    DomainS * dom = get_domain_structure_with_index(index_of_grid);
+   
+    if(dom == 0){
         return -3;
     }
 
@@ -410,7 +414,7 @@ int get_interpolated_gravitational_potential(double x, double y, double z,   dou
 }
 
 int get_index_of_position(double x, double y,
-  double z,int level, int domain, double *i , double * j, double * k)
+  double z,int index_of_grid, double *i , double * j, double * k)
   {
 
     double pos[3] = {0,0,0};
@@ -419,24 +423,10 @@ int get_index_of_position(double x, double y,
         return -1;
     }
 
-    if (level >= mesh.NLevels){
-        return -2;
-    }
-
-    if (mesh.DomainsPerLevel[level] == 0)
-    {
-        return -3;
-    }
-    DomainS * dom = 0;
-    int ii = 0;
-    for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
-    {
-        dom = (DomainS*)&(mesh.Domain[level][ii]);
-        if(dom->InputBlock == domain){
-            break;
-        }
-    }
-    if(dom->InputBlock != domain){
+    
+    DomainS * dom = get_domain_structure_with_index(index_of_grid);
+   
+    if(dom == 0){
         return -3;
     }
     
@@ -475,7 +465,7 @@ int test() {
 
 int get_grid_state(
     int * i, int * j, int * k,
-    int * levels, int * domains,
+    int * index_of_grid,
     double * rho,
     double * rhovx, double * rhovy, double * rhovz,
     double * en,
@@ -483,10 +473,9 @@ int get_grid_state(
 {
     int l=0;
     int i0,j0,k0 = 0;
-    int level = 0;
-    int domain = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
     int ii = 0;
-
+    DomainS * dom = 0;
     if (mesh.NLevels == 0) {
         return -1;
     }
@@ -494,32 +483,15 @@ int get_grid_state(
         i0 = i[l];
         j0 = j[l];
         k0 = k[l];
-        level = levels[l];
-        domain = domains[l];
-
-        rho[l] = rhovx[l] = rhovy[l]= rhovz[l] = en[l] = 0.0;
-
-        if (level >= mesh.NLevels){
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
             continue;
         }
-
-        
-        if (mesh.DomainsPerLevel[level] == 0)
-        {
-           continue;
-        }
-        DomainS * dom = 0;
-        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
-        {
-            dom = (DomainS*)&(mesh.Domain[level][ii]);
-            if(dom->InputBlock == domain){
-                break;
-            }
-        }
-        if(dom->InputBlock != domain){
-           continue;
-        }
-
 
         if(dom->Grid == NULL)
         {
@@ -595,16 +567,19 @@ int get_grid_state(
 
 int get_density(
     int * i, int * j, int * k,
-    int * levels, int * domains,
+    int * index_of_grid,
     double * rho,
     int number_of_points)
 {
     int l=0;
     int i0,j0,k0 = 0;
-    int level = 0;
-    int domain = 0;
     int ii = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
     
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    DomainS * dom = 0;
     if (mesh.NLevels == 0) {
         return -1;
     }
@@ -612,30 +587,19 @@ int get_density(
         i0 = i[l];
         j0 = j[l];
         k0 = k[l];
-        level = levels[l];
-        domain = domains[l];
-
+        
         rho[l] = 0.0;
-
-        if (level >= mesh.NLevels){
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
             continue;
         }
         
-        if (mesh.DomainsPerLevel[level] == 0)
-        {
-           continue;
-        }
-        DomainS * dom = 0;
-        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
-        {
-            dom = (DomainS*)&(mesh.Domain[level][ii]);
-            if(dom->InputBlock == domain){
-                break;
-            }
-        }
-        if(dom->InputBlock != domain){
-           continue;
-        }
 
         if(dom->Grid == NULL)
         {
@@ -699,15 +663,18 @@ int get_density(
 
 int get_momentum_density(
     int * i, int * j, int * k,
-    int * levels, int * domains,
+    int * index_of_grid,
     double * rhovx, double * rhovy, double * rhovz,
     int number_of_points)
 {
     int l=0;
     int i0,j0,k0 = 0;
-    int level = 0;
-    int domain = 0;
-
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    DomainS * dom = 0;
     if (mesh.NLevels == 0) {
         return -1;
     }
@@ -715,32 +682,17 @@ int get_momentum_density(
         i0 = i[l];
         j0 = j[l];
         k0 = k[l];
-        level = levels[l];
-        domain = domains[l];
-
+        
         rhovx[l] = rhovy[l]= rhovz[l] = 0.0;
-
-        if (level >= mesh.NLevels){
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
             continue;
-        }
-
-        
-        
-        if (mesh.DomainsPerLevel[level] == 0)
-        {
-           continue;
-        }
-        DomainS * dom = 0;
-        int ii = 0;
-        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
-        {
-            dom = (DomainS*)&(mesh.Domain[level][ii]);
-            if(dom->InputBlock == domain){
-                break;
-            }
-        }
-        if(dom->InputBlock != domain){
-           continue;
         }
 
         if(dom->Grid == NULL)
@@ -810,15 +762,15 @@ int get_momentum_density(
 
 int get_energy_density(
     int * i, int * j, int * k,
-    int * levels, int * domains,
+    int * index_of_grid,
     double * en,
     int number_of_points)
 {
     int l=0;
     int i0,j0,k0 = 0;
-    int level = 0;
-    int domain = 0;
-
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
     if (mesh.NLevels == 0) {
         return -1;
     }
@@ -826,32 +778,18 @@ int get_energy_density(
         i0 = i[l];
         j0 = j[l];
         k0 = k[l];
-        level = levels[l];
-        domain = domains[l];
-
+        
         en[l] = 0.0;
-
-        if (level >= mesh.NLevels){
+        
+        
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
             continue;
-        }
-
-        
-        
-        if (mesh.DomainsPerLevel[level] == 0)
-        {
-           continue;
-        }
-        DomainS * dom = 0;
-        int ii = 0;
-        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
-        {
-            dom = (DomainS*)&(mesh.Domain[level][ii]);
-            if(dom->InputBlock == domain){
-                break;
-            }
-        }
-        if(dom->InputBlock != domain){
-           continue;
         }
 
         if(dom->Grid == NULL)
@@ -923,48 +861,34 @@ int set_grid_state(
     double * rho,
     double * rhovx, double * rhovy, double * rhovz,
     double * en,
-    int * levels,
-    int * domains,
+    int * index_of_grid,
     int number_of_points)
 {
 
     int l=0;
     int i0,j0,k0 = 0;
-    int level = 0;
-    int domain = 0;
-
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
     if (mesh.NLevels == 0) {
         return -1;
     }
+    
     for(l=0; l < number_of_points; l++) {
         i0 = i[l];
         j0 = j[l];
         k0 = k[l];
-        level = levels[l];
-        domain = domains[l];
 
-        if (level >= mesh.NLevels){
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
             continue;
         }
-
-       
         
-        if (mesh.DomainsPerLevel[level] == 0)
-        {
-           continue;
-        }
-        DomainS * dom = 0;
-        int ii = 0;
-        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
-        {
-            dom = (DomainS*)&(mesh.Domain[level][ii]);
-            if(dom->InputBlock == domain){
-                break;
-            }
-        }
-        if(dom->InputBlock != domain){
-           continue;
-        }
 
         if(dom->Grid == NULL)
         {
@@ -1456,7 +1380,7 @@ int evolve(double tlim) {
     int is_timeout_detection_enabled;
     int number_of_steps_innerloop = 0;
     int max_number_of_steps;
-    int timeout;
+    double timeout;
     time_t clock_current, clock_init;
     int error;
 
