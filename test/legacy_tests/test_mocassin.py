@@ -88,6 +88,12 @@ class TestMocassinInterface(TestWithMPI):
         self.assertEquals(0, error)
         self.assertEquals([0.0] * len(indices_x), temperatures)
         
+        ni, nj, nk, error = instance.get_max_indices(1)
+        self.assertEquals(0, error)
+        
+        self.assertEquals(ni, 13)
+        self.assertEquals(nj, 13)
+        self.assertEquals(nj, 13)
         instance.stop()
         
         
@@ -98,7 +104,7 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_symmetricXYZ(True)
         instance.setup_mesh(13,13,13,0.95E+19,0.95E+19,0.95E+19)
         instance.setup_abundancies()
-        #instance.set_abundancies_filename(1, 'abunHII20.in')
+        #instance.set_abundancies_filename('abunHII20.in')
         instance.set_input_directory(instance.get_default_input_directory())
         instance.set_constant_hydrogen_density(100.0)
         instance.set_initial_nebular_temperature(6000.0)
@@ -132,3 +138,45 @@ class TestMocassinInterface(TestWithMPI):
         print temperatures
         instance.stop()
 
+
+
+class TestMocassin(TestWithMPI):
+    
+    def test1(self):
+        instance=self.new_instance(Mocassin)
+        instance.initialize_code()
+        
+        self.assertEquals(0.0 | units.cm**-3, instance.parameters.constant_hydrogen_density)
+        print instance.parameters.abundancies_filename
+        instance.parameters.constant_hydrogen_density = 100.0 | units.cm**-3
+        self.assertEquals(100.0 | units.cm**-3, instance.parameters.constant_hydrogen_density)
+        
+        self.assertEquals(10000 | units.K, instance.parameters.initial_nebular_temperature)
+        
+        self.assertEquals("" | units.none, instance.parameters.abundancies_filename)
+        
+        
+    def test2(self):
+        instance=self.new_instance(Mocassin) #, redirection = "none")
+        instance.initialize_code()
+        instance.set_input_directory(instance.get_default_input_directory())
+        
+        
+        instance.set_symmetricXYZ(True)
+        
+        instance.parameters.nx = 11
+        instance.parameters.ny = 12
+        instance.parameters.nz = 13
+        
+        instance.parameters.length_x = 1 | units.km
+        instance.parameters.length_y = 1 | units.km
+        instance.parameters.length_z = 1 | units.km
+        
+        instance.commit_parameters()
+        self.assertEquals(instance.grid.shape[0], 11)
+        self.assertEquals(instance.grid.shape[1], 12)
+        self.assertEquals(instance.grid.shape[2], 13)
+        
+        
+        
+        

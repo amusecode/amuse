@@ -152,6 +152,7 @@ CONTAINS
      
         
         allocate(abundanceFile(0:100))
+        abundanceFile = ''
         
         initialize_code=0
     END FUNCTION
@@ -358,7 +359,7 @@ CONTAINS
         get_position_of_index=0
     END FUNCTION
     
-    FUNCTION set_abundancies_filename(index, filename)
+    FUNCTION set_abundancies_filename(filename, index)
         IMPLICIT NONE
         CHARACTER(LEN=*) filename
         INTEGER index, set_abundancies_filename
@@ -789,6 +790,29 @@ CONTAINS
         END DO
         get_grid_active = 0
     END FUNCTION
+    
+    FUNCTION get_max_indices(index_of_grid,ni,nj,nk)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: index_of_grid
+        INTEGER, INTENT(OUT) :: ni,nj,nk
+        
+        INTEGER :: get_max_indices
+
+        IF (index_of_grid .GT. nGrids) THEN
+            ni = 0
+            nj = 0
+            nk = 0
+            get_max_indices = -1
+            CONTINUE
+        END IF
+        
+        ni = size(grid3D(index_of_grid)%xAxis)
+        nj = size(grid3D(index_of_grid)%yAxis)
+        nk = size(grid3D(index_of_grid)%zAxis)
+        
+        get_max_indices = 0
+    END FUNCTION
+    
     
     FUNCTION set_emit_rate_of_photons(value)
         IMPLICIT NONE

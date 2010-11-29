@@ -1,6 +1,7 @@
 from amuse.legacy import *
 from amuse.legacy.interface.common import CommonCodeInterface
 from amuse.support.core import OrderedDictionary
+from amuse.support.units import derivedsi
 
 import tempfile
 import os
@@ -24,7 +25,7 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
         with os.fdopen(fd, 'w') as f:
             for atomname, value in self.abundancies_table().iteritems():
                 f.write("{0} !{1}\n".format(value, atomname))
-        self.set_abundancies_filename(1,name)
+        self.set_abundancies_filename(name, 1)
             
         
     
@@ -112,15 +113,15 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
     @legacy_function    
     def set_abundancies_filename():
         function = LegacyFunctionSpecification()  
-        function.addParameter('index', dtype='int32', direction=function.IN)
         function.addParameter('filename', dtype='s', direction=function.IN)
+        function.addParameter('index', dtype='int32', direction=function.IN, default=1)
         function.result_type = 'int32'
         return function
 
     @legacy_function    
     def get_abundancies_filename():
         function = LegacyFunctionSpecification()  
-        function.addParameter('index', dtype='int32', direction=function.IN)
+        function.addParameter('index', dtype='int32', direction=function.IN, default=1)
         function.addParameter('filename', dtype='s', direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -434,6 +435,17 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
         return function
         
     @legacy_function
+    def get_max_indices():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+        for parametername in ['ni','nj','nk']:
+            function.addParameter(parametername, dtype='int32', direction=function.OUT)
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function
+        
+        
+    @legacy_function
     def set_emit_rate_of_photons():
         function = LegacyFunctionSpecification()  
         function.addParameter('value', dtype='float64', direction=function.IN)
@@ -447,36 +459,80 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
         function.result_type = 'int32'
         return function
         
+#class Parameters(object):
+#    emit_rate_of_photons = MethodParameter(name = "emit_rate_of_photons", unit = units.seconds, default = )
+#
+#class Methods(object):
+#    get_grid_electron_density = MethodWithUnit(name = "get_grid_electron_density", i = INDEX, j = INDEX, k = INDEX, is_active = NOUNIT )
+
+units.ryd = 13.6 * derivedsi.eV
+
 class Mocassin(CodeInterface):
-
-    def __init__(self):
-        CodeInterface.__init__(self,  MocassinInterface())
     
-
+    def __init__(self, **options):
+        CodeInterface.__init__(self,  MocassinInterface(**options), **options)
+    
+    def get_index_range_inclusive(self, index_of_grid = 1):
+        ni, nj, nk = self.get_max_indices(index_of_grid)
+        return (1, ni, 1, nj, 1, nk)
+        
+    def define_methods(self, object):
+        object.add_method(
+            'get_position_of_index',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (units.cm, units.cm, units.cm, object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_max_indices',
+            (object.INDEX),
+            (object.NO_UNIT, object.NO_UNIT, object.NO_UNIT, object.ERROR_CODE,)
+            
+        )
+        object.add_method(
+            'get_grid_electron_temperature',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (units.K, object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_grid_electron_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (units.cm**-3, object.ERROR_CODE,)
+        )
+        object.add_method(
+            'get_grid_active',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        object.add_method(
+            'define_stars',
+            (units.cm, units.cm, units.cm, units.K, 1e36 * units.erg * (units.s**-1)),
+            (object.ERROR_CODE,)
+        )
+        
     def define_parameters(self, object):
         object.add_method_parameter(
-            "get_get_abundancies_filename",
-            "set_get_abundancies_filename", 
-            "get_abundancies_filename", 
+            "get_abundancies_filename",
+            "set_abundancies_filename", 
+            "abundancies_filename", 
             "<fill>", 
             units.none, 
         )
     
     
         object.add_method_parameter(
-            "get_get_constant_hydrogen_density",
-            "set_get_constant_hydrogen_density", 
-            "get_constant_hydrogen_density", 
+            "get_constant_hydrogen_density",
+            "set_constant_hydrogen_density", 
+            "constant_hydrogen_density", 
             "<fill>", 
-            units.none, 
-            100.0 | units.none
+            1.0/units.cm**3, 
+            100.0 | (1.0/units.cm**3)
         )
     
     
         object.add_method_parameter(
-            "get_get_convergence_limit",
-            "set_get_convergence_limit", 
-            "get_convergence_limit", 
+            "get_convergence_limit",
+            "set_convergence_limit", 
+            "convergence_limit", 
             "<fill>", 
             units.none, 
             0.0 | units.none
@@ -484,9 +540,49 @@ class Mocassin(CodeInterface):
     
     
         object.add_method_parameter(
-            "get_get_emit_rate_of_photons",
-            "set_get_emit_rate_of_photons", 
-            "get_emit_rate_of_photons", 
+            "get_emit_rate_of_photons",
+            "set_emit_rate_of_photons", 
+            "emit_rate_of_photons", 
+            "This is the number of hydrogen-ionizing photons emitted by the source per unit time. Only used when a single star is modelled", 
+            1e36 / units.s, 
+            0.0 | (1e36 / units.s)
+        )
+    
+    
+        object.add_method_parameter(
+            "get_high_limit_of_the_frequency_mesh",
+            "set_high_limit_of_the_frequency_mesh", 
+            "high_limit_of_the_frequency_mesh", 
+            "<fill>", 
+            units.ryd, 
+            15. | units.ryd
+        )
+    
+    
+        object.add_method_parameter(
+            "get_initial_nebular_temperature",
+            "set_initial_nebular_temperature", 
+            "initial_nebular_temperature", 
+            "Initial guess for the nebular temperature. ", 
+            units.K, 
+            10000.0 | units.K
+        )
+    
+    
+        object.add_method_parameter(
+            "get_inner_radius_of_the_ionised_region",
+            "set_inner_radius_of_the_ionised_region", 
+            "inner_radius_of_the_ionised_region", 
+            "Inner radius of the ionised region", 
+            units.cm, 
+            0.0 | units.cm
+        )
+    
+    
+        object.add_method_parameter(
+            "get_input_directory",
+            "set_input_directory", 
+            "input_directory", 
             "<fill>", 
             units.none, 
             0.0 | units.none
@@ -494,9 +590,19 @@ class Mocassin(CodeInterface):
     
     
         object.add_method_parameter(
-            "get_get_high_limit_of_the_frequency_mesh",
-            "set_get_high_limit_of_the_frequency_mesh", 
-            "get_high_limit_of_the_frequency_mesh", 
+            "get_low_limit_of_the_frequency_mesh",
+            "set_low_limit_of_the_frequency_mesh", 
+            "low_limit_of_the_frequency_mesh", 
+            "<fill>", 
+            units.ryd, 
+            1.001e-5 | units.ryd
+        )
+    
+    
+        object.add_method_parameter(
+            "get_maximum_number_of_monte_carlo_iterations",
+            "set_maximum_number_of_monte_carlo_iterations", 
+            "maximum_number_of_monte_carlo_iterations", 
             "<fill>", 
             units.none, 
             0.0 | units.none
@@ -504,9 +610,9 @@ class Mocassin(CodeInterface):
     
     
         object.add_method_parameter(
-            "get_get_initial_nebular_temperature",
-            "set_get_initial_nebular_temperature", 
-            "get_initial_nebular_temperature", 
+            "get_minimum_convergence_level",
+            "set_minimum_convergence_level", 
+            "minimum_convergence_level", 
             "<fill>", 
             units.none, 
             0.0 | units.none
@@ -514,9 +620,49 @@ class Mocassin(CodeInterface):
     
     
         object.add_method_parameter(
-            "get_get_inner_radius_of_the_ionised_region",
-            "set_get_inner_radius_of_the_ionised_region", 
-            "get_inner_radius_of_the_ionised_region", 
+            "get_number_of_ionisation_stages",
+            "set_number_of_ionisation_stages", 
+            "number_of_ionisation_stages", 
+            "<fill>", 
+            units.none, 
+            6 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_outer_radius_of_the_ionised_region",
+            "set_outer_radius_of_the_ionised_region", 
+            "outer_radius_of_the_ionised_region", 
+            "<fill>", 
+            units.cm, 
+            0.0 | units.cm
+        )
+    
+    
+        object.add_method_parameter(
+            "get_symmetricXYZ",
+            "set_symmetricXYZ", 
+            "symmetricXYZ", 
+            "If true assumes model is symetric in the X, Y and Z axes", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_total_number_of_photons",
+            "set_total_number_of_photons", 
+            "total_number_of_photons", 
+            "Total number of photons to start the iteration with", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_total_number_of_points_in_frequency_mesh",
+            "set_total_number_of_points_in_frequency_mesh", 
+            "total_number_of_points_in_frequency_mesh", 
             "<fill>", 
             units.none, 
             0.0 | units.none
@@ -524,102 +670,109 @@ class Mocassin(CodeInterface):
     
     
         object.add_method_parameter(
-            "get_get_input_directory",
-            "set_get_input_directory", 
-            "get_input_directory", 
-            "<fill>", 
+            "get_write_snapshot_every_iteration",
+            "set_write_snapshot_every_iteration", 
+            "write_snapshot_every_iteration", 
+            "If True will write the data to an output directory after every monte carlo iteration", 
             units.none, 
             0.0 | units.none
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_low_limit_of_the_frequency_mesh",
-            "set_get_low_limit_of_the_frequency_mesh", 
-            "get_low_limit_of_the_frequency_mesh", 
-            "<fill>", 
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshx",
+            "nx", 
+            "number of cells in the x direction", 
             units.none, 
-            0.0 | units.none
+            10 | units.none,
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_maximum_number_of_monte_carlo_iterations",
-            "set_get_maximum_number_of_monte_carlo_iterations", 
-            "get_maximum_number_of_monte_carlo_iterations", 
-            "<fill>", 
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshy",
+            "ny", 
+            "number of cells in the y direction", 
             units.none, 
-            0.0 | units.none
+            10 | units.none,
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_minimum_convergence_level",
-            "set_get_minimum_convergence_level", 
-            "get_minimum_convergence_level", 
-            "<fill>", 
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshz",
+            "nz", 
+            "number of cells in the z direction", 
             units.none, 
-            0.0 | units.none
+            10 | units.none,
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_number_of_ionisation_stages",
-            "set_get_number_of_ionisation_stages", 
-            "get_number_of_ionisation_stages", 
-            "<fill>", 
-            units.none, 
-            0.0 | units.none
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "xlength",
+            "length_x", 
+            "length of model in the x direction", 
+            units.cm, 
+            2e19 | units.cm,
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_outer_radius_of_the_ionised_region",
-            "set_get_outer_radius_of_the_ionised_region", 
-            "get_outer_radius_of_the_ionised_region", 
-            "<fill>", 
-            units.none, 
-            0.0 | units.none
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "ylength",
+            "length_y", 
+            "length of model in the x direction", 
+            units.cm, 
+            2e19 | units.cm,
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_symmetricXYZ",
-            "set_get_symmetricXYZ", 
-            "get_symmetricXYZ", 
-            "<fill>", 
-            units.none, 
-            0.0 | units.none
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "zlength",
+            "length_z", 
+            "length of model in the z direction", 
+            units.cm, 
+            2e19 | units.cm,
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_total_number_of_photons",
-            "set_get_total_number_of_photons", 
-            "get_total_number_of_photons", 
-            "<fill>", 
-            units.none, 
-            0.0 | units.none
+        
+        object.add_vector_parameter(
+            "mesh_size",
+            "number of cells in the x, y and z directions",
+            ("nx", "ny", "nz")
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_total_number_of_points_in_frequency_mesh",
-            "set_get_total_number_of_points_in_frequency_mesh", 
-            "get_total_number_of_points_in_frequency_mesh", 
-            "<fill>", 
-            units.none, 
-            0.0 | units.none
+        
+        object.add_vector_parameter(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z")
         )
-    
-    
-        object.add_method_parameter(
-            "get_get_write_snapshot_every_iteration",
-            "set_get_write_snapshot_every_iteration", 
-            "get_write_snapshot_every_iteration", 
-            "<fill>", 
-            units.none, 
-            0.0 | units.none
+        
+    def commit_parameters(self):
+        self.setup_abundancies()
+        self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
+        
+    def define_particle_sets(self, object):
+        object.define_grid('grid')
+        object.set_grid_range('grid', 'get_index_range_inclusive')
+        object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
+        object.add_getter('grid', 'get_grid_electron_temperature', names=('rho',))
+        object.add_getter('grid', 'get_grid_electron_density', names=('rho',))
+        
+        #object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        #object.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        
+        #object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
+        #object.add_getter('grid', 'get_energy_density', names=('energy',))
+        object.define_extra_keywords('grid', {'index_of_grid':1})
+        
+        object.define_inmemory_set('particles')
+        
+    def commit_particles(self):
+        self.define_particles(
+            self.particles.x,
+            self.particles.y,
+            self.particles.z,
+            self.particles.temperature,
+            self.particles.luminosity
         )
-    
+        self.overridden().commit_particles()
+        
     
