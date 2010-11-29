@@ -115,11 +115,12 @@ class TestInterface(TestWithMPI):
         
         (x, error) = instance.get_mass_transfer_rate(index_of_the_star)
         self.assertEquals(0, error)
-        self.assertEquals(0.0, x)
+        self.assertEquals(0, x)
         
         (x, error) = instance.get_wind_mass_loss_rate(index_of_the_star)
         self.assertEquals(0, error)
-        self.assertEquals(0.0, x)
+        self.assertTrue(x < 1e-13, "mass loss should be less than 1e-13, it is {0}".format(x))
+        self.assertTrue(x > 0, "mass loss rate should be more than 0, it is {0}".format(x))
         
         instance.stop()
         
