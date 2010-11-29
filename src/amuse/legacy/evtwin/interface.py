@@ -600,6 +600,48 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, CommonC
             The code could not retrieve the value.
         """
         return function
+    
+    @legacy_function   
+    def get_mass_transfer_rate():
+        """
+        Retrieve the current mass transfer of the star to the other star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The mass transfer of the star to the other star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+        
+        
+    
+    @legacy_function   
+    def get_wind_mass_loss_rate():
+        """
+        Retrieve the current mass loss rate of the star due to stellar wind.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('value', dtype='float64', direction=function.OUT
+            , description="The mass loss rate of the star due to stellar wind.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been retrieved.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
         
 class EVtwin(CodeInterface):
     
@@ -800,6 +842,17 @@ class EVtwin(CodeInterface):
             (object.INDEX,), 
             (units.MSun, object.ERROR_CODE,)
         )
+        object.add_method(
+            "get_mass_transfer_rate",
+            (object.INDEX,),
+            (units.MSun/units.yr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_wind_mass_loss_rate",
+            (object.INDEX,),
+            (units.MSun/units.yr, object.ERROR_CODE,)
+        )
+        
         object.add_method(
             "get_radius", 
             (object.INDEX,), 

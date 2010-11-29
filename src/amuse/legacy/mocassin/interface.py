@@ -452,3 +452,174 @@ class Mocassin(CodeInterface):
     def __init__(self):
         CodeInterface.__init__(self,  MocassinInterface())
     
+
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_get_abundancies_filename",
+            "set_get_abundancies_filename", 
+            "get_abundancies_filename", 
+            "<fill>", 
+            units.none, 
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_constant_hydrogen_density",
+            "set_get_constant_hydrogen_density", 
+            "get_constant_hydrogen_density", 
+            "<fill>", 
+            units.none, 
+            100.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_convergence_limit",
+            "set_get_convergence_limit", 
+            "get_convergence_limit", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_emit_rate_of_photons",
+            "set_get_emit_rate_of_photons", 
+            "get_emit_rate_of_photons", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_high_limit_of_the_frequency_mesh",
+            "set_get_high_limit_of_the_frequency_mesh", 
+            "get_high_limit_of_the_frequency_mesh", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_initial_nebular_temperature",
+            "set_get_initial_nebular_temperature", 
+            "get_initial_nebular_temperature", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_inner_radius_of_the_ionised_region",
+            "set_get_inner_radius_of_the_ionised_region", 
+            "get_inner_radius_of_the_ionised_region", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_input_directory",
+            "set_get_input_directory", 
+            "get_input_directory", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_low_limit_of_the_frequency_mesh",
+            "set_get_low_limit_of_the_frequency_mesh", 
+            "get_low_limit_of_the_frequency_mesh", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_maximum_number_of_monte_carlo_iterations",
+            "set_get_maximum_number_of_monte_carlo_iterations", 
+            "get_maximum_number_of_monte_carlo_iterations", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_minimum_convergence_level",
+            "set_get_minimum_convergence_level", 
+            "get_minimum_convergence_level", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_number_of_ionisation_stages",
+            "set_get_number_of_ionisation_stages", 
+            "get_number_of_ionisation_stages", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_outer_radius_of_the_ionised_region",
+            "set_get_outer_radius_of_the_ionised_region", 
+            "get_outer_radius_of_the_ionised_region", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_symmetricXYZ",
+            "set_get_symmetricXYZ", 
+            "get_symmetricXYZ", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_total_number_of_photons",
+            "set_get_total_number_of_photons", 
+            "get_total_number_of_photons", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_total_number_of_points_in_frequency_mesh",
+            "set_get_total_number_of_points_in_frequency_mesh", 
+            "get_total_number_of_points_in_frequency_mesh", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    
+        object.add_method_parameter(
+            "get_get_write_snapshot_every_iteration",
+            "set_get_write_snapshot_every_iteration", 
+            "get_write_snapshot_every_iteration", 
+            "<fill>", 
+            units.none, 
+            0.0 | units.none
+        )
+    
+    

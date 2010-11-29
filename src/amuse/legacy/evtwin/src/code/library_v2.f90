@@ -807,7 +807,49 @@ contains
       get_luminosity = 0
       value = star_list(id)%hpr(inv_var_perm(8), 1)/clsn
    end function get_luminosity
-
+   
+   function get_wind_mass_loss_rate(id,value)
+      use real_kind
+      use constants
+      
+      implicit none
+      integer :: get_wind_mass_loss_rate
+      real(double) , intent(out) :: value
+      integer, intent(in) :: id
+      
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
+         value = 0.0
+         get_wind_mass_loss_rate = -1
+         return
+      end if
+      
+      value = star_list(id)%zet(1)*csy/cmsn
+      
+      get_wind_mass_loss_rate = 0
+   end function
+   
+  
+   ! msun / yr
+   function get_mass_transfer_rate(id, value)
+      use real_kind
+      use constants
+      
+      implicit none
+      integer :: get_mass_transfer_rate
+      real(double) , intent(out) :: value
+      integer, intent(in) :: id
+      
+      if (id<1 .or. id>highest_star_index .or. .not. star_list(id)%star_exists) then
+         value = 0.0
+         get_mass_transfer_rate = -1
+         return
+      end if
+      
+      value = star_list(id)%xit(1)*csy/cmsn
+      
+      get_mass_transfer_rate = 0
+   end function
+   
 ! get_mass:
 !  Returns the star's mass, in solar units
    function get_mass(id, value)
@@ -916,7 +958,8 @@ contains
       read (metallicity_str_with_zero, '(F10.8)') value
       get_metallicity = 0
    end function
-
+   
+   
 ! set_metallicity:
 ! Set the metallicity parameter
    function set_metallicity(value)
@@ -1612,7 +1655,7 @@ contains
          end do
          if ( star%jf==1 ) star%jf = 0
          
-         flush(6)
+         ! flush(6)
          hpr(:,1:kh) = h(:,1:kh)
          dh(:, 1:kh) = 0.0d0
          jhold = 2

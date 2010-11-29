@@ -81,37 +81,45 @@ class TestInterface(TestWithMPI):
         instance = EVtwinInterface()
         
         error = instance.set_ev_path(instance.get_data_directory())
-        self.assertEquals(0, error)      
+        self.assertEquals(0, error)
         
         error = instance.initialize_code()
-        self.assertEquals(0, error)      
+        self.assertEquals(0, error)
         
         error = instance.commit_parameters()
         self.assertEquals(0, error)
         
         (index_of_the_star, error) = instance.new_particle(1.05)
-        self.assertEquals(0, error)       
+        self.assertEquals(0, error)
         
-        self.assertTrue(index_of_the_star >= 0)      
+        self.assertTrue(index_of_the_star >= 0)
         
         (mass, error) = instance.get_mass(index_of_the_star)
-        self.assertEquals(0, error)      
-        self.assertEquals(1.05, mass)    
+        self.assertEquals(0, error)
+        self.assertEquals(1.05, mass)
         
         error = instance.evolve(index_of_the_star)
-        self.assertEquals(0, error)      
+        self.assertEquals(0, error)
           
         for i in range(2):
             error = instance.evolve(index_of_the_star)
-            self.assertEquals(0, error)      
+            self.assertEquals(0, error)
     
         (mass, error) = instance.get_mass(index_of_the_star)
-        self.assertEquals(0, error)      
-        self.assertTrue(mass < 1.05)  
+        self.assertEquals(0, error)
+        self.assertTrue(mass < 1.05)
     
         (age, error) = instance.get_age(index_of_the_star)
-        self.assertEquals(0, error) 
-        self.assertTrue(age > 0)      
+        self.assertEquals(0, error)
+        self.assertTrue(age > 0)
+        
+        (x, error) = instance.get_mass_transfer_rate(index_of_the_star)
+        self.assertEquals(0, error)
+        self.assertEquals(0.0, x)
+        
+        (x, error) = instance.get_wind_mass_loss_rate(index_of_the_star)
+        self.assertEquals(0, error)
+        self.assertEquals(0.0, x)
         
         instance.stop()
         

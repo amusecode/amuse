@@ -76,6 +76,7 @@ class MyFancyUrlopener(urllib.FancyURLopener):
 class DownloadAthenaFromWebpage(object):
     url_template = "http://www.ast.cam.ac.uk/~be/transit/mocassin.{version}.tar.gz"
     backup_url_template = "http://www.amusecode.org/codes/mocassin.{version}.tar.gz"
+    url_template = "http://www.amusecode.org/codes/mocassin.{version}.tar.gz"
     filename_template = "mocassin.{version}.tar.gz"
     version = "2.02.66"
     
