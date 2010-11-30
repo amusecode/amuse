@@ -459,6 +459,36 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
         function.result_type = 'int32'
         return function
         
+    @legacy_function
+    def get_grid_hydrogen_density():
+        function = LegacyFunctionSpecification()  
+        for parametername in ['i','j','k']:
+            function.addParameter(parametername, dtype='int32', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+        
+        function.addParameter('hydrogen_density', dtype='float64', direction=function.OUT)
+            
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_grid_hydrogen_density():
+        function = LegacyFunctionSpecification()  
+        for parametername in ['i','j','k']:
+            function.addParameter(parametername, dtype='int32', direction=function.IN)
+        
+        function.addParameter('hydrogen_density', dtype='float64', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='int32', direction=function.IN, default = 1)
+            
+        function.addParameter('n', dtype='int32', direction=function.LENGTH)
+        function.must_handle_array = True
+        function.result_type = 'int32'
+        return function
+
+
+        
 #class Parameters(object):
 #    emit_rate_of_photons = MethodParameter(name = "emit_rate_of_photons", unit = units.seconds, default = )
 #
@@ -498,6 +528,19 @@ class Mocassin(CodeInterface):
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (units.cm**-3, object.ERROR_CODE,)
         )
+        
+        object.add_method(
+            'get_grid_hydrogen_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (units.cm**-3, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_grid_hydrogen_density',
+            (object.INDEX, object.INDEX, object.INDEX, units.cm**-3 , object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        
         object.add_method(
             'get_grid_active',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
@@ -753,20 +796,17 @@ class Mocassin(CodeInterface):
         object.define_grid('grid')
         object.set_grid_range('grid', 'get_index_range_inclusive')
         object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
-        object.add_getter('grid', 'get_grid_electron_temperature', names=('rho',))
-        object.add_getter('grid', 'get_grid_electron_density', names=('rho',))
+        object.add_getter('grid', 'get_grid_electron_temperature', names=('electron_temperature',))
+        object.add_getter('grid', 'get_grid_electron_density', names=('electron_density',))
+        object.add_getter('grid', 'get_grid_hydrogen_density', names=('hydrogen_density',))
+        object.add_setter('grid', 'set_grid_hydrogen_density', names=('hydrogen_density',))
         
-        #object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        #object.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        
-        #object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
-        #object.add_getter('grid', 'get_energy_density', names=('energy',))
         object.define_extra_keywords('grid', {'index_of_grid':1})
         
         object.define_inmemory_set('particles')
         
     def commit_particles(self):
-        self.define_particles(
+        self.define_stars(
             self.particles.x,
             self.particles.y,
             self.particles.z,

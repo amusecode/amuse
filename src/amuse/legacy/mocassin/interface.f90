@@ -27,7 +27,7 @@ CONTAINS
         lgMultiDustChemistry = .false.
         lgMultiChemistry = .false.
         lgTalk        = .false.
-        lgHdenConstant= .false.
+        lgHdenConstant= .true.
         lgDfile       = .false.
         lgDebug       = .false.
         lgDlaw        = .false.
@@ -210,22 +210,12 @@ CONTAINS
         IMPLICIT NONE
         INTEGER commit_particles
         INTEGER i
+        Integer :: nxA,nyA,nzA
         
         do i = 1, nStars
            nPhotons(i) = NphotonsTot/nStars
            deltaE(i) = Lstar(i)/nPhotons(i)
-        end do  
-        
-    END FUNCTION
-
-    FUNCTION commit_grid()
-        IMPLICIT NONE
-        INTEGER commit_grid
-        INTEGER i, iGrid
-        DOUBLE PRECISION test
-        Integer :: nxA,nyA,nzA
-        
-        
+        end do
         
         ! initialize opacities x sections array
         call initXSecArray()
@@ -247,6 +237,18 @@ CONTAINS
         
         call setStarPosition(grid3D(1)%xAxis,grid3D(1)%yAxis,grid3D(1)%zAxis, grid3D(1:nGrids))
         
+        
+    END FUNCTION
+
+    FUNCTION commit_grid()
+        IMPLICIT NONE
+        INTEGER commit_grid
+        INTEGER i, iGrid
+        DOUBLE PRECISION test
+        
+        
+        
+       
         if (taskid==0) then
            do iGrid = 1, nGrids
               print*, 'Grid : ', iGrid 
@@ -790,6 +792,67 @@ CONTAINS
         END DO
         get_grid_active = 0
     END FUNCTION
+    
+    FUNCTION get_grid_hydrogen_density(i,j,k,index_of_grid,hydrogen_density, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
+        
+        double precision, INTENT(OUT), DIMENSION(N) :: hydrogen_density
+        
+        INTEGER get_grid_hydrogen_density
+        INTEGER :: index, active_cell_index
+
+
+        
+        DO index = 1,n
+            
+            IF (index_of_grid(index).GT.nGrids) THEN
+                get_grid_hydrogen_density = -1
+                return
+            END IF
+            active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+            if (active_cell_index .eq. 0) then
+                
+                    hydrogen_density(index) = 0
+                
+            else
+                
+                    hydrogen_density(index) = grid3D(index_of_grid(index))%Hden(active_cell_index)
+                
+            end if
+        END DO
+        get_grid_hydrogen_density = 0
+    END FUNCTION
+
+    FUNCTION set_grid_hydrogen_density(i,j,k,hydrogen_density,index_of_grid, n)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: n
+        INTEGER, INTENT(IN), DIMENSION(N) :: i,j,k, index_of_grid
+        
+        double precision, INTENT(IN), DIMENSION(N) :: hydrogen_density
+        
+        INTEGER set_grid_hydrogen_density
+        INTEGER :: index, active_cell_index
+
+
+        
+        DO index = 1,n
+            
+            IF (index_of_grid(index).GT.nGrids) THEN
+                set_grid_hydrogen_density = -1
+                return
+            END IF
+            active_cell_index = grid3D(index_of_grid(index))%active(i(index), j(index), k(index))
+            if (active_cell_index .ne. 0) then
+                
+                     grid3D(index_of_grid(index))%Hden(active_cell_index) = hydrogen_density(index)
+                
+            end if
+        END DO
+        set_grid_hydrogen_density = 0
+    END FUNCTION
+
     
     FUNCTION get_max_indices(index_of_grid,ni,nj,nk)
         IMPLICIT NONE
