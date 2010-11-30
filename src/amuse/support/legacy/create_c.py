@@ -21,6 +21,45 @@ dtype_to_spec = DTypeToSpecDictionary({
                     'number_of_longs', 'long long int', 'MPI_LONG_LONG_INT'),
 })
 
+    
+redirect_outputs_function_template = """
+int internal__redirect_outputs(const char * stdoutfile, const char * stderrfile)
+{
+    char fullname[1024];
+    int mpi_rank, mpi_err, redirect_outputs;
+    
+    fclose(stdin);
+    
+    mpi_err = MPI_Comm_rank( MPI_COMM_WORLD, &mpi_rank );
+    if (strcmp(stdoutfile, "none"))
+    {
+        if (strcmp(stdoutfile, "/dev/null") ) 
+        {
+            snprintf( fullname, 1024, "%s.%0.3d",stdoutfile, mpi_rank );
+        }
+        else
+        {
+            snprintf( fullname, 1024, "%s",stdoutfile);
+        }
+        freopen(fullname, "a+", stdout);
+    }
+    
+    if (strcmp(stderrfile, "none"))
+    {         
+        if (strcmp(stderrfile, "/dev/null") ) 
+        {
+            snprintf( fullname, 1024, "%s.%0.3d",stderrfile, mpi_rank ); 
+        }
+        else
+        {
+            snprintf( fullname, 1024, "%s",stderrfile);
+        }
+        freopen(fullname, "a+", stderr);
+    }
+        
+    return 0;
+}
+"""
 
 EXIT_HANDLER_STRING = """\
 void onexit(void) {
@@ -411,6 +450,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.lf().lf()
         self.output_header_class_definition()
         self.output_onexit_fuinction()
+        self.output_redirect_output()
+        
         self.output_runloop_function_def_start()
         self.output_switch_start()
                 
@@ -419,6 +460,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
             
         self.output_switch_end()
         self.output_runloop_function_def_end()
+        
         self.output_main()
         self._result = self.out.string
         
@@ -427,6 +469,7 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out.n() + '#include <iostream>'
         self.out.n() + '#include <string.h>'
         self.out.n() + '#include <stdlib.h>'
+        self.out.n() + '#include <stdio.h>'
         
         
     def output_local_includes(self):
@@ -652,7 +695,10 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.out + ' = new ' + type
         self.out + '[' + ' max_len * ' + maximum_number_of_inputvariables_of_a_type + ']' + ';'
         self.out.lf() 
-            
+        
+    def output_redirect_output(self):
+        self.out.lf().lf() + redirect_outputs_function_template
+    
     def output_main(self):
         self.out.lf().lf() + 'int main(int argc, char *argv[])'
         self.out.lf() + '{'
@@ -685,6 +731,9 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
     def make_extern_c(self):
         return True
     
+    def include_legacy_function(self, x):
+        return not x.specification.name.startswith("internal__")
+        
     def handle_legacy_function(self, name_of_the_function, function):
         for cls in self.ignore_functions_from:
             if hasattr(cls, name_of_the_function):
@@ -722,7 +771,10 @@ class MakeACInterfaceStringOfAClassWithLegacyFunctions\
     
     def make_legacy_function(self):
         return create_definition.CreateCStub()
-        
+
+    def include_legacy_function(self, x):
+        return not x.specification.name.startswith("internal__")
+     
     def start(self):  
     
         self.output_local_includes()

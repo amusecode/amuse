@@ -471,94 +471,6 @@ def is_mpd_running():
     else:
         return True
 
-class RunStandardStreamsRedirection(object):
-    _INSTANCE = None
-    
-    @classmethod
-    def instance(cls):
-        if cls._INSTANCE is None:
-            cls._INSTANCE = cls()
-            cls._INSTANCE.start()
-        return cls._INSTANCE
-    
-    @classmethod
-    def clear(cls):
-        if not cls._INSTANCE is None:
-            cls._INSTANCE.stop()
-            cls._INSTANCE = None
-    
-    def __init__(self):
-        self.copied_fds = False
-        self.restored_fds = False
-        self.must_run = False
-        
-    def setup(self):
-        self.fd_stdin_r, self.fd_stdin_w = os.pipe()
-        self.fd_stdout_r, self.fd_stdout_w= os.pipe()
-        self.fd_stderr_r, self.fd_stderr_w = os.pipe()
-    
-    def before_spawn(self):
-        if not self.copied_fds:
-            self.fd_stdin = os.dup(0)
-            self.fd_stdout = os.dup(1)
-            self.fd_stderr = os.dup(2)
-            
-            os.dup2(self.fd_stdin_r, 0)
-            os.dup2(self.fd_stdout_w, 1)
-            os.dup2(self.fd_stderr_w, 2)
-            
-            self.copied_fds = True
-    
-    def after_spawn(self):
-        if not self.copied_fds:
-            return
-            
-        if not self.restored_fds:
-            os.dup2(self.fd_stdin, 0)
-            os.dup2(self.fd_stdout, 1)
-            os.dup2(self.fd_stderr, 2)
-            
-            os.close(self.fd_stdin)
-            os.close(self.fd_stdout)
-            os.close(self.fd_stderr)
-        
-            self.restored_fds = True
-    
-    def start(self):
-        self.must_run = True
-        self.setup()
-        self.process = threading.Thread(target = self.runloop)
-        self.process.daemon = True
-        self.process.start()
-    
-    def stop(self):
-        self.must_run = False
-        
-    def runloop(self):
-        readers = (self.fd_stdout_r, self.fd_stderr_r)
-        while self.must_run:
-            ready_to_read, ignore1, ignore2 = select.select(readers, [], [])
-            for x in ready_to_read:
-                if x == self.fd_stdout_r:
-                    bytes = os.read(self.fd_stdout_r, 1024)
-                    sys.stdout.write(bytes)
-                    sys.stdout.flush()
-                elif x == self.fd_stderr_r:
-                    bytes = os.read(self.fd_stderr_r, 1024)
-                    sys.stderr.write(bytes)
-                    sys.stdout.flush()
-                else:
-                    pass
-        
-        
-        os.close(self.fd_stdout_r)
-        os.close(self.fd_stderr_r)
-        os.close(self.fd_stdin_r)
-        os.close(self.fd_stdout_w)
-        os.close(self.fd_stderr_w)
-        os.close(self.fd_stdin_w)
-            
-                
 
 class MpiChannel(MessageChannel):
     """
@@ -575,7 +487,7 @@ class MpiChannel(MessageChannel):
     
     def __init__(self, name_of_the_worker, legacy_interface_type = None,  **options):
         MessageChannel.__init__(self, **options)
-        
+               
         self.name_of_the_worker = name_of_the_worker
                 
         if not legacy_interface_type is None:
@@ -622,11 +534,7 @@ class MpiChannel(MessageChannel):
         """Name of the debugger to use when starting the code"""
         return "none"
         
-    @option(choices=("none","null","file"), sections=("channel",))
-    def redirection(self):
-        """Redirect the output of the code to null, standard streams or file"""
-        return "null"
-        
+    
     @option(type="int", sections=("channel",))
     def max_message_length(self):
         """
@@ -635,18 +543,7 @@ class MpiChannel(MessageChannel):
         """
         return 1000000
     
-    @option(sections=("channel",))
-    def redirect_file(self):
-        return "code.out"
-        
-    @late
-    def redirection_filenames(self):
-        return {
-            "none":None,
-            "null":("/dev/null", "/dev/null", "/dev/null"), 
-            "file":("/dev/null", self.redirect_file, self.redirect_file),
-        }[self.redirection]
-        
+
     @late
     def debugger_method(self):
         return self.DEBUGGERS[self.debugger]
@@ -666,16 +563,11 @@ class MpiChannel(MessageChannel):
         else:
             arguments = None
             command = self.full_name_of_the_worker
-            
-            if not self.redirection_filenames is None:
-               RunStandardStreamsRedirection.instance().before_spawn() 
-            
-        try:
-            self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
-        finally:
-            if not self.redirection_filenames is None:
-               RunStandardStreamsRedirection.instance().after_spawn() 
-            
+        
+        self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
+        
+        
+        
     def stop(self):
         if not self.intercomm is None:
             try:
@@ -799,7 +691,7 @@ class MpiChannel(MessageChannel):
         except MPI.Exception as ex:
             self.stop()
             raise
-            
+        
         if message.tag == -1:
             raise exceptions.LegacyException("Not a valid message, message is not understood by legacy code")
         elif message.tag == -2:

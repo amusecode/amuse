@@ -39,7 +39,6 @@ class MakeCodeStringOfAClassWithLegacyFunctions(MakeCodeString):
             value = getattr(self.class_with_legacy_functions, x)
             if isinstance(value, legacy_function) and self.handle_legacy_function(x, value):
                 legacy_functions.append(value)
-        
         legacy_functions.sort(key= lambda x: x.specification.id)
         return legacy_functions
         
@@ -99,11 +98,16 @@ class MakeCodeStringOfAClassWithLegacyFunctions(MakeCodeString):
                     
         return result
                 
-           
+    def include_legacy_function(self, x):
+        return True
+        
     def output_legacy_functions(self):
         for x in self.legacy_functions:
             if x.specification.id == 0:
                 continue
+            if not self.include_legacy_function(x):
+                continue
+                
             self.out.lf()
             uc = self.make_legacy_function()
             uc.specification = x.specification

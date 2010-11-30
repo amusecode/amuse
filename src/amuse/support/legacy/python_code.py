@@ -7,6 +7,7 @@ from mpi4py import MPI
 
 import numpy
 import sys
+import os
 
 
 class ValueHolder(object):
@@ -56,7 +57,7 @@ class PythonImplementation(object):
                 if message.tag in self.mapping_from_tag_to_legacy_function:
                     try:
                         self.handle_message(message, result_message)
-                    except:
+                    except Exception as ex:
                         result_message.tag = -1
                 else:
                     result_message.tag = -1
@@ -81,8 +82,10 @@ class PythonImplementation(object):
                 else:
                     getattr(output_message, attribute).append(numpy.empty(output_message.length, dtype=type))
         
-        
-        method = getattr(self.implementation, specification.name)
+        if specification.name.startswith('internal__'):
+            method = getattr(self, specification.name)
+        else:
+            method = getattr(self.implementation, specification.name)
         
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             array = getattr(input_message, attribute)
@@ -95,9 +98,9 @@ class PythonImplementation(object):
                 result = method(**keyword_arguments)
             except TypeError:
                 result = method(*list(keyword_arguments))
-                
             self.fill_output_message(output_message, index, result, keyword_arguments, specification)
         
+            
         for type, attribute in self.dtype_to_message_attribute.iteritems():
             array = getattr(output_message, attribute)
             packed = pack_array(array, input_message.length, type)
@@ -170,4 +173,33 @@ class PythonImplementation(object):
             x.specification.prepare_output_parameters()
             
         return legacy_functions
+        
+    def internal__redirect_outputs(self, stdoutfile, stderrfile):
+        mpi_rank = MPI.COMM_WORLD.rank
+        sys.stdin.close()
+        try:
+            os.close(0)
+        except Exception as ex:
+            print ex
+            
+        if stdoutfile != "none":
+            if stdoutfile != "/dev/null":
+                fullname = "{0:s}.{1:03d}".format(stdoutfile, mpi_rank)
+            else:
+                fullname = stdoutfile
+                
+        
+            sys.stdout.close()
+            sys.stdout = open(fullname, "a+")
+            
+        if stderrfile != "none":
+            if stderrfile != "/dev/null": 
+                fullname = "{0:s}.{1:03d}".format(stderrfile, mpi_rank)
+            else:
+                fullname = stderrfile
+                
+            sys.stderr.close()
+            sys.stderr = open(fullname, "a+") 
+    
+        return 0
         

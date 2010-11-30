@@ -41,8 +41,14 @@ class late(object):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        value = self.initializer(instance)
+        
+        try:
+            value = self.initializer(instance)
+        except Exception as ex:
+            raise AttributeError(ex)
+            
         setattr(instance,self.initializer.__name__, value)
+        
         return value
     
         

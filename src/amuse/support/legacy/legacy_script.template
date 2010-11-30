@@ -17,7 +17,7 @@ if __name__ == '__main__':
         existing_syspath = set(sys.path)
         for x in syspath:
             if not x in existing_syspath:
-                sys.path.insert(0, x)
+                sys.path.append(x)
 
         from amuse.support.legacy import core
         

@@ -13,8 +13,11 @@ from amuse.support import exceptions
 
 import subprocess
 import os
+import time
 
 codestring = """
+#include <stdio.h>
+#include <stdlib.h>
 
 int echo_int(int int_in, int * int_out) {
     *int_out = int_in;
@@ -44,6 +47,16 @@ int echo_float(float in, float * out) {
 }
 int echo_string(char * in, char ** out) {
     *out = in;
+    return 0;
+}
+
+int print_string(char * in) {
+    fprintf(stdout, "%s\\n", in);
+    return 0;
+}
+
+int print_error_string(char * in) {
+    fprintf(stderr, "%s\\n", in);
     return 0;
 }
 
@@ -115,8 +128,8 @@ int echo_string_array(char ** in, char ** out, int len) {
 
 class ForTestingInterface(LegacyInterface):
     
-    def __init__(self, exefile):
-        LegacyInterface.__init__(self, exefile)
+    def __init__(self, exefile, **options):
+        LegacyInterface.__init__(self, exefile, **options)
 
     @legacy_function
     def echo_int():
@@ -247,13 +260,28 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+    
+    @legacy_function
+    def print_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
         
+    @legacy_function
+    def print_error_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
     
     
 class ForTesting(CodeInterface):
     
     def __init__(self, exefile, **options):
-        CodeInterface.__init__(self, ForTestingInterface(exefile), **options)
+        CodeInterface.__init__(self, ForTestingInterface(exefile, **options), **options)
     
     def define_methods(self, object):
         object.add_method(
@@ -288,7 +316,8 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        if not os.path.exists(objectname):
+        if process.returncode != 0 or not os.path.exists(objectname):
+            print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
     
     def cxx_compile(self, objectname, string):
@@ -309,7 +338,8 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        if not os.path.exists(objectname):
+        if process.returncode != 0 or not os.path.exists(objectname):
+            print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     def c_build(self, exename, objectnames):
@@ -329,6 +359,8 @@ class TestInterface(TestWithMPI):
         )
         stdout, stderr = process.communicate()
         if process.returncode != 0 or not os.path.exists(exename):
+            
+            print "Could not compile {0}, error = {1}".format(exename, stderr)
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     
     def build_worker(self):
@@ -344,7 +376,6 @@ class TestInterface(TestWithMPI):
         uc.class_with_legacy_functions = ForTestingInterface
         header =  uc.result
         
-        
         uc = create_c.MakeACStringOfAClassWithLegacyFunctions()
         uc.class_with_legacy_functions = ForTestingInterface
         code =  uc.result
@@ -358,8 +389,13 @@ class TestInterface(TestWithMPI):
     
     def setUp(self):
         super(TestInterface, self).setUp()
-        print "building"
-        self.build_worker()
+        print "building...",
+        try:
+            self.build_worker()
+        except Exception as ex:
+            print ex
+            raise
+        print "done"
         
     def test1(self):
         instance = ForTestingInterface(self.exefile)
@@ -493,8 +529,6 @@ class TestInterface(TestWithMPI):
         instance.legacy_interface.echo_int.specification.id = -9
         self.assertRaises(exceptions.LegacyException, lambda : instance.echo_int(1 | units.m))
         instance.stop()
-    
-    
 
     def test15(self):
         instance = ForTesting(self.exefile)
@@ -513,8 +547,6 @@ class TestInterface(TestWithMPI):
         self.assertEquals(output_ints6[0], 0)
         self.assertEquals(output_ints7[0], 5)
         self.assertEquals(output_ints8[0], 1)
-    
-    
 
     def test16(self):
         instance = ForTesting(self.exefile)
@@ -534,9 +566,6 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error[1], 11)
         self.assertEquals(error[2], 11)
 
-    
-    
-
     def test18(self):
         instance = ForTestingInterface(self.exefile)
         out, error = instance.echo_logical([True, False, True])
@@ -551,6 +580,41 @@ class TestInterface(TestWithMPI):
         instance.stop()
         self.assertEquals(int_out, 3935559000370003845)
         self.assertEquals(error, 0)
+        
+    def test20(self):
+        if os.path.exists("pout.000"):
+            os.remove("pout.000")
+        if os.path.exists("perr.000"):
+            os.remove("perr.000")
+        
+        x = ForTesting(self.exefile, redirect_stderr_file = 'perr', redirect_stdout_file = 'pout', redirection="file")
+        x.print_string("abc")
+        x.print_error_string("exex")
+        x.stop()
+        
+        time.sleep(0.2)
+        
+        self.assertTrue(os.path.exists("pout.000"))
+        with open("pout.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "abc")
+        
+        self.assertTrue(os.path.exists("perr.000"))
+        with open("perr.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "exex")
+        
+        x = ForTesting(self.exefile, redirect_stderr_file = 'pout', redirect_stdout_file = 'pout', redirection="file")
+        x.print_string("def")
+        x.print_error_string("exex")
+        x.stop()
+        
+        time.sleep(0.2)
+        
+        self.assertTrue(os.path.exists("pout.000"))
+        with open("pout.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "abc\ndef\nexex")
         
         
     

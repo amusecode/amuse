@@ -273,7 +273,7 @@ class legacy_function(object):
         except Exception:
             pass
         
-        raise  Exception("No working crc32 implementation found!")
+        raise Exception("No working crc32 implementation found!")
         
 
 class legacy_global(object):
@@ -337,7 +337,7 @@ class legacy_global(object):
         except Exception:
             pass
         
-        raise  exceptions.LegacyException("No working crc32 implementation found!")
+        raise exceptions.LegacyException("No working crc32 implementation found!")
      
 class ParameterSpecification(object):
     def __init__(self, name, dtype, direction, description, default = None):
@@ -570,13 +570,12 @@ class LegacyInterface(OptionalAttributes):
         :argument hostname: Start the worker on the node with this name
         """
         OptionalAttributes.__init__(self, **options)
-            
+           
         self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
         self._check_if_worker_is_up_to_date()
         self.channel.start()
         self.instances.append(weakref.ref(self))
-        
-   
+        self._redirect_outputs(*self.redirection_filenames)
         
     def __del__(self):
         self._stop()
@@ -608,6 +607,15 @@ Please do a 'make clean; make' in the root directory.
     def _stop_worker():
         function = LegacyFunctionSpecification()  
         function.id = 0
+        return function
+        
+    @legacy_function
+    def _redirect_outputs():
+        function = LegacyFunctionSpecification() 
+        function.name = 'internal__redirect_outputs' 
+        function.addParameter('stdoutfile', dtype='s', direction=function.IN)
+        function.addParameter('stderrfile', dtype='s', direction=function.IN)
+        function.result_type = 'int32'
         return function 
         
     def stop(self):
@@ -632,8 +640,32 @@ Please do a 'make clean; make' in the root directory.
     @option(choices=['mpi','remote'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
-    
-    
+        
+    @option(choices=("none","null","file"), sections=("channel",))
+    def redirection(self):
+        """Redirect the output of the code to null, standard streams or file"""
+        return "null"
+        
+    @late
+    def redirection_filenames(self):
+        return {
+            "none":("none", "none"),
+            "null":("/dev/null", "/dev/null"), 
+            "file":(self.redirect_stdout_file, self.redirect_stderr_file),
+        }[self.redirection]
+        
+    @option(sections=("channel",))
+    def redirect_stdout_file(self):
+        return self.redirect_file
+        
+    @option(sections=("channel",))
+    def redirect_stderr_file(self):
+        return self.redirect_file
+
+    @option(sections=("channel",))
+    def redirect_file(self):
+        return "code.out"
+        
 
     @late
     def channel_factory(self):
@@ -669,12 +701,9 @@ class LegacyPythonInterface(LegacyInterface):
         
         string = self.new_executable_script_string_for(implementation_factory)
         
-        #path = inspect.getfile(implementation_factory)
-        #path = os.path.dirname(path)
-        #path = os.path.join(path, 'workerscript')
-        
         filename = os.path.basename(inspect.getfile(implementation_factory))
         filename = filename.split('.')[0]
+        filename.replace(os.sep, '_')
         path = os.path.abspath(os.path.curdir)
         path = os.path.join(path, filename)
         

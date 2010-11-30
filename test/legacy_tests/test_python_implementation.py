@@ -1,5 +1,6 @@
 from amuse.support.legacy.core import *
 
+
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
@@ -9,6 +10,10 @@ from amuse.support.interface import CodeInterface
 from amuse.test.amusetest import TestWithMPI
 
 import parser
+import sys
+import os
+import time
+
 
 class ForTestingInterface(LegacyPythonInterface):
     
@@ -102,6 +107,22 @@ class ForTestingInterface(LegacyPythonInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+        
+    @legacy_function
+    def print_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+        
+    @legacy_function
+    def print_error_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
     
     
     
@@ -136,6 +157,14 @@ class ForTestingImplementation(object):
         
     def echo_string(self, string_in, string_out):
         string_out.value = string_in
+        return 0
+        
+    def print_string(self, string_in):
+        print string_in
+        return 0
+        
+    def print_error_string(self, string_in):
+        print >> sys.stderr, string_in
         return 0
         
     def echo_strings(self, string_inout1, string_inout2):
@@ -245,8 +274,6 @@ class TestInterface(TestWithMPI):
         self.assertEquals(answer, 10.0)
         x.stop()
         
-        
-        x.stop()
         
         
     def test6(self):
@@ -422,6 +449,42 @@ class TestInterface(TestWithMPI):
         self.assertTrue(list(strings1) == ['MURDER' for i in range(N)])
         self.assertTrue(list(strings2) == ['desserts' for i in range(N)])
         x.stop()
+        
+    def test20(self):
+        if os.path.exists("pout.000"):
+            os.remove("pout.000")
+        if os.path.exists("perr.000"):
+            os.remove("perr.000")
+        
+        x = ForTesting(redirect_stderr_file = 'perr', redirect_stdout_file = 'pout', redirection="file")
+        x.print_string("abc")
+        x.print_error_string("exex")
+        x.stop()
+        
+        time.sleep(0.2)
+        
+        self.assertTrue(os.path.exists("pout.000"))
+        with open("pout.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "abc")
+        
+        self.assertTrue(os.path.exists("perr.000"))
+        with open("perr.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "exex")
+        
+        x = ForTesting(redirect_stderr_file = 'pout', redirect_stdout_file = 'pout', redirection="file")
+        x.print_string("def")
+        x.print_error_string("exex")
+        x.stop()
+        
+        time.sleep(0.2)
+        
+        self.assertTrue(os.path.exists("pout.000"))
+        with open("pout.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "abc\ndef\nexex")
+        
 
 
 

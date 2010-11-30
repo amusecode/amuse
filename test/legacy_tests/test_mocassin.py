@@ -30,6 +30,7 @@ class TestMocassinInterface(TestWithMPI):
         instance.set_input_directory(instance.get_default_input_directory())
         instance.set_constant_hydrogen_density(900.0)
         instance.commit_parameters()
+        instance.commit_particles()
         instance.commit_grid()
         indices_x = list(range(1,12,1))
         x,y,z,error = instance.get_position_of_index(indices_x,[1]*len(indices_x), [1]*len(indices_x))
@@ -176,6 +177,24 @@ class TestMocassin(TestWithMPI):
         self.assertEquals(instance.grid.shape[0], 11)
         self.assertEquals(instance.grid.shape[1], 12)
         self.assertEquals(instance.grid.shape[2], 13)
+        
+    def test3(self):
+        instance=self.new_instance(Mocassin)
+        instance.initialize_code()
+        instance.redirect_outputs_to("moc1-out.txt", "moc1-err.txt")
+        instance.set_input_directory(instance.get_default_input_directory())
+        instance.set_symmetricXYZ(True)
+        instance.set_constant_hydrogen_density(100.0)
+        instance.setup_mesh(11,11,11,0.95E+19,0.95E+19,0.95E+19)
+        instance.commit_parameters()
+        p = core.Particle()
+        p.x = 0 | units.cm
+        p.y = 0 | units.cm
+        p.z = 0 | units.cm
+        p.temperature = 20000 | units.K
+        p.luminosity = 1.0  | units.LSun
+        instance.particles.add_particle(p)
+        instance.commit_particles()
         
         
         

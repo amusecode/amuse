@@ -10,6 +10,7 @@ from amuse.support.legacy import create_fortran
 
 import subprocess
 import os
+import time
 
 codestring = """
 function echo_int(int_in, int_out)
@@ -81,6 +82,26 @@ function hello_string(string_out)
     string_out = 'hello'
     
     hello_string = 0
+end function
+
+function print_string(string_in)
+    implicit none
+    character(len=*) :: string_in
+    integer :: print_string
+    
+    write (*,*) string_in
+    
+    print_string = 0
+end function
+
+function print_error_string(string_in)
+    implicit none
+    character(len=*) :: string_in
+    integer :: print_error_string
+    
+    write (0,*) string_in
+    
+    print_error_string = 0
 end function
 
 function echo_string_fixed_len(string_in, string_out)
@@ -242,6 +263,23 @@ class ForTestingInterface(LegacyInterface):
         function.result_type = 'int32'
         function.can_handle_array = True
         return function
+        
+    @legacy_function
+    def print_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+        
+    @legacy_function
+    def print_error_string():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string_in', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function  
+    
     
     
 class TestInterface(TestWithMPI):
@@ -267,7 +305,8 @@ class TestInterface(TestWithMPI):
         )
         stdout, stderr = process.communicate()
         
-        if not os.path.exists(objectname):
+        if not os.path.exists(objectname) or process.returncode != 0:
+            print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     
@@ -284,7 +323,8 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        if process.returncode != 0:
+        if not os.path.exists(exename) or process.returncode != 0:
+            print "Could not build {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     
     def build_worker(self):
@@ -299,7 +339,6 @@ class TestInterface(TestWithMPI):
         uc = create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions()
         uc.class_with_legacy_functions = ForTestingInterface
         string =  uc.result
-        #print string
         self.fortran_compile(interfacefile, string)
         self.fortran_build(self.exefile, [interfacefile, codefile] )
     
@@ -459,5 +498,49 @@ class TestInterface(TestWithMPI):
         self.assertEquals(error2, 0)
         self.assertTrue(output1)
         self.assertFalse(output2)
+        
+    def test20(self):
+        if os.path.exists("pout.000"):
+            os.remove("pout.000")
+        if os.path.exists("perr.000"):
+            os.remove("perr.000")
+        
+        x = ForTestingInterface(self.exefile, redirect_stderr_file = 'perr', redirect_stdout_file = 'pout', redirection="file")
+        x.print_string("abc")
+        x.print_error_string("exex")
+        x.stop()
+        
+        time.sleep(0.2)
+        
+        self.assertTrue(os.path.exists("pout.000"))
+        with open("pout.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "abc")
+        
+        self.assertTrue(os.path.exists("perr.000"))
+        with open("perr.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "exex")
+        
+        x = ForTestingInterface(self.exefile, redirect_stderr_file = 'perr', redirect_stdout_file = 'pout', redirection="file")
+        x.print_string("def")
+        x.print_error_string("exex")
+        x.stop()
+        
+        time.sleep(0.2)
+        
+        self.assertTrue(os.path.exists("pout.000"))
+        with open("pout.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "abc\n def") 
+        
+        self.assertTrue(os.path.exists("perr.000"))
+        with open("perr.000","r") as f:
+            content = f.read()
+        self.assertEquals(content.strip(), "exex\n exex")
+        
+        
+    
+
     
     
