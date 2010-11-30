@@ -383,6 +383,8 @@ int recommit_particles(){
         }
         free(particle_map);
         free_memory();
+        ngb_treefree();
+        force_treefree();
     }
     return commit_particles();
 }
