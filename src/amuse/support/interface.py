@@ -710,8 +710,9 @@ class ParticleSetDefinition(AbstracParticleSetDefinition):
         self.getters = []
         self.queries = []
         self.attributes = []
-
+    
         self.selects_form_particle = []
+        self.subselects_in_set = []
         self.methods = []
         self.is_superset = False
         self.is_inmemory = False
@@ -760,20 +761,24 @@ class ParticleSetDefinition(AbstracParticleSetDefinition):
         queries = self.new_queries(handler.interface)
         for x in queries:
             result.add_function_attribute(x.public_name, x.apply)
-
+    
         selects = self.new_selects_from_particle(handler.interface)
         for x in selects:
             result.add_function_attribute(x.public_name, x.apply_on_all)
             result.add_particle_function_attribute(x.public_name, x.apply_on_one)
-
+            
+        selects = self.new_subselects_in_set(handler.interface)
+        for x in selects:
+            result.add_function_attribute(x.public_name, x.apply_on_all)
+    
         selects = self.new_particle_methods(handler.interface)
         for x in selects:
             result.add_function_attribute(x.public_name, x.apply_on_all, x.apply_on_one)
-
+    
         attributes = self.attributes
         for name_of_the_attribute, name_of_the_method, names in attributes:
             result.add_calculated_attribute(name_of_the_attribute, getattr(handler.interface, name_of_the_method), names)
-
+    
         return result
 
     def new_queries(self, interface):
@@ -800,6 +805,17 @@ class ParticleSetDefinition(AbstracParticleSetDefinition):
 
         return results
 
+
+    def new_subselects_in_set(self, interface):
+        results = []
+        for name, number_of_particles_name, public_name in self.subselects_in_set:
+            number_of_particles_method = None if number_of_particles_name is None else getattr(interface, number_of_particles_name)
+            x = incode_storage.ParticleSetSelectSubsetMethod(getattr(interface, name), number_of_particles_method, public_name)
+            results.append(x)
+    
+        return results
+    
+    
 class ParticleSupersetDefinition(AbstracParticleSetDefinition):
 
     def __init__(self, handler, particle_subset_names, index_to_default_set=None):
@@ -961,6 +977,16 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
     
 
 
+
+    
+
+    def add_subselect_in_set(self, name_of_the_set, name, get_number_of_particles_name = None,  public_name = None):
+        if not public_name:
+            public_name = name
+    
+        self.mapping_from_name_to_set_definition[name_of_the_set].subselects_in_set.append((name, get_number_of_particles_name, public_name))
+    
+    
 class OverriddenCodeInterface(object):
 
     def __init__(self, code_interface):

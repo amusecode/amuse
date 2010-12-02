@@ -146,6 +146,66 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(x[1], 3 | units.m)
         self.assertEquals(mass[1], 15 | units.kg)
         
+
+    def test3(self):
+        class Code(object):
+            def __init__(self):
+                # mass
+                self.data = []
+                self.get_mass_called = False
+                self.set_mass_called = False
+                
+            def get_number_of_particles(self):
+                return  0 if not self.data else len(self.data[0])
+                
+            def get_mass(self,index):
+                self.get_mass_called = True
+                data_to_return = [self.data[0][i] for i in index]
+                return units.kg(data_to_return)
+                
+            def set_mass(self,index,mass):
+                self.set_mass_called = True
+                pass
+                
+            def new_particle(self, mass):
+                mass = mass.value_in(units.kg)
+                self.data = [mass]
+                return [i for i in range(len(mass))]
+                
+        code = Code()
+        storage = InCodeAttributeStorage(
+            code,
+            NewParticleMethod(code.new_particle,("mass",)),
+            None,
+            code.get_number_of_particles,
+            [],
+            [
+                ParticleGetAttributesMethod(code.get_mass,("mass",)),
+            ],
+            name_of_the_index = "index"
+        )
+        
+        storage._add_particles(
+            [1,2,3,4],
+            ["mass"],
+            [
+                units.kg([1,2,3,4]),
+            ]
+        )
+        
+        self.assertEquals(len(storage), 4)
+        
+        self.assertEquals(storage._get_attribute_names(), set(["mass",]))
+        
+        index,mass = storage._get_values([2,3],["index_in_code","mass"])
+        self.assertTrue(code.get_mass_called)
+        print index, mass
+        self.assertEquals(index[0], 1)
+        self.assertEquals(mass[0],  2 | units.kg)
+        self.assertEquals(index[1], 2)
+        self.assertEquals(mass[1],  3 | units.kg)
+    
+    
 class TestGrids(amusetest.TestCase):
     
     def test1(self):

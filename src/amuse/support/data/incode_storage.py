@@ -269,7 +269,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
         
         self.code_interface = code_interface
         
-        self.getters = getters
+        self.getters = list(getters)
         self.setters = setters
         
         self.attributes = set([])
@@ -281,7 +281,7 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
         self.writable_attributes = set([])
         for x in self.setters:
             self.writable_attributes |= set(x.attribute_names)
-            
+        
         
         self.extra_keyword_arguments_for_getters_and_setters = extra_keyword_arguments_for_getters_and_setters
         
@@ -336,6 +336,8 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
         
         
 
+
+    
 class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
        
     def __init__(self, 
@@ -355,7 +357,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             x.name_of_the_indexing_parameter = name_of_the_index
         
         AbstractInCodeAttributeStorage.__init__(self, code_interface, setters, getters)
-
+    
         self.mapping_from_particle_key_to_index_in_the_code = {}
         self.mapping_from_index_in_the_code_to_particle_key = {}
         self.particle_keys = []
@@ -363,6 +365,8 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         self._get_number_of_particles = number_of_particles_method
         self.delete_particle_method = delete_particle_method
         self.new_particle_method = new_particle_method
+        
+        self.getters.append(ParticleGetIndexMethod())
         
         
                     
@@ -558,4 +562,63 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     def _get_writeable_attribute_names(self):
         return self.writable_attributes
 
+
+
+class ParticleGetIndexMethod(object):
+    """
+    Instances return the index of a particle in the code
+    """
+    ATTRIBUTE_NAME = "index_in_code"
+    
+    def __init__(self):
+        pass
+    
+    @late
+    def attribute_names(self):
+        return [self.ATTRIBUTE_NAME]
+    
+    def get_attribute_values(self, storage, attributes_to_return, *indices):
+        
+        return {self.ATTRIBUTE_NAME : indices[0]}
+
+
+class ParticleSelectSubsetMethod(object):
+    def __init__(self,  method, get_number_of_particles_in_set_method = None, names = (), public_name = None):
+        self.method = method
+        self.get_number_of_particles_in_set_method = get_number_of_particles_in_set_method
+        self.name_of_the_out_parameters = names
+        self.public_name = public_name
+
+    def apply_on_all(self, particles):
+        
+        if not self.number_of_particles_method is None:
+            number_of_particles_in_set = self.get_number_of_particles_in_set_method()
+            indices = self.method(range(number_of_particles_in_set))
+        else:
+            index = self.method()
+            indices = [index]
+        
+        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)        
+        
+        return particles._subset(keys)
+
+
+class ParticleSetSelectSubsetMethod(object):
+    def __init__(self,  method, get_number_of_particles_in_set_method = None, public_name = None):
+        self.method = method
+        self.get_number_of_particles_in_set_method = get_number_of_particles_in_set_method
+        self.public_name = public_name
+
+    def apply_on_all(self, particles):
+        
+        if not self.get_number_of_particles_in_set_method is None:
+            number_of_particles_in_set = self.get_number_of_particles_in_set_method()
+            indices = self.method(range(number_of_particles_in_set))
+        else:
+            index = self.method()
+            indices = [index]
+        
+        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)    
+        
+        return particles._subset(keys)
 

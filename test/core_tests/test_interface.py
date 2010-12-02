@@ -626,8 +626,23 @@ class TestParticlesWithBinding(amusetest.TestCase):
             for i in id:
                 self.masses[i] += 1.0
             return map(lambda x : 0, id)
-            
         
+        def get_heaviest_particle(self):
+            max = -1
+            id = -1
+            for index, mass in self.masses.iteritems():
+                if mass > max:
+                    id = index
+                    max = mass
+            return id
+            
+        def get_number_of_lightest_particles(self):
+            return 2
+            
+        def get_lightest_particles(self, offset):
+            sorted_masses = sorted(list(self.masses.iteritems()), key = lambda x : x[1])
+            return [sorted_masses[x][0] for x in offset]
+            
             
     def test1(self):
         original = self.TestInterface()
@@ -817,6 +832,52 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         
         
+
+    def test6(self):
+        original = self.TestInterface()
+        
+        instance = interface.CodeInterface(original)
+        
+        handler = instance.get_handler('METHOD')
+        handler.add_method('get_mass',(handler.NO_UNIT,), (nbody_system.mass, handler.ERROR_CODE))
+        handler.add_method('set_mass',(handler.NO_UNIT, nbody_system.mass,), (handler.ERROR_CODE,))
+        handler.add_method('new_particle',(nbody_system.mass,), (handler.NO_UNIT, handler.ERROR_CODE))
+        handler.add_method('delete_particle',(handler.NO_UNIT,), (handler.ERROR_CODE,))
+        handler.add_method('get_number_of_particles',(), (handler.NO_UNIT, handler.ERROR_CODE,))
+        
+        handler = instance.get_handler('PARTICLES')
+        handler.define_set('particles', 'id')
+        handler.set_new('particles', 'new_particle')
+        handler.set_delete('particles', 'delete_particle')
+        handler.add_setter('particles', 'set_mass')
+        handler.add_getter('particles', 'get_mass', names = ('mass',))
+        handler.add_subselect_in_set('particles', 'get_heaviest_particle', public_name = 'heaviest')
+        handler.add_subselect_in_set('particles', 'get_lightest_particles', 'get_number_of_lightest_particles', public_name = 'lightest')
+        
+        
+        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
+        
+        handler = instance.get_handler('UNIT')
+        handler.set_nbody_converter(convert_nbody)
+    
+        local_particles = core.Particles(4)
+        local_particles.mass = units.kg.new_quantity([3.0, 4.0, 6.0, 5.0])
+        
+        remote_particles = instance.particles
+        remote_particles.add_particles(local_particles)
+        
+        self.assertEquals(len(instance.particles), 4)
+        self.assertEquals(instance.particles[0].mass, 3.0 | units.kg)
+        subset = instance.particles.heaviest()
+        self.assertEquals(len(subset), 1)
+        self.assertEquals(subset[0], local_particles[2])
+        
+        subset = instance.particles.lightest()
+        self.assertEquals(len(subset), 2)
+        self.assertEquals(subset[0], local_particles[0])
+        self.assertEquals(subset[1], local_particles[1])
+    
+    
 class TestGridWithBinding(amusetest.TestCase):
     class TestInterface(object):
         
