@@ -24,6 +24,7 @@ class ExampleParticlesInterface(interface.CodeInterface):
         print message.format(*arguments)
     
     def __init__(self):
+        super(type(self), self).__init__(None)
         self.particles = {}
         self.highest_id = 0
         self.log("initialized the code")
@@ -37,6 +38,7 @@ class ExampleParticlesInterface(interface.CodeInterface):
         
         Redefined from CodeInterface.
         """
+        
         
         # first we define the name of the set and wich parameter will be used
         # to specify the id of a particle in the code
@@ -57,6 +59,8 @@ class ExampleParticlesInterface(interface.CodeInterface):
         builder.add_getter('particles', 'get_mass', names = ('mass',))
         builder.add_setter('particles', 'set_position')
         builder.add_getter('particles', 'get_position', names = ('x', 'y', 'z'))
+        
+        self.log("defined the particle set with name {0!r}", 'particles')
     
     
 
@@ -69,11 +73,14 @@ class ExampleParticlesInterface(interface.CodeInterface):
         Note: the arguments are all arrays
         """
         
-        result = [] 
+        result = []
         for mass_element, x_element, y_element, z_element in zip(mass, x, y, z):
             particle = [self.highest_id, mass_element, x_element, y_element, z_element]
             self.particles[self.highest_id] = particle
             result.append(self.highest_id)
+            
+            self.log("created new particle with id {0}, (mass={1}, x={2}, y={3}, z={4})", self.highest_id, mass_element, x_element, y_element, z_element)
+            
             self.highest_id += 1
     
     
@@ -86,6 +93,8 @@ class ExampleParticlesInterface(interface.CodeInterface):
         
         for x in index_of_the_particle:
             del self.particles[x]
+            
+            self.log("deleted the particle with id {0}", x)
     
     
 
