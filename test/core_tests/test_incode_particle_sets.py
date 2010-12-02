@@ -7,25 +7,42 @@ from amuse.test import amusetest
 
 class ExampleParticlesInterface(interface.CodeInterface):
     """This is an example class to demonstrate how to work with incode particle sets
-    using the next-level mapping interface.
+    using the object mapping interface.
     
-    This class is not connected to a code, instead it provides all necessary
-    methods to create, delete and update particles. For simplicity
-    all attributes are stored in quantities (values with units),
+    The particle set mapping has two functions:
+    
+    1) Convert function calls to attribute access. Setting or getting
+       an attribute is converted to a call to the code.
+          
+          particles[0].mass = 10 | units.kg
+          -->
+          code.set_mass(index_of_the_particle = 0, mass = 10)
+    
+    2) Convert ids from the code into particle keys. All particles
+       in AMUSE have an unique key, this key is mapped to the corresponding
+       id of that particle in a code by the particle set. As every particle
+       set mapping is unique for a code, every code has a mapping table (and
+       different codes can have differen ids for the same particle, the key
+       to id mapping will ensure that attribute values are assigned correctly)
+       
+    This example class is not connected to a real code, instead it 
+    provides all necessary methods to create, delete and update particles. 
+    
+    For simplicity all attributes are stored in quantities (values with units),
     no unit conversion is provided.
     
     In this example code particles have an id (id),  position (x,y and z) and a
     mass attribute (mass).
     
-    See the ExampleParticlesInterfaceTests class for examples of use.
+    See the ExampleParticlesInterfaceTests class for examples / tests of use.
     """
     
     def log(self, message, *arguments):
-        print message.format(*arguments)
+        print "IN CODE >>", message.format(*arguments)
     
     def __init__(self):
         super(type(self), self).__init__(None)
-        self.particles = {}
+        self.mapping_from_id_to_particle = {}
         self.highest_id = 0
         self.log("initialized the code")
 
@@ -76,12 +93,14 @@ class ExampleParticlesInterface(interface.CodeInterface):
         result = []
         for mass_element, x_element, y_element, z_element in zip(mass, x, y, z):
             particle = [self.highest_id, mass_element, x_element, y_element, z_element]
-            self.particles[self.highest_id] = particle
+            self.mapping_from_id_to_particle[self.highest_id] = particle
             result.append(self.highest_id)
             
             self.log("created new particle with id {0}, (mass={1}, x={2}, y={3}, z={4})", self.highest_id, mass_element, x_element, y_element, z_element)
             
             self.highest_id += 1
+        
+        return result
     
     
 
@@ -92,7 +111,7 @@ class ExampleParticlesInterface(interface.CodeInterface):
         """
         
         for x in index_of_the_particle:
-            del self.particles[x]
+            del self.mapping_from_id_to_particle[x]
             
             self.log("deleted the particle with id {0}", x)
     
@@ -105,11 +124,14 @@ class ExampleParticlesInterface(interface.CodeInterface):
         """
         
         for index_element, mass_element, x_element, y_element, z_element in zip(index_of_the_particle, mass, x, y, z):
-            particle = self.particles[index_element]
+            particle = self.mapping_from_id_to_particle[index_element]
             particle[1] = mass
             particle[2] = x
             particle[3] = y
             particle[4] = z
+            
+            
+            self.log("updated state of particle with id {0}", index_element)
     
     
 
@@ -123,12 +145,14 @@ class ExampleParticlesInterface(interface.CodeInterface):
         zresult = values.AdaptingVectorQuantity()
         
         for index_element in index_of_the_particle:
-            particle = self.particles[index_element]
+            particle = self.mapping_from_id_to_particle[index_element]
             
             massresult.append(particle[1])
             xresult.append(particle[2])
             yresult.append(particle[3])
             zresult.append(particle[4])
+            
+            self.log("retrieved state of particle with id {0}", index_element)
             
         return massresult, xresult, yresult, zresult
     
@@ -141,8 +165,10 @@ class ExampleParticlesInterface(interface.CodeInterface):
         massresult = values.AdaptingVectorQuantity()
         
         for index_element in index_of_the_particle:
-            particle = self.particles[index_element]
+            particle = self.mapping_from_id_to_particle[index_element]
             massresult.append(particle[1])
+            
+            self.log("retrieved mass of particle with id {0} (mass = {1})", index_element, particle[1])
             
         return massresult
     
@@ -157,12 +183,13 @@ class ExampleParticlesInterface(interface.CodeInterface):
         zresult = values.AdaptingVectorQuantity()
         
         for index_element in index_of_the_particle:
-            particle = self.particles[index_element]
+            particle = self.mapping_from_id_to_particle[index_element]
             
             xresult.append(particle[2])
             yresult.append(particle[3])
             zresult.append(particle[4])
             
+            self.log("retrieved position of particle with id {0} (x = {1}, y = {2}, z = {3})", index_element, particle[2], particle[3], particle[4])
         return xresult, yresult, zresult
     
     
@@ -174,10 +201,12 @@ class ExampleParticlesInterface(interface.CodeInterface):
         """
         
         for index_element, mass_element in zip(index_of_the_particle, mass):
-            particle = self.particles[index_element]
+            particle = self.mapping_from_id_to_particle[index_element]
             
             particle[1] = mass
-    
+            
+            self.log("updated mass of particle with id {0} (mass = {1})", index_element, particle[1])
+            
     
 
     def set_position(self, index_of_the_particle, x, y, z):
@@ -187,11 +216,13 @@ class ExampleParticlesInterface(interface.CodeInterface):
         """
         
         for index_element, x_element, y_element, z_element in zip(index_of_the_particle, x, y, z):
-            particle = self.particles[index_element]
+            particle = self.mapping_from_id_to_particle[index_element]
             
             particle[2] = x
             particle[3] = y
             particle[4] = z
+            
+            self.log("updated position of particle with id {0} (x = {1}, y = {2}, z = {3})", index_element, particle[2], particle[3], particle[4])
     
     
 
@@ -202,6 +233,46 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
     
     
     def test1(self):
+        """
+        In this test we will add and remove a particle from
+        the particle set of the code.
+        
+        Adding a particle to the set will result in creating
+        a new particle in the code.
+        
+        Removing a particle form the set will result in deleting
+        the corresponding particle in the code.
+        """
+        
+        self.log("adding and removing of a particle")
+        
         instance = ExampleParticlesInterface()
         self.assertEquals(len(instance.particles), 0)
+    
+        # we create a particle in our script
+        # all attributes of this particle are stored in the python space
+        # when creating a particle you can set it's key
+        # or let the system determine a unique key
+        # to set the key in the script do: core.Particle(1000) where 1000 is the key
+        
+        theParticle = core.Particle()
+        theParticle.mass = 10 | units.kg
+        theParticle.x = 0.1 | units.m
+        theParticle.y = 0.2 | units.m
+        theParticle.z = 0.5 | units.m
+        
+        self.log("Adding particle with key {0}", theParticle.key)
+        instance.particles.add_particle(theParticle)
+        
+        self.assertEquals(len(instance.particles), 1)
+        
+        self.log("Removing particle with key {0}", theParticle.key)
+        instance.particles.remove_particle(theParticle)
+        
+        self.assertEquals(len(instance.particles), 0)
 
+
+    def log(self, message, *arguments):
+        print "IN TEST >>", message.format(*arguments)
+    
+    
