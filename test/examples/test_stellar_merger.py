@@ -7,13 +7,14 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.data.core import Particles, ParticlesSuperset
+from amuse.support.data.core import Particles, ParticlesSuperset, Grid
 from amuse.support.units import units, constants
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.exceptions import AmuseException
 from amuse.legacy.mesa.interface import MESA
 from amuse.legacy.gadget2.interface import Gadget2
-from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
+from amuse.legacy.fi.interface import Fi
+from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model, StellarModel2SPH
 from optparse import OptionParser
 import numpy
 
@@ -21,67 +22,107 @@ def slowtest1():
     head_on_stellar_merger()
 
 def head_on_stellar_merger(
-        masses = [1.0, 1.0] | units.MSun, 
-        star_age = 10.0 | units.Gyr, 
+        masses = [0.3, 3.0] | units.MSun, 
+        star_age = 310.0 | units.Myr, 
         initial_separation = 4.0 | units.RSun, 
-        initial_speed = 100.0 | units.km / units.s, 
-        number_of_sph_particles = 300, 
-        t_end = 2.0e4 | units.s,
-        maximally_evolved_stars = False
+        angle = numpy.pi / 3,
+        initial_speed = 3000.0 | units.km / units.s, 
+        initial_speed_perpendicular = 30.0 | units.km / units.s, 
+        number_of_sph_particles = 1000, 
+        t_end = 1.0e4 | units.s,
+        maximally_evolved_stars = False,
+        sph_code = Fi,
+        steps_per_snapshot = 4,
+        snapshot_size = 100
     ):
+    """
+    masses: Mass of the two stars
+    star_age: Initial age of the stars (if maximally_evolved_stars is False)
+    maximally_evolved_stars: Evolve stars as far as the Stellar Evolution code can get
+    number_of_sph_particles: Total number of particles of both stars, divided according to their masses
+    sph_code: Code to use for the hydrodynamics simulation
+    steps_per_snapshot: A hydroplot snapshot is generated each time after this many steps (0 or None means no snapshots)
+    snapshot_size: Size of the snapshot in pixels along one dimension
+    """
     n_string = "n" + ("%1.0e"%(number_of_sph_particles)).replace("+0","").replace("+","")
     t_end_string = "t" + ("%1.0e"%(t_end.value_in(units.s))).replace("+0","").replace("+","")
+    base_output_file_name = os.path.join(get_path_to_results(), "stellar_merger_"+n_string+"_"+t_end_string)
     
-    try:
-        stellar_evolution = MESA()
-    except:
-        print "MESA was not built. Returning."
-        return
     stars =  Particles(2)
     stars.mass = masses
-    stellar_evolution.initialize_module_with_current_parameters() 
-    stellar_evolution.particles.add_particles(stars)
-    stellar_evolution.initialize_stars()
     
-    if maximally_evolved_stars:
+    pickle_file_1 = os.path.join(get_path_to_results(), "stellar_merger_1.pkl")
+    pickle_file_2 = os.path.join(get_path_to_results(), "stellar_merger_2.pkl")
+    if not (os.path.exists(pickle_file_1) and os.path.exists(pickle_file_2)):
         try:
-            while True:
-                stellar_evolution.evolve_model()
-        except AmuseException as exception:
-            print exception
-    else:
-        stellar_evolution.evolve_model(star_age)
+            stellar_evolution = MESA()
+        except:
+            print "MESA was not built. Returning."
+            return
+        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.particles.add_particles(stars)
+        stellar_evolution.initialize_stars()
+        
+        if maximally_evolved_stars:
+            try:
+                while True:
+                    stellar_evolution.evolve_model()
+                    print stellar_evolution.particles.radius
+            except AmuseException as exception:
+                print exception
+        else:
+            stellar_evolution.evolve_model(star_age)
+        
+        pickle_stellar_model(stellar_evolution.particles[0], pickle_file_1)
+        pickle_stellar_model(stellar_evolution.particles[1], pickle_file_2)
+        stellar_evolution.stop()
     
-    composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
-    outer_radii = stellar_evolution.particles[0].get_radius_profile()
-    outer_radii.prepend(0.0 | units.m)
-    midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
-    temperature = stellar_evolution.particles[0].get_temperature_profile()
-    mu          = stellar_evolution.particles[0].get_mu_profile()
-    specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg)
+    model_1 = StellarModel2SPH(None, None, pickle_file = pickle_file_1)
+    model_2 = StellarModel2SPH(None, None, pickle_file = pickle_file_2)
+    model_1.unpickle_stellar_structure()
+    model_2.unpickle_stellar_structure()
+    composition = model_2.composition_profile
+    midpoints = model_2.midpoints_profile[1:-1]
+    specific_internal_energy = model_2.specific_internal_energy_profile
+    print len(composition), len(composition[0]), len(midpoints), len(specific_internal_energy)
     
+    number_of_sph_particles_1 = int(round(number_of_sph_particles * 
+        (model_1.mass / (model_1.mass + model_2.mass)).value_in(units.none)))
+    number_of_sph_particles_2 = number_of_sph_particles - number_of_sph_particles_1
     print "Creating initial conditions from a MESA stellar evolution model:"
-    print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
+    print model_1.mass, "star consisting of", number_of_sph_particles_1, "particles."
     sph_particles_1 = convert_stellar_model_to_SPH(
-        stellar_evolution.particles[0], 
-        number_of_sph_particles, 
+        None, 
+        number_of_sph_particles_1, 
         seed=12345,
-        mode = "scaling method"
+        mode = "scaling method",
+        pickle_file = pickle_file_1
     )
-    print stars.mass[1], "star consisting of", number_of_sph_particles, "particles."
+    print model_2.mass, "star consisting of", number_of_sph_particles_2, "particles."
     sph_particles_2 = convert_stellar_model_to_SPH(
-        stellar_evolution.particles[1], 
-        number_of_sph_particles, 
-        seed=12345,
-        mode = "scaling method"
+        None, 
+        number_of_sph_particles_2, 
+        mode = "scaling method",
+        pickle_file = pickle_file_2
     )
-    sph_particles_2.x  += initial_separation + stellar_evolution.particles.radius.sum()
-    sph_particles_1.vx += initial_speed
-    stellar_evolution.stop()
-    all_sph_particles = ParticlesSuperset([sph_particles_1, sph_particles_2])
+    initial_separation += model_1.radius + model_2.radius
+    sph_particles_2.x  += numpy.cos(angle) * initial_separation
+    sph_particles_2.y  += numpy.sin(angle) * initial_separation
+    sph_particles_1.vx += numpy.cos(angle) * initial_speed - numpy.sin(angle) * initial_speed_perpendicular
+    sph_particles_1.vy += numpy.cos(angle) * initial_speed_perpendicular + numpy.sin(angle) * initial_speed
+    view = [-0.5, 0.5, -0.5, 0.5] * (initial_separation + model_1.radius + model_2.radius)
     
-    unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, masses.sum(), t_end)
-    hydro_legacy_code = Gadget2(unit_converter)
+    all_sph_particles = ParticlesSuperset([sph_particles_1, sph_particles_2])
+    all_sph_particles.move_to_center()
+    
+    unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
+    hydro_legacy_code = sph_code(unit_converter)
+    n_steps = 100
+    hydro_legacy_code.parameters.n_smooth = 96 | units.none
+    try:
+        hydro_legacy_code.parameters.timestep = t_end / n_steps
+    except Exception as exc:
+        if not "parameter is read-only" in str(exc): raise
     hydro_legacy_code.gas_particles.add_particles(all_sph_particles)
     
     times = [] | units.Myr
@@ -90,16 +131,23 @@ def head_on_stellar_merger(
     thermal_energies =   [] | units.J
     
     print "Evolving to:", t_end
-    n_steps = 100
-    for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
+    for time, i_step in [(i*t_end/n_steps, i) for i in range(1, n_steps+1)]:
         hydro_legacy_code.evolve_model(time)
         times.append(time)
         kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
         potential_energies.append( hydro_legacy_code.potential_energy)
         thermal_energies.append(   hydro_legacy_code.thermal_energy)
+        if steps_per_snapshot and (not i_step % steps_per_snapshot):
+            hydro_plot(
+                view,
+                hydro_legacy_code,
+                (snapshot_size, snapshot_size),
+                base_output_file_name + "_hydro_image{0:=03}.png".format(i_step)
+            )
+
     
     hydro_legacy_code.gas_particles.new_channel_to(all_sph_particles).copy_attributes(
-        ['mass', 'rho', 'x','y','z', 'vx','vy','vz', 'u'])
+        ['mass', 'x','y','z', 'vx','vy','vz', 'u'])
     center_of_mass = all_sph_particles.center_of_mass().as_quantity_in(units.RSun)
     center_of_mass_velocity = all_sph_particles.center_of_mass_velocity().as_quantity_in(units.km / units.s)
     print
@@ -108,7 +156,6 @@ def head_on_stellar_merger(
     all_sph_particles.position -= center_of_mass
     sph_midpoints = all_sph_particles.position.lengths()
     
-    base_output_file_name = os.path.join(get_path_to_results(), "stellar_merger_"+n_string+"_"+t_end_string)
     energy_plot(
         times, 
         kinetic_energies, potential_energies, thermal_energies, 
@@ -128,6 +175,12 @@ def head_on_stellar_merger(
         midpoints, specific_internal_energy, 
         sph_midpoints, all_sph_particles.u, 
         base_output_file_name+"_new_u.png"
+    )
+    hydro_plot(
+        [-2.0, 2.0, -2.0, 2.0] | units.RSun,
+        hydro_legacy_code,
+        (100, 100),
+        base_output_file_name + "_hydro_image.png"
     )
     hydro_legacy_code.stop()
     print "All done!\n"
@@ -187,6 +240,54 @@ def thermal_energy_plot(time, E_therm, figname):
     pyplot.savefig(figname)
     print "\nPlot of thermal energy evolution was saved to: ", figname
     pyplot.close()
+
+def hydro_plot(view, hydro_code, image_size, figname):
+    """
+    view: the (physical) region to plot [xmin, xmax, ymin, ymax]
+    hydro_code: hydrodynamics code in which the gas to be plotted is defined
+    image_size: size of the output image in pixels (x, y)
+    """
+    shape = (image_size[0], image_size[1], 1)
+    size = image_size[0] * image_size[1]
+    axis_lengths = [0.0, 0.0, 0.0] | units.m
+    axis_lengths[0] = view[1] - view[0]
+    axis_lengths[1] = view[3] - view[2]
+    grid = Grid.create(shape, axis_lengths)
+    grid.x += view[0]
+    grid.y += view[2]
+    speed = grid.z.reshape(size) * (0 | 1/units.s)
+    rho, rhovx, rhovy, rhovz, rhoe = hydro_code.get_hydro_state_at_point(grid.x.reshape(size), 
+        grid.y.reshape(size), grid.z.reshape(size), speed, speed, speed)
+    
+    min_v =  800.0 | units.km / units.s
+    max_v = 3000.0 | units.km / units.s
+    min_rho = 3.0e-4 | units.g / units.cm**3
+    max_rho = 0.1 | units.g / units.cm**3
+    min_E = 1.0e11 | units.J / units.kg
+    max_E = 1.0e13 | units.J / units.kg
+    
+    v_sqr = (rhovx**2 + rhovy**2 + rhovz**2) / rho**2
+    E = rhoe / rho
+    log_v = numpy.log((v_sqr / min_v**2).value_in(units.none)) / numpy.log((max_v**2 / min_v**2).value_in(units.none))
+    log_rho = numpy.log((rho / min_rho).value_in(units.none)) / numpy.log((max_rho / min_rho).value_in(units.none))
+    log_E = numpy.log((E / min_E).value_in(units.none)) / numpy.log((max_E / min_E).value_in(units.none))
+    
+    red   = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_rho)).reshape(shape)
+    green = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_v)).reshape(shape)
+    blue  = numpy.minimum(numpy.ones_like(rho.number), numpy.maximum(numpy.zeros_like(rho.number), log_E)).reshape(shape)
+    alpha = numpy.minimum(numpy.ones_like(log_v), numpy.maximum(numpy.zeros_like(log_v), 
+        numpy.log((rho / (10*min_rho)).value_in(units.none)))).reshape(shape)
+    
+    rgba = numpy.concatenate((red, green, blue, alpha), axis = 2)
+    
+    pyplot.figure(figsize = (image_size[0]/100, image_size[1]/100))
+    im = pyplot.figimage(rgba, origin='lower')
+    
+    pyplot.savefig(figname, transparent=True)
+    print "\nHydroplot was saved to: ", figname
+    pyplot.close()
+    
+    
     
 def new_option_parser():
     result = OptionParser()

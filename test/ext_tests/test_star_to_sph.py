@@ -7,7 +7,7 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-from amuse.support.data.core import Particles, Particle, ParticlesSuperset
+from amuse.support.data.core import Particles, Particle, ParticlesSuperset, Grid
 from amuse.support.units import units, generic_unit_system, nbody_system, constants
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.exceptions import AmuseException
@@ -850,9 +850,8 @@ class TestStellarModel2SPH(TestWithMPI):
     def slowtest18(self):
         print "SPH model with core"
         # options:
-        with_core = True # set to False to do a comparison run without a core
+        with_core = True # set to False to do a comparison run without a core (True)
         hydro_code = Gadget2 # Fi -or- Gadget2
-        hydro_code_args = dict() # dict() -or- dict(use_gl = True)
         
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -895,6 +894,7 @@ class TestStellarModel2SPH(TestWithMPI):
             else:
                 print "Only SPH particles created."
         else:
+            gas_without_core = None
             gas = convert_stellar_model_to_SPH(
                 stellar_evolution.particles[0], 
                 number_of_sph_particles, 
@@ -903,12 +903,12 @@ class TestStellarModel2SPH(TestWithMPI):
             )
         stellar_evolution.stop()
         
-        t_end = 1.0e4 | units.s
+        t_end = 1.0e2 | units.s
         print "Evolving to:", t_end
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
-        hydro_legacy_code = hydro_code(unit_converter, hydro_code_args)
+        hydro_legacy_code = hydro_code(unit_converter)
         
         try:
             hydro_legacy_code.parameters.timestep = t_end / n_steps
@@ -1009,6 +1009,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertTrue(numpy.all( sph_particles.h1[1:]  - sph_particles.h1[:-1]  >= -0.0001 | units.none ))
         self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 | units.none ))
         self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 | units.none ))
+    
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):
     if not HAS_MATPLOTLIB:

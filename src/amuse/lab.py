@@ -15,7 +15,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import nbody_system as nbody
 
 from amuse.support.data import particle_attributes
-from amuse.support.data.core import Particle, Particles, ParticlesSuperset
+from amuse.support.data.core import Particle, Particles, ParticlesSuperset, Grid
 from amuse.support.data.values import zero, ScalarQuantity, VectorQuantity,  AdaptingVectorQuantity, new_quantity
 from amuse.support.data.console import set_printing_strategy, get_current_printing_strategy
 
