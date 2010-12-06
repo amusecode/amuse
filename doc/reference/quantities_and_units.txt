@@ -18,12 +18,6 @@ McGraw-Hill Book Company], i.e. we can state things like:
 
 1 AU = 149597870.691 km
 
-Quantity objects have basic conversion ability, when different units
-belonging to the same dimension exist the quantity object will convert
-from one to the other. For more elaborate conversion facilities, like
-interfacing with a natural unit code, AMUSE provides the
-generic_unit_converter and the derived nbody_system.  
-
 .. code-block:: python
 
     >>> from amuse.support.units import units
@@ -31,6 +25,12 @@ generic_unit_converter and the derived nbody_system.
     >>> q2 = 1.98892e30|units.kg
     >>> q1 == q2
     True
+
+Quantity objects have basic conversion ability, when different units
+belonging to the same dimension exist the quantity object will convert
+from one to the other. For more elaborate conversion facilities, like
+interfacing with a natural unit code, AMUSE provides the
+generic_unit_converter and the derived nbody_system modules.  
 
 
 Quantities
@@ -94,3 +94,52 @@ Converter
      .. autoclass:: ConvertBetweenGenericAndSiUnits
          :members:
                      
+Use with codes
+~~~~~~~~~~~~~~
+
+For convenience, the gravitational dynamics interface works with a
+unit-converter which converts between the units used by the code and
+the preferred units in the script (user's choice).
+
+We show two examples. The first one uses the (derived from the generic
+units converter) nbody_system converter, which is the logical choice
+for dynamics (n-body) codes.
+
+The second one uses the generic unit converter directly, this is just
+an example.
+
+~~~~~~~~~~~~~~~~
+Usage: example 1
+~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+
+    >>> from amuse.legacy.hermite0.interface import Hermite
+    >>> from amuse.support.units import nbody_system
+    >>> from amuse.support.units import constants, units
+    >>> convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+    >>> hermite = Hermite(convert_nbody)
+
+~~~~~~~~~~~~~~~~
+Usage: example 2
+~~~~~~~~~~~~~~~~
+
+.. code-block:: python
+    
+    >>> from amuse.legacy.hermite0.interface import Hermite
+    >>> from amuse.support.units import generic_unit_converter as gc
+    >>> from amuse.support.units import constants, units
+    >>> converter = gc.ConvertBetweenGenericAndSiUnits(constants.G, 1.0 | units.MSun, 1 | units.AU) 
+    >>> hermite = Hermite(converter)
+
+~~~~~~~
+Example
+~~~~~~~
+
+More examples can be found in the tutorial, :ref:`working_with_units`
+
+.. automodule:: amuse.legacy.interface.gd
+
+    .. autoclass:: GravitationalDynamics
+        :members: __init__
+

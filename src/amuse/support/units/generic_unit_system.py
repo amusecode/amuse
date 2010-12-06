@@ -1,4 +1,24 @@
 """
+The generic unit system knows the seven base quantities in the
+International System of Quantities, I.S.Q.
+
++-------------------+-----------------------------------+-----------------+
+|Base quantity      |Name in generic unit               |Name in S.I. unit|
++-------------------+-----------------------------------+-----------------+
+|length             |generic_system.length              |units.m          |
++-------------------+-----------------------------------+-----------------+
+|time               |generic_system.time                |units.s          |
++-------------------+-----------------------------------+-----------------+
+|mass               |generic_system.mass                |units.kg         |
++-------------------+-----------------------------------+-----------------+
+|current            |generic_system.current             |units.A          |
++-------------------+-----------------------------------+-----------------+
+|temperature        |generic_system.temperature         |units.K          |
++-------------------+-----------------------------------+-----------------+
+|amount of substance|generic_system.amount_of_substance |units.mol        |
++-------------------+-----------------------------------+-----------------+
+|luminous intensity |generic_system.luminous_intensity  |units.cd         |
++-------------------+-----------------------------------+-----------------+
 """
 from amuse.support.units import units
 from amuse.support.units import core

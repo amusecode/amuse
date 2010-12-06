@@ -1,3 +1,47 @@
+"""
+
+The n-body unit system knows the three base quantities in the
+International System of Quantities, I.S.Q. and defines 
+the gravitational constant to be 1:
+
+G = 1 | (length**3) / (mass * (time**2))
+
++-------------------+-----------------------------------+-----------------+
+|Base quantity      |Name in generic unit               |Name in S.I. unit|
++-------------------+-----------------------------------+-----------------+
+|length             |generic_system.length              |units.m          |
++-------------------+-----------------------------------+-----------------+
+|time               |generic_system.time                |units.s          |
++-------------------+-----------------------------------+-----------------+
+|mass               |generic_system.mass                |units.kg         |
++-------------------+-----------------------------------+-----------------+
+
+Derived quantities
+~~~~~~~~~~~~~~~~~~
+
++------------------+--------------------------------+
+|acceleration      |length / (time ** 2)            |
++------------------+--------------------------------+
+|potential         |(length ** 2) / (time ** 2)     |
++------------------+--------------------------------+
+|energy            |mass * potential                |
++------------------+--------------------------------+
+|specific_energy   |potential                       |
++------------------+--------------------------------+
+|speed             |length / time                   |
++------------------+--------------------------------+
+|volume            |(length ** 3)                   |
++------------------+--------------------------------+
+|density           |mass / volume                   |
++------------------+--------------------------------+
+|momentum_density  |density * speed                 |
++------------------+--------------------------------+
+|energy_density    |density * specific_energy       |
++------------------+--------------------------------+
+
+
+"""
+
 from amuse.support.units import units
 from amuse.support.units import core
 from amuse.support.units import constants
