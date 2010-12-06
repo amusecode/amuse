@@ -445,7 +445,7 @@ class TestAthenaInterface(TestWithMPI):
     
 
     def test13(self):
-        instance=self.new_instance(AthenaInterface)
+        instance=self.new_instance(AthenaInterface, redirection="none")
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)

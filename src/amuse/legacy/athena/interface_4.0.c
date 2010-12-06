@@ -91,29 +91,44 @@ static DomainS * get_domain_structure_with_index(int index_of_grid)
     return dom;
 }
 
+/*
+ * determine i,j,k for x1, x2, x3
+ * x1 will be between i and i+1
+ * x2 will be between j and j+1
+ * x3 will be between k and k+1
+ */
 
 static inline void ijk_pos_dom(
     const Real x1, const Real x2, const Real x3,
-    Real * i, Real * j, Real * k
+    Real * i, Real * j, Real * k,
+    Real * dx, Real * dy, Real * dz
 )
 {
   DomainS * domain = &mesh.Domain[0][0];
 
   if(domain->dx[0] == 0) {
     *i = 0;
+    *dx = 0;
   } else {
     *i = ((x1 - domain->MinX[0])/domain->dx[0]) - 0.5 + nghost;
+    *dx = modf(*i, i);
   }
   if(domain->dx[1] == 0) {
      *j = 0;
+     *dy = 0.0;
+     
   } else {
     *j = ((x2 - domain->MinX[1])/domain->dx[1]) - 0.5 + nghost;
+    *dy = modf(*j, j);
   }
 
   if(domain->dx[2] == 0) {
     *k = 0.0;
+    *dz = 0;
   } else {
     *k = ((x3 - domain->MinX[2])/domain->dx[2]) - 0.5 + nghost;
+    
+    *dz = modf(*k, k);
   }
 }
 
@@ -122,27 +137,45 @@ static Real ***Potentials=NULL;
 static Real grav_pot(const Real x1, const Real x2, const Real x3)
 {
     Real i, j, k;
-    ijk_pos_dom(x1,x2,x3, &i, &j, &k);
+    Real dx, dy, dz;
+    ijk_pos_dom(x1,x2,x3, &i, &j, &k, &dx, &dy, &dz);
     int ii, jj, kk;
     ii = i;
     jj = j;
     kk = k;
-
-    Real potential0 = Potentials[kk][jj][ii];
-    Real potential1 = potential0;
-    if(ii < i) {
-        potential1 = Potentials[kk][jj][ii + 1];
-    } else if(jj < j) {
-        potential1 = Potentials[kk][jj + 1][ii];
-    } else if(kk < k) {
-        potential1 = Potentials[kk + 1][jj][ii];
-    } else {
-        potential1 = potential0;
+    
+    Real potential000 = Potentials[kk][jj][ii];
+    
+    Real potential001 = potential000;
+    Real potential100 = potential000;
+    Real potential101 = potential000;
+    Real potential010 = potential000;
+    Real potential011 = potential000;
+    Real potential110 = potential000;
+    Real potential111 = potential000;
+    
+    if(dx > 0) potential001 = Potentials[kk][jj][ii+1];
+    if(dz > 0) potential100 = Potentials[kk+1][jj][ii];
+    if(dz > 0 && dx > 0) potential101 = Potentials[kk+1][jj][ii+1];
+    if(dy > 0) {
+        potential010 = Potentials[kk][jj+1][ii];
+        if(dx > 0) potential011 = Potentials[kk][jj+1][ii+1];
+        if(dz > 0) potential110 = Potentials[kk+1][jj+1][ii];
+        if(dz > 0 && dx > 0) potential111 = Potentials[kk+1][jj+1][ii+1];
     }
-
-    return (potential0 + potential1) / 2.0;
-
-    return 0;
+    
+    Real potential = 
+        (potential000 * (1 - dz) * (1 - dy) * (1 - dx)) +
+        (potential100 * dz * (1 - dy) * (1 - dx)) +
+        (potential010 * (1 - dz) * dy * (1 - dz)) +
+        (potential001 * (1 - dz) * (1 - dy) * dx) +
+        (potential101 * dz * (1 - dy) * dx) +
+        (potential011 * (1 - dz) * dy * dx) +
+        (potential110 * dz * dy * (1 - dx)) +
+        (potential111 * dz * dy * dx );
+    
+    
+    return potential;
 }
 
 
