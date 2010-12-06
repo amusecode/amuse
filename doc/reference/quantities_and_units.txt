@@ -1,17 +1,48 @@
-==========================
+====================
 Quantities and Units
-==========================
+====================
+
+Introduction
+------------
+
+We want to be able to use physical quantities rather than just
+measures (represented by e.g. floats or integers on computers) in
+order to raise the ambiguity caused by the implicit choice of
+units. Serving this purpose, AMUSE comes with a **quantity** class. Like
+particle sets (fundamental data structure in AMUSE), quantities are
+fundamental variables. When interacting with code all data has units,
+even scaled systems. In handling quantities we regard units as being
+integral part of the mathematical description of the variable
+[D.C. Ipsen, Units, Dimension, and Dimensionless Numbers, 1960,
+McGraw-Hill Book Company], i.e. we can state things like:
+
+1 AU = 149597870.691 km
+
+Quantity objects have basic conversion ability, when different units
+belonging to the same dimension exist the quantity object will convert
+from one to the other. For more elaborate conversion facilities, like
+interfacing with a natural unit code, AMUSE provides the
+generic_unit_converter and the derived nbody_system.  
+
+.. code-block:: python
+
+    >>> from amuse.support.units import units
+    >>> q1 = 1.0|units.MSun
+    >>> q2 = 1.98892e30|units.kg
+    >>> q1 == q2
+    True
+
 
 Quantities
 ----------
+
 .. inheritance-diagram:: amuse.support.data.values
 
 .. automodule:: amuse.support.data.values
     
     .. autoclass:: Quantity
         :members:
-    
-    
+   
     .. autoclass:: ScalarQuantity
         :members:
 
@@ -19,8 +50,7 @@ Quantities
         :members:
 
         .. automethod:: __getitem__
-        
-        
+       
         .. automethod:: __setitem__
     
     .. autoclass:: NonNumericQuantity
@@ -37,6 +67,30 @@ Units
 Unit systems and converters
 ---------------------------
 
+The amuse framework gives you the ability to choose a unit system for
+your model through the 'generic_unit_converter' module.  This enables
+you to work with e.g. natural units or n-body units within AMUSE.
 
+The implementation makes use of a dimension-space, which is a
+vector-space where the chosen units form a base. For a detailed
+description of the method see e.g.: Maksymowicz, A, *American Journal
+of Physics*, Vol.44, No.3, **1976**.         
     
-    
+Generic units
+~~~~~~~~~~~~~
+
+.. automodule:: amuse.support.units.generic_unit_system
+
+N-body units
+~~~~~~~~~~~~
+
+.. automodule:: amuse.support.units.nbody_system
+
+Converter
+~~~~~~~~~
+
+.. automodule:: amuse.support.units.generic_unit_converter
+
+     .. autoclass:: ConvertBetweenGenericAndSiUnits
+         :members:
+                     

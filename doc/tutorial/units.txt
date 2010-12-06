@@ -1,3 +1,5 @@
+.. _working_with_units:
+
 ==================
 Working with Units
 ==================
@@ -18,7 +20,7 @@ Quantities are created by the ```|(bar)``` operator. All
 quantities can be used like numbers and a lot of numpy 
 functions also work on quantities.
 
-.. code-block: pycon
+.. code-block:: python
     
     >>> from amuse.support.units.si import *
     >>> from amuse.support.units.core import named_unit
@@ -42,7 +44,7 @@ Working with arrays
 A vector quantity can be used like a python list. Take care to only 
 put quantities into a vector quantity.
 
-.. code-block: pycon
+.. code-block:: python
     
     >>> from amuse.support.units.units import MSun
     >>>

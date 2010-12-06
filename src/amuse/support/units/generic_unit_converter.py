@@ -3,7 +3,35 @@ from amuse.support.units.generic_unit_system import *
 from amuse.support.data.values import new_quantity
 from amuse.support import exceptions
 
+class ConverterDoc(object):
+    DOCSTRING = """
+    A ConvertBetweenGenericAndSiUnits object is a converter from                                                           
+    arbitrary units which user gives, to si units (and vice versa).                         
+
+    The ``generic_unit_converter'' **ConvertBetweenGenericAndSiUnits**
+    is the actual class through which you define
+    the unit system. Upon instantiation you choose the base units. In the
+    example below we chose the speed of light as a unit: *c* = 1 unit length/second,
+    and the second as the unit of time.
+    Note that the system has two base dimensions, length and time. By the second argument we have
+    assigned the unit second to time and by the requirement that unit lenght / second equals one,
+    the new unit length will be {*c*} meters in S.I. units.
+
+    Example:
+
+    >>> from amuse.support.units.generic_unit_system import *
+    >>> from amuse.support.units.generic_unit_converter import *
+    >>> from amuse.support.units import units, constants
+    >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.m)
+
+    """
+
+    def __get__(self, instance, owner):
+        return self.DOCSTRING       
+
 class ConvertBetweenGenericAndSiUnits(object):
+
+    __doc__ = ConverterDoc()
 
     def __init__(self, *arguments_list):
         self.values = arguments_list
@@ -35,6 +63,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         matrix = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
         for row, value in enumerate(self.values):
             for n, unit in value.unit.base:
+                print row, n, unit
                 matrix[row, [i for i, j in enumerate(self.list_of_available_units) if j == unit]] = n
         return matrix
 
@@ -74,6 +103,15 @@ class ConvertBetweenGenericAndSiUnits(object):
         return None, None
 
     def to_si(self, value):
+       """                       
+        >>> from amuse.support.units.generic_unit_system import *
+        >>> from amuse.support.units.generic_unit_converter import *
+        >>> from amuse.support.units import units, constants
+        >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
+        >>> print converter.to_si(length)
+        299792458.0 m
+        """ 
+          
         factor = value.unit.factor
         number = value.number
         new_unit = 1
@@ -92,6 +130,15 @@ class ConvertBetweenGenericAndSiUnits(object):
         return new_quantity(number * factor, new_unit)
 
     def to_generic(self, value):
+       """
+        >>> from amuse.support.units.generic_unit_system import *
+        >>> from amuse.support.units.generic_unit_converter import *
+        >>> from amuse.support.units import units, constants
+        >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
+        >>> print converter.to_si(length)
+        299792458.0 m
+        """   
+
         generic_units_in_si = self.units
         base = value.unit.base
         factor = value.unit.factor
