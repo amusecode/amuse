@@ -24,36 +24,47 @@ def slowtest1():
 def head_on_stellar_merger(
         masses = [0.3, 3.0] | units.MSun, 
         star_age = 310.0 | units.Myr, 
+        maximally_evolved_stars = False,
         initial_separation = 4.0 | units.RSun, 
         angle = numpy.pi / 3,
         initial_speed = 3000.0 | units.km / units.s, 
         initial_speed_perpendicular = 30.0 | units.km / units.s, 
         number_of_sph_particles = 1000, 
         t_end = 1.0e4 | units.s,
-        maximally_evolved_stars = False,
         sph_code = Fi,
         steps_per_snapshot = 4,
-        snapshot_size = 100
+        snapshot_size = 100,
+        use_stored_stellar_models = True
     ):
     """
     masses: Mass of the two stars
     star_age: Initial age of the stars (if maximally_evolved_stars is False)
     maximally_evolved_stars: Evolve stars as far as the Stellar Evolution code can get
     number_of_sph_particles: Total number of particles of both stars, divided according to their masses
+    t_end: (Physical, not computational) duration of the hydrodynamics simulation
     sph_code: Code to use for the hydrodynamics simulation
     steps_per_snapshot: A hydroplot snapshot is generated each time after this many steps (0 or None means no snapshots)
     snapshot_size: Size of the snapshot in pixels along one dimension
+    use_stored_stellar_models: Flag to use previously stored stellar model files (for speed-up).
     """
+    
+    # Convert some of the input parameters to string, for use in output file names:    
     n_string = "n" + ("%1.0e"%(number_of_sph_particles)).replace("+0","").replace("+","")
     t_end_string = "t" + ("%1.0e"%(t_end.value_in(units.s))).replace("+0","").replace("+","")
+    masses_string = ("m1_" + ("%0.3e"%(masses[0].value_in(units.MSun))).replace("+0","").replace("+","") +
+        "_m2_" + ("%0.3e"%(masses[1].value_in(units.MSun))).replace("+0","").replace("+",""))
+    if maximally_evolved_stars:
+        star_age_string = "a_max"
+    else:
+        star_age_string = "a" + ("%0.3e"%(star_age.value_in(units.Myr))).replace("+0","").replace("+","")
+    
     base_output_file_name = os.path.join(get_path_to_results(), "stellar_merger_"+n_string+"_"+t_end_string)
+    pickle_file_1 = os.path.join(get_path_to_results(), "stellar_merger_"+masses_string+"_"+star_age_string+"_1.pkl")
+    pickle_file_2 = os.path.join(get_path_to_results(), "stellar_merger_"+masses_string+"_"+star_age_string+"_2.pkl")
     
-    stars =  Particles(2)
-    stars.mass = masses
-    
-    pickle_file_1 = os.path.join(get_path_to_results(), "stellar_merger_1.pkl")
-    pickle_file_2 = os.path.join(get_path_to_results(), "stellar_merger_2.pkl")
-    if not (os.path.exists(pickle_file_1) and os.path.exists(pickle_file_2)):
+    if not use_stored_stellar_models or not (os.path.exists(pickle_file_1) and os.path.exists(pickle_file_2)):
+        stars =  Particles(2)
+        stars.mass = masses
         try:
             stellar_evolution = MESA()
         except:
@@ -67,14 +78,22 @@ def head_on_stellar_merger(
             try:
                 while True:
                     stellar_evolution.evolve_model()
-                    print stellar_evolution.particles.radius
             except AmuseException as exception:
                 print exception
         else:
             stellar_evolution.evolve_model(star_age)
         
-        pickle_stellar_model(stellar_evolution.particles[0], pickle_file_1)
-        pickle_stellar_model(stellar_evolution.particles[1], pickle_file_2)
+        if os.path.exists(pickle_file_1):
+            print "Could not save stellar model 1: file already exists."
+        else:
+            pickle_stellar_model(stellar_evolution.particles[0], pickle_file_1)
+            print "Stellar model 1 saved at:", pickle_file_1
+        if os.path.exists(pickle_file_1):
+            print "Could not save stellar model 2: file already exists."
+        else:
+            pickle_stellar_model(stellar_evolution.particles[1], pickle_file_2)
+            print "Stellar model 2 saved at:", pickle_file_2
+        
         stellar_evolution.stop()
     
     model_1 = StellarModel2SPH(None, None, pickle_file = pickle_file_1)
@@ -84,7 +103,6 @@ def head_on_stellar_merger(
     composition = model_2.composition_profile
     midpoints = model_2.midpoints_profile[1:-1]
     specific_internal_energy = model_2.specific_internal_energy_profile
-    print len(composition), len(composition[0]), len(midpoints), len(specific_internal_energy)
     
     number_of_sph_particles_1 = int(round(number_of_sph_particles * 
         (model_1.mass / (model_1.mass + model_2.mass)).value_in(units.none)))
@@ -280,10 +298,10 @@ def hydro_plot(view, hydro_code, image_size, figname):
     
     rgba = numpy.concatenate((red, green, blue, alpha), axis = 2)
     
-    pyplot.figure(figsize = (image_size[0]/100, image_size[1]/100))
+    pyplot.figure(figsize = (image_size[0]/100.0, image_size[1]/100.0), dpi = 100)
     im = pyplot.figimage(rgba, origin='lower')
     
-    pyplot.savefig(figname, transparent=True)
+    pyplot.savefig(figname, transparent=True, dpi = 100)
     print "\nHydroplot was saved to: ", figname
     pyplot.close()
     
