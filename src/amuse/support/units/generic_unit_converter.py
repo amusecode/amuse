@@ -5,14 +5,15 @@ from amuse.support import exceptions
 
 class ConverterDoc(object):
     DOCSTRING = """
-    A ConvertBetweenGenericAndSiUnits object is a converter from                                                           
-    arbitrary units which user gives, to si units (and vice versa).                         
+    A ConvertBetweenGenericAndSiUnits object is a converter from
+    arbitrary units which user gives, to si units (and vice versa).
 
     The ``generic_unit_converter'' **ConvertBetweenGenericAndSiUnits**
     is the actual class through which you define
     the unit system. Upon instantiation you choose the base units. In the
     example below we chose the speed of light as a unit: *c* = 1 unit length/second,
     and the second as the unit of time.
+
     Note that the system has two base dimensions, length and time. By the second argument we have
     assigned the unit second to time and by the requirement that unit lenght / second equals one,
     the new unit length will be {*c*} meters in S.I. units.
@@ -134,8 +135,9 @@ class ConvertBetweenGenericAndSiUnits(object):
         >>> from amuse.support.units.generic_unit_converter import *
         >>> from amuse.support.units import units, constants
         >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
-        >>> print converter.to_si(length)
-        299792458.0 m
+        >>> print converter.to_generic(constants.c)
+        1.0 length * time**-1
+
         """   
 
         generic_units_in_si = self.units
@@ -193,6 +195,26 @@ class ConvertBetweenGenericAndSiUnits(object):
                     return quantity
                 
         return GenericToSiConverter(self)
+
+#    def __repr__(self):                                                                
+#        string = ""                                                                    
+#        string+= "generic unit converter object information"                           
+#        string+= "-----------------------------------------"                           
+#        string+= "unit system defined by setting {0} to ONE".format(self.values)       
+#        string+= "Q = {Q}*[Q]; Quantity = value * unit"                                
+#                                                                                       
+#        for generic_unit, si_unit in self.units:                                       
+#            string+= "Q = {{1}} * [{0}] Q = {{ {1} }} * [{2}^{3}]".format(             
+#                generic_unit.base,                                                     
+#                si_unit.number,                                                        
+#                si_unit.base[1],                                                       
+#                si_unit.base[0])                                                       
+#                                                                                       
+#        string+= self.list_of_available_units                                          
+#        string+= self.new_base                                                         
+#        string+= self.new_base_inv                                                     
+#                                                                                       
+#        return string                                                                  
 
 
 class UnitsNotOrtogonalException(exceptions.AmuseException):
