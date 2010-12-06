@@ -103,7 +103,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         return None, None
 
     def to_si(self, value):
-       """                       
+        """                       
         >>> from amuse.support.units.generic_unit_system import *
         >>> from amuse.support.units.generic_unit_converter import *
         >>> from amuse.support.units import units, constants
@@ -111,7 +111,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         >>> print converter.to_si(length)
         299792458.0 m
         """ 
-          
+        
         factor = value.unit.factor
         number = value.number
         new_unit = 1
@@ -130,7 +130,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         return new_quantity(number * factor, new_unit)
 
     def to_generic(self, value):
-       """
+        """
         >>> from amuse.support.units.generic_unit_system import *
         >>> from amuse.support.units.generic_unit_converter import *
         >>> from amuse.support.units import units, constants
