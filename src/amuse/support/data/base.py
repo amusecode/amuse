@@ -273,7 +273,6 @@ class AbstractSet(object):
                     self._get_values(self._get_keys(), [name_of_the_attribute])[0]
                 )
             except Exception as ex:
-                print ex
                 if name_of_the_attribute in self._get_attribute_names():
                     raise
                 else:
