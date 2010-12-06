@@ -181,6 +181,20 @@ class unit(object):
             raise IncompatibleUnitsException(x, self)
       
     def in_(self, x):
+        """Express this quantity in the given unit
+        
+        :argument unit: The unit to express this quantity in
+        :result: A Quantity object
+ 
+        Examples
+
+        >>> from amuse.support.units import units
+        >>> l = 1 | units.AU
+        >>> l.in_(units.km)
+        quantity<149597870.691 km>
+        
+        """
+
         return self.as_quantity_in(x)
     
     def as_quantity_in(self, unit):
