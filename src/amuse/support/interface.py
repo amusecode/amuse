@@ -808,9 +808,10 @@ class ParticleSetDefinition(AbstracParticleSetDefinition):
 
     def new_subselects_in_set(self, interface):
         results = []
-        for name, number_of_particles_name, public_name in self.subselects_in_set:
+        for name, set_query_arguments_name, number_of_particles_name, public_name in self.subselects_in_set:
             number_of_particles_method = None if number_of_particles_name is None else getattr(interface, number_of_particles_name)
-            x = incode_storage.ParticleSetSelectSubsetMethod(getattr(interface, name), number_of_particles_method, public_name)
+            set_query_arguments_method = None if set_query_arguments_name is None else getattr(interface, set_query_arguments_name)
+            x = incode_storage.ParticleSetSelectSubsetMethod(getattr(interface, name), set_query_arguments_method, number_of_particles_method, public_name)
             results.append(x)
     
         return results
@@ -980,11 +981,11 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
 
     
 
-    def add_subselect_in_set(self, name_of_the_set, name, get_number_of_particles_name = None,  public_name = None):
+    def add_subselect_in_set(self, name_of_the_set, name, set_query_arguments_name = None, get_number_of_particles_name = None,  public_name = None):
         if not public_name:
             public_name = name
     
-        self.mapping_from_name_to_set_definition[name_of_the_set].subselects_in_set.append((name, get_number_of_particles_name, public_name))
+        self.mapping_from_name_to_set_definition[name_of_the_set].subselects_in_set.append((name, set_query_arguments_name, get_number_of_particles_name, public_name))
     
     
 class OverriddenCodeInterface(object):

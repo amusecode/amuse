@@ -852,7 +852,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         handler.add_setter('particles', 'set_mass')
         handler.add_getter('particles', 'get_mass', names = ('mass',))
         handler.add_subselect_in_set('particles', 'get_heaviest_particle', public_name = 'heaviest')
-        handler.add_subselect_in_set('particles', 'get_lightest_particles', 'get_number_of_lightest_particles', public_name = 'lightest')
+        handler.add_subselect_in_set('particles', 'get_lightest_particles', get_number_of_particles_name = 'get_number_of_lightest_particles', public_name = 'lightest')
         
         
         convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )

@@ -392,21 +392,55 @@ class ParticleMethod(AbstractCodeMethodWrapper):
         return self.method(index[0], *list_arguments, **keyword_arguments)
         
 class ParticleSetSelectSubsetMethod(object):
-    def __init__(self,  method, get_number_of_particles_in_set_method = None, public_name = None):
+    """
+    Generic method to query and retrieve particles from the
+    set. This selection can have up to tree stages:
+    
+    1. start the query given a number of optional arguments
+    2. get the number of selected particles
+    3. get the index of each particle 
+    
+    The pseudo-code for this selection is:
+    
+    .. code::
+    
+        set_selection_criteria(r = 10.0 | units.m)
+        n = get_number_of_selected_particles()
+        for i in range(n):
+            particle_index = get_index_of_selected_particle(i)
+    
+    The first and second step are optional. If no number of 
+    particles method is provided the class assumes the selection
+    only returns 1 particle.
+    
+    Generalisation of ParticleQueryMethod
+    """
+    
+    def __init__(self,  method, set_query_arguments_method = None, get_number_of_particles_in_set_method = None, public_name = None):
         self.method = method
+        self.set_query_arguments_method = set_query_arguments_method
         self.get_number_of_particles_in_set_method = get_number_of_particles_in_set_method
         self.public_name = public_name
 
-    def apply_on_all(self, particles):
+    def apply_on_all(self, particles, *list_arguments, **keyword_arguments):
+        query_identifiers = None
+        if not self.set_query_arguments_method is None:
+            query_identifiers = self.set_query_arguments_method(*list_arguments, **keyword_arguments)
         
+        if query_identifiers is None:
+            query_identifiers = ()
+        elif not hasattr(results, '__iter__'):
+            query_identifiers = (query_identifiers,)
+            
         if not self.get_number_of_particles_in_set_method is None:
-            number_of_particles_in_set = self.get_number_of_particles_in_set_method()
+            number_of_particles_in_set = self.get_number_of_particles_in_set_method(*query_identifiers)
             indices = self.method(range(number_of_particles_in_set))
         else:
-            index = self.method()
+            index = self.method(*query_identifiers)
             indices = [index]
         
-        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)    
+        query_identifiers = [ [x]*len(indices) for x in query_identifiers ]
+        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices, *query_identifiers)    
         
         return particles._subset(keys)
 
