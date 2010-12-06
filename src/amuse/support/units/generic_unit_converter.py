@@ -63,7 +63,6 @@ class ConvertBetweenGenericAndSiUnits(object):
         matrix = numpy.mat(numpy.zeros((self.system_rank,self.system_rank)))
         for row, value in enumerate(self.values):
             for n, unit in value.unit.base:
-                print row, n, unit
                 matrix[row, [i for i, j in enumerate(self.list_of_available_units) if j == unit]] = n
         return matrix
 
