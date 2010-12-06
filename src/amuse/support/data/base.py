@@ -268,13 +268,17 @@ class AbstractSet(object):
         elif name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[name_of_the_attribute].get_values_for_entities(self)
         else:
-            if name_of_the_attribute in self._get_attribute_names():
+            try:
                 return self._convert_to_entities_or_quantities(
                     self._get_values(self._get_keys(), [name_of_the_attribute])[0]
                 )
-            else:
-                raise AttributeError("You tried to access attribute '{0}'"
-                    " but this attribute is not defined for this set.".format(name_of_the_attribute))
+            except Exception as ex:
+                print ex
+                if name_of_the_attribute in self._get_attribute_names():
+                    raise
+                else:
+                    raise AttributeError("You tried to access attribute '{0}'"
+                        " but this attribute is not defined for this set.".format(name_of_the_attribute))
     
     def check_attribute(self, value):
         if not isinstance(value, Quantity):
@@ -312,7 +316,7 @@ class AbstractSet(object):
             return self._set_values([key], [attribute], value.as_vector_with_length(1))
             
     def _convert_to_entities_or_quantities(self, x):
-        if x.unit.iskey():
+        if hasattr(x, 'unit') and x.unit.iskey():
             return self._subset(x.number)
         else:
             return x

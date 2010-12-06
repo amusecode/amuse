@@ -1,3 +1,89 @@
+"""This module defines the classes needed to map
+functions defined by the codes into particle sets
+and grids.
+
+The attribute values of Particles or Gridpoints are 
+stored in Particle Sets or Grids. These sets or grids
+manage:
+
+1. The storage allocation (deletion and removal of particles)
+2. The attribute access (getting or setting the value(s) of attribute(s))
+3. Queries or selections of particles (selection of subsets of particles)
+
+All 3 functions can be provided by a code. The classes in this 
+module provide a mapping from the functions in a code to
+the datamodel used in AMUSE. 
+
+When a code manages a particular set all the data of that set is 
+stored in the memory space of that code. The code needs to provide
+functions to acces the data in the set.
+
+.. note::
+
+    Most codes already implement a particle set or a grid. 
+    The only extra requirement for AMUSE is to provide functions to access
+    this set. When a code does not have any knowlegde of sets or grids, the
+    management will take place in AMUSE and only some data transfer code
+    is needed
+
+All incode storage is build on mapping attributes to functions. These
+mappings are provided by a number of helper classes:
+
+**setter/getter**
+
+    :py:class:`ParticleGetAttributesMethod`
+        Given particle indices or gridpoints (i,j,k) return a vectorq quantity
+        for each attribute
+        
+    :py:class:`ParticleSetAttributesMethod`
+        Send values to the code given particle indices or gridpoints (i,j,k)
+        and a vector quantities for each attribute.
+    
+**new/delete**
+
+    :py:class:`NewParticleMethod`
+        Given vector quantities for attributes return the indices
+        of newly allocated particles
+
+**function**
+
+    :py:class:`ParticleMethod`
+        Given particle indices or gridpoints (i,j,k) and optional arguments 
+        return one or more vector quantities
+
+**selection**
+        
+    :py:class:`ParticleSpecificSelectMethod`
+        Given a particle return a subset of particles. For links between
+        particles (nearest neighbor, subparticle)
+
+    :py:class:`ParticleQueryMethod`
+        Retrieve indices from the code and return a subset of particles.
+        For selection of a limited number of particles by the code (get
+        the escaper)
+
+    :py:class:`ParticleSetSelectSubsetMethod`
+        Like ParticleQueryMethod but can handle larger subsets of
+        particles, the code can provide a special function
+        the return the number of particles in the set.
+        
+
+The InCode storage system is based on a number of classes:
+
+:py:class:`AbstractInCodeAttributeStorage`
+    Handle attribute set/get functionality but no particle or
+    grid management
+    
+:py:class:`InCodeAttributeStorage`
+    Subclass of AbstractInCodeAttributeStorage, manages particles
+    
+:py:class:`InCodeGridAttributeStorage`
+    Subclass of AbstractInCodeAttributeStorage, manages grids
+
+    
+
+"""
+
 from amuse.support.data import parameters
 from amuse.support.data.core import Particles, ParticleInformationChannel, Particle
 from amuse.support.data.core import AttributeStorage
@@ -36,6 +122,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     and return a tuple with arrays of result values.
     
     .. code::
+    
         x, y, z = instance.get_xyz(indices)
     
     Instances of this class make it possible to access the 
@@ -123,6 +210,7 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
     and one or more arrays of new values.
     
     .. code::
+    
        instance.set_xyz(indices, x, y, z)
     
     Instances of this class make it possible to access the 
@@ -184,7 +272,21 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
 
 
 class NewParticleMethod(ParticleSetAttributesMethod):
+    """
+    Instances wrap a method to create particles. The method may
+    take attributes values to set initial values on
+    the created particles. 
     
+    The new particle functions work a lot like 
+    the set attribute methods, only the new particle 
+    function is supposed to return an array
+    of the indices of the created particles.
+    
+    .. code::
+    
+       indices = instance.new_particle(x, y, z)
+       
+    """
     def __init__(self,  method, attribute_names = None):
         ParticleSetAttributesMethod.__init__(self, method, attribute_names)
 
@@ -194,6 +296,18 @@ class NewParticleMethod(ParticleSetAttributesMethod):
         return indices
         
 class ParticleQueryMethod(object):
+    """
+    Instances wrap a function that can take one or more arguments
+    and returns an index (or a list of indices, if the arguments are
+    lists). This method is most useful to select one particle form
+    all particles in the set
+    
+    .. code::
+    
+        index = instance.get_escaper()
+    
+    The idex or indices are converted to a particle subset.
+    """
     def __init__(self, method, names = (), public_name = None):
         self.method = method
         self.name_of_the_out_parameters = names
@@ -206,6 +320,19 @@ class ParticleQueryMethod(object):
         
 
 class ParticleSpecificSelectMethod(object):
+    """
+    Instances wrap a function that can take a particle index
+    and returns one or more indices
+    (but a limited and fixed number of indices). This method is most 
+    useful to return links between particles (subparticles or
+    nearest neighbors)
+    
+    .. code::
+    
+        output_index = instance.get_nearest_neigbord(input_index)
+    
+    The idex or indices are converted to a particle subset.
+    """
     def __init__(self, method, names = (), public_name = None):
         self.method = method
         self.name_of_the_out_parameters = names
@@ -241,7 +368,15 @@ class ParticleSpecificSelectMethod(object):
         
         
 class ParticleMethod(AbstractCodeMethodWrapper):
+    """
+    Instances wrap a function that returns quanties given particle
+    indices and optional arguments. Instances have a lot in common
+    with attribute getters, but can take extra arguments.
     
+    .. code::
+    
+        pressure = instance.get_pressure(index, gamma)
+    """
     def __init__(self, method, public_name = None):
         AbstractCodeMethodWrapper.__init__(self, method)
         self.public_name = public_name
@@ -256,10 +391,53 @@ class ParticleMethod(AbstractCodeMethodWrapper):
         index = storage.get_indices_of([particle.key])
         return self.method(index[0], *list_arguments, **keyword_arguments)
         
+class ParticleSetSelectSubsetMethod(object):
+    def __init__(self,  method, get_number_of_particles_in_set_method = None, public_name = None):
+        self.method = method
+        self.get_number_of_particles_in_set_method = get_number_of_particles_in_set_method
+        self.public_name = public_name
+
+    def apply_on_all(self, particles):
+        
+        if not self.get_number_of_particles_in_set_method is None:
+            number_of_particles_in_set = self.get_number_of_particles_in_set_method()
+            indices = self.method(range(number_of_particles_in_set))
+        else:
+            index = self.method()
+            indices = [index]
+        
+        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)    
+        
+        return particles._subset(keys)
 
 
+
+class ParticleGetIndexMethod(object):
+    """
+    Instances return the index of a particle in the code
+    """
+    ATTRIBUTE_NAME = "index_in_code"
+    
+    def __init__(self):
+        pass
+    
+    @late
+    def attribute_names(self):
+        return [self.ATTRIBUTE_NAME]
+    
+    def get_attribute_values(self, storage, attributes_to_return, *indices):
+        
+        return {self.ATTRIBUTE_NAME : indices[0]}
 
 class AbstractInCodeAttributeStorage(base.AttributeStorage):
+    """
+    Abstract base storage for incode attribute storage.
+    It provides functions to handle getters and setters of 
+    attributes but not for creating or deleting of particles as
+    this differs between grids and particle sets.
+    
+    """
+    
     def __init__(self, 
             code_interface, 
             setters,
@@ -333,13 +511,14 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
     
     def _state_attributes(self):
         return self._get_attribute_names()
-        
-        
-
 
     
 class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
-       
+    """
+    Manages sets of particles stored in codes.
+    
+    Maps indices returned by the code to keys defined in AMUSE.
+    """
     def __init__(self, 
             code_interface, 
             new_particle_method, 
@@ -367,13 +546,10 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         self.new_particle_method = new_particle_method
         
         self.getters.append(ParticleGetIndexMethod())
-        
-        
-                    
+
     def __len__(self):
         return self._get_number_of_particles()
-            
-            
+
     def _add_particles(self, keys, attributes = [], values = []):
         
         indices = self.new_particle_method.add_entities(attributes, values)
@@ -388,9 +564,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             self.mapping_from_particle_key_to_index_in_the_code[key] = indices[index]
             self.mapping_from_index_in_the_code_to_particle_key[indices[index]] = key
             index = index + 1
-            
-        
-        
+
     def get_indices_of(self, keys):
         indices_in_the_code = []
         if keys is None:
@@ -475,7 +649,10 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     
 
 class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
-    
+    """
+    Manages grids stored in codes. Grids are currently
+    assumed to be three dimensional.
+    """
     def __init__(self, 
             code_interface, 
             get_range_method,
@@ -561,64 +738,4 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         
     def _get_writeable_attribute_names(self):
         return self.writable_attributes
-
-
-
-class ParticleGetIndexMethod(object):
-    """
-    Instances return the index of a particle in the code
-    """
-    ATTRIBUTE_NAME = "index_in_code"
-    
-    def __init__(self):
-        pass
-    
-    @late
-    def attribute_names(self):
-        return [self.ATTRIBUTE_NAME]
-    
-    def get_attribute_values(self, storage, attributes_to_return, *indices):
-        
-        return {self.ATTRIBUTE_NAME : indices[0]}
-
-
-class ParticleSelectSubsetMethod(object):
-    def __init__(self,  method, get_number_of_particles_in_set_method = None, names = (), public_name = None):
-        self.method = method
-        self.get_number_of_particles_in_set_method = get_number_of_particles_in_set_method
-        self.name_of_the_out_parameters = names
-        self.public_name = public_name
-
-    def apply_on_all(self, particles):
-        
-        if not self.number_of_particles_method is None:
-            number_of_particles_in_set = self.get_number_of_particles_in_set_method()
-            indices = self.method(range(number_of_particles_in_set))
-        else:
-            index = self.method()
-            indices = [index]
-        
-        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)        
-        
-        return particles._subset(keys)
-
-
-class ParticleSetSelectSubsetMethod(object):
-    def __init__(self,  method, get_number_of_particles_in_set_method = None, public_name = None):
-        self.method = method
-        self.get_number_of_particles_in_set_method = get_number_of_particles_in_set_method
-        self.public_name = public_name
-
-    def apply_on_all(self, particles):
-        
-        if not self.get_number_of_particles_in_set_method is None:
-            number_of_particles_in_set = self.get_number_of_particles_in_set_method()
-            indices = self.method(range(number_of_particles_in_set))
-        else:
-            index = self.method()
-            indices = [index]
-        
-        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices)    
-        
-        return particles._subset(keys)
 

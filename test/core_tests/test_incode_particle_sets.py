@@ -78,8 +78,6 @@ class ExampleParticlesInterface(interface.CodeInterface):
         builder.add_getter('particles', 'get_position', names = ('x', 'y', 'z'))
         
         self.log("defined the particle set with name {0!r}", 'particles')
-    
-    
 
     def new_particle(self, mass, x, y, z):
         """Creates new particles.
@@ -101,8 +99,6 @@ class ExampleParticlesInterface(interface.CodeInterface):
             self.highest_id += 1
         
         return result
-    
-    
 
     def delete_particle(self, index_of_the_particle):
         """Delete particles in array index_of_the_particle
@@ -114,8 +110,6 @@ class ExampleParticlesInterface(interface.CodeInterface):
             del self.mapping_from_id_to_particle[x]
             
             self.log("deleted the particle with id {0}", x)
-    
-    
 
     def set_state(self, index_of_the_particle, mass, x, y, z):
         """Sets the mass and the position of a particle.
@@ -132,8 +126,6 @@ class ExampleParticlesInterface(interface.CodeInterface):
             
             
             self.log("updated state of particle with id {0}", index_element)
-    
-    
 
     def get_state(self, index_of_the_particle, mass, x, y, z):
         """Returns arrays for the mass, x, y and z values
@@ -155,8 +147,6 @@ class ExampleParticlesInterface(interface.CodeInterface):
             self.log("retrieved state of particle with id {0}", index_element)
             
         return massresult, xresult, yresult, zresult
-    
-    
 
     def get_mass(self, index_of_the_particle):
         """Returns an array for the masses of the indices int the index_of_the_particle array
@@ -172,9 +162,22 @@ class ExampleParticlesInterface(interface.CodeInterface):
             
         return massresult
     
-    
 
-    def get_position(self, index_of_the_particle, mass, x, y, z):
+    def set_mass(self, index_of_the_particle, mass):
+        """Sets the mass and the position of a particle.
+        
+        Note: the arguments are arrays
+        """
+        
+        for index_element, mass_element in zip(index_of_the_particle, mass):
+            particle = self.mapping_from_id_to_particle[index_element]
+            
+            particle[1] = mass
+            
+            self.log("updated mass of particle with id {0} (mass = {1})", index_element, particle[1])
+            
+
+    def get_position(self, index_of_the_particle):
         """Returns an array of the positions for the indices in index_of_the_particle
         """
         
@@ -191,23 +194,6 @@ class ExampleParticlesInterface(interface.CodeInterface):
             
             self.log("retrieved position of particle with id {0} (x = {1}, y = {2}, z = {3})", index_element, particle[2], particle[3], particle[4])
         return xresult, yresult, zresult
-    
-    
-
-    def set_mass(self, index_of_the_particle, mass):
-        """Sets the mass and the position of a particle.
-        
-        Note: the arguments are arrays
-        """
-        
-        for index_element, mass_element in zip(index_of_the_particle, mass):
-            particle = self.mapping_from_id_to_particle[index_element]
-            
-            particle[1] = mass
-            
-            self.log("updated mass of particle with id {0} (mass = {1})", index_element, particle[1])
-            
-    
 
     def set_position(self, index_of_the_particle, x, y, z):
         """Sets the mass and the position of a particle.
@@ -227,11 +213,10 @@ class ExampleParticlesInterface(interface.CodeInterface):
     
 
 class ExampleParticlesInterfaceTests(amusetest.TestCase):
-    """This class runs example on the particle example particles interface
+    """This class runs tests on the example particles interface
     class.
+    
     """
-    
-    
     def test1(self):
         """
         In this test we will add and remove a particle from
@@ -264,13 +249,56 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         self.log("Adding particle with key {0}", theParticle.key)
         instance.particles.add_particle(theParticle)
         
+        print instance.particles.index_in_code
         self.assertEquals(len(instance.particles), 1)
         
         self.log("Removing particle with key {0}", theParticle.key)
         instance.particles.remove_particle(theParticle)
         
         self.assertEquals(len(instance.particles), 0)
+        
 
+    def test2(self):
+        """
+        In this test we will set and get different properties
+        of the particle.
+        
+        To limit overhead, the system will use the set_* or get_* calls 
+        that are the closests match to the attributes queries.
+        """
+        self.log("accessing attributes of a particle")
+        instance = ExampleParticlesInterface()
+        self.assertEquals(len(instance.particles), 0)
+        
+        theParticle = core.Particle()
+        theParticle.mass = 10 | units.kg
+        theParticle.x = 0.1 | units.m
+        theParticle.y = 0.2 | units.m
+        theParticle.z = 0.5 | units.m
+        
+        instance.particles.add_particle(theParticle)
+        
+        self.log("Getting the mass of particle with key {0}, get_mass should be called", theParticle.key)
+        self.assertEquals(instance.particles[0].mass, 10 | units.kg)
+        
+        self.log("Getting the position of particle with key {0}, get_position should be called", theParticle.key)
+        self.assertEquals(instance.particles[0].position, [0.1, 0.2, 0.5] | units.m)
+        
+        self.log("Getting the only the x attribute of particle with key {0}, get_position should be called (y and z are discarded)", theParticle.key)
+        self.assertEquals(instance.particles[0].x, 0.1 | units.m)
+        
+        
+        self.log("Setting the position of particle with key {0}, set_position should be called", theParticle.key)
+        instance.particles[0].position =  [0.2, 0.3, 0.6] | units.m
+        
+        self.log("Setting the x of particle with key {0}, should fail as no function can set x and no others", theParticle.key)
+        def block():
+            instance.particles[0].x =  0.1 | units.m
+        self.assertRaises(Exception, block)
+        
+        
+        
+        
 
     def log(self, message, *arguments):
         print "IN TEST >>", message.format(*arguments)

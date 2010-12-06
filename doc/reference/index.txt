@@ -13,6 +13,7 @@ Reference documentation
    available-legacy-codes
    quantities_and_units
    particles
+   incode_storage
    stopping_conditions
    fileformat
    options
