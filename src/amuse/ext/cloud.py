@@ -2,7 +2,7 @@ from amuse.support.data import core
 from amuse.support.units import generic_unit_system
 
 import numpy
-
+import inspect
 
 
 def fill_grid_with_cloud_and_medium(
@@ -36,7 +36,7 @@ def fill_grid_with_spherical_cloud(
         dr = grid.cellsize().length()
         selection = radii < (radius - dr)
         
-    grid.rho[selection] = rho
+    grid.rho[selection] = rho(radii) if inspect.isroutine(rho) else rho
     grid.rhovx[selection] = rhovx
     grid.rhovy[selection] = rhovy
     grid.rhovz[selection] = rhovz

@@ -6,6 +6,7 @@ import warnings
 
 import atexit
 import sys
+import traceback
 
 ClassWithLiteratureReferences = namedtuple(\
     "ClassWithLiteratureReferences", 
@@ -34,15 +35,18 @@ class TracLiteratureReferences(object):
     def register(self):
         self.original_excepthook = sys.excepthook
         sys.excepthook = self.exception_hook
-        
         atexit.register(self.atexit_hook)
         
     def register_class(self, cls):
         self.registered_classes.add(cls)
     
     def exception_hook(self, *arguments):
-        self.original_excepthook(*arguments)
+        #print "exception", arguments, self.original_excepthook
         self.must_show_literature_references_atexit = False
+        lines = traceback.format_exception(type, value, tb)
+        print string.join(lines)
+   
+        self.original_excepthook(*arguments)
         
     def atexit_hook(self):
         if not self.original_excepthook is None:

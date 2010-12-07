@@ -463,6 +463,7 @@ class VectorQuantity(Quantity):
 
     def norm(self):
         return self.length()
+        
 
     def append(self, scalar_quantity):
         """
@@ -660,6 +661,7 @@ class ZeroQuantity(Quantity):
     
     def in_base(self):
         return self
+    
     
     
     def sqrt(self):

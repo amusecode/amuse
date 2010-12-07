@@ -11,6 +11,7 @@ CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -ldl -lm
 
 AMUSE_OBJS = interface_$(VERSION).o
+AMUSE_OBJS_SELFGRAV = interface_$(VERSION).selfgrav_o
 
 CODELIB = $(ATHENA_DIR)/bin/libathena.a
 
@@ -24,6 +25,9 @@ SCINC ?= -I../../../../lib/stopcond
 
 ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o $(ATHENA_DIR)/src/*/*.o))
 
+FFTWLIB = -L/usr/lib -lfftw3
+FFTWINC = -I/usr/include
+  
 all: athena_worker 
 
 $(ATHENA_DIR):
@@ -48,7 +52,7 @@ endif
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) -f *~ athena_worker
-	$(RM) -f $(CODELIB)
+	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
 
 codeclean: clean
 	make -C $(ATHENA_DIR) clean
@@ -64,7 +68,7 @@ $(CODELIB): $(ATHENA_DIR)
 	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
 	rm -f $(CODELIB)
 	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
-
+	
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py AthenaInterface -o $@
@@ -75,7 +79,25 @@ worker_code.h: interface.py
 athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(AMUSE_OBJS) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS)
 
+athena_worker_selfgrav: worker_code.cc worker_code.h interface_$(VERSION).c
+	cd $(ATHENA_DIR); make clean
+	$(RM) -f $(CODELIB)
+	cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft
+	
+	$(CC) $(CXXFLAGS) $(SCINC) -c -o $(AMUSE_OBJS_SELFGRAV) interface_$(VERSION).c
+	
+	cd $(ATHENA_DIR); ln -fs ../../../amuse_problem_$(VERSION).c src/problem.c
+	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	$(RM) -f $(CODELIB)
+	cd $(ATHENA_DIR); make all CFLAGS=-g CC=$(MPICC) LDR=$(MPICC)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(CODELIB) $(AMUSE_OBJS_SELFGRAV) $(CODELIB) $(LDFLAGS) -o $@ $(SCLIBS) $(FFTWLIB)
+	$(RM) -f $(CODELIB)
+	cd $(ATHENA_DIR); ./configure --with-gas=hydro --enable-mpi --enable-smr
+	cd $(ATHENA_DIR); make clean
+	$(RM) -f $(CODELIB)
+	
 .c.o: $<
 	$(CC) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
+	
 
 

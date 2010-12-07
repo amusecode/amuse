@@ -30,7 +30,13 @@ static VDFun_t Integrate;
 static int is_dt_set_by_script=0;
 static int is_restart = 0;
 static int has_external_gravitational_potential=0;
-static int mpi_comm_size = 0;
+static int mpi_comm_size_interface = 0;
+static Real last_dt_above_zero = 0.0;
+
+#ifdef SELF_GRAVITY
+  VDFun_t SelfGrav;      /* function pointer to self-gravity, set at runtime */
+#endif
+
 
 static inline void ijk_pos(
     const GridS *pG,
@@ -199,6 +205,12 @@ int get_has_external_gravitational_potential(int * value) {
 
 int initialize_code(){
 
+#ifdef SELF_GRAVITY
+  grav_mean_rho = 1.0;
+  four_pi_G = -1.0;
+#endif
+  last_dt_above_zero = 0.0;
+
   par_open("/dev/null"); /* to trick athena into thinking it has opened a parameter file, will not work on windows */
 
   par_sets("job","problem_id", "amuse", "all amuse runs");
@@ -216,12 +228,13 @@ int initialize_code(){
     {
         ath_error("Error on calling MPI_Comm_rank\n");
     }
-    if(MPI_SUCCESS != MPI_Comm_size(MPI_COMM_WORLD,&(mpi_comm_size)))
+    if(MPI_SUCCESS != MPI_Comm_size(MPI_COMM_WORLD,&(mpi_comm_size_interface)))
     {
-        ath_error("Error on calling MPI_Comm_size\n");
+        ath_error("Error on calling mpi_comm_size_interface\n");
     }
 #else
     myID_Comm_world = 0;
+    mpi_comm_size_interface = 0;
 #endif
   return 0;
 }
@@ -248,15 +261,17 @@ int commit_parameters(){
   int err_level = par_geti_def("log","err_level",0);
 
   ath_log_set_level(out_level, err_level);
-
-  /*
-   * if(has_external_gravitational_potential) {
+/*
+  if(has_external_gravitational_potential) {
     StaticGravPot = grav_pot;
   }
-  *
-  */
-
+*/
   CourNo = par_getd("time","cour_no");
+
+#ifdef SELF_GRAVITY
+  four_pi_G = par_getd("problem","four_pi_G");
+  grav_mean_rho = par_getd("problem","grav_mean_rho");
+#endif
 
 #ifdef ISOTHERMAL
   Iso_csound = par_getd("problem","iso_csound");
@@ -338,10 +353,10 @@ int initialize_grid()
   Integrate = integrate_init(&mesh);
 
 #ifdef SELF_GRAVITY
-  SelfGrav = selfg_init(&Mesh);
+  SelfGrav = selfg_init(&mesh);
   for (nl=0; nl<(mesh.NLevels); nl++){
     for (nd=0; nd<(mesh.DomainsPerLevel[nl]); nd++){
-      ifmesh.Domain[nl][nd].Grid != NULL){
+      if(mesh.Domain[nl][nd].Grid != NULL){
         (*SelfGrav)(&(mesh.Domain[nl][nd]));
         bvals_grav(&(mesh.Domain[nl][nd]));
       }
@@ -358,7 +373,6 @@ int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, do
   double * z){
 
     double pos[4] = {0,0,0,0};
-
     if (mesh.NLevels == 0) {
         return -1;
     }
@@ -424,7 +438,8 @@ int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, do
         MPI_Reduce(MPI_IN_PLACE, pos, 4, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     }
 #endif
-    if(pos[3] == mpi_comm_size) {
+    
+    if(mpi_comm_size_interface > 0 && pos[3] == mpi_comm_size_interface) {
         return -4;
     }
     *x = pos[0];
@@ -1407,7 +1422,6 @@ int get_time(double * value){
 
 int evolve(double tlim) {
     int nl, nd;
-    Real dt_done;
     //AMUSE STOPPING CONDITIONS
     int is_number_of_steps_detection_enabled;
     int is_timeout_detection_enabled;
@@ -1416,7 +1430,7 @@ int evolve(double tlim) {
     double timeout;
     time_t clock_current, clock_init;
     int error;
-
+    
     par_setd("time","tlim", "%.15e", tlim, "-");
 
     //AMUSE STOPPING CONDITIONS SUPPORT
@@ -1428,8 +1442,30 @@ int evolve(double tlim) {
     get_stopping_condition_timeout_parameter(&timeout);    
     time(&clock_init);
     
+    if(mesh.time + mesh.dt > tlim) {
+        if(mesh.time < tlim)
+        {
+            mesh.dt = (tlim - mesh.time) / 2.0;
+            fprintf(stderr, "set mesh.time %f, %f, %f\n", mesh.time, mesh.dt, tlim);
+        }
+        else 
+        {
+            return 0;
+        }
+    }
+    if(mesh.dt == 0.0)
+    {
+        mesh.dt = last_dt_above_zero;
+        new_dt(&mesh); 
+        fprintf(stderr, "new mesh.time %f, %f (%f), %f\n", mesh.time, mesh.dt, last_dt_above_zero, tlim);
+ 
+    }
     while (mesh.time < tlim) {
-
+        fprintf(stderr, "mesh.time %g, %g, %g\n", mesh.time, mesh.dt, tlim);
+        if(mesh.dt == 0.0)
+        {
+            break;
+        }
     /*--- Step 9b. ---------------------------------------------------------------*/
     /* operator-split explicit diffusion: thermal conduction, viscosity, resistivity
      * Done first since CFL constraint is applied which may change dt  */
@@ -1504,9 +1540,11 @@ int evolve(double tlim) {
           }
         }
 
-        dt_done = mesh.dt;
-        new_dt(&mesh);
-
+        last_dt_above_zero = mesh.dt;
+        if(mesh.time < tlim)
+        {
+            new_dt(&mesh);
+        }
     /*--- Step 9h. ---------------------------------------------------------------*/
     /* Boundary values must be set after time is updated for t-dependent BCs.
      * With SMR, ghost zones at internal fine/coarse boundaries set by Prolongate */

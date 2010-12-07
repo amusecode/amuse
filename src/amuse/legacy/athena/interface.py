@@ -42,11 +42,23 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
     include_headers = ['worker_code.h', 'stopcond.h']
     
-    def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="athena_worker", **options)
+    MODE_NORMAL = 'normal'
+    MODE_SELF_GRAVITY   = 'self-gravity'
+    
+    def __init__(self, mode = MODE_NORMAL, **options):
+        
+        LegacyInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
         self.set_auto_decomposition(1)
         LiteratureRefs.__init__(self)
         self.number_of_grids = 1
+        
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_NORMAL:
+            return 'athena_worker'
+        elif mode == self.MODE_SELF_GRAVITY:
+            return 'athena_worker_selfgrav'
+        else:
+            return 'athena_worker'
         
     @legacy_function
     def par_seti():
@@ -149,7 +161,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         idisp = self.par_geti(domainid, "iDisp")[0]
         jdisp = self.par_geti(domainid, "jDisp")[0]
         kdisp = self.par_geti(domainid, "kDisp")[0]
-        print index_of_grid, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
+        #print index_of_grid, "  ===  > ", (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
         return (idisp, idisp+ni[0]-1, jdisp, jdisp + nj[0]-1, kdisp, kdisp + nk[0]-1)
         
@@ -186,15 +198,15 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.result_type = 'i'
         return function
     
-    
         
-    
-    
+    def set_four_pi_G(self, value):
+        self.par_setd("problem", "four_pi_G", "%.15e", value, "")
+        return 0 
         
-    
-    
-    
-        
+    def set_grav_mean_rho(self, value):
+        self.par_setd("problem", "grav_mean_rho", "%.15e", value, "")
+        return 0 
+
     def set_isocsound(self, value):
         self.par_setd("problem", "iso_csound", "%.15e", value, "")
         return 0 
@@ -457,10 +469,18 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
 class Athena(CodeInterface):
 
-    def __init__(self, **options):
+    def __init__(self, unit_converter = None, **options):
+        self.unit_converter = unit_converter
+        
         self.stopping_conditions = StoppingConditions(self)
         CodeInterface.__init__(self,  AthenaInterface(**options), **options)
         
+    def define_converter(self, object):
+        if self.unit_converter is None:
+            return
+        
+        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+
     def define_properties(self, object):
         object.add_property('get_time', time, "model_time")
         
