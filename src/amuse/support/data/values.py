@@ -292,11 +292,20 @@ class VectorQuantity(Quantity):
             array.append(x.value_in(unit))
         return cls(array, unit)
 
-    
+    def aszeros(self):
+        return new_quantity(numpy.zeros(self.shape, dtype=self.number.dtype), self.unit)
+        
     @classmethod
     def zeros(cls, length, unit):
         array = numpy.zeros(length, dtype=unit.dtype)
         return cls(array, unit)
+    
+    @property
+    def shape(self):
+        return self.number.shape
+    
+    def flatten(self):
+        return new_quantity(self.number.flatten(), self.unit)
         
     def is_vector(self):
         return True
