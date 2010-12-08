@@ -77,48 +77,141 @@ class HDF5AttributeStorage(AttributeStorage):
                 dataset = self.attributesgroup.create_dataset(attribute, shape=len(self.particle_keys), dtype=quantity.number.dtype)
                 dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
             dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
+
+
+class HDF5GridAttributeStorage(AttributeStorage):
+
+    def __init__(self, shape, hdfgroup):
+        self.hdfgroup = hdfgroup
+        self.attributesgroup = self.hdfgroup["attributes"]
+        self.shape = shape
+        
+    def storage_shape(self):
+        return self.shape
     
+    def _add_particles(self, keys, attributes = [], quantities = []):
+        raise exceptions.AmuseException("adding points to the grid is not implemented")
+            
+    def _remove_particles(self, keys):
+        raise exceptions.AmuseException("removing points from the grid is not implemented")
+        
+    def __len__(self):
+        return numpy.prod(self.shape)
+        
+    def get_unit_of(self, attribute):
+        dataset = self.attributesgroup[attribute]
+        return eval(dataset.attrs["units"], core.__dict__) 
+        
+    def _get_attribute_names(self):
+        return self.attributesgroup.keys()
+        
+    def _get_values(self, indices, attributes):
+            
+        results = []
+        for attribute in attributes:
+            values_vector = self.attributesgroup[attribute]
+            if indices is None:
+                selected_values = numpy.ndarray(shape=self.shape, dtype = values_vector.dtype)
+                values_vector.read_direct(selected_values)
+            else:    
+                #selection = h5py.selections.PointSelection(values_vector.shape)
+                #selection.set(numpy.transpose([indices,]))
+                selected_values = values_vector[indices]
+            results.append(self.get_unit_of(attribute).new_quantity(selected_values))
+        
+        return results
+        
+    def _has_key(self, key):
+        return False
+    
+    def _get_keys(self):
+        return None
+        
+    def _set_values(self, indices, attributes, quantities):
+        
+        for attribute, quantity in zip(attributes, quantities):
+            if attribute in self.attributesgroup:
+                dataset = self.attributesgroup[attribute]
+            else:
+                dataset = self.attributesgroup.create_dataset(attribute, shape=self.shape, dtype=quantity.number.dtype)
+                dataset["unit"] =  quantity.unit.to_simple_form().reference_string()
+            dataset[indices] = quantity.value_in(self.get_unit_of(attribute))
         
         
 class StoreHDF(object):
     PARTICLES_GROUP_NAME = "particles"
+    GRIDS_GROUP_NAME = "grids"
     
     def __init__(self, filename, append_to_file=True):
         if not append_to_file and os.path.exists(filename):
             os.remove(filename)
         self.hdf5file = h5py.File(filename,'a')
-        
+    
+    
     def store(self, particles):
-        particles_group = self.particles_group()
-        index = len(particles_group)
+        if hasattr(particles, 'shape') and len(particles.shape) > 1:
+            self.store_grid(particles)
+        else:            
+            self.store_particles(particles)
+    
+    def new_group(self, master_group):
+        index = len(master_group)
         name = format(index + 1,"010d")
+        return master_group.create_group(name)
         
-        group = particles_group.create_group(name)
-        
-        attributes_group = group.create_group("attributes")
-        
+    def store_particles(self, particles):
+        group = self.new_group(self.particles_group())
         
         group.attrs["number_of_particles"] = len(particles)
         group.attrs["class_of_the_particles"] = pickle.dumps(particles._set_factory())
-        
-        quantity = particles.get_timestamp()
-        if not quantity is None:
-            group.attrs["timestamp"] = quantity.value_in(quantity.unit)
-            group.attrs["timestamp_unit"] = quantity.unit.reference_string()
-    
+            
         keys = particles._get_keys()
         dataset = group.create_dataset("keys", data=keys)
-        
-        all_values = particles._get_values(None, particles._get_attribute_names())
+
+        self.store_timestamp(particles, group)
+        self.store_values(particles, group)
+            
+        self.hdf5file.flush()
     
-        for attribute, quantity in zip(particles._get_attribute_names(), all_values):
+    def store_grid(self, grid):
+        group = self.new_group(self.grids_group())
+        
+        group.attrs["class_of_the_container"] = pickle.dumps(grid._set_factory())
+        group.create_dataset("shape", data=numpy.asarray(grid.shape))
+        
+        self.store_timestamp(grid, group)
+        self.store_values(grid, group)
+        
+        self.hdf5file.flush()
+        
+    def store_values(self, container, group):
+        attributes_group = group.create_group("attributes")
+        
+        all_values = container._get_values(None, container._get_attribute_names())
+    
+        for attribute, quantity in zip(container._get_attribute_names(), all_values):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
             dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
             
-        self.hdf5file.flush()
-        
+    
+    def store_timestamp(self, container, group):
+        quantity = container.get_timestamp()
+        if not quantity is None:
+            group.attrs["timestamp"] = quantity.value_in(quantity.unit)
+            group.attrs["timestamp_unit"] = quantity.unit.reference_string()
+    
+    
     def load(self):
+        if not self.PARTICLES_GROUP_NAME in self.hdf5file:
+            return self.load_grid()
+        else:
+            if len(self.particles_group()) > 0:
+                return self.load_particles()
+            else:
+                return self.load_grid()
+                
+    def load_particles(self):
         particles_group = self.particles_group()
         number_of_saved_particle_sets = len(particles_group)
         all_particle_sets = [None] * number_of_saved_particle_sets
@@ -151,8 +244,44 @@ class StoreHDF(object):
         copy_of_last._private.previous = last
         return copy_of_last
         
+        
+    
+    def load_grid(self):
+        container_group = self.grids_group()
+        number_of_saved_particle_containers= len(container_group)
+        all_containers = [None] * number_of_saved_particle_containers
+        for group_index in container_group.keys():
+            group = container_group[group_index]
+            class_of_the_container = pickle.loads(group.attrs["class_of_the_container"])
+            shape = tuple(group["shape"])
+            
+            if "timestamp" in group.attrs:
+                unit = eval(group.attrs["timestamp_unit"], core.__dict__) 
+                timestamp = unit.new_quantity(group.attrs["timestamp"])
+            else:
+                timestamp = None
+            
+            container = class_of_the_container()
+            container._private.attribute_storage = HDF5GridAttributeStorage(shape, group)
+            container._private.timestamp = timestamp
+            
+            all_containers[int(group_index) - 1] = container
+            
+        previous = None
+        for x in all_containers:
+            x._private.previous = previous
+            previous = x
+            
+        last = all_containers[-1]
+        copy_of_last = last.copy_to_memory()
+        copy_of_last._private.previous = last
+        return copy_of_last
+        
     def particles_group(self):
         return self.hdf5file.require_group(self.PARTICLES_GROUP_NAME)
+        
+    def grids_group(self):
+        return self.hdf5file.require_group(self.GRIDS_GROUP_NAME)
         
     def close(self):
         self.hdf5file.flush()

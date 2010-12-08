@@ -2,7 +2,7 @@ from amuse.support.io import store
 from amuse.support import io
 from amuse.support.units import units
 from amuse.support.units import nbody_system
-from amuse.support.data.core import Particles
+from amuse.support.data.core import Particles, Grid
 from amuse.test import amusetest
 
 import os
@@ -95,3 +95,50 @@ class TestStoreHDF(amusetest.TestCase):
         particles_from_file.savepoint(4.0 | units.s)
 
         self.assertAlmostRelativeEquals(particles_from_file.mass[2], 1.0 | units.kg)
+    
+    def test5(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "testgrid.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        instance = store.StoreHDF(output_file)
+        
+        shape = 10, 10, 10
+        p = Grid(*shape)
+        p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
+        p.model_time = 2.0 | units.s
+
+        instance.store_grid(p)
+
+        loaded_grid = instance.load_grid()
+
+        self.assertEquals(loaded_grid.shape, shape)
+        
+        loaded_mass_in_kg = loaded_grid.mass.value_in(units.kg)
+        previous_mass_in_kg = p.mass.value_in(units.kg)
+        for expected, actual in zip(previous_mass_in_kg, loaded_mass_in_kg):
+            self.assertEquals(expected, actual)
+    
+    def test6(self):
+        test_results_path = self.get_path_to_results()
+        output_file = os.path.join(test_results_path, "testgrid.hdf5")
+        if os.path.exists(output_file):
+            os.remove(output_file)
+        instance = store.StoreHDF(output_file)
+        
+        shape = 10, 10, 10
+        p = Grid(*shape)
+        p.mass = ([x * 2.0 for x in range(p.size)] | units.kg).reshape(shape)
+        p.model_time = 2.0 | units.s
+
+        instance.store_grid(p)
+
+        loaded_grid = instance.load_grid().previous_state()
+        
+        
+        self.assertEquals(loaded_grid.shape, shape)
+        self.assertEquals(loaded_grid[0][0][0].mass, 0 | units.kg)
+        self.assertAlmostRelativeEquals(loaded_grid[...,1,1].mass, p[...,1,1].mass)
+
+        
+        

@@ -34,10 +34,33 @@ class AbstractGrid(AbstractSet):
     
     def _get_particle(self, index):
         return GridPoint(index, self._original_set())
+    
+    
+    def previous_state(self):
+        return self._private.previous
         
+        
+    def savepoint(self, timestamp=None):
+        instance = type(self)()
+        instance._private.attribute_storage = self._private.attribute_storage.copy()
+        instance._private.timestamp = timestamp
+        instance._private.previous = self._private.previous
+        self._private.previous = instance
+        return instance
+    
     
     def new_channel_to(self, other):
         return GridInformationChannel(self, other)
+    
+    
+    def copy_to_memory(self):
+        attributes = self._get_attribute_names()
+        values = self._get_values(None, attributes)
+        result = Grid(*self.shape)
+        result._set_values(None, attributes, values)
+        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
+       
+        return result
         
 class Grid(AbstractGrid):
     def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):
@@ -101,8 +124,10 @@ class Grid(AbstractGrid):
     def shape(self):
         return self._private.attribute_storage.storage_shape()
         
+    @property
+    def size(self):
+        return numpy.prod(self.shape)
         
-
     def indices(self):
         return numpy.indices(self.shape)
     
