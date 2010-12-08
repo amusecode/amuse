@@ -43,8 +43,8 @@ class TracLiteratureReferences(object):
     def exception_hook(self, *arguments):
         #print "exception", arguments, self.original_excepthook
         self.must_show_literature_references_atexit = False
-        lines = traceback.format_exception(type, value, tb)
-        print string.join(lines)
+        lines = traceback.format_exception(*arguments)
+        #print ''.join(lines)
    
         self.original_excepthook(*arguments)
         

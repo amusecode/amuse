@@ -34,6 +34,9 @@ class CalculateSolutionIn3D(object):
     number_of_workers = 1
     number_of_grid_points = 25
     gamma = 5.0/3.0
+    rho_medium = 0 | density
+    rho_sphere = 0.6 | density
+    
     name_of_the_code = "athena_selfgravity"
     convert_generic_units = ConvertBetweenGenericAndSiUnits(1.0 | units.kpc, 1.0e10 | units.MSun, constants.G)
 
@@ -61,7 +64,7 @@ class CalculateSolutionIn3D(object):
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.3
         result.set_four_pi_G( 4 * pi )
-        result.set_grav_mean_rho(1e-04)
+        result.set_grav_mean_rho(self.rho_medium.value_in(density))
         return result
         
     def new_instance_of_capreole_code(self):
@@ -73,9 +76,9 @@ class CalculateSolutionIn3D(object):
         
         instance.parameters.mesh_size = self.dimensions_of_mesh
         
-        instance.parameters.length_x = 1 | length
-        instance.parameters.length_y = 1 | length
-        instance.parameters.length_z = 1 | length
+        instance.parameters.length_x = 20.0 | length
+        instance.parameters.length_y = 20.0 | length
+        instance.parameters.length_z = 20.0 | length
         
         instance.x_boundary_conditions = ("periodic","periodic")
         instance.y_boundary_conditions = ("periodic","periodic")
@@ -103,12 +106,24 @@ class CalculateSolutionIn3D(object):
     
         return grid
     
+    def initialize_grid_with_plummer_sphere(self, grid):
+        center = [5.0, 5.0, 5.0] | length
+        radius = 1.0 / 1.695 | length
+        total_mass = 1.0 | mass
+        print total_mass
+        radii = (grid.position - center).lengths()
+        selected_radii  = radii[radii < 1.0 | length ]
+        print "number of cells in cloud (number of cells in grid)", len(selected_radii), grid.size
+        self.rho_sphere = ((0.75 * total_mass /  (pi * (radius ** 3))))
+        grid.rho = self.rho_medium + ((0.75 * total_mass /   (pi *(radius ** 3)))* ((1 + (radii ** 2) / (radius ** 2))**(-5.0/2.0)))
+        internal_energy = (0.25 | time ** -2  * mass ** -1 * length **3) * total_mass / radius 
+        grid.energy = grid.rho * internal_energy/(1+(radii/radius)**2)**(1.0/2.0)
+        
     def initialize_grid_with_sphere(self, grid):
         density = mass / length**3
         energy =  mass / (time**2 * length)
         
         center = [0.5, 0.5, 0.5] | length
-        radii = (grid.position - center).lengths()
         rho0 = 0 | density
         rho1 = 1.0 | density
         radius = 0.1 | length
@@ -142,7 +157,8 @@ class CalculateSolutionIn3D(object):
         self.from_code_to_model = self.instance.grid.new_channel_to(self.grid)
         
         self.from_code_to_model.copy_attributes(("x","y","z",))
-        self.initialize_grid_with_sphere(self.grid)
+        #self.initialize_grid_with_sphere(self.grid)
+        self.initialize_grid_with_plummer_sphere(self.grid)
         self.from_model_to_code.copy()
         
         self.instance.initialize_grid()
@@ -160,7 +176,7 @@ class CalculateSolutionIn3D(object):
         return self.grid
 
 def store_attributes(x, rho, rhovx, energy, filename):
-    output = text.CsvFileText(filename = filename)
+    output = text.TableFormattedText(filename = filename)
     output.quantities = (x, rho, rhovx, energy)
     output.attribute_names = ("x", "rho", "rhovx", "energy")
     output.store()
