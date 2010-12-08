@@ -88,7 +88,7 @@ def head_on_stellar_merger(
         else:
             pickle_stellar_model(stellar_evolution.particles[0], pickle_file_1)
             print "Stellar model 1 saved at:", pickle_file_1
-        if os.path.exists(pickle_file_1):
+        if os.path.exists(pickle_file_2):
             print "Could not save stellar model 2: file already exists."
         else:
             pickle_stellar_model(stellar_evolution.particles[1], pickle_file_2)
@@ -265,6 +265,8 @@ def hydro_plot(view, hydro_code, image_size, figname):
     hydro_code: hydrodynamics code in which the gas to be plotted is defined
     image_size: size of the output image in pixels (x, y)
     """
+    if not HAS_MATPLOTLIB:
+        return
     shape = (image_size[0], image_size[1], 1)
     size = image_size[0] * image_size[1]
     axis_lengths = [0.0, 0.0, 0.0] | units.m

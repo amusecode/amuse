@@ -171,4 +171,7 @@ if __name__ == "__main__":
         "of the density, green: log of the speed and for blue we used " \
         "the log of the specific internal energy."
     print
-    head_on_stellar_merger()
+    if HAS_MATPLOTLIB:
+        head_on_stellar_merger()
+    else:
+        print "matplotlib is not installed. Install it in the site-packages folder of your Python installation. Returning."
