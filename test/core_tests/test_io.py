@@ -163,6 +163,8 @@ class FormatTests(amusetest.TestCase):
     
     def test5(self):
         print "Testing HDF5 io"
+        if os.path.exists("test_unit.hdf5"):
+            os.remove("test_unit.hdf5")
         x = core.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
         x.radius = [3.0, 4.0] | units.m
@@ -180,6 +182,8 @@ class FormatTests(amusetest.TestCase):
         
     def test6(self):
         print "Testing HDF5 io, with options"
+        if os.path.exists("test_unit.hdf5"):
+            os.remove("test_unit.hdf5")
         x = core.Particles(2)
         x.mass = [1.0, 2.0] | units.kg
         io.write_set_to_file(x, "test_unit.hdf5","hdf5")
@@ -203,6 +207,8 @@ class FormatTests(amusetest.TestCase):
         
     def test7(self):
         print "Testing HDF5 io with a ParticlesSuperset"
+        if os.path.exists("test_unit.hdf5"):
+            os.remove("test_unit.hdf5")
         set1 = core.Particles(2)
         set2 = core.Particles(2)
         superset = core.ParticlesSuperset([set1, set2])

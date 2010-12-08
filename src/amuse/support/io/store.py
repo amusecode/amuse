@@ -148,11 +148,11 @@ class StoreHDF(object):
         self.hdf5file = h5py.File(filename,'a')
     
     
-    def store(self, particles):
-        if hasattr(particles, 'shape') and len(particles.shape) > 1:
-            self.store_grid(particles)
+    def store(self, container):
+        if hasattr(container, 'shape') and len(container.shape) > 1:
+            self.store_grid(container)
         else:            
-            self.store_particles(particles)
+            self.store_particles(container)
     
     def new_group(self, master_group):
         index = len(master_group)
@@ -188,7 +188,6 @@ class StoreHDF(object):
         attributes_group = group.create_group("attributes")
         
         all_values = container._get_values(None, container._get_attribute_names())
-    
         for attribute, quantity in zip(container._get_attribute_names(), all_values):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
