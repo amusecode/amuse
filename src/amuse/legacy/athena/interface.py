@@ -469,7 +469,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
 
     @legacy_function
-    def get_grid_gravitational_potential_energy():
+    def get_grid_gravitational_potential():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         for x in ['i','j','k']:
@@ -496,6 +496,53 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         
+        return function
+        
+    @legacy_function
+    def get_gravity_at_point():
+        """
+        Determine the gravitational force on a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+            description = "The smoothing parameter")
+        function.addParameter('x', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('y', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('z', dtype='float64', direction=function.IN,
+            description = "The position vector of the point")
+        function.addParameter('forcex', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('forcey', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.addParameter('forcez', dtype='float64', direction=function.OUT,
+            description = "Force created by the particles in the code at the given position")
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        function.result_doc = """
+         0 - OK
+            Force could be calculated
+        -1 - ERROR
+            No force calculation supported
+        """
+        return function
+
+
+    @legacy_function
+    def get_potential_at_point():
+        """
+        Determine the potential on a given point
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('eps', dtype='float64', direction=function.IN,
+         description = "The smoothing factor, may be ignored by the code")
+        function.addParameter('x', dtype='float64', direction=function.IN)
+        function.addParameter('y', dtype='float64', direction=function.IN)
+        function.addParameter('z', dtype='float64', direction=function.IN)
+        function.addParameter('phi', dtype='float64', direction=function.OUT)
+        function.can_handle_array = True
+        function.result_type = 'int32'
         return function
     
     
@@ -579,6 +626,32 @@ class Athena(CodeInterface):
             object.ERROR_CODE,)
         )
     
+        object.add_method(
+            'get_grid_gravitational_potential',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX,),
+            (potential_energy,
+            object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_grid_gravitational_acceleration',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX,),
+            (acceleration,acceleration,acceleration,
+            object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_gravity_at_point',
+            (length, length, length, length),
+            (acceleration, acceleration, acceleration, object.ERROR_CODE)
+        )
+
+        object.add_method(
+            'get_potential_at_point',
+            (length, length, length, length),
+            (potential, object.ERROR_CODE)
+        )
+    
         self.stopping_conditions.define_methods(object)
     
     def define_particle_sets(self, object):
@@ -593,6 +666,10 @@ class Athena(CodeInterface):
         object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
         object.add_getter('grid', 'get_energy_density', names=('energy',))
         object.define_extra_keywords('grid', {'index_of_grid':1})
+        
+        object.add_getter('grid', 'get_grid_gravitational_potential', names=('gravitational_potential',))
+        object.add_getter('grid', 'get_grid_gravitational_acceleration', names=('gravitational_acceleration_x','gravitational_acceleration_y','gravitational_acceleration_z',))
+        
         
         #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
         #object.add_setter('grid', 'set_density', names=('rho',))

@@ -629,7 +629,7 @@ int get_grid_state(
 }
 
 
-int get_grid_gravitational_potential_energy(
+int get_grid_gravitational_potential(
     int * i, int * j, int * k,
     int * index_of_grid,
     double * phi,
@@ -643,10 +643,11 @@ int get_grid_gravitational_potential_energy(
     if (mesh.NLevels == 0) {
         return -1;
     }
-#ifndef SELF_GRAV
+#ifndef SELF_GRAVITY
     for(l=0; l < number_of_points; l++) {
         phi[l] = 0.0;
     }
+    
 #else
 
     for(l=0; l < number_of_points; l++) {
@@ -696,6 +697,46 @@ int get_grid_gravitational_potential_energy(
     return 0;
 }
 
+
+int get_potential_at_point(double eps, double x, double y, double z, double *phi)
+{
+    if(myID_Comm_world)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    
+    double ii, jj, kk;
+    double dx, dy, dz;
+    int i, j, k;
+    int index_of_grid = 1; // supports only one grid!
+    
+    ijk_pos_dom(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
+    i = ii; j = jj; k = kk;
+    get_grid_gravitational_potential(&i, &j, &k, &index_of_grid,  phi, 1);
+    
+
+    return 0;
+}
+
+int get_gravity_at_point(double eps, double x,double y, double z,
+                         double *fx, double *fy, double *fz)
+{
+    if(myID_Comm_world)     { // calculate only on the root mpi process, not on others
+        return 0;
+    }
+    double ii, jj, kk;
+    double dx, dy, dz;
+    int i, j, k;
+    int index_of_grid = 1; // supports only one grid!
+    
+    
+    ijk_pos_dom(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
+    i = ii; j = jj; k = kk;
+    get_grid_gravitational_acceleration(&i, &j, &k, &index_of_grid, fx, fy, fz, 1);
+
+    return 0;
+}
+
+
 int get_grid_gravitational_acceleration(
     int * i, int * j, int * k,
     int * index_of_grid,
@@ -710,14 +751,13 @@ int get_grid_gravitational_acceleration(
     if (mesh.NLevels == 0) {
         return -1;
     }
-#ifndef SELF_GRAV
+#ifndef SELF_GRAVITY
     for(l=0; l < number_of_points; l++) {
         fx[l] = 0;
         fy[l] = 0;
         fz[l] = 0;
     }
 #else
-
     for(l=0; l < number_of_points; l++) {
         i0 = i[l];
         j0 = j[l];

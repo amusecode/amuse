@@ -898,5 +898,80 @@ class TestAthena(TestWithMPI):
         #print grid.rho[...,0,0]
         #plot.plot(instance.grid.x[...,0,0], grid.rho[...,0,0])
         #pyplot.savefig("bla2.png")
+        
     
+    def test11(self):
+        instance=self.new_instance(Athena, mode=AthenaInterface.MODE_SELF_GRAVITY) #, redirection = "none") #, debugger="gdb")
+        instance.initialize_code()
+        instance.parameters.gamma = 5/3.0
+        instance.parameters.courant_number=0.3
+        
+        instance.set_four_pi_G( 4 * numpy.pi ) # G = 1, like nbody
+        instance.set_grav_mean_rho(0.0)
+        
+
+        core.Grid.add_global_vector_attribute("position", ["x","y","z"])
+        n = 10
+        
+        density = generic_unit_system.mass / (generic_unit_system.length ** 3)
+        momentum =  generic_unit_system.mass / (generic_unit_system.time * (generic_unit_system.length**2))
+        energy =  generic_unit_system.mass / ((generic_unit_system.time**2) * generic_unit_system.length)
+        
+        instance.parameters.nx = n
+        instance.parameters.ny = n
+        instance.parameters.nz = n
+        
+        instance.parameters.length_x = 4.0 | generic_unit_system.length
+        instance.parameters.length_y = 4.0 | generic_unit_system.length
+        instance.parameters.length_z = 4.0 | generic_unit_system.length
+        
+        instance.x_boundary_conditions = ("periodic","periodic")
+        instance.y_boundary_conditions = ("periodic","periodic")
+        instance.z_boundary_conditions = ("periodic","periodic")
+        
+        result = instance.commit_parameters()
     
+        grid = core.Grid.create((n,n,n), [4.0 , 4.0, 4.0] | generic_unit_system.length)
+        
+        grid.rho = 0.0 | generic_unit_system.density
+        grid.rhovx = 0.0 | momentum
+        grid.rhovy = 0.0 | momentum
+        grid.rhovz = 0.0 | momentum
+        grid.energy = 0.001 | energy
+        
+        scaled_radius = 1.0 / 1.695 | generic_unit_system.length
+        total_mass = 1.0 | generic_unit_system.mass
+        
+        radii = (grid.position - ([2.0, 2.0, 2.0] | generic_unit_system.length)).lengths()
+        
+        rho_sphere = ((0.75 * total_mass /  (numpy.pi * (scaled_radius ** 3))))
+        grid.rho =  (rho_sphere * ((1 + (radii ** 2) / (scaled_radius ** 2))**(-5.0/2.0)))
+        
+        internal_energy = (0.25 | generic_unit_system.time ** -2  * generic_unit_system.mass ** -1 * generic_unit_system.length **3) * total_mass / scaled_radius 
+        grid.energy = grid.rho * internal_energy/(1+(radii/scaled_radius)**2)**(1.0/2.0)
+        
+      
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+        
+        instance.initialize_grid()
+        
+        instance.evolve(0.01 | generic_unit_system.time)
+        G = 1.0 | generic_unit_system.length **3 * generic_unit_system.mass**-1 * generic_unit_system.time**-2
+        a = instance.grid[5][5].gravitational_potential
+        b = (-1 * G * total_mass / (radii**2+scaled_radius**2).sqrt()) [5][5]
+        
+        for x in a:
+            self.assertTrue(x < 0 | generic_unit_system.potential)
+            
+        
+        a = instance.grid[5][5].gravitational_acceleration_z
+        for index, x in enumerate(a):
+            if index < 5:
+                self.assertTrue(x > 0 | generic_unit_system.acceleration)
+            else:
+                self.assertTrue(x < 0 | generic_unit_system.acceleration)
+                
+        
+        
