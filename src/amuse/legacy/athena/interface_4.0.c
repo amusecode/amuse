@@ -369,6 +369,47 @@ int initialize_grid()
   return 0;
 }
 
+static inline int is_on_grid(GridS * grid, int i0, int j0, int k0)
+{
+    if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+    {
+        return 0;
+    }
+    else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+    {
+        return 0;
+    }
+    else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
+}
+static inline int ijk_on_grid(GridS * grid, int * i0, int * j0, int * k0)
+{
+    *i0 -= grid->Disp[0] - grid->is;
+    if(grid->Nx[1] > 1)
+    {
+        *j0 -= grid->Disp[1] - grid->js;
+    }
+    else
+    {
+        *j0 = 0;
+    }
+    if(grid->Nx[2] > 1)
+    {
+        *k0 -= grid->Disp[2] - grid->ks;
+    }
+    else
+    {
+        *k0 = 0;
+    }
+}
+
+
 int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, double * y,
   double * z){
 
@@ -394,25 +435,20 @@ int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, do
         GridS * grid = dom->Grid;
         //fprintf(stderr, "i %d: %d, %d, %d, %d\n", i, grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
 
+        pos[0] = 0.0;
+        pos[1] = 0.0;
+        pos[2] = 0.0;
+        
         if (grid->Nx[0] > 1 && ( (grid->Disp[0] > 0 && i < (grid->Disp[0]))  || (((grid->Disp[0] + grid->Nx[0]) < dom->Nx[0]) && i >= (grid->Disp[0] + grid->Nx[0]))))
         {
-            pos[0] = 0.0;
-            pos[1] = 0.0;
-            pos[2] = 0.0;
             pos[3] = 1;
         }
         else if (grid->Nx[1] > 1 && ((grid->Disp[1] > 0 && j < (grid->Disp[1]))  || (((grid->Disp[1] + grid->Nx[1]) < dom->Nx[1]) &&j >= (grid->Disp[1] + grid->Nx[1]))))
         {
-            pos[0] = 0.0;
-            pos[1] = 0.0;
-            pos[2] = 0.0;
             pos[3] = 1;
         }
         else if (grid->Nx[2] > 1 && ((grid->Disp[2] > 0 && k < (grid->Disp[2]))  || (((grid->Disp[2] + grid->Nx[2]) < dom->Nx[2]) &&k >= (grid->Disp[2] + grid->Nx[2]))))
         {
-            pos[0] = 0.0;
-            pos[1] = 0.0;
-            pos[2] = 0.0;
             pos[3] = 1;
         }
         else
@@ -511,7 +547,6 @@ int test() {
     return 1;
 }
 
-
 int get_grid_state(
     int * i, int * j, int * k,
     int * index_of_grid,
@@ -557,37 +592,9 @@ int get_grid_state(
         else
         {
             GridS * grid = dom->Grid;
-            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            if (is_on_grid(grid, i0, j0, k0))
             {
-
-            }
-            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-            {
-
-            }
-            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-            {
-            }
-            else
-            {
-
-                i0 -= grid->Disp[0] - grid->is;
-                if(grid->Nx[1] > 1)
-                {
-                    j0 -= grid->Disp[1] - grid->js;
-                }
-                else
-                {
-                    j0 = 0;
-                }
-                if(grid->Nx[2] > 1)
-                {
-                    k0 -= grid->Disp[2] - grid->ks;
-                }
-                else
-                {
-                    k0 = 0;
-                }
+                ijk_on_grid(grid, &i0, &j0, &k0);
 
 
                 rho[l] = grid->U[k0][j0][i0].d;
@@ -665,39 +672,10 @@ int get_grid_gravitational_potential_energy(
         else
         {
             GridS * grid = dom->Grid;
-            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            
+            if (is_on_grid(grid, i0, j0, k0))
             {
-
-            }
-            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-            {
-
-            }
-            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-            {
-                
-            }
-            else
-            {
-
-                i0 -= grid->Disp[0] - grid->is;
-                if(grid->Nx[1] > 1)
-                {
-                    j0 -= grid->Disp[1] - grid->js;
-                }
-                else
-                {
-                    j0 = 0;
-                }
-                if(grid->Nx[2] > 1)
-                {
-                    k0 -= grid->Disp[2] - grid->ks;
-                }
-                else
-                {
-                    k0 = 0;
-                }
-
+                ijk_on_grid(grid, &i0, &j0, &k0);
                 phi[l] = grid->Phi[k0][j0][i0];
             }
 
@@ -765,38 +743,12 @@ int get_grid_gravitational_acceleration(
         else
         {
             GridS * grid = dom->Grid;
-            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            
+            if (is_on_grid(grid, i0, j0, k0))
             {
 
-            }
-            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-            {
-
-            }
-            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-            {
                 
-            }
-            else
-            {
-
-                i0 -= grid->Disp[0] - grid->is;
-                if(grid->Nx[1] > 1)
-                {
-                    j0 -= grid->Disp[1] - grid->js;
-                }
-                else
-                {
-                    j0 = 0;
-                }
-                if(grid->Nx[2] > 1)
-                {
-                    k0 -= grid->Disp[2] - grid->ks;
-                }
-                else
-                {
-                    k0 = 0;
-                }
+                ijk_on_grid(grid, &i0, &j0, &k0);
                 fx[l] = (grid->Phi[k0][j0][i0-1] - grid->Phi[k0][j0][i0+1]) / grid->dx1;
                 fy[l] = (grid->Phi[k0][j0-1][i0] - grid->Phi[k0][j0+1][i0]) / grid->dx2;
                 fz[l] = (grid->Phi[k0-1][j0][i0] - grid->Phi[k0+1][j0][i0]) / grid->dx3;
@@ -866,39 +818,12 @@ int get_density(
         else
         {
             GridS * grid = dom->Grid;
-            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            
+            if (is_on_grid(grid, i0, j0, k0))
             {
 
-            }
-            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-            {
-
-            }
-            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-            {
-            }
-            else
-            {
-
-                i0 -= grid->Disp[0] - grid->is;
-                if(grid->Nx[1] > 1)
-                {
-                    j0 -= grid->Disp[1] - grid->js;
-                }
-                else
-                {
-                    j0 = 0;
-                }
-                if(grid->Nx[2] > 1)
-                {
-                    k0 -= grid->Disp[2] - grid->ks;
-                }
-                else
-                {
-                    k0 = 0;
-                }
-
-
+                
+                ijk_on_grid(grid, &i0, &j0, &k0);
                 rho[l] = grid->U[k0][j0][i0].d;
             }
 
@@ -960,38 +885,12 @@ int get_momentum_density(
         else
         {
             GridS * grid = dom->Grid;
-            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+           
+            if (is_on_grid(grid, i0, j0, k0))
             {
 
-            }
-            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-            {
-
-            }
-            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-            {
-            }
-            else
-            {
-
-                i0 -= grid->Disp[0] - grid->is;
-                if(grid->Nx[1] > 1)
-                {
-                    j0 -= grid->Disp[1] - grid->js;
-                }
-                else
-                {
-                    j0 = 0;
-                }
-                if(grid->Nx[2] > 1)
-                {
-                    k0 -= grid->Disp[2] - grid->ks;
-                }
-                else
-                {
-                    k0 = 0;
-                }
-
+                
+                ijk_on_grid(grid, &i0, &j0, &k0);
 
                 rhovx[l] = grid->U[k0][j0][i0].M1;
                 rhovy[l] = grid->U[k0][j0][i0].M2;
@@ -1057,37 +956,12 @@ int get_energy_density(
         else
         {
             GridS * grid = dom->Grid;
-            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            
+            if (is_on_grid(grid, i0, j0, k0))
             {
 
-            }
-            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-            {
-
-            }
-            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-            {
-            }
-            else
-            {
-
-                i0 -= grid->Disp[0] - grid->is;
-                if(grid->Nx[1] > 1)
-                {
-                    j0 -= grid->Disp[1] - grid->js;
-                }
-                else
-                {
-                    j0 = 0;
-                }
-                if(grid->Nx[2] > 1)
-                {
-                    k0 -= grid->Disp[2] - grid->ks;
-                }
-                else
-                {
-                    k0 = 0;
-                }
+                
+                ijk_on_grid(grid, &i0, &j0, &k0);
 
 
                 en[l] = grid->U[k0][j0][i0].E;
@@ -1155,43 +1029,11 @@ int set_grid_state(
         else
         {
             GridS * grid = dom->Grid;
-            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            
+            if (is_on_grid(grid, i0, j0, k0))
             {
-
-            }
-            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
-            {
-
-            }
-            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
-            {
-            }
-            else
-            {
-                if(grid->Nx[0] > 1)
-                {
-                    i0 -= grid->Disp[0] - grid->is;
-                }
-                else
-                {
-                    i0 = 0;
-                }
-                if(grid->Nx[1] > 1)
-                {
-                    j0 -= grid->Disp[1] - grid->js;
-                }
-                else
-                {
-                    j0 = 0;
-                }
-                if(grid->Nx[2] > 1)
-                {
-                    k0 -= grid->Disp[2] - grid->ks;
-                }
-                else
-                {
-                    k0 = 0;
-                }
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                
                 grid->U[k0][j0][i0].d = rho[l];
                 grid->U[k0][j0][i0].M1 = rhovx[l];
                 grid->U[k0][j0][i0].M2 = rhovy[l];

@@ -534,11 +534,11 @@ class TestAthena(TestWithMPI):
         
         
         potential_grid = core.Grid(12,22,42)
-        potential_grid.potential = 2.0 | energy
+        potential_grid.potential = 2.0 | generic_unit_system.potential
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
-        self.assertEquals(instance.potential_grid[0][0][0].potential, 2.0 |energy)
-        self.assertEquals(instance.potential_grid[0][2][20].potential, 2.0 |energy)
+        self.assertEquals(instance.potential_grid[0][0][0].potential, 2.0 | generic_unit_system.potential)
+        self.assertEquals(instance.potential_grid[0][2][20].potential, 2.0 | generic_unit_system.potential)
         
         instance.stop()
     
@@ -646,7 +646,7 @@ class TestAthena(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         potential_grid = core.Grid(12,12,1)
-        potential_grid.potential = 0.0 | energy
+        potential_grid.potential = 0.0 | generic_unit_system.potential
         channel = potential_grid.new_channel_to(instance.potential_grid)
         channel.copy()
         result = instance.initialize_grid()
@@ -697,7 +697,7 @@ class TestAthena(TestWithMPI):
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
         potential_grid = core.Grid(12,12,1)
-        potential_grid.potential = 0.0 | energy
+        potential_grid.potential = 0.0 | generic_unit_system.potential
         print instance.potential_grid.shape
         print instance.potential_grid.x[0].number.shape
         print instance.grid.shape
@@ -715,7 +715,7 @@ class TestAthena(TestWithMPI):
                     potential = 0.0
                 if py < 0 or py > 1.0:
                     potential = 0.0
-                instance.potential_grid[i][j][0].potential = energy.new_quantity([potential])
+                instance.potential_grid[i][j][0].potential = generic_unit_system.potential.new_quantity([potential])
         print potential_grid.potential
         #channel = potential_grid.new_channel_to(instance.potential_grid)
         #channel.copy()
@@ -729,7 +729,7 @@ class TestAthena(TestWithMPI):
         #print instance.grid.rhox
         z = instance.grid.rho[...,...,0]
         z = instance.potential_grid.potential[...,...,0]
-        z = z.value_in(energy)
+        z = z.value_in(generic_unit_system.potential)
         #from matplotlib import pyplot
         #pyplot.imshow(z)
         #pyplot.savefig("bla.png")

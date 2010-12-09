@@ -532,6 +532,7 @@ class Athena(CodeInterface):
         density = mass / (length**3)
         momentum =  mass / (time * (length**2))
         energy =  mass / ((time**2) * length)
+        potential_energy =  length ** 2 / time ** 2
         
         object.add_method(
             'set_grid_state',
@@ -568,13 +569,13 @@ class Athena(CodeInterface):
         object.add_method(
             'set_potential',
             (object.INDEX, object.INDEX, object.INDEX,
-            energy),
+            potential_energy),
             (object.ERROR_CODE,)
         )
         object.add_method(
             'get_potential',
             (object.INDEX, object.INDEX, object.INDEX,),
-            (energy,
+            (potential_energy,
             object.ERROR_CODE,)
         )
     

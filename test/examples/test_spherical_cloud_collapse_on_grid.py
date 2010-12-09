@@ -147,7 +147,7 @@ class HydroGridAndNbody(object):
         )
         print "got potential enery"
         potential = potential.reshape(self.gridcode.potential_grid.shape)
-        self.gridcode.potential_grid.potential = potential * (1.0 | length ** -3 * mass)
+        self.gridcode.potential_grid.potential = potential 
         
         self.gridcode.evolve(time)
         
