@@ -77,7 +77,6 @@
          use run_star_support
          use ctrls_io, only: set_default_controls
          implicit none
-         integer :: initialize_code
          integer :: ierr
          initialize_code = -1
          call set_default_controls

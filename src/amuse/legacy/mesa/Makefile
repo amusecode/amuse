@@ -7,6 +7,7 @@ AMUSE_DIR ?=../../../..
 MESA_MAKE_DIR=./mesa_reqs
 INCLUDE_DIR=./src/star/make
 MESA_DIR = ./src
+MESA_LIB=$(MESA_DIR)/lib/libstar.a
 
 include $(MESA_MAKE_DIR)/makefile_header
 include $(MESA_MAKE_DIR)/makefile_include
@@ -27,7 +28,6 @@ all:	mesa_worker
 src:
 ifdef DOWNLOAD_CODES
 		$(DOWNLOAD_FROM_SVN)
-		cd $(MESA_DIR); ./install
 else
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
@@ -49,9 +49,8 @@ clean:
 	$(RM) -f mesa_worker
 	make -C $(MESA_MAKE_DIR) clean
 
-veryclean:
-	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90
-	make -C $(MESA_MAKE_DIR) veryclean
+veryclean: clean
+	cd $(MESA_DIR); ./clean
 
 distclean: clean
 	$(RM) -Rf ./src/
@@ -62,6 +61,9 @@ mesa_worker:	worker_code.f90 MESA_code.o $(STAR_WORK_OBJS)
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MESAInterface -o $@
 
-MESA_code.o: MESA_code.f src
+$(MESA_LIB): src
+	cd $(MESA_DIR); ./install
+
+MESA_code.o: MESA_code.f $(MESA_LIB)
 	make -s --no-print-directory -C $(MESA_MAKE_DIR) star FFLAGS="$(FFLAGS)"
 	$(WORK_COMPILE) -I$(INCLUDE_DIR) -I$(MESA_MAKE_DIR) -o $@ $<

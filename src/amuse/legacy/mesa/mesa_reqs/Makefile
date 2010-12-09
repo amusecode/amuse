@@ -48,9 +48,5 @@ lib_mesa_star:
 clean:
 	-@rm -f *.o *.mod $(WORK_DIR)/$(STAR)
 
-veryclean: clean
-	make -C $(STAR_LIB_DIR) clean
-	make -C $(STAR_RUN_LIB_DIR) clean
-
 remk:
 	-@rm -f run.o $(WORK_DIR)/$(STAR)
