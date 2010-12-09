@@ -465,6 +465,39 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.addParameter('number_of_points', 'i', function.LENGTH)
         function.result_type = 'i'
         return function
+        
+    
+
+    @legacy_function
+    def get_grid_gravitational_potential_energy():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['phi']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        
+        return function
+    
+    
+
+    @legacy_function
+    def get_grid_gravitational_acceleration():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['fx', 'fy', 'fz']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        
+        return function
+    
     
     
 class Athena(CodeInterface):

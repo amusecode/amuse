@@ -19,6 +19,7 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_WEB = ./downloadhttp.py
+PATCH_FILES = ./patch_files.py
 
 SCLIBS ?= -L../../../../lib/stopcond -lstopcond
 SCINC ?= -I../../../../lib/stopcond
@@ -32,20 +33,22 @@ all: athena_worker
 
 $(ATHENA_DIR):
 ifdef DOWNLOAD_CODES
-		$(DOWNLOAD_FROM_WEB) $(VERSION)
-		cd $(ATHENA_DIR)/src;patch Makefile.in < ../../../makefile.patch
+	$(RM) -Rf .pc
+	$(DOWNLOAD_FROM_WEB) $(VERSION)
+	#cd $(ATHENA_DIR)/src;patch Makefile.in < ../../../makefile.patch
+	$(PATCH_FILES)
 else
-		@echo ""
-		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		@echo ""
-		@echo "DOWNLOAD_CODES is not set. Athena will not be downloaded and build."
-		@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
-		@echo "bash> export DOWNLOAD_CODES=1"
-		@echo "csh> setenv DOWNLOAD_CODES 1"
-		@echo ""
-		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		@echo ""
-		@make -s --no-print-directory -C . raise_error
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "DOWNLOAD_CODES is not set. Athena will not be downloaded and build."
+	@echo "If you do want Athena, set DOWNLOAD_CODES to 1."
+	@echo "bash> export DOWNLOAD_CODES=1"
+	@echo "csh> setenv DOWNLOAD_CODES 1"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
 endif
 
 

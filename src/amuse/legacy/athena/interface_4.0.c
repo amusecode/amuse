@@ -511,6 +511,7 @@ int test() {
     return 1;
 }
 
+
 int get_grid_state(
     int * i, int * j, int * k,
     int * index_of_grid,
@@ -531,6 +532,14 @@ int get_grid_state(
         i0 = i[l];
         j0 = j[l];
         k0 = k[l];
+        
+        
+        rho[l] = 0;
+        rhovx[l] = 0;
+        rhovy[l] = 0;
+        rhovz[l] = 0;
+        en[l] = 0;
+                
         current_index_of_grid = index_of_grid[l];
         if (current_index_of_grid != previous_index_of_grid)
         {
@@ -612,6 +621,207 @@ int get_grid_state(
     return 0;
 }
 
+
+int get_grid_gravitational_potential_energy(
+    int * i, int * j, int * k,
+    int * index_of_grid,
+    double * phi,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    int ii = 0;
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+#ifndef SELF_GRAV
+    for(l=0; l < number_of_points; l++) {
+        phi[l] = 0.0;
+    }
+#else
+
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        current_index_of_grid = index_of_grid[l];
+        
+        phi[l] = 0;
+        
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            {
+
+            }
+            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+            {
+
+            }
+            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+            {
+                
+            }
+            else
+            {
+
+                i0 -= grid->Disp[0] - grid->is;
+                if(grid->Nx[1] > 1)
+                {
+                    j0 -= grid->Disp[1] - grid->js;
+                }
+                else
+                {
+                    j0 = 0;
+                }
+                if(grid->Nx[2] > 1)
+                {
+                    k0 -= grid->Disp[2] - grid->ks;
+                }
+                else
+                {
+                    k0 = 0;
+                }
+
+                phi[l] = grid->Phi[k0][j0][i0];
+            }
+
+        }
+    }
+
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(phi, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+     } else {
+        MPI_Reduce(MPI_IN_PLACE, phi, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+#endif
+    return 0;
+}
+
+int get_grid_gravitational_acceleration(
+    int * i, int * j, int * k,
+    int * index_of_grid,
+    double * fx, double * fy, double * fz,
+    int number_of_points)
+{
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    int ii = 0;
+    DomainS * dom = 0;
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+#ifndef SELF_GRAV
+    for(l=0; l < number_of_points; l++) {
+        fx[l] = 0;
+        fy[l] = 0;
+        fz[l] = 0;
+    }
+#else
+
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+        current_index_of_grid = index_of_grid[l];
+        
+        fx[l] = 0;
+        fy[l] = 0;
+        fz[l] = 0;
+        
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            if (grid->Nx[0] > 1 && (i0 < (grid->Disp[0])  || i0 >= (grid->Disp[0] + grid->Nx[0])))
+            {
+
+            }
+            else if (grid->Nx[1] > 1 && (j0 < (grid->Disp[1])  || j0 >= (grid->Disp[1] + grid->Nx[1])))
+            {
+
+            }
+            else if (grid->Nx[2] > 1 && (k0 < (grid->Disp[2])  || k0 >= (grid->Disp[2] + grid->Nx[2])))
+            {
+                
+            }
+            else
+            {
+
+                i0 -= grid->Disp[0] - grid->is;
+                if(grid->Nx[1] > 1)
+                {
+                    j0 -= grid->Disp[1] - grid->js;
+                }
+                else
+                {
+                    j0 = 0;
+                }
+                if(grid->Nx[2] > 1)
+                {
+                    k0 -= grid->Disp[2] - grid->ks;
+                }
+                else
+                {
+                    k0 = 0;
+                }
+                fx[l] = (grid->Phi[k0][j0][i0-1] - grid->Phi[k0][j0][i0+1]) / grid->dx1;
+                fy[l] = (grid->Phi[k0][j0-1][i0] - grid->Phi[k0][j0+1][i0]) / grid->dx2;
+                fz[l] = (grid->Phi[k0-1][j0][i0] - grid->Phi[k0+1][j0][i0]) / grid->dx3;
+            }
+
+        }
+    }
+
+
+
+#ifdef MPI_PARALLEL
+    if(myID_Comm_world) {
+        MPI_Reduce(fx, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(fy, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(fz, NULL, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+     } else {
+        MPI_Reduce(MPI_IN_PLACE, fx, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, fy, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, fz, number_of_points, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    }
+#endif
+
+#endif
+    return 0;
+}
 
 int get_density(
     int * i, int * j, int * k,
