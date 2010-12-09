@@ -549,13 +549,14 @@ class MpiChannel(MessageChannel):
         return self.DEBUGGERS[self.debugger]
     
     def start(self):
-        fd_stdin = None
         
+        must_close_stdin = True
         if self.debug_with_gdb or (not self.debugger_method is None):
             if not 'DISPLAY' in os.environ:
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
+                must_close_stdin = False
                 if self.debugger is None:
                     command, arguments = self.GDB(self.full_name_of_the_worker)
                 else:
@@ -564,8 +565,19 @@ class MpiChannel(MessageChannel):
             arguments = None
             command = self.full_name_of_the_worker
         
-        self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
-        
+
+        fd_stdin = None
+        if must_close_stdin:
+            fd_stdin = os.dup(0)
+            zero = open('/dev/null','r')
+            os.dup2(zero.fileno(), 0)
+        try:
+            self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
+        finally: 
+            if must_close_stdin:
+                os.dup2(fd_stdin, 0)
+                os.close(fd_stdin)
+            
         
         
     def stop(self):
