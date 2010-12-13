@@ -231,23 +231,35 @@ class AbstractParticleSet(AbstractSet):
         all_values = self._get_values(self._get_keys(), attributes)
         for index, quantity in enumerate(all_values):
             column = columns[index + 1]
-            column.append(format_str11(str(quantity.unit)))
+            if hasattr(quantity, 'unit'):
+                column.append(format_str11(str(quantity.unit)))
+            else:
+                column.append('none')
+                
             column.append('=' * 11)
             if len(quantity) > 40:
-                if quantity.unit.dtype:
-                    values_to_show = list(map(format_str11,quantity.number[:20]))
-                    values_to_show.append(format_str11('...'))
-                    values_to_show.extend(map(format_str11,quantity.number[-20:]))
+                if hasattr(quantity, 'unit'):
+                    if quantity.unit.dtype:
+                        values_to_show = list(map(format_str11,quantity.number[:20]))
+                        values_to_show.append(format_str11('...'))
+                        values_to_show.extend(map(format_str11,quantity.number[-20:]))
+                    else:
+                        values_to_show = list(map(format_float,quantity.number[:20]))
+                        values_to_show.append(format_str11('...'))
+                        values_to_show.extend(map(format_float,quantity.number[-20:]))
                 else:
-                    values_to_show = list(map(format_float,quantity.number[:20]))
+                    values_to_show = list(map(format_str11,quantity[:20]))
                     values_to_show.append(format_str11('...'))
-                    values_to_show.extend(map(format_float,quantity.number[-20:]))
+                    values_to_show.extend(map(format_str11,quantity[-20:]))
             else:
-                if quantity.unit.dtype:
-                    values_to_show = map(format_str11,quantity.number)
+                if hasattr(quantity, 'unit'):
+                    if quantity.unit.dtype:
+                        values_to_show = map(format_str11,quantity.number)
+                    else:
+                        values_to_show = map(format_float,quantity.number)
                 else:
-                    values_to_show = map(format_float,quantity.number)
-            
+                    values_to_show = map(format_str11,quantity)
+                    
             column.extend(values_to_show)
             column.append('=' * 11)
             
