@@ -467,10 +467,10 @@ class string_unit(nonnumeric_unit):
         nonnumeric_unit.__init__(self, name, symbol)
     
     def value_to_string(self, value):
-        return value
+        return '' if value is None else value
     
     def is_valid_value(self, value):
-        return isinstance(value, str)
+        return value is None or isinstance(value, str)
         
 
 class enumeration_unit(nonnumeric_unit):

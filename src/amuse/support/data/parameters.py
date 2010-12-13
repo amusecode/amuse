@@ -21,7 +21,8 @@ class ParameterDocumentation(object):
 
 class Parameters(object):
     __doc__ = ParameterDocumentation()
-
+    __name__ = 'Parameters'
+    
     def __init__(self, definitions, instance):
         object.__setattr__(self, '_instance', weakref.ref(instance))
         object.__setattr__(self, '_definitions', definitions)
@@ -32,6 +33,8 @@ class Parameters(object):
             self._mapping_from_name_to_definition[x.name] = x
 
     def __getattr__(self, name):
+        #if name.startswith('__'):
+        #    return object.__getattribute__(self, name)
         if not name in self._mapping_from_name_to_definition:
             raise exceptions.CoreException("tried to get unknown parameter '{0}' for a '{1}' object".format(name, type(self._instance()).__name__))
             
