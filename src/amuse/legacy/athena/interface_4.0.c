@@ -64,17 +64,21 @@ static inline void ijk_pos(
     *i = 0;
   } else {
     *i = ((x1 - pG->MinX[0])/pG->dx1) - 0.5 + pG->Disp[0];
+    modf(*i, i);
   }
   if(pG->dx2 == 0) {
      *j = 0;
   } else {
     *j = ((x2 - pG->MinX[1])/pG->dx2) - 0.5 + pG->Disp[1];
+    modf(*j, j);
+
   }
 
   if(pG->dx3 == 0) {
     *k = 0.0;
   } else {
     *k = ((x3 - pG->MinX[2])/pG->dx3) - 0.5 + pG->Disp[2];
+    modf(round(*k), k);
   }
 }
 
@@ -149,6 +153,7 @@ static Real grav_pot(const Real x1, const Real x2, const Real x3)
     ii = i;
     jj = j;
     kk = k;
+    
     
     Real potential000 = Potentials[kk][jj][ii];
     
@@ -676,6 +681,8 @@ int get_grid_gravitational_potential(
             
             if (is_on_grid(grid, i0, j0, k0))
             {
+                
+    fprintf(stderr, "GRID i,j,k %d,%d,%d\n", i0, j0, k0);
                 ijk_on_grid(grid, &i0, &j0, &k0);
                 phi[l] = grid->Phi[k0][j0][i0];
             }
@@ -708,9 +715,20 @@ int get_potential_at_point(double eps, double x, double y, double z, double *phi
     double dx, dy, dz;
     int i, j, k;
     int index_of_grid = 1; // supports only one grid!
-    
-    ijk_pos_dom(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
+    DomainS * dom = get_domain_structure_with_index(1);
+
+    if(dom == 0)
+    {
+        return -1;
+    }
+    if(dom->Grid == NULL)
+    {
+        return -1;
+    }
+
+    ijk_pos(dom->Grid, x, y, z, &ii, &jj, &kk);//(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
     i = ii; j = jj; k = kk;
+    fprintf(stderr, "XYZ i,j,k %f,%f,%f\n", ii, jj, kk);
     get_grid_gravitational_potential(&i, &j, &k, &index_of_grid,  phi, 1);
     
 
