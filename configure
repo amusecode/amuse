@@ -3485,7 +3485,13 @@ fi
 #
 # Check whether --enable-cuda was given.
 if test "${enable_cuda+set}" = set; then :
-  enableval=$enable_cuda; WITH_CUDA=yes
+  enableval=$enable_cuda; WITH_CUDA=no
+    if test "x$enable_cuda" != "xno"; then :
+
+        WITH_CUDA=yes
+
+fi
+
 else
   WITH_CUDA=no
 

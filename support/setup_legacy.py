@@ -115,6 +115,14 @@ class LegacyCommand(Command):
             self.environment['CUDA_SDK'] = config.cuda.sdk_path
             return
             
+        if is_configured and not config.cuda.is_enabled:
+            self.found_cuda = True
+            self.environment['CUDA_LIBDIRS'] = '-L/NOCUDACONFIGURED/lib' + ' -LNOCUDACONFIGURED/lib64'
+            self.environment['CUDA_LIBS'] = '-lnocuda'
+            self.environment['CUDA_TK'] = '/NOCUDACONFIGURED'
+            self.environment['CUDA_SDK'] = '/NOCUDACONFIGURED'
+            return 
+
         for x in ['CUDA_TK', 'CUDA_SDK']:
             if not x in self.environment:
                 all_found = False

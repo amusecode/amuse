@@ -14,9 +14,13 @@ AC_ARG_VAR([NVCC], [CUDA compiler command])
 #
 #  Cuda libraries and sdk
 #
-AC_ARG_ENABLE([cuda],
+AC_ARG_ENABLE(cuda,
     [AS_HELP_STRING([--enable-cuda],[Enable CUDA for codes])],
-    [WITH_CUDA=yes],
+    [WITH_CUDA=no
+    AS_IF([test "x$enable_cuda" != "xno"], [
+        WITH_CUDA=yes
+    ])
+    ],
     [WITH_CUDA=no]
 )
 AC_ARG_VAR([CUDA_SDK], [CUDA sdk directory])
