@@ -45,9 +45,9 @@ evtwin_worker: mpi_code.f90 $(SRC)
 	@-mkdir -p $(LIBDIR)
 #	make -s --no-print-directory -C src lib/libtwin.a FORT=$(FORTRAN)
 	make -s --no-print-directory -C $(MODDIR)
-	cp $(MODDIR)/twin_library_v2.mod .
-	cp $(MODDIR)/mesh.mod .
-	$(MPIF90) $< -o $@ $(EVTWINLIB)
+#	cp $(MODDIR)/twin_library_v2.mod .
+#	cp $(MODDIR)/mesh.mod .
+	$(MPIF90) -I$(MODDIR) $< -o $@ $(EVTWINLIB)
 
 mpi_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py EVtwinInterface -o $@
