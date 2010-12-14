@@ -729,7 +729,7 @@ int get_potential_at_point(double eps, double x, double y, double z, double *phi
 
     ijk_pos(dom->Grid, x, y, z, &ii, &jj, &kk);//(x, y, z, &ii, &jj, &kk, &dx, &dy, &dz);
     i = ii; j = jj; k = kk;
-    fprintf(stderr, "XYZ i,j,k %f,%f,%f\n", ii, jj, kk);
+    //fprintf(stderr, "XYZ i,j,k %f,%f,%f\n", ii, jj, kk);
     get_grid_gravitational_potential(&i, &j, &k, &index_of_grid,  phi, 1);
     
 
