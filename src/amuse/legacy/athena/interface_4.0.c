@@ -64,13 +64,14 @@ static inline void ijk_pos(
     *i = 0;
   } else {
     *i = ((x1 - pG->MinX[0])/pG->dx1) - 0.5 + pG->Disp[0];
-    modf(*i, i);
+    //fprintf(stderr, "index of pos (i) %d\n", i);
+    modf(round(*i), i);
   }
   if(pG->dx2 == 0) {
      *j = 0;
   } else {
     *j = ((x2 - pG->MinX[1])/pG->dx2) - 0.5 + pG->Disp[1];
-    modf(*j, j);
+    modf(round(*j), j);
 
   }
 

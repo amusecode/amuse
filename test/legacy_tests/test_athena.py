@@ -345,8 +345,14 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEqual(j, 0)
         self.assertAlmostRelativeEqual(k, 0)
         
+        i,j,k,error = instance.get_index_of_position(0.39, 0.1, 0.1)
+        self.assertAlmostRelativeEqual(i, 1.0)
+        self.assertAlmostRelativeEqual(j, 0)
+        self.assertAlmostRelativeEqual(k, 0)
+        
+
         i,j,k,error = instance.get_index_of_position(0.4, 0.1, 0.1)
-        self.assertAlmostRelativeEqual(i, 1.5)
+        self.assertAlmostRelativeEqual(i, 2.0)
         self.assertAlmostRelativeEqual(j, 0)
         self.assertAlmostRelativeEqual(k, 0)
         
