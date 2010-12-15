@@ -25,7 +25,7 @@ def get_amuse_root_dir():
     if not 'amuse_root_dir' in locals():
         import os
         try:
-            amuse_root_dir = os.environ['AMUSE_ROOT_DIR']
+            amuse_root_dir = os.environ['AMUSE_DIR']
         except KeyError:
             amuse_root_dir = os.path.abspath(__file__)
             while not os.path.exists(os.path.join(amuse_root_dir, 'build.py')):

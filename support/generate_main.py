@@ -42,7 +42,7 @@ class generate_main(Command):
                 script_file.write(x)
 
             script_file.write('\n')
-            script_file.write('export AMUSE_ROOT_DIR=')
+            script_file.write('export AMUSE_DIR=')
             script_file.write(self.amuse_dir)
             script_file.write('\n')
             script_file.write('python "$@"\n')
