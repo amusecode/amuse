@@ -29,10 +29,8 @@ AC_ARG_VAR([CUDA_TK], [CUDA toolkit directory])
 AS_IF([test x"$WITH_CUDA" != xno],[
     WITH_CUDA=yes
     AC_PATH_PROG([NVCC], [nvcc],
-            [NVCC=no]
-            [$PATH$ /usr/local/cuda/cuda/bin /usr/local/cuda/bin]
-            [CUDA_TK]
-            [/opt/cuda/cuda/bin /opt/cuda/bin])
+            [NVCC=no],
+            [$PATH$ /usr/local/cuda/cuda/bin /usr/local/cuda/bin $CUDA_TK/bin /opt/cuda/cuda/bin /opt/cuda/bin])
     
     AS_IF([test x"$CUDA_TK" = x],
     [
