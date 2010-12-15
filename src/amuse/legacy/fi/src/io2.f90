@@ -27,7 +27,7 @@ subroutine writebods(filenaam)
  
  call prepareoutput
  
- ioversion=1
+ ioversion=2
   
  header(1)=nihead
  header(2)=nrhead
@@ -144,6 +144,20 @@ IF(nsph.GT.0) THEN
  IF(phead(23).EQ.1) WRITE(ubodsout) (hsmcurlv(p),p=1,nsph)
  IF(phead(24).EQ.1) WRITE(ubodsout) (vdisp(p),p=1,nsph)
  IF(phead(25).EQ.1) WRITE(ubodsout) (h2frac(p),p=1,nsph)
+ IF(phead(26).EQ.1) THEN
+  IF(uentropy) THEN
+   WRITE(ubodsout) (tempvect(p),p=nsph+1,2*nsph)
+  ELSE
+   WRITE(ubodsout) (dethdt(p),p=1,nsph)  
+  ENDIF
+ ENDIF
+ IF(phead(27).EQ.1) THEN
+  IF(uentropy) THEN
+   WRITE(ubodsout) (dentdt(p),p=1,nsph)
+  ELSE
+   WRITE(ubodsout) (tempvect(p),p=nsph+1,2*nsph)  
+  ENDIF
+ ENDIF
 ENDIF
 
 IF(nstar.GT.0) THEN 
@@ -187,7 +201,7 @@ subroutine readbods(filenaam)
  
 
  if(header(1).GT.nihead.OR.header(2).GT.nrhead.OR. &
-                 header(3).GT.nphead.OR.ioversion.NE.1) then
+                 header(3).GT.nphead.OR.ioversion.GT.2) then
   print*,' warning: file input from newer file format?'
  endif
  
@@ -287,6 +301,8 @@ IF(nsph.GT.0) THEN
  IF(phead(23).EQ.1) READ(ubodsin) (hsmcurlv(p),p=1,nsph)
  IF(phead(24).EQ.1) READ(ubodsin) (vdisp(p),p=1,nsph)
  IF(phead(25).EQ.1) READ(ubodsin) (h2frac(p),p=1,nsph)
+ IF(phead(26).EQ.1) READ(ubodsin) ! ignore 
+ IF(phead(27).EQ.1) READ(ubodsin) ! ignore
  ENDIF
 
 IF(nstar.GT.0) THEN
@@ -309,12 +325,15 @@ subroutine prepareoutput
  integer :: nkeep,nbods
  if(uentropy) then
   tempvect(1:nsph)=entropy(1:nsph)/gamma1*rho(1:nsph)**gamma1
+  tempvect(nsph+1:2*nsph)=dentdt(1:nsph)/gamma1*rho(1:nsph)**gamma1
  else
   if(.NOT.isotherm) then
    tempvect(1:nsph)=ethermal(1:nsph)*gamma1/rho(1:nsph)**gamma1 
+   tempvect(nsph+1:2*nsph)=dethdt(1:nsph)*gamma1/rho(1:nsph)**gamma1 
   else
    ethermal(1:nsph)=csound(1:nsph)**2
    tempvect(1:nsph)=csound(1:nsph)**2
+   tempvect(nsph+1:2*nsph)=0. 
    temperat(1:nsph)=csound(1:nsph)**2*meanmwt*mhboltz
   endif
  endif 

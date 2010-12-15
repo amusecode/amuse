@@ -90,7 +90,7 @@ subroutine write_parameters(restart)
   data keys/ "mass","pos","vel","eps","tform","acc", &
 "","","","rho","ethermal","entropy","hsmooth","fuvheat","esnthdt", &
 "tcollaps","temperat","elecfrac","csound","pressure","hsmdivv","mumaxdvh", &
-"hsmcurlv","vdisp","h2frac","","","","","","","","","starfuv","snentropy", &
+"hsmcurlv","vdisp","h2frac","dethdt","dentdt","","","","","","","starfuv","snentropy", &
 "itimestp","","","","phi","phiext","nbexist","","","","","","","","","","", &
 "","","","","","","","","","","","" /
 
@@ -212,7 +212,7 @@ subroutine get_output(line,unit,output,set)
   data keys/"mass","pos","vel","eps","tform","acc",&
   "","","","rho","ethermal","entropy","hsmooth","fuvheat","esnthdt",      &
   "tcollaps","temperat","elecfrac","csound","pressure","hsmdivv","mumaxdvh",&
-  "hsmcurlv","vdisp","h2frac","","","","","","","","","starfuv","snentropy",&
+  "hsmcurlv","vdisp","h2frac","dethdt","dentdt","","","","","","","starfuv","snentropy",&
   "itimestp","","","","phi","phiext","nbexist","","","","","","","","","","", &
   "","","","","","","","","","","","" /
   integer :: i,j,unit,set

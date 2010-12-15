@@ -252,9 +252,15 @@ subroutine entdot(n,hsm,ppos,pvel,lrho,lcsound,dent,tmuij)
   if(vdotdr.GT.0.) muij=0.
   piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                  (min(lrho,rho(nb)))
+! gadget visc
+!  if(dr2.NE.0) muij=vdotdr/sqrt(dr2)
+!  if(vdotdr.GT.0..OR.dr2.EQ.0) muij=0.
+!  piij=-alpha*muij*(lcsound+csound(nb)-3*muij)/(lrho+rho(nb))
   eij=vdotdr*0.5*piij
   dent=dent+eij*mass(nb)*0.5*(dwmass+dwmass1)
   tmuij=MAX(tmuij,ABS(muij))
+! gadget visc  
+!  tmuij=MAX(tmuij, lcsound+csound(nb)-3*muij)  
   enddo
  else
   do i=1,n
@@ -353,6 +359,10 @@ subroutine accsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh)
   if(vdotdr.GT.0.) muij=0.
   piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                   (min(lrho,rho(nb)))
+!  gadget visc
+!  if(dr2.NE.0) muij=vdotdr/sqrt(dr2)
+!  if(vdotdr.GT.0..OR.dr2.EQ.0) muij=0.
+!  piij=-alpha*muij*(lcsound+csound(nb)-3*muij)/(lrho+rho(nb))
  		  
   fi=1/(1+ldrhodh*hsm/3/(rhomin+lrho))
   fnbi=1/(1+drhodh(nb)*hsmooth(nb)/3/(rhomin+rho(nb)))
@@ -443,6 +453,12 @@ subroutine entdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,dent,tmuij)
   if(vdotdr.GT.0.) muij=0.
   piij=(-alpha*muij*(max(lcsound,csound(nb)))+beta*muij**2)/ &
                                                   (min(lrho,rho(nb)))
+!  gadget visc
+!  if(dr2.NE.0) muij=vdotdr/sqrt(dr2)
+!  if(vdotdr.GT.0..OR.dr2.EQ.0) muij=0.
+!  piij=-alpha*muij*(lcsound+csound(nb)-3*muij)/(lrho+rho(nb))
+
+
  		  
 !  fi=1/(1+ldrhodh*hsm/3/(rhomin+lrho))
 !  fnbi=1/(1+drhodh(nb)*hsmooth(nb)/3/(rhomin+rho(nb)))
@@ -461,6 +477,8 @@ subroutine entdotaccsphco(n,hsm,ppos,pvel,pacc,lrho,lcsound,ldrhodh,dent,tmuij)
   eij=vdotdr*0.5*piij
   dent=dent+eij*mass(nb)*0.5*(dwmass+dwmass1)
   tmuij=MAX(tmuij,ABS(muij))
+!  gadget visc
+!  tmuij=MAX(tmuij, lcsound+csound(nb)-3*muij)
  enddo
  dent=dent*gamma1/(lrho**gamma1)
 end
