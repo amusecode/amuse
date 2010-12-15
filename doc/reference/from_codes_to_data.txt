@@ -29,25 +29,39 @@ parameters). For functions that handle 1-D vectors each vector must be of the sa
 
 An exampe of using the first level with scalars and vectors::
 
-    # create an instance of the code (will start an application in the background to
-    # handle all requests)
+    # create an instance of the code (will start an application 
+    # in the background to handle all requests)
     hydro = AthenaInterface()
     
     # set parameters needed by the code
+    # these are functions handling one scalar input 
+    # parameter
     hydro.set_gamma(1.6666666666666667)
     hydro.set_courant_friedrichs_lewy_number(0.8)
     
     # define a grid having 5 cells in all directions and 
     # with the total length of the grid in each direction
     # is 1.0
+    # this is a function handling multiple
+    # scalar input parameters
     hydro.setup_mesh(5, 5, 5, 1.0, 1.0, 1.0)
     
-    # setup boundary conditions (can be periodic, reflective, outflow)
-    hydro.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+    # setup boundary conditions 
+    # (can be periodic, reflective, outflow)
+    hydro.set_boundary(
+        "periodic","periodic",
+        "periodic","periodic",
+        "periodic","periodic"
+    )
     
     # let the code do some work
     # (athena will allocate the grid)
+    # this is a function handling no 
+    # scalar input parameters and having 
+    # 1 scalar output parameter
     hydro.commit_parameters()
     
     # all calls so far have been to functions handling scalar values
     # the next calls will be to functions handling vectors of values
+    
+    
