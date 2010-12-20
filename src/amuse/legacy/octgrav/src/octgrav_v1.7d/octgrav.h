@@ -11,12 +11,17 @@
 using namespace std;
 
 #include <sys/time.h>
+#include <cuda.h>
 #include <builtin_types.h>
+
+
+#if CUDA_VERSION < 3020
 
 struct double4 
 {
   double x, y, z, w;
 };
+#endif
 
 #include "n_per_cell.h"
 

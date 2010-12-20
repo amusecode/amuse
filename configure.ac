@@ -28,18 +28,23 @@ AC_ARG_VAR([CUDA_TK], [CUDA toolkit directory])
 
 AS_IF([test x"$WITH_CUDA" != xno],[
     WITH_CUDA=yes
-    AC_PATH_PROG([NVCC], [nvcc],
-            [NVCC=no],
-            [$PATH$ /usr/local/cuda/cuda/bin /usr/local/cuda/bin $CUDA_TK/bin /opt/cuda/cuda/bin /opt/cuda/bin])
+    AC_PATH_PROG(
+        [NVCC], 
+        nvcc,
+        [no],
+        $PATH:/usr/local/cuda/cuda/bin:/usr/local/cuda/bin:$CUDA_TK/bin:/opt/cuda/cuda/bin:/opt/cuda/bin
+    )
+    
     
     AS_IF([test x"$CUDA_TK" = x],
     [
+        
+        AS_IF([test x"$NVCC" = xno],
+            [AC_MSG_ERROR([CUDA_TK path is not set, and could not find nvcc in path, please set CUDA_TK variable])]
+        )
+        
         CUDA_TK_BIN=`AS_DIRNAME("$NVCC")`
         CUDA_TK=`AS_DIRNAME("$CUDA_TK_BIN")`
-        AS_IF([test x"$NVCC" != xno],
-        [],
-        [AC_MSG_ERROR([CUDA_TK path is not set, and could not find nvcc in path, please set CUDA_TK variable])]
-        )
     ]
     )
     
@@ -112,7 +117,7 @@ AS_VERSION_COMPARE([$PYTHON_nose_VERSION], [0.11],
         [AC_MSG_ERROR([nose version $PYTHON_nose_VERSION found, but at least 0.11 needed])]
 )
 AC_CHECK_PYTHON_MODULE(docutils, __version__)
-AS_VERSION_COMPARE([$PYTHON_docutils_VERSION], [0.6],
+AS_VERSION_COMPARE([$PYTHON_docutils_VERSION], [0.5],
         [AC_MSG_ERROR([docutils version $PYTHON_docutils_VERSION found, but at least 0.6 needed])]
 )
 AC_CHECK_PYTHON_MODULE(zlib, __version__)
