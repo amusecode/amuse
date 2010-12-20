@@ -1,0 +1,27 @@
+Index: mpiamrvac/src/mpiamrvac/src/makefile
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2010-12-20 10:17:14.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/makefile	2010-12-20 10:21:23.000000000 +0100
+@@ -148,3 +148,15 @@
+ clean: ;	\
+ 	/bin/rm -f *.o  *.f *.mod \
+ 	../amrvac
++
++
++#########################################################################$
++#  AMUSE LIB
++#########################################################################
++
++MAINS = amrvac.o
++LIBOBJECTS = $(filter-out  $(MAINS), $(OBJECTS))
++
++libmpiamrvac.a: $(LIBOBJECTS)
++	ar ruv $@ $(LIBOBJECTS)
++	ranlib $@
+Index: mpiamrvac/src/mpiamrvac/src/amrvacsettings.t
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mpiamrvac/src/mpiamrvac/src/amrvacsettings.t	2010-12-20 10:28:00.000000000 +0100
+@@ -0,0 +1,2 @@
++! the following are set by amrvac!!!
++INTEGER, PARAMETER :: ixGlo^D=1, ixGhi1=16,ixGhi2=16,ixGhi3=16
