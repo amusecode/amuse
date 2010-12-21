@@ -1,0 +1,29 @@
+Index: mpiamrvac/src/mpiamrvac/src/amrio.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/amrio.t	2010-12-20 10:40:03.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrio.t	2010-12-20 14:42:33.000000000 +0100
+@@ -1,8 +1,10 @@
+ !=============================================================================
+-subroutine readparameters
++subroutine readparameters(parametersfilename)
+ 
+ include 'amrvacdef.f'
+ 
++character(len=512), optional, intent(in) :: parametersfilename
++
+ logical :: fileopen
+ integer :: i, j, k, ifile, iB, isave, iw, level, idim
+ integer :: nxlone^D
+@@ -251,7 +253,11 @@
+ enddo
+ 
+ ! MPI reads from a file
+-open(unitpar,file='amrvac.par',status='old')
++if (present(parametersfilename))  then
++    open(unitpar,file=trim(parametersfilename),status='old')
++else
++    open(unitpar,file='amrvac.par',status='old')
++end if
+ 
+ ! Start reading from standard input
+ read(unitpar,testlist)

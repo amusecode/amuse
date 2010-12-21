@@ -1,7 +1,7 @@
 MPIF90 ?= mpif90
 FC      = $(MPIF90)
 
-FFLAGS   += -Wall -g -ffree-form
+FFLAGS   +=  -g -ffree-form
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
@@ -64,4 +64,4 @@ mpiamrvac_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	$(MPIF90) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 %.o: %.f90
-	$(FC) $(FFLAGS) -c -o $@ $<
+	$(FC) $(FFLAGS) -I$(CODEDIR) -c -o $@ $<

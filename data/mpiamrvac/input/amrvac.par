@@ -1,0 +1,39 @@
+ &testlist
+ /
+ 
+ &filelist
+ /
+
+ &savelist
+ /
+
+ &stoplist
+ /
+
+ &methodlist
+    wnames = 'rho'
+ /
+
+ &boundlist
+ /
+
+ 
+ &amrlist
+    errorestimate=3
+    mxnest=3
+    tol=13*0.5d0
+    nxlone1=24
+    nxlone2=24
+    nxlone3=24
+    xprobmin1=-0.5d0
+    xprobmax1=0.5d0
+    xprobmin2=-0.5d0
+    xprobmax2=0.5d0
+    xprobmin3=-0.5d0
+    xprobmax3=0.5d0
+    iprob=6
+ /
+
+ &paramlist
+ /
+
