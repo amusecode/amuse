@@ -42,14 +42,14 @@ class MpiAmrVacInterfaceTests(TestWithMPI):
         
 
     def test3(self):
-        instance = self.new_instance(MpiAmrVacInterface, redirection = 'none')
+        instance = self.new_instance(MpiAmrVacInterface)
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
         self.assertEquals(error, 0)
         instance.stop()
         
     def test4(self):
-        instance = self.new_instance(MpiAmrVacInterface, debugger = 'gdb')
+        instance = self.new_instance(MpiAmrVacInterface) #, redirection="none")
         print instance.default_parameters_filename
         instance.set_parameters_filename(instance.default_parameters_filename)
         error = instance.initialize_code()
@@ -58,8 +58,15 @@ class MpiAmrVacInterfaceTests(TestWithMPI):
         error = instance.commit_parameters()
         self.assertEquals(error, 0)
         
+        print instance.get_mesh_size(1)
+        if True:
+            return
         error = instance.initialize_grid()
         self.assertEquals(error, 0)
+        print instance.get_mesh_size(1)
+        print instance.get_position_of_index(0,0,0,1)
+        print instance.get_position_of_index(11,11,11,1)
+        print instance.get_position_of_index(0,0,0,2)
         instance.stop()
-        
+        self.assertTrue(False)        
         

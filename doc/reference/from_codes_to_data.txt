@@ -29,6 +29,8 @@ parameters). For functions that handle 1-D vectors each vector must be of the sa
 
 An exampe of using the first level with scalars and vectors::
 
+    from amuse.legacy.codes.athena.interface import AthenaInterface
+    
     # create an instance of the code (will start an application 
     # in the background to handle all requests)
     hydro = AthenaInterface()
@@ -61,7 +63,37 @@ An exampe of using the first level with scalars and vectors::
     # 1 scalar output parameter
     hydro.commit_parameters()
     
+    # lets print the center position
+    # of one grid point
+    print hydro.get_position_of_index(1,2,3)
+    
     # all calls so far have been to functions handling scalar values
     # the next calls will be to functions handling vectors of values
     
+    # lets print the center positions
+    # of all grid points on one line
+    print hydro.get_position_of_index(range(0,5), [0] * 5, [0] * 5)
+
+In the previous example we used functions with scalar parameters and
+vector parameters. The functions handling vectors often can also
+handle scalars, the framework will take care of the necessary 
+conversions.
+
+All first level functions are not actual python functions, these
+functions are instances of a special Python class that
+implements function call handling. To continue our example::
+
+    # let's take a look at the kind of functions
+    # on the first level
+    print hydro.get_position_of_index
+    
+    # you can ask the specificition of a
+    # first level function
+    print hydro.get_position_of_index.specification
+Adding units
+~~~~~~~~~~~~
+The first step after defining a first level function is to
+specify the units of the in- and output-parameters of the first
+level function. 
+
     

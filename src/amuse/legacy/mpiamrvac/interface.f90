@@ -2118,5 +2118,109 @@ CONTAINS
         get_parameters_filename = 0   
     end function
     
+    function get_local_index_of_grid(global_index_of_grid)
+        use mod_forest
+        
+        include 'amrvacdef.f'
+        
+        integer :: get_local_index_of_grid
+        integer :: iigrid
+        integer, intent(in) :: global_index_of_grid
+        
+        if(igrid_inuse(global_index_of_grid, mype)) then
+            do iigrid=1,igridstail
+               if (igrids(iigrid) .EQ. global_index_of_grid) then
+                  get_local_index_of_grid = iigrid
+                  return 
+               end if
+            end do
+        else
+            get_local_index_of_grid = 0
+            return
+        end if
+                
+    end function
+    
+    function is_index_valid(i, j, k)
+        include 'amrvacdef.f'
+        logical :: is_index_valid
+        integer, intent(in) :: i,j,k
+        
+        is_index_valid = .TRUE.
+        
+        is_index_valid = is_index_valid .AND. (i .GE. 0)
+        is_index_valid = is_index_valid .AND. (i .LE. (ixMhi1 - ixMlo1))
+        
+        is_index_valid = is_index_valid .AND. (j .GE. 0)
+        is_index_valid = is_index_valid .AND. (j .LE. (ixMhi2 - ixMlo2))
+        
+        is_index_valid = is_index_valid .AND. (k .GE. 0)
+        is_index_valid = is_index_valid .AND. (k .LE. (ixMhi3 - ixMlo3))
+    end function
+    
+    
+    function get_position_of_index(i, j, k, index_of_grid, x, y, z, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: get_position_of_index
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        double precision, intent(out), dimension(n) :: x, y, z
+        
+        local_index_of_grid = 0
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+            end if 
+            
+            if (local_index_of_grid .EQ. 0) then
+                x(index) = 0.0
+                y(index) = 0.0
+                z(index) = 0.0
+            else
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                end if
+                reali = ixMlo1 + i(index)
+                realj = ixMlo2 + j(index)
+                realk = ixMlo3 + k(index)
+                
+                x(index) = px(local_index_of_grid)%x(reali,realj,realk,1)
+                y(index) = px(local_index_of_grid)%x(reali,realj,realk,2)
+                z(index) = px(local_index_of_grid)%x(reali,realj,realk,3)
+            end if
+            
+        end do
+                
+        if(mype .GT. 0) then
+            call MPI_Reduce(x,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(y,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(z,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, x, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, y, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, z, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+    end function
+    
+    function get_mesh_size(nx, ny, nz, index_of_grid)
+        include 'amrvacdef.f'
+
+        integer :: get_mesh_size
+        integer, intent(out) :: nx, ny, nz
+        integer, intent(in) :: index_of_grid
+        
+        nx = ixMhi1 - ixMlo1 + 1
+        ny = ixMhi2 - ixMlo2 + 1
+        nz = ixMhi3 - ixMlo3 + 1
+    
+        get_mesh_size = 0
+    end function
+    
+    
 END MODULE mpiamrvac_interface
 

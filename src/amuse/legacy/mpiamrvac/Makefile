@@ -54,7 +54,7 @@ distclean:
 	$(RM) -Rf .pc
 
 $(CODELIB): $(CODEDIR)
-	cd src/mpiamrvac/src; ./setamrvac -d=33 -g=16,16,16 -phi=0 -z=2 -p=rho -u=nul -cp=openmpi
+	cd src/mpiamrvac/src; ./setamrvac -d=33 -g=16,16,16 -phi=0 -z=2 -p=rho -u=testrho -cp=openmpi
 	make -C $(CODEDIR) clean amrvac $(LIBNAME) F90FLAGS="$(FFLAGS)"
 
 worker_code.f90: interface.py

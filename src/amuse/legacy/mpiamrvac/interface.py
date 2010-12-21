@@ -1857,6 +1857,35 @@ class MpiAmrVacInterface(LegacyInterface, CommonCodeInterface):
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
         return function
+        
+    
+    @legacy_function
+    def get_mesh_size():
+        function = LegacyFunctionSpecification()
+        function.addParameter('nmeshx', dtype='i', direction=function.OUT)
+        function.addParameter('nmeshy', dtype='i', direction=function.OUT)
+        function.addParameter('nmeshz', dtype='i', direction=function.OUT)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function    
+    def get_position_of_index():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        
+        function.addParameter('n', dtype='i', direction=function.LENGTH)
+        
+        function.result_type = 'i'
+        return function
+
+    
+    
     
     
 class MpiAmrVac(CodeInterface):
