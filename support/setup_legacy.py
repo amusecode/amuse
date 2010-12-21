@@ -165,6 +165,16 @@ class LegacyCommand(Command):
                 self.environment[varname] = os.environ[varname]
             else:
                 self.environment_notset[varname] ='-L<directory>'
+        
+        if 'SAPPORO_LIBDIRS' in self.environment:
+            self.environment['SAPPOROLIBS'] = '-L{0} -lsapporo'.format(
+                self.environment['SAPPORO_LIBDIRS']
+            )
+        else:
+            self.environment['SAPPOROLIBS'] = '-L{0}/lib/sapporo_light -l sapporo'.format(
+                os.path.abspath(os.getcwd())
+            )
+            self.environment['BOOSTLIBS'] = ''
      
     def set_libs_variables(self):
         for varname, libname in []:
