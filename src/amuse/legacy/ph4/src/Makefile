@@ -2,7 +2,7 @@
 # Makefile to build the libph4.a library.  The first draft was
 # auto-generated; subsequent versions are hand-coded.  Save a copy!
 
-# Optimizaton may cause failure on some systems.  Replace by -O0 in
+# Optimization may cause failure on some systems.  Replace by -O0 in
 # that case.
 
 OPT	  = -O4

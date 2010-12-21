@@ -1,7 +1,7 @@
 
 # Original ph4 Makefile -- builds a standalone program.
 
-# Optimizaton may cause failure on some systems.  Replace by -O0 in
+# Optimization may cause failure on some systems.  Replace by -O0 in
 # that case.
 
 OPT	  = -O4
