@@ -5,9 +5,11 @@
 
 MPICXX   ?= openmpicxx
 
-CFLAGS   += -Wall -g -DGPU
+CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
-LDFLAGS  += -lm $(MUSE_LD_FLAGS) \
+LDFLAGS  += -lm $(MUSE_LD_FLAGS)
+
+LDFLAGS_GPU = $(LDFLAGS) \
 		-L/usr/local/sapporo_v1.5 -lsapporo \
 		-L/usr/local/cuda/lib -lcuda -lcudart \
 		-L/opt/local/lib -lboost_thread-mt
@@ -15,6 +17,11 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS) \
 OBJS = interface.o
 
 CODELIB = src/libph4.a
+
+CODELIB_GPU = src/libph4gpu.a
+
+CUDA_SDK ?= /disks/koppoel1/CUDA23/cudasdk/C
+CUDA_TK  ?= /disks/koppoel1/CUDA23/cuda
 
 AMUSE_DIR ?= ../../../..
 
@@ -27,7 +34,10 @@ save:
 		cp -p $$f $$f.save; done
 
 $(CODELIB):
-	make -C src all
+	make -C src all CXX=$(MPICXX)
+	
+$(CODELIB_GPU):
+	make -C src gpulib CXX=$(MPICXX)
 
 worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py ph4Interface -o $@
@@ -37,8 +47,11 @@ interface.h: interface.py
 
 ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@
+	
+ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(LDFLAGS_GPU) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@
 
-.cc.o:	$<
+%.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
 
 clean:

@@ -9,29 +9,47 @@ OPT	  = -O4
 
 GPU	  = -DGPU
 CXX	  = openmpicxx
-CFLAGS   += -Wall -g $(GPU) $(OPT)
+CFLAGS   += -Wall -g  $(OPT)
 CXXFLAGS += $(CFLAGS) 
 
 CODELIB = libph4.a
 
+CODELIB_GPU = libph4gpu.a
+
 CODEOBJS = diag.o gpu.o grape.o idata.o jdata.o scheduler.o
+
+CODEOBJS_GPU = $(subst .o,.gpuo, $(CODEOBJS))
+
+GPUFLAGS = $(GPU)
 
 AR = ar ruv
 RANLIB = ranlib
 RM = rm
 
 all: $(CODELIB) 
+	
+gpulib: $(CODELIB_GPU)
 
 $(CODELIB): $(CODEOBJS)
 	$(RM) -f $@
 	$(AR) $@ $(CODEOBJS)
 	$(RANLIB) $@
+	
+$(CODELIB_GPU): $(CODEOBJS_GPU)
+	echo $(CODEOBJS_GPU)
+	$(RM) -f $@
+	$(AR) $@ $(CODEOBJS_GPU)
+	$(RANLIB) $@
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 
-
+	
+$(CODEOBJS_GPU): %.gpuo: %.cc
+	$(CXX) $(CXXFLAGS) $(GPUFLAGS) -c -o $@ $< 
+	
+	
 tar:
 	tar czf ph4.tgz Makefile.ph4 *.h *.cc plummer*.in*
 
 clean:
-	$(RM) -r -f *.o *~ *.tgz *.a
+	$(RM) -r -f *.o *~ *.tgz *.a *.gpuo

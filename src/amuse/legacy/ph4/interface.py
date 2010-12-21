@@ -19,11 +19,25 @@ class ph4Interface(LegacyInterface,
 
     include_headers = ['interface.h']
 
-    def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self,
-                                 name_of_the_worker="ph4_worker",
-                                 **keyword_arguments)
+    MODE_GPU   = 'gpu'
+    MODE_CPU = 'cpu'
+    
+    def __init__(self, mode = 'MODE_CPU', **options):
+        LegacyInterface.__init__(
+            self,
+            name_of_the_worker=self.name_of_the_muse_worker(mode),
+            **options
+        )
 
+    
+    def name_of_the_muse_worker(self, mode):
+        if mode == self.MODE_CPU:
+            return 'ph4_worker'
+        elif mode == self.MODE_GPU:
+            return 'ph4_worker_gpu'
+        else:
+            return 'ph4_worker'
+        
     # Inheritance from GravitationalDynamicsInterface means that
     # functions in the standard interface don't need to be defined.
     # See interface.py.2 for a laboriously hand-coded version written

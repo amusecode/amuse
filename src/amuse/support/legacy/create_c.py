@@ -35,7 +35,7 @@ int internal__redirect_outputs(const char * stdoutfile, const char * stderrfile)
     {
         if (strcmp(stdoutfile, "/dev/null") ) 
         {
-            snprintf( fullname, 1024, "%s.%0.3d",stdoutfile, mpi_rank );
+            snprintf( fullname, 1024, "%s.%.3d",stdoutfile, mpi_rank );
         }
         else
         {
@@ -48,7 +48,7 @@ int internal__redirect_outputs(const char * stdoutfile, const char * stderrfile)
     {         
         if (strcmp(stderrfile, "/dev/null") ) 
         {
-            snprintf( fullname, 1024, "%s.%0.3d",stderrfile, mpi_rank ); 
+            snprintf( fullname, 1024, "%s.%.3d",stderrfile, mpi_rank ); 
         }
         else
         {
