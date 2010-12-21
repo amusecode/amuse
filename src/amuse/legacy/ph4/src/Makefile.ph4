@@ -1,0 +1,67 @@
+
+# Original ph4 Makefile -- builds a standalone program.
+
+# Optimizaton may cause failure on some systems.  Replace by -O0 in
+# that case.
+
+OPT	  = -O4
+
+MPICXX = openmpicxx
+CFLAGS += -g -Wall $(GPU) $(OPT)
+
+OBJS =	jdata.o scheduler.o idata.o grape.o gpu.o diag.o close_encounter.o
+LIBS =	-L/usr/local/sapporo_v1.5 -lsapporo \
+	-L/usr/local/cuda/lib -lcuda -lcudart \
+	-L/opt/local/lib -lboost_thread-mt
+
+EXE = 	parallel_hermite_4
+NP  =	1
+
+# Input file choices are plummer1.in, plummer16.in, plummer4.in,
+# plummer8.in, plummer_test.in.
+
+FILE =	plummer_test.in
+ARGS =	-d 0.125 -t 2 -r -f $(FILE) -e 0
+
+.SUFFIXES:
+.SUFFIXES: .cc .o
+
+.cc:	
+	$(MPICXX) $(CFLAGS) $< -o $@
+
+.cc.o:
+	$(MPICXX) $(CFLAGS) -c $<
+
+all:	ph4
+
+ph4:
+	@export GPU='-DGPU' && make  -f Makefile.ph4 parallel_hermite_4
+
+ph42:
+	@export GPU='' && make -f Makefile.ph4 parallel_hermite_4 \
+		       && mv parallel_hermite_4 parallel_hermite_4_noGPU
+	@export GPU='-DGPU' && make  -f Makefile.ph4 parallel_hermite_4
+
+parallel_hermite_4:	parallel_hermite_4.cc $(OBJS)
+	$(MPICXX) $(CFLAGS) $(OBJS) $(LIBS) $@.cc -o $@
+
+test:
+	@export GPU='-DGPU' && make  -f Makefile.ph4 clean parallel_hermite_4
+	@echo ""; echo ""
+	mpiexec -n $(NP) parallel_hermite_4 $(ARGS)
+
+test2:
+	@make -f Makefile.ph4 clean ph42
+	@echo ""; echo ""
+	mpiexec -n $(NP) parallel_hermite_4_noGPU $(ARGS)	> noGPU.log
+	@echo ""; echo ""
+	mpiexec -n $(NP) parallel_hermite_4 $(ARGS)		> GPU.log
+
+tar:
+	tar czf ph4.tgz Makefile.ph4 *.h *.cc plummer*.in*
+
+clean:
+	$(RM) -r -f *.o *~ *.tgz $(EXE)
+
+cleanall:
+	$(RM) -r -f *.o *~ *.tgz $(EXE) $(EXE)*GPU
