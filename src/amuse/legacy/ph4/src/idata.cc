@@ -30,7 +30,7 @@
 
 void idata::set_ni(int n)
 {
-    char *in_function = "idata::set_ni";
+    const char *infunction = "idata::set_ni";
     if (DEBUG > 2) PRL(in_function);
 
     if (n > 0) {
@@ -62,7 +62,7 @@ void idata::set_ni(int n)
 
 void idata::setup(jdata& jd)
 {
-    char *in_function = "idata::setup";
+    const char *infunction = "idata::setup";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     ti = jd.system_time;
@@ -75,7 +75,7 @@ void idata::setup(jdata& jd)
 
 void idata::cleanup()
 {
-    char *in_function = "idata::cleanup";
+    const char *infunction = "idata::cleanup";
     if (DEBUG > 2) PRL(in_function);
 
     if (ilist) delete [] ilist;
@@ -134,7 +134,7 @@ void idata::cleanup()
 
 void idata::get_partial_acc_and_jerk(jdata& jd)
 {
-    char *in_function = "idata::get_partial_acc_and_jerk";
+    const char *infunction = "idata::get_partial_acc_and_jerk";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Compute the partial pots, accs, and jerks on the i-particles.
@@ -208,7 +208,7 @@ void idata::get_partial_acc_and_jerk(jdata& jd)
 
 void idata::get_acc_and_jerk(jdata& jd)
 {
-    char *in_function = "idata::get_acc_and_jerk";
+    const char *infunction = "idata::get_acc_and_jerk";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Compute the accs and jerks on the i-particles with respect to
@@ -267,7 +267,7 @@ void idata::get_acc_and_jerk(jdata& jd)
 
 void idata::predict(real t, jdata& jd)
 {
-    char *in_function = "idata::predict";
+    const char *infunction = "idata::predict";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Predict the i system to time t (old_pos, oldvel --> ipos,
@@ -325,7 +325,7 @@ void idata::predict(real t, jdata& jd)
 
 void idata::correct(real tnext, real eta)
 {
-    char *in_function = "idata::correct";
+    const char *infunction = "idata::correct";
     if (DEBUG > 10) PRL(in_function);
 
     // Compute and apply the ilist corrector.  Return a new time step.
@@ -435,7 +435,7 @@ void idata::correct(real tnext, real eta)
 
 real idata::get_pot(jdata& jd)
 {
-    char *in_function = "idata::get_pot";
+    const char *infunction = "idata::get_pot";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Return the total potential energy of the i system by summing
@@ -453,7 +453,7 @@ real idata::get_pot(jdata& jd)
 
 real idata::get_kin(jdata& jd)
 {
-    char *in_function = "idata::get_kin";
+    const char *infunction = "idata::get_kin";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Return the total kinetic energy of the i system by summing over
@@ -470,7 +470,7 @@ real idata::get_kin(jdata& jd)
 
 void idata::gather(jdata& jd)
 {
-    char *in_function = "idata::gather";
+    const char *infunction = "idata::gather";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     for (int i = 0; i < ni; i++) {
@@ -511,7 +511,7 @@ void idata::gather(jdata& jd)
 
 void idata::scatter(jdata& jd)
 {
-    char *in_function = "idata::scatter";
+    const char *infunction = "idata::scatter";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Scatter the i-particles back to the j-arrays.
@@ -536,7 +536,7 @@ void idata::scatter(jdata& jd)
 
 void idata::check_encounters(jdata& jd)
 {
-    char *in_function = "idata::check_encounters";
+    const char *infunction = "idata::check_encounters";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Search the current i-list to find the IDs of the particles (if
@@ -591,7 +591,7 @@ void idata::check_encounters(jdata& jd)
 
 void idata::set_list_all(jdata& jd)
 {
-    char *in_function = "idata::set_list_all";
+    const char *infunction = "idata::set_list_all";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Make a list of the entire system.
@@ -603,7 +603,7 @@ void idata::set_list_all(jdata& jd)
 
 void idata::set_list_sync(jdata& jd)
 {
-    char *in_function = "idata::set_list_sync";
+    const char *infunction = "idata::set_list_sync";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Make a list of particles not already at system_time.
@@ -617,7 +617,7 @@ void idata::set_list_sync(jdata& jd)
 
 real idata::set_list(scheduler& sched)
 {
-    char *in_function = "idata::set_list";
+    const char *infunction = "idata::set_list";
     if (DEBUG > 10) PRL(in_function);
 
     // System scheduler.  Determine the set of particles with the
@@ -652,7 +652,7 @@ real idata::set_list(scheduler& sched)
 
 void idata::set_list(int jlist[], int njlist)
 {
-    char *in_function = "idata::set_list";
+    const char *infunction = "idata::set_list";
     if (DEBUG > 10) PRL(in_function);
 
     ni = 0;
@@ -661,7 +661,7 @@ void idata::set_list(int jlist[], int njlist)
 
 void idata::advance(jdata &jd, real tnext, real eta)
 {
-    char *in_function = "idata::advance";
+    const char *infunction = "idata::advance";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     gather(jd);				// j pos,vel --> old_ipos, old_ivel

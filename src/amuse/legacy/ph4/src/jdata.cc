@@ -33,7 +33,7 @@
 
 void jdata::setup_mpi(MPI::Intracomm comm)
 {
-    char *in_function = "jdata::setup_mpi";
+    const char *infunction = "jdata::setup_mpi";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     mpi_comm = comm;
@@ -63,7 +63,7 @@ int jdata::add_particle(real pmass, real pradius,
 			vec ppos, vec pvel,
 			int pid)		// default = -1
 {
-    char *in_function = "jdata::add_particle";
+    const char *infunction = "jdata::add_particle";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     if (nj >= njbuf) {
@@ -131,7 +131,7 @@ int jdata::add_particle(real pmass, real pradius,
 
 void jdata::remove_particle(int j)
 {
-    char *in_function = "jdata::remove_particle";
+    const char *infunction = "jdata::remove_particle";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Remove particle j from the system by swapping it with the last
@@ -170,7 +170,7 @@ void jdata::remove_particle(int j)
 
 void jdata::initialize_arrays()
 {
-    char *in_function = "jdata::initialize_arrays";
+    const char *infunction = "jdata::initialize_arrays";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Complete the initialization of all arrays used in the calculation.
@@ -229,7 +229,7 @@ void jdata::initialize_arrays()
 
 int jdata::get_inverse_id(int i)
 {
-    char *in_function = "jdata::get_inverse_id";
+    const char *infunction = "jdata::get_inverse_id";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     map<int,int>::iterator ii = inverse_id.find(i);
@@ -239,7 +239,7 @@ int jdata::get_inverse_id(int i)
 
 void jdata::check_inverse_id()
 {
-    char *in_function = "jdata::check_inverse_id";
+    const char *infunction = "jdata::check_inverse_id";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     if (mpi_rank == 0) {
@@ -265,7 +265,7 @@ void jdata::check_inverse_id()
 
 void jdata::set_initial_timestep()
 {
-    char *in_function = "jdata::set_initial_timestep";
+    const char *infunction = "jdata::set_initial_timestep";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Assume acc and jerk have already been set.
@@ -292,7 +292,7 @@ void jdata::set_initial_timestep()
 
 real jdata::get_pot(idata *id)		// default = NULL
 {
-    char *in_function = "jdata::get_pot";
+    const char *infunction = "jdata::get_pot";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Compute the total potential energy of the entire j-particle
@@ -359,7 +359,7 @@ real jdata::get_pot(idata *id)		// default = NULL
 
 real jdata::get_kin(idata *id)			// default = NULL
 {
-    char *in_function = "jdata::get_kin";
+    const char *infunction = "jdata::get_kin";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Return the total kinetic energy of the j system.
@@ -382,7 +382,7 @@ real jdata::get_kin(idata *id)			// default = NULL
 
 real jdata::get_energy(idata *id)		// default = NULL
 {
-    char *in_function = "jdata::get_energy";
+    const char *infunction = "jdata::get_energy";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     real pot = get_pot(id);
@@ -392,7 +392,7 @@ real jdata::get_energy(idata *id)		// default = NULL
 
 void jdata::predict(int j, real t)
 {
-    char *in_function = "jdata::predict";
+    const char *infunction = "jdata::predict";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Predict particle j to time t.  Do so even if dt = 0, since we
@@ -413,7 +413,7 @@ void jdata::predict(int j, real t)
 void jdata::predict_all(real t,
 			bool full_range)	// default = false
 {
-    char *in_function = "jdata::predict_all";
+    const char *infunction = "jdata::predict_all";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Predict the entire j-system to time t (pos, vel --> pred_pos,
@@ -460,7 +460,7 @@ void jdata::predict_all(real t,
 
 void jdata::advance(idata& id, scheduler& sched)
 {
-    char *in_function = "jdata::advance";
+    const char *infunction = "jdata::advance";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Advance the system by a single step.
@@ -498,7 +498,7 @@ void jdata::advance(idata& id, scheduler& sched)
 void jdata::synchronize_all(idata& id,
 			    scheduler *sched)	// default = NULL
 {
-    char *in_function = "jdata::synchronize_all";
+    const char *infunction = "jdata::synchronize_all";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Synchronize all particles at the current system time.
@@ -529,7 +529,7 @@ void jdata::synchronize_all(idata& id,
 void jdata::synchronize_list(int jlist[], int njlist,
 			     idata& id, scheduler* sched)
 {
-    char *in_function = "jdata::synchronize_list";
+    const char *infunction = "jdata::synchronize_list";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Advance the particles on the list to the current system time.
@@ -577,7 +577,7 @@ void jdata::synchronize_list(int jlist[], int njlist,
 static real E0 = 0;
 void jdata::print(idata *id)
 {
-    char *in_function = "jdata::print";
+    const char *infunction = "jdata::print";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     real E = get_energy(id);
@@ -648,7 +648,7 @@ void jdata::print(idata *id)
 
 void jdata::cleanup()
 {
-    char *in_function = "jdata::cleanup";
+    const char *infunction = "jdata::cleanup";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     if (name) delete [] name;

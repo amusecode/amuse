@@ -210,7 +210,7 @@ static void reflect_orbit(real total_mass, vec& rel_pos, vec& rel_vel)
 
 bool jdata::resolve_encounter(idata& id, scheduler& sched)
 {
-    char *in_function = "jdata::resolve_encounter";
+    const char *infunction = "jdata::resolve_encounter";
     if (DEBUG > 2) PRL(in_function);
 
     bool status = false;
