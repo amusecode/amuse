@@ -575,7 +575,8 @@ class LegacyInterface(OptionalAttributes):
         self._check_if_worker_is_up_to_date()
         self.channel.start()
         self.instances.append(weakref.ref(self))
-        self._redirect_outputs(*self.redirection_filenames)
+        if not 'debugger' in options:
+            self._redirect_outputs(*self.redirection_filenames)
         
     def __del__(self):
         self._stop()

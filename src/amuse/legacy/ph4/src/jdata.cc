@@ -278,7 +278,16 @@ void jdata::set_initial_timestep()
 	}
 
 	real firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
-
+    
+    if(a2 == 0.0 || j2 == 0.0)
+    {
+        firststep = 0.0625 * eta;
+    }
+    if(eta == 0.0)
+    {
+        firststep = 0.0625;
+    }
+    
 	// Force the time step to a power of 2 commensurate with
 	// system_time.
 

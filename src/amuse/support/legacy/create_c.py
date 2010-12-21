@@ -26,7 +26,7 @@ redirect_outputs_function_template = """
 int internal__redirect_outputs(const char * stdoutfile, const char * stderrfile)
 {
     char fullname[1024];
-    int mpi_rank, mpi_err, redirect_outputs;
+    int mpi_rank, mpi_err;
     
     fclose(stdin);
     

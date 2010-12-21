@@ -123,11 +123,12 @@ class ph4(GravitationalDynamics):
 
     # The actual module.
 
-    def __init__(self, **keyword_arguments):
+    def __init__(self, convert_nbody = None, **keyword_arguments):
         legacy_interface = ph4Interface(**keyword_arguments)
 
         GravitationalDynamics.__init__(self,
                                        legacy_interface,
+                                       convert_nbody,
                                        **keyword_arguments)
 
     def define_parameters(self, object):
