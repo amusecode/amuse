@@ -26,7 +26,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 {
 #ifdef GPU
 
-    const char *infunction = "jdata::initialize_gpu";
+    const char *in_function = "jdata::initialize_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Initialize the local GPU(s).
@@ -69,7 +69,7 @@ void jdata::update_gpu(int jlist[], int njlist)
 {
 #ifdef GPU
 
-    const char *infunction = "jdata::update_gpu";
+    const char *in_function = "jdata::update_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Load new position and velocity for selected j-particles into
@@ -107,7 +107,7 @@ void idata::update_gpu(jdata& jd)
 {
 #ifdef GPU
 
-    const char *infunction = "idata::update_gpu";
+    const char *in_function = "idata::update_gpu";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     // Load corrected data for i-particles into the local GPUs.
@@ -151,7 +151,7 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 
 #ifdef GPU
 
-    const char *infunction = "idata::get_partial_acc_and_jerk_on_gpu";
+    const char *in_function = "idata::get_partial_acc_and_jerk_on_gpu";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
     static int npipes = 0, localnj;
@@ -362,7 +362,7 @@ void jdata::get_densities_on_gpu()	// under development
 {
 #ifdef GPU
 
-    const char *infunction = "jdata::get_densities_on_gpu";
+    const char *in_function = "jdata::get_densities_on_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     static int npipes = 0, localnj, knn = 12, nbrmax,

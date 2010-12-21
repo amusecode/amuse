@@ -30,7 +30,7 @@
 
 void scheduler::initialize()	// (re)initialize based on time step data in jd
 {
-    const char *infunction = "scheduler::initialize";
+    const char *in_function = "scheduler::initialize";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     if (jd) {
@@ -53,7 +53,7 @@ void scheduler::initialize()	// (re)initialize based on time step data in jd
 
 real scheduler::get_list(int *ilist, int& n) const
 {
-    const char *infunction = "scheduler::get_list";
+    const char *in_function = "scheduler::get_list";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     li ib;
@@ -64,7 +64,7 @@ real scheduler::get_list(int *ilist, int& n) const
 int scheduler::find_block(real t,
 			  int i1) const		// default = 0
 {
-    const char *infunction = "scheduler::find_block";
+    const char *in_function = "scheduler::find_block";
     if (DEBUG > 3 && jd->mpi_rank == 0) PRL(in_function);
 
     // Return the starting index of the first block with t_next >= t.
@@ -115,7 +115,7 @@ int scheduler::find_block(real t,
 
 void scheduler::update()
 {
-    const char *infunction = "scheduler::update";
+    const char *in_function = "scheduler::update";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     // The portion of blist from bp[0] to bp[1]-1 is assumed to
@@ -196,7 +196,7 @@ void scheduler::update()
 
 void scheduler::add_particle(int j)
 {
-    const char *infunction = "scheduler::add_particle";
+    const char *in_function = "scheduler::add_particle";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     // Add particle j to the scheduler.  Code is essentially the same
@@ -221,7 +221,7 @@ void scheduler::add_particle(int j)
 
 void scheduler::remove_particle(int j)
 {
-    const char *infunction = "scheduler::remove_particle";
+    const char *in_function = "scheduler::remove_particle";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     // Remove particle j from the scheduler.
@@ -257,7 +257,7 @@ void scheduler::remove_particle(int j)
 
 void scheduler::print_blist()
 {
-    const char *infunction = "scheduler::print_blist";
+    const char *in_function = "scheduler::print_blist";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     if (jd->mpi_rank == 0) {
@@ -272,7 +272,7 @@ void scheduler::print_blist()
 
 void scheduler::print_bp(bool verbose)		// default = false
 {
-    const char *infunction = "scheduler::print_bp";
+    const char *in_function = "scheduler::print_bp";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     if (jd->mpi_rank == 0) {
@@ -300,7 +300,7 @@ void scheduler::print_bp(bool verbose)		// default = false
 
 void scheduler::print(bool verbose)		// default = false
 {
-    const char *infunction = "scheduler::print";
+    const char *in_function = "scheduler::print";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     if (jd->mpi_rank == 0 && verbose) {
@@ -316,7 +316,7 @@ void scheduler::print(bool verbose)		// default = false
 void scheduler::check(bool repair,		// default = true
 		      bool verbose)		// default = false
 {
-    const char *infunction = "scheduler::check";
+    const char *in_function = "scheduler::check";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     // Checks that should be carried out:
