@@ -48,4 +48,18 @@ class MpiAmrVacInterfaceTests(TestWithMPI):
         self.assertEquals(error, 0)
         instance.stop()
         
+    def test4(self):
+        instance = self.new_instance(MpiAmrVacInterface, debugger = 'gdb')
+        print instance.default_parameters_filename
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        error = instance.initialize_code()
+        self.assertEquals(error, 0)
+        
+        error = instance.commit_parameters()
+        self.assertEquals(error, 0)
+        
+        error = instance.initialize_grid()
+        self.assertEquals(error, 0)
+        instance.stop()
+        
         

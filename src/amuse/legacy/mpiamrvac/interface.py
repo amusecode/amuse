@@ -1848,6 +1848,15 @@ class MpiAmrVacInterface(LegacyInterface, CommonCodeInterface):
             File does not exist
         """
         return function
+        
+    #
+    #
+    
+    @legacy_function    
+    def initialize_grid():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
     
     
 class MpiAmrVac(CodeInterface):

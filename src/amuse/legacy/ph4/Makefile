@@ -15,7 +15,7 @@ BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
 
 LDFLAGS_GPU = $(LDFLAGS) \
 		$(SAPPOROLIBS) \
-		-L$(CUDA_TK)/lib -lcudart \
+		-L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart \
 		$(BOOSTLIBS)
 
 OBJS = interface.o

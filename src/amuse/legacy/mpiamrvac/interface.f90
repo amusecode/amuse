@@ -5,8 +5,15 @@ MODULE mpiamrvac_interface
 CONTAINS
 
     FUNCTION initialize_code()
+        include 'amrvacdef.f'
         INTEGER initialize_code
         logical :: file_exists
+        
+        call MPI_COMM_RANK(MPI_COMM_WORLD,mype,ierrmpi)
+        call MPI_COMM_SIZE(MPI_COMM_WORLD,npe,ierrmpi)
+
+        icomm=MPI_COMM_WORLD
+        
         
         INQUIRE(FILE= TRIM(parameters_filename), EXIST=file_exists)
         
@@ -27,6 +34,10 @@ CONTAINS
     
     FUNCTION commit_parameters()
         INTEGER commit_parameters
+        
+        call initialize_vars()
+        call init_comm_types    
+        
         commit_parameters = 0
     END FUNCTION
     
@@ -35,6 +46,22 @@ CONTAINS
         recommit_parameters = 0
     END FUNCTION
 
+    FUNCTION initialize_grid()
+        INTEGER :: initialize_grid
+        
+        call initglobaldata_usr
+        call initglobaldata
+        
+        ! form and initialize all grids at level one
+        call initlevelone
+        
+        ! set up and initialize finer level grids, if needed
+        call settree
+   
+        initialize_grid = 0
+        
+    END FUNCTION
+    
 
     function set_dt(inputvalue)
         include 'amrvacdef.f'

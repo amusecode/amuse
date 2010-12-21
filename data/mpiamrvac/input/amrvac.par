@@ -1,39 +1,65 @@
  &testlist
  /
- 
+
  &filelist
+        filenamelog='datamr/testrho/testball'
+        filenameout='datamr/testrho/testball'
+        primnames= 'rho'
  /
+        filenameini='datamr/testrho/testball'
+        snapshotini=0
+        convert=.true.
+        convert_type='vtuB'
+        saveprim=.false.
 
  &savelist
+        itsave(1,1)=0
+        itsave(1,2)=0
+        ditsave(1)=1
+        dtsave(2)=0.05d0
  /
 
  &stoplist
+        tmax=1.0d0
+        tmaxexact=.true.
+        dtmin=1.D-6
  /
 
  &methodlist
-    wnames = 'rho'
+        wnames=       'rho'
+        fileheadout=  'ball_rho33'
+        typeadvance=  'twostep'
+        typefull1=    13*'hll'
+        typepred1=    13*'hll'
+        typelow1=     13*'hll1'
+        typelimiter1= 13*'woodward'
+        typelimited=  'predictor'
+        dimsplit=.false.
  /
 
  &boundlist
+        dixB=   2
+        typeB=  'periodic','periodic','periodic','periodic','periodic','periodic'
  /
 
- 
  &amrlist
-    errorestimate=3
-    mxnest=3
-    tol=13*0.5d0
-    nxlone1=24
-    nxlone2=24
-    nxlone3=24
-    xprobmin1=-0.5d0
-    xprobmax1=0.5d0
-    xprobmin2=-0.5d0
-    xprobmax2=0.5d0
-    xprobmin3=-0.5d0
-    xprobmax3=0.5d0
-    iprob=6
+        errorestimate=3
+        mxnest=3
+        tol=13*0.5d0
+        nxlone1=24
+        nxlone2=24
+        nxlone3=24
+        xprobmin1=-0.5d0
+        xprobmax1=0.5d0
+        xprobmin2=-0.5d0
+        xprobmax2=0.5d0
+        xprobmin3=-0.5d0
+        xprobmax3=0.5d0
+        iprob=6
  /
 
  &paramlist
+        typecourant='maxsum'
+        courantpar=0.9d0
+        slowsteps=10
  /
-
