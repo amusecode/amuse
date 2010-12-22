@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/amrio.t
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/amrio.t	2010-12-20 10:40:03.000000000 +0100
-+++ mpiamrvac/src/mpiamrvac/src/amrio.t	2010-12-20 14:42:33.000000000 +0100
+--- mpiamrvac.orig/src/mpiamrvac/src/amrio.t	2010-12-21 14:26:28.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrio.t	2010-12-21 14:26:31.000000000 +0100
 @@ -1,8 +1,10 @@
  !=============================================================================
 -subroutine readparameters
@@ -27,3 +27,32 @@ Index: mpiamrvac/src/mpiamrvac/src/amrio.t
  
  ! Start reading from standard input
  read(unitpar,testlist)
+Index: mpiamrvac/src/mpiamrvac/src/comm_lib.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/comm_lib.t	2010-12-21 14:26:28.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/comm_lib.t	2010-12-22 13:14:07.000000000 +0100
+@@ -136,9 +136,24 @@
+ character(len=*), intent(in) :: message
+ 
+ integer :: ierrcode
++integer :: parent
++integer :: header(8)
+ !------------------------------------------------------------------------------
+ write(*,*) "ERROR for processor",mype,":"
+ write(*,*) message
++
++call MPI_COMM_GET_PARENT(parent, ierrcode)
++if(parent /= MPI_COMM_NULL) then
++    header(1) = -2
++    header(2) = 1
++    header(3:) = 0 
++    call MPI_SEND(header, 8, MPI_INTEGER, 0, 999, &
++        parent, ierrcode);
++        
++    call MPI_COMM_DISCONNECT(parent, ierrcode)
++end if
++
++
+ call MPI_ABORT(icomm,ierrcode,ierrmpi)
+ 
+ end subroutine mpistop

@@ -24,6 +24,7 @@ CONTAINS
         
         call readparameters(parameters_filename)
         
+        eqpar(gamma_) = 5.0d0/3.0d0
         initialize_code = 0
     END FUNCTION
     
@@ -36,7 +37,13 @@ CONTAINS
         INTEGER commit_parameters
         
         call initialize_vars()
-        call init_comm_types    
+        call init_comm_types   
+        
+        call initglobaldata_usr
+        call initglobaldata 
+        
+        ! form and initialize all grids at level one
+        call initlevelone
         
         commit_parameters = 0
     END FUNCTION
@@ -49,14 +56,8 @@ CONTAINS
     FUNCTION initialize_grid()
         INTEGER :: initialize_grid
         
-        call initglobaldata_usr
-        call initglobaldata
-        
-        ! form and initialize all grids at level one
-        call initlevelone
-        
         ! set up and initialize finer level grids, if needed
-        call settree
+        !call settree
    
         initialize_grid = 0
         
@@ -2220,7 +2221,363 @@ CONTAINS
     
         get_mesh_size = 0
     end function
+
+    function get_number_of_grids(number_of_grids)
+        use mod_forest
+        
+        include 'amrvacdef.f'
+        integer :: ip, igrid
+        integer, intent(out) :: number_of_grids
+        integer :: get_number_of_grids
+        get_number_of_grids = 0
+        number_of_grids = 0
+        do ip = 0, npe - 1
+            do igrid = 1, ngridshi
+                if (igrid_inuse(igrid, ip)) then
+                    number_of_grids = number_of_grids + 1
+                end if
+            end do
+        end do
+    end function
     
+    function get_level_of_grid(level, index_of_grid)
+        use mod_forest
+        
+        include 'amrvacdef.f'
+        integer, intent(out) :: level
+        integer, intent(in) :: index_of_grid
+        integer :: get_level_of_grid
+        
+        if(index_of_grid > ngridshi) then
+            level = 0
+            get_level_of_grid = -1
+            return
+        end if
+        
+        level = node(plevel_, index_of_grid)
+        get_level_of_grid = 0
+    end function
+    
+    function get_cell_size_of_grid(dx1, dx2, dx3, index_of_grid)
+        use mod_forest
+        
+        include 'amrvacdef.f'
+        double precision, intent(out) :: dx1, dx2, dx3
+        integer, intent(in) :: index_of_grid
+        integer :: level
+        integer :: get_cell_size_of_grid
+        
+        dx1 = 0
+        dx2 = 0
+        dx3 = 0
+        if(index_of_grid > ngridshi) then
+            get_cell_size_of_grid = -1
+            return
+        end if
+        
+        level = node(plevel_, index_of_grid)
+        
+        if(level > 0) then
+            dx1 = dx(1,level)
+            dx2 = dx(2,level)
+            dx3 = dx(3,level)
+            get_cell_size_of_grid = 0
+        else
+            get_cell_size_of_grid = -2
+        end if
+        
+    end function
+
+    
+    function setup_mesh(nmeshx, nmeshy, nmeshz, xlength, ylength, zlength)
+        include 'amrvacdef.f'
+        integer, intent(in) :: nmeshx, nmeshy, nmeshz
+        double precision, intent(in) :: xlength, ylength, zlength
+        integer :: setup_mesh
+                
+        xprobmin1 = 0.0
+        xprobmin2 = 0.0
+        xprobmin3 = 0.0
+        xprobmax1 = xlength
+        xprobmax2 = ylength
+        xprobmax3 = zlength
+        
+        if(nmeshx < 1 .OR.  mod(nmeshx,2)/=0) then
+            setup_mesh = -1
+            return
+        end if
+        if(nmeshy < 1 .OR.  mod(nmeshy,2)/=0) then
+            setup_mesh = -1
+            return
+        end if
+        if(nmeshz < 1 .OR.  mod(nmeshz,2)/=0) then
+            setup_mesh = -1
+            return
+        end if
+        
+        
+        dx(1,1)=(xprobmax1-xprobmin1)/dble(nmeshx)
+        dx(2,1)=(xprobmax2-xprobmin2)/dble(nmeshy)
+        dx(3,1)=(xprobmax3-xprobmin3)/dble(nmeshz)
+        
+        setup_mesh = 0
+    end function
+    
+    
+    function get_grid_density(i, j, k, index_of_grid, rho, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: get_grid_density
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(out), dimension(n) :: rho
+        
+        local_index_of_grid = 0
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+            end if 
+            
+            if (local_index_of_grid .EQ. 0) then
+            
+                rho(index) = 0.0
+                
+            else
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                end if
+                reali = ixMlo1 + i(index)
+                realj = ixMlo2 + j(index)
+                realk = ixMlo3 + k(index)
+                
+                rho(index) = pw(local_index_of_grid)%w(reali,realj,realk,1)
+            end if
+            
+        end do
+                
+        if(mype .GT. 0) then
+            call MPI_Reduce(rho,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, rho, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        get_grid_density = 0
+    end function
+    
+    function get_grid_momentum_density(i, j, k, index_of_grid, m1, m2, m3, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: get_grid_momentum_density
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(out), dimension(n) :: m1, m2, m3
+        
+        local_index_of_grid = 0
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+            end if 
+            
+            if (local_index_of_grid .EQ. 0) then
+                m1(index) = 0.0
+                m2(index) = 0.0
+                m3(index) = 0.0
+            else
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                end if
+                reali = ixMlo1 + i(index)
+                realj = ixMlo2 + j(index)
+                realk = ixMlo3 + k(index)
+                
+                m1(index) = pw(local_index_of_grid)%w(reali,realj,realk,2)
+                m2(index) = pw(local_index_of_grid)%w(reali,realj,realk,3)
+                m3(index) = pw(local_index_of_grid)%w(reali,realj,realk,4)
+            end if
+            
+        end do
+                
+        if(mype .GT. 0) then
+            call MPI_Reduce(m1,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(m2,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(m3,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, m1, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m2, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m3, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+        get_grid_momentum_density = 0
+    end function
+    
+    function get_grid_energy_density(i, j, k, index_of_grid, en, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: get_grid_energy_density
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(out), dimension(n) :: en
+        
+        local_index_of_grid = 0
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+            end if 
+            
+            if (local_index_of_grid .EQ. 0) then
+            
+                en(index) = 0.0
+                
+            else
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                end if
+                reali = ixMlo1 + i(index)
+                realj = ixMlo2 + j(index)
+                realk = ixMlo3 + k(index)
+                
+                en(index) = pw(local_index_of_grid)%w(reali,realj,realk,5)
+            end if
+            
+        end do
+                
+        if(mype .GT. 0) then
+            call MPI_Reduce(en,  0, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, en, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+        get_grid_energy_density = 0
+    end function
+    
+    
+    
+    function set_grid_density(i, j, k, rho, index_of_grid, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: set_grid_density
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(in), dimension(n) :: rho
+        
+        local_index_of_grid = 0
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+            end if 
+            
+            if (local_index_of_grid /= 0) then
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                
+                else
+                    
+                    reali = ixMlo1 + i(index)
+                    realj = ixMlo2 + j(index)
+                    realk = ixMlo3 + k(index)
+                    
+                    pw(local_index_of_grid)%w(reali,realj,realk,1) = rho(index)
+                
+                end if
+            end if
+            
+        end do
+        
+        set_grid_density = 0
+    end function
+
+    function set_grid_energy_density(i, j, k, en, index_of_grid, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: set_grid_energy_density
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(in), dimension(n) :: en
+        
+        local_index_of_grid = 0
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+            end if 
+            
+            if (local_index_of_grid /= 0) then
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                
+                else
+                    
+                    reali = ixMlo1 + i(index)
+                    realj = ixMlo2 + j(index)
+                    realk = ixMlo3 + k(index)
+                    
+                    pw(local_index_of_grid)%w(reali,realj,realk,5) = en(index)
+                
+                end if
+            end if
+            
+        end do
+        
+        set_grid_energy_density = 0
+    end function
+    
+    function set_grid_momentum_density(i, j, k, m1, m2, m3, index_of_grid, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: set_grid_momentum_density
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(in), dimension(n) :: m1, m2, m3
+        
+        local_index_of_grid = 0
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+            end if 
+            
+            if (local_index_of_grid /= 0) then
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                
+                else
+                    
+                    reali = ixMlo1 + i(index)
+                    realj = ixMlo2 + j(index)
+                    realk = ixMlo3 + k(index)
+                    
+                    pw(local_index_of_grid)%w(reali,realj,realk,2) = m1(index)
+                    pw(local_index_of_grid)%w(reali,realj,realk,3) = m2(index)
+                    pw(local_index_of_grid)%w(reali,realj,realk,4) = m3(index)
+                
+                end if
+            end if
+            
+        end do
+        
+        set_grid_momentum_density = 0
+    end function
     
 END MODULE mpiamrvac_interface
 

@@ -2,44 +2,42 @@
  /
 
  &filelist
-        filenamelog='datamr/testrho/testball'
-        filenameout='datamr/testrho/testball'
-        primnames= 'rho'
- /
-        filenameini='datamr/testrho/testball'
-        snapshotini=0
-        convert=.true.
-        convert_type='vtuB'
-        saveprim=.false.
+        filenamelog='data/mpiamrvac/output'
+        filenameout='data/mpiamrvac/output'
+        primnames= 'rho v1 v2 v3 p'
+/
 
  &savelist
         itsave(1,1)=0
         itsave(1,2)=0
-        ditsave(1)=1
         dtsave(2)=0.05d0
  /
 
  &stoplist
         tmax=1.0d0
-        tmaxexact=.true.
         dtmin=1.D-6
  /
 
  &methodlist
-        wnames=       'rho'
-        fileheadout=  'ball_rho33'
+        wnames=       'rho m1 m2 m3 e'
+        fileheadout=  'amuse33'
+        fileheadout=  'rt_hd33'
         typeadvance=  'twostep'
-        typefull1=    13*'hll'
-        typepred1=    13*'hll'
-        typelow1=     13*'hll1'
+        typefull1=    3*'tvdlf',10*'tvdmu'
+        typepred1=    3*'tvdlf',10*'tvdmu'
         typelimiter1= 13*'woodward'
-        typelimited=  'predictor'
+        typelimited='predictor'
         dimsplit=.false.
+        sourceunsplit=.true.
+        sourcesplit=.false.
  /
 
  &boundlist
         dixB=   2
-        typeB=  'periodic','periodic','periodic','periodic','periodic','periodic'
+        typeB=   5*'periodic',5*'periodic',
+                 'symm','symm','asymm','symm','symm',
+                 'symm','symm','asymm','symm','symm',
+                 5*'periodic',5*'periodic',
  /
 
  &amrlist
