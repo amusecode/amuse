@@ -393,7 +393,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
 
     @legacy_function
-    def get_density():
+    def get_grid_density():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         for x in ['i','j','k']:
@@ -408,7 +408,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
 
     @legacy_function
-    def get_energy_density():
+    def get_grid_energy_density():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         for x in ['i','j','k']:
@@ -423,7 +423,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
 
     @legacy_function
-    def get_momentum_density():
+    def get_grid_momentum_density():
         function = LegacyFunctionSpecification()
         function.must_handle_array = True
         for x in ['i','j','k']:
@@ -595,19 +595,19 @@ class Athena(CodeInterface):
             object.ERROR_CODE,)
         )
         object.add_method(
-            'get_energy_density',
+            'get_grid_energy_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             ( energy,
             object.ERROR_CODE,)
         )
         object.add_method(
-            'get_density',
+            'get_grid_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (density,
             object.ERROR_CODE,)
         )
         object.add_method(
-            'get_momentum_denisty',
+            'get_grid_momentum_denisty',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             ( momentum, momentum, momentum, 
             object.ERROR_CODE,)
@@ -662,9 +662,9 @@ class Athena(CodeInterface):
         object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
         object.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
         
-        object.add_getter('grid', 'get_density', names=('rho',))
-        object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
-        object.add_getter('grid', 'get_energy_density', names=('energy',))
+        object.add_getter('grid', 'get_grid_density', names=('rho',))
+        object.add_getter('grid', 'get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        object.add_getter('grid', 'get_grid_energy_density', names=('energy',))
         object.define_extra_keywords('grid', {'index_of_grid':1})
         
         object.add_getter('grid', 'get_grid_gravitational_potential', names=('gravitational_potential',))

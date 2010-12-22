@@ -834,7 +834,7 @@ int get_grid_gravitational_acceleration(
     return 0;
 }
 
-int get_density(
+int get_grid_density(
     int * i, int * j, int * k,
     int * index_of_grid,
     double * rho,
@@ -903,7 +903,7 @@ int get_density(
 }
 
 
-int get_momentum_density(
+int get_grid_momentum_density(
     int * i, int * j, int * k,
     int * index_of_grid,
     double * rhovx, double * rhovy, double * rhovz,
@@ -976,7 +976,7 @@ int get_momentum_density(
     return 0;
 }
 
-int get_energy_density(
+int get_grid_energy_density(
     int * i, int * j, int * k,
     int * index_of_grid,
     double * en,

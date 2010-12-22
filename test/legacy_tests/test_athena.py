@@ -30,7 +30,7 @@ class TestAthenaInterface(TestWithMPI):
         instance.stop()
         
     def test2(self):
-        instance=self.new_instance(AthenaInterface, debugger="none")
+        instance=self.new_instance(AthenaInterface)
         instance.initialize_code()
         instance.par_setd("test", "test2", "%.15e", 1.123, "a test parameter")
         x = instance.par_getd("test", "test2")
@@ -40,7 +40,7 @@ class TestAthenaInterface(TestWithMPI):
         
         
     def test3(self):
-        instance=self.new_instance(AthenaInterface, debugger="none")
+        instance=self.new_instance(AthenaInterface)
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.8)
@@ -116,7 +116,7 @@ class TestAthenaInterface(TestWithMPI):
     def test15(self):
         results = []
         for x in range(1,6):
-            instance=self.new_instance(AthenaInterface, number_of_workers=x, debugger="none")
+            instance=self.new_instance(AthenaInterface, number_of_workers=x)
             instance.initialize_code()
             instance.setup_mesh(100,1,1,100.0,0,0)
             instance.set_gamma(1.6666666666666667)
@@ -138,7 +138,7 @@ class TestAthenaInterface(TestWithMPI):
         
     def test16(self):
         for x in range(1,6):
-            instance=self.new_instance(AthenaInterface, number_of_workers=x, debugger="none")
+            instance=self.new_instance(AthenaInterface, number_of_workers=x)
             instance.initialize_code()
             instance.setup_mesh(10,100,1,100.0,100.0,0)
             instance.set_gamma(1.6666666666666667)
@@ -186,19 +186,19 @@ class TestAthenaInterface(TestWithMPI):
         self.assertEquals(rhovz, 0.4)
         self.assertEquals(energy, 0.5)
         
-        rhovx, rhovy, rhovz, error = instance.get_momentum_density(1,1,1)
+        rhovx, rhovy, rhovz, error = instance.get_grid_momentum_density(1,1,1)
         
         self.assertEquals(error, 0)
         self.assertEquals(rhovx, 0.2)
         self.assertEquals(rhovy, 0.3)
         self.assertEquals(rhovz, 0.4)
         
-        rho, error = instance.get_density(1,1,1)
+        rho, error = instance.get_grid_density(1,1,1)
         
         self.assertEquals(error, 0)
         self.assertEquals(rho, 0.1)
         
-        energy, error = instance.get_energy_density(1,1,1)
+        energy, error = instance.get_grid_energy_density(1,1,1)
         
         self.assertEquals(error, 0)
         self.assertEquals(energy, 0.5)
@@ -221,7 +221,7 @@ class TestAthenaInterface(TestWithMPI):
     def test7(self):
         results = []
         for x in range(1,5):
-            instance=self.new_instance(AthenaInterface, number_of_workers=x, debugger="none")
+            instance=self.new_instance(AthenaInterface, number_of_workers=x)
             instance.initialize_code()
             instance.setup_mesh(128,1,1,1.0,0,0)
             instance.set_gamma(1.6666666666666667)
@@ -290,7 +290,7 @@ class TestAthenaInterface(TestWithMPI):
     def test9(self):
         results = []
         for x in range(1,5):
-            instance=self.new_instance(AthenaInterface, number_of_workers=x, debugger="none")
+            instance=self.new_instance(AthenaInterface, number_of_workers=x)
             instance.initialize_code()
             instance.setup_mesh(128,1,1,1.0,0,0)
             instance.set_gamma(1.6666666666666667)
@@ -321,7 +321,7 @@ class TestAthenaInterface(TestWithMPI):
     
 
     def test10(self):
-        instance=self.new_instance(AthenaInterface, debugger="none")
+        instance=self.new_instance(AthenaInterface)
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
@@ -451,7 +451,7 @@ class TestAthenaInterface(TestWithMPI):
     
 
     def test13(self):
-        instance=self.new_instance(AthenaInterface, redirection="none")
+        instance=self.new_instance(AthenaInterface)
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
