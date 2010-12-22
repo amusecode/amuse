@@ -59,6 +59,8 @@ CONTAINS
         ! set up and initialize finer level grids, if needed
         !call settree
    
+        if (levmax>levmin) call allocateBflux
+
         initialize_grid = 0
         
     END FUNCTION
@@ -2578,6 +2580,153 @@ CONTAINS
         
         set_grid_momentum_density = 0
     end function
+    
+    
+    function evolve(tend) 
+        include 'amrvacdef.f'
+        
+        integer :: evolve
+        double precision :: tend
+
+        integer :: level, ifile
+        double precision :: time_in, timeio0, timeio_tot, timegr0, timegr_tot,&
+            timeloop, timeloop0
+       
+        
+        time_advance=.true. 
+        time_accurate=.true.
+        
+        
+        time_in=MPI_WTIME()
+        timeio_tot=zero
+        timegr_tot=zero
+
+        
+
+        itmin=it
+
+        call getbc(t,ixGlo1,ixGlo2,ixGlo3,ixGhi1,ixGhi2,ixGhi3,pw,pwCoarse,pgeo,&
+           pgeoCoarse,.false.)
+
+        !  ------ start of integration loop. ------------------
+        timeloop0=MPI_WTIME()
+        if (mype==0) then
+           write(*,'(a,f12.3,a)')'BCs before Advance took    : ',timeloop0&
+              -time_in,' sec'
+        end if
+
+        time_evol : do
+           ! exit time loop criteria
+           if (it>=itmax) exit time_evol
+           if (time_accurate .and. t>=tmax) exit time_evol
+
+           call setdt
+           
+           if(fixprocess) call process(it,t)
+           if(mype==0.and..false.) print *,'done setdt for it=',it
+
+           timeio0=MPI_WTIME()
+           !do ifile=nfile,1,-1
+           !   if(timetosave(ifile)) call saveamrfile(ifile)
+           !end do
+           timeio_tot=timeio_tot+(MPI_WTIME()-timeio0)
+
+           if(mype==0.and..false.) print *,'enters advance for it=',it
+           call advance(it)
+           if(mype==0.and..false.) print *,'done advance for it=',it
+
+           if((.not.time_accurate).or.(residmin>smalldouble)) then
+              call getresidual(it)
+           endif 
+           if (time_accurate .and.  (residual<residmin .or. residual&
+              >residmax)) exit time_evol
+           if (.not.time_accurate .and. (residual<residmin .or. residual&
+              >residmax)) exit time_evol
+
+           ! resetting of tree BEFORE IO and setdt
+           timegr0=MPI_WTIME()
+           !if (mxnest>1 .and. .not.(fixgrid(0))) call resettree
+           if (mxnest>1) call resettree
+           timegr_tot=timegr_tot+(MPI_WTIME()-timegr0)
+
+           it = it + 1
+           if (time_accurate) t = t + dt
+           if(addmpibarrier) call MPI_BARRIER(icomm,ierrmpi)
+           
+           if(it>900000) it = slowsteps+10
+           
+        end do time_evol
+
+        timeloop=MPI_WTIME()-timeloop0
+
+        if (mype==0) then
+           write(*,'(a,f12.3,a)')'Total timeloop took        : ',timeloop,' sec'
+           write(*,'(a,f12.3,a)')'Time spent on Regrid+Update: ',timegr_tot,' sec'
+           write(*,'(a,f9.2)')   '                 Percentage: ',100.0*timegr_tot&
+              /timeloop
+           write(*,'(a,f12.3,a)')'Time spent on IO in loop   : ',timeio_tot,' sec'
+           write(*,'(a,f9.2)')   '                 Percentage: ',100.0*timeio_tot&
+              /timeloop
+           write(*,'(a,f12.3,a)')'Time spent on BC           : ',time_bc,' sec'
+        end if
+
+        timeio0=MPI_WTIME()
+        !do ifile=nfile,1,-1
+        !   if(itsavelast(ifile)<it)call saveamrfile(ifile)
+        !enddo
+        if (mype==0) call MPI_FILE_CLOSE(log_fh,ierrmpi)
+        timeio_tot=timeio_tot+(MPI_WTIME()-timeio0)
+
+        if (mype==0) then
+           write(*,'(a,f12.3,a)')'Total time spent on IO     : ',timeio_tot,' sec'
+           write(*,'(a,f12.3,a)')'Total timeintegration took : ',MPI_WTIME()&
+              -time_in,' sec'
+        end if
+    
+        evolve = 0
+    end function
+
+    function get_time(tnow)
+        include 'amrvacdef.f'
+        
+        integer :: get_time
+        double precision :: tnow
+
+        tnow = t
+        
+        get_time = 0
+    end function
+    
+    function set_boundary(lowx,highx,lowy,highy,lowz,highz)
+        include 'amrvacdef.f'
+        
+        integer :: set_boundary
+        integer :: idim
+        character(len=25), intent(in) :: lowx,highx,lowy,highy,lowz,highz
+        
+        typeB(1:nw,1) = lowx
+        typeB(1:nw,2) = highx
+        typeB(1:nw,3) = lowy
+        typeB(1:nw,4) = highy
+        typeB(1:nw,5) = lowz
+        typeB(1:nw,6) = highz
+        
+        do idim=1,ndim
+            periodB(idim)=(typeB(1,2*idim-1)=="periodic")
+            if ((.not.periodB(idim).and.(any(typeB(:,2*idim-1:2*idim)&
+                =="periodic"))) .or.(periodB(idim).and.(any(typeB(:,2*idim&
+                -1:2*idim)/="periodic")))) then
+                write(unitterm,*)"Each dimension should either have all",&
+                " or no variables periodic"
+                set_boundary = -2
+                return
+            end if
+        end do
+        
+        set_boundary = 0
+    end function  
+
+
     
 END MODULE mpiamrvac_interface
 

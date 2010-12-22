@@ -170,5 +170,28 @@ class MpiAmrVacInterfaceTests(TestWithMPI):
         self.assertEquals(rho, 0.0)
                         
         instance.stop()
+        
+    def test8(self):
+        instance = self.new_instance(MpiAmrVacInterface)
+        print instance.default_parameters_filename
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        error = instance.initialize_code()
+        self.assertEquals(error, 0)
+        instance.setup_mesh(20,20,20, 20.0, 20.0, 20.0)
+        error = instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
+        
+        self.assertEquals(error, 0)
+        error = instance.commit_parameters()
+        self.assertEquals(error, 0)
+        
+        number_of_grids, error = instance.get_number_of_grids()
+        self.assertEquals(error, 0)
+        self.assertEquals(number_of_grids, 8)
+        error = instance.initialize_grid()
+        self.assertEquals(error, 0)
+                                
+        instance.stop()
+
+        
 
         

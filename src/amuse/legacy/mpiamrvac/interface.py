@@ -2011,7 +2011,36 @@ class MpiAmrVacInterface(LegacyInterface, CommonCodeInterface):
         function.result_type = 'i'
         return function
 
+    #
+    #
+    #
+    
+    
+    @legacy_function    
+    def set_boundary():
+        function = LegacyFunctionSpecification()  
+        for x in ["xbound1","xbound2","ybound1","ybound2","zbound1","zbound2"]:
+            function.addParameter(x, dtype='string', direction=function.IN)
+        function.result_type = 'i'
+        return function
+        
+    #
+    #
+    #
+    
+    @legacy_function    
+    def evolve():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
 
+    @legacy_function    
+    def get_time():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
     
     
     

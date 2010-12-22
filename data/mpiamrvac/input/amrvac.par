@@ -34,11 +34,8 @@
 
  &boundlist
         dixB=   2
-        typeB=   5*'periodic',5*'periodic',
-                 'symm','symm','asymm','symm','symm',
-                 'symm','symm','asymm','symm','symm',
-                 5*'periodic',5*'periodic',
- /
+        typeB=   5*'periodic',5*'periodic',5*'periodic',5*'periodic',5*'periodic',5*'periodic'
+/
 
  &amrlist
         errorestimate=3
