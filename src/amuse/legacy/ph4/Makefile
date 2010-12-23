@@ -42,7 +42,7 @@ save:
 
 $(CODELIB):
 	make -C src all CXX=$(MPICXX)
-	
+
 $(CODELIB_GPU):
 	make -C src gpulib CXX=$(MPICXX)
 
@@ -54,7 +54,7 @@ interface.h: interface.py
 
 ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@
-	
+
 ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU)
 
