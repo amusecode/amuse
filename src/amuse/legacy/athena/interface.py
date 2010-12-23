@@ -607,7 +607,7 @@ class Athena(CodeInterface):
             object.ERROR_CODE,)
         )
         object.add_method(
-            'get_grid_momentum_denisty',
+            'get_grid_momentum_density',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             ( momentum, momentum, momentum, 
             object.ERROR_CODE,)
