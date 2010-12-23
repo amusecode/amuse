@@ -696,7 +696,53 @@ class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
 
 
 class AbstracParticleSetDefinition(object):
-    pass
+    
+    def set_new(self, name_of_new_particle_method, names = None):
+        self.new_particle_method = (name_of_new_particle_method, names)
+        
+    def set_grid_range(self, name_of_the_get_range_method):
+        self.name_of_the_get_range_method = name_of_the_get_range_method
+
+    def set_delete(self, name_of_delete_particle_method):
+        self.name_of_delete_particle_method = name_of_delete_particle_method
+
+    def add_getter(self, name_of_the_getter, names = None):
+        self.getters.append((name_of_the_getter, names))
+
+    def add_setter(self, name_of_the_setter, names = None):
+        self.setters.append((name_of_the_setter, names))
+
+    def add_attribute(self, name_of_the_attribute, name_of_the_method, names = None):
+        self.attributes.append((name_of_the_attribute,name_of_the_method, names))
+
+    def add_query(self, name_of_the_query, names = (), public_name = None):
+        if not public_name:
+            public_name = name_of_the_query
+        self.queries.append((name_of_the_query, names, public_name))
+
+
+    def add_method(self, name_of_the_method, public_name = None):
+        if not public_name:
+            public_name = name_of_the_method
+        self.methods.append((name_of_the_method, public_name))
+
+
+    def add_select_from_particle(self, name, names = (), public_name = None):
+        if not public_name:
+            public_name = name
+        self.selects_form_particle.append((name, names, public_name))
+    
+    def define_extra_keywords(self, dictionary):
+        self.extra_keyword_arguments_for_getters_and_setters = dictionary
+    
+    
+
+    def add_subselect_in_set(self, name, set_query_arguments_name = None, get_number_of_particles_name = None,  public_name = None):
+        if not public_name:
+            public_name = name
+        self.subselects_in_set.append((name, set_query_arguments_name, get_number_of_particles_name, public_name))
+    
+
     
 class ParticleSetDefinition(AbstracParticleSetDefinition):
 
@@ -930,64 +976,43 @@ class HandleParticles(HandleCodeInterfaceAttributeAccess):
         self.mapping_from_name_to_set_definition[name] = definition
         
     def set_new(self, name_of_the_set, name_of_new_particle_method, names = None):
-        self.mapping_from_name_to_set_definition[name_of_the_set].new_particle_method = (name_of_new_particle_method, names)
+        self.mapping_from_name_to_set_definition[name_of_the_set].set_new(name_of_new_particle_method, names = names)
         
     def set_grid_range(self, name_of_the_set, name_of_the_get_range_method):
-        self.mapping_from_name_to_set_definition[name_of_the_set].name_of_the_get_range_method = name_of_the_get_range_method
+        self.mapping_from_name_to_set_definition[name_of_the_set].set_grid_range(name_of_the_get_range_method)
 
     def set_delete(self, name_of_the_set, name_of_delete_particle_method):
-        self.mapping_from_name_to_set_definition[name_of_the_set].name_of_delete_particle_method = name_of_delete_particle_method
+        self.mapping_from_name_to_set_definition[name_of_the_set].set_delete(name_of_delete_particle_method)
 
     def add_getter(self, name_of_the_set, name_of_the_getter, names = None):
-
-        self.mapping_from_name_to_set_definition[name_of_the_set].getters.append((name_of_the_getter, names))
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_getter(name_of_the_getter, names = names)
 
     def add_setter(self, name_of_the_set, name_of_the_setter, names = None):
-
-        self.mapping_from_name_to_set_definition[name_of_the_set].setters.append((name_of_the_setter, names))
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_setter(name_of_the_setter, names = names)
 
     def add_attribute(self, name_of_the_set, name_of_the_attribute, name_of_the_method, names = None):
-
-        self.mapping_from_name_to_set_definition[name_of_the_set].attributes.append((name_of_the_attribute,name_of_the_method, names))
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_attribute(name_of_the_attribute, name_of_the_method, names = names)
 
     def add_query(self, name_of_the_set, name_of_the_query, names = (), public_name = None):
-        if not public_name:
-            public_name = name_of_the_query
-
-        self.mapping_from_name_to_set_definition[name_of_the_set].queries.append((name_of_the_query, names, public_name))
-
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_query(name_of_the_query, names = names, public_name = public_name)
 
     def add_method(self, name_of_the_set, name_of_the_method, public_name = None):
-        if not public_name:
-            public_name = name_of_the_method
-
-        self.mapping_from_name_to_set_definition[name_of_the_set].methods.append((name_of_the_method, public_name))
-
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_method(name_of_the_method, public_name = public_name)
 
     def add_select_from_particle(self, name_of_the_set, name, names = (), public_name = None):
-        if not public_name:
-            public_name = name
-
-        self.mapping_from_name_to_set_definition[name_of_the_set].selects_form_particle.append((name, names, public_name))
-    
-    
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_select_from_particle(name, names = names, public_name = public_name)
+        
     def define_extra_keywords(self, name_of_the_set, dictionary):
-
-        self.mapping_from_name_to_set_definition[name_of_the_set].extra_keyword_arguments_for_getters_and_setters = dictionary
+        self.mapping_from_name_to_set_definition[name_of_the_set].define_extra_keywords(dictionary)    
     
-    
-
-
-
-    
-
     def add_subselect_in_set(self, name_of_the_set, name, set_query_arguments_name = None, get_number_of_particles_name = None,  public_name = None):
-        if not public_name:
-            public_name = name
-    
-        self.mapping_from_name_to_set_definition[name_of_the_set].subselects_in_set.append((name, set_query_arguments_name, get_number_of_particles_name, public_name))
-    
-    
+        self.mapping_from_name_to_set_definition[name_of_the_set].add_subselect_in_set(
+            name, 
+            set_query_arguments_name = set_query_arguments_name, 
+            get_number_of_particles_name = get_number_of_particles_name,  
+            public_name = public_name
+        )
+        
 class OverriddenCodeInterface(object):
 
     def __init__(self, code_interface):
@@ -1069,6 +1094,13 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
 
     def get_name_of_current_state(self):
         return self.state_machine.get_name_of_current_state()
+        
+    def _create_new_grid(self, builder_function, **extra_arguments):
+        handler = self.get_handler('PARTICLES')
+        
+        definition = GridDefinition(handler)
+        builder_function(definition, **extra_arguments)
+        return definition.new_set_instance(handler)
 
 
 class IncorrectMethodDefinition(IncorrectWrappedMethodException):

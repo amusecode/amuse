@@ -3,6 +3,7 @@ from amuse.legacy.interface.common import CommonCodeInterface
 
 from amuse.support.options import OptionalAttributes, option
 
+from amuse.support.units import generic_unit_system
 import os
 
 class MpiAmrVacInterface(LegacyInterface, CommonCodeInterface):
@@ -2046,6 +2047,272 @@ class MpiAmrVacInterface(LegacyInterface, CommonCodeInterface):
     
 class MpiAmrVac(CodeInterface):
 
-    def __init__(self, **options):
+    def __init__(self, unit_converter = None, **options):
+        self.unit_converter = unit_converter
+        
         CodeInterface.__init__(self,  MpiAmrVacInterface(**options), **options)
+    
+    def define_converter(self, object):
+        if self.unit_converter is None:
+            return
+        
+        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+
+    
+    
+    def get_index_range_inclusive(self, index_of_grid = 1):
+        nx, ny, nz, error = self.get_mesh_size(index_of_grid)
+        
+        return (0, nx-1, 0, ny-1, 0, nz-1)
+
+    def define_methods(self, object):
+        object.add_method(
+            'evolve',
+            (generic_unit_system.time,),
+            (object.ERROR_CODE,),
+        )
+        object.add_method(
+            'get_position_of_index',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        density = generic_unit_system.density
+        momentum =  generic_unit_system.momentum_density
+        energy =  generic_unit_system.energy_density
+        
+        object.add_method(
+            'set_grid_energy_density',
+            (object.INDEX, object.INDEX, object.INDEX, energy, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_grid_density',
+            (object.INDEX, object.INDEX, object.INDEX, density, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_grid_momentum_denisty',
+            (object.INDEX, object.INDEX, object.INDEX, momentum, momentum, momentum, object.INDEX),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_grid_energy_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            ( energy,
+            object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_grid_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            (density,
+            object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_grid_momentum_density',
+            (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
+            ( momentum, momentum, momentum, 
+            object.ERROR_CODE,)
+        )
+    
+    def define_parameters(self, object):
+        
+        
+        #object.add_method_parameter(
+        #    "get_gamma", 
+        #    "set_gamma",
+        #    "gamma", 
+        #    "ratio of specific heats used in equation of state", 
+        #    units.none, 
+        #    1.6666666666666667 | units.none,
+        #    must_set_before_get = True
+        #)
+        
+        object.add_method_parameter(
+            "get_courantpar", 
+            "set_courantpar",
+            "courant_number", 
+            "CFL number", 
+            units.none, 
+            0.7 | units.none,
+            must_set_before_get = True
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshx",
+            "nx", 
+            "number of cells in the x direction", 
+            units.none, 
+            10 | units.none,
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshy",
+            "ny", 
+            "number of cells in the y direction", 
+            units.none, 
+            10 | units.none,
+        )
+        
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "nmeshz",
+            "nz", 
+            "number of cells in the z direction", 
+            units.none, 
+            10 | units.none,
+        )
+        
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "xlength",
+            "length_x", 
+            "length of model in the x direction", 
+            generic_unit_system.length, 
+            10 | generic_unit_system.length,
+        )
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "ylength",
+            "length_y", 
+            "length of model in the x direction", 
+            generic_unit_system.length, 
+            10 | generic_unit_system.length,
+        )
+        object.add_caching_parameter(
+            "setup_mesh", 
+            "zlength",
+            "length_z", 
+            "length of model in the z direction", 
+            generic_unit_system.length, 
+            10 | generic_unit_system.length,
+        )
+        
+        object.add_vector_parameter(
+            "mesh_size",
+            "number of cells in the x, y and z directions",
+            ("nx", "ny", "nz")
+        )
+        
+        object.add_vector_parameter(
+            "mesh_length",
+            "length of the model in the x, y and z directions",
+            ("length_x", "length_y", "length_z")
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "xbound1",
+            "xbound1", 
+            "boundary conditions on first (inner, left) X boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "xbound2",
+            "xbound2", 
+            "boundary conditions on second (outer, right) X boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "ybound1",
+            "ybound1", 
+            "boundary conditions on first (inner, front) Y boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "ybound2",
+            "ybound2", 
+            "boundary conditions on second (outer, back) Y boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "zbound1",
+            "zbound1", 
+            "boundary conditions on first (inner, bottom) Z boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        object.add_caching_parameter(
+            "set_boundary", 
+            "zbound2",
+            "zbound2", 
+            "boundary conditions on second (outer, top) Z boundary", 
+            units.string, 
+            "reflective" | units.string,
+        )
+        
+        
+        
+        object.add_vector_parameter(
+            "x_boundary_conditions",
+            "boundary conditions for the X directorion",
+            ("xbound1", "xbound2")
+        )
+        
+        
+        object.add_vector_parameter(
+            "y_boundary_conditions",
+            "boundary conditions for the Y directorion",
+            ("ybound1", "ybound2")
+        )
+        
+        
+        object.add_vector_parameter(
+            "z_boundary_conditions",
+            "boundary conditions for the Z directorion",
+            ("zbound1", "zbound2")
+        )
+
+    def commit_parameters(self):
+        self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
+        
+    def itergrids(self):
+        n, error = self.get_number_of_grids()
+        
+        for x in range(1,n+1):
+            yield self._create_new_grid(self.specify_grid, index_of_grid = x)
+    
+    def specify_grid(self, definition, index_of_grid = 1):
+        definition.set_grid_range('get_index_range_inclusive')
+        
+        definition.add_getter('get_position_of_index', names=('x','y','z'))
+        
+        definition.add_setter('set_grid_density', names=('rho',))
+        definition.add_setter('set_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        definition.add_setter('set_grid_energy_density', names=('energy',))
+        
+        definition.add_getter('get_grid_density', names=('rho',))
+        definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        definition.add_getter('get_grid_energy_density', names=('energy',))
+        
+        definition.define_extra_keywords({'index_of_grid':index_of_grid})
+        
     

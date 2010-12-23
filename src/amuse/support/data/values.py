@@ -546,6 +546,30 @@ class VectorQuantity(Quantity):
         values = numpy.where(is_larger_than, self.number, other_in_my_units.number)
         return VectorQuantity(values, self.unit)
         
+    def amax(self, axis = None):
+        """
+        Return the maximum along an axis.
+        
+        >>> from amuse.support.units import si
+        >>> v1 = [1.0, 2.0, 3.0] | si.kg
+        >>> v1.amax()
+        quantity<3.0 kg>
+        """
+
+        return self.unit.new_quantity(numpy.amax(self.number, axis = axis))
+        
+    def amin(self, axis = None):
+        """
+        Return the minimum value along an axis.
+        
+        >>> from amuse.support.units import si
+        >>> v1 = [1.0, 2.0, 3.0] | si.kg
+        >>> v1.amin()
+        quantity<1.0 kg>
+        """
+
+        return self.unit.new_quantity(numpy.amin(self.number, axis = axis))
+        
     def sorted(self):
         """
         Return a new vector with all items sorted.

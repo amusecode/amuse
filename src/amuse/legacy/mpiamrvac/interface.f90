@@ -2127,21 +2127,33 @@ CONTAINS
         include 'amrvacdef.f'
         
         integer :: get_local_index_of_grid
-        integer :: iigrid
+        integer :: iigrid, number_of_grids_before, ipe
         integer, intent(in) :: global_index_of_grid
         
-        if(igrid_inuse(global_index_of_grid, mype)) then
-            do iigrid=1,igridstail
-               if (igrids(iigrid) .EQ. global_index_of_grid) then
-                  get_local_index_of_grid = iigrid
-                  return 
-               end if
+        get_local_index_of_grid = 0
+        
+        number_of_grids_before = 0
+        do ipe = 0, mype-1
+            do iigrid = 1, ngridshi
+                if(igrid_inuse(iigrid, ipe)) then
+                   number_of_grids_before = number_of_grids_before + 1
+                else
+                   exit !we can break on the first not allocated grid, grids seem to be always consecutive
+                end if
             end do
-        else
+        end do
+        
+        if ( global_index_of_grid .LE. number_of_grids_before ) then
             get_local_index_of_grid = 0
-            return
+        else if ( global_index_of_grid .GT. number_of_grids_before + igridstail ) then
+            get_local_index_of_grid = 0
+        else
+            get_local_index_of_grid = global_index_of_grid - number_of_grids_before
         end if
-                
+        
+        !print *, "get_local_index_of_grid", global_index_of_grid, get_local_index_of_grid,&
+        !&number_of_grids_before,number_of_grids_before+igridstail
+                        
     end function
     
     function is_index_valid(i, j, k)
@@ -2174,12 +2186,13 @@ CONTAINS
         double precision, intent(out), dimension(n) :: x, y, z
         
         local_index_of_grid = 0
+        previous_index_of_grid = -1
         
         do index = 1,n
             if ( previous_index_of_grid .NE. index_of_grid(index)) then
                 local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
             end if 
-            
             if (local_index_of_grid .EQ. 0) then
                 x(index) = 0.0
                 y(index) = 0.0
@@ -2249,6 +2262,7 @@ CONTAINS
         integer, intent(out) :: level
         integer, intent(in) :: index_of_grid
         integer :: get_level_of_grid
+        integer :: local_index_of_grid
         
         if(index_of_grid > ngridshi) then
             level = 0
@@ -2256,7 +2270,20 @@ CONTAINS
             return
         end if
         
-        level = node(plevel_, index_of_grid)
+        local_index_of_grid = get_local_index_of_grid(index_of_grid)
+        
+        if(local_index_of_grid > 0) then
+            level = node(plevel_, index_of_grid)
+        else
+            level = 0
+        end if
+        
+        if(mype .GT. 0) then
+            call MPI_Reduce(level,  0, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, level, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
         get_level_of_grid = 0
     end function
     
@@ -2268,25 +2295,40 @@ CONTAINS
         integer, intent(in) :: index_of_grid
         integer :: level
         integer :: get_cell_size_of_grid
+        integer :: local_index_of_grid
         
         dx1 = 0
         dx2 = 0
         dx3 = 0
+        
         if(index_of_grid > ngridshi) then
             get_cell_size_of_grid = -1
             return
         end if
         
-        level = node(plevel_, index_of_grid)
+        local_index_of_grid = get_local_index_of_grid(index_of_grid)
         
-        if(level > 0) then
-            dx1 = dx(1,level)
-            dx2 = dx(2,level)
-            dx3 = dx(3,level)
-            get_cell_size_of_grid = 0
-        else
-            get_cell_size_of_grid = -2
+        if(local_index_of_grid > 0) then
+            level = node(plevel_, local_index_of_grid)
+        
+            if(level > 0) then
+                dx1 = dx(1,level)
+                dx2 = dx(2,level)
+                dx3 = dx(3,level)
+            end if
         end if
+        
+        if(mype .GT. 0) then
+            call MPI_Reduce(dx1,  0, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(dx2,  0, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(dx2,  0, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, dx1, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, dx2, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, dx3, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+        get_cell_size_of_grid = 0
         
     end function
 
@@ -2339,10 +2381,12 @@ CONTAINS
         double precision, intent(out), dimension(n) :: rho
         
         local_index_of_grid = 0
+        previous_index_of_grid = -1
         
         do index = 1,n
             if ( previous_index_of_grid .NE. index_of_grid(index)) then
                 local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
             end if 
             
             if (local_index_of_grid .EQ. 0) then
@@ -2382,10 +2426,12 @@ CONTAINS
         double precision, intent(out), dimension(n) :: m1, m2, m3
         
         local_index_of_grid = 0
+        previous_index_of_grid = -1
         
         do index = 1,n
             if ( previous_index_of_grid .NE. index_of_grid(index)) then
                 local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
             end if 
             
             if (local_index_of_grid .EQ. 0) then
@@ -2432,10 +2478,12 @@ CONTAINS
         double precision, intent(out), dimension(n) :: en
         
         local_index_of_grid = 0
+        previous_index_of_grid = -1
         
         do index = 1,n
             if ( previous_index_of_grid .NE. index_of_grid(index)) then
                 local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
             end if 
             
             if (local_index_of_grid .EQ. 0) then
@@ -2478,10 +2526,12 @@ CONTAINS
         double precision, intent(in), dimension(n) :: rho
         
         local_index_of_grid = 0
+        previous_index_of_grid = -1
         
         do index = 1,n
             if ( previous_index_of_grid .NE. index_of_grid(index)) then
                 local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
             end if 
             
             if (local_index_of_grid /= 0) then
@@ -2516,10 +2566,12 @@ CONTAINS
         double precision, intent(in), dimension(n) :: en
         
         local_index_of_grid = 0
+        previous_index_of_grid = -1
         
         do index = 1,n
             if ( previous_index_of_grid .NE. index_of_grid(index)) then
                 local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
             end if 
             
             if (local_index_of_grid /= 0) then
@@ -2554,10 +2606,12 @@ CONTAINS
         double precision, intent(in), dimension(n) :: m1, m2, m3
         
         local_index_of_grid = 0
+        previous_index_of_grid = -1
         
         do index = 1,n
             if ( previous_index_of_grid .NE. index_of_grid(index)) then
                 local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
             end if 
             
             if (local_index_of_grid /= 0) then
