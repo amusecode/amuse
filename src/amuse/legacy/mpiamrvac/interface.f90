@@ -2273,7 +2273,7 @@ CONTAINS
         local_index_of_grid = get_local_index_of_grid(index_of_grid)
         
         if(local_index_of_grid > 0) then
-            level = node(plevel_, index_of_grid)
+            level = node(plevel_, local_index_of_grid)
         else
             level = 0
         end if

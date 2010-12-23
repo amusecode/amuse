@@ -281,8 +281,8 @@ class TestMpiAmrVac(TestWithMPI):
             
             for index, grid in enumerate(grids):
                 position = grid.position
-                print instance.get_level_of_grid(index)
-                level, error = instance.get_level_of_grid(index)
+                #print instance.get_level_of_grid(index + 1)
+                level, error = instance.get_level_of_grid(index + 1)
                 self.assertEquals(level, 1)
                 for i in range(3):
                     max_x = position[...,...,...,i].amax()
