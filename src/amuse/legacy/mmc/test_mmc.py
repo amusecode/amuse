@@ -6,7 +6,7 @@ from .interface import mmc
 
 class mmcInterfaceTests(TestWithMPI):
     
-    def test1(self):
+    def xtest1(self):
         instance = mmcInterface(redirection="null")
         print "enter"
         instance.nonstandard_init()
