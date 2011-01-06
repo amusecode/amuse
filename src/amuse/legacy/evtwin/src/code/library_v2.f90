@@ -1858,6 +1858,7 @@ contains
 
 ! Return the temperature at the specified zone/mesh-cell of the star
       integer function get_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use structure_variables
          implicit none
          integer, intent(in) :: AMUSE_id, AMUSE_zone
          double precision, intent(out) :: AMUSE_value
@@ -1871,9 +1872,9 @@ contains
             get_temperature_at_zone = -22
             return
          end if
-!         call update_quantities_if_needed(AMUSE_id)
-!         AMUSE_value = sx(4, AMUSE_zone+1)
-         AMUSE_value = exp(star_list(AMUSE_id)% hpr(inv_var_perm(2), star_list(AMUSE_id)% number_of_meshpoints-AMUSE_zone))
+         call update_quantities_if_needed(AMUSE_id)
+         AMUSE_value = sx(4, AMUSE_zone+2)
+!         AMUSE_value = exp(star_list(AMUSE_id)% hpr(inv_var_perm(2), star_list(AMUSE_id)% number_of_meshpoints-AMUSE_zone))
          get_temperature_at_zone = 0
       end function
 
@@ -1894,7 +1895,7 @@ contains
             return
          end if
          call update_quantities_if_needed(AMUSE_id)
-         AMUSE_value = sx(3, AMUSE_zone+1)
+         AMUSE_value = sx(3, AMUSE_zone+2)
          get_density_at_zone = 0
       end function
 
@@ -1916,7 +1917,7 @@ contains
             return
          end if
          call update_quantities_if_needed(AMUSE_id)
-         AMUSE_value = sx(17, AMUSE_zone+1) * CRSN * 1.0D11
+         AMUSE_value = sx(17, AMUSE_zone+2) * CRSN * 1.0D11
          get_radius_at_zone = 0
       end function
 
@@ -1937,7 +1938,7 @@ contains
             return
          end if
          call update_quantities_if_needed(AMUSE_id)
-         AMUSE_value = sx(31, AMUSE_zone+2) ! why 2??
+         AMUSE_value = sx(31, AMUSE_zone+2)
          get_mu_at_zone = 0
       end function
 
