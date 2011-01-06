@@ -78,6 +78,7 @@ module twin_library_v2
    integer, private :: max_stars = -1        ! Maximum number of stars
    type(twin_star_t), private, allocatable, target :: star_list(:)
    integer, private :: current_star = 0      ! Currently selected star
+   integer, private :: sx_updated_for_star = 0 ! Stellar structure data sx is up-to-date for this star
    integer, private :: highest_star_index = 0  ! Highest index assigned to a star so far
    integer, private :: num_stars = 0         ! Number of allocated stars
 
@@ -1513,6 +1514,7 @@ contains
       integer :: jo,it, i
       real(double) :: dty,bms,ecc,per,tm,toa
       
+      sx_updated_for_star = 0
       
       ! Nothing to do if the star has already been swapped in
       if (current_star == star_id .and. .not. star_list(star_id)%virgin) return
@@ -1825,6 +1827,241 @@ contains
       implicit none
       call swap_out_star(current_star)
    end subroutine flush_star
+
+
+! Internal structure getters:
+
+! Return the current number of zones/mesh-cells of the star
+      integer function get_number_of_zones(AMUSE_id, AMUSE_value)
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         integer, intent(out) :: AMUSE_value
+         if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+            AMUSE_value = 0
+            get_number_of_zones = -21
+            return
+         end if
+         AMUSE_value = star_list(AMUSE_id)% number_of_meshpoints
+         get_number_of_zones = 0
+      end function
+
+! Update the stellar structure data sx for the specified star, if necessary
+      subroutine update_quantities_if_needed(AMUSE_id)
+         implicit none
+         integer, intent(in) :: AMUSE_id
+         if (sx_updated_for_star .ne. AMUSE_id) then
+            call swap_in_star(AMUSE_id)
+            call compute_output_quantities ( 1 )
+            sx_updated_for_star = AMUSE_id
+         end if
+      end subroutine
+
+! Return the temperature at the specified zone/mesh-cell of the star
+      integer function get_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+            AMUSE_value = -1.0
+            get_temperature_at_zone = -21
+            return
+         end if
+         if (AMUSE_zone >= star_list(AMUSE_id)% number_of_meshpoints .or. AMUSE_zone < 0) then
+            AMUSE_value = -1.0
+            get_temperature_at_zone = -22
+            return
+         end if
+!         call update_quantities_if_needed(AMUSE_id)
+!         AMUSE_value = sx(4, AMUSE_zone+1)
+         AMUSE_value = exp(star_list(AMUSE_id)% hpr(inv_var_perm(2), star_list(AMUSE_id)% number_of_meshpoints-AMUSE_zone))
+         get_temperature_at_zone = 0
+      end function
+
+! Return the density at the specified zone/mesh-cell of the star
+      integer function get_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use structure_variables
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+            AMUSE_value = -1.0
+            get_density_at_zone = -21
+            return
+         end if
+         if (AMUSE_zone >= star_list(AMUSE_id)% number_of_meshpoints .or. AMUSE_zone < 0) then
+            AMUSE_value = -1.0
+            get_density_at_zone = -22
+            return
+         end if
+         call update_quantities_if_needed(AMUSE_id)
+         AMUSE_value = sx(3, AMUSE_zone+1)
+         get_density_at_zone = 0
+      end function
+
+! Return the radius at the specified zone/mesh-cell of the star
+      integer function get_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use structure_variables
+         use constants
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+            AMUSE_value = -1.0
+            get_radius_at_zone = -21
+            return
+         end if
+         if (AMUSE_zone >= star_list(AMUSE_id)% number_of_meshpoints .or. AMUSE_zone < 0) then
+            AMUSE_value = -1.0
+            get_radius_at_zone = -22
+            return
+         end if
+         call update_quantities_if_needed(AMUSE_id)
+         AMUSE_value = sx(17, AMUSE_zone+1) * CRSN * 1.0D11
+         get_radius_at_zone = 0
+      end function
+
+! Return the mean molecular weight per particle (ions + free electrons) at the specified zone/mesh-cell of the star
+      integer function get_mu_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use structure_variables
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+            AMUSE_value = -1.0
+            get_mu_at_zone = -21
+            return
+         end if
+         if (AMUSE_zone >= star_list(AMUSE_id)% number_of_meshpoints .or. AMUSE_zone < 0) then
+            AMUSE_value = -1.0
+            get_mu_at_zone = -22
+            return
+         end if
+         call update_quantities_if_needed(AMUSE_id)
+         AMUSE_value = sx(31, AMUSE_zone+2) ! why 2??
+         get_mu_at_zone = 0
+      end function
+
+! Return the current number of chemical abundance variables per zone of the star
+   integer function get_number_of_species(AMUSE_id, AMUSE_value)
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      integer, intent(out) :: AMUSE_value
+      AMUSE_value = 9
+      get_number_of_species = 0
+   end function
+
+! Return the name of chemical abundance variable 'AMUSE_species' of the star
+   integer function get_name_of_species(AMUSE_id, AMUSE_species, AMUSE_value)
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_species
+      character (len=6), intent(out) :: AMUSE_value
+      get_name_of_species = 0
+      select case (AMUSE_species)
+         case (1)
+            AMUSE_value = 'h1'
+         case (2)
+            AMUSE_value = 'he4'
+         case (3)
+            AMUSE_value = 'c12'
+         case (4)
+            AMUSE_value = 'n14'
+         case (5)
+            AMUSE_value = 'o16'
+         case (6)
+            AMUSE_value = 'ne20'
+         case (7)
+            AMUSE_value = 'mg24'
+         case (8)
+            AMUSE_value = 'si28'
+         case (9)
+            AMUSE_value = 'fe56'
+         case default
+            AMUSE_value = 'error'
+            get_name_of_species = -23
+      end select
+   end function
+
+! Return the mass fraction of species 'AMUSE_species' at the specified 
+! zone/mesh-cell of the star
+   integer function get_mass_fraction_of_species_at_zone(AMUSE_id, &
+         AMUSE_species, AMUSE_zone, AMUSE_value)
+      use atomic_data
+      use extra_elements
+      use binary_history, only: hpr
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
+      double precision, intent(out) :: AMUSE_value
+      real(double) :: xa(9), na(9)
+      real(double) :: avm
+      integer :: zone_index, i
+  
+      AMUSE_value = -1.0
+      if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+         get_mass_fraction_of_species_at_zone = -21
+         return
+      end if
+      if (AMUSE_zone >= star_list(AMUSE_id)% number_of_meshpoints .or. AMUSE_zone < 0) then
+         get_mass_fraction_of_species_at_zone = -22
+         return
+      end if
+      if (AMUSE_species > 9 .or. AMUSE_species < 1) then
+         get_mass_fraction_of_species_at_zone = -23
+         return
+      end if
+      call update_quantities_if_needed(AMUSE_id)
+      zone_index = star_list(AMUSE_id)% number_of_meshpoints - AMUSE_zone
+      xa(1) = hpr(5, zone_index)
+      xa(2) = hpr(9, zone_index)
+      xa(3) = hpr(10, zone_index)
+      xa(4) = hpr(16, zone_index)
+      xa(5) = hpr(3, zone_index)
+      xa(6) = hpr(11, zone_index)
+      xa(8) = hpr(NSi28, zone_index)
+      xa(9) = hpr(NFe56, zone_index)
+      xa(7) = 1.0d0 - sum(xa(1:6)) - sum(xa(8:9))
+      do i=1, 9
+        na(i) = xa(i) * can(i)/cbn(i)
+      end do
+      avm = sum(na(1:9))
+      AMUSE_value = na(AMUSE_species) / avm
+      get_mass_fraction_of_species_at_zone = 0
+   end function
+
+   integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
+         AMUSE_species, AMUSE_zone, AMUSE_value)
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone, AMUSE_species
+      double precision, intent(in) :: AMUSE_value
+      set_mass_fraction_of_species_at_zone = -4
+   end function
+   
+   integer function set_density_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone
+      double precision, intent(in) :: AMUSE_value
+      set_density_at_zone = -4
+   end function
+   
+   integer function set_temperature_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone
+      double precision, intent(in) :: AMUSE_value
+      set_temperature_at_zone = -4
+   end function
+   
+   integer function set_radius_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+      implicit none
+      integer, intent(in) :: AMUSE_id, AMUSE_zone
+      double precision, intent(in) :: AMUSE_value
+      set_radius_at_zone = -4
+   end function
+   
+   integer function set_mass(AMUSE_id, AMUSE_value)
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(in) :: AMUSE_value
+      set_mass = -4
+   end function
 
 
 end module twin_library_v2

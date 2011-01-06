@@ -1,6 +1,7 @@
 from amuse.test.amusetest import TestWithMPI
 import sys
 import os.path
+from numpy import pi
 
 from amuse.legacy.evtwin.interface import EVtwin, EVtwinInterface
 
@@ -261,7 +262,7 @@ class TestInterface(TestWithMPI):
         instance.stop()
     
     
-class TestInterfaceBinding(TestWithMPI):
+class TestEVtwin(TestWithMPI):
     
             
     
@@ -488,3 +489,155 @@ class TestInterfaceBinding(TestWithMPI):
         
         instance.stop()
 
+    def test6(self):
+        print "Test for obtaining the stellar structure model"
+        stars = core.Particles(2)
+        stars.mass = [1.0, 10.0] | units.MSun
+        instance = EVtwin()
+        instance.initialize_module_with_default_parameters() 
+        instance.particles.add_particles(stars)
+        instance.initialize_stars()
+        instance.evolve_model()
+        self.assertEquals(instance.particles.get_number_of_zones(), [199, 199] | units.none)
+        self.assertEquals(len(instance.particles[0].get_radius_profile()), 199)
+        self.assertRaises(AmuseException, instance.particles.get_radius_profile, 
+            expected_message = "Querying radius profiles of more than one particle at a time is not supported.")
+        print instance.particles
+        self.assertEquals(len(instance.particles[1].get_density_profile()), 199)
+        self.assertIsOfOrder(instance.particles[0].get_radius_profile()[-1],          1.0 | units.RSun)
+        self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[0],  1.0e7 | units.K)
+        self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[-1],  5.0e3 | units.K)
+        radius1 = instance.particles[0].get_radius_profile()
+        radius2 = radius1[:-1]
+        radius2.prepend(0|units.m)
+        delta_radius_cubed = (radius1**3 - radius2**3)
+        total_mass = (4./3. * pi * instance.particles[0].get_density_profile() * delta_radius_cubed).sum()
+        self.assertAlmostRelativeEqual(total_mass, stars[0].mass, places = 1)
+        self.assertAlmostEquals(instance.particles[0].get_mu_profile(), [0.62]*199 | units.amu, places=1)
+        instance.stop()
+        del instance
+    
+    def test7(self):
+        print "Test for obtaining the stellar composition structure"
+        stars = core.Particles(1)
+        stars.mass = 1.0 | units.MSun
+        instance = EVtwin()
+        instance.initialize_module_with_default_parameters() 
+        instance.particles.add_particles(stars)
+        instance.initialize_stars()
+        instance.evolve_model()
+        instance.evolve_model()
+        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
+        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        species_names     = instance.particles[0].get_names_of_species()
+        self.assertEquals(number_of_zones,    199)
+        self.assertEquals(number_of_species,    9)
+        self.assertEquals(len(species_names),  number_of_species)
+        self.assertEquals(len(composition),    number_of_species)
+        self.assertEquals(len(composition[0]), number_of_zones)
+        self.assertEquals(species_names, ['h1', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', 'fe56'])
+        self.assertAlmostEquals(composition[0, -1],        0.7 | units.none, 4)
+        self.assertAlmostEquals(composition[1, -1],        0.3 - instance.parameters.metallicity, 4)
+        self.assertAlmostEquals(composition[2:,-1].sum(),  instance.parameters.metallicity, 4)
+        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        instance.stop()
+        del instance
+    
+    def slowtest8(self):
+        print "Test for obtaining the stellar composition structure - evolved star"
+        stars = core.Particles(1)
+        stars.mass = 1.0 | units.MSun
+        instance = EVtwin()
+        instance.initialize_module_with_default_parameters() 
+        instance.particles.add_particles(stars)
+        instance.initialize_stars()
+        instance.evolve_model(11.7 | units.Gyr)
+        self.assertTrue(instance.particles[0].age >= 11.7 | units.Gyr)
+        self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
+        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
+        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        species_names     = instance.particles[0].get_names_of_species()
+        self.assertEquals(number_of_zones,    199)
+        self.assertEquals(number_of_species,    9)
+        self.assertEquals(len(species_names),  number_of_species)
+        self.assertEquals(len(composition),    number_of_species)
+        self.assertEquals(len(composition[0]), number_of_zones)
+        self.assertEquals(species_names, ['h1', 'he4', 'c12', 'n14', 'o16', 'ne20', 'mg24', 'si28', 'fe56'])
+        self.assertAlmostRelativeEquals(composition[0, -1],        0.7 | units.none, 1)
+        self.assertAlmostRelativeEquals(composition[1, -1],        0.3 - instance.parameters.metallicity, 1)
+        self.assertAlmostRelativeEquals(composition[2:,-1].sum(),  instance.parameters.metallicity, 1)
+        self.assertAlmostEquals(composition.sum(axis=0), [1.0]*number_of_zones | units.none)
+        self.assertAlmostEquals(composition[0, 0],        0.00 | units.none)
+        self.assertAlmostEquals(composition[1, 0],        1.00 - instance.parameters.metallicity, 3)
+        self.assertAlmostEquals(composition[2:,0].sum(),  instance.parameters.metallicity, 3)
+        instance.stop()
+        del instance
+    
+    def xtest9(self):
+        print "Test for changing the stellar structure model (not yet implemented)"
+        star = core.Particles(1)
+        star.mass = 1.0 | units.MSun
+        instance = EVtwin()
+        instance.initialize_module_with_default_parameters() 
+        instance.particles.add_particles(star)
+        instance.initialize_stars()
+        instance.evolve_model()
+
+        density_profile = instance.particles[0].get_density_profile()
+        
+        self.assertRaises(AmuseException, instance.particles[0].set_density_profile, density_profile[2:], 
+            expected_message = "The length of the supplied vector (197) does not match the number of "
+            "mesh zones of the star (199).")
+        
+        mass_factor = 1.1
+        instance.particles[0].set_density_profile(mass_factor*density_profile)
+        self.assertAlmostRelativeEqual(instance.particles[0].get_density_profile(), density_profile*mass_factor, places=10)
+        instance.particles.mass *= mass_factor
+        instance.evolve_model()
+        
+        outer_radius = instance.particles[0].get_radius_profile()
+        inner_radius = outer_radius[:-1]
+        inner_radius.prepend(0|units.m)
+        delta_radius_cubed = (outer_radius**3 - inner_radius**3)
+        integrated_mass = (4./3.*pi*delta_radius_cubed*instance.particles[0].get_density_profile()).sum()
+        self.assertAlmostRelativeEqual(integrated_mass, star.mass*mass_factor, places = 3)
+        instance.stop()
+        del instance
+    
+    def xtest10(self):
+        print "Test for changing the stellar composition (not yet implemented)"
+        star = core.Particles(1)
+        star.mass = 1.0 | units.MSun
+        instance = EVtwin()
+        instance.initialize_module_with_default_parameters() 
+        instance.particles.add_particles(star)
+        instance.initialize_stars()
+        instance.evolve_model()
+        
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        h1_profile = composition[0] * 1
+        he4_profile = composition[1] * 1
+        k_surface = -1 # index to the outer mesh cell (surface)
+        
+        self.assertAlmostEquals(composition[0, k_surface],  0.7 | units.none, 4)
+        self.assertAlmostEquals(composition[1, k_surface],  (0.3 | units.none) - instance.parameters.metallicity, 4)
+        self.assertAlmostEquals(composition[2: , k_surface].sum(),  instance.parameters.metallicity, 4)
+        
+        composition[0] = he4_profile
+        composition[1] = h1_profile
+        instance.particles[0].set_chemical_abundance_profiles(composition)
+        instance.evolve_model()
+        
+        composition       = instance.particles[0].get_chemical_abundance_profiles()
+        self.assertAlmostEquals(composition[0, k_surface],  (0.3 | units.none) - instance.parameters.metallicity, 4)
+        self.assertAlmostEquals(composition[1, k_surface],  0.7 | units.none, 4)
+        self.assertAlmostEquals(composition[2: , k_surface].sum(),  instance.parameters.metallicity, 4)
+        self.assertAlmostEquals(composition.sum(axis=0), 1.0 | units.none)
+        
+        self.assertRaises(AmuseException, instance.particles[0].set_chemical_abundance_profiles, composition[:7], 
+            expected_message = "The length of the supplied vector (7) does not match the number of "
+            "chemical species of the star (8).")
+        instance.stop()
+        del instance

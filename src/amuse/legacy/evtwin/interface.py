@@ -1,6 +1,7 @@
 from operator import itemgetter
 from amuse.legacy import *
-from amuse.legacy.interface.se import StellarEvolution
+from amuse.legacy.interface.se import StellarEvolution, InternalStellarStructure, \
+    InternalStellarStructureInterface
 from amuse.legacy.interface.common import CommonCodeInterface
 
 from amuse.support.interface import CodeInterface
@@ -8,7 +9,8 @@ from amuse.support.options import OptionalAttributes, option
 
 import os
 
-class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, CommonCodeInterface):
+class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, 
+        InternalStellarStructureInterface, CommonCodeInterface):
     """
     Evtwin is based on Peter Eggleton's stellar evolution code, and solves 
     the differential equations that apply to the interior of a star. Therefore 
@@ -643,7 +645,7 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, CommonC
         """
         return function
         
-class EVtwin(CodeInterface):
+class EVtwin(CodeInterface, InternalStellarStructure):
     
     def __init__(self, **options):
         CodeInterface.__init__(self, EVtwinInterface(**options), **options)
@@ -792,10 +794,13 @@ class EVtwin(CodeInterface):
         object.add_getter('particles', 'get_spin', names = ('spin',))
         object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
         object.add_getter('particles', 'get_temperature',names = ('temperature',))
-        
         object.add_method('particles', 'evolve', 'evolve_one_step')
+        InternalStellarStructure.define_particle_sets(self, object)
     
     def define_errorcodes(self, object):
+        object.add_errorcode(-4, 'Not implemented.')
+        InternalStellarStructure.define_errorcodes(self, object)
+        
         object.add_errorcode(-2, 'BEGINN -- requested mesh too large')
         object.add_errorcode(-1, 'STAR12 -- no timesteps required')
         object.add_errorcode(2, 'BACKUP -- tstep reduced below limit; quit')
@@ -821,7 +826,7 @@ class EVtwin(CodeInterface):
         
     
     def define_methods(self, object):
-            
+        InternalStellarStructure.define_methods(self, object)
         object.add_method(
             'evolve', 
             (object.INDEX,), 

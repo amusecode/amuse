@@ -460,7 +460,9 @@ class TestMESA(TestWithMPI):
         radius2 = radius1[:-1]
         radius2.prepend(0|units.m)
         delta_radius_cubed = (radius1**3 - radius2**3)
-        self.assertAlmostEquals(instance.particles[0].get_density_profile() / (delta_mass/(4./3.*pi*delta_radius_cubed)), [1]*479|units.none, places=3)
+        self.assertAlmostEquals(instance.particles[0].get_density_profile() / 
+            (delta_mass/(4./3.*pi*delta_radius_cubed)), [1]*479|units.none, places=3)
+        self.assertAlmostEquals(instance.particles[1].get_mu_profile(), [0.62]*985 | units.amu, places=1)
         instance.stop()
         del instance
     
