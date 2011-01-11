@@ -66,7 +66,7 @@ class InstallPrerequisites(object):
           (
             'h5py', 
             ['hdf'], 
-            '1.3.1-beta', 
+            '1.3.1', 
             'h5py-' , '.tar.gz', 
             'http://h5py.googlecode.com/files/', self.h5py_build
           ) ,

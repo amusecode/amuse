@@ -13,6 +13,8 @@ if __name__ == "__main__":
         pythonexe = config.interpreters.python
     except ImportError as ex:
         pythonexe = sys.executable
+    except AttributeError as ex:
+        pythonexe = sys.executable
         
     gencodepy = inspect.getsourcefile(gencode)
     
