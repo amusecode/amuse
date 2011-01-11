@@ -45,7 +45,8 @@ class generate_main(Command):
             script_file.write('export AMUSE_DIR=')
             script_file.write(self.amuse_dir)
             script_file.write('\n')
-            script_file.write('python "$@"\n')
+            script_file.write(sys.executable)
+            script_file.write(' "$@"\n')
         os.chmod('amuse.sh', stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC)
 
         with open('iamuse.sh','w') as script_file:
