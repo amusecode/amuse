@@ -41,7 +41,7 @@ class InstallPrerequisites(object):
           (
             'numpy' ,                  #name to refer by
             [],                        #names of prerequisites (unused)
-            '1.5.0' ,                  #version string
+            '1.5.1' ,                  #version string
             'numpy-', '.tar.gz',       #pre- and postfix for filename
             'http://ignum.dl.sourceforge.net/sourceforge/numpy/', #download url, filename is appended
             self.python_build          #method to use for building
@@ -49,7 +49,7 @@ class InstallPrerequisites(object):
           (
             'nose', 
             [], 
-            '0.11.1', 
+            '0.11.2', 
             'nose-' , '.tar.gz', 
             'http://somethingaboutorange.com/mrl/projects/nose/', 
             self.python_build
@@ -57,38 +57,39 @@ class InstallPrerequisites(object):
           (
             'hdf' ,
             [],  
-            '1.8.4',
+            '1.8.5',
             'hdf5-' , '-patch1.tar.gz' , 
-            'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.4-patch1/src/', 
+            #'http://www.hdfgroup.org/ftp/HDF5/prev-releases/hdf5-1.8.4-patch1/src/', 
+            'http://www.hdfgroup.org/ftp/HDF5/current/src/',
             self.hdf5_build
           ) ,
           (
             'h5py', 
             ['hdf'], 
-            '1.3.0', 
+            '1.3.1-beta', 
             'h5py-' , '.tar.gz', 
             'http://h5py.googlecode.com/files/', self.h5py_build
           ) ,
           (
             'docutils', 
             [], 
-            '0.6', 
+            '0.7', 
             'docutils-','.tar.gz', 
-            'http://downloads.sourceforge.net/project/docutils/docutils/0.6/', 
+            'http://downloads.sourceforge.net/project/docutils/docutils/0.7/', 
             self.python_build
           ) ,
           (
             'mpich2', 
             [], 
-            '1.2.1', 
+            '1.3.1', 
             'mpich2-', '.tar.gz', 
-            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.2.1/', 
+            'http://www.mcs.anl.gov/research/projects/mpich2/downloads/tarballs/1.3.1/', 
             self.mpich2_build
           ) ,
           (
             'mpi4py', 
             ['mpich2'], 
-            '1.2', 
+            '1.2.2', 
             'mpi4py-', '.tar.gz', 
             'http://mpi4py.googlecode.com/files/', 
             self.python_build
@@ -115,7 +116,7 @@ class InstallPrerequisites(object):
           (
             'cmake' ,                   #name to refer by
             [],                         #names of prerequisites (unused)
-            '2.8.2' ,                   #version string
+            '2.8.3' ,                   #version string
             'cmake-', '.tar.gz',        #pre- and postfix for filename
             'http://www.cmake.org/files/v2.8/', #download url, filename is appended
             self.fftw_build             #method to use for building - same as for FFTW should work
@@ -129,8 +130,8 @@ class InstallPrerequisites(object):
     
     @late
     def fortran90_compiler(self):
-        if 'F90' in os.environ:
-            return os.environ['F90']
+        if 'FC' in os.environ:
+            return os.environ['FC']
         else:
             return self.fortran_compiler
             
@@ -216,14 +217,15 @@ class InstallPrerequisites(object):
         command = [
           './configure',
           '--prefix='+self.prefix,
+          '--enable-shared',
           '--enable-sharedlibs=gcc',
-          '--enable-f90', 
-          '--with-python='+self.prefix + '/bin/python2.6',
+          '--enable-fc', 
+          '--with-python='+self.prefix + '/bin/python2.7',
           #'--with-device=ch3:sock',
-          #'--with-pm=mpd'
+          '--with-pm=mpd'
         ]
         if not self.fortran90_compiler is None:
-            command.append('F90=' + self.fortran90_compiler)
+            command.append('FC=' + self.fortran90_compiler)
         
         commands.append(command)
         commands.append(['make'])
@@ -427,15 +429,15 @@ if __name__ == '__main__':
     if INSTALL.fortran90_compiler is None:
         print """No fortran 90 compiler environment variable set.
 A FORTRAN 90 compiler is needed for MPI and several module, 
-please set F90 first by (bash, replace gfortran with your preferred
+please set FC first by (bash, replace gfortran with your preferred
 compiler):
 
-export F90=gfortran
+export FC=gfortran
 export F77=gfortran
 
 or (csh):
 
-setenv F90 gfortran 
+setenv FC gfortran 
 setenv F77 gfortran 
 
 """
