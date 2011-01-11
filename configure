@@ -2177,6 +2177,8 @@ ac_config_files="$ac_config_files src/amuse/config.py:support/configpy.in"
 
 ac_config_files="$ac_config_files support/config.py:support/configpy.in"
 
+ac_config_files="$ac_config_files config.mk"
+
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -3431,6 +3433,7 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+PYTHON=python
 
 # Extract the first word of "$PYTHON", so it can be a program name with args.
 set dummy $PYTHON; ac_word=$2
@@ -5520,6 +5523,7 @@ do
   case $ac_config_target in
     "src/amuse/config.py") CONFIG_FILES="$CONFIG_FILES src/amuse/config.py:support/configpy.in" ;;
     "support/config.py") CONFIG_FILES="$CONFIG_FILES support/config.py:support/configpy.in" ;;
+    "config.mk") CONFIG_FILES="$CONFIG_FILES config.mk" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

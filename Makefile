@@ -1,4 +1,6 @@
-PYTHON=python2.6
+-include config.mk
+
+PYTHON ?= python2.6
 
 export PYTHONPATH := $(PYTHONPATH):$(PWD)/src:$(PWD)/test
 
@@ -13,8 +15,11 @@ clean:
 	$(PYTHON) setup.py clean
 
 distclean:
+	rm -f config.mk
 	rm -f support/config.py
+	rm -f support/config.pyc
 	rm -f src/amuse/config.py
+	rm -f src/amuse/config.pyc
 
 tests:
 	$(PYTHON) setup.py tests

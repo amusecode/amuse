@@ -2,6 +2,9 @@
 # @configure_input@
 #
 
+class interpreters(object):
+    python = '@PYTHON@' 
+
 class compilers(object):
     cxx = '@CXX@' 
     cc  = '@CC@'
