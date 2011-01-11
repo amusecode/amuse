@@ -221,8 +221,9 @@ def make_directory(settings):
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
         
     builder.start()
-        
-def main():
+    
+    
+if __name__ == '__main__':
     
     setup_sys_path()
     
@@ -238,8 +239,4 @@ def main():
         make_directory(settings)
     else:
         make_file(settings)
-    
-    
-if __name__ == '__main__':
-    main()
     
