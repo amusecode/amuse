@@ -3433,7 +3433,13 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-PYTHON=python
+
+
+if test "x$PYTHON" = "x"; then :
+
+    PYTHON=python
+
+fi
 
 # Extract the first word of "$PYTHON", so it can be a program name with args.
 set dummy $PYTHON; ac_word=$2

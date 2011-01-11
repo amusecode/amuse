@@ -8,8 +8,10 @@ AC_CONFIG_FILES([config.mk])
 AC_PROG_CC()
 AC_PROG_CXX()
 AC_PROG_FC([],95)
-PYTHON=ifdef($PYTHON, $PYTHON, python) 
 AC_ARG_VAR([PYTHON], [Python interpreter])
+
+AS_IF([test "x$PYTHON" = "x"], [PYTHON=python])
+
 AC_PATH_PROG([PYTHON], [$PYTHON], [])
 AC_ARG_VAR([NVCC], [CUDA compiler command])
 
