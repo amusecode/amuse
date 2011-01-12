@@ -130,6 +130,9 @@ class TestCase(unittest.TestCase):
             unittest.TestCase.assertRaises(self, exception, callable, *list_args, **keyword_args)
     
     def run(self, result=None):
+        if hasattr(unittest, 'SkipTest'):
+            return unittest.TestCase.run(self, result)
+            
         if result is None:
             result = self.defaultTestResult()
         result.startTest(self)
@@ -175,8 +178,11 @@ class TestCase(unittest.TestCase):
         try:
             from nose.plugins import skip
             raise skip.SkipTest(reason)
-        except ImportError:
-            raise SkipTest(reason)
+        except ImportError:   
+            if hasattr(unittest, 'SkipTest'):
+                raise unittest.SkipTest(reason)
+            else:
+                raise SkipTest(reason)
             
     def get_path_to_results(self):
         return get_path_to_results()
