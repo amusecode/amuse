@@ -6,7 +6,7 @@ from .interface import mmc
 
 class mmcInterfaceTests(TestWithMPI):
     
-    def test1(self):
+    def xtest1(self):
         instance = mmcInterface(redirection="file", redirect_file = "junk.txt")
         instance.nonstandard_init()
         while (1):
