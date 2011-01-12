@@ -10,7 +10,6 @@ from amuse.support.data.values import Quantity
 from amuse.support.units.si import no_unit
 
 class SkipTest(exceptions.AmuseException):
-class SkipTest(exceptions.AmuseException):
     pass
     
 class TestCase(unittest.TestCase):
