@@ -2,12 +2,14 @@ import unittest
 
 import numpy
 import os
+import sys
 import inspect
 
 from amuse.support import exceptions
 from amuse.support.data.values import Quantity
 from amuse.support.units.si import no_unit
 
+class SkipTest(exceptions.AmuseException):
 class SkipTest(exceptions.AmuseException):
     pass
     
@@ -138,7 +140,7 @@ class TestCase(unittest.TestCase):
             except KeyboardInterrupt:
                 raise
             except:
-                result.addError(self, self._exc_info())
+                result.addError(self, sys._exc_info())
                 return
 
             ok = False
@@ -146,21 +148,21 @@ class TestCase(unittest.TestCase):
                 testMethod()
                 ok = True
             except self.failureException:
-                result.addFailure(self, self._exc_info())
+                result.addFailure(self, sys._exc_info())
             except SkipTest, ex:
                 ok = True
                 pass
             except KeyboardInterrupt:
                 raise
             except:
-                result.addError(self, self._exc_info())
+                result.addError(self, sys._exc_info())
 
             try:
                 self.tearDown()
             except KeyboardInterrupt:
                 raise
             except:
-                result.addError(self, self._exc_info())
+                result.addError(self, sys._exc_info())
                 ok = False
                 
             if ok:
