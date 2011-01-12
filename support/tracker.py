@@ -160,6 +160,9 @@ class RequestACodeReview(object):
         if not self.log_string:
             pass
         
+        if subprocess.call(['which', 'post-review']) != 0:
+            return
+            
         revision = self.revision
         
         repository_url =  '--repository-url=' + self.svn_repository_url
