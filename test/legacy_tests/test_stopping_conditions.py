@@ -1,16 +1,16 @@
-from amuse.support.legacy.core import *
+from amuse.support.codes.core import *
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.support.legacy import create_c
+from amuse.support.codes import create_c
 #cello
-from amuse.support.legacy import create_fortran
+from amuse.support.codes import create_fortran
 
-from amuse.support.legacy import stopping_conditions
+from amuse.support.codes import stopping_conditions
 from amuse.support.interface import CodeInterface
 
 import subprocess

@@ -8,7 +8,7 @@ from amuse.legacy.mesa.interface import MESA, MESAInterface
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
 from amuse.support.units import units
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 
 class TestMESAInterface(TestWithMPI):
     

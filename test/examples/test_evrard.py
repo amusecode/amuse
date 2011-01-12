@@ -13,7 +13,7 @@ from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.test.amusetest import get_path_to_results
-from amuse.support.legacy.core import is_mpd_running
+from amuse.support.codes.core import is_mpd_running
 
 import logging
 #logging.basicConfig(level=logging.DEBUG)

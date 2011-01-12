@@ -9,7 +9,7 @@ from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 
 class TestInterface(TestWithMPI):
     

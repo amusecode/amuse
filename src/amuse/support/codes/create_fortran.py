@@ -1,10 +1,10 @@
 from amuse.support.core import late
 from amuse.support import exceptions
-from amuse.support.legacy.core import LegacyFunctionSpecification
-from amuse.support.legacy.create_code import MakeCodeString
-from amuse.support.legacy.create_code import MakeCodeStringOfAClassWithLegacyFunctions
-from amuse.support.legacy.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
-from amuse.support.legacy import create_definition
+from amuse.support.codes.core import LegacyFunctionSpecification
+from amuse.support.codes.create_code import MakeCodeString
+from amuse.support.codes.create_code import MakeCodeStringOfAClassWithLegacyFunctions
+from amuse.support.codes.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
+from amuse.support.codes import create_definition
 
 import numpy
 

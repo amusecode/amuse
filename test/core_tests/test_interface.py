@@ -8,7 +8,7 @@ from amuse.support.data import core
 from amuse.support.core import OrderedDictionary
 from amuse.support import exceptions
 
-from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
+from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 
 from amuse.test import amusetest
 import numpy

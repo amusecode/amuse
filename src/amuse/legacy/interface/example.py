@@ -2,7 +2,7 @@
 Example function for documentation purposess
 """
 
-from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
+from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 
 class ExampleInterface(object):
     @legacy_function   

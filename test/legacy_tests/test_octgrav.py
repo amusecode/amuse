@@ -7,7 +7,7 @@ from amuse.legacy.octgrav.interface import OctgravInterface, Octgrav
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 
 from amuse.ext.plummer import *
 

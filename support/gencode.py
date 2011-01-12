@@ -227,9 +227,9 @@ if __name__ == '__main__':
     
     setup_sys_path()
     
-    from amuse.support.legacy import create_c
-    from amuse.support.legacy import create_fortran
-    from amuse.support.legacy import create_dir
+    from amuse.support.codes import create_c
+    from amuse.support.codes import create_fortran
+    from amuse.support.codes import create_dir
     
     uc = ParseCommandLine()
     uc.start()

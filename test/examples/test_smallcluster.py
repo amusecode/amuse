@@ -20,7 +20,7 @@ from amuse.legacy.hermite0.interface import Hermite
 from amuse.legacy.bhtree.interface import BHTree
 from amuse.legacy.sse.interface import SSE
 from amuse.legacy.phiGRAPE.interface import PhiGRAPE
-from amuse.support.legacy.core import is_mpd_running
+from amuse.support.codes.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results
 
 from amuse.support.io import store

@@ -6,7 +6,7 @@ from time import time
 import math, sys
 
 # MPI Debugging
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
 #channel.MessageChannel.DEBUGGER = channel.MessageChannel.GDB
 #channel.MessageChannel.DEBUGGER = channel.MessageChannel.DDD

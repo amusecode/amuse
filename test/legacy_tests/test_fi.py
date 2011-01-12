@@ -11,7 +11,7 @@ from amuse.ext.plummer import new_plummer_sphere
 from amuse.support.units import nbody_system as nbody
 from amuse.support.units import units
 from amuse.support.data import core
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 
 class TestFiInterface(TestWithMPI):
 

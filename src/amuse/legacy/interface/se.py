@@ -5,7 +5,7 @@ Stellar Dynamics Interface Defintion
 import numpy
 from amuse.support.units import units
 from amuse.support import exceptions
-from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
+from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 
 class StellarEvolution(object): 
 

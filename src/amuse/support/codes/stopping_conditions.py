@@ -1,4 +1,4 @@
-from amuse.support.legacy.core import legacy_function, LegacyFunctionSpecification
+from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 from amuse.support.units import units
 from amuse.support.units import nbody_system as nbody
     

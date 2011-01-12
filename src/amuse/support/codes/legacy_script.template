@@ -19,14 +19,14 @@ if __name__ == '__main__':
             if not x in existing_syspath:
                 sys.path.append(x)
 
-        from amuse.support.legacy import core
+        from amuse.support.codes import core
         
         from {factory_module} import {factory}
         from {interface_module} import {interface}
         
         instance = {factory}()
         
-        from amuse.support.legacy.python_code import PythonImplementation
+        from amuse.support.codes.python_code import PythonImplementation
         
         x = PythonImplementation(instance, {interface})
         x.start()

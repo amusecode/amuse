@@ -1,5 +1,5 @@
 import unittest
-from amuse.support.legacy import lit
+from amuse.support.codes import lit
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.legacy.bhtree.interface import BHTree

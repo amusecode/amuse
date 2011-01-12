@@ -1,7 +1,7 @@
-from amuse.support.legacy.core import legacy_function, legacy_global, LegacyFunctionSpecification
+from amuse.support.codes.core import legacy_function, legacy_global, LegacyFunctionSpecification
 from amuse.support.core import late, OrderedDictionary
 
-from amuse.support.legacy.channel import Message, pack_array, unpack_array
+from amuse.support.codes.channel import Message, pack_array, unpack_array
 
 from mpi4py import MPI
 

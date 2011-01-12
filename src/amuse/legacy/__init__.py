@@ -1,9 +1,9 @@
-from amuse.support.legacy.core import LegacyInterface, legacy_function, legacy_global
-from amuse.support.legacy.core import LegacyFunctionSpecification, is_mpd_running
+from amuse.support.codes.core import LegacyInterface, legacy_function, legacy_global
+from amuse.support.codes.core import LegacyFunctionSpecification, is_mpd_running
 
-from amuse.support.legacy.stopping_conditions import StoppingConditionInterface, StoppingConditions
+from amuse.support.codes.stopping_conditions import StoppingConditionInterface, StoppingConditions
 
-from amuse.support.legacy.lit import LiteratureRefs
+from amuse.support.codes.lit import LiteratureRefs
 
 from amuse.support.data import parameters
 from amuse.support.data import attributes

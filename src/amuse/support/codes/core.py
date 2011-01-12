@@ -12,9 +12,9 @@ from amuse.support.core import late
 from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
 from amuse.support.options import OptionalAttributes, option
-from amuse.support.legacy.create_definition import LegacyDocStringProperty
-from amuse.support.legacy.channel import MpiChannel, MultiprocessingMPIChannel
-from amuse.support.legacy.channel import is_mpd_running
+from amuse.support.codes.create_definition import LegacyDocStringProperty
+from amuse.support.codes.channel import MpiChannel, MultiprocessingMPIChannel
+from amuse.support.codes.channel import is_mpd_running
 
 """
 This module implements the code to the define interfaces between python

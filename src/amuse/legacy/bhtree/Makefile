@@ -39,7 +39,7 @@ worker_code.cc: interface.py
 	$(CODE_GENERATOR) --type=c interface.py BHTreeInterface -o $@
 
 worker_code.h: interface.py
-	$(CODE_GENERATOR) --type=H -i amuse.support.legacy.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
+	$(CODE_GENERATOR) --type=H -i amuse.support.codes.stopping_conditions.StoppingConditionInterface  interface.py BHTreeInterface -o $@
 
 bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)

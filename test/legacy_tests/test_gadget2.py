@@ -11,7 +11,7 @@ from amuse.support.units import generic_unit_converter
 from amuse.support.units import generic_unit_system
 from amuse.support.units import units
 from amuse.support.data import core
-from amuse.support.legacy import channel
+from amuse.support.codes import channel
 
 default_options = dict()#redirection = "null")
 #default_options = dict(debugger = "none")

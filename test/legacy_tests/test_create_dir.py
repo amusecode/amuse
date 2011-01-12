@@ -4,7 +4,7 @@ import shutil
 import subprocess
 import sys
 
-from amuse.support.legacy import create_dir
+from amuse.support.codes import create_dir
 
 class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCase):
     
