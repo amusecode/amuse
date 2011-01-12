@@ -67,6 +67,20 @@ class mmcInterface(LegacyInterface):
         return function
 
     @legacy_function
+    def get_kinetic_energy():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('Ek', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def initial_run():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('res', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def run():
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'

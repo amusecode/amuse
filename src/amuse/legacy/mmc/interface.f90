@@ -24,6 +24,18 @@ FUNCTION get_time(time)
   get_time = 0
 END FUNCTION
 
+FUNCTION get_kinetic_energy(Ek)
+  IMPLICIT NONE
+  INTEGER :: res
+  INTEGER :: total_kinetic_energy
+  INTEGER :: get_kinetic_energy
+  DOUBLE PRECISION :: Ek
+
+  res = total_kinetic_energy(Ek)
+  get_kinetic_energy = 0
+END FUNCTION
+
+
 FUNCTION new_particle( index_of_the_particle, x, y, z)
   IMPLICIT NONE
   INTEGER :: new_particle
