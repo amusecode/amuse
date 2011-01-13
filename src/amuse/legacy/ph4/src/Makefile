@@ -27,14 +27,14 @@ RANLIB = ranlib
 RM = rm
 
 all: $(CODELIB) 
-	
+
 gpulib: $(CODELIB_GPU)
 
 $(CODELIB): $(CODEOBJS)
 	$(RM) -f $@
 	$(AR) $@ $(CODEOBJS)
 	$(RANLIB) $@
-	
+
 $(CODELIB_GPU): $(CODEOBJS_GPU)
 	echo $(CODEOBJS_GPU)
 	$(RM) -f $@
@@ -43,11 +43,10 @@ $(CODELIB_GPU): $(CODEOBJS_GPU)
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) -c -o $@ $< 
-	
+
 $(CODEOBJS_GPU): %.gpuo: %.cc
 	$(CXX) $(CXXFLAGS) $(GPUFLAGS) -c -o $@ $< 
-	
-	
+
 tar:
 	tar czf ph4.tgz Makefile.ph4 *.h *.cc plummer*.in*
 
