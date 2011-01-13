@@ -87,8 +87,8 @@
       call energy(2)
       potold = pot
 *
-      open(44,file='binarym.dat',access='append')
-      open(43,file='starm.dat',access='append')          
+      open(44,file=trim(datadir)//'/binarym.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')          
 *
       do 10 i = lmin,lmax
 *
@@ -395,7 +395,8 @@ c                 endif
 *      initial types of binary components: bh - wd, bh - ns, bh - bh
 *
                  if(ik1.eq.14.and.(ik2.ge.10.and.ik2.le.14)) then
-                   open(27,file='bhmergers.dat',access='append')
+                   open(27,file=trim(datadir)//'/bhmergers.dat',
+     &  access='append')
                    write(27,1000) im1,ibx,idb,id1,id2,ikind(im1),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -406,7 +407,8 @@ c                 endif
                   endif 
 *
                  if(ik2.eq.14.and.(ik1.ge.10.and.ik1.le.13)) then
-                   open(27,file='bhmergers.dat',access='append')
+                   open(27,file=trim(datadir)//'/bhmergers.dat',
+     &  access='append')
                    write(27,1000) im1,ibx,idb,id1,id2,ikind(im1),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -419,7 +421,8 @@ c                 endif
 *      initial types of binary components: bh - all types
 *
                  if(ik1.eq.14.or.ik2.eq.14) then
-                   open(28,file='bhmergers-all.dat',access='append')
+                   open(28,file=trim(datadir)//'/bhmergers-all.dat',
+     &  access='append')
                    write(28,1000) im1,ibx,idb,id1,id2,ikind(im1),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -432,7 +435,8 @@ c                 endif
 *      initial types of binary components: all types - all types
 *
                  if(ik1n.eq.14.or.ik2n.eq.14) then
-                   open(29,file='bhmergers-all-all.dat',access='append')
+                   open(29,file=trim(datadir)//'/bhmergers-all-all.dat',
+     &  access='append')
                    write(29,1010) im1,ibx,idb,id1,id2,ikind(im1),   
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,

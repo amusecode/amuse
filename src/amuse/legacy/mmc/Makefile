@@ -12,7 +12,7 @@ AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: worker_code
+all: worker_code $(CODELIB)
 
 clean:
 	$(RM) -f *.o *.pyc worker_code.f90  

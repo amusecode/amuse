@@ -53,12 +53,12 @@ cAdded DCH 4/1/7
       call flush(6)
       pctonbu = rtidkg/rbar
 *
-      open(10,file='lagrangi.dat',access='append')
-      open(11,file='velocity.dat',access='append')
-      open(12,file='anisotro.dat',access='append')
-      open(13,file='system.dat',access='append')
-      open(14,file='core.dat',access='append')
-      open(20,file='collabo.dat',access='append')
+      open(10,file=trim(datadir)//'/lagrangi.dat',access='append')
+      open(11,file=trim(datadir)//'/velocity.dat',access='append')
+      open(12,file=trim(datadir)//'/anisotro.dat',access='append')
+      open(13,file=trim(datadir)//'/system.dat',access='append')
+      open(14,file=trim(datadir)//'/core.dat',access='append')
+      open(20,file=trim(datadir)//'/collabo.dat',access='append')
 *
 *                 f90
 *
@@ -494,7 +494,7 @@ c  120 format(1x,i5,1p10e12.4,i9,1p3e12.4)
 *
       if(iesc1.gt.0) then
 *      
-        open(15,file='escape.dat',access='append')       
+        open(15,file=trim(datadir)//'/escape.dat',access='append')       
 *
         do 30 i=1,iesc1
    30      write(15,130) iseed,time,tphys,ienam1(i),iekind(i),
@@ -510,7 +510,7 @@ c  120 format(1x,i5,1p10e12.4,i9,1p3e12.4)
 *
       if(nbin3.gt.0) then
 *
-        open(17,file='bin3glo.dat',access='append')
+        open(17,file=trim(datadir)//'/bin3glo.dat',access='append')
 c        open(18,file='bin3inf.dat',access='append')
 c        open(19,file='bin3int.dat')
 c        open(19,file='bin3int.dat',access='append')
@@ -587,7 +587,7 @@ c      endif
       n1000 = 1000
       if(tphys.gt.tcrit) n1000 = n
 *
-      open(21,file='snapshot.dat',access='append')
+      open(21,file=trim(datadir)//'/snapshot.dat',access='append')
 *      open(21,file='snapshot.dat',position='append')
 *
       ttp = ttp + dttp
@@ -856,7 +856,7 @@ cAdded DCH 1/8/6
  10   continue
 *
       if(iprof.eq.1) then
-        open(22,file='profile.dat',access='append')
+        open(22,file=trim(datadir)//'/profile.dat',access='append')
         write (22,30) tphys
       endif
 *      open(22,file='profile.dat',position='append')

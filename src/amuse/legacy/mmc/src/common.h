@@ -10,6 +10,8 @@
       logical isnan
 *
       include 'params.h'
+
+      CHARACTER*200 datadir
 *
 *
 *      REAL*8  BODY,R,VR,VT,U,RO,VRO,VTO,UO,BIN2,BIN3,BINP,BIN4,SMTO,
@@ -515,3 +517,4 @@ c      INTEGER  IENAME,IESC,IESC1,IENAM1,IEKIND,IDUM2,IY,IV
 *
 *
 *
+     COMMON /AMUSE/ datadir

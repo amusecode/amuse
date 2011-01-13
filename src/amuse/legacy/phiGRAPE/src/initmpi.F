@@ -3,10 +3,9 @@
 #include <mpif.h>
       INCLUDE 'mpi.inc'
       INTEGER ierr
-
+        WRITE (*,*) "XXXXXX"
         CALL mpi_init(ierr)
 #endif
-      
       END 
 
       SUBROUTINE initmpi
@@ -23,6 +22,7 @@ C=========================================================================
 #ifndef NOMPI
 #include <mpif.h>
       INCLUDE 'mpi.inc'
+
 C---  local vars
       INTEGER ierr
 #endif

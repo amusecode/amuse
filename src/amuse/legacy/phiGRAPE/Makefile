@@ -4,7 +4,7 @@ MPIF90 ?= mpif90
 FC = $(MPIF90)
 CC = $(MPICC)
 
-OPTS+=-DNOMPI
+#OPTS+=-DNOMPI
 
 AMUSE_DIR?=../../../..
 

@@ -492,7 +492,7 @@ class TestHermite(TestWithMPI):
     def test13(self):
         particles = plummer.new_plummer_sphere(31)
        
-        instance = Hermite(number_of_workers=1)
+        instance = Hermite(number_of_workers=1, debugger="xterm")
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
         instance.particles.add_particles(particles)

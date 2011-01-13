@@ -615,6 +615,9 @@ C====================================================================
 #include "../../lib/stopcond/stopcond.inc"
       INTEGER i,initialize_code
       INTEGER set_support_for_condition, error
+
+      WRITE (*,*) "hELLO9"
+
 C     AMUSE STOPPING CONDITION SUPPORT
       error = set_support_for_condition(COLLISION_DETECTION)
       error = set_support_for_condition(PAIR_DETECTION)

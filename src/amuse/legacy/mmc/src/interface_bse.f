@@ -1146,6 +1146,8 @@ cAlso, an extra call to print_roche_data was also added to evBinary
        implicit none
        integer in,id
        double precision aRsun,e,m1,m2,a
+       character*200 datadir
+       common /AMUSE/ datadir
 
 C        if (in.ne.1) then
 C           write (6,*) 'in != 1 in init_binaries not implemented,',
@@ -1154,7 +1156,7 @@ C           stop
 C        endif
        a = aRsun
        call initBinary(in,id,a,e,m1,m2)
-       open (7,file='BSE.data')
+       open (7,file=trim(datadir)//'/BSE.data')
        write (7,*) '      TIME    M1     M2  KW1 KW2    SEP    ECC R1/',
      &     'ROL1 R2/ROL2  TYPE'
        return

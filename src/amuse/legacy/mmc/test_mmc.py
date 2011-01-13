@@ -6,8 +6,9 @@ from .interface import mmc
 
 class mmcInterfaceTests(TestWithMPI):
     
-    def xtest1(self):
+    def test1(self):
         instance = mmcInterface(redirection="file", redirect_file = "junk.txt")
+        instance.set_mmc_data_directory(instance.data_directory)
         instance.nonstandard_init()
         while (1):
             print instance.get_time()

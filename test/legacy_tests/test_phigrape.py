@@ -25,6 +25,7 @@ class TestMPIInterface(TestWithMPI):
         instance = PhiGRAPEInterface()
         self.assertTrue("Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P." 
             in instance.all_literature_references_string())
+        instance.stop()
 
     def test1(self):
         instance = PhiGRAPEInterface()
@@ -34,9 +35,10 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(11.0,  retrieved_state['mass'])
         self.assertEquals(2.0, retrieved_state['radius'])
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
-        instance.cleanup_code()
+        #instance.cleanup_code()
+        print "XXXX"
         instance.stop()
-        
+        print "XXX"
     def test2(self):
         instance = PhiGRAPEInterface()
         for x in [0.101, 4.0]:
@@ -46,7 +48,6 @@ class TestMPIInterface(TestWithMPI):
             self.assertEquals(error, 0)
             self.assertEquals(x, value)
         instance.stop()
-        
     
     def test3(self):
         instance = PhiGRAPEInterface()
@@ -65,7 +66,7 @@ class TestMPIInterface(TestWithMPI):
         retrieved_state = instance.get_state([2,3,4])
         self.assertEquals(12.0,  retrieved_state['mass'][0])
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 4)
-        instance.cleanup_code()
+        #instance.cleanup_code()
         instance.stop()
     
     def test5(self):
@@ -85,8 +86,9 @@ class TestMPIInterface(TestWithMPI):
             , values)
         retrieved_state = instance.get_state(3999)
         self.assertEquals(3999.0,  retrieved_state['mass'])
-        instance.cleanup_code()
-        
+        #instance.cleanup_code()
+        instance.stop()
+
     def test6(self):
         instance = PhiGRAPEInterface()
         instance.initialize_code()
@@ -106,15 +108,17 @@ class TestMPIInterface(TestWithMPI):
                 
         retrieved_state = instance.get_state(1)
         self.assertEquals(1.0,  retrieved_state['mass'])
-        instance.cleanup_code()
+        #instance.cleanup_code()
+        instance.stop()
 
     def test7(self):
         instance = PhiGRAPEInterface()#(debugger="xterm")
         instance.initialize_code()
+        print "1 "
         instance.set_eps2(0.0**2)
         instance.set_eta(0.01,0.02)
         instance.commit_parameters()
-        
+
         instance.new_particle( 
             [1.0,1.0,1.0],
             [0.0,0.0,0.0],
@@ -124,7 +128,7 @@ class TestMPIInterface(TestWithMPI):
             [0.0,1.0,0.0],
             [0.0,0.0,0.0],
             [0.0,0.0,0.0] )
-        instance.commit_particles()
+        instance.recommit_particles()
         Ep=instance.get_potential_energy()['potential_energy']
         Ek=instance.get_kinetic_energy()['kinetic_energy']
         self.assertEqual( Ek, 0.5)
@@ -139,10 +143,10 @@ class TestMPIInterface(TestWithMPI):
         self.assertEqual( Ek, 0.)
         self.assertEqual( Ep, -0.5)    
     
-        instance.cleanup_code()
+        #instance.cleanup_code()
         instance.stop()
 
-    def test8(self):
+    def xtest8(self):
         instance = PhiGRAPEInterface()
         instance.initialize_code()
         instance.set_eps2(0.0**2)
@@ -173,7 +177,6 @@ class TestMPIInterface(TestWithMPI):
         self.assertTrue( abs(state1['x'] - state2['x'])<0.2)
         """
         instance.stop()
-        
 
 class TestPhigrape(TestWithMPI):
     def new_system_of_sun_and_earth(self):

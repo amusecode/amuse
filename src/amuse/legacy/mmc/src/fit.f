@@ -4,7 +4,7 @@ cAttempt to fit numerical data from numeric-fit-svn to produce ideal model!
       dimension data(ndatamax,16),xinc(6),sig(ndatamax)
       integer xinc
       data xinc/1,2,3,4,6,8/
-      open (7,file='temp')
+      open (7,file=trim(datadir)//'/temp')
       i = 1
  10   continue
       read(7,*,end=20) (data(i,j),j=1,16)

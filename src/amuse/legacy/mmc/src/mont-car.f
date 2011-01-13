@@ -2087,7 +2087,7 @@ c             denb(i) = co/(rb(ib)**3 - rb(nmin1)**3)
 *
 *
       print*,'lmax,dt = ',lmax,tim
-      open(37,file='escape_binary.dat',access='append')
+      open(37,file=trim(datadir)//'/escape_binary.dat',access='append')
 *
       aursun = 214.95d0
       pctonbu = rtidkg/rbar
@@ -2409,8 +2409,8 @@ cChanged for M67:
 *
       common /timset/ tform(20),tb3f(20),tb3b3(20),tcoll(20)
 *
-      open(44,file='binarym.dat',access='append')
-      open(43,file='starm.dat',access='append')
+      open(44,file=trim(datadir)//'/binarym.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')
 
       n = nt
       sm2s = 0.d0
@@ -2862,7 +2862,7 @@ c            nameb(im1) = nbin3
 *              open input file and read initial parameters
 *
 *
-      open(1,file='mont.run')
+      open(1,file=trim(datadir)//'/mont.run')
 *
       read(1,*) ixx1,ixx2,istart,ncor,nmin,ixx3,nzonc,nminzo,ntwo,
      &          imodel,iprint,ib3f,iexch,tcrit,tcomp,qe,alphal,
@@ -3068,7 +3068,7 @@ c            nameb(im1) = nbin3
 *
       common /timset/ tform(20),tb3f(20),tb3b3(20),tcoll(20)
 *
-      open(43,file='starm.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')
 *           
       n = nt
       icoll = 0
@@ -3532,8 +3532,8 @@ c      enekin = enekin - zzz
 *
       if((nbin3-nescb3-ndist3-ndist4-ndiste-nmerge).eq.0) return
 *
-      open(44,file='binarym.dat',access='append')
-      open(43,file='starm.dat',access='append')
+      open(44,file=trim(datadir)//'/binarym.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')
 *
       n = nt
       c1 = float(nt)/log(gamma*nt)
@@ -5259,8 +5259,8 @@ c      endif
       call energy(2)
       potold = pot
 *
-      open(44,file='binarym.dat',access='append')
-      open(43,file='starm.dat',access='append')          
+      open(44,file=trim(datadir)//'/binarym.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')          
 *
       do 10 i = lmin,lmax
 *
@@ -5567,7 +5567,7 @@ c                 endif
 *      initial types of binary components: bh - wd, bh - ns, bh - bh
 *
                  if(ik1.eq.14.and.(ik2.ge.10.and.ik2.le.14)) then
-                   open(27,file='bhmergers.dat',access='append')
+                   open(27,file=trim(datadir)//'/bhmergers.dat',access='append')
                    write(27,1000) im1,ibx,idb,id1,id2,ikind(im1),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -5578,7 +5578,7 @@ c                 endif
                   endif 
 *
                  if(ik2.eq.14.and.(ik1.ge.10.and.ik1.le.13)) then
-                   open(27,file='bhmergers.dat',access='append')
+                   open(27,file=trim(datadir)//'/bhmergers.dat',access='append')
                    write(27,1000) im1,ibx,idb,id1,id2,ikind(im1),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -5591,7 +5591,7 @@ c                 endif
 *      initial types of binary components: bh - all types
 *
                  if(ik1.eq.14.or.ik2.eq.14) then
-                   open(28,file='bhmergers-all.dat',access='append')
+                   open(28,file=trim(datadir)//'/bhmergers-all.dat',access='append')
                    write(28,1000) im1,ibx,idb,id1,id2,ikind(im1),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -5604,7 +5604,7 @@ c                 endif
 *      initial types of binary components: all types - all types
 *
                  if(ik1n.eq.14.or.ik2n.eq.14) then
-                   open(29,file='bhmergers-all-all.dat',access='append')
+                   open(29,file=trim(datadir)//'/bhmergers-all-all.dat',access='append')
                    write(29,1010) im1,ibx,idb,id1,id2,ikind(im1),   
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -6577,7 +6577,7 @@ c     &      .or.xxl2.gt.0.01d0) then
 *      initial types of binary components: bh - wd, bh - ns, bh - bh
 *
           if(ik1.eq.14.and.(ik2.ge.10.and.ik2.le.14)) then
-            open(27,file='bhmergers.dat',access='append')
+            open(27,file=trim(datadir)//'/bhmergers.dat',access='append')
             write(27,1000) im1,ibx,idb,id1,id2,abs(ikind(im1)),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -6588,7 +6588,7 @@ c     &      .or.xxl2.gt.0.01d0) then
           endif 
 *
           if(ik2.eq.14.and.(ik1.ge.10.and.ik1.le.13)) then
-            open(27,file='bhmergers.dat',access='append')
+            open(27,file=trim(datadir)//'/bhmergers.dat',access='append')
             write(27,1000) im1,ibx,idb,id1,id2,abs(ikind(im1)),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -6601,7 +6601,7 @@ c     &      .or.xxl2.gt.0.01d0) then
 *      initial types of binary components: bh - all types
 *
           if(ik1.eq.14.or.ik2.eq.14) then
-            open(28,file='bhmergers-all.dat',access='append')
+            open(28,file=trim(datadir)//'/bhmergers-all.dat',access='append')
             write(28,1000) im1,ibx,idb,id1,id2,abs(ikind(im1)),
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -6614,7 +6614,7 @@ c     &      .or.xxl2.gt.0.01d0) then
 *      initial types of binary components: all types - all types
 *
           if(ik1n.eq.14.or.ik2n.eq.14) then
-            open(29,file='bhmergers-all-all.dat',access='append')
+            open(29,file=trim(datadir)//'/bhmergers-all-all.dat',access='append')
             write(29,1010) im1,ibx,idb,id1,id2,abs(ikind(im1)),   
      &  timevo,z,(zpars(kk),kk=1,20),vss,ecc0,semi0,tb0,ik0,ik1,tphys1,
      &  tphysf1,epoch1,tmstim1,smass1,s0mass1,scmass1,semass1,rad1,
@@ -7234,7 +7234,7 @@ c      include 'zdata.h'
 *       open restart file   -  restart.fil 
 *
 c       open(1,file='restart.fil',status='unknown',form='formatted')
-       open(1,file='restart.fil',status='unknown',form='unformatted')
+       open(1,file=trim(datadir)//'/restart.fil',status='unknown',form='unformatted')
 *
 *
 *       read all common variables saved for restart
@@ -8505,12 +8505,12 @@ cAdded DCH 4/1/7
       call flush(6)
       pctonbu = rtidkg/rbar
 *
-      open(10,file='lagrangi.dat',access='append')
-      open(11,file='velocity.dat',access='append')
-      open(12,file='anisotro.dat',access='append')
-      open(13,file='system.dat',access='append')
-      open(14,file='core.dat',access='append')
-      open(20,file='collabo.dat',access='append')
+      open(10,file=trim(datadir)//'/lagrangi.dat',access='append')
+      open(11,file=trim(datadir)//'/velocity.dat',access='append')
+      open(12,file=trim(datadir)//'/anisotro.dat',access='append')
+      open(13,file=trim(datadir)//'/system.dat',access='append')
+      open(14,file=trim(datadir)//'/core.dat',access='append')
+      open(20,file=trim(datadir)//'/collabo.dat',access='append')
 *
 *                 f90
 *
@@ -8870,7 +8870,7 @@ c
 *
       if(iesc1.gt.0) then
 *      
-        open(15,file='escape.dat',access='append')       
+        open(15,file=trim(datadir)//'/escape.dat',access='append')       
 *
         do 30 i=1,iesc1
    30      write(15,130) iseed,time,tphys,ienam1(i),iekind(i),
@@ -8886,9 +8886,9 @@ c
 *
       if(nbin3.gt.0) then
 *
-        open(17,file='bin3glo.dat',access='append')
-        open(18,file='bin3inf.dat',access='append')
-        open(19,file='bin3int.dat')
+        open(17,file=trim(datadir)//'/bin3glo.dat',access='append')
+        open(18,file=trim(datadir)//'/bin3inf.dat',access='append')
+        open(19,file=trim(datadir)//'/bin3int.dat')
 c        open(19,file='bin3int.dat',access='append')
 *        open(17,file='bin3glo.dat',position='append')
 *        open(18,file='bin3inf.dat',position='append')
@@ -8954,7 +8954,7 @@ c
 *
       if((tphys.eq.0.d0).or.(tphys.ge.ttp).or.time.gt.tcrit) then
 *
-      open(21,file='snapshot.dat',access='append')
+      open(21,file=trim(datadir)//'/snapshot.dat',access='append')
 *      open(21,file='snapshot.dat',position='append')
 *
       ttp = ttp + dttp
@@ -9211,7 +9211,7 @@ cAdded DCH 1/8/6
  20      continue
  10   continue
 *
-      open(22,file='profile.dat',access='append')
+      open(22,file=trim(datadir)//'/profile.dat',access='append')
 *      open(22,file='profile.dat',position='append')
 *      
       write (22,30) tphys
@@ -12251,7 +12251,7 @@ C           stop
 C        endif
        a = aRsun
        call initBinary(in,id,a,e,m1,m2)
-       open (7,file='BSE.data')
+       open (7,file=trim(datadir)//'/BSE.data')
        write (7,*) '      TIME    M1     M2  KW1 KW2    SEP    ECC R1/',
      &     'ROL1 R2/ROL2  TYPE'
        return
@@ -20048,7 +20048,7 @@ C       END
       REAL*8 wtgr(ntgr2),wggr(nggr2),wubv(ntgr2,nggr2,5)
       COMMON /wubvdata/ wtgr,wggr,wubv
 *
-      OPEN(23,file='Kurucz.dat',
+      OPEN(23,file=trim(datadir)//'/Kurucz.dat',
      &        form='formatted',status='old')
       do k = 1, nzgr
          do i = 1, ntgr
@@ -20063,7 +20063,7 @@ c....... zgr=log(Z/0.02), assuming X=0.76-3*Z and Z(sun)=0.02
       end do
       CLOSE(23)
 *
-      OPEN(24,file='wdhyd.dat',
+      OPEN(24,file=trim(datadir)//'/wdhyd.dat',
      &        form='formatted',status='old')
       do j = 1,nggr2
          do i = 1,ntgr2

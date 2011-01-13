@@ -50,8 +50,8 @@
 *
       if((nbin3-nescb3-ndist3-ndist4-ndiste-nmerge).eq.0) return
 *
-      open(44,file='binarym.dat',access='append')
-      open(43,file='starm.dat',access='append')
+      open(44,file=trim(datadir)//'/binarym.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')
 *
       n = nt
       c1 = float(nt)/log(gamma*nt)

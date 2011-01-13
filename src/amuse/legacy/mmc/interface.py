@@ -1,11 +1,21 @@
 from amuse.legacy import *
-
+from amuse.support.options import OptionalAttributes, option
+import os
 class mmcInterface(LegacyInterface):
     
     use_modules = ['MMC']
     
     def __init__(self, **keyword_arguments):
         LegacyInterface.__init__(self, **keyword_arguments)
+
+    @option(type="string")
+    def data_directory(self):
+        """
+        The root name of the directory for the EVTwin
+        application data files. This directory should contain the
+        zams data and init.run and init.dat.
+        """
+        return os.path.join(get_amuse_root_dir(), 'data', 'mmc')
 
     @legacy_function
     def nonstandard_init():
@@ -18,7 +28,14 @@ class mmcInterface(LegacyInterface):
         function = LegacyFunctionSpecification()
         function.result_type = 'int32'
         return function
-        
+
+    @legacy_function
+    def set_mmc_data_directory():
+        function = LegacyFunctionSpecification()
+        function.addParameter('data_directory', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
     @legacy_function
     def new_particle():
         function = LegacyFunctionSpecification()

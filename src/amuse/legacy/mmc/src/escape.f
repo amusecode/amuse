@@ -25,7 +25,8 @@
 *
 *
       print*,'lmax,dt = ',lmax,tim
-      open(37,file='escape_binary.dat',access='append')
+*cello
+      open(37,file=trim(datadir)//'/escape_binary.dat',access='append')
 *
       aursun = 214.95d0
       pctonbu = rtidkg/rbar

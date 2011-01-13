@@ -54,8 +54,8 @@
 *
       if((nbin3-nescb3-ndist3-ndist4-ndiste-nmerge).le.1) return
 *
-      open(44,file='binarym.dat',access='append')
-      open(43,file='starm.dat',access='append')
+      open(44,file=trim(datadir)//'/binarym.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')
 *
       deb3s = 0.d0
       co = float(nt)/log(gamma*nt)

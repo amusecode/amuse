@@ -3,10 +3,10 @@
       integer is,nt,nb,nc,i,ii,k,kk,kkk,l,ll
       dimension x(14),xx(4),xxx(4),i(4),ii(13)
 *
-      open(10,file='lagrangi.dat')
-      open(11,file='system.dat')
-      open(12,file='core.dat')
-      open(13,file='rcrh.dat')
+      open(10,file=trim(datadir)//'/lagrangi.dat')
+      open(11,file=trim(datadir)//'/system.dat')
+      open(12,file=trim(datadir)//'/core.dat')
+      open(13,file=trim(datadir)//'/rcrh.dat')
 *
  10   continue
 *

@@ -23,7 +23,7 @@
 *
       common /timset/ tform(20),tb3f(20),tb3b3(20),tcoll(20)
 *
-      open(43,file='starm.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')
 *           
       n = nt
       icoll = 0

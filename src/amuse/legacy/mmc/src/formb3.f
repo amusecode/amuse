@@ -28,8 +28,8 @@
 *
       common /timset/ tform(20),tb3f(20),tb3b3(20),tcoll(20)
 *
-      open(44,file='binarym.dat',access='append')
-      open(43,file='starm.dat',access='append')
+      open(44,file=trim(datadir)//'/binarym.dat',access='append')
+      open(43,file=trim(datadir)//'/starm.dat',access='append')
 
       n = nt
       sm2s = 0.d0

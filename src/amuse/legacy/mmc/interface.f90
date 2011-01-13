@@ -7,10 +7,17 @@ FUNCTION nonstandard_init()
   INTEGER :: init_sequence
   INTEGER :: res
   ! read initial parameters
-  print*,'calling input'
+  PRINT*,'calling input'
   res = init_sequence()
   nonstandard_init = res
-  print*,'init done'
+  PRINT*,'init done'
+END FUNCTION
+
+FUNCTION set_mmc_data_directory(data_directory) 
+  INTEGER :: set_mmc_data_directory
+  CHARACTER(len=200) :: data_directory
+  CALL amuse_set_mmc_data_directory(data_directory)
+  set_mmc_data_directory = 0
 END FUNCTION
 
 FUNCTION get_time(time)
@@ -67,10 +74,10 @@ FUNCTION get_state( index_of_the_particle, x, y, z)
   get_state=0
 END FUNCTION
 
-FUNCTION get_number_of_particles( value)
+FUNCTION get_number_of_particles( VALUE)
   IMPLICIT NONE
   INTEGER :: get_number_of_particles
-  INTEGER :: value
+  INTEGER :: VALUE
   get_number_of_particles=0
 END FUNCTION
 

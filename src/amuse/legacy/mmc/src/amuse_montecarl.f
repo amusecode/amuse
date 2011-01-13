@@ -60,6 +60,14 @@ c     if (res.lt.0) exit
       parameter_test = 0
       end function
 
+      subroutine amuse_set_mmc_data_directory(datadir_)
+        include 'common.h'
+        character(len=200), intent(in) :: datadir_
+        datadir=datadir_
+        print*, "datadir:"
+        print*, datadir
+      end subroutine
+
       function total_kinetic_energy(Ek)
       include 'common.h'
       integer total_kinetic_energy

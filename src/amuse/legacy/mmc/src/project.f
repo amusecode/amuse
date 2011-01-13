@@ -4,8 +4,8 @@ cProgram to project a snap12.dat file (which must be so named)
      &     teff,epoch1,epoch2,mv,mbv,mi,mv1,mbv1,mi1,mv2,
      &     mbv2,mi2,spin1,spin2,ecc,rp
                
-      open (7,file='snap12.dat')
-      open (8,file='snap12p.dat')
+      open (7,file=trim(datadir)//'/snap12.dat')
+      open (8,file=trim(datadir)//'/snap12p.dat')
       idum = 2
  10   continue
 *

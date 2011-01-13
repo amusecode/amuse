@@ -223,7 +223,7 @@ cCentral velocity dispersion**2 (3-dimensional)
       endif
 c      CALL SOLVDE(ITMAX,CONV,SLOWC,SCALV,INDEXV,NE,NB,M,Y,NYJ,NYK,
 c     *     C,NCI,NCJ,NCK,S,NSI,NSJ)
-      open(8,file='fort8.out')
+      open(8,file=trim(datadir)//'/fort8.out')
       do j = 1,m
          write (8,100) sqrt(yking(1,j)),densty(acoefft,m2,xdch(j),w0), 
      &        xdch(j), (yking(i,j),i=1,2)

@@ -1,5 +1,5 @@
-GFORTRAN module version '4' created from interface.f90 on Wed Jan 12 13:21:45 2011
-MD5:c280d184d165d0095f1acef967674b00 -- If you edit this, you'll get what you deserve.
+GFORTRAN module version '4' created from interface.f90 on Thu Jan 13 15:11:52 2011
+MD5:082cca2b18e68ece6a6d00b93b4bb404 -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () () ()
 () () ())
@@ -46,9 +46,15 @@ INTEGER ()) 0 0 () () 32 () () () 0 0)
 33 'run' 'mmc' 'run' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL
 UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 33 () () () 0
 0)
-34 'set_state' 'mmc' 'set_state' 1 ((PROCEDURE UNKNOWN-INTENT
-MODULE-PROC DECL UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 35 0 (
-36 37 38 39) () 34 () () () 0 0)
+34 'set_mmc_data_directory' 'mmc' 'set_mmc_data_directory' 1 ((
+PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL UNKNOWN 0 0 FUNCTION) (
+INTEGER 4 0 0 INTEGER ()) 35 0 (36) () 34 () () () 0 0)
+37 'set_state' 'mmc' 'set_state' 1 ((PROCEDURE UNKNOWN-INTENT
+MODULE-PROC DECL UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 38 0 (
+39 40 41 42) () 37 () () () 0 0)
+36 'data_directory' '' 'data_directory' 35 ((VARIABLE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (CHARACTER 1 0 0 CHARACTER ((
+CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '200'))) 0 0 () () 0 () () () 0 0)
 20 'time' '' 'time' 19 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
 UNKNOWN 0 0 DUMMY) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 8 'ek' '' 'ek' 7 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
@@ -65,14 +71,14 @@ INTEGER ()) 0 0 () () 0 () () () 0 0)
 5 'index_of_the_particle' '' 'index_of_the_particle' 4 ((VARIABLE
 UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0
 INTEGER ()) 0 0 () () 0 () () () 0 0)
-36 'index_of_the_particle' '' 'index_of_the_particle' 35 ((VARIABLE
+39 'index_of_the_particle' '' 'index_of_the_particle' 38 ((VARIABLE
 UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0
 INTEGER ()) 0 0 () () 0 () () () 0 0)
-37 'x' '' 'x' 35 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
+40 'x' '' 'x' 38 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
 0 0 DUMMY) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-38 'y' '' 'y' 35 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
+41 'y' '' 'y' 38 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
 0 0 DUMMY) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-39 'z' '' 'z' 35 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
+42 'z' '' 'z' 38 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
 0 0 DUMMY) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 14 'index_of_the_particle' '' 'index_of_the_particle' 13 ((VARIABLE
 UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0
@@ -96,4 +102,5 @@ UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (CHARACTER 1 0 0 CHARACTER (()))
 ('commit_parameters' 0 2 'delete_particle' 0 3 'get_kinetic_energy' 0 6
 'get_number_of_particles' 0 9 'get_state' 0 12 'get_time' 0 18
 'internal__redirect_outputs' 0 21 'mmc' 0 25 'new_particle' 0 26
-'nonstandard_init' 0 32 'run' 0 33 'set_state' 0 34)
+'nonstandard_init' 0 32 'run' 0 33 'set_mmc_data_directory' 0 34
+'set_state' 0 37)

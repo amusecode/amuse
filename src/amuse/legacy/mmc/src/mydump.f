@@ -29,6 +29,9 @@ c      include 'zdata.h'
 *
 *     monte carlo commons
 *
+
+      character*200 datadir
+
       common /param/  y1(i1)
       common /coefi/  y2(i2)
       common /body/   y3(i3)
@@ -68,11 +71,13 @@ c      include 'zdata.h'
       common /rand3/ iys3(i29)
       common /types/ iys4(i30,i30)
       common /flags/ iys5(i31)
+      common /AMUSE/ datadir
 *
 *       open restart file   -  restart.fil 
 *
 c       open(1,file='restart.fil',status='unknown',form='formatted')
-       open(1,file='restart.fil',status='unknown',form='unformatted')
+       open(1,file=trim(datadir)//'/restart.fil',status='unknown',
+     &      form='unformatted')
 *
 *
 *       read all common variables saved for restart

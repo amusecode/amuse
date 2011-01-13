@@ -27,12 +27,6 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
             return 'phigrape_worker_gpu'
         elif mode == self.MODE_GRAPE:
             return 'phigrape_worker_grape'
-        
-
-    
-
-    
-
 
     def initialize_particles(self, time):
         return self.commit_particles()
@@ -171,9 +165,6 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
         function.must_handle_array = True
         function.result_type = 'int32'
         return function
-
-
-    
 
 class PhiGRAPEInterfaceGL(PhiGRAPEInterface):
 
