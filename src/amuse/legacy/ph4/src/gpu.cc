@@ -20,7 +20,9 @@
 // No need to check jdata::use_gpu here, as the GPU functions will
 // only be called if use_gpu = true.
 
+#ifdef GPU
 static int clusterid = 0;
+#endif
 
 void jdata::initialize_gpu(bool reinitialize)	// default = false
 {
