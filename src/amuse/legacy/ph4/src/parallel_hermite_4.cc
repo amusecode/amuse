@@ -146,7 +146,7 @@ void initialize_particles(jdata &jd, int nj, int seed,
 
 	    // Force the id to be the one in the input file.
 
-	    jd.add_particle(mass, radius, pos, vel, id);
+	    jd.add_particle(mass, radius, pos, 0.1*vel, id);
 	}
 
 	s.close();
@@ -199,6 +199,9 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     sched.print();
     real t_out = dt_out;
 
+    real dt_log = 1./16, t_log = dt_log;
+    jd.log_output(&id);
+
     int step = 0;
     while (jd.system_time < t_max) {
 
@@ -210,7 +213,14 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	cout.precision(p);
 #endif
 
-	// Special treatment of close encounters (for non-AMUSE code).
+	// Special treatment of close encounters (non-AMUSE code, for
+	// now).
+
+	// In AMUSE, we would return with a collision flag set, then
+	// get close1 and close2, and call the multiples module to
+	// handle the encounter.  We still need additional (and
+	// separate) AMUSE functions to synchronize the neighbors and
+	// correct the tidal errors.
 
 	if (jd.close1 >= 0 && jd.eps2 == 0) {
 	    bool status = jd.resolve_encounter(id, sched);
@@ -222,6 +232,16 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	}
 
 	step++;
+
+	// Special output.  Need a better name...
+
+	if (jd.system_time >= t_log) {
+	    jd.log_output(&id);
+	    t_log += dt_log;
+	}
+
+	// Routine output.
+
 	if (jd.system_time >= t_out || jd.system_time >= t_max) {
 	    jd.print(&id);
 	    if (jd.system_time >= t_max) sched.print();
