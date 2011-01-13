@@ -5,6 +5,7 @@
 // N-body system.
 
 #include "stdinc.h"
+#include <vector>
 #include <map>
 
 class scheduler;
@@ -100,6 +101,7 @@ class jdata {
     void synchronize_list(int jlist[], int njlist,
 			  idata& id, scheduler *sched);
     void print(idata *id = NULL);
+    void log_output(idata *id);
 
     // In gpu.cc:
 
@@ -110,6 +112,9 @@ class jdata {
     // In diag.cc:
 
     vec get_center();
+    void get_lagrangian_radii(vector<real>& mlist,
+			      vector<real>& rlist,
+			      vec center = 0);
     void print_percentiles(vec center = 0);
 
     // In close_encounter.cc:

@@ -655,6 +655,23 @@ void jdata::print(idata *id)
     }
 }
 
+void jdata::log_output(idata *id)
+{
+    // Rudimentary log output...
+
+    if (mpi_rank == 0) {
+	vector<real> mlist, rlist;
+	mlist.push_back(0.1);
+	mlist.push_back(0.5);
+	mlist.push_back(0.9);
+	rlist.clear();
+	get_lagrangian_radii(mlist, rlist);
+	cout << "%%% " << system_time << " "
+	     << rlist[0] << " " << rlist[1] << " " << rlist[2]
+	     << endl << flush;
+	    }
+}
+
 void jdata::cleanup()
 {
     const char *in_function = "jdata::cleanup";
