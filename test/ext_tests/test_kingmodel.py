@@ -36,6 +36,5 @@ class TestKingModel(amusetest.TestCase):
         self.assertRaises(AmuseException, new_king_model, number_of_particles, W0 = 16.5, 
             expected_message = "makeking: must specify w0 < 16")
         
-        self.assertRaises(ZeroDivisionError, new_king_model, number_of_particles, W0 = 0.0, 
-            expected_message = "float division")
+        self.assertRaises(ZeroDivisionError, new_king_model, number_of_particles, W0 = 0.0)
     
