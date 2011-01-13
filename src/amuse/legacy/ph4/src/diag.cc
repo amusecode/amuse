@@ -69,49 +69,58 @@ class mrdata {
 
 bool operator < (const mrdata& x, const mrdata& y) {return x.r_sq < y.r_sq;}
 
-void jdata::print_percentiles(vec center)	// default = (0,0,0)
+void jdata::get_lagrangian_radii(vector<real>& mlist,
+				 vector<real>& rlist,
+				 vec center)	// default = (0,0,0)
 {
-    // Probably should parallelize this...
+    // Compute lagrangian radii corresponding to the input lagrangian
+    // masses.  Probably should parallelize this...
 
-    if (mpi_rank == 0) {
+    vector<mrdata> mrlist;
+    real total_mass = 0;
+    for (int j = 0; j < nj; j++) {
+	total_mass += mass[j];
+	real r_sq = 0;
+	for (int k = 0; k < 3; k++)
+	    r_sq += pow(pos[j][k] - center[k], 2);
+	mrlist.push_back(mrdata(id[j], mass[j], r_sq));
+    }
 
-	// For now, just do a simple STL sort on node 0.
+    sort(mrlist.begin(), mrlist.end());
 
-	vector<mrdata> mrlist;
-	real total_mass = 0;
-	for (int j = 0; j < nj; j++) {
-	    total_mass += mass[j];
-	    real r_sq = 0;
-	    for (int k = 0; k < 3; k++)
-		r_sq += pow(pos[j][k] - center[k], 2);
-	    mrlist.push_back(mrdata(id[j], mass[j], r_sq));
-	}
+    // Extract the desired radii.
 
-	sort(mrlist.begin(), mrlist.end());
+    vector<real>::const_iterator miter = mlist.begin();
+    real mcurr = 0;
+    rlist.clear();
 
-	real mcurr = 0;
-	bool ten = false, fifty = false, ninety = false;    // clumsy -- to
-							    // be improved
+    for (vector<mrdata>::const_iterator mriter = mrlist.begin();
+	 mriter != mrlist.end(); mriter++) {
+	mcurr += mriter->mass;
 
-	for (vector<mrdata>::const_iterator iter = mrlist.begin();
-	     iter != mrlist.end(); iter++) {
-	    mcurr += iter->mass;
-	    if (!ten) {
-		if (mcurr > total_mass/10) {
-		    cout << "10% radius = " << sqrt(iter->r_sq) << endl;
-		    ten = true;
-		}
-	    } else if (!fifty) {
-		if (mcurr > total_mass/2) {
-		    cout << "50% radius = " << sqrt(iter->r_sq) << endl;
-		    fifty = true;
-		}
-	    } else if (!ninety) {
-		if (mcurr > 9*total_mass/10) {
-		    cout << "90% radius = " << sqrt(iter->r_sq) << endl;
-		    break;
-		}
-	    }
+	if (mcurr >= *miter) {
+	    rlist.push_back(sqrt(mriter->r_sq));
+	    miter++;
+	    if (miter == mlist.end()) break;
 	}
     }
+    mpi_comm.Barrier();
+}
+
+void jdata::print_percentiles(vec center)	// default = (0,0,0)
+{
+    // Print selected percentiles.
+
+    vector<real> mlist, rlist;
+
+    mlist.push_back(0.1);
+    mlist.push_back(0.5);
+    mlist.push_back(0.9);
+    rlist.clear();
+
+    get_lagrangian_radii(mlist, rlist, center);
+
+    cout << "10% radius = " << rlist[0] << endl;
+    cout << "50% radius = " << rlist[1] << endl;
+    cout << "90% radius = " << rlist[2] << endl;
 }
