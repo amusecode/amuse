@@ -100,4 +100,41 @@ FUNCTION commit_parameters( )
   commit_parameters=0
 END FUNCTION
 
+FUNCTION set_irun(init_sequence_of_rnd_numbs)
+  COMMON /IPARAM/ IRUN
+  INTEGER IRUN
+  INTEGER init_sequence_of_rnd_numbs
+  INTEGER set_irun 
+  irun = init_sequence_of_rnd_numbs
+  set_irun = 0
+END FUNCTION set_irun
+
+FUNCTION set_nt(tot_numb_of_objs)
+  COMMON /IPARAM/ NT
+  INTEGER NT
+  INTEGER tot_numb_of_objs
+  INTEGER set_nt
+  nt = tot_numb_of_objs
+  set_nT = 0
+END FUNCTION set_nt
+
+FUNCTION set_istart(start_or_restart)
+  COMMON /IPARAM/ ISTART
+  INTEGER ISTART
+  INTEGER start_or_restart
+  INTEGER set_istart
+  istart = start_or_restart
+  set_istart = 0
+END FUNCTION set_istart
+
+FUNCTION set_ncor(numb_of_stars_to_calc_c_parms)
+  COMMON /IPARAM/ NCOR
+  INTEGER NCOR
+  INTEGER numb_of_stars_to_calc_c_parms
+  INTEGER set_nt
+  ncor = numb_of_stars_to_calc_c_parms
+  set_ncor = 0
+END FUNCTION set_ncor
+
+
 END MODULE

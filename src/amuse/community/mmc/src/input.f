@@ -15,7 +15,7 @@
 *
 *
 *      open(1,file='src/mont.run')
-      open(1,file=trim(datadir)//'/mont.run')
+      open(1,file=trim(datadir)//'/static/mont.run')
 *
       read(1,*) ixx1,ixx2,istart,ncor,nmin,ixx3,nzonc,nminzo,ntwo,
      &          imodel,iprint,ib3f,iexch,tcrit,tcomp,qe,alphal,

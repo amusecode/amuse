@@ -66,7 +66,7 @@ SOURCE_AMUSE += amuse_output.f
 OBJECTS = $(SOURCE:.f=.o) plumix.o rand.o
 OBJECTS_AMUSE = $(SOURCE_AMUSE:.f=.o) plumix.o rand.o
 
-amuse: $(OBJECTS_AMUSE) params.h amuse_globals.h
+amuse: $(OBJECTS_AMUSE) params.h
 	$(RM) -f libmmc.a
 	$(AR) libmmc.a $(OBJECTS_AMUSE)
 	$(RANLIB) libmmc.a

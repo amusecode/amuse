@@ -2862,7 +2862,7 @@ c            nameb(im1) = nbin3
 *              open input file and read initial parameters
 *
 *
-      open(1,file=trim(datadir)//'/mont.run')
+      open(1,file=trim(datadir)//'/static/mont.run')
 *
       read(1,*) ixx1,ixx2,istart,ncor,nmin,ixx3,nzonc,nminzo,ntwo,
      &          imodel,iprint,ib3f,iexch,tcrit,tcomp,qe,alphal,
@@ -20048,7 +20048,7 @@ C       END
       REAL*8 wtgr(ntgr2),wggr(nggr2),wubv(ntgr2,nggr2,5)
       COMMON /wubvdata/ wtgr,wggr,wubv
 *
-      OPEN(23,file=trim(datadir)//'/Kurucz.dat',
+      OPEN(23,file=trim(datadir)//'/static/Kurucz.dat',
      &        form='formatted',status='old')
       do k = 1, nzgr
          do i = 1, ntgr
@@ -20063,7 +20063,7 @@ c....... zgr=log(Z/0.02), assuming X=0.76-3*Z and Z(sun)=0.02
       end do
       CLOSE(23)
 *
-      OPEN(24,file=trim(datadir)//'/wdhyd.dat',
+      OPEN(24,file=trim(datadir)//'/static/wdhyd.dat',
      &        form='formatted',status='old')
       do j = 1,nggr2
          do i = 1,ntgr2

@@ -1,5 +1,5 @@
-GFORTRAN module version '4' created from interface.f90 on Thu Jan 13 15:11:52 2011
-MD5:082cca2b18e68ece6a6d00b93b4bb404 -- If you edit this, you'll get what you deserve.
+GFORTRAN module version '4' created from interface.f90 on Fri Jan 14 15:14:26 2011
+MD5:84faf213d15ce06a7c6c4a558ac5a44c -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () () ()
 () () ())
@@ -46,13 +46,25 @@ INTEGER ()) 0 0 () () 32 () () () 0 0)
 33 'run' 'mmc' 'run' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL
 UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 0 0 () () 33 () () () 0
 0)
-34 'set_mmc_data_directory' 'mmc' 'set_mmc_data_directory' 1 ((
-PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL UNKNOWN 0 0 FUNCTION) (
-INTEGER 4 0 0 INTEGER ()) 35 0 (36) () 34 () () () 0 0)
-37 'set_state' 'mmc' 'set_state' 1 ((PROCEDURE UNKNOWN-INTENT
+34 'set_irun' 'mmc' 'set_irun' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC
+DECL UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 35 0 (36) () 34 ()
+() () 0 0)
+37 'set_istart' 'mmc' 'set_istart' 1 ((PROCEDURE UNKNOWN-INTENT
 MODULE-PROC DECL UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 38 0 (
-39 40 41 42) () 37 () () () 0 0)
-36 'data_directory' '' 'data_directory' 35 ((VARIABLE UNKNOWN-INTENT
+39) () 37 () () () 0 0)
+40 'set_mmc_data_directory' 'mmc' 'set_mmc_data_directory' 1 ((
+PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL UNKNOWN 0 0 FUNCTION) (
+INTEGER 4 0 0 INTEGER ()) 41 0 (42) () 40 () () () 0 0)
+43 'set_ncor' 'mmc' 'set_ncor' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC
+DECL UNKNOWN 0 0 FUNCTION) (REAL 4 0 0 REAL ()) 44 0 (45) () 43 () () ()
+0 0)
+46 'set_nt' 'mmc' 'set_nt' 1 ((PROCEDURE UNKNOWN-INTENT MODULE-PROC DECL
+UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 47 0 (48) () 46 () () ()
+0 0)
+49 'set_state' 'mmc' 'set_state' 1 ((PROCEDURE UNKNOWN-INTENT
+MODULE-PROC DECL UNKNOWN 0 0 FUNCTION) (INTEGER 4 0 0 INTEGER ()) 50 0 (
+51 52 53 54) () 49 () () () 0 0)
+42 'data_directory' '' 'data_directory' 41 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (CHARACTER 1 0 0 CHARACTER ((
 CONSTANT (INTEGER 4 0 0 INTEGER ()) 0 '200'))) 0 0 () () 0 () () () 0 0)
 20 'time' '' 'time' 19 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN
@@ -71,14 +83,14 @@ INTEGER ()) 0 0 () () 0 () () () 0 0)
 5 'index_of_the_particle' '' 'index_of_the_particle' 4 ((VARIABLE
 UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0
 INTEGER ()) 0 0 () () 0 () () () 0 0)
-39 'index_of_the_particle' '' 'index_of_the_particle' 38 ((VARIABLE
+51 'index_of_the_particle' '' 'index_of_the_particle' 50 ((VARIABLE
 UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0
 INTEGER ()) 0 0 () () 0 () () () 0 0)
-40 'x' '' 'x' 38 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
+52 'x' '' 'x' 50 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
 0 0 DUMMY) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-41 'y' '' 'y' 38 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
+53 'y' '' 'y' 50 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
 0 0 DUMMY) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
-42 'z' '' 'z' 38 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
+54 'z' '' 'z' 50 ((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN
 0 0 DUMMY) (REAL 8 0 0 REAL ()) 0 0 () () 0 () () () 0 0)
 14 'index_of_the_particle' '' 'index_of_the_particle' 13 ((VARIABLE
 UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0
@@ -97,10 +109,23 @@ UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (CHARACTER 1 0 0 CHARACTER (()))
 24 'stderrfile' '' 'stderrfile' 22 ((VARIABLE UNKNOWN-INTENT
 UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (CHARACTER 1 0 0 CHARACTER (()))
 0 0 () () 0 () () () 0 0)
+36 'init_sequence_of_rnd_numbs' '' 'init_sequence_of_rnd_numbs' 35 ((
+VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
+48 'tot_numb_of_objs' '' 'tot_numb_of_objs' 47 ((VARIABLE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0 INTEGER ()) 0 0 ()
+() 0 () () () 0 0)
+39 'start_or_restart' '' 'start_or_restart' 38 ((VARIABLE UNKNOWN-INTENT
+UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (INTEGER 4 0 0 INTEGER ()) 0 0 ()
+() 0 () () () 0 0)
+45 'numb_of_stars_to_calc_c_parms' '' 'numb_of_stars_to_calc_c_parms' 44
+((VARIABLE UNKNOWN-INTENT UNKNOWN-PROC UNKNOWN UNKNOWN 0 0 DUMMY) (
+INTEGER 4 0 0 INTEGER ()) 0 0 () () 0 () () () 0 0)
 )
 
 ('commit_parameters' 0 2 'delete_particle' 0 3 'get_kinetic_energy' 0 6
 'get_number_of_particles' 0 9 'get_state' 0 12 'get_time' 0 18
 'internal__redirect_outputs' 0 21 'mmc' 0 25 'new_particle' 0 26
-'nonstandard_init' 0 32 'run' 0 33 'set_mmc_data_directory' 0 34
-'set_state' 0 37)
+'nonstandard_init' 0 32 'run' 0 33 'set_irun' 0 34 'set_istart' 0 37
+'set_mmc_data_directory' 0 40 'set_ncor' 0 43 'set_nt' 0 46 'set_state'
+0 49)
