@@ -24,16 +24,16 @@ except ImportError:
     is_configured = False
     
     
-class LegacyCommand(Command):
+class CodeCommand(Command):
     user_options = [
-        ('legacy-dir=', 'd', "directory containing legacy codes"),
+        ('code-dir=', 'd', "directory containing codes"),
         ('lib-dir=', 'l', "directory containing libraries to build"),
     ]
 
     boolean_options = ['force']
 
     def initialize_options (self):
-        self.legacy_dir = None
+        self.codes_dir = None
         self.lib_dir = None
         self.amuse_src_dir =  os.path.join('src','amuse')
         self.environment = {}
@@ -42,8 +42,8 @@ class LegacyCommand(Command):
         self.found_sapporo = False
         
     def finalize_options (self):
-        if self.legacy_dir is None:
-            self.legacy_dir = os.path.join(self.amuse_src_dir,'community')
+        if self.codes_dir is None:
+            self.codes_dir = os.path.join(self.amuse_src_dir,'community')
         
         if self.lib_dir is None:
             self.lib_dir = 'lib'
@@ -188,12 +188,12 @@ class LegacyCommand(Command):
      
     
             
-    def subdirs_in_legacy_dir(self):
-        names = os.listdir(self.legacy_dir)
+    def subdirs_in_codes_dir(self):
+        names = os.listdir(self.codes_dir)
         for name in names:
             if name.startswith('.'):
                 continue
-            path = os.path.join(self.legacy_dir, name)
+            path = os.path.join(self.codes_dir, name)
             if os.path.isdir(path):
                 yield path
                 
@@ -216,7 +216,7 @@ class LegacyCommand(Command):
                     
     def makefile_paths(self):
                     
-        for x in self.subdirs_in_legacy_dir():
+        for x in self.subdirs_in_codes_dir():
             for name in ('makefile', 'Makefile'):
                 makefile_path = os.path.join(x, name)
                 if os.path.exists(makefile_path):
@@ -275,9 +275,9 @@ class LegacyCommand(Command):
                     result.append((line[:index_of_the_colon], targetname,))
         return result
         
-class BuildLegacy(LegacyCommand):
+class BuildCodes(CodeCommand):
 
-    description = "build interfaces to legacy codes"
+    description = "build interfaces to codes"
     
     def run_make_on_directory(self, codename, directory, target, environment):
         buildlog = "{0}-{1}-build.log".format(codename, target)
@@ -310,7 +310,7 @@ class BuildLegacy(LegacyCommand):
         makefile_paths = list(self.makefile_paths())
         
         for x in makefile_paths:
-            shortname = x[len(self.legacy_dir) + 1:].lower()
+            shortname = x[len(self.codes_dir) + 1:].lower()
             starttime = datetime.datetime.now()
             self.announce("[{1:%H:%M:%S}] building {0}".format(shortname, starttime), level =  log.INFO)
             returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
@@ -353,8 +353,8 @@ class BuildLegacy(LegacyCommand):
         if not_build or not_build_special:
             print
             print
-            print "Legacy codes not built (because of errors):"
-            print "==========================================="
+            print "Community codes not built (because of errors):"
+            print "=============================================="
             for x in not_build:
                 print '*', x 
             for x in not_build_special:
@@ -362,16 +362,16 @@ class BuildLegacy(LegacyCommand):
         if build:
             print
             print
-            print "Legacy codes built"
-            print "=================="
+            print "Community codes built"
+            print "====================="
             for x in build:
                 print '*', x
         
         
  
-class CleanLegacy(LegacyCommand):
+class CleanCodes(CodeCommand):
 
-    description = "clean build products in legacy codes"
+    description = "clean build products in codes"
 
     def run (self):
         for x in self.makefile_libpaths():
@@ -382,31 +382,31 @@ class CleanLegacy(LegacyCommand):
             self.announce("cleaning " + x)
             call(['make','-C', x, 'clean'])
         
-class BuildOneLegacyCode(LegacyCommand):  
+class BuildOneCode(CodeCommand):  
     description = "build one code"
-    user_options = list(LegacyCommand.user_options)
-    user_options.append( ('code-name=', 'n', "name of the legacy code",), )
+    user_options = list(CodeCommand.user_options)
+    user_options.append( ('code-name=', 'n', "name of the code",), )
     
     
     def initialize_options(self):
-        LegacyCommand.initialize_options(self)
+        CodeCommand.initialize_options(self)
         self.code_name = None
         
     
     def finalize_options (self):
-        LegacyCommand.finalize_options(self)
+        CodeCommand.finalize_options(self)
         if self.code_name is None:
-            raise Exception("no legacy code was specified")
+            raise Exception("no code was specified")
     
     
-    def subdirs_in_legacy_dir(self):
-        names = os.listdir(self.legacy_dir)
+    def subdirs_in_codes_dir(self):
+        names = os.listdir(self.codes_dir)
         for name in names:
             if name.startswith('.'):
                 continue
             if not name.lower().startswith(self.code_name.lower()):
                 continue
-            path = os.path.join(self.legacy_dir, name)
+            path = os.path.join(self.codes_dir, name)
             if os.path.isdir(path):
                 yield path
                 
@@ -417,7 +417,7 @@ class BuildOneLegacyCode(LegacyCommand):
         
         results = []
         for x in self.makefile_paths():
-            shortname = x[len(self.legacy_dir) + 1:].lower()
+            shortname = x[len(self.codes_dir) + 1:].lower()
             
             self.announce("cleaning " + x)
             call(['make','-C', x, 'clean'])

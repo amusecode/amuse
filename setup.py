@@ -6,7 +6,7 @@ from distutils.extension import Extension
 
 from support.generate_main import generate_main
 from support.build_latex import build_latex
-from support.setup_legacy import BuildLegacy, CleanLegacy, BuildOneLegacyCode
+from support.setup_codes import BuildCodes, CleanCodes, BuildOneCode
 from support.run_tests import run_tests
 
 #include_dirs.append(sysconfig.get_python_inc())
@@ -21,23 +21,23 @@ class Clean(clean):
             
 mapping_from_command_name_to_command_class = {
     'build_latex':build_latex, 
-    'build_legacy':BuildLegacy,
-    'code':BuildOneLegacyCode,
-    'clean_legacy':CleanLegacy,
+    'build_codes':BuildCodes,
+    'code':BuildOneCode,
+    'clean_codes':CleanCodes,
     'clean_python':clean,
     'clean': Clean,
     'tests':run_tests, 
     'generate_main': generate_main,
 }
    
-build.sub_commands.append(('build_legacy',None))
+build.sub_commands.append(('build_codes',None))
 build.sub_commands.append(('generate_main',None))
-Clean.sub_commands.append(('clean_legacy',None))
+Clean.sub_commands.append(('clean_codes',None))
 Clean.sub_commands.append(('clean_python',None))
  
 setup(
     name = 'amuse',
-    version = '2.3',
+    version = '3.x',
     cmdclass = mapping_from_command_name_to_command_class,
     ext_modules = extensions,
     classifiers = [
