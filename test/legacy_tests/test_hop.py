@@ -8,14 +8,14 @@ from amuse.test.amusetest import get_path_to_results
 
 from amuse.support.units import units, nbody_system
 
-from amuse.legacy.fi import interface as interface
+from amuse.community.fi import interface as interface
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.molecular_cloud import molecular_cloud
 from amuse.ext.evrard_test import body_centered_grid_unit_cube
 from amuse.ext import plummer
 
-from amuse.legacy.hop.interface import HopInterface
+from amuse.community.hop.interface import HopInterface
 
 class TestHop(amusetest.TestCase):
     def test1(self):

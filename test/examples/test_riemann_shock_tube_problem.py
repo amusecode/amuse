@@ -38,8 +38,8 @@ from amuse.support import io
 from amuse.support.io import text
 from amuse.support.units.generic_unit_system import *
 
-from amuse.legacy.athena.interface import Athena
-from amuse.legacy.capreole.interface import Capreole
+from amuse.community.athena.interface import Athena
+from amuse.community.capreole.interface import Capreole
 
 try:
     from amuse import plot

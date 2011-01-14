@@ -27,21 +27,21 @@ from amuse.ext.spherical_model import new_uniform_spherical_particle_distributio
 from amuse.ext.salpeter import new_salpeter_mass_distribution, new_salpeter_mass_distribution_nbody
 from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
 
-from amuse.legacy.bhtree.interface import BHTree, BHTreeInterface
-from amuse.legacy.hermite0.interface import Hermite, HermiteInterface
-from amuse.legacy.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
-from amuse.legacy.octgrav.interface import Octgrav, OctgravInterface
-from amuse.legacy.twobody.twobody import TwoBody, TwoBodyInterface
+from amuse.community.bhtree.interface import BHTree, BHTreeInterface
+from amuse.community.hermite0.interface import Hermite, HermiteInterface
+from amuse.community.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
+from amuse.community.octgrav.interface import Octgrav, OctgravInterface
+from amuse.community.twobody.twobody import TwoBody, TwoBodyInterface
 
-from amuse.legacy.fi.interface import Fi, FiInterface
-from amuse.legacy.gadget2.interface import Gadget2, Gadget2Interface
-from amuse.legacy.athena.interface import Athena, AthenaInterface
-from amuse.legacy.capreole.interface import Capreole, CapreoleInterface
+from amuse.community.fi.interface import Fi, FiInterface
+from amuse.community.gadget2.interface import Gadget2, Gadget2Interface
+from amuse.community.athena.interface import Athena, AthenaInterface
+from amuse.community.capreole.interface import Capreole, CapreoleInterface
 
-from amuse.legacy.sse.interface import SSE, SSEInterface
-from amuse.legacy.bse.interface import BSE, BSEInterface
-from amuse.legacy.evtwin.interface import EVtwin, EVtwinInterface
-from amuse.legacy.mesa.interface import MESA, MESAInterface
+from amuse.community.sse.interface import SSE, SSEInterface
+from amuse.community.bse.interface import BSE, BSEInterface
+from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
+from amuse.community.mesa.interface import MESA, MESAInterface
 
 
 

@@ -2,7 +2,7 @@ from amuse.test import amusetest
 from amuse.support.data.core import *
 
 from amuse.support.units import units
-from amuse.legacy.hermite0.interface import Hermite
+from amuse.community.hermite0.interface import Hermite
 from amuse.support.units import nbody_system
 from amuse.support.io import store
 import numpy

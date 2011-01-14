@@ -3,8 +3,8 @@ from amuse.test.amusetest import TestWithMPI
 import os
 import sys
 
-from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.bhtree.interface import BHTree
+from amuse.community.hermite0.interface import Hermite
+from amuse.community.bhtree.interface import BHTree
 
 from amuse.support.data.core import Particles
 from amuse.support.units import nbody_system

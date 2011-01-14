@@ -1,5 +1,5 @@
 import numpy
-from amuse.legacy.mercury.interface import Mercury
+from amuse.community.mercury.interface import Mercury
 
 try:
     from matplotlib import pyplot

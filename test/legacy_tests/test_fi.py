@@ -4,7 +4,7 @@ import numpy
 import time
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.legacy.fi.interface import FiInterface, Fi
+from amuse.community.fi.interface import FiInterface, Fi
 from amuse.ext.evrard_test import new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 from amuse.ext.plummer import new_plummer_sphere

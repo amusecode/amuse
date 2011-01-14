@@ -13,7 +13,7 @@ if __name__ == "__main__":
     else:
         print "This script must run from the command prompt"
         
-    from amuse.legacy.support import create_fortran
+    from amuse.community.support import create_fortran
 
     if len(sys.argv) < 3:
         print "Usage: " + sys.argv[0] + "name_of_module name_of_class"

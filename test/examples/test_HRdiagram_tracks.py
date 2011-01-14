@@ -8,12 +8,12 @@ from optparse import OptionParser
 from amuse.support.units import units
 from amuse.support.data import core
 
-from amuse.legacy.sse.interface import SSE
-from amuse.legacy.evtwin.interface import EVtwin
-from amuse.legacy.evtwin2sse.interface import EVtwin2SSE
-from amuse.legacy.mesa.interface import MESA
+from amuse.community.sse.interface import SSE
+from amuse.community.evtwin.interface import EVtwin
+from amuse.community.evtwin2sse.interface import EVtwin2SSE
+from amuse.community.mesa.interface import MESA
 
-from amuse.legacy.cachedse.interface import CachedStellarEvolution
+from amuse.community.cachedse.interface import CachedStellarEvolution
 
 from amuse.support.codes.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results

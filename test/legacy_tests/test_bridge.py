@@ -4,10 +4,10 @@ from amuse.test.amusetest import TestWithMPI
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 
-from amuse.legacy.fi.interface import Fi
-from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.phiGRAPE.interface import PhiGRAPE
-from amuse.legacy.bhtree.interface import BHTree
+from amuse.community.fi.interface import Fi
+from amuse.community.hermite0.interface import Hermite
+from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.bhtree.interface import BHTree
 from amuse.ext.bridge import bridge
 from amuse.ext.kingmodel import new_king_model
 

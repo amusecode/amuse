@@ -3,7 +3,7 @@ import sys
 import numpy
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.legacy.mercury.interface import Mercury
+from amuse.community.mercury.interface import Mercury
 
 try:
     from matplotlib import pyplot

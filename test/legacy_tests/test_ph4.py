@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from amuse.legacy.ph4.interface import ph4Interface, ph4
+from amuse.community.ph4.interface import ph4Interface, ph4
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system

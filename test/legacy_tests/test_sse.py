@@ -1,6 +1,6 @@
 import os
 
-from amuse.legacy.sse import interface as mpi_interface
+from amuse.community.sse import interface as mpi_interface
 
 from amuse.support.data import core
 from amuse.support.units import units

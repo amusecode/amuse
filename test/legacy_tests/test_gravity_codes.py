@@ -1,10 +1,10 @@
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.legacy.bhtree.interface import BHTree
-from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.phiGRAPE.interface import PhiGRAPE
-from amuse.legacy.gadget2.interface import Gadget2
-from amuse.legacy.fi.interface import Fi
+from amuse.community.bhtree.interface import BHTree
+from amuse.community.hermite0.interface import Hermite
+from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.gadget2.interface import Gadget2
+from amuse.community.fi.interface import Fi
 
 from amuse.support.data import core
 from amuse.support.units import units

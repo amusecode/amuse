@@ -8,7 +8,7 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
     
-from amuse.legacy.fi import interface as interface
+from amuse.community.fi import interface as interface
 from amuse.ext.evrard_test import MakeEvrardTest
 from amuse.ext.evrard_test import regular_grid_unit_cube
 from amuse.ext.evrard_test import body_centered_grid_unit_cube

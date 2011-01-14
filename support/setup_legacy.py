@@ -43,7 +43,7 @@ class LegacyCommand(Command):
         
     def finalize_options (self):
         if self.legacy_dir is None:
-            self.legacy_dir = os.path.join(self.amuse_src_dir,'legacy')
+            self.legacy_dir = os.path.join(self.amuse_src_dir,'community')
         
         if self.lib_dir is None:
             self.lib_dir = 'lib'

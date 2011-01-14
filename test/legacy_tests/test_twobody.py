@@ -6,7 +6,7 @@ from amuse.support.units import nbody_system
 
 import numpy
 
-from amuse.legacy.twobody import twobody
+from amuse.community.twobody import twobody
 
 from amuse.test.amusetest import TestWithMPI
 

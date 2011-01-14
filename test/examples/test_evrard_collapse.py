@@ -13,8 +13,8 @@ from amuse.support.units import units, constants, nbody_system
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.ext.evrard_test import new_evrard_gas_sphere
 from amuse.support.codes.core import is_mpd_running
-from amuse.legacy.gadget2.interface import Gadget2
-from amuse.legacy.fi.interface import Fi
+from amuse.community.gadget2.interface import Gadget2
+from amuse.community.fi.interface import Fi
 
 usage = """\
 usage: amuse.sh %prog [options]

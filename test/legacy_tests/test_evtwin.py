@@ -3,7 +3,7 @@ import sys
 import os.path
 from numpy import pi
 
-from amuse.legacy.evtwin.interface import EVtwin, EVtwinInterface
+from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core

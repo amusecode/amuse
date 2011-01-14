@@ -1,4 +1,4 @@
-from amuse.legacy import *
+from amuse.community import *
 
 class NearestNeighborInterface(LegacyInterface):
     

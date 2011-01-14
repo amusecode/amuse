@@ -11,9 +11,9 @@ from amuse.support.data.core import Particles, Particle, ParticlesSuperset, Grid
 from amuse.support.units import units, generic_unit_system, nbody_system, constants
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.exceptions import AmuseException
-from amuse.legacy.mesa.interface import MESA
-from amuse.legacy.gadget2.interface import Gadget2
-from amuse.legacy.fi.interface import Fi
+from amuse.community.mesa.interface import MESA
+from amuse.community.gadget2.interface import Gadget2
+from amuse.community.fi.interface import Fi
 from amuse.ext.star_to_sph import *
 
 

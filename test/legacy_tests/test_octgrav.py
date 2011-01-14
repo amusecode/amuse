@@ -2,7 +2,7 @@ import os
 import sys
 import numpy
 
-from amuse.legacy.octgrav.interface import OctgravInterface, Octgrav
+from amuse.community.octgrav.interface import OctgravInterface, Octgrav
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system

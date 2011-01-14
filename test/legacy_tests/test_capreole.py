@@ -6,8 +6,8 @@ from amuse.support.units import generic_unit_system
 from amuse.support.data import core
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.legacy.capreole.interface import CapreoleInterface
-from amuse.legacy.capreole.interface import Capreole
+from amuse.community.capreole.interface import CapreoleInterface
+from amuse.community.capreole.interface import Capreole
 
 class TestMPIInterface(TestWithMPI):
     

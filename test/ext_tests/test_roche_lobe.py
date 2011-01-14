@@ -12,8 +12,8 @@ from amuse.support.data.core import Particles, Particle, ParticlesSuperset
 from amuse.support.units import units, generic_unit_system, nbody_system, constants
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.exceptions import AmuseException
-from amuse.legacy.mesa.interface import MESA
-from amuse.legacy.hermite0.interface import Hermite
+from amuse.community.mesa.interface import MESA
+from amuse.community.hermite0.interface import Hermite
 from amuse.ext.roche_lobe import *
 
 turn_tests_into_slowtests = False

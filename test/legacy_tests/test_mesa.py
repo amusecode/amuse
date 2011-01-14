@@ -3,7 +3,7 @@ import sys
 import os.path
 from numpy import pi
 
-from amuse.legacy.mesa.interface import MESA, MESAInterface
+from amuse.community.mesa.interface import MESA, MESAInterface
 
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core

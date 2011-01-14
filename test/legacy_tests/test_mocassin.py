@@ -4,7 +4,7 @@ import numpy
 import math
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.legacy.mocassin.interface import MocassinInterface, Mocassin
+from amuse.community.mocassin.interface import MocassinInterface, Mocassin
 
 from amuse.support.units import generic_unit_system
 from amuse.support.units import units

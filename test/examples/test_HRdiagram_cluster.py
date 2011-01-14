@@ -11,10 +11,10 @@ from amuse.support.data import core
 
 from amuse.ext.salpeter import SalpeterIMF
 
-from amuse.legacy.sse.interface import SSE
-from amuse.legacy.evtwin.interface import EVtwin
-from amuse.legacy.mesa.interface import MESA
-from amuse.legacy.cachedse.interface import CachedStellarEvolution
+from amuse.community.sse.interface import SSE
+from amuse.community.evtwin.interface import EVtwin
+from amuse.community.mesa.interface import MESA
+from amuse.community.cachedse.interface import CachedStellarEvolution
 
 from amuse.support.codes.core import is_mpd_running
 from amuse.test.amusetest import get_path_to_results

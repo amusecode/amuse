@@ -2,13 +2,13 @@ import unittest
 from amuse.support.codes import lit
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.legacy.bhtree.interface import BHTree
-from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.phiGRAPE.interface import PhiGRAPE
-from amuse.legacy.sse.interface import SSE
-from amuse.legacy.bse.interface import BSE
-from amuse.legacy.mesa.interface import MESA
-from amuse.legacy.evtwin.interface import EVtwin
+from amuse.community.bhtree.interface import BHTree
+from amuse.community.hermite0.interface import Hermite
+from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.sse.interface import SSE
+from amuse.community.bse.interface import BSE
+from amuse.community.mesa.interface import MESA
+from amuse.community.evtwin.interface import EVtwin
 
 class TestLiteratureRefs(unittest.TestCase):
     def setUp(self):

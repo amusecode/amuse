@@ -1,11 +1,11 @@
 from amuse.support.core import late, print_out
 
-from amuse.legacy import *
+from amuse.community import *
 
 import os
 
 interface_file_template = """\
-from amuse.legacy import *
+from amuse.community import *
 
 class {0.name_of_the_legacy_interface_class}({0.name_of_the_superclass_for_the_legacy_interface_class}):
     
@@ -32,7 +32,7 @@ class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_cod
 """
 
 test_file_template = """\
-from amuse.legacy import *
+from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
 from {0.name_for_import_of_the_interface_module} import {0.name_of_the_legacy_interface_class}

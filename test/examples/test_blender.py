@@ -5,7 +5,7 @@ Blender: 249
 Group:'Add'
 Tooltip: 'Amuse example'
 """
-from amuse.legacy.hermite0.interface import HermiteInterface, Hermite         
+from amuse.community.hermite0.interface import HermiteInterface, Hermite         
 from amuse.support.data import core           
 from amuse.support.units import nbody_system          
 from amuse.support.units import units

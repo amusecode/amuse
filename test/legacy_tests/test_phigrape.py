@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
+from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system

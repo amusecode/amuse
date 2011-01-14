@@ -7,7 +7,7 @@ import numpy
 import time
 import math
 
-from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
+from amuse.community.bhtree.interface import BHTreeInterface, BHTree
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
 from amuse.support.data import values

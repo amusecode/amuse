@@ -2,9 +2,9 @@ import os
 import sys
 
 from amuse.test import amusetest
-from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
-from amuse.legacy.hermite0.interface import HermiteInterface, Hermite
-from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
+from amuse.community.bhtree.interface import BHTreeInterface, BHTree
+from amuse.community.hermite0.interface import HermiteInterface, Hermite
+from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units

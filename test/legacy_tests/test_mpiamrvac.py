@@ -1,8 +1,8 @@
-from amuse.legacy import *
+from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.legacy.mpiamrvac.interface import MpiAmrVacInterface
-from amuse.legacy.mpiamrvac.interface import MpiAmrVac
+from amuse.community.mpiamrvac.interface import MpiAmrVacInterface
+from amuse.community.mpiamrvac.interface import MpiAmrVac
 
 from amuse.support.units import generic_unit_system
 import os

@@ -4,7 +4,7 @@ import sys
 import numpy
 import math
 
-from amuse.legacy.hermite0.interface import HermiteInterface, Hermite
+from amuse.community.hermite0.interface import HermiteInterface, Hermite
 
 from amuse.support.data import core
 from amuse.support.units import nbody_system
@@ -492,7 +492,7 @@ class TestHermite(TestWithMPI):
     def test13(self):
         particles = plummer.new_plummer_sphere(31)
        
-        instance = Hermite(number_of_workers=1, debugger="xterm")
+        instance = Hermite(number_of_workers=1)#, debugger="xterm")
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | nbody_system.length ** 2
         instance.particles.add_particles(particles)

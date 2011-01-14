@@ -4,7 +4,7 @@ import numpy
 import math
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.legacy.athena.interface import AthenaInterface, Athena
+from amuse.community.athena.interface import AthenaInterface, Athena
 
 from amuse.support.units import generic_unit_system
 from amuse.support.units import units

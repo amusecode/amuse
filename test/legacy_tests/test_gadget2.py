@@ -1,6 +1,6 @@
 import numpy
 from amuse.test.amusetest import TestWithMPI
-from amuse.legacy.gadget2.interface import Gadget2Interface, Gadget2
+from amuse.community.gadget2.interface import Gadget2Interface, Gadget2
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution

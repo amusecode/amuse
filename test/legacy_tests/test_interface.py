@@ -1,8 +1,8 @@
 
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.legacy.interface import gd
-from amuse.legacy.interface.gd import GravitationalDynamicsInterface
+from amuse.community.interface import gd
+from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.support.codes.create_definition import LegacyDocStringProperty
 
 from amuse.support.codes import create_definition

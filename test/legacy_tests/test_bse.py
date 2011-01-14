@@ -1,4 +1,4 @@
-from amuse.legacy.bse.interface import BSE
+from amuse.community.bse.interface import BSE
 
 from amuse.support.data import core
 from amuse.support.units import units

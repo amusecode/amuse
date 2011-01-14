@@ -1,6 +1,6 @@
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.legacy.seba.interface import SebaInterface, Seba
+from amuse.community.seba.interface import SebaInterface, Seba
 from amuse.support.units import units
 from amuse.support.data.core import Particle
 

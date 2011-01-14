@@ -12,10 +12,10 @@ from amuse.support.units.generic_unit_converter import *
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.ext import cloud
-from amuse.legacy.athena.interface import Athena, AthenaInterface
-from amuse.legacy.capreole.interface import Capreole
-from amuse.legacy.hermite0.interface import Hermite
-from amuse.legacy.phiGRAPE.interface import PhiGRAPE
+from amuse.community.athena.interface import Athena, AthenaInterface
+from amuse.community.capreole.interface import Capreole
+from amuse.community.hermite0.interface import Hermite
+from amuse.community.phiGRAPE.interface import PhiGRAPE
 
 import sys
 

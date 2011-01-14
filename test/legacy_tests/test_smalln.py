@@ -4,7 +4,7 @@ import numpy
 import math
 
 from amuse.test.amusetest import TestWithMPI
-from amuse.legacy.smallN.muse_dynamics_mpi import SmallNInterface, SmallN
+from amuse.community.smallN.muse_dynamics_mpi import SmallNInterface, SmallN
 
 from amuse.support.units import nbody_system
 from amuse.support.units import units

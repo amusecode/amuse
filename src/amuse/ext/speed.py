@@ -2,7 +2,7 @@ import time
 import sys
 import numpy
 
-from amuse.legacy.hermite0.interface import HermiteInterface
+from amuse.community.hermite0.interface import HermiteInterface
 
 try:
     from matplotlib import pyplot
