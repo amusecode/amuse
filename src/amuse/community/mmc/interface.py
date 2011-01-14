@@ -110,6 +110,35 @@ class mmcInterface(LegacyInterface):
         function.addParameter('value', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
         return function    
+
+    @legacy_function
+    def set_ncor():
+        function = LegacyFunctionSpecification()
+        function.addParameter('numb_of_stars_to_calc_c_parms', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_istart():
+        function = LegacyFunctionSpecification()
+        function.addParameter('start_or_restart', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_nt():
+        function = LegacyFunctionSpecification()
+        function.addParameter('tot_numb_of_objs', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_irun():
+        function = LegacyFunctionSpecification()
+        function.addParameter('init_sequence_of_rnd_numbs', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+        
     
     
 class mmc(CodeInterface):
