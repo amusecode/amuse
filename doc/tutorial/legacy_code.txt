@@ -1,8 +1,8 @@
-==============================================
-Create an low-level Interface to a Legacy Code
-==============================================
+=======================================
+Create an low-level Interface to a Code
+=======================================
 
-In this tutorial we will create an interface to a legacy code. 
+In this tutorial we will create an interface to a code. 
 
 .. warning::
     
@@ -17,27 +17,27 @@ In this tutorial we will create an interface to a legacy code.
 
 Work directory
 ~~~~~~~~~~~~~~
-We start by making a directory for our legacy code. This directory should
-be a subdirectory of the "src/amuse/legacy" directory. It also will be
+We start by making a directory for our code. This directory should
+be a subdirectory of the "src/amuse/community" directory. It also will be
 a python package and we need to create the file "__init__.py" in 
 this directory. So, let's open a shell and go to the AMUSE 
-root directory. To create the legacy code directory we then do:
+root directory. To create the code directory we then do:
 
 .. code-block:: bash
     
-    >> cd src/amuse/legacy
+    >> cd src/amuse/community
     >> mkdir mycode
     >> cd mycode
     >> touch __init__.py
     >> pwd
-    ../src/amuse/legacy/mycode
+    ../src/amuse/community/mycode
     >> ls
     __init__.py
     
 
-The legacy code
-~~~~~~~~~~~~~~~
-To create an interface we first need the legacy code. For
+The code
+~~~~~~~~
+To create an interface we first need the code. For
 this example we will use a very simple code do some calculations 
 on two numbers.
 
@@ -80,7 +80,7 @@ interface needs to inherit from the class "LegacyInterface".
 .. code-block:: python
     :linenos:
     
-    from amuse.legacy import *
+    from amuse.community import *
     
     class MyCode(LegacyInterface):
         include_headers = ['code.h']
@@ -88,8 +88,8 @@ interface needs to inherit from the class "LegacyInterface".
         def __init__(self):
              LegacyInterface.__init__(self)
              
-In this example we first import names from the ``amuse.legacy`` 
-module on line 1. The ``amuse.legacy`` module defines the typical 
+In this example we first import names from the ``amuse.community`` 
+module on line 1. The ``amuse.community`` module defines the typical 
 classes and function needed to write a legacy interface. On line 3 
 we define our class and inherit from ``LegacyInterface``. The class 
 will be used to generate a C++ file. In this file we will need the 
@@ -167,10 +167,10 @@ We can use ``amuse.sh`` and try the interface.
 
 .. code-block:: pycon
 
-    >>> from amuse.legacy.mycode import interface
+    >>> from amuse.community.mycode import interface
     >>> instance = interface.MyCode()
     >>> instance
-    <amuse.legacy.mycode.interface.MyCode object at 0x7f57abfb2550>
+    <amuse.community.mycode.interface.MyCode object at 0x7f57abfb2550>
     >>> del instance
     
 We have not defined any methods and our interface class is not
@@ -187,7 +187,7 @@ the MyCode class.
 .. code-block:: python
     :linenos:
     
-    from amuse.legacy import *
+    from amuse.community import *
     
     class MyCode(LegacyInterface):
         include_headers = ['code.h']
@@ -239,7 +239,7 @@ We can now start ```amuse.sh``` again and do a simple sum
 
 .. code-block:: pycon
 
-    >>> from amuse.legacy.mycode import interface
+    >>> from amuse.community.mycode import interface
     >>> instance = interface.MyCode()
     >>> instance.sum(40.5, 10.3)
     50.799999999999997
@@ -256,7 +256,7 @@ We can complete out interface by defining the ``divide`` function.
 .. code-block:: python
     :linenos:
     
-    from amuse.legacy import *
+    from amuse.community import *
     
     class MyCode(LegacyInterface):
         include_headers = ['code.h']
@@ -287,7 +287,7 @@ After rebuilding we can try this new function.
 
 .. code-block:: pycon
 
-    >>> from amuse.legacy.mycode import interface
+    >>> from amuse.community.mycode import interface
     >>> instance = interface.MyCode()
     >>> (result, error) =  instance.divide(10.2, 30.2)
     >>> result
@@ -306,7 +306,7 @@ For example:
 
 .. code-block:: pycon
 
-    >>> from amuse.legacy.mycode import interface
+    >>> from amuse.community.mycode import interface
     >>> instance = interface.MyCode()
     >>> x_values = [1.0, 2.0, 3.0, 4.0, 5.0]
     >>> y_values = [10.3, 20.3, 30.4 , 40.4, 50.6]
@@ -326,7 +326,7 @@ to handle arrays.
 .. code-block:: python
     :linenos:
     
-    from amuse.legacy import *
+    from amuse.community import *
     
     class MyCode(LegacyInterface):
         include_headers = ['code.h']
@@ -351,7 +351,7 @@ Let's rebuild the code and run an example.
 
 .. code-block:: pycon
 
-    >>> from amuse.legacy.mycode import interface
+    >>> from amuse.community.mycode import interface
     >>> instance = interface.MyCode()
     >>> x_values = [1.0, 2.0, 3.0, 4.0, 5.0]
     >>> y_values = [10.3, 20.3, 30.4 , 40.4, 50.6]
@@ -362,7 +362,7 @@ Let's rebuild the code and run an example.
 
 Other interfaces
 ~~~~~~~~~~~~~~~~
-The legacy codes directory contains a number of codes. Please look at
+The community codes directory contains a number of codes. Please look at
 these codes to see how the interfaces are defined.
 
 
