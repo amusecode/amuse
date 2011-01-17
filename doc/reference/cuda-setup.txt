@@ -103,7 +103,7 @@ but first re-initialize mpd (or it will remember its original environment):
    mpdallexit
    mpd &
    make octgrav.code
-   nosetests ./test/legacy_tests/test_octgrav.py
+   nosetests ./test/codes_tests/test_octgrav.py
 
 If this fails, please contact us through the `'amusecode' google group <http://groups.google.com/group/amusecode>`_, 
 or on IRC at the #amuse channel on irc.freenode.net. 
