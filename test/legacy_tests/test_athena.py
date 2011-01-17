@@ -53,6 +53,10 @@ class TestAthenaInterface(TestWithMPI):
         error = instance.commit_parameters()
         self.assertEquals(error, 0)
         
+        number_of_grids, error = instance.get_number_of_grids()
+        self.assertEquals(error, 0)
+        self.assertEquals(number_of_grids, 1)
+
         x,y,z,error = instance.get_position_of_index(0,0,0,1)
         self.assertEquals(error, 0)
         self.assertAlmostRelativeEquals(x, 0.1)
@@ -787,6 +791,8 @@ class TestAthena(TestWithMPI):
         channel.copy()
         self.assertEquals(instance.grid[0][0][0].rho, 0.4 | density)
         self.assertEquals(instance.grid.rho.number.ndim, 3)
+        
+        self.assertEquals(len(list(instance.itergrids())), 1)
         
         instance.stop()
 

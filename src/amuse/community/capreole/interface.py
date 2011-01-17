@@ -507,5 +507,8 @@ class Capreole(CodeInterface):
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
+        
+    def itergrids(self):
+        yield self.grid
     
     

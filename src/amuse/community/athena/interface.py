@@ -544,6 +544,14 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
         function.can_handle_array = True
         function.result_type = 'int32'
         return function
+        
+    @legacy_function
+    def get_number_of_grids():
+        function = LegacyFunctionSpecification()
+        function.addParameter('n', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
     
     
     
@@ -654,28 +662,37 @@ class Athena(CodeInterface):
     
         self.stopping_conditions.define_methods(object)
     
-    def define_particle_sets(self, object):
-        object.define_grid('grid')
-        object.set_grid_range('grid', 'get_index_range_inclusive')
-        object.add_getter('grid', 'get_position_of_index', names=('x','y','z'))
-        
-        object.add_getter('grid', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        object.add_setter('grid', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        
-        object.add_getter('grid', 'get_grid_density', names=('rho',))
-        object.add_getter('grid', 'get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
-        object.add_getter('grid', 'get_grid_energy_density', names=('energy',))
-        object.define_extra_keywords('grid', {'index_of_grid':1})
-        
-        object.add_getter('grid', 'get_grid_gravitational_potential', names=('gravitational_potential',))
-        object.add_getter('grid', 'get_grid_gravitational_acceleration', names=('gravitational_acceleration_x','gravitational_acceleration_y','gravitational_acceleration_z',))
-        
-        
-        #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
-        #object.add_setter('grid', 'set_density', names=('rho',))
-        #object.add_setter('grid', 'set_energy_density', names=('energy',))
-        
     
+    def specify_grid(self, definition, index_of_grid = 1):
+        definition.set_grid_range('get_index_range_inclusive')
+        
+        definition.add_getter('get_position_of_index', names=('x','y','z'))
+        
+        definition.add_getter('get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        definition.add_setter('set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
+        
+        definition.add_getter('get_grid_density', names=('rho',))
+        definition.add_getter('get_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
+        definition.add_getter('get_grid_energy_density', names=('energy',))
+        
+        definition.add_getter('get_grid_gravitational_potential', names=('gravitational_potential',))
+        definition.add_getter('get_grid_gravitational_acceleration', names=('gravitational_acceleration_x','gravitational_acceleration_y','gravitational_acceleration_z',))
+        
+        definition.define_extra_keywords({'index_of_grid':index_of_grid})
+        
+
+    @property
+    def grid(self):
+        return self._create_new_grid(self.specify_grid, index_of_grid = 1)
+        
+    def itergrids(self):
+        n, error = self.get_number_of_grids()
+        
+        for x in range(1,n+1):
+            yield self._create_new_grid(self.specify_grid, index_of_grid = x)
+
+    
+    def define_particle_sets(self, object):
         object.define_grid('potential_grid')
         object.set_grid_range('potential_grid', 'get_index_range_for_potential')
         object.add_getter('potential_grid', 'get_position_of_index', names=('x','y','z'))
@@ -684,18 +701,6 @@ class Athena(CodeInterface):
         object.define_extra_keywords('potential_grid', {'index_of_grid':1})
         
         
-        object.define_grid('grid1')
-        object.set_grid_range('grid1', 'get_index_range_inclusive')
-        object.add_getter('grid1', 'get_position_of_index', names=('x','y','z'))
-        
-        object.add_getter('grid1', 'get_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        object.add_setter('grid1', 'set_grid_state', names=('rho', 'rhovx','rhovy','rhovz','energy'))
-        
-        object.add_getter('grid1', 'get_density', names=('rho',))
-        object.add_getter('grid1', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
-        object.add_getter('grid1', 'get_energy_density', names=('energy',))
-        object.define_extra_keywords('grid1', {'index_of_grid':2})
-
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_isocsound", 

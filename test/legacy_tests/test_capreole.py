@@ -264,6 +264,7 @@ class TestCapreole(TestWithMPI):
         
         instance.commit_parameters()
     
+        self.assertEquals(len(list(instance.itergrids())),1)
         grid = core.Grid(10,10,10)
         grid.rho = 0.4 | generic_unit_system.density
         grid.rhovx = 0.1 | generic_unit_system.momentum_density

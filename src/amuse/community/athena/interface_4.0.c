@@ -209,6 +209,28 @@ int get_has_external_gravitational_potential(int * value) {
     return 0;
 }
 
+
+
+int get_number_of_grids(int * value) {
+    DomainS * dom = 0;
+    int ii = 0, level = 0;
+    int result = -1;
+    for(level = 0; level < mesh.NLevels; level++)
+    {
+        for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
+        {
+            dom = (DomainS*)&(mesh.Domain[level][ii]);
+            if(dom->InputBlock > result)
+            {
+                result = dom->InputBlock;
+            }
+        }
+    }
+    *value = result;
+    return 0;
+}
+
+
 int initialize_code(){
 
 #ifdef SELF_GRAVITY
