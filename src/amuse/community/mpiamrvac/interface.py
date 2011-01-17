@@ -2094,7 +2094,7 @@ class MpiAmrVac(CodeInterface):
         )
         
         object.add_method(
-            'set_grid_momentum_denisty',
+            'set_grid_momentum_density',
             (object.INDEX, object.INDEX, object.INDEX, momentum, momentum, momentum, object.INDEX),
             (object.ERROR_CODE,)
         )
@@ -2306,6 +2306,7 @@ class MpiAmrVac(CodeInterface):
         definition.add_getter('get_position_of_index', names=('x','y','z'))
         
         definition.add_setter('set_grid_density', names=('rho',))
+        
         definition.add_setter('set_grid_momentum_density', names=('rhovx','rhovy','rhovz'))
         definition.add_setter('set_grid_energy_density', names=('energy',))
         

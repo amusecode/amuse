@@ -191,7 +191,7 @@ class CalculateSolutionIn3D(object):
             setattr(self, x, keyword_arguments[x])
             
         self.dimensions_of_mesh = (
-            self.number_of_grid_points * 3, 
+            self.number_of_grid_points * 1, 
             self.number_of_grid_points, 
             self.number_of_grid_points
         )
@@ -209,7 +209,8 @@ class CalculateSolutionIn3D(object):
         
 
     def new_instance_of_mpiamrvac_code(self):
-        result=MpiAmrVac(number_of_workers=self.number_of_workers)
+        result=MpiAmrVac(number_of_workers=self.number_of_workers, redirection="none")
+        result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         return result
         
@@ -226,22 +227,24 @@ class CalculateSolutionIn3D(object):
         instance.parameters.length_y = 1 | length
         instance.parameters.length_z = 1 | length
         
-        instance.x_boundary_conditions = ("periodic","periodic")
-        instance.y_boundary_conditions = ("periodic","periodic")
-        instance.z_boundary_conditions = ("periodic","periodic")
-        
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        #instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
+        print instance.parameters.mesh_size
         result = instance.commit_parameters()
     
     def new_grid(self):
+        grid = Grid.create(self.dimensions_of_mesh, [1,1,1] | length)
+        self.clear_grid(grid)
+        return grid
         
+    
+    def clear_grid(self, grid):
         density = mass / length**3
-        
-        density = density
         momentum =  speed * density
         energy =  mass / (time**2 * length)
-        
-        grid = Grid.create(self.dimensions_of_mesh, [1,1,1] | length)
-        
+
         grid.rho =  0.0 | density
         grid.rhovx = 0.0 | momentum
         grid.rhovy = 0.0 | momentum
@@ -266,25 +269,28 @@ class CalculateSolutionIn3D(object):
         instance=self.new_instance_of_code()
         self.set_parameters(instance)
         
-        grid = self.new_grid()
-        self.initialize_grid_with_shock(grid)
         
-        from_model_to_code = grid.new_channel_to(instance.grid)
-        from_code_to_model = instance.grid.new_channel_to(grid)
+        for x in instance.itergrids():
+            inmem = x.copy_to_memory()
+            self.clear_grid(inmem)
+            self.initialize_grid_with_shock(inmem)
+            from_model_to_code = inmem.new_channel_to(x)
+            from_model_to_code.copy()
         
-        from_model_to_code.copy()
         instance.initialize_grid()
         
         print "start evolve"
         instance.evolve(time)
         
         print "copying results"
-        from_code_to_model.copy()
-        from_code_to_model.copy_attributes(("x","y","z",))
         
+        for x in instance.itergrids():
+            inmem = x.copy_to_memory()
+            return inmem
+            
+        instance.stop()
         
-        return grid
-
+            
 def store_attributes(x, rho, rhovx, energy, filename):
     output = text.CsvFileText(filename = filename)
     output.quantities = (x, rho, rhovx, energy)

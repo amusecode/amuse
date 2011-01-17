@@ -2758,6 +2758,7 @@ CONTAINS
         integer :: idim
         character(len=25), intent(in) :: lowx,highx,lowy,highy,lowz,highz
         
+        print * ,lowx, nw
         typeB(1:nw,1) = lowx
         typeB(1:nw,2) = highx
         typeB(1:nw,3) = lowy
