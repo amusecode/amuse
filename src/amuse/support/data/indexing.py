@@ -77,6 +77,12 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
         return number_of_dimensions - 1
     elif isinstance(index, slice):
         return number_of_dimensions
+    elif isinstance(index, list) or isinstance(index, numpy.ndarray):
+        ndarray = numpy.asarray(index)
+        if ndarray.dtype == 'bool':
+            return number_of_dimensions - len(ndarray.shape) + 1
+        else:
+            raise Exception("Not handled yet")
     else:
         raise Exception("Not handled yet")
     

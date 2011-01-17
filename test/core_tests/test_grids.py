@@ -148,8 +148,53 @@ class TestGrids(amusetest.TestCase):
                     self.assertEquals(iarray[i][j][k], i)
                     self.assertEquals(jarray[i][j][k], j)
                     self.assertEquals(karray[i][j][k], k)
+        print grid[0].indices()
+        iarray,jarray,karray = grid.indices()
+        i = 0
+        for j in range(4):
+            for k in range(2):
+                self.assertEquals(iarray[i][j][k], i)
+                self.assertEquals(jarray[i][j][k], j)
+                self.assertEquals(karray[i][j][k], k)
+       
+        iarray,jarray,karray = grid[...,0,0].indices()
+        j = 0
+        k = 0
+        print iarray
+        for i in range(5):
+            self.assertEquals(iarray[i], i)
+            self.assertEquals(jarray[i], j)
+            self.assertEquals(karray[i], k)
+        print grid[0,0,...].indices()
+        iarray,jarray,karray = grid[3,2,...].indices()
+        i = 3
+        j = 2
+        for k in range(2):
+            self.assertEquals(iarray[k], i)
+            self.assertEquals(jarray[k], j)
+            self.assertEquals(karray[k], k)
+        iarray,jarray,karray = grid[2,...,1].indices()
+        i = 2
+        k = 1
+        for j in range(4):
+            self.assertEquals(iarray[j], i)
+            self.assertEquals(jarray[j], j)
+            self.assertEquals(karray[j], k)
     
     
+    def test12(self):
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        print grid.indices()[0]
+        print grid[grid.x>0.4| units.m].indices()
+        print grid.x[grid.x>0.4| units.m]
+        self.assertEquals(grid[grid.x > 0.4| units.m].x.shape, (24,))
+        self.assertEquals(grid[grid.x>0.4| units.m].x, grid.x[grid.x>0.4|units.m])
+        iarray,jarray,karray = grid.indices()
+        self.assertEquals(grid[grid.x>0.4| units.m].indices()[0],  iarray[grid.x>0.4| units.m])
+        self.assertEquals(grid[grid.x>0.4| units.m].indices()[1],  jarray[grid.x>0.4| units.m])
+        self.assertEquals(grid[grid.x>0.4| units.m].indices()[2],  karray[grid.x>0.4| units.m])
+       
+            
 class TestIndexing(amusetest.TestCase):
     def test1(self):
         self.assertEquals(2, number_of_dimensions_after_index(3, 1))

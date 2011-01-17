@@ -40,6 +40,7 @@ from amuse.support.units.generic_unit_system import *
 
 from amuse.community.athena.interface import Athena
 from amuse.community.capreole.interface import Capreole
+from amuse.community.mpiamrvac.interface import MpiAmrVac
 
 try:
     from amuse import plot
@@ -206,6 +207,12 @@ class CalculateSolutionIn3D(object):
         result.parameters.courant_number=0.3
         return result
         
+
+    def new_instance_of_mpiamrvac_code(self):
+        result=MpiAmrVac(number_of_workers=self.number_of_workers)
+        result.initialize_code()
+        return result
+        
     def new_instance_of_capreole_code(self):
         result=Capreole(number_of_workers=self.number_of_workers)
         result.initialize_code()
@@ -233,7 +240,7 @@ class CalculateSolutionIn3D(object):
         momentum =  speed * density
         energy =  mass / (time**2 * length)
         
-        grid = Grid(*self.dimensions_of_mesh)
+        grid = Grid.create(self.dimensions_of_mesh, [1,1,1] | length)
         
         grid.rho =  0.0 | density
         grid.rhovx = 0.0 | momentum
@@ -248,10 +255,12 @@ class CalculateSolutionIn3D(object):
         
         halfway = self.dimensions_of_mesh[0]/2 - 1
         
-        grid[:halfway].rho = 4.0  | density
-        grid[:halfway].energy = (1.0 | energy)/ (self.gamma - 1)
-        grid[halfway:].rho = 1.0  | density
-        grid[halfway:].energy = (0.1795 | energy)/ (self.gamma - 1)
+        firsthalf = grid.x <= 0.5 | length
+        secondhalf = grid.x > 0.5 | length
+        grid[firsthalf].rho = 4.0  | density
+        grid[firsthalf].energy = (1.0 | energy)/ (self.gamma - 1)
+        grid[secondhalf].rho = 1.0  | density
+        grid[secondhalf].energy = (0.1795 | energy)/ (self.gamma - 1)
         
     def get_solution_at_time(self, time):
         instance=self.new_instance_of_code()

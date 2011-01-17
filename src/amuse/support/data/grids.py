@@ -175,8 +175,7 @@ class SubGrid(AbstractGrid):
 
 
     def indices(self):
-        return self._original_set().indices()[self._private.indices]
-    
+        return [x[self._private.indices] for x in self._original_set().indices()]   
     
 class GridPoint(object):
 
