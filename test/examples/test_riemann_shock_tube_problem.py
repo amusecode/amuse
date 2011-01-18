@@ -341,7 +341,7 @@ def test_riemann_shocktube_problem():
     model.name_of_the_code = "athena"
     model.dimensions_of_mesh = (500,1,1)
     
-    grids = model.get_solution_at_time(0.02 | time)
+    grids = model.get_solution_at_time(0.12 | time)
     grid = grids[0]
     model_x = grid.x[...,0,0]
     density = grid.rho[...,0,0]
