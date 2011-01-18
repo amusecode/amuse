@@ -17,7 +17,6 @@ from subprocess import Popen, PIPE
 from amuse.support.options import OptionalAttributes, option
 from amuse.support.core import late
 from amuse.support import exceptions
-#from amuse.support.legacy import datatypes
 
 class ASyncRequest(object):
         
@@ -582,11 +581,11 @@ class MpiChannel(MessageChannel):
             fd_stdin = os.dup(0)
             zero = open('/dev/null','r')
             os.dup2(zero.fileno(), 0)
-            if self.redirect_stdout_file == None:
+            if not self.redirect_stdout_file == "none":
                 fd_stdout = os.dup(1)
                 zero = open(self.redirect_stdout_file,'a')
                 os.dup2(zero.fileno(), 1)
-            if self.redirect_stdout_file == None:
+            if not self.redirect_stderr_file == "none":
                 fd_stderr = os.dup(2)
                 zero = open(self.redirect_stderr_file,'a')
                 os.dup2(zero.fileno(), 2)
@@ -597,10 +596,10 @@ class MpiChannel(MessageChannel):
                 os.dup2(fd_stdin, 0)
                 os.close(fd_stdin)
                 if not fd_stdout == None:
-                    os.dup2(fd_stdout, 0)
+                    os.dup2(fd_stdout, 1)
                     os.close(fd_stdout)
                 if not fd_stderr == None:
-                    os.dup2(fd_stderr, 0)
+                    os.dup2(fd_stderr, 2)
                     os.close(fd_stderr)
             
         

@@ -2148,7 +2148,7 @@ CONTAINS
         else if ( global_index_of_grid .GT. number_of_grids_before + igridstail ) then
             get_local_index_of_grid = 0
         else
-            get_local_index_of_grid = global_index_of_grid - number_of_grids_before
+            get_local_index_of_grid = igrids(global_index_of_grid - number_of_grids_before)
         end if
         
         !print *, "get_local_index_of_grid", global_index_of_grid, get_local_index_of_grid,&
@@ -2655,8 +2655,6 @@ CONTAINS
         timeio_tot=zero
         timegr_tot=zero
 
-        
-
         itmin=it
 
         call getbc(t,ixGlo1,ixGlo2,ixGlo3,ixGhi1,ixGhi2,ixGhi3,pw,pwCoarse,pgeo,&
@@ -2668,12 +2666,14 @@ CONTAINS
            write(*,'(a,f12.3,a)')'BCs before Advance took    : ',timeloop0&
               -time_in,' sec'
         end if
-
+        
+        tmax = tend
+        
         time_evol : do
            ! exit time loop criteria
            if (it>=itmax) exit time_evol
            if (time_accurate .and. t>=tmax) exit time_evol
-
+           print *, t,tmax, tend
            call setdt
            
            if(fixprocess) call process(it,t)

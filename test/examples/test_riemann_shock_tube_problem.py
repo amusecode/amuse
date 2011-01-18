@@ -191,7 +191,7 @@ class CalculateSolutionIn3D(object):
             setattr(self, x, keyword_arguments[x])
             
         self.dimensions_of_mesh = (
-            self.number_of_grid_points * 1, 
+            self.number_of_grid_points * 3, 
             self.number_of_grid_points, 
             self.number_of_grid_points
         )
@@ -209,7 +209,7 @@ class CalculateSolutionIn3D(object):
         
 
     def new_instance_of_mpiamrvac_code(self):
-        result=MpiAmrVac(number_of_workers=self.number_of_workers, redirection="none")
+        result=MpiAmrVac(number_of_workers=self.number_of_workers)#, redirection="none") #, debugger = "ddd")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         return result
@@ -220,7 +220,6 @@ class CalculateSolutionIn3D(object):
         return result
         
     def set_parameters(self, instance):
-        
         instance.parameters.mesh_size = self.dimensions_of_mesh
         
         instance.parameters.length_x = 1 | length
@@ -230,8 +229,7 @@ class CalculateSolutionIn3D(object):
         instance.parameters.x_boundary_conditions = ("periodic","periodic")
         instance.parameters.y_boundary_conditions = ("periodic","periodic")
         instance.parameters.z_boundary_conditions = ("periodic","periodic")
-        #instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
-        print instance.parameters.mesh_size
+        
         result = instance.commit_parameters()
     
     def new_grid(self):
@@ -283,12 +281,14 @@ class CalculateSolutionIn3D(object):
         instance.evolve(time)
         
         print "copying results"
-        
+        result = []
         for x in instance.itergrids():
-            inmem = x.copy_to_memory()
-            return inmem
-            
+            result.append(x.copy_to_memory())
+
+        print "terminating code"
         instance.stop()
+
+        return result
         
             
 def store_attributes(x, rho, rhovx, energy, filename):
@@ -341,7 +341,8 @@ def test_riemann_shocktube_problem():
     model.name_of_the_code = "athena"
     model.dimensions_of_mesh = (500,1,1)
     
-    grid = model.get_solution_at_time(0.12 | time)
+    grids = model.get_solution_at_time(0.02 | time)
+    grid = grids[0]
     model_x = grid.x[...,0,0]
     density = grid.rho[...,0,0]
     
@@ -360,16 +361,18 @@ def main(**options):
     
     print "calculating shock using code"
     model = CalculateSolutionIn3D(**options)
-    grid = model.get_solution_at_time(0.12 | time)
+    grids = model.get_solution_at_time(0.12 | time)
     
     print "saving data"
     store_attributes(x,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
-    store_attributes_of_line(grid, **options)
+    #store_attributes_of_line(grid, **options)
     
     if IS_PLOT_AVAILABLE:
         print "plotting solution"
         plot.plot(x,rho)
-        plot.plot(grid.x[...,0,0], grid.rho[...,0,0])
+        for g in grids:
+            if g.y[0,0,0] < (1.0/10.0 | length): 
+                plot.plot(g.x[...,0,0], g.rho[...,0,0])
         pyplot.xlim(0.3,0.7)
         pyplot.ylim(0.5,4.5)
         pyplot.savefig("rho.png")

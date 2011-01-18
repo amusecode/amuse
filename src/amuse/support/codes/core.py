@@ -574,8 +574,8 @@ class LegacyInterface(OptionalAttributes):
         self.channel = self.channel_factory(name_of_the_worker, type(self), **options)
         self._check_if_worker_is_up_to_date()
         
-        self.channel.redirect_stdout_file = self.redirect_stdout_file   
-        self.channel.redirect_stderr_file = self.redirect_stderr_file 
+        self.channel.redirect_stdout_file = self.redirection_filenames[0]
+        self.channel.redirect_stderr_file = self.redirection_filenames[1]
         
         self.channel.start()
         self.instances.append(weakref.ref(self))
