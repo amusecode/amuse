@@ -745,9 +745,32 @@ Python packages
 By this point all libraries and frameworks are installed. We can now
 install python packages (some depend on the installed libraries)::
 
-    > sudo port install py26-numpy py26-h5py +gcc44
+    > sudo port install py26-numpy py26-h5py py26-nose py26-docutils +gcc44
+
+If you installed openmpi in the MPI2 step you need to set the
+"openmpi" variant for "py26-mpi4py"::
+
     > sudo port install py26-mpi4py +openmpi
-    > sudo port install py26-nose py26-docutils +gcc44
+
+For mpich2 no such variant is needed::
+
+    > sudo port install py26-mpi4py
+
+
+.. note::
+
+    Macports will install the compilers under non standard names. To
+    use the right compilers you need to specify these during the
+    configure stage of AMUSE.
+    
+    See the output for ```configure --help``` for a list of all 
+    environment variables you can set.
+    
+    If you installed openmpi you need to specify the mpi compilers 
+    like so::
+    
+        ./configure MPICXX=openmpicxx MPICC=openmpicc MPIFC=openmpif90
+    
     
 
     
