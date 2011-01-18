@@ -745,7 +745,9 @@ Python packages
 By this point all libraries and frameworks are installed. We can now
 install python packages (some depend on the installed libraries)::
 
-    > sudo port install py26-numpy py26-h5py py26-mpi4py py26-nose py26-docutils +gcc44
+    > sudo port install py26-numpy py26-h5py +gcc44
+    > sudo port install py26-mpi4py +openmpi
+    > sudo port install py26-nose py26-docutils +gcc44
     
 
     
