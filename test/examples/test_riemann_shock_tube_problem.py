@@ -367,12 +367,20 @@ def main(**options):
     store_attributes(x,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
     #store_attributes_of_line(grid, **options)
     
+    xpoints = [] | length
+    rhovalues = [] | density
+    
+    sortedgrids = sorted(grids, key = lambda x : x.x[0,0,0])
+    for g in sortedgrids:
+        print g.y[0,0,0], g.x[0,0,0]
+        if g.y[0,0,0] < (1.0/10.0 | length): 
+            xpoints.extend(g.x[...,0,0])
+            rhovalues.extend(g.rho[...,0,0])
+            
     if IS_PLOT_AVAILABLE:
         print "plotting solution"
         plot.plot(x,rho)
-        for g in grids:
-            if g.y[0,0,0] < (1.0/10.0 | length): 
-                plot.plot(g.x[...,0,0], g.rho[...,0,0])
+        plot.plot(xpoints, rhovalues)
         pyplot.xlim(0.3,0.7)
         pyplot.ylim(0.5,4.5)
         pyplot.savefig("rho.png")

@@ -276,10 +276,34 @@ class RunSpeedTests(object):
         self.number_of_gridpoints = [8]
      
     def get_mpicc_name(self):
-        return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
     
+        if is_configured:
+            return config.mpi.mpicc
+        else:
+            return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+            
     def get_mpicxx_name(self):
-        return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            return config.mpi.mpicxx
+        else:
+            return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+    
+    def wait_for_file(self, filename):
+        for dt in [0.01, 0.01, 0.02, 0.05]:
+            if os.path.exists(filename):
+                return
+            time.sleep(dt)
     
     def c_compile(self, objectname, string):
         if os.path.exists(objectname):
@@ -293,6 +317,9 @@ class RunSpeedTests(object):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate(string)
+        if process.returncode == 0:
+            self.wait_for_file(objectname)
+            
         if process.returncode != 0 or not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
@@ -307,6 +334,8 @@ class RunSpeedTests(object):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate(string)
+        if process.returncode == 0:
+            self.wait_for_file(objectname)
         if process.returncode != 0 or not os.path.exists(objectname):
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
@@ -329,6 +358,8 @@ class RunSpeedTests(object):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
+        if process.returncode == 0:
+            self.wait_for_file(exename)
         if process.returncode != 0 or not os.path.exists(exename):
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     

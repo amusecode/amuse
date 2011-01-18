@@ -285,8 +285,23 @@ class ForTestingInterface(LegacyInterface):
 class TestInterface(TestWithMPI):
     
     def get_mpif90_name(self):
-        return os.environ['MPIF90'] if 'MPIF90' in os.environ else 'mpif90'
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
     
+        if is_configured:
+            return config.mpi.mpif95
+        else:
+            return os.environ['MPIFC'] if 'MPIFC' in os.environ else 'mpif90'
+    
+    def wait_for_file(self, filename):
+        for dt in [0.01, 0.01, 0.02, 0.05]:
+            if os.path.exists(filename):
+                return
+            time.sleep(dt)
+            
     def fortran_compile(self, objectname, string):
         if os.path.exists(objectname):
             os.remove(objectname)
@@ -296,7 +311,7 @@ class TestInterface(TestWithMPI):
         
         with open(sourcename, "w") as f:
             f.write(string)
-            
+        
         process = subprocess.Popen(
             [self.get_mpif90_name(), "-g", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
@@ -304,13 +319,20 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
+        process.wait()
         
-        if not os.path.exists(objectname) or process.returncode != 0:
+        if process.returncode == 0:
+            self.wait_for_file(objectname)
+            
+        if process.returncode != 0 or not os.path.exists(objectname):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     
     def fortran_build(self, exename, objectnames):
+        if os.path.exists(exename):
+            os.remove(exename)
+            
         arguments = [self.get_mpif90_name()]
         arguments.extend(objectnames)
         arguments.append("-o")
@@ -323,8 +345,13 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
-        if not os.path.exists(exename) or process.returncode != 0:
-            print "Could not build {0}, error = {1}".format(objectname, stderr)
+        
+        if process.returncode == 0:
+            self.wait_for_file(exename)
+            
+        
+        if process.returncode != 0 or not os.path.exists(exename):
+            print "Could not build {0}, error = {1}".format(exename, stderr)
             raise Exception("Could not build {0}, error = {1}".format(exename, stderr))
     
     def build_worker(self):

@@ -297,7 +297,37 @@ class ForTesting(CodeInterface):
 
 
 class TestInterface(TestWithMPI):
-      
+    
+    def get_mpicc_name(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            return config.mpi.mpicc
+        else:
+            return os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+            
+    def get_mpicxx_name(self):
+        try:
+            from amuse import config
+            is_configured = hasattr(config, 'mpi')
+        except ImportError:
+            is_configured = False
+    
+        if is_configured:
+            return config.mpi.mpicxx
+        else:
+            return os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+    
+    def wait_for_file(self, filename):
+        for dt in [0.01, 0.01, 0.02, 0.05]:
+            if os.path.exists(filename):
+                return
+            time.sleep(dt)
+        
     def c_compile(self, objectname, string):
         root, ext = os.path.splitext(objectname)
         sourcename = root + '.c'
@@ -308,14 +338,18 @@ class TestInterface(TestWithMPI):
         with open(sourcename, "w") as f:
             f.write(string)
             
-        mpicc = os.environ['MPICC'] if 'MPICC' in os.environ else 'mpicc'
+        mpicc = self.get_mpicc_name()
         process = subprocess.Popen(
-            ["mpicc", "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
+            [mpicc, "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
             stdout = subprocess.PIPE,
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
+        
+        if process.returncode == 0:
+            self.wait_for_file(objectname)
+        
         if process.returncode != 0 or not os.path.exists(objectname):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
@@ -330,7 +364,7 @@ class TestInterface(TestWithMPI):
         with open(sourcename, "w") as f:
             f.write(string)
             
-        mpicxx = os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
+        mpicxx = self.get_mpicxx_name()
         process = subprocess.Popen(
             [mpicxx, "-I", "lib/stopcond", "-c",  "-o", objectname, sourcename],
             stdin = subprocess.PIPE,
@@ -338,15 +372,21 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
+        
+        if process.returncode == 0:
+            self.wait_for_file(objectname)
+            
         if process.returncode != 0 or not os.path.exists(objectname):
             print "Could not compile {0}, error = {1}".format(objectname, stderr)
             raise Exception("Could not compile {0}, error = {1}".format(objectname, stderr))
             
     def c_build(self, exename, objectnames):
-        mpicxx = os.environ['MPICXX'] if 'MPICXX' in os.environ else 'mpicxx'
-        arguments = [mpicxx]
+        
         if os.path.exists(exename):
             os.remove(exename)
+            
+        mpicxx = self.get_mpicxx_name()
+        arguments = [mpicxx]
         arguments.extend(objectnames)
         arguments.append("-o")
         arguments.append(exename)
@@ -358,6 +398,10 @@ class TestInterface(TestWithMPI):
             stderr = subprocess.PIPE
         )
         stdout, stderr = process.communicate()
+        
+        if process.returncode == 0:
+            self.wait_for_file(exename)
+            
         if process.returncode != 0 or not os.path.exists(exename):
             
             print "Could not compile {0}, error = {1}".format(exename, stderr)
