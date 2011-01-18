@@ -546,18 +546,26 @@ class MpiChannel(MessageChannel):
     
 
     @late
+    def redirect_stdout_file(self):
+        return "/dev/null"
+        
+    @late
+    def redirect_stderr_file(self):
+        return "/dev/null"
+        
+    @late
     def debugger_method(self):
         return self.DEBUGGERS[self.debugger]
     
     def start(self):
         
-        must_close_stdin = True
+        must_close_std_streams = True
         if self.debug_with_gdb or (not self.debugger_method is None):
             if not 'DISPLAY' in os.environ:
                 arguments = None
                 command = self.full_name_of_the_worker
             else:
-                must_close_stdin = False
+                must_close_std_streams = False
                 if self.debugger is None:
                     command, arguments = self.GDB(self.full_name_of_the_worker)
                 else:
@@ -568,16 +576,32 @@ class MpiChannel(MessageChannel):
         
 
         fd_stdin = None
-        if must_close_stdin:
+        fd_stdout = None
+        fd_stderr = None
+        if must_close_std_streams:
             fd_stdin = os.dup(0)
             zero = open('/dev/null','r')
             os.dup2(zero.fileno(), 0)
+            if self.redirect_stdout_file == None:
+                fd_stdout = os.dup(1)
+                zero = open(self.redirect_stdout_file,'a')
+                os.dup2(zero.fileno(), 1)
+            if self.redirect_stdout_file == None:
+                fd_stderr = os.dup(2)
+                zero = open(self.redirect_stderr_file,'a')
+                os.dup2(zero.fileno(), 2)
         try:
             self.intercomm = MPI.COMM_SELF.Spawn(command, arguments, self.number_of_workers, info = self.info)
         finally: 
-            if must_close_stdin:
+            if must_close_std_streams:
                 os.dup2(fd_stdin, 0)
                 os.close(fd_stdin)
+                if not fd_stdout == None:
+                    os.dup2(fd_stdout, 0)
+                    os.close(fd_stdout)
+                if not fd_stderr == None:
+                    os.dup2(fd_stderr, 0)
+                    os.close(fd_stderr)
             
         
         
