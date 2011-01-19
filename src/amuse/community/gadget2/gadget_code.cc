@@ -1113,53 +1113,6 @@ int found_particle(int index_of_the_particle, int *local_index){
     return 0;
 }
 
-int find_particle(int index_of_the_particle, struct particle_data **Pfound, int *at_task){
-    int found_at_task = -1;
-    map<long long, int>::iterator it;
-    *at_task = -1;
-    
-    if (!particles_initialized || index_of_the_particle < 1 || 
-            index_of_the_particle > index_of_highest_mapped_particle)
-        return -1;
-    
-    if (!particle_map_up_to_date)
-        update_particle_map();
-    
-    it = local_index_map.find(index_of_the_particle);
-    if (it != local_index_map.end()){
-        *Pfound = &P[(*it).second];
-        found_at_task = ThisTask;
-    }
-    MPI_Allreduce(MPI_IN_PLACE, &found_at_task, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    *at_task = found_at_task;
-    if (found_at_task == -1)
-        return -1;
-    return 0;
-}
-int find_sph_particle(int index_of_the_particle, struct particle_data **Pfound, struct sph_particle_data **SphPfound, int *at_task){
-    int found_at_task = -1;
-    map<long long, int>::iterator it;
-    *at_task = -1;
-    
-    if (!particles_initialized || index_of_the_particle < 1 || 
-            index_of_the_particle > index_of_highest_mapped_particle)
-        return -1;
-    
-    if (!particle_map_up_to_date)
-        update_particle_map();
-    
-    it = local_index_map.find(index_of_the_particle);
-    if (it != local_index_map.end()){
-        *Pfound = &P[(*it).second];
-        *SphPfound = &SphP[(*it).second];
-        found_at_task = ThisTask;
-    }
-    MPI_Allreduce(MPI_IN_PLACE, &found_at_task, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
-    *at_task = found_at_task;
-    if (found_at_task == -1)
-        return -1;
-    return 0;
-}
 int get_mass(int *index, double *mass, int length){
     int errors = 0;
     double buffer[length];
