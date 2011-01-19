@@ -331,6 +331,36 @@ class VectorQuantity(Quantity):
         quantity<3.0 kg>
         """
         return new_quantity(self.number.sum(axis, dtype, out), self.unit)
+        
+    def prod(self, axis=None, dtype=None):
+        """Calculate the sum of the vector components
+
+        >>> from amuse.support.units import units
+        >>> v1 = [1.0, 2.0, 3.0] | units.m
+        >>> v1.prod()
+        quantity<6.0 m**3>
+        >>> v1 = [[2.0, 3.0], [2.0, 4.0], [5.0,3.0] ] | units.m
+        >>> v1.prod()
+        quantity<720.0 m**6>
+        >>> v1.prod(0)
+        quantity<[20.0, 36.0] m**3>
+        >>> v1.prod(1)
+        quantity<[6.0, 8.0, 15.0] m**2>
+        
+        >>> v1 = [[[2.0, 3.0], [2.0, 4.0]],[[5.0, 2.0], [3.0, 4.0]]] | units.m
+        >>> v1.prod()
+        quantity<5760.0 m**8>
+        >>> v1.prod(0)
+        quantity<[[ 10.   6.], [  6.  16.]] m**2>
+        >>> v1.prod(1)
+        quantity<[[  4.  12.], [ 15.   8.]] m**2>
+        >>> v1.prod(2)
+        quantity<[[ 6.  8.], [ 10.  12.]] m**2>
+        """
+        if axis == None:
+            return new_quantity(self.number.prod(axis, dtype), self.unit ** numpy.prod(self.number.shape))
+        else:
+            return new_quantity(self.number.prod(axis, dtype), self.unit ** self.number.shape[axis])
     
     def length_squared(self):
         """Calculate the squared length of the vector.

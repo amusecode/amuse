@@ -99,8 +99,8 @@ class TestCase(unittest.TestCase):
             places = self.PRECISION + places
         
         maxRelativeError = 0.1 ** places
-        relativeError = abs((second_num - first_num) / first_num)
-            
+        relativeError = abs((second_num - first_num) / (first_num))
+        
         failures = numpy.array(relativeError >= maxRelativeError).flatten()
         self._raise_exceptions_if_any(failures, first, second, "{0!r} != {1!r} within {2!r} places", msg, places)
         

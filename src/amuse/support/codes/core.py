@@ -79,14 +79,18 @@ class LegacyCall(object):
             
         self.interface.channel.send_message(self.specification.id, dtype_to_arguments = dtype_to_values)
         
-        if not self.owner is None:
-            logging.getLogger("legacy").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
         
         try:
             dtype_to_result = self.interface.channel.recv_message(self.specification.id, handle_as_array)
         except Exception, ex:
             raise exceptions.LegacyException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
-        return self.converted_results(dtype_to_result, handle_as_array)
+        
+        result = self.converted_results(dtype_to_result, handle_as_array)
+        
+        if not self.owner is None:
+            logging.getLogger("legacy").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
+        
+        return result
     
     def async(self, *arguments_list, **keyword_arguments):
         dtype_to_values = self.converted_keyword_and_list_arguments( arguments_list, keyword_arguments)

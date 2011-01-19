@@ -62,6 +62,10 @@ class AbstractGrid(AbstractSet):
        
         return result
         
+    def samplePoint(self, position, must_return_values_on_cell_center = False):
+        pass
+        
+        
 class Grid(AbstractGrid):
     def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):
         AbstractGrid.__init__(self)
@@ -223,30 +227,3 @@ class GridInformationChannel(object):
         self.copy_attributes(self.target._get_writeable_attribute_names())
     
     
-        
-
-@Grid.function_for_set
-def cellsize(grid, dimensions = 3):
-    """Returns the lenght of each direction in the grid, assumes 3d grid
-    """
-    cell1 = grid[0][0][0]
-    cell2 = grid[1][0][0]
-    dx = cell2.x - cell1.x
-    
-    result = [0.0,0.0,0.0] | dx.unit
-    result[0] = dx
-   
-    if dimensions > 1:
-        cell2 = grid[0][1][0]
-        result[1] = cell2.y - cell1.y
-    else:
-        return result[0:1]
-        
-    if dimensions > 2:
-        cell2 = grid[0][0][1]
-        result[2] = cell2.z - cell1.z
-        return result
-    else:
-        return result[0:2]
-
-

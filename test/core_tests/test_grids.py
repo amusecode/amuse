@@ -291,3 +291,14 @@ class TestIndexing(amusetest.TestCase):
         
         self.assertEquals(indirect.shape, direct.shape)
         self.assertTrue(numpy.all(indirect ==  direct))
+        
+        
+class TestGridAttributes(amusetest.TestCase):
+    
+    def test1(self):
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        print grid.get_minimum_position()
+        self.assertAlmostRelativeEquals(grid.get_minimum_position()+ (1.0  | units.m),  ([0.0, 0.0, 0.0] | units.m) + (1.0  | units.m))
+        self.assertAlmostRelativeEquals(grid.get_maximum_position(),  [1.0, 1.0, 1.0] | units.m)
+        self.assertAlmostRelativeEquals(grid.get_volume(),  1.0 | units.m ** 3)
+        self.assertTrue(grid.contains([0.5,0.5,0.5] | units.m)
