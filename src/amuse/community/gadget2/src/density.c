@@ -373,14 +373,27 @@ void density(void)
 			{
 			  if(P[i].Type == 0 && fabs(SphP[i].NumNgb - All.DesNumNgb) < 0.5 * All.DesNumNgb)
 			    {
-			      SphP[i].Hsml *=
-				1 - (SphP[i].NumNgb -
+			      double d=(SphP[i].NumNgb -
 				     All.DesNumNgb) / (NUMDIMS * SphP[i].NumNgb) * SphP[i].DhsmlDensityFactor;
-			    }
+                              if(d<.99)
+                                SphP[i].Hsml *= 1 - d;
+			      else
+                                SphP[i].Hsml /= 1.26;
+                            }
 			  else
 			    SphP[i].Hsml /= 1.26;
 			}
 		    }
+
+                   if(SphP[i].Hsml <= 0.)
+		    {
+		      printf
+			("** i=%d task=%d ID=%d Hsml=%g Left=%g Right=%g Ngbs=%g dhsml=%g\n ",
+			 i, ThisTask, (int) P[i].ID, SphP[i].Hsml, SphP[i].Left, SphP[i].Right,
+			 (float) SphP[i].NumNgb, SphP[i].DhsmlDensityFactor);
+		      fflush(stdout);
+		    }
+
 
 		  if(SphP[i].Hsml < All.MinGasHsml)
 		    SphP[i].Hsml = All.MinGasHsml;
