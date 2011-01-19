@@ -211,6 +211,8 @@ class MakeAReportOfATestRun(object):
         self.end_time = 0
         self.skipped = 0
         self.report_id = -1
+        self.last_test_run = None
+        self.crashed = False
         
         if reports_queue is None:
             self._queue_report = self.ignore_report
@@ -603,7 +605,9 @@ class RunTests(object):
         except Empty:
             print "No message recieved from process for 60 seconds"
             report = MakeAReportOfATestRun()
+            report.last_test_run = self.last_test_started
             report.start_time = report.end_time = time.time()
+            report.crashed = True
             result = 'failed', report
             temp_stdout.flush()
             

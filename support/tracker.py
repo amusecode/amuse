@@ -101,6 +101,11 @@ This is to inform you that your commit had errors.
 success_start = """\
 This is to inform you that your commit had no errors, well done!
 """
+crash_start = """\
+This is to inform you that during testing of your commit the code crashed.
+
+The last test run was: {last_test_run}
+"""
 
 commit_info = """\
 AUTHOR   : {author}
@@ -137,6 +142,7 @@ same_tests = """\
 The number of tests has not increased, is your code tested?
 """
 
+crashed_email_subject = """Test {last_test_run} crashed in revision {revision}"""
 errored_email_subject = """Found {number_of_errors} error(s) in revision {revision}"""
 success_email_subject = """For revision revision {revision}, all {number_of_tests} tests were successful!"""
 
@@ -317,7 +323,10 @@ class RunAllTestsOnASvnCommit(object):
         uc = SendAnEmail()
         uc.mail_contents = mail_content_string
         
-        if report["number_of_errors"] > 0:
+        
+        if report["crashed"]:
+            uc.subject = crashed_email_subject.format(**report)
+        elif report["number_of_errors"] > 0:
             uc.subject = errored_email_subject.format(**report)
         else:
             uc.subject = success_email_subject.format(**report)
@@ -333,7 +342,9 @@ class RunAllTestsOnASvnCommit(object):
         contents = []
         contents.append(header.format(**report))
         
-        if report["number_of_errors"] > 0:
+        if report["crashed"]:
+            contents.append(crash_start.format(**report))
+        elif report["number_of_errors"] > 0:
             contents.append(errored_start.format(**report))
         else:
             contents.append(success_start.format(**report))
@@ -393,12 +404,18 @@ class RunAllTestsOnASvnCommit(object):
         report['number_of_skips'] = test_report.skipped
         report['number_of_tests'] = test_report.tests
         report['number_of_seconds'] = test_report.end_time - test_report.start_time
-        report['revision']  = revision
+        report['revision'] = revision
+        report['crashed'] = test_report.crashed
+        report['last_test_run'] = test_report.last_test_run
         
         previous_revision = int(revision) - 1
         while not previous_revision in self.mapping_from_revision_to_report and previous_revision > 0:
             previous_revision -= 1
-            
+            if previous_revision in self.mapping_from_revision_to_report:
+                previous_report = self.mapping_from_revision_to_report[previous_revision]
+                if previous_report['crashed']:
+                    previous_revision -= 1
+           
         if previous_revision in self.mapping_from_revision_to_report:
             previous_report = self.mapping_from_revision_to_report[previous_revision]
             previous_number_of_tests = previous_report['number_of_tests']
