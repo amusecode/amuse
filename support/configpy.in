@@ -17,7 +17,7 @@ class compilers(object):
 class mpi(object):
     mpicxx = '@MPICXX@' 
     mpicc  = '@MPICC@'
-    mpif95 = '@MPIFC@ '
+    mpif95 = '@MPIFC@'
 
 class cuda(object):
     is_enabled   = '@WITH_CUDA@'=='yes'
