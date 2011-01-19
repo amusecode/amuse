@@ -3,7 +3,6 @@
 #include <string.h>
 #include <vector>
 #include <map>
-//#include <algorithm>
 #include <math.h>
 #include "gadget_code.h"
 #include "worker_code.h"
@@ -1177,11 +1176,11 @@ int get_mass(int *index, double *mass, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1196,15 +1195,35 @@ int get_mass(int *index, double *mass, int length){
     }
     return 0;
 }
-int set_mass(int index, double mass){
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask)
-            Pcurrent->Mass = mass;
+int check_counts(int *count, int length){
+    int errors = 0;
+    if(ThisTask) {
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         return 0;
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1)
+                errors++;
+        }
     }
-    return -3;
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
+}
+int set_mass(int *index, double *mass, int length){
+    int count[length];
+    int local_index;
+    
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            P[local_index].Mass = mass[i];
+            count[i] = 1;
+        } else count[i] = 0;
+    }
+    return check_counts(count, length);
 }
 int get_radius(int index, double *radius){
     return -2;
@@ -1232,11 +1251,11 @@ int get_position(int *index, double *x, double *y, double *z, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1256,18 +1275,19 @@ int get_position(int *index, double *x, double *y, double *z, int length){
     }
     return 0;
 }
-int set_position(int index, double x, double y, double z){
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask){
-            Pcurrent->Pos[0] = x;
-            Pcurrent->Pos[1] = y;
-            Pcurrent->Pos[2] = z;
-        }
-        return 0;
+int set_position(int *index, double *x, double *y, double *z, int length){
+    int count[length];
+    int local_index;
+    
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            P[local_index].Pos[0] = x[i];
+            P[local_index].Pos[1] = y[i];
+            P[local_index].Pos[2] = z[i];
+            count[i] = 1;
+        } else count[i] = 0;
     }
-    return -3;
+    return check_counts(count, length);
 }
 int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
     int errors = 0;
@@ -1289,11 +1309,11 @@ int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1313,18 +1333,19 @@ int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
     }
     return 0;
 }
-int set_velocity(int index, double vx, double vy, double vz){
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask){
-            Pcurrent->Vel[0] = vx;
-            Pcurrent->Vel[1] = vy;
-            Pcurrent->Vel[2] = vz;
-        }
-        return 0;
+int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
+    int count[length];
+    int local_index;
+    
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            P[local_index].Vel[0] = vx[i];
+            P[local_index].Vel[1] = vy[i];
+            P[local_index].Vel[2] = vz[i];
+            count[i] = 1;
+        } else count[i] = 0;
     }
-    return -3;
+    return check_counts(count, length);
 }
 int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
     int errors = 0;
@@ -1354,11 +1375,11 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1386,22 +1407,23 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
     }
     return 0;
 }
-int set_state(int index, double mass, double x, double y, double z, double vx, double vy, double vz){
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask){
-            Pcurrent->Mass = mass;
-            Pcurrent->Pos[0] = x;
-            Pcurrent->Pos[1] = y;
-            Pcurrent->Pos[2] = z;
-            Pcurrent->Vel[0] = vx;
-            Pcurrent->Vel[1] = vy;
-            Pcurrent->Vel[2] = vz;
-        }
-        return 0;
+int set_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
+    int count[length];
+    int local_index;
+    
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            P[local_index].Mass = mass[i];
+            P[local_index].Pos[0] = x[i];
+            P[local_index].Pos[1] = y[i];
+            P[local_index].Pos[2] = z[i];
+            P[local_index].Vel[0] = vx[i];
+            P[local_index].Vel[1] = vy[i];
+            P[local_index].Vel[2] = vz[i];
+            count[i] = 1;
+        } else count[i] = 0;
     }
-    return -3;
+    return check_counts(count, length);
 }
 int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
     int errors = 0;
@@ -1410,6 +1432,10 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
     int local_index;
     double a3;
     
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
+    }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
@@ -1436,11 +1462,11 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1470,26 +1496,32 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
     }
     return 0;
 }
-int set_state_sph(int index, double mass, double x, double y, double z, double vx, double vy, double vz, double internal_energy){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
+int set_state_sph(int *index, double *mass, double *x, double *y, double *z, 
+        double *vx, double *vy, double *vz, double *internal_energy, int length){
+    int count[length];
+    int local_index;
     double a3;
-    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-        if (at_task == ThisTask){
-            Pcurrent->Mass = mass;
-            Pcurrent->Pos[0] = x;
-            Pcurrent->Pos[1] = y;
-            Pcurrent->Pos[2] = z;
-            Pcurrent->Vel[0] = vx;
-            Pcurrent->Vel[1] = vy;
-            Pcurrent->Vel[2] = vz;
-            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-            SphPcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(SphPcurrent->Density / a3, GAMMA_MINUS1);
-        }
-        return 0;
+    
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
     }
-    return -3;
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            P[local_index].Mass = mass[i];
+            P[local_index].Pos[0] = x[i];
+            P[local_index].Pos[1] = y[i];
+            P[local_index].Pos[2] = z[i];
+            P[local_index].Vel[0] = vx[i];
+            P[local_index].Vel[1] = vy[i];
+            P[local_index].Vel[2] = vz[i];
+            SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] / 
+                pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+            count[i] = 1;
+        } else count[i] = 0;
+    }
+    return check_counts(count, length);
 }
 int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
     int errors = 0;
@@ -1516,11 +1548,11 @@ int get_acceleration(int *index, double * ax, double * ay, double * az, int leng
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1550,6 +1582,10 @@ int get_internal_energy(int *index, double *internal_energy, int length){
     int local_index;
     double a3;
     
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
+    }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
         if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
@@ -1562,11 +1598,11 @@ int get_internal_energy(int *index, double *internal_energy, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1581,19 +1617,24 @@ int get_internal_energy(int *index, double *internal_energy, int length){
     }
     return 0;
 }
-int set_internal_energy(int index, double internal_energy){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
+int set_internal_energy(int *index, double *internal_energy, int length){
+    int count[length];
+    int local_index;
     double a3;
-    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-        if (at_task == ThisTask){
-            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-            SphPcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(SphPcurrent->Density / a3, GAMMA_MINUS1);
-        }
-        return 0;
+    
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
     }
-    return -3;
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] / 
+                pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+            count[i] = 1;
+        } else count[i] = 0;
+    }
+    return check_counts(count, length);
 }
 int get_smoothing_length(int *index, double *smoothing_length, int length){
     int errors = 0;
@@ -1616,11 +1657,11 @@ int get_smoothing_length(int *index, double *smoothing_length, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1656,11 +1697,11 @@ int get_density(int *index, double *density_out, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;
@@ -1696,11 +1737,11 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
         }
     }
     if(ThisTask) {
-        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
         for (int i = 0; i < length; i++){
             if (count[i] != 1){
                 errors++;

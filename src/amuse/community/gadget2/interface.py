@@ -111,7 +111,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         dynamics particle (mass, position and velocity) is updated.
         """
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
@@ -121,6 +121,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function.addParameter('vx', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.IN, description = "The new velocity vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -151,6 +152,27 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         """
         return function
     @legacy_function
+    def set_mass():
+        """
+        Update the mass of a particle. Mass is a scalar property of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('mass', dtype='float64', direction=function.IN, description = "The new mass of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            code does not support updating of a particle
+        """
+        return function
+    @legacy_function
     def get_position():
         """
         Retrieve the position vector of a particle. Position is a vector property,
@@ -175,6 +197,29 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         """
         return function
     @legacy_function
+    def set_position():
+        """
+        Update the position of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('x', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN, description = "The new position vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was set
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            code does not support updating of a particle
+        """
+        return function
+    @legacy_function
     def get_velocity():
         """
         Retrieve the velocity vector of a particle. Position is a vector property,
@@ -187,6 +232,29 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function.addParameter('vx', dtype='float64', direction=function.OUT, description = "The current x component of the position vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.OUT, description = "The current y component of the position vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current z component of the position vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+    @legacy_function
+    def set_velocity():
+        """
+        Set the velocity vector of a particle.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('vx', dtype='float64', direction=function.IN, description = "The current x component of the velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN, description = "The current y component of the velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN, description = "The current z component of the velocity vector of the particle")
         function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         function.result_doc = """
@@ -236,11 +304,12 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def set_state_sph():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         for x in ['mass','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='float64', direction=function.IN)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
@@ -257,9 +326,10 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def set_internal_energy():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('u', dtype='float64', direction=function.IN)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
