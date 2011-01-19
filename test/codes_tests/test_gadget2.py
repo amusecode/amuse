@@ -184,7 +184,7 @@ class TestGadget2Interface(TestWithMPI):
         instance.stop()
     
     def test8(self):
-        instance = Gadget2Interface(**default_options)
+        instance = Gadget2Interface(**few_particles_default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -772,7 +772,8 @@ class TestGadget2(TestWithMPI):
             instance.evolve_model(0.001 | generic_unit_system.time)
             positions_per_workers.append(instance.particles.position)
             instance.stop()
-         
-         
+        
         for index, n in enumerate([2,3,4,5]):
-            self.assertAlmostRelativeEqual(expected_positions, positions_per_workers[index])
+            self.assertAlmostRelativeEqual(expected_positions[:,0], positions_per_workers[index][:,0])
+            self.assertAlmostRelativeEqual(expected_positions[:,1], positions_per_workers[index][:,1])
+            self.assertAlmostRelativeEqual(expected_positions[:,2], positions_per_workers[index][:,2])

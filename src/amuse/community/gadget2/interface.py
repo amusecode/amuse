@@ -84,7 +84,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         dynamics particle (mass, position and velocity) is returned.
         """
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
@@ -94,6 +94,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
         function.addParameter('vx', dtype='float64', direction=function.OUT, description = "The current velocity vector of the particle")
         function.addParameter('vy', dtype='float64', direction=function.OUT, description = "The current velocity vector of the particle")
         function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current velocity vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK
@@ -128,14 +129,108 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
             particle could not be found
         """
         return function
+    
+    @legacy_function
+    def get_mass():
+        """
+        Retrieve the mass of a particle. Mass is a scalar property of a particle,
+        this function has one OUT argument.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('mass', dtype='float64', direction=function.OUT, description = "The current mass of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was removed from the model
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    @legacy_function
+    def get_position():
+        """
+        Retrieve the position vector of a particle. Position is a vector property,
+        this function has 3 OUT arguments.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+    @legacy_function
+    def get_velocity():
+        """
+        Retrieve the velocity vector of a particle. Position is a vector property,
+        this function has 3 OUT arguments.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the velocity from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('vx', dtype='float64', direction=function.OUT, description = "The current x component of the position vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.OUT, description = "The current y component of the position vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current z component of the position vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+    @legacy_function
+    def get_acceleration():
+        """
+        Retrieve the acceleration vector of a particle. Second time derivative of the position.
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('ax', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('ay', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('az', dtype='float64', direction=function.OUT, description = "The current position vector of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        -2 - ERROR
+            not yet implemented
+        """
+        return function
+    
     @legacy_function
     def get_state_sph():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
             description = "Index of the particle to get the state from. This index must have been returned by an earlier call to :meth:`new_particle`")
         for x in ['mass','x','y','z','vx','vy','vz','u']:
             function.addParameter(x, dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     @legacy_function
@@ -152,9 +247,10 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def get_internal_energy():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('u', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
@@ -170,27 +266,30 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def get_smoothing_length():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('h_smooth', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def get_density():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('rho', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def get_n_neighbours():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('num_neighbours', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
@@ -204,18 +303,20 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     @legacy_function
     def get_epsilon_dm_part():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('radius', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     
     @legacy_function
     def get_epsilon_gas_part():
         function = LegacyFunctionSpecification()
-        function.can_handle_array = True
+        function.must_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
         function.addParameter('radius', dtype='float64', direction=function.OUT)
+        function.addParameter('length', 'int32', function.LENGTH)
         function.result_type = 'int32'
         return function
     

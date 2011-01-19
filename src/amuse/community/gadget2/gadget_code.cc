@@ -3,7 +3,7 @@
 #include <string.h>
 #include <vector>
 #include <map>
-#include <algorithm>
+//#include <algorithm>
 #include <math.h>
 #include "gadget_code.h"
 #include "worker_code.h"
@@ -1096,9 +1096,28 @@ void update_particle_map(void){
     }
     particle_map_up_to_date = true;
 }
+int found_particle(int index_of_the_particle, int *local_index){
+    map<long long, int>::iterator it;
+    
+    if (!particles_initialized || index_of_the_particle < 1 || 
+            index_of_the_particle > index_of_highest_mapped_particle)
+        return 0;
+    
+    if (!particle_map_up_to_date)
+        update_particle_map();
+    
+    it = local_index_map.find(index_of_the_particle);
+    if (it != local_index_map.end()){
+        *local_index = (*it).second;
+        return 1;
+    }
+    return 0;
+}
+
 int find_particle(int index_of_the_particle, struct particle_data **Pfound, int *at_task){
     int found_at_task = -1;
     map<long long, int>::iterator it;
+    *at_task = -1;
     
     if (!particles_initialized || index_of_the_particle < 1 || 
             index_of_the_particle > index_of_highest_mapped_particle)
@@ -1118,10 +1137,11 @@ int find_particle(int index_of_the_particle, struct particle_data **Pfound, int 
         return -1;
     return 0;
 }
-
 int find_sph_particle(int index_of_the_particle, struct particle_data **Pfound, struct sph_particle_data **SphPfound, int *at_task){
     int found_at_task = -1;
     map<long long, int>::iterator it;
+    *at_task = -1;
+    
     if (!particles_initialized || index_of_the_particle < 1 || 
             index_of_the_particle > index_of_highest_mapped_particle)
         return -1;
@@ -1141,28 +1161,40 @@ int find_sph_particle(int index_of_the_particle, struct particle_data **Pfound, 
         return -1;
     return 0;
 }
-int get_mass(int index, double *mass){
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    double buffer[1];
-    MPI_Status status;
+int get_mass(int *index, double *mass, int length){
+    int errors = 0;
+    double buffer[length];
+    int count[length];
+    int local_index;
     
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask)
-            buffer[0] = Pcurrent->Mass;
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            count[i] = 1;
+            buffer[i] = P[local_index].Mass;
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
         }
-        
-        if (ThisTask == 0)
-            *mass = buffer[0];
-        return 0;
     }
-    return -3;
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                mass[i] = 0;
+            } else
+                mass[i] = buffer[i];
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
 }
 int set_mass(int index, double mass){
     struct particle_data *Pcurrent;
@@ -1180,34 +1212,49 @@ int get_radius(int index, double *radius){
 int set_radius(int index, double radius){
     return -2;
 }
-int get_position(int index, double *x, double *y, double *z){
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    double buffer[3];
-    MPI_Status status;
+int get_position(int *index, double *x, double *y, double *z, int length){
+    int errors = 0;
+    double buffer[length*3];
+    int count[length];
+    int local_index;
     
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask){
-            buffer[0] = Pcurrent->Pos[0];
-            buffer[1] = Pcurrent->Pos[1];
-            buffer[2] = Pcurrent->Pos[2];
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            count[i] = 1;
+            buffer[i] = P[local_index].Pos[0];
+            buffer[i+length] = P[local_index].Pos[1];
+            buffer[i+2*length] = P[local_index].Pos[2];
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+            buffer[i+length] = 0;
+            buffer[i+2*length] = 0;
         }
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 3, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 3, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0){
-            *x = buffer[0];
-            *y = buffer[1];
-            *z = buffer[2];
-        }
-        return 0;
     }
-    return -3;
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                x[i] = 0;
+                y[i] = 0;
+                z[i] = 0;
+            } else {
+                x[i] = buffer[i];
+                y[i] = buffer[i+length];
+                z[i] = buffer[i+2*length];
+            }
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
 }
 int set_position(int index, double x, double y, double z){
     struct particle_data *Pcurrent;
@@ -1222,34 +1269,49 @@ int set_position(int index, double x, double y, double z){
     }
     return -3;
 }
-int get_velocity(int index, double *vx, double *vy, double *vz){
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    double buffer[3];
-    MPI_Status status;
+int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
+    int errors = 0;
+    double buffer[length*3];
+    int count[length];
+    int local_index;
     
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask){
-            buffer[0] = Pcurrent->Vel[0];
-            buffer[1] = Pcurrent->Vel[1];
-            buffer[2] = Pcurrent->Vel[2];
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            count[i] = 1;
+            buffer[i] = P[local_index].Vel[0];
+            buffer[i+length] = P[local_index].Vel[1];
+            buffer[i+2*length] = P[local_index].Vel[2];
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+            buffer[i+length] = 0;
+            buffer[i+2*length] = 0;
         }
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 3, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 3, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0){
-            *vx = buffer[0];
-            *vy = buffer[1];
-            *vz = buffer[2];
-        }
-        return 0;
     }
-  return -3;
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                vx[i] = 0;
+                vy[i] = 0;
+                vz[i] = 0;
+            } else {
+                vx[i] = buffer[i];
+                vy[i] = buffer[i+length];
+                vz[i] = buffer[i+2*length];
+            }
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
 }
 int set_velocity(int index, double vx, double vy, double vz){
     struct particle_data *Pcurrent;
@@ -1264,42 +1326,65 @@ int set_velocity(int index, double vx, double vy, double vz){
     }
     return -3;
 }
-int get_state(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz) {
-    struct particle_data *Pcurrent;
-    int at_task = -1;
-    double buffer[7];
-    MPI_Status status;
+int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
+    int errors = 0;
+    double buffer[length*7];
+    int count[length];
+    int local_index;
     
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask){
-            buffer[0] = Pcurrent->Mass;
-            buffer[1] = Pcurrent->Pos[0];
-            buffer[2] = Pcurrent->Pos[1];
-            buffer[3] = Pcurrent->Pos[2];
-            buffer[4] = Pcurrent->Vel[0];
-            buffer[5] = Pcurrent->Vel[1];
-            buffer[6] = Pcurrent->Vel[2];
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            count[i] = 1;
+            buffer[i] = P[local_index].Mass;
+            buffer[i+length] = P[local_index].Pos[0];
+            buffer[i+2*length] = P[local_index].Pos[1];
+            buffer[i+3*length] = P[local_index].Pos[2];
+            buffer[i+4*length] = P[local_index].Vel[0];
+            buffer[i+5*length] = P[local_index].Vel[1];
+            buffer[i+6*length] = P[local_index].Vel[2];
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+            buffer[i+length] = 0;
+            buffer[i+2*length] = 0;
+            buffer[i+3*length] = 0;
+            buffer[i+4*length] = 0;
+            buffer[i+5*length] = 0;
+            buffer[i+6*length] = 0;
         }
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 7, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 7, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0){
-            *mass = buffer[0];
-            *x =  buffer[1];
-            *y =  buffer[2];
-            *z =  buffer[3];
-            *vx = buffer[4];
-            *vy = buffer[5];
-            *vz = buffer[6];
-        }
-        return 0;
     }
-    return -3;
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                mass[i] = 0;
+                x[i] = 0;
+                y[i] = 0;
+                z[i] = 0;
+                vx[i] = 0;
+                vy[i] = 0;
+                vz[i] = 0;
+            } else {
+                mass[i] = buffer[i];
+                x[i] = buffer[i+length];
+                y[i] = buffer[i+2*length];
+                z[i] = buffer[i+3*length];
+                vx[i] = buffer[i+4*length];
+                vy[i] = buffer[i+5*length];
+                vz[i] = buffer[i+6*length];
+            }
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
 }
 int set_state(int index, double mass, double x, double y, double z, double vx, double vy, double vz){
     struct particle_data *Pcurrent;
@@ -1318,47 +1403,72 @@ int set_state(int index, double mass, double x, double y, double z, double vx, d
     }
     return -3;
 }
-int get_state_sph(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy) {
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
+int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
+    int errors = 0;
+    double buffer[length*8];
+    int count[length];
+    int local_index;
     double a3;
-    double buffer[8];
-    MPI_Status status;
     
-    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-        if (at_task == ThisTask){
-            buffer[0] = Pcurrent->Mass;
-            buffer[1] = Pcurrent->Pos[0];
-            buffer[2] = Pcurrent->Pos[1];
-            buffer[3] = Pcurrent->Pos[2];
-            buffer[4] = Pcurrent->Vel[0];
-            buffer[5] = Pcurrent->Vel[1];
-            buffer[6] = Pcurrent->Vel[2];
-            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-            buffer[7] = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+            buffer[i] = P[local_index].Mass;
+            buffer[i+length] = P[local_index].Pos[0];
+            buffer[i+2*length] = P[local_index].Pos[1];
+            buffer[i+3*length] = P[local_index].Pos[2];
+            buffer[i+4*length] = P[local_index].Vel[0];
+            buffer[i+5*length] = P[local_index].Vel[1];
+            buffer[i+6*length] = P[local_index].Vel[2];
+            buffer[i+7*length] = SphP[local_index].Entropy * 
+                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+            buffer[i+length] = 0;
+            buffer[i+2*length] = 0;
+            buffer[i+3*length] = 0;
+            buffer[i+4*length] = 0;
+            buffer[i+5*length] = 0;
+            buffer[i+6*length] = 0;
+            buffer[i+7*length] = 0;
         }
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 8, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 8, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0){
-            *mass = buffer[0];
-            *x =  buffer[1];
-            *y =  buffer[2];
-            *z =  buffer[3];
-            *vx = buffer[4];
-            *vy = buffer[5];
-            *vz = buffer[6];
-            *internal_energy = buffer[7];
-        }
-        return 0;
     }
-    return -3;
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                mass[i] = 0;
+                x[i] = 0;
+                y[i] = 0;
+                z[i] = 0;
+                vx[i] = 0;
+                vy[i] = 0;
+                vz[i] = 0;
+                internal_energy[i] = 0;
+            } else {
+                mass[i] = buffer[i];
+                x[i] = buffer[i+length];
+                y[i] = buffer[i+2*length];
+                z[i] = buffer[i+3*length];
+                vx[i] = buffer[i+4*length];
+                vy[i] = buffer[i+5*length];
+                vz[i] = buffer[i+6*length];
+                internal_energy[i] = buffer[i+7*length];
+            }
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
 }
 int set_state_sph(int index, double mass, double x, double y, double z, double vx, double vy, double vz, double internal_energy){
     struct particle_data *Pcurrent;
@@ -1381,72 +1491,95 @@ int set_state_sph(int index, double mass, double x, double y, double z, double v
     }
     return -3;
 }
-int get_acceleration(int index, double * ax, double * ay, double * az){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
-    double buffer[3];
-    MPI_Status status;
+int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
+    int errors = 0;
+    double buffer[length*3];
+    int count[length];
+    int local_index;
     
-    if(!(find_particle(index, &Pcurrent, &at_task))){
-        if (at_task == ThisTask){
-            buffer[0] = Pcurrent->GravAccel[0];
-            buffer[1] = Pcurrent->GravAccel[1];
-            buffer[2] = Pcurrent->GravAccel[2];
-            if(Pcurrent->Type == 0){
-                if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-                    buffer[0] += SphPcurrent->HydroAccel[0];
-                    buffer[1] += SphPcurrent->HydroAccel[1];
-                    buffer[2] += SphPcurrent->HydroAccel[2];
-                }
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index)){
+            count[i] = 1;
+            buffer[i] = P[local_index].GravAccel[0];
+            buffer[i+length] = P[local_index].GravAccel[1];
+            buffer[i+2*length] = P[local_index].GravAccel[2];
+            if(P[local_index].Type == 0){
+                buffer[i] += SphP[local_index].HydroAccel[0];
+                buffer[i+length] += SphP[local_index].HydroAccel[1];
+                buffer[i+2*length] += SphP[local_index].HydroAccel[2];
+            }
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+            buffer[i+length] = 0;
+            buffer[i+2*length] = 0;
+        }
+    }
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                ax[i] = 0;
+                ay[i] = 0;
+                az[i] = 0;
+            } else {
+                ax[i] = buffer[i];
+                ay[i] = buffer[i+length];
+                az[i] = buffer[i+2*length];
             }
         }
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 3, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 3, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0){
-            *ax = buffer[0];
-            *ay = buffer[1];
-            *az = buffer[2];
-        }
-        return 0;
     }
-    return -3;
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
 }
 int set_acceleration(int index, double ax, double ay, double az){
     return -2;
 }
-int get_internal_energy(int index, double *internal_energy){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
+int get_internal_energy(int *index, double *internal_energy, int length){
+    int errors = 0;
+    double buffer[length];
+    int count[length];
+    int local_index;
     double a3;
-    double buffer[1];
-    MPI_Status status;
     
-    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-        if (at_task == ThisTask){
-            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-            buffer[0] = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+            buffer[i] = SphP[local_index].Entropy * 
+                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
         }
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0)
-            *internal_energy = buffer[0];
-        return 0;
     }
-    return -3;
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                internal_energy[i] = 0;
+            } else
+                internal_energy[i] = buffer[i];
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
 }
 int set_internal_energy(int index, double internal_energy){
     struct particle_data *Pcurrent;
@@ -1462,106 +1595,141 @@ int set_internal_energy(int index, double internal_energy){
     }
     return -3;
 }
-int get_smoothing_length(int index, double *smoothing_length){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
-    double buffer[1];
-    MPI_Status status;
+int get_smoothing_length(int *index, double *smoothing_length, int length){
+    int errors = 0;
+    double buffer[length];
+    int count[length];
+    int local_index;
     
-    if (!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-        if (!density_up_to_date){
-            density();
-            density_up_to_date = true;
-        }
-        
-        if (at_task == ThisTask)
-            buffer[0] = SphPcurrent->Hsml;
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0)
-            *smoothing_length = buffer[0];
-        return 0;
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
     }
-    return -3;
-}
-int get_density(int index, double *density_out){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
-    double buffer[1];
-    MPI_Status status;
-    
-    if (!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-        if (!density_up_to_date){
-            density();
-            density_up_to_date = true;
+        
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+            buffer[i] = SphP[local_index].Hsml;
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
         }
-        
-        if (at_task == ThisTask)
-            buffer[0] = SphPcurrent->Density;
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0)
-            *density_out = buffer[0];
-        return 0;
     }
-    return -3;
-}
-int get_n_neighbours(int index, double *n_neighbours){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    int at_task = -1;
-    double buffer[1];
-    MPI_Status status;
-    
-    if (!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
-        if (!density_up_to_date){
-            density();
-            density_up_to_date = true;
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                smoothing_length[i] = 0;
+            } else
+                smoothing_length[i] = buffer[i];
         }
-        
-        if (at_task == ThisTask)
-            buffer[0] = SphPcurrent->NumNgb;
-        
-        if (at_task){ // particle data not on the root process
-            if (at_task == ThisTask) // particle data is on this process
-                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
-            else if (ThisTask == 0)
-                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
-        }
-        
-        if (ThisTask == 0)
-            *n_neighbours = buffer[0];
-        return 0;
     }
-    return -3;
-}
-int get_epsilon_dm_part(int index, double *epsilon){
-    set_softenings();
-    if (ThisTask) {return 0;}
-    *epsilon = All.SofteningTable[1];
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
     return 0;
 }
-int get_epsilon_gas_part(int index, double *epsilon){
+int get_density(int *index, double *density_out, int length){
+    int errors = 0;
+    double buffer[length];
+    int count[length];
+    int local_index;
+    
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
+    }
+        
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+            buffer[i] = SphP[local_index].Density;
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+        }
+    }
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                density_out[i] = 0;
+            } else
+                density_out[i] = buffer[i];
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
+}
+int get_n_neighbours(int *index, double *n_neighbours, int length){
+    int errors = 0;
+    double buffer[length];
+    int count[length];
+    int local_index;
+    
+    if (!density_up_to_date){
+        density();
+        density_up_to_date = true;
+    }
+        
+    for (int i = 0; i < length; i++){
+        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+            count[i] = 1;
+            buffer[i] = SphP[local_index].NumNgb;
+        } else {
+            count[i] = 0;
+            buffer[i] = 0;
+        }
+    }
+    if(ThisTask) {
+        MPI_Reduce(&buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(&count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        MPI_Reduce(MPI_IN_PLACE, &count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+        for (int i = 0; i < length; i++){
+            if (count[i] != 1){
+                errors++;
+                n_neighbours[i] = 0;
+            } else
+                n_neighbours[i] = buffer[i];
+        }
+    }
+    if (errors){
+        cout << "Number of particles not found: " << errors << endl;
+        return -3;
+    }
+    return 0;
+}
+int get_epsilon_dm_part(int *index, double *epsilon, int length){
+    set_softenings();
+    if (ThisTask) {return 0;}
+    for (int i = 0; i < length; i++)
+        epsilon[i] = All.SofteningTable[1];
+    return 0;
+}
+int get_epsilon_gas_part(int *index, double *epsilon, int length){
 #if defined(ADAPTIVE_GRAVSOFT_FORGAS) &&  defined(UNEQUALSOFTENINGS)
-    return get_smoothing_length(index, epsilon);
+    return get_smoothing_length(index, epsilon, length);
 #else
     set_softenings();
     if (ThisTask) {return 0;}
-    *epsilon = All.SofteningTable[0];
+    for (int i = 0; i < length; i++)
+        epsilon[i] = All.SofteningTable[0];
     return 0;
 #endif
 }
