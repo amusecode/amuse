@@ -1,7 +1,8 @@
-      function init_sequence()
+      function init_sequence(res)
       include 'common.h'
       integer init_sequence
-      integer initial_run, res
+      integer initial_run 
+      integer res
       print*, 'initwrapper beeing called, now try init'
       call input
       print *,istart

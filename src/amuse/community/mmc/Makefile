@@ -19,11 +19,12 @@ all: compile worker_code
 clean:
 	$(RM) -f *.o *.pyc worker_code.f90  
 	$(RM) *~ worker_code worker_code.f90
-	$(RM) $(MMC_DATA_DIR) *.dat
+	$(RM) $(MMC_DATA_DIR)/ *.dat
 	make -C src clean
 
 compile:
 	make -C src
+	python makeinterface.py
 
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py mmcInterface -o $@
