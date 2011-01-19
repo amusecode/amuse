@@ -3,7 +3,6 @@
 #include <mpif.h>
       INCLUDE 'mpi.inc'
       INTEGER ierr
-        WRITE (*,*) "XXXXXX"
         CALL mpi_init(ierr)
 #endif
       END 
