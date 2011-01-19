@@ -6,14 +6,12 @@ extern "C" {
 }
 
 typedef struct {
-    int id;                                             /// identifier
     double mass;                                        /// mass
     double x, y, z;                                     /// position
     double vx, vy, vz;                                  /// velocity
 } dynamics_state;
 
 typedef struct {
-    int id;                                             /// identifier
     double mass;                                        /// mass
     double x, y, z;                                     /// position
     double vx, vy, vz;                                  /// velocity
@@ -24,8 +22,10 @@ typedef struct {
 extern "C" void   begrun(void);
 extern "C" double second(void);
 
-int find_particle(int index_of_the_particle, struct particle_data **Pfound);
-int find_sph_particle(int index_of_the_particle, struct sph_particle_data **SphPfound);
+int find_particle(int index_of_the_particle, struct particle_data **Pfound, int *at_task);
+int find_sph_particle(int index_of_the_particle, struct particle_data **Pfound, 
+    struct sph_particle_data **SphPfound, int *at_task);
+void update_particle_map(void);
 
 extern "C" void hydro_state_at_point(FLOAT pos[3], FLOAT vel[3], FLOAT *h_out,
   FLOAT *ngb_out, FLOAT *dhsml_out, FLOAT *rho_out, FLOAT *rhov_out,

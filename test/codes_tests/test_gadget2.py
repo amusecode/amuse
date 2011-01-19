@@ -1,7 +1,7 @@
 import numpy
 from amuse.test.amusetest import TestWithMPI
 from amuse.community.gadget2.interface import Gadget2Interface, Gadget2
-from amuse.ext.plummer import MakePlummerModel
+from amuse.ext.plummer import MakePlummerModel, new_plummer_sphere
 from amuse.ext.evrard_test import MakeEvrardTest, new_evrard_gas_sphere
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution
 
@@ -13,8 +13,13 @@ from amuse.support.units import units
 from amuse.support.data import core
 from amuse.support.codes import channel
 
-default_options = dict()#redirection = "null")
-#default_options = dict(debugger = "none")
+# Change the default for some Gadget2(-Interface) keyword arguments:
+default_options = dict(number_of_workers=2)
+#default_options = dict(number_of_workers=2, redirection="none")
+
+# ... but never use (number_of_workers>1) for tests with only a few particles:
+few_particles_default_options = dict()
+#few_particles_default_options = dict(redirection="none")
 
 class TestGadget2Interface(TestWithMPI):
 
@@ -38,7 +43,7 @@ class TestGadget2Interface(TestWithMPI):
         instance.stop()
 
     def test3(self):
-        instance = Gadget2Interface(**default_options)
+        instance = Gadget2Interface(**few_particles_default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -54,7 +59,7 @@ class TestGadget2Interface(TestWithMPI):
         instance.stop()
 
     def test4(self):
-        instance = Gadget2Interface(**default_options)
+        instance = Gadget2Interface(**few_particles_default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -228,7 +233,8 @@ class TestGadget2Interface(TestWithMPI):
 
 
     def test9(self):
-        instance = Gadget2Interface(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        instance = Gadget2Interface(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 
+            **few_particles_default_options)
         instance.initialize_code()
         instance.set_min_size_timestep(1.0)
         instance.set_gadget_output_directory(instance.get_output_directory())
@@ -270,7 +276,8 @@ class TestGadget2Interface(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
         
-        instance = Gadget2Interface(mode = Gadget2Interface.MODE_NORMAL) # MODE_NORMAL is default: non-periodic
+        instance = Gadget2Interface(mode = Gadget2Interface.MODE_NORMAL,
+            **few_particles_default_options) # MODE_NORMAL is default: non-periodic
         instance.initialize_code()
         instance.set_gadget_output_directory(instance.get_output_directory())
         
@@ -283,7 +290,7 @@ class TestGadget2Interface(TestWithMPI):
         
     
     def test10(self):
-        instance = Gadget2Interface()
+        instance = Gadget2Interface(**few_particles_default_options)
         self.assertEquals(0, instance.initialize_code())
         self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
         self.assertEquals(0, instance.commit_parameters())
@@ -363,7 +370,8 @@ class TestGadget2(TestWithMPI):
 
     def test3(self):
         print "Testing Gadget, 2 nbody particles"
-        instance = Gadget2(self.default_converter, **default_options)
+         # No default_options since this test fails for (number_of_workers > 1):
+        instance = Gadget2(self.default_converter, **few_particles_default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2
 
@@ -559,7 +567,7 @@ class TestGadget2(TestWithMPI):
         particles.vz =  0 | generic_unit_system.speed
         particles.mass = 1.0 | generic_unit_system.mass
 
-        instance = Gadget2(self.default_converter, **default_options)
+        instance = Gadget2(self.default_converter, **few_particles_default_options)
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2 | units.none)
@@ -661,7 +669,8 @@ class TestGadget2(TestWithMPI):
         self.assertIsOfOrder(rho_sort[select]/mean_density, r_sort.mean()/r_sort[select])
     
     def test15(self):
-        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES, 
+            **few_particles_default_options)
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         self.assertEqual(instance.parameters.periodic_boundaries_flag, False)
         # 'False' is default, will be changed for periodic runs in initialize_code():
@@ -687,7 +696,8 @@ class TestGadget2(TestWithMPI):
         instance.stop()
         
     def test16(self):
-        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
+            **few_particles_default_options)
         self.assertEqual(instance.parameters.periodic_boundaries_flag, False) # 'False' is default
         instance.initialize_code() # initialize_code() will set periodic_boundaries_flag correctly:
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
@@ -720,7 +730,8 @@ class TestGadget2(TestWithMPI):
     
     def test18(self):
         print "Testing Gadget parameters further"
-        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES)
+        instance = Gadget2(mode = Gadget2Interface.MODE_PERIODIC_BOUNDARIES,
+            **few_particles_default_options)
         instance.parameters.periodic_box_size = 2.0 | generic_unit_system.length # implicitly calls initialize_code()...
         instance.parameters.time_begin = 10.04 | generic_unit_system.time
         instance.parameters.time_max = 10.4 | generic_unit_system.time
@@ -736,3 +747,32 @@ class TestGadget2(TestWithMPI):
         self.assertAlmostEqual(instance.dm_particles.y, [0.,1.6,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.4] | units.kpc, places=6)
         instance.stop()
+    
+    def test19(self):
+        particles = new_plummer_sphere(31)
+       
+        instance = Gadget2(self.default_converter, number_of_workers=1)
+        instance.initialize_code()
+        instance.parameters.epsilon_squared = 0.01 | generic_unit_system.length ** 2
+        instance.particles.add_particles(particles)
+        instance.commit_particles()
+        
+        instance.evolve_model(0.001 | generic_unit_system.time)
+        expected_positions = instance.particles.position
+        instance.stop()
+        positions_per_workers = []
+        for n in [2,3,4,5]:
+            instance = Gadget2(self.default_converter, number_of_workers=n)
+            instance.initialize_code()
+            instance.parameters.epsilon_squared = 0.01 | generic_unit_system.length ** 2
+            instance.commit_parameters()
+            instance.particles.add_particles(particles)
+            instance.commit_particles()
+            
+            instance.evolve_model(0.001 | generic_unit_system.time)
+            positions_per_workers.append(instance.particles.position)
+            instance.stop()
+         
+         
+        for index, n in enumerate([2,3,4,5]):
+            self.assertAlmostRelativeEqual(expected_positions, positions_per_workers[index])

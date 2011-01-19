@@ -1,5 +1,7 @@
 MPICXX ?= mpicxx
 MPICC ?= mpicc
+GSL_INCL ?= $(shell gsl-config --cflags)
+GSL_LIBS ?= $(shell gsl-config --libs)
 
 #----------------------------------------------------------------------
 # From the list below, please activate/deactivate the options that     

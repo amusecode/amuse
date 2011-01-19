@@ -2,6 +2,8 @@
 #include <iostream>
 #include <string.h>
 #include <vector>
+#include <map>
+#include <algorithm>
 #include <math.h>
 #include "gadget_code.h"
 #include "worker_code.h"
@@ -19,12 +21,13 @@ bool global_quantities_of_system_up_to_date = false;
 bool potential_energy_also_up_to_date = false;
 bool density_up_to_date = false;
 bool particle_map_up_to_date = false;
-int particles_counter = 0;
-int index_of_highest_mapped_particle = 0;
-vector<dynamics_state> ds;        // for initialization only
-vector<sph_state> sph_ds;         // for initialization only
-int *particle_map;
-
+long long particle_id_counter = 0;
+long long dm_particles_in_buffer = 0;
+long long sph_particles_in_buffer = 0;
+long long index_of_highest_mapped_particle = 0;
+map<long long, dynamics_state> dm_states;
+map<long long, sph_state> sph_states;
+map<long long, int> local_index_map;
 
 // general interface functions:
 
@@ -126,73 +129,64 @@ int initialize_code(){
 int cleanup_code(){
     if (outfiles_opened)
         close_outputfiles();
-    if (particles_initialized)
+    if (particles_initialized){
         free_memory();
+        ngb_treefree();
+        force_treefree();
+    }
     return 0;
 }
 
 int check_parameters(){
+    MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
+    if (ThisTask)
+        return 0;
     if(sizeof(long long) != 8){
-        if(ThisTask == 0)
-            printf("\nType `long long' is not 64 bit on this platform. Stopping.\n\n");
+        printf("\nType `long long' is not 64 bit on this platform. Stopping.\n\n");
         return -4;
     }
     if(sizeof(int) != 4){
-        if(ThisTask == 0)
-            printf("\nType `int' is not 32 bit on this platform. Stopping.\n\n");
+        printf("\nType `int' is not 32 bit on this platform. Stopping.\n\n");
         return -4;
     }
     if(sizeof(float) != 4){
-        if(ThisTask == 0)
-            printf("\nType `float' is not 32 bit on this platform. Stopping.\n\n");
+        printf("\nType `float' is not 32 bit on this platform. Stopping.\n\n");
         return -4;
     }
     if(sizeof(double) != 8){
-        if(ThisTask == 0)
-            printf("\nType `double' is not 64 bit on this platform. Stopping.\n\n");
+        printf("\nType `double' is not 64 bit on this platform. Stopping.\n\n");
         return -4;
     }
-    MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
     if(All.NumFilesWrittenInParallel < 1){
-        if(ThisTask == 0)
-            printf("NumFilesWrittenInParallel MUST be at least 1\n");
+        printf("NumFilesWrittenInParallel MUST be at least 1\n");
         return -4;
     }
     if(All.NumFilesWrittenInParallel > NTask){
-        if(ThisTask == 0)
-            printf("NumFilesWrittenInParallel MUST be smaller than number of processors\n");
+        printf("NumFilesWrittenInParallel MUST be smaller than number of processors\n");
         return -4;
     }
 #ifdef PERIODIC
     if(All.PeriodicBoundariesOn == 0){
-        if(ThisTask == 0){
-            printf("Code was compiled with periodic boundary conditions switched on.\n");
-            printf("You must set `PeriodicBoundariesOn=1', or recompile the code.\n");
-        }
+        printf("Code was compiled with periodic boundary conditions switched on.\n");
+        printf("You must set `PeriodicBoundariesOn=1', or recompile the code.\n");
         return -4;
     }
 #else
     if(All.PeriodicBoundariesOn == 1){
-        if(ThisTask == 0){
-            printf("Code was compiled with periodic boundary conditions switched off.\n");
-            printf("You must set `PeriodicBoundariesOn=0', or recompile the code.\n");
-        }
+        printf("Code was compiled with periodic boundary conditions switched off.\n");
+        printf("You must set `PeriodicBoundariesOn=0', or recompile the code.\n");
         return -4;
     }
 #endif
     if(All.TypeOfTimestepCriterion >= 1){
-        if(ThisTask == 0){
-            printf("The specified timestep criterion\n");
-            printf("is not valid\n");
-        }
+        printf("The specified timestep criterion\n");
+        printf("is not valid\n");
         return -4;
     }
 #if defined(LONG_X) ||  defined(LONG_Y) || defined(LONG_Z)
 #ifndef NOGRAVITY
-    if(ThisTask == 0){
-        printf("Code was compiled with LONG_X/Y/Z, but not with NOGRAVITY.\n");
-        printf("Stretched periodic boxes are not implemented for gravity yet.\n");
-    }
+    printf("Code was compiled with LONG_X/Y/Z, but not with NOGRAVITY.\n");
+    printf("Stretched periodic boxes are not implemented for gravity yet.\n");
     return -4;
 #endif
 #endif
@@ -245,41 +239,51 @@ int recommit_parameters(){
 int commit_particles(){
     double t0, t1, a3;
     int i, j;
+    
     t0 = second();
-    All.TotNumPart = ds.size()+sph_ds.size();
-    All.TotN_gas = sph_ds.size();
-    NumPart = All.TotNumPart;
-    N_gas = All.TotN_gas;
+    All.TotNumPart = dm_particles_in_buffer + sph_particles_in_buffer;
+    All.TotN_gas = sph_particles_in_buffer;
     All.MaxPart = All.PartAllocFactor * (All.TotNumPart / NTask);	/* sets the maximum number of particles that may */
     All.MaxPartSph = All.PartAllocFactor * (All.TotN_gas / NTask);	/* sets the maximum number of particles that may 
                                                                         reside on a processor */
+    NumPart = dm_states.size()+sph_states.size();
+    N_gas = sph_states.size();
     allocate_memory();
-    for(i = 0; i < N_gas; i++){	/* initialize sph particles */
-        P[i].ID = sph_ds.at(i).id;
-        P[i].Mass = sph_ds.at(i).mass;
-        P[i].Pos[0] = sph_ds.at(i).x;
-        P[i].Pos[1] = sph_ds.at(i).y;
-        P[i].Pos[2] = sph_ds.at(i).z;
-        P[i].Vel[0] = sph_ds.at(i).vx;
-        P[i].Vel[1] = sph_ds.at(i).vy;
-        P[i].Vel[2] = sph_ds.at(i).vz;
+    
+    // initialize sph particles
+    i = 0;
+    for (map<long long, sph_state>::iterator state_iter = sph_states.begin(); 
+            state_iter != sph_states.end(); state_iter++, i++){
+        P[i].ID = (*state_iter).first;
+        P[i].Mass = (*state_iter).second.mass;
+        P[i].Pos[0] = (*state_iter).second.x;
+        P[i].Pos[1] = (*state_iter).second.y;
+        P[i].Pos[2] = (*state_iter).second.z;
+        P[i].Vel[0] = (*state_iter).second.vx;
+        P[i].Vel[1] = (*state_iter).second.vy;
+        P[i].Vel[2] = (*state_iter).second.vz;
         P[i].Type = 0; // SPH particles (dark matter particles have type 1)
-        SphP[i].Entropy = sph_ds.at(i).u;
+        SphP[i].Entropy = (*state_iter).second.u;
         SphP[i].Density = -1;
         SphP[i].Hsml = 0;
     }
-    for (i = N_gas; i < NumPart; i++){	/* initialize dark matter particles */
-        j=i-N_gas;
-        P[i].ID = ds.at(j).id;
-        P[i].Mass = ds.at(j).mass;
-        P[i].Pos[0] = ds.at(j).x;
-        P[i].Pos[1] = ds.at(j).y;
-        P[i].Pos[2] = ds.at(j).z;
-        P[i].Vel[0] = ds.at(j).vx;
-        P[i].Vel[1] = ds.at(j).vy;
-        P[i].Vel[2] = ds.at(j).vz;
+    sph_states.clear();
+    
+    // initialize dark matter particles
+    i = N_gas;
+    for (map<long long, dynamics_state>::iterator state_iter = dm_states.begin(); 
+            state_iter != dm_states.end(); state_iter++, i++){
+        P[i].ID = (*state_iter).first;
+        P[i].Mass = (*state_iter).second.mass;
+        P[i].Pos[0] = (*state_iter).second.x;
+        P[i].Pos[1] = (*state_iter).second.y;
+        P[i].Pos[2] = (*state_iter).second.z;
+        P[i].Vel[0] = (*state_iter).second.vx;
+        P[i].Vel[1] = (*state_iter).second.vy;
+        P[i].Vel[2] = (*state_iter).second.vz;
         P[i].Type = 1; // dark matter particles (SPH particles have type 0)
     }
+    dm_states.clear();
     All.TimeBegin += All.Ti_Current * All.Timebase_interval;
     All.Ti_Current = 0;
     All.Time = All.TimeBegin;
@@ -312,18 +316,19 @@ int commit_particles(){
     ngb_treeallocate(MAX_NGB);
     if((All.MaxPart < 1000) && (All.TreeAllocFactor <= 1.0)){
         All.TreeAllocFactor = 4000.0/All.MaxPart;
-        cout << "Gadget assumes large numbers of particles while allocating memory. " << endl << "Changed "
-            "TreeAllocFactor to " << All.TreeAllocFactor << " to allocate enough memory" << endl << 
-            "for this run with " << All.TotNumPart << " particles only." << endl;
+        if (ThisTask == 0){
+            cout << "Gadget assumes large numbers of particles while allocating memory. " << endl << "Changed "
+                "TreeAllocFactor to " << All.TreeAllocFactor << " to allocate enough memory" << endl << 
+                "for this run with " << All.TotNumPart << " particles only." << endl;
+        }
     }
     force_treeallocate(All.TreeAllocFactor * 10*All.MaxPart, 10*All.MaxPart);
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
     Flag_FullStep = 1;		/* to ensure that Peano-Hilber order is done */
     domain_Decomposition();	/* do initial domain decomposition (gives equal numbers of particles) */
-    particle_map = (int*) calloc(particles_counter+2, sizeof(int));
-    particle_map_up_to_date = false;
-    index_of_highest_mapped_particle = particles_counter;
-    
+    update_particle_map();
+    index_of_highest_mapped_particle = local_index_map.rbegin()->first;
+    MPI_Allreduce(MPI_IN_PLACE, &index_of_highest_mapped_particle, 1, MPI_LONG_LONG_INT, MPI_MAX, MPI_COMM_WORLD);
     ngb_treebuild();		/* will build tree */
     setup_smoothinglengths();
     TreeReconstructFlag = 1;
@@ -333,11 +338,9 @@ int commit_particles(){
    * Once the density has been computed, we can convert thermal energy to entropy.
    */
 #ifndef ISOTHERM_EQS
-//  if(header.flag_entropy_instead_u == 0){
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for(i = 0; i < N_gas; i++)
         SphP[i].Entropy = GAMMA_MINUS1 * SphP[i].Entropy / pow(SphP[i].Density / a3, GAMMA_MINUS1);
-//  }
 #endif
 #ifdef PMGRID
     long_range_init_regionsize();
@@ -349,39 +352,47 @@ int commit_particles(){
     All.CPU_Total += timediff(t0, t1);
     
     particles_initialized = true;
-    cout << flush;
+    if (ThisTask == 0)
+        cout << flush;
     return 0;
 }
-int recommit_particles(){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
+void push_particle_data_on_state_vectors(){
+    map<long long, int>::iterator iter;
     double a3;
+    int i;
+    
+    if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+    for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
+        i = (*iter).second;
+        if (P[i].Type == 0){
+            // store sph particle data
+            sph_state state;
+            state.mass = P[i].Mass;
+            state.x =    P[i].Pos[0];
+            state.y =    P[i].Pos[1];
+            state.z =    P[i].Pos[2];
+            state.vx =   P[i].Vel[0];
+            state.vy =   P[i].Vel[0];
+            state.vz =   P[i].Vel[0];
+            state.u = SphP[i].Entropy * pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+            sph_states.insert(std::pair<long long, sph_state>(P[i].ID, state));
+        } else {
+            // store dark matter particle data
+            dynamics_state state;
+            state.mass = P[i].Mass;
+            state.x =    P[i].Pos[0];
+            state.y =    P[i].Pos[1];
+            state.z =    P[i].Pos[2];
+            state.vx =   P[i].Vel[0];
+            state.vy =   P[i].Vel[0];
+            state.vz =   P[i].Vel[0];
+            dm_states.insert(std::pair<long long, dynamics_state>(P[i].ID, state));
+        }
+    }
+}
+int recommit_particles(){
     if (particles_initialized){
-        for (vector<dynamics_state>::iterator state_iter = ds.begin(); state_iter != ds.end(); state_iter++){
-            if(!(find_particle((*state_iter).id, &Pcurrent))){
-                (*state_iter).mass = Pcurrent->Mass;
-                (*state_iter).x = Pcurrent->Pos[0];
-                (*state_iter).y = Pcurrent->Pos[1];
-                (*state_iter).z = Pcurrent->Pos[2];
-                (*state_iter).vx = Pcurrent->Vel[0];
-                (*state_iter).vy = Pcurrent->Vel[1];
-                (*state_iter).vz = Pcurrent->Vel[2];
-            } else {break;}
-        }
-        if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        for (vector<sph_state>::iterator state_iter = sph_ds.begin(); state_iter != sph_ds.end(); state_iter++){
-            if(!(find_particle((*state_iter).id, &Pcurrent)) && !(find_sph_particle((*state_iter).id, &SphPcurrent))){
-                (*state_iter).mass = Pcurrent->Mass;
-                (*state_iter).x = Pcurrent->Pos[0];
-                (*state_iter).y = Pcurrent->Pos[1];
-                (*state_iter).z = Pcurrent->Pos[2];
-                (*state_iter).vx = Pcurrent->Vel[0];
-                (*state_iter).vy = Pcurrent->Vel[1];
-                (*state_iter).vz = Pcurrent->Vel[2];
-                (*state_iter).u = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
-            } else {break;}
-        }
-        free(particle_map);
+        push_particle_data_on_state_vectors();
         free_memory();
         ngb_treefree();
         force_treefree();
@@ -508,7 +519,8 @@ int evolve(double t_end){
             }
         }
     } else {return -6;}
-    cout << flush;
+    if (ThisTask == 0)
+        cout << flush;
     return 0;
 }
 
@@ -533,48 +545,89 @@ int contruct_tree_if_needed(void){
     return 0;
 }
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
-    dynamics_state state;
-    particles_counter++;
-    state.id = particles_counter;
-    state.mass = mass;
-    state.x = x;
-    state.y = y;
-    state.z = z;
-    state.vx = vx;
-    state.vy = vy;
-    state.vz = vz;
-    ds.push_back(state);
-    *id = state.id;
+    particle_id_counter++;
+    if (ThisTask == 0)
+        *id = particle_id_counter;
+    
+    // Divide the particles equally over all Tasks, Gadget will redistribute them later. 
+    if (ThisTask == (dm_particles_in_buffer % NTask)){
+        dynamics_state state;
+        state.mass = mass;
+        state.x = x;
+        state.y = y;
+        state.z = z;
+        state.vx = vx;
+        state.vy = vy;
+        state.vz = vz;
+        dm_states.insert(std::pair<long long, dynamics_state>(particle_id_counter, state));
+    }
+    dm_particles_in_buffer++;
     return 0;
 }
 int new_sph_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double u){
-    sph_state state;
-    particles_counter++;
-    state.id = particles_counter;
-    state.mass = mass;
-    state.x = x;
-    state.y = y;
-    state.z = z;
-    state.vx = vx;
-    state.vy = vy;
-    state.vz = vz;
-    state.u = u;
-    sph_ds.push_back(state);
-    *id = state.id;
+    particle_id_counter++;
+    if (ThisTask == 0)
+        *id = particle_id_counter;
+    
+    // Divide the sph particles equally over all Tasks, Gadget will redistribute them later. 
+    if (ThisTask == (sph_particles_in_buffer % NTask)){
+        sph_state state;
+        state.mass = mass;
+        state.x = x;
+        state.y = y;
+        state.z = z;
+        state.vx = vx;
+        state.vy = vy;
+        state.vz = vz;
+        state.u = u;
+        sph_states.insert(std::pair<long long, sph_state>(particle_id_counter, state));
+    }
+    sph_particles_in_buffer++;
     return 0;
 }
 int delete_particle(int id){
-    for (vector<dynamics_state>::iterator state_iter = ds.begin(); state_iter != ds.end(); state_iter++){
-        if ((*state_iter).id == id){
-            ds.erase(state_iter);
-            return 0;
-        }
+    int found = 0;
+    map<long long, int>::iterator it;
+    map<long long, dynamics_state>::iterator dyn_it;
+    map<long long, sph_state>::iterator sph_it;
+    
+    if (!particle_map_up_to_date)
+        update_particle_map();
+    
+    it = local_index_map.find(id);
+    if (it != local_index_map.end()){
+        local_index_map.erase(it);
+        found = 1 + P[(*it).second].Type; // 1 for sph; 2 for dm
     }
-    for (vector<sph_state>::iterator state_iter = sph_ds.begin(); state_iter != sph_ds.end(); state_iter++){
-        if ((*state_iter).id == id){
-            sph_ds.erase(state_iter);
-            return 0;
-        }
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    if (found){
+        if (found == 2)
+            dm_particles_in_buffer--;
+        else
+            sph_particles_in_buffer--;
+        return 0;
+    }
+    
+    dyn_it = dm_states.find(id);
+    if (dyn_it != dm_states.end()){
+        dm_states.erase(dyn_it);
+        found = 1;
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
+    if (found){
+        dm_particles_in_buffer--;
+        return 0;
+    }
+    
+    sph_it = sph_states.find(id);
+    if (sph_it != sph_states.end()){
+        sph_states.erase(sph_it);
+        found = 1;
+    }
+    MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
+    if (found){
+        sph_particles_in_buffer--;
+        return 0;
     }
     return -3;
 }
@@ -583,13 +636,16 @@ int delete_particle(int id){
 // parameter getters/setters:
 
 int get_time_step(double *timestep){
+    if (ThisTask) {return 0;}
     *timestep = All.TimeStep;
     return 0;
 }
 int set_time_step(double timestep){
+    if (ThisTask) {return 0;}
     return -2;
 }
 int get_epsilon(double *epsilon){
+    if (ThisTask) {return 0;}
     set_softenings();
     *epsilon = All.SofteningTable[1];
     return 0;
@@ -600,12 +656,15 @@ int set_epsilon(double epsilon){
     return 0;
 }
 int get_eps2(double *epsilon_squared){
+    if (ThisTask) {return 0;}
     return -2;
 }
 int set_eps2(double epsilon_squared){
+    if (ThisTask) {return 0;}
     return -2;
 }
 int get_epsgas(double *gas_epsilon){
+    if (ThisTask) {return 0;}
     set_softenings();
     *gas_epsilon = All.SofteningTable[0];
     return 0;
@@ -616,6 +675,7 @@ int set_epsgas(double gas_epsilon){
     return 0;
 }
 int get_unit_mass(double *code_mass_unit){
+    if (ThisTask) {return 0;}
     *code_mass_unit = All.UnitMass_in_g;
     return 0;
 }
@@ -624,6 +684,7 @@ int set_unit_mass(double code_mass_unit){
     return 0;
 }
 int get_unit_length(double *code_length_unit){
+    if (ThisTask) {return 0;}
     *code_length_unit = All.UnitLength_in_cm;
     return 0;
 }
@@ -632,6 +693,7 @@ int set_unit_length(double code_length_unit){
     return 0;
 }
 int get_unit_time(double *code_time_unit){
+    if (ThisTask) {return 0;}
     *code_time_unit = All.UnitTime_in_s;
     return 0;
 }
@@ -641,6 +703,7 @@ int set_unit_time(double code_time_unit){
     return 0;
 }
 int get_unit_velocity(double *code_velocity_unit){
+    if (ThisTask) {return 0;}
     *code_velocity_unit = All.UnitVelocity_in_cm_per_s;
     return 0;
 }
@@ -651,6 +714,7 @@ int set_unit_velocity(double code_velocity_unit){
 }
 
 int get_gadget_output_directory(char **output_directory){
+    if (ThisTask) {return 0;}
     *output_directory = All.OutputDir;
     return 0;
 }
@@ -665,6 +729,7 @@ int set_gadget_output_directory(char *output_directory){
     return 0;
 }
 int get_nogravity(int *no_gravity_flag){
+    if (ThisTask) {return 0;}
 #ifdef NOGRAVITY
     *no_gravity_flag = 1;
 #else
@@ -673,6 +738,7 @@ int get_nogravity(int *no_gravity_flag){
     return 0;
 }
 int get_gdgop(int *gadget_cell_opening_flag){
+    if (ThisTask) {return 0;}
     *gadget_cell_opening_flag = All.TypeOfOpeningCriterion;
     return 0;
 }
@@ -681,6 +747,7 @@ int set_gdgop(int gadget_cell_opening_flag){
     return 0;
 }
 int get_isotherm(int *isothermal_flag){
+    if (ThisTask) {return 0;}
 #ifdef ISOTHERM_EQS
     *isothermal_flag = 1;
 #else
@@ -689,6 +756,7 @@ int get_isotherm(int *isothermal_flag){
     return 0;
 }
 int get_eps_is_h(int *eps_is_h_flag){
+    if (ThisTask) {return 0;}
 #if defined(ADAPTIVE_GRAVSOFT_FORGAS) &&  defined(UNEQUALSOFTENINGS)
     *eps_is_h_flag = 1;
 #else
@@ -697,6 +765,7 @@ int get_eps_is_h(int *eps_is_h_flag){
     return 0;
 }
 int get_nsmooth(int *nsmooth){
+    if (ThisTask) {return 0;}
     *nsmooth = All.DesNumNgb;
     return 0;
 }
@@ -705,6 +774,7 @@ int set_nsmooth(int nsmooth){
     return 0;
 }
 int get_bh_tol(double *opening_angle){
+    if (ThisTask) {return 0;}
     *opening_angle = All.ErrTolTheta;
     return 0;
 }
@@ -713,6 +783,7 @@ int set_bh_tol(double opening_angle){
     return 0;
 }
 int get_gdgtol(double *gadget_cell_opening_constant){
+    if (ThisTask) {return 0;}
     *gadget_cell_opening_constant = All.ErrTolForceAcc;
     return 0;
 }
@@ -721,10 +792,12 @@ int set_gdgtol(double gadget_cell_opening_constant){
     return 0;
 }
 int get_gamma(double *gamma){
+    if (ThisTask) {return 0;}
     *gamma = GAMMA;
     return 0;
 }
 int get_alpha(double *artificial_viscosity_alpha){
+    if (ThisTask) {return 0;}
     *artificial_viscosity_alpha = All.ArtBulkViscConst;
     return 0;
 }
@@ -733,6 +806,7 @@ int set_alpha(double artificial_viscosity_alpha){
     return 0;
 }
 int get_courant(double *courant){
+    if (ThisTask) {return 0;}
     *courant = All.CourantFac*2.0;
     return 0;
 }
@@ -741,6 +815,7 @@ int set_courant(double courant){
     return 0;
 }
 int get_nsmtol(double *n_neighbour_tol){
+    if (ThisTask) {return 0;}
     *n_neighbour_tol = All.MaxNumNgbDeviation / All.DesNumNgb;
     return 0;
 }
@@ -750,6 +825,7 @@ int set_nsmtol(double n_neighbour_tol){
 }
 
 int get_energy_file(char **energy_file){
+    if (ThisTask) {return 0;}
     *energy_file = All.EnergyFile;
     return 0;
 }
@@ -758,6 +834,7 @@ int set_energy_file(char *energy_file){
     return 0;
 }
 int get_info_file(char **info_file){
+    if (ThisTask) {return 0;}
     *info_file = All.InfoFile;
     return 0;
 }
@@ -766,6 +843,7 @@ int set_info_file(char *info_file){
     return 0;
 }
 int get_timings_file(char **timings_file){
+    if (ThisTask) {return 0;}
     *timings_file = All.TimingsFile;
     return 0;
 }
@@ -774,6 +852,7 @@ int set_timings_file(char *timings_file){
     return 0;
 }
 int get_cpu_file(char **cpu_file){
+    if (ThisTask) {return 0;}
     *cpu_file = All.CpuFile;
     return 0;
 }
@@ -783,6 +862,7 @@ int set_cpu_file(char *cpu_file){
 }
 
 int get_time_limit_cpu(double *time_limit_cpu){
+    if (ThisTask) {return 0;}
     *time_limit_cpu = All.TimeLimitCPU;
     return 0;
 }
@@ -791,6 +871,7 @@ int set_time_limit_cpu(double time_limit_cpu){
     return 0;
 }
 int get_comoving_integration_flag(int *comoving_integration_flag){
+    if (ThisTask) {return 0;}
     *comoving_integration_flag = All.ComovingIntegrationOn;
     return 0;
 }
@@ -799,6 +880,7 @@ int set_comoving_integration_flag(int comoving_integration_flag){
     return 0;
 }
 int get_type_of_timestep_criterion(int *type_of_timestep_criterion){
+    if (ThisTask) {return 0;}
     *type_of_timestep_criterion = All.TypeOfTimestepCriterion;
     return 0;
 }
@@ -807,6 +889,7 @@ int set_type_of_timestep_criterion(int type_of_timestep_criterion){
     return 0;
 }
 int get_time_begin(double *time_begin){
+    if (ThisTask) {return 0;}
     *time_begin = All.TimeBegin;
     return 0;
 }
@@ -815,6 +898,7 @@ int set_time_begin(double time_begin){
     return 0;
 }
 int get_time_max(double *time_max){
+    if (ThisTask) {return 0;}
     *time_max = All.TimeMax;
     return 0;
 }
@@ -823,6 +907,7 @@ int set_time_max(double time_max){
     return 0;
 }
 int get_omega_zero(double *omega_zero){
+    if (ThisTask) {return 0;}
     *omega_zero = All.Omega0;
     return 0;
 }
@@ -831,6 +916,7 @@ int set_omega_zero(double omega_zero){
     return 0;
 }
 int get_omega_lambda(double *omega_lambda){
+    if (ThisTask) {return 0;}
     *omega_lambda = All.OmegaLambda;
     return 0;
 }
@@ -839,6 +925,7 @@ int set_omega_lambda(double omega_lambda){
     return 0;
 }
 int get_omega_baryon(double *omega_baryon){
+    if (ThisTask) {return 0;}
     *omega_baryon = All.OmegaBaryon;
     return 0;
 }
@@ -847,6 +934,7 @@ int set_omega_baryon(double omega_baryon){
     return 0;
 }
 int get_hubble_param(double *hubble_param){
+    if (ThisTask) {return 0;}
     *hubble_param = All.HubbleParam;
     return 0;
 }
@@ -855,6 +943,7 @@ int set_hubble_param(double hubble_param){
     return 0;
 }
 int get_err_tol_int_accuracy(double *err_tol_int_accuracy){
+    if (ThisTask) {return 0;}
     *err_tol_int_accuracy = All.ErrTolIntAccuracy;
     return 0;
 }
@@ -863,6 +952,7 @@ int set_err_tol_int_accuracy(double err_tol_int_accuracy){
     return 0;
 }
 int get_max_size_timestep(double *max_size_timestep){
+    if (ThisTask) {return 0;}
     *max_size_timestep = All.MaxSizeTimestep;
     return 0;
 }
@@ -871,6 +961,7 @@ int set_max_size_timestep(double max_size_timestep){
     return 0;
 }
 int get_min_size_timestep(double *min_size_timestep){
+    if (ThisTask) {return 0;}
     *min_size_timestep = All.MinSizeTimestep;
     return 0;
 }
@@ -879,6 +970,7 @@ int set_min_size_timestep(double min_size_timestep){
     return 0;
 }
 int get_tree_domain_update_frequency(double *tree_domain_update_frequency){
+    if (ThisTask) {return 0;}
     *tree_domain_update_frequency = All.TreeDomainUpdateFrequency;
     return 0;
 }
@@ -887,6 +979,7 @@ int set_tree_domain_update_frequency(double tree_domain_update_frequency){
     return 0;
 }
 int get_time_between_statistics(double *time_between_statistics){
+    if (ThisTask) {return 0;}
     *time_between_statistics = All.TimeBetStatistics;
     return 0;
 }
@@ -895,6 +988,7 @@ int set_time_between_statistics(double time_between_statistics){
     return 0;
 }
 int get_min_gas_temp(double *min_gas_temp){
+    if (ThisTask) {return 0;}
     *min_gas_temp = All.MinGasTemp;
     return 0;
 }
@@ -903,6 +997,7 @@ int set_min_gas_temp(double min_gas_temp){
     return 0;
 }
 int get_min_gas_hsmooth_fractional(double *min_gas_hsmooth_fractional){
+    if (ThisTask) {return 0;}
     *min_gas_hsmooth_fractional = All.MinGasHsmlFractional;
     return 0;
 }
@@ -911,6 +1006,7 @@ int set_min_gas_hsmooth_fractional(double min_gas_hsmooth_fractional){
     return 0;
 }
 int get_softening_gas_max_phys(double *softening_gas_max_phys){
+    if (ThisTask) {return 0;}
     *softening_gas_max_phys = All.SofteningGasMaxPhys;
     return 0;
 }
@@ -919,6 +1015,7 @@ int set_softening_gas_max_phys(double softening_gas_max_phys){
     return 0;
 }
 int get_softening_halo_max_phys(double *softening_halo_max_phys){
+    if (ThisTask) {return 0;}
     *softening_halo_max_phys = All.SofteningHaloMaxPhys;
     return 0;
 }
@@ -929,6 +1026,7 @@ int set_softening_halo_max_phys(double softening_halo_max_phys){
 
 int get_box_size(double *value)
 {
+    if (ThisTask) {return 0;}
     *value = All.BoxSize;
     return 0;
 }
@@ -941,6 +1039,7 @@ int set_box_size(double value)
 
 int get_periodic_boundaries_flag(int *value)
 {
+    if (ThisTask) {return 0;}
     *value = All.PeriodicBoundariesOn;
     return 0;
 }
@@ -958,73 +1057,119 @@ int get_index_of_first_particle(int *index_of_the_particle){
     return get_index_of_next_particle(0, index_of_the_particle);
 }
 int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next_particle){
-    struct particle_data *Pcurrent;
-    bool found = false;
-    if (!particles_initialized) {
+    map<long long, int>::iterator it;
+    long long next_local_index = 0;
+
+    if (!particles_initialized)
         return -1;
+    
+    if (!particle_map_up_to_date)
+        update_particle_map();
+    
+    it = local_index_map.lower_bound(index_of_the_particle + 1);
+    if (it != local_index_map.end()){
+        next_local_index = (*it).first;
+    } else {
+        next_local_index = index_of_highest_mapped_particle + 1;
     }
-    for (int i = index_of_the_particle+1; i <= particles_counter; i++){
-        if (!(find_particle(i, &Pcurrent))) {
-            if (found){
-                return 0;
-            } else {
-                *index_of_the_next_particle = Pcurrent->ID;
-                found = true;
-            }
+    
+    if (ThisTask == 0){
+        MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+        *index_of_the_next_particle = next_local_index;
+        if (next_local_index < index_of_highest_mapped_particle){
+            return 0;
+        } else if (next_local_index == index_of_highest_mapped_particle){
+            return 1;
+        } else {
+            return -1;
         }
+    } else {
+        MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+        return 0;
     }
-    if (found) return 1; // This was the last particle.
-    return -1; // No particle found.
 }
+
 void update_particle_map(void){
-    for(int i = 0; i < All.TotNumPart; i++) {
-        particle_map[P[i].ID] = i;
+    local_index_map.clear();
+    for(int i = 0; i < NumPart; i++) {
+        local_index_map.insert(std::pair<long long, int>(P[i].ID, i));
     }
     particle_map_up_to_date = true;
 }
-
-int find_particle(int index_of_the_particle, struct particle_data **Pfound){
-    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > index_of_highest_mapped_particle)
-    {
+int find_particle(int index_of_the_particle, struct particle_data **Pfound, int *at_task){
+    int found_at_task = -1;
+    map<long long, int>::iterator it;
+    
+    if (!particles_initialized || index_of_the_particle < 1 || 
+            index_of_the_particle > index_of_highest_mapped_particle)
         return -1;
-    }
     
     if (!particle_map_up_to_date)
-    {
         update_particle_map();
-    }
     
-    if(P[particle_map[index_of_the_particle]].ID == (unsigned int) index_of_the_particle)
-    {
-        *Pfound = &P[particle_map[index_of_the_particle]];
-        return 0;
+    it = local_index_map.find(index_of_the_particle);
+    if (it != local_index_map.end()){
+        *Pfound = &P[(*it).second];
+        found_at_task = ThisTask;
     }
-    return -1;
+    MPI_Allreduce(MPI_IN_PLACE, &found_at_task, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    *at_task = found_at_task;
+    if (found_at_task == -1)
+        return -1;
+    return 0;
 }
 
-int find_sph_particle(int index_of_the_particle, struct sph_particle_data **SphPfound){
-    if (!particles_initialized || index_of_the_particle < 1 || index_of_the_particle > index_of_highest_mapped_particle)
+int find_sph_particle(int index_of_the_particle, struct particle_data **Pfound, struct sph_particle_data **SphPfound, int *at_task){
+    int found_at_task = -1;
+    map<long long, int>::iterator it;
+    if (!particles_initialized || index_of_the_particle < 1 || 
+            index_of_the_particle > index_of_highest_mapped_particle)
         return -1;
+    
     if (!particle_map_up_to_date)
         update_particle_map();
-    if(P[particle_map[index_of_the_particle]].ID == (unsigned int) index_of_the_particle){
-        *SphPfound = &SphP[particle_map[index_of_the_particle]];
-        return 0;
+    
+    it = local_index_map.find(index_of_the_particle);
+    if (it != local_index_map.end()){
+        *Pfound = &P[(*it).second];
+        *SphPfound = &SphP[(*it).second];
+        found_at_task = ThisTask;
     }
-    return -1;
+    MPI_Allreduce(MPI_IN_PLACE, &found_at_task, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+    *at_task = found_at_task;
+    if (found_at_task == -1)
+        return -1;
+    return 0;
 }
 int get_mass(int index, double *mass){
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        *mass = Pcurrent->Mass;
+    int at_task = -1;
+    double buffer[1];
+    MPI_Status status;
+    
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask)
+            buffer[0] = Pcurrent->Mass;
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0)
+            *mass = buffer[0];
         return 0;
     }
     return -3;
 }
 int set_mass(int index, double mass){
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        Pcurrent->Mass = mass;
+    int at_task = -1;
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask)
+            Pcurrent->Mass = mass;
         return 0;
     }
     return -3;
@@ -1037,100 +1182,130 @@ int set_radius(int index, double radius){
 }
 int get_position(int index, double *x, double *y, double *z){
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        *x = Pcurrent->Pos[0];
-        *y = Pcurrent->Pos[1];
-        *z = Pcurrent->Pos[2];
+    int at_task = -1;
+    double buffer[3];
+    MPI_Status status;
+    
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask){
+            buffer[0] = Pcurrent->Pos[0];
+            buffer[1] = Pcurrent->Pos[1];
+            buffer[2] = Pcurrent->Pos[2];
+        }
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 3, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 3, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0){
+            *x = buffer[0];
+            *y = buffer[1];
+            *z = buffer[2];
+        }
         return 0;
     }
     return -3;
 }
 int set_position(int index, double x, double y, double z){
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        Pcurrent->Pos[0] = x;
-        Pcurrent->Pos[1] = y;
-        Pcurrent->Pos[2] = z;
+    int at_task = -1;
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask){
+            Pcurrent->Pos[0] = x;
+            Pcurrent->Pos[1] = y;
+            Pcurrent->Pos[2] = z;
+        }
         return 0;
     }
     return -3;
 }
 int get_velocity(int index, double *vx, double *vy, double *vz){
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        *vx = Pcurrent->Vel[0];
-        *vy = Pcurrent->Vel[1];
-        *vz = Pcurrent->Vel[2];
+    int at_task = -1;
+    double buffer[3];
+    MPI_Status status;
+    
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask){
+            buffer[0] = Pcurrent->Vel[0];
+            buffer[1] = Pcurrent->Vel[1];
+            buffer[2] = Pcurrent->Vel[2];
+        }
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 3, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 3, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0){
+            *vx = buffer[0];
+            *vy = buffer[1];
+            *vz = buffer[2];
+        }
         return 0;
     }
   return -3;
 }
 int set_velocity(int index, double vx, double vy, double vz){
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        Pcurrent->Vel[0] = vx;
-        Pcurrent->Vel[1] = vy;
-        Pcurrent->Vel[2] = vz;
+    int at_task = -1;
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask){
+            Pcurrent->Vel[0] = vx;
+            Pcurrent->Vel[1] = vy;
+            Pcurrent->Vel[2] = vz;
+        }
         return 0;
     }
     return -3;
 }
 int get_state(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz) {
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        *mass = Pcurrent->Mass;
-        *x = Pcurrent->Pos[0];
-        *y = Pcurrent->Pos[1];
-        *z = Pcurrent->Pos[2];
-        *vx = Pcurrent->Vel[0];
-        *vy = Pcurrent->Vel[1];
-        *vz = Pcurrent->Vel[2];
+    int at_task = -1;
+    double buffer[7];
+    MPI_Status status;
+    
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask){
+            buffer[0] = Pcurrent->Mass;
+            buffer[1] = Pcurrent->Pos[0];
+            buffer[2] = Pcurrent->Pos[1];
+            buffer[3] = Pcurrent->Pos[2];
+            buffer[4] = Pcurrent->Vel[0];
+            buffer[5] = Pcurrent->Vel[1];
+            buffer[6] = Pcurrent->Vel[2];
+        }
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 7, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 7, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0){
+            *mass = buffer[0];
+            *x =  buffer[1];
+            *y =  buffer[2];
+            *z =  buffer[3];
+            *vx = buffer[4];
+            *vy = buffer[5];
+            *vz = buffer[6];
+        }
         return 0;
     }
     return -3;
 }
 int set_state(int index, double mass, double x, double y, double z, double vx, double vy, double vz){
     struct particle_data *Pcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        Pcurrent->Mass = mass;
-        Pcurrent->Pos[0] = x;
-        Pcurrent->Pos[1] = y;
-        Pcurrent->Pos[2] = z;
-        Pcurrent->Vel[0] = vx;
-        Pcurrent->Vel[1] = vy;
-        Pcurrent->Vel[2] = vz;
-        return 0;
-    }
-    return -3;
-}
-int get_state_sph(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy) {
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    double a3;
-    if(!(find_sph_particle(index, &SphPcurrent))){
-        if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        *internal_energy = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
-        if(!(find_particle(index, &Pcurrent))){
-            *mass = Pcurrent->Mass;
-            *x = Pcurrent->Pos[0];
-            *y = Pcurrent->Pos[1];
-            *z = Pcurrent->Pos[2];
-            *vx = Pcurrent->Vel[0];
-            *vy = Pcurrent->Vel[1];
-            *vz = Pcurrent->Vel[2];
-            return 0;
-        }
-    }
-    return -3;
-}
-int set_state_sph(int index, double mass, double x, double y, double z, double vx, double vy, double vz, double internal_energy){
-    struct particle_data *Pcurrent;
-    struct sph_particle_data *SphPcurrent;
-    double a3;
-    if(!(find_sph_particle(index, &SphPcurrent))){
-        if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        SphPcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(SphPcurrent->Density / a3, GAMMA_MINUS1);
-        if(!(find_particle(index, &Pcurrent))){
+    int at_task = -1;
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask){
             Pcurrent->Mass = mass;
             Pcurrent->Pos[0] = x;
             Pcurrent->Pos[1] = y;
@@ -1138,24 +1313,106 @@ int set_state_sph(int index, double mass, double x, double y, double z, double v
             Pcurrent->Vel[0] = vx;
             Pcurrent->Vel[1] = vy;
             Pcurrent->Vel[2] = vz;
-            return 0;
         }
+        return 0;
+    }
+    return -3;
+}
+int get_state_sph(int index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy) {
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
+    int at_task = -1;
+    double a3;
+    double buffer[8];
+    MPI_Status status;
+    
+    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
+        if (at_task == ThisTask){
+            buffer[0] = Pcurrent->Mass;
+            buffer[1] = Pcurrent->Pos[0];
+            buffer[2] = Pcurrent->Pos[1];
+            buffer[3] = Pcurrent->Pos[2];
+            buffer[4] = Pcurrent->Vel[0];
+            buffer[5] = Pcurrent->Vel[1];
+            buffer[6] = Pcurrent->Vel[2];
+            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+            buffer[7] = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+        }
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 8, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 8, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0){
+            *mass = buffer[0];
+            *x =  buffer[1];
+            *y =  buffer[2];
+            *z =  buffer[3];
+            *vx = buffer[4];
+            *vy = buffer[5];
+            *vz = buffer[6];
+            *internal_energy = buffer[7];
+        }
+        return 0;
+    }
+    return -3;
+}
+int set_state_sph(int index, double mass, double x, double y, double z, double vx, double vy, double vz, double internal_energy){
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
+    int at_task = -1;
+    double a3;
+    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
+        if (at_task == ThisTask){
+            Pcurrent->Mass = mass;
+            Pcurrent->Pos[0] = x;
+            Pcurrent->Pos[1] = y;
+            Pcurrent->Pos[2] = z;
+            Pcurrent->Vel[0] = vx;
+            Pcurrent->Vel[1] = vy;
+            Pcurrent->Vel[2] = vz;
+            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+            SphPcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(SphPcurrent->Density / a3, GAMMA_MINUS1);
+        }
+        return 0;
     }
     return -3;
 }
 int get_acceleration(int index, double * ax, double * ay, double * az){
     struct particle_data *Pcurrent;
     struct sph_particle_data *SphPcurrent;
-    if(!(find_particle(index, &Pcurrent))){
-        *ax = Pcurrent->GravAccel[0];
-        *ay = Pcurrent->GravAccel[1];
-        *az = Pcurrent->GravAccel[2];
-        if(Pcurrent->Type == 0){
-            if(!(find_sph_particle(index, &SphPcurrent))){
-                *ax += SphPcurrent->HydroAccel[0];
-                *ay += SphPcurrent->HydroAccel[1];
-                *az += SphPcurrent->HydroAccel[2];
+    int at_task = -1;
+    double buffer[3];
+    MPI_Status status;
+    
+    if(!(find_particle(index, &Pcurrent, &at_task))){
+        if (at_task == ThisTask){
+            buffer[0] = Pcurrent->GravAccel[0];
+            buffer[1] = Pcurrent->GravAccel[1];
+            buffer[2] = Pcurrent->GravAccel[2];
+            if(Pcurrent->Type == 0){
+                if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
+                    buffer[0] += SphPcurrent->HydroAccel[0];
+                    buffer[1] += SphPcurrent->HydroAccel[1];
+                    buffer[2] += SphPcurrent->HydroAccel[2];
+                }
             }
+        }
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 3, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 3, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0){
+            *ax = buffer[0];
+            *ay = buffer[1];
+            *az = buffer[2];
         }
         return 0;
     }
@@ -1165,63 +1422,136 @@ int set_acceleration(int index, double ax, double ay, double az){
     return -2;
 }
 int get_internal_energy(int index, double *internal_energy){
-    struct sph_particle_data *Pcurrent;
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
+    int at_task = -1;
     double a3;
-    if(!(find_sph_particle(index, &Pcurrent))){
-        if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        *internal_energy = Pcurrent->Entropy * pow(Pcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+    double buffer[1];
+    MPI_Status status;
+    
+    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
+        if (at_task == ThisTask){
+            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+            buffer[0] = SphPcurrent->Entropy * pow(SphPcurrent->Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+        }
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0)
+            *internal_energy = buffer[0];
         return 0;
     }
     return -3;
 }
 int set_internal_energy(int index, double internal_energy){
-    struct sph_particle_data *Pcurrent;
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
+    int at_task = -1;
     double a3;
-    if(!(find_sph_particle(index, &Pcurrent))){
-        if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
-        Pcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(Pcurrent->Density / a3, GAMMA_MINUS1);
+    if(!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
+        if (at_task == ThisTask){
+            if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
+            SphPcurrent->Entropy = GAMMA_MINUS1 * internal_energy / pow(SphPcurrent->Density / a3, GAMMA_MINUS1);
+        }
         return 0;
     }
     return -3;
 }
 int get_smoothing_length(int index, double *smoothing_length){
-    struct sph_particle_data *Pcurrent;
-    if (!(find_sph_particle(index, &Pcurrent))){
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
+    int at_task = -1;
+    double buffer[1];
+    MPI_Status status;
+    
+    if (!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
         if (!density_up_to_date){
             density();
             density_up_to_date = true;
         }
-        *smoothing_length = Pcurrent->Hsml;
+        
+        if (at_task == ThisTask)
+            buffer[0] = SphPcurrent->Hsml;
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0)
+            *smoothing_length = buffer[0];
         return 0;
     }
     return -3;
 }
 int get_density(int index, double *density_out){
-    struct sph_particle_data *Pcurrent;
-    if (!(find_sph_particle(index, &Pcurrent))){
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
+    int at_task = -1;
+    double buffer[1];
+    MPI_Status status;
+    
+    if (!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
         if (!density_up_to_date){
             density();
             density_up_to_date = true;
         }
-        *density_out = Pcurrent->Density;
+        
+        if (at_task == ThisTask)
+            buffer[0] = SphPcurrent->Density;
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0)
+            *density_out = buffer[0];
         return 0;
     }
     return -3;
 }
 int get_n_neighbours(int index, double *n_neighbours){
-    struct sph_particle_data *Pcurrent;
-    if (!(find_sph_particle(index, &Pcurrent))){
+    struct particle_data *Pcurrent;
+    struct sph_particle_data *SphPcurrent;
+    int at_task = -1;
+    double buffer[1];
+    MPI_Status status;
+    
+    if (!(find_sph_particle(index, &Pcurrent, &SphPcurrent, &at_task))){
         if (!density_up_to_date){
             density();
             density_up_to_date = true;
         }
-        *n_neighbours = Pcurrent->NumNgb;
+        
+        if (at_task == ThisTask)
+            buffer[0] = SphPcurrent->NumNgb;
+        
+        if (at_task){ // particle data not on the root process
+            if (at_task == ThisTask) // particle data is on this process
+                MPI_Ssend(buffer, 1, MPI_DOUBLE, 0, 123, MPI_COMM_WORLD);
+            else if (ThisTask == 0)
+                MPI_Recv(buffer, 1, MPI_DOUBLE, at_task, 123, MPI_COMM_WORLD, &status);
+        }
+        
+        if (ThisTask == 0)
+            *n_neighbours = buffer[0];
         return 0;
     }
     return -3;
 }
 int get_epsilon_dm_part(int index, double *epsilon){
     set_softenings();
+    if (ThisTask) {return 0;}
     *epsilon = All.SofteningTable[1];
     return 0;
 }
@@ -1230,6 +1560,7 @@ int get_epsilon_gas_part(int index, double *epsilon){
     return get_smoothing_length(index, epsilon);
 #else
     set_softenings();
+    if (ThisTask) {return 0;}
     *epsilon = All.SofteningTable[0];
     return 0;
 #endif
@@ -1248,27 +1579,35 @@ void update_global_quantities(bool do_potential){
     global_quantities_of_system_up_to_date = true;
 }
 int get_time(double *time){
+    if (ThisTask) {return 0;}
     *time = All.Time;
     return 0;
 }
 int get_total_radius(double *radius){
-    double r_squared;
+    double r_squared, local_max = 0;
     int i, j;
+    
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
-    *radius = 0;
     for (i = 0; i < NumPart; i++){
         for (r_squared = 0, j = 0; j < 3; j++)
             r_squared += (SysState.CenterOfMass[j]-P[i].Pos[j])*(SysState.CenterOfMass[j]-P[i].Pos[j]);
-        if (r_squared > *radius)
-            *radius = r_squared;
+        if (r_squared > local_max)
+            local_max = r_squared;
     }
-    *radius = sqrt(*radius);
+    
+    if(ThisTask) {
+        MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+    } else {
+        MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+        *radius = sqrt(local_max);
+    }
     return 0;
 }
 int get_total_mass(double *mass){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
+    if (ThisTask) {return 0;}
     *mass = SysState.Mass;
     return 0;
 }
@@ -1278,22 +1617,26 @@ int get_potential(double x, double y, double z, double *V){
 int get_kinetic_energy(double *kinetic_energy){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
+    if (ThisTask) {return 0;}
     *kinetic_energy = SysState.EnergyKin;
     return 0;
 }
 int get_potential_energy(double *potential_energy){
     if (!(global_quantities_of_system_up_to_date && potential_energy_also_up_to_date))
         update_global_quantities(true);
+    if (ThisTask) {return 0;}
     *potential_energy = SysState.EnergyPot;
     return 0;
 }
 int get_thermal_energy(double *thermal_energy){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
+    if (ThisTask) {return 0;}
     *thermal_energy = SysState.EnergyInt;
     return 0;
 }
 int get_number_of_particles(int *number_of_particles){
+    if (ThisTask) {return 0;}
     *number_of_particles = All.TotNumPart;
     return 0; 
 }
@@ -1303,6 +1646,7 @@ int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_pa
 int get_center_of_mass_position(double *x, double *y, double *z){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
+    if (ThisTask) {return 0;}
     *x = SysState.CenterOfMass[0];
     *y = SysState.CenterOfMass[1];
     *z = SysState.CenterOfMass[2];
@@ -1311,6 +1655,7 @@ int get_center_of_mass_position(double *x, double *y, double *z){
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
+    if (ThisTask) {return 0;}
     *vx = SysState.Momentum[0]/SysState.Mass;
     *vy = SysState.Momentum[1]/SysState.Mass;
     *vz = SysState.Momentum[2]/SysState.Mass;
@@ -1337,6 +1682,7 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
     vel[1] = vy;
     vel[2] = vz;
     hydro_state_at_point(pos, vel, &h_out, &ngb_out, &dhsml_out, &rho_out, rhov_out, &rhov2_out, &rhoe_out);
+    if (ThisTask) {return 0;}
     *rho   = rho_out;
     *rhovx = rhov_out[0];
     *rhovy = rhov_out[1];
