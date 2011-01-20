@@ -1,10 +1,10 @@
 from amuse.community import *
 
 class SimpleX(LegacyInterface):
-    include_headers=['muse_worker.h']
+    include_headers=['worker.h']
     
     def __init__(self, **kwargs):       
-        LegacyInterface.__init__(self,name_of_the_worker="muse_worker",**kwargs)
+        LegacyInterface.__init__(self,name_of_the_worker="simplex_worker",**kwargs)
         
 
     @legacy_function   
