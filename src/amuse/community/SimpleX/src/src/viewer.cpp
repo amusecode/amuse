@@ -9,7 +9,13 @@ using namespace std;
 //c function
 extern "C" int writetiff(char *filename, char *description, int x, int y, int width, int height, int compression);
 
-SimpleX *SimpleXGrid;
+#ifndef __VIEWER
+#define SIMPLEX SimpleX
+SIMPLEX *SimpleXGrid;
+#else
+#define SIMPLEX AMUSE_SimpleX
+extern SIMPLEX *SimpleXGrid;
+#endif
 
 float fi=.9*M_PI/4.,theta=M_PI/7,r=2.25;
 float cam[3],dummy[3];
@@ -531,7 +537,7 @@ void *viewer(void* simplex)
     char ** __argv;
     int sm1,sm2,sm3,mm;
 
-    SimpleXGrid=(SimpleX*) simplex;
+    SimpleXGrid=(SIMPLEX*) simplex;
 
       __argc = 1;
       __argv = (char **) malloc((__argc+1)*sizeof(char));

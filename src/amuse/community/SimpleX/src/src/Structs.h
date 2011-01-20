@@ -187,7 +187,7 @@ class Site : public Vertex {
     /* //! assign the ionised fraction to site */
     /* void set_ionised_fraction(const float& ionFrac){ ion_frac = ionFrac; } */
     /* //! get the ionised fraction in the site */
-    /* const float& get_ionised_fraction() const{ return ion_frac; } */
+    const float get_ionised_fraction() const{ return n_HII/(n_HI+n_HII); } 
 
     //! assign the number density of neutral hydrogen to site
     void set_n_HI(const float& nH){ n_HI = nH; }

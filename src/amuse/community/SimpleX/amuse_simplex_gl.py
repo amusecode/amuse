@@ -1,6 +1,6 @@
 import numpy
 
-from amuse.legacy import *
+from amuse.community import *
 from amuse_simplex import SimpleX as SimpleX_basic
 
 

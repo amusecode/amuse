@@ -18,6 +18,7 @@ Untstarsed2.cpp
 #include <tiffio.h>
 
 #include "SimpleX.h"
+#include "amuse_interface.h"
 
 using namespace std;
 

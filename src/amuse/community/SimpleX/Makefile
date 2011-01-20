@@ -18,10 +18,9 @@ LIBS =  -L${HDF5}/lib -lhdf5 -lz \
         -L${GSL_PATH}/lib -lgslcblas -lgsl 
 
 GLLIBS=-lGL -lGLU -L/home/inti/libraries/freeglut-2.4.0/src/.libs -lglut \
--L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
+-L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11 -ltiff
 
-#AMUSE_DIR?=../../../..
-AMUSE_DIR?=/Users/jppaarde/work/code/amuse-svn
+AMUSE_DIR?=../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -57,7 +56,7 @@ muse_worker: muse_worker.cc muse_worker.h $(OBJS) $(SRCDIR)/src/amuse_interface.
 muse_worker_gl: muse_worker_gl.cc muse_worker_gl.h $(OBJS) $(SRCDIR)/src/amuse_interface.cpp $(SRCDIR)/src/amuse_interface_gl.cpp
 	cd $(SRCDIR) && $(MAKE) amuse_interface
 	cd $(SRCDIR) && $(MAKE) amuse_interface_gl
-	mpicxx $(GLOBJS) $@.cc $(LIBS) $(GLLIBS) $(OBJS)  $(HEALPIX_PATH)/lib/libhealpix_cxx.a -o $@
+	mpicxx $(GLOBJS) $(OBJS)  $@.cc -o $@ $(LIBS) $(GLLIBS)  $(HEALPIX_PATH)/lib/libhealpix_cxx.a
 
 $(SRCDIR)/obj/amuse_interface.o:
 	cd $(SRCDIR) && $(MAKE) amuse_interface
