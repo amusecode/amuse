@@ -1475,7 +1475,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     
 class GlFiInterface(FiInterface):
     def __init__(self, **options):
-        LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
+        LegacyInterface.__init__(self,name_of_the_worker = 'fi_worker_gl', **options)
     
     @legacy_function
     def viewer():

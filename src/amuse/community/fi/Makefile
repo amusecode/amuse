@@ -2,6 +2,7 @@
 MPIF90 ?= mpif90
 FORTRAN ?= gfortran
 FC = $(MPIF90)
+GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 
 SRC=src
 
@@ -11,11 +12,8 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 LIBS=$(SRC)/libfi.a
 
 GLOBJECTS=$(SRC)/fthread.o $(SRC)/stars3d.o $(SRC)/libpt.a
-
-GLINCLUDE = -I/usr/include/GL -I/home/inti/libraries/f90gl-1.2.11/include/GL/
-
-GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
--lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  -lguide 
+GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
+GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut
 
 X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
 
@@ -43,6 +41,7 @@ endif
 ifeq ($(findstring ifort, $(notdir $(FORTRAN))), ifort)
 # ifort flags
 FFLAGS= -r8 -O -ip -u $(PIC)
+GLLIB = $(GLLIB) -lguide 
 endif
 
 #FFLAGS= -fdefault-real-8 -O -ffree-line-length-256 -frecord-marker=4 $(PIC)
@@ -79,7 +78,7 @@ fi_worker: worker.f90 interface.o $(SRC)/libfi.a
 	$(FC) $(FFLAGS) $(SCINC) worker.f90 interface.o -o $@ $(LIBS) $(SCLIBS)
 
 fi_worker_gl: glworker.f90 interface.o $(SRC)/libfi.a
-	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
+	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)" GLINCLUDE="$(GLINCLUDE)" GLLIB="$(GLLIB)"
 	$(FC) $(FFLAGS) $(SCINC) glworker.f90 interface.o -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
 

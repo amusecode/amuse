@@ -35,11 +35,9 @@ FILES = $(COMMONFILES) io.o io2.o
 
 SFILES=extern_dummy.o 
 
-GLINCLUDE = -I/usr/include/GL \
--I/home/inti/libraries/f90gl-1.2.11/include/GL/
-
-GLLIB = -L/home/inti/libraries/f90gl-1.2.11/lib \
--lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut 
+GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
+GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/
+GLLIB = -L$(GL_PATH)/lib -lf90GLU -lf90GL -lf90glut  -lGLU -lGL -lglut  #-lguide 
 
 X11LIB = -L/usr/X11R6/lib -lXaw -lXt -lXmu -lXi -lXext -lX11
 
@@ -67,10 +65,10 @@ all: $(APPS)
 	$(FC) $(FFLAGS)  -c -o $@ $< 
 
 stars3d.o: stars3d.f90 mem.o
-	$(FC) $(FFLAGS2) $(GLINCLUDE) -c -o $@ $<
+	$(FC) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 snapviewer.o: snapviewer.f90
-	$(FC) $(FFLAGS2) $(GLINCLUDE) -c -o $@ $<
+	$(FC) $(FFLAGS) $(GLINCLUDE) -c -o $@ $<
 
 fi: $(FILES) $(SFILES) fi.o
 	$(FC) $(FFLAGS) -o $@ $^ $(LIBS)
