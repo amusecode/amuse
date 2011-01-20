@@ -16,16 +16,9 @@
 #ifdef INDIE
   #include "structs.h"
 #else
-  #ifdef SIMPLEX24
-    #include "Structs.h"
-  #else  
-    #ifdef MULTI_FREQ
-      #include "Structs_mf.h"
-    #else
-      #include "Structs_sf.h"
-    #endif
-  #endif
+  #include "Structs.h"
 #endif
+
 
 
 
