@@ -7,13 +7,13 @@ OBJS = $(OBJDIR)/amuse_interface.o $(OBJDIR)/SimpleX.o \
        $(OBJDIR)/keyValue.o $(OBJDIR)/tree_structures.o $(OBJDIR)/hilbert.o 
 GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 
-PLUGINS = /Users/jppaarde/work/code/amuse-svn/src/amuse/community/SimpleX/src/plugins
-HDF5 = /Users/jppaarde/sw/hdf5-1.6.10/installed
-HEALPIX_PATH = $(PLUGINS)/HEALPix
+PLUGINS = /data2/pelupes/amuse/trunk/src/amuse/community/SimpleX/src/plugins
+HDF5 = /data1/pelupes/libraries/hdf5-1.6.9/
+HEALPIX_PATH = $(PLUGINS)/HEALPix/Healpix_2.11/src/cxx/generic_gcc/
 GSL_PATH = /usr/local/scisoft
 
 LIBS =  -L${HDF5}/lib -lhdf5 -lz \
-        -L${PLUGINS}/QHull -lqhull \
+        -L${PLUGINS}/QHull/src -lqhull \
         -L${HEALPIX_PATH}/lib  -lhealpix_cxx \
         -L${GSL_PATH}/lib -lgslcblas -lgsl 
 
@@ -52,7 +52,7 @@ muse_worker_gl.h: amuse_simplex_gl.py
 
 muse_worker: muse_worker.cc muse_worker.h $(OBJS) $(SRCDIR)/src/amuse_interface.cpp 
 	cd $(SRCDIR) && $(MAKE) amuse_interface
-	mpicxx $@.cc $(LIBS) $(OBJS) $(HEALPIX_PATH)/lib/libhealpix_cxx.a -o $@
+	mpicxx $@.cc $(OBJS) -o $@ $(LIBS) $(HEALPIX_PATH)/lib/libhealpix_cxx.a 
 
 muse_worker_gl: muse_worker_gl.cc muse_worker_gl.h $(OBJS) $(SRCDIR)/src/amuse_interface.cpp $(SRCDIR)/src/amuse_interface_gl.cpp
 	cd $(SRCDIR) && $(MAKE) amuse_interface

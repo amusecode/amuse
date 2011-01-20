@@ -4,16 +4,16 @@ use_healpix = yes
 
 MACRODEFS = 
 
-PLUGINS = /Users/jppaarde/work/code/amuse-svn/src/amuse/community/SimpleX/src/plugins
+PLUGINS = /data2/pelupes/amuse/trunk/src/amuse/community/SimpleX/src/plugins
 
 KEYVALUE_PATH = $(PLUGINS)/keyValue
 HDF5_PATH = $(PLUGINS)/hdf5
-HEALPIX_PATH = $(PLUGINS)/HEALPix
+HEALPIX_PATH = $(PLUGINS)/HEALPix/Healpix_2.11/src/cxx/generic_gcc/
 
 ifeq ($(use_parallel_hdf5),yes)
   HDF5 = /disks/theory4/jpieter/programs/hdf5_parallel/hdf5-1.6.8/installed
 else
-  HDF5 = /Users/jppaarde/sw/hdf5-1.6.10/installed
+  HDF5 = /data1/pelupes/libraries/hdf5-1.6.9/
 endif
 
 HDF5_INCL = -I${HDF5}/include
@@ -32,7 +32,7 @@ BIN=./bin/
 FLAGS = -O -g -Wall -W -Wno-deprecated
 
 MYLIBS = -L${PLUGINS}/QHull -lqhull -L${GSL_PATH}/lib -lgslcblas -lgsl #-L${MPI_PATH}/lib
-MYINCLUDE = -I${PLUGINS}/keyValue -I${PLUGINS}/QHull -I${PLUGINS}/hdf5  \
+MYINCLUDE = -I${PLUGINS}/keyValue -I${PLUGINS}/QHull/src/ -I${PLUGINS}/hdf5  \
             -I${PLUGINS}/octree -I${PLUGINS}/hilbert -I${SRC} \
             -I${PLUGINS}/unit_sphere_tess/include -I${GSL_PATH}/include
 
@@ -47,7 +47,7 @@ else
 endif
 
 ifeq ($(use_healpix),yes)
-  MACRODEFS += -D HEAL_PIX
+  MACRODEFS += -DHEAL_PIX
   MYINCLUDE += -I${HEALPIX_PATH}/include
   MYLIBS += -L${HEALPIX_PATH}/lib  -lhealpix_cxx
 endif
