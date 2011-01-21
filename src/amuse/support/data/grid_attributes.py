@@ -2,6 +2,7 @@
 from amuse.support.data import base
 from amuse.support.data import grids
 
+import numpy
 
 grids.Grid.add_global_vector_attribute("position", ["x","y","z"])
 grids.Grid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
@@ -56,5 +57,8 @@ def get_volume(grid):
 
 @grids.AbstractGrid.function_for_set
 def contains(grid, points):
-    return points >= grid.get_minimum_position() and points < grid.get_maximum_position()
+    return numpy.logical_and(
+        numpy.all(points >= grid.get_minimum_position(), axis=len(points.shape)-1),
+        numpy.all(points < grid.get_maximum_position(), axis=len(points.shape)-1)
+    )
    

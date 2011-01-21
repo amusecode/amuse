@@ -301,4 +301,30 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertAlmostRelativeEquals(grid.get_minimum_position()+ (1.0  | units.m),  ([0.0, 0.0, 0.0] | units.m) + (1.0  | units.m))
         self.assertAlmostRelativeEquals(grid.get_maximum_position(),  [1.0, 1.0, 1.0] | units.m)
         self.assertAlmostRelativeEquals(grid.get_volume(),  1.0 | units.m ** 3)
-        #self.assertTrue(grid.contains([0.5,0.5,0.5] | units.m))
+        self.assertTrue(grid.contains([0.5,0.5,0.5] | units.m))
+        
+    def test2(self):
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertTrue(numpy.all(grid.contains([[0.5,0.5,0.5] , [0.1,0.1,0.1]]| units.m)))
+        self.assertFalse(numpy.all(grid.contains([[1.1,0.5,0.5] , [0.1,1.1,0.1]]| units.m)))
+        
+    def test3(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        self.assertEquals(sample.index , [1,1,1])
+        sample = grid.samplePoint([2.5,2.5,2.5]| units.m)
+        self.assertEquals(sample.index , [1,1,1])
+        sample = grid.samplePoint([3.5,3.5,3.5]| units.m)
+        self.assertEquals(sample.index , [1,1,1])
+        
+        for x in range(0,100):
+            
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            self.assertEquals(sample.index , [0,2,3])
+            
+        for x in range(100,200):
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            print sample.index
+            self.assertEquals(sample.index , [1,3,4])
+            

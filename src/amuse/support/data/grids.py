@@ -3,7 +3,7 @@ from amuse.support.data.values import Quantity, new_quantity, zero
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.units import generic_unit_system
-from amuse.support.core import CompositeDictionary
+from amuse.support.core import CompositeDictionary, late
 
 from amuse.support import exceptions
 from amuse.support.data.base import *
@@ -63,7 +63,10 @@ class AbstractGrid(AbstractSet):
         return result
         
     def samplePoint(self, position, must_return_values_on_cell_center = False):
-        pass
+        if must_return_values_on_cell_center:
+            return SamplePointOnCellCenter(self, position)
+        else:
+            return SamplePointWithIntepolation(self, position)
         
         
 class Grid(AbstractGrid):
@@ -226,4 +229,15 @@ class GridInformationChannel(object):
     def copy(self):
         self.copy_attributes(self.target._get_writeable_attribute_names())
     
+class SamplePointWithIntepolation(object):
     
+    
+    def __init__(self, grid, point):
+        self.grid = grid
+        self.point = point
+        
+    @late
+    def index(self):
+        offset = self.point - self.grid.get_minimum_position()
+        indices = (offset / self.grid.cellsize()).value_in(units.none)
+        return numpy.floor(indices)
