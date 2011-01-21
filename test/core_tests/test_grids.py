@@ -318,13 +318,39 @@ class TestGridAttributes(amusetest.TestCase):
         sample = grid.samplePoint([3.5,3.5,3.5]| units.m)
         self.assertEquals(sample.index , [1,1,1])
         
-        for x in range(0,100):
-            
+        for x in range(0,200):
             sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
             self.assertEquals(sample.index , [0,2,3])
             
-        for x in range(100,200):
+        for x in range(200,400):
             sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
             print sample.index
             self.assertEquals(sample.index , [1,3,4])
+
+    def test4(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        self.assertEquals(sample.index_for_000_cell , [1,1,1])
+        sample = grid.samplePoint([2.5,2.5,2.5]| units.m)
+        self.assertEquals(sample.index_for_000_cell , [0,0,0])
+        sample = grid.samplePoint([3.5,3.5,3.5]| units.m)
+        self.assertEquals(sample.index_for_000_cell , [1,1,1])
+        sample = grid.samplePoint([4.5,4.5,4.5]| units.m)
+        self.assertEquals(sample.index_for_000_cell , [1,1,1])
+        self.assertEquals(sample.index , [2,2,2])
+        
+        for x in range(0,100):
+            
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            self.assertEquals(sample.index_for_000_cell , [-1,1,2])
+        for x in range(100,300):
+            
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            self.assertEquals(sample.index_for_000_cell , [0,2,3])
+            
+        for x in range(300,400):
+            sample = grid.samplePoint([0.0 + (x/100.0),4.0+(x/100.0),6.0+(x/100.0)]| units.m)
+            print sample.index
+            self.assertEquals(sample.index_for_000_cell , [1,3,4])
             

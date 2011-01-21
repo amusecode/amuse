@@ -241,3 +241,14 @@ class SamplePointWithIntepolation(object):
         offset = self.point - self.grid.get_minimum_position()
         indices = (offset / self.grid.cellsize()).value_in(units.none)
         return numpy.floor(indices)
+        
+    @late
+    def index_for_000_cell(self):
+        offset = self.point - self.grid[0,0,0].position
+        indices = (offset / self.grid.cellsize()).value_in(units.none)
+        return numpy.floor(indices)
+
+        
+    
+    def factors(self):
+        self.grid.cellsize()
