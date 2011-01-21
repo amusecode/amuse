@@ -230,7 +230,16 @@ class GridInformationChannel(object):
         self.copy_attributes(self.target._get_writeable_attribute_names())
     
 class SamplePointWithIntepolation(object):
-    
+    """
+    Vxyz =	 V000 (1 - x) (1 - y) (1 - z) +
+V100 x (1 - y) (1 - z) + 
+V010 (1 - x) y (1 - z) + 
+V001 (1 - x) (1 - y) z +
+V101 x (1 - y) z + 
+V011 (1 - x) y z + 
+V110 x y (1 - z) + 
+V111 x y z
+    """
     
     def __init__(self, grid, point):
         self.grid = grid
@@ -246,9 +255,50 @@ class SamplePointWithIntepolation(object):
     def index_for_000_cell(self):
         offset = self.point - self.grid[0,0,0].position
         indices = (offset / self.grid.cellsize()).value_in(units.none)
-        return numpy.floor(indices)
+        return numpy.floor(indices).astype(numpy.int)
 
+    @late
+    def surrounding_cell_indices(self):
+        cell000 = self.index_for_000_cell
+        translations = [
+            [0, 0, 0],
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+            [1, 0, 1],
+            [0, 1, 1],
+            [1, 1, 0],
+            [1, 1, 1],
+        ]
+        return cell000 + translations
         
-    
+    @late
     def factors(self):
-        self.grid.cellsize()
+        x0,y0,z0 = self.grid[self.index_for_000_cell].position
+        x1,y1,z1 = self.grid[self.index_for_000_cell + [1,1,1]].position
+        x,y,z = self.point
+        
+        dx1 = (x1 - x) / (x1 - x0)
+        dy1 = (y1 - y) / (y1 - y0)
+        dz1 = (z1 - z) / (z1 - z0)
+        dx0 = (x - x0) / (x1 - x0)
+        dy0 = (y - y0) / (y1 - y0)
+        dz0 = (z - z0) / (z1 - z0)
+        
+        return [
+            dx1 * dy1 * dz1,
+            dx0 * dy1 * dz1,
+            dx1 * dy0 * dz1,
+            dx1 * dy1 * dz0,
+            dx0 * dy1 * dz0,
+            dx1 * dy0 * dz0,
+            dx0 * dy0 * dz1,
+            dx0 * dy0 * dz0
+        ]   
+    
+    @late
+    def surrounding_cells(self):
+        return [self.grid[tuple(x)] for x in self.surrounding_cell_indices]
+        
+        
+        

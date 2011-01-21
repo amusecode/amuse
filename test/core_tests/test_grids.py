@@ -354,3 +354,30 @@ class TestGridAttributes(amusetest.TestCase):
             print sample.index
             self.assertEquals(sample.index_for_000_cell , [1,3,4])
             
+    
+    def test5(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        self.assertEquals(sample.index_for_000_cell , [1,1,1])
+        self.assertEquals(sample.surrounding_cell_indices , [
+            [1,1,1],
+            [2,1,1],
+            [1,2,1],
+            [1,1,2],
+            [2,1,2],
+            [1,2,2],
+            [2,2,1],
+            [2,2,2],
+        ])
+    
+    def test6(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        print sample.surrounding_cells
+        self.assertEquals(sample.surrounding_cells[0].position , [3.0,3.0,3.0] | units.m )    
+        self.assertEquals(sample.surrounding_cells[1].position , [5.0,3.0,3.0] | units.m )   
+        self.assertEquals(sample.surrounding_cells[-1].position , [5.0,5.0,5.0] | units.m )        
+
+            
