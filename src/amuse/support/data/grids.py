@@ -9,6 +9,7 @@ from amuse.support import exceptions
 from amuse.support.data.base import *
 from amuse.support.data.memory_storage import *
 from amuse.support.data import indexing
+from amuse.support.data import values
 
 class AbstractGrid(AbstractSet):
     
@@ -273,10 +274,11 @@ V111 x y z
         return cell000 + translations
         
     @late
-    def factors(self):
-        x0,y0,z0 = self.grid[self.index_for_000_cell].position
-        x1,y1,z1 = self.grid[self.index_for_000_cell + [1,1,1]].position
+    def weighing_factors(self):
+        x0,y0,z0 = self.grid[tuple(self.index_for_000_cell)].position
+        x1,y1,z1 = self.grid[tuple(self.index_for_000_cell + [1,1,1])].position
         x,y,z = self.point
+        
         
         dx1 = (x1 - x) / (x1 - x0)
         dy1 = (y1 - y) / (y1 - y0)
@@ -285,7 +287,8 @@ V111 x y z
         dy0 = (y - y0) / (y1 - y0)
         dz0 = (z - z0) / (z1 - z0)
         
-        return [
+        result = values.AdaptingVectorQuantity()
+        result.extend([
             dx1 * dy1 * dz1,
             dx0 * dy1 * dz1,
             dx1 * dy0 * dz1,
@@ -294,11 +297,23 @@ V111 x y z
             dx1 * dy0 * dz0,
             dx0 * dy0 * dz1,
             dx0 * dy0 * dz0
-        ]   
+        ] )
+        return result 
     
     @late
     def surrounding_cells(self):
         return [self.grid[tuple(x)] for x in self.surrounding_cell_indices]
+        
+    def get_values_of_attribute(self, name_of_the_attribute):
+        result = values.AdaptingVectorQuantity()
+        for x in self.surrounding_cells:
+            result.append(getattr(x, name_of_the_attribute))
+        return result
+    
+    def __getattr__(self, name_of_the_attribute):
+        values = self.get_values_of_attribute(name_of_the_attribute)
+        print values, self.weighing_factors
+        return (values * self.weighing_factors).sum()
         
         
         

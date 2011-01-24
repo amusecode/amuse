@@ -837,7 +837,7 @@ class AdaptingVectorQuantity(VectorQuantity):
     
     def extend(self, quantity):
         for x in quantity:
-            self.append(self, x)
+            self.append(x)
             
     def __setitem__(self, index, quantity):
         quantity_in_my_units = quantity.as_quantity_in(self.unit)

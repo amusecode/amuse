@@ -380,4 +380,38 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertEquals(sample.surrounding_cells[1].position , [5.0,3.0,3.0] | units.m )   
         self.assertEquals(sample.surrounding_cells[-1].position , [5.0,5.0,5.0] | units.m )        
 
+    
+    def test7(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        masses = sample.get_values_of_attribute("mass")
+        print masses
+        self.assertEquals(masses[0] , 3.0 | units.kg ) 
+        self.assertEquals(masses[1] , 5.0 | units.kg ) 
+        self.assertEquals(masses[2] , 3.0 | units.kg )  
+        self.assertEquals(masses[3] , 3.0 | units.kg )  
+        self.assertEquals(masses[4] , 5.0 | units.kg )  
+        self.assertEquals(masses[5] , 3.0 | units.kg )  
+        self.assertEquals(masses[6] , 5.0 | units.kg )  
+        self.assertEquals(masses[7] , 5.0 | units.kg ) 
+        factors = sample.weighing_factors
+        print factors
+        self.assertEquals(factors[0] , 1.0 | units.none ) 
+        self.assertEquals(factors[1] , 0.0 | units.none ) 
+        self.assertEquals(factors[2] , 0.0 | units.none )  
+        self.assertEquals(factors[3] , 0.0 | units.none )  
+        self.assertEquals(factors[4] , 0.0 | units.none )  
+        self.assertEquals(factors[5] , 0.0 | units.none )  
+        self.assertEquals(factors[6] , 0.0 | units.none )  
+        self.assertEquals(factors[7] , 0.0 | units.none ) 
+        
+        self.assertAlmostRelativeEquals(sample.mass , 3.0 | units.kg ) 
+            
+    def test8(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        for xpos in numpy.arange(3.0,5.0,0.1):
+            sample = grid.samplePoint([xpos,3.0,3.0]| units.m)
+            self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
             
