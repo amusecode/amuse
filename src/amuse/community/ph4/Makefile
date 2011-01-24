@@ -3,14 +3,14 @@
 # subsequent versions are hand-coded, so save a copy.  Note that
 # all compiles must use MPICXX, not CXX.
 
-MPICXX   ?= openmpicxx
+MPICXX   ?= mpicxx
 
 CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
-SAPPOROLIBS ?= -L/usr/local/sapporo_v1.5 -lsapporo
+SAPPOROLIBS ?= -L/usr/local/sapporo -lsapporo
 BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
 
 LDFLAGS_GPU = $(LDFLAGS) \
@@ -56,7 +56,7 @@ ph4_worker: worker_code.cc interface.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(LDFLAGS) worker_code.cc $(OBJS) $(CODELIB) -o $@
 
 ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
-	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU)
+	$(MPICXX) $(CXXFLAGS) worker_code.cc $(OBJS) $(CODELIB_GPU) -o $@ $(LDFLAGS_GPU) -DGPU
 
 %.o: %.cc
 	$(MPICXX) $(CXXFLAGS) -c -o $@ $< 
