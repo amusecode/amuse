@@ -416,7 +416,7 @@ p.Disconnect()"""
                 tried_workers.append(full_name_of_the_worker)
                 current_type = current_type.__bases__[0]
                 if current_type.__bases__[0] is object:
-                    raise exceptions.LegacyException("The worker application does not exists, it should be at: {0}".format(tried_workers))
+                    raise exceptions.CodeException("The worker application does not exists, it should be at: {0}".format(tried_workers))
             else:
                 found = True
         return full_name_of_the_worker
@@ -497,10 +497,10 @@ class MpiChannel(MessageChannel):
            
         if self.check_mpi:
             if not is_mpd_running():
-                raise exceptions.LegacyException("The mpd daemon is not running, please make sure it is started before starting this code")
+                raise exceptions.CodeException("The mpd daemon is not running, please make sure it is started before starting this code")
         
         if self._mpi_is_broken_after_possible_code_crash:
-            raise exceptions.LegacyException("Another code has crashed, cannot spawn a new code, please stop the script and retry")
+            raise exceptions.CodeException("Another code has crashed, cannot spawn a new code, please stop the script and retry")
         
         if not self.hostname is None:
             self.info = MPI.Info.Create()
@@ -635,9 +635,9 @@ class MpiChannel(MessageChannel):
     def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
 
         if self.is_inuse():
-            raise exceptions.LegacyException("You've tried to send a message to a code that is already handling a message, this is not correct")
+            raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.intercomm is None:
-            raise exceptions.LegacyException("You've tried to send a message to a code that is not running")
+            raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
         length = self.determine_length_from_data(dtype_to_arguments)
         
@@ -729,10 +729,10 @@ class MpiChannel(MessageChannel):
             raise
         
         if message.tag == -1:
-            raise exceptions.LegacyException("Not a valid message, message is not understood by legacy code")
+            raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
         elif message.tag == -2:
             self.stop()
-            raise exceptions.LegacyException("Fatal error in code, code has exited")
+            raise exceptions.CodeException("Fatal error in code, code has exited")
         
         return self.convert_message_to_result(message, handle_as_array)
         
@@ -763,7 +763,7 @@ class MpiChannel(MessageChannel):
             message = function()
             
             if message.tag < 0:
-                raise exceptions.LegacyException("Not a valid message, message is not understood by legacy code")
+                raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
                 
             return self.convert_message_to_result(message, handle_as_array)
     

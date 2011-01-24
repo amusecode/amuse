@@ -696,13 +696,13 @@ class InternalStellarStructure(object):
     
     def _check_supplied_values(self, number_of_values, expected_number, type_string = "mesh zones"):
         if number_of_values != expected_number:
-            raise exceptions.LegacyException(("The length of the supplied vector ({0}) does not match the number of "
+            raise exceptions.CodeException(("The length of the supplied vector ({0}) does not match the number of "
                 +type_string+" of the star ({1}).").format(number_of_values, expected_number))
     
     def _check_number_of_indices(self, indices_of_the_stars, action_string = "Querying/setting profiles"):
         if hasattr(indices_of_the_stars, '__iter__'):
             if len(indices_of_the_stars) > 1:
-                raise exceptions.LegacyException(action_string+" of more than one particle at a time is not supported.")
+                raise exceptions.CodeException(action_string+" of more than one particle at a time is not supported.")
             return indices_of_the_stars[0]
         return indices_of_the_stars
     

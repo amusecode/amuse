@@ -12,14 +12,14 @@ from amuse.support.core import late
 from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
 from amuse.support.options import OptionalAttributes, option
-from amuse.support.codes.create_definition import LegacyDocStringProperty
+from amuse.support.codes.create_definition import CodeDocStringProperty
 from amuse.support.codes.channel import MpiChannel, MultiprocessingMPIChannel
 from amuse.support.codes.channel import is_mpd_running
 
 """
 This module implements the code to the define interfaces between python
-code and C++ or Fortran legacy codes. It provides the abstract base
-class for all legacy codes.
+code and C++ or Fortran codes. It provides the abstract base
+class for all community codes.
 """
 
 def ensure_mpd_is_running():
@@ -52,9 +52,9 @@ def _typecode_to_datatype(typecode):
 
 
     
-class LegacyCall(object):
+class CodeFunction(object):
     
-    __doc__ = LegacyDocStringProperty()
+    __doc__ = CodeDocStringProperty()
    
     def __init__(self, interface, owner, specification):
         """
@@ -75,7 +75,7 @@ class LegacyCall(object):
         handle_as_array = self.must_handle_as_array(dtype_to_values)
         
         if not self.owner is None:
-            logging.getLogger("legacy").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
+            logging.getLogger("code").info("start call '%s.%s'",self.owner.__name__, self.specification.name)
             
         self.interface.channel.send_message(self.specification.id, dtype_to_arguments = dtype_to_values)
         
@@ -83,12 +83,12 @@ class LegacyCall(object):
         try:
             dtype_to_result = self.interface.channel.recv_message(self.specification.id, handle_as_array)
         except Exception, ex:
-            raise exceptions.LegacyException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
+            raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
         
         result = self.converted_results(dtype_to_result, handle_as_array)
         
         if not self.owner is None:
-            logging.getLogger("legacy").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
+            logging.getLogger("code").info("end call '%s.%s'",self.owner.__name__, self.specification.name)
         
         return result
     
@@ -105,7 +105,7 @@ class LegacyCall(object):
             try:
                 dtype_to_result = function()
             except Exception, ex:
-                raise exceptions.LegacyException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
+                raise exceptions.CodeException("Exception when calling legacy code '{0}', exception was '{1}'".format(self.specification.name, ex))
             return self.converted_results(dtype_to_result, handle_as_array)
             
         request.add_result_handler(handle_result)
@@ -189,7 +189,7 @@ class LegacyCall(object):
                 input_parameters_seen.remove(parameter.name)
                 
         if input_parameters_seen:
-            raise exceptions.LegacyException("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
+            raise exceptions.CodeException("Not enough parameters in call, missing " + str(sorted(input_parameters_seen)))
          
         return dtype_to_values
         
@@ -199,7 +199,7 @@ class LegacyCall(object):
         
 class legacy_function(object):
     
-    __doc__ = LegacyDocStringProperty()
+    __doc__ = CodeDocStringProperty()
     
     def __init__(self, specification_function):
         """Decorator for legacy functions.
@@ -224,7 +224,7 @@ class legacy_function(object):
         >>> LegacyExample.evolve #doctest: +ELLIPSIS
         <amuse.support.codes.core.legacy_function object at 0x...>
         >>> x.evolve #doctest: +ELLIPSIS
-        <amuse.support.codes.core.LegacyCall object at 0x...>
+        <amuse.support.codes.core.CodeFunction object at 0x...>
         
                     
         :argument specification_function: The function to be decorated
@@ -235,7 +235,7 @@ class legacy_function(object):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return LegacyCall(instance, owner, self.specification)
+        return CodeFunction(instance, owner, self.specification)
         
     def __set__(self, instance, value):
         return
@@ -243,7 +243,7 @@ class legacy_function(object):
     @late
     def specification(self):
         """
-        The legacy function specification of the call.
+        Returns the specification for the call.
         """
         result = self.specification_function()
         if result.name is None:
@@ -299,10 +299,10 @@ class legacy_global(object):
     def __get__(self, instance, owner):
         if instance is None:
             return self
-        return LegacyCall(instance, owner, self.get_specification)()
+        return CodeFunction(instance, owner, self.get_specification)()
         
     def __set__(self, instance, value):
-        return LegacyCall(instance, None, self.set_specification)(value)
+        return CodeFunction(instance, None, self.set_specification)(value)
 
     def to_c_string(self):
         uc = MakeACStringOfALegacyGlobalSpecification()
@@ -341,7 +341,7 @@ class legacy_global(object):
         except Exception:
             pass
         
-        raise exceptions.LegacyException("No working crc32 implementation found!")
+        raise exceptions.CodeException("No working crc32 implementation found!")
      
 class ParameterSpecification(object):
     def __init__(self, name, dtype, direction, description, default = None):
@@ -608,7 +608,7 @@ class LegacyInterface(OptionalAttributes):
             if isinstance(value, legacy_function):
                 is_up_to_date = value.is_compiled_file_up_to_date(modificationtime_of_worker)
                 if not is_up_to_date:
-                    raise exceptions.LegacyException("""The worker code of the '{0}' interface class is not up to date.
+                    raise exceptions.CodeException("""The worker code of the '{0}' interface class is not up to date.
 Please do a 'make clean; make' in the root directory.
 """.format(type(self).__name__))
         
@@ -686,7 +686,7 @@ Please do a 'make clean; make' in the root directory.
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
     
     
-class LegacyPythonInterface(LegacyInterface):
+class PythonCodeInterface(LegacyInterface):
     """
     Base class for codes having a python implementation
     
@@ -696,7 +696,7 @@ class LegacyPythonInterface(LegacyInterface):
     def __init__(self, implementation_factory = None, name_of_the_worker = None, **options):
         if name_of_the_worker is None:
             if implementation_factory is None:
-                raise exceptions.LegacyException("Must provide the name of a worker script or the implementation_factory class")
+                raise exceptions.CodeException("Must provide the name of a worker script or the implementation_factory class")
             name_of_the_worker = self.make_executable_script_for(implementation_factory)
         
         LegacyInterface.__init__(self, name_of_the_worker, **options)
@@ -729,7 +729,7 @@ class LegacyPythonInterface(LegacyInterface):
         import sys
         
         path = os.path.dirname(__file__)
-        path = os.path.join(path, 'legacy_script.template')
+        path = os.path.join(path, 'python_code_script.template')
         with open(path, "r") as f:
             template_string = f.read()
         

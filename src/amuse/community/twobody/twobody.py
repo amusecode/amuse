@@ -398,10 +398,10 @@ class TwoBodyImplementation(object):
 
 
 
-class TwoBodyInterface(LegacyPythonInterface, GravitationalDynamicsInterface):
+class TwoBodyInterface(PythonCodeInterface, GravitationalDynamicsInterface):
     
     def __init__(self, **options):
-        LegacyPythonInterface.__init__(self, TwoBodyImplementation, **options)
+        PythonCodeInterface.__init__(self, TwoBodyImplementation, **options)
 
 class TwoBody(GravitationalDynamics):
     

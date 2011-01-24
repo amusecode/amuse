@@ -6,7 +6,7 @@ def strip_indent(string_with_indents):
     return re.sub('^ *\n', '', string_with_indents.rstrip())
 
 
-class LegacyDocStringProperty(object):            
+class CodeDocStringProperty(object):            
     """
     Return a docstring generated from a legacy
     function specification

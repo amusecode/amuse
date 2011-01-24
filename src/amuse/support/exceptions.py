@@ -32,7 +32,7 @@ class CoreException(AmuseException):
     errorcode = ErrorCode(majorcode,-1, "core error")
 
 
-class LegacyException(AmuseException):
+class CodeException(AmuseException):
     majorcode = 1
     errorcode = ErrorCode(majorcode,-1, "legacy code error")
 

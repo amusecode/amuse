@@ -15,10 +15,10 @@ import os
 import time
 
 
-class ForTestingInterface(LegacyPythonInterface):
+class ForTestingInterface(PythonCodeInterface):
     
     def __init__(self, **options):
-        LegacyPythonInterface.__init__(self, implementation_factory = ForTestingImplementation, **options)
+        PythonCodeInterface.__init__(self, implementation_factory = ForTestingImplementation, **options)
         
     @legacy_function
     def get_mass():

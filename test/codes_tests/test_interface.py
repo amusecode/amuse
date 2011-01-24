@@ -3,7 +3,7 @@ from amuse.test.amusetest import TestWithMPI
 
 from amuse.community.interface import gd
 from amuse.community.interface.gd import GravitationalDynamicsInterface
-from amuse.support.codes.create_definition import LegacyDocStringProperty
+from amuse.support.codes.create_definition import CodeDocStringProperty
 
 from amuse.support.codes import create_definition
 from amuse.support.codes.core import LegacyFunctionSpecification
@@ -82,7 +82,7 @@ class TestGravitationalDynamics(TestWithMPI):
                 specification.description = 'Example function'
                 return specification
                 
-            __doc__ = LegacyDocStringProperty()
+            __doc__ = CodeDocStringProperty()
             
             
         self.assertEquals("orignal doc", WithLegacyDocStringProperty.__doc__)
