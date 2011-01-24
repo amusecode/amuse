@@ -161,7 +161,7 @@ def module_name(string):
     return string
     
 def make_cplusplus_header():
-    result = create_c.MakeACHeaderStringOfAClassWithLegacyFunctions()
+    result = create_c.GenerateACHeaderStringFromASpecificationClass()
     result.make_extern_c = False
     return result
    
@@ -171,30 +171,30 @@ def make_file(settings):
         if settings.name_of_module_or_python_file.endswith('.py'):
             module = {}
             execfile(settings.name_of_module_or_python_file, module)
-            class_with_legacy_functions = module[settings.name_of_class]
+            specification_class = module[settings.name_of_class]
         else:
             module = __import__(settings.name_of_module,fromlist=[settings.name_of_class])
-            class_with_legacy_functions = getattr(module, settings.name_of_class)
+            specification_class = getattr(module, settings.name_of_class)
     except ImportError as exception:
         uc.show_error_and_exit(exception)
     
         
     usecases = { 
-        ('c','mpi'): create_c.MakeACStringOfAClassWithLegacyFunctions,
-        ('h','mpi'): create_c.MakeACHeaderStringOfAClassWithLegacyFunctions,
+        ('c','mpi'): create_c.GenerateACSourcecodeStringFromASpecificationClass,
+        ('h','mpi'): create_c.GenerateACHeaderStringFromASpecificationClass,
         ('H','mpi'): make_cplusplus_header,
-        ('f90','mpi'): create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions,      
-        ('c','stub'): create_c.MakeACInterfaceStringOfAClassWithLegacyFunctions,    
-        ('f90','stub'): create_fortran.MakeAFortranInterfaceStringOfAClassWithLegacyFunctions,
+        ('f90','mpi'): create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass,      
+        ('c','stub'): create_c.GenerateACStubStringFromASpecificationClass,    
+        ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
     }
     
     try:
         builder = usecases[(settings.type, settings.mode)]()
-        builder.class_with_legacy_functions = class_with_legacy_functions
-        builder.ignore_functions_from = settings.ignore_classes
+        builder.specification_class = specification_class
+        builder.ignore_functions_from_specification_class = settings.ignore_classes
     except:
         uc.show_error_and_exit("'{0}' and '{1}' is not a valid combination of type and mode, cannot generate the code".format(settings.type, settings.mode))
-        
+    
     if settings.output == '-':
         print builder.result
     else:
@@ -209,8 +209,8 @@ def make_file(settings):
 def make_directory(settings):
 
     usecases = {
-        ('c','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForACLegacyCode,    
-        ('f90','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranLegacyCode, 
+        ('c','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForACCode,    
+        ('f90','dir'): create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranCode, 
     }
     
     try:

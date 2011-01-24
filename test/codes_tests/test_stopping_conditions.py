@@ -164,15 +164,15 @@ class TestInterface(TestWithMPI):
         
         self.cxx_compile(codefile, codestring)
         
-        uc = create_c.MakeACHeaderStringOfAClassWithLegacyFunctions()
-        uc.class_with_legacy_functions = ForTestingInterface
+        uc = create_c.GenerateACHeaderStringFromASpecificationClass()
+        uc.specification_class = ForTestingInterface
         uc.make_extern_c = True
-        uc.ignore_functions_from = [stopping_conditions.StoppingConditionInterface]
+        uc.ignore_functions_from_specification_class = [stopping_conditions.StoppingConditionInterface]
         header =  uc.result
 
-        uc = create_c.MakeACStringOfAClassWithLegacyFunctions()
+        uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
 
-        uc.class_with_legacy_functions = ForTestingInterface
+        uc.specification_class = ForTestingInterface
         code =  uc.result
 
         string = '\n\n'.join([header, code])
@@ -300,8 +300,8 @@ class TestInterfaceF(TestWithMPI):
         
         self.f90_compile(codefile, codestringF)
         
-        uf = create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions()
-        uf.class_with_legacy_functions = ForTestingInterface
+        uf = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
+        uf.specification_class = ForTestingInterface
         string =  uf.result
         
         #print string

@@ -152,27 +152,27 @@ class PythonImplementation(object):
     @late
     def mapping_from_tag_to_legacy_function(self):
         result = {}
-        for x in self.legacy_functions:
+        for x in self.interface_functions:
             result[x.specification.id] = x
         return result
         
     @late
-    def legacy_functions(self):
+    def interface_functions(self):
         attribute_names = dir(self.interface)
-        legacy_functions = []
+        interface_functions = []
         for x in attribute_names:
             if x.startswith('__'):
                 continue
             value = getattr(self.interface, x)
             if isinstance(value, legacy_function):
-                legacy_functions.append(value)
+                interface_functions.append(value)
         
-        legacy_functions.sort(key= lambda x: x.specification.id)
+        interface_functions.sort(key= lambda x: x.specification.id)
         
-        for x in legacy_functions:
+        for x in interface_functions:
             x.specification.prepare_output_parameters()
             
-        return legacy_functions
+        return interface_functions
         
     def internal__redirect_outputs(self, stdoutfile, stderrfile):
         mpi_rank = MPI.COMM_WORLD.rank

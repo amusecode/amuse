@@ -416,12 +416,12 @@ class TestInterface(TestWithMPI):
         
         self.c_compile(codefile, codestring)
         
-        uc = create_c.MakeACHeaderStringOfAClassWithLegacyFunctions()
-        uc.class_with_legacy_functions = ForTestingInterface
+        uc = create_c.GenerateACHeaderStringFromASpecificationClass()
+        uc.specification_class = ForTestingInterface
         header =  uc.result
         
-        uc = create_c.MakeACStringOfAClassWithLegacyFunctions()
-        uc.class_with_legacy_functions = ForTestingInterface
+        uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
+        uc.specification_class = ForTestingInterface
         code =  uc.result
         
         string = '\n\n'.join([header, code])

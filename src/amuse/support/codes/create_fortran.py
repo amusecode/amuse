@@ -1,8 +1,8 @@
 from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.support.codes.core import LegacyFunctionSpecification
-from amuse.support.codes.create_code import MakeCodeString
-from amuse.support.codes.create_code import MakeCodeStringOfAClassWithLegacyFunctions
+from amuse.support.codes.create_code import GenerateASourcecodeString
+from amuse.support.codes.create_code import GenerateASourcecodeStringFromASpecificationClass
 from amuse.support.codes.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
 from amuse.support.codes import create_definition
 
@@ -60,14 +60,13 @@ function internal__redirect_outputs(stdoutfile, stderrfile)
 end function
 """
 
-
-class MakeAFortranStringFromAFunctionSpecification(MakeCodeString):
+class GenerateAFortranStringOfAFunctionSpecification(GenerateASourcecodeString):
+    MAX_STRING_LEN = 256
+    
     @late
     def specification(self):
         raise exceptions.AmuseException("No specification set, please set the specification first")
-        
-class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFunctionSpecification):
-    MAX_STRING_LEN = 256
+    
     
     @late
     def dtype_to_spec(self):
@@ -293,7 +292,7 @@ class MakeAFortranStringOfALegacyFunctionSpecification(MakeAFortranStringFromAFu
         self.out.n() 
         
         
-class MakeAFortranStringOfALegacyGlobalSpecification(MakeCodeString):
+class MakeAFortranStringOfALegacyGlobalSpecification(GenerateASourcecodeString):
     
     @late
     def dtype_to_spec(self):
@@ -331,7 +330,7 @@ class MakeAFortranStringOfALegacyGlobalSpecification(MakeCodeString):
         self.out.n() 
 
 
-class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLegacyFunctions):
+class GenerateAFortranSourcecodeStringFromASpecificationClass(GenerateASourcecodeStringFromASpecificationClass):
     MAX_STRING_LEN = 256
 
     @late
@@ -347,14 +346,14 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         return 2 + self.number_of_types
         
         
-    def make_legacy_function(self):
-        return MakeAFortranStringOfALegacyFunctionSpecification()
+    def output_sourcecode_for_function(self):
+        return GenerateAFortranStringOfAFunctionSpecification()
    
     def start(self):
         self.output_character_index_function()
         self.output_runloop_function_def_start()
         self.output_switch_start()
-        self.output_legacy_functions()
+        self.output_sourcecode_for_functions()
         self.output_switch_end()
         self.output_runloop_function_def_end()
         self.output_redirect_output()
@@ -368,13 +367,13 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
             
     def output_modules(self):
         self.out.n()
-        if hasattr(self.class_with_legacy_functions, 'use_modules'):
-            for x in self.class_with_legacy_functions.use_modules:
+        if hasattr(self.specification_class, 'use_modules'):
+            for x in self.specification_class.use_modules:
                 self.out.n() + 'use ' + x 
                 
-    def output_legacy_functions_declarations(self):
-        if not hasattr(self.class_with_legacy_functions, 'use_modules'):
-            for x in self.legacy_functions:
+    def output_declarations_for_the_functions(self):
+        if not hasattr(self.specification_class, 'use_modules'):
+            for x in self.interface_functions:
                 specification = x.specification
                 if specification.id == 0:
                     continue
@@ -452,7 +451,7 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         self.out.lf().lf() + 'integer :: len_in, len_out'
         self.output_character_index_inderface()
         self.out.lf()
-        self.output_legacy_functions_declarations()
+        self.output_declarations_for_the_functions()
         
         for dtype_spec in self.dtype_to_spec.values():
             self.out.lf() + dtype_spec.type
@@ -660,14 +659,14 @@ class MakeAFortranStringOfAClassWithLegacyFunctions(MakeCodeStringOfAClassWithLe
         
         
 
-class MakeAFortranInterfaceStringOfAClassWithLegacyFunctions\
-    (MakeCodeStringOfAClassWithLegacyFunctions):
+class GenerateAFortranStubStringFromASpecificationClass\
+    (GenerateASourcecodeStringFromASpecificationClass):
 
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
   
-    def make_legacy_function(self):
+    def output_sourcecode_for_function(self):
         result = create_definition.CreateFortranStub()
         result.output_definition_only = False
         return result
@@ -678,7 +677,7 @@ class MakeAFortranInterfaceStringOfAClassWithLegacyFunctions\
         
         self.out.lf()
         
-        self.output_legacy_functions()
+        self.output_sourcecode_for_functions()
         
         self.out.lf()
         
@@ -687,8 +686,8 @@ class MakeAFortranInterfaceStringOfAClassWithLegacyFunctions\
     
     def output_modules(self):
         self.out.n()
-        if hasattr(self.class_with_legacy_functions, 'use_modules'):
-            for x in self.class_with_legacy_functions.use_modules:
+        if hasattr(self.specification_class, 'use_modules'):
+            for x in self.specification_class.use_modules:
                 self.out.n() + 'use ' + x 
         
     

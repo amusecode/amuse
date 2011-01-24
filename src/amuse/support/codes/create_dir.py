@@ -7,12 +7,12 @@ import os
 interface_file_template = """\
 from amuse.community import *
 
-class {0.name_of_the_legacy_interface_class}({0.name_of_the_superclass_for_the_legacy_interface_class}):
+class {0.name_of_the_community_interface_class}({0.name_of_the_superclass_for_the_community_code_interface_class}):
     
     include_headers = ['worker_code.h']
     
     def __init__(self, **keyword_arguments):
-        {0.name_of_the_superclass_for_the_legacy_interface_class}.__init__(self, name_of_the_worker="{0.name_of_the_legacy_code}_worker", **keyword_arguments)
+        {0.name_of_the_superclass_for_the_community_code_interface_class}.__init__(self, name_of_the_worker="{0.name_of_the_community_code}_worker", **keyword_arguments)
     
     @legacy_function
     def echo_int():
@@ -27,7 +27,7 @@ class {0.name_of_the_legacy_interface_class}({0.name_of_the_superclass_for_the_l
 class {0.name_of_the_code_interface_class}({0.name_of_the_superclass_for_the_code_interface_class}):
 
     def __init__(self):
-        {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_legacy_interface_class}())
+        {0.name_of_the_superclass_for_the_code_interface_class}.__init__(self,  {0.name_of_the_community_interface_class}())
     
 """
 
@@ -35,13 +35,13 @@ test_file_template = """\
 from amuse.community import *
 from amuse.test.amusetest import TestWithMPI
 
-from {0.name_for_import_of_the_interface_module} import {0.name_of_the_legacy_interface_class}
+from {0.name_for_import_of_the_interface_module} import {0.name_of_the_community_interface_class}
 from {0.name_for_import_of_the_interface_module} import {0.name_of_the_code_interface_class}
 
-class {0.name_of_the_legacy_interface_class}Tests(TestWithMPI):
+class {0.name_of_the_community_interface_class}Tests(TestWithMPI):
     
     def test1(self):
-        instance = {0.name_of_the_legacy_interface_class}()
+        instance = {0.name_of_the_community_interface_class}()
         result,error = instance.echo_int(12)
         self.assertEquals(error, 0)
         self.assertEquals(result, 12)
@@ -58,29 +58,29 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = {0.name_of_the_interface_code}.o
 
-CODELIB = src/lib{0.name_of_the_legacy_code}.a
+CODELIB = src/lib{0.name_of_the_community_code}.a
 
 AMUSE_DIR?={0.reference_to_amuse_path}
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: {0.name_of_the_legacy_code}_worker 
+all: {0.name_of_the_community_code}_worker 
 
 clean:
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-\t$(RM) *~ {0.name_of_the_legacy_code}_worker worker_code.cc
+\t$(RM) *~ {0.name_of_the_community_code}_worker worker_code.cc
 \tmake -C src clean
 
 $(CODELIB):
 \tmake -C src all
 
 worker_code.cc: {0.name_of_the_python_module}
-\t$(CODE_GENERATOR) --type=c interface.py {0.name_of_the_legacy_interface_class} -o $@
+\t$(CODE_GENERATOR) --type=c interface.py {0.name_of_the_community_interface_class} -o $@
 
 worker_code.h: {0.name_of_the_python_module}
-\t$(CODE_GENERATOR) --type=H interface.py {0.name_of_the_legacy_interface_class} -o $@
+\t$(CODE_GENERATOR) --type=H interface.py {0.name_of_the_community_interface_class} -o $@
 
-{0.name_of_the_legacy_code}_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
+{0.name_of_the_community_code}_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 \t$(MPICXX) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 .cc.o: $<
@@ -92,7 +92,7 @@ CFLAGS   += -Wall -g
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
-CODELIB = lib{0.name_of_the_legacy_code}.a
+CODELIB = lib{0.name_of_the_community_code}.a
 
 CODEOBJS = test.o
 
@@ -138,14 +138,14 @@ int echo_int(int input, int * output){
 
 """
 
-class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
+class CreateADirectoryAndPopulateItWithFiles(object):
     
     @late
     def path_of_the_root_directory(self):
         return os.path.dirname(os.path.dirname(__file__))
         
     @late
-    def name_of_the_legacy_code(self):
+    def name_of_the_community_code(self):
         return self.name_of_the_code_interface_class.lower()
         
     @late
@@ -154,7 +154,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         
     @late
     def name_of_the_test_module(self):
-        return 'test_{0}.py'.format(self.name_of_the_legacy_code)
+        return 'test_{0}.py'.format(self.name_of_the_community_code)
     
     @late
     def name_of_the_interface_code(self):
@@ -165,7 +165,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         return 'MyCode'
         
     @late
-    def name_of_the_legacy_interface_class(self):
+    def name_of_the_community_interface_class(self):
         return self.name_of_the_code_interface_class + 'Interface'
     
     @late
@@ -177,28 +177,28 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         return '.' + self.name_of_the_python_module[:-3]
         
     @late
-    def path_of_the_legacy_code(self):
-        return os.path.join(self.path_of_the_root_directory, self.name_of_the_legacy_code)
+    def path_of_the_community_code(self):
+        return os.path.join(self.path_of_the_root_directory, self.name_of_the_community_code)
         
     @late
     def path_of_the_source_code(self):
-        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_code_directory)
+        return os.path.join(self.path_of_the_community_code, self.name_of_the_code_directory)
         
     @late
     def path_of_the_init_file(self):
-        return os.path.join(self.path_of_the_legacy_code, '__init__.py')
+        return os.path.join(self.path_of_the_community_code, '__init__.py')
         
     @late
     def path_of_the_interface_file(self):
-        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_python_module)
+        return os.path.join(self.path_of_the_community_code, self.name_of_the_python_module)
     
     @late
     def path_of_the_test_file(self):
-        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_test_module)
+        return os.path.join(self.path_of_the_community_code, self.name_of_the_test_module)
         
     @late
     def path_of_the_makefile(self):
-        return os.path.join(self.path_of_the_legacy_code, 'Makefile')
+        return os.path.join(self.path_of_the_community_code, 'Makefile')
     
     @late
     def path_of_the_code_makefile(self):
@@ -221,10 +221,10 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         
     @late
     def reference_to_amuse_path(self):
-        return os.path.relpath(self.path_of_amuse, self.path_of_the_legacy_code)
+        return os.path.relpath(self.path_of_amuse, self.path_of_the_community_code)
         
     @late 
-    def name_of_the_superclass_for_the_legacy_interface_class(self):
+    def name_of_the_superclass_for_the_community_code_interface_class(self):
         return LegacyInterface.__name__
         
     @late
@@ -240,7 +240,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         
         
     def make_directories(self):
-        os.mkdir(self.path_of_the_legacy_code)
+        os.mkdir(self.path_of_the_community_code)
         os.mkdir(self.path_of_the_source_code)
         
     def make_python_files(self):
@@ -262,7 +262,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCode(object):
         pass
         
         
-class CreateADirectoryAndPopulateItWithFilesForACLegacyCode(CreateADirectoryAndPopulateItWithFilesForALegacyCode):
+class CreateADirectoryAndPopulateItWithFilesForACCode(CreateADirectoryAndPopulateItWithFiles):
    
     @late
     def path_of_the_code_examplefile(self):
@@ -270,7 +270,7 @@ class CreateADirectoryAndPopulateItWithFilesForACLegacyCode(CreateADirectoryAndP
         
     @late
     def path_of_the_interface_examplefile(self):
-        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_interface_code + '.cc')
+        return os.path.join(self.path_of_the_community_code, self.name_of_the_interface_code + '.cc')
             
     def make_makefile(self):
         
@@ -302,13 +302,13 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = {0.name_of_the_interface_code}.o
 
-CODELIB = src/lib{0.name_of_the_legacy_code}.a
+CODELIB = src/lib{0.name_of_the_community_code}.a
 
 AMUSE_DIR?={0.reference_to_amuse_path}
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: {0.name_of_the_legacy_code}_worker 
+all: {0.name_of_the_community_code}_worker 
 
 clean:
 \t$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
@@ -319,9 +319,9 @@ $(CODELIB):
 \tmake -C src all
 
 worker_code.f90: {0.name_of_the_python_module}
-\t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_legacy_interface_class} -o $@
+\t$(CODE_GENERATOR) --type=f90 interface.py {0.name_of_the_community_interface_class} -o $@
 
-{0.name_of_the_legacy_code}_worker: worker_code.f90 $(CODELIB) $(OBJS)
+{0.name_of_the_community_code}_worker: worker_code.f90 $(CODELIB) $(OBJS)
 \t$(MPIF90) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
 
 %.o: %.f90
@@ -335,7 +335,7 @@ FC      = $(MPIF90)
 FFLAGS   += -Wall -g
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
-CODELIB = lib{0.name_of_the_legacy_code}.a
+CODELIB = lib{0.name_of_the_community_code}.a
 
 CODEOBJS = test.o
 
@@ -375,7 +375,7 @@ FUNCTION echo_int(input, output)
 END FUNCTION
 
 """
-class CreateADirectoryAndPopulateItWithFilesForAFortranLegacyCode(CreateADirectoryAndPopulateItWithFilesForALegacyCode):
+class CreateADirectoryAndPopulateItWithFilesForAFortranCode(CreateADirectoryAndPopulateItWithFiles):
    
     @late
     def path_of_the_code_examplefile(self):
@@ -383,7 +383,7 @@ class CreateADirectoryAndPopulateItWithFilesForAFortranLegacyCode(CreateADirecto
         
     @late
     def path_of_the_interface_examplefile(self):
-        return os.path.join(self.path_of_the_legacy_code, self.name_of_the_interface_code + '.f90')
+        return os.path.join(self.path_of_the_community_code, self.name_of_the_interface_code + '.f90')
             
     def make_makefile(self):
         

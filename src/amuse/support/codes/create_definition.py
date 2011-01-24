@@ -8,7 +8,7 @@ def strip_indent(string_with_indents):
 
 class CodeDocStringProperty(object):            
     """
-    Return a docstring generated from a legacy
+    Return a docstring generated from a
     function specification
     """
     def __get__(self, instance, owner):
@@ -18,12 +18,12 @@ class CodeDocStringProperty(object):
             else:
                 return self
         
-        usecase = CreateDescriptionOfALegacyFunctionDefinition()
+        usecase = CreateDescriptionOfAFunctionSpecification()
         usecase.specification = instance.specification
         usecase.start()
         return usecase.out.string
 
-class CreateDescriptionOfALegacyFunctionDefinition(object):
+class CreateDescriptionOfAFunctionSpecification(object):
 
     @late
     def out(self):

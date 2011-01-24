@@ -372,14 +372,14 @@ class RunSpeedTests(object):
         
         self.c_compile(codefile, codestring)
         
-        uc = create_c.MakeACHeaderStringOfAClassWithLegacyFunctions()
-        uc.class_with_legacy_functions = TestCode
+        uc = create_c.GenerateACHeaderStringFromASpecificationClass()
+        uc.specification_class = TestCode
         uc.make_extern_c = False
         header =  uc.result
         
         
-        uc = create_c.MakeACStringOfAClassWithLegacyFunctions()
-        uc.class_with_legacy_functions = TestCode
+        uc = create_c.GenerateACSourcecodeStringFromASpecificationClass()
+        uc.specification_class = TestCode
         code =  uc.result
         
         string = '\n\n'.join([header, code])

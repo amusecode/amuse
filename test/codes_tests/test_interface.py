@@ -22,7 +22,7 @@ class TestGravitationalDynamics(TestWithMPI):
         specification.addParameter('one','d',specification.IN, 'first parameter')
         specification.description = 'Example function'
         
-        x = create_definition.CreateDescriptionOfALegacyFunctionDefinition()
+        x = create_definition.CreateDescriptionOfAFunctionSpecification()
         x.specification = specification
         x.start()
         
@@ -40,7 +40,7 @@ class TestGravitationalDynamics(TestWithMPI):
         specification.result_doc = 'an integer'
         specification.description = 'Example function'
         
-        x = create_definition.CreateDescriptionOfALegacyFunctionDefinition()
+        x = create_definition.CreateDescriptionOfAFunctionSpecification()
         x.specification = specification
         x.start()
         
@@ -99,7 +99,7 @@ class TestGravitationalDynamics(TestWithMPI):
         specification.result_doc = 'an integer'
         specification.description = 'Example function'
         
-        x = create_definition.CreateDescriptionOfALegacyFunctionDefinition()
+        x = create_definition.CreateDescriptionOfAFunctionSpecification()
         x.specification = specification
         x.start()
         self.assertTrue(x.out.string.find('int32 test(float64 * one)') > 0)

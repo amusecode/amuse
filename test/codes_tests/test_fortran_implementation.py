@@ -363,8 +363,8 @@ class TestInterface(TestWithMPI):
         
         self.fortran_compile(codefile, codestring)
         
-        uc = create_fortran.MakeAFortranStringOfAClassWithLegacyFunctions()
-        uc.class_with_legacy_functions = ForTestingInterface
+        uc = create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass()
+        uc.specification_class = ForTestingInterface
         string =  uc.result
         self.fortran_compile(interfacefile, string)
         self.fortran_build(self.exefile, [interfacefile, codefile] )

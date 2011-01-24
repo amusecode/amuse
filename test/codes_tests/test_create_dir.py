@@ -6,13 +6,13 @@ import sys
 
 from amuse.support.codes import create_dir
 
-class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCase):
+class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.TestCase):
     
     def test1(self):
-        instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACLegacyCode()
+        instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACCode()
         instance.name_of_the_code_interface_class = 'TestCode'
-        self.assertEquals(instance.name_of_the_legacy_code, 'testcode')
-        self.assertTrue(instance.path_of_the_legacy_code.endswith('testcode'))
+        self.assertEquals(instance.name_of_the_community_code, 'testcode')
+        self.assertTrue(instance.path_of_the_community_code.endswith('testcode'))
             
     def test2(self):
         root = self.get_path_to_results()
@@ -23,7 +23,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         if os.path.exists(working_dir):
             shutil.rmtree(working_dir)
                         
-        instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACLegacyCode()
+        instance = create_dir.CreateADirectoryAndPopulateItWithFilesForACCode()
         instance.name_of_the_code_interface_class = 'TestCode'
         instance.path_of_the_root_directory = root
         self.assertEquals(instance.reference_to_amuse_path,'../..')
@@ -94,7 +94,7 @@ class CreateADirectoryAndPopulateItWithFilesForALegacyCodeTest(amusetest.TestCas
         if os.path.exists(working_dir):
             shutil.rmtree(working_dir)
                         
-        instance = create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranLegacyCode()
+        instance = create_dir.CreateADirectoryAndPopulateItWithFilesForAFortranCode()
         instance.name_of_the_code_interface_class = 'TestCodeF'
         instance.path_of_the_root_directory = root
         self.assertEquals(instance.reference_to_amuse_path,'../..')

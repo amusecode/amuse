@@ -1,8 +1,8 @@
 from amuse.support.core import late
 from amuse.support import exceptions
 from amuse.support.codes.core import LegacyFunctionSpecification
-from amuse.support.codes.create_code import MakeCodeString
-from amuse.support.codes.create_code import MakeCodeStringOfAClassWithLegacyFunctions
+from amuse.support.codes.create_code import GenerateASourcecodeString
+from amuse.support.codes.create_code import GenerateASourcecodeStringFromASpecificationClass
 from amuse.support.codes.create_code import DTypeSpec, dtypes, DTypeToSpecDictionary
 from amuse.support.codes import create_definition
 
@@ -80,20 +80,18 @@ void onexit(void) {
 }
 """
 
-class MakeCCodeString(MakeCodeString):
+class MakeCCodeString(GenerateASourcecodeString):
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
        
          
 
-class MakeCStringFromAFunctionSpecification(MakeCCodeString):
+class GenerateACStringOfAFunctionSpecification(MakeCCodeString):
     @late
     def specification(self):
         raise exceptions.AmuseException("No specification set, please set the specification first")
-        
-class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecification):
-
+   
         
     def start(self):
         
@@ -265,7 +263,7 @@ class MakeACStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecifi
         
         
 
-class MakeACHeaderDefinitionStringOfALegacyFunctionSpecification(MakeCStringFromAFunctionSpecification):
+class GenerateACHeaderDefinitionStringFromAFunctionSpecification(MakeCCodeString):
    
         
     def start(self):
@@ -349,7 +347,7 @@ class MakeACStringOfALegacyGlobalSpecification(MakeCCodeString):
         
         
         
-class MakeCMessageHeaderClassDefinition(MakeCCodeString):
+class GenerateCMessageHeaderClassDefinition(MakeCCodeString):
     @late
     def number_of_types(self):
         return len(self.dtype_to_spec)
@@ -425,19 +423,19 @@ class MakeCMessageHeaderClassDefinition(MakeCCodeString):
         
 
 
-class MakeACStringOfAClassWithLegacyFunctions\
-    (MakeCodeStringOfAClassWithLegacyFunctions):
+class GenerateACSourcecodeStringFromASpecificationClass\
+    (GenerateASourcecodeStringFromASpecificationClass):
 
     @late
-    def class_with_legacy_functions(self):
-        raise exceptions.AmuseException("No class_with_legacy_functions set, please set the class_with_legacy_functions first")
+    def specification_class(self):
+        raise exceptions.AmuseException("No specification_class set, please set the specification_class first")
     
     @late
     def dtype_to_spec(self):
         return dtype_to_spec
 
-    def make_legacy_function(self):
-        return MakeACStringOfALegacyFunctionSpecification()
+    def output_sourcecode_for_function(self):
+        return GenerateACStringOfAFunctionSpecification()
     
     def make_legacy_global(self):
         return MakeACStringOfALegacyGlobalSpecification()
@@ -455,8 +453,8 @@ class MakeACStringOfAClassWithLegacyFunctions\
         self.output_runloop_function_def_start()
         self.output_switch_start()
                 
-        self.output_legacy_functions()
-        self.output_legacy_globals()
+        self.output_sourcecode_for_functions()
+        self.output_sourcecode_for_globals()
             
         self.output_switch_end()
         self.output_runloop_function_def_end()
@@ -474,18 +472,18 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
     def output_local_includes(self):
         self.out.n()
-        if hasattr(self.class_with_legacy_functions, 'include_headers'):
-            for x in self.class_with_legacy_functions.include_headers:
+        if hasattr(self.specification_class, 'include_headers'):
+            for x in self.specification_class.include_headers:
                 self.out.n() + '#include "' + x + '"'
     
     def output_extra_content(self):
         self.out.lf()
-        if hasattr(self.class_with_legacy_functions, 'extra_content'):
-            self.out.n() + self.class_with_legacy_functions.extra_content
+        if hasattr(self.specification_class, 'extra_content'):
+            self.out.n() + self.specification_class.extra_content
     
             
     def output_header_class_definition(self):
-        uc = MakeCMessageHeaderClassDefinition()
+        uc = GenerateCMessageHeaderClassDefinition()
         uc.out = self.out
         uc.start()
     
@@ -716,11 +714,11 @@ class MakeACStringOfAClassWithLegacyFunctions\
         
         
 
-class MakeACHeaderStringOfAClassWithLegacyFunctions\
-    (MakeCodeStringOfAClassWithLegacyFunctions):
+class GenerateACHeaderStringFromASpecificationClass\
+    (GenerateASourcecodeStringFromASpecificationClass):
 
     @late
-    def ignore_functions_from(self):
+    def ignore_functions_from_specification_class(self):
         return []
         
     @late
@@ -731,24 +729,25 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
     def make_extern_c(self):
         return True
     
-    def include_legacy_function(self, x):
-        return not x.specification.name.startswith("internal__")
-        
-    def handle_legacy_function(self, name_of_the_function, function):
-        for cls in self.ignore_functions_from:
-            if hasattr(cls, name_of_the_function):
+    def must_include_interface_function_in_output(self, x):
+        if x.specification.name.startswith("internal__"):
+            return False
+            
+        for cls in self.ignore_functions_from_specification_class:
+            if hasattr(cls, x.specification.name):
                 return False
+        
         return True
         
-    def make_legacy_function(self):
-        return MakeACHeaderDefinitionStringOfALegacyFunctionSpecification()
+    def output_sourcecode_for_function(self):
+        return GenerateACHeaderDefinitionStringFromAFunctionSpecification()
         
     def start(self):  
         if self.make_extern_c:
             self.out + 'extern "C" {'
             self.out.indent().lf()
             
-        self.output_legacy_functions()
+        self.output_sourcecode_for_functions()
         
         if self.make_extern_c:
             self.out.dedent().lf() + '}'
@@ -758,8 +757,8 @@ class MakeACHeaderStringOfAClassWithLegacyFunctions\
         self._result = self.out.string
         
 
-class MakeACInterfaceStringOfAClassWithLegacyFunctions\
-    (MakeCodeStringOfAClassWithLegacyFunctions):
+class GenerateACStubStringFromASpecificationClass\
+    (GenerateASourcecodeStringFromASpecificationClass):
 
     @late
     def dtype_to_spec(self):
@@ -769,10 +768,10 @@ class MakeACInterfaceStringOfAClassWithLegacyFunctions\
     def make_extern_c(self):
         return False
     
-    def make_legacy_function(self):
+    def output_sourcecode_for_function(self):
         return create_definition.CreateCStub()
 
-    def include_legacy_function(self, x):
+    def must_include_interface_function_in_output(self, x):
         return not x.specification.name.startswith("internal__")
      
     def start(self):  
@@ -785,7 +784,7 @@ class MakeACInterfaceStringOfAClassWithLegacyFunctions\
             self.out + 'extern "C" {'
             self.out.indent().lf()
             
-        self.output_legacy_functions()
+        self.output_sourcecode_for_functions()
         
         if self.make_extern_c:
             self.out.dedent().lf() + '}'
@@ -797,8 +796,8 @@ class MakeACInterfaceStringOfAClassWithLegacyFunctions\
     
     def output_local_includes(self):
         self.out.n()
-        if hasattr(self.class_with_legacy_functions, 'include_headers'):
-            for x in self.class_with_legacy_functions.include_headers:
+        if hasattr(self.specification_class, 'include_headers'):
+            for x in self.specification_class.include_headers:
                 self.out.n() + '#include "' + x + '"'
     
         
