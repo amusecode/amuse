@@ -426,7 +426,15 @@ p.Disconnect()"""
         
     def recv_message(self, tag, handle_as_array = False):
         pass
+        
+    def start(self):
+        pass
+        
+    def stop(self):
+        pass
 
+    def is_active(self):
+        return True
  
 MessageChannel.DEBUGGERS = {
     "none":None,

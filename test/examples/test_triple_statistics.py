@@ -92,7 +92,8 @@ class SimulateTripleSystemUntilDecay(object):
             self.from_code_to_model_channel.copy()
             has_escaper = self.has_triple_an_escaper(self.particles)
             self.store_point_positions()
-        
+            print self.time
+            
         if self.time >= self.tmax:
             self.make_plot()
         
