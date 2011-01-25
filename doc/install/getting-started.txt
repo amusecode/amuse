@@ -5,9 +5,15 @@ Getting started with AMUSE
 Introduction
 ~~~~~~~~~~~~
 
-At this point you should have built and tested AMUSE, as described in the previous sections, and are probably wondering "What can AMUSE do for me?". This section will get you started with AMUSE.
+At this point you should have built and tested AMUSE, as described 
+in the previous sections, and are probably wondering "What can AMUSE 
+do for me?". This section will get you started with AMUSE.
 
-AMUSE is based on python, so if you're new to Python, you'll find the official `Python documentation <http://docs.python.org/>`_ a valuable resource. Like with Python, there are basically two ways to use AMUSE. Firstly, directly via the interactive (Python) command line:
+AMUSE is based on python, so if you're new to Python, you'll find 
+the official `Python documentation <http://docs.python.org/>`_ a 
+valuable resource. Like with Python, there are basically two ways to 
+use AMUSE. Firstly, directly via the interactive (Python) command 
+line:
 
 .. code-block:: sh
 
@@ -18,7 +24,9 @@ AMUSE is based on python, so if you're new to Python, you'll find the official `
     >>> 
     >>> quit()    
 
-Secondly, by writing (Python) scripts. Suppose you wrote the following script `myscript.py`, and saved it in the current working directory:
+Secondly, by writing (Python) scripts. Suppose you wrote the 
+following script `myscript.py`, and saved it in the current working 
+directory:
 
 .. code-block:: python
    :linenos:
@@ -61,7 +69,10 @@ Then this script can be executed from the AMUSE interactive command line:
    6.0 cm   -->  4.99654096667 GHz
    >>> quit()
 
-You can also run scripts directly from the terminal prompt. Calling `amuse.sh` with a file name argument will make AMUSE execute the file. For this you need to add the following line to your script, telling the script which of its functions to call when executed:
+You can also run scripts directly from the terminal prompt. Calling 
+`amuse.sh` with a file name argument will make AMUSE execute the 
+file. For this you need to add the following line to your script, 
+telling the script which of its functions to call when executed:
 
 .. code-block:: python
    
@@ -85,35 +96,43 @@ Your script can now be executed directly from the terminal prompt:
 Example interactive session
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This is an example of an interactive session with AMUSE, showing how the interface to a typical (gravitational dynamics) legacy code works. Using the Barnes & Hut Tree code, the dynamics of the Sun-Earth system is solved. This two-body problem is chosen for simplicity, and is, of course, not exactly what a Tree code normally is used for.
-First we import the necessary AMUSE modules.
+This is an example of an interactive session with AMUSE, showing how 
+the interface to a typical (gravitational dynamics) legacy code 
+works. Using the Barnes & Hut Tree code, the dynamics of the 
+Sun-Earth system is solved. This two-body problem is chosen for 
+simplicity, and is, of course, not exactly what a Tree code normally 
+is used for. First we import the necessary AMUSE modules.
 
 .. code-block:: python
    
-   >>> from amuse.legacy.bhtree.interface import BHTree
+   >>> from amuse.community.bhtree.interface import BHTree
    >>> from amuse.support.data import core
    >>> from amuse.support.units import nbody_system
    >>> from amuse.support.units import units
 
-Gravitational dynamics legacy codes usually work with `N-body units <http://en.wikipedia.org/wiki/N-body_units>`_ internally. We have to tell the code how to convert these to the natural units of the specific system, when creating an instance of the legacy code class.
+Gravitational dynamics legacy codes usually work with `N-body units 
+<http://en.wikipedia.org/wiki/N-body_units>`_ internally. We have to 
+tell the code how to convert these to the natural units of the 
+specific system, when creating an instance of the legacy code class.
 
 .. code-block:: python
    
    >>> convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
    >>> instance = BHTree(convert_nbody)
 
-Now we can tell the instance to change one of its parameters, before it initializes itself:
+Now we can tell the instance to change one of its parameters, before 
+it initializes itself:
 
 .. code-block:: python
    
    >>> instance.parameters.epsilon_squared = 0.001 | units.AU**2
-   >>> instance.setup_module()
 
-Then we create two particles, with properties set to those of the Sun and the Earth, and hand them over to the BHTree instance.
+Then we create two particles, with properties set to those of the 
+Sun and the Earth, and hand them over to the BHTree instance.
 
 .. code-block:: python
    
-   >>> stars = core.Stars(2)
+   >>> stars = core.Particles(2)
    >>> sun = stars[0]
    >>> sun.mass = 1.0 | units.MSun
    >>> sun.position = [0.0,0.0,0.0] | units.m
@@ -124,9 +143,17 @@ Then we create two particles, with properties set to those of the Sun and the Ea
    >>> earth.radius = 6371.0 | units.km 
    >>> earth.position = [1.0, 0.0, 0.0] | units.AU
    >>> earth.velocity = [0.0, 29783, 0.0] | units.ms
-   >>> instance.setup_particles(stars)
+   >>> instance.particles.add_particles(stars)
 
-Now the model can be evolved up to a specified end time. The current values of the particles are retieved from the legacy code by using `update_particles`.
+We need to setup a channel to copy values from the code
+to our model in python:
+
+.. code-block:: python
+   >>> channel = instance.particles.new_channel_to(stars)
+
+Now the model can be evolved up to a specified end time. The current 
+values of the particles are retieved from the legacy code by using 
+`update_particles`.
 
 .. code-block:: python
    
@@ -137,11 +164,11 @@ Now the model can be evolved up to a specified end time. The current values of t
    >>> instance.evolve_model(1.0 | units.yr)
    >>> print earth.position.as_quantity_in(units.AU)[0] # This is the outdated value! (should update_particles first)
    1.0 AU
-   >>> instance.update_particles(stars)
+   >>> channel.copy()
    >>> print earth.position.as_quantity_in(units.AU)[0]
    0.999843742682 AU
    >>> instance.evolve_model(1.5 | units.yr)
-   >>> instance.update_particles(stars)
+   >>> channel.copy()
    >>> print earth.position.as_quantity_in(units.AU)[0]
    -1.0024037469 AU
 
@@ -149,8 +176,7 @@ It's always a good idea to clean up after you're finished:
 
 .. code-block:: python
    
-   >>> instance.cleanup_module()
-   >>> del instance
+   >>> instance.stop()
 
 
 Example scripts
@@ -191,21 +217,34 @@ In the `test/examples <http://castle.strw.leidenuniv.nl/trac/amuse/browser/trunk
    The evolution of  1000  stars will be  simulated until t= 1000.0 Myr ...
    ...
 
-If instead of "Plotting the data..." the script printed "Unable to produce plot: couldn't find matplotlib.", this probably means you do not have Matplotlib installed. See the subsection on Matplotlib_ below.
+If instead of "Plotting the data..." the script printed "Unable to 
+produce plot: couldn't find matplotlib.", this probably means you do 
+not have Matplotlib installed. See the subsection on Matplotlib_ 
+below.
 
 .. _Matplotlib:
 
 Matplotlib
 ----------
 
-Matplotlib is a python plotting library which produces publication quality figures. Many of the AMUSE example scripts use this library to produce graphical output. If you would like to take advantage of this library, get it from http://matplotlib.sourceforge.net/ and install it in the Python site-packages directory. For your own work, it is of course also possible to print the required output to the terminal and use your favourite plotting tool to make the figures, or use gnuplot_, as described in the next section.
+Matplotlib is a python plotting library which produces publication 
+quality figures. Many of the AMUSE example scripts use this library 
+to produce graphical output. If you would like to take advantage of 
+this library, get it from http://matplotlib.sourceforge.net/ and 
+install it in the Python site-packages directory. For your own work, 
+it is of course also possible to print the required output to the 
+terminal and use your favourite plotting tool to make the figures, 
+or use gnuplot_, as described in the next section.
 
 .. _gnuplot:
 
 Gnuplot
 -------
 
-Another plotting utility that can be used from Python and AMUSE scripts is gnuplot. Gnuplot can be downloaded from http://www.gnuplot.info/. If you have gnuplot, you can install the **gnuplot-py** package to control gnuplot directly from your script.
+Another plotting utility that can be used from Python and AMUSE 
+scripts is gnuplot. Gnuplot can be downloaded from 
+http://www.gnuplot.info/. If you have gnuplot, you can install the 
+**gnuplot-py** package to control gnuplot directly from your script.
 
 To install **gnuplot-py**, open a shell and do::
         
@@ -215,7 +254,9 @@ To install **gnuplot-py**, open a shell and do::
 Further documentation
 ~~~~~~~~~~~~~~~~~~~~~
 
-I hope this got you started with AMUSE. To further explore the possibilities with AMUSE, take a look at the other example scripts, and the available:
+I hope this got you started with AMUSE. To further explore the 
+possibilities with AMUSE, take a look at the other example scripts, 
+and the available:
 
 * :ref:`tutorials-label`
 * :ref:`reference-label`
