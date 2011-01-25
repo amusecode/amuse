@@ -149,11 +149,12 @@ We need to setup a channel to copy values from the code
 to our model in python:
 
 .. code-block:: python
+
    >>> channel = instance.particles.new_channel_to(stars)
 
 Now the model can be evolved up to a specified end time. The current 
 values of the particles are retieved from the legacy code by using 
-`update_particles`.
+`copy` from the channel.
 
 .. code-block:: python
    
