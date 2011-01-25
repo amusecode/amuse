@@ -28,8 +28,8 @@ class SimulateTripleSystemUntilDecay(object):
     distance_relative_to_inner_binary_axis = 50
     
     t0 = 0 | nbody_system.time
-    tmax = 200 | nbody_system.time
-    dt = 0.01 | nbody_system.time
+    tmax = 1000 | nbody_system.time
+    dt = 1 | nbody_system.time
         
     def __init__(self, gravity_code, particles):
         self.particles = particles
@@ -44,12 +44,12 @@ class SimulateTripleSystemUntilDecay(object):
         distance_to_cm = (outer_particle.position - position_cm).length()
         
         energy = (
-            (mass_inner * (velocity_cm.length_squared())) / 2.0 +
-            (outer_particle.mass * (outer_particle.velocity.length_squared())) / 2.0 + 
+            ((mass_inner * (velocity_cm.length_squared())) / 2.0) +
+            ((outer_particle.mass * (outer_particle.velocity.length_squared())) / 2.0) + 
             - self.gravitational_constant * mass_inner * outer_particle.mass /  distance_to_cm
         ) # formula (3) in Orlov(2010)
         
-        return energy < 0 | nbody_system.energy
+        return energy > 0 | nbody_system.energy
 
     def is_outside_escape_distance(self, inner_binary, outer_particle):
         position_cm = inner_binary.center_of_mass()
@@ -93,7 +93,8 @@ class SimulateTripleSystemUntilDecay(object):
             has_escaper = self.has_triple_an_escaper(self.particles)
             self.store_point_positions()
         
-        self.make_plot()
+        if self.time >= self.tmax:
+            self.make_plot()
         
         return self.time
     
@@ -122,7 +123,7 @@ class SimulateTripleSystemUntilDecay(object):
         self.gravity_code.stop()
 
 def new_initial_system():
-    n = 1.0
+    n = 10.0
     xi = 0.01
     result = Particles(3)
     result.mass = numpy.random.rand(3) * (10.0 | nbody_system.mass)
@@ -139,6 +140,7 @@ def new_initial_system():
 def calculate_escape_time(index, number_of_systems, queue):
     numpy.random.seed()
     
+    #from amuse.community.smallN.muse_dynamics_mpi import SmallN
     print "start of subprocess", index
     try:
         for x in range(number_of_systems):
@@ -155,8 +157,8 @@ if __name__ == '__main__':
         
     result = AdaptingVectorQuantity()
     
-    total_number_of_systems = 1
-    number_of_processes = 1
+    total_number_of_systems = 6
+    number_of_processes = 2
     number_of_systems_per_process = total_number_of_systems/number_of_processes
     queue = Queue()
     
@@ -200,14 +202,14 @@ if __name__ == '__main__':
     
     print "doing statistics"
     sorted_times = result.sorted()
-    t = 1000 | nbody_system.time
-    tend = 100000 | nbody_system.time
-    dt = 10 | nbody_system.time
+    t = 0 | nbody_system.time
+    tend = 1000 | nbody_system.time
+    dt = 1 | nbody_system.time
     while t < tend:
         i = 0
         while i < len(sorted_times):
-            i += 1
             tn = sorted_times[i]
+            i += 1
             if tn < t:
                 continue
             else:
