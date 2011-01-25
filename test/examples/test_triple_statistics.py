@@ -92,7 +92,6 @@ class SimulateTripleSystemUntilDecay(object):
             self.from_code_to_model_channel.copy()
             has_escaper = self.has_triple_an_escaper(self.particles)
             self.store_point_positions()
-            print self.time
             
         if self.time >= self.tmax:
             self.make_plot()
@@ -145,7 +144,9 @@ def calculate_escape_time(index, number_of_systems, queue):
     print "start of subprocess", index
     try:
         for x in range(number_of_systems):
-            code = SimulateTripleSystemUntilDecay(Hermite(), new_initial_system())
+            gravity = Hermite()
+            print "code instantiated for", index
+            code = SimulateTripleSystemUntilDecay(gravity, new_initial_system())
             tend = code.evolve_model_until_escape()
             code.stop()
             queue.put(tend)
