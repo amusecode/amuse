@@ -196,6 +196,11 @@ class AbstractParticleSet(AbstractSet):
             return self._subset(keys)
         else:
             return Particle(self._get_keys()[index], self._original_set())
+    
+    def get_all_particles_at(self, *indices):
+        allkeys = self._get_keys()
+        selectedkeyes = [allkeys[x] for x in indices]
+        return self._subset(selectedkeyes)
         
     def __str__(self):
         """

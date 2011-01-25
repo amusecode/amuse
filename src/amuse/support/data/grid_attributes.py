@@ -38,6 +38,14 @@ def cellsize(grid, dimensions = 3):
 
 
 
+@grids.AbstractGrid.function_for_set
+def get_minimum_index(grid):
+    return [0,0,0]
+    
+@grids.AbstractGrid.function_for_set
+def get_maximum_index(grid):
+    return grid.shape - numpy.asarray([1,1,1])
+    
 
 @grids.AbstractGrid.function_for_set
 def get_minimum_position(grid):

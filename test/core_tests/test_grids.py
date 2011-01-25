@@ -414,4 +414,26 @@ class TestGridAttributes(amusetest.TestCase):
         for xpos in numpy.arange(3.0,5.0,0.1):
             sample = grid.samplePoint([xpos,3.0,3.0]| units.m)
             self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
-            
+          
+            sample = grid.samplePoint([xpos,3.0,3.0]| units.m)
+            self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
+          
+            sample = grid.samplePoint([xpos,5.0,3.0]| units.m)
+            self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
+          
+            sample = grid.samplePoint([xpos,3.0,5.0]| units.m)
+            self.assertAlmostRelativeEquals(sample.mass , (3.0 | units.kg) + ((2.0 * (xpos - 3.0) / 2.0) | units.kg) ) 
+        
+
+            sample = grid.samplePoint([4.0,4.0,4.0]| units.m)
+            self.assertAlmostRelativeEquals(sample.mass , (4.0 | units.kg)) 
+
+    def test9(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
+        self.assertTrue(sample.isvalid)
+        sample = grid.samplePoint([11.0,3.0,3.0]| units.m)
+        self.assertFalse(sample.isvalid)
+        sample = grid.samplePoint([3.0,-1.0,3.0]| units.m)
+        self.assertFalse(sample.isvalid)

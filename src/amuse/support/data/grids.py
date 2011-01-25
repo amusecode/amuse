@@ -69,6 +69,8 @@ class AbstractGrid(AbstractSet):
         else:
             return SamplePointWithIntepolation(self, position)
         
+    def samplePoints(self, positions):
+        return SamplePoints(self, positions, SamplePointWithIntepolation)
         
 class Grid(AbstractGrid):
     def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):
@@ -232,14 +234,15 @@ class GridInformationChannel(object):
     
 class SamplePointWithIntepolation(object):
     """
-    Vxyz =	 V000 (1 - x) (1 - y) (1 - z) +
-V100 x (1 - y) (1 - z) + 
-V010 (1 - x) y (1 - z) + 
-V001 (1 - x) (1 - y) z +
-V101 x (1 - y) z + 
-V011 (1 - x) y z + 
-V110 x y (1 - z) + 
-V111 x y z
+    Vxyz =
+    V000 (1 - x) (1 - y) (1 - z) +
+    V100 x (1 - y) (1 - z) + 
+    V010 (1 - x) y (1 - z) + 
+    V001 (1 - x) (1 - y) z +
+    V101 x (1 - y) z + 
+    V011 (1 - x) y z + 
+    V110 x y (1 - z) + 
+    V111 x y z
     """
     
     def __init__(self, grid, point):
@@ -303,6 +306,13 @@ V111 x y z
     @late
     def surrounding_cells(self):
         return [self.grid[tuple(x)] for x in self.surrounding_cell_indices]
+    
+    @late
+    def isvalid(self):
+        return numpy.logical_and(
+            numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()),
+            numpy.all(self.index_for_000_cell <= self.grid.get_maximum_index())
+        )
         
     def get_values_of_attribute(self, name_of_the_attribute):
         result = values.AdaptingVectorQuantity()
@@ -316,4 +326,30 @@ V111 x y z
         return (values * self.weighing_factors).sum()
         
         
+
+class SamplePoints(object):
+    
+    def __init__(self, grid, points, samplesFactory = SamplePointWithIntepolation):
+        self.grid = grid
+        self.samples = [samplesFactory(grid, x) for x in points]
+        self.samples = [x for x in self.samples if x.isvalid ]
+        
+    @late
+    def indices(self):
+        for x in self.sample:
+            yield sample.index
+            
+    @late
+    def points(self):
+        for x in self.sample:
+            yield sample.point
+        
+    def __getattr__(self, name_of_the_attribute):
+        result = values.AdaptingVectorQuantity()
+        for x in self.samples:
+            result.append(getattr(x, name_of_the_attribute))
+        return result
+        
+        
+
         
