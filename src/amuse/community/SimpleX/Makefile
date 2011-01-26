@@ -1,4 +1,5 @@
 MPICXX ?= mpicxx
+export MPICXX
 
 AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
@@ -8,18 +9,16 @@ OBJDIR = $(SRCDIR)/obj
 APP		 = $(SRCDIR)/bin/SimpleX
 PLUGINS = $(SRCDIR)/plugins
 
-HDF5_INCL = -DH5_USE_16_API
-HDF5_LIB =  -lhdf5 -lz 
-
 OBJS = $(OBJDIR)/amuse_interface.o $(OBJDIR)/SimpleX.o \
        $(OBJDIR)/Structs.o $(OBJDIR)/Common.o $(OBJDIR)/h5w_serial.o \
        $(OBJDIR)/keyValue.o $(OBJDIR)/tree_structures.o $(OBJDIR)/hilbert.o 
 GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 
-HEALPIX_PATH = $(PLUGINS)/HEALPix/Healpix_2.11/src/cxx/generic_gcc/
+HEALPIX_PATH = $(PLUGINS)/HEALPix/
+QHULL_PATH = $(PLUGINS)/QHull/
 
-LIBS =  ${HDF5_LIB} \
-        -L${PLUGINS}/QHull/src -lqhull \
+LIBS =  -lhdf5 -lz \
+        -L${QHULL_PATH} -lqhull \
         -L${HEALPIX_PATH}/lib  -lhealpix_cxx \
         -lgslcblas -lgsl 
 
