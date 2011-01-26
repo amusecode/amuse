@@ -19,7 +19,7 @@ all: compile worker_code
 clean:
 	$(RM) -f *.o *.pyc worker_code.f90  
 	$(RM) *~ worker_code worker_code.f90 interface.f90
-	$(RM) $(MMC_DATA_DIR)/ *.dat
+	$(RM) $(MMC_DATA_DIR)/*.dat
 	make -C src clean
 
 compile:
