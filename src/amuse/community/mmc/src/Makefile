@@ -84,7 +84,7 @@ standalone: standalone.o interface_bse.o jarrod.o
 	$(FC) -c $(FFLAGS) $(SOURCE_AMUSE) $<
 
 clean:
-	rm *.o *.a
+	rm -f *.o *.a
 
 tar:checke.f coefpot.f collabr.f  core.f data.f \
 	denbin.f density.f energy.f escape.f formb3.f input.f intb3b3.f \
