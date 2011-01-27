@@ -4,7 +4,6 @@ from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support.core import CompositeDictionary
 from amuse.support import exceptions
-from amuse.support.data.base import *
 
 import numpy
 import random

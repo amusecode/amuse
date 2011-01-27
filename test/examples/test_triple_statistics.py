@@ -23,19 +23,23 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
+from mpi4py import MPI
+
 class SimulateTripleSystemUntilDecay(object):
     gravitational_constant = nbody_system.G
     distance_relative_to_inner_binary_axis = 50
     
     t0 = 0 | nbody_system.time
-    tmax = 1000 | nbody_system.time
-    dt = 1 | nbody_system.time
+    tmax = 7000 | nbody_system.time
+    dt = 10 | nbody_system.time
         
-    def __init__(self, gravity_code, particles):
+    def __init__(self, gravity_code, particles, rank = 0, index = 0):
         self.particles = particles
         self.gravity_code = gravity_code
         self.gravity_code.particles.add_particles(self.particles)
         self.from_code_to_model_channel = self.gravity_code.particles.new_channel_to(self.particles)
+        self.rank = rank
+        self.index = index
         
     def is_hyperbolic(self, inner_binary, outer_particle):
         mass_inner = inner_binary.mass.sum()
@@ -92,9 +96,8 @@ class SimulateTripleSystemUntilDecay(object):
             self.from_code_to_model_channel.copy()
             has_escaper = self.has_triple_an_escaper(self.particles)
             self.store_point_positions()
-            
-        if self.time >= self.tmax:
-            self.make_plot()
+        
+        self.make_plot()
         
         return self.time
     
@@ -117,16 +120,18 @@ class SimulateTripleSystemUntilDecay(object):
                 self.y_positions[index].value_in(nbody_system.length)
             )
             
-        figure.savefig("triple.png")
+        figure.savefig("triple_{0:03}_{1:03}.png".format(self.rank, self.index))
             
     def stop(self):
         self.gravity_code.stop()
 
 def new_initial_system():
     n = 10.0
-    xi = 0.01
+    xi = 0.001
     result = Particles(3)
-    result.mass = numpy.random.rand(3) * (10.0 | nbody_system.mass)
+    mass =  numpy.random.rand(3)
+    mass = mass / mass.sum()
+    result.mass = mass * (1.0 | nbody_system.mass)
     a = (numpy.random.rand() * n) + (n+xi)
     b = numpy.random.rand() * 2*n
     c = (numpy.random.rand() * 2*n) + xi
@@ -137,65 +142,61 @@ def new_initial_system():
     result.velocity = [0,0,0] | nbody_system.speed
     return result
 
-def calculate_escape_time(index, number_of_systems, queue):
+def calculate_escape_time(index, number_of_systems):
     numpy.random.seed()
     
     #from amuse.community.smallN.muse_dynamics_mpi import SmallN
     print "start of subprocess", index
+    x0 = AdaptingVectorQuantity()
+    y0 = AdaptingVectorQuantity()
+    x1 = AdaptingVectorQuantity()
+    y1 = AdaptingVectorQuantity()
+    x2 = AdaptingVectorQuantity()
+    y2 = AdaptingVectorQuantity()
+    m0 = AdaptingVectorQuantity()
+    m1 = AdaptingVectorQuantity()
+    m2 = AdaptingVectorQuantity()
+    tends = AdaptingVectorQuantity()
+    
     try:
         for x in range(number_of_systems):
             gravity = Hermite()
-            print "code instantiated for", index
-            code = SimulateTripleSystemUntilDecay(gravity, new_initial_system())
+            particles = new_initial_system()
+            code = SimulateTripleSystemUntilDecay(gravity, particles, index, x)
             tend = code.evolve_model_until_escape()
+            print index, x, tend
             code.stop()
-            queue.put(tend)
+            x0.append(particles[0].x)
+            y0.append(particles[0].y)
+            x1.append(particles[1].x)
+            y1.append(particles[1].y)
+            x2.append(particles[2].x)
+            y2.append(particles[2].y)
+            m0.append(particles[0].mass)
+            m1.append(particles[1].mass)
+            m2.append(particles[2].mass)
+            tends.append(tend)
     except KeyboardInterrupt:
         pass
     
     print "end of subprocess", index
     
+    return x0,y0,x1,y1,x2,y2,m0,m1,m2,tends
+    
 if __name__ == '__main__':
         
     result = AdaptingVectorQuantity()
     
-    total_number_of_systems = 6
-    number_of_processes = 2
-    number_of_systems_per_process = total_number_of_systems/number_of_processes
-    queue = Queue()
+    rank = MPI.COMM_WORLD.Get_rank()
     
-    processes = []
-    for x in range(number_of_processes):
-        process = Process(
-            target=calculate_escape_time, 
-            args=(x, number_of_systems_per_process,queue)
-        )
-        process.start()
-        processes.append(process)
-        time.sleep(0.2)
+    total_number_of_systems = int(sys.argv[1])
+    data = calculate_escape_time(rank, total_number_of_systems)
    
     
-    try:
-        c = 0
-        while c < total_number_of_systems:
-            tend = queue.get()
-            print c, tend
-            result.append(tend)
-            c += 1
-    except KeyboardInterrupt:
-        print "calculation interrupted"
     
-    for process in processes:
-        if process.exitcode is None:
-            process.terminate()
-        process.join()
-    
-    if len(result) == 0:
-        sys.exit(1)
-        
-    output = text.CsvFileText(filename = "triple_statistics_1.csv")
-    output.quantities = (result,)
-    output.attribute_names = ("tend",)
+    output = text.CsvFileText(filename = "triple_data_{0:03}.csv".format(rank))
+    output.quantities = data
+    output.attribute_names = ("x0","y0","x1","y1","x2","y2","m0","m1","m2","tend")
     output.store()
     
     times = AdaptingVectorQuantity()
@@ -203,7 +204,7 @@ if __name__ == '__main__':
     
     
     print "doing statistics"
-    sorted_times = result.sorted()
+    sorted_times = data[-1].sorted()
     t = 0 | nbody_system.time
     tend = 1000 | nbody_system.time
     dt = 1 | nbody_system.time
@@ -221,10 +222,12 @@ if __name__ == '__main__':
         counts.append((len(sorted_times) - i) | units.none)
         t += dt
         
-    output = text.CsvFileText(filename = "triple_statistics_2.csv")
+    output = text.CsvFileText(filename = "triple_statistics_{0:03}.csv".format(rank))
     output.quantities = (times,counts)
     output.attribute_names = ("t","n(t)")
     output.store()
+    
+    print "done"
 """
 
 set logscale xy

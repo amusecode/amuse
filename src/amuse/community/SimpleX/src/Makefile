@@ -44,6 +44,9 @@ OBJS += ${OBJ}SimpleX.o  ${OBJ}Structs.o ${OBJ}Common.o \
 
 all: HEALPix QHull SimpleX
 
+obj:
+	mkdir obj
+	
 HEALPix:
 	@cd $(HEALPIX_PATH)/src ; \
 	make all
