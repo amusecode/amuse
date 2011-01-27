@@ -13,9 +13,8 @@ SRC=./src/
 OBJ=./obj/
 LIB=./lib/
 BIN=./bin/
-CXXWARNFLAGS= -W -Wall -Wshadow -Wwrite-strings -Wredundant-decls -Woverloaded-virtual -Wcast-qual -Wcast-align -Wpointer-arith -Wconversion -Wold-style-cast -Wno-unknown-pragmas
-CXXCFLAGS= $(CXXWARNFLAGS) -ansi -I$(INCDIR) -O2 -g0 -ffast-math -fomit-frame-pointer -c
-#CXXCFLAGS = -O -g -Wall -W -Wno-deprecated
+
+CXXCFLAGS = -Wall -fopenmp -ansi -O2 -g0 -ffast-math -fomit-frame-pointer -c
 export CXXCFLAGS
 
 MACRODEFS = -DH5_USE_16_API
