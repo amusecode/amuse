@@ -45,7 +45,7 @@ class TableFormattedText(base.FileFormatProcessor):
         self.set = set
     
     def forward(self):
-        line = selfdata_file.readline()
+        line = self.data_file.readline()
         return line.rstrip('\r\n')
         
     def split_into_columns(self, line):

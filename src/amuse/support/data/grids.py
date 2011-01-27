@@ -11,6 +11,8 @@ from amuse.support.data.memory_storage import *
 from amuse.support.data import indexing
 from amuse.support.data import values
 
+import numpy
+
 class AbstractGrid(AbstractSet):
     
     GLOBAL_DERIVED_ATTRIBUTES = {}
@@ -337,12 +339,12 @@ class SamplePoints(object):
     @late
     def indices(self):
         for x in self.sample:
-            yield sample.index
+            yield x.index
             
     @late
     def points(self):
         for x in self.sample:
-            yield sample.point
+            yield x.point
         
     def __getattr__(self, name_of_the_attribute):
         result = values.AdaptingVectorQuantity()

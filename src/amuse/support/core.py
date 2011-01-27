@@ -433,9 +433,9 @@ class OrderedSet(collections.MutableSet):
             self.next.previous = self.previous
             
     def __init__(self, iterable=None):
-        self.end = Node(None, None, None)
-        self.end.prev = end
-        self.end.next = end
+        self.end = self.Node(None, None, None)
+        self.end.prev = self.end
+        self.end.next = self.end
         self.map = {}
         if iterable is not None:
             self |= iterable
@@ -448,7 +448,7 @@ class OrderedSet(collections.MutableSet):
 
     def add(self, key):
         if key not in self.map:
-            self.map[key] = self.Node(key, end.previous, end.next)
+            self.map[key] = self.Node(key, self.end.previous, self.end.next)
 
     def discard(self, key):
         if key in self.map:        

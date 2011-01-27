@@ -305,7 +305,8 @@ class legacy_global(object):
         return CodeFunction(instance, None, self.set_specification)(value)
 
     def to_c_string(self):
-        uc = MakeACStringOfALegacyGlobalSpecification()
+        from . import create_c
+        uc = create_c.MakeACStringOfALegacyGlobalSpecification()
         uc.specification = self
         return uc.result 
         

@@ -206,11 +206,11 @@ class CreateADirectoryAndPopulateItWithFiles(object):
         
     @late
     def path_of_the_code_examplefile(self):
-        raise NotImplementedException()
+        raise NotImplementedError()
         
     @late
     def path_of_the_interface_examplefile(self):
-        raise NotImplementedException()
+        raise NotImplementedError()
         
     @late
     def path_of_amuse(self):

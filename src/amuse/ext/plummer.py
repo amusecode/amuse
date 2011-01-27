@@ -5,7 +5,7 @@ experiment with HDF data format
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 
-from math import *
+from math import pi, sqrt
 import numpy, numpy.random
 import random
 

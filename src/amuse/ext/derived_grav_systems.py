@@ -1,3 +1,5 @@
+from amuse.support.units import constants
+
 class center_of_mass(object):
     """
     com=center_of_mass(grav_instance)

@@ -344,7 +344,8 @@ class MakeKingModel(object):
             il = 0
             iu = int(((self.NG/self.YMAX) * math.sqrt(-potential))) #	// Binning OK for W0 < 16,
             #   				        		// *only* if beta >= 0.
-            if (iu > self.NG): iu = NG
+            if (iu > self.NG): 
+                iu = self.NG
             rl = 0
             ru = pfac * self.g_integral[iu] - self.v33[iu]
             rno = numpy.random.uniform(0.0, ru)

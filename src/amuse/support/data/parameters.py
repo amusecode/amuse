@@ -190,10 +190,10 @@ class AbstractParameterDefinition(object):
         self.description = description
 
     def get_value(self, parameter, object):
-        raise AmuseException("not implemented")
+        raise exceptions.AmuseException("not implemented")
 
     def set_value(self, parameter, object, quantity):
-        raise AmuseException("not implemented")
+        raise exceptions.AmuseException("not implemented")
 
     def set_default_value(self, parameter, object):
         pass

@@ -19,7 +19,7 @@ class MyFancyUrlopener(urllib.FancyURLopener):
                 fp = self.open_local_file(url1)
                 hdrs = fp.info()
                 del fp
-                return url2pathname(splithost(url1)[1]), hdrs
+                return urllib.url2pathname(urllib.splithost(url1)[1]), hdrs
             except IOError, msg:
                 pass
         fp = self.open(url, data)
@@ -30,10 +30,10 @@ class MyFancyUrlopener(urllib.FancyURLopener):
                 tfp = open(filename, 'wb')
             else:
                 import tempfile
-                garbage, path = splittype(url)
-                garbage, path = splithost(path or "")
-                path, garbage = splitquery(path or "")
-                path, garbage = splitattr(path or "")
+                garbage, path = urllib.splittype(url)
+                garbage, path = urllib.splithost(path or "")
+                path, garbage = urllib.splitquery(path or "")
+                path, garbage = urllib.splitattr(path or "")
                 suffix = os.path.splitext(path)[1]
                 (fd, filename) = tempfile.mkstemp(suffix)
                 self.__tempfiles.append(filename)
@@ -68,7 +68,7 @@ class MyFancyUrlopener(urllib.FancyURLopener):
 
         # raise exception if actual size does not match content-length header
         if size >= 0 and read < size:
-            raise ContentTooShortError("retrieval incomplete: got only %i out "
+            raise urllib.ContentTooShortError("retrieval incomplete: got only %i out "
                                        "of %i bytes" % (read, size), result)
 
         return result

@@ -8,7 +8,7 @@ from amuse.support import exceptions
 from amuse.support.data.base import *
 from amuse.support.data.memory_storage import *
 
-
+import numpy
 
 
 class AbstractParticleSet(AbstractSet):
@@ -1517,7 +1517,7 @@ class Particle(object):
         return self.particles_set.get_timeline_of_attribute(self.key, attribute)
         
     def get_timeline_of_attributes(self, attributes):
-        return self.particles_set.get_timeline_of_attributes(self.key, attribute)
+        return self.particles_set.get_timeline_of_attributes(self.key, attributes)
         
     def as_set(self):
         """

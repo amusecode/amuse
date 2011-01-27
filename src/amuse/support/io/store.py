@@ -7,6 +7,8 @@ from amuse.support.data.core import Particles, AttributeStorage
 from amuse.support.units import si, units, core
 from amuse.support.io import base
 
+from amuse.support import exceptions
+
 
 class HDF5AttributeStorage(AttributeStorage):
 

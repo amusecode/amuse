@@ -1,4 +1,5 @@
-from math import *
+from math import sqrt
+
 import numpy
 
 from amuse.support.data import core

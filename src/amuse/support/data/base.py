@@ -531,14 +531,7 @@ class AbstractSet(object):
         return result
         
     def copy_to_memory(self):
-        attributes = self._get_attribute_names()
-        keys = self._get_keys()
-        values = self._get_values(keys, attributes)
-        result = Particles()
-        result._add_particles(keys, attributes, values)
-        object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
-       
-        return result
+        raise NotImplementedError()
     
     def copy_values_of_attribute_to(self, attribute_name, particles):
         """
@@ -568,39 +561,7 @@ class AbstractSet(object):
     def new_channel_to(self, other):
         raise NotImplementedError()
         
-    def __add__(self, particles):
-        """
-        Returns a particle subset, composed of the given
-        particle(s) and this particle set. Attribute values are
-        not stored by the subset. The subset provides a view
-        on two or more sets of particles.
-        
-        :parameter particles: (set of) particle(s) to be added to self.
-        
-        >>> from amuse.support.data.core import Particles
-        >>> particles = Particles(4)
-        >>> particles1 = particles[:2]
-        >>> particles1.x = [1.0, 2.0] | units.m
-        >>> particles2 = particles[2:]
-        >>> particles2.x = [3.0, 4.0] | units.m
-        >>> new_set = particles1 + particles2
-        >>> new_set  # doctest:+ELLIPSIS
-        <amuse.support.data.particles.ParticlesSubset object at 0x...>
-        >>> print len(new_set)
-        4
-        >>> print new_set.x
-        [1.0, 2.0, 3.0, 4.0] m
-        """
-        particles = particles.as_set()
-        original_particles_set = self._original_set()
-        if set(original_particles_set.key)!=set(particles._original_set().key):
-            raise Exception("Can't create new subset from particles belonging to "
-                "separate particle sets. Try creating a superset instead.")
-        keys = list(self.key) + list(particles.key)
-        new_set = ParticlesSubset(original_particles_set, keys)
-        if new_set.has_duplicates():
-            raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
-        return new_set
+    
     
     def __sub__(self, particles):
         """
@@ -636,35 +597,7 @@ class AbstractSet(object):
         return self._subset(new_keys)
     
     def add_particles(self, particles):
-        """
-        Adds particles from the supplied set to this set. Attributes
-        and values are copied over. 
-        
-        .. note::
-            For performance reasons the particles
-            are not checked for duplicates. When the same particle 
-            is part of both sets errors may occur.
-        
-        :parameter particles: set of particles to copy values from
-        
-        >>> from amuse.support.data.core import Particles
-        >>> particles1 = Particles(2)
-        >>> particles1.x = [1.0, 2.0] | units.m
-        >>> particles2 = Particles(2)
-        >>> particles2.x = [3.0, 4.0] | units.m
-        >>> particles1.add_particles(particles2)  # doctest:+ELLIPSIS
-        <amuse.support.data.particles.ParticlesSubset object at 0x...>
-        >>> print len(particles1)
-        4
-        >>> print particles1.x
-        [1.0, 2.0, 3.0, 4.0] m
-        """
-        attributes = particles._get_attribute_names()
-        keys = particles._get_keys()
-        values = particles._get_values(keys, attributes)
-        values = map(self._convert_from_entities_or_quantities, values)
-        self._add_particles(keys, attributes, values)
-        return ParticlesSubset(self._original_set(), keys)
+        raise NotImplementedError()
     
     
     def add_particle(self, particle):
@@ -914,7 +847,7 @@ class AbstractSet(object):
         return other._subset(selected_keys)
         
     def _subset(self, keys):
-        return ParticlesSubset(self._original_set(), keys)
+        raise NotImplementedError()
         
         
     def __dir__(self):
@@ -997,16 +930,7 @@ class AbstractSet(object):
         >>> print new_set.x
         [1.0, 2.0, 3.0, 4.0] m
         """
-        particles = particles.as_set()
-        original_particles_set = self._original_set()
-        if set(original_particles_set.key)!=set(particles._original_set().key):
-            raise Exception("Can't create new subset from particles belonging to "
-                "separate particle sets. Try creating a superset instead.")
-        keys = list(self.key) + list(particles.key)
-        new_set = ParticlesSubset(original_particles_set, keys)
-        if new_set.has_duplicates():
-            raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
-        return new_set
+        raise NotImplementedError()
     
     
 

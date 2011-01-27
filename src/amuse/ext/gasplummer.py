@@ -1,4 +1,3 @@
-from math import *
 import numpy
 
 from amuse.support.data import core

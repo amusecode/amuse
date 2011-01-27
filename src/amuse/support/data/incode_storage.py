@@ -350,7 +350,7 @@ class ParticleSpecificSelectMethod(object):
             lists_of_keys.append(keys)
         
         result = []
-        for keys in zip(list_of_keys):
+        for keys in zip(lists_of_keys):
             result.append(particles._subset(keys))
             
         return result
@@ -364,7 +364,7 @@ class ParticleSpecificSelectMethod(object):
         keys = set._private.attribute_storage._get_keys_for_indices_in_the_code(result)  
         
         result = []
-        return particles._subset(keys)
+        return particle.as_set()._subset(keys)
         
         
 class ParticleMethod(AbstractCodeMethodWrapper):
@@ -429,7 +429,7 @@ class ParticleSetSelectSubsetMethod(object):
         
         if query_identifiers is None:
             query_identifiers = ()
-        elif not hasattr(results, '__iter__'):
+        elif not hasattr(query_identifiers, '__iter__'):
             query_identifiers = (query_identifiers,)
             
         if not self.get_number_of_particles_in_set_method is None:
@@ -759,6 +759,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         return shape[0] * shape[1] * shape[2]
         
     def copy(self):
+        from .memory_storage import InMemoryGridAttributeStorage
         copy = InMemoryGridAttributeStorage()
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
