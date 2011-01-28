@@ -22,7 +22,7 @@ experiments.  The toolbox provides:
 * A standard way of input and output of astrophysical data.
 * Support for set-up and management of numerical experiments.
 * A unique method to couple a wide variety of physical codes
-* A legacy set of standard, proven codes. These codes will be integrated 
+* A set of standard, proven codes. These codes will be integrated 
   into AMUSE as modules. Each module can be used stand-alone or in
   combination with other modules
 * A standard way for adding new modules to AMUSE.

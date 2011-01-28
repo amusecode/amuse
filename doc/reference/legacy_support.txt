@@ -1,6 +1,6 @@
-============================================
-Support code for the legacy code interfaces
-============================================
+===============================================
+Support code for the community code interfaces
+===============================================
 
 .. automodule:: amuse.support.codes.core
     :members:

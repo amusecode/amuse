@@ -2,7 +2,7 @@
 Introduction
 ============
 
-In this document we will specify the low-level interfaces of the legacy codes. 
+In this document we will specify the low-level interfaces of the comminity codes. 
 These interfaces should follow a pattern. This pattern is described bellow. This
 pattern can be used to keep the interfaces of the codes consistent
 between codes of different physical domains and to help in learning about
@@ -17,7 +17,7 @@ is handled by the next-level interfaces described in nextlevel_.
 Data Types
 ----------
 The exact size (in bytes) and type of the values sent between the python 
-layer and the legacy codes is very important. In this document we will 
+layer and the community codes is very important. In this document we will 
 specify the type of each argument and return value. 
 Currently AMUSE supports 4 types, these are described in the following table. 
 
@@ -38,7 +38,7 @@ Each function returns an error or status code. Results are returned through
 the function arguments. In C these arguments need to be pointers
 to valid memory locations.
 
-.. autoclass:: amuse.legacy.interface.example.ExampleInterface
+.. autoclass:: amuse.community.interface.example.ExampleInterface
    :members: example_function
         
 The error codes all have the same general form. Zero stands for no error, a negative
@@ -63,23 +63,23 @@ Codes can have a number of parameters. Some parameters are domain specific, thes
 parameters are found for all codes in a specific domain (for example the smoothing
 length in gravitational dynamics). Other parameters are only defined and used by
 a specific code. The domain specific parameters are defined on the domain specific
-interfaces, when a legacy code supports the parameter it should implement the
+interfaces, when a code supports the parameter it should implement the
 specified functions. Other parameters have to be accessed with functions following
-the template of the :meth:`~ amuse.legacy.interface.example.ExampleInterface.get_example_parameter` 
-and :meth:`~amuse.legacy.interface.example.ExampleInterface.set_example_parameter` functions. 
+the template of the :meth:`~ amuse.community.interface.example.ExampleInterface.get_example_parameter` 
+and :meth:`~amuse.community.interface.example.ExampleInterface.set_example_parameter` functions. 
 
-.. autoclass:: amuse.legacy.interface.example.ExampleInterface
+.. autoclass:: amuse.community.interface.example.ExampleInterface
    :members: get_example_parameter, set_example_parameter
    
 
 A function used to access (set or get) a parameter may only retrieve
 or update the value of a single parameter. Functions setting two or more
 parameters in one go are not supported by the next-level interfaces. After all 
-parameters have been set, the  :meth:`~amuse.legacy.interface.example.ExampleInterface.initialize_code`
+parameters have been set, the  :meth:`~amuse.community.interface.example.ExampleInterface.initialize_code`
 function should be called, this gives the code the opportunity prepare the model.
 
 
-.. autoclass:: amuse.legacy.interface.example.ExampleInterface
+.. autoclass:: amuse.community.interface.example.ExampleInterface
    :members: initialize_code
 
    
@@ -93,7 +93,7 @@ When a code supports objects, the code is responsible for managing these objects
 The code needs to assign a unique index to a particle so that the particle can be 
 referred to in other function calls. This is a *major* difference with the 
 ``MUSE`` code. Where the user of the code was responsible for assigning unique ids
-to the particles. This change makes the implementation of the legacy simpler and
+to the particles. This change makes the implementation of the code simpler and
 allows the code to support creation of new objects during simulation. For example
 a hydrocode can add or delete gridpoints during the evolution of the model.
 

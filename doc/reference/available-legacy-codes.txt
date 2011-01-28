@@ -1,16 +1,16 @@
 .. _supported-codes-label:
 
-=================================
-Currently supported Legacy Codes
-=================================
+===================================
+Currently supported Community Codes
+===================================
 
 Introduction
 ~~~~~~~~~~~~
 
-Here we provide an overview of all currently supported legacy codes in AMUSE,
+Here we provide an overview of all currently supported community codes in AMUSE,
 along with a concise explanation of how each code works.
 This document serves as an initial guide in finding the code with the highest
-applicability to a specific astrophysical problem. The supported legacy codes
+applicability to a specific astrophysical problem. The supported codes
 have been sorted according to their astrophysical domain:
 
 * :ref:`Dynamics`
@@ -75,8 +75,8 @@ Note: holds for AMUSE implementation.
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
 
-(1) Parallel in the following sense: AMUSE uses MPI to communicate with legacy codes, but
-    for some codes it can be used to parallelize the calculations. Some legacy codes (GPU) 
+(1) Parallel in the following sense: AMUSE uses MPI to communicate with the codes, but
+    for some codes it can be used to parallelize the calculations. Some codes (GPU) 
     are already parallel, however in this table we *do not* refer to that.
   
     Codes designated *Y* for parallel can set the number of (parallel) workers, e.g. to set
@@ -165,7 +165,7 @@ example
 
 .. code-block:: python
 
-     >>> from amuse.legacy.bhtree.interface import BHTreeInterface, BHTree
+     >>> from amuse.community.bhtree.interface import BHTreeInterface, BHTree
      >>> from amuse.support.units import nbody_system
      >>> instance = BHTree(BHTree.NBODY)
      >>> instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
@@ -227,7 +227,7 @@ Parameters
 |                                    |               |               |output             |
 +------------------------------------+---------------+---------------+-------------------+
 
-.. automodule:: amuse.legacy.hermite0.interface
+.. automodule:: amuse.community.hermite0.interface
 
     .. autoclass:: Hermite
 
@@ -283,7 +283,7 @@ module the preferred mode can be selected whith the mode parameter:
 
 .. code-block:: python
 
-   >>> from amuse.legacy.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
+   >>> from amuse.community.phiGRAPE.interface import PhiGRAPEInterface, PhiGRAPE
    >>> instance = PhiGRAPE(PhiGRAPE.NBODY, PhiGRAPEInterface.MODE_GPU)
 
 The default is **MODE_G6LIB**.
@@ -548,7 +548,21 @@ Relevant papers:
 mesa
 ----
 
-The software project MESA (Modules for Experiments in Stellar Astrophysics, `<http://mesa.sourceforge.net/>`_), aims to provide state-of-the-art, robust, and efficient open source modules, usable singly or in combination for a wide range of applications in stellar astrophysics. Since the package is rather big (about 800 MB download, >2 GB built), this legacy code is optional and does not install automatically. Set the environment variable DO_INSTALL_MESA and run `make` to download and install it. The AMUSE interface to MESA can create and evolve stars using the MESA/STAR module. If you order a metallicity you haven't used before, starting models will be computed automatically and saved in the `mesa/src/data/star_data/starting_models` directory (please be patient...). All metallicities are supported, even the interesting case of Z=0. The supported stellar mass range is from about 0.1 to 100 Msun.
+The software project MESA (Modules for Experiments in Stellar 
+Astrophysics, `<http://mesa.sourceforge.net/>`_), aims to provide 
+state-of-the-art, robust, and efficient open source modules, usable 
+singly or in combination for a wide range of applications in stellar 
+astrophysics. Since the package is rather big (about 800 MB 
+download, >2 GB built), this community code is optional and does not 
+install automatically. Set the environment variable DO_INSTALL_MESA 
+and run `make` to download and install it. The AMUSE interface to 
+MESA can create and evolve stars using the MESA/STAR module. If you 
+order a metallicity you haven't used before, starting models will be 
+computed automatically and saved in the 
+`mesa/src/data/star_data/starting_models` directory (please be 
+patient...). All metallicities are supported, even the interesting 
+case of Z=0. The supported stellar mass range is from about 0.1 to 
+100 Msun.
 
 References:
 
@@ -666,4 +680,4 @@ The relevant references are:
 Radiative Transfer
 ~~~~~~~~~~~~~~~~~~
 
-Alas, no radiative transfer legacy codes yet!
+Work in progress

@@ -29,7 +29,7 @@ parameters). For functions that handle 1-D vectors each vector must be of the sa
 
 An exampe of using the first level with scalars and vectors::
 
-    from amuse.legacy.codes.athena.interface import AthenaInterface
+    from amuse.community.codes.athena.interface import AthenaInterface
     
     # create an instance of the code (will start an application 
     # in the background to handle all requests)

@@ -31,7 +31,7 @@ loop.
             style=filled;
             color=azure2;
             labeljust="l";
-            label="Legacy Code";
+            label="Community Code";
             "outer loop";
             "inner loop";
       }
@@ -107,12 +107,12 @@ conditions. This framework uses simple tables in the
 codes and translates these tables to objects in the python
 scripts. In the next section the use of this framework
 is described. In the final section the implementation of
-the framework in a legacy code is described.
+the framework in a community code is described.
 
 Using stopping conditions
 -------------------------
 
-All interaction with the *stopping conditions* of a *legacy code*
+All interaction with the *stopping conditions* of a *code*
 is via the :attr:`stopping_conditions` attribute of a :class:`CodeInterface`
 class. When the :attr:`stopping_conditions` attribute is
 queried it returns a :class:`StoppingConditions` object. All
@@ -139,7 +139,7 @@ number_of_steps_detection
 .. note ::
 
     :class:`CodeInterface` objects provide a object oriented
-    interface to the legacy codes.
+    interface to each code.
 
 
 All :class:`StoppingConditions` objects provide a string
@@ -291,7 +291,7 @@ and can be found in the ```lib/stopcond``` directory.
 
 The library implements *all* functions of the :class:`StoppingConditionInterface`
 interface and provides a number functions for the
-legacy code implementer to actually set and support
+code implementer to actually set and support
 stopping conditions. The library does not implement any
 stopping condition detection routines. These have to
 be implemented on a per code basis. The functionality
@@ -498,7 +498,7 @@ the following steps.
     Makefile.
 
     To use the ```stopcond``` library, the compile and link steps
-    of the legacy code must be changed. The following compiler flags
+    of the community code must be changed. The following compiler flags
     need to be added::
 
         -I$(AMUSE_DIR)/lib/stopcond
@@ -517,7 +517,7 @@ the following steps.
 
         #include <stopcond.h>
 
-    The legacy code should take care of the setting
+    The code should take care of the setting
     of the :c:data:`supported_conditions` bitmap
     in its initialization, e.g.:
 
@@ -607,5 +607,5 @@ the following steps.
 
 
 A good example of a code implementing the stopping conditions
-is the "hermite0" legacy code. The code can be found
-in the 'src/amuse/legacy/hermite0' directory.
+is the "hermite0" community code. The code can be found
+in the 'src/amuse/community/hermite0' directory.

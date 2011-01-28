@@ -1,28 +1,28 @@
-================================================
-Message protocol between python and legacy codes
-================================================
+===================================================
+Message protocol between python and community codes
+===================================================
 
 Introduction
 ------------
 
-The implementation of the interfaces of the legacy codes is based
+The implementation of the interfaces of the community codes is based
 on sending messages. These messages are encoded as MPI primitive datatypes
-and send to the legacy codes using MPI. In this section we will describe the
+and send to each code using MPI. In this section we will describe the
 overall operation of the interface implementation and specify the message
 format.
 
 Overall Operation
 -----------------
 The method call interface is a request/response protocol. For every method
-call a message is send to the legacy code. This message is decoded 
-by the legacy code into a function-id and arguments. The legacy code will call 
+call a message is send to the code. This message is decoded 
+by the code into a function-id and arguments. The code will call 
 the function with the function-id using the decoded arguments. After the
 function completes a result message is returned containing all the
 results and the function-id of the called function. This process is depicted
 in the following table.
 
 ============================= === =============
-Python script                 ..  Legacy Code
+Python script                 ..  Code
 (client)                      ..  (server)
 ============================= === =============
 start of function call
@@ -42,7 +42,7 @@ end of function call
 
 Message format
 --------------
-Every message sent between the python script and a legacy code has the
+Every message sent between the python script and a code has the
 same format. This format consists of a header and zero or more
 content arrays. The header contains the function-id, 
 the number of calls to the same function and 

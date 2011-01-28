@@ -9,7 +9,7 @@ Introduction
 
 Here we provide help for setting up general-purpose computing on graphics processing units (GPGPU)
 using CUDA. Performing (part of) the calculations on a graphics card can result 
-in a significant speed-up. Currently two legacy codes in AMUSE support or require GPGPU: 
+in a significant speed-up. Currently two codes in AMUSE support or require GPGPU: 
 phi-GRAPE (using Sapporo) and Octgrav.
 
 
@@ -17,7 +17,7 @@ Self-help script
 ~~~~~~~~~~~~~~~~
 
 In the AMUSE root directory a self-help script can be found. If building or testing any of the 
-legacy codes mentioned above fails and you wonder why, it will hopefully provide you with helpful suggestions.
+codes mentioned above fails and you wonder why, it will hopefully provide you with helpful suggestions.
 From a command line run the bash script `cuda_self_help`:
 
 .. code-block:: sh

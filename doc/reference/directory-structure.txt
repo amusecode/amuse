@@ -11,7 +11,7 @@ The amuse source-code is separated into 3 directories:
 Under the ``src`` directories all code needed to run AMUSE can be found.
 One can view this code as an *library* that can be used to create
 *applications* to do numerical astrophysical experiments. This code will
-contain the building blocks needed to interface with legacy codes,
+contain the building blocks needed to interface with codes,
 import and export data, do unit conversions, and all other AMUSE
 functionality.
 
@@ -31,12 +31,12 @@ The ``src`` directories
 The directories under the ``src`` directory are further split into:
 
 
-* ``legacy`` - contains the source code of existing astrophysical
+* ``community`` - contains the source code of existing astrophysical
   applications and *glue* code to the AMUSE interface classes. in other
   words this directory contains the implementation of the interfaces.
 * ``support`` - contains the AMUSE generic code, defines the data
   representation and input/output routines and also provides the generic
-  unit handling code. Code in the ``interface`` and ``legacy`` directories
+  unit handling code. Code in the ``interface`` and ``community`` directories
   use these functions and classes to provide their functionality.
 
 
