@@ -405,6 +405,48 @@ For 9.10 the FFTW package name is fftw3 and not libfftw3, FFTW can be installed 
 
  
 
+Installing on Ubuntu 10.10
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this section we asume a default Ubuntu desktop installation.
+
+All
+---
+The prerequisites can be installed with a couple of commands
+on Ubuntu. The only choice to make is between openmpi and mpich2. Most
+of our testing is done with MPICH2 but openmpi should also work.
+
+For openmpi do::
+
+	> sudo apt-get install build-essential gfortran python-dev \
+	  libopenmpi-dev openmpi-bin \
+	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+	  python-nose python-numpy python-setuptools python-docutils \
+	  python-h5py python-setuptools
+	
+	> sudo easy_install mpi4py
+
+For mpich2 do::
+	
+	> sudo apt-get install build-essential gfortran python-dev \
+	  mpich2 libmpich2-dev \
+	  libgsl0-dev cmake libfftw3-3 libfftw3-dev \
+	  python-nose python-numpy python-setuptools python-docutils \
+	  python-h5py python-setuptools
+	
+	> sudo easy_install mpi4py
+
+..note::
+	
+	Please make sure not to install mpich2 and openmpi together. 
+	When both openmpi and mpich2 are installed strange errors
+	will occur and AMUSE will not work. If you see both installed
+	please remove both and install one.
+
+
+
+
+
 Installing on Fedora 11
 ~~~~~~~~~~~~~~~~~~~~~~~
 
