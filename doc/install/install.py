@@ -220,7 +220,7 @@ class InstallPrerequisites(object):
           '--enable-shared',
           '--enable-sharedlibs=gcc',
           '--enable-fc', 
-          '--with-python='+self.prefix + '/bin/python2.7',
+          '--with-python='+self.executable,
           #'--with-device=ch3:sock',
           '--with-pm=mpd'
         ]

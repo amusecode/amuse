@@ -436,7 +436,7 @@ For mpich2 do::
 	
 	> sudo easy_install mpi4py
 
-..note::
+.. note::
 	
 	Please make sure not to install mpich2 and openmpi together. 
 	When both openmpi and mpich2 are installed strange errors
