@@ -7,6 +7,7 @@
 //
 //	void jdata::setup_mpi(MPI::Intracomm comm)
 //	int  jdata::add_particle(real pmass, real pradius,
+//				 vec ppos, vec pvel, int pid)
 //	void jdata::remove_particle(int j)
 //	void jdata::initialize_arrays()
 //	int  jdata::get_inverse_id(int i)
@@ -18,8 +19,9 @@
 //	void jdata::predict(int j, real t)
 //	void jdata::predict_all(real t, bool full)
 //	void jdata::advance(idata& id, scheduler& sched)
-//	void jdata::synchronize_all(idata& id,
+//	void jdata::synchronize_all(idata& id, scheduler *sched)
 //	void jdata::synchronize_list(int jlist[], int njlist,
+//				     idata& id, scheduler* sched)
 //	void jdata::print(idata *id)
 //	void jdata::cleanup()
 

@@ -57,6 +57,8 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 
     // Load local particles into the GPU.
 
+    // PRC(in_function); PRC(j_start); PRL(j_end);
+
     for (int j = j_start; j < j_end; j++)
 	g6_set_j_particle(clusterid, j-j_start, id[j],	// note the use of ID
 			  time[j], timestep[j],		// as GRAPE index
@@ -156,10 +158,9 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
     const char *in_function = "idata::get_partial_acc_and_jerk_on_gpu";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
-    static int npipes = 0, localnj;
-    static int *lnn;
-    static real *h2, *lpot, *ldnn;
-    static real2 a2, j6, lacc, ljerk;
+    static int npipes = 0;
+    static real *h2;
+    static real2 a2, j6;
 
     if (npipes == 0) {
 
@@ -170,31 +171,45 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 	a2 = new real[npipes][3];
 	j6 = new real[npipes][3];
 	for (int i = 0; i < npipes; i++) h2[i] = jd.eps2;
+    }
 
-	// Define my j-range.
+    // Avoid unnecessary reductions in the 1-process case.  These
+    // pointers only need be recomputed after setup() is called, which
+    // sets lnn = NULL.
 
-	int n = jd.get_nj()/jd.mpi_size;
-	if (n*jd.mpi_size < jd.get_nj()) n++;
-	int j_start = jd.mpi_rank*n;
-	int j_end = j_start + n;
-	if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
-	localnj = j_end - j_start;
+    static real *lpot, *ldnn;
+    static real2 lacc, ljerk;
 
-	// Define accumulator arrays.
-
+    if (lnn == NULL) {
 	if (jd.mpi_size == 1) {
+	    lnn = inn;
+	    ldnn = idnn;
 	    lpot = ipot;
 	    lacc = iacc;
 	    ljerk = ijerk;
-	    lnn = inn;
-	    ldnn = idnn;
 	} else {
+	    lnn = pnn;
+	    ldnn = pdnn;
 	    lpot = ppot;
 	    lacc = pacc;
 	    ljerk = pjerk;
-	    lnn = pnn;
-	    ldnn = pdnn;
 	}
+    }
+
+    // Define the j-domains.  These only need be recomputed if nj
+    // changes.
+
+    static int curr_nj = 0;
+    static int j_start, j_end, localnj;
+
+    if (jd.get_nj() != curr_nj) {
+	int n = jd.get_nj()/jd.mpi_size;
+	if (n*jd.mpi_size < jd.get_nj()) n++;
+	j_start = jd.mpi_rank*n;
+	j_end = j_start + n;
+	if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
+	curr_nj = jd.get_nj();
+	localnj = j_end - j_start;
     }
 
     // Calculate the gravitational forces on the i-particles.

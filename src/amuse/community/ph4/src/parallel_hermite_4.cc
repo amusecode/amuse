@@ -17,7 +17,8 @@
 // Currently no snapshot output is produced for restart or other
 // purposes.  To be fixed...
 //
-// Version 0, September 2010:	Steve McMillan (steve@physics.drexel.edu)
+// version 0, September 2010:	Steve McMillan (steve@physics.drexel.edu)
+// version 1, December 2010:	added treatment of close encounters
 //
 //----------------------------------------------------------------------
 
@@ -202,6 +203,12 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     real dt_log = 1./16, t_log = dt_log;
     jd.log_output(&id);
 
+
+
+    bool remove = true;
+
+
+
     int step = 0;
     while (jd.system_time < t_max) {
 
@@ -246,6 +253,33 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    jd.print(&id);
 	    if (jd.system_time >= t_max) sched.print();
 	    if (jd.system_time >= t_out) t_out += dt_out;
+	}
+
+	// Test code for Alf's AMUSE bug.
+
+	if (jd.system_time > 1 && remove) {
+
+	    jd.synchronize_all(id, &sched);
+	    jd.print(&id);
+
+	    // Remove some particles.
+
+	    cout << endl;
+	    for (int j = 5; j <= 50; j += 5) {
+		PRC(jd.system_time); cout << "removing "; PRL(j);
+		jd.remove_particle(j);
+	    }
+	    
+	    if (!jd.use_gpu)
+		jd.predict_all(jd.system_time, true);	// set pred quantities
+	    else
+		jd.initialize_gpu(true);		// reload the GPU
+
+	    id.setup(jd);				// compute acc and jerk
+	    sched.initialize();				// reconstruct scheduler
+
+	    remove = false;
+	    jd.print(&id);
 	}
     }
 }

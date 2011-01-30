@@ -39,6 +39,7 @@ void idata::set_ni(int n)
 	ilist = new int[n];
 	inn = new int[n];
 	pnn = new int[n];
+	lnn = NULL;	// force recomuptation in get_partial_acc_and_jerk()
 	imass = new real[n];
 	iradius = new real[n];
 	itime = new real[n];
@@ -149,26 +150,45 @@ void idata::get_partial_acc_and_jerk(jdata& jd)
     // Note that all "p" lists are contiguous.  Sets pnn, pdnn, ppot,
     // pacc, and pjerk.
 
-    // Avoid unnecessary reductions in the 1-process case.
+    // Avoid unnecessary reductions in the 1-process case.  These
+    // pointers only need be recomputed after setup() is called, which
+    // sets lnn = NULL.
 
-    int *lnn = pnn;
-    real *lpot = ppot, *ldnn = pdnn;
-    real2 lacc = pacc, ljerk = pjerk;
-    if (jd.mpi_size == 1) {
-	lpot = ipot;
-	lacc = iacc;
-	ljerk = ijerk;
-	lnn = inn;
-	ldnn = idnn;
+    static real *lpot, *ldnn;
+    static real2 lacc, ljerk;
+
+    if (lnn == NULL) {
+	if (jd.mpi_size == 1) {
+	    lnn = inn;
+	    ldnn = idnn;
+	    lpot = ipot;
+	    lacc = iacc;
+	    ljerk = ijerk;
+	} else {
+	    lnn = pnn;
+	    ldnn = pdnn;
+	    lpot = ppot;
+	    lacc = pacc;
+	    ljerk = pjerk;
+	}
     }
 
-    // Define the j-domains.
+    // Define the j-domains.  These only need be recomputed if nj
+    // changes.
 
-    int n = jd.get_nj()/jd.mpi_size;
-    if (n*jd.mpi_size < jd.get_nj()) n++;
-    int j_start = jd.mpi_rank*n;
-    int j_end = j_start + n;
-    if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
+    static int curr_nj = 0;
+    static int j_start, j_end;
+
+    if (jd.get_nj() != curr_nj) {
+	int n = jd.get_nj()/jd.mpi_size;
+	if (n*jd.mpi_size < jd.get_nj()) n++;
+	j_start = jd.mpi_rank*n;
+	j_end = j_start + n;
+	if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
+	curr_nj = jd.get_nj();
+    }
+
+    // Calculate the gravitational forces on the i-particles.
 
     real dx[3], dv[3], r2, xv;
     real r2i, ri, mri, mr3i, a3;

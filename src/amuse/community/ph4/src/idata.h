@@ -19,7 +19,7 @@ class idata {
   public:
     real ti;				// most recent update time
 
-    int *iid, *ilist, *inn, *pnn;
+    int *iid, *ilist, *inn, *pnn, *lnn;
     real *imass, *iradius, *itime, *itimestep, *ipot, *ppot, *idnn, *pdnn;
     real2 old_pos, old_vel, ipos, ivel,
 	  old_acc, old_jerk, iacc, ijerk, pacc, pjerk;
@@ -27,7 +27,7 @@ class idata {
     int get_ni() {return ni;}
 
     idata(jdata* jd = NULL) {
-	iid = ilist = inn = pnn = NULL;
+	iid = ilist = inn = pnn = lnn = NULL;
 	imass = iradius = itime = itimestep
 	    = ipot = ppot = idnn = pdnn = NULL;
 	old_pos = old_vel = ipos = ivel

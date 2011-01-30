@@ -1,10 +1,10 @@
 
 # Original ph4 Makefile -- builds a standalone program.
 
-# Optimization may cause failure on some systems.  Replace by -O0 in
-# that case.
+# Optimization may cause failure on some systems.  Replace by -Ox by
+# -O0 in that case.
 
-OPT	  = -O4
+OPT	  = -O4 -Wall
 
 MPICXX = openmpicxx
 CFLAGS += -g -Wall $(GPU) $(OPT)

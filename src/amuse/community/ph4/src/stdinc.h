@@ -29,9 +29,10 @@ typedef real (*real2)[3];	// 2-d array: "real2 x" = "real (*x)[3]"
 const real tiny = 1.e-25;
 const real huge = 1.e25;
 
+#define PRI(n) for (int __k = 0; __k < n; __k++) cout << " "
 #define PR(x)  cout << #x << " = " << x << " "
 #define PRC(x) cout << #x << " = " << x << ",  "
-#define PRL(x) cout << #x << " = " << x << endl
+#define PRL(x) cout << #x << " = " << x << endl << flush
 
 //#define PRC(r,x) cout << r << ": " << #x << " = " << x << ",  " << flush
 //#define PRL(r,x) cout << r << ": " << #x << " = " << x << endl << flush
