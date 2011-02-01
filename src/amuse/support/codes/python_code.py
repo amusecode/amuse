@@ -1,7 +1,7 @@
 from amuse.support.codes.core import legacy_function, legacy_global, LegacyFunctionSpecification
 from amuse.support.core import late, OrderedDictionary
 
-from amuse.support.codes.channel import Message, pack_array, unpack_array
+from amuse.support.codes.channel import ClientSideMPIMessage, pack_array, unpack_array
 
 from mpi4py import MPI
 
@@ -46,10 +46,10 @@ class PythonImplementation(object):
         self.must_run = True
         while self.must_run:
             
-            message = Message()
+            message = ClientSideMPIMessage()
             message.recieve(parent)
                 
-            result_message = Message(message.tag, message.length)
+            result_message = ClientSideMPIMessage(message.tag, message.length)
             
             if message.tag == 0:
                 self.must_run = False

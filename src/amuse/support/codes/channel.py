@@ -78,10 +78,9 @@ class ASyncRequest(object):
         
         return self._result
         
-        
-class Message(object):
+class AbstractMessage(object):
     
-    def __init__(self, tag = -1, length= 1):
+    def __init__(self, tag = -1, length= 1, dtype_to_arguments = {}):
         self.tag = tag
         self.length = length
         self.ints = []
@@ -91,6 +90,44 @@ class Message(object):
         self.booleans = []
         self.longs = []
         
+        self.pack_data(dtype_to_arguments)
+        
+    def pack_data(self,dtype_to_arguments):
+        for dtype, attrname in self.dtype_to_message_attribute():
+            if dtype in dtype_to_arguments:
+                array = pack_array( dtype_to_arguments[dtype], self.length, dtype)
+                setattr(self, attrname, array)
+    
+    def to_result(self, handle_as_array = False):
+        dtype_to_result = {}
+        for dtype, attrname in self.dtype_to_message_attribute():
+                result = getattr(self, attrname)
+                if self.length > 1 or handle_as_array:
+                    dtype_to_result[dtype] = unpack_array(result , self.length, dtype)
+                else:
+                    dtype_to_result[dtype] = result
+                    
+        return dtype_to_result
+    
+    def dtype_to_message_attribute(self):
+        return (
+            ('float64', 'doubles'),
+            ('float32', 'floats'),
+            ('int32', 'ints'),
+            ('bool', 'booleans'),
+            ('string', 'strings'),
+            ('int64', 'longs'),
+        )
+    
+    def recieve(self, comm):
+        raise NotImplementedError
+        
+    def send(self, comm):
+        raise NotImplementedError
+        
+    
+class MPIMessage(AbstractMessage):
+    
         
     def recieve(self, comm):
         header = numpy.zeros(8,  dtype='i')
@@ -119,13 +156,9 @@ class Message(object):
         
     def nonblocking_recieve(self, comm):
         header = numpy.zeros(8,  dtype='i')
-        
         request = self.mpi_nonblocking_recieve(comm, [header, MPI.INT])
-        
         return ASyncRequest(request, self, comm,  header)
-        
     
-        
     def recieve_doubles(self, comm, length, total):
         if total > 0:
             result = numpy.empty(total * length,  dtype='d')
@@ -254,14 +287,6 @@ class Message(object):
             print buffer
             self.mpi_send(comm,[buffer, MPI.INTEGER8])    
     
-    def mpi_recieve(self, comm, array):
-        comm.Bcast(array, root = 0)
-        
-        
-    def mpi_send(self, comm, array):
-        comm.Send(array, dest=0, tag = 999)
-
-
     def string_offsets(self, array):
         offsets = numpy.zeros(len(array), dtype='i')
         offset = 0
@@ -274,10 +299,18 @@ class Message(object):
             index += 1
         
         return offsets
+        
+    def mpi_nonblocking_recieve(self, comm, array):
+        raise NotImplementedError()
+    
+    def mpi_recieve(self, comm, array):
+        raise NotImplementedError()
+        
+    def mpi_send(self, comm, array):
+        raise NotImplementedError()
     
     
-class ServerSideMessage(Message):
-    
+class ServerSideMPIMessage(MPIMessage):
     
     def mpi_recieve(self, comm, array):
         comm.Recv(array,  source=0, tag=999)
@@ -285,6 +318,18 @@ class ServerSideMessage(Message):
     def mpi_send(self, comm, array):
         comm.Bcast(array, root=MPI.ROOT)
     
+    def mpi_nonblocking_recieve(self, comm, array):
+        return comm.Irecv(array,  source=0, tag=999)
+
+    
+class ClientSideMPIMessage(MPIMessage):
+    
+    def mpi_recieve(self, comm, array):
+        comm.Bcast(array, root = 0)
+        
+    def mpi_send(self, comm, array):
+        comm.Send(array, dest=0, tag = 999)
+
     def mpi_nonblocking_recieve(self, comm, array):
         return comm.Irecv(array,  source=0, tag=999)
 
@@ -653,20 +698,9 @@ class MpiChannel(MessageChannel):
             self.split_message(tag, id, dtype_to_arguments, length)
             return
             
-        message = ServerSideMessage(tag, length)
-        for dtype, attrname in (
-                ('float64', 'doubles'),
-                ('float32', 'floats'),
-                ('int32', 'ints'),
-                ('string', 'strings'),
-                ('bool', 'booleans'),
-                ('int64', 'longs'),
-            ):
-                if dtype in dtype_to_arguments:
-                    array = pack_array( dtype_to_arguments[dtype], message.length, dtype)
-                    setattr(message, attrname, array)
-        
+        message = ServerSideMPIMessage(tag, length, dtype_to_arguments)
         message.send(self.intercomm)
+        
         self._is_inuse = True
         
     def split_message(self, tag, id, dtype_to_arguments, length):
@@ -729,7 +763,7 @@ class MpiChannel(MessageChannel):
             del self._merged_results_splitted_message
             return x
         
-        message = ServerSideMessage()
+        message = ServerSideMPIMessage()
         try:
             message.recieve(self.intercomm)
         except MPI.Exception as ex:
@@ -742,28 +776,10 @@ class MpiChannel(MessageChannel):
             self.stop()
             raise exceptions.CodeException("Fatal error in code, code has exited")
         
-        return self.convert_message_to_result(message, handle_as_array)
-        
-    def convert_message_to_result(self, message, handle_as_array):
-        dtype_to_result = {}
-        for dtype, attrname in (
-                ('float64', 'doubles'),
-                ('float32', 'floats'),
-                ('int32', 'ints'),
-                ('bool', 'booleans'),
-                ('string', 'strings'),
-                ('int64', 'longs'),
-            ):
-                result = getattr(message, attrname)
-                if message.length > 1 or handle_as_array:
-                    dtype_to_result[dtype] = unpack_array(result , message.length, dtype)
-                else:
-                    dtype_to_result[dtype] = result
-                    
-        return dtype_to_result
+        return message.to_result(handle_as_array)
         
     def nonblocking_recv_message(self, tag, handle_as_array):
-        request = ServerSideMessage().nonblocking_recieve(self.intercomm)
+        request = ServerSideMPIMessage().nonblocking_recieve(self.intercomm)
         
         def handle_result(function):
             self._is_inuse = False
@@ -773,7 +789,7 @@ class MpiChannel(MessageChannel):
             if message.tag < 0:
                 raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
                 
-            return self.convert_message_to_result(message, handle_as_array)
+            return message.to_result(handle_as_array)
     
         request.add_result_handler(handle_result)
         
