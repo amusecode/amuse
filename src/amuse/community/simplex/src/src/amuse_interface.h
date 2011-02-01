@@ -7,7 +7,10 @@ class AMUSE_SimpleX : public SimpleX {
 
   public:
 
-    AMUSE_SimpleX(){total_time=0.;syncflag=-1;};
+    AMUSE_SimpleX(string output_path): SimpleX(output_path) {
+        total_time=0.;
+        syncflag=-1;
+    };
     ~AMUSE_SimpleX(){};
     int add_vertex(long *id, double x,double y,double z,double rho,
                                            double flux,double xion);

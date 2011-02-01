@@ -59,7 +59,7 @@ the radiative transfer calculations
 using namespace std;
 
 // constructor
-SimpleX::SimpleX(){
+SimpleX::SimpleX(const string& output_path){
 
   //rank of this processor and total number of processors
   COMM_RANK = MPI::COMM_WORLD.Get_rank();    
@@ -101,7 +101,10 @@ SimpleX::SimpleX(){
   ran = gsl_rng_alloc (gsl_rng_taus);
 
   //output to log file
-  simpleXlog.open( "SimpleX.log" );
+  if (output_path.size() < 1) 
+    simpleXlog.open( "SimpleX.log" );
+  else
+    simpleXlog.open( (output_path + "/SimpleX.log").c_str() );
 
 }
 

@@ -40,17 +40,17 @@ clean:
 	$(RM) simplex_worker simplex_worker_gl *~
 	cd $(SRCDIR) && $(MAKE) clean
 
-worker.cc: amuse_simplex.py
-	$(CODE_GENERATOR) --type=c amuse_simplex.py SimpleX -o $@
+worker.cc: interface.py
+	$(CODE_GENERATOR) --type=c $< SimpleXInterface -o $@
 
-worker.h: amuse_simplex.py
-	$(CODE_GENERATOR) --type=h amuse_simplex.py SimpleX -o $@
+worker.h: interface.py
+	$(CODE_GENERATOR) --type=H $< SimpleXInterface -o $@
 
-worker_gl.cc: amuse_simplex_gl.py
-	$(CODE_GENERATOR) --type=c amuse_simplex_gl.py SimpleX -o $@
+worker_gl.cc: interface.py
+	$(CODE_GENERATOR) --type=c $< GlSimpleXInterface -o $@
 
-worker_gl.h: amuse_simplex_gl.py
-	$(CODE_GENERATOR) --type=h amuse_simplex_gl.py SimpleX -o $@
+worker_gl.h: interface.py
+	$(CODE_GENERATOR) --type=H $< GlSimpleXInterface -o $@
 
 simplex_worker: worker.cc worker.h $(OBJS)
 	$(MPICXX) $^ -o $@ $(LIBS)
@@ -58,7 +58,7 @@ simplex_worker: worker.cc worker.h $(OBJS)
 simplex_worker_gl: worker_gl.cc worker_gl.h $(OBJS) $(GLOBJS)
 	$(MPICXX) $^ -o $@ $(LIBS) $(GLLIBS)
 
-$(OBJDIR)/amuse_interface.o: $(SRCDIR)/src/amuse_interface.cpp
+$(OBJDIR)/amuse_interface.o: $(SRCDIR)/src/amuse_interface.cpp $(SRCDIR)/src/amuse_interface.h
 	cd $(SRCDIR) && $(MAKE) amuse_interface
 $(OBJDIR)/amuse_interface_gl.o: $(SRCDIR)/src/amuse_interface_gl.cpp
 	cd $(SRCDIR) && $(MAKE) amuse_interface_gl

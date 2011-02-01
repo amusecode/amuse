@@ -79,7 +79,7 @@ class SimpleX{
 
   public:
     //! constructor
-    SimpleX();
+    SimpleX(const string& output_path = ".");
     //! destructor
     ~SimpleX();
 

@@ -5,7 +5,7 @@
 
 pthread_t viz_thread;
 
-extern "C" int start_viewer(){
+int start_viewer(){
 pthread_t viz_thread;
 
 pthread_create(&viz_thread,NULL,viewer, (void*) SimpleXGrid);
@@ -14,7 +14,7 @@ return 0;
 
 }
 
-extern "C" int stop_viewer(){
+int stop_viewer(){
 
 pthread_join(viz_thread, NULL);
 

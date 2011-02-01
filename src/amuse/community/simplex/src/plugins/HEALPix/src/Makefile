@@ -31,11 +31,13 @@ libcxxsupport.a:
 	@cd cxxsupport ; \
 	make all
 	cp -f cxxsupport/libcxxsupport.a $(LIBDIR)/libcxxsupport.a
+	cp -f cxxsupport/libcxxsupport.a libcxxsupport.a
 
 libfftpack.a:
 	@cd libfftpack ; \
 	make all
 	cp -f libfftpack/libfftpack.a $(LIBDIR)/libfftpack.a
+	cp -f libfftpack/libfftpack.a libfftpack.a
 
 libhealpix_cxx.a: $(HEALPIX_OBJ) $(HEADERS)
 	$(ARCREATE) libhealpix_cxx.a $(HEALPIX_OBJ)

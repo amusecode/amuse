@@ -464,38 +464,44 @@ int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
 //relevant global parameters for run
 AMUSE_SimpleX *SimpleXGrid;
 int COMM_RANK;
-int lastid=0;
+int lastid = 0;
+string global_output_path = ".";
 
-
-//------------------ C wrappers for C++ routines ------------------//
-
-extern "C" int setup_module() {
+int initialize_code() {
   COMM_RANK = MPI::COMM_WORLD.Get_rank();
-  SimpleXGrid=new AMUSE_SimpleX();
+  SimpleXGrid=new AMUSE_SimpleX(global_output_path);
   return (*SimpleXGrid).setup_simplex();  
 }
 
-extern "C" int initialize(double current_time) {
- return  (*SimpleXGrid).initialize(current_time);
+int set_output_directory(char *output_path){
+    global_output_path = output_path;
+    return 0;
 }
 
-extern "C" int reinitialize() {
- return  (*SimpleXGrid).reinitialize();
+int commit_particles() {
+    return (*SimpleXGrid).initialize(0.0);
 }
 
-extern "C"  int add_particle(long *id, double x,double y,double z,double rho,
+int recommit_particles() {
+    return (*SimpleXGrid).reinitialize();
+}
+
+int new_particle(int *id, double x,double y,double z,double rho,
                                         double flux,double xion){
- if((*SimpleXGrid).get_syncflag() == 0) return -1;
- *id=lastid++;
- if((*SimpleXGrid).get_syncflag() == -1)
-  return (*SimpleXGrid).add_vertex(id, x, y, z, rho, flux, xion);
- if((*SimpleXGrid).get_syncflag() == 1)
-  return (*SimpleXGrid).add_site(id, x,y,z,rho,flux,xion);
-  
- return -1;
+    long tmp_id;
+    
+    if((*SimpleXGrid).get_syncflag() == 0)
+        return -1;
+    *id = lastid++;
+    tmp_id = *id;
+    if((*SimpleXGrid).get_syncflag() == -1)
+        return (*SimpleXGrid).add_vertex(&tmp_id, x, y, z, rho, flux, xion);
+    if((*SimpleXGrid).get_syncflag() == 1)
+        return (*SimpleXGrid).add_site(&tmp_id, x, y, z, rho, flux, xion);
+    return -1;
 }
 
-extern "C" int remove_particle(long id) {
+int delete_particle(int id) {
  int returnvalue,returnvalues;
  if((*SimpleXGrid).get_syncflag() != 1) return -1;
  returnvalue=(*SimpleXGrid).remove_site(id);
@@ -504,11 +510,11 @@ extern "C" int remove_particle(long id) {
  return returnvalues-1;
 }
   
-extern "C" int evolve(double t_target,int sync) {
+int evolve(double t_target,int sync) {
  return (*SimpleXGrid).evolve(t_target, sync);
 }
 
-extern "C" int get_state(int id, double *x,double *y,double *z,double *rho,
+int get_state(int id, double *x,double *y,double *z,double *rho,
                                            double *flux,double *xion){
  double fx=0.,fy=0.,fz=0.,frho=0.,fflux=0.,fxion=0.;                                          
  double send[6],recv[6];
@@ -524,7 +530,15 @@ extern "C" int get_state(int id, double *x,double *y,double *z,double *rho,
  return totalret-1;                        
 }     
 
-extern "C" int cleanup_module(void){
+int cleanup_code(void){
  (*SimpleXGrid).clear_temporary();
  return 0;
+}
+
+int commit_parameters(){
+    return 0;
+}
+
+int recommit_parameters(){
+    return 0;
 }
