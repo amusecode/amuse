@@ -38,11 +38,7 @@ class RunSpeedTests(object):
     @late
     def report_lines(self):
         return []
-        
-    @late
-    def report_lines(self):
-        return []
-        
+                
     @late
     def header_line(self):
         return ('action', 'duration (seconds)')

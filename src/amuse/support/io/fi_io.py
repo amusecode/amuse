@@ -58,7 +58,7 @@ class FiFileFormatProcessor(base.FortranFileFormatProcessor):
     def load_header(self,file):
         self.ioversion = self.read_fortran_block_ints(file)[0]
         if self.ioversion != ioversion:
-          raise Exception
+            raise Exception
         self.header=self.read_fortran_block_ints(file) 
         self.ihead=self.read_fortran_block_ints(file)
         self.rhead=self.read_fortran_block_doubles(file)
@@ -72,8 +72,8 @@ class FiFileFormatProcessor(base.FortranFileFormatProcessor):
         self.unitl_in_kpc= self.rhead[17]/3.086e21 
         
         if self.unitm_in_msun==0. or self.unitl_in_kpc==0.:
-          self.unitm_in_msun= 1.e9
-          self.unitl_in_kpc= 1.0 
+            self.unitm_in_msun= 1.e9
+            self.unitl_in_kpc= 1.0 
                
                   
         self.convert=nbody_system.nbody_to_si( self.unitm_in_msun | units.MSun, self.unitl_in_kpc | units.kpc)
@@ -89,35 +89,36 @@ class FiFileFormatProcessor(base.FortranFileFormatProcessor):
         self.dark=core.Particles(self.ndm)
         self.star=core.Particles(self.nstar)
         
-        for name,typ,index,part,unit in variables:
-          if self.phead[index-1] == 1:
-            if typ == 'd':
-              tmp=self.read_fortran_block_doubles(file)
-            if typ == 'i':        
-              tmp=self.read_fortran_block_ints(file)
+        for name, typ, index, part, unit in variables:
+            if self.phead[index - 1] == 1:
+                if typ == 'd':
+                    tmp = self.read_fortran_block_doubles(file)
+                if typ == 'i':        
+                    tmp = self.read_fortran_block_ints(file)
 # special cases:
-            if index==14:
-              tmp=tmp/self.heatconst              
-            if index==34:
-              tmp=tmp/self.heatconst/10**self.flxscale
+            if index == 14:
+                tmp = tmp / self.heatconst              
+            if index == 34:
+                tmp = tmp / self.heatconst / 10 ** self.flxscale
 
 
             if part == "all":
-              if self.ngas > 0:
-                setattr(self.gas, name, self.convert.to_si(unit.new_quantity(tmp[0:self.ngas])))
-              if self.ndm > 0:
-                setattr(self.dark, name, self.convert.to_si(unit.new_quantity(tmp[self.ngas:self.ngas+self.ndm])))
-              if self.nstar > 0:
-                setattr(self.star, name, 
-                  self.convert.to_si(unit.new_quantity(tmp[self.ngas+self.ndm:self.ngas+self.ndm+self.nstar])))              
+                if self.ngas > 0:
+                    setattr(self.gas, name, self.convert.to_si(unit.new_quantity(tmp[0:self.ngas])))
+                if self.ndm > 0:
+                    setattr(self.dark, name, self.convert.to_si(unit.new_quantity(tmp[self.ngas:self.ngas + self.ndm])))
+                if self.nstar > 0:
+                    setattr(self.star, name,
+                            self.convert.to_si(unit.new_quantity(tmp[self.ngas + self.ndm:self.ngas + self.ndm + self.nstar])))              
             if part == "gas":
-              if self.ngas > 0:
-                setattr(self.gas, name, self.convert.to_si(unit.new_quantity(tmp[0:self.ngas])))
+                if self.ngas > 0:
+                    setattr(self.gas, name, self.convert.to_si(unit.new_quantity(tmp[0:self.ngas])))
             if part == "stars":    
-              if self.nstar > 0:
-                setattr(self.star, name, 
-                  self.convert.to_si(unit.new_quantity(tmp[self.ngas+self.ndm:self.ngas+self.ndm+self.nstar])))              
+                if self.nstar > 0:
+                    setattr(self.star, name,
+                            self.convert.to_si(unit.new_quantity(tmp[self.ngas + self.ndm:self.ngas + self.ndm + self.nstar])))              
     
+
     def load_file(self, file):
         self.load_header(file)
         self.load_body(file)

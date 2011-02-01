@@ -370,7 +370,7 @@ class TestGadget2(TestWithMPI):
 
     def test3(self):
         print "Testing Gadget, 2 nbody particles"
-         # No default_options since this test fails for (number_of_workers > 1):
+        # No default_options since this test fails for (number_of_workers > 1):
         instance = Gadget2(self.default_converter, **few_particles_default_options)
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.01 | units.kpc**2

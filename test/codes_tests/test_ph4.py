@@ -360,7 +360,7 @@ class TestPH4(TestWithMPI):
         instance.stop()
         
     def xtest8(self):
-        particles = core.ph4(6)
+        particles = ph4(6)
         particles.mass = nbody_system.mass.new_quantity(range(1,7))
         particles.radius =   0.00001 | nbody_system.length
         particles.position = [[-1.0,0.0,0.0],[1.0,0.0,0.0],[0.0,-1.0,0.0],[0.0,1.0,0.0],[0.0,0.0,-1.0],[0.0,0.0,1.0]] | nbody_system.length
@@ -368,7 +368,7 @@ class TestPH4(TestWithMPI):
         
         for current_mode in ['g6lib','gpu','grape','pg']:
             try:
-                instance = PhiGRAPE(mode = current_mode)
+                instance = ph4(mode = current_mode)
             except:
                 print "Running PhiGRAPE with mode=", current_mode, " was unsuccessful."
             else:

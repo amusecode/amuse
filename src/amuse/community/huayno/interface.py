@@ -142,10 +142,11 @@ class HuaynoInterface(LegacyInterface,GravitationalDynamicsInterface):
         function.result_type = 'i'
         return function
 
-    def set_eps2(self,e):
-      return self.set_eps2_parameter(e)
+    def set_eps2(self, e):
+        return self.set_eps2_parameter(e)
+
     def get_eps2(self):
-      return self.get_eps2_parameter()
+        return self.get_eps2_parameter()
     
 class Huayno(GravitationalDynamics):
 
