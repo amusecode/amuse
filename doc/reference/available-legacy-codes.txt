@@ -70,23 +70,12 @@ Note: holds for AMUSE implementation.
 |         |                     |                 |        |        |      |         |              |             |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|gadget   |tree                 |individual       |Y       |N       |N     |C/C++    |S             |N            |
+|gadget   |tree                 |individual       |Y       |N       |N     |C/C++    |S             |Y            |
 |         |                     |                 |        |        |      |         |              |             |
 |         |                     |                 |        |        |      |         |              |             |
 +---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
 
-(1) Parallel in the following sense: AMUSE uses MPI to communicate with the codes, but
-    for some codes it can be used to parallelize the calculations. Some codes (GPU) 
-    are already parallel, however in this table we *do not* refer to that.
-  
-    Codes designated *Y* for parallel can set the number of (parallel) workers, e.g. to set
-    10 workers for hermite do:
-
-    .. code-block:: python
-
-       >>> instance = Hermite(number_of_workers=10)
-
-(2) stopping conditions
+(1) stopping conditions
    
     ==== ==========================
     code name of stopping condition
@@ -98,6 +87,17 @@ Note: holds for AMUSE implementation.
     P    Pair detection
     T    Timeout detection
     ==== ==========================
+
+(2) Parallel in the following sense: AMUSE uses MPI to communicate with the codes, but
+    for some codes it can be used to parallelize the calculations. Some codes (GPU) 
+    are already parallel, however in this table we *do not* refer to that.
+  
+    Codes designated *Y* for parallel can set the number of (parallel) workers, e.g. to set
+    10 workers for hermite do:
+
+    .. code-block:: python
+
+       >>> instance = Hermite(number_of_workers=10)
 
 .. _BHtree:
 
