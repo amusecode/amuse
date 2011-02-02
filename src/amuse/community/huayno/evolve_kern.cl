@@ -2,11 +2,11 @@
 #define RATIMESTEP
 #define RVRARATIO   1.
 
-#define FLOAT double
-#define FLOAT4 double4
+#define FLOAT float
+#define FLOAT4 float4
 #define BIGNUM HUGE_VAL
 
-#pragma OPENCL EXTENSION cl_amd_fp64 : enable 
+//#pragma OPENCL EXTENSION cl_amd_fp64 : enable 
 
 __kernel void kick_kernel(
   uint nj, 
@@ -37,9 +37,10 @@ __kernel void kick_kernel(
     {
       FLOAT4 p2 = pblock[j];
       FLOAT4 d = p2-p;
-      FLOAT dr2=d.x*d.x + d.y*d.y + d.z*d.z + eps2;
+      FLOAT dr2=d.x*d.x + d.y*d.y + d.z*d.z;
       if(dr2 > 0)
       {
+        dr2+=eps2;
         FLOAT invr = rsqrt(dr2);
         FLOAT invr3 = p2.w*invr*invr*invr;
         FLOAT4 f = (FLOAT4) (invr3,invr3,invr3,0.0);
@@ -88,9 +89,10 @@ __kernel void timestep_kernel(
       FLOAT4 p2 = pblock[j];
       FLOAT4 v2 = vblock[j];
       FLOAT4 d = p2-p;
-      FLOAT dr2=d.x*d.x + d.y*d.y + d.z*d.z + eps2;
+      FLOAT dr2=d.x*d.x + d.y*d.y + d.z*d.z;
       if(dr2 > 0)
       {
+        dr2+=eps2;
         FLOAT dr = sqrt(dr2);
         FLOAT dr3 = dr*dr2;
         FLOAT4 dv = v2-v;
@@ -153,9 +155,10 @@ __kernel void potential_kernel(
     {
       FLOAT4 p2 = pblock[j];
       FLOAT4 d = p2-p;
-      FLOAT dr2=d.x*d.x + d.y*d.y + d.z*d.z + eps2;
+      FLOAT dr2=d.x*d.x + d.y*d.y + d.z*d.z;
       if(dr2 > 0)
       {
+        dr2+=eps2;
         FLOAT invr = rsqrt(dr2);
         pot-= p2.w*invr;
       }  
