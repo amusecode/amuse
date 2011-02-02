@@ -408,7 +408,7 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
   FLOAT dx[3],dr3,dr2,dr,acci;
   FLOAT acc[3];
 
-#pragma omp parallel for if(s1.n*s2.n>MPWORKLIMIT) default(none) \
+#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT) default(none) \
  private(i,j,dx,dr3,dr2,dr,acc,acci) \
  shared(dt,s1,s2,eps2)
   for(i=0;i<s1.n;i++)
@@ -443,22 +443,22 @@ static void kick_cpu(struct sys s1, struct sys s2, DOUBLE dt)
 static void kick(struct sys s1, struct sys s2, DOUBLE dt)
 {
 #ifdef EVOLVE_OPENCL
-  if(s1.n*s2.n>CLWORKLIMIT) 
+  if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
   {
     kick_cl(s1,s2,dt);
     cl_step++;
-    cl_count+=s1.n*s2.n;
+    cl_count+=(ULONG) s1.n*s2.n;
   } else
   {
     kick_cpu(s1,s2,dt);
     cpu_step++;
-    cpu_count+=s1.n*s2.n;
+    cpu_count+=(ULONG) s1.n*s2.n;
   }
 #else
   kick_cpu(s1,s2,dt);
 #endif  
   kstep[clevel]++;
-  kcount[clevel]+=s1.n*s2.n;
+  kcount[clevel]+=(ULONG) s1.n*s2.n;
 }
 
 static void potential_cpu(struct sys s1,struct sys s2)
@@ -467,7 +467,7 @@ static void potential_cpu(struct sys s1,struct sys s2)
   FLOAT dx[3],dr2,dr;
   FLOAT pot;
 
-#pragma omp parallel for if(s1.n*s2.n>MPWORKLIMIT) default(none) \
+#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT) default(none) \
  private(i,j,dx,dr2,dr,pot) \
  shared(s1,s2,eps2)
   for(i=0;i<s1.n;i++)
@@ -493,7 +493,7 @@ static void potential_cpu(struct sys s1,struct sys s2)
 static void potential(struct sys s1, struct sys s2)
 {
 #ifdef EVOLVE_OPENCL
-  if(s1.n*s2.n>CLWORKLIMIT) 
+  if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
   {
     potential_cl(s1,s2);
   } else
@@ -510,7 +510,7 @@ static void timestep_cpu(struct sys s1, struct sys s2)
   UINT i,j;
   FLOAT timestep;
   FLOAT dx[3],dr3,dr2,dr,dv[3],dv2,mu,vdotdr2,tau,dtau;
-#pragma omp parallel for if(s1.n*s2.n>MPWORKLIMIT) default(none) \
+#pragma omp parallel for if((ULONG) s1.n*s2.n>MPWORKLIMIT) default(none) \
  private(i,j,dx,dr3,dr2,dr,dv,dv2,mu,vdotdr2,\
            tau,dtau,timestep) \
  shared(s1,s2,eps2,dt_param)
@@ -563,7 +563,7 @@ static void timestep_cpu(struct sys s1, struct sys s2)
 static void timestep(struct sys s1, struct sys s2)
 {
 #ifdef EVOLVE_OPENCL
-  if(s1.n*s2.n>CLWORKLIMIT) 
+  if((ULONG) s1.n*s2.n>CLWORKLIMIT) 
   {
     timestep_cl(s1,s2);
   } else
@@ -574,7 +574,7 @@ static void timestep(struct sys s1, struct sys s2)
   timestep_cpu(s1,s2);
 #endif  
   tstep[clevel]++;
-  tcount[clevel]+=s1.n*s2.n;
+  tcount[clevel]+=(ULONG) s1.n*s2.n;
 }
 
 
@@ -607,9 +607,9 @@ static void report(struct sys s,DOUBLE etime, int inttype)
   }    
   printf("total: %18li %18li %18li\n",ktot,dtot,ttot);  
   if(inttype == PASS_DKD || inttype == HOLD_DKD)
-    printf("equiv: %18li %18li %18li\n",deepsteps*n*n,2*deepsteps*n,deepsteps*n*n);
+    printf("equiv: %18li %18li %18li\n",(long int) deepsteps*n*n,2*deepsteps*n,(long int) deepsteps*n*n);
   else
-    printf("equiv: %18li %18li %18li\n",2*deepsteps*n*n,deepsteps*n,deepsteps*n*n);  
+    printf("equiv: %18li %18li %18li\n",(long int) 2*deepsteps*n*n,deepsteps*n,(long int) deepsteps*n*n);  
   printf("ksteps: %18li, dsteps: %18li, tsteps: %18li\n", kstot,dstot,tstot);
   printf("steps: %18li, equiv: %18li, maxlevel: %i\n", 
     deepsteps,((long) 1)<<maxlevel,maxlevel); 
