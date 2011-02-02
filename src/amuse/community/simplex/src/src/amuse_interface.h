@@ -25,7 +25,17 @@ class AMUSE_SimpleX : public SimpleX {
     int reinitialize();
     int evolve(double dt, int sync);
     int get_site(int id, double *x,double *y,double *z,double *rho,
-                                           double *flux,double *xion);     
+                                           double *flux,double *xion);
+    int get_position(int id, double *x, double *y, double *z);
+    int get_density(int id, double *rho);
+    int get_flux(int id, double *flux);
+    int get_ionisation(int id, double *xion);
+    int set_site(int id, double x, double y, double z, double rho,
+                                           double flux, double xion);
+    int set_position(int id, double x, double y, double z);
+    int set_density(int id, double rho);
+    int set_flux(int id, double flux);
+    int set_ionisation(int id, double xion);
     int cleanup();
     int get_syncflag(){return syncflag;}
 

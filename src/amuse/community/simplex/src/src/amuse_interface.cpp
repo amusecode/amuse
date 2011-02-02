@@ -202,10 +202,10 @@ void AMUSE_SimpleX::convert_units(){
   UNIT_M = UNIT_D * UNIT_V;
 
   //set the neutral and ionised hydrogen fractions
-  for(unsigned int i=0; i<temp_n_HI_list.size(); i++){
-    temp_n_HI_list[i] /= UNIT_D;
-    temp_n_HII_list[i] /= UNIT_D;  
-  }
+//  for(unsigned int i=0; i<temp_n_HI_list.size(); i++){
+//    temp_n_HI_list[i] /= UNIT_D;
+//    temp_n_HII_list[i] /= UNIT_D;  
+//  }
   
 }
 
@@ -433,32 +433,163 @@ int AMUSE_SimpleX::reinitialize(){
 
 //return properties of specified site
 int AMUSE_SimpleX::get_site(int id, double *x,double *y,double *z,double *rho,
-                                              double *flux,double *xion){     
+                                              double *flux,double *xion){
    SITE_ITERATOR p;
    Site tmp;
    
    tmp.set_vertex_id((unsigned long long) id);
-
    p=lower_bound(sites.begin(),sites.end(), tmp, compare_vertex_id_site);
    if(p->get_vertex_id() == (unsigned long long int)id){
      if (p->get_process() == COMM_RANK){
        *x=p->get_x();
        *y=p->get_y();
        *z=p->get_z();
-       double tmp=(double) p->get_n_HI() + (double) p->get_n_HII();
-       // if(p->get_n_HI() != p->get_n_HI()){
-       //   simpleXlog << "Found NAN in n_HI" << endl;
-       //   exit(-1);
-       // }
-       
-       *rho=p->get_n_HI()+p->get_n_HII();
-       *flux=p->get_flux();
-       *xion= (double) p->get_n_HII()/( (double) p->get_n_HI() + (double) p->get_n_HII() );
-       
+       double tmp = (double) p->get_n_HI() + (double) p->get_n_HII();
+       *rho = tmp;
+       *flux = p->get_flux();
+       *xion = (double) p->get_n_HII()/tmp;
        return 1;
      }
-   }  
+   }
    return 0;
+}
+
+int AMUSE_SimpleX::get_position(int id, double *x,double *y,double *z){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p = lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        if (p->get_process() == COMM_RANK){
+            *x=p->get_x();
+            *y=p->get_y();
+            *z=p->get_z();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int AMUSE_SimpleX::get_density(int id, double *rho){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        if (p->get_process() == COMM_RANK){
+            *rho = (double) p->get_n_HI() + (double) p->get_n_HII();
+            return 1;
+        }
+    }
+    return 0;
+}
+
+int AMUSE_SimpleX::get_flux(int id, double *flux){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        if (p->get_process() == COMM_RANK){
+            *flux = p->get_flux();
+            return 1;
+        }
+    }
+    return 0;
+}
+int AMUSE_SimpleX::get_ionisation(int id, double *xion){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        if (p->get_process() == COMM_RANK){
+            *xion = (double) p->get_n_HII() / ((double) p->get_n_HI() + (double) p->get_n_HII());
+            return 1;
+        }
+    }
+    return 0;
+}
+
+//set properties of specified site
+int AMUSE_SimpleX::set_site(int id, double x, double y, double z, double rho,
+                                              double flux, double xion){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p = lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        p->set_x(x);
+        p->set_y(y);
+        p->set_z(z);
+        p->set_flux(flux);
+        p->set_n_HI((1-xion)*rho);
+        p->set_n_HII(xion*rho);
+        return 1;
+    }
+    return 0;
+}
+
+int AMUSE_SimpleX::set_position(int id, double x, double y, double z){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p = lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        p->set_x(x);
+        p->set_y(y);
+        p->set_z(z);
+        return 1;
+    }
+    return 0;
+}
+
+int AMUSE_SimpleX::set_density(int id, double rho){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        double old_rho = (double) p->get_n_HI() + (double) p->get_n_HII();
+        p->set_n_HI((double) p->get_n_HI() * rho/old_rho);
+        p->set_n_HII((double) p->get_n_HII() * rho/old_rho);
+        return 1;
+    }
+    return 0;
+}
+
+int AMUSE_SimpleX::set_flux(int id, double flux){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        p->set_flux(flux);
+        return 1;
+    }
+    return 0;
+}
+int AMUSE_SimpleX::set_ionisation(int id, double xion){
+    SITE_ITERATOR p;
+    Site tmp;
+    
+    tmp.set_vertex_id((unsigned long long) id);
+    p=lower_bound(sites.begin(), sites.end(), tmp, compare_vertex_id_site);
+    if(p->get_vertex_id() == (unsigned long long int)id){
+        double rho = (double) p->get_n_HI() + (double) p->get_n_HII();
+        p->set_n_HI((1-xion)*rho);
+        p->set_n_HII(xion*rho);
+        return 1;
+    }
+    return 0;
 }
 
 //relevant global parameters for run
@@ -514,21 +645,127 @@ int evolve(double t_target,int sync) {
  return (*SimpleXGrid).evolve(t_target, sync);
 }
 
-int get_state(int id, double *x,double *y,double *z,double *rho,
-                                           double *flux,double *xion){
- double fx=0.,fy=0.,fz=0.,frho=0.,fflux=0.,fxion=0.;                                          
- double send[6],recv[6];
- int ret,totalret;
- 
- ret=(*SimpleXGrid).get_site(id, &fx,&fy,&fz,&frho,&fflux,&fxion);
- MPI::COMM_WORLD.Reduce(&ret,&totalret,1,MPI::INT,MPI::SUM,0); 
- send[0]=fx;send[1]=fy;send[2]=fz;send[3]=frho;send[4]=fflux;send[5]=fxion;
- MPI::COMM_WORLD.Reduce(&send[0],&recv[0],6,MPI::DOUBLE,MPI::SUM,0); 
- MPI::COMM_WORLD.Barrier();
- fx=recv[0];fy=recv[1];fz=recv[2];frho=recv[3];fflux=recv[4];fxion=recv[5];
- *x=fx;*y=fy;*z=fz;*rho=frho;*flux=fflux;*xion=fxion;
- return totalret-1;                        
-}     
+int get_state(int id, double *x, double *y, double *z, double *rho,
+                                           double *flux, double *xion){
+    double fx=0.0, fy=0.0, fz=0.0, frho=0.0, fflux=0.0, fxion=0.0;
+    double send[6], recv[6];
+    int ret, totalret;
+    
+    ret=(*SimpleXGrid).get_site(id, &fx, &fy, &fz, &frho, &fflux, &fxion);
+    MPI::COMM_WORLD.Reduce(&ret,&totalret,1,MPI::INT,MPI::SUM,0); 
+    send[0]=fx;send[1]=fy;send[2]=fz;send[3]=frho;send[4]=fflux;send[5]=fxion;
+    MPI::COMM_WORLD.Reduce(&send[0],&recv[0],6,MPI::DOUBLE,MPI::SUM,0); 
+    MPI::COMM_WORLD.Barrier();
+    fx=recv[0];fy=recv[1];fz=recv[2];frho=recv[3];fflux=recv[4];fxion=recv[5];
+    *x=fx;*y=fy;*z=fz;*rho=frho;*flux=fflux;*xion=fxion;
+    return totalret-1;
+}
+
+int get_position(int id, double *x, double *y, double *z){
+    double fx=0.0, fy=0.0, fz=0.0;
+    double send[3], recv[3];
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).get_position(id, &fx, &fy, &fz);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    send[0] = fx;
+    send[1] = fy;
+    send[2] = fz;
+    MPI::COMM_WORLD.Reduce(&send[0], &recv[0], 3, MPI::DOUBLE, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    *x = recv[0];
+    *y = recv[1];
+    *z = recv[2];
+    return totalret-1;
+}
+
+int get_density(int id, double *rho){
+    double frho=0.0;
+    double send, recv;
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).get_density(id, &frho);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    send = frho;
+    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    *rho = recv;
+    return totalret-1;
+}
+
+int get_flux(int id, double *flux){
+    double fflux=0.0;
+    double send, recv;
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).get_flux(id, &fflux);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    send = fflux;
+    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    *flux = recv;
+    return totalret-1;
+}
+
+int get_ionisation(int id, double *xion){
+    double fxion=0.0;
+    double send, recv;
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).get_ionisation(id, &fxion);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    send = fxion;
+    MPI::COMM_WORLD.Reduce(&send, &recv, 1, MPI::DOUBLE, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    *xion = recv;
+    return totalret-1;
+}
+
+int set_state(int id, double x, double y, double z, double rho,
+                                           double flux, double xion){
+    int ret,totalret;
+    
+    ret = (*SimpleXGrid).set_site(id, x, y, z, rho, flux, xion);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
+int set_position(int id, double x, double y, double z){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_position(id, x, y, z);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
+int set_density(int id, double rho){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_density(id, rho);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
+int set_flux(int id, double flux){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_flux(id, flux);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
+
+int set_ionisation(int id, double xion){
+    int ret, totalret;
+    
+    ret = (*SimpleXGrid).set_ionisation(id, xion);
+    MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
+    MPI::COMM_WORLD.Barrier();
+    return totalret-1;
+}
 
 int cleanup_code(void){
  (*SimpleXGrid).clear_temporary();

@@ -95,7 +95,149 @@ class SimpleXInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
             function.addParameter(x, dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
-        
+    
+    @legacy_function
+    def get_position():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the position from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current x position of the particle")
+        function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current y position of the particle")
+        function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current z position of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    @legacy_function
+    def get_flux():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the flux from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('flux', dtype='float64', direction=function.OUT, description = "The current flux of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    @legacy_function
+    def get_density():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the density from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('rho', dtype='float64', direction=function.OUT, description = "The current density of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    @legacy_function
+    def get_ionisation():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the ionisation from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('xion', dtype='float64', direction=function.OUT, description = "The current ionisation of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    @legacy_function
+    def set_state():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        for x in ['x','y','z','rho','flux','xion']:
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_position():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the position for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('x', dtype='float64', direction=function.IN, description = "The new x position of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN, description = "The new y position of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN, description = "The new z position of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    @legacy_function
+    def set_flux():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the flux for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('flux', dtype='float64', direction=function.IN, description = "The new flux of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    @legacy_function
+    def set_density():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the density for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('rho', dtype='float64', direction=function.IN, description = "The new density of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
+    @legacy_function
+    def set_ionisation():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the ionisation for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('xion', dtype='float64', direction=function.IN, description = "The new ionisation of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+    
     @legacy_function
     def evolve():
         function = LegacyFunctionSpecification()
