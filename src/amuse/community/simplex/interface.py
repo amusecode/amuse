@@ -242,9 +242,15 @@ class SimpleXInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
     def evolve():
         function = LegacyFunctionSpecification()
         function.addParameter('time', dtype='float64', direction=function.IN)
-        function.addParameter('synchronize', dtype='int32', direction=function.IN)
+#        function.addParameter('synchronize', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
+    
+    def invoke_state_change2(self):
+        pass
+    
+    def synchronize_model(self):
+        pass
     
 
 
@@ -281,3 +287,200 @@ class SimpleX(CommonCode):
     def __init__(self, **options):
         CodeInterface.__init__(self, SimpleXInterface(), **options)
         self.set_output_directory(self.output_directory)
+    
+    def define_methods(self, object):
+        CommonCode.define_methods(self, object)
+        object.add_method(
+            'evolve',
+            (units.Myr,),
+            public_name = 'evolve_model'
+        )
+        object.add_method(
+            "new_particle",
+            (
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                0.001 * units.amu / units.cm**3,
+                1.0e48 / units.s,
+                units.none
+            ),
+            (
+                object.INDEX,
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "delete_particle",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            "get_state",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                0.001 * units.amu / units.cm**3,
+                1.0e48 / units.s,
+                units.none,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_state",
+            (
+                object.NO_UNIT,
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                0.001 * units.amu / units.cm**3,
+                1.0e48 / units.s,
+                units.none
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_position",
+            (
+                object.NO_UNIT,
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_position",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                13.20 * units.kpc,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_density",
+            (
+                object.NO_UNIT,
+                0.001 * units.amu / units.cm**3,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_density",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                0.001 * units.amu / units.cm**3,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_flux",
+            (
+                object.NO_UNIT,
+                1.0e48 / units.s,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_flux",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                1.0e48 / units.s,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "set_ionisation",
+            (
+                object.NO_UNIT,
+                units.none
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_ionisation",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                units.none,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            'commit_particles',
+            (),
+            (object.ERROR_CODE)
+        )
+        object.add_method(
+            'recommit_particles',
+            (),
+            (object.ERROR_CODE)
+        )
+    
+    def define_particle_sets(self, object):
+        object.define_set('particles', 'index_of_the_particle')
+        object.set_new('particles', 'new_particle')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_state')
+        object.add_getter('particles', 'get_state')
+        object.add_setter('particles', 'set_position')
+        object.add_getter('particles', 'get_position')
+        object.add_setter('particles', 'set_density')
+        object.add_getter('particles', 'get_density')
+        object.add_setter('particles', 'set_flux')
+        object.add_getter('particles', 'get_flux')
+        object.add_setter('particles', 'set_ionisation')
+        object.add_getter('particles', 'get_ionisation')
+    
+    def define_state(self, object):
+        CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
+        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
+        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
+        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        object.add_method('EDIT', 'new_particle')
+        object.add_method('EDIT', 'delete_particle')
+        object.add_transition('EDIT', 'RUN', 'commit_particles')
+        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'delete_particle', False)
+        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
+        object.add_method('EVOLVED', 'evolve_model')
+        object.add_transition('EVOLVED','RUN', 'synchronize_model')
+        object.add_method('RUN', 'synchronize_model')
+        object.add_method('RUN', 'get_state')
+        object.add_method('RUN', 'get_density')
+        object.add_method('RUN', 'get_position')
+        object.add_method('RUN', 'get_flux')
+        object.add_method('RUN', 'get_ionisation')
+
+    
+

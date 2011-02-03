@@ -191,21 +191,21 @@ void AMUSE_SimpleX::convert_units(){
   
   
   //calculate mean number density
-  double n_H = 0.0;
-  for(unsigned int i=0; i<temp_n_HI_list.size(); i++){
-    n_H += temp_n_HI_list[i] + temp_n_HII_list[i];
-  }
-  n_H/=temp_n_HI_list.size();
+  //double n_H = 0.0;
+  //for(unsigned int i=0; i<temp_n_HI_list.size(); i++){
+    //n_H += temp_n_HI_list[i] + temp_n_HII_list[i];
+  //}
+  //n_H/=temp_n_HI_list.size();
   
   //set UNIT_D and UNIT_M
-  UNIT_D = n_H;
+  UNIT_D = 1.0;//n_H;
   UNIT_M = UNIT_D * UNIT_V;
 
   //set the neutral and ionised hydrogen fractions
-//  for(unsigned int i=0; i<temp_n_HI_list.size(); i++){
-//    temp_n_HI_list[i] /= UNIT_D;
-//    temp_n_HII_list[i] /= UNIT_D;  
-//  }
+  //for(unsigned int i=0; i<temp_n_HI_list.size(); i++){
+    //temp_n_HI_list[i] /= UNIT_D;
+    //temp_n_HII_list[i] /= UNIT_D;  
+  //}
   
 }
 
@@ -641,8 +641,11 @@ int delete_particle(int id) {
  return returnvalues-1;
 }
   
-int evolve(double t_target,int sync) {
- return (*SimpleXGrid).evolve(t_target, sync);
+//int evolve(double t_target,int sync) {
+ //return (*SimpleXGrid).evolve(t_target, sync);
+//}
+int evolve(double t_target) {
+ return (*SimpleXGrid).evolve(t_target, 1);
 }
 
 int get_state(int id, double *x, double *y, double *z, double *rho,
