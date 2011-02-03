@@ -17,7 +17,7 @@ option(WANT_HOST_OPT  "Enable host-specific optimisation. Choose only when compi
 option(WANT_IPO    "Inter-procedural optimisation" off)
 option(WANT_STATIC "Generate statically linked executable" off)
 option(WANT_CHECKS "Activate runtime checks (array bounds, NaNs)" off)
-option(WANT_WARNINGS "Activate warnings" on)
+option(WANT_WARNINGS "Activate warnings" off)
 option(WANT_LIBRARY "Compile the code as a library" on)
 option(WANT_STRICT_FLOATS "Enable strict floating point calculations" off)
 option(WANT_PROFILING "Compile the code with profiling symbols" off)

@@ -11,7 +11,7 @@
 ! Mespoints should be passed in from *surface* to *centre*
 function import_stellar_merger(nmesh, numvar, model, age_tag)
    use real_kind
-   use twin_library
+   use twin_library_v2
    use control
    use mesh_enc
    use constants
@@ -88,7 +88,7 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
 
    print *, 'loading zams star of mass', mass
    call flush_star
-   star_id = load_zams_star(mass, 0.0d0)
+   star_id = load_zams_star(mass, -1.0d0, 0.0d0)
    call select_star(star_id)
 
    ! Stage 1: match composition
