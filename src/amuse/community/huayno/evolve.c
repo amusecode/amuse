@@ -260,9 +260,9 @@ void do_evolve(struct sys s, double dt, int inttype)
   simtime=0.;
   for(i=0;i<MAXLEVEL;i++)
   {
-   tstep[i]=0;tcount[i]=0;
-   kstep[i]=0;kcount[i]=0;
-   dstep[i]=0;dcount[i]=0;
+    tstep[i]=0;tcount[i]=0;
+    kstep[i]=0;kcount[i]=0;
+    dstep[i]=0;dcount[i]=0;
   }
   switch (inttype)
   {
@@ -288,6 +288,7 @@ void do_evolve(struct sys s, double dt, int inttype)
       evolve_split_pass_dkd(s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     default:  
+      endrun((char*)" unknown integrator\n");
       break;
   } 
   for(p=0;p<s.n;p++) s.part[p].pot=0;
@@ -316,15 +317,7 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
   right=s.last;
   while(1)
   {
-    if(i>s.n)
-    {
-      for(i=0;i<s.n;i++)
-      {
-        printf(":%g\n", s.part[i].timestep);
-      }
-      fflush(stdout);
-      endrun((char*)" split\n");
-    }
+    if(i>=s.n) endrun((char*)"split error 1");
     i++;
     while(left->timestep<dt && left<right) left++;
     while(right->timestep>=dt && left<right) right--;
@@ -351,38 +344,46 @@ static void split(FLOAT dt, struct sys s, struct sys *slow, struct sys *fast)
     fast->part=s.part;
     fast->last=s.part+fast->n-1;
   }
-  if(fast->n+slow->n !=s.n) endrun((char*) "split error");
+  if(fast->n+slow->n !=s.n) endrun((char*) "split error 2");
   for(i=0;i<s.n;i++) s.part[i].level=clevel;
 }
 
 static struct sys join(struct sys s1,struct sys s2)
 {
-  struct sys s;
+  struct sys s=zerosys;
   if(s1.n == 0) return s2;
   if(s2.n == 0) return s1;  
   s.n=s1.n+s2.n;
-  s.part=s1.part;
-  s.last=s2.last;
-  if(s.last-s.part + 1 != s.n) endrun((char*)"join error"); 
+  if(s1.part+s1.n == s2.part)
+  {
+    s.part=s1.part;
+    s.last=s2.last;
+  } else
+  {
+    if(s2.part+s2.n == s1.part)
+    {
+      s.part=s2.part;
+      s.last=s1.last;
+    } else
+      endrun((char*)"join error 1");
+  }   
+  if(s.last-s.part + 1 != s.n) endrun((char*)"join error 2"); 
   return s;
 }
 
 static void kdk(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
-  if(s2.n>0) kick(s1, s2, dt/2);
   if(s2.n>0) kick(s2, s1, dt/2);
-  kick(s1, s1, dt/2);
+  kick(s1,join(s1,s2),dt/2);
   drift(s1,etime, dt);
-  kick(s1, s1, dt/2);
+  kick(s1,join(s1,s2),dt/2);
   if(s2.n>0) kick(s2, s1, dt/2);
-  if(s2.n>0) kick(s1, s2, dt/2);
 }
 
 static void dkd(struct sys s1,struct sys s2, DOUBLE stime, DOUBLE etime, DOUBLE dt)
 {
   drift(s1,stime+dt/2, dt/2);
-  if(s2.n>0) kick(s1, s2, dt);
-  kick(s1, s1, dt);
+  kick(s1,join(s1,s2),dt);
   if(s2.n>0) kick(s2, s1, dt);
   drift(s1,etime, dt/2);
 }
