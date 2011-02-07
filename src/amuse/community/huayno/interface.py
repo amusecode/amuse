@@ -3,7 +3,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
 class HuaynoInterface(LegacyInterface,GravitationalDynamicsInterface):
-    include_headers = ['worker.h']
+    include_headers = ['worker_code.h']
 
     EVOLVE_SHARED=1
     EVOLVE_EXTRAPOLATE=5
@@ -18,10 +18,10 @@ class HuaynoInterface(LegacyInterface,GravitationalDynamicsInterface):
         
     def name_of_worker(self,mode):
         if mode==self.MODE_OPENCL:
-            return 'worker_cl'
+            return 'huayno_worker_cl'
         if mode==self.MODE_OPENMP:
-            return 'worker_mp'
-        return 'worker'
+            return 'huayno_worker_mp'
+        return 'huayno_worker'
       
     def __init__(self, mode=None, **options):
         LegacyInterface.__init__(self, name_of_the_worker = self.name_of_worker(mode), **options) 

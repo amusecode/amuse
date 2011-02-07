@@ -35,19 +35,15 @@ mercury_worker_gl: glworker.f90 interface.o
 	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
 	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
 
-worker.f90: interface.py __init__.py
+worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(CLASSNAME) -o $@
 
-glworker.f90: interface.py __init__.py
+glworker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(CODE_GENERATOR) --type=f90 $< $(GLCLASSNAME) -o $@
 
-__init__.py:
-	touch $@
-
 clean:
 	make -C src clean
-	rm -f __init__.py
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
 	rm -f mercury_worker mercury_worker_gl

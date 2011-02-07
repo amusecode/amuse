@@ -91,21 +91,14 @@ fi_worker_periodic: worker.f90 interface.o $(SRC)/libfi.a
 	./patch_globals_dot_h.py
 	make -C src purge
 
-worker.f90: interface.py __init__.py $(AMUSE_INTERFACE_DEPS)
+worker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< FiInterface -o $@
 
-glworker.f90: interface.py __init__.py $(AMUSE_INTERFACE_DEPS)
+glworker.f90: interface.py $(AMUSE_INTERFACE_DEPS)
 	$(CODE_GENERATOR) --type=f90 $< GlFiInterface -o $@
-
-
-
-
-__init__.py:
-	touch $@
 
 clean:
 	make -C src purge
-	rm -f __init__.py
 	rm -f *.o *.pyc *.bck worker worker.f90 glworker glworker.f90
 	rm -f fi_worker_periodic fi_worker_gl fi_worker
 	rm -f worker_code_periodic worker_code
