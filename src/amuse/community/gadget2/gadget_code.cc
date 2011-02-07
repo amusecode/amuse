@@ -371,8 +371,8 @@ void push_particle_data_on_state_vectors(){
             state.y =    P[i].Pos[1];
             state.z =    P[i].Pos[2];
             state.vx =   P[i].Vel[0];
-            state.vy =   P[i].Vel[0];
-            state.vz =   P[i].Vel[0];
+            state.vy =   P[i].Vel[1];
+            state.vz =   P[i].Vel[2];
             state.u = SphP[i].Entropy * pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
             sph_states.insert(std::pair<long long, sph_state>(P[i].ID, state));
         } else {
@@ -383,8 +383,8 @@ void push_particle_data_on_state_vectors(){
             state.y =    P[i].Pos[1];
             state.z =    P[i].Pos[2];
             state.vx =   P[i].Vel[0];
-            state.vy =   P[i].Vel[0];
-            state.vz =   P[i].Vel[0];
+            state.vy =   P[i].Vel[1];
+            state.vz =   P[i].Vel[2];
             dm_states.insert(std::pair<long long, dynamics_state>(P[i].ID, state));
         }
     }
