@@ -53,7 +53,7 @@ void set_default_parameters(){
     All.ErrTolForceAcc = 0.005;
     All.TreeDomainUpdateFrequency = 0.05;
     All.DesNumNgb = 50;
-    All.MaxNumNgbDeviation = 5;
+    All.MaxNumNgbDeviation = 5.;
     All.ArtBulkViscConst = 0.5;
     All.MinGasTemp = 0;
     All.UnitLength_in_cm = 3.085678e21;
@@ -819,7 +819,7 @@ int get_nsmtol(double *n_neighbour_tol){
     return 0;
 }
 int set_nsmtol(double n_neighbour_tol){
-    All.MaxNumNgbDeviation = round(n_neighbour_tol * All.DesNumNgb);
+    All.MaxNumNgbDeviation = n_neighbour_tol * All.DesNumNgb;
     return 0;
 }
 
