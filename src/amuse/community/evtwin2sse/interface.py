@@ -220,7 +220,7 @@ def _sse_search_endpoint_reached(stars):
 if __name__ == '__main__':
 
     # simple test for the EVtwinContSSE script
-    stellar_evolution = EVtwinContSSE()
+    stellar_evolution = EVtwin2SSE()
     stellar_evolution.initialize_module_with_current_parameters() 
 
     star = core.Particle()

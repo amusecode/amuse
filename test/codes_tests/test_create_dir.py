@@ -55,7 +55,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         try:
             __import__('testcode.interface')
         except:
-            fail("import of code failed")
+            self.fail("import of code failed")
         
         module = sys.modules['testcode.interface']
         instance = module.TestCode()
@@ -125,7 +125,7 @@ class CreateADirectoryAndPopulateItWithFilesForACommunityCodeTest(amusetest.Test
         try:
             __import__('testcodef.interface')
         except:
-            fail("import of code failed")
+            self.fail("import of code failed")
         
         module = sys.modules['testcodef.interface']
         instance = module.TestCodeF()

@@ -413,7 +413,7 @@ class RunSpeedTests(object):
 
         errorcode = instance.set_number_of_points_in_one_dimension(number_of_points_in_one_dimension)
         if errorcode < 0:
-            raise Excption("Could not allocate memory")
+            raise Exception("Could not allocate memory")
 
         t0 = time.time()
         instance.set_data(indices, data_x, data_y, data_z)
