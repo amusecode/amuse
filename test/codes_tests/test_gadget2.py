@@ -586,7 +586,7 @@ class TestGadget2(TestWithMPI):
         gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
         instance = Gadget2(self.default_converter, **default_options)
         instance.parameters.n_smooth     =   64 | units.none
-        instance.parameters.n_smooth_tol = 0.01 | units.none
+        instance.parameters.n_smooth_tol = 1.56250e-2 | units.none
         instance.gas_particles.add_particles(gas)
         
         coords = [0.0 | units.kpc]*3
