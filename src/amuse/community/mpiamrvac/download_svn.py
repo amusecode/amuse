@@ -22,7 +22,7 @@ class GetCodeFromSVN(object):
     def run(self):
         arguments = [
             'svn',
-            'co',
+            'export',
             '-r',
             self.revision,
             self.url,
