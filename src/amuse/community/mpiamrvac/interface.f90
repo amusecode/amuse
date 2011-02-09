@@ -2221,6 +2221,7 @@ CONTAINS
             call MPI_Reduce(MPI_IN_PLACE, z, n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
+        get_position_of_index=0
     end function
     
     function get_mesh_size(nx, ny, nz, index_of_grid)
