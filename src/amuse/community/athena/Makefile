@@ -85,7 +85,9 @@ athena_worker: worker_code.cc worker_code.h $(CODELIB) $(AMUSE_OBJS)
 athena_worker_selfgrav: worker_code.cc worker_code.h interface_$(VERSION).c
 	cd $(ATHENA_DIR); make clean
 	$(RM) -f $(CODELIB)
-	cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft
+	cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --disable-cooling
+	#cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=fft --enable-fft --with-flux=roe --with-eos=adiabatic --with-order=2 --enable-h-correction --disable-cooling
+	#cd $(ATHENA_DIR); ./configure --with-gas=hydro --with-gravity=multigrid
 
 	
 	$(CC) $(CXXFLAGS) $(SCINC) -c -o $(AMUSE_OBJS_SELFGRAV) interface_$(VERSION).c

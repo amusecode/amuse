@@ -1,5 +1,5 @@
 """
-In this script we simulate the evrard cload collapse in 3d.
+In this script we simulate a plummer sphere on a grid
 """
 
 from amuse.support.core import late
@@ -16,6 +16,7 @@ from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole
 from amuse.community.hermite0.interface import Hermite
 from amuse.community.phiGRAPE.interface import PhiGRAPE
+from amuse.community.octgrav.interface import Octgrav
 
 import sys
 
@@ -31,7 +32,7 @@ from numpy import sqrt, arange, searchsorted, tanh, pi
 from optparse import OptionParser
 
 
-Grid.add_global_vector_attribute("position", ["x","y","z"])
+#Grid.add_global_vector_attribute("position", ["x","y","z"])
 
 
 class HydroGridAndNbody(object):
@@ -50,7 +51,7 @@ class HydroGridAndNbody(object):
         staggered_grid_shape =  numpy.asarray(self.gridcode.grid.shape) + 1
         corner0 = self.gridcode.grid[0][0][0].position
         corner1 = self.gridcode.grid[-1][-1][-1].position
-        print corner0, corner1
+        
         delta = self.gridcode.grid[1][1][1].position - corner0
         self.volume = numpy.prod(delta)
         staggered_corner0 = corner0 - delta
@@ -59,9 +60,7 @@ class HydroGridAndNbody(object):
         self.staggered_grid.x += staggered_corner0.x
         self.staggered_grid.y += staggered_corner0.x
         self.staggered_grid.z += staggered_corner0.x
-        print self.staggered_grid.position[0][0][0], corner0
-        print self.staggered_grid.position[-1][-1][-1], corner1
-        print delta
+        
         self.staggered_grid.p000 = 0.0 | mass
         self.staggered_grid.p100 = 0.0 | mass
         self.staggered_grid.p010 = 0.0 | mass
@@ -85,9 +84,7 @@ class HydroGridAndNbody(object):
         
         self.nbodycode.particles.add_particles(particles)
         self.from_model_to_nbody = particles.new_channel_to(self.nbodycode.particles)
-        print "0"
         self.nbodycode.commit_particles()
-        print "0"
         self.particles = particles
         
     @property
@@ -110,9 +107,7 @@ class HydroGridAndNbody(object):
         
         
     def evolve(self, time):
-        print "1"
         masses = self.gridcode.grid.rho * self.volume * 1.0 / 8.0
-        print "2"
         self.staggered_grid.p000[1:,1:,1:] = masses
         self.staggered_grid.p100[:-1,1:,1:] = masses
         self.staggered_grid.p010[1:,:-1,1:] = masses
@@ -121,7 +116,6 @@ class HydroGridAndNbody(object):
         self.staggered_grid.p101[:-1,1:,:-1] = masses
         self.staggered_grid.p011[1:,:-1,:-1] = masses
         self.staggered_grid.p111[:-1,:-1,:-1] = masses
-        print "3"
         
         self.staggered_grid.masses = (
             self.staggered_grid.p000 + 
@@ -133,8 +127,6 @@ class HydroGridAndNbody(object):
             self.staggered_grid.p011 +
             self.staggered_grid.p111
         )
-        print "4"
-        print self.staggered_grid.masses.sum(), masses.sum() * 8
         
         self.particles.mass = self.staggered_grid.masses.flatten()
         self.from_model_to_nbody.copy_attribute('mass')
@@ -159,10 +151,10 @@ class CalculateSolutionIn3D(object):
     number_of_grid_points = 25
     gamma = 5.0/3.0
     rho_medium = 0 | density
-    rho_sphere = 0.6 | density
+    rho_sphere = 0.5 | density
     center = [1.0 / 2.0, 1.0 / 2.0, 1.0 / 2.0] * size
     radius = 1.0 | length
-    
+    total_mass = 1.0 | mass
     name_of_the_code = "athena_selfgravity"
     convert_generic_units = ConvertBetweenGenericAndSiUnits(1.0 | units.kpc, 1.0e10 | units.MSun, constants.G)
 
@@ -184,17 +176,17 @@ class CalculateSolutionIn3D(object):
         return getattr(self,attribute)()
         
     def new_instance_of_athena_selfgravity_code(self):
-        #unit_converter = self.convert_generic_units,
         result=Athena(mode = AthenaInterface.MODE_SELF_GRAVITY, redirection="none", number_of_workers=1)
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.3
-        result.set_four_pi_G( 4 * pi )
-        result.set_grav_mean_rho(self.rho_medium.value_in(density))
+        result.set_four_pi_G( 4 * pi ) # G == 1
+        print (self.total_mass / (self.size **3))
+        
+        result.set_grav_mean_rho(self.rho_mean.value_in(density)) #(self.total_mass / (self.size **3)).value_in(density))
         return result
         
     def new_instance_of_athena_code(self):
-        #unit_converter = self.convert_generic_units,
         result=Athena(redirection="none", number_of_workers=1)
         result.initialize_code()
         result.parameters.gamma = self.gamma
@@ -202,7 +194,6 @@ class CalculateSolutionIn3D(object):
         return result
         
     def new_instance_of_athena_and_nbody_code(self):
-        #unit_converter = self.convert_generic_units,
         gridcode=Athena(redirection="none", number_of_workers=1)
         gridcode.initialize_code()
         gridcode.parameters.gamma = self.gamma
@@ -230,9 +221,9 @@ class CalculateSolutionIn3D(object):
         instance.parameters.length_y = self.size
         instance.parameters.length_z = self.size
         
-        instance.x_boundary_conditions = ("periodic","periodic")
-        instance.y_boundary_conditions = ("periodic","periodic")
-        instance.z_boundary_conditions = ("periodic","periodic")
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
         
         result = instance.commit_parameters()
     
@@ -244,7 +235,7 @@ class CalculateSolutionIn3D(object):
         momentum =  speed * density
         energy =  mass / (time**2 * length)
         
-        grid = Grid(*self.dimensions_of_mesh)
+        grid = Grid.create(self.dimensions_of_mesh, (10.0, 10.0, 10.0) | length)
         
         grid.rho =  self.rho_medium
         grid.rhovx = 0.0 | momentum
@@ -255,61 +246,38 @@ class CalculateSolutionIn3D(object):
         return grid
     
     def initialize_grid_with_plummer_sphere(self, grid):
-        scaled_radius = self.radius / 1.695
-        total_mass = 1.0 | mass
+        scaled_radius = self.radius #/ 1.695
+        
         
         radii = (grid.position - self.center).lengths()
         selected_radii  = radii[radii < self.radius ]
         print "number of cells in cloud (number of cells in grid)", len(selected_radii), grid.shape, grid.size
         
-        self.rho_sphere = ((0.75 * total_mass /  (pi * (scaled_radius ** 3))))
+        self.rho_sphere = ((0.75 * self.total_mass /  (pi * (scaled_radius ** 3))))
         grid.rho = self.rho_medium + (self.rho_sphere * ((1 + (radii ** 2) / (scaled_radius ** 2))**(-5.0/2.0)))
         
-        internal_energy = (0.25 | time ** -2  * mass ** -1 * length **3) * total_mass / scaled_radius 
-        grid.energy = grid.rho * internal_energy/(1+(radii/scaled_radius)**2)**(1.0/2.0)
+        internal_energy = (0.25 | potential) * ( 1.0 | length / mass) * self.total_mass / scaled_radius
+        # 1.0 * grid.rho * 
+        grid.energy =  grid.rho * (internal_energy/((1.0+(radii/scaled_radius)**2)**(1.0/2.0)))
         
-    def initialize_grid_with_sphere(self, grid):
-        density = mass / length**3
-        energy =  mass / (time**2 * length)
-        
-        center = [0.5, 0.5, 0.5] | length
-        rho0 = 0 | density
-        rho1 = 1.0 | density
-        radius = 0.1 | length
-        total_mass = 1.0 | mass
-        sig0 = 1.0
-        rho_mean = 3.0 *  total_mass  / (4.0 * pi * (radius ** 3))
-        rho_mean = 0.01 | density
-        p0 = 0.1 | energy
-        selection = radii < radius
-        #grid.rho[selection] = (1.0 | density) * ((1.0 | length) / radii[selection]) 
-        #grid.rho[selection] = grid.rho[selection] / grid.rho.sum().number
-        
-        grid.rho[selection] = rho_mean
-        #print  "SUM:", grid.rho.sum()
-        #print  "SUM:", grid.rho[selection]
-        #grid.energy =  (self.gamma - 1.0) * grid.rho  * (0.05 | length ** 2 / time ** 2)
-        #print  4 * pi / (self.gamma ** 2) * rho_mean ** 2 * radius ** 2  * (0.05 | ( length**3 / (mass * time**2)))
-        grid.energy[selection] =  (4 * pi / (self.gamma ** 2)) * rho_mean ** 2 * radius ** 2  * (0.10 | ( length**3 / (mass * time**2)))
-        #print grid.energy[selection]
-    
     def setup_code(self):
         print "setup code"
+        
+        self.grid = self.new_grid()
+        self.initialize_grid_with_plummer_sphere(self.grid)
+        print "Mean density", self.grid.rho.flatten().mean()
+        self.rho_mean = self.grid.rho.flatten().mean()
         
         self.instance=self.new_instance_of_code()
         self.set_parameters(self.instance)
         
         
-        self.grid = self.new_grid()
         
         self.from_model_to_code = self.grid.new_channel_to(self.instance.grid)
         self.from_code_to_model = self.instance.grid.new_channel_to(self.grid)
         
         self.from_code_to_model.copy_attributes(("x","y","z",))
-        #self.initialize_grid_with_sphere(self.grid)
-        self.initialize_grid_with_plummer_sphere(self.grid)
         self.from_model_to_code.copy()
-        
         self.instance.initialize_grid()
         
     def get_solution_at_time(self, time):
@@ -321,6 +289,12 @@ class CalculateSolutionIn3D(object):
         
         print "copying results"
         self.from_code_to_model.copy()
+        
+        print "max,min",  max(self.grid.rhovx.flatten()),  min(self.grid.rhovx.flatten())
+        print "max,min",  max(self.grid.rhovy.flatten()),  min(self.grid.rhovy.flatten())
+        print "max,min",  max(self.grid.rhovz.flatten()),  min(self.grid.rhovz.flatten())
+        print "max,min",  max(self.grid.energy.flatten()),  min(self.grid.energy.flatten())
+        print "max,min",  max(self.grid.rho.flatten()),  min(self.grid.rho.flatten())
 
         return self.grid
 
@@ -337,7 +311,7 @@ def store_attributes_of_line(grid, yindex = 0, zindex = 0, **options):
         grid.rho[...,yindex,zindex],
         grid.rhovx[...,yindex,zindex],
         grid.energy[...,yindex,zindex],
-        filename = "spherical_collapse_{name_of_the_code}_{number_of_grid_points}_{number_of_workers}_{time}.csv".format(**options)
+        filename = "plummer_sphere_{name_of_the_code}_{number_of_grid_points}_{number_of_workers}_{time}.csv".format(**options)
     )
     
 
@@ -370,8 +344,6 @@ def new_option_parser():
     return result
 
 def xtest_sperical_collapse():
-    exact = CalculateExactSolutionIn1D()
-    x, rho, p, u = exact.get_solution_at_time(0.12 | time)
     
     model = CalculateSolutionIn3D()
     model.name_of_the_code = "athena"
@@ -390,16 +362,13 @@ def xtest_sperical_collapse():
     
     
 def main(**options):
-    #print "calculating shock using exact solution"
-    #exact = CalculateExactSolutionIn1D()
-    #x, rho, p, u = exact.get_solution_at_time(0.12 | time)
-    
     center = options['number_of_grid_points'] / 2
     
     print "calculating shock using code"
     model = CalculateSolutionIn3D(**options)
-    for t in range(50):
-        grid = model.get_solution_at_time(t * 0.1 | time)
+    grid = model.get_solution_at_time(11.0 | time)
+    for t in range(150):
+        grid = model.get_solution_at_time((11 +  t* 2.0) | time)
         print "saving data"
         store_attributes_of_line(grid, yindex = center, zindex = center, time = t, **options)
     
