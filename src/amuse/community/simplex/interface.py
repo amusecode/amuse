@@ -285,7 +285,7 @@ class SimpleX(CommonCode):
     __doc__ = SimpleXDoc()
     
     def __init__(self, **options):
-        CodeInterface.__init__(self, SimpleXInterface(), **options)
+        CodeInterface.__init__(self, SimpleXInterface(**options))
         self.set_output_directory(self.output_directory)
     
     def define_methods(self, object):
