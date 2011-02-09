@@ -13,7 +13,8 @@ class BuildMesa(object):
     def get_mesa_source_from_svn(self):
         mesa_url = "https://mesa.svn.sourceforge.net/svnroot/mesa/trunk"
         revision = "2208"
-        subprocess.call(['svn', 'co', '-r', revision, mesa_url, 'src'], cwd = self.mesa_directory())
+        subprocess.call(['svn', 'co', '--trust-server-cert', '--non-interactive', 
+            '-r', revision, mesa_url, 'src'], cwd = self.mesa_directory())
         subprocess.call(['cp','-f','./mesa_reqs/makefile_header',
             './src/utils/makefile_header'], cwd = self.mesa_directory())
         subprocess.call(['cp','-f','./mesa_reqs/create_zams.f',
