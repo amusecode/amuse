@@ -2280,9 +2280,9 @@ CONTAINS
         end if
         
         if(mype .GT. 0) then
-            call MPI_Reduce(level,  0, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(level,  0, 1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         else
-            call MPI_Reduce(MPI_IN_PLACE, level, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, level, 1, MPI_INTEGER, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
         end if
         
         get_level_of_grid = 0
