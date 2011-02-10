@@ -53,7 +53,8 @@ class HydroGridAndNbody(object):
         corner1 = self.gridcode.grid[-1][-1][-1].position
         
         delta = self.gridcode.grid[1][1][1].position - corner0
-        self.volume = numpy.prod(delta)
+        print delta.prod()
+        self.volume = delta.prod()
         staggered_corner0 = corner0 - delta
         staggered_corner1 = corner1
         self.staggered_grid = Grid.create(staggered_grid_shape, staggered_corner1 - staggered_corner0 + delta)
@@ -141,7 +142,9 @@ class HydroGridAndNbody(object):
         potential = potential.reshape(self.gridcode.potential_grid.shape)
         self.gridcode.potential_grid.potential = potential 
         
+        print "evolve hydro", time
         self.gridcode.evolve(time)
+        print "end evolve hydro"
         
         
 class CalculateSolutionIn3D(object):
@@ -202,6 +205,7 @@ class CalculateSolutionIn3D(object):
         gridcode.set_has_external_gravitational_potential(1)
         
         nbodycode = PhiGRAPE(mode="gpu")
+        #nbodycode = Octgrav(mode="gpu")
         nbodycode.initialize_code()
         nbodycode.commit_parameters()
         
@@ -290,11 +294,11 @@ class CalculateSolutionIn3D(object):
         print "copying results"
         self.from_code_to_model.copy()
         
-        print "max,min",  max(self.grid.rhovx.flatten()),  min(self.grid.rhovx.flatten())
-        print "max,min",  max(self.grid.rhovy.flatten()),  min(self.grid.rhovy.flatten())
-        print "max,min",  max(self.grid.rhovz.flatten()),  min(self.grid.rhovz.flatten())
-        print "max,min",  max(self.grid.energy.flatten()),  min(self.grid.energy.flatten())
-        print "max,min",  max(self.grid.rho.flatten()),  min(self.grid.rho.flatten())
+        #print "max,min",  max(self.grid.rhovx.flatten()),  min(self.grid.rhovx.flatten())
+        #print "max,min",  max(self.grid.rhovy.flatten()),  min(self.grid.rhovy.flatten())
+        #print "max,min",  max(self.grid.rhovz.flatten()),  min(self.grid.rhovz.flatten())
+        #print "max,min",  max(self.grid.energy.flatten()),  min(self.grid.energy.flatten())
+        #print "max,min",  max(self.grid.rho.flatten()),  min(self.grid.rho.flatten())
 
         return self.grid
 
@@ -366,9 +370,8 @@ def main(**options):
     
     print "calculating shock using code"
     model = CalculateSolutionIn3D(**options)
-    grid = model.get_solution_at_time(11.0 | time)
-    for t in range(150):
-        grid = model.get_solution_at_time((11 +  t* 2.0) | time)
+    for t in range(200):
+        grid = model.get_solution_at_time( t * 0.1 | time)
         print "saving data"
         store_attributes_of_line(grid, yindex = center, zindex = center, time = t, **options)
     
