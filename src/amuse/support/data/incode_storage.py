@@ -699,9 +699,13 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             
     def storage_shape(self):
         try:
-            
-            imin, imax, jmin, jmax, kmin, kmax = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
-            return (imax - imin + 1, jmax - jmin + 1, kmax - kmin + 1)
+            minmax_per_dimension = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
+            result = []
+            for i in range(0, len(minmax_per_dimension), 2):
+                minval = minmax_per_dimension[i]
+                maxval = minmax_per_dimension[i+1]
+                result.append(maxval - minval + 1)
+            return tuple(result)
         except:
             import traceback
             traceback.print_exc()
@@ -714,38 +718,48 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         raise exceptions.AmuseException("removing points from the grid is not implemented")
     
     def _to_arrays_of_indices(self, index):
-        imin, imax, jmin, jmax, kmin, kmax = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
-        indices = numpy.mgrid[slice(imin, imax+1),slice(jmin, jmax+1),slice(kmin, kmax+1)]
+        #imin, imax, jmin, jmax, kmin, kmax = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
+        
+        minmax_per_dimension = self.get_range_method(**self.extra_keyword_arguments_for_getters_and_setters)
+        result = []
+        for i in range(0, len(minmax_per_dimension), 2):
+            minval = minmax_per_dimension[i]
+            maxval = minmax_per_dimension[i+1]
+            result.append(slice(minval, maxval+1))
+        indices = numpy.mgrid[tuple(result)]
+        
         if index is None:
             return indices
         else:
             return [x[index] for x in indices]
         
     def _get_values(self, indices, attributes):
-        i,j,k = self._to_arrays_of_indices(indices)
-        mapping_from_attribute_to_result = {}
+        array_of_indices = self._to_arrays_of_indices(indices)
+        mapping_from_attribute_to_result = {}    
+        one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
         for getter in self.select_getters_for(attributes):
-            result = getter.get_attribute_values(self, attributes, i.reshape(-1), j.reshape(-1),k.reshape(-1))
+            result = getter.get_attribute_values(self, attributes, *one_dimensional_array_of_indices)
             mapping_from_attribute_to_result.update(result)
             
         results = []
         for attribute in attributes:
             returned_value = mapping_from_attribute_to_result[attribute]
             
-            if len(i.shape) == 0:
+            if len(array_of_indices[0].shape) == 0:
                 value = returned_value[0]
             else:
-                value = returned_value.reshape(i.shape)
+                value = returned_value.reshape(array_of_indices[0].shape)
                 
             results.append(value)
             
         return results
         
     def _set_values(self,  indices, attributes, quantities):
-        i,j,k = self._to_arrays_of_indices(indices)
+        array_of_indices = self._to_arrays_of_indices(indices)
         one_dimensional_values = [x.reshape(-1) for x in quantities]
+        one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
         for setter in self.select_setters_for(attributes):
-            setter.set_attribute_values(self, attributes, one_dimensional_values, i.reshape(-1), j.reshape(-1),k.reshape(-1))
+            setter.set_attribute_values(self, attributes, one_dimensional_values, *one_dimensional_array_of_indices)
      
         
     def _has_key(self, key):

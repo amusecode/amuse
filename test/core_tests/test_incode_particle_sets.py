@@ -77,6 +77,8 @@ class ExampleParticlesInterface(interface.CodeInterface):
         builder.add_setter('particles', 'set_position')
         builder.add_getter('particles', 'get_position', names = ('x', 'y', 'z'))
         
+        builder.add_method('particles',  'get_list', 'element_list' )
+        
         self.log("defined the particle set with name {0!r}", 'particles')
 
     def new_particle(self, mass, x, y, z):
@@ -210,6 +212,39 @@ class ExampleParticlesInterface(interface.CodeInterface):
             
             self.log("updated position of particle with id {0} (x = {1}, y = {2}, z = {3})", index_element, particle[2], particle[3], particle[4])
     
+    def get_list_size(self, index_of_the_particle):
+        """Returns the inclusive range of indices in the
+        list of element coupled to a particle.
+        """
+        return (0,9)
+    
+    def get_list_element(self, index_in_the_list, index_of_the_particle ):
+        """Returns an array of the positions for the indices in index_of_the_particle
+        """
+        if not hasattr(index_in_the_list, '__iter__'):
+            index_in_the_list = [index_in_the_list,]
+        if not hasattr(index_of_the_particle, '__iter__'):
+            index_of_the_particle = [index_of_the_particle,]
+        value1 = values.AdaptingVectorQuantity()
+        value2 = values.AdaptingVectorQuantity()
+        
+        for index_of_one_particle, index_of_one_element in zip(index_of_the_particle, index_in_the_list):
+            
+            value1.append(index_of_one_particle | units.none)
+            value2.append(index_of_one_element | units.none)
+            
+        return value1, value2
+    
+    def get_list(self, index_of_the_particle):
+        if hasattr(index_of_the_particle, '__iter__'):
+            return [self._create_new_grid(self.specify_list, index_of_the_particle = x) for x in index_of_the_particle]
+        else:
+            return self._create_new_grid(self.specify_list, index_of_the_particle = index_of_the_particle)
+    
+    def specify_list(self, definition, index_of_the_particle = 0):
+        definition.set_grid_range('get_list_size')
+        definition.add_getter('get_list_element', names=('value1', 'value2'))
+        definition.define_extra_keywords({'index_of_the_particle':index_of_the_particle})
     
 
 class ExampleParticlesInterfaceTests(amusetest.TestCase):
@@ -298,6 +333,47 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         
         
         
+    def test3(self):
+        """
+        In this test we will get a list from a particle
+        """
+        
+        instance = ExampleParticlesInterface()
+        self.assertEquals(len(instance.particles), 0)
+        
+        theParticle = core.Particle()
+        theParticle.mass = 10 | units.kg
+        theParticle.x = 0.1 | units.m
+        theParticle.y = 0.2 | units.m
+        theParticle.z = 0.5 | units.m
+        
+        instance.particles.add_particle(theParticle)
+        
+        theParticle = core.Particle()
+        theParticle.mass = 11 | units.kg
+        theParticle.x = 0.1 | units.m
+        theParticle.y = 0.2 | units.m
+        theParticle.z = 0.5 | units.m
+        
+        instance.particles.add_particle(theParticle)
+        
+        self.assertEquals(len(instance.particles[0].element_list()), 10)
+        list = instance.particles[0].element_list()
+        self.assertEquals(list[0].value1, 0 | units.none)
+        self.assertEquals(list[0].value2, 0 | units.none)
+        self.assertEquals(list[1].value1, 0 | units.none)
+        self.assertEquals(list[1].value2, 1 | units.none)
+        for x in range(len(list)):
+            self.assertEquals(list[x].value1, 0 | units.none)
+            self.assertEquals(list[x].value2, x | units.none)
+            
+        list = instance.particles[1].element_list()
+        for x in range(len(list)):
+            self.assertEquals(list[x].value1, 1 | units.none)
+            self.assertEquals(list[x].value2, x | units.none)
+            
+        #print instance.particles.element_list()
+        #print instance.particles.element_list()[0][1].value2
         
 
     def log(self, message, *arguments):

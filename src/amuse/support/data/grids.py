@@ -73,6 +73,9 @@ class AbstractGrid(AbstractSet):
         
     def samplePoints(self, positions):
         return SamplePoints(self, positions, SamplePointWithIntepolation)
+    
+    def __len__(self):
+        return self.shape[0]
         
 class Grid(AbstractGrid):
     def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):

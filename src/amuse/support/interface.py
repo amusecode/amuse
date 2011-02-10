@@ -1097,7 +1097,6 @@ class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
         
     def _create_new_grid(self, builder_function, **extra_arguments):
         handler = self.get_handler('PARTICLES')
-        
         definition = GridDefinition(handler)
         builder_function(definition, **extra_arguments)
         return definition.new_set_instance(handler)
