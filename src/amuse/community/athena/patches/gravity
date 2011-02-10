@@ -1,8 +1,8 @@
 Index: athena/src/athena4.1/src/gravity/bvals_grav.c
 ===================================================================
---- athena.orig/src/athena4.1/src/gravity/bvals_grav.c	2010-03-01 16:14:02.000000000 +0100
-+++ athena/src/athena4.1/src/gravity/bvals_grav.c	2011-02-09 17:03:36.000000000 +0100
-@@ -25,6 +25,7 @@
+--- athena.orig/src/athena4.1/src/gravity/bvals_grav.c	2010-09-28 07:02:42.000000000 +0200
++++ athena/src/athena4.1/src/gravity/bvals_grav.c	2011-02-10 11:17:14.000000000 +0100
+@@ -27,6 +27,7 @@
  #ifdef SELF_GRAVITY
  
  #ifdef MPI_PARALLEL
@@ -10,7 +10,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  /* MPI send and receive buffers */
  static double **send_buf = NULL, **recv_buf = NULL;
  static MPI_Request *recv_rq, *send_rq;
-@@ -103,8 +104,8 @@
+@@ -108,8 +109,8 @@
    if (pGrid->Nx[0] > 1){
  
  #ifdef MPI_PARALLEL
@@ -21,7 +21,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
      cnt = nghost*cnt2*cnt3;
  
  /* MPI blocks to both left and right */
-@@ -117,11 +118,11 @@
+@@ -122,11 +123,11 @@
          pD->Comm_Domain, &(recv_rq[1]));
  
        /* pack and send data L and R */
@@ -35,7 +35,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx1_id, LtoR_tag,
          pD->Comm_Domain, &(send_rq[1]));
  
-@@ -130,11 +131,11 @@
+@@ -135,11 +136,11 @@
  
        /* check non-blocking receives and unpack data in any order. */
        ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
@@ -51,7 +51,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  
-@@ -146,7 +147,7 @@
+@@ -151,7 +152,7 @@
          pD->Comm_Domain, &(recv_rq[1]));
  
        /* pack and send data R */
@@ -60,7 +60,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx1_id, LtoR_tag,
          pD->Comm_Domain, &(send_rq[1]));
  
-@@ -158,7 +159,7 @@
+@@ -163,7 +164,7 @@
  
        /* wait on non-blocking receive from R and unpack data */
        ierr = MPI_Wait(&(recv_rq[1]), MPI_STATUS_IGNORE);
@@ -69,7 +69,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  
-@@ -170,7 +171,7 @@
+@@ -175,7 +176,7 @@
          pD->Comm_Domain, &(recv_rq[0]));
  
        /* pack and send data L */
@@ -78,7 +78,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx1_id, RtoL_tag,
          pD->Comm_Domain, &(send_rq[0]));
  
-@@ -182,7 +183,7 @@
+@@ -187,7 +188,7 @@
  
        /* wait on non-blocking receive from L and unpack data */
        ierr = MPI_Wait(&(recv_rq[0]), MPI_STATUS_IGNORE);
@@ -87,7 +87,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  #endif /* MPI_PARALLEL */
-@@ -201,8 +202,8 @@
+@@ -206,8 +207,8 @@
    if (pGrid->Nx[1] > 1){
  
  #ifdef MPI_PARALLEL
@@ -98,7 +98,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
      cnt = nghost*cnt1*cnt3;
  
  /* MPI blocks to both left and right */
-@@ -215,11 +216,11 @@
+@@ -220,11 +221,11 @@
          pD->Comm_Domain, &(recv_rq[1]));
  
        /* pack and send data L and R */
@@ -112,7 +112,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx2_id, LtoR_tag,
          pD->Comm_Domain, &(send_rq[1]));
  
-@@ -228,11 +229,11 @@
+@@ -233,11 +234,11 @@
  
        /* check non-blocking receives and unpack data in any order. */
        ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
@@ -128,7 +128,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  
-@@ -244,7 +245,7 @@
+@@ -249,7 +250,7 @@
          pD->Comm_Domain, &(recv_rq[1]));
  
        /* pack and send data R */
@@ -137,7 +137,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx2_id, LtoR_tag,
          pD->Comm_Domain, &(send_rq[1]));
  
-@@ -256,7 +257,7 @@
+@@ -261,7 +262,7 @@
  
        /* wait on non-blocking receive from R and unpack data */
        ierr = MPI_Wait(&(recv_rq[1]), MPI_STATUS_IGNORE);
@@ -146,7 +146,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  
-@@ -268,7 +269,7 @@
+@@ -273,7 +274,7 @@
          pD->Comm_Domain, &(recv_rq[0]));
  
        /* pack and send data L */
@@ -155,7 +155,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx2_id, RtoL_tag,
          pD->Comm_Domain, &(send_rq[0]));
  
-@@ -280,7 +281,7 @@
+@@ -285,7 +286,7 @@
  
        /* wait on non-blocking receive from L and unpack data */
        ierr = MPI_Wait(&(recv_rq[0]), MPI_STATUS_IGNORE);
@@ -164,7 +164,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  #endif /* MPI_PARALLEL */
-@@ -297,7 +298,7 @@
+@@ -302,7 +303,7 @@
      if (my_iproc == 0) {
        ShearingSheet_grav_ix1(pGrid, pDomain);
      }
@@ -173,7 +173,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ShearingSheet_grav_ox1(pGrid, pDomain);
      }
  #endif
-@@ -310,8 +311,8 @@
+@@ -315,8 +316,8 @@
    if (pGrid->Nx[2] > 1){
  
  #ifdef MPI_PARALLEL
@@ -184,7 +184,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
      cnt = nghost*cnt1*cnt2;
  
  /* MPI blocks to both left and right */
-@@ -324,11 +325,11 @@
+@@ -329,11 +330,11 @@
          pD->Comm_Domain, &(recv_rq[1]));
  
        /* pack and send data L and R */
@@ -198,7 +198,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx3_id, LtoR_tag,
          pD->Comm_Domain, &(send_rq[1]));
  
-@@ -337,11 +338,11 @@
+@@ -342,11 +343,11 @@
  
        /* check non-blocking receives and unpack data in any order. */
        ierr = MPI_Waitany(2,recv_rq,&mIndex,MPI_STATUS_IGNORE);
@@ -214,7 +214,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  
-@@ -353,7 +354,7 @@
+@@ -358,7 +359,7 @@
          pD->Comm_Domain, &(recv_rq[1]));
  
        /* pack and send data R */
@@ -223,7 +223,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[1], cnt, MPI_DOUBLE, pGrid->rx3_id, LtoR_tag,
          pD->Comm_Domain, &(send_rq[1]));
  
-@@ -365,7 +366,7 @@
+@@ -370,7 +371,7 @@
  
        /* wait on non-blocking receive from R and unpack data */
        ierr = MPI_Wait(&(recv_rq[1]), MPI_STATUS_IGNORE);
@@ -232,7 +232,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
  
      }
  
-@@ -377,7 +378,7 @@
+@@ -382,7 +383,7 @@
          pD->Comm_Domain, &(recv_rq[0]));
  
        /* pack and send data L */
@@ -241,7 +241,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        ierr = MPI_Isend(send_buf[0], cnt, MPI_DOUBLE, pGrid->lx3_id, RtoL_tag,
          pD->Comm_Domain, &(send_rq[0]));
  
-@@ -389,7 +390,7 @@
+@@ -394,7 +395,7 @@
  
        /* wait on non-blocking receive from L and unpack data */
        ierr = MPI_Wait(&(recv_rq[0]), MPI_STATUS_IGNORE);
@@ -250,7 +250,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
      }
  #endif /* MPI_PARALLEL */
  
-@@ -460,7 +461,7 @@
+@@ -466,7 +467,7 @@
            case 4: /* Periodic */
              ix1_GBCFun = periodic_Phi_ix1;
  #ifdef MPI_PARALLEL
@@ -259,7 +259,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
                pG->lx1_id = pD->GData[myN][myM][pD->NGrid[0]-1].ID_Comm_Domain;
  	    }
  #endif /* MPI_PARALLEL */
-@@ -500,7 +501,7 @@
+@@ -506,7 +507,7 @@
            case 4: /* Periodic */
              ox1_GBCFun = periodic_Phi_ox1;
  #ifdef MPI_PARALLEL
@@ -268,7 +268,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
                pG->rx1_id = pD->GData[myN][myM][0].ID_Comm_Domain;
              }
  #endif /* MPI_PARALLEL */
-@@ -545,7 +546,7 @@
+@@ -551,7 +552,7 @@
            case 4: /* Periodic */
              ix2_GBCFun = periodic_Phi_ix2;
  #ifdef MPI_PARALLEL
@@ -277,7 +277,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
                pG->lx2_id = pD->GData[myN][pD->NGrid[1]-1][myL].ID_Comm_Domain;
              }
  #endif /* MPI_PARALLEL */
-@@ -585,7 +586,7 @@
+@@ -591,7 +592,7 @@
            case 4: /* Periodic */
              ox2_GBCFun = periodic_Phi_ox2;
  #ifdef MPI_PARALLEL
@@ -286,7 +286,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
                pG->rx2_id = pD->GData[myN][0][myL].ID_Comm_Domain;
              }
  #endif /* MPI_PARALLEL */
-@@ -630,7 +631,7 @@
+@@ -636,7 +637,7 @@
            case 4: /* Periodic */
              ix3_GBCFun = periodic_Phi_ix3;
  #ifdef MPI_PARALLEL
@@ -295,7 +295,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
                pG->lx3_id = pD->GData[pD->NGrid[2]-1][myM][myL].ID_Comm_Domain;
              }
  #endif /* MPI_PARALLEL */
-@@ -670,7 +671,7 @@
+@@ -676,7 +677,7 @@
            case 4: /* Periodic */
              ox3_GBCFun = periodic_Phi_ox3;
  #ifdef MPI_PARALLEL
@@ -304,16 +304,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
                pG->rx3_id = pD->GData[0][myM][myL].ID_Comm_Domain;
              }
  #endif /* MPI_PARALLEL */
-@@ -1078,7 +1079,7 @@
- /*----------------------------------------------------------------------------*/
- /* PACK boundary conditions for MPI_Isend, Inner x1 boundary */
+@@ -1101,7 +1102,7 @@
+ /*! \fn static void pack_Phi_ix1(GridS *pG)
+  *  \brief PACK boundary conditions for MPI_Isend, Inner x1 boundary */
  
 -static void pack_Phi_ix1(GridS *pG)
 +static void pack_Phi_ix1(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1090,7 +1091,7 @@
+@@ -1113,7 +1114,7 @@
    for (k=ks; k<=ke; k++){
      for (j=js; j<=je; j++){
        for (i=is; i<=is+(nghost-1); i++){
@@ -322,16 +322,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1101,7 +1102,7 @@
- /*----------------------------------------------------------------------------*/
- /* PACK boundary conditions for MPI_Isend, Outer x1 boundary */
+@@ -1125,7 +1126,7 @@
+ /*! \fn static void pack_Phi_ox1(GridS *pG)
+  *  \brief PACK boundary conditions for MPI_Isend, Outer x1 boundary */
  
 -static void pack_Phi_ox1(GridS *pG)
 +static void pack_Phi_ox1(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1113,7 +1114,7 @@
+@@ -1137,7 +1138,7 @@
    for (k=ks; k<=ke; k++){
      for (j=js; j<=je; j++){
        for (i=ie-(nghost-1); i<=ie; i++){
@@ -340,16 +340,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1124,7 +1125,7 @@
- /*----------------------------------------------------------------------------*/
- /* PACK boundary conditions for MPI_Isend, Inner x2 boundary */
+@@ -1149,7 +1150,7 @@
+ /*! \fn static void pack_Phi_ix2(GridS *pG)
+  *  \brief PACK boundary conditions for MPI_Isend, Inner x2 boundary */
  
 -static void pack_Phi_ix2(GridS *pG)
 +static void pack_Phi_ix2(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1136,7 +1137,7 @@
+@@ -1161,7 +1162,7 @@
    for (k=ks; k<=ke; k++){
      for (j=js; j<=js+(nghost-1); j++){
        for (i=is-nghost; i<=ie+nghost; i++){
@@ -358,16 +358,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1147,7 +1148,7 @@
- /*----------------------------------------------------------------------------*/
- /* PACK boundary conditions for MPI_Isend, Outer x2 boundary */
+@@ -1173,7 +1174,7 @@
+ /*! \fn static void pack_Phi_ox2(GridS *pG)
+  *  \brief PACK boundary conditions for MPI_Isend, Outer x2 boundary */
  
 -static void pack_Phi_ox2(GridS *pG)
 +static void pack_Phi_ox2(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1160,7 +1161,7 @@
+@@ -1186,7 +1187,7 @@
    for (k=ks; k<=ke; k++){
      for (j=je-(nghost-1); j<=je; j++){
        for (i=is-nghost; i<=ie+nghost; i++){
@@ -376,9 +376,9 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1171,12 +1172,13 @@
- /*----------------------------------------------------------------------------*/
- /* PACK boundary conditions for MPI_Isend, Inner x3 boundary */
+@@ -1198,12 +1199,13 @@
+ /*! \fn static void pack_Phi_ix3(GridS *pG)
+  *  \brief PACK boundary conditions for MPI_Isend, Inner x3 boundary */
  
 -static void pack_Phi_ix3(GridS *pG)
 +static void pack_Phi_ix3(GridS *pGrid)
@@ -391,7 +391,7 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
    double *pSnd = send_buf[0];
  
  /* Pack only Phi into send buffer */
-@@ -1184,23 +1186,23 @@
+@@ -1211,7 +1213,7 @@
    for (k=ks; k<=ks+(nghost-1); k++){
      for (j=js-nghost; j<=je+nghost; j++){
        for (i=is-nghost; i<=ie+nghost; i++){
@@ -400,26 +400,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
- 
- /* send contents of buffer to the neighboring grid on L-x3 */
- 
--  ierr = MPI_Send(send_buf, cnt, MPI_DOUBLE, pG->lx3_id,
-+  /*ierr = MPI_Send(send_buf, cnt, MPI_DOUBLE, pGrid->lx3_id,
- 		  boundary_cells_tag, MPI_COMM_WORLD);
--
-+    */
-   return;
- }
- 
- /*----------------------------------------------------------------------------*/
- /* PACK boundary conditions for MPI_Isend, Outer x3 boundary */
+@@ -1228,7 +1230,7 @@
+ /*! \fn static void pack_Phi_ox3(GridS *pG)
+  *  \brief PACK boundary conditions for MPI_Isend, Outer x3 boundary */
  
 -static void pack_Phi_ox3(GridS *pG)
 +static void pack_Phi_ox3(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1213,7 +1215,7 @@
+@@ -1241,7 +1243,7 @@
    for (k=ke-(nghost-1); k<=ke; k++){
      for (j=js-nghost; j<=je+nghost; j++){
        for (i=is-nghost; i<=ie+nghost; i++){
@@ -428,16 +418,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1224,7 +1226,7 @@
- /*----------------------------------------------------------------------------*/
- /* UNPACK boundary conditions after MPI_Irecv, Inner x1 boundary */
+@@ -1253,7 +1255,7 @@
+ /*! \fn static void unpack_Phi_ix1(GridS *pG)
+  *  \brief UNPACK boundary conditions after MPI_Irecv, Inner x1 boundary */
  
 -static void unpack_Phi_ix1(GridS *pG)
 +static void unpack_Phi_ix1(GridS *pGrid)
  {
    int is = pGrid->is;
    int js = pGrid->js, je = pGrid->je;
-@@ -1237,7 +1239,7 @@
+@@ -1266,7 +1268,7 @@
    for (k=ks; k<=ke; k++){
      for (j=js; j<=js; j++){
        for (i=is-nghost; i<=is-1; i++){
@@ -446,16 +436,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1248,7 +1250,7 @@
- /*----------------------------------------------------------------------------*/
- /* UNPACK boundary conditions after MPI_Irecv, Outer x1 boundary */
+@@ -1278,7 +1280,7 @@
+ /*! \fn static void unpack_Phi_ox1(GridS *pG)
+  *  \brief UNPACK boundary conditions after MPI_Irecv, Outer x1 boundary */
  
 -static void unpack_Phi_ox1(GridS *pG)
 +static void unpack_Phi_ox1(GridS *pGrid)
  {
    int ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1261,7 +1263,7 @@
+@@ -1291,7 +1293,7 @@
    for (k=ks; k<=ke; k++){
      for (j=js; j<=je; j++){
        for (i=ie+1; i<=ie+nghost; i++){
@@ -464,16 +454,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1272,7 +1274,7 @@
- /*----------------------------------------------------------------------------*/
- /* UNPACK boundary conditions after MPI_Irecv, Inner x2 boundary */
+@@ -1303,7 +1305,7 @@
+ /*! \fn static void unpack_Phi_ix2(GridS *pG)
+  *  \brief UNPACK boundary conditions after MPI_Irecv, Inner x2 boundary */
  
 -static void unpack_Phi_ix2(GridS *pG)
 +static void unpack_Phi_ix2(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js;
-@@ -1285,7 +1287,7 @@
+@@ -1316,7 +1318,7 @@
    for (k=ks; k<=ke; k++){
      for (j=js-nghost; j<=js-1; j++){
        for (i=is-nghost; i<=ie+nghost; i++){
@@ -482,16 +472,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1296,7 +1298,7 @@
- /*----------------------------------------------------------------------------*/
- /* UNPACK boundary conditions after MPI_Irecv, Outer x2 boundary */
+@@ -1328,7 +1330,7 @@
+ /*! \fn static void unpack_Phi_ox2(GridS *pG)
+  *  \brief UNPACK boundary conditions after MPI_Irecv, Outer x2 boundary */
  
 -static void unpack_Phi_ox2(GridS *pG)
 +static void unpack_Phi_ox2(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int je = pGrid->je;
-@@ -1309,7 +1311,7 @@
+@@ -1341,7 +1343,7 @@
    for (k=ks; k<=ke; k++){
      for (j=je+1; j<=je+nghost; j++){
        for (i=is-nghost; i<=ie+nghost; i++){
@@ -500,16 +490,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1320,7 +1322,7 @@
- /*----------------------------------------------------------------------------*/
- /* UNPACK boundary conditions after MPI_Irecv, Inner x3 boundary */
+@@ -1353,7 +1355,7 @@
+ /*! \fn static void unpack_Phi_ix3(GridS *pG)
+  *  \brief UNPACK boundary conditions after MPI_Irecv, Inner x3 boundary */
  
 -static void unpack_Phi_ix3(GridS *pG)
 +static void unpack_Phi_ix3(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1333,7 +1335,7 @@
+@@ -1366,7 +1368,7 @@
    for (k=ks-nghost; k<=ks-1; k++){
      for (j=js-nghost; j<=je+nghost; j++){
        for (i=is-nghost; i<=ie+nghost; i++){
@@ -518,16 +508,16 @@ Index: athena/src/athena4.1/src/gravity/bvals_grav.c
        }
      }
    }
-@@ -1344,7 +1346,7 @@
- /*----------------------------------------------------------------------------*/
- /* UNPACK boundary conditions after MPI_Irecv, Outer x3 boundary */
+@@ -1378,7 +1380,7 @@
+ /*! \fn static void unpack_Phi_ox3(GridS *pG)
+  *  \brief UNPACK boundary conditions after MPI_Irecv, Outer x3 boundary */
  
 -static void unpack_Phi_ox3(GridS *pG)
 +static void unpack_Phi_ox3(GridS *pGrid)
  {
    int is = pGrid->is, ie = pGrid->ie;
    int js = pGrid->js, je = pGrid->je;
-@@ -1357,7 +1359,7 @@
+@@ -1391,7 +1393,7 @@
    for (k=ke+1; k<=ke+nghost; k++){
      for (j=js-nghost; j<=je+nghost; j++){
        for (i=is-nghost; i<=ie+nghost; i++){
