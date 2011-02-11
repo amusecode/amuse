@@ -313,7 +313,11 @@ class AbstractParticleSet(AbstractSet):
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
-        
+    
+    def _is_superset(self):
+        return False
+
+    
     def copy_to_memory(self):
         attributes = self._get_attribute_names()
         keys = self._get_keys()
@@ -384,6 +388,33 @@ class AbstractParticleSet(AbstractSet):
         if new_set.has_duplicates():
             raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
         return new_set
+    
+    def __or__(self, particles):
+        """
+        Returns a particle superset, composed of the given
+        particle(s) and this particle set.
+        
+        :parameter particles: (set of) particle(s) to be added to self.
+         
+        >>> particles1 = Particles(2)
+        >>> particles1.x = [1.0, 2.0] | units.m
+        >>> particles2 = Particles(2)
+        >>> particles2.x = [3.0, 4.0] | units.m
+        >>> new_set = particles1 | particles2
+        >>> new_set  # doctest:+ELLIPSIS
+        <amuse.support.data.particles.ParticlesSuperset object at 0x...>
+        >>> print len(new_set)
+        4
+        >>> print new_set.x
+        [1.0, 2.0, 3.0, 4.0] m
+        """
+        if isinstance(particles, Particle):
+            particles = particles.as_set()
+            
+        original_particles_set1 = self._original_set()
+        original_particles_set2 = particles._original_set()
+        
+        return ParticlesSuperset((original_particles_set1, original_particles_set2))
     
     def __sub__(self, particles):
         """
@@ -899,7 +930,7 @@ class ParticlesSuperset(AbstractParticleSet):
     
     def __init__(self, particle_sets, index_to_default_set=None):
         AbstractParticleSet.__init__(self)
-        
+                
         self._private.particle_sets = particle_sets
         self._private.index_to_default_set = index_to_default_set
         
@@ -914,6 +945,7 @@ class ParticlesSuperset(AbstractParticleSet):
             
         return result
     
+
     
     def _set_factory(self):
         return Particles
@@ -948,7 +980,7 @@ class ParticlesSuperset(AbstractParticleSet):
                 
             indices_array = numpy.arange(len(keys_array))
             for setindex, x in enumerate(self._private.particle_sets):
-                mask = self.in1d(keys_array, x._get_keys(), True)
+                mask = self._in1d(keys_array, x._get_keys(), True)
                 split_sets[setindex] =  keys_array[mask]
                 split_indices[setindex] = indices_array[mask]
         
@@ -1047,8 +1079,10 @@ class ParticlesSuperset(AbstractParticleSet):
 
 
 
+    def _is_superset(self):
+        return True
 
-    def in1d(self, ar1, ar2, assume_unique=False):
+    def _in1d(self, ar1, ar2, assume_unique=False):
         """
         copied from numpy.in1d (nump 1.4), to be compatible with numpy 1.3.0
         """
