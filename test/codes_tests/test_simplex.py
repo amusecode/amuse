@@ -26,7 +26,7 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory, 'vertices_10.txt')
+        input_file = os.path.join(instance.data_directory, 'vertices_test.txt')
         x, y, z, n_H, flux, X_ion = read_input_file(input_file)
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion)
@@ -36,25 +36,25 @@ class TestSimpleXInterface(TestWithMPI):
         x_out, y_out, z_out, n_H_out, flux_out, X_ion_out, error = instance.get_state(indices)
         for expected, received in zip([x, y, z, n_H, flux, X_ion, [0]*number_of_particles], 
                 [x_out, y_out, z_out, n_H_out, flux_out, X_ion_out, error]):
-            self.assertAlmostEqual(expected, received, 5)
+            self.assertAlmostRelativeEqual(expected, received, 5)
         
         x, y, z, n_H, flux, X_ion, error = instance.get_state(0)
-        for expected, received in zip([0.5, 0.5, 0.5, 0.001, 5.0, 0.0, 0], 
+        for expected, received in zip([6600, 6600, 6600, 0.001, 5.0, 0.0, 0], 
                 [x, y, z, n_H, flux, X_ion, error]):
-            self.assertAlmostEqual(expected, received)
+            self.assertAlmostRelativeEqual(expected, received,6)
         x, y, z, error1 = instance.get_position(0)
         n_H, error2     = instance.get_density(0)
         flux, error3    = instance.get_flux(0)
         X_ion, error4   = instance.get_ionisation(0)
-        for expected, received in zip([0.5, 0.5, 0.5, 0.001, 5.0, 0.0, 0, 0, 0, 0], 
+        for expected, received in zip([6600.,6600.,6600., 0.001, 5.0, 0.0, 0, 0, 0, 0], 
                 [x, y, z, n_H, flux, X_ion, error1, error2, error3, error4]):
-            self.assertAlmostEqual(expected, received, 5)
+            self.assertAlmostRelativeEqual(expected, received, 5)
         
         self.assertEqual(0, instance.set_state(3, 1.0, 2.0, 3.0, 4.0, 5.0, 0.6))
         x, y, z, n_H, flux, X_ion, error = instance.get_state(3)
         for expected, received in zip([1.0, 2.0, 3.0, 4.0, 5.0, 0.6, 0], 
                 [x, y, z, n_H, flux, X_ion, error]):
-            self.assertAlmostEqual(expected, received, 5)
+            self.assertAlmostRelativeEqual(expected, received, 5)
         self.assertEqual(0, instance.set_position(4, 3.0, 2.0, 1.0))
         self.assertEqual(0, instance.set_density(4, 0.6))
         self.assertEqual(0, instance.set_flux(4, 0.5))
@@ -62,7 +62,7 @@ class TestSimpleXInterface(TestWithMPI):
         x, y, z, n_H, flux, X_ion, error = instance.get_state(4)
         for expected, received in zip([3.0, 2.0, 1.0, 0.6, 0.5, 0.4, 0], 
                 [x, y, z, n_H, flux, X_ion, error]):
-            self.assertAlmostEqual(expected, received, 5)
+            self.assertAlmostRelativeEqual(expected, received, 5)
         
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
@@ -74,7 +74,7 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(0, instance.initialize_code())
         self.assertEqual(0, instance.commit_parameters())
         
-        input_file = os.path.join(instance.data_directory, 'vertices_10.txt')
+        input_file = os.path.join(instance.data_directory, 'vertices_test.txt')
         x, y, z, n_H, flux, X_ion = read_input_file(input_file)
         number_of_particles = len(x)
         indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion)
@@ -89,6 +89,35 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(errors, [0]*number_of_particles)
         self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000933205)
         
+        self.assertEqual(0, instance.cleanup_code())
+        instance.stop()
+
+    def test1(self):
+        print "Test 4: set boxsize, hilbert_order, timestep"
+        instance = SimpleXInterface(**default_options)
+        self.assertEqual(0, instance.set_output_directory(instance.output_directory))
+        self.assertEqual(0, instance.initialize_code())
+        
+        instance.set_box_size_parameter(16384.)
+        instance.set_hilbert_order_parameter(1)
+        instance.set_timestep_parameter(0.5)
+                
+        self.assertEqual(0, instance.commit_parameters())
+        
+        self.assertEqual(16384.,instance.get_box_size_parameter()['box_size'])
+        self.assertEqual(1,instance.get_hilbert_order_parameter()['hilbert_order'])
+        self.assertEqual(0.5,instance.get_timestep_parameter()['timestep'])
+
+        input_file = os.path.join(instance.data_directory, 'vertices_test.txt')
+        x, y, z, n_H, flux, X_ion = read_input_file(input_file)
+        number_of_particles = len(x)
+        indices, errors = instance.new_particle(x, y, z, n_H, flux, X_ion)
+        instance.commit_particles()
+
+        self.assertEqual(16384.,instance.get_box_size_parameter()['box_size'])
+        self.assertEqual(1,instance.get_hilbert_order_parameter()['hilbert_order'])
+#        self.assertEqual(0.5,instance.get_timestep_parameter()['timestep'])
+
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
     
@@ -109,15 +138,15 @@ class TestSimpleX(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        input_file = os.path.join(instance.data_directory, 'vertices_10.txt')
+        input_file = os.path.join(instance.data_directory, 'vertices_test.txt')
         particles = particles_from_input_file(input_file)
         instance.particles.add_particles(particles)
         instance.commit_particles()
         for attribute in ['position', 'rho', 'flux', 'xion']:
-            self.assertAlmostEqual(getattr(particles, attribute),
+            self.assertAlmostRelativeEqual(getattr(particles, attribute),
                                    getattr(instance.particles, attribute), 5)
-            setattr(instance.particles, attribute, getattr(particles, attribute)*2.0)
-            self.assertAlmostEqual(getattr(particles, attribute)*2.0,
+            setattr(instance.particles, attribute, getattr(particles, attribute)/2.0)
+            self.assertAlmostRelativeEqual(getattr(particles, attribute)/2.0,
                                    getattr(instance.particles, attribute), 5)
         instance.cleanup_code()
         instance.stop()
@@ -128,7 +157,7 @@ class TestSimpleX(TestWithMPI):
         instance.initialize_code()
         instance.commit_parameters()
         
-        input_file = os.path.join(instance.data_directory, 'vertices_10.txt')
+        input_file = os.path.join(instance.data_directory, 'vertices_test.txt')
         particles = particles_from_input_file(input_file)
         instance.particles.add_particles(particles)
         instance.commit_particles()
@@ -157,9 +186,9 @@ def read_input_file(input_file):
 def particles_from_input_file(input_file):
     x, y, z, n_H, flux, X_ion = read_input_file(input_file)
     particles = Particles(len(x))
-    particles.x = x | 13.20 * units.kpc
-    particles.y = y | 13.20 * units.kpc
-    particles.z = z | 13.20 * units.kpc
+    particles.x = x | units.parsec
+    particles.y = y | units.parsec
+    particles.z = z | units.parsec
     particles.rho = n_H | 0.001 * units.amu / units.cm**3
     particles.flux = flux | 1.0e48 / units.s
     particles.xion = X_ion | units.none

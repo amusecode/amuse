@@ -246,6 +246,51 @@ class SimpleXInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
         function.result_type = 'int32'
         return function
     
+    
+    @legacy_function
+    def set_box_size_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('box_size', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_box_size_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('box_size', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_hilbert_order_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('hilbert_order', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_hilbert_order_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('hilbert_order', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_timestep_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('timestep', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    
+    @legacy_function
+    def get_timestep_parameter():
+        function = LegacyFunctionSpecification()
+        function.addParameter('timestep', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+
     def invoke_state_change2(self):
         pass
     
@@ -288,6 +333,35 @@ class SimpleX(CommonCode):
         CodeInterface.__init__(self, SimpleXInterface(**options))
         self.set_output_directory(self.output_directory)
     
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_timestep_parameter",
+            "set_timestep_parameter", 
+            "timestep", 
+            "timestep for radiative transfer sweeps", 
+            units.Myr, 
+            0.05 | units.Myr
+        )
+
+        object.add_method_parameter(
+            "get_hilbert_order_parameter",
+            "set_hilbert_order_parameter", 
+            "hilbert_order", 
+            "hilbert_order for domain decomposition", 
+            units.none, 
+            1 | units.none
+        )
+
+        object.add_method_parameter(
+            "get_boxsize_parameter",
+            "set_boxsize_parameter", 
+            "box_size", 
+            "boxsize for radiative transfer particle distribution", 
+            units.parsec, 
+            13200. | units.parsec
+        )
+
+
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
         object.add_method(
@@ -298,9 +372,9 @@ class SimpleX(CommonCode):
         object.add_method(
             "new_particle",
             (
-                13.20 * units.kpc,
-                13.20 * units.kpc,
-                13.20 * units.kpc,
+                units.parsec,
+                units.parsec,
+                units.parsec,
                 0.001 * units.amu / units.cm**3,
                 1.0e48 / units.s,
                 units.none
@@ -325,9 +399,9 @@ class SimpleX(CommonCode):
                 object.NO_UNIT,
             ),
             (
-                13.20 * units.kpc,
-                13.20 * units.kpc,
-                13.20 * units.kpc,
+                units.parsec,
+                units.parsec,
+                units.parsec,
                 0.001 * units.amu / units.cm**3,
                 1.0e48 / units.s,
                 units.none,
@@ -338,9 +412,9 @@ class SimpleX(CommonCode):
             "set_state",
             (
                 object.NO_UNIT,
-                13.20 * units.kpc,
-                13.20 * units.kpc,
-                13.20 * units.kpc,
+                units.parsec,
+                units.parsec,
+                units.parsec,
                 0.001 * units.amu / units.cm**3,
                 1.0e48 / units.s,
                 units.none
@@ -353,9 +427,9 @@ class SimpleX(CommonCode):
             "set_position",
             (
                 object.NO_UNIT,
-                13.20 * units.kpc,
-                13.20 * units.kpc,
-                13.20 * units.kpc,
+                units.parsec,
+                units.parsec,
+                units.parsec,
             ),
             (
                 object.ERROR_CODE
@@ -367,9 +441,9 @@ class SimpleX(CommonCode):
                 object.NO_UNIT,
             ),
             (
-                13.20 * units.kpc,
-                13.20 * units.kpc,
-                13.20 * units.kpc,
+                units.parsec,
+                units.parsec,
+                units.parsec,
                 object.ERROR_CODE
             )
         )

@@ -620,6 +620,14 @@ int recommit_particles() {
 int new_particle(int *id, double x,double y,double z,double rho,
                                         double flux,double xion){
     long tmp_id;
+    double bs;
+    
+    (*SimpleXGrid).get_sizeBox(&bs);
+    if(bs==0) return -2;
+    x/=bs;y/=bs;z/=bs;
+    if (x<0 || x>1 || 
+        y<0 || y>1 ||
+        z<0 || z>1 ) return -3;
     
     if((*SimpleXGrid).get_syncflag() == 0)
         return -1;
@@ -652,7 +660,11 @@ int get_state(int id, double *x, double *y, double *z, double *rho,
                                            double *flux, double *xion){
     double fx=0.0, fy=0.0, fz=0.0, frho=0.0, fflux=0.0, fxion=0.0;
     double send[6], recv[6];
-    int ret, totalret;
+    int ret, totalret=0;
+    double bs;
+    
+    (*SimpleXGrid).get_sizeBox(&bs);
+    if(bs==0) return -2;  
     
     ret=(*SimpleXGrid).get_site(id, &fx, &fy, &fz, &frho, &fflux, &fxion);
     MPI::COMM_WORLD.Reduce(&ret,&totalret,1,MPI::INT,MPI::SUM,0); 
@@ -660,7 +672,7 @@ int get_state(int id, double *x, double *y, double *z, double *rho,
     MPI::COMM_WORLD.Reduce(&send[0],&recv[0],6,MPI::DOUBLE,MPI::SUM,0); 
     MPI::COMM_WORLD.Barrier();
     fx=recv[0];fy=recv[1];fz=recv[2];frho=recv[3];fflux=recv[4];fxion=recv[5];
-    *x=fx;*y=fy;*z=fz;*rho=frho;*flux=fflux;*xion=fxion;
+    *x=fx*bs;*y=fy*bs;*z=fz*bs;*rho=frho;*flux=fflux;*xion=fxion;
     return totalret-1;
 }
 
@@ -668,6 +680,10 @@ int get_position(int id, double *x, double *y, double *z){
     double fx=0.0, fy=0.0, fz=0.0;
     double send[3], recv[3];
     int ret, totalret;
+    double bs;
+    
+    (*SimpleXGrid).get_sizeBox(&bs);
+    if(bs==0) return -2;     
     
     ret = (*SimpleXGrid).get_position(id, &fx, &fy, &fz);
     MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
@@ -676,9 +692,9 @@ int get_position(int id, double *x, double *y, double *z){
     send[2] = fz;
     MPI::COMM_WORLD.Reduce(&send[0], &recv[0], 3, MPI::DOUBLE, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
-    *x = recv[0];
-    *y = recv[1];
-    *z = recv[2];
+    *x = recv[0]*bs;
+    *y = recv[1]*bs;
+    *z = recv[2]*bs;
     return totalret-1;
 }
 
@@ -727,7 +743,15 @@ int get_ionisation(int id, double *xion){
 int set_state(int id, double x, double y, double z, double rho,
                                            double flux, double xion){
     int ret,totalret;
+    double bs;
     
+    (*SimpleXGrid).get_sizeBox(&bs);
+    if(bs==0) return -2;
+    x/=bs;y/=bs;z/=bs;
+    if (x<0 || x>1 || 
+        y<0 || y>1 ||
+        z<0 || z>1 ) return -3;
+          
     ret = (*SimpleXGrid).set_site(id, x, y, z, rho, flux, xion);
     MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
@@ -736,7 +760,15 @@ int set_state(int id, double x, double y, double z, double rho,
 
 int set_position(int id, double x, double y, double z){
     int ret, totalret;
+    double bs;
     
+    (*SimpleXGrid).get_sizeBox(&bs);    
+    if(bs==0) return -2;
+    x/=bs;y/=bs;z/=bs;
+    if (x<0 || x>1 || 
+        y<0 || y>1 ||
+        z<0 || z>1 ) return -3;
+        
     ret = (*SimpleXGrid).set_position(id, x, y, z);
     MPI::COMM_WORLD.Reduce(&ret, &totalret, 1, MPI::INT, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
@@ -774,6 +806,31 @@ int cleanup_code(void){
  (*SimpleXGrid).clear_temporary();
  return 0;
 }
+
+int set_box_size_parameter(double bs){
+  return (*SimpleXGrid).set_sizeBox(bs);
+}
+
+int get_box_size_parameter(double *bs){
+  return (*SimpleXGrid).get_sizeBox(bs);
+}
+
+int set_timestep_parameter(double ts){
+  return (*SimpleXGrid).set_UNIT_T(ts);
+}
+
+int get_timestep_parameter(double *ts){
+  return (*SimpleXGrid).get_UNIT_T(ts);
+}
+
+int set_hilbert_order_parameter(int ho){
+  return (*SimpleXGrid).set_hilbert_order(ho);
+}
+
+int get_hilbert_order_parameter(int *ho){
+  return (*SimpleXGrid).get_hilbert_order(ho);
+}
+
 
 int commit_parameters(){
     return 0;

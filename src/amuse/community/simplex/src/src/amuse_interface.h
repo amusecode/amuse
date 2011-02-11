@@ -38,6 +38,13 @@ class AMUSE_SimpleX : public SimpleX {
     int set_ionisation(int id, double xion);
     int cleanup();
     int get_syncflag(){return syncflag;}
+    int set_UNIT_T(double ts){ UNIT_T=ts;return 0;}
+    int get_UNIT_T(double *ts){ *ts=UNIT_T;return 0;}
+    int set_sizeBox(double bs){ sizeBox=bs;return 0;}
+    int get_sizeBox(double *bs){ *bs=sizeBox;return 0;}
+    int set_hilbert_order(int ho){ hilbert_order=ho;return 0;}
+    int get_hilbert_order(int *ho){ *ho=hilbert_order;return 0;}
+
 
   private:
 
