@@ -92,7 +92,7 @@ class TestSimpleXInterface(TestWithMPI):
         self.assertEqual(0, instance.cleanup_code())
         instance.stop()
 
-    def test1(self):
+    def test4(self):
         print "Test 4: set boxsize, hilbert_order, timestep"
         instance = SimpleXInterface(**default_options)
         self.assertEqual(0, instance.set_output_directory(instance.output_directory))
