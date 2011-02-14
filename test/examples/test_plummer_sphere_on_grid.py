@@ -11,6 +11,7 @@ from amuse.support.units.generic_unit_system import *
 from amuse.support.units.generic_unit_converter import *
 from amuse.support.units import constants
 from amuse.support.units import units
+from amuse.support.units import nbody_system
 from amuse.ext import cloud
 from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole
@@ -48,7 +49,7 @@ class HydroGridAndNbody(object):
         self.eps =  self.x.aszeros()
         
     def setup_particles_in_nbodycode(self):
-        staggered_grid_shape =  numpy.asarray(self.gridcode.grid.shape) + 1
+        staggered_grid_shape =  numpy.asarray(self.gridcode.grid.shape) + 2
         corner0 = self.gridcode.grid[0][0][0].position
         corner1 = self.gridcode.grid[-1][-1][-1].position
         
@@ -58,26 +59,27 @@ class HydroGridAndNbody(object):
         staggered_corner0 = corner0 - delta
         staggered_corner1 = corner1
         self.staggered_grid = Grid.create(staggered_grid_shape, staggered_corner1 - staggered_corner0 + delta)
-        self.staggered_grid.x += staggered_corner0.x
-        self.staggered_grid.y += staggered_corner0.x
-        self.staggered_grid.z += staggered_corner0.x
+        #self.staggered_grid.x += staggered_corner0.x
+        #self.staggered_grid.y += staggered_corner0.x
+        #self.staggered_grid.z += staggered_corner0.x
         
-        self.staggered_grid.p000 = 0.0 | mass
-        self.staggered_grid.p100 = 0.0 | mass
-        self.staggered_grid.p010 = 0.0 | mass
-        self.staggered_grid.p110 = 0.0 | mass
-        self.staggered_grid.p000 = 0.0 | mass
-        self.staggered_grid.p100 = 0.0 | mass
-        self.staggered_grid.p011 = 0.0 | mass
-        self.staggered_grid.p111 = 0.0 | mass
-        self.staggered_grid.p001 = 0.0 | mass
-        self.staggered_grid.p101 = 0.0 | mass
+        #self.staggered_grid.p000 = 0.0 | mass
+        #self.staggered_grid.p100 = 0.0 | mass
+        #self.staggered_grid.p010 = 0.0 | mass
+        #self.staggered_grid.p110 = 0.0 | mass
+        #self.staggered_grid.p000 = 0.0 | mass
+        #self.staggered_grid.p100 = 0.0 | mass
+        #self.staggered_grid.p011 = 0.0 | mass
+        #self.staggered_grid.p111 = 0.0 | mass
+        #self.staggered_grid.p001 = 0.0 | mass
+        #self.staggered_grid.p101 = 0.0 | mass
         
-        particles = Particles(self.staggered_grid.size)
+        self.normal_grid = Grid.create(self.gridcode.grid.shape, corner1 - corner0 + delta)
+        particles = Particles(self.normal_grid.size)
         particles.mass = 0.0 | mass
-        particles.x = self.staggered_grid.x.flatten()
-        particles.y = self.staggered_grid.y.flatten()
-        particles.z = self.staggered_grid.z.flatten()
+        particles.x = self.grid.x.flatten()
+        particles.y = self.grid.y.flatten()
+        particles.z = self.grid.z.flatten()
         particles.vx = 0.0 | speed
         particles.vy = 0.0 | speed
         particles.vz = 0.0 | speed
@@ -108,36 +110,48 @@ class HydroGridAndNbody(object):
         
         
     def evolve(self, time):
-        masses = self.gridcode.grid.rho * self.volume * 1.0 / 8.0
-        self.staggered_grid.p000[1:,1:,1:] = masses
-        self.staggered_grid.p100[:-1,1:,1:] = masses
-        self.staggered_grid.p010[1:,:-1,1:] = masses
-        self.staggered_grid.p110[:-1,:-1,1:] = masses
-        self.staggered_grid.p001[1:,1:,:-1] = masses
-        self.staggered_grid.p101[:-1,1:,:-1] = masses
-        self.staggered_grid.p011[1:,:-1,:-1] = masses
-        self.staggered_grid.p111[:-1,:-1,:-1] = masses
+        #masses = self.gridcode.grid.rho * self.volume * 1.0 / 8.0
+        #self.staggered_grid.p000[1:,1:,1:] = masses
+        #self.staggered_grid.p100[:-1,1:,1:] = masses
+        # self.staggered_grid.p010[1:,:-1,1:] = masses
+        #self.staggered_grid.p110[:-1,:-1,1:] = masses
+        #self.staggered_grid.p001[1:,1:,:-1] = masses
+        #self.staggered_grid.p101[:-1,1:,:-1] = masses
+        #self.staggered_grid.p011[1:,:-1,:-1] = masses
+        #self.staggered_grid.p111[:-1,:-1,:-1] = masses
         
-        self.staggered_grid.masses = (
-            self.staggered_grid.p000 + 
-            self.staggered_grid.p100 + 
-            self.staggered_grid.p010 +
-            self.staggered_grid.p110 +
-            self.staggered_grid.p001 +
-            self.staggered_grid.p101 +
-            self.staggered_grid.p011 +
-            self.staggered_grid.p111
-        )
+        #self.staggered_grid.masses = (
+        #    self.staggered_grid.p000 + 
+        #    self.staggered_grid.p100 + 
+        #    self.staggered_grid.p010 +
+        #    self.staggered_grid.p110 +
+        #    self.staggered_grid.p001 +
+        #    self.staggered_grid.p101 +
+        #    self.staggered_grid.p011 +
+        #    self.staggered_grid.p111
+        #)
         
-        self.particles.mass = self.staggered_grid.masses.flatten()
+        #self.particles.mass = self.staggered_grid.masses.flatten()
+        self.particles.mass = (self.gridcode.grid.rho * self.volume).flatten()
         self.from_model_to_nbody.copy_attribute('mass')
-        print "getting potential enery"
+        
+        correction = (length ** 3) / (mass * (time ** 2))
+        print correction, nbody_system.G
+        
+        print "getting potential energy"
         potential = self.nbodycode.get_potential_at_point(
             self.eps,
             self.x,
             self.y,
             self.z
+            
         )
+        print potential.shape, self.gridcode.potential_grid.shape, self.grid.shape
+        self.staggered_grid.rho  = 0.0 | density
+        self.staggered_grid[1:-1,1:-1,1:-1].rho = self.gridcode.grid.rho
+        correction = ((self.staggered_grid.rho * self.volume) / numpy.sqrt(self.nbodycode.parameters.epsilon_squared)) * nbody_system.G
+        print correction.flatten().shape, potential.shape
+        potential = potential + correction.flatten()
         print "got potential enery"
         potential = potential.reshape(self.gridcode.potential_grid.shape)
         self.gridcode.potential_grid.potential = potential 
@@ -187,11 +201,12 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
         self.staggered_grid.p001 = 0.0 | mass
         self.staggered_grid.p101 = 0.0 | mass
         
+        self.normal_grid = Grid.create(self.gridcode.grid.shape, corner1 - corner0 + delta)
         particles = Particles(self.staggered_grid.size)
         particles.mass = 0.0 | mass
-        particles.x = self.staggered_grid.x.flatten()
-        particles.y = self.staggered_grid.y.flatten()
-        particles.z = self.staggered_grid.z.flatten()
+        particles.x = self.normal_grid.x.flatten()
+        particles.y = self.normal_grid.y.flatten()
+        particles.z = self.normal_grid.z.flatten()
         particles.vx = 0.0 | speed
         particles.vy = 0.0 | speed
         particles.vz = 0.0 | speed
@@ -243,7 +258,8 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
             self.staggered_grid.p111
         )
         
-        self.particles.mass = self.staggered_grid.masses.flatten()
+        #self.particles.mass = self.staggered_grid.masses.flatten()
+        self.particles.mass = self.gridcode.grid.rho * self.volume
         self.from_model_to_nbody.copy_attribute('mass')
         print "getting acceleration field"
         acc_x, acc_y, acc_z = self.nbodycode.get_gravity_at_point(
@@ -253,9 +269,9 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
             self.z
         )
         print "got acceleration field"
-        acc_x  = acc_x.reshape(self.grid.shape)
-        acc_y  = acc_y.reshape(self.grid.shape)
-        acc_z  = acc_z.reshape(self.grid.shape)
+        acc_x  =  acc_x.reshape(self.grid.shape)
+        acc_y  =  acc_y.reshape(self.grid.shape)
+        acc_z  =  acc_z.reshape(self.grid.shape)
         self.gridcode.acceleration_grid._set_values(None, ["fx","fy","fz"], [acc_x, acc_y, acc_z]) 
         
         print "evolve hydro", time
@@ -298,10 +314,8 @@ class CalculateSolutionIn3D(object):
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.3
-        result.set_four_pi_G( 4 * pi ) # G == 1
-        print (self.total_mass / (self.size **3))
-        
-        result.set_grav_mean_rho(self.rho_mean.value_in(density)) #(self.total_mass / (self.size **3)).value_in(density))
+        result.set_four_pi_G( 4.0 * pi ) # G == 1
+        result.set_grav_mean_rho(self.rho_mean.value_in(density))
         return result
         
     def new_instance_of_athena_code(self):
@@ -322,6 +336,7 @@ class CalculateSolutionIn3D(object):
         nbodycode = PhiGRAPE(mode="gpu")
         #nbodycode = Octgrav(mode="gpu")
         nbodycode.initialize_code()
+        nbodycode.parameters.epsilon_squared = (self.size / (10000.0 * self.number_of_grid_points)) ** 2
         nbodycode.commit_parameters()
         
         result = HydroGridAndNbody(gridcode, nbodycode)
@@ -333,6 +348,7 @@ class CalculateSolutionIn3D(object):
         nbodycode = PhiGRAPE(mode="gpu")
         #nbodycode = Octgrav(mode="gpu")
         nbodycode.initialize_code()
+        nbodycode.parameters.epsilon_squared = (self.size / (10000.0 * self.number_of_grid_points)) ** 2
         nbodycode.commit_parameters()
         
         result = HydroGridAndNbodyWithAccelerationTransfer(gridcode, nbodycode)
@@ -473,7 +489,7 @@ def main(**options):
     
     print "calculating shock using code"
     model = CalculateSolutionIn3D(**options)
-    for t in range(200):
+    for t in range(50):
         grid = model.get_solution_at_time( t * 0.1 | time)
         print "saving data"
         store_attributes_of_line(grid, yindex = center, zindex = center, time = t, **options)
