@@ -73,7 +73,11 @@ module amuse_helpers
       call evolve()
     endif
     ret=0
-    if(time.NE.tend) ret=-1
+    if(abs(time-tend).LT.1.e-15) time=tend
+    if(time.NE.tend) then
+      print*,time.LE.tend,time-tend,time,tend,nf,lastframe,frametime
+      ret=-1
+    endif  
   end function
 
   function amuse_endrun() result(ret)
@@ -118,6 +122,9 @@ module amuse_helpers
   end function
 
   function amuse_commit_parameters() result(ret)
+    integer :: i,j,k,ret
+    character(len=10),parameter :: str_length_unit="default"
+
     ret = 0
     write(unit=log_unit,fmt="(2/,A,/)") "----- Mesh -----"
     write(unit=log_unit,fmt="(A,3I5)") "1) Number of mesh points: ", &
