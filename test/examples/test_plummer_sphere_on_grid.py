@@ -145,7 +145,122 @@ class HydroGridAndNbody(object):
         print "evolve hydro", time
         self.gridcode.evolve(time)
         print "end evolve hydro"
+
+
+class HydroGridAndNbodyWithAccelerationTransfer(object):
+    
+    def __init__(self, gridcode, nbodycode):
+        self.gridcode = gridcode
+        self.nbodycode = nbodycode
         
+        self.gridcode.grid.add_vector_attribute("acceleration_field", ["fx","fy","fz"])
+    
+    def setup_positions_for_potential_grid(self):
+        self.x = self.gridcode.acceleration_grid.x.flatten()
+        self.y = self.gridcode.acceleration_grid.y.flatten()
+        self.z = self.gridcode.acceleration_grid.z.flatten()
+        self.eps =  self.x.aszeros()
+        
+    def setup_particles_in_nbodycode(self):
+        staggered_grid_shape =  numpy.asarray(self.gridcode.grid.shape) + 1
+        corner0 = self.gridcode.grid[0][0][0].position
+        corner1 = self.gridcode.grid[-1][-1][-1].position
+        
+        delta = self.gridcode.grid[1][1][1].position - corner0
+        print delta.prod()
+        self.volume = delta.prod()
+        staggered_corner0 = corner0 - delta
+        staggered_corner1 = corner1
+        self.staggered_grid = Grid.create(staggered_grid_shape, staggered_corner1 - staggered_corner0 + delta)
+        self.staggered_grid.x += staggered_corner0.x
+        self.staggered_grid.y += staggered_corner0.x
+        self.staggered_grid.z += staggered_corner0.x
+        
+        self.staggered_grid.p000 = 0.0 | mass
+        self.staggered_grid.p100 = 0.0 | mass
+        self.staggered_grid.p010 = 0.0 | mass
+        self.staggered_grid.p110 = 0.0 | mass
+        self.staggered_grid.p000 = 0.0 | mass
+        self.staggered_grid.p100 = 0.0 | mass
+        self.staggered_grid.p011 = 0.0 | mass
+        self.staggered_grid.p111 = 0.0 | mass
+        self.staggered_grid.p001 = 0.0 | mass
+        self.staggered_grid.p101 = 0.0 | mass
+        
+        particles = Particles(self.staggered_grid.size)
+        particles.mass = 0.0 | mass
+        particles.x = self.staggered_grid.x.flatten()
+        particles.y = self.staggered_grid.y.flatten()
+        particles.z = self.staggered_grid.z.flatten()
+        particles.vx = 0.0 | speed
+        particles.vy = 0.0 | speed
+        particles.vz = 0.0 | speed
+        particles.radius = 0.0 | length
+        
+        self.nbodycode.particles.add_particles(particles)
+        self.from_model_to_nbody = particles.new_channel_to(self.nbodycode.particles)
+        self.nbodycode.commit_particles()
+        self.particles = particles
+        
+    @property
+    def grid(self):
+        return self.gridcode.grid
+        
+    @property
+    def parameters(self):
+        return self.gridcode.parameters
+    
+    def commit_parameters(self):
+        self.gridcode.commit_parameters()
+        self.setup_positions_for_potential_grid()
+        self.setup_particles_in_nbodycode()
+        
+    def initialize_grid(self):
+        self.gridcode.initialize_grid()
+        self.position = self.gridcode.grid.position
+        
+        
+        
+    def evolve(self, time):
+        masses = self.gridcode.grid.rho * self.volume * 1.0 / 8.0
+        self.staggered_grid.p000[1:,1:,1:] = masses
+        self.staggered_grid.p100[:-1,1:,1:] = masses
+        self.staggered_grid.p010[1:,:-1,1:] = masses
+        self.staggered_grid.p110[:-1,:-1,1:] = masses
+        self.staggered_grid.p001[1:,1:,:-1] = masses
+        self.staggered_grid.p101[:-1,1:,:-1] = masses
+        self.staggered_grid.p011[1:,:-1,:-1] = masses
+        self.staggered_grid.p111[:-1,:-1,:-1] = masses
+        
+        self.staggered_grid.masses = (
+            self.staggered_grid.p000 + 
+            self.staggered_grid.p100 + 
+            self.staggered_grid.p010 +
+            self.staggered_grid.p110 +
+            self.staggered_grid.p001 +
+            self.staggered_grid.p101 +
+            self.staggered_grid.p011 +
+            self.staggered_grid.p111
+        )
+        
+        self.particles.mass = self.staggered_grid.masses.flatten()
+        self.from_model_to_nbody.copy_attribute('mass')
+        print "getting acceleration field"
+        acc_x, acc_y, acc_z = self.nbodycode.get_gravity_at_point(
+            self.eps,
+            self.x,
+            self.y,
+            self.z
+        )
+        print "got acceleration field"
+        acc_x  = acc_x.reshape(self.grid.shape)
+        acc_y  = acc_y.reshape(self.grid.shape)
+        acc_z  = acc_z.reshape(self.grid.shape)
+        self.gridcode.acceleration_grid._set_values(None, ["fx","fy","fz"], [acc_x, acc_y, acc_z]) 
+        
+        print "evolve hydro", time
+        self.gridcode.evolve(time)
+        print "end evolve hydro"
         
 class CalculateSolutionIn3D(object):
     size = 10.0 | length
@@ -212,9 +327,15 @@ class CalculateSolutionIn3D(object):
         result = HydroGridAndNbody(gridcode, nbodycode)
         return result
         
-    def new_instance_of_capreole_code(self):
-        result=Capreole(number_of_workers=self.number_of_workers)
-        result.initialize_code()
+    def new_instance_of_capreole_and_nbody_code(self):
+        gridcode=Capreole(number_of_workers=self.number_of_workers)
+        gridcode.initialize_code()
+        nbodycode = PhiGRAPE(mode="gpu")
+        #nbodycode = Octgrav(mode="gpu")
+        nbodycode.initialize_code()
+        nbodycode.commit_parameters()
+        
+        result = HydroGridAndNbodyWithAccelerationTransfer(gridcode, nbodycode)
         return result
         
     def set_parameters(self, instance):
@@ -346,24 +467,6 @@ def new_option_parser():
         help="name of the code to use"
     )
     return result
-
-def xtest_sperical_collapse():
-    
-    model = CalculateSolutionIn3D()
-    model.name_of_the_code = "athena"
-    model.dimensions_of_mesh = (500,1,1)
-    
-    grid = model.get_solution_at_time(0.12 | time)
-    model_x = grid.x[...,0,0]
-    density = grid.rho[...,0,0]
-    
-    index_in_model = searchsorted(model_x.value_in(length), 0.56)
-    index_in_exact = searchsorted(x.value_in(length), 0.56)
-    
-    #store_attributes_of_line(grid, name_of_the_code = "athena-test", number_of_grid_points = 500, number_of_workers = 1)
-    
-    #assert abs((rho[index_in_exact] - density[index_in_model])/ density[index_in_model]) < 1.e-3 |units.none
-    
     
 def main(**options):
     center = options['number_of_grid_points'] / 2

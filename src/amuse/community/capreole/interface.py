@@ -264,9 +264,15 @@ class GLCapreoleInterface(CapreoleInterface):
 
 class Capreole(CodeInterface):
 
-    def __init__(self, **options):
+    def __init__(self, unit_converter = None, **options):
+        self.unit_converter = unit_converter
+        
         CodeInterface.__init__(self,  CapreoleInterface(**options), **options)
     
+    def define_converter(self, object):
+        if not self.unit_converter is None:
+            object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+            
     def define_properties(self, object):
         object.add_property('get_time', time, "model_time")
         
@@ -285,6 +291,7 @@ class Capreole(CodeInterface):
         density = mass / (length**3)
         momentum_density =  mass / (time * (length**2))
         energy_density =  mass / ((time**2) * length)
+        acceleration =  length / time ** 2
         
         object.add_method(
             'set_grid_state',
@@ -321,6 +328,19 @@ class Capreole(CodeInterface):
             object.ERROR_CODE,)
         )
     
+        object.add_method(
+            'get_gravity_field',
+            (object.INDEX, object.INDEX, object.INDEX),
+            (acceleration, acceleration, acceleration,
+            object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_gravity_field',
+            (object.INDEX, object.INDEX, object.INDEX,
+             acceleration, acceleration, acceleration,),
+            (object.ERROR_CODE,)
+        )
+    
         
     
     def define_particle_sets(self, object):
@@ -334,6 +354,12 @@ class Capreole(CodeInterface):
         object.add_getter('grid', 'get_density', names=('rho',))
         object.add_getter('grid', 'get_momentum_density', names=('rhovx','rhovy','rhovz'))
         object.add_getter('grid', 'get_energy_density', names=('energy',))
+        
+        object.define_grid('acceleration_grid')
+        object.set_grid_range('acceleration_grid', 'get_index_range_inclusive')
+        object.add_getter('acceleration_grid', 'get_position_of_index', names=('x','y','z'))
+        object.add_setter('acceleration_grid', 'set_gravity_field', names=('fx','fy','fz'))
+        object.add_getter('acceleration_grid', 'get_gravity_field', names=('fx','fy','fz'))
         
         #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
         #object.add_setter('grid', 'set_density', names=('rho',))
