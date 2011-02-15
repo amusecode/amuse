@@ -76,6 +76,10 @@ class AbstractGrid(AbstractSet):
     
     def __len__(self):
         return self.shape[0]
+    
+    def __iter__(self):
+        for i in range(self.shape[0]):
+            yield self[i]
         
 class Grid(AbstractGrid):
     def __init__(self, number_of_points_in_x_direction = 1, number_of_points_in_y_direction = 1, number_of_points_in_z_direction = 1, storage = None):
@@ -186,8 +190,9 @@ class SubGrid(AbstractGrid):
     def _get_writeable_attribute_names(self):
         return self._private.grid._get_writeable_attribute_names()
     
-        
-
+    @property
+    def shape(self):
+        return indexing.shape_after_index(self._private.grid.shape, self._private.indices )
 
     def indices(self):
         return [x[self._private.indices] for x in self._original_set().indices()]   

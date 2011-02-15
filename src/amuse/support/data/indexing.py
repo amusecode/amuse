@@ -5,6 +5,7 @@ numpy indexing options.
 
 import numpy
 import collections
+from types import EllipsisType
 
 def unpack_slice(slice):
     start = 0 if slice.start is None else slice.start
@@ -73,6 +74,15 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
     if isinstance(index, tuple):
         if is_all_int(index):
             return number_of_dimensions - len(index)
+        else:
+            result = number_of_dimensions
+            for x in index:
+                if isinstance(x, EllipsisType):
+                    pass
+                else:
+                    result -= 1
+            return result
+                    
     elif isinstance(index, int) or isinstance(index, long):
         return number_of_dimensions - 1
     elif isinstance(index, slice):
@@ -85,5 +95,37 @@ def number_of_dimensions_after_index(number_of_dimensions, index):
             raise Exception("Not handled yet")
     else:
         raise Exception("Not handled yet")
+    
+def shape_after_index(shape, index):
+    if isinstance(index, tuple):
+        if is_all_int(index):
+            return tuple(shape[len(index):])
+        else:
+            if len(index) > len(shape):
+                raise Exception("Not handled yet")
+                
+            shape_as_list = list(shape)
+            result = []
+            for i,x in enumerate(index):
+                if isinstance(x, EllipsisType):
+                    result.append(shape_as_list[i])
+                else:
+                    pass
+            return tuple(result)
+    elif isinstance(index, int) or isinstance(index, long):
+        return tuple(shape[1:])
+    elif isinstance(index, slice):
+        result = list(shape)
+        result[0] = len(index.indices(shape[0]))
+        return tuple(result)
+    elif isinstance(index, list) or isinstance(index, numpy.ndarray):
+        ndarray = numpy.asarray(index)
+        if ndarray.dtype == 'bool':
+            raise Exception("Not handled yet")
+        else:
+            raise Exception("Not handled yet")
+    else:
+        raise Exception("Not handled yet")
+    
     
     

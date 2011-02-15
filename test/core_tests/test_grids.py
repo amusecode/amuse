@@ -192,9 +192,42 @@ class TestGrids(amusetest.TestCase):
         iarray,jarray,karray = grid.indices()
         self.assertEquals(grid[grid.x>0.4| units.m].indices()[0],  iarray[grid.x>0.4| units.m])
         self.assertEquals(grid[grid.x>0.4| units.m].indices()[1],  jarray[grid.x>0.4| units.m])
-        self.assertEquals(grid[grid.x>0.4| units.m].indices()[2],  karray[grid.x>0.4| units.m])
-       
-            
+        self.assertEquals(grid[grid.x>0.4| units.m].indices()[2],  karray[grid.x>0.4| units.m])  
+        
+    def test13(self):
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEquals(grid[0].shape, (4,2))
+        self.assertEquals(grid[0][0].shape, (2,))
+        self.assertEquals(grid[...,2,1].shape, (5,))
+        
+    def test14(self):
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        self.assertEquals(grid[0].x, grid.x[0])
+        self.assertEquals(grid[0][1].x, grid.x[0][1])
+        self.assertEquals(grid[1][2][1].x, grid.x[1][2][1])
+        self.assertEquals(grid[...,2,1].x, grid.x[...,2,1])
+        self.assertEquals(grid[1,...,1].x, grid.x[1,...,1])
+        self.assertEquals(grid[1,2,...].x, grid.x[1,2,...])
+        self.assertEquals(grid[...,...,1].x, grid.x[...,...,1])
+        self.assertEquals(grid[2,...,...].x, grid.x[2,...,...])
+        self.assertEquals(grid[...,3,...].x, grid.x[...,3,...])
+        self.assertEquals(grid[...,3,...].y, grid.y[...,3,...])
+        self.assertEquals(grid[...,3,...].z, grid.z[...,3,...])
+    
+    def test15(self):
+        
+        grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
+        nk = nj = ni =0
+        for plane1 in grid:
+            nk += 1
+            for plane2 in plane1:
+                nj += 1
+                for plane3 in plane2:
+                    ni += 1
+        self.assertEquals(nk, 5)
+        self.assertEquals(nj, 4 * 5)
+        self.assertEquals(ni, 2 * 4 * 5)
+                    
 class TestIndexing(amusetest.TestCase):
     def test1(self):
         self.assertEquals(2, number_of_dimensions_after_index(3, 1))
