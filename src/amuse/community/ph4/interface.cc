@@ -319,7 +319,7 @@ int evolve(double time)
     // system_time < time[j] + timestep[j].  If synchronization is
     // needed, do it with synchronize_model().
 
-    while (jd->system_time < time) jd->advance(*id, *s);
+    while (jd->system_time < time) jd->advance(*id);
     return 0;
 }
 
@@ -329,7 +329,7 @@ int synchronize_model()
     // default is not to reinitialize the scheduler, as this will be
     // handled later, in recommit_particles().
 
-    jd->synchronize_all(*id, s);
+    jd->synchronize_all(*id);
     return 0;
 }
 

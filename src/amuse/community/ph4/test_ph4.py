@@ -11,7 +11,11 @@ import os
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.data import particle_attributes
-from amuse.community.ph4.interface import ph4
+
+from amuse.community.ph4.interface import ph4 as grav
+#from amuse.community.phiGRAPE.interface import PhiGRAPE as grav
+#from amuse.community.hermite0.interface import Hermite as grav
+
 from amuse.support.codes.core import is_mpd_running
 from amuse.ext.plummer import MakePlummerModel
 from amuse.ext.salpeter import new_salpeter_mass_distribution_nbody
@@ -30,7 +34,7 @@ def print_log(time, gravity, particles, initial_total_energy, total_energy):
 def test_ph4(number_of_stars = 50,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
-             n_workers = 2, use_gpu = 1):
+             n_workers = 1, use_gpu = 1):
 
     print "number_of_stars =", number_of_stars
     print "end_time =", end_time
@@ -39,7 +43,7 @@ def test_ph4(number_of_stars = 50,
     print "use_gpu =", use_gpu
 
     print "initializing the gravity module"
-    gravity = ph4(number_of_workers = n_workers)
+    gravity = grav(number_of_workers = n_workers, redirection = "none")
     gravity.initialize_code()
     gravity.parameters.set_defaults()
 
@@ -59,13 +63,13 @@ def test_ph4(number_of_stars = 50,
     particles.mass = scaled_mass
     particles.radius = 0.0 | nbody_system.length
 
-    print "centering the particles"
+    print "centering particles"
     particles.move_to_center()
     print "scaling particles to virial equilibrium"
     particles.scale_to_standard(smoothing_length_squared
                                 = gravity.parameters.epsilon_squared)
 
-    print "adding the particles"
+    print "adding particles"
     gravity.particles.add_particles(particles)
     gravity.commit_particles()
 

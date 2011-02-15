@@ -3,14 +3,17 @@
 # subsequent versions are hand-coded, so save a copy.  Note that
 # all compiles must use MPICXX, not CXX.
 
+ALL	 = ph4_worker # ph4_worker_gpu
+OPT	  = -O4
+
 MPICXX   ?= mpicxx
 
-CFLAGS   += -Wall -g
+CFLAGS   += -Wall -g $(OPT)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
-SAPPOROLIBS ?= -L/usr/local/sapporo -lsapporo
+SAPPOROLIBS ?= -L/usr/local/sapporo_v1.5 -lsapporo
 BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
 
 LDFLAGS_GPU = $(LDFLAGS) \
@@ -24,8 +27,6 @@ CODELIB = src/libph4.a
 
 CODELIB_GPU = src/libph4gpu.a
 
-
-
 CUDA_LIBS ?= -lcudart
 
 SAPPORO_LIBDIRS ?= -L$(AMUSE_DIR)/lib/sapporo_light
@@ -34,7 +35,7 @@ AMUSE_DIR ?= ../../../..
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
-all: ph4_worker
+all: $(ALL)
 
 save:
 	@ for f in Makefile interface.py interface.cc src/Makefile; do \
@@ -63,5 +64,5 @@ ph4_worker_gpu: worker_code.cc interface.h $(CODELIB_GPU) $(OBJS)
 
 clean:
 	$(RM) -r -f *.so *.dSYM *.o *.pyc worker_code.cc interface.h 
-	$(RM) *~ ph4_worker worker_code.cc
+	$(RM) -f *~ ph4_worker ph4_worker_gpu worker_code.cc
 	make -C src clean
