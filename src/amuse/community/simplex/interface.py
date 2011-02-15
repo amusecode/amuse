@@ -353,8 +353,8 @@ class SimpleX(CommonCode):
         )
 
         object.add_method_parameter(
-            "get_boxsize_parameter",
-            "set_boxsize_parameter", 
+            "get_box_size_parameter",
+            "set_box_size_parameter", 
             "box_size", 
             "boxsize for radiative transfer particle distribution", 
             units.parsec, 
@@ -375,7 +375,7 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.parsec,
                 units.parsec,
-                0.001 * units.amu / units.cm**3,
+                units.amu / units.cm**3,
                 1.0e48 / units.s,
                 units.none
             ),
@@ -402,7 +402,7 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.parsec,
                 units.parsec,
-                0.001 * units.amu / units.cm**3,
+                units.amu / units.cm**3,
                 1.0e48 / units.s,
                 units.none,
                 object.ERROR_CODE
@@ -415,7 +415,7 @@ class SimpleX(CommonCode):
                 units.parsec,
                 units.parsec,
                 units.parsec,
-                0.001 * units.amu / units.cm**3,
+                units.amu / units.cm**3,
                 1.0e48 / units.s,
                 units.none
             ),
@@ -451,7 +451,7 @@ class SimpleX(CommonCode):
             "set_density",
             (
                 object.NO_UNIT,
-                0.001 * units.amu / units.cm**3,
+                units.amu / units.cm**3,
             ),
             (
                 object.ERROR_CODE
@@ -463,7 +463,7 @@ class SimpleX(CommonCode):
                 object.NO_UNIT,
             ),
             (
-                0.001 * units.amu / units.cm**3,
+                units.amu / units.cm**3,
                 object.ERROR_CODE
             )
         )

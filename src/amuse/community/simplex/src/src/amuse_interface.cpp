@@ -624,7 +624,7 @@ int new_particle(int *id, double x,double y,double z,double rho,
     
     (*SimpleXGrid).get_sizeBox(&bs);
     if(bs==0) return -2;
-    x/=bs;y/=bs;z/=bs;
+    x=(x/bs)+0.5d;y=y/bs+0.5;z=z/bs+0.5;
     if (x<0 || x>1 || 
         y<0 || y>1 ||
         z<0 || z>1 ) return -3;
@@ -672,7 +672,8 @@ int get_state(int id, double *x, double *y, double *z, double *rho,
     MPI::COMM_WORLD.Reduce(&send[0],&recv[0],6,MPI::DOUBLE,MPI::SUM,0); 
     MPI::COMM_WORLD.Barrier();
     fx=recv[0];fy=recv[1];fz=recv[2];frho=recv[3];fflux=recv[4];fxion=recv[5];
-    *x=fx*bs;*y=fy*bs;*z=fz*bs;*rho=frho;*flux=fflux;*xion=fxion;
+    *x=(fx-0.5d)*bs;*y=(fy-0.5)*bs;*z=(fz-0.5)*bs;*rho=frho;*flux=fflux;*xion=fxion;
+    
     return totalret-1;
 }
 
@@ -692,9 +693,9 @@ int get_position(int id, double *x, double *y, double *z){
     send[2] = fz;
     MPI::COMM_WORLD.Reduce(&send[0], &recv[0], 3, MPI::DOUBLE, MPI::SUM, 0);
     MPI::COMM_WORLD.Barrier();
-    *x = recv[0]*bs;
-    *y = recv[1]*bs;
-    *z = recv[2]*bs;
+    *x = (recv[0]-0.5d)*bs;
+    *y = (recv[1]-0.5d)*bs;
+    *z = (recv[2]-0.5d)*bs;
     return totalret-1;
 }
 
@@ -747,7 +748,7 @@ int set_state(int id, double x, double y, double z, double rho,
     
     (*SimpleXGrid).get_sizeBox(&bs);
     if(bs==0) return -2;
-    x/=bs;y/=bs;z/=bs;
+    x=x/bs+0.5;y=y/bs+0.5;z=z/bs+0.5;
     if (x<0 || x>1 || 
         y<0 || y>1 ||
         z<0 || z>1 ) return -3;
@@ -764,7 +765,7 @@ int set_position(int id, double x, double y, double z){
     
     (*SimpleXGrid).get_sizeBox(&bs);    
     if(bs==0) return -2;
-    x/=bs;y/=bs;z/=bs;
+    x=x/bs+0.5;y=y/bs+0.5;z=z/bs+0.5;
     if (x<0 || x>1 || 
         y<0 || y>1 ||
         z<0 || z>1 ) return -3;
