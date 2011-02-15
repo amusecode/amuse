@@ -4,7 +4,7 @@ from amuse.support.units import units
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.data import core
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.support.data.indexing import *
 

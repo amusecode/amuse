@@ -5,7 +5,7 @@ from amuse.community import *
 from amuse.community.interface.se import StellarEvolution, \
     InternalStellarStructureInterface, InternalStellarStructure
 
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution, 
         InternalStellarStructureInterface): 
@@ -662,10 +662,10 @@ class MESAInterface(LegacyInterface, LiteratureRefs, StellarEvolution,
         """
         return function
 
-class MESA(CodeInterface, InternalStellarStructure):
+class MESA(InCodeComponentImplementation, InternalStellarStructure):
     
     def __init__(self, **options):
-        CodeInterface.__init__(self, MESAInterface(), **options)
+        InCodeComponentImplementation.__init__(self, MESAInterface(), **options)
         self.set_MESA_paths(self.default_path_to_inlist, 
             self.default_path_to_MESA_data, self.get_data_directory())
         self.parameters.set_defaults()

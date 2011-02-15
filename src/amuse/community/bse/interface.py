@@ -224,10 +224,10 @@ class BSEParticles(Particles):
     def _state_attributes(self):
         return ["mass1", "mass2", "radius1", "radius2"]
     
-class BSE(CodeInterface):
+class BSE(InCodeComponentImplementation):
     
     def __init__(self, **options):
-        CodeInterface.__init__(self, BSEInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self, BSEInterface(**options), **options)
 
         self.parameters.set_defaults()
         

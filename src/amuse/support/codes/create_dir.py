@@ -229,7 +229,7 @@ class CreateADirectoryAndPopulateItWithFiles(object):
         
     @late
     def name_of_the_superclass_for_the_code_interface_class(self):
-        return CodeInterface.__name__
+        return InCodeComponentImplementation.__name__
         
     def start(self):
         

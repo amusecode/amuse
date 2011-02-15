@@ -20,10 +20,10 @@ class SebaInterface(LegacyInterface):
         function.can_handle_array = True
         return function
     
-class Seba(CodeInterface):
+class Seba(InCodeComponentImplementation):
 
     def __init__(self, **options):
-        CodeInterface.__init__(self,  SebaInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self,  SebaInterface(**options), **options)
     
     def define_methods(self, object):
         object.add_method(

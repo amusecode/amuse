@@ -5,7 +5,7 @@ from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.codes import python_code
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
 
@@ -185,10 +185,10 @@ class ForTestingImplementation(object):
         int_out.value = int_in1 * int_in2
         return 0
         
-class ForTesting(CodeInterface):
+class ForTesting(InCodeComponentImplementation):
     
     def __init__(self, **options):
-        CodeInterface.__init__(self, ForTestingInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self, ForTestingInterface(**options), **options)
     
     def define_methods(self, object):
         object.add_method("sleep", (units.s,), (object.ERROR_CODE,))

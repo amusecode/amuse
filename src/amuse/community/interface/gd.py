@@ -3,7 +3,7 @@ Stellar Dynamics Interface Defintion
 """
 
 from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.units import nbody_system
 from amuse.support.units import generic_unit_converter
 from amuse.community.interface import common
@@ -803,7 +803,7 @@ class GravitationalDynamics(common.CommonCode):
     def __init__(self, legacy_interface, unit_converter = None,  **options):
         self.unit_converter = unit_converter
         
-        CodeInterface.__init__(self, legacy_interface, **options)
+        InCodeComponentImplementation.__init__(self, legacy_interface, **options)
 
     def define_properties(self, object):
         object.add_property("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)

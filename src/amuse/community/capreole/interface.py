@@ -262,12 +262,12 @@ class GLCapreoleInterface(CapreoleInterface):
         return function
 
 
-class Capreole(CodeInterface):
+class Capreole(InCodeComponentImplementation):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
         
-        CodeInterface.__init__(self,  CapreoleInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self,  CapreoleInterface(**options), **options)
     
     def define_converter(self, object):
         if not self.unit_converter is None:

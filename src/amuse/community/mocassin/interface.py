@@ -497,10 +497,10 @@ class MocassinInterface(LegacyInterface, CommonCodeInterface):
 
 units.ryd = 13.6 * derivedsi.eV
 
-class Mocassin(CodeInterface):
+class Mocassin(InCodeComponentImplementation):
     
     def __init__(self, **options):
-        CodeInterface.__init__(self,  MocassinInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self,  MocassinInterface(**options), **options)
     
     def get_index_range_inclusive(self, index_of_grid = 1):
         ni, nj, nk = self.get_max_indices(index_of_grid)

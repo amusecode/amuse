@@ -11,7 +11,7 @@ from amuse.support.codes import create_c
 from amuse.support.codes import create_fortran
 
 from amuse.support.codes import stopping_conditions
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 import subprocess
 import os
@@ -94,10 +94,10 @@ class ForTestingInterface(LegacyInterface, stopping_conditions.StoppingCondition
         function.can_handle_array = True
         return function  
 
-class ForTesting(CodeInterface):
+class ForTesting(InCodeComponentImplementation):
     def __init__(self, exefile, **options):
         self.stopping_conditions = stopping_conditions.StoppingConditions(self)
-        CodeInterface.__init__(self, ForTestingInterface(exefile, **options), **options)
+        InCodeComponentImplementation.__init__(self, ForTestingInterface(exefile, **options), **options)
     
     def define_methods(self, object):
         self.stopping_conditions.define_methods(object)

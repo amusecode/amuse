@@ -2045,12 +2045,12 @@ class MpiAmrVacInterface(LegacyInterface, CommonCodeInterface):
     
     
     
-class MpiAmrVac(CodeInterface):
+class MpiAmrVac(InCodeComponentImplementation):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
         
-        CodeInterface.__init__(self,  MpiAmrVacInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self,  MpiAmrVacInterface(**options), **options)
     
     def define_converter(self, object):
         if self.unit_converter is None:

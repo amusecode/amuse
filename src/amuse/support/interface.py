@@ -1021,7 +1021,7 @@ class OverriddenCodeInterface(object):
     def __getattr__(self, name):
         return self.code_interface.__getattr__(name)
 
-class CodeInterface(OldObjectsBindingMixin, OptionalAttributes):
+class InCodeComponentImplementation(OldObjectsBindingMixin, OptionalAttributes):
 
     def __init__(self, legacy_interface, **options):
         OptionalAttributes.__init__(self, **options)

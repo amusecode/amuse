@@ -5,7 +5,7 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.codes import channel
 
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.test.amusetest import TestWithMPI
 from amuse.support.codes import create_c
@@ -278,10 +278,10 @@ class ForTestingInterface(LegacyInterface):
         return function  
     
     
-class ForTesting(CodeInterface):
+class ForTesting(InCodeComponentImplementation):
     
     def __init__(self, exefile, **options):
-        CodeInterface.__init__(self, ForTestingInterface(exefile, **options), **options)
+        InCodeComponentImplementation.__init__(self, ForTestingInterface(exefile, **options), **options)
     
     def define_methods(self, object):
         object.add_method(

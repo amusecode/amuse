@@ -5,7 +5,7 @@ from amuse.support.units import units
 from amuse.support.units import constants
 
 from amuse.support.data.core import Particles, ParticlesSubset
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 class SSEInterface(LegacyInterface, LiteratureRefs): 
     """
@@ -142,10 +142,10 @@ class SSEParticles(Particles):
         
         
 
-class SSE(CodeInterface):
+class SSE(InCodeComponentImplementation):
     
     def __init__(self, **options):
-        CodeInterface.__init__(self, SSEInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self, SSEInterface(**options), **options)
         
         
         self.parameters.set_defaults()

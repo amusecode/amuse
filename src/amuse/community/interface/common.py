@@ -3,7 +3,7 @@ Common code functions
 """
 
 from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 class CommonCodeInterface(object):
 
@@ -87,7 +87,7 @@ class CommonCodeInterface(object):
     def invoke_state_change(self):
         pass
 
-class CommonCode(CodeInterface):
+class CommonCode(InCodeComponentImplementation):
 
     def define_state(self, object):
         object.set_initial_state('UNINITIALIZED')

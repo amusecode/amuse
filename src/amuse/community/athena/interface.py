@@ -555,13 +555,13 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
     
     
-class Athena(CodeInterface):
+class Athena(InCodeComponentImplementation):
 
     def __init__(self, unit_converter = None, **options):
         self.unit_converter = unit_converter
         
         self.stopping_conditions = StoppingConditions(self)
-        CodeInterface.__init__(self,  AthenaInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self,  AthenaInterface(**options), **options)
         
     def define_converter(self, object):
         if self.unit_converter is None:

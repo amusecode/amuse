@@ -5,7 +5,7 @@ from amuse.support.units import units
 from amuse.support.units import constants
 from amuse.support.units import nbody_system
 from amuse.support.data import core
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 
 import numpy
 import time
@@ -191,10 +191,10 @@ class TestParticlesWithBinding(amusetest.TestCase):
         set_state = set_mass
         get_state = get_mass
         
-    class TestInterface(CodeInterface):
+    class TestInterface(InCodeComponentImplementation):
         
         def __init__(self):
-            CodeInterface.__init__(self, TestParticlesWithBinding.TestLegacyCode())
+            InCodeComponentImplementation.__init__(self, TestParticlesWithBinding.TestLegacyCode())
         
         def define_methods(self, handler):
             handler.add_method('get_mass',(handler.NO_UNIT,), (units.g, handler.ERROR_CODE))

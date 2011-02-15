@@ -5,7 +5,7 @@ from amuse.support import interface
 
 from amuse.test import amusetest
 
-class ExampleParticlesInterface(interface.CodeInterface):
+class ExampleParticlesInterface(interface.InCodeComponentImplementation):
     """This is an example class to demonstrate how to work with incode particle sets
     using the object mapping interface.
     

@@ -4,7 +4,7 @@ from amuse.community.interface.se import StellarEvolution, InternalStellarStruct
     InternalStellarStructureInterface
 from amuse.community.interface.common import CommonCodeInterface
 
-from amuse.support.interface import CodeInterface
+from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import OptionalAttributes, option
 
 import os
@@ -645,10 +645,10 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution,
         """
         return function
         
-class EVtwin(CodeInterface, InternalStellarStructure):
+class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
     
     def __init__(self, **options):
-        CodeInterface.__init__(self, EVtwinInterface(**options), **options)
+        InCodeComponentImplementation.__init__(self, EVtwinInterface(**options), **options)
         self.set_ev_path(self.data_directory)        
         self.set_init_dat_name(self.init_dat_name)        
         self.set_init_run_name(self.init_run_name)        

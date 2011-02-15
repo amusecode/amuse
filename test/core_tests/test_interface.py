@@ -27,7 +27,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_mass', nbody_system.mass)
@@ -47,7 +47,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_mass', nbody_system.mass)
@@ -66,7 +66,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
         convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
         
         original = self.TestClass()
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
 
         handler = instance.get_handler('UNIT')
         handler.set_nbody_converter(convert_nbody)
@@ -86,7 +86,7 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
 
     def test4(self):
         original = self.TestClass()
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
 
         handler = instance.get_handler('METHOD')
         handler.add_method('add_to_length', (units.m,), units.m, public_name = 'add_10')
@@ -111,7 +111,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     def test1(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
 
         handler = instance.get_handler('METHOD')
         handler.add_method('add_10_to_length', (units.m,), units.m)
@@ -125,7 +125,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     def test2(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -137,7 +137,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     def test3(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('PROPERTY')
@@ -148,7 +148,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     def test4(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('PROPERTY')
@@ -160,7 +160,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     def test5(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_state', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
@@ -174,7 +174,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
     def test6(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_state_error', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
@@ -217,7 +217,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test1(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         self.assertTrue(instance.always_works())
         instance.move_to_state_1()
@@ -226,7 +226,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test2(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         handler = instance.get_handler('STATE')
         
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -243,7 +243,7 @@ class CodeInterfaceTests(amusetest.TestCase):
         
     
     def test3(self):
-        class TestCodeInterface(interface.CodeInterface):
+        class TestCodeInterface(interface.InCodeComponentImplementation):
             
             def move_to_state_1(self):
                 self.overridden().move_to_state_1()
@@ -270,7 +270,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test4(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('STATE')
         
@@ -286,7 +286,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test5(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -303,7 +303,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test6(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -335,7 +335,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test7(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -370,7 +370,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test8(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -390,7 +390,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test9(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -423,7 +423,7 @@ class CodeInterfaceTests(amusetest.TestCase):
     def test10(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('STATE')
         handler.add_transition('ZERO', 'ONE', 'move_to_state_1')
@@ -462,7 +462,7 @@ class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     def test1(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -479,7 +479,7 @@ class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     def test2(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -496,7 +496,7 @@ class CodeInterfaceWithUnitsAndStateTests(amusetest.TestCase):
     def test3(self):
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -525,7 +525,7 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
         
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass', (), (units.m, handler.ERROR_CODE,))
@@ -557,7 +557,7 @@ class CodeInterfaceWithParticlesTests(amusetest.TestCase):
         
         original = self.TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('PROPERTY')
         handler.add_property('get_mass', nbody_system.mass)
@@ -647,7 +647,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test1(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
@@ -680,7 +680,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test2(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
@@ -721,7 +721,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test3(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
@@ -757,7 +757,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test4(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (units.kg, handler.ERROR_CODE))
@@ -795,7 +795,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test5(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (nbody_system.mass, handler.ERROR_CODE))
@@ -836,7 +836,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     def test6(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_mass',(handler.NO_UNIT,), (nbody_system.mass, handler.ERROR_CODE))
@@ -908,7 +908,7 @@ class TestGridWithBinding(amusetest.TestCase):
     def test1(self):
         original = self.TestInterface()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         handler = instance.get_handler('METHOD')
         handler.add_method('get_a',(handler.INDEX, handler.INDEX,handler.INDEX,), (units.kg,))
@@ -950,7 +950,7 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
                 return function
             
         original = TestClass()
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('METHOD')
@@ -959,7 +959,7 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
             expected_message = "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', "
             "the number of outputs do not match, expected 3, actual 2.")
             
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         handler = instance.get_handler('METHOD')
         handler.add_method('echo_inputs', (units.m, units.s), (units.s, units.m, units.s, handler.ERROR_CODE))
         self.assertRaises(exceptions.AmuseException, lambda: instance.echo_inputs, 
@@ -982,7 +982,7 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
             
         original = TestClass()
         
-        instance = interface.CodeInterface(original)
+        instance = interface.InCodeComponentImplementation(original)
         
         
         handler = instance.get_handler('METHOD')

@@ -448,8 +448,8 @@ class mmcInterface(LegacyInterface):
         
     
     
-class mmc(CodeInterface):
+class mmc(InCodeComponentImplementation):
 
     def __init__(self):
-        CodeInterface.__init__(self,  NearestNeighborInterface())
+        InCodeComponentImplementation.__init__(self,  NearestNeighborInterface())
     

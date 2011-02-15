@@ -17,8 +17,8 @@ class mmc2Interface(LegacyInterface):
         return function
         
     
-class mmc2(CodeInterface):
+class mmc2(InCodeComponentImplementation):
 
     def __init__(self):
-        CodeInterface.__init__(self,  mmc2Interface())
+        InCodeComponentImplementation.__init__(self,  mmc2Interface())
     
