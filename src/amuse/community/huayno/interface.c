@@ -372,7 +372,7 @@ int commit_parameters()
   return 0;
 }
 
-int get_potential(double x,double y,double z, double *pot)
+int get_potential(int id, double *pot)
 {
   return -2;
 }

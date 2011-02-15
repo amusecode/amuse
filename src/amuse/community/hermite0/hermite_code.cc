@@ -1252,10 +1252,10 @@ int get_potential_energy(double *potential_energy)
     return 0;
 }
 
-int get_potential(double x, double y, double z,  double *V)
+int get_potential(int id,  double *value)
 {
-  //only for compliance reasons, will be replaced by get_potential_at_point?
-  return -2;
+    // get the potential energy of one particle
+    return -2;
 }
 
 int get_potential_at_point(double eps, double x, double y, double z, double *phi)

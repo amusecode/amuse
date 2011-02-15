@@ -1773,7 +1773,7 @@ int get_total_mass(double *mass){
     *mass = SysState.Mass;
     return 0;
 }
-int get_potential(double x, double y, double z, double *V){
+int get_potential(int id, double * value){
     return -2;
 }
 int get_kinetic_energy(double *kinetic_energy){

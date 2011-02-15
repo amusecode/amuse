@@ -353,15 +353,14 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
     @legacy_function
     def get_potential():
         """
-        Retrieve the potential at a (particle) position (vector).
-        
-        *Need better description of use and relation to get_acceleration and get_gravity*
+        Retrieve the potential at a particle position, for retrieving the potential anywhere in
+        the field use get_potential_at_point.
         """
         function = LegacyFunctionSpecification()
-        function.addParameter('x', dtype='float64', direction=function.IN, description = "The current position vector of the particle")
-        function.addParameter('y', dtype='float64', direction=function.IN, description = "The current position vector of the particle")
-        function.addParameter('z', dtype='float64', direction=function.IN, description = "The current position vector of the particle")
-        function.addParameter('V', dtype='float64', direction=function.OUT, description = "The current scalar potential...")
+        
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('potential', dtype='float64', direction=function.OUT, description = "The current scalar potential...")
         function.result_type = 'int32'
         function.result_doc = """
         0 - OK

@@ -967,25 +967,26 @@ C---  get array address
       RETURN
       END
 
-      FUNCTION get_potential(id)
+      FUNCTION get_potential(id, value)
       IMPLICIT NONE 
 #include "src/general.inc"
 
 C---  local vars
-      INTEGER          id,ip
-      DOUBLE PRECISION get_potential
+      INTEGER          id,ip, get_potential
+      DOUBLE PRECISION value
 
 
 C---  get array address
       ip = myind(id)
       IF ((ip.LE.0).OR.(ip.GT.NMAX)) THEN
-         PRINT*, 'get_mass: No such particle exists!'
-         get_potential = -1.d0
-         GOTO 999
+         PRINT*, 'get_potential: No such particle exists!'
+         get_potential = -1
+         RETURN
       ENDIF
 
       get_potential = pot(ip)
- 999  CONTINUE
+      
+      get_potential = 0
       RETURN
       END
 

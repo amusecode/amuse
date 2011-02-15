@@ -459,7 +459,7 @@ int delete_particle(int id)
     return 0;
 }
 
-int get_potential(double x, double y, double z, double *V)
+int get_potential(int id, double *value)
 {
   return -2;
 }
