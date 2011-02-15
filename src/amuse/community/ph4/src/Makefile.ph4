@@ -1,15 +1,17 @@
 
-# Original ph4 Makefile -- builds a standalone program.
+# Original ph4 Makefile -- builds a standalone program.  Command-line
+# argument NOSYNC=-DNOSYNC turns *off* GPU sync in resolve_encounter().
 
-# Optimization may cause failure on some systems.  Replace by -Ox by
+# Optimization may cause problems on some systems.  Replace by -Ox by
 # -O0 in that case.
 
-OPT	  = -O4 -Wall
+OPT	  = -O4
 
 MPICXX = openmpicxx
 CFLAGS += -g -Wall $(GPU) $(OPT)
 
-OBJS =	jdata.o scheduler.o idata.o grape.o gpu.o diag.o close_encounter.o
+OBJS    = jdata.o scheduler.o idata.o grape.o gpu.o diag.o debug.o close_encounter.o
+
 LIBS =	-L/usr/local/sapporo_v1.5 -lsapporo \
 	-L/usr/local/cuda/lib -lcuda -lcudart \
 	-L/opt/local/lib -lboost_thread-mt
@@ -43,7 +45,7 @@ ph42:
 	@export GPU='-DGPU' && make  -f Makefile.ph4 parallel_hermite_4
 
 parallel_hermite_4:	parallel_hermite_4.cc $(OBJS)
-	$(MPICXX) $(CFLAGS) $(OBJS) $(LIBS) $@.cc -o $@
+	$(MPICXX) $(NOSYNC) $(CFLAGS) $@.cc $(OBJS) $(LIBS) -o $@
 
 test:
 	@export GPU='-DGPU' && make  -f Makefile.ph4 clean parallel_hermite_4

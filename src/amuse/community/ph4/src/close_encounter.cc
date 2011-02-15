@@ -1,14 +1,14 @@
 
 // Special approximate treatment of close encounters.  Suitable for
-// runs in which we need to resolve relaxation but don't care about
-// binaries.
+// runs in which we need to resolve relaxation but don't want/care
+// about binaries.
 //
 // The code in this file is currently not used by AMUSE, but it does
 // contain 1 jdata member function.
 //
 // Global function:
 //
-//	void jdata::resolve_encounter(idata& id, scheduler& sched)
+//	void jdata::resolve_encounter(idata& id)
 
 #include "jdata.h"
 #include "scheduler.h"
@@ -16,6 +16,16 @@
 #include <vector>
 #include <algorithm>
 #include <unistd.h>
+
+//---------------------------------------------------------------------
+// Diagnostic functions in parallel_hermite.cc
+
+extern real TDEBUG;
+void printq(int j, real2 q, const char *s);
+void print_list(jdata &jd);
+bool twiddles(real q, real v, real tol = 1.e-3);
+
+//---------------------------------------------------------------------
 
 class rdata {
   public:
@@ -43,7 +53,8 @@ static void sort_neighbors(jdata& jd, vec center)
 	    element.r_sq += pow(jd.pos[j][k]-center[k],2);
 	rlist.push_back(element);
     }
-    sort(rlist.begin(), rlist.end());
+    sort(rlist.begin(), rlist.end());	// NB precise ordering of identical
+					//    elements is unpredictable
 }
 
 static inline void swap(int list[], int j1, int j2)
@@ -55,27 +66,57 @@ static inline void swap(int list[], int j1, int j2)
     }
 }
 
-static real partial_potential(int list[], int nj, jdata& jd)
+static real partial_potential(int list1[], int n1,
+			      int list2[], int n2,
+			      jdata& jd)
 {
-    // Return the potential energy of the first two elements of the
-    // list relative to the rest.
+    // Return the potential energy of list1 relative to list2.
 
-    int j1 = list[0], j2 = list[1];
-    real pot1 = 0, pot2 = 0;
-    for (int jl = 2; jl < nj; jl++) {
-	int j = list[jl];
-	real r1 = 0, r2 = 0;
-	for (int k = 0; k < 3; k++) {
-	    r1 += pow(jd.pos[j][k]-jd.pos[j1][k], 2);
-	    r2 += pow(jd.pos[j][k]-jd.pos[j2][k], 2);
+    real pot = 0;
+    for (int l1 = 0; l1 < n1; l1++) {
+	real pot1 = 0;
+	int j1 = list1[l1];
+	for (int l2 = 0; l2 < n2; l2++) {
+	    int j2 = list2[l2];
+	    real r2 = 0;
+	    for (int k = 0; k < 3; k++)
+		r2 += pow(jd.pos[j1][k]-jd.pos[j2][k], 2);
+	    pot1 += jd.mass[j2]/sqrt(r2);
 	}
-	pot1 += jd.mass[j]/sqrt(r1);
-	pot2 += jd.mass[j]/sqrt(r2);
+	pot -= jd.mass[j1]*pot1;
     }
-    return -jd.mass[j1]*pot1 - jd.mass[j2]*pot2;
+    return pot;
 }
 
-static void reflect_orbit(real total_mass, vec& rel_pos, vec& rel_vel)
+static real total_energy(int jlist[], int n, jdata& jd)
+{
+    // Compute the total self-energy of the listed particles.
+
+    real ke = 0, pe = 0;
+    for (int i = 0; i < n; i++) {
+	int j = jlist[i];
+	real v2 = 0;
+	for (int k = 0; k < 3; k++) v2 += pow(jd.vel[j][k], 2);
+	ke += 0.5*jd.mass[j]*v2;
+	real ppe = 0;
+	for (int i1 = i+1; i1 < n; i1++) {
+	    int j1 = jlist[i1];
+	    real r2 = jd.eps2;
+	    for (int k = 0; k < 3; k++)
+		r2 += pow(jd.pos[j][k] - jd.pos[j1][k], 2);
+	    ppe -= jd.mass[j1]/sqrt(r2);
+	}
+	pe += jd.mass[j]*ppe;
+    }
+    // PRC(pe); PRL(ke);
+    return pe+ke;
+}
+
+
+
+static bool reflect_or_merge_orbit(real total_mass,
+				   vec& rel_pos, vec& rel_vel,
+				   real& energy, real rmin = huge)
 {
     // Advance a two-body orbit past pericenter out to the same
     // separation.  We only need the unit vectors for the orbit in
@@ -87,7 +128,7 @@ static void reflect_orbit(real total_mass, vec& rel_pos, vec& rel_vel)
     // Dynamics and geometry.
 
     real separation = abs(rel_pos);
-    real energy = 0.5 * rel_vel * rel_vel - total_mass / separation;
+    energy = 0.5 * rel_vel * rel_vel - total_mass / separation;
 
     vec normal_unit_vector = rel_pos ^ rel_vel;
     real angular_momentum = abs(normal_unit_vector);
@@ -128,7 +169,8 @@ static void reflect_orbit(real total_mass, vec& rel_pos, vec& rel_vel)
         periastron = 0.5 * angular_momentum * angular_momentum / total_mass;
     }
 
-    PRC(semi_major_axis); PRL(eccentricity);
+    PRC(energy); PRC(semi_major_axis); PRL(eccentricity);
+    if (eccentricity < 1 && semi_major_axis <= rmin) return true;
 
     vec r_unit = rel_pos / separation;
 
@@ -204,11 +246,15 @@ static void reflect_orbit(real total_mass, vec& rel_pos, vec& rel_vel)
     rel_pos -= 2*dr_trans*transverse_unit_vector;
     rel_vel -= 2*dv_long*longitudinal_unit_vector;
     // PRC(abs(rel_pos)); PRL(abs(rel_vel));
+
+    return false;
 }
+
+
 
 #define REVERSE 0
 
-bool jdata::resolve_encounter(idata& id, scheduler& sched)
+bool jdata::resolve_encounter(idata& id)
 {
     const char *in_function = "jdata::resolve_encounter";
     if (DEBUG > 2) PRL(in_function);
@@ -216,6 +262,7 @@ bool jdata::resolve_encounter(idata& id, scheduler& sched)
     bool status = false;
     if (close1 < 0 || close2 < 0 || eps2 > 0) return status;
 
+    //-----------------------------------------------------------------
     // We will treat this encounter as an unperturbed two-body event
     // and absorb the tidal errors into the nearby motion if:
     //
@@ -226,10 +273,22 @@ bool jdata::resolve_encounter(idata& id, scheduler& sched)
     // We will improve on these criteria (e.g. to handle a mass
     // spectrum) soon.  TODO.
 
-    int j1 = inverse_id[close1];
-    int j2 = inverse_id[close2];
+    int comp1 = close1, comp2 = close2;
+    int j1 = inverse_id[comp1];
+    int j2 = inverse_id[comp2];
 
-    if (j1 < 0 || j2 < 0) return status;	// caution!
+    if (j1 < 0 || j2 < 0) return status;
+
+    // Make j1 < j2, but note we may have to repeat this process with
+    // the lists as constructed below.
+
+    if (j1 > j2) {
+	int temp = j1; j1 = j2; j2 = temp;
+	temp = comp1; comp1 = comp2; comp2 = temp;
+    }
+
+    int pair[2] = {j1, j2};
+    synchronize_list(pair, 2, id);
 
     predict(j1, system_time);
     predict(j2, system_time);
@@ -243,6 +302,7 @@ bool jdata::resolve_encounter(idata& id, scheduler& sched)
 
     if (dr*dv >= 0) return status;		// criterion (1)
 
+    //-----------------------------------------------------------------
     // We will probably need to list neighbors soon anyway, so just
     // predict all particles and make a list of indices sorted by
     // distance away.  O(N) front-end operations -- could be
@@ -250,29 +310,54 @@ bool jdata::resolve_encounter(idata& id, scheduler& sched)
 
     predict_all(system_time, true);
 
-    real mtot = mass[j1] + mass[j2];
+    real total_mass = mass[j1] + mass[j2];
+    real reduced_mass = mass[j1]*mass[j2]/total_mass;
     vec cmpos;
     for (int k = 0; k < 3; k++)
 	cmpos[k] = (mass[j1]*pred_pos[j1][k]
-		     + mass[j2]*pred_pos[j2][k]) / mtot;
+		     + mass[j2]*pred_pos[j2][k]) / total_mass;
 
     sort_neighbors(*this, cmpos);		// sorted list is rlist
 
     real dr2 = dr*dr;
-    if (rlist[2].r_sq < 4*dr2) return status;	// criterion (2)
+    if (rlist[2].r_sq < 9*dr2) return status;	// criterion (2): factor TBD
 
     cout << endl << "managing two-body encounter of "
-	 << j1 << " (" << close1 << ") and "
-	 << j2 << " (" << close2 << ") at time " << system_time
+	 << j1 << " (" << comp1 << ") and "
+	 << j2 << " (" << comp2 
+	 << ") at time " << system_time
 	 << endl << flush;
+
+    // Ordering or j1 and j2 elements or rlist is not clear.  Force
+    // element 0 to be j1, since later lists depend on this ordering.
+
+    if (rlist[0].jindex != j1) {
+	rlist[0].jindex = j1;
+	real tmp = rlist[0].r_sq;
+	rlist[0].r_sq = rlist[1].r_sq;
+	rlist[1].jindex = j2;
+	rlist[1].r_sq = tmp;
+    }
+
+#if 0
+    cout << "Neighbor distances (rmin = " << rmin << "):" << endl;
+    int nl = rlist.size();
+    if (nl > 5) nl = 5;
+    for (int il = 0; il < nl; il++)
+	cout << "    " << rlist[il].jindex << " " << sqrt(rlist[il].r_sq)
+	     << endl << flush;
+#endif
 
     status = true;
 
+    //-----------------------------------------------------------------
     // Prepare for two-body motion by synchronizing the neighbors.
     // Make a list of all particles within 100 |dr|, and a sub-list of
-    // particles that need to be synchronized.  Factor TBD.  TODO.
+    // particles that need to be synchronized.  Optimal factor TBD.
+    // TODO.
 
-    int *nbrlist = new int[nj];
+    int *nbrlist0 = new int[nj+1];	// nbrlist0 leaves room for CM
+    int *nbrlist = nbrlist0 + 1;	// nbrlist contains pair and neighbors
     int *synclist = new int[nj];
     int nnbr = 0, nsync = 0;
 
@@ -285,19 +370,23 @@ bool jdata::resolve_encounter(idata& id, scheduler& sched)
 	    break;
     }
 
-    synchronize_list(synclist, nsync, id, &sched);
+    synchronize_list(synclist, nsync, id);
     delete [] synclist;
 
     // Note that the lists are based on pred_pos, but now the
     // positions have been advanced and corrected.  Still use the
     // indices based on rlist (but don't trust the distances).
 
+    //-----------------------------------------------------------------
+    // Recalculate the center of mass and relative coordinates of
+    // particles j1 and j2.
+
     vec cmvel;
     for (int k = 0; k < 3; k++) {
 	cmpos[k] = (mass[j1]*pos[j1][k]
-		     + mass[j2]*pos[j2][k]) / mtot;
+		     + mass[j2]*pos[j2][k]) / total_mass;
 	cmvel[k] = (mass[j1]*vel[j1][k]
-		     + mass[j2]*vel[j2][k]) / mtot;
+		     + mass[j2]*vel[j2][k]) / total_mass;
     }
 
     dr = vec(pos[j1][0]-pos[j2][0],
@@ -308,16 +397,18 @@ bool jdata::resolve_encounter(idata& id, scheduler& sched)
 	     vel[j1][2]-vel[j2][2]);
     dr2 = dr*dr;
 
-    real mu = mass[j2]/mtot;
+    // PRL(cmpos);
+    // PRL(cmvel);
+    // PRC(dr); PRL(abs(dr));
+    // PRC(dv); PRL(abs(dv));
 
-    // Note: by choice of sign, pos[j1] = cmpos + mu*dr,
-    // pos[j2] = cmpos - (1-mu)*dr
+    real m2 = mass[j2]/total_mass;
 
-    // PRL(cmpos+mu*dr);
-    // PRC(pos[j1][0]); PRC(pos[j1][1]); PRL(pos[j1][2]); 
-    // PRL(cmvel+mu*dv);
-    // PRC(vel[j1][0]); PRC(vel[j1][1]); PRL(vel[j1][2]); 
+    // Note: by choice of sign, pos[j1] = cmpos + m2*dr,
+    //                          pos[j2] = cmpos - (1-m2)*dr
 
+
+    //-----------------------------------------------------------------
     // Make sure j1 and j2 are at the start of nbrlist (shouldn't be
     // necessary).
 
@@ -329,92 +420,231 @@ bool jdata::resolve_encounter(idata& id, scheduler& sched)
     }
     if (loc < 2) cout << "nbrlist: huh?" << endl << flush;
 
+    //-----------------------------------------------------------------
     // Calculate the potential energy of the (j1,j2) pair relative to
     // the neighbors (uses pos).
 
-    real pot_init = partial_potential(nbrlist, nnbr, *this);
+    real pot_init = 0;
+    if (nnbr > 2)
+	pot_init = partial_potential(nbrlist, 2, nbrlist+2, nnbr-2, *this);
+    // PRL(pot_init);
+    // real total_init = total_energy(nbrlist, nnbr, *this);
 
-    // Advance the relative orbit past pericenter out to the same
-    // separation.
+    //-----------------------------------------------------------------
+    // Advance the relative orbit past pericenter and out to the same
+    // separation, or collapse the pair into a single particle.  The
+    // factor of 2 in the merger condition is TBD: TODO.
 
     vec dr_old = dr, dv_old = dv;
-    reflect_orbit(mtot, dr, dv);
+    real energy;
+    bool merge = reflect_or_merge_orbit(total_mass, dr, dv, energy,
+					2*rmin);
+					//0);
+    // PRC(merge); PRL(nnbr);
+    // PRC(dr); PRL(abs(dr));
+    // PRC(dv); PRL(abs(dv));
 
-    // Update jd.pos and jd.vel.
+    if (merge) {
 
-    for (int k = 0; k < 3; k++) {
-#if REVERSE == 0
+	// Suppress merger if next NN is too close.  Factor TBD.
 
-	// Use the reflected orbit just computed.
-
- 	pos[j1][k] = cmpos[k] + mu*dr[k];
- 	pos[j2][k] = cmpos[k] - (1-mu)*dr[k];
- 	vel[j1][k] = cmvel[k] + mu*dv[k];
- 	vel[j2][k] = cmvel[k] - (1-mu)*dv[k];
-#else
-
-	// *** EXPERIMENT: Simply reverse the velocities in the CM
-	// *** frame.  No energy error, and statistically OK, even if
-	// *** it is dynamically completely wrong.
-
- 	vel[j1][k] = cmvel[k] - mu*dv_old[k];	  // note sign change
- 	vel[j2][k] = cmvel[k] + (1-mu)*dv_old[k];
-#endif
+	real dr2 = 0;
+	for (int k = 0; k < 3; k++)
+	    dr2 += pow(pos[nbrlist[2]][k]-cmpos[k], 2);
+	if (dr2 < rmin*rmin) {
+	    cout << "suppressing merger because " << nbrlist[2]
+		 << " (" << this->id[nbrlist[2]] << ") is too close"
+		 << endl << flush;
+	    merge = false;
+	}
     }
 
-    if (use_gpu) update_gpu(nbrlist, 2);	// modify pos and vel
+    //-----------------------------------------------------------------
+    // Update jd.pos and jd.vel to their final values.
 
-    // Calculate the new potential energy and the energy error.
+    if (merge) {
 
-    real pot_final = partial_potential(nbrlist, nnbr, *this);
+	// Define CM quantities.
+
+	real newstep = fmin(timestep[j1], timestep[j2]);
+	real newrad = radius[j1]+radius[j2];
+	int newid = nj+j1+j2;
+
+	// Remove both components from the jdata arrays, add the CM,
+	// and correct nbrlist.  We need to keep track of the changes
+	// in order to recompute the potential energy, update the GPU
+	// with new j-data, and recompute the forces on the
+	// components/CM and neighbors.  The scheduler is updated by
+	// remove_particle().  Note that, as written, the code below
+	// needs to know explicitly how removal and addition affect
+	// the internal j-data -- probably not good.
+
+	// Removal of particle j swaps j with the last particle and
+	// reduces nj.
+
+	cout << "removing " << j1 << " (" << this->id[j1] << ")"
+	     << endl << flush;
+	remove_particle(j1);	
+	for (int jl = 1; jl < nnbr; jl++)	// recall 0, 1 are j1, j2
+	    if (nbrlist[jl] == nj) nbrlist[jl] = j1;
+
+	j2 = nbrlist[1];
+
+	cout << "removing " << j2 << " (" << this->id[j2] << ")"
+	     << endl << flush;
+	remove_particle(j2);
+	for (int jl = 2; jl < nnbr; jl++)
+	    if (nbrlist[jl] == nj) nbrlist[jl] = j2;
+
+	add_particle(total_mass, newrad, cmpos, cmvel, newid, newstep);
+	cout << "added " << nj-1 << " (" << this->id[nj-1] << ")"
+	     << endl << flush;
+
+	// Strange new storage order preserves contiguous lists
+	// below.  Affected j-data locations are j1, j2, nj-1.
+
+	nbrlist[-1] = j1;
+	nbrlist[0]  = j2;
+	nbrlist[1]  = nj-1;
+
+    } else {
+
+	for (int k = 0; k < 3; k++) {
+#if REVERSE == 0
+
+	    // Use the reflected orbit just computed.
+
+	    pos[j1][k] = cmpos[k] + m2*dr[k];
+	    pos[j2][k] = cmpos[k] - (1-m2)*dr[k];
+	    vel[j1][k] = cmvel[k] + m2*dv[k];
+	    vel[j2][k] = cmvel[k] - (1-m2)*dv[k];
+#else
+
+	    // *** EXPERIMENT: Simply reverse the velocities in the CM
+	    // *** frame.  No energy error, and statistically OK, even if
+	    // *** it is dynamically completely wrong.
+
+	    vel[j1][k] = cmvel[k] - m2*dv_old[k];	  // note sign change
+	    vel[j2][k] = cmvel[k] + (1-m2)*dv_old[k];
+#endif
+
+	    // Affected j-data locations are j1, j2 only.
+	}
+    }
+
+    //-----------------------------------------------------------------
+    // Calculate the new potential energy and the energy error.  Use
+    // j1 and j2 (0 and 1) for a flyby, jcm (1) for a merger.
+
+    real pot_final = 0;
+    if (nnbr > 2)
+	pot_final = partial_potential(nbrlist+merge, 2-merge,
+				      nbrlist+2, nnbr-2, *this);
     real de = pot_final - pot_init;
-    PRC(nnbr); PRC(pot_init); PRC(pot_final); PRL(de);
+    PRC(pot_init); PRC(pot_final); PRL(de);
+    // real dtotal = total_energy(nbrlist+merge, nnbr-merge, *this)-total_init;
+    // PRL(dtotal);
 
+    //-----------------------------------------------------------------
     // Redistribute the energy error among the components and the
-    // neighbors.
+    // neighbors.  For mergers, simply report and live with the error,
+    // for now.
 
-    if (de != 0) {	// de should be zero in the REVERSE case
+    if (merge) {
 
-	// Redistribution is rather ad hoc.  Simplest approach is
-	// to modify the relative velocities of the interacting
-	// particles.
+	// Simply report the merger and the error (NB dE currently
+	// includes both internal and tidal components).
 
-	real kin = 0.5*mass[j1]*mass[j2]*dv*dv/mtot;
-	real vfac2 = 1 - de/kin;
-	if (vfac2 < 0.25)
+	de -= reduced_mass*energy;
+	update_merger_energy(de);
+	cout << "*** merged "
+	     << j1 << " (" << comp1 << ") and "
+	     << j2 << " (" << comp2
+	     << ") at time " << system_time
+	     << "  dE = " << de
+	     << endl << flush;
 
-	    // We'll need to be cleverer in this case.  Let's see how
-	    // often it occurs...
+    } else {
 
-	    cout << "warning: can't correct component velocities." << endl;
+	// Correct the error.
 
-	else {
-	    real v_correction_fac = sqrt(vfac2);
-	    PRL(v_correction_fac);
-	    dv *= v_correction_fac;
-	    for (int k = 0; k < 3; k++) {
-		vel[j1][k] = cmvel[k] + mu*dv[k];
-		vel[j2][k] = cmvel[k] - (1-mu)*dv[k];
+	if (de != 0) {	// de should be zero in the REVERSE case
+
+	    // Redistribution is rather ad hoc.  Simplest approach is
+	    // to modify the relative velocities of the interacting
+	    // particles.
+
+	    real kin = 0.5*mass[j1]*mass[j2]*dv*dv/total_mass;
+	    real vfac2 = 1 - de/kin;
+	    if (vfac2 < 0.25)
+
+		// We'll need to be cleverer in this case.  Let's see how
+		// often it occurs...
+
+		cout << "warning: can't correct component velocities." << endl;
+
+	    else {
+		real v_correction_fac = sqrt(vfac2);
+		PRL(v_correction_fac);
+		dv *= v_correction_fac;
+		for (int k = 0; k < 3; k++) {
+		    vel[j1][k] = cmvel[k] + m2*dv[k];
+		    vel[j2][k] = cmvel[k] - (1-m2)*dv[k];
+		}
 	    }
 	}
     }
 
-    // Recompute all forces.  The following code is taken from
-    // jdata::synchronize_list() and idata::advance().  Retain current
-    // time steps and scheduling.  Note that in the REVERSE case, the
-    // accelerations should not change.
+    //-----------------------------------------------------------------
+    // Send new data on all affected j-particles to GPU.
+
+    if (use_gpu) {
+
+	// First make sure all pending data are properly flushed.
+
+#ifndef NOSYNC		// set NOSYNC to omit
+	sync_gpu();	// hardly a true fix for the GPU update
+			// problem, since we don't understand why it
+			// occurs, but this seems to work...
+#endif
+
+	if (merge && mpi_size > 1) {
+
+	    // We may have changed the distribution of particles
+	    // across domains.  Simplest to reinitialize all worker
+	    // processes.
+
+	    initialize_gpu(true);
+
+	} else {
+	    
+	    // No change to the distribution of particles among
+	    // domains.  Update the GPU data only for the affected
+	    // locations.  Function update_gpu() will ignore any
+	    // references to j >= nj.
+
+	    update_gpu(nbrlist-merge, 2+merge);  // nbrlist-1 is nbrlist0
+	}
+    }
+
+    //-----------------------------------------------------------------
+    // Recompute forces on pair and neigbors.  The following code is
+    // taken from jdata::synchronize_list() and idata::advance().
+    // Retain current time steps and scheduling.  Note that in the
+    // REVERSE case, the accelerations should not change.
 
     if (!use_gpu) predict_all(system_time);
-    id.set_list(nbrlist, nnbr);
+    id.set_list(nbrlist+merge, nnbr-merge, nj);
     id.gather(*this);
     id.predict(system_time, *this);
     id.get_acc_and_jerk(*this);		// compute iacc, ijerk
     id.scatter(*this);			// j acc, jerk <-- iacc, ijerk
+
     if (use_gpu) id.update_gpu(*this);
 
     // Could cautiously reduce neighbor steps here (and reschedule),
     // but that seems not to be necessary.
 
-    delete [] nbrlist;
+    delete [] nbrlist0;
     return status;
 }

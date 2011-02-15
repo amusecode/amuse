@@ -35,7 +35,6 @@ void scheduler::initialize()	// (re)initialize based on time step data in jd
 
     if (jd) {
 	clear();		// scheduler member function
-
 	for (int j = 0; j < jd->get_nj(); j++)
 	    blist.push_back(jtime(j, t_next(j)));
 
@@ -219,7 +218,7 @@ void scheduler::add_particle(int j)
 	bp[ibp] = newbp;
 }
 
-void scheduler::remove_particle(int j)
+bool scheduler::remove_particle(int j)
 {
     const char *in_function = "scheduler::remove_particle";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
@@ -232,6 +231,11 @@ void scheduler::remove_particle(int j)
     int ibp = find_block(t_next(j));
     
     for (li ib = bp[ibp]; ib != blist.end() && ib != bp[ibp+1]; ib++) {
+
+	//if (jd->system_time >= 2.19141) {
+	//    PRC(j); PRC(ibp); PRL(ib->jindex);
+	//}
+
 	if (ib->jindex == j) {
 
 	    // Correct pointers.
@@ -245,14 +249,15 @@ void scheduler::remove_particle(int j)
 	    // Remove ib.
 
 	    blist.erase(ib);
-	    return;
+	    return true;
 	}
     }
 
     // Didn't find j.  Flag it.
 
-    cout << "scheduler::remove_particle(): " << j << " not found"
-	 << endl << flush;
+    cout << "scheduler::remove_particle(): " << j << " not found, ";
+    PRL(ibp);
+    return false;
 }
 
 void scheduler::print_blist()
@@ -276,8 +281,12 @@ void scheduler::print_bp(bool verbose)		// default = false
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     if (jd->mpi_rank == 0) {
-	cout << "block pointers (size = "	// NB last element
-	     << bp.size() << "):"		//    is blist.end()
+
+	int total = 0;
+	for (int kb = 0; kb < (int)bp.size()-1; kb++)
+	    for (li ib = bp[kb]; ib != bp[kb+1]; ib++) total++;
+	cout << "block pointers (size = "		   // NB last element
+	     << bp.size() << ", total = " << total << "):" //    is blist.end()
 	     << endl << flush;	
 
 	for (int kb = 0; kb < (int)bp.size()-1; kb++) {
@@ -320,6 +329,8 @@ void scheduler::check(bool repair,		// default = true
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     // Checks that should be carried out:
+    //	 every particle is on the list
+    //	 everything on the list is a particle
     //	 blist is ordered
     //	 blist jindex pointers are within the jdata range
     //	 blist elements are ordered in t_next

@@ -113,14 +113,25 @@ void jdata::print_percentiles(vec center)	// default = (0,0,0)
 
     vector<real> mlist, rlist;
 
-    mlist.push_back(0.1);
-    mlist.push_back(0.5);
-    mlist.push_back(0.9);
+    mlist.push_back(0.01);
+    mlist.push_back(0.02);
+    mlist.push_back(0.05);
+    mlist.push_back(0.10);
+    mlist.push_back(0.25);
+    mlist.push_back(0.50);
+    mlist.push_back(0.75);
+    mlist.push_back(0.90);
     rlist.clear();
 
     get_lagrangian_radii(mlist, rlist, center);
 
-    cout << "10% radius = " << rlist[0] << endl;
-    cout << "50% radius = " << rlist[1] << endl;
-    cout << "90% radius = " << rlist[2] << endl;
+    cout << "lagrangian radii (";
+    for (unsigned int ip = 0; ip < mlist.size(); ip++) {
+	if (ip > 0) cout << " ";
+	printf("%.2f", mlist[ip]);
+    }
+    cout << "):" << endl << "   " << flush;
+    for (unsigned int ip = 0; ip < mlist.size(); ip++)
+	printf(" %.4f", rlist[ip]);
+    cout << endl << flush;
 }

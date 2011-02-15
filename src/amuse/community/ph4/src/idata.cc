@@ -299,7 +299,7 @@ void idata::predict(real t, jdata& jd)
     // j-domain.
 
     // Don't clutter the GPU code with extra checks used only in the
-    // non-GPU case.  Just write the lookp twice.
+    // non-GPU case.  Just write the loop twice.
 
     if (jd.use_gpu) {
 	for (int i = 0; i < ni; i++) {
@@ -670,13 +670,14 @@ real idata::set_list(scheduler& sched)
     return tnext;
 }
 
-void idata::set_list(int jlist[], int njlist)
+void idata::set_list(int jlist[], int njlist, int nj)
 {
     const char *in_function = "idata::set_list";
     if (DEBUG > 10) PRL(in_function);
 
     ni = 0;
-    for (int jj = 0; jj < njlist; jj++) ilist[ni++] = jlist[jj];
+    for (int jj = 0; jj < njlist; jj++)
+	if (jlist[jj] < nj) ilist[ni++] = jlist[jj];
 }
 
 void idata::advance(jdata &jd, real tnext, real eta)

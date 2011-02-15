@@ -40,7 +40,7 @@ static real randinter(real a=0, real b=1)
     return a + (b-a)*x;
 }
 
-void initialize_particles(jdata &jd, int nj, int seed,
+void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 			  char *infile, real &system_time)
 {
     // Initialize basic j data: mass, radius, position, and velocity,
@@ -61,7 +61,7 @@ void initialize_particles(jdata &jd, int nj, int seed,
 	// Create a simple homogeneous sphere of unit radius.  The
 	// virial mean square velocity is 0.6 (G=1).
 
-	system_time = 0;
+	jd.system_time = system_time = 0;
 
 	srandom(seed);
 	real v2scale = 0.6;
@@ -78,6 +78,8 @@ void initialize_particles(jdata &jd, int nj, int seed,
 		
 	    real v = sqrt(2*v2scale*randinter());	// nonthermal, out of
 							// virial equilibrium
+	    v *= vfac;
+
 	    costh = randinter(-1,1);
 	    sinth = sqrt(fmax(0,1-costh*costh));
 	    phi = randinter(0,2*M_PI);
@@ -140,6 +142,7 @@ void initialize_particles(jdata &jd, int nj, int seed,
 	real mass, radius = 0;
 	vec pos, vel;
 	s >> isnap >> nj >> system_time;
+	jd.system_time = system_time;
 	for (int j = 0; j < nj; j++) {
 	    s >> id >> mass;
 	    s >> pos[0] >> pos[1] >> pos[2];
@@ -147,7 +150,7 @@ void initialize_particles(jdata &jd, int nj, int seed,
 
 	    // Force the id to be the one in the input file.
 
-	    jd.add_particle(mass, radius, pos, 0.1*vel, id);
+	    jd.add_particle(mass, radius, pos, vfac*vel, id);
 	}
 
 	s.close();
@@ -167,7 +170,8 @@ void initialize_particles(jdata &jd, int nj, int seed,
 
 
 void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
-		  real eps2, real eta, real t_max, real dt_out, bool repot)
+		  real eps2, real eta, real t_max, real dt_out,
+		  real vfac, bool repot)
 {
     real system_time = 0;
 
@@ -179,8 +183,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     jd.eps2 = eps2;
     jd.eta = eta;
 
-    initialize_particles(jd, ntotal, seed, file, system_time);
-    jd.system_time = system_time;
+    initialize_particles(jd, ntotal, seed, vfac, file, system_time);
     jd.initialize_arrays();
     idata id(&jd);	  // set up idata data structures (sets acc and jerk)
     jd.set_initial_timestep();		// set timesteps (needs acc and jerk)
@@ -204,24 +207,16 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     jd.log_output(&id);
 
 
-
-    bool remove = true;
-
+    bool remove = false;	// check GPU bug in remove_particle()
 
 
     int step = 0;
     while (jd.system_time < t_max) {
 
-	jd.advance(id, sched);
-#if 0
-	cout << endl << "after normal step" << endl;
-	int p = cout.precision(10);
-	PRC(jd.system_time); PRL(jd.get_energy(&id));
-	cout.precision(p);
-#endif
+	jd.advance(id);
 
 	// Special treatment of close encounters (non-AMUSE code, for
-	// now).
+	// now).  All the work is done in resolve_encounter().
 
 	// In AMUSE, we would return with a collision flag set, then
 	// get close1 and close2, and call the multiples module to
@@ -230,11 +225,10 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	// correct the tidal errors.
 
 	if (jd.close1 >= 0 && jd.eps2 == 0) {
-	    bool status = jd.resolve_encounter(id, sched);
+	    bool status = jd.resolve_encounter(id);
 	    if (status) {
-		int p = cout.precision(10);
-		PRC(jd.system_time); PRL(jd.get_energy(&id));
-		cout.precision(p);
+		cout << "after resolve_encounter: ";
+		PRL(jd.get_energy(&id));
 	    }
 	}
 
@@ -255,11 +249,11 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    if (jd.system_time >= t_out) t_out += dt_out;
 	}
 
-	// Test code for Alf's AMUSE bug.
+	// Test code for remove_particle() bug.
 
-	if (jd.system_time > 1 && remove) {
+	if (remove && jd.system_time > 1) {
 
-	    jd.synchronize_all(id, &sched);
+	    jd.synchronize_all(id);
 	    jd.print(&id);
 
 	    // Remove some particles.
@@ -292,12 +286,14 @@ int main(int argc, char *argv[])
 
     real eta = 0.14;
     real dt_out = 0.5;
-    real eps2 = 1.e-2;
+    real eps = 0.01;
+    real eps2 = eps*eps;
     char *infile = NULL;
     int ntotal = 1000;
     bool repot = false;
     int seed = 12345;
-    real t_max = 0.5;
+    real t_max = 10.0;
+    real vfac = 1.0;
 #ifdef GPU
     bool use_gpu = true;
 #else
@@ -313,7 +309,8 @@ int main(int argc, char *argv[])
 				break;
                 case 'd':	dt_out = atof(argv[++i]);
 				break;
-                case 'e':	eps2 = pow(atof(argv[++i]),2);
+                case 'e':	eps = atof(argv[++i]);
+				eps2 = pow(eps,2);
 				break;
 		case 'f':	infile = argv[++i];
 				break;
@@ -327,12 +324,32 @@ int main(int argc, char *argv[])
 				break;
                 case 't':	t_max = atof(argv[++i]);
 				break;
+                case 'v':	vfac = atof(argv[++i]);
+				break;
             }
+
+    // Echo the command-line arguments.
+
+    cout << "Parameters:" << endl << flush;
+    cout << "    -a "; PRL(eta);
+    cout << "    -d "; PRL(dt_out);
+    cout << "    -e "; PRL(eps);
+    if (infile) {
+	cout << "    -f "; PRL(infile);
+    } else
+	cout << "    -f (no file)" << endl << flush;
+    cout << "    -g "; PRL(use_gpu);
+    cout << "    -n "; PRL(ntotal);
+    cout << "    -r "; PRL(repot);
+    cout << "    -s "; PRL(seed);
+    cout << "    -t "; PRL(t_max);
+    cout << "    -v "; PRL(vfac);
 
     // Run the integrator.
 
     MPI::Init(argc, argv);
     run_hermite4(ntotal, seed, infile, use_gpu,
-		 eps2, eta, t_max, dt_out, repot);
+		 eps2, eta, t_max, dt_out, vfac,
+		 repot);
     MPI_Finalize();
 }

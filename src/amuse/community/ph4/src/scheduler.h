@@ -54,7 +54,7 @@ public:
     real t_next(const int j) const {return jd->time[j] + jd->timestep[j];}
 
     void initialize();
-    void set_jd(jdata *j = NULL) {jd = j; initialize();}
+    void set_jd(jdata *j = NULL) {jd = j; if (jd) jd->sched = this; initialize();}
     scheduler(jdata *j = NULL) {set_jd(j);}
     ~scheduler() {clear();}
 
@@ -63,7 +63,7 @@ public:
     void update();
 
     void add_particle(int j);
-    void remove_particle(int j);
+    bool remove_particle(int j);
 
     void print_blist();
     void print_bp(bool verbose = false);

@@ -47,10 +47,13 @@ class jdata {
     string *name;
     int *id, *nn;
     map<int,int> inverse_id;
+    vector<int> user_specified_id;
 
     real *mass, *radius, *pot, *dnn, *time, *timestep;
     real2 pos, vel, acc, jerk;
     real2 pred_pos, pred_vel;
+
+    scheduler *sched;
 
     int get_nj() {return nj;}
 
@@ -73,9 +76,12 @@ class jdata {
 	coll1 = coll2 = -1;
 	id = nn = NULL;
 	inverse_id.clear();
+	user_specified_id.clear();
 	name = NULL;
 	mass = radius = pot = dnn = time = timestep = NULL;
 	pos = vel = acc = jerk = pred_pos = pred_vel = NULL;
+
+	sched = NULL;
     }
 
     void cleanup();		// (in jdata.cc)
@@ -84,8 +90,9 @@ class jdata {
     // In jdata.cc:
 
     void setup_mpi(MPI::Intracomm comm);
+    int get_particle_id(int offset = 0);
     int add_particle(real pmass, real pradius, vec ppos, vec pvel,
-		     int pid = -1);
+		     int pid = -1, real dt = -1);
     void remove_particle(int j);
     void initialize_arrays();
     int get_inverse_id(int i);
@@ -96,10 +103,9 @@ class jdata {
     real get_energy(idata *id = NULL);
     void predict(int j, real t);
     void predict_all(real t, bool full_range = false);
-    void advance(idata& id, scheduler& sched);
-    void synchronize_all(idata& id, scheduler *sched = NULL);
-    void synchronize_list(int jlist[], int njlist,
-			  idata& id, scheduler *sched);
+    void advance(idata& id);
+    void synchronize_all(idata& id);
+    void synchronize_list(int jlist[], int njlist, idata& id);
     void print(idata *id = NULL);
     void log_output(idata *id);
 
@@ -107,6 +113,7 @@ class jdata {
 
     void initialize_gpu(bool reinitialize = false);
     void update_gpu(int jlist[], int njlist);
+    void sync_gpu();
     void get_densities_on_gpu();
 
     // In diag.cc:
@@ -119,7 +126,9 @@ class jdata {
 
     // In close_encounter.cc:
 
-    bool resolve_encounter(idata& id, scheduler& sched);
+    bool resolve_encounter(idata& id);
 };
+
+void update_merger_energy(real dEmerge);
 
 #endif

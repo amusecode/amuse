@@ -48,7 +48,7 @@ class idata {
     void set_list_all(jdata& jd);
     void set_list_sync(jdata& jd);
     real set_list(scheduler& sched);
-    void set_list(int list[], int n);
+    void set_list(int list[], int n, int nj);
     void get_partial_acc_and_jerk(jdata& jd);
     void get_acc_and_jerk(jdata& jd);
     real get_pot(jdata& jd);

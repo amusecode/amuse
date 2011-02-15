@@ -18,10 +18,9 @@
 //	real jdata::get_energy(idata *id)
 //	void jdata::predict(int j, real t)
 //	void jdata::predict_all(real t, bool full)
-//	void jdata::advance(idata& id, scheduler& sched)
-//	void jdata::synchronize_all(idata& id, scheduler *sched)
-//	void jdata::synchronize_list(int jlist[], int njlist,
-//				     idata& id, scheduler* sched)
+//	void jdata::advance(idata& id)
+//	void jdata::synchronize_all(idata& id)
+//	void jdata::synchronize_list(int jlist[], int njlist, idata& id)
 //	void jdata::print(idata *id)
 //	void jdata::cleanup()
 
@@ -43,14 +42,20 @@ void jdata::setup_mpi(MPI::Intracomm comm)
     mpi_rank = mpi_comm.Get_rank();
 }
 
-static int next_id = 1;
-static int get_particle_id(int offset = 0)
+static int init_id = 1, next_id = init_id;
+int jdata::get_particle_id(int offset)		// default - 0
 {
     // Return a unique ID for a new particle.  Just number
     // sequentially, for now.  Don't reuse IDs, and allow the
     // possibility of an additive offset.
 
-    return next_id++ + offset;
+    int pid = next_id++ + offset;
+    
+    if (user_specified_id.size() > 0)
+	while (find(user_specified_id.begin(), user_specified_id.end(), pid)
+	       != user_specified_id.end()) pid = next_id++ + offset;
+
+    return pid;
 }
 
 template <class T>
@@ -63,7 +68,8 @@ static string ToString(const T &arg)
 
 int jdata::add_particle(real pmass, real pradius,
 			vec ppos, vec pvel,
-			int pid)		// default = -1
+			int pid,		// default = -1
+			real dt)		// default = -1
 {
     const char *in_function = "jdata::add_particle";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -82,12 +88,15 @@ int jdata::add_particle(real pmass, real pradius,
 	string *name0 = name;
 	int *id0 = id;
 	real *mass0 = mass, *radius0 = radius;
+	real *time0 = time, *timestep0 = timestep;
 	real2 pos0 = pos, vel0 = vel;
 
 	name = new string[njbuf];
 	id = new int[njbuf];			// gather
 	mass = new real[njbuf];			// gather
 	radius = new real[njbuf];
+	time = new real[njbuf];			// gather, scatter
+	timestep = new real[njbuf];		// gather, scatter
 	pos = new real[njbuf][3];		// gather, scatter
 	vel = new real[njbuf][3];		// gather, scatter
 
@@ -96,6 +105,8 @@ int jdata::add_particle(real pmass, real pradius,
 	    id[j] = id0[j];
 	    mass[j] = mass0[j];
 	    radius[j] = radius0[j];
+	    time[j] = time0[j];
+	    timestep[j] = timestep0[j];
 	    for (int k = 0; k < 3; k++) {
 		pos[j][k] = pos0[j][k];
 		vel[j][k] = vel0[j][k];
@@ -106,17 +117,36 @@ int jdata::add_particle(real pmass, real pradius,
 	if (id0) delete [] id0;
 	if (mass0) delete [] mass0;
 	if (radius0) delete [] radius0;
+	if (time0) delete [] time0;
+	if (timestep0) delete [] timestep0;
 	if (pos0) delete [] pos0;
 	if (vel0) delete [] vel0;
     }
 
-    // Give the particle a name if none is specified.
+    // If a particle ID is specified, check that it isn't already in
+    // use.
+
+    if (pid >= 0) {
+	if (pid >= init_id && pid < next_id) {
+	    cout << "user specified ID " << pid << " already in use (1)."
+		 << endl;
+	    pid = -1;
+	} else if (user_specified_id.size() > 0) {
+	    if (find(user_specified_id.begin(), user_specified_id.end(), pid)
+		!= user_specified_id.end()) {
+		cout << "user specified ID " << pid << " already in use (2)."
+		     << endl;
+		pid = -1;
+	    }
+	}
+    }
 
     if (pid < 0) pid = get_particle_id();
 
     // Place the new particle at the end of the list.
 
     id[nj] = pid;
+    time[nj] = system_time;
     name[nj] = ToString(pid);
     mass[nj] = pmass;
     radius[nj] = pradius;
@@ -124,6 +154,30 @@ int jdata::add_particle(real pmass, real pradius,
 	pos[nj][k] = ppos[k];
 	vel[nj][k] = pvel[k];
     }
+
+//     if (mpi_rank == 0) {
+// 	cout << "add_particle: "; PRC(system_time);
+// 	PRC(pmass); PRC(nj); PRL(pid);
+//     }
+
+    // Update the inverse ID structure, such that inverse[id[j]] = j.
+    // Use an STL map, so we don't have to worry about the range or
+    // sparseness of the IDs in use.
+
+    inverse_id[pid] = nj;
+
+    // Set the timestep if required, and update the scheduler, if it
+    // exists.
+
+    if (dt > 0) {
+	timestep[nj] = dt;
+	if (sched) {
+	    // cout << "sched.add " << nj << " (" << pid << ")"
+	    //	 << endl << flush;
+	    sched->add_particle(nj);
+	}
+    }
+
     nj++;
 
     // Return the particle id.
@@ -137,36 +191,44 @@ void jdata::remove_particle(int j)
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     // Remove particle j from the system by swapping it with the last
-    // particle and reducing nj.  Only copy basic data, as we will
-    // have to recompute acc and jerk in any case.  Keep the timestep,
-    // which should still be trustworthy in practice.
+    // particle and reducing nj.
+
+    // Don't update the GPU(s), if any, yet, as repeated removals will
+    // probably change the j-domains, so this must be done later,
+    // e.g. in recommit_particles(), which also recomputes forces and
+    // time steps.  Do update the scheduler, however: remove j and
+    // remove/replace nj, if necessary.
 
     inverse_id.erase(id[j]);
+    // cout << "sched.remove " << j << " (" << id[j] << ")"
+    //	 << endl << flush;
+    sched->remove_particle(j);
 
     nj--;
     if (j < nj) {
-
+	// cout << "sched.remove " << nj << " (" << id[nj] << ")"
+	//     << endl << flush;
+	sched->remove_particle(nj);
 	id[j] = id[nj];
 	name[j] = name[nj];
 	time[j] = time[nj];
 	timestep[j] = timestep[nj];
 	mass[j] = mass[nj];
 	radius[j] = radius[nj];
+	pot[j] = pot[nj];
+	nn[j] = nn[nj];
+	dnn[j] = dnn[nj];
 	for (int k = 0; k < 3; k++) {
 	    pos[j][k] = pos[nj][k];
 	    vel[j][k] = vel[nj][k];
+	    acc[j][k] = acc[nj][k];
+	    jerk[j][k] = jerk[nj][k];
+	    pred_pos[j][k] = pred_pos[nj][k];
+	    pred_vel[j][k] = pred_vel[nj][k];
 	}
-
-	// Note: pot, nn, dnn, acc, jerk, pred_pos, and pred_vel are
-	// not copied.
-
 	inverse_id[id[j]] = j;
-
-	// Don't update the GPU yet, as repeated removals will
-	// probably change the j-domains.  Also, don't update the
-	// scheduler.  We will reload the GPU and recompute the
-	// scheduing in recommit_particles(), which also recomputes
-	// all forces and time steps.
+	// cout << "sched.add " << j << endl << flush;
+	sched->add_particle(j);
     } 
 }
 
@@ -180,8 +242,6 @@ void jdata::initialize_arrays()
     nn = new int[njbuf];			// scatter
     pot = new real[njbuf];			// scatter
     dnn = new real[njbuf];			// scatter
-    time = new real[njbuf];			// gather, scatter
-    timestep = new real[njbuf];			// gather, scatter
     acc = new real[njbuf][3];			// gather, scatter
     jerk = new real[njbuf][3];			// gather, scatter
     pred_pos = new real[njbuf][3];		// gather, scatter
@@ -195,11 +255,9 @@ void jdata::initialize_arrays()
 	    acc[j][k] = jerk[j][k] = pred_pos[j][k] = pred_vel[j][k] = 0;
     }
 
-    // Create the inverse ID structure, such that inverse[id[j]] = j.
-    // Use an STL map, so we don't have to worry about the range or
-    // sparseness of the IDs in use.
+    // Check the integrity of the inverse ID structure (should have
+    // inverse[id[j]] = j for all j).
 
-    for (int j = 0; j < nj; j++) inverse_id[id[j]] = j;
     check_inverse_id();
 
     // *** To be refined... ***
@@ -469,7 +527,7 @@ void jdata::predict_all(real t,
     predict_time = t;
 }
 
-void jdata::advance(idata& id, scheduler& sched)
+void jdata::advance(idata& id)
 {
     const char *in_function = "jdata::advance";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -483,7 +541,7 @@ void jdata::advance(idata& id, scheduler& sched)
     //		correct the i-list
     //		scatter the i-list
 
-    real tnext = id.set_list(sched);	// determine next time, make ilist
+    real tnext = id.set_list(*sched);	// determine next time, make ilist
 
     if (!use_gpu) {
 
@@ -502,12 +560,11 @@ void jdata::advance(idata& id, scheduler& sched)
     // Note that system_time remains unchanged until the END of the step.
 
     system_time = tnext;
-    sched.update();
-    // sched.print(true);
+    sched->update();
+    // sched->print(true);
 }
 
-void jdata::synchronize_all(idata& id,
-			    scheduler *sched)	// default = NULL
+void jdata::synchronize_all(idata& id)	// default = NULL
 {
     const char *in_function = "jdata::synchronize_all";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -537,8 +594,7 @@ void jdata::synchronize_all(idata& id,
     if (sched) sched->initialize();	// default is to reinitialize later
 }
 
-void jdata::synchronize_list(int jlist[], int njlist,
-			     idata& id, scheduler* sched)
+void jdata::synchronize_list(int jlist[], int njlist, idata& id)
 {
     const char *in_function = "jdata::synchronize_list";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -560,7 +616,7 @@ void jdata::synchronize_list(int jlist[], int njlist,
 
     // Transmit the jlist to the idata routines.
 
-    id.set_list(jlist, njlist);
+    id.set_list(jlist, njlist, nj);
 
     if (!use_gpu) {
 
@@ -572,7 +628,10 @@ void jdata::synchronize_list(int jlist[], int njlist,
 
     // Remove the particles from the scheduler.
 
-    for (int jj = 0; jj < njlist; jj++) sched->remove_particle(jlist[jj]);
+    bool ok = true;
+    for (int jj = 0; jj < njlist; jj++)
+	ok &= sched->remove_particle(jlist[jj]);
+    if (!ok) sched->print(true);
 
     // Advance the particles as usual.  Count this as one block step.
 
@@ -586,6 +645,9 @@ void jdata::synchronize_list(int jlist[], int njlist,
 }
 
 static real E0 = 0;
+static real Emerge = 0;
+void update_merger_energy(real dEmerge) {Emerge += dEmerge;}
+
 void jdata::print(idata *id)
 {
     const char *in_function = "jdata::print";
@@ -593,6 +655,11 @@ void jdata::print(idata *id)
 
     real E = get_energy(id);
     if (E0 == 0) E0 = E;
+    real pe = get_pot(id);
+    real total_mass = 0;
+    for (int j = 0; j < nj; j++) total_mass += mass[j];
+    int n_async = 0;
+    for (int j = 0; j < nj; j++) if (time[j] < system_time) n_async++;
 
     // Note: get_energy() predicts all particles and recomputes the
     // total potential and kinetic energies.  For the most accurate
@@ -602,7 +669,7 @@ void jdata::print(idata *id)
 
     real dnnmin = huge;
     int jmin = 0;
-     for (int j = 0; j < nj; j++)
+    for (int j = 0; j < nj; j++)
  	if (dnn[j] < dnnmin) {
  	    jmin = j;
  	    dnnmin = dnn[j];
@@ -611,14 +678,13 @@ void jdata::print(idata *id)
     if (mpi_rank == 0) {
 
 	cout << endl;
-	PRC(system_time); PRL(nj);
+	PRC(system_time); PRC(nj); PRC(total_mass); PRL(n_async);
+	real rvir = -0.5*total_mass*total_mass/pe;
+	PRC(pe); PRL(rvir);
 	int p = cout.precision(12);
-	PRC(E); PRL(E - E0);
+	PRC(E); PRL(E-E0);
+	PRC(Emerge); PRL(E-E0-Emerge);
 	cout.precision(p);
-	int n_async = 0;
-	for (int j = 0; j < nj; j++)
-	    if (time[j] < system_time) n_async++;
-	PRL(n_async);
 	print_percentiles();			// OK: runs on process 0 only
 
 	if (NN) {
@@ -631,7 +697,7 @@ void jdata::print(idata *id)
 	real user_time, stime;
 	get_cpu_time(user_time, stime);
 	real Gflops_user = 6.e-8*(nj-1)*total_steps/(user_time+tiny);
-	PRC(block_steps); PRC(total_steps); PRL(total_steps/block_steps);
+	PRC(block_steps); PRL(total_steps); PRL(total_steps/block_steps);
 	PRC(elapsed_time); PRL(user_time);
 	PRC(Gflops_elapsed); PRL(Gflops_user);
 
@@ -700,4 +766,6 @@ void jdata::cleanup()
     pos = vel = acc = jerk = pred_pos = pred_vel = NULL;
     nj = 0;
     njbuf = 0;
+    inverse_id.clear();
+    user_specified_id.clear();
 }

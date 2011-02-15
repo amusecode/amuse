@@ -17,8 +17,18 @@
 #include "grape.h"
 #endif
 
+// Diagnostic functions in parallel_hermite.cc
+
+extern real TDEBUG;
+void printq(int j, real2 q, const char *s);
+void print_list(jdata &jd);
+bool twiddles(real q, real v, real tol = 1.e-3);
+
 // No need to check jdata::use_gpu here, as the GPU functions will
 // only be called if use_gpu = true.
+
+// Maybe some of the n, j_start, j_end, etc. below should be promoted
+// to member data to avoid replicated code...?
 
 #ifdef GPU
 static int clusterid = 0;
@@ -31,7 +41,7 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
     const char *in_function = "jdata::initialize_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    // Initialize the local GPU(s).
+    // (Re)initialize the local GPU(s): reload all particles.
    
     if (!reinitialize) {
 	g6_open(clusterid);
@@ -39,7 +49,8 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 	// g6_set_xunit(new_xunit);
     }
 
-    static int n = 0, j_start, j_end;
+    static int n = 0;
+    static int j_start, j_end;
     static real a2[3] = {0,0,0}, j6[3] = {0,0,0}, k18[3] = {0,0,0};
 
     if (reinitialize) n = 0;
@@ -55,14 +66,19 @@ void jdata::initialize_gpu(bool reinitialize)	// default = false
 	if (mpi_rank == mpi_size-1) j_end = nj;
     }
 
-    // Load local particles into the GPU.
+    // Load all local particles into the GPU.
 
     // PRC(in_function); PRC(j_start); PRL(j_end);
 
-    for (int j = j_start; j < j_end; j++)
-	g6_set_j_particle(clusterid, j-j_start, id[j],	// note the use of ID
+    for (int j = j_start; j < j_end; j++) {
+	for (int k = 0; k < 3; k++) {
+	    a2[k] = acc[j][k]/2;
+	    j6[k] = jerk[j][k]/6;
+	}
+	g6_set_j_particle(clusterid, j-j_start, id[j],	// note use of ID
 			  time[j], timestep[j],		// as GRAPE index
 			  mass[j], k18, j6, a2, vel[j], pos[j]);
+    }
 
 #endif
 }
@@ -76,32 +92,63 @@ void jdata::update_gpu(int jlist[], int njlist)
     const char *in_function = "jdata::update_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    // Load new position and velocity for selected j-particles into
-    // the GPU.
+    // Load data for the listed j-particles into the GPU.
 
-    static int n = 0, j_start;
-    static real a2[3], j6[3], k18[3] = {0,0,0};
+    static int my_nj = -1;
+    static int n, j_start;
+    static real a2[3] = {0,0,0}, j6[3] = {0,0,0}, k18[3] = {0,0,0};
 
-    if (n == 0) {
+    if (my_nj != nj) {
 
-	// Define my j-range.
+	// (Re)define my j-range.  Oonly necessary if nj changes.
 
 	n = nj/mpi_size;
 	if (n*mpi_size < nj) n++;
 	j_start = mpi_rank*n;
+	my_nj = nj;
     }
+
+    // Load particles into the GPU.
+
+    bool debug = twiddles(system_time, TDEBUG);
+
+    if (debug) {PRC(in_function); PRC(j_start); PRL(njlist);}
 
     for (int jj = 0; jj < njlist; jj++) {
 	int j = jlist[jj];
-	int curr_rank = j/n;
-	if (curr_rank == mpi_rank) {
-	    for (int k = 0; k < 3; k++) {
-		a2[k] = acc[j][k]/2;
-		j6[k] = jerk[j][k]/6;
+	if (j < nj) {
+	    int curr_rank = j/n;
+	    if (curr_rank == mpi_rank) {
+		for (int k = 0; k < 3; k++) {
+		    a2[k] = acc[j][k]/2;
+		    j6[k] = jerk[j][k]/6;
+		}
+
+		if (debug) {
+		    int p = cout.precision(10);
+		    cout << "jdata::update_gpu(): jj = " << jj << " "
+			 << j << " (" << id[j] << ") " << time[j] << " "
+			 << timestep[j] << " " << mass[j] << endl;
+		    cout << "    pos: ";
+		    for (int k = 0; k < 3; k++) cout << pos[j][k] << " ";
+		    cout << endl << flush;
+		    cout << "    vel: ";
+		    for (int k = 0; k < 3; k++) cout << vel[j][k] << " ";
+		    cout << endl << flush;
+		    cout << "    a2: ";
+		    for (int k = 0; k < 3; k++) cout << a2[k] << " ";
+		    cout << endl << flush;
+		    cout << "    j6: ";
+		    for (int k = 0; k < 3; k++) cout << j6[k] << " ";
+		    cout << endl << flush;
+		    PRI(4); PRL(j-j_start);
+		    cout.precision(p);
+		}
+
+		g6_set_j_particle(clusterid, j-j_start, id[j],
+				  time[j], timestep[j],
+				  mass[j], k18, j6, a2, vel[j], pos[j]);
 	    }
-	    g6_set_j_particle(clusterid, j-j_start, id[j],
-			      time[j], timestep[j],
-			      mass[j], k18, j6, a2, vel[j], pos[j]);
 	}
     }
 #endif
@@ -114,19 +161,29 @@ void idata::update_gpu(jdata& jd)
     const char *in_function = "idata::update_gpu";
     if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
 
-    // Load corrected data for i-particles into the local GPUs.
+    // Load corrected data for all i-particles into the local GPUs.
+    // We coud just use the jdata version to avoid replicated code,
+    // but more efficient to avoid the extra call and use contiguous
+    // data for this function, which is called from the inner
+    // integration loop.
 
-    static int n = 0, j_start;
+    // Code is essentially identical to the jdata version.
+
+    static int my_nj = -1;
+    static int n, j_start;
     static real a2[3], j6[3], k18[3] = {0,0,0};
 
-    if (n == 0) {
+    if (my_nj != jd.get_nj()) {
 
 	// Define my j-range.
 
 	n = jd.get_nj()/jd.mpi_size;
 	if (n*jd.mpi_size < jd.get_nj()) n++;
 	j_start = jd.mpi_rank*n;
+	my_nj = jd.get_nj();
     }
+
+    bool debug = twiddles(jd.system_time, TDEBUG);
 
     for (int i = 0; i < ni; i++) {
 	int j = ilist[i];
@@ -136,7 +193,30 @@ void idata::update_gpu(jdata& jd)
 		a2[k] = iacc[i][k]/2;
 		j6[k] = ijerk[i][k]/6;
 	    }
-	    g6_set_j_particle(clusterid, j-j_start, iid[i],	// ?= id[j]
+
+	    if (debug) {
+		int p = cout.precision(10);
+		cout << "idata::update_gpu(): i = "
+		     << i << " (" << iid[i] << ") "
+		     << j << " (" << jd.id[j] << ") "
+		     << itime[i] << " " << itimestep[i] << " "
+		     << imass[i] << endl << flush;
+		cout << "    ipos: ";
+		for (int k = 0; k < 3; k++) cout << ipos[i][k] << " ";
+		cout << endl << flush;
+		cout << "    ivel: ";
+		for (int k = 0; k < 3; k++) cout << ivel[i][k] << " ";
+		cout << endl << flush;
+		cout << "    a2: ";
+		for (int k = 0; k < 3; k++) cout << a2[k] << " ";
+		cout << endl << flush;
+		cout << "    j6: ";
+		for (int k = 0; k < 3; k++) cout << j6[k] << " ";
+		cout << endl << flush;
+		cout.precision(p);
+	    }
+
+	    g6_set_j_particle(clusterid, j-j_start, iid[i],	// = id[j]
 			      itime[i], itimestep[i],
 			      imass[i], k18, j6, a2, ivel[i], ipos[i]);
 	}
@@ -146,6 +226,78 @@ void idata::update_gpu(jdata& jd)
 }
 
 
+
+void jdata::sync_gpu()
+{
+    // Do phony work on the GPU to force synchronization of the
+    // internal buffers.
+
+#ifdef GPU
+
+    if (0) {
+	force_j_particle_send();	// Jeroen's code
+	return;
+    }
+
+    const char *in_function = "sync_gpu";
+    if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+
+    static int npipes = 0, *iid;
+    static real *ipot, *h2;
+    static real2 ipos, ivel, a2, j6;
+
+    if (npipes == 0) {
+
+	//Initialize local data.
+
+	npipes = g6_npipes();
+	iid = new int[npipes];
+	ipot = new real[npipes];
+	h2 = new real[npipes];
+	ipos = new real[npipes][3];
+	ivel = new real[npipes][3];
+	a2 = new real[npipes][3];
+	j6 = new real[npipes][3];
+
+	for (int i = 0; i < npipes; i++) h2[i] = eps2;
+    }
+
+    // Define the j-domains.  These only need be recomputed if nj
+    // changes.
+
+    static int my_nj = 0;
+    static int j_start, j_end, localnj;
+
+    if (my_nj != nj) {
+	// cout << in_function << ": resetting domains" << endl << flush;
+	int n = nj/mpi_size;
+	if (n*mpi_size < nj) n++;
+	j_start = mpi_rank*n;
+	j_end = j_start + n;
+	if (mpi_rank == mpi_size-1) j_end = nj;
+	localnj = j_end - j_start;
+	my_nj = nj;
+    }
+
+    // Do nothing...
+
+    g6_set_ti(clusterid, system_time);
+    for (int i = 0; i < npipes; i++) {
+	iid[i] = id[0];
+	ipot[i] = pot[0];
+	for (int k = 0; k < 3; k++) {
+	    ipos[i][k] = pos[0][k];
+	    ivel[i][k] = vel[0][k];
+	    a2[i][k] = acc[0][k]/2;
+	    j6[i][k] = jerk[0][k]/6;
+	}
+    }
+    g6calc_firsthalf(clusterid, localnj, npipes, iid,
+		     ipos, ivel, a2, j6, ipot, eps2, h2);
+
+#endif
+
+}
 
 void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 					    bool pot)	// default = false
@@ -199,23 +351,25 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
     // Define the j-domains.  These only need be recomputed if nj
     // changes.
 
-    static int curr_nj = 0;
+    static int my_nj = 0;
     static int j_start, j_end, localnj;
 
-    if (jd.get_nj() != curr_nj) {
+    if (my_nj != jd.get_nj()) {
+	// cout << "resetting domains" << endl << flush;
 	int n = jd.get_nj()/jd.mpi_size;
 	if (n*jd.mpi_size < jd.get_nj()) n++;
 	j_start = jd.mpi_rank*n;
 	j_end = j_start + n;
 	if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
-	curr_nj = jd.get_nj();
 	localnj = j_end - j_start;
+	my_nj = jd.get_nj();
     }
 
     // Calculate the gravitational forces on the i-particles.
 
     g6_set_ti(clusterid, ti);
- 
+    bool debug = twiddles(ti, TDEBUG);
+
     for (int i = 0; i < ni; i += npipes) {
 	int nni = npipes;
 	if (ni - i < npipes) nni = ni - i;
@@ -248,13 +402,53 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 	if (pot || !want_neighbors)
 
 	    g6calc_lasthalf(clusterid, localnj, nni, iid+i,
-			     ipos+i, ivel+i, jd.eps2, h2,
-			     lacc+i, ljerk+i, lpot+i);
+			    ipos+i, ivel+i, jd.eps2, h2,
+			    lacc+i, ljerk+i, lpot+i);
 	else
 
 	    g6calc_lasthalf2(clusterid, localnj, nni, iid+i,
 			     ipos+i, ivel+i, jd.eps2, h2,
 			     lacc+i, ljerk+i, lpot+i, lnn+i);
+
+
+	if (debug) {
+
+	    int p = cout.precision(10);
+	    cout << in_function << ": t = " << ti << endl;
+
+	    // Code from Jeroen:
+
+	    real temp_pos[3], temp_vel[3], temp_acc[3], temp_jrk[3],
+		 temp_ppos[3], temp_pvel[3];
+
+	    for (int j = 0; j < jd.get_nj(); j++) 
+		if (j == 0 || j == 1 || j == 709 || j == 982) {
+
+		    //get_j_part_data(j, localnj, temp_pos, temp_vel,
+		    //	    temp_acc, temp_jrk, temp_ppos, temp_pvel);
+  
+		    cout << "j = " << j << " (" << jd.id[j] << ")" << endl
+			 << "    tpos ";
+		    for (int k = 0; k < 3; k++) cout << temp_pos[k] << " ";
+		    cout << endl << flush;
+		    cout << "    tvel ";
+		    for (int k = 0; k < 3; k++) cout << temp_vel[k] << " ";
+		    cout << endl << flush;
+		    cout << "    tacc ";
+		    for (int k = 0; k < 3; k++) cout << temp_acc[k] << " ";
+		    cout << endl << flush;
+		    cout << "    tjrk ";
+		    for (int k = 0; k < 3; k++) cout << temp_jrk[k] << " ";
+		    cout << endl << flush;
+		    cout << "    ppos ";
+		    for (int k = 0; k < 3; k++) cout << temp_ppos[k] << " ";
+		    cout << endl << flush;
+		    cout << "    pvel ";
+		    for (int k = 0; k < 3; k++) cout << temp_pvel[k] << " ";
+		    cout << endl << flush;
+		}
+	    cout.precision(p);
+	}
 
 	jd.gpu_calls += 1;
 	jd.gpu_total += nni;
@@ -343,7 +537,7 @@ void get_neighbors(jdata& jd, int knn)
 }
 
 static inline void save_neighbors(jdata& jd, int j, int nlocal, int local[],
-				 int nsave, int save[])
+				  int nsave, int save[])
 {
     // Reduce the local neighbors of particle j to a list of the nsave
     // nearest neighbors.
@@ -382,8 +576,8 @@ void jdata::get_densities_on_gpu()	// under development
     const char *in_function = "jdata::get_densities_on_gpu";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    static int npipes = 0, localnj, knn = 12, nbrmax,
-	*nneighbors, *neighbors, *pneighbors, *itemp;
+    static int npipes = 0;
+    static int *itemp;
     static real *h2, (*a2)[3], (*j6)[3], *temp, (*temp3)[3];
 
     if (npipes == 0) {
@@ -397,13 +591,21 @@ void jdata::get_densities_on_gpu()	// under development
 	itemp = new int[npipes];
 	temp = new real[npipes];
 	temp3 = new real[npipes][3];
+    }
+
+    static int my_nj = 0;
+    static int j_start, j_end, localnj;
+    int knn = 12, nbrmax = 0,
+	*nneighbors = NULL, *neighbors = NULL, *pneighbors = NULL;
+
+    if (my_nj != nj) {
 
 	// Define my j-range.
 
 	int n = nj/mpi_size;
 	if (n*mpi_size < nj) n++;
-	int j_start = mpi_rank*n;
-	int j_end = j_start + n;
+	j_start = mpi_rank*n;
+	j_end = j_start + n;
 	if (mpi_rank == mpi_size-1) j_end = nj;
 	localnj = j_end - j_start;
 
@@ -415,6 +617,8 @@ void jdata::get_densities_on_gpu()	// under development
 	    pneighbors = new int[2*nj*knn];	// extra space for merging
 	else
 	    pneighbors = new int[nj*knn];
+
+	my_nj = nj;
     }
 
     // get_neighbors(*this, knn);

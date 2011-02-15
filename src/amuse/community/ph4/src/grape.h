@@ -110,6 +110,13 @@ extern "C" {
   void g6_set_neighbour_list_sort_mode(int mode);
 
   int g6_set_overflow_flag_test_mode(int aflag, int jflag, int pflag);
+
+  void force_j_particle_send();
+
+// For debugging:
+
+  int get_j_part_data(int, int, double*, double*, double*,
+		      double*, double*, double*);
 }
 
 #endif
