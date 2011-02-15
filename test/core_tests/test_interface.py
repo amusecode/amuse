@@ -180,7 +180,7 @@ class CodeInterfaceWithMethodsAndPropertiesTests(amusetest.TestCase):
         handler.add_method('get_state_error', (handler.NO_UNIT,), (units.m, units.m, units.kg, handler.ERROR_CODE))
         
         self.assertRaises(AmuseException, instance.get_state_error, 1, 
-            expected_message = "Error when calling 'get_state_error' of a 'CodeInterface', errorcode is -1.0")
+            expected_message = "Error when calling 'get_state_error' of a 'InCodeComponentImplementation', errorcode is -1.0")
             
 class CodeInterfaceTests(amusetest.TestCase):
     class TestClass(object):
@@ -536,11 +536,11 @@ class CodeInterfaceWithErrorHandlingTests(amusetest.TestCase):
         self.assertEquals(instance.get_mass(), 10.0 | units.m)
         original.errorcode = -2
         self.assertRaises(AmuseException, instance.get_mass, expected_message = 
-            "Error when calling 'get_mass' of a 'CodeInterface', errorcode is -2, error is 'no such method'")
+            "Error when calling 'get_mass' of a 'InCodeComponentImplementation', errorcode is -2, error is 'no such method'")
             
         original.errorcode = -1
         self.assertRaises(AmuseException, instance.get_mass, expected_message = 
-            "Error when calling 'get_mass' of a 'CodeInterface', errorcode is -1")
+            "Error when calling 'get_mass' of a 'InCodeComponentImplementation', errorcode is -1")
             
 
 class CodeInterfaceWithParticlesTests(amusetest.TestCase):
@@ -956,14 +956,14 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('echo_inputs', (units.m, units.s), (units.s, handler.ERROR_CODE))
         self.assertRaises(exceptions.AmuseException, lambda: instance.echo_inputs, 
-            expected_message = "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', "
+            expected_message = "Incorrect definition of method 'echo_inputs' of class 'InCodeComponentImplementation', "
             "the number of outputs do not match, expected 3, actual 2.")
             
         instance = interface.InCodeComponentImplementation(original)
         handler = instance.get_handler('METHOD')
         handler.add_method('echo_inputs', (units.m, units.s), (units.s, units.m, units.s, handler.ERROR_CODE))
         self.assertRaises(exceptions.AmuseException, lambda: instance.echo_inputs, 
-            expected_message = "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', "
+            expected_message = "Incorrect definition of method 'echo_inputs' of class 'InCodeComponentImplementation', "
             "the number of outputs do not match, expected 3, actual 4.")
 
 
@@ -988,7 +988,7 @@ class CodeInterfaceAndLegacyFunctionsTest(amusetest.TestCase):
         handler = instance.get_handler('METHOD')
         handler.add_method('echo_inputs', (units.m), (units.s, units.m, handler.ERROR_CODE), )
         self.assertRaises(exceptions.AmuseException, lambda: instance.echo_inputs, 
-            expected_message = "Incorrect definition of method 'echo_inputs' of class 'CodeInterface', "
+            expected_message = "Incorrect definition of method 'echo_inputs' of class 'InCodeComponentImplementation', "
             "the number of inputs do not match, expected 2, actual 1.")
     
     
