@@ -17,10 +17,13 @@ GLOBJS = $(OBJDIR)/amuse_interface_gl.o
 HEALPIX_PATH = $(PLUGINS)/HEALPix/
 QHULL_PATH = $(PLUGINS)/QHull/
 
-LIBS =  -lhdf5 -lz \
+HDF5_PATH = /Users/jppaarde/sw/hdf5-1.6.10/installed
+GSL_PATH = /usr/local/scisoft
+
+LIBS =  -L${HDF5_PATH}/lib -lhdf5 -lz \
         -L${QHULL_PATH} -lqhull \
         -L${HEALPIX_PATH}/lib  -lhealpix_cxx \
-        -lgslcblas -lgsl 
+        -L${GSL_PATH}/lib -lgslcblas -lgsl 
 
 GL_PATH ?= /home/inti/libraries/f90gl-1.2.11
 GLINCLUDE = -I/usr/include/GL -I$(GL_PATH)/include/GL/

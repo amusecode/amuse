@@ -565,6 +565,7 @@ class SimpleX{
     double UNIT_M;                 //!< Unit mass in box, converts number density into number of atoms
     double UNIT_I;                 //!< Unit number of ionising photons in box
     double UNIT_T;                 //!< Time of 1 sweep in seconds
+    double UNIT_T_MYR;             //!< Time of 1 sweep in Myr
     double UNIT_D;                 //!< Unit number density
     double UNIT_V;                 //!< Unit volume
  

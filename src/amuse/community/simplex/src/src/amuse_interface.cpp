@@ -18,7 +18,7 @@ void AMUSE_SimpleX::read_parameters(){
   hilbert_order = 1;
 
   //time step
-  UNIT_T = 0.05;
+  UNIT_T_MYR = 0.05;
   //size of simulation domain in pc
   sizeBox = 13200;
 
@@ -308,7 +308,7 @@ int AMUSE_SimpleX::setup_simplex(){
 //evolve the radiative transfer over time t_target
 int AMUSE_SimpleX::evolve(double t_target, int sync) {
     
-  double dt= t_target*secondsPerMyr -total_time;
+  double dt= t_target*secondsPerMyr - total_time;
     
   if(syncflag==1){
     reinitialize();

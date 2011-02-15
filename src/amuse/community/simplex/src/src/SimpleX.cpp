@@ -71,6 +71,7 @@ SimpleX::SimpleX(const string& output_path){
 
   //conversion factors between numerical and physical units
   UNIT_T = 0.0;
+  UNIT_T_MYR = 0.0;
   UNIT_L = 0.0;
 
   //total volume, total number of atoms and maximal resolution of/in simulation domain
@@ -1235,6 +1236,8 @@ bool SimpleX::inDomain(const float& x, const float& y, const float& z, const uns
 void SimpleX::compute_triangulation(){
 
 
+
+
   // ---------- define subboxes  ---------------//
 
 
@@ -1336,7 +1339,7 @@ void SimpleX::compute_triangulation(){
       //change the abort to extension of the borders!
       //if( in_box.size() <= (unsigned int) dimension ){ 
       if( in_subbox <= (unsigned int) dimension ){ 
-        cerr << "Too few points in subbox to do tessellation." << endl;
+        cerr << "Too few points in subbox " << i << " to do tessellation." << endl;
         MPI::COMM_WORLD.Abort( -1 );
       }
 
@@ -7997,7 +8000,7 @@ void SimpleX::initialise_physics_params() {
 
   //physical units
   simTime *= secondsPerMyr;  
-  UNIT_T *= secondsPerMyr;  
+  UNIT_T = UNIT_T_MYR * secondsPerMyr;  
   UNIT_L = sizeBox * parsecToCm; 
   UNIT_V = pow(UNIT_L, 3.0);
 
