@@ -619,6 +619,36 @@ class TestParticlesSuperset(amusetest.TestCase):
         for key, value in zip(sorted_keys, sorted_values):
             print dictionary[key],value
             self.assertEqual(dictionary[key],value)
+            
+    def test3(self):
+        set1 = core.Particles(2)
+        set2 = core.Particles(3)
+        set1.x = [1.0 , 2.0] | units.m 
+        set1.y = [3.0 , 4.0] | units.m
+        set2.x = [5.0 , 6.0, 7.0] | units.m 
+        set2.y = [1.0 , 2.0, 3.0] | units.m
+        set1.add_calculated_attribute("xy", lambda x, y : x * y)
+        set2.add_calculated_attribute("xy", lambda x, y : x * y)
+        superset = core.ParticlesSuperset([set1, set2])
+        self.assertEquals(len(superset), 5)
+        self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
+        self.assertEquals(superset.xy, ([3.0, 8.0, 5.0, 12.0, 21.0] | units.m ** 2))
+        
+    def test4(self):
+        set1 = core.Particles(2)
+        set2 = core.Particles(3)
+        set1.x = [1.0 , 2.0] | units.m 
+        set1.y = [3.0 , 4.0] | units.m
+        set2.x = [5.0 , 6.0, 7.0] | units.m 
+        set2.y = [1.0 , 2.0, 3.0] | units.m
+        set1.add_function_attribute("xy", lambda p, o : p.x * p.y - o)
+        set2.add_function_attribute("xy", lambda p, o : p.x * p.y + o)
+        superset = core.ParticlesSuperset([set1, set2])
+        self.assertEquals(len(superset), 5)
+        self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
+        self.assertEquals(superset.xy(0.0 | units.m ** 2), ([3.0, 8.0, 5.0, 12.0, 21.0] | units.m ** 2))
+        self.assertEquals(superset.xy(2.0 | units.m ** 2), ([1.0, 6.0, 7.0, 14.0, 23.0] | units.m ** 2))
+        
     
 class TestSliceParticles(amusetest.TestCase):
     

@@ -898,7 +898,69 @@ class Particles(AbstractParticleSet):
     def _set_factory(self):
         return Particles
     
+class BoundSupersetParticlesFunctionAttribute(object):
+    def  __init__(self, name, superset):
+        self.name = name
+        self.superset = superset
+        self.subsetfunctions = []
+        
+    def add_subsetfunction(self, callable):
+        self.subsetfunctions.append(callable)
+        
+    def __call__(self, *list_arguments, **keyword_arguments):
+        result = None
+        offset = 0
+        for x in self.subsetfunctions:
+            subset_result = x(*list_arguments, **keyword_arguments)
+            if subset_result is None and result is None:
+                result = None
+            elif hasattr(subset_result, 'unit'):
+                if result is None:
+                    result = VectorQuantity.zeros(len(self.superset), subset_result.unit)
+                    offset = 0
+                result[offset:len(subset_result)+offset] = subset_result
+                offset += len(subset_result)
+            else:
+                raise exceptions.AmuseException("cannot handle this type of functions on supersets yet") 
+        return result
+
+class DerivedSupersetAttribute(DerivedAttribute):
+                        
+            
+    def __init__(self, name):
+        self.name = name
     
+    def get_values_for_entities(self, superset):
+        result = None
+        offset = 0
+        for subset in superset._private.particle_sets:
+            subset_result =  getattr(subset, self.name)
+            if hasattr(subset_result, '__call__'):
+                if result is None:
+                    result = BoundSupersetParticlesFunctionAttribute(self.name, superset)
+                result.add_subsetfunction(subset_result)
+                
+            elif hasattr(subset_result, 'unit'):
+                if result is None:
+                    result = VectorQuantity.zeros(len(superset), subset_result.unit)
+                    offset = 0
+                result[offset:len(subset_result)+offset] = subset_result
+                offset += len(subset_result)
+            else:
+                raise exceptions.AmuseException("cannot handle this type of attribute on supersets yet") 
+        return result
+                
+    def set_values_for_entities(self, superset, value):
+        raise exceptions.AmuseException("cannot set value of attribute '{0}'")
+
+    def get_value_for_entity(self, superset, key):
+        subset = superset._get_subset_for_key(key)
+        return getattr(subset, self.name)
+
+    def set_value_for_entity(self, superset, key, value):
+        subset = superset._get_subset_for_key(key)
+        return setattr(subset, self.name)
+
 class ParticlesSuperset(AbstractParticleSet):
     """A superset of particles. Attribute values are not
     stored by the superset. The superset provides a view
@@ -933,6 +995,19 @@ class ParticlesSuperset(AbstractParticleSet):
                 
         self._private.particle_sets = particle_sets
         self._private.index_to_default_set = index_to_default_set
+        
+        keysinallsubsets = None
+        for subset in particle_sets:
+            derivedattribute_keys = set(subset._derived_attributes.keys())
+            if keysinallsubsets is None:
+                keysinallsubsets = set(derivedattribute_keys)
+            else:
+                keysinallsubsets &= derivedattribute_keys
+        
+        keysinallsubsets -= set(self.GLOBAL_DERIVED_ATTRIBUTES.keys())
+        
+        for key in keysinallsubsets:
+            self._derived_attributes[key] = DerivedSupersetAttribute(key)
         
         if self.has_duplicates():
             raise exceptions.AmuseException("Unable to add a particle, because it was already part of this set.")
@@ -1077,7 +1152,11 @@ class ParticlesSuperset(AbstractParticleSet):
     def _original_set(self):
         return self
 
-
+    def _get_subset_for_key(self, key):
+        for set in self._private.particle_sets:
+            if set._has_key(key):
+                return set
+        return None
 
     def _is_superset(self):
         return True
