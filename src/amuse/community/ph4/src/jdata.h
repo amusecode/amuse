@@ -109,6 +109,7 @@ class jdata {
     void synchronize_list(int jlist[], int njlist);
     void print();
     void spec_output(const char *s = NULL);
+    void to_com();
 
     // In gpu.cc:
 

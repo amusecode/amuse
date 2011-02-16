@@ -804,3 +804,17 @@ void jdata::cleanup()
     inverse_id.clear();
     user_specified_id.clear();
 }
+
+void jdata::to_com()
+{
+    // Place the system in the center of mass frame.
+
+    vec cmpos, cmvel;
+    get_com(cmpos, cmvel);
+    for (int j = 0; j < nj; j++) {
+	for (int k = 0; k < 3; k++) {
+	    pos[j][k] -= cmpos[k];
+	    vel[j][k] -= cmvel[k];
+	}
+    }
+}

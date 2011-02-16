@@ -165,6 +165,10 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 	}
 	jd.mpi_comm.Barrier();
     }
+
+    // Set the system center of mass position and velocity to zero.
+
+    jd.to_com();
 }
 
 
