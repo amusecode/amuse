@@ -12,7 +12,7 @@ CFLAGS += -g -Wall $(GPU) $(OPT)
 
 OBJS    = jdata.o scheduler.o idata.o grape.o gpu.o diag.o debug.o close_encounter.o
 
-LIBS =	-L/usr/local/sapporo_v1.5 -lsapporo \
+LIBS =	-L/usr/local/sapporo_v1.6 -lsapporo \
 	-L/usr/local/cuda/lib -lcuda -lcudart \
 	-L/opt/local/lib -lboost_thread-mt
 

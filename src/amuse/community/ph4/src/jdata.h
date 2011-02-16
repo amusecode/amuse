@@ -108,7 +108,7 @@ class jdata {
     void synchronize_all();
     void synchronize_list(int jlist[], int njlist);
     void print();
-    void log_output();
+    void spec_output(const char *s = NULL);
 
     // In gpu.cc:
 
@@ -119,6 +119,10 @@ class jdata {
 
     // In diag.cc:
 
+    void get_com(vec& pos, vec& vel);
+    void get_mcom(vec& pos, vec& vel,
+		  real cutoff = 0.9,
+		  int n_iter = 2);
     vec get_center();
     void get_lagrangian_radii(vector<real>& mlist,
 			      vector<real>& rlist,

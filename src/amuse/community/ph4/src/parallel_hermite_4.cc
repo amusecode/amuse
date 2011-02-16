@@ -205,8 +205,8 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     sched.print();
     real t_out = dt_out;
 
-    real dt_log = 1./16, t_log = dt_log;
-    jd.log_output();
+    real dt_spec = 1./16, t_spec = dt_spec;
+    jd.spec_output("%%%");
 
 
     bool remove = false;	// check GPU bug in remove_particle()
@@ -236,14 +236,14 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 
 	step++;
 
-	// Special output.  Need a better name...
+	// Problem-specific output.
 
-	if (jd.system_time >= t_log) {
-	    jd.log_output();
-	    t_log += dt_log;
+	if (jd.system_time >= t_spec) {
+	    jd.spec_output("%%%");
+	    t_spec += dt_spec;
 	}
 
-	// Routine output.
+	// Routine diagnostic output.
 
 	if (jd.system_time >= t_out || jd.system_time >= t_max) {
 	    jd.print();

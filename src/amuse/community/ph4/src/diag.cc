@@ -54,10 +54,25 @@ void get_cpu_time(real& user_time, real& system_time)
     }
 }
 
-vec jdata::get_center()
+void jdata::get_com(vec& cmpos, vec& cmvel)
 {
-    return vec(0,0,0);		// TODO
+    // Compute the center of mass of the system.
+
+    cmpos = cmvel = 0;
+    real mtot = 0;
+    for (int j = 0; j < nj; j++) {
+	mtot += mass[j];
+	for (int k = 0; k < 3; k++) {
+	    cmpos[k] += mass[j]*pos[j][k];
+	    cmvel[k] += mass[j]*vel[j][k];
+	}
+    }
+    cmpos /= mtot;
+    cmvel /= mtot;
 }
+
+// Data structure mrdata does double duty for calculation of both the
+// modified center of mass and lagrangian radii.
 
 class mrdata {
   public:
@@ -68,6 +83,84 @@ class mrdata {
 };
 
 bool operator < (const mrdata& x, const mrdata& y) {return x.r_sq < y.r_sq;}
+
+void jdata::get_mcom(vec& cmpos, vec& cmvel,
+		     real cutoff,		// default = 0.9
+		     int n_iter)		// default = 2
+{
+    // Compute the modified center of mass of the system.  Code stolen
+    // from Starlab and modified to use STL vectors.
+
+    // Use center of mass pos and vel as the starting point for
+    // computing the modified com.
+
+    get_com(cmpos, cmvel);
+
+    vector<mrdata> mrlist;
+    bool loop;
+    int count = n_iter;
+
+    if (cutoff > 1) cutoff = 1;
+    if (cutoff == 1) count = 0;
+
+    int j_max = (int) (cutoff*nj);
+
+    do {
+	loop = false;
+
+	// Set up an array of radii relative to the current center.
+
+	for (int j = 0; j < nj; j++) {
+	    real r_sq = 0;
+	    for (int k = 0; k < 3; k++)
+		r_sq += pow(pos[j][k] - cmpos[k], 2);
+	    mrlist.push_back(mrdata(j, mass[j], r_sq));
+	}
+
+	// Sort the array by radius.
+
+	sort(mrlist.begin(), mrlist.end());
+
+	// Compute mpos and mvel by removing outliers (defined as a
+	// fixed fraction by number) and recomputing the center of
+	// mass.
+
+	// Currently, apply mass-independent weighting to all stars, but
+	// let the weighting function go to zero at the cutoff.
+
+	real r_sq_maxi = 1/mrlist[j_max].r_sq;
+	real weighted_mass = 0;
+	vec new_pos = 0, new_vel = 0;
+	for (int jlist = 0; jlist < j_max; jlist++) {
+	    int j = mrlist[jlist].index;
+	    real r_sq = mrlist[jlist].r_sq;
+	    real rfac = 1 - r_sq*r_sq_maxi;
+	    if (rfac < 0) rfac = 0;
+	    real weight = mrlist[jlist].mass * rfac;
+	    weighted_mass += weight;
+	    for (int k = 0; k < 3; k++) {
+		new_pos[k] += weight * pos[j][k];
+		new_vel[k] += weight * vel[j][k];
+	    }
+	}
+
+	if (weighted_mass > 0) {
+	    cmpos = new_pos / weighted_mass;
+	    cmvel = new_vel / weighted_mass;
+	    if (count-- > 0) loop = true;
+	}
+
+    } while (loop);
+}
+
+vec jdata::get_center()
+{
+    vec cmpos, cmvel;
+    get_mcom(cmpos, cmvel);
+    return cmpos;
+}
+
+
 
 void jdata::get_lagrangian_radii(vector<real>& mlist,
 				 vector<real>& rlist,

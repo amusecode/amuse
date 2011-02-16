@@ -677,6 +677,8 @@ void jdata::print()
     const char *in_function = "jdata::print";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
+    // Print standard diagnostic information on the j-data system.
+
     real E = get_energy();
     if (E0 == 0) E0 = E;
     real pe = get_pot();
@@ -709,6 +711,11 @@ void jdata::print()
 	PRC(E); PRL(E-E0);
 	PRC(Emerge); PRL(E-E0-Emerge);
 	cout.precision(p);
+	vec cmpos, cmvel;
+	get_com(cmpos, cmvel);
+	cout << "com:  " << cmpos << endl << flush;
+	get_mcom(cmpos, cmvel);
+	cout << "mcom: " << cmpos << endl << flush;
 	print_percentiles();			// OK: runs on process 0 only
 
 	if (NN) {
@@ -747,21 +754,25 @@ void jdata::print()
     }
 }
 
-void jdata::log_output()
+void jdata::spec_output(const char *s)	// default = NULL
 {
-    // Rudimentary log output...
+    // Problem-specific output...
 
     if (mpi_rank == 0) {
 	vector<real> mlist, rlist;
-	mlist.push_back(0.1);
-	mlist.push_back(0.5);
-	mlist.push_back(0.9);
+	mlist.push_back(0.01);
+	mlist.push_back(0.05);
+	mlist.push_back(0.10);
+	mlist.push_back(0.25);
+	mlist.push_back(0.50);
+	mlist.push_back(0.90);
 	rlist.clear();
 	get_lagrangian_radii(mlist, rlist);
-	cout << "%%% " << system_time << " "
-	     << rlist[0] << " " << rlist[1] << " " << rlist[2]
-	     << endl << flush;
-	    }
+	if (s) cout << s << " ";
+	cout << system_time;
+	for (unsigned int i = 0; i < mlist.size(); i++) cout << " " << rlist[i];
+	cout << endl << flush;
+    }
 }
 
 void jdata::cleanup()
