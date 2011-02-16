@@ -11,24 +11,24 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 class ph4Interface(LegacyInterface,
                    GravitationalDynamicsInterface):
     """
-    Parallel, GPU-accelerated N-body integration module with block
-    time steps, using the Hermite integration scheme.
+    Parallel, GPU-accelerated, N-body integration module with block
+    time steps, using a 4th-order Hermite integration scheme.
     """
 
     # Interface specification.
 
     include_headers = ['interface.h']
 
-    MODE_GPU   = 'gpu'
+    MODE_GPU = 'gpu'
     MODE_CPU = 'cpu'
     
-    def __init__(self, mode = 'MODE_CPU', **options):
+    def __init__(self, mode = MODE_CPU, **options):
+        print "worker code =", self.name_of_the_muse_worker(mode)
         LegacyInterface.__init__(
             self,
             name_of_the_worker=self.name_of_the_muse_worker(mode),
             **options
         )
-
     
     def name_of_the_muse_worker(self, mode):
         if mode == self.MODE_CPU:

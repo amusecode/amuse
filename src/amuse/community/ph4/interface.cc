@@ -120,7 +120,7 @@ int recommit_particles()
 	jd->predict_all(jd->system_time, true);	// set pred quantities
     else
 	jd->initialize_gpu(true);		// reload the GPU
-    id->setup(*jd);				// compute acc and jerk
+    id->setup();				// compute acc and jerk
     s->initialize();				// reconstruct the scheduler
     return 0;
 }
@@ -130,6 +130,8 @@ int cleanup_code()
     // Clean up at the end of the calculation.
 
     jd->cleanup();
+    id->cleanup();
+    s->cleanup();
     return 0;
 }
 
@@ -162,7 +164,7 @@ int get_index_of_next_particle(int index_of_the_particle,
 {
     int j = jd->get_inverse_id(index_of_the_particle);
     if (j < 0) return -1;
-    else if (j >= jd->get_nj()-1) return 1;
+    else if (j >= jd->nj-1) return 1;
     else *index_of_the_next_particle = jd->id[j+1];
     return 0;
 }
@@ -319,7 +321,7 @@ int evolve(double time)
     // system_time < time[j] + timestep[j].  If synchronization is
     // needed, do it with synchronize_model().
 
-    while (jd->system_time < time) jd->advance(*id);
+    while (jd->system_time < time) jd->advance();
     return 0;
 }
 
@@ -329,7 +331,7 @@ int synchronize_model()
     // default is not to reinitialize the scheduler, as this will be
     // handled later, in recommit_particles().
 
-    jd->synchronize_all(*id);
+    jd->synchronize_all();
     return 0;
 }
 
@@ -355,27 +357,27 @@ int get_indices_of_colliding_particles(int * index_of_particle1,
 
 int get_number_of_particles(int * number_of_particles)
 {
-    *number_of_particles = jd->get_nj();
+    *number_of_particles = jd->nj;
     return 0;
 }
 
 int get_total_mass(double * mass)
 {
     real mtot = 0;
-    for (int j = 0; j < jd->get_nj(); j++) mtot += jd->mass[j];
+    for (int j = 0; j < jd->nj; j++) mtot += jd->mass[j];
     *mass = mtot;
     return 0;
 }
 
 int get_potential_energy(double * potential_energy)
 {
-    *potential_energy = jd->get_pot(id);
+    *potential_energy = jd->get_pot();
     return 0;
 }
 
 int get_kinetic_energy(double * kinetic_energy)
 {
-    *kinetic_energy = jd->get_kin(id);	// NB should call get_kin after get_pot
+    *kinetic_energy = jd->get_kin();	// NB should call get_kin after get_pot
     return 0;
 }
 
@@ -383,7 +385,7 @@ int get_center_of_mass_position(double * x, double * y, double * z)
 {
     real mtot = 0;
     vec cmx(0,0,0);
-    for (int j = 0; j < jd->get_nj(); j++) {
+    for (int j = 0; j < jd->nj; j++) {
 	mtot += jd->mass[j];
 	for (int k = 0; k < 3; k++) cmx[k] += jd->mass[j]*jd->pos[j][k];
     }
@@ -397,7 +399,7 @@ int get_center_of_mass_velocity(double * vx, double * vy, double * vz)
 {
     real mtot = 0;
     vec cmv(0,0,0);
-    for (int j = 0; j < jd->get_nj(); j++) {
+    for (int j = 0; j < jd->nj; j++) {
 	mtot += jd->mass[j];
 	for (int k = 0; k < 3; k++) cmv[k] += jd->mass[j]*jd->vel[j][k];
     }
@@ -412,7 +414,7 @@ int get_total_radius(double * radius)
     real r2max = 0;
     vec pos;
     get_center_of_mass_position(&pos[0], &pos[1], &pos[2]);
-    for (int j = 0; j < jd->get_nj(); j++)  {
+    for (int j = 0; j < jd->nj; j++)  {
 	real r2 = 0;
 	for (int k = 0; k < 3; k++) r2 += pow(jd->pos[j][k]-pos[k], 2);
 	if (r2 > r2max) r2max = r2;
