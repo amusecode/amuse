@@ -716,7 +716,7 @@ void jdata::print()
 	cout << "com:  " << cmpos << endl << flush;
 	get_mcom(cmpos, cmvel);
 	cout << "mcom: " << cmpos << endl << flush;
-	print_percentiles();			// OK: runs on process 0 only
+	print_percentiles(get_center());	// OK: runs on process 0 only
 
 	if (NN) {
 	    int jnn = nn[jmin];
@@ -767,7 +767,7 @@ void jdata::spec_output(const char *s)	// default = NULL
 	mlist.push_back(0.50);
 	mlist.push_back(0.90);
 	rlist.clear();
-	get_lagrangian_radii(mlist, rlist);
+	get_lagrangian_radii(mlist, rlist, get_center());
 	if (s) cout << s << " ";
 	cout << system_time;
 	for (unsigned int i = 0; i < mlist.size(); i++) cout << " " << rlist[i];
