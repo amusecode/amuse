@@ -1,6 +1,7 @@
 from math import *
 import numpy
 
+from amuse.support.units import units
 from amuse.support.units import nbody_system
 from amuse.support.data.core import Particles, ParticlesWithUnitsConverted
 
@@ -43,6 +44,86 @@ class body_centered_grid_unit_cube(object):
         y=numpy.concatenate( (y1.flatten(),y2.flatten()) )
         z=numpy.concatenate( (z1.flatten(),z2.flatten()) )
         return x,y,z
+
+
+class glass_unit_cube(object):
+    def __init__(self,targetN,target_rms=0.01):
+        self.targetN=targetN
+        self.target_rms=target_rms
+        if target_rms < 0.0001:
+          print "warning: target_rms may not succeed"
+        if targetN < 1000:
+          print "warning: not enough particles"  
+          
+    def make_xyz(self):
+        from amuse.community.fi.interface import Fi
+
+        N=self.targetN
+        target_rms=self.target_rms
+
+        L=1| nbody_system.length
+        dt=0.01 | nbody_system.time
+        x,y,z=uniform_random_unit_cube(N).make_xyz()
+        vx,vy,vz=uniform_unit_sphere(N).make_xyz()
+
+        p=Particles(N)
+        p.x=L*x
+        p.y=L*y
+        p.z=L*z
+        p.h_smooth=0. * L
+        p.vx= 0.1*vx | (nbody_system.speed)
+        p.vy= 0.1*vy | (nbody_system.speed)
+        p.vz= 0.1*vz | (nbody_system.speed)
+        p.u= (0.1*0.1) | nbody_system.speed**2 
+        p.mass=(8./N) | nbody_system.mass
+
+        sph=Fi(use_gl=False,mode='periodic',redirection='none')   
+        sph.initialize_code()
+
+        sph.parameters.use_hydro_flag=True
+        sph.parameters.radiation_flag=False
+        sph.parameters.self_gravity_flag=False
+        sph.parameters.gamma=1.
+        sph.parameters.isothermal_flag=True
+        sph.parameters.integrate_entropy_flag=False
+        sph.parameters.timestep=dt  
+        sph.parameters.verbosity=0
+        sph.parameters.pboxsize=2*L
+        sph.parameters.artificial_viscosity_alpha=1.| units.none
+        sph.parameters.beta=2. | units.none
+        sph.commit_parameters()
+        sph.gas_particles.add_particles(p)
+        sph.commit_particles()
+
+#        sph.start_viewer()
+
+        t=0. | nbody_system.time
+        rms=1.
+        minrms=1.
+        i=0
+        while rms > target_rms:
+          i+=1
+          t=t+(0.25 | nbody_system.time)
+          sph.evolve_model(t)
+          h=sph.particles.h_smooth.value_in(nbody_system.length)
+          rho=h**(-1./3.)
+          rms=rho.std()/rho.mean()
+          minrms=min(minrms,rms)
+          if rms>2.*minrms or i>300:
+            print " RMS(rho) convergence warning:", i, rms,minrms
+          if i>100000:
+            print "i> 100k steps - not sure about this..."
+            print " rms:", rms
+            break
+
+
+        x=sph.particles.x.value_in(nbody_system.length)
+        y=sph.particles.y.value_in(nbody_system.length)
+        z=sph.particles.z.value_in(nbody_system.length)
+
+        del sph  
+        return x,y,z
+
 
 class uniform_unit_sphere(object):
     def __init__(self,targetN, base_grid=None):
