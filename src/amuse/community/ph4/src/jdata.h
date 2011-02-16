@@ -32,8 +32,8 @@ class jdata {
     int mpi_size;
     int mpi_rank;
 
-    bool have_gpu;
-    bool use_gpu;
+    bool have_gpu;			// will be true if -DGPU is compiled in
+    bool use_gpu;			// true if actually using GPU
 
     real eps2, eta;
     real rmin;				// 90 degree turnaround distance
@@ -67,13 +67,8 @@ class jdata {
 	mpi_comm = NULL;
 	mpi_size = 0;
 	mpi_rank = -1;
-#ifdef GPU
-	have_gpu = true;
-	use_gpu = true;
-#else
-	have_gpu = false;
-	use_gpu = false;
-#endif
+	have_gpu = false;		// correct values will be set at
+	use_gpu = false;		// run time, in setup_gpu()
 	eps2 = eta = rmin = dtmin = 0;
 	block_steps = total_steps = gpu_calls = gpu_total = 0;
 	system_time = predict_time = -1;
@@ -95,6 +90,7 @@ class jdata {
     // In jdata.cc:
 
     void setup_mpi(MPI::Intracomm comm);
+    void setup_gpu();
     int get_particle_id(int offset = 0);
     int add_particle(real pmass, real pradius, vec ppos, vec pvel,
 		     int pid = -1, real dt = -1);

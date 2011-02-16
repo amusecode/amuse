@@ -179,6 +179,8 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 
     jdata jd;
     jd.setup_mpi(MPI::COMM_WORLD);
+    jd.setup_gpu();		// set have_gpu and default use_gpu
+    if (use_gpu && !jd.have_gpu) use_gpu = false;
     jd.use_gpu = use_gpu;
     jd.eps2 = eps2;
     jd.eta = eta;
@@ -314,7 +316,7 @@ int main(int argc, char *argv[])
 				break;
 		case 'f':	infile = argv[++i];
 				break;
-		case 'g':	use_gpu = false;
+		case 'g':	use_gpu = !use_gpu;
 				break;
                 case 'n':	ntotal = atoi(argv[++i]);
 				break;

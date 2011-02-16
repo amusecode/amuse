@@ -6,6 +6,7 @@
 // Global functions:
 //
 //	void jdata::setup_mpi(MPI::Intracomm comm)
+//	void jdata::setup_gpu()
 //	int  jdata::add_particle(real pmass, real pradius,
 //				 vec ppos, vec pvel, int pid)
 //	void jdata::remove_particle(int j)
@@ -40,6 +41,21 @@ void jdata::setup_mpi(MPI::Intracomm comm)
     mpi_comm = comm;
     mpi_size = mpi_comm.Get_size();
     mpi_rank = mpi_comm.Get_rank();
+}
+
+void jdata::setup_gpu()
+{
+    const char *in_function = "jdata::setup_gpu";
+    if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
+
+    // Determine GPU availability and use, based on the option
+    // actually compiled into the module.
+
+#ifdef GPU
+    have_gpu = use_gpu = true;
+#else
+    have_gpu = use_gpu = false;
+#endif
 }
 
 static int init_id = 1, next_id = init_id;
@@ -267,6 +283,13 @@ void jdata::initialize_arrays()
 
     if (mpi_rank == 0) {
 	PRC(rmin); PRL(dtmin);
+    }
+
+    // Final consistency check on GPU availability/use.
+
+    if (use_gpu && !have_gpu) {
+	if (mpi_rank == 0) cout << endl << "GPU unavailable" << endl << flush;
+	use_gpu = false;
     }
 
     if (!use_gpu) {

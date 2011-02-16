@@ -37,12 +37,12 @@ ARGS =	-d 0.125 -t 2 -r -f $(FILE) -e 0
 all:	ph4
 
 ph4:
-	@export GPU='-DGPU' && make  -f Makefile.ph4 parallel_hermite_4
+	@export GPU='-DGPU' && make -f Makefile.ph4 parallel_hermite_4
 
 ph42:
 	@export GPU='' && make -f Makefile.ph4 parallel_hermite_4 \
 		       && mv parallel_hermite_4 parallel_hermite_4_noGPU
-	@export GPU='-DGPU' && make  -f Makefile.ph4 parallel_hermite_4
+	@export GPU='-DGPU' && make -f Makefile.ph4 clean parallel_hermite_4
 
 parallel_hermite_4:	parallel_hermite_4.cc $(OBJS)
 	$(MPICXX) $(NOSYNC) $(CFLAGS) $@.cc $(OBJS) $(LIBS) -o $@

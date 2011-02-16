@@ -21,9 +21,10 @@ int initialize_code()
 
     jd = new jdata;
     jd->setup_mpi(MPI::COMM_WORLD);
+    jd->setup_gpu();
     if (jd->mpi_rank == 0) {
 	cout << "initialize_code: ";
-	PRL(jd->mpi_size);
+	PRC(jd->mpi_size); PRL(jd->have_gpu);
     }
     jd->system_time = 0;		// TBD
     return 0;
@@ -80,6 +81,10 @@ int get_time(double * sys_time)
 int commit_parameters()
 {
     // Perform any needed setup after initial code parameters have been set.
+
+    // Consistency check:
+
+    if (jd->use_gpu && !jd->have_gpu) jd->use_gpu = false;
 
     if (jd->mpi_rank == 0) {
 	cout << "commit_parameters: ";
