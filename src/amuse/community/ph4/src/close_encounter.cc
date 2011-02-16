@@ -8,7 +8,7 @@
 //
 // Global function:
 //
-//	void jdata::resolve_encounter(idata& id)
+//	void jdata::resolve_encounter()
 
 #include "jdata.h"
 #include "scheduler.h"
@@ -46,7 +46,7 @@ static void sort_neighbors(jdata& jd, vec center)
 
     rlist.clear();
     rdata element;
-    for (int j = 0; j < jd.get_nj(); j++) {
+    for (int j = 0; j < jd.nj; j++) {
 	element.jindex = j;
 	element.r_sq = 0;
 	for (int k = 0; k < 3; k++)
@@ -78,38 +78,16 @@ static real partial_potential(int list1[], int n1,
 	int j1 = list1[l1];
 	for (int l2 = 0; l2 < n2; l2++) {
 	    int j2 = list2[l2];
-	    real r2 = 0;
-	    for (int k = 0; k < 3; k++)
-		r2 += pow(jd.pos[j1][k]-jd.pos[j2][k], 2);
-	    pot1 += jd.mass[j2]/sqrt(r2);
+	    if (j2 != j1) {
+		real r2 = 0;
+		for (int k = 0; k < 3; k++)
+		    r2 += pow(jd.pos[j1][k]-jd.pos[j2][k], 2);
+		pot1 += jd.mass[j2]/sqrt(r2);
+	    }
 	}
 	pot -= jd.mass[j1]*pot1;
     }
     return pot;
-}
-
-static real total_energy(int jlist[], int n, jdata& jd)
-{
-    // Compute the total self-energy of the listed particles.
-
-    real ke = 0, pe = 0;
-    for (int i = 0; i < n; i++) {
-	int j = jlist[i];
-	real v2 = 0;
-	for (int k = 0; k < 3; k++) v2 += pow(jd.vel[j][k], 2);
-	ke += 0.5*jd.mass[j]*v2;
-	real ppe = 0;
-	for (int i1 = i+1; i1 < n; i1++) {
-	    int j1 = jlist[i1];
-	    real r2 = jd.eps2;
-	    for (int k = 0; k < 3; k++)
-		r2 += pow(jd.pos[j][k] - jd.pos[j1][k], 2);
-	    ppe -= jd.mass[j1]/sqrt(r2);
-	}
-	pe += jd.mass[j]*ppe;
-    }
-    // PRC(pe); PRL(ke);
-    return pe+ke;
 }
 
 
@@ -254,7 +232,7 @@ static bool reflect_or_merge_orbit(real total_mass,
 
 #define REVERSE 0
 
-bool jdata::resolve_encounter(idata& id)
+bool jdata::resolve_encounter()
 {
     const char *in_function = "jdata::resolve_encounter";
     if (DEBUG > 2) PRL(in_function);
@@ -288,7 +266,7 @@ bool jdata::resolve_encounter(idata& id)
     }
 
     int pair[2] = {j1, j2};
-    synchronize_list(pair, 2, id);
+    synchronize_list(pair, 2);
 
     predict(j1, system_time);
     predict(j2, system_time);
@@ -370,7 +348,7 @@ bool jdata::resolve_encounter(idata& id)
 	    break;
     }
 
-    synchronize_list(synclist, nsync, id);
+    synchronize_list(synclist, nsync);
     delete [] synclist;
 
     // Note that the lists are based on pred_pos, but now the
@@ -453,7 +431,7 @@ bool jdata::resolve_encounter(idata& id)
 	    dr2 += pow(pos[nbrlist[2]][k]-cmpos[k], 2);
 	if (dr2 < rmin*rmin) {
 	    cout << "suppressing merger because " << nbrlist[2]
-		 << " (" << this->id[nbrlist[2]] << ") is too close"
+		 << " (" << id[nbrlist[2]] << ") is too close"
 		 << endl << flush;
 	    merge = false;
 	}
@@ -482,7 +460,7 @@ bool jdata::resolve_encounter(idata& id)
 	// Removal of particle j swaps j with the last particle and
 	// reduces nj.
 
-	cout << "removing " << j1 << " (" << this->id[j1] << ")"
+	cout << "removing " << j1 << " (" << id[j1] << ")"
 	     << endl << flush;
 	remove_particle(j1);	
 	for (int jl = 1; jl < nnbr; jl++)	// recall 0, 1 are j1, j2
@@ -490,14 +468,14 @@ bool jdata::resolve_encounter(idata& id)
 
 	j2 = nbrlist[1];
 
-	cout << "removing " << j2 << " (" << this->id[j2] << ")"
+	cout << "removing " << j2 << " (" << id[j2] << ")"
 	     << endl << flush;
 	remove_particle(j2);
 	for (int jl = 2; jl < nnbr; jl++)
 	    if (nbrlist[jl] == nj) nbrlist[jl] = j2;
 
 	add_particle(total_mass, newrad, cmpos, cmvel, newid, newstep);
-	cout << "added " << nj-1 << " (" << this->id[nj-1] << ")"
+	cout << "added " << nj-1 << " (" << id[nj-1] << ")"
 	     << endl << flush;
 
 	// Strange new storage order preserves contiguous lists
@@ -634,13 +612,13 @@ bool jdata::resolve_encounter(idata& id)
     // REVERSE case, the accelerations should not change.
 
     if (!use_gpu) predict_all(system_time);
-    id.set_list(nbrlist+merge, nnbr-merge, nj);
-    id.gather(*this);
-    id.predict(system_time, *this);
-    id.get_acc_and_jerk(*this);		// compute iacc, ijerk
-    id.scatter(*this);			// j acc, jerk <-- iacc, ijerk
+    idat->set_list(nbrlist+merge, nnbr-merge);
+    idat->gather();
+    idat->predict(system_time);
+    idat->get_acc_and_jerk();		// compute iacc, ijerk
+    idat->scatter();			// j acc, jerk <-- iacc, ijerk
 
-    if (use_gpu) id.update_gpu(*this);
+    if (use_gpu) idat->update_gpu();
 
     // Could cautiously reduce neighbor steps here (and reschedule),
     // but that seems not to be necessary.

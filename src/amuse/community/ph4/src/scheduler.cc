@@ -25,17 +25,29 @@
 //	void scheduler::print(bool verbose)
 //	void check(bool repair, bool verbose)   (NOT IMPLEMENTED)
 
+#include "idata.h"
 #include "scheduler.h"
 #include <unistd.h>
 
-void scheduler::initialize()	// (re)initialize based on time step data in jd
+void scheduler::initialize(jdata *jd)	// (re)initialize based on the
+					// time step data in jd
 {
     const char *in_function = "scheduler::initialize";
     if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
 
     if (jd) {
+	jdat = jd;
+	jdat->sched = this;
+	if (jdat->idat)
+	    jdat->idat->sched = this;
+	else
+	    cout << "scheduler::initialize: jdata has no idata pointer"
+		 << endl << flush;
+    }
+
+    if (jdat) {
 	clear();		// scheduler member function
-	for (int j = 0; j < jd->get_nj(); j++)
+	for (int j = 0; j < jdat->nj; j++)
 	    blist.push_back(jtime(j, t_next(j)));
 
 	blist.sort(compare);	// --> the main reason to use stl::list
@@ -53,7 +65,7 @@ void scheduler::initialize()	// (re)initialize based on time step data in jd
 real scheduler::get_list(int *ilist, int& n) const
 {
     const char *in_function = "scheduler::get_list";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     li ib;
     for (n = 0, ib = bp[0]; ib != bp[1]; ib++) ilist[n++] = ib->jindex;
@@ -64,7 +76,7 @@ int scheduler::find_block(real t,
 			  int i1) const		// default = 0
 {
     const char *in_function = "scheduler::find_block";
-    if (DEBUG > 3 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 3 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Return the starting index of the first block with t_next >= t.
     // Start the search at block i1.  Return i1 if t is less than any
@@ -115,7 +127,7 @@ int scheduler::find_block(real t,
 void scheduler::update()
 {
     const char *in_function = "scheduler::update";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // The portion of blist from bp[0] to bp[1]-1 is assumed to
     // have just been advanced, and is now out of order.  Merge it
@@ -150,7 +162,7 @@ void scheduler::update()
     cout << "in update..." << endl << flush;
     for (li ib = bp[0]; ib != bp[1]; ib++) {
 	cout << ib->jindex << "  ib->t_next = " << ib->t_next
-	     << "  jd->t_next = " << t_next(ib->jindex) << endl << flush;
+	     << "  jdat->t_next = " << t_next(ib->jindex) << endl << flush;
     }
     print_blist();
     print_bp();
@@ -196,7 +208,7 @@ void scheduler::update()
 void scheduler::add_particle(int j)
 {
     const char *in_function = "scheduler::add_particle";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Add particle j to the scheduler.  Code is essentially the same
     // as in update().
@@ -221,7 +233,7 @@ void scheduler::add_particle(int j)
 bool scheduler::remove_particle(int j)
 {
     const char *in_function = "scheduler::remove_particle";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Remove particle j from the scheduler.
 
@@ -232,7 +244,7 @@ bool scheduler::remove_particle(int j)
     
     for (li ib = bp[ibp]; ib != blist.end() && ib != bp[ibp+1]; ib++) {
 
-	//if (jd->system_time >= 2.19141) {
+	//if (jdat->system_time >= 2.19141) {
 	//    PRC(j); PRC(ibp); PRL(ib->jindex);
 	//}
 
@@ -263,14 +275,14 @@ bool scheduler::remove_particle(int j)
 void scheduler::print_blist()
 {
     const char *in_function = "scheduler::print_blist";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
-    if (jd->mpi_rank == 0) {
+    if (jdat->mpi_rank == 0) {
 	cout << "blist (size = " << blist.size() << "):" << endl << flush;
 	for (li ib = blist.begin(); ib != blist.end(); ib++)
 	    cout << "    " << ib->jindex << "  " << ib->t_next
-		 << "  " << jd->time[ib->jindex]
-		 << "  " << jd->timestep[ib->jindex]
+		 << "  " << jdat->time[ib->jindex]
+		 << "  " << jdat->timestep[ib->jindex]
 		 << endl << flush;
     }
 }
@@ -278,9 +290,9 @@ void scheduler::print_blist()
 void scheduler::print_bp(bool verbose)		// default = false
 {
     const char *in_function = "scheduler::print_bp";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
-    if (jd->mpi_rank == 0) {
+    if (jdat->mpi_rank == 0) {
 
 	int total = 0;
 	for (int kb = 0; kb < (int)bp.size()-1; kb++)
@@ -310,23 +322,23 @@ void scheduler::print_bp(bool verbose)		// default = false
 void scheduler::print(bool verbose)		// default = false
 {
     const char *in_function = "scheduler::print";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
-    if (jd->mpi_rank == 0 && verbose) {
+    if (jdat->mpi_rank == 0 && verbose) {
 	cout << endl << "----------"
-	     << endl << "system time = " << jd->system_time << ", " << flush;
+	     << endl << "system time = " << jdat->system_time << ", " << flush;
 	print_blist();
     }
     print_bp(verbose);
-    if (jd->mpi_rank == 0 && verbose) cout << "----------"
-							 << endl << flush;
+    if (jdat->mpi_rank == 0 && verbose) cout << "----------"
+					     << endl << flush;
 }
 
 void scheduler::check(bool repair,		// default = true
 		      bool verbose)		// default = false
 {
     const char *in_function = "scheduler::check";
-    if (DEBUG > 2 && jd->mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Checks that should be carried out:
     //	 every particle is on the list
@@ -338,4 +350,9 @@ void scheduler::check(bool repair,		// default = true
     //	 bp pointers are correct
     //
     // TODO
+}
+
+void scheduler::cleanup()
+{
+    clear();
 }

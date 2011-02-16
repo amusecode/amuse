@@ -6,8 +6,8 @@
 // Global functions:
 //
 //	void jdata::initialize_gpu()
-//	void idata::update_gpu(jdata& jd)
-//	void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd)
+//	void idata::update_gpu()
+//	void idata::get_partial_acc_and_jerk_on_gpu()
 //	void jdata::get_densities_on_gpu(idata& id)  (UNDER DEVELOPMENT)  MPI
 
 #include "jdata.h"
@@ -17,12 +17,8 @@
 #include "grape.h"
 #endif
 
-// Diagnostic functions in parallel_hermite.cc
-
-extern real TDEBUG;
-void printq(int j, real2 q, const char *s);
-void print_list(jdata &jd);
-bool twiddles(real q, real v, real tol = 1.e-3);
+#include "debug.h"
+extern real TDEBUG;	// in debug.cc
 
 // No need to check jdata::use_gpu here, as the GPU functions will
 // only be called if use_gpu = true.
@@ -154,12 +150,12 @@ void jdata::update_gpu(int jlist[], int njlist)
 #endif
 }
 
-void idata::update_gpu(jdata& jd)
+void idata::update_gpu()
 {
 #ifdef GPU
 
     const char *in_function = "idata::update_gpu";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Load corrected data for all i-particles into the local GPUs.
     // We coud just use the jdata version to avoid replicated code,
@@ -173,22 +169,22 @@ void idata::update_gpu(jdata& jd)
     static int n, j_start;
     static real a2[3], j6[3], k18[3] = {0,0,0};
 
-    if (my_nj != jd.get_nj()) {
+    if (my_nj != jdat->nj) {
 
 	// Define my j-range.
 
-	n = jd.get_nj()/jd.mpi_size;
-	if (n*jd.mpi_size < jd.get_nj()) n++;
-	j_start = jd.mpi_rank*n;
-	my_nj = jd.get_nj();
+	n = jdat->nj/jdat->mpi_size;
+	if (n*jdat->mpi_size < jdat->nj) n++;
+	j_start = jdat->mpi_rank*n;
+	my_nj = jdat->nj;
     }
 
-    bool debug = twiddles(jd.system_time, TDEBUG);
+    bool debug = twiddles(jdat->system_time, TDEBUG);
 
     for (int i = 0; i < ni; i++) {
 	int j = ilist[i];
 	int curr_rank = j/n;
-	if (curr_rank == jd.mpi_rank) {
+	if (curr_rank == jdat->mpi_rank) {
 	    for (int k = 0; k < 3; k++) {
 		a2[k] = iacc[i][k]/2;
 		j6[k] = ijerk[i][k]/6;
@@ -198,7 +194,7 @@ void idata::update_gpu(jdata& jd)
 		int p = cout.precision(10);
 		cout << "idata::update_gpu(): i = "
 		     << i << " (" << iid[i] << ") "
-		     << j << " (" << jd.id[j] << ") "
+		     << j << " (" << jdat->id[j] << ") "
 		     << itime[i] << " " << itimestep[i] << " "
 		     << imass[i] << endl << flush;
 		cout << "    ipos: ";
@@ -299,8 +295,7 @@ void jdata::sync_gpu()
 
 }
 
-void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
-					    bool pot)	// default = false
+void idata::get_partial_acc_and_jerk_on_gpu(bool pot)	// default = false
 {
     // Compute the partial forces on all i-particles due to this
     // j-domain.
@@ -308,7 +303,7 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 #ifdef GPU
 
     const char *in_function = "idata::get_partial_acc_and_jerk_on_gpu";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     static int npipes = 0;
     static real *h2;
@@ -322,18 +317,18 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 	h2 = new real[npipes];
 	a2 = new real[npipes][3];
 	j6 = new real[npipes][3];
-	for (int i = 0; i < npipes; i++) h2[i] = jd.eps2;
+	for (int i = 0; i < npipes; i++) h2[i] = jdat->eps2;
     }
 
     // Avoid unnecessary reductions in the 1-process case.  These
-    // pointers only need be recomputed after setup() is called, which
-    // sets lnn = NULL.
+    // pointers only need be recomputed after idata::setup() is
+    // called, which sets lnn = NULL.
 
     static real *lpot, *ldnn;
     static real2 lacc, ljerk;
 
     if (lnn == NULL) {
-	if (jd.mpi_size == 1) {
+	if (jdat->mpi_size == 1) {
 	    lnn = inn;
 	    ldnn = idnn;
 	    lpot = ipot;
@@ -354,15 +349,15 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
     static int my_nj = 0;
     static int j_start, j_end, localnj;
 
-    if (my_nj != jd.get_nj()) {
+    if (my_nj != jdat->nj) {
 	// cout << "resetting domains" << endl << flush;
-	int n = jd.get_nj()/jd.mpi_size;
-	if (n*jd.mpi_size < jd.get_nj()) n++;
-	j_start = jd.mpi_rank*n;
+	int n = jdat->nj/jdat->mpi_size;
+	if (n*jdat->mpi_size < jdat->nj) n++;
+	j_start = jdat->mpi_rank*n;
 	j_end = j_start + n;
-	if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
+	if (jdat->mpi_rank == jdat->mpi_size-1) j_end = jdat->nj;
 	localnj = j_end - j_start;
-	my_nj = jd.get_nj();
+	my_nj = jdat->nj;
     }
 
     // Calculate the gravitational forces on the i-particles.
@@ -391,23 +386,23 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 		a2[ii][k] = old_acc[i+ii][k]/2;
 		j6[ii][k] = old_jerk[i+ii][k]/6;
 	    }
-	    if (NN == 2 && itimestep[i+ii] < jd.dtmin)
+	    if (NN == 2 && itimestep[i+ii] < jdat->dtmin)
 		want_neighbors = true;
 	}
 
 	g6calc_firsthalf(clusterid, localnj, nni, iid+i,
 			 ipos+i, ivel+i, a2, j6, ipot+i,
-			 jd.eps2, h2);
+			 jdat->eps2, h2);
 
 	if (pot || !want_neighbors)
 
 	    g6calc_lasthalf(clusterid, localnj, nni, iid+i,
-			    ipos+i, ivel+i, jd.eps2, h2,
+			    ipos+i, ivel+i, jdat->eps2, h2,
 			    lacc+i, ljerk+i, lpot+i);
 	else
 
 	    g6calc_lasthalf2(clusterid, localnj, nni, iid+i,
-			     ipos+i, ivel+i, jd.eps2, h2,
+			     ipos+i, ivel+i, jdat->eps2, h2,
 			     lacc+i, ljerk+i, lpot+i, lnn+i);
 
 
@@ -421,13 +416,13 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 	    real temp_pos[3], temp_vel[3], temp_acc[3], temp_jrk[3],
 		 temp_ppos[3], temp_pvel[3];
 
-	    for (int j = 0; j < jd.get_nj(); j++) 
+	    for (int j = 0; j < jdat->nj; j++) 
 		if (j == 0 || j == 1 || j == 709 || j == 982) {
 
 		    //get_j_part_data(j, localnj, temp_pos, temp_vel,
 		    //	    temp_acc, temp_jrk, temp_ppos, temp_pvel);
   
-		    cout << "j = " << j << " (" << jd.id[j] << ")" << endl
+		    cout << "j = " << j << " (" << jdat->id[j] << ")" << endl
 			 << "    tpos ";
 		    for (int k = 0; k < 3; k++) cout << temp_pos[k] << " ";
 		    cout << endl << flush;
@@ -450,8 +445,8 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 	    cout.precision(p);
 	}
 
-	jd.gpu_calls += 1;
-	jd.gpu_total += nni;
+	jdat->gpu_calls += 1;
+	jdat->gpu_total += nni;
 
 	if (!pot && want_neighbors) {
 
@@ -482,11 +477,11 @@ void idata::get_partial_acc_and_jerk_on_gpu(jdata& jd,
 
 		int id = lnn[i+ii];
 		if (id >= 0) {		// should be true by construction...
-		    int j = jd.inverse_id[id];
+		    int j = jdat->inverse_id[id];
 		    lnn[i+ii] = j;
-		    ldnn[i+ii] = sqrt(pow(jd.pos[j][0]-ipos[i+ii][0],2)
-				      + pow(jd.pos[j][1]-ipos[i+ii][1],2)
-				      + pow(jd.pos[j][2]-ipos[i+ii][2],2));
+		    ldnn[i+ii] = sqrt(pow(jdat->pos[j][0]-ipos[i+ii][0],2)
+				      + pow(jdat->pos[j][1]-ipos[i+ii][1],2)
+				      + pow(jdat->pos[j][2]-ipos[i+ii][2],2));
 		}
 	    }
 	}
@@ -511,20 +506,20 @@ inline bool operator < (const rdata& x, const rdata& y)
     return x.r_sq < y.r_sq;
 }
 
-void get_neighbors(jdata& jd, int knn)
+void get_neighbors(jdata *jdat, int knn)
 {
     // Direct N^2 single-process neighbor computation.
 
     vector<rdata> rlist;
     rdata element;
 
-    for (int j1 = 0; j1 < jd.get_nj(); j1++) {
-	for (int j2 = 0; j2 < jd.get_nj(); j2++)
+    for (int j1 = 0; j1 < jdat->nj; j1++) {
+	for (int j2 = 0; j2 < jdat->nj; j2++)
 	    if (j2 != j1) {
 		element.index = j1;
 		element.r_sq = 0;
 		for (int k = 0; k < 3; k++)
-		    element.r_sq += pow(jd.pos[j2][k]-jd.pos[j1][k],2);
+		    element.r_sq += pow(jdat->pos[j2][k]-jdat->pos[j1][k],2);
 		rlist.push_back(element);
 	    }
 	sort(rlist.begin(), rlist.end());
@@ -536,7 +531,7 @@ void get_neighbors(jdata& jd, int knn)
     }
 }
 
-static inline void save_neighbors(jdata& jd, int j, int nlocal, int local[],
+static inline void save_neighbors(jdata *jdat, int j, int nlocal, int local[],
 				  int nsave, int save[])
 {
     // Reduce the local neighbors of particle j to a list of the nsave
@@ -550,7 +545,7 @@ static inline void save_neighbors(jdata& jd, int j, int nlocal, int local[],
 	    element.index = jj;
 	    element.r_sq = 0;
 	    for (int k = 0; k < 3; k++)
-		element.r_sq += pow(jd.pos[j][k]-jd.pos[jj][k],2);
+		element.r_sq += pow(jdat->pos[j][k]-jdat->pos[jj][k],2);
 	    rlist.push_back(element);
 	}
     }
@@ -621,7 +616,7 @@ void jdata::get_densities_on_gpu()	// under development
 	my_nj = nj;
     }
 
-    // get_neighbors(*this, knn);
+    // get_neighbors(this, knn);
 
     // Calculate partial neighbor lists of all particles relative to
     // my j-domain.  Assume that nearest neighbor distances are
@@ -783,7 +778,7 @@ void jdata::get_densities_on_gpu()	// under development
 	// nearest neighbors and save them.
 
 	for (int jj = 0; jj < np; jj++)
-	    save_neighbors(*this, j+jj, nneighbors[jj], neighbors+jj*nbrmax,
+	    save_neighbors(this, j+jj, nneighbors[jj], neighbors+jj*nbrmax,
 			   knn, pneighbors+(j+jj)*knn);
     }
 
@@ -841,7 +836,7 @@ void jdata::get_densities_on_gpu()	// under development
 			nbrlist[k] = pneighbors[j*knn+k];
 			nbrlist[knn+k] = pneighbors[(nj+j)*knn+k];
 		    }
-		    save_neighbors(*this, j, 2*knn, nbrlist,
+		    save_neighbors(this, j, 2*knn, nbrlist,
 				   knn, pneighbors+j*knn);
 		}
 	    }

@@ -5,20 +5,20 @@
 //
 // Global functions:
 //
-//	void idata::get_partial_acc_and_jerk(jdata& jd)
-//	void idata::get_acc_and_jerk(jdata& jd)				* MPI *
-//	void idata::predict(real t, jdata& jd)
+//	void idata::get_partial_acc_and_jerk()
+//	void idata::get_acc_and_jerk()				* MPI *
+//	void idata::predict(real t)
 //	void idata::correct(real tnext, real eta)
-//	real idata::get_pot(jdata& jd)
-//	void void idata::gather(jdata& jd)
-//	void idata::scatter(jdata& jd)
-//	void idata::check_encounters(jdata& jd)
-//	void idata::set_list_all(jdata& jd)
-//	void idata::set_list_sync(jdata& jd)
-//	real idata::set_list(scheduler& sched)
-//	void set_list(int list[], int n)
+//	real idata::get_pot()
+//	void void idata::gather()
+//	void idata::scatter()
+//	void idata::check_encounters()
+//	void idata::set_list_all()
+//	void idata::set_list_sync()
+//	real idata::set_list()
+//	void set_list(int jlist[], int njlist)
 //	void idata::set_list(int jlist[], int njlist)
-//	void idata::advance(jdata &jd, real tnext, real eta)
+//	void idata::advance(real tnext, real eta)
 //
 // OpenMP acceleration in get_partial_acc_and_jerk is for the purpose
 // of illustration/experimentation.  Preferably use GPU acceleration
@@ -61,17 +61,20 @@ void idata::set_ni(int n)
     }
 }
 
-void idata::setup(jdata& jd)
+void idata::setup()
 {
     const char *in_function = "idata::setup";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
-
-    ti = jd.system_time;
-    set_ni(jd.get_nj());
-    set_list_all(jd);
-    gather(jd);
-    get_acc_and_jerk(jd);		// set i pot, acc, jerk
-    scatter(jd);			// set j pot, acc, jerk
+    if (DEBUG > 2 && jdat && jdat->mpi_rank == 0) PRL(in_function);
+    if (jdat) {
+	ti = jdat->system_time;
+	set_ni(jdat->nj);
+	set_list_all();
+	gather();
+	get_acc_and_jerk();			// set i pot, acc, jerk
+	scatter();				// set j pot, acc, jerk
+	jdat->idat = this;
+    } else
+	cout << "idata::setup: jdata pointer is NULL" << endl << flush;
 }
 
 void idata::cleanup()
@@ -133,10 +136,10 @@ void idata::cleanup()
 // ONLY if the force calculation is done on the front end.  If a GPU
 // is used, they are never used.
 
-void idata::get_partial_acc_and_jerk(jdata& jd)
+void idata::get_partial_acc_and_jerk()
 {
     const char *in_function = "idata::get_partial_acc_and_jerk";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Compute the partial pots, accs, and jerks on the i-particles.
     //
@@ -158,7 +161,7 @@ void idata::get_partial_acc_and_jerk(jdata& jd)
     static real2 lacc, ljerk;
 
     if (lnn == NULL) {
-	if (jd.mpi_size == 1) {
+	if (jdat->mpi_size == 1) {
 	    lnn = inn;
 	    ldnn = idnn;
 	    lpot = ipot;
@@ -179,19 +182,20 @@ void idata::get_partial_acc_and_jerk(jdata& jd)
     static int curr_nj = 0;
     static int j_start, j_end;
 
-    if (jd.get_nj() != curr_nj) {
-	int n = jd.get_nj()/jd.mpi_size;
-	if (n*jd.mpi_size < jd.get_nj()) n++;
-	j_start = jd.mpi_rank*n;
+    if (jdat->nj != curr_nj) {
+	int n = jdat->nj/jdat->mpi_size;
+	if (n*jdat->mpi_size < jdat->nj) n++;
+	j_start = jdat->mpi_rank*n;
 	j_end = j_start + n;
-	if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
-	curr_nj = jd.get_nj();
+	if (jdat->mpi_rank == jdat->mpi_size-1) j_end = jdat->nj;
+	curr_nj = jdat->nj;
     }
 
     // Calculate the gravitational forces on the i-particles.
 
     real dx[3], dv[3], r2, xv;
     real r2i, ri, mri, mr3i, a3;
+    real eps2 = jdat->eps2;
 
     for (int i = 0; i < ni; i++) {
 	lpot[i] = 0;
@@ -200,14 +204,14 @@ void idata::get_partial_acc_and_jerk(jdata& jd)
 	for (int j = j_start; j < j_end; j++) {
 	    r2 = xv = 0;
 	    for (int k = 0; k < 3; k++) {
-		dx[k] = jd.pred_pos[j][k] - ipos[i][k];
-		dv[k] = jd.pred_vel[j][k] - ivel[i][k];
+		dx[k] = jdat->pred_pos[j][k] - ipos[i][k];
+		dv[k] = jdat->pred_vel[j][k] - ivel[i][k];
 		r2 += dx[k]*dx[k];
 		xv += dx[k]*dv[k];
 	    }
-	    r2i = 1/(r2+jd.eps2+tiny);
+	    r2i = 1/(r2+eps2+tiny);
 	    ri = sqrt(r2i);
-	    mri = jd.mass[j]*ri;
+	    mri = jdat->mass[j]*ri;
 	    mr3i = mri*r2i;
 	    a3 = -3*xv*r2i;
 	    if (r2 > tiny) {
@@ -226,10 +230,10 @@ void idata::get_partial_acc_and_jerk(jdata& jd)
     }
 }
 
-void idata::get_acc_and_jerk(jdata& jd)
+void idata::get_acc_and_jerk()
 {
     const char *in_function = "idata::get_acc_and_jerk";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Compute the accs and jerks on the i-particles with respect to
     // the predicted quantities in the j system.  Every node has a
@@ -237,11 +241,11 @@ void idata::get_acc_and_jerk(jdata& jd)
     // total.  Combine in process 0 to get the final result.  Sets
     // inn, idnn, ipot, iacc, and ijerk.
 
-    if (!jd.use_gpu) {
+    if (!jdat->use_gpu) {
 
 	// Calculate partial accs and jerks on the front end.
 
-	get_partial_acc_and_jerk(jd);
+	get_partial_acc_and_jerk();
 
     } else {
 
@@ -249,26 +253,26 @@ void idata::get_acc_and_jerk(jdata& jd)
 	// quantities are never used.
 
 	if (DEBUG > 1) cout << "getting acc and jerk on GPU" << endl << flush;
-	get_partial_acc_and_jerk_on_gpu(jd);
+	get_partial_acc_and_jerk_on_gpu();
 	if (DEBUG > 1) cout << "acc and jerk on GPU done" << endl << flush;
 
     }
 
-    jd.mpi_comm.Barrier();
+    jdat->mpi_comm.Barrier();
 
-    if (jd.mpi_size > 1) {
+    if (jdat->mpi_size > 1) {
 
 	// Combine partial potentials, accs, and jerks to get the totals.
 	// If size = 1, the data have already been saved in ipot, etc.
 
-	jd.mpi_comm.Allreduce(ppot, ipot, ni, MPI_DOUBLE, MPI_SUM);
-	jd.mpi_comm.Allreduce(pacc, iacc, 3*ni, MPI_DOUBLE, MPI_SUM);
-	jd.mpi_comm.Allreduce(pjerk, ijerk, 3*ni, MPI_DOUBLE, MPI_SUM);
+	jdat->mpi_comm.Allreduce(ppot, ipot, ni, MPI_DOUBLE, MPI_SUM);
+	jdat->mpi_comm.Allreduce(pacc, iacc, 3*ni, MPI_DOUBLE, MPI_SUM);
+	jdat->mpi_comm.Allreduce(pjerk, ijerk, 3*ni, MPI_DOUBLE, MPI_SUM);
 
 	// Update and distribute the nn pointers.  Start by determining
 	// the global nearest neighbor distances.
 
-	jd.mpi_comm.Allreduce(pdnn, idnn, ni, MPI_DOUBLE, MPI_MIN);
+	jdat->mpi_comm.Allreduce(pdnn, idnn, ni, MPI_DOUBLE, MPI_MIN);
 
 	// Currently, pnn[i] is the nearest neighbor of i in the local j
 	// domain.  Use the idnn array to decide if the local nearest
@@ -279,16 +283,16 @@ void idata::get_acc_and_jerk(jdata& jd)
 	for (int i = 0; i < ni; i++)
 	    if (pdnn[i] > idnn[i]) pnn[i] = 0;
 
-	jd.mpi_comm.Allreduce(pnn, inn, ni, MPI_INT, MPI_SUM);
+	jdat->mpi_comm.Allreduce(pnn, inn, ni, MPI_INT, MPI_SUM);
     }
 
-    jd.mpi_comm.Barrier();
+    jdat->mpi_comm.Barrier();
 }
 
-void idata::predict(real t, jdata& jd)
+void idata::predict(real t)
 {
     const char *in_function = "idata::predict";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Predict the i system to time t (old_pos, oldvel --> ipos,
     // ivel).  Note: should skip ipos, ivel in gather in this case.
@@ -301,7 +305,7 @@ void idata::predict(real t, jdata& jd)
     // Don't clutter the GPU code with extra checks used only in the
     // non-GPU case.  Just write the loop twice.
 
-    if (jd.use_gpu) {
+    if (jdat->use_gpu) {
 	for (int i = 0; i < ni; i++) {
 	    real dt = t - itime[i];
 	    for (int k = 0; k < 3; k++) {
@@ -319,11 +323,11 @@ void idata::predict(real t, jdata& jd)
 	// Define the j-domains.  Logic would be easier if ilist was
 	// sorted.
 
-	int n = jd.get_nj()/jd.mpi_size;
-	if (n*jd.mpi_size < jd.get_nj()) n++;
-	int j_start = jd.mpi_rank*n;
+	int n = jdat->nj/jdat->mpi_size;
+	if (n*jdat->mpi_size < jdat->nj) n++;
+	int j_start = jdat->mpi_rank*n;
 	int j_end = j_start + n;
-	if (jd.mpi_rank == jd.mpi_size-1) j_end = jd.get_nj();
+	if (jdat->mpi_rank == jdat->mpi_size-1) j_end = jdat->nj;
 
 	for (int i = 0; i < ni; i++) {
 	    int j = ilist[i];
@@ -343,7 +347,7 @@ void idata::predict(real t, jdata& jd)
     }
 }
 
-void idata::correct(real tnext, real eta)
+void idata::correct(real tnext)
 {
     const char *in_function = "idata::correct";
     if (DEBUG > 10) PRL(in_function);
@@ -383,6 +387,8 @@ void idata::correct(real tnext, real eta)
 
     // ...but this ugly version may actually be more useful for
     // purposes of computing the Aarseth time step.
+
+    real eta = jdat->eta;
 
     for (int i = 0; i < ni; i++) {
 
@@ -453,10 +459,10 @@ void idata::correct(real tnext, real eta)
 #endif
 }
 
-real idata::get_pot(jdata& jd)
+real idata::get_pot()
 {
     const char *in_function = "idata::get_pot";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Return the total potential energy of the i system by summing
     // the potentials of the individual particles.  Note that the pots
@@ -467,14 +473,14 @@ real idata::get_pot(jdata& jd)
 
     real pot2 = 0;
     for (int i = 0; i < ni; i++)
-	pot2 += jd.mass[ilist[i]]*ipot[i];
+	pot2 += jdat->mass[ilist[i]]*ipot[i];
     return pot2/2;
 }
 
-real idata::get_kin(jdata& jd)
+real idata::get_kin()
 {
     const char *in_function = "idata::get_kin";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Return the total kinetic energy of the i system by summing over
     // individual particles.  See note in get_pot().
@@ -483,91 +489,91 @@ real idata::get_kin(jdata& jd)
     for (int i = 0; i < ni; i++) {
 	real v2 = 0;
 	for (int k = 0; k < 3; k++) v2 += pow(ivel[i][k],2);
-	kin2 += jd.mass[ilist[i]]*v2;
+	kin2 += jdat->mass[ilist[i]]*v2;
     }
     return kin2/2;
 }
 
-void idata::gather(jdata& jd)
+void idata::gather()
 {
     const char *in_function = "idata::gather";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     for (int i = 0; i < ni; i++) {
 	int j = ilist[i];
-	itime[i] = jd.time[j];
-	itimestep[i] = jd.timestep[j];
-	ipot[i] = jd.pot[j];
+	itime[i] = jdat->time[j];
+	itimestep[i] = jdat->timestep[j];
+	ipot[i] = jdat->pot[j];
 	for (int k = 0; k < 3; k++) {
-	    old_pos[i][k] = jd.pos[j][k];
-	    old_vel[i][k] = jd.vel[j][k];
+	    old_pos[i][k] = jdat->pos[j][k];
+	    old_vel[i][k] = jdat->vel[j][k];
 
 	    // Need id and radius for encounter checking.  Don't
 	    // scatter back.
 
-	    iid[i] = jd.id[j];
-	    iradius[i] = jd.radius[j];
+	    iid[i] = jdat->id[j];
+	    iradius[i] = jdat->radius[j];
 
-	    if (!jd.use_gpu) {
+	    if (!jdat->use_gpu) {
 
-		ipos[i][k] = jd.pred_pos[j][k];	// i??? = jd.pred_???, note
-		ivel[i][k] = jd.pred_vel[j][k];
+		ipos[i][k] = jdat->pred_pos[j][k];  // NB i??? = jdat->pred_???
+		ivel[i][k] = jdat->pred_vel[j][k];
 
 	    } else {
 
 		// Don't use pred_pos/vel in the GPU case.  Also, need
 		// mass for GPU update.  Don't scatter back.
 
-		imass[i] = jd.mass[j];
-		ipos[i][k] = jd.pos[j][k];
-		ivel[i][k] = jd.vel[j][k];
+		imass[i] = jdat->mass[j];
+		ipos[i][k] = jdat->pos[j][k];
+		ivel[i][k] = jdat->vel[j][k];
 	    }
 
-	    old_acc[i][k] = jd.acc[j][k];
-	    old_jerk[i][k] = jd.jerk[j][k];
+	    old_acc[i][k] = jdat->acc[j][k];
+	    old_jerk[i][k] = jdat->jerk[j][k];
 	}
     }
 }
 
-void idata::scatter(jdata& jd)
+void idata::scatter()
 {
     const char *in_function = "idata::scatter";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Scatter the i-particles back to the j-arrays.
 
     for (int i = 0; i < ni; i++) {
 	int j = ilist[i];
-	jd.nn[j] = inn[i];
-	jd.pot[j] = ipot[i];
-	jd.dnn[j] = idnn[i];
-	jd.time[j] = itime[i];
-	jd.timestep[j] = itimestep[i];
+	jdat->nn[j] = inn[i];
+	jdat->pot[j] = ipot[i];
+	jdat->dnn[j] = idnn[i];
+	jdat->time[j] = itime[i];
+	jdat->timestep[j] = itimestep[i];
 	for (int k = 0; k < 3; k++) {
-//	    jd.pred_pos[j][k] = 
-	    jd.pos[j][k] = ipos[i][k];
-//	    jd.pred_vel[j][k] = 
-	    jd.vel[j][k] = ivel[i][k];
-	    jd.acc[j][k] = iacc[i][k];
-	    jd.jerk[j][k] = ijerk[i][k];
+//	    jdat->pred_pos[j][k] = 
+	    jdat->pos[j][k] = ipos[i][k];
+//	    jdat->pred_vel[j][k] = 
+	    jdat->vel[j][k] = ivel[i][k];
+	    jdat->acc[j][k] = iacc[i][k];
+	    jdat->jerk[j][k] = ijerk[i][k];
 	}
     }
 }
 
-void idata::check_encounters(jdata& jd)
+void idata::check_encounters()
 {
     const char *in_function = "idata::check_encounters";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Search the current i-list to find the IDs of the particles (if
     // any) involved in the a close encounter or collision.  This
     // function is routinely called from idata::advance() after every
     // step.
 
-    jd.close1 = jd.close2 = -1;
-    jd.coll1 = jd.coll2 = -1;
+    jdat->close1 = jdat->close2 = -1;
+    jdat->coll1 = jdat->coll2 = -1;
 
-    if (!jd.use_gpu || NN > 0) {
+    if (!jdat->use_gpu || NN > 0) {
 
 	// All relevant particles have nearest neighbor pointers.
 	// Search those to identify encounters and collisons.
@@ -579,7 +585,7 @@ void idata::check_encounters(jdata& jd)
 	    int jnn = inn[i];			// j index, note
 	    if (jnn >= 0) {			// valid neighbor
 
-		real r = jd.rmin/idnn[i];
+		real r = jdat->rmin/idnn[i];
 		if (r > rmax_close) {
 		    rmax_close = r;
 		    imax_close = i;
@@ -589,7 +595,7 @@ void idata::check_encounters(jdata& jd)
 		// Not clear if this is expensive.  Should monitor.
 		// TODO.
 
-		r = (iradius[i]+jd.radius[jnn])/idnn[i];
+		r = (iradius[i]+jdat->radius[jnn])/idnn[i];
 		if (r > rmax_coll) {
 		    rmax_coll = r;
 		    imax_coll = i;
@@ -598,44 +604,44 @@ void idata::check_encounters(jdata& jd)
 	}
 
 	if (rmax_close >= 1) {			// close criterion
-	    jd.close1 = iid[imax_close];
-	    jd.close2 = jd.id[inn[imax_close]];
+	    jdat->close1 = iid[imax_close];
+	    jdat->close2 = jdat->id[inn[imax_close]];
 	}
 
 	if (rmax_coll >= 1) {			// collision criterion
-	    jd.coll1 = iid[imax_coll];
-	    jd.coll2 = jd.id[inn[imax_coll]];
+	    jdat->coll1 = iid[imax_coll];
+	    jdat->coll2 = jdat->id[inn[imax_coll]];
 	}
     }
 }
 
-void idata::set_list_all(jdata& jd)
+void idata::set_list_all()
 {
     const char *in_function = "idata::set_list_all";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Make a list of the entire system.
 
-    ni = jd.get_nj();
+    ni = jdat->nj;
     for (int j = 0; j < ni; j++) ilist[j] = j;
-    ti = jd.system_time;
+    ti = jdat->system_time;
 }
 
-void idata::set_list_sync(jdata& jd)
+void idata::set_list_sync()
 {
     const char *in_function = "idata::set_list_sync";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Make a list of particles not already at system_time.
 
     ni = 0;
     for (int j = 0; j < ni; j++)
-	if (jd.time[j] < jd.system_time)
+	if (jdat->time[j] < jdat->system_time)
 	    ilist[ni++] = j;
-    ti = jd.system_time;
+    ti = jdat->system_time;
 }
 
-real idata::set_list(scheduler& sched)
+real idata::set_list()
 {
     const char *in_function = "idata::set_list";
     if (DEBUG > 10) PRL(in_function);
@@ -652,40 +658,40 @@ real idata::set_list(scheduler& sched)
 
     // Do an O(N) search (don't do this!).
 
-    for (int j = 0; j < sched.jd->nj; j++)
-	if (sched.jd->time[j]+sched.jd->timestep[j] < tnext)
-	    tnext = sched.jd->time[j]+sched.jd->timestep[j];
+    for (int j = 0; j < jdat->nj; j++)
+	if (jdat->time[j]+jdat->timestep[j] < tnext)
+	    tnext = jdat->time[j]+jdat->timestep[j];
     ni = 0;
-    for (int j = 0; j < sched.jd->nj; j++)
-	if (sched.jd->time[j]+sched.jd->timestep[j] == tnext) ilist[ni++] = j;
+    for (int j = 0; j < jdat->nj; j++)
+	if (jdat->time[j]+jdat->timestep[j] == tnext) ilist[ni++] = j;
 
 #else
 
     // Use the scheduler.
 
-    tnext = sched.get_list(ilist, ni);
+    tnext = sched->get_list(ilist, ni);
 
 #endif
 
     return tnext;
 }
 
-void idata::set_list(int jlist[], int njlist, int nj)
+void idata::set_list(int jlist[], int njlist)
 {
     const char *in_function = "idata::set_list";
     if (DEBUG > 10) PRL(in_function);
 
     ni = 0;
     for (int jj = 0; jj < njlist; jj++)
-	if (jlist[jj] < nj) ilist[ni++] = jlist[jj];
+	if (jlist[jj] < jdat->nj) ilist[ni++] = jlist[jj];
 }
 
-void idata::advance(jdata &jd, real tnext, real eta)
+void idata::advance(real tnext)
 {
     const char *in_function = "idata::advance";
-    if (DEBUG > 2 && jd.mpi_rank == 0) PRL(in_function);
+    if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
-    gather(jd);				// j pos,vel --> old_ipos, old_ivel
+    gather();				// j pos,vel --> old_ipos, old_ivel
 					// (j pred_pos, pred_vel --> ipos, ivel)
 					// j acc, jerk --> i old_acc, old_jerk
     ti = tnext;
@@ -694,32 +700,32 @@ void idata::advance(jdata &jd, real tnext, real eta)
     // j-particles), or i-particles not in the current j-domain (no
     // GPU).
 
-    predict(tnext, jd);
-    get_acc_and_jerk(jd);		// compute iacc, ijerk
-    correct(tnext, eta);		// --> new ipos, ivel
-    scatter(jd);			// j pos, vel <-- ipos, ivel
+    predict(tnext);
+    get_acc_and_jerk();			// compute iacc, ijerk
+    correct(tnext);			// --> new ipos, ivel
+    scatter();				// j pos, vel <-- ipos, ivel
  					// j acc, jerk <-- iacc, ijerk
 
-    if (jd.use_gpu) {
+    if (jdat->use_gpu) {
 
 	// Send updated information to the GPU.
 
-	update_gpu(jd);
+	update_gpu();
     }
 
     // Check for close encounters and collisions.
 
-    check_encounters(jd);
+    check_encounters();
 
-    // jd.coll1 >= 0 ==> take some action in the calling function, or
+    // jdat->coll1 >= 0 ==> take some action in the calling function, or
     // return to AMUSE.
 
     if (DEBUG > 1) {
-	if (jd.close1 >= 0) {
-	    PRC(jd.system_time); PRC(jd.close1); PRL(jd.close2);
+	if (jdat->close1 >= 0) {
+	    PRC(jdat->system_time); PRC(jdat->close1); PRL(jdat->close2);
 	}
-	if (jd.coll1 >= 0) {
-	    PRC(jd.system_time); PRC(jd.coll1); PRL(jd.coll2);
+	if (jdat->coll1 >= 0) {
+	    PRC(jdat->system_time); PRC(jdat->coll1); PRL(jdat->coll2);
 	}
     }
 }

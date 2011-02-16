@@ -13,13 +13,13 @@
 //	int  jdata::get_inverse_id(int i)
 //	void jdata::check_inverse_id()
 //	void jdata::set_initial_timestep()
-//	real jdata::get_pot(idata *id)				* MPI *
-//	real jdata::get_kin(idata *id)
-//	real jdata::get_energy(idata *id)
+//	real jdata::get_pot(bool reeval)			* MPI *
+//	real jdata::get_kin(bool reeval)
+//	real jdata::get_energy(bool reeval)
 //	void jdata::predict(int j, real t)
 //	void jdata::predict_all(real t, bool full)
-//	void jdata::advance(idata& id)
-//	void jdata::synchronize_all(idata& id)
+//	void jdata::advance()
+//	void jdata::synchronize_all()
 //	void jdata::synchronize_list(int jlist[], int njlist, idata& id)
 //	void jdata::print(idata *id)
 //	void jdata::cleanup()
@@ -359,7 +359,7 @@ void jdata::set_initial_timestep()
     }
 }
 
-real jdata::get_pot(idata *id)		// default = NULL
+real jdata::get_pot(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_pot";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -371,7 +371,7 @@ real jdata::get_pot(idata *id)		// default = NULL
 
     real total_pot = 0;
 
-    if (!id) {
+    if (reeval) {
 
 	// Direct parallel calculation on the j-data, with no GPU.
 	// Note: always predict first, so use pred_pos in this case.
@@ -405,7 +405,8 @@ real jdata::get_pot(idata *id)		// default = NULL
 	}
 
 	mpi_comm.Allreduce(&mypot, &total_pot, 1, MPI_DOUBLE, MPI_SUM);
-	total_pot /= 2;					// double counting
+
+	total_pot /= 2;				// double counting
 
     } else {
 
@@ -415,18 +416,18 @@ real jdata::get_pot(idata *id)		// default = NULL
 	// Predict and recompute individual potentials.
 
 	if (!use_gpu) predict_all(system_time);
-	id->set_list_all(*this);		// select the entire j system
-	id->gather(*this);			// copy into the i system
-	id->predict(system_time, *this);
-	id->get_acc_and_jerk(*this);		// parallel, may use GPU
+	idat->set_list_all();			// select the entire j system
+	idat->gather();				// copy into the i system
+	idat->predict(system_time);
+	idat->get_acc_and_jerk();		// parallel, may use GPU
 						// computes acc, jerk, pot
-	total_pot = id->get_pot(*this);
+	total_pot = idat->get_pot();
     }
 
     return total_pot;
 }
 
-real jdata::get_kin(idata *id)			// default = NULL
+real jdata::get_kin(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_kin";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -437,7 +438,7 @@ real jdata::get_kin(idata *id)			// default = NULL
     // argument, so use pred_vel if id == NULL, and idata::get_kin()
     // otherwise.
 
-    if (!id) {
+    if (reeval) {
 	real kin2 = 0;
 	for (int j = 0; j < nj; j++) {
 	    real v2 = 0;
@@ -446,16 +447,16 @@ real jdata::get_kin(idata *id)			// default = NULL
 	}
 	return kin2/2;
     } else
-	return id->get_kin(*this);
+	return idat->get_kin();
 }
 
-real jdata::get_energy(idata *id)		// default = NULL
+real jdata::get_energy(bool reeval)		// default = false
 {
     const char *in_function = "jdata::get_energy";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    real pot = get_pot(id);
-    real kin = get_kin(id);			// order is important!
+    real pot = get_pot(reeval);
+    real kin = get_kin(reeval);			// order is important!
     return pot + kin;
 }
 
@@ -527,7 +528,7 @@ void jdata::predict_all(real t,
     predict_time = t;
 }
 
-void jdata::advance(idata& id)
+void jdata::advance()
 {
     const char *in_function = "jdata::advance";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -541,7 +542,7 @@ void jdata::advance(idata& id)
     //		correct the i-list
     //		scatter the i-list
 
-    real tnext = id.set_list(*sched);	// determine next time, make ilist
+    real tnext = idat->set_list();	// determine next time, make ilist
 
     if (!use_gpu) {
 
@@ -553,9 +554,9 @@ void jdata::advance(idata& id)
 
     // All of the actual work is done by idata::advance.
 
-    id.advance(*this, tnext, eta);
+    idat->advance(tnext);
     block_steps += 1;
-    total_steps += id.get_ni();
+    total_steps += idat->ni;
 
     // Note that system_time remains unchanged until the END of the step.
 
@@ -564,7 +565,7 @@ void jdata::advance(idata& id)
     // sched->print(true);
 }
 
-void jdata::synchronize_all(idata& id)	// default = NULL
+void jdata::synchronize_all()
 {
     const char *in_function = "jdata::synchronize_all";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -575,7 +576,7 @@ void jdata::synchronize_all(idata& id)	// default = NULL
     // Don't worry about disrupting the scheduler, as we will
     // recompute it after the synchronization is done.
 
-    id.set_list_sync(*this);
+    idat->set_list_sync();
 
     if (!use_gpu) {
 
@@ -587,14 +588,14 @@ void jdata::synchronize_all(idata& id)	// default = NULL
 
     // All of the actual work is done by idata::advance.
 
-    id.advance(*this, system_time, eta);
+    idat->advance(system_time);
     block_steps += 1;
-    total_steps += id.get_ni();
+    total_steps += idat->ni;
 
     if (sched) sched->initialize();	// default is to reinitialize later
 }
 
-void jdata::synchronize_list(int jlist[], int njlist, idata& id)
+void jdata::synchronize_list(int jlist[], int njlist)
 {
     const char *in_function = "jdata::synchronize_list";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
@@ -616,7 +617,7 @@ void jdata::synchronize_list(int jlist[], int njlist, idata& id)
 
     // Transmit the jlist to the idata routines.
 
-    id.set_list(jlist, njlist, nj);
+    idat->set_list(jlist, njlist);
 
     if (!use_gpu) {
 
@@ -635,9 +636,9 @@ void jdata::synchronize_list(int jlist[], int njlist, idata& id)
 
     // Advance the particles as usual.  Count this as one block step.
 
-    id.advance(*this, system_time, eta);
+    idat->advance(system_time);
     block_steps += 1;
-    total_steps += id.get_ni();
+    total_steps += idat->ni;
 
     // Put the particles back into the scheduler.
 
@@ -648,14 +649,14 @@ static real E0 = 0;
 static real Emerge = 0;
 void update_merger_energy(real dEmerge) {Emerge += dEmerge;}
 
-void jdata::print(idata *id)
+void jdata::print()
 {
     const char *in_function = "jdata::print";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    real E = get_energy(id);
+    real E = get_energy();
     if (E0 == 0) E0 = E;
-    real pe = get_pot(id);
+    real pe = get_pot();
     real total_mass = 0;
     for (int j = 0; j < nj; j++) total_mass += mass[j];
     int n_async = 0;
@@ -723,7 +724,7 @@ void jdata::print(idata *id)
     }
 }
 
-void jdata::log_output(idata *id)
+void jdata::log_output()
 {
     // Rudimentary log output...
 

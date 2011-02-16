@@ -9,14 +9,18 @@
 class jdata;
 class scheduler;
 
-// i-data:
+// Note: after proper initialization:
+//
+//     jdata and scheduler have pointers to each other
+//     jdata and idata have pointers to each other
+//     idata has a pointer to scheduler
+//
+// Order of initialization: jdata, idata(jdata), scheduler(jdata).
 
 class idata {
 
-  private:
-    int ni;
-
   public:
+    int ni;				// public, but note set_ni() below
     real ti;				// most recent update time
 
     int *iid, *ilist, *inn, *pnn, *lnn;
@@ -24,7 +28,8 @@ class idata {
     real2 old_pos, old_vel, ipos, ivel,
 	  old_acc, old_jerk, iacc, ijerk, pacc, pjerk;
 
-    int get_ni() {return ni;}
+    jdata *jdat;
+    scheduler *sched;
 
     idata(jdata* jd = NULL) {
 	iid = ilist = inn = pnn = lnn = NULL;
@@ -33,7 +38,8 @@ class idata {
 	old_pos = old_vel = ipos = ivel
 	    = old_acc = old_jerk = iacc = ijerk
 	    = pacc = pjerk = NULL;
-	if (jd) setup(*jd);
+	jdat = jd;
+	setup();
     }
 
     void cleanup();			// (in idata.cc)
@@ -41,27 +47,27 @@ class idata {
 
     // In idata.cc:
 
-    void setup(jdata& jd);
+    void setup();
     void set_ni(int n = 0);
-    void gather(jdata& jd);
-    void scatter(jdata& jd);
-    void set_list_all(jdata& jd);
-    void set_list_sync(jdata& jd);
-    real set_list(scheduler& sched);
-    void set_list(int list[], int n, int nj);
-    void get_partial_acc_and_jerk(jdata& jd);
-    void get_acc_and_jerk(jdata& jd);
-    real get_pot(jdata& jd);
-    real get_kin(jdata& jd);
-    void predict(real t, jdata& jd);
-    void correct(real tnext, real eta);
-    void advance(jdata& jd, real tnext, real eta);
-    void check_encounters(jdata& jd);
+    void gather();
+    void scatter();
+    void set_list_all();
+    void set_list_sync();
+    real set_list();
+    void set_list(int jlist[], int njlist);
+    void get_partial_acc_and_jerk();
+    void get_acc_and_jerk();
+    real get_pot();
+    real get_kin();
+    void predict(real t);
+    void correct(real tnext);
+    void advance(real tnext);
+    void check_encounters();
 
     // In gpu.cc:
 
-    void update_gpu(jdata& jd);
-    void get_partial_acc_and_jerk_on_gpu(jdata& jd, bool pot = false);
+    void update_gpu();
+    void get_partial_acc_and_jerk_on_gpu(bool pot = false);
 };
 
 #endif

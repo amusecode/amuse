@@ -199,12 +199,12 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 
     // Loop to advance the system to time t_max.
 
-    jd.print(&id);	// no repot needed because the system is synchronized
+    jd.print();		// no repot needed because the system is synchronized
     sched.print();
     real t_out = dt_out;
 
     real dt_log = 1./16, t_log = dt_log;
-    jd.log_output(&id);
+    jd.log_output();
 
 
     bool remove = false;	// check GPU bug in remove_particle()
@@ -213,7 +213,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     int step = 0;
     while (jd.system_time < t_max) {
 
-	jd.advance(id);
+	jd.advance();
 
 	// Special treatment of close encounters (non-AMUSE code, for
 	// now).  All the work is done in resolve_encounter().
@@ -225,10 +225,10 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	// correct the tidal errors.
 
 	if (jd.close1 >= 0 && jd.eps2 == 0) {
-	    bool status = jd.resolve_encounter(id);
+	    bool status = jd.resolve_encounter();
 	    if (status) {
 		cout << "after resolve_encounter: ";
-		PRL(jd.get_energy(&id));
+		PRL(jd.get_energy());
 	    }
 	}
 
@@ -237,14 +237,14 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	// Special output.  Need a better name...
 
 	if (jd.system_time >= t_log) {
-	    jd.log_output(&id);
+	    jd.log_output();
 	    t_log += dt_log;
 	}
 
 	// Routine output.
 
 	if (jd.system_time >= t_out || jd.system_time >= t_max) {
-	    jd.print(&id);
+	    jd.print();
 	    if (jd.system_time >= t_max) sched.print();
 	    if (jd.system_time >= t_out) t_out += dt_out;
 	}
@@ -253,8 +253,8 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 
 	if (remove && jd.system_time > 1) {
 
-	    jd.synchronize_all(id);
-	    jd.print(&id);
+	    jd.synchronize_all();
+	    jd.print();
 
 	    // Remove some particles.
 
@@ -269,11 +269,11 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    else
 		jd.initialize_gpu(true);		// reload the GPU
 
-	    id.setup(jd);				// compute acc and jerk
+	    id.setup();					// compute acc and jerk
 	    sched.initialize();				// reconstruct scheduler
 
 	    remove = false;
-	    jd.print(&id);
+	    jd.print();
 	}
     }
 }

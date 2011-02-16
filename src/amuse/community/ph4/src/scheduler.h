@@ -6,6 +6,14 @@
 #include "stdinc.h"
 #include "jdata.h"
 
+// Note: after proper initialization:
+//
+//     jdata and scheduler have pointers to each other
+//     jdata and idata have pointers to each other
+//     idata has a pointer to scheduler
+//
+// Order of initialization: jdata, idata(jdata), scheduler(jdata).
+
 #include <list>
 #include <deque>
 #include <algorithm>
@@ -26,11 +34,11 @@ typedef std::list<jtime>::iterator li;
 class scheduler {
 public:
 
-    jdata *jd;
+    jdata *jdat;
     list<jtime> blist;
     deque<li> bp;
 
-    // jd is a pointer to the jdata structure served by the scheduler
+    // jdat is a pointer to the jdata structure served by the scheduler
     //
     // blist contains indices of particles in the jdata array, sorted
     // by t_next
@@ -51,12 +59,13 @@ public:
 	bp.clear();
     }
 
-    real t_next(const int j) const {return jd->time[j] + jd->timestep[j];}
+    real t_next(const int j) const {return jdat->time[j] + jdat->timestep[j];}
 
-    void initialize();
-    void set_jd(jdata *j = NULL) {jd = j; if (jd) jd->sched = this; initialize();}
-    scheduler(jdata *j = NULL) {set_jd(j);}
-    ~scheduler() {clear();}
+    void initialize(jdata *jd = NULL);
+    scheduler(jdata *jd = NULL) {initialize(jd);}
+    ~scheduler() {cleanup();}
+
+    // In scheduler.cc:
 
     real get_list(int *ilist, int& n) const;
     int find_block(real t, int i1 = 0) const;
@@ -69,6 +78,8 @@ public:
     void print_bp(bool verbose = false);
     void print(bool verbose = false);
     void check(bool repair = true, bool verbose = false);
+
+    void cleanup();
 };
 
 #endif

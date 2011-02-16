@@ -11,17 +11,22 @@
 class scheduler;
 class idata;
 
-// j-data:
+// Note: after proper initialization:
+//
+//     jdata and scheduler have pointers to each other
+//     jdata and idata have pointers to each other
+//     idata has a pointer to scheduler
+//
+// Order of initialization: jdata, idata(jdata), scheduler(jdata).
 
 #define JBUF_INC	8192
 
 class jdata {
 
-  private:
+  public:
+
     int nj;
     int njbuf;
-
-  public:
 
     MPI::Intracomm mpi_comm;		// communicator for the N-body system
     int mpi_size;
@@ -53,9 +58,8 @@ class jdata {
     real2 pos, vel, acc, jerk;
     real2 pred_pos, pred_vel;
 
+    idata *idat;
     scheduler *sched;
-
-    int get_nj() {return nj;}
 
     jdata() {
 	nj = 0;
@@ -81,6 +85,7 @@ class jdata {
 	mass = radius = pot = dnn = time = timestep = NULL;
 	pos = vel = acc = jerk = pred_pos = pred_vel = NULL;
 
+	idat = NULL;
 	sched = NULL;
     }
 
@@ -98,16 +103,16 @@ class jdata {
     int get_inverse_id(int i);
     void check_inverse_id();
     void set_initial_timestep();
-    real get_pot(idata *id = NULL);
-    real get_kin(idata *id = NULL);
-    real get_energy(idata *id = NULL);
+    real get_pot(bool reeval = false);
+    real get_kin(bool reeval = false);
+    real get_energy(bool reeval = false);
     void predict(int j, real t);
     void predict_all(real t, bool full_range = false);
-    void advance(idata& id);
-    void synchronize_all(idata& id);
-    void synchronize_list(int jlist[], int njlist, idata& id);
-    void print(idata *id = NULL);
-    void log_output(idata *id);
+    void advance();
+    void synchronize_all();
+    void synchronize_list(int jlist[], int njlist);
+    void print();
+    void log_output();
 
     // In gpu.cc:
 
@@ -126,7 +131,7 @@ class jdata {
 
     // In close_encounter.cc:
 
-    bool resolve_encounter(idata& id);
+    bool resolve_encounter();
 };
 
 void update_merger_energy(real dEmerge);
