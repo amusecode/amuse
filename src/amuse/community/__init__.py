@@ -1,4 +1,4 @@
-from amuse.support.codes.core import LegacyInterface, legacy_function, legacy_global
+from amuse.support.codes.core import CodeInterface, legacy_function, legacy_global
 from amuse.support.codes.core import LegacyFunctionSpecification, is_mpd_running
 
 from amuse.support.codes.stopping_conditions import StoppingConditionInterface, StoppingConditions

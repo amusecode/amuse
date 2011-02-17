@@ -2,14 +2,14 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class BHTreeInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
+class BHTreeInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
     include_headers = ['bhtree_code.h', 'worker_code.h', 'stopcond.h']
     
     def __init__(self, convert_nbody = None, **kwargs):
-        LegacyInterface.__init__(self, name_of_the_worker="bhtree_worker", **kwargs)
+        CodeInterface.__init__(self, name_of_the_worker="bhtree_worker", **kwargs)
         """
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         if convert_nbody is None:

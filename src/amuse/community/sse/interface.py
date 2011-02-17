@@ -7,7 +7,7 @@ from amuse.support.units import constants
 from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.support.interface import InCodeComponentImplementation
 
-class SSEInterface(LegacyInterface, LiteratureRefs): 
+class SSEInterface(CodeInterface, LiteratureRefs): 
     """
     Stellar evolution is performed by the rapid single-star evolution (SSE)
     algorithm. This is a package of analytical formulae fitted to the detailed 
@@ -22,7 +22,7 @@ class SSEInterface(LegacyInterface, LiteratureRefs):
         .. [#] ... "Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity"
     """
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="sse_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="sse_worker", **options)
         LiteratureRefs.__init__(self)
     
     @legacy_function   

@@ -15,14 +15,14 @@ do_hop()
 
 from amuse.community import *
 
-class HopInterface(LegacyInterface):
+class HopInterface(CodeInterface):
     '''
         .. [#] Eisenstein, DJ, Hut, P, HOP: A new group-finding algorithm for N-body simulations, ApJ 498 (1998)
     '''
     include_headers = ['worker_code.h']
     
     def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self, name_of_the_worker="hop_worker", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="hop_worker", **keyword_arguments)
     
     @legacy_function
     def new_particle():

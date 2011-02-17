@@ -7,7 +7,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
+class PhiGRAPEInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Harfst, S., Gualandris, A., Merritt, D., Spurzem, R., Portegies Zwart, S., & Berczik, P. 2007, New Astronomy, 12, 357
     """
@@ -17,7 +17,7 @@ class PhiGRAPEInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsIn
     MODE_GRAPE = 'grape'
 
     def __init__(self, mode = MODE_G6LIB, **options):
-        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode), **options)
+        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_muse_worker(mode), **options)
         LiteratureRefs.__init__(self)
 
     def name_of_the_muse_worker(self, mode):

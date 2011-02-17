@@ -48,9 +48,9 @@ codestringF = """
 
 """
 
-class ForTestingInterface(LegacyInterface, stopping_conditions.StoppingConditionInterface):
+class ForTestingInterface(CodeInterface, stopping_conditions.StoppingConditionInterface):
     def __init__(self, exefile, **options):
-        LegacyInterface.__init__(self, exefile, **options)
+        CodeInterface.__init__(self, exefile, **options)
 
     include_headers = ['stopcond.h']
 

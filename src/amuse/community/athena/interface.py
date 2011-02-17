@@ -5,7 +5,7 @@ from amuse.support.units.generic_unit_system import *
 
 import numpy
 
-class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, StoppingConditionInterface):
+class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureRefs, StoppingConditionInterface):
     """
     Athena is a grid-based code for astrophysical hydrodynamics. Athena can solve 
     magnetohydrodynamics (MHD) as well, but this is currently not supported from 
@@ -47,7 +47,7 @@ class AthenaInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs, Stop
     
     def __init__(self, mode = MODE_NORMAL, **options):
         
-        LegacyInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
+        CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
         self.set_auto_decomposition(1)
         LiteratureRefs.__init__(self)
         self.number_of_grids = 1

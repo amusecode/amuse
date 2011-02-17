@@ -707,6 +707,7 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertEquals(len(superset), 2)
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesy(), ([3.0, 8.0] | units.m ** 2))
+        
     
 class TestSliceParticles(amusetest.TestCase):
     

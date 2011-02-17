@@ -156,10 +156,10 @@ end function
 
 """
 
-class ForTestingInterface(LegacyInterface):
+class ForTestingInterface(CodeInterface):
     
     def __init__(self, exefile, **options):
-        LegacyInterface.__init__(self, exefile, **options)
+        CodeInterface.__init__(self, exefile, **options)
 
     @legacy_function
     def echo_int():

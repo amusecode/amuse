@@ -1,12 +1,12 @@
 from amuse.community import *
 from amuse.support.options import OptionalAttributes, option
 import os
-class mmcInterface(LegacyInterface):
+class mmcInterface(CodeInterface):
     
     use_modules = ['MMC']
     
     def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self, **keyword_arguments)
+        CodeInterface.__init__(self, **keyword_arguments)
 
     @option(type="string")
     def data_directory(self):

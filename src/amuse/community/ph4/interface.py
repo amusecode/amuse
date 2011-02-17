@@ -8,7 +8,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 # *** interface.cc will have be hand-coded to implement the details,
 # *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
 
-class ph4Interface(LegacyInterface,
+class ph4Interface(CodeInterface,
                    GravitationalDynamicsInterface):
     """
     Parallel, GPU-accelerated, N-body integration module with block
@@ -24,7 +24,7 @@ class ph4Interface(LegacyInterface,
     
     def __init__(self, mode = MODE_CPU, **options):
         print "worker code =", self.name_of_the_muse_worker(mode)
-        LegacyInterface.__init__(
+        CodeInterface.__init__(
             self,
             name_of_the_worker=self.name_of_the_muse_worker(mode),
             **options

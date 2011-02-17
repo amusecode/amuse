@@ -6,12 +6,12 @@ from amuse.support.options import OptionalAttributes, option
 from amuse.support.units import generic_unit_system
 import os
 
-class MpiAmrVacInterface(LegacyInterface, CommonCodeInterface):
+class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
     
     use_modules = ['mpiamrvac_interface']
     
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="mpiamrvac_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="mpiamrvac_worker", **options)
     
     #
     # options

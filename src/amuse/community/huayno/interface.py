@@ -2,7 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class HuaynoInterface(LegacyInterface,GravitationalDynamicsInterface):
+class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
     include_headers = ['worker_code.h']
 
     EVOLVE_SHARED=1
@@ -24,7 +24,7 @@ class HuaynoInterface(LegacyInterface,GravitationalDynamicsInterface):
         return 'huayno_worker'
       
     def __init__(self, mode=None, **options):
-        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_worker(mode), **options) 
+        CodeInterface.__init__(self, name_of_the_worker = self.name_of_worker(mode), **options) 
         
     @legacy_function    
     def new_particle():

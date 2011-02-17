@@ -1,11 +1,11 @@
 from amuse.community import *
 
-class mmc2Interface(LegacyInterface):
+class mmc2Interface(CodeInterface):
     
     include_headers = ['worker_code.h']
     
     def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self, name_of_the_worker="mmc2_worker", **keyword_arguments)
+        CodeInterface.__init__(self, name_of_the_worker="mmc2_worker", **keyword_arguments)
     
     @legacy_function
     def echo_int():

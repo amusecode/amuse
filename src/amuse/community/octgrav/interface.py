@@ -2,7 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
+class OctgravInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Gaburov, Nitadori, Harfst, Portegies Zwart & Makino,"A gravitational tree code on graphics processing units:
                Implementation in CUDA", in preparetion; and main MUSE paper, arXiv/0807.1996
@@ -11,7 +11,7 @@ class OctgravInterface(LegacyInterface, LiteratureRefs, GravitationalDynamicsInt
     include_headers = ['octgrav_code.h', 'parameters.h', 'worker_code.h', 'local.h', 'stopcond.h']
 
     def __init__(self, convert_nbody = None, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="octgrav_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="octgrav_worker", **options)
         """
         self.parameters = parameters.Parameters(self.parameter_definitions, self)
         if convert_nbody is None:

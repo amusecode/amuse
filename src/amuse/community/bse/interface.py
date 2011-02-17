@@ -4,7 +4,7 @@ from amuse.support.units import units
 from amuse.support.data.values import Quantity
 from amuse.support.data.core import Particles, ParticlesSubset
 
-class BSEInterface(LegacyInterface, LiteratureRefs): 
+class BSEInterface(CodeInterface, LiteratureRefs): 
     """
     Binary evolution is performed by the **rapid** binary-star evolution (BSE) 
     algorithm. Circularization of eccentric orbits and synchronization of stellar 
@@ -32,7 +32,7 @@ class BSEInterface(LegacyInterface, LiteratureRefs):
         .. [#] ... Comprehensive analytic formulae for stellar evolution as a function of mass and metallicity
     """
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="bse_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="bse_worker", **options)
         LiteratureRefs.__init__(self)
 
     @legacy_function   

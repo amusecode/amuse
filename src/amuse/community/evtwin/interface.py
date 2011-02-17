@@ -9,7 +9,7 @@ from amuse.support.options import OptionalAttributes, option
 
 import os
 
-class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution, 
+class EVtwinInterface(CodeInterface, LiteratureRefs, StellarEvolution, 
         InternalStellarStructureInterface, CommonCodeInterface):
     """
     Evtwin is based on Peter Eggleton's stellar evolution code, and solves 
@@ -39,7 +39,7 @@ class EVtwinInterface(LegacyInterface, LiteratureRefs, StellarEvolution,
     use_modules = ['twin_library_v2']
     
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
+        CodeInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
         LiteratureRefs.__init__(self)
     
     @option(type="string")

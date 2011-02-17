@@ -138,10 +138,10 @@ int reset()
 }
 """
 
-class TestCode(LegacyInterface):
+class TestCode(CodeInterface):
     
     def __init__(self, exefile):
-        LegacyInterface.__init__(self, exefile)
+        CodeInterface.__init__(self, exefile)
          
          
     @legacy_function

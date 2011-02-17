@@ -536,7 +536,7 @@ def stop_interfaces():
     All instantiated interfaces will become unstable
     after this call!
     """
-    for reference in LegacyInterface.instances:
+    for reference in CodeInterface.instances:
         x = reference()
         if not x is None:
             try:
@@ -546,7 +546,7 @@ def stop_interfaces():
 
 atexit.register(stop_interfaces)
 
-class LegacyInterface(OptionalAttributes):
+class CodeInterface(OptionalAttributes):
     """
     Abstract base class for all interfaces to legacy codes.
     
@@ -687,7 +687,7 @@ Please do a 'make clean; make' in the root directory.
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
     
     
-class PythonCodeInterface(LegacyInterface):
+class PythonCodeInterface(CodeInterface):
     """
     Base class for codes having a python implementation
     
@@ -700,7 +700,7 @@ class PythonCodeInterface(LegacyInterface):
                 raise exceptions.CodeException("Must provide the name of a worker script or the implementation_factory class")
             name_of_the_worker = self.make_executable_script_for(implementation_factory)
         
-        LegacyInterface.__init__(self, name_of_the_worker, **options)
+        CodeInterface.__init__(self, name_of_the_worker, **options)
         
     def _check_if_worker_is_up_to_date(self):
         pass

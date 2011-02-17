@@ -3,7 +3,7 @@ from amuse.community import *
 from amuse.support.units.generic_unit_system import *
 from amuse.community.interface.common import CommonCodeInterface
 
-class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
+class CapreoleInterface(CodeInterface, CommonCodeInterface, LiteratureRefs):
     """
     Capreole is a grid-based astrophysical hydrodynamics code developed by Garrelt Mellema. 
     It works in one, two dimensions, and three spatial dimensions and is programmed in 
@@ -18,7 +18,7 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
     
     
     def __init__(self, number_of_workers = 1, **options):
-        LegacyInterface.__init__(self, self.name_of_the_worker(number_of_workers),**options)
+        CodeInterface.__init__(self, self.name_of_the_worker(number_of_workers),**options)
         LiteratureRefs.__init__(self)
     
     def name_of_the_worker(self, number_of_workers):
@@ -254,7 +254,7 @@ class CapreoleInterface(LegacyInterface, CommonCodeInterface, LiteratureRefs):
     
 class GLCapreoleInterface(CapreoleInterface):
     def __init__(self, **options):
-        LegacyInterface.__init__(self,name_of_the_worker = 'glworker', **options)
+        CodeInterface.__init__(self,name_of_the_worker = 'glworker', **options)
         
     @legacy_function
     def viewer():

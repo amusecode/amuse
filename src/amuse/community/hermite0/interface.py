@@ -2,7 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class HermiteInterface(LegacyInterface,
+class HermiteInterface(CodeInterface,
                        LiteratureRefs,
                        GravitationalDynamicsInterface,
                        StoppingConditionInterface):
@@ -18,7 +18,7 @@ class HermiteInterface(LegacyInterface,
 
 
     def __init__(self, **options):
-        LegacyInterface.__init__(self, name_of_the_worker="hermite_worker",
+        CodeInterface.__init__(self, name_of_the_worker="hermite_worker",
                                  **options)
         LiteratureRefs.__init__(self)
 

@@ -4,7 +4,7 @@ from amuse.support.units import units
 
 from amuse.community.interface.gd import GravitationalDynamics
 
-class SmallNInterface(LegacyInterface):
+class SmallNInterface(CodeInterface):
     """
         Interface to the Kira Small-N Integrator and Kepler modules from
         Starlab.  http://www.ids.ias.edu/~starlab/
@@ -30,7 +30,7 @@ class SmallNInterface(LegacyInterface):
    
 
     def __init__(self, convert_nbody = None):
-        LegacyInterface.__init__(self, name_of_the_worker='smalln_worker')
+        CodeInterface.__init__(self, name_of_the_worker='smalln_worker')
         
         self.has_run = False
         self.eps2 = 0.0

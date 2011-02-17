@@ -3,7 +3,7 @@ import numpy
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 from amuse.community import *
 
-class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs, StoppingConditionInterface):
+class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefs, StoppingConditionInterface):
     """
     GADGET-2 computes gravitational forces with a hierarchical tree 
     algorithm (optionally in combination with a particle-mesh 
@@ -29,7 +29,7 @@ class Gadget2Interface(LegacyInterface, GravitationalDynamicsInterface, Literatu
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
-        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
+        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureRefs.__init__(self)
         
     def name_of_the_worker(self, mode):

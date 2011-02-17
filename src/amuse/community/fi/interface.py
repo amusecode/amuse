@@ -3,7 +3,7 @@ import numpy
 from amuse.community.interface.gd import GravitationalDynamicsInterface, GravitationalDynamics
 from amuse.community import *
 
-class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRefs, StoppingConditionInterface):   
+class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefs, StoppingConditionInterface):   
     """
     FI is a parallel TreeSPH code for galaxy simulations. Extensively 
     rewritten, extended and parallelized it is a development from code from 
@@ -32,7 +32,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
-        LegacyInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
+        CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureRefs.__init__(self)
                      
     
@@ -1475,7 +1475,7 @@ class FiInterface(LegacyInterface, GravitationalDynamicsInterface, LiteratureRef
     
 class GlFiInterface(FiInterface):
     def __init__(self, **options):
-        LegacyInterface.__init__(self,name_of_the_worker = 'fi_worker_gl', **options)
+        CodeInterface.__init__(self,name_of_the_worker = 'fi_worker_gl', **options)
     
     @legacy_function
     def viewer():

@@ -1,8 +1,8 @@
 from amuse.community import *
 
-class Mercury(LegacyInterface):
+class Mercury(CodeInterface):
     def __init__(self, **args):
-        LegacyInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
+        CodeInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
 
     @legacy_function
     def initialize_code():
