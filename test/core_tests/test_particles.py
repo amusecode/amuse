@@ -687,6 +687,27 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesy, ([3.0, 8.0] | units.m ** 2))
     
+    def test7(self):
+        def xtimesy1(x,y):
+            raise Exception("error querying function on empty set")
+            
+        set1 = core.Particles(2)
+        set2 = core.Particles()
+        set1.x = [1.0 , 2.0] | units.m 
+        set1.y = [3.0 , 4.0] | units.m
+        set2.x = [] | units.m 
+        set2.y = [] | units.m 
+        set1.add_function_attribute("xtimesy", lambda p : p.x * p.y)
+        set2.add_function_attribute("xtimesy", xtimesy1)
+        superset = core.ParticlesSuperset([set1, set2])
+        self.assertEquals(len(superset), 2)
+        self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
+        self.assertEquals(superset.xtimesy(), ([3.0, 8.0] | units.m ** 2))
+        superset = core.ParticlesSuperset([set2, set1])
+        self.assertEquals(len(superset), 2)
+        self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
+        self.assertEquals(superset.xtimesy(), ([3.0, 8.0] | units.m ** 2))
+    
 class TestSliceParticles(amusetest.TestCase):
     
     def test1(self):
@@ -939,7 +960,7 @@ class TestIterateOverParticles(amusetest.TestCase):
         
         print dt1, dt0, dt1 / dt0
     
-        self.assertTrue((dt1 / dt0) < 10)
+        self.assertTrue((dt1 / dt0) < 20)
 
     def iterate_over_particles1(self, particles):
         for x in particles:

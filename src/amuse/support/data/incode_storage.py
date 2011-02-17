@@ -383,8 +383,8 @@ class ParticleMethod(AbstractCodeMethodWrapper):
 
     def apply_on_all(self, particles, *list_arguments, **keyword_arguments):
         storage = particles._private.attribute_storage
-        all_indices = storage.mapping_from_index_in_the_code_to_particle_key.keys()
-        return self.method(list(all_indices), *list_arguments, **keyword_arguments)
+        all_indices = list(storage.mapping_from_index_in_the_code_to_particle_key.keys())
+        return self.method(all_indices, *list_arguments, **keyword_arguments)
     
     def apply_on_one(self, set,  particle, *list_arguments, **keyword_arguments):
         storage = particle.particles_set._private.attribute_storage

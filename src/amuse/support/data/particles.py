@@ -934,11 +934,14 @@ class DerivedSupersetAttribute(DerivedAttribute):
         result = None
         offset = 0
         for subset in superset._private.particle_sets:
+            
             subset_result =  getattr(subset, self.name)
             if hasattr(subset_result, '__call__'):
-                if result is None:
-                    result = BoundSupersetParticlesFunctionAttribute(self.name, superset)
-                result.add_subsetfunction(subset_result)
+                print len(subset)
+                if len(subset) > 0:
+                    if result is None:
+                        result = BoundSupersetParticlesFunctionAttribute(self.name, superset)
+                    result.add_subsetfunction(subset_result)
                 
             elif hasattr(subset_result, 'unit'):
                 if len(subset_result) == 0:
