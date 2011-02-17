@@ -272,7 +272,7 @@ to the NearestNeighborInterface class:
 
 .. code-block:: python
 
-    class NearestNeighborInterface(LegacyInterface):    
+    class NearestNeighborInterface(CodeInterface):    
         #...
         
         @legacy_function

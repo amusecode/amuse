@@ -1,11 +1,11 @@
 from amuse.community import *
 
-class NearestNeighborInterface(LegacyInterface):
+class NearestNeighborInterface(CodeInterface):
     
     include_headers = ['worker_code.h']
     
     def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self, **keyword_arguments)
+        CodeInterface.__init__(self, **keyword_arguments)
     
     @legacy_function
     def new_particle():

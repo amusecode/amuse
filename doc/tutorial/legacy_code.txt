@@ -75,23 +75,23 @@ The contents of the code.h file:
 The interface code
 ~~~~~~~~~~~~~~~~~~
 Now we can define the interface class for our code in python. An 
-interface needs to inherit from the class "LegacyInterface".
+interface needs to inherit from the class "CodeInterface".
 
 .. code-block:: python
     :linenos:
     
     from amuse.community import *
     
-    class MyCode(LegacyInterface):
+    class MyCode(CodeInterface):
         include_headers = ['code.h']
         
         def __init__(self):
-             LegacyInterface.__init__(self)
+             CodeInterface.__init__(self)
              
 In this example we first import names from the ``amuse.community`` 
 module on line 1. The ``amuse.community`` module defines the typical 
 classes and function needed to write a legacy interface. On line 3 
-we define our class and inherit from ``LegacyInterface``. The class 
+we define our class and inherit from ``CodeInterface``. The class 
 will be used to generate a C++ file. In this file we will need the 
 definitions of our legacy functions. So, on line 4 we specify the 
 necessary include files in a array of strings. Each string will be
@@ -189,11 +189,11 @@ the MyCode class.
     
     from amuse.community import *
     
-    class MyCode(LegacyInterface):
+    class MyCode(CodeInterface):
         include_headers = ['code.h']
         
         def __init__(self):
-             LegacyInterface.__init__(self)
+             CodeInterface.__init__(self)
              
         @legacy_function
         def sum():
@@ -258,11 +258,11 @@ We can complete out interface by defining the ``divide`` function.
     
     from amuse.community import *
     
-    class MyCode(LegacyInterface):
+    class MyCode(CodeInterface):
         include_headers = ['code.h']
         
         def __init__(self):
-             LegacyInterface.__init__(self)
+             CodeInterface.__init__(self)
              
         @legacy_function
         def sum():
@@ -328,11 +328,11 @@ to handle arrays.
     
     from amuse.community import *
     
-    class MyCode(LegacyInterface):
+    class MyCode(CodeInterface):
         include_headers = ['code.h']
         
         def __init__(self):
-             LegacyInterface.__init__(self)
+             CodeInterface.__init__(self)
              
         @legacy_function
         def sum():

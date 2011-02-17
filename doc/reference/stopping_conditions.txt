@@ -216,7 +216,7 @@ all the functions defined in the interface:
 
 .. code-block:: python
 
-    class MyCodeInterface(LegacyInterface, StoppingConditionInterface):
+    class MyCodeInterface(CodeInterface, StoppingConditionInterface):
         ...
 
 This :class:`StoppingConditionInterface` interface models the interface to a

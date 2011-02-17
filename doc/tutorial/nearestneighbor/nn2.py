@@ -1,11 +1,11 @@
 from amuse.community import *
 
-class NearestNeighborInterface(LegacyInterface):
+class NearestNeighborInterface(CodeInterface):
     
     use_modules = ['NN']
     
     def __init__(self, **keyword_arguments):
-        LegacyInterface.__init__(self, **keyword_arguments)
+        CodeInterface.__init__(self, **keyword_arguments)
     
     @legacy_function
     def commit_parameters():
