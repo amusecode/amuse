@@ -364,6 +364,7 @@ void idata::get_partial_acc_and_jerk_on_gpu(bool pot)	// default = false
 
     g6_set_ti(clusterid, ti);
     bool debug = twiddles(ti, TDEBUG);
+    real eps2 = jdat->eps2;
 
     for (int i = 0; i < ni; i += npipes) {
 	int nni = npipes;
@@ -392,17 +393,17 @@ void idata::get_partial_acc_and_jerk_on_gpu(bool pot)	// default = false
 
 	g6calc_firsthalf(clusterid, localnj, nni, iid+i,
 			 ipos+i, ivel+i, a2, j6, ipot+i,
-			 jdat->eps2, h2);
+			 eps2, h2);
 
 	if (pot || !want_neighbors)
 
 	    g6calc_lasthalf(clusterid, localnj, nni, iid+i,
-			    ipos+i, ivel+i, jdat->eps2, h2,
+			    ipos+i, ivel+i, eps2, h2,
 			    lacc+i, ljerk+i, lpot+i);
 	else
 
 	    g6calc_lasthalf2(clusterid, localnj, nni, iid+i,
-			     ipos+i, ivel+i, jdat->eps2, h2,
+			     ipos+i, ivel+i, eps2, h2,
 			     lacc+i, ljerk+i, lpot+i, lnn+i);
 
 

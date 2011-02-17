@@ -691,6 +691,10 @@ void idata::advance(real tnext)
     const char *in_function = "idata::advance";
     if (DEBUG > 2 && jdat->mpi_rank == 0) PRL(in_function);
 
+    //cout << endl; PRC(jdat->system_time); PRL(ni);
+    //for (int i = 0; i < ni; i++) PRC(ilist[i]);
+    //PRL(tnext);
+
     gather();				// j pos,vel --> old_ipos, old_ivel
 					// (j pred_pos, pred_vel --> ipos, ivel)
 					// j acc, jerk --> i old_acc, old_jerk

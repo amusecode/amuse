@@ -220,6 +220,8 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     while (jd.system_time < t_max) {
 
 	jd.advance();
+	step++;
+	//PRL(step);
 
 	// Special treatment of close encounters (non-AMUSE code, for
 	// now).  All the work is done in resolve_encounter().
@@ -237,8 +239,6 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 		PRL(jd.get_energy());
 	    }
 	}
-
-	step++;
 
 	// Problem-specific output.
 

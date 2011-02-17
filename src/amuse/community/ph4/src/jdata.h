@@ -102,6 +102,7 @@ class jdata {
     real get_pot(bool reeval = false);
     real get_kin(bool reeval = false);
     real get_energy(bool reeval = false);
+    real get_total_mass();
     void predict(int j, real t);
     void predict_all(real t, bool full_range = false);
     void advance();

@@ -79,8 +79,9 @@ int scheduler::find_block(real t,
     if (DEBUG > 3 && jdat->mpi_rank == 0) PRL(in_function);
 
     // Return the starting index of the first block with t_next >= t.
-    // Start the search at block i1.  Return i1 if t is less than any
-    // t_next, and nbp-1 if t is greater than any t_next.
+    // Start the search at block i1 = 0 or 1, depending on context.
+    // Return i1 if t is less than any t_next, and nbp-1 if t is
+    // greater than any t_next.
     //
     //            current/next
     //            active list          rest of the system
@@ -97,7 +98,7 @@ int scheduler::find_block(real t,
     // this separately.
 
     int nbp = bp.size();		// should *always* be >= 2
-    if (nbp == 2) return i1;
+    if (nbp == 2 && i1 > 0) return i1;	// special case
 
     real t1 = t_next(bp[i1]->jindex);
     if (t <= t1) return i1;
@@ -217,6 +218,11 @@ void scheduler::add_particle(int j)
 
     int ibp = find_block(t_next(j));
 
+#if 0
+    cout << "add_particle " << j << ": found block ";
+    PRC(ibp); PRL(bp.size());
+#endif
+
     // Insert the particle as the first member of that block.  Don't
     // check whether j is already in blist.
 
@@ -244,10 +250,6 @@ bool scheduler::remove_particle(int j)
     
     for (li ib = bp[ibp]; ib != blist.end() && ib != bp[ibp+1]; ib++) {
 
-	//if (jdat->system_time >= 2.19141) {
-	//    PRC(j); PRC(ibp); PRL(ib->jindex);
-	//}
-
 	if (ib->jindex == j) {
 
 	    // Correct pointers.
@@ -269,6 +271,7 @@ bool scheduler::remove_particle(int j)
 
     cout << "scheduler::remove_particle(): " << j << " not found, ";
     PRL(ibp);
+    print(true);
     return false;
 }
 

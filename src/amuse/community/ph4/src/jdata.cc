@@ -17,6 +17,7 @@
 //	real jdata::get_pot(bool reeval)			* MPI *
 //	real jdata::get_kin(bool reeval)
 //	real jdata::get_energy(bool reeval)
+//	real jdata::get_total_mass()
 //	void jdata::predict(int j, real t)
 //	void jdata::predict_all(real t, bool full)
 //	void jdata::advance()
@@ -483,6 +484,13 @@ real jdata::get_energy(bool reeval)		// default = false
     return pot + kin;
 }
 
+real jdata::get_total_mass()
+{
+    real mtot = 0;
+    for (int j = 0; j < nj; j++) mtot += mass[j];
+    return mtot;
+}
+
 void jdata::predict(int j, real t)
 {
     const char *in_function = "jdata::predict";
@@ -638,6 +646,8 @@ void jdata::synchronize_list(int jlist[], int njlist)
     }
     njlist -= joffset;
 
+    if (njlist == 0) return;		// nothing to do
+
     // Transmit the jlist to the idata routines.
 
     idat->set_list(jlist, njlist);
@@ -682,8 +692,7 @@ void jdata::print()
     real E = get_energy();
     if (E0 == 0) E0 = E;
     real pe = get_pot();
-    real total_mass = 0;
-    for (int j = 0; j < nj; j++) total_mass += mass[j];
+    real total_mass = get_total_mass();
     int n_async = 0;
     for (int j = 0; j < nj; j++) if (time[j] < system_time) n_async++;
 
@@ -756,7 +765,7 @@ void jdata::print()
 
 void jdata::spec_output(const char *s)	// default = NULL
 {
-    // Problem-specific output...
+    // Problem-specific output.
 
     if (mpi_rank == 0) {
 	vector<real> mlist, rlist;
@@ -768,8 +777,11 @@ void jdata::spec_output(const char *s)	// default = NULL
 	mlist.push_back(0.90);
 	rlist.clear();
 	get_lagrangian_radii(mlist, rlist, get_center());
+	real mtot = get_total_mass();
+	real pot = get_pot();
+	real rvir = -0.5*mtot*mtot/pot;
 	if (s) cout << s << " ";
-	cout << system_time;
+	cout << system_time << " " << rvir;
 	for (unsigned int i = 0; i < mlist.size(); i++) cout << " " << rlist[i];
 	cout << endl << flush;
     }

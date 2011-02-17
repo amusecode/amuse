@@ -79,7 +79,7 @@ static real partial_potential(int list1[], int n1,
 	for (int l2 = 0; l2 < n2; l2++) {
 	    int j2 = list2[l2];
 	    if (j2 != j1) {
-		real r2 = 0;
+		real r2 = jd.eps2;
 		for (int k = 0; k < 3; k++)
 		    r2 += pow(jd.pos[j1][k]-jd.pos[j2][k], 2);
 		pot1 += jd.mass[j2]/sqrt(r2);
@@ -306,7 +306,7 @@ bool jdata::resolve_encounter()
 	 << ") at time " << system_time
 	 << endl << flush;
 
-    // Ordering or j1 and j2 elements or rlist is not clear.  Force
+    // Ordering of j1 and j2 elements in rlist is not clear.  Force
     // element 0 to be j1, since later lists depend on this ordering.
 
     if (rlist[0].jindex != j1) {
@@ -318,7 +318,7 @@ bool jdata::resolve_encounter()
     }
 
 #if 0
-    cout << "Neighbor distances (rmin = " << rmin << "):" << endl;
+    cout << "neighbor distances (rmin = " << rmin << "):" << endl;
     int nl = rlist.size();
     if (nl > 5) nl = 5;
     for (int il = 0; il < nl; il++)
@@ -460,23 +460,23 @@ bool jdata::resolve_encounter()
 	// Removal of particle j swaps j with the last particle and
 	// reduces nj.
 
-	cout << "removing " << j1 << " (" << id[j1] << ")"
-	     << endl << flush;
+	//cout << "removing " << j1 << " (" << id[j1] << ")"
+	//     << endl << flush;
 	remove_particle(j1);	
 	for (int jl = 1; jl < nnbr; jl++)	// recall 0, 1 are j1, j2
 	    if (nbrlist[jl] == nj) nbrlist[jl] = j1;
 
 	j2 = nbrlist[1];
 
-	cout << "removing " << j2 << " (" << id[j2] << ")"
-	     << endl << flush;
+	//cout << "removing " << j2 << " (" << id[j2] << ")"
+	//     << endl << flush;
 	remove_particle(j2);
 	for (int jl = 2; jl < nnbr; jl++)
 	    if (nbrlist[jl] == nj) nbrlist[jl] = j2;
 
 	add_particle(total_mass, newrad, cmpos, cmvel, newid, newstep);
-	cout << "added " << nj-1 << " (" << id[nj-1] << ")"
-	     << endl << flush;
+	//cout << "added " << nj-1 << " (" << id[nj-1] << ")"
+	//     << endl << flush;
 
 	// Strange new storage order preserves contiguous lists
 	// below.  Affected j-data locations are j1, j2, nj-1.
@@ -535,7 +535,7 @@ bool jdata::resolve_encounter()
 
 	de -= reduced_mass*energy;
 	update_merger_energy(de);
-	cout << "*** merged "
+	cout << "merged "
 	     << j1 << " (" << comp1 << ") and "
 	     << j2 << " (" << comp2
 	     << ") at time " << system_time
