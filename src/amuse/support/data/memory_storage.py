@@ -401,7 +401,9 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         if particles is None:
             return numpy.arange(0,len(self.particle_keys))
         
-        
+        if len(self.particle_keys) == 0:
+            return ()
+            
         indices = numpy.searchsorted(self.sorted_keys, particles)
         return self.sorted_indices[indices]
         

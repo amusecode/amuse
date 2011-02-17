@@ -941,6 +941,8 @@ class DerivedSupersetAttribute(DerivedAttribute):
                 result.add_subsetfunction(subset_result)
                 
             elif hasattr(subset_result, 'unit'):
+                if len(subset_result) == 0:
+                    continue
                 if result is None:
                     shape = [len(superset),] + list(subset_result.shape[1:])
                     result = VectorQuantity.zeros(shape, subset_result.unit)
