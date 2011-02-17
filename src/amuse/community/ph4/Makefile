@@ -13,10 +13,10 @@ CXXFLAGS += $(CFLAGS)
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 CUDA_TK  ?= /usr/local/cuda
-SAPPOROLIBS ?= -L/usr/local/sapporo_v1.5 -lsapporo
+SAPPOROLIBS ?= -L/usr/local/sapporo_v1.6 -lsapporo
 BOOSTLIBS ?= -L/opt/local/lib -lboost_thread-mt
 
-LDFLAGS_GPU = $(LDFLAGS) \
+LDFLAGS_GPU =	$(LDFLAGS) \
 		$(SAPPOROLIBS) \
 		-L$(CUDA_TK)/lib -L$(CUDA_TK)/lib64 -lcudart \
 		$(BOOSTLIBS)
