@@ -204,16 +204,11 @@ void jdata::print_percentiles(vec center)	// default = (0,0,0)
 {
     // Print selected percentiles.
 
-    vector<real> mlist, rlist;
+    int nm = 8;
+    real m[8] = {0.01, 0.02, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90};
 
-    mlist.push_back(0.01);
-    mlist.push_back(0.02);
-    mlist.push_back(0.05);
-    mlist.push_back(0.10);
-    mlist.push_back(0.25);
-    mlist.push_back(0.50);
-    mlist.push_back(0.75);
-    mlist.push_back(0.90);
+    vector<real> mlist, rlist;
+    for (int i = 0; i < nm; i++) mlist.push_back(m[i]);
     rlist.clear();
 
     get_lagrangian_radii(mlist, rlist, center);

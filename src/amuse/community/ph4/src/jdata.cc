@@ -763,17 +763,20 @@ void jdata::print()
     }
 }
 
-void jdata::spec_output(const char *s)	// default = NULL
+void jdata::spec_output(const char *s)		// default = NULL
 {
     // Problem-specific output.
 
     if (mpi_rank == 0) {
 	vector<real> mlist, rlist;
+	mlist.push_back(0.005);
 	mlist.push_back(0.01);
+	mlist.push_back(0.02);
 	mlist.push_back(0.05);
 	mlist.push_back(0.10);
 	mlist.push_back(0.25);
 	mlist.push_back(0.50);
+	mlist.push_back(0.75);
 	mlist.push_back(0.90);
 	rlist.clear();
 	get_lagrangian_radii(mlist, rlist, get_center());
