@@ -963,12 +963,14 @@ class DerivedSupersetAttribute(DerivedAttribute):
         raise exceptions.AmuseException("cannot set value of attribute '{0}'")
 
     def get_value_for_entity(self, superset, key):
-        subset = superset._get_subset_for_key(key)
-        return getattr(subset, self.name)
+        #subset = superset._get_subset_for_key(key)
+        #return getattr(subset, self.name)
+        raise exceptions.AmuseException("cannot get value of entity for superset")
 
     def set_value_for_entity(self, superset, key, value):
-        subset = superset._get_subset_for_key(key)
-        return setattr(subset, self.name)
+        #subset = superset._get_subset_for_key(key)
+        #return setattr(subset, self.name)
+        raise exceptions.AmuseException("cannot get value of entity for superset")
 
 class ParticlesSuperset(AbstractParticleSet):
     """A superset of particles. Attribute values are not
@@ -1028,8 +1030,11 @@ class ParticlesSuperset(AbstractParticleSet):
             
         return result
     
-
-    
+    def __iter__(self):
+        for set in self._private.particle_sets:
+            for particle in set:
+                yield particle
+                
     def _set_factory(self):
         return Particles
         

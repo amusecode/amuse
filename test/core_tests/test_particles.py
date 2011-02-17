@@ -708,6 +708,20 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertEquals(superset.x, ([1.0, 2.0] | units.m))
         self.assertEquals(superset.xtimesy(), ([3.0, 8.0] | units.m ** 2))
         
+    def test8(self):
+        set1 = core.Particles(2)
+        set2 = core.Particles(3)
+        set1.x = [1.0 , 2.0] | units.m 
+        set1.y = [3.0 , 4.0] | units.m
+        set2.x = [5.0 , 6.0, 7.0] | units.m 
+        set2.y = [1.0 , 2.0, 3.0] | units.m
+        set1.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y - o, lambda all, p, o : p.x * p.x - o)
+        set2.add_function_attribute("xtimesypluso", lambda p, o : p.x * p.y + o, lambda all, p, o : p.x * p.x - o)
+        superset = core.ParticlesSuperset([set1, set2])
+        self.assertEquals(len(superset), 5)
+        self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
+        self.assertEquals(superset[1].xtimesypluso(0.0 | units.m ** 2), (4.0 | units.m ** 2))
+        self.assertEquals(list(superset)[1].xtimesypluso(0.0 | units.m ** 2), (4.0 | units.m ** 2))
     
 class TestSliceParticles(amusetest.TestCase):
     
