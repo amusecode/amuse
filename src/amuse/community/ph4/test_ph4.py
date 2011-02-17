@@ -46,9 +46,13 @@ def test_ph4(number_of_stars = 50,
     print "use_gpu =", use_gpu
 
     print "initializing the gravity module"
-    gravity = grav(number_of_workers = n_workers,
-                   redirection = "none",
-                   mode = "gpu")
+    try:
+        gravity = grav(number_of_workers = n_workers,
+                       redirection = "none",
+                       mode = "gpu")
+    except Exception as ex:
+        gravity = grav(number_of_workers = n_workers, redirection = "none")
+        
     gravity.initialize_code()
     gravity.parameters.set_defaults()
 
