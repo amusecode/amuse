@@ -942,9 +942,13 @@ class DerivedSupersetAttribute(DerivedAttribute):
                 
             elif hasattr(subset_result, 'unit'):
                 if result is None:
-                    result = VectorQuantity.zeros(len(superset), subset_result.unit)
+                    shape = [len(superset),] + list(subset_result.shape[1:])
+                    result = VectorQuantity.zeros(shape, subset_result.unit)
                     offset = 0
-                result[offset:len(subset_result)+offset] = subset_result
+                try:
+                    result[offset:len(subset_result)+offset] = subset_result
+                except ValueError:
+                    raise AttributeError("Subsets return incompatible quantities for attribute '{0}', attribute cannot be queried from the superset".format(self.name)) 
                 offset += len(subset_result)
             else:
                 raise exceptions.AmuseException("cannot handle this type of attribute on supersets yet") 
@@ -1005,7 +1009,6 @@ class ParticlesSuperset(AbstractParticleSet):
                 keysinallsubsets &= derivedattribute_keys
         
         keysinallsubsets -= set(self.GLOBAL_DERIVED_ATTRIBUTES.keys())
-        
         for key in keysinallsubsets:
             self._derived_attributes[key] = DerivedSupersetAttribute(key)
         

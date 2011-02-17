@@ -651,7 +651,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(len(some_sph_particles[0].composition), 3)
         self.assertEqual(len(more_sph_particles[0].composition), 4)
         self.assertRaises(AttributeError, getattr, sph_particles, "composition", 
-            expected_message = "You tried to access attribute 'composition' but this attribute is not defined for this set.")
+            expected_message = "Subsets return incompatible quantities for attribute 'composition', attribute cannot be queried from the superset")
         
         
         self.assertAlmostEqual(some_sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
