@@ -368,9 +368,7 @@ int get_number_of_particles(int * number_of_particles)
 
 int get_total_mass(double * mass)
 {
-    real mtot = 0;
-    for (int j = 0; j < jd->nj; j++) mtot += jd->mass[j];
-    *mass = mtot;
+    *mass = jd->get_total_mass();
     return 0;
 }
 
@@ -388,6 +386,8 @@ int get_kinetic_energy(double * kinetic_energy)
 
 int get_center_of_mass_position(double * x, double * y, double * z)
 {
+    // (Could also use jdata::get_com.)
+
     real mtot = 0;
     vec cmx(0,0,0);
     for (int j = 0; j < jd->nj; j++) {
@@ -402,6 +402,8 @@ int get_center_of_mass_position(double * x, double * y, double * z)
 
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz)
 {
+    // (Could also use jdata::get_com.)
+
     real mtot = 0;
     vec cmv(0,0,0);
     for (int j = 0; j < jd->nj; j++) {
