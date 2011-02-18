@@ -101,11 +101,11 @@ class AbstractMessage(object):
     def to_result(self, handle_as_array = False):
         dtype_to_result = {}
         for dtype, attrname in self.dtype_to_message_attribute():
-                result = getattr(self, attrname)
-                if self.length > 1 or handle_as_array:
-                    dtype_to_result[dtype] = unpack_array(result , self.length, dtype)
-                else:
-                    dtype_to_result[dtype] = result
+            result = getattr(self, attrname)
+            if self.length > 1 or handle_as_array:
+                dtype_to_result[dtype] = unpack_array(result , self.length, dtype)
+            else:
+                dtype_to_result[dtype] = result
                     
         return dtype_to_result
     
