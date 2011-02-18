@@ -247,11 +247,32 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    t_spec += dt_spec;
 	}
 
-	// Routine diagnostic output.
-
 	if (jd.system_time >= t_out || jd.system_time >= t_max) {
+
+	    // Routine diagnostic output.
+
 	    jd.print();
-	    if (jd.system_time >= t_max) sched.print();
+
+	    // End of run output.
+
+	    if (jd.system_time >= t_max) {
+		sched.print();
+		if (jd.binary_list.size() > 0) {
+		    cout << "binaries:" << endl;
+		    for (unsigned int i = 0; i < jd.binary_list.size(); i++) {
+			real semi = jd.binary_list[i].semi;
+			real energy = -0.5*jd.binary_list[i].mass1
+					  *jd.binary_list[i].mass2/semi;
+			cout << "    " << jd.binary_list[i].binary_id
+			     << " "    << jd.binary_list[i].comp1
+			     << " "    << jd.binary_list[i].comp2
+			     << " "    << semi
+			     << " "    << jd.binary_list[i].ecc
+			     << " "    << energy
+			     << endl << flush;
+		    }
+		}
+	    }
 	    if (jd.system_time >= t_out) t_out += dt_out;
 	}
 

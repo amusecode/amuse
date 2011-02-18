@@ -94,7 +94,8 @@ static real partial_potential(int list1[], int n1,
 
 static bool reflect_or_merge_orbit(real total_mass,
 				   vec& rel_pos, vec& rel_vel,
-				   real& energy, real rmin = huge)
+				   real& energy, real& semi_major_axis,
+				   real& eccentricity, real rmin = huge)
 {
     // Advance a two-body orbit past pericenter out to the same
     // separation.  We only need the unit vectors for the orbit in
@@ -111,7 +112,7 @@ static bool reflect_or_merge_orbit(real total_mass,
     vec normal_unit_vector = rel_pos ^ rel_vel;
     real angular_momentum = abs(normal_unit_vector);
 
-    real semi_major_axis, eccentricity, periastron;
+    real periastron;
 
     if (energy != 0) {
 
@@ -288,8 +289,8 @@ bool jdata::resolve_encounter()
 
     predict_all(system_time, true);
 
-    real total_mass = mass[j1] + mass[j2];
-    real reduced_mass = mass[j1]*mass[j2]/total_mass;
+    real mass1 = mass[j1], mass2 = mass[j2], total_mass = mass1 + mass2;
+    real reduced_mass = mass1*mass2/total_mass;
     vec cmpos;
     for (int k = 0; k < 3; k++)
 	cmpos[k] = (mass[j1]*pred_pos[j1][k]
@@ -414,8 +415,9 @@ bool jdata::resolve_encounter()
     // factor of 2 in the merger condition is TBD: TODO.
 
     vec dr_old = dr, dv_old = dv;
-    real energy;
+    real energy, semi_major_axis, eccentricity;
     bool merge = reflect_or_merge_orbit(total_mass, dr, dv, energy,
+					semi_major_axis, eccentricity,
 					2*rmin);
 					//0);
     // PRC(merge); PRL(nnbr);
@@ -446,7 +448,7 @@ bool jdata::resolve_encounter()
 
 	real newstep = fmin(timestep[j1], timestep[j2]);
 	real newrad = radius[j1]+radius[j2];
-	int newid = nj+j1+j2;
+	int newid = binary_base + binary_list.size();
 
 	// Remove both components from the jdata arrays, add the CM,
 	// and correct nbrlist.  We need to keep track of the changes
@@ -484,6 +486,11 @@ bool jdata::resolve_encounter()
 	nbrlist[-1] = j1;
 	nbrlist[0]  = j2;
 	nbrlist[1]  = nj-1;
+
+	// Save the binary properties for later use.
+
+	binary_list.push_back(binary(newid, comp1, comp2, mass1, mass2,
+				     semi_major_axis, eccentricity));
 
     } else {
 
@@ -541,6 +548,8 @@ bool jdata::resolve_encounter()
 	     << ") at time " << system_time
 	     << "  dE = " << de
 	     << endl << flush;
+
+	
 
     } else {
 

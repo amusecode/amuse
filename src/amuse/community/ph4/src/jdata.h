@@ -11,6 +11,28 @@
 class scheduler;
 class idata;
 
+class binary {
+
+  // The basic stable multiple structure is a binary tree, where each
+  // node is a stable object (star, binary, hierarchical triple,
+  // etc.).  Simply store component IDs, masses, and binary
+  // properties.  In a hierarchy, one or both IDs refer to another
+  // binary.  Orbital phases and orientations are not stored, and are
+  // randomized on instantiation.
+
+  public:
+
+    int binary_id;			// CM ID
+    int comp1, comp2;			// component IDs
+    real mass1, mass2;			// component masses
+    real semi, ecc;			// relative orbital elements
+
+    binary(int bid, int id1, int id2, real m1, real m2, real a, real e)
+    {binary_id = bid; comp1 = id1; comp2 = id2;
+     mass1 = m1; mass2 = m2; semi = a; ecc = e;}
+    ~binary() {}
+};
+
 // Note: after proper initialization:
 //
 //     jdata and scheduler have pointers to each other
@@ -58,8 +80,15 @@ class jdata {
     real2 pos, vel, acc, jerk;
     real2 pred_pos, pred_vel;
 
+    // Pointers to other data structures.
+
     idata *idat;
     scheduler *sched;
+
+    // Multiple structure management:
+
+    int binary_base;
+    vector<binary> binary_list;
 
     jdata() {
 	nj = 0;
@@ -82,6 +111,8 @@ class jdata {
 
 	idat = NULL;
 	sched = NULL;
+
+	binary_list.clear();
     }
 
     void cleanup();		// (in jdata.cc)

@@ -286,6 +286,11 @@ void jdata::initialize_arrays()
 	PRC(rmin); PRL(dtmin);
     }
 
+    // Starting point for binary IDs.
+
+    int bb = log10((real)nj) + 1;
+    binary_base = pow(10., bb);
+
     // Final consistency check on GPU availability/use.
 
     if (use_gpu && !have_gpu) {
@@ -682,6 +687,9 @@ static real E0 = 0;
 static real Emerge = 0;
 void update_merger_energy(real dEmerge) {Emerge += dEmerge;}
 
+// Note that the total merger energy will not be the sum of the merged
+// binary energies, becaue of tidal effects.  TBD.
+
 void jdata::print()
 {
     const char *in_function = "jdata::print";
@@ -818,6 +826,7 @@ void jdata::cleanup()
     njbuf = 0;
     inverse_id.clear();
     user_specified_id.clear();
+    binary_list.clear();
 }
 
 void jdata::to_com()
