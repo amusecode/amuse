@@ -51,9 +51,9 @@ class glass_unit_cube(object):
         self.targetN=targetN
         self.target_rms=target_rms
         if target_rms < 0.0001:
-          print "warning: target_rms may not succeed"
+            print "warning: target_rms may not succeed"
         if targetN < 1000:
-          print "warning: not enough particles"  
+            print "warning: not enough particles"  
           
     def make_xyz(self):
         from amuse.community.fi.interface import Fi
@@ -102,19 +102,19 @@ class glass_unit_cube(object):
         minrms=1.
         i=0
         while rms > target_rms:
-          i+=1
-          t=t+(0.25 | nbody_system.time)
-          sph.evolve_model(t)
-          h=sph.particles.h_smooth.value_in(nbody_system.length)
-          rho=h**(-1./3.)
-          rms=rho.std()/rho.mean()
-          minrms=min(minrms,rms)
-          if rms>2.*minrms or i>300:
-            print " RMS(rho) convergence warning:", i, rms,minrms
-          if i>100000:
-            print "i> 100k steps - not sure about this..."
-            print " rms:", rms
-            break
+            i+=1
+            t=t+(0.25 | nbody_system.time)
+            sph.evolve_model(t)
+            h=sph.particles.h_smooth.value_in(nbody_system.length)
+            rho=h**(-1./3.)
+            rms=rho.std()/rho.mean()
+            minrms=min(minrms,rms)
+            if rms>2.*minrms or i>300:
+                print " RMS(rho) convergence warning:", i, rms,minrms
+            if i>100000:
+                print "i> 100k steps - not sure about this..."
+                print " rms:", rms
+                break
 
 
         x=sph.particles.x.value_in(nbody_system.length)
