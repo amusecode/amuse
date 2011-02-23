@@ -1,12 +1,13 @@
 from amuse.test.amusetest import TestWithMPI
 import sys
 import os.path
-from numpy import pi
+from numpy import pi, arange
 
 from amuse.community.evtwin.interface import EVtwin, EVtwinInterface
 
 from amuse.support.exceptions import AmuseException
 from amuse.support.data import core
+from amuse.support.data.values import new_quantity
 from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.support.codes import channel
@@ -261,7 +262,49 @@ class TestInterface(TestWithMPI):
         
         instance.stop()
     
+        
+    def test9(self):
+        print "Testing adding and removing particles from stellar evolution code..."
+        instance = EVtwinInterface()
+        self.assertEquals(0, instance.set_ev_path(instance.get_data_directory()))
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.commit_parameters())
+        
+        (indices, errors) = instance.new_particle([1.0, 1.0])
+        self.assertEquals(errors, [0, 0])
+        self.assertEquals(indices, [1, 2])
+        
+        self.assertEquals(0, instance.initialize_stars())
+        
+
+        for index in indices:
+            self.assertEquals(0, instance.evolve(index))
+            (age_after_evolve, error) = instance.get_age(index)
+            self.assertEquals(0, error)
+            self.assertAlmostEqual(age_after_evolve, 845581.26610757)
+        
+        self.assertEquals(0, instance.delete_star(1))
+        self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
+        (age, error) = instance.get_age(1)
+        self.assertEquals(error, -1)
+        
+        (indices, errors) = instance.new_particle([1.0, 1.0])
+        self.assertEquals(errors, [0, 0])
+        self.assertEquals(indices, [1, 3])
+        self.assertEquals(instance.get_number_of_particles().number_of_particles, 3)
+        
+        for index in indices:
+            (age, error) = instance.get_age(index)
+            self.assertEquals(0, error)
+            self.assertTrue(age < age_after_evolve)
+            self.assertEquals(0, instance.evolve(index))
+            (age, error) = instance.get_age(index)
+            self.assertEquals(0, error)
+            self.assertAlmostEqual(age, age_after_evolve)
+        
+        instance.stop()
     
+
 class TestEVtwin(TestWithMPI):
     
             
@@ -412,81 +455,40 @@ class TestEVtwin(TestWithMPI):
 
         instance.stop()
         
-    def test5_add_and_remove(self):
+    def test5(self):
         print "Testing adding and removing particles from stellar evolution code..."
+        
+        particles = core.Particles(3)
+        particles.mass = 1.0 | units.MSun
+        
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
-        stars = core.Stars(0)
-#       Create an "array" of one star
-        stars1 = core.Stars(1)
-        star1=stars1[0]
-        star1.mass = 1.0 | units.MSun
-        star1.radius = 0.0 | units.RSun
-#       Create another "array" of one star
-        stars2 = core.Stars(1)
-        star2=stars2[0]
-        star2.mass = 1.0 | units.MSun
-        star2.radius = 0.0 | units.RSun
-        key1 = stars1._get_keys()[0]
-        key2 = stars2._get_keys()[0]
-        stars.add_particles(stars1)
-        stars.add_particles(stars2)
-        self.assertEquals(stars._get_keys()[1], key2)
-        self.assertEquals(len(instance.particles), 0) # before creation
-        instance.particles.add_particles(stars)
+        stars = instance.particles
+        self.assertEquals(len(stars), 0) # before creation
+        stars.add_particles(particles[:-1])
         instance.initialize_stars()
-        indices_in_the_code = instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())
-        for i in range(len(instance.particles)):
-            self.assertEquals(indices_in_the_code[i], i+1)
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        from_code_to_model.copy()
-        instance.evolve_model(end_time=1.0|units.Myr)
-        from_code_to_model.copy()
-        self.assertEquals(len(instance.particles), 2) # before remove
-        for i in range(len(instance.particles)):
-            self.assertTrue(stars[i].age.value_in(units.Myr) > 1.0)
-        instance.particles.remove_particle(stars[0])
-        self.assertEquals(instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())[0], 2)
-        self.assertEquals(len(instance.particles), 1) # in between remove
-        self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
-        stars.remove_particle(stars[0])
-        self.assertEquals(stars._get_keys()[0], key2)
-        self.assertEquals(len(stars), 1) # after remove
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        instance.evolve_model(end_time=2.0|units.Myr)
-        from_code_to_model.copy()
-        age_of_star=stars[0].age
-        self.assertTrue(age_of_star.value_in(units.Myr) > 2.0)
-#       Create another "array" of one star
-        stars3 = core.Stars(1)
-        star3=stars3[0]
-        star3.mass = 1.0 | units.MSun
-        star3.radius = 0.0 | units.RSun
-        key3 = stars3._get_keys()[0]
-        stars.add_particles(stars3)
-        stars.add_particles(stars1)
-        self.assertEquals(stars._get_keys()[0], key2)
-        self.assertEquals(stars._get_keys()[1], key3)
-        self.assertEquals(stars._get_keys()[2], key1)
-        instance.particles.add_particles(stars3)
-        instance.particles.add_particles(stars1)
-        indices_in_the_code = instance.particles._private.attribute_storage.get_indices_of(instance.particles._get_keys())
-        self.assertEquals(indices_in_the_code[0], 2)
-        self.assertEquals(indices_in_the_code[1], 1)
-        self.assertEquals(indices_in_the_code[2], 3)
-        self.assertEquals(len(instance.particles), 3) # it's back...
-        self.assertEquals(stars[1].age.value_in(units.Myr), 0.0)
-        self.assertEquals(stars[2].age.value_in(units.Myr), 0.0) # ... and rejuvenated
-        from_code_to_model = instance.particles.new_channel_to(stars)
-        instance.evolve_model(end_time=1.0|units.Myr)
-        from_code_to_model.copy()
-        self.assertTrue(stars[1].age.value_in(units.Myr) > 1.0 and stars[1].age.value_in(units.Myr) < 2.0)
-        self.assertEquals(stars[1].age, stars[2].age)
-        instance.evolve_model(end_time=2.0|units.Myr)
-        from_code_to_model.copy()
-        self.assertAlmostEqual(stars[1].age.value_in(units.Myr), age_of_star.value_in(units.Myr), 3)
-        self.assertTrue(stars[0].age >= age_of_star)
+        instance.evolve_model(1.0 | units.Myr)
+        self.assertEquals(len(stars), 2) # before remove
+        for star in stars:
+            self.assertTrue(star.age > 1.0 | units.Myr)
         
+        stars.remove_particle(particles[0])
+        self.assertEquals(len(stars), 1)
+        self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
+        instance.evolve_model(2.0 | units.Myr)
+        self.assertTrue(stars[0].age > 2.0 | units.Myr)
+        
+        stars.add_particles(particles[::2])
+        self.assertEquals(len(stars), 3) # it's back...
+        self.assertTrue(stars[0].age > 2.0 | units.Myr)
+        self.assertTrue(stars[1].age < 1.0 | units.Myr)
+        self.assertTrue(stars[2].age < 1.0 | units.Myr) # ... and rejuvenated
+        instance.evolve_model(1.0 | units.Myr)
+        self.assertTrue(stars[1].age > 1.0 | units.Myr and stars[1].age < 2.0 | units.Myr)
+        self.assertEquals(stars[1].age, stars[2].age)
+        instance.evolve_model(2.0 | units.Myr)
+        self.assertAlmostEqual(stars[1].age, stars[0].age)
+        self.assertAlmostEqual(stars[2].age, stars[0].age)
         instance.stop()
 
     def test6(self):
@@ -502,7 +504,6 @@ class TestEVtwin(TestWithMPI):
         self.assertEquals(len(instance.particles[0].get_radius_profile()), 199)
         self.assertRaises(AmuseException, instance.particles.get_radius_profile, 
             expected_message = "Querying radius profiles of more than one particle at a time is not supported.")
-        print instance.particles
         self.assertEquals(len(instance.particles[1].get_density_profile()), 199)
         self.assertIsOfOrder(instance.particles[0].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[0],  1.0e7 | units.K)
@@ -639,5 +640,33 @@ class TestEVtwin(TestWithMPI):
         self.assertRaises(AmuseException, instance.particles[0].set_chemical_abundance_profiles, composition[:7], 
             expected_message = "The length of the supplied vector (7) does not match the number of "
             "chemical species of the star (8).")
+        instance.stop()
+        del instance
+    
+    def slowtest11(self):
+        print "Test 11: Continue the stellar evolution of a 'merger product' - WIP"
+        instance = EVtwin(redirection = "none")
+        instance.initialize_module_with_default_parameters()
+        instance.parameters.min_timestep_stop_condition = 1.0 | units.s
+        
+        stars = core.Particles(3)
+        stars.mass = [1.0, 2.0, 1.0] | units.MSun
+        instance.particles.add_particles(stars)
+        instance.initialize_stars()
+        instance.evolve_model(1.0 | units.Myr)
+        stellar_models = instance.native_stars.internal_structure()
+        
+        self.assertEqual(len(stellar_models), 3)
+        self.assertEqual(len(stellar_models[0]), 199)
+        self.assertEqual(len(stellar_models[1]), 199)
+        self.assertAlmostEqual(stellar_models[0].mass[0], 1.0 | units.MSun, 2)
+        self.assertAlmostEqual(stellar_models[1].mass[0], 2.0 | units.MSun, 2)
+        self.assertAlmostEqual(stellar_models[0].mass[198], 0.0 | units.MSun, 2)
+        
+        instance.new_particle_from_model(stellar_models[0], instance.particles[0].age)
+        self.assertEqual(len(instance.particles), 4)
+        self.assertEqual(len(instance.imported_stars), 1)
+#        instance.evolve_model(2.0 | units.Myr)
+        print instance.particles
         instance.stop()
         del instance

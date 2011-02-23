@@ -36,7 +36,7 @@ class EVtwinInterface(CodeInterface, LiteratureRefs, StellarEvolution,
         .. [#] Eldridge & Tout, 2004 MNRAS 348 (for the OPAL 1996 opacity tables)
         .. [#] Glebbeek, Pols & Hurley, 2008 A&A (for enhancements to the solver)
     """
-    use_modules = ['twin_library_v2']
+    use_modules = ['twin_library_v2', 'create_new_model']
     
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="evtwin_worker", **options)
@@ -79,7 +79,7 @@ class EVtwinInterface(CodeInterface, LiteratureRefs, StellarEvolution,
         dir = os.path.dirname(__file__)
         return os.path.join(dir, 'src')
         
-    @legacy_function   
+    @legacy_function
     def new_particle():
         """
         Define a new star in the code. The star will start with the given mass.
@@ -644,7 +644,55 @@ class EVtwinInterface(CodeInterface, LiteratureRefs, StellarEvolution,
             A star with the given index was not found.
         """
         return function
-        
+    
+    @legacy_function   
+    def new_stellar_model():
+        """
+        Define a new star model in the code. The star needs to be finalized 
+        before it can evolve, see 'finalize_stellar_model'.
+        """
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C', 
+                'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+            function.addParameter(par, dtype='float64', direction=function.IN)
+        function.addParameter('n', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function   
+    def finalize_stellar_model():
+        """
+        Finalize the new star model defined by 'new_stellar_model'.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_star', dtype='int32', 
+            direction=function.OUT, description = "The new index for the star. "
+            "This index can be used to refer to this star in other functions")
+        function.addParameter('age_tag', dtype='float64', direction=function.IN, 
+            description = "The initial age of the star")
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_stellar_model_element():
+        """
+        Return properties of the stellar model at a specific zone.
+        """
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('index_of_the_zone', dtype='int32', direction=function.IN, 
+            description="The index of the zone to get the values of")
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, 
+            description="The index of the star to get the values of")
+        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C', 
+                'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+            function.addParameter(par, dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+
+
 class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
     
     def __init__(self, **options):
@@ -782,20 +830,29 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
         
         
     def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_star')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_star')
+        object.define_super_set('particles', ['native_stars', 'imported_stars'], 
+            index_to_default_set = 0)
         
-        object.add_getter('particles', 'get_radius', names = ('radius',))
-        object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
-        object.add_getter('particles', 'get_mass', names = ('mass',))
-        object.add_getter('particles', 'get_age', names = ('age',))
-        object.add_getter('particles', 'get_time_step', names = ('time_step',))
-        object.add_getter('particles', 'get_spin', names = ('spin',))
-        object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
-        object.add_getter('particles', 'get_temperature',names = ('temperature',))
-        object.add_method('particles', 'evolve', 'evolve_one_step')
-        InternalStellarStructure.define_particle_sets(self, object)
+        object.define_set('imported_stars', 'index_of_the_star')
+        object.set_new('imported_stars', 'finalize_stellar_model')
+        object.set_delete('imported_stars', 'delete_star')
+        
+        object.define_set('native_stars', 'index_of_the_star')
+        object.set_new('native_stars', 'new_particle')
+        object.set_delete('native_stars', 'delete_star')
+        
+        for particle_set_name in ['native_stars', 'imported_stars']:
+            object.add_getter(particle_set_name, 'get_radius', names = ('radius',))
+            object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
+            object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
+            object.add_getter(particle_set_name, 'get_age', names = ('age',))
+            object.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
+            object.add_getter(particle_set_name, 'get_spin', names = ('spin',))
+            object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
+            object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
+            object.add_method(particle_set_name, 'evolve', 'evolve_one_step')
+            InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
+            object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
     
     def define_errorcodes(self, object):
         object.add_errorcode(-4, 'Not implemented.')
@@ -893,7 +950,25 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             (object.INDEX,), 
             (units.day, object.ERROR_CODE,)
         )
-        
+        object.add_method(
+            "new_stellar_model", 
+            (units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.none, units.none, units.none, units.none, units.none, 
+                units.none, units.none, units.none, units.none,), 
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "finalize_stellar_model", 
+            (units.yr,), 
+            (object.INDEX, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_stellar_model_element", 
+            (object.INDEX, object.INDEX,),
+            (units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.none, units.none, units.none, units.none, units.none, 
+                units.none, units.none, units.none, units.none, object.ERROR_CODE)
+        )
     
     def initialize_module_with_default_parameters(self):
         self.initialize_code()
@@ -922,4 +997,41 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
                 while particle.age < end_time:
                     particle.evolve_one_step()
                 
-        
+    def get_stellar_model(self, index_of_the_star):
+        if hasattr(index_of_the_star, '__iter__'):
+            return [self._create_new_grid(self._specify_stellar_model, index_of_the_star = x) for x in index_of_the_star]
+        else:
+            return self._create_new_grid(self._specify_stellar_model, index_of_the_star = index_of_the_star)
+    
+    def get_range_in_zones(self, index_of_the_star):
+        """
+        Returns the inclusive range of defined zones/mesh-cells of the star.
+        """
+        return (1, self.get_number_of_zones(index_of_the_star).number)
+    
+    def _specify_stellar_model(self, definition, index_of_the_star = 0):
+        definition.set_grid_range('get_range_in_zones')
+        definition.add_getter('get_stellar_model_element', names=('mass', 'radius', 
+            'rho', 'pressure', 'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
+        definition.define_extra_keywords({'index_of_the_star':index_of_the_star})
+    
+    def new_particle_from_model(self, internal_structure, current_age):
+        self.new_stellar_model(
+            internal_structure.mass,
+            internal_structure.radius,
+            internal_structure.rho,
+            internal_structure.pressure,
+            internal_structure.X_H,
+            internal_structure.X_He,
+            internal_structure.X_C,
+            internal_structure.X_N,
+            internal_structure.X_O,
+            internal_structure.X_Ne,
+            internal_structure.X_Mg,
+            internal_structure.X_Si,
+            internal_structure.X_Fe
+        )
+        tmp_star = core.Particles(1)
+        tmp_star.age_tag = current_age
+        self.imported_stars.add_particles(tmp_star)
+

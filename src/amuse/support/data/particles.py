@@ -937,7 +937,6 @@ class DerivedSupersetAttribute(DerivedAttribute):
             
             subset_result =  getattr(subset, self.name)
             if hasattr(subset_result, '__call__'):
-                print len(subset)
                 if len(subset) > 0:
                     if result is None:
                         result = BoundSupersetParticlesFunctionAttribute(self.name, superset)

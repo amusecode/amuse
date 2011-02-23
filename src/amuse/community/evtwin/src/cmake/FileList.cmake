@@ -58,8 +58,9 @@ set(TWIN_SRC_FILES
 
 set(TWIN_LIBRARY_FILES
    code/export.f90
-   code/import.f90
    code/library_v2.f90
+   code/import.f90
+   code/create_new_model.f90
    code/prtoft.f90
    )
 

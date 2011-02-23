@@ -608,19 +608,19 @@ class InternalStellarStructureInterface(object):
 
 class InternalStellarStructure(object): 
 
-    def define_particle_sets(self, object):
-        object.add_method('particles', 'get_number_of_zones')
-        object.add_method('particles', 'get_density_profile')
-        object.add_method('particles', 'set_density_profile')
-        object.add_method('particles', 'get_radius_profile')
-        object.add_method('particles', 'set_radius_profile')
-        object.add_method('particles', 'get_temperature_profile')
-        object.add_method('particles', 'set_temperature_profile')
-        object.add_method('particles', 'get_mu_profile')
-        object.add_method('particles', 'get_number_of_species')
-        object.add_method('particles', 'get_names_of_species')
-        object.add_method('particles', 'get_chemical_abundance_profiles')
-        object.add_method('particles', 'set_chemical_abundance_profiles')
+    def define_particle_sets(self, object, set_name = 'particles'):
+        object.add_method(set_name, 'get_number_of_zones')
+        object.add_method(set_name, 'get_density_profile')
+        object.add_method(set_name, 'set_density_profile')
+        object.add_method(set_name, 'get_radius_profile')
+        object.add_method(set_name, 'set_radius_profile')
+        object.add_method(set_name, 'get_temperature_profile')
+        object.add_method(set_name, 'set_temperature_profile')
+        object.add_method(set_name, 'get_mu_profile')
+        object.add_method(set_name, 'get_number_of_species')
+        object.add_method(set_name, 'get_names_of_species')
+        object.add_method(set_name, 'get_chemical_abundance_profiles')
+        object.add_method(set_name, 'set_chemical_abundance_profiles')
     
     def define_errorcodes(self, object):
         object.add_errorcode(-21, 'Specified particle does not exist.')

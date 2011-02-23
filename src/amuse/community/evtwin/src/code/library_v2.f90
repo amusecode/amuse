@@ -2028,6 +2028,67 @@ contains
       get_mass_fraction_of_species_at_zone = 0
    end function
 
+! Return the internal structure of the star at a specific zone
+      integer function get_stellar_model_element(AMUSE_zone, AMUSE_id, &
+            mass, radius, rho, pressure, XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE)
+         use mesh
+         use structure_variables
+         use atomic_data
+         use extra_elements
+         use binary_history, only: hpr
+         
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: mass, radius, rho, pressure, &
+            XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE
+         real(double) :: xa(9), na(9)
+         real(double) :: avm
+         integer :: i, ikk
+         
+         if (AMUSE_id<1 .or. AMUSE_id>highest_star_index .or. .not. star_list(AMUSE_id)%star_exists) then
+            get_stellar_model_element = -21
+            return
+         end if
+         if (AMUSE_zone > star_list(AMUSE_id)% number_of_meshpoints .or. AMUSE_zone < 1) then
+            get_stellar_model_element = -22
+            return
+         end if
+         
+         call update_quantities_if_needed(AMUSE_id)
+         ikk = 1 + (kh+1-AMUSE_zone)
+         mass = sx(9, ikk)
+         radius = sx(17, ikk)
+         rho = sx(3, ikk)
+         pressure = sx(2, ikk)
+         
+         ! Convert *all* abundances to mass fractions
+         xa(1) = hpr(5, AMUSE_zone)
+         xa(2) = hpr(9, AMUSE_zone)
+         xa(3) = hpr(10, AMUSE_zone)
+         xa(4) = hpr(16, AMUSE_zone)
+         xa(5) = hpr(3, AMUSE_zone)
+         xa(6) = hpr(11, AMUSE_zone)
+         xa(8) = hpr(NSi28, AMUSE_zone)
+         xa(9) = hpr(NFe56, AMUSE_zone)
+         xa(7) = 1.0d0 - sum(xa(1:6)) - sum(xa(8:9))
+         do i=1, 9
+           na(i) = xa(i) * can(i)/cbn(i)
+         end do
+         avm = sum(na(1:9))
+         
+         XH = na(1) / avm
+         XHE = na(2) / avm
+         XC = na(3) / avm
+         XN = na(4) / avm
+         XO = na(5) / avm
+         XNE = na(6) / avm
+         XMG = na(7) / avm
+         XSI = na(8) / avm
+         XFE = na(9) / avm
+         
+         get_stellar_model_element = 0
+      end function
+   
    integer function set_mass_fraction_of_species_at_zone(AMUSE_id, &
          AMUSE_species, AMUSE_zone, AMUSE_value)
       implicit none

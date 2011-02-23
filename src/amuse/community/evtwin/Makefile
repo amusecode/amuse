@@ -14,7 +14,9 @@ MODDIR=src/modules
 
 CMAKE_DEPS=src/CMakeLists.txt src/cmake/CompilerFlags.cmake src/cmake/FileList.cmake
 
-SRC=$(SRCDIR)/library_v2.f90
+SRC = $(SRCDIR)/library_v2.f90 $(SRCDIR)/export.f90 $(SRCDIR)/import.f90 \
+      $(SRCDIR)/create_new_model.f90 $(SRCDIR)/prtoft.f90
+
 EVTWINLIB=$(LIBDIR)/libtwin.a
  
 

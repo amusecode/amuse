@@ -1,3 +1,7 @@
+module import
+
+contains
+
 ! This module is designed to work along the MUSE library.
 ! It takes an array with pressure, density, mass coordinate and
 ! composition for each mesh point (to be extended with angular momentum)
@@ -116,6 +120,11 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
 
    ! Store output
    call flush_star()
+   
+   ! AMUSE version ends here (entropy adjustment is WIP):
+   import_stellar_merger = star_id
+   return
+   
    outputfilename = trim(basename)//'.comp_mod'
    print *, 'writing output to ', trim(outputfilename)
    call dump_twin_model(star_id, outputfilename);
@@ -209,3 +218,4 @@ function import_stellar_merger(nmesh, numvar, model, age_tag)
    import_stellar_merger = star_id
 end function import_stellar_merger
 
+end module

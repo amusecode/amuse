@@ -32,6 +32,7 @@ Gyr = gyr
 g = named('gram','g', 1e-3 * kg)
 cm = named('centimeter','cm',0.01*m)
 erg = named('erg','erg', 1e-7 * J)
+barye = named('barye', 'Ba', 0.1*Pa)
 
 percent = named('percent', '%', 0.01 * none)
 metallicity = core.none_unit('metallicity', 'metallicity')
