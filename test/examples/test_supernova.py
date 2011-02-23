@@ -50,8 +50,8 @@ def setup_stellar_evolution_model():
 def run_supernova():
     # options:
     use_hydro_code = Gadget2 # Fi -or- Gadget2
-    hydro_code_options = dict() # e.g. dict(use_gl = True) or dict(redirection = "none")
-    number_of_sph_particles = 1000
+    hydro_code_options = dict(number_of_workers=3) # e.g. dict(use_gl = True) or dict(redirection = "none")
+    number_of_sph_particles = 30000
     t_end = 1.0e5 | units.s
     
     pickle_file = setup_stellar_evolution_model()
@@ -88,15 +88,15 @@ def run_supernova():
     hydro_code.gas_particles.add_particles(gas_without_core)
     hydro_code.dm_particles.add_particles(core)
     
-    times = [] | units.s
-    kinetic_energies =   [] | units.J
-    potential_energies = [] | units.J
-    thermal_energies =   [] | units.J
+    times = [0.0] | units.s
+    potential_energies = hydro_code.potential_energy.as_quantity_in(units.J).as_vector_with_length(1)
+    kinetic_energies =   hydro_code.kinetic_energy.as_quantity_in(units.J).as_vector_with_length(1)
+    thermal_energies =   hydro_code.thermal_energy.as_quantity_in(units.J).as_vector_with_length(1)
     for time, i_step in [(i*t_end/n_steps, i) for i in range(1, n_steps+1)]:
         hydro_code.evolve_model(time)
         times.append(time)
-        kinetic_energies.append(   hydro_code.kinetic_energy)
         potential_energies.append( hydro_code.potential_energy)
+        kinetic_energies.append(   hydro_code.kinetic_energy)
         thermal_energies.append(   hydro_code.thermal_energy)
         hydro_plot(
             [-1.0, 1.0, -1.0, 1.0] * (350 | units.RSun),
@@ -156,7 +156,6 @@ def hydro_plot(view, hydro_code, image_size, figname):
     
     v_sqr = (rhovx**2 + rhovy**2 + rhovz**2) / rho**2
     E = rhoe / rho
-    print max(v_sqr).sqrt()
     log_v = numpy.log((v_sqr / min_v**2).value_in(units.none)) / numpy.log((max_v**2 / min_v**2).value_in(units.none))
     log_rho = numpy.log((rho / min_rho).value_in(units.none)) / numpy.log((max_rho / min_rho).value_in(units.none))
     log_E = numpy.log((E / min_E).value_in(units.none)) / numpy.log((max_E / min_E).value_in(units.none))
