@@ -665,7 +665,7 @@ class MESAInterface(CodeInterface, LiteratureRefs, StellarEvolution,
 class MESA(InCodeComponentImplementation, InternalStellarStructure):
     
     def __init__(self, **options):
-        InCodeComponentImplementation.__init__(self, MESAInterface(), **options)
+        InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)
         self.set_MESA_paths(self.default_path_to_inlist, 
             self.default_path_to_MESA_data, self.get_data_directory())
         self.parameters.set_defaults()
