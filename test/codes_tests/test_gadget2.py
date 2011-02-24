@@ -630,6 +630,8 @@ class TestGadget2(TestWithMPI):
         speeds = [0.0 | units.m / units.s]*3
         rho, rhovx, rhovy, rhovz, rhoe = instance.get_hydro_state_at_point(*(coords + speeds))
         self.assertAlmostRelativeEqual(rho,   density,                              places=3)
+        self.assertAlmostRelativeEqual(rho,   max(instance.gas_particles.rho),      places=2)
+        self.assertIsOfOrder(          rho,   instance.gas_particles.rho)
         self.assertAlmostRelativeEqual(rhovx, density*instance.gas_particles[0].vx, places=3)
         self.assertAlmostRelativeEqual(rhovy, density*instance.gas_particles[0].vy, places=3)
         self.assertAlmostRelativeEqual(rhovz, density*instance.gas_particles[0].vz, places=3)
