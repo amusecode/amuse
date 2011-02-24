@@ -115,6 +115,15 @@ class TestUniformSphericalDistribution(TestCase):
         self.assertTrue(numpy.all( r_squared < max(rad)**2 ))
         self.assertFalse(numpy.all( r_squared < (0.9*max(rad))**2 ))
         
+    def test10(self):
+        numpy.random.seed(12345)
+        # setting target_rms to 20% for test speed-up
+        instance = UniformSphericalDistribution(1234, type="glass", target_rms = 0.3)
+        x, y, z = instance.result
+        self.assertEqual(len(x), 1234)
+        r_squared = x*x + y*y + z*z
+        self.assertTrue(numpy.all( r_squared < 1.0**2 ))
+        self.assertFalse(numpy.all(r_squared < 0.9**2 ))
     
 
 class TestEnclosedMassInterpolator(TestCase):
