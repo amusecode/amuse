@@ -267,6 +267,11 @@ function get_smoothing_length(id,eps) result(ret)
   real*8 :: eps
   ret=amuse_get_hsmooth(id,eps)
 end function
+function get_density(id,density) result(ret)
+  integer :: id,ret,amuse_get_density
+  real*8 :: density
+  ret=amuse_get_density(id,density)
+end function
 function get_position(id,x,y,z) result(ret)
   integer :: id,ret,amuse_get_position
   real*8 :: x,y,z

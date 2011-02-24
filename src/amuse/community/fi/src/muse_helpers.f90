@@ -762,6 +762,19 @@ function amuse_get_hsmooth(id,h) result(ret)
   h=hsmooth(p)
   ret=0 
 end function
+function amuse_get_density(id, density) result(ret)
+  include 'globals.h'
+  integer :: id,ret,p,muse_find_particle
+  real*8 :: density
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    ret=-1
+    return
+  endif 
+  if(nbexist(p).NE.id) call terror("id error 2")
+  density=rho(p)
+  ret=0 
+end function
 function amuse_get_position(id,x,y,z) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle

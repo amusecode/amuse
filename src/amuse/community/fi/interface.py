@@ -206,6 +206,14 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefs,
         function.addParameter('h_smooth', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
+    @legacy_function
+    def get_density():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        function.addParameter('rho', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
     @legacy_function    
     def get_star_tform():
         function = LegacyFunctionSpecification()   
@@ -1544,6 +1552,7 @@ class Fi(GravitationalDynamics):
         object.add_method('RUN', 'get_acceleration')
         object.add_method('RUN', 'get_internal_energy')
         object.add_method('RUN', 'get_smoothing_length')
+        object.add_method('RUN', 'get_density')
         object.add_method('RUN', 'get_star_tform')
         object.add_method('RUN', 'get_state_sph')
         object.add_method('RUN', 'get_state_star')
@@ -2200,6 +2209,7 @@ class Fi(GravitationalDynamics):
         object.add_getter('gas_particles', 'get_internal_energy')
         object.add_setter('gas_particles', 'set_smoothing_length')
         object.add_getter('gas_particles', 'get_smoothing_length')
+        object.add_getter('gas_particles', 'get_density')
         
         object.define_set('star_particles', 'id')
         object.set_new('star_particles', 'new_star_particle')
@@ -2347,6 +2357,11 @@ class Fi(GravitationalDynamics):
             "get_smoothing_length",
             (object.INDEX,),
             (nbody_system.length, object.ERROR_CODE)
+        )
+        object.add_method(
+            "get_density",
+            (object.INDEX,),
+            (nbody_system.density, object.ERROR_CODE)
         )
         
         object.add_method(
