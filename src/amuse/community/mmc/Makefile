@@ -21,9 +21,11 @@ clean:
 	$(RM) *~ worker_code worker_code.f90 interface.f90
 	$(RM) $(MMC_DATA_DIR)/*.dat
 	make -C src clean
+	make -C amuselib clean
 
 compile:
 	make -C src
+	make -C amuselib
 
 interface.f90 /src/amuse_interface2.f: makeinterface.py
 	python makeinterface.py
