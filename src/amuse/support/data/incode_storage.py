@@ -274,7 +274,7 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
             if x is not_set_marker:
                 raise exceptions.AmuseException("To add particles to this code you need to specify the {0!r} attribute".format(self.attribute_names[index]))
             
-        return list_arguments
+        return list_arguments, {}
 
 
 class NewParticleMethod(ParticleSetAttributesMethod):
