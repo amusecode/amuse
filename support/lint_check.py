@@ -6,8 +6,8 @@ import os
 import os.path
 from optparse import OptionParser
 from collections import namedtuple
-import monitor
-import webserver
+from . import monitor
+from . import  webserver
 import json
 import urlparse
 import threading

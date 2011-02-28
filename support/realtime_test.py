@@ -8,10 +8,10 @@ import webbrowser
 
 from optparse import OptionParser
 
-import webserver
-import monitor
-import background_test
-import project
+from . import webserver
+from . import monitor
+from . import background_test
+from . import project
             
 background_test.RunTests.instance = background_test.RunTests()
 

@@ -17,8 +17,8 @@ from optparse import OptionParser
 from subprocess import call, Popen, PIPE
 
 
-import background_test
-import project
+from . import background_test
+from . import project
             
 background_test.RunTests.instance = background_test.RunTests()
 

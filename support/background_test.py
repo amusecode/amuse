@@ -22,7 +22,7 @@ from Queue import Empty
 
 from StringIO import StringIO
 
-import project
+from . import project
 
 
 def is_mpd_running():

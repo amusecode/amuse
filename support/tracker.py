@@ -16,9 +16,9 @@ from xml.dom import minidom
 
 from optparse import OptionParser
 
-import webserver
-import background_test
-import project
+from . import webserver
+from . import background_test
+from . import project
 import pickle
 import textwrap
 
