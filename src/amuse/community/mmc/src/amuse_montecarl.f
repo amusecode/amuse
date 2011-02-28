@@ -1,53 +1,58 @@
-      function init_sequence(res)
+      function init_sequence()
       include 'common.h'
       integer init_sequence
-      integer initial_run 
+      integer run_a_while
+      integer iphase
       integer res
-      print*, 'initwrapper beeing called, now try init'
-      call input
-      print *,istart
+
+c     this is done by amuse_input call because it overwrites
+c     AMUSE settings, so only explicit use please..
+c     call input
+
       if (istart.eq.1) then
+          write(6,*)   '  calling start..'
+          call flush(6)
+
           call start
           iphase = 1
       else
           call mydump(2)
+c         hmmmm...
           call input
           iphase = 2
       endif
 
-      res = initial_run()
-
+c     only in evolve...
+c     res = run_a_while(iphase)
       init_sequence = res
-      print*,'leaving amuse code interface'
       end function
 
-      function initial_run(res)
+      function run_a_while(iphase)
       include 'common.h'
       integer evolve_step
-      integer initial_run
+      integer run_a_while
+      integer iphase
       integer res, amuse_output
 
       if (iphase.ne.1) then
           call zone
           call relaxt
           iphase = 1
+          res = -20
       endif
-
 
       if (iphase.eq.1) then
 c     call output
 c     we use our own 'cos the original stops, amuse doesnt
 c     like that:
           res = amuse_output()
-          print*, res
 c     if (res.lt.0) exit
 c     let python script decide when to stop...
           call zone
           call relaxt
-          initial_run = res
       endif
 
-      initial_run = res
+      run_a_while = res
       end function
 
       function parameter_test(times)
@@ -59,6 +64,39 @@ c     let python script decide when to stop...
       parameter_test = 0
       end function
 
+      function evolve_src(time_end)
+      include 'common.h'
+      integer evolve_src
+      integer run_a_while
+      integer iphase
+      integer res, dumpres
+      double precision tcrit_, time_end
+
+      res = 0
+
+ 10   if (time_end.gt.time) then 
+          write(6,*) time, time_end
+          call flush(6)
+
+   20     if (res.eq.0) then
+              iphase = 1  
+              write(6,*) "run"
+              call flush(6)
+
+              res = run_a_while(iphase)
+              write(6,*) "ran"
+              call flush(6)
+
+              goto 20
+          endif
+          if (res.eq.-2) then
+              evolve_src = 0
+          endif
+          goto 10          
+      endif
+
+      end function
+
       subroutine amuse_set_mmc_data_directory(datadir_)
         character(len=200) datadir
         common /AMUSE/ datadir
@@ -66,11 +104,8 @@ c     let python script decide when to stop...
         datadir=datadir_
       end subroutine
 
-      function total_kinetic_energy(Ek)
-      include 'common.h'
-      integer total_kinetic_energy
-      double precision Ek
-      Ek = ZKIN
-      total_kinetic_energy = 0
-      end function
+      subroutine amuse_input_src()
+        include 'common.h'
+        call input()
+      end subroutine
 

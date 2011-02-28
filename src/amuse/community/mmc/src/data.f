@@ -75,11 +75,17 @@
           ii = 0
 *
           do 10 i = 1,ntt
+             write(6,*)   '  settingsloop ',i
+             call flush(6)
+
              body(i) = 1.0d0
              smt = smt + body(i)
              if(i.le.nss) then 
                ii = ii + 1
                ikind(i) = 1
+               write(6,*)   '  setting ikind ',i, 1
+               call flush(6)
+
                names(i) = i - 1
                nameb(i) = 0
                iname(i) = i
@@ -90,6 +96,9 @@
                else
                  ii = ii + 1
                  ikind(ii) = 2
+                 write(6,*)   '  setting ikind ',i, 1
+                 call flush(6)
+
                  nameb(ii) = i - 2
                  names(ii) = 0
                  iname(ii) = ii 
@@ -684,8 +693,13 @@ c         stop
 *
       call sort2(n,r,iname)
 *
+      write(6,*) 'ikind in data', ikind(1), ikind(2), ikind(1500)
+      call flush(6)
+
       return
 *
+
+
       end
 *
 *
@@ -713,5 +727,6 @@ c         stop
      &         (a(13) + a(14)*m**2 + 
      &          (a(15)*m**8 + m**18 + a(16)*m**19)*mx)
 *
+
       return
       end

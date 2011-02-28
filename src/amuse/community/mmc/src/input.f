@@ -40,8 +40,10 @@
       if(istart.eq.1) then
         irun = ixx1
         nt = ixx2
+        print*, "NT in input function is:"
+        print*, nt
         nt0 = nt
-        iseed = ixx1
+        iseed = ixx1q
         nz0 = ixx3
         zmbar = xxx4
         nt00 = nt0
@@ -144,6 +146,7 @@
 *     ------------------------------------------------------------------------
 *
 *
+      print*, "nt @ end input fct",nt
 
       return
 *

@@ -115,8 +115,8 @@ cAdded DCH 4/1/7
         else
           tte = tte + dtte
         endif
-*cello  print*,'tphys,timet,time,tcrit,tcrevo,tte,dtte0,dtte ',
-*     &          tphys,timet,time,tcrit,tcrevo,tte,dtte0,dtte
+      print*,'tphys,timet,time,tcrit,tcrevo,tte,dtte0,dtte ',
+     &          tphys,timet,time,tcrit,tcrevo,tte,dtte0,dtte
       else
         nup = 1
       endif
@@ -183,7 +183,7 @@ c      print*,'after escape in mloss  int,nt=',int,nt
  6544 format(1x,'output-e tphys,etotn,zkin,pot,ehmlev,enepot,ehcoll,',
      & 'eccol,ekickt,ekicktbs,ekicktbd,ekicktwd,enekin,escsta,ehbin3,',
      & 'ehb3b3 =',1p16e20.12)                
-*celloprint*,'tphys,ltot: ',tphys,ltot
+      print*,'tphys,ltot: ',tphys,ltot
 *
 *       calculate conservation of the total energy
 *
@@ -369,7 +369,7 @@ c
       csb = csb/(2.d0*pi)
       slum = 0.d0
 *                                
-*celloprint*,' ekick,ekickbs,ekickbd = ',ekick,ekickbs,ekickbd
+      print*,' ekick,ekickbs,ekickbd = ',ekick,ekickbs,ekickbd
       if(ekick.gt.0.d0.or.ekickbs.gt.0.d0.or.ekickbd.gt.0.d0) then
         zkink = zkin - ekick - ekickbs - ekickbd
       else
@@ -398,8 +398,10 @@ c
 *     compute the "observational" core radius (rcob = distance where the
 *     surface brightnes is half of the central surface brightnes)
 *
-      call profiles(tphys,vscal,0,rcob)
+ccello      call profiles(tphys,vscal,0,rcob)
 * 
+      write(6,*)  ' out profiles'
+      call flush(6)
       write(13,110) iseed,time,tphys,smt,etot,zkink,pot,escsta,ehbint,
      &              ehb3b3,ehmlev,ehcoll,eccoll,error,enepot,sloses,
      &              slosev,slosco,rc,rcob,rlag(11),rtid,nt,nescst,
@@ -424,9 +426,14 @@ c
 *     prepare output for collaboration project
 *
       write(6,*)   '  in collabr '
+      call flush(6)
 *
 cAltered DCH 3/8/6:
       call colabr(nbh)
+
+      write(6,*)  ' out colabr'
+      call flush(6)
+
 *
       write(6,*)   '  out collabr  '
 *      
@@ -597,7 +604,7 @@ c      endif
 *      open(21,file='snapshot.dat',position='append')
 *
       ttp = ttp + dttp
-*celloprint*,'tphys,ttp,dttp = ',tphys,ttp,dttp
+      print*,'tphys,ttp,dttp = ',tphys,ttp,dttp
       xxn = zmbar*rtidkg/rbar
       vscal = 0.06558d0*sqrt(xxn)
 
@@ -609,12 +616,12 @@ cIn the following (DCH) the temperature is in units of (4*pi*sigma)**-0.25
       do 200 i = 1,n1000
          k = iname(i)
          if(r(i).gt.rtid) then
-*cello     print*,'r>rt tim,r,rt=',tphys,r(i),rtid
+           print*,'r>rt tim,r,rt=',tphys,r(i),rtid
            go to 200
          endif
          if(abs(body(k)).lt.tolm) go to 200
          if(ikind(k).lt.0) then
-*cello     print*,'output: i,k,ikind = ',i,k,ikind(k)
+           print*,'output: i,k,ikind = ',i,k,ikind(k)
          endif
          if(ikind(k).eq.1.or.ikind(k).ge.3) then
            ids = names(k)
@@ -626,7 +633,7 @@ cAdded DCH 9/9/6
            spin2 = 0.d0
            slum = slum1
            if(isNaN(slum)) then
-*cello       print*,'i,im1,ids,r,lum = ',i,k,ids,r(i),slum1
+             print*,'i,im1,ids,r,lum = ',i,k,ids,r(i),slum1
              go to 200
            endif
            call get_ss_type(ids,ik1)
@@ -718,8 +725,8 @@ cAdded DCH 9/9/6
      &                 ecc,inexch(k),inexch2(k)
  220     format(1x,3i8,1p12e12.4,4i5,i8,1p3e12.4,i5,1p12e12.4,2i6)
          if(ikind(k).ge.3.and.abs(body(k)*zmbar - temp).gt.0.01) then
-*cello     print*,'output k,body(k)*zmbar,temp,time: ',
-*cello&            k,body(k)*zmbar,temp,time
+           print*,'output k,body(k)*zmbar,temp,time: ',
+     &            k,body(k)*zmbar,temp,time
          endif
  200  continue
 *

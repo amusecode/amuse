@@ -80,7 +80,7 @@
 *
             tescp(l) = tescp(l) + dt*tscale0*log(gamma*nt00)
      &              /log(gamma*ntnew)*float(ntnew)/float(nt00)
-*cello            print*,'escape- nup,tescp(l) = ',l,nup,tescp(l)
+            print*,'escape- nup,tescp(l) = ',l,nup,tescp(l)
             call flush(6)
             tim = tescp(l) 
 *

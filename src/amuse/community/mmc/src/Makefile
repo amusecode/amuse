@@ -12,7 +12,8 @@
 #FFLAGS = -fast
 #FFLAGS = -O2
 #FFLAGS = -O2 -pg
-FFLAGS = -O3 -fno-automatic
+##ceFFLAGS = -O3 -fno-automatic
+FFLAGS = -fno-automatic -g
 #FFLAGS = -CB
 #FFLAGS = -C
 #FFLAGS = -ftrapuv -check all -check noarg_temp_created -debug all -Winline -vec-report0 -WB -g -traceback -warn all
@@ -21,11 +22,11 @@ FFLAGS = -O3 -fno-automatic
 #FFLAGS = -fbounds-check [not ifort]
 #FC = g77
 #FC = ifort
-FC = gfortran
+#FC = gfortran
 
 # AMUSE STUFF======
-#MPIF90 ?= mpif90
-#FC      = $(MPIF90)
+MPIF90 ?= mpif90
+FC      = $(MPIF90)
 #FFLAGS += -Wall -g
 # =================
 #FC = pgf77
@@ -62,6 +63,8 @@ velocity.f zero.f zone.f jh_routines.f poly.f
 
 SOURCE_AMUSE = $(SOURCE:montcarl.f=amuse_montecarl.f)
 SOURCE_AMUSE += amuse_output.f
+SOURCE_AMUSE += amuse_interface.f
+SOURCE_AMUSE += amuse_interface2.f
 
 OBJECTS = $(SOURCE:.f=.o) plumix.o rand.o
 OBJECTS_AMUSE = $(SOURCE_AMUSE:.f=.o) plumix.o rand.o

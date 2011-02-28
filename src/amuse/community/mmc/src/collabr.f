@@ -77,6 +77,10 @@
 cAdded DCH 3/8/6
       nbh = 0
 *
+
+      write(6,*)   '  collabr alive'
+      call flush(6)
+
       do 10 i = 1,n
          im = iname(i)
          if(r(i).gt.rtid) go to 10
@@ -170,6 +174,7 @@ c     &             id2,ik1,ik2,sm1,sm2
          endif
 * 	
  10   continue
+
 * 
 *
 *     main sequence stars
@@ -187,6 +192,9 @@ c     &             id2,ik1,ik2,sm1,sm2
  12   im = im + 1
       i = iname(im)
       if(ikind(i).ne.2) then
+        write(6,*)   '  collabr alive', r(im), ikind(i),rtid
+        call flush(6)
+
         if(r(im).gt.rtid) go to 12
         if(body(i)*zmbar.lt.0.5d0) go to 12
         ids = names(i)
@@ -199,6 +207,7 @@ c     &             id2,ik1,ik2,sm1,sm2
 *
       else
 *
+   
         ibir = 0
         if(r(im).gt.rtid) go to 12
         idb = nameb(i)
@@ -228,7 +237,7 @@ c     &             id2,ik1,ik2,sm1,sm2
         endif
  14     continue 
       endif
-*      
+*
       if(zm.lt.zmilh) go to 12
       if(ibir.eq.1) zm2 = zm2 + zm3
       zm1 = zm - zm2
@@ -825,6 +834,7 @@ cAdded DCH 1/8/6
 *
 *     only binaries
 *
+
       if(nb.gt.20) then
 *
 c
