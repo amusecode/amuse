@@ -967,7 +967,7 @@ m.run_mpi_channel('{2}')"""
     def _createAClientUNIXSocket(self, name_of_the_socket):
         import socket
         client_socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        #client_socket.settimeout(0)
+        #client_socket.settimeout(0)header 
         client_socket.connect(name_of_the_socket)
         return client_socket
                 

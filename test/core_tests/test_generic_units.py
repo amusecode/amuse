@@ -73,5 +73,10 @@ class TestGenericUnits(amusetest.TestCase):
             "but found 2. To convert between S.I. units and another system of units a set of quantities with "
             "orthogonal units is needed. These can be quantities with a single unit (such as length or time) "
             "or quantities with a derived units (such as velocity or force)")
+            
+        
+    def test6(self):
+        self.assertRaises(NotAQuantityException, ConvertBetweenGenericAndSiUnits, 1)
+        self.assertRaises(NotAScalarException, ConvertBetweenGenericAndSiUnits,  1 | units.km, [1,2] | units.s, )
     
     

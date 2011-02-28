@@ -1,7 +1,16 @@
 import numpy
 from amuse.support.units.generic_unit_system import *
-from amuse.support.data.values import new_quantity
+from amuse.support.data.values import new_quantity, is_quantity
 from amuse.support import exceptions
+
+class UnitsNotOrtogonalException(exceptions.AmuseException):
+    formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'
+
+class NotAQuantityException(exceptions.AmuseException):
+    formatstring = 'Converters need to be initialized with a quantity argument[{0}] {0!r} is not a quantity'
+
+class NotAScalarException(exceptions.AmuseException):
+    formatstring = 'Converters need to be initialized scalar quantities, argument[{0}] {0!r} is not a scalar'
 
 class ConverterDoc(object):
     DOCSTRING = """
@@ -35,7 +44,11 @@ class ConvertBetweenGenericAndSiUnits(object):
     __doc__ = ConverterDoc()
 
     def __init__(self, *arguments_list):
+        
+        self.check_arguments(arguments_list)
+        
         self.values = arguments_list
+        
         self.units_of_values = [x.unit for x in self.values]
         self.system_rank = len(self.values)
         
@@ -44,8 +57,8 @@ class ConvertBetweenGenericAndSiUnits(object):
     
         available_units = set()
         for unit in self.units_of_values:
-            for x in unit.base:
-                available_units.add(x[1])
+            for factor, base_unit in unit.base:
+                available_units.add(base_unit)
         if not len(available_units) is self.system_rank:
             raise UnitsNotOrtogonalException(self.system_rank, len(available_units))
         self.list_of_available_units = list(available_units)
@@ -56,6 +69,14 @@ class ConvertBetweenGenericAndSiUnits(object):
             raise UnitsNotOrtogonalException(self.system_rank, rank_of_new_base)
         self.new_base_inv = self.new_base ** -1
 
+    def check_arguments(self, arguments):
+        
+        for index, x in enumerate(arguments):
+            if not is_quantity(x):
+                raise NotAQuantityException(index, x)
+            if not x.is_scalar():
+                raise NotAScalarException(index, x)
+        
     def matrixrank(self, A, tol=1e-8):
         s = numpy.linalg.svd(A,compute_uv=0)
         return numpy.sum(numpy.where( s>tol, 1, 0 ) )
@@ -216,7 +237,4 @@ class ConvertBetweenGenericAndSiUnits(object):
 #                                                                                       
 #        return string                                                                  
 
-
-class UnitsNotOrtogonalException(exceptions.AmuseException):
-    formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'
 
