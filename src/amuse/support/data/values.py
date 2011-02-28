@@ -879,6 +879,13 @@ def new_quantity(value, unit):
 def is_quantity(input):
     return hasattr(input, "is_quantity")
     
+def is_unit(input):
+    if hasattr(input, "base"):
+        return True
+    else:
+        return False
+        
+
 def to_quantity(input):
     if is_quantity(input):
         return input

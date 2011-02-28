@@ -1,6 +1,6 @@
 import numpy
 from amuse.support.units.generic_unit_system import *
-from amuse.support.data.values import new_quantity, is_quantity
+from amuse.support.data.values import new_quantity, is_unit, is_quantity
 from amuse.support import exceptions
 
 class UnitsNotOrtogonalException(exceptions.AmuseException):
@@ -72,6 +72,8 @@ class ConvertBetweenGenericAndSiUnits(object):
     def check_arguments(self, arguments):
         
         for index, x in enumerate(arguments):
+            if is_unit(x):
+                continue
             if not is_quantity(x):
                 raise NotAQuantityException(index, x)
             if not x.is_scalar():
