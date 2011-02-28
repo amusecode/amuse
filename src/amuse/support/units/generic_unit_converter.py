@@ -7,10 +7,10 @@ class UnitsNotOrtogonalException(exceptions.AmuseException):
     formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'
 
 class NotAQuantityException(exceptions.AmuseException):
-    formatstring = 'Converters need to be initialized with a quantity argument[{0}] {0!r} is not a quantity'
+    formatstring = 'Converters need to be initialized with a quantity argument[{0}] {1!r} is not a quantity'
 
 class NotAScalarException(exceptions.AmuseException):
-    formatstring = 'Converters need to be initialized scalar quantities, argument[{0}] {0!r} is not a scalar'
+    formatstring = 'Converters need to be initialized scalar quantities, argument[{0}] {1!r} is not a scalar'
 
 class ConverterDoc(object):
     DOCSTRING = """
