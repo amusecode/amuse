@@ -96,8 +96,16 @@ class TestParticles(amusetest.TestCase):
             Ep+=x.mass*x.potential()/2
         self.assertEquals(particles.kinetic_energy(), Ek)
         self.assertEquals(particles.potential_energy(), Ep)
-
         
+    
+    def test7(self):
+        
+        particles = core.Particles(2)
+        for i in range(3):
+            particles.mass = (i * 1.0) | units.kg
+            
+        self.assertTrue(hasattr(particles, 'mass'))
+        self.assertFalse(hasattr(particles, 'radius'))
         
 class TestStars(amusetest.TestCase):
 
@@ -722,6 +730,22 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertEquals(superset.x, ([1.0, 2.0, 5.0, 6.0, 7.0] | units.m))
         self.assertEquals(superset[1].xtimesypluso(0.0 | units.m ** 2), (4.0 | units.m ** 2))
         self.assertEquals(list(superset)[1].xtimesypluso(0.0 | units.m ** 2), (4.0 | units.m ** 2))
+        
+    
+    def test9(self):
+        
+        particles1 = core.Particles(2)
+        particles1.mass = 10 | units.kg
+        particles2 = core.Particles(2)
+        particles2.mass = 20 | units.kg
+        superset = core.ParticlesSuperset([particles1, particles2])
+            
+        self.assertTrue(hasattr(superset, 'mass'))
+        self.assertFalse(hasattr(superset, 'radius'))
+        particles1.radius = 10 | units.m
+        self.assertFalse(hasattr(superset, 'radius'))
+        particles2.radius = 20 | units.m
+        self.assertTrue(hasattr(superset, 'radius'))
     
 class TestSliceParticles(amusetest.TestCase):
     

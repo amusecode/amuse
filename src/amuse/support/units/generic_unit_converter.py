@@ -10,7 +10,7 @@ class NotAQuantityException(exceptions.AmuseException):
     formatstring = 'Converters need to be initialized with a quantity argument[{0}] {1!r} is not a quantity'
 
 class NotAScalarException(exceptions.AmuseException):
-    formatstring = 'Converters need to be initialized scalar quantities, argument[{0}] {1!r} is not a scalar'
+    formatstring = 'Converters need to be initialized with scalar quantities, argument[{0}] {1!r} is not a scalar'
 
 class ConverterDoc(object):
     DOCSTRING = """

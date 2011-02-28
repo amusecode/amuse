@@ -47,6 +47,21 @@ class AbstractCodeMethodWrapper(object):
                 if args[0] == 'self' or args[0] == 'cls':
                     return args[1:]
             return args
+        
+    @late
+    def optional_method_input_argument_names(self):
+        if self.method_is_code:
+            return self.method.optional_method_input_argument_names
+        elif self.method_is_legacy:
+            return map(lambda x : x.name, self.method.specification.iter_optional_input_parameters())
+        else:
+            argspec = inspect.getargspec(self.method)
+            defaults = argspec.defaults
+            if defaults is None or len(defaults) == 0:
+                return []
+            else:
+                return argspec.args[-len(defaults):]
+             
       
     @late
     def method_output_argument_names(self):

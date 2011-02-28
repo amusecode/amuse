@@ -256,11 +256,13 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
         
     def set_attribute_values(self, storage, attributes, values, *indices):
         list_arguments = list(indices)
-        list_arguments.extend(self.convert_attributes_and_values_to_list_arguments(attributes, values))
+        list_args, keyword_args = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
+        list_arguments.extend(list_args)
         self.method(*list_arguments, **storage.extra_keyword_arguments_for_getters_and_setters)
     
-    def convert_attributes_and_values_to_list_arguments(self, attributes, values):
-        list_arguments = [0] * (len(self.attribute_names))
+    def convert_attributes_and_values_to_list_and_keyword_arguments(self, attributes, values):
+        not_set_marker = object()
+        list_arguments = [not_set_marker] * (len(self.attribute_names))
         
         names_to_index = self.names_to_index
         for attribute, quantity in zip(attributes, values):
@@ -268,6 +270,10 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
                 index = names_to_index[attribute]
                 list_arguments[index] = quantity
         
+        for index, x in enumerate(list_arguments):
+            if x is not_set_marker:
+                raise exceptions.AmuseException("To add particles to this code you need to specify the {0!r} attribute".format(self.attribute_names[index]))
+            
         return list_arguments
 
 
@@ -291,8 +297,8 @@ class NewParticleMethod(ParticleSetAttributesMethod):
         ParticleSetAttributesMethod.__init__(self, method, attribute_names)
 
     def add_entities(self, attributes, values):
-        list_arguments = self.convert_attributes_and_values_to_list_arguments(attributes, values)
-        indices = self.method(*list_arguments)
+        list_arguments,keyword_arguments = self.convert_attributes_and_values_to_list_and_keyword_arguments(attributes, values)
+        indices = self.method(*list_arguments, **keyword_arguments)
         return indices
         
 class ParticleQueryMethod(object):

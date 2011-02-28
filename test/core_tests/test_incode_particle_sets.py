@@ -2,6 +2,7 @@ from amuse.support.units import units
 from amuse.support.data import core
 from amuse.support.data import values
 from amuse.support import interface
+from amuse.support import exceptions
 
 from amuse.test import amusetest
 
@@ -374,6 +375,23 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
             
         #print instance.particles.element_list()
         #print instance.particles.element_list()[0][1].value2
+        
+        
+        
+    def test4(self):
+        """
+        In this test we will get a list from a particle
+        """
+        
+        instance = ExampleParticlesInterface()
+        self.assertEquals(len(instance.particles), 0)
+        
+        theParticle = core.Particle()
+        theParticle.x = 0.1 | units.m
+        theParticle.y = 0.2 | units.m
+        theParticle.z = 0.5 | units.m
+        
+        self.assertRaises(exceptions.AmuseException, instance.particles.add_particle, theParticle)        
         
 
     def log(self, message, *arguments):

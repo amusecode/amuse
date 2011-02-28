@@ -370,6 +370,7 @@ class ParameterSpecification(object):
         return not self.default is None
     
     
+    
 class LegacyFunctionSpecification(object):
     """
     Specification of a legacy function.
@@ -525,7 +526,12 @@ class LegacyFunctionSpecification(object):
     
     def _set_result_type(self, value):
         self._result_type = _typecode_to_datatype(value)
-        
+    
+    def iter_optional_input_parameters(self):
+        for x in self.input_parameters:
+            if x.has_default_value():
+                yield x
+                
     result_type = property(_get_result_type, _set_result_type);
 
 
