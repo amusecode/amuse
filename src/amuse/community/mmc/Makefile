@@ -14,7 +14,7 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 SRCINC = -I./src
 
-all: compile interface.o worker_code 
+all: /src/amuse_interface2.f compile interface.o worker_code 
 
 clean:
 	$(RM) -f *.o *.pyc worker_code.f90  
