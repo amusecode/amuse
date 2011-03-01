@@ -386,6 +386,10 @@ class InstallPrerequisitesOnOSX(InstallPrerequisites):
         commands.append([
           './configure',
           '--prefix='+self.prefix,
+          '--enable-fc',
+          '--enable-shared',
+          '--with-python='+sys.executable,
+          '--with-pm=mpd',
           '--enable-sharedlibs=osx-gcc',
           '--with-device=ch3:sock',
         ])
