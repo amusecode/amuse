@@ -12,6 +12,11 @@ def move_to_center(particles):
     """
     Move the particle positions to the center of mass and
     move the particle velocity to the center of mass velocity.
+    
+    Implemented as::
+    
+        particles.position -= particles.center_of_mass()
+        particles.velocity -= particles.center_of_mass_velocity()
     """
     particles.position -= particles.center_of_mass()
     particles.velocity -= particles.center_of_mass_velocity()

@@ -13,6 +13,7 @@ Reference documentation
    available-legacy-codes
    quantities_and_units
    particles
+   particle_attributes
    from_codes_to_data
    incode_storage
    stopping_conditions
