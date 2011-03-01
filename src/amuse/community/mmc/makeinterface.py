@@ -238,7 +238,7 @@ END FUNCTION
 if __name__ == '__main__':
     f = open('interface.f90','w')
     g = open('src/amuse_interface2.f','w')
-    h = open('interface_specs.py','w')
+    h = open('interface_specs.tmp','w')
     
     f.write(codestringfort)
 

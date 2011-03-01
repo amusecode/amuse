@@ -53,11 +53,11 @@ def example_M67():
 
     mmc = mmcInterface(redirection="null")
     mmc.set_mmc_data_directory(mmc.data_directory)
-    mmc.set_nt(2000)
+    mmc.set_nt(1000)
     n_total = mmc.get_number_of_particles().n_
 
-    mmc.set_imodel(2) #M67
     mmc.amuse_input()
+    mmc.set_imodel(2) #M67
     mmc.nonstandard_init()
 
     mmc.set_tau0(0.001)
@@ -65,7 +65,7 @@ def example_M67():
     mass,radius,x,y,z,vx,vy,vz = plummer(n_total)
     r_, vr_, vt_ = mmc.phase_to_polar(x, y, z, vx, vy, vz)
 
-    mmcstate  = mmc.get_state(range(1,n_total+1))
+    mmcstate = mmc.get_state(range(1,n_total+1))
 
     x, y, z, vx, vy, vz,ex,ey,ez = mmc.phase_to_cartesian(mmcstate.r, mmcstate.vr, mmcstate.vt)
 
@@ -116,7 +116,6 @@ def example_M67():
 
 def example_plummer():
     pass
-
 
 if __name__ == '__main__':
 
