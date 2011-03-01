@@ -10,8 +10,8 @@ from amuse.support import exceptions
 
 def move_to_center(particles):
     """
-    Move the particle positions to the center of mass, also
-    moves the particle velocity to the center of mass velocity.
+    Move the particle positions to the center of mass and
+    move the particle velocity to the center of mass velocity.
     """
     particles.position -= particles.center_of_mass()
     particles.velocity -= particles.center_of_mass_velocity()
@@ -24,10 +24,10 @@ def scale_to_standard(particles, convert_nbody = None,
     **total mass=1**, **kinetic energy=0.25** and 
     **potential_energy=0.5** (or **viridial_radius=1.0**)
     
-    :argument convert_nbody: the scaling is in nbody units and
+    :argument convert_nbody: the scaling is in nbody units,
         when the particles are in si units a convert_nbody is needed
     :argument smoothing_length_squared: needed for calculating
-        the potential energy
+        the potential energy correctly.
     """
     if not convert_nbody is None:
         particles = ParticlesWithUnitsConverted(particles, convert_nbody.as_converter_from_nbody_to_si())

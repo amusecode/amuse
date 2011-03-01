@@ -94,7 +94,7 @@ class AttributeStorage(object):
 
 
 
-    def _get_value(self, particle, attribute):
+    def get_value_in_store(self, particle, attribute):
         return self.get_values_in_store([particle],[attribute])[0][0]
     
     
@@ -299,7 +299,7 @@ class AbstractSet(object):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, key)
         else:
-            return self._convert_to_entity_or_quantity(self._get_value(key, attribute))
+            return self._convert_to_entity_or_quantity(self.get_value_in_store(key, attribute))
     
     def _get_values_for_entity(self, key, attributes):
         return [x[0] for x in self.get_values_in_store([key], attributes)]
@@ -512,7 +512,7 @@ class AbstractSet(object):
     def __len__(self):
         return len(self.get_all_keys_in_store())
         
-    def _set_factory(self):
+    def _factory_for_new_collection(self):
         return type(self._original_set())
 
     def copy(self):
@@ -524,7 +524,7 @@ class AbstractSet(object):
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
         values = self.get_values_in_store(keys, attributes)
-        result = self._set_factory()()
+        result = self._factory_for_new_collection()()
         result.add_particles_to_store(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
@@ -893,7 +893,7 @@ class AbstractSet(object):
 
 
 
-    def _get_value(self, key, attribute):
+    def get_value_in_store(self, key, attribute):
         return self.get_values_in_store([key],[attribute])[0][0]
     
     
@@ -963,7 +963,7 @@ class AbstractSet(object):
 
         """
         keys = self.get_all_keys_in_store()
-        result = self._set_factory()()
+        result = self._factory_for_new_collection()()
         result.add_particles_to_store(keys, [],[])
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         return result

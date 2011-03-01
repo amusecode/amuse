@@ -455,7 +455,7 @@ class TestSSE(TestWithMPI):
         stars = core.Stars(10)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.particles.add_particles(stars)
-        print  stellar_evolution.particles._set_factory()
+        print  stellar_evolution.particles._factory_for_new_collection()
         if os.path.exists('test.h5'):
             os.remove('test.h5')
             

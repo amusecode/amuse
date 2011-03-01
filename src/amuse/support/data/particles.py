@@ -308,7 +308,7 @@ class AbstractParticleSet(AbstractSet):
         attributes = self.get_attribute_names_defined_in_store()
         keys = self.get_all_keys_in_store()
         values = self.get_values_in_store(keys, attributes)
-        result = self._set_factory()()
+        result = self._factory_for_new_collection()()
         result.add_particles_to_store(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
@@ -886,10 +886,10 @@ class Particles(AbstractParticleSet):
     def has_key_in_store(self, key):
         return self._private.attribute_storage.has_key_in_store(key)
 
-    def _get_value(self, key, attribute):
-        return self._private.attribute_storage._get_value(key, attribute)
+    def get_value_in_store(self, key, attribute):
+        return self._private.attribute_storage.get_value_in_store(key, attribute)
 
-    def _set_factory(self):
+    def _factory_for_new_collection(self):
         return Particles
     
 class BoundSupersetParticlesFunctionAttribute(object):
@@ -1028,7 +1028,7 @@ class ParticlesSuperset(AbstractParticleSet):
             for particle in set:
                 yield particle
                 
-    def _set_factory(self):
+    def _factory_for_new_collection(self):
         return Particles
         
     def __getitem__(self, index):

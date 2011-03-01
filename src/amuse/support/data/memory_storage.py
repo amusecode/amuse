@@ -183,7 +183,7 @@ class InMemoryAttributeStorage(AttributeStorage):
     
     
 
-    def _get_value(self, particle_key, attribute):
+    def get_value_in_store(self, particle_key, attribute):
         attribute_values = self.mapping_from_attribute_to_quantities[attribute]
         index = self.get_indices_of(particle_key)
         return attribute_values[index]
@@ -415,7 +415,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         
 
         
-    def _get_value(self, particle_key, attribute):
+    def get_value_in_store(self, particle_key, attribute):
         attribute_values = self.mapping_from_attribute_to_quantities[attribute]
         index = self.get_indices_of(particle_key)
         return attribute_values[index]

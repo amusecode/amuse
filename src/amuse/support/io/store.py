@@ -165,7 +165,7 @@ class StoreHDF(object):
         group = self.new_group(self.particles_group())
         
         group.attrs["number_of_particles"] = len(particles)
-        group.attrs["class_of_the_particles"] = pickle.dumps(particles._set_factory())
+        group.attrs["class_of_the_particles"] = pickle.dumps(particles._factory_for_new_collection())
             
         keys = particles.get_all_keys_in_store()
         dataset = group.create_dataset("keys", data=keys)
@@ -178,7 +178,7 @@ class StoreHDF(object):
     def store_grid(self, grid):
         group = self.new_group(self.grids_group())
         
-        group.attrs["class_of_the_container"] = pickle.dumps(grid._set_factory())
+        group.attrs["class_of_the_container"] = pickle.dumps(grid._factory_for_new_collection())
         group.create_dataset("shape", data=numpy.asarray(grid.shape))
         
         self.store_timestamp(grid, group)
