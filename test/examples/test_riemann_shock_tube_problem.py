@@ -338,7 +338,7 @@ def test_riemann_shocktube_problem():
     x, rho, p, u = exact.get_solution_at_time(0.12 | time)
     
     model = CalculateSolutionIn3D()
-    model.name_of_the_code = "athena"
+    model.name_of_the_code = "capreole"
     model.dimensions_of_mesh = (500,1,1)
     
     grids = model.get_solution_at_time(0.12 | time)
