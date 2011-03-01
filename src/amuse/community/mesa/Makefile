@@ -25,10 +25,11 @@ DOWNLOAD_FROM_SVN = ./build_mesa.py download
 
 all:	mesa_worker
 
-src:
+
 ifdef DOWNLOAD_CODES
-		$(DOWNLOAD_FROM_SVN)
+src: download
 else
+src:
 		@echo ""
 		@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 		@echo ""
@@ -43,6 +44,10 @@ else
 		@echo ""
 		@make -s --no-print-directory -C . raise_error
 endif
+
+download:
+	$(RM) -Rf src
+	$(DOWNLOAD_FROM_SVN)
 
 clean:
 	$(RM) -f *~ *.pyc *.mod *.o worker_code worker_code.f90

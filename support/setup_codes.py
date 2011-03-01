@@ -274,6 +274,7 @@ class CodeCommand(Command):
                     targetname = line[len(name + '_worker_'):index_of_the_colon]
                     result.append((line[:index_of_the_colon], targetname,))
         return result
+    
         
 class BuildCodes(CodeCommand):
 
@@ -285,8 +286,16 @@ class BuildCodes(CodeCommand):
             process = Popen(['make','-C', directory, target], env = environment, stdout = output, stderr = output)
             return process.wait(), buildlog
     
+    def is_download_needed(self, filename):
+        with open(filename, 'r') as f:
+            for line in f:
+                if 'DOWNLOAD_CODES' in line:
+                    return True
+        return False
+        
     def run (self):
         not_build = list()
+        is_download_needed = list()
         not_build_special = list()
         build = list()
         environment = self.environment
@@ -316,8 +325,12 @@ class BuildCodes(CodeCommand):
             returncode, buildlog = self.run_make_on_directory(shortname, x, 'all', environment)
             endtime = datetime.datetime.now()
             if returncode > 0:
-                not_build.append(shortname)
                 self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.INFO)
+                if self.is_download_needed(buildlog):
+                    is_download_needed.append(shortname)
+                else:
+                    not_build.append(shortname)
+                continue
             else:
                 build.append(shortname)
                 self.announce("[{1:%H:%M:%S}] building {0}, succeeded".format(shortname, endtime), level =  log.INFO)
@@ -343,14 +356,14 @@ class BuildCodes(CodeCommand):
         #for x in sorted_keys:
         #    print "%s\t%s" % (x , self.environment[x] )
         #print
-        print "Environment variables not set"
-        print "============================="
-        sorted_keys = sorted(self.environment_notset.keys())
-        for x in sorted_keys:
-            print "%s\t%s" % (x, self.environment_notset[x] )
-        print
-        print
-        if not_build or not_build_special:
+        #print "Environment variables not set"
+        #print "============================="
+        #sorted_keys = sorted(self.environment_notset.keys())
+        #for x in sorted_keys:
+        #    print "%s\t%s" % (x, self.environment_notset[x] )
+        #print
+        #print
+        if not_build or not_build_special or is_download_needed:
             print
             print
             print "Community codes not built (because of errors):"
@@ -359,6 +372,8 @@ class BuildCodes(CodeCommand):
                 print '*', x 
             for x in not_build_special:
                 print '*', x, '** optional, needs special libraries or hardware to compile **'
+            for x in is_download_needed:
+                print '*', x, '** needs to be download, use make {0}.code DOWNLOAD_CODES=1 to download and build **'.format(x)
         if build:
             print
             print

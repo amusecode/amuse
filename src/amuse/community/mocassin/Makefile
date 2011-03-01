@@ -34,12 +34,10 @@ LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 all: mocassin_worker 
 
-$(CODEDIR):
 ifdef DOWNLOAD_CODES
-	$(RM) -Rf .pc
-	$(DOWNLOAD_FROM_WEB) $(VERSION)
-	$(PATCH_FILES)
+$(CODEDIR): download
 else
+$(CODEDIR):
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -53,12 +51,21 @@ else
 	@make -s --no-print-directory -C . raise_error
 endif
 
+download:
+	$(RM) -Rf .pc
+	$(DOWNLOAD_FROM_WEB) $(VERSION)
+	$(PATCH_FILES)
+
 
 clean:
 	$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code worker_code.f90
 	$(RM) mocassin_worker
 	make -C $(CODEDIR) clean
+	
+distclean: clean
+	$(RM) -Rf src
+	$(RM) -Rf .pc
 
 $(CODELIB): $(CODEDIR)
 	make -C $(CODEDIR) clean

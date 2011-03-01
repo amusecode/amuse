@@ -28,16 +28,15 @@ ATHENA_OBJS = $(subst $(ATHENA_DIR)/src/main.o,,$(wildcard $(ATHENA_DIR)/src/*.o
 
 FFTWLIB = -L/usr/lib -lfftw3
 FFTWINC = -I/usr/include
-  
+ 
+.PHONY : download
+
 all: athena_worker 
 
-$(ATHENA_DIR):
 ifdef DOWNLOAD_CODES
-	$(RM) -Rf .pc
-	$(DOWNLOAD_FROM_WEB) $(VERSION)
-	#cd $(ATHENA_DIR)/src;patch Makefile.in < ../../../makefile.patch
-	$(PATCH_FILES)
+$(ATHENA_DIR): download
 else
+$(ATHENA_DIR):
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -49,8 +48,12 @@ else
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
 	@make -s --no-print-directory -C . raise_error
-endif
+endif 
 
+download:
+	$(RM) -Rf .pc
+	$(DOWNLOAD_FROM_WEB) $(VERSION)
+	$(PATCH_FILES)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
@@ -62,6 +65,7 @@ codeclean: clean
 
 distclean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
+	$(RM) -Rf .pc
 	$(RM) *~ worker_code
 	$(RM) -Rf src
 

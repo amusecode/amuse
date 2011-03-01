@@ -19,15 +19,10 @@ DOWNLOAD_FROM_WEB = ./download_svn.py
 PATCH_FILES = ./patch_files.py
 all: mpiamrvac_worker 
 
-
-$(CODEDIR):
 ifdef DOWNLOAD_CODES
-	$(RM) -Rf .pc
-	$(RM) -Rf src
-	mkdir src
-	$(DOWNLOAD_FROM_WEB)
-	$(PATCH_FILES)
+$(CODEDIR): download
 else
+$(CODEDIR):
 	@echo ""
 	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 	@echo ""
@@ -41,6 +36,12 @@ else
 	@make -s --no-print-directory -C . raise_error
 endif
 
+download:
+	$(RM) -Rf .pc
+	$(RM) -Rf src
+	mkdir src
+	$(DOWNLOAD_FROM_WEB)
+	$(PATCH_FILES)
 
 clean:
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h *.mod
