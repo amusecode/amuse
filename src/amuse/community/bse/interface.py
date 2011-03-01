@@ -164,7 +164,7 @@ class BSEParticles(Particles):
         Particles.__init__(self, storage = storage)
         self._private.code_interface = code_interface 
         
-    def _add_particles(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes = [], values = []):
         if len(keys) == 0:
             return
             
@@ -215,7 +215,7 @@ class BSEParticles(Particles):
                 all_attributes.append(attribute)
                 all_values.append(default_value.as_vector_with_length(len(keys)))
         
-        super(BSEParticles, self)._add_particles(keys, all_attributes, all_values)
+        super(BSEParticles, self).add_particles_to_store(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
 
@@ -583,13 +583,13 @@ class BSE(InCodeComponentImplementation):
             "eccentricity"
         )
         
-        arguments = particles._get_values(particles._get_keys(), attributes)
+        arguments = particles.get_values_in_store(particles.get_all_keys_in_store(), attributes)
         
         arguments.append(end_time.as_vector_with_length(len(particles)))
         
         result = self.evolve(*arguments)
         
-        particles._set_values(particles._get_keys(), attributes, result)
+        particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
         
         
     def evolve_model(self, end_time = None):

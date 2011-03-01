@@ -161,7 +161,7 @@ class TestStellarModel2SPH(TestWithMPI):
         
         r_squared = sph_particles.position.lengths_squared().value_in(units.RSun**2)
         dtype = [('r_squared', 'float64'), ('key', 'uint64')]
-        sorted = numpy.sort(numpy.array(zip(r_squared, sph_particles._get_keys()), dtype=dtype), order='r_squared')
+        sorted = numpy.sort(numpy.array(zip(r_squared, sph_particles.get_all_keys_in_store()), dtype=dtype), order='r_squared')
         sorted_particles = sph_particles._subset(sorted['key'])
         sorted_particles.r = sorted_particles.position.lengths()
         self.assertTrue(numpy.all( sorted_particles.h1[1:]  - sorted_particles.h1[:-1]  >= -0.0001 | units.none ))

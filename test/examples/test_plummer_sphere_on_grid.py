@@ -272,7 +272,7 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
         acc_x  =  acc_x.reshape(self.grid.shape)
         acc_y  =  acc_y.reshape(self.grid.shape)
         acc_z  =  acc_z.reshape(self.grid.shape)
-        self.gridcode.acceleration_grid._set_values(None, ["fx","fy","fz"], [acc_x, acc_y, acc_z]) 
+        self.gridcode.acceleration_grid.set_values_in_store(None, ["fx","fy","fz"], [acc_x, acc_y, acc_z]) 
         
         print "evolve hydro", time
         self.gridcode.evolve(time)

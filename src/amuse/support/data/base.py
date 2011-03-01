@@ -68,25 +68,25 @@ class AttributeStorage(object):
     """
     __version__ = -1
     
-    def _add_particles(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes = [], values = []):
         pass
         
-    def _remove_particles(self, keys):
+    def remove_particles_from_store(self, keys):
         pass
         
-    def _get_values(self, particles, attributes):
+    def get_values_in_store(self, particles, attributes):
         pass
         
-    def _set_values(self, particles, attributes, list_of_values_to_set):
+    def set_values_in_store(self, particles, attributes, list_of_values_to_set):
         pass
         
-    def _get_attribute_names(self):
+    def get_attribute_names_defined_in_store(self):
         pass
     
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return False
         
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return []
         
     def __len__(self):
@@ -95,7 +95,7 @@ class AttributeStorage(object):
 
 
     def _get_value(self, particle, attribute):
-        return self._get_values([particle],[attribute])[0][0]
+        return self.get_values_in_store([particle],[attribute])[0][0]
     
     
 class DerivedAttribute(object):
@@ -123,7 +123,7 @@ class VectorAttribute(DerivedAttribute):
         self.attribute_names = attribute_names
     
     def get_values_for_entities(self, instance):
-        values = instance._get_values(instance._get_keys(), self.attribute_names)
+        values = instance.get_values_in_store(instance.get_all_keys_in_store(), self.attribute_names)
           
         unit_of_the_values = None
         results = []
@@ -145,7 +145,7 @@ class VectorAttribute(DerivedAttribute):
             values = value.unit.new_quantity(split[i].reshape(len(split[i])))
             list_of_values.append(values)
             
-        instance._set_values(instance._get_keys(), self.attribute_names, list_of_values)
+        instance.set_values_in_store(instance.get_all_keys_in_store(), self.attribute_names, list_of_values)
     
     def get_value_for_entity(self, instance,  key):
         values = instance._get_values_for_entity(key, self.attribute_names)
@@ -181,7 +181,7 @@ class CalculatedAttribute(DerivedAttribute):
             self.attribute_names = attribute_names
     
     def get_values_for_entities(self, instance):
-        values = instance._get_values(instance._get_keys(), self.attribute_names)
+        values = instance.get_values_in_store(instance.get_all_keys_in_store(), self.attribute_names)
         return self.function(*values)
     
     def get_value_for_entity(self, instance,  key):
@@ -263,16 +263,16 @@ class AbstractSet(object):
     
     def __getattr__(self, name_of_the_attribute):
         if name_of_the_attribute == 'key':
-            return self._get_keys()
+            return self.get_all_keys_in_store()
         elif name_of_the_attribute in self._derived_attributes:
             return self._derived_attributes[name_of_the_attribute].get_values_for_entities(self)
         else:
             try:
                 return self._convert_to_entities_or_quantities(
-                    self._get_values(self._get_keys(), [name_of_the_attribute])[0]
+                    self.get_values_in_store(self.get_all_keys_in_store(), [name_of_the_attribute])[0]
                 )
             except Exception as ex:
-                if name_of_the_attribute in self._get_attribute_names():
+                if name_of_the_attribute in self.get_attribute_names_defined_in_store():
                     raise
                 else:
                     raise AttributeError("You tried to access attribute '{0}'"
@@ -293,7 +293,7 @@ class AbstractSet(object):
         if name_of_the_attribute in self._derived_attributes:
             self._derived_attributes[name_of_the_attribute].set_values_for_entities(self, value)
         else:
-            self._set_values(self._get_keys(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
+            self.set_values_in_store(self.get_all_keys_in_store(), [name_of_the_attribute], [self._convert_from_entities_or_quantities(value)])
     
     def _get_value_of_attribute(self, key, attribute, index = None, version = None):
         if attribute in self._derived_attributes:
@@ -302,16 +302,16 @@ class AbstractSet(object):
             return self._convert_to_entity_or_quantity(self._get_value(key, attribute))
     
     def _get_values_for_entity(self, key, attributes):
-        return [x[0] for x in self._get_values([key], attributes)]
+        return [x[0] for x in self.get_values_in_store([key], attributes)]
         
     def _set_values_for_entity(self, key, attributes, values):
-        return self._set_values([key], attributes, [x.as_vector_with_length(1) for x in values])
+        return self.set_values_in_store([key], attributes, [x.as_vector_with_length(1) for x in values])
     
     def _set_value_of_attribute(self, key, attribute, value):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
         else:
-            return self._set_values([key], [attribute], value.as_vector_with_length(1))
+            return self.set_values_in_store([key], [attribute], value.as_vector_with_length(1))
             
     def _convert_to_entities_or_quantities(self, x):
         if hasattr(x, 'unit') and x.unit.iskey():
@@ -329,28 +329,28 @@ class AbstractSet(object):
     # Particle storage interface
     #
     
-    def _get_values(self, keys, attributes):
+    def get_values_in_store(self, keys, attributes):
         pass
     
-    def _set_values(self, keys, attributes, values):
+    def set_values_in_store(self, keys, attributes, values):
         pass
         
-    def _add_particles(self, keys, attributes, values):
+    def add_particles_to_store(self, keys, attributes, values):
         pass
         
-    def _remove_particles(self, keys):
+    def remove_particles_from_store(self, keys):
         pass
     
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return []
         
-    def _has_key(self):
+    def has_key_in_store(self):
         return False
     
-    def _get_attribute_names(self):
+    def get_attribute_names_defined_in_store(self):
         return []
     
-    def _get_state_attributes(self):
+    def get_state_attributes_defined_in_store(self):
         return []
     
     def _original_set(self):
@@ -510,7 +510,7 @@ class AbstractSet(object):
         self._derived_attributes[name_of_the_attribute] = FunctionAttribute(None, function)
         
     def __len__(self):
-        return len(self._get_keys())
+        return len(self.get_all_keys_in_store())
         
     def _set_factory(self):
         return type(self._original_set())
@@ -521,11 +521,11 @@ class AbstractSet(object):
         all attributes and values into this set. The history
         of the set is not copied over.
         """
-        attributes = self._get_attribute_names()
-        keys = self._get_keys()
-        values = self._get_values(keys, attributes)
+        attributes = self.get_attribute_names_defined_in_store()
+        keys = self.get_all_keys_in_store()
+        values = self.get_values_in_store(keys, attributes)
         result = self._set_factory()()
-        result._add_particles(keys, attributes, values)
+        result.add_particles_to_store(keys, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -586,8 +586,8 @@ class AbstractSet(object):
         [1.0, 2.0, 3.0, 4.0] m
         """
         particles = particles.as_set()
-        new_keys = [] ; new_keys.extend(self._get_keys())
-        subtract_keys = particles._get_keys()
+        new_keys = [] ; new_keys.extend(self.get_all_keys_in_store())
+        subtract_keys = particles.get_all_keys_in_store()
         for key in subtract_keys:
             if key in new_keys:
                 new_keys.remove(key)
@@ -641,8 +641,8 @@ class AbstractSet(object):
         >>> print particles1.x
         [2.0] m
         """
-        keys = particles._get_keys()
-        self._remove_particles(keys)
+        keys = particles.get_all_keys_in_store()
+        self.remove_particles_from_store(keys)
         
     
     def remove_particle(self, particle):
@@ -693,24 +693,24 @@ class AbstractSet(object):
         [1.0, 2.0, 3.0] m
         
         """
-        other_keys = set(other_particles._get_keys())
-        my_keys = set(self._get_keys())
+        other_keys = set(other_particles.get_all_keys_in_store())
+        my_keys = set(self.get_all_keys_in_store())
         added_keys = my_keys - other_keys
         removed_keys = other_keys - my_keys
         
         added_keys = list(added_keys)
         if added_keys:
-            attributes = self._get_attribute_names()
-            values = self._get_values(added_keys, attributes)
-            other_particles._add_particles(added_keys, attributes, values)
+            attributes = self.get_attribute_names_defined_in_store()
+            values = self.get_values_in_store(added_keys, attributes)
+            other_particles.add_particles_to_store(added_keys, attributes, values)
         
         removed_keys = list(removed_keys)
         if removed_keys:
-            other_particles._remove_particles(removed_keys)
+            other_particles.remove_particles_from_store(removed_keys)
         
     def copy_values_of_state_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
-        channel.copy_attributes(self._get_state_attributes())   
+        channel.copy_attributes(self.get_state_attributes_defined_in_store())   
     
     def as_set(self):
         """
@@ -726,7 +726,7 @@ class AbstractSet(object):
         >>> print particles.x
         [1.0, 2.0, 3.0] m
         """
-        return self._subset(self._get_keys())
+        return self._subset(self.get_all_keys_in_store())
     
     
     def select(self, selection_function, attributes):
@@ -748,7 +748,7 @@ class AbstractSet(object):
         [2.0, 3.0] m
         
         """
-        keys = self._get_keys()
+        keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors
         values = map(lambda x: getattr(self, x), attributes)
         selected_keys = []
@@ -790,7 +790,7 @@ class AbstractSet(object):
         >>> print len(subset)
         499
         """
-        keys = self._get_keys()
+        keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors
         values = map(lambda x: getattr(self, x), attributes)
         
@@ -839,11 +839,11 @@ class AbstractSet(object):
         >>> p3 == p1
         True
         """
-        return len(self) != len(set(self._get_keys()))
+        return len(self) != len(set(self.get_all_keys_in_store()))
     
     
     def as_subset_in(self, other):
-        selected_keys = filter(lambda x : other._has_key(x), self._get_keys())
+        selected_keys = filter(lambda x : other.has_key_in_store(x), self.get_all_keys_in_store())
         return other._subset(selected_keys)
         
     def _subset(self, keys):
@@ -872,7 +872,7 @@ class AbstractSet(object):
     
     def _attributes_for_dir(self):
         result = []
-        result.extend(self._get_attribute_names())
+        result.extend(self.get_attribute_names_defined_in_store())
         result.extend(self._derived_attributes.keys())
         return result
         
@@ -884,7 +884,7 @@ class AbstractSet(object):
         return result
         
     def stored_attributes(self):
-        return list(self._get_attribute_names())
+        return list(self.get_attribute_names_defined_in_store())
         
 
     def is_empty(self):
@@ -894,7 +894,7 @@ class AbstractSet(object):
 
 
     def _get_value(self, key, attribute):
-        return self._get_values([key],[attribute])[0][0]
+        return self.get_values_in_store([key],[attribute])[0][0]
     
     
 
@@ -962,9 +962,9 @@ class AbstractSet(object):
         2
 
         """
-        keys = self._get_keys()
+        keys = self.get_all_keys_in_store()
         result = self._set_factory()()
-        result._add_particles(keys, [],[])
+        result.add_particles_to_store(keys, [],[])
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
         return result
     

@@ -47,10 +47,10 @@ class HDF5AttributeStorage(AttributeStorage):
         dataset = self.attributesgroup[attribute]
         return eval(dataset.attrs["units"], core.__dict__) 
         
-    def _get_attribute_names(self):
+    def get_attribute_names_defined_in_store(self):
         return self.attributesgroup.keys()
         
-    def _get_values(self, particles, attributes):
+    def get_values_in_store(self, particles, attributes):
         indices = self.get_indices_of(particles)
             
         results = []
@@ -63,13 +63,13 @@ class HDF5AttributeStorage(AttributeStorage):
         
         return results
         
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
     
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return self.particle_keys
         
-    def _set_values(self, particles, attributes, quantities):
+    def set_values_in_store(self, particles, attributes, quantities):
         indices = self.get_indices_of(particles)
         
         for attribute, quantity in zip(attributes, quantities):
@@ -91,10 +91,10 @@ class HDF5GridAttributeStorage(AttributeStorage):
     def storage_shape(self):
         return self.shape
     
-    def _add_particles(self, keys, attributes = [], quantities = []):
+    def add_particles_to_store(self, keys, attributes = [], quantities = []):
         raise exceptions.AmuseException("adding points to the grid is not implemented")
             
-    def _remove_particles(self, keys):
+    def remove_particles_from_store(self, keys):
         raise exceptions.AmuseException("removing points from the grid is not implemented")
         
     def __len__(self):
@@ -104,10 +104,10 @@ class HDF5GridAttributeStorage(AttributeStorage):
         dataset = self.attributesgroup[attribute]
         return eval(dataset.attrs["units"], core.__dict__) 
         
-    def _get_attribute_names(self):
+    def get_attribute_names_defined_in_store(self):
         return self.attributesgroup.keys()
         
-    def _get_values(self, indices, attributes):
+    def get_values_in_store(self, indices, attributes):
             
         results = []
         for attribute in attributes:
@@ -123,13 +123,13 @@ class HDF5GridAttributeStorage(AttributeStorage):
         
         return results
         
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return False
     
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return None
         
-    def _set_values(self, indices, attributes, quantities):
+    def set_values_in_store(self, indices, attributes, quantities):
         
         for attribute, quantity in zip(attributes, quantities):
             if attribute in self.attributesgroup:
@@ -167,7 +167,7 @@ class StoreHDF(object):
         group.attrs["number_of_particles"] = len(particles)
         group.attrs["class_of_the_particles"] = pickle.dumps(particles._set_factory())
             
-        keys = particles._get_keys()
+        keys = particles.get_all_keys_in_store()
         dataset = group.create_dataset("keys", data=keys)
 
         self.store_timestamp(particles, group)
@@ -189,8 +189,8 @@ class StoreHDF(object):
     def store_values(self, container, group):
         attributes_group = group.create_group("attributes")
         
-        all_values = container._get_values(None, container._get_attribute_names())
-        for attribute, quantity in zip(container._get_attribute_names(), all_values):
+        all_values = container.get_values_in_store(None, container.get_attribute_names_defined_in_store())
+        for attribute, quantity in zip(container.get_attribute_names_defined_in_store(), all_values):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
             dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()

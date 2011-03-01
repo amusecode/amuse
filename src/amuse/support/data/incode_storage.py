@@ -546,11 +546,11 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
             
         return result
     
-    def _get_attribute_names(self):
+    def get_attribute_names_defined_in_store(self):
         return self.attributes
     
     def _state_attributes(self):
-        return self._get_attribute_names()
+        return self.get_attribute_names_defined_in_store()
 
     
 class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
@@ -590,7 +590,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
     def __len__(self):
         return self._get_number_of_particles()
 
-    def _add_particles(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes = [], values = []):
         
         indices = self.new_particle_method.add_entities(attributes, values)
         
@@ -629,7 +629,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
           
         return result
          
-    def _get_values(self, keys, attributes):
+    def get_values_in_store(self, keys, attributes):
         indices_in_the_code = self.get_indices_of(keys)
         
         if len(indices_in_the_code) == 0:
@@ -646,7 +646,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             results.append(mapping_from_attribute_to_result[attribute])
         return results
         
-    def _set_values(self, keys, attributes, values):
+    def set_values_in_store(self, keys, attributes, values):
         indices_in_the_code = self.get_indices_of(keys)
         
         if len(indices_in_the_code) == 0:
@@ -655,7 +655,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         for setter in self.select_setters_for(attributes):
             setter.set_attribute_values(self, attributes, values, indices_in_the_code)
     
-    def _remove_particles(self, keys):
+    def remove_particles_from_store(self, keys):
         indices_in_the_code = self.get_indices_of(keys)
         
         if not indices_in_the_code:
@@ -675,10 +675,10 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
             
         
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return self.particle_keys
 
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return key in self.mapping_from_particle_key_to_index_in_the_code
         
     def _get_keys_for_indices_in_the_code(self, indices):
@@ -717,10 +717,10 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             traceback.print_exc()
             raise
         
-    def _add_particles(self, keys, attributes = [], quantities = []):
+    def add_particles_to_store(self, keys, attributes = [], quantities = []):
         raise exceptions.AmuseException("adding points to the grid is not implemented")
             
-    def _remove_particles(self, keys):
+    def remove_particles_from_store(self, keys):
         raise exceptions.AmuseException("removing points from the grid is not implemented")
     
     def _to_arrays_of_indices(self, index):
@@ -739,7 +739,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         else:
             return [x[index] for x in indices]
         
-    def _get_values(self, indices, attributes):
+    def get_values_in_store(self, indices, attributes):
         array_of_indices = self._to_arrays_of_indices(indices)
         mapping_from_attribute_to_result = {}    
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
@@ -760,7 +760,7 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             
         return results
         
-    def _set_values(self,  indices, attributes, quantities):
+    def set_values_in_store(self,  indices, attributes, quantities):
         array_of_indices = self._to_arrays_of_indices(indices)
         one_dimensional_values = [x.reshape(-1) for x in quantities]
         one_dimensional_array_of_indices = [x.reshape(-1) for x in array_of_indices]
@@ -768,10 +768,10 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
             setter.set_attribute_values(self, attributes, one_dimensional_values, *one_dimensional_array_of_indices)
      
         
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
         
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return None 
         
     def __len__(self):

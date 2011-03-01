@@ -50,7 +50,7 @@ class Seba(InCodeComponentImplementation):
             particles.metallicity,
         )
         
-        particles._set_values(particles._get_keys(), attributes, result)
+        particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
 
     def evolve_model(self, end_time = None):
         if end_time is None:

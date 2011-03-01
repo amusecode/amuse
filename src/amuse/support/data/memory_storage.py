@@ -18,7 +18,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.sorted_indices = []
         self.keys_set = set([])
         
-    def _add_particles(self, keys, attributes = [], quantities = []):
+    def add_particles_to_store(self, keys, attributes = [], quantities = []):
         if len(quantities) != len(attributes):
             raise exceptions.AmuseException(
                 "you need to provide the same number of quantities as attributes, found {0} attributes and {1} list of values".format(
@@ -70,7 +70,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.particle_keys = numpy.concatenate((self.particle_keys,  numpy.array(list(keys), dtype='uint64')))
         self.reindex()
             
-    def _get_values(self, particles, attributes):
+    def get_values_in_store(self, particles, attributes):
         indices = self.get_indices_of(particles)
             
         results = []
@@ -85,7 +85,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         
         return results
         
-    def _set_values(self, particles, attributes, list_of_values_to_set):
+    def set_values_in_store(self, particles, attributes, list_of_values_to_set):
         indices = self.get_indices_of(particles)
         
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
@@ -103,14 +103,14 @@ class InMemoryAttributeStorage(AttributeStorage):
             
     
     
-    def _get_attribute_names(self):
+    def get_attribute_names_defined_in_store(self):
         return sorted(self.mapping_from_attribute_to_quantities.keys())
     
     
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return key in self.keys_set
         
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return self.particle_keys
         
     def __len__(self):
@@ -141,7 +141,7 @@ class InMemoryAttributeStorage(AttributeStorage):
         indices = numpy.searchsorted(self.sorted_keys, particles)
         return self.sorted_indices[indices]
         
-    def _remove_particles(self, keys):
+    def remove_particles_from_store(self, keys):
         indices = self.get_indices_of(keys)
         
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
@@ -200,13 +200,13 @@ class InMemoryGridAttributeStorage(object):
     def storage_shape(self):
         return (self.number_of_i, self.number_of_j, self.number_of_k)
         
-    def _add_particles(self, keys, attributes = [], quantities = []):
+    def add_particles_to_store(self, keys, attributes = [], quantities = []):
         raise exceptions.AmuseException("adding points to the grid is not implemented")
             
-    def _remove_particles(self, keys):
+    def remove_particles_from_store(self, keys):
         raise exceptions.AmuseException("removing points from the grid is not implemented")
         
-    def _get_values(self, indices, attributes):
+    def get_values_in_store(self, indices, attributes):
         results = []
         for attribute in attributes:
             attribute_values = self.mapping_from_attribute_to_quantities[attribute]
@@ -219,7 +219,7 @@ class InMemoryGridAttributeStorage(object):
         
         return results
         
-    def _set_values(self,  indices, attributes, list_of_values_to_set):
+    def set_values_in_store(self,  indices, attributes, list_of_values_to_set):
         
         for attribute, values_to_set in zip(attributes, list_of_values_to_set):
             if attribute in self.mapping_from_attribute_to_quantities:
@@ -233,13 +233,13 @@ class InMemoryGridAttributeStorage(object):
                  
             attribute_values[indices] = values_to_set
      
-    def _get_attribute_names(self):
+    def get_attribute_names_defined_in_store(self):
         return sorted(self.mapping_from_attribute_to_quantities.keys())
         
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
         
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return None #numpy.s_[0:self.number_of_i], numpy.s_[0:self.number_of_j], numpy.s_[0:self.number_of_k]
         
     def __len__(self):
@@ -306,7 +306,7 @@ class InMemoryAttributeStorageUseDictionaryForKeySet(InMemoryAttributeStorage):
 
     
 
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
 
     def copy(self):
@@ -377,7 +377,7 @@ class InMemoryAttributeStorageUseSortedKeys(InMemoryAttributeStorage):
         self.reindex()
             
     
-    def _has_key(self, key):
+    def has_key_in_store(self, key):
         return key in self.keys_set
         
     def copy(self):

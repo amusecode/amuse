@@ -221,7 +221,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     
     def test1(self):
         interface = self.TestInterface()
-        interface.particles._add_particles(
+        interface.particles.add_particles_to_store(
             [1,2],
             ["mass"],
             [[3.0, 4.0] | units.kg]
@@ -249,7 +249,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
     
     def test2(self):
         interface = self.TestInterface()
-        interface.particles._add_particles(
+        interface.particles.add_particles_to_store(
             [1, 2],
             ["mass"],
             [[3.0, 4.0] | units.kg]
@@ -259,7 +259,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         self.assertEquals(len(remote_particles), 2)
         
-        interface.particles._add_particles(
+        interface.particles.add_particles_to_store(
             [3, 4],
             ["mass"],
             [[5.0, 6.0] | units.kg]
@@ -270,7 +270,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3)
         self.assertEquals(remote_particles[2].mass.value_in(units.kg), 5)
         
-        interface.particles._remove_particles((1,3))
+        interface.particles.remove_particles_from_store((1,3))
         
         self.assertEquals(len(remote_particles), 2)
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 4)
@@ -299,8 +299,8 @@ class TestParticlesWithBinding(amusetest.TestCase):
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 3)
         self.assertEquals(remote_particles[2].mass.value_in(units.kg), 5)
         
-        keys = remote_particles._get_keys()
-        interface.particles._remove_particles((keys[0], keys[2]))
+        keys = remote_particles.get_all_keys_in_store()
+        interface.particles.remove_particles_from_store((keys[0], keys[2]))
         
         self.assertEquals(len(remote_particles), 2)
         self.assertEquals(remote_particles[0].mass.value_in(units.kg), 4)
@@ -348,7 +348,7 @@ class TestParticlesWithBinding(amusetest.TestCase):
         
         local_particles1.synchronize_to(remote_particles)
         
-        local_particles1._remove_particles([local_particles1._get_keys()[0]])
+        local_particles1.remove_particles_from_store([local_particles1.get_all_keys_in_store()[0]])
         local_particles1.synchronize_to(remote_particles)
         self.assertEquals(len(remote_particles), 4)
         
@@ -598,8 +598,8 @@ class TestParticlesSuperset(amusetest.TestCase):
         self.assertEqual(superset.x, ([1.0, 2.0, 3.0, 4.0, 5.0, 6.0]|units.m))
         # Check whether it returns the right value for the right key when the key order is 'random'
         dictionary = dict(zip(superset.key, superset.x))
-        sorted_keys = sorted(superset._get_keys())
-        sorted_values = superset._get_values(sorted_keys,['x'])[0]
+        sorted_keys = sorted(superset.get_all_keys_in_store())
+        sorted_values = superset.get_values_in_store(sorted_keys,['x'])[0]
         for key, value in zip(sorted_keys, sorted_values):
             self.assertEqual(dictionary[key],value)
     
@@ -620,9 +620,9 @@ class TestParticlesSuperset(amusetest.TestCase):
         superset.z = [-1.0, 1.0] | units.m
         self.assertEqual(superset.z, ([-1.0, 1.0, -1.0, 1.0, -1.0, 1.0]|units.m))
         # Check whether it sets the value of the right particle when the key order is 'random'
-        sorted_keys = sorted(superset._get_keys())
-        sorted_values = superset._get_values(sorted_keys,['x'])[0]
-        superset._set_values(sorted_keys,['zz'],[sorted_values])
+        sorted_keys = sorted(superset.get_all_keys_in_store())
+        sorted_values = superset.get_values_in_store(sorted_keys,['x'])[0]
+        superset.set_values_in_store(sorted_keys,['zz'],[sorted_values])
         dictionary = dict(zip(superset.key, superset.zz))
         for key, value in zip(sorted_keys, sorted_values):
             print dictionary[key],value
@@ -1022,7 +1022,7 @@ class TestIterateOverParticles(amusetest.TestCase):
         particles.radius = 2.0 | nbody_system.length
         t0 = time.time()
         #self.iterate_over_array(particles)
-        for key in particles._get_keys():
+        for key in particles.get_all_keys_in_store():
             key
         t1 = time.time()
         dt0 = t1 - t0

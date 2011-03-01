@@ -17,7 +17,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = get_in_memory_attribute_storage_factory()()
-        instance._add_particles(particles, attributes, values)
+        instance.add_particles_to_store(particles, attributes, values)
         
         self.assertEquals(2.0 | units.m, instance.get_value_of(particles[1], "a"))
         
@@ -31,7 +31,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = get_in_memory_attribute_storage_factory()()
-        instance._add_particles(particles, attributes, values)
+        instance.add_particles_to_store(particles, attributes, values)
         
         indices = instance.get_indices_of([
             particles[2], 
@@ -42,7 +42,7 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         for index, wanted in zip(indices, [2,1,0]):
             self.assertEquals(index,wanted)
             
-        all_values = instance._get_values(
+        all_values = instance.get_values_in_store(
             [particles[2], particles[0]],
             ["b","a"]
         )
@@ -61,11 +61,11 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = get_in_memory_attribute_storage_factory()()
-        instance._add_particles(particles, attributes, values)
+        instance.add_particles_to_store(particles, attributes, values)
         self.assertEquals(values[0][0], 1.0 | units.m)
         
         
-        instance._set_values(
+        instance.set_values_in_store(
             [particles[0], particles[2]],
             ["b","a"],
             [
@@ -88,12 +88,12 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = get_in_memory_attribute_storage_factory()()
-        instance._add_particles(particles, attributes, values)
+        instance.add_particles_to_store(particles, attributes, values)
         
-        instance._remove_particles([particles[0], particles[2]])
+        instance.remove_particles_from_store([particles[0], particles[2]])
         
       
-        all_values = instance._get_values(
+        all_values = instance.get_values_in_store(
             [particles[1], particles[3]],
             ["a","b"]
         )
@@ -112,25 +112,25 @@ class TestInMemoryAttributeStorage(amusetest.TestCase):
         ]
         
         instance = get_in_memory_attribute_storage_factory()()
-        instance._add_particles(particles, attributes, values)
+        instance.add_particles_to_store(particles, attributes, values)
         
         self.assertEquals(len(instance), 4)
         
         particles = [4,5,6,7]
-        instance._add_particles(particles, attributes, values)
+        instance.add_particles_to_store(particles, attributes, values)
         
         self.assertEquals(len(instance), 8)
         
-        all_values = instance._get_values([1,5], ["a"])
+        all_values = instance.get_values_in_store([1,5], ["a"])
         
         self.assertEquals(all_values[0][0], 2.0 | units.m)
         self.assertEquals(all_values[0][1], 2.0 | units.m)
         
-        instance._remove_particles((0, 4))
+        instance.remove_particles_from_store((0, 4))
         
         self.assertEquals(len(instance), 6)
         
-        all_values = instance._get_values([1,5], ["a"])
+        all_values = instance.get_values_in_store([1,5], ["a"])
         
         self.assertEquals(all_values[0][0], 2.0 | units.m)
         self.assertEquals(all_values[0][1], 2.0 | units.m)
@@ -143,13 +143,13 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         i = (0,1,2,3,4)
         j = (1,3,1,3,1)
         k = (0,2,0,2,0)
-        x._set_values(
+        x.set_values_in_store(
             (i,j,k), 
             ['a','b'], 
             [2.0 | units.kg, 1.0 | units.m]
         )
         
-        b, a = x._get_values(None, ['b','a'])
+        b, a = x.get_values_in_store(None, ['b','a'])
         print a
         self.assertEquals(b[0][1][0], 1.0 | units.m)
         self.assertEquals(b[0][0][0], 0.0 | units.m)
@@ -157,7 +157,7 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         self.assertEquals(a[1][3][2], 2.0 | units.kg)
         self.assertEquals(a[1][2][2], 0.0 | units.kg)
         
-        (b,) = x._get_values((numpy.s_[0:4], numpy.s_[1:4], numpy.s_[:]), ['a'])
+        (b,) = x.get_values_in_store((numpy.s_[0:4], numpy.s_[1:4], numpy.s_[:]), ['a'])
         
         self.assertEquals(b[0][0][0], 2.0 | units.kg)
         self.assertEquals(b[0][0][2], 0.0 | units.kg)
@@ -167,7 +167,7 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         
         self.assertEquals(b.sum(), 8.0 | units.kg)
         
-        self.assertEquals(sorted(x._get_attribute_names()), ["a", "b"])
+        self.assertEquals(sorted(x.get_attribute_names_defined_in_store()), ["a", "b"])
         
         
         

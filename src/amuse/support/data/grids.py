@@ -21,19 +21,19 @@ class AbstractGrid(AbstractSet):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].get_value_for_entity(self, key)
         else:
-            return self._convert_to_entities_or_quantities(self._get_values(key, [attribute])[0])
+            return self._convert_to_entities_or_quantities(self.get_values_in_store(key, [attribute])[0])
         
     def _set_value_of_attribute(self, key, attribute, value):
         if attribute in self._derived_attributes:
             return self._derived_attributes[attribute].set_value_for_entity(self, key, value)
         else:
-            return self._set_values(key, [attribute], value)
+            return self.set_values_in_store(key, [attribute], value)
 
     def _get_values_for_entity(self, key, attributes):
-        return self._get_values(key, attributes)
+        return self.get_values_in_store(key, attributes)
         
     def _set_values_for_entity(self, key, attributes, values):
-        return self._set_values(key, attributes, values)
+        return self.set_values_in_store(key, attributes, values)
     
     def _get_particle(self, index):
         return GridPoint(index, self._original_set())
@@ -57,10 +57,10 @@ class AbstractGrid(AbstractSet):
     
     
     def copy_to_memory(self):
-        attributes = self._get_attribute_names()
-        values = self._get_values(None, attributes)
+        attributes = self.get_attribute_names_defined_in_store()
+        values = self.get_values_in_store(None, attributes)
         result = Grid(*self.shape)
-        result._set_values(None, attributes, values)
+        result.set_values_in_store(None, attributes, values)
         object.__setattr__(result, "_derived_attributes", CompositeDictionary(self._derived_attributes))
        
         return result
@@ -110,15 +110,15 @@ class Grid(AbstractGrid):
         
         return result
             
-    def _get_values(self, indices, attributes):
-        result = self._private.attribute_storage._get_values(indices, attributes)
+    def get_values_in_store(self, indices, attributes):
+        result = self._private.attribute_storage.get_values_in_store(indices, attributes)
         return result
         
-    def _set_values(self, indices, attributes, values):
-        self._private.attribute_storage._set_values(indices, attributes, values)
+    def set_values_in_store(self, indices, attributes, values):
+        self._private.attribute_storage.set_values_in_store(indices, attributes, values)
 
-    def _get_attribute_names(self):
-        return self._private.attribute_storage._get_attribute_names()
+    def get_attribute_names_defined_in_store(self):
+        return self._private.attribute_storage.get_attribute_names_defined_in_store()
         
     def _get_writeable_attribute_names(self):
         return self._private.attribute_storage._get_writeable_attribute_names()
@@ -127,8 +127,8 @@ class Grid(AbstractGrid):
     def _original_set(self):
         return self
         
-    def _get_keys(self):
-        return self._private.attribute_storage._get_keys()
+    def get_all_keys_in_store(self):
+        return self._private.attribute_storage.get_all_keys_in_store()
     
     def __getitem__(self, index):
         if indexing.number_of_dimensions_after_index(3, index) == 0:
@@ -161,16 +161,16 @@ class SubGrid(AbstractGrid):
     def _original_set(self):
         return self._private.grid
         
-    def _get_values(self, indices, attributes):
+    def get_values_in_store(self, indices, attributes):
         combined_index = indexing.combine_indices(self._private.indices, indices)
-        result = self._private.grid._get_values(combined_index, attributes)
+        result = self._private.grid.get_values_in_store(combined_index, attributes)
         return result
     
-    def _set_values(self, indices, attributes, values):
+    def set_values_in_store(self, indices, attributes, values):
         combined_index = indexing.combine_indices(self._private.indices, indices)
-        self._private.grid._set_values(combined_index, attributes, values)
+        self._private.grid.set_values_in_store(combined_index, attributes, values)
             
-    def _get_keys(self):
+    def get_all_keys_in_store(self):
         return None
 
     def number_of_dimensions(self):
@@ -184,8 +184,8 @@ class SubGrid(AbstractGrid):
             return SubGrid(self._original_set(), combined_index)
             
     
-    def _get_attribute_names(self):
-        return self._private.grid._get_attribute_names()
+    def get_attribute_names_defined_in_store(self):
+        return self._private.grid.get_attribute_names_defined_in_store()
         
     def _get_writeable_attribute_names(self):
         return self._private.grid._get_writeable_attribute_names()
@@ -236,8 +236,8 @@ class GridInformationChannel(object):
         
         
     def copy_attributes(self, attributes):
-        data = self.source._get_values(self.index, attributes)
-        self.target._set_values(self.index, attributes, data)
+        data = self.source.get_values_in_store(self.index, attributes)
+        self.target.set_values_in_store(self.index, attributes, data)
     
     def copy(self):
         self.copy_attributes(self.target._get_writeable_attribute_names())

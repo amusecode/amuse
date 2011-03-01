@@ -90,7 +90,7 @@ class SSEParticles(Particles):
     def calculate_effective_temperature(self, luminosity, radius):
         return ((luminosity/(constants.four_pi_stefan_boltzmann*radius**2))**.25).in_(units.K)
         
-    def _add_particles(self, keys, attributes = [], values = []):
+    def add_particles_to_store(self, keys, attributes = [], values = []):
         if len(keys) == 0:
             return
             
@@ -125,7 +125,7 @@ class SSEParticles(Particles):
                 all_attributes.append(attribute)
                 all_values.append(default_value.as_vector_with_length(len(keys)))
         
-        super(SSEParticles, self)._add_particles(keys, all_attributes, all_values)
+        super(SSEParticles, self).add_particles_to_store(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
         self._private.code_interface._evolve_particles(added_particles, 1e-06 | units.Myr)
@@ -386,7 +386,7 @@ class SSE(InCodeComponentImplementation):
             particles.age,
             end_time.as_vector_with_length(len(particles)))
         
-        particles._set_values(particles._get_keys(), attributes, result)
+        particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
         
         
     def evolve_model(self, end_time = None, keep_synchronous = True):
