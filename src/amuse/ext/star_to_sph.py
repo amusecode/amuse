@@ -20,11 +20,13 @@ class StellarModel2SPH(object):
     :argument number_of_sph_particles: Number of gas particles in the resulting model
     :argument with_core_particle: Model the core as a heavy, non-sph particle (only for "scaling method")
     :argument do_relax: Relax the SPH model - doesn't seem to work satisfactorily yet!
+    :argument base_grid_options: dict() with options for the initial distribution, 
+        see new_uniform_spherical_particle_distribution
     """
     
     def __init__(self, particle, number_of_sph_particles, seed = None, mode = "scaling method", 
             do_relax = False, sph_legacy_code = Gadget2, compatible_converter = ConvertBetweenGenericAndSiUnits,
-            with_core_particle = False, pickle_file = None):
+            with_core_particle = False, pickle_file = None, base_grid_options = dict(type = "bcc")):
         self.particle = particle
         self.number_of_sph_particles = number_of_sph_particles
         self.with_core_particle = with_core_particle
@@ -38,6 +40,7 @@ class StellarModel2SPH(object):
         else:
             raise AmuseException("Unknown mode: {0}. Mode can be 'scaling method' or 'random sampling'.".format(mode))
         
+        self.base_grid_options = base_grid_options
         self.do_relax = do_relax
         self.sph_legacy_code = sph_legacy_code # used to relax the SPH model
         self.compatible_converter = compatible_converter
@@ -199,7 +202,8 @@ class StellarModel2SPH(object):
         if self.mode == "scaling method":
             sph_particles = new_spherical_particle_distribution(
                 self.number_of_sph_particles, 
-                radii = self.radius_profile, densities = self.density_profile, core_radius = self.sph_core_radius)
+                radii = self.radius_profile, densities = self.density_profile, 
+                core_radius = self.sph_core_radius, **self.base_grid_options)
         else:
             sph_particles = Particles(self.number_of_sph_particles)
             sph_particles.position = self.new_positions()

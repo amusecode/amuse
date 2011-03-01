@@ -1066,6 +1066,7 @@ class TestStellarModel2SPH(TestWithMPI):
                 stellar_evolution.particles[0], 
                 number_of_sph_particles, 
                 seed = 12345,
+                base_grid_options = dict(type = "glass", target_rms = 0.04),
                 mode = "scaling method",
                 with_core_particle = True
             )
@@ -1080,6 +1081,7 @@ class TestStellarModel2SPH(TestWithMPI):
                 stellar_evolution.particles[0], 
                 number_of_sph_particles, 
                 seed = 12345,
+                base_grid_options = dict(type = "glass", target_rms = 0.04),
                 mode = "scaling method"
             )
         

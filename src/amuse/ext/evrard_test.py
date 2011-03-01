@@ -105,8 +105,7 @@ class glass_unit_cube(object):
             i+=1
             t=t+(0.25 | nbody_system.time)
             sph.evolve_model(t)
-            h=sph.particles.h_smooth.value_in(nbody_system.length)
-            rho=h**(-1./3.)
+            rho=sph.particles.rho.value_in(nbody_system.density)
             rms=rho.std()/rho.mean()
             minrms=min(minrms,rms)
             if rms>2.*minrms or i>300:
