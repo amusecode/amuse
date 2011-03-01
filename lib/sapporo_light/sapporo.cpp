@@ -85,7 +85,8 @@ int sapporo::set_j_particle(int cluster_id,
     
     if(iterator != end)
     {
-        int index = (*iterator).first;
+        //int index = (*iterator).first;
+        int index = (*iterator).second; //Jeroen 1-march-2011, 
         //printf("found index: %d for address: %d\n", index, address);
         t_j[index] = (DS2){to_DS(tj), to_DS(dtj)};
         pos_j[index] = ( (DS4){to_DS(x[0]), to_DS(x[1]), to_DS(x[2]), Dmass} );
