@@ -341,7 +341,9 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertTrue(numpy.all(grid.contains([[0.5,0.5,0.5] , [0.1,0.1,0.1]]| units.m)))
         self.assertFalse(numpy.all(grid.contains([[1.1,0.5,0.5] , [0.1,1.1,0.1]]| units.m)))
         
-    def test3(self):
+class TestGridSampling(amusetest.TestCase):
+    
+    def test1(self):
         grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
@@ -360,7 +362,7 @@ class TestGridAttributes(amusetest.TestCase):
             print sample.index
             self.assertEquals(sample.index , [1,3,4])
 
-    def test4(self):
+    def test2(self):
         grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
@@ -388,7 +390,7 @@ class TestGridAttributes(amusetest.TestCase):
             self.assertEquals(sample.index_for_000_cell , [1,3,4])
             
     
-    def test5(self):
+    def test3(self):
         grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
@@ -404,7 +406,7 @@ class TestGridAttributes(amusetest.TestCase):
             [2,2,2],
         ])
     
-    def test6(self):
+    def test4(self):
         grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
@@ -414,7 +416,7 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertEquals(sample.surrounding_cells[-1].position , [5.0,5.0,5.0] | units.m )        
 
     
-    def test7(self):
+    def test5(self):
         grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
@@ -441,7 +443,7 @@ class TestGridAttributes(amusetest.TestCase):
         
         self.assertAlmostRelativeEquals(sample.mass , 3.0 | units.kg ) 
             
-    def test8(self):
+    def test6(self):
         grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         for xpos in numpy.arange(3.0,5.0,0.1):
@@ -461,7 +463,7 @@ class TestGridAttributes(amusetest.TestCase):
             sample = grid.samplePoint([4.0,4.0,4.0]| units.m)
             self.assertAlmostRelativeEquals(sample.mass , (4.0 | units.kg)) 
 
-    def test9(self):
+    def test7(self):
         grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
         grid.mass = grid.x.value_in(units.m) | units.kg
         sample = grid.samplePoint([3.0,3.0,3.0]| units.m)
@@ -470,3 +472,46 @@ class TestGridAttributes(amusetest.TestCase):
         self.assertFalse(sample.isvalid)
         sample = grid.samplePoint([3.0,-1.0,3.0]| units.m)
         self.assertFalse(sample.isvalid)
+        
+    
+    def test8(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m, must_return_values_on_cell_center = True)    
+        self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)    
+        self.assertEquals(sample.mass, 3.0 | units.kg)
+        sample = grid.samplePoint([3.5,3.0,3.0]| units.m, must_return_values_on_cell_center = True)    
+        self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)  
+        self.assertEquals(sample.mass, 3.0 | units.kg)
+        
+    def test9(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        sample = grid.samplePoint([3.0,3.0,3.0]| units.m, must_return_values_on_cell_center = False)    
+        self.assertEquals(sample.position, [3.0,3.0,3.0]| units.m)    
+        self.assertEquals(sample.mass, 3.0 | units.kg)
+        sample = grid.samplePoint([3.5,3.0,3.0]| units.m, must_return_values_on_cell_center = False)    
+        self.assertEquals(sample.position, [3.5,3.0,3.0]| units.m)  
+        self.assertEquals(sample.mass, 3.5 | units.kg)
+        
+    
+class TestGridSamplingMultiplePoints(amusetest.TestCase):
+    
+    def test1(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        samples = grid.samplePoints([[3.0,3.0,3.0], [4.0,3.0,3.0]]| units.m)
+        self.assertEquals(len(samples), 2)
+        self.assertEquals(samples.position[0] , [3.0,3.0,3.0]| units.m)
+        self.assertEquals(samples.position[0] , samples[0].position)
+        self.assertEquals(samples.position[1] , samples[1].position)
+        self.assertEquals(samples.mass , [3.0, 4.0] | units.kg)
+    
+    def test2(self):
+        grid = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid.mass = grid.x.value_in(units.m) | units.kg
+        samples = grid.samplePoints([[3.5,3.0,3.0], [4.5,3.0,3.0]]| units.m)
+        self.assertEquals(len(samples), 2)
+        self.assertEquals(samples.mass , [3.5, 4.5] | units.kg)
+        
+    

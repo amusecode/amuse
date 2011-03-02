@@ -71,8 +71,11 @@ class AbstractGrid(AbstractSet):
         else:
             return SamplePointWithIntepolation(self, position)
         
-    def samplePoints(self, positions):
-        return SamplePoints(self, positions, SamplePointWithIntepolation)
+    def samplePoints(self, positions, must_return_values_on_cell_center = False):
+        if must_return_values_on_cell_center:
+            return SamplePointsOnGrid(self, positions, SamplePointOnCellCenter)
+        else:
+            return SamplePointsOnGrid(self, positions, SamplePointWithIntepolation)
     
     def __len__(self):
         return self.shape[0]
@@ -241,7 +244,39 @@ class GridInformationChannel(object):
     
     def copy(self):
         self.copy_attributes(self.target._get_writeable_attribute_names())
+
+class SamplePointOnCellCenter(object):
+    def __init__(self, grid, point):
+        self.grid = grid
+        self.point = point
+        
+    @late
+    def position(self):
+        return self.cell.position
     
+    @late
+    def index(self):
+        offset = self.point - self.grid.get_minimum_position()
+        indices = (offset / self.grid.cellsize()).value_in(units.none)
+        return numpy.floor(indices).astype(numpy.int)
+        
+    @late
+    def isvalid(self):
+        return numpy.logical_and(
+            numpy.all(self.index >= self.grid.get_minimum_index()),
+            numpy.all(self.index <= self.grid.get_maximum_index())
+        )
+    
+    @late
+    def cell(self):
+        return self.grid[tuple(self.index)]
+    
+    def get_value_of_attribute(self, name_of_the_attribute):
+        return getattr(self.cell, name_of_the_attribute)
+    
+    def __getattr__(self, name_of_the_attribute):
+        return self.get_value_of_attribute(name_of_the_attribute)
+
 class SamplePointWithIntepolation(object):
     """
     Vxyz =
@@ -260,6 +295,10 @@ class SamplePointWithIntepolation(object):
         self.point = point
         
     @late
+    def position(self):
+        return self.point
+    
+    @late
     def index(self):
         offset = self.point - self.grid.get_minimum_position()
         indices = (offset / self.grid.cellsize()).value_in(units.none)
@@ -271,6 +310,10 @@ class SamplePointWithIntepolation(object):
         indices = (offset / self.grid.cellsize()).value_in(units.none)
         return numpy.floor(indices).astype(numpy.int)
 
+    @late
+    def index_for_111_cell(self):
+        return self.index_for_000_cell + [1,1,1]
+    
     @late
     def surrounding_cell_indices(self):
         cell000 = self.index_for_000_cell
@@ -321,7 +364,7 @@ class SamplePointWithIntepolation(object):
     def isvalid(self):
         return numpy.logical_and(
             numpy.all(self.index_for_000_cell >= self.grid.get_minimum_index()),
-            numpy.all(self.index_for_000_cell <= self.grid.get_maximum_index())
+            numpy.all(self.index_for_111_cell <= self.grid.get_maximum_index())
         )
         
     def get_values_of_attribute(self, name_of_the_attribute):
@@ -337,28 +380,90 @@ class SamplePointWithIntepolation(object):
         
         
 
-class SamplePoints(object):
+class SamplePointsOnGrid(object):
     
-    def __init__(self, grid, points, samplesFactory = SamplePointWithIntepolation):
+    def __init__(self, grid, points, samples_factory = SamplePointWithIntepolation):
         self.grid = grid
-        self.samples = [samplesFactory(grid, x) for x in points]
+        self.samples = [samples_factory(grid, x) for x in points]
         self.samples = [x for x in self.samples if x.isvalid ]
         
     @late
     def indices(self):
-        for x in self.sample:
+        for x in self.samples:
             yield x.index
             
     @late
-    def points(self):
-        for x in self.sample:
-            yield x.point
+    def positions(self):
+        for x in self.samples:
+            yield x.position
         
     def __getattr__(self, name_of_the_attribute):
         result = values.AdaptingVectorQuantity()
         for x in self.samples:
             result.append(getattr(x, name_of_the_attribute))
         return result
+    
+    def __iter__(self):
+        for x in len(self):
+            yield self[x]
+    
+    def __getitem__(self, index):
+        return self.samples[index]
+    
+    def __len__(self):
+        return len(self.samples)
+
+class SamplePointsOnMultipleGrids(object):
+    
+    def __init__(self, grids, points, samples_factory = SamplePointWithIntepolation):
+        self.grids = grids
+        self.points = points
+        self.samples_factory = samples_factory
+    
+    def _grid_for_point(self, point):
+        for grid in self.grids:
+            if (numpy.all(point > grid.get_minimum_position()) and
+                 numpy.all(point < grid.get_maximum_position())):
+                return grid
+        return None 
+                
+    @late
+    def samples(self):
+        result = []
+        for x in self.points:
+            grid = self._grid_for_point(x)
+            if grid is None:
+                continue
+            sample = self.samples_factory(grid, x)
+            if not sample.isvalid:
+                continue
+            result.append(sample)
+        
+    @late
+    def indices(self):
+        for x in self.samples:
+            yield x.index
+            
+    @late
+    def positions(self):
+        for x in self.samples:
+            yield x.position
+        
+    def __getattr__(self, name_of_the_attribute):
+        result = values.AdaptingVectorQuantity()
+        for x in self.samples:
+            result.append(getattr(x, name_of_the_attribute))
+        return result
+    
+    def __iter__(self):
+        for x in len(self):
+            yield self[x]
+    
+    def __getitem__(self, index):
+        return self.samples[index]
+    
+    def __len__(self):
+        return len(self.samples)
         
         
 
