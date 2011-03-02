@@ -36,9 +36,8 @@ class TestMPIInterface(TestWithMPI):
         self.assertEquals(2.0, retrieved_state['radius'])
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
         #instance.cleanup_code()
-        print "XXXX"
         instance.stop()
-        print "XXX"
+        
     def test2(self):
         instance = PhiGRAPEInterface()
         for x in [0.101, 4.0]:
@@ -114,7 +113,7 @@ class TestMPIInterface(TestWithMPI):
     def test7(self):
         instance = PhiGRAPEInterface()#(debugger="xterm")
         instance.initialize_code()
-        print "1 "
+        
         instance.set_eps2(0.0**2)
         instance.set_eta(0.01,0.02)
         instance.commit_parameters()
@@ -177,6 +176,42 @@ class TestMPIInterface(TestWithMPI):
         self.assertTrue( abs(state1['x'] - state2['x'])<0.2)
         """
         instance.stop()
+        
+    
+    def test8(self):
+        instance = PhiGRAPEInterface()
+        instance.initialize_code()
+        instance.set_eps2(0.1**2)
+        instance.commit_parameters()
+        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        id2,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(id1)
+        self.assertEquals(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
+        total_potential, errorcode = instance.get_potential_energy()
+        potentials, errorcode = instance.get_potential([id1, id2])
+        
+        self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0)
+        
+    def test9(self):
+        instance = PhiGRAPEInterface()
+        instance.initialize_code()
+        instance.set_eps2(0)
+        instance.commit_parameters()
+        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        id2,errorcode = instance.new_particle(mass = 1.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(id1)
+        self.assertEquals(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
+        total_potential, errorcode = instance.get_potential_energy()
+        potentials, errorcode = instance.get_potential([id1, id2])
+        
+        self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
+        
 
 class TestPhigrape(TestWithMPI):
     def new_system_of_sun_and_earth(self):

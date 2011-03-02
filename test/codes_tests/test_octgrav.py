@@ -70,6 +70,27 @@ class TestMPIInterface(TestWithMPI):
     
         instance.cleanup_code()
         instance.stop()
+        
+    def test3(self):
+        instance = self.new_instance_of_an_optional_code(OctgravInterface)
+        instance.initialize_code()
+        instance.set_eps2(0.1**2)
+        instance.commit_parameters()
+        ids = []
+        for i in range(32):
+            id,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = i, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+            ids.append(id)
+            self.assertEquals(errorcode, 0)
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(ids[0])
+        self.assertEquals(errorcode, 0)
+        excpected_potential = numpy.sum([ -10.0 / numpy.sqrt((x+1.0)**2 + 0.1**2) for x in range(31)])
+        self.assertAlmostRelativeEquals(potential,excpected_potential , 5)
+        total_potential, errorcode = instance.get_potential_energy()
+        potentials, errorcode = instance.get_potential(ids)
+        
+        self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * 10.0) / 2.0)
+        
 
 class TestAmuseInterface(TestWithMPI):
     def new_system_of_sun_and_earth(self):

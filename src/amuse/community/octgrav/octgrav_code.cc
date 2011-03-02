@@ -194,9 +194,17 @@ int remove_particle(int id)
 
 int get_potential(int id, double * value)
 {
-  //should get id instead of position vector...
-  //*V = calcEpot(bodies_pos, bodies_grav);
-  return -2;
+  int i = get_index_from_identity(id);
+  if (i >= 0 && i < n_bodies)
+    {
+      *value = bodies_grav[i].w;
+      return 0;
+    }
+    else
+    {
+        *value = 0.0;
+        return -1;
+    }
 }
 
 int get_potential_energy(double *potential_energy)

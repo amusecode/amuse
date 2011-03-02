@@ -69,9 +69,10 @@ real t_evolve = t;                // Time requested by evolve.  Control returns
 real t_wanted = 0;
 
 vector<int>  ident;
-vector<real> mass, radius;
+vector<real> mass, radius, potential;
 vector<vec>  pos, vel, acc, jerk;
 vector<vec>  acc_reduced, jerk_reduced;
+vector<real> potential_reduced;
 
 // Control parameters:
 
@@ -309,6 +310,7 @@ inline int mpi_distribute_data(int n) {
         pos.resize(n+1);
         acc.resize(n+1);
         jerk.resize(n+1);
+        potential.resize(n+1, 0.0);
         ident.resize(n+1);
         mass.resize(n+1, 0.0);
         radius.resize(n+1, 0.0);
@@ -338,14 +340,17 @@ inline void mpi_collect_data(int n, real *epot, real *coll_time_q_out, real coll
     if(!mpi_rank) {
         acc_reduced.resize(n+1);
         jerk_reduced.resize(n+1);
+        potential_reduced.resize(n+1);
     }
     
     MPI_Reduce(&acc[0], &acc_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     MPI_Reduce(&jerk[0], &jerk_reduced[0], n * 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+    MPI_Reduce(&potential[0], &potential_reduced[0], n, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
     
     if(!mpi_rank) {
         acc = acc_reduced;
         jerk = jerk_reduced;
+        potential = potential_reduced;
     }
     
     mpi_collect_stopping_conditions();
@@ -370,6 +375,7 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
           {
             acc[i][k] = jerk[i][k] = 0;
           }
+        potential[i]= 0;
       }
 
     *epot = 0;
@@ -455,6 +461,8 @@ void get_acc_jerk_pot_coll(real *epot, real *coll_time)
             // Add the {i,j} contribution to the total potential energy.
 
             *epot -= mass[i] * mass[j] / r;
+            potential[i] = -mass[j] / r;
+            potential[j] = -mass[i] / r;
 
             // Add the {j (i)} contribution to the {i (j)} acc and jerk.
 
@@ -836,6 +844,7 @@ int cleanup_code()
     mass.clear();
     acc.clear();
     jerk.clear();
+    potential.clear();
     radius.clear();
     return 0;
 }
@@ -866,6 +875,7 @@ int new_particle(int *id, double _mass, double _radius,
   vel.push_back(vec(vx, vy, vz));
   acc.push_back(vec(0,0,0));
   jerk.push_back(vec(0,0,0));
+  potential.push_back(0);
 
   *id = new_element;
 
@@ -893,6 +903,7 @@ int delete_particle(int id)
       vel.erase(vel.begin()+i);
       acc.erase(acc.begin()+i);
       jerk.erase(jerk.begin()+i);
+      potential.erase(potential.begin()+i);
       return 0;
     }
   else
@@ -1254,8 +1265,18 @@ int get_potential_energy(double *potential_energy)
 
 int get_potential(int id,  double *value)
 {
-    // get the potential energy of one particle
-    return -2;
+	if(mpi_rank) {return 0;}
+	unsigned int i = find(ident.begin(), ident.end(), id) - ident.begin();
+	if (i < ident.size())
+	  {
+		*value = potential[i];
+		return 0;
+	  }
+	else
+	  {
+		*value = 0.0;
+		return -1;
+	  }
 }
 
 int get_potential_at_point(double eps, double x, double y, double z, double *phi)
@@ -1501,7 +1522,7 @@ int set_particle(int id, double _mass, double _radius, double x, double y, doubl
         vel[i] = vec(vx, vy, vz);
         acc[i] = vec(0.0);
         jerk[i] = vec(0.9);
-
+        potential[i] = 0;
         return 0;
       }
     else
@@ -1572,6 +1593,10 @@ int get_testmode(int * value) {
 }
 
 int recommit_particles(){
+    real epot, coll_time;
+
+    get_acc_jerk_pot_coll(&epot, &coll_time);
+
     return 0;
 }
 

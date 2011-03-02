@@ -107,7 +107,46 @@ class TestHermiteInterface(TestWithMPI):
         self.assertEqual(retr['phi'], -20.0)
         hermite.cleanup_code()
        
+    def test7(self):
+        instance = HermiteInterface()
+        instance.initialize_code()
+        instance.set_eps2(0.1 * 0.1)
+        instance.commit_parameters()
+        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        id2,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(id1)
+        self.assertEquals(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
+        
+        potential, errorcode = instance.get_potential(id2)
+        self.assertEquals(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
+        
+        total_potential, errorcode = instance.get_potential_energy()
+        potentials, errorcode = instance.get_potential([id1, id2])
+        
+        self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 10.0]) / 2.0)
+        
 
+    def test8(self):
+        instance = HermiteInterface()
+        instance.initialize_code()
+        instance.set_eps2(0)
+        instance.commit_parameters()
+        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        id2,errorcode = instance.new_particle(mass = 1.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(id1)
+        self.assertEquals(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential,  -1.0 / numpy.sqrt(2.0**2), 8)
+        total_potential, errorcode = instance.get_potential_energy()
+        potentials, errorcode = instance.get_potential([id1, id2])
+        
+        self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
+        
 class TestHermite(TestWithMPI):
     def new_system_of_sun_and_earth(self):
         stars = core.Stars(2)

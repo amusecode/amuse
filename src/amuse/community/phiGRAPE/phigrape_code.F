@@ -984,7 +984,7 @@ C---  get array address
          RETURN
       ENDIF
 
-      get_potential = pot(ip)
+      value = pot(ip)
       
       get_potential = 0
       RETURN

@@ -459,9 +459,23 @@ int delete_particle(int id)
     return 0;
 }
 
-int get_potential(int id, double *value)
+int get_potential(int index_of_the_particle, double *value)
 {
-  return -2;
+	if (!initialized) {
+		*value = 0.0;
+		return 0;
+	}
+	int i = get_index_from_identity(index_of_the_particle);
+
+    if (i >= 0 && i < bhtcs.n) {
+    	nbody_particle *np = bhtcs.get_particle_pointer();
+    	*value = np[i].get_phi_gravity();
+    }
+    else {
+        *value = 0.0;
+        return -1;
+    }
+	return 0;
 }
 
 int set_state(int index_of_the_particle, double mass, double radius, double x, double y, double z, double vx, double vy, double vz)
@@ -952,6 +966,7 @@ int get_escaper()
 
 int recommit_particles(){
     bhtcs.setup_tree();
+    bhtcs.calculate_gravity();
     
     return 0;
 }
@@ -970,6 +985,7 @@ int commit_particles(){
     
     bhtcs.time = 0.0;
     bhtcs.setup_tree();
+    bhtcs.calculate_gravity();
     return 0;
 }
 

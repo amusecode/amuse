@@ -104,20 +104,6 @@ class ph4Interface(CodeInterface,
         function.result_type = 'int32'
         return function
 
-    @legacy_function
-    def get_potential():
-        """
-        Return the potential at the position of a particle.  Note that
-        the specification here is not quite what it says in the
-        documentation (which is incorrect...).
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('index_of_the_particle', dtype='int32',
-                              direction=function.IN)
-        function.addParameter('potential', dtype='float64',
-                              direction=function.OUT)
-        function.result_type = 'int32'
-        return function
 
 class ph4(GravitationalDynamics):
 

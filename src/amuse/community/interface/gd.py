@@ -362,6 +362,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
             description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
         function.addParameter('potential', dtype='float64', direction=function.OUT, description = "The current scalar potential...")
         function.result_type = 'int32'
+        function.can_handle_array = True
         function.result_doc = """
         0 - OK
             current value was retrieved

@@ -160,7 +160,20 @@ class TestBHTreeInterface(TestWithMPI):
         self.assertEquals(interface.get_number_of_particles()['number_of_particles'], 2)
         interface.cleanup_code()
         interface.stop()
-    
+        
+    def test8(self):
+        instance = BHTreeInterface()
+        instance.initialize_code()
+        instance.set_epsilon_squared(0.1 * 0.1)
+        instance.commit_parameters()
+        id1,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
+        id2,errorcode = instance.new_particle(mass = 10.0, radius = 1.0, x = 2.0, y = 0.0, z = 0.0, vx = 10.0, vy = 0.0, vz = 0.0)
+        
+        instance.commit_particles()
+        potential, errorcode = instance.get_potential(id1)
+        self.assertEquals(errorcode, 0)
+        self.assertAlmostRelativeEquals(potential,  -10.0 / numpy.sqrt(2.0**2 + 0.1**2), 8)
+        
     
 class TestBHTree(TestWithMPI):
     def new_system_of_sun_and_earth(self):
