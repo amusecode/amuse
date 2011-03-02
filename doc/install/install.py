@@ -135,6 +135,13 @@ class InstallPrerequisites(object):
         else:
             return self.fortran_compiler
             
+    @late
+    def fortran77_compiler(self):
+        if 'F77' in os.environ:
+            return os.environ['F77']
+        else:
+            return None
+            
     
     @late
     def fortran_compiler(self):
@@ -430,10 +437,10 @@ if __name__ == '__main__':
     print "Files are downloaded to: ", INSTALL.temp_dir
     print ""
     
-    if INSTALL.fortran90_compiler is None:
+    if INSTALL.fortran90_compiler is None or INSTALL.fortran77_compiler is None:
         print """No fortran 90 compiler environment variable set.
-A FORTRAN 90 compiler is needed for MPI and several module, 
-please set FC first by (bash, replace gfortran with your preferred
+A FORTRAN 90 compiler is needed for MPI and several modules, 
+please set FC and F77 first by (bash, replace gfortran with your preferred
 compiler):
 
 export FC=gfortran
@@ -448,6 +455,7 @@ setenv F77 gfortran
         sys.exit(1)
     else:
         print "Fortran 90 compiler used will be: ", INSTALL.fortran90_compiler
+        print "Fortran 77 compiler used will be: ", INSTALL.fortran77_compiler
     
     print ""
     INSTALL.setup_temp_dir()
