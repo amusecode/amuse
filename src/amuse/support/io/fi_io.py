@@ -128,3 +128,5 @@ if __name__=="__main__":
     p=base.read_set_from_file("test2",format=FiFileFormatProcessor)  
     print p[0]
     print len(p[0]),len(p[1]),len(p[2])
+
+#Hello!
