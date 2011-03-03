@@ -105,6 +105,26 @@ class Gadget2Interface(CodeInterface, GravitationalDynamicsInterface, Literature
         return function
 
     @legacy_function
+    def get_potential():
+        """
+        Retrieve the current potential of a particle. 
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the potential from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('Potential', dtype='float64', direction=function.OUT, description = "The current potential of the particle")
+        function.addParameter('length', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            particle was found in the model and the information was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
     def set_state():
         """
         Update the current state of a particle. The *minimal* information of a stellar
@@ -1730,6 +1750,16 @@ class Gadget2(GravitationalDynamics):
                 generic_unit_system.acceleration,
                 generic_unit_system.acceleration,
                 generic_unit_system.acceleration,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_potential",
+            (
+                object.NO_UNIT,
+            ),
+            (
+                generic_unit_system.potential,
                 object.ERROR_CODE
             )
         )

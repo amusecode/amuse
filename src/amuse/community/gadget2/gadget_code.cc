@@ -9,7 +9,6 @@
 //AMUSE STOPPING CONDITIONS
 #include "stopcond.h"
 
-
 using namespace std;
 
 const bool debug = false;
@@ -526,6 +525,7 @@ int evolve(double t_end){
 int synchronize_model() {
     return 0;
 }
+
 int contruct_tree_if_needed(void){
     double tstart, tend;
     if (!particles_initialized)
@@ -543,6 +543,7 @@ int contruct_tree_if_needed(void){
     All.CPU_TreeConstruction += timediff(tstart, tend);
     return 0;
 }
+
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
     particle_id_counter++;
     if (ThisTask == 0)
@@ -563,6 +564,7 @@ int new_dm_particle(int *id, double mass, double x, double y, double z, double v
     dm_particles_in_buffer++;
     return 0;
 }
+
 int new_sph_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double u){
     particle_id_counter++;
     if (ThisTask == 0)
@@ -584,6 +586,7 @@ int new_sph_particle(int *id, double mass, double x, double y, double z, double 
     sph_particles_in_buffer++;
     return 0;
 }
+
 int delete_particle(int id){
     int found = 0;
     map<long long, int>::iterator it;
@@ -1300,6 +1303,7 @@ int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
     }
     return check_counts(count, length);
 }
+
 int get_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length) {
     int errors = 0;
     double buffer[length*7];
@@ -1360,6 +1364,7 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
     }
     return 0;
 }
+
 int set_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
     int count[length];
     int local_index;
@@ -1378,6 +1383,7 @@ int set_state(int *index, double *mass, double *x, double *y, double *z, double 
     }
     return check_counts(count, length);
 }
+
 int get_state_sph(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, double *internal_energy, int length) {
     int errors = 0;
     double buffer[length*8];
@@ -1449,6 +1455,7 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
     }
     return 0;
 }
+
 int set_state_sph(int *index, double *mass, double *x, double *y, double *z, 
         double *vx, double *vy, double *vz, double *internal_energy, int length){
     int count[length];
@@ -1629,6 +1636,7 @@ int get_smoothing_length(int *index, double *smoothing_length, int length){
     }
     return 0;
 }
+
 int get_density(int *index, double *density_out, int length){
     int errors = 0;
     double buffer[length];
@@ -1766,6 +1774,7 @@ int get_total_radius(double *radius){
     }
     return 0;
 }
+
 int get_total_mass(double *mass){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
@@ -1773,9 +1782,51 @@ int get_total_mass(double *mass){
     *mass = SysState.Mass;
     return 0;
 }
-int get_potential(int id, double * value){
-    return -2;
+
+int get_potential(int *index, double *potential, int length)
+{
+     int errors = 0;
+     double buffer[length];
+     int count[length];
+     int local_index;
+
+     if (!potential_energy_also_up_to_date) {
+	  compute_potential();
+	  potential_energy_also_up_to_date = true;
+     }
+     
+     for (int i = 0; i < length; i++) {
+	  if (found_particle(index[i], &local_index)) {
+	       count[i] = 1;
+	       buffer[i] = P[local_index].Potential;
+	  } else {
+	       count[i] = 0;
+	       buffer[i] = 0;
+	  }
+     }
+
+     if (ThisTask) {
+	  MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	  MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+     } else {
+	  MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	  MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	  for (int i = 0; i < length; i++) {
+	       if (count[i] != 1){
+		    errors++;
+		    potential[i] = 0;
+	       } else {
+		    potential[i] = buffer[i];
+	       }
+	  }
+     }
+     if (errors) {
+	  cout << "Number of particles not found: " << errors << endl;
+	  return -3;
+     }
+     return 0;
 }
+
 int get_kinetic_energy(double *kinetic_energy){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);
