@@ -9,7 +9,7 @@ from collections import namedtuple
 import struct
 import numpy
 
-ioversion=1
+ioversion=2
 
 nheader=8
 nihead=32
@@ -46,6 +46,8 @@ variables=[
   [ "hsmcurlv",'d',23,"gas", nbody_system.speed],
   [ "vdisp",'d',24,"gas", nbody_system.speed],
   [ "h2frac",'d',25,"gas", units.none],
+  [ "dethdt",'d',26,"gas", nbody_system.speed**2/nbody_system.time],
+  [ "dentdt",'d',27,"gas", units.none],   # not sure about this unit
   [ "starfuv",'d',34,"stars", units.erg/units.s],    # special case
   [ "snentropy",'d',35,"stars", units.none],  # not sure about this unit
   [ "pot", 'd', 40, "all", nbody_system.speed**2],
@@ -129,4 +131,3 @@ if __name__=="__main__":
     print p[0]
     print len(p[0]),len(p[1]),len(p[2])
 
-#Hello!
