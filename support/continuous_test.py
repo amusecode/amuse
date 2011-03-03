@@ -240,7 +240,7 @@ class WriteTestReportOnTestingBlog(object):
         if filename.endswith('.pyc'):
             filename = filename[:-3] + 'py'
         
-        self.parts.append('<a href="/trac/amuse/browser/trunk'+filename+'#L'+str(lineno)+'">')
+        self.parts.append('<a href="/trac/browser/trunk'+filename+'#L'+str(lineno)+'">')
         self.parts.append(str(id))
         self.parts.append('</a>')
         
