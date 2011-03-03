@@ -196,6 +196,38 @@ class mmcInterface(CodeInterface, PolarSupport):
         return function
 
     @legacy_function
+    def set_iseed():
+        function = LegacyFunctionSpecification()
+        function.addParameter('init_sequence_of_rnd_numbs', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_flagr():
+        function = LegacyFunctionSpecification()
+        function.addParameter('lagrangeradii', dtype='float64', direction=function.IN)
+        function.addParameter('len', dtype='int32', direction=function.LENGTH)
+        function.result_type = 'int32'
+        function.must_handle_array = True
+        return function
+
+    @legacy_function
+    def get_flagr():
+        function = LegacyFunctionSpecification()
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        function.addParameter('flagr_', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        function.can_handle_array = True
+        return function
+
+    @legacy_function
+    def get_nlagra():
+        function = LegacyFunctionSpecification()
+        function.addParameter('nlagrange', dtype='int32', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def get_irun():
         function = LegacyFunctionSpecification()
         function.addParameter('init_sequence_of_rnd_numbs', dtype='int32', direction=function.OUT)
@@ -210,7 +242,14 @@ class mmcInterface(CodeInterface, PolarSupport):
         return function
 
     @legacy_function
-    def set_nt_naught():
+    def set_nt0():
+        function = LegacyFunctionSpecification()
+        function.addParameter('tot_numb_of_objs', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_nt00():
         function = LegacyFunctionSpecification()
         function.addParameter('tot_numb_of_objs', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
@@ -266,14 +305,14 @@ class mmcInterface(CodeInterface, PolarSupport):
         return function
 
     @legacy_function
-    def set_nz_naught():
+    def set_nz0():
         function = LegacyFunctionSpecification()
         function.addParameter('numb_of_stars_in_each_zone_at_t0', dtype='int32', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_nz_naught():
+    def get_nz0():
         function = LegacyFunctionSpecification()
         function.addParameter('numb_of_stars_in_each_zone_at_t0', dtype='int32', direction=function.OUT)
         function.result_type = 'int32'
@@ -462,42 +501,42 @@ class mmcInterface(CodeInterface, PolarSupport):
         return function
 
     @legacy_function
-    def set_body_1():
+    def set_body1():
         function = LegacyFunctionSpecification()
         function.addParameter('max_particle_mass_before_scaling', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_body_1():
+    def get_body1():
         function = LegacyFunctionSpecification()
         function.addParameter('max_particle_mass_before_scaling', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def set_body_n():
+    def set_bodyn():
         function = LegacyFunctionSpecification()
         function.addParameter('min_particle_mass_before_scaling', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_body_n():
+    def get_bodyn():
         function = LegacyFunctionSpecification()
         function.addParameter('min_particle_mass_before_scaling', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def set_body_fracb():
+    def set_fracb():
         function = LegacyFunctionSpecification()
         function.addParameter('primordial_bin_fraction', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_body_fracb():
+    def get_fracb():
         function = LegacyFunctionSpecification()
         function.addParameter('primordial_bin_fraction', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
@@ -574,14 +613,14 @@ class mmcInterface(CodeInterface, PolarSupport):
         return function
 
     @legacy_function
-    def set_w_naught():
+    def set_w0():
         function = LegacyFunctionSpecification()
         function.addParameter('king_model_parameter', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_w_naught():
+    def get_w0():
         function = LegacyFunctionSpecification()
         function.addParameter('king_model_parameter', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
@@ -589,6 +628,13 @@ class mmcInterface(CodeInterface, PolarSupport):
 
     @legacy_function
     def set_bmin():
+        function = LegacyFunctionSpecification()
+        function.addParameter('min_val_of_sin_betasqr', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def set_bmin0():
         function = LegacyFunctionSpecification()
         function.addParameter('min_val_of_sin_betasqr', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
@@ -700,14 +746,14 @@ class mmcInterface(CodeInterface, PolarSupport):
         return function
 
     @legacy_function
-    def set_dtte_naught():
+    def set_dtte0():
         function = LegacyFunctionSpecification()
         function.addParameter('time_step_for_mloss_call_tph_lt_tcr', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
 
     @legacy_function
-    def get_dtte_naught():
+    def get_dtte0():
         function = LegacyFunctionSpecification()
         function.addParameter('time_step_for_mloss_call_tph_lt_tcr', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'

@@ -43,7 +43,7 @@
         print*, "NT in input function is:"
         print*, nt
         nt0 = nt
-        iseed = ixx1q
+        iseed = ixx1
         nz0 = ixx3
         zmbar = xxx4
         nt00 = nt0

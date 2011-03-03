@@ -6,8 +6,6 @@ from amuse.ext.plummer import MakePlummerModel
 
 from amuse.community.hop.interface import HopInterface as Hop
 
-from matplotlib import pyplot
-
 import logging
 #logging.basicConfig(level=logging.DEBUG)
 
@@ -54,13 +52,6 @@ def coreradius(mass,x,y,z):
   y_core=numpy.sum(dens*y)/tdens
   z_core=numpy.sum(dens*z)/tdens
 
-  #r=((x-x_core)**2+(y-y_core)**2+(z-z_core)**2)**0.5
-  #pyplot.figure(figsize=(8,6))
-  #pyplot.loglog(r,dens,'r .')
-  #pyplot.xlabel('r')
-  #pyplot.ylabel('dens')
-  #pyplot.show()
-  
   rc=numpy.sqrt(
       numpy.sum(dens**2*((x-x_core)**2+(y-y_core)**2+(z-z_core)**2))/numpy.sum(dens**2))
   return x_core,y_core,z_core,rc

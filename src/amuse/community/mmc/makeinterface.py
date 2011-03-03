@@ -6,11 +6,11 @@
 funcs =\
 [['irun','','init_sequence_of_rnd_numbs'],
 ['nt','','tot_numb_of_objs'],
-['nt_naught','','num'],
+['nt0','','num'],
 ['istart','','start_or_restart'],
 ['ncor','','numb_of_stars_to_calc_c_parms'],
 ['nmin','','min_numb_of_stars_to_calc_c_parms'],
-['nz_naught','','numb_of_stars_in_each_zone_at_t0'],
+['nz0','','numb_of_stars_in_each_zone_at_t0'],
 ['nzonc','','min_numb_of_zones_in_the_core'],
 ['nminzo','','min_numb_of_stars_in_a_zone'],
 ['ntwo','','max_index_od_two'],
@@ -24,15 +24,15 @@ funcs =\
 ['alphal','','pwr_law_index_lt_breake_mass'],
 ['alphah', '','pwr_law_index_ht_breake_mass'],
 ['brakem','DOUBLE PRECISION','mass_in_which_IMF_breaks'],
-['body_1','DOUBLE PRECISION','max_particle_mass_before_scaling'],
-['body_n','DOUBLE PRECISION','min_particle_mass_before_scaling'],
-['body_fracb','DOUBLE PRECISION','primordial_bin_fraction'],
+['body1','DOUBLE PRECISION','max_particle_mass_before_scaling'],
+['bodyn','DOUBLE PRECISION','min_particle_mass_before_scaling'],
+['fracb','DOUBLE PRECISION','primordial_bin_fraction'],
 ['amin','DOUBLE PRECISION','min_semi_major_ax_of_bins'],
 ['amax','DOUBLE PRECISION','max_semi_major_ax_of_bins'],
 ['qvir','DOUBLE PRECISION','virial_ratio'],
 ['rbar','DOUBLE PRECISION','tidal_radius'],
 ['zmbar','DOUBLE PRECISION','total_mass_cluster'],
-['w_naught','DOUBLE PRECISION','king_model_parameter'],
+['w0','DOUBLE PRECISION','king_model_parameter'],
 ['bmin','DOUBLE PRECISION','min_val_of_sin_betasqr'],
 ['bmax','DOUBLE PRECISION','max_val_of_sin_betasqr'],
 ['tau0','DOUBLE PRECISION','time_step_for_complete_cluster_model'],
@@ -41,7 +41,7 @@ funcs =\
 ['rplum','DOUBLE PRECISION','rsplum_scale_radius_plummer_model'],
 ['dttp','DOUBLE PRECISION','time_step_for_profile_output'],
 ['dtte','DOUBLE PRECISION','time_step_for_mloss_call'],
-['dtte_naught','DOUBLE PRECISION','time_step_for_mloss_call_tph_lt_tcr'],
+['dtte0','DOUBLE PRECISION','time_step_for_mloss_call_tph_lt_tcr'],
 ['tcrevo','DOUBLE PRECISION','critical_time_step_dtte0_to_dtte'],
 ['xtau','DOUBLE PRECISION','call_mloss'],
 ['ytau','DOUBLE PRECISION','mult_tau0'],
@@ -50,7 +50,10 @@ funcs =\
 ['ikroupa','','initial_bins_parameters'],
 ['iflagns','','natal_kicks_ns'],
 ['iflagbh','','natal_kicks_bh'],
-['nitesc','','iteration_tidal_radius']]
+['nitesc','','iteration_tidal_radius'],
+['nt00','','num'],
+['bmin0','DOUBLE PRECISION','num'],
+['iseed','','rnd_seed']]
 
 codestringfort = \
 """
@@ -321,7 +324,11 @@ if __name__ == '__main__':
         h.write("    function.result_type = 'int32'\n")
         h.write("    return function\n\n")
 
+        print "mmc.set_{0}()".format(i)
+
     f.write("END MODULE\n")
+
+
 
     f.close()
     g.close()

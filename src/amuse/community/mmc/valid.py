@@ -53,14 +53,66 @@ def example_M67():
 
     mmc = mmcInterface(redirection="null")
     mmc.set_mmc_data_directory(mmc.data_directory)
-    mmc.set_nt(1000)
-    n_total = mmc.get_number_of_particles().n_
 
+    mmc.set_irun(10)
+    mmc.set_iseed(10)
+    mmc.set_nt(2000)
+    mmc.set_nt0(2000)
+    mmc.set_nt00(2000)
+    mmc.set_istart(1)
+    mmc.set_ncor(20)
+    mmc.set_nmin(5)
+    mmc.set_nz0(100)
+    mmc.set_nzonc(1)
+    mmc.set_nminzo(30)
+    mmc.set_ntwo(10)
+    mmc.set_imodel(4)
+    mmc.set_iprint(3)
+    mmc.set_ib3f(3)
+    mmc.set_iexch(2)
+    mmc.set_tcrit(600000.0)
+    mmc.set_tcomp(18000.0)
+    mmc.set_qe(1.e-0)
+    mmc.set_alphal(1.3)
+    mmc.set_alphah(2.3)
+    mmc.set_brakem(0.5)
+    mmc.set_body1(100.0)
+    mmc.set_bodyn(0.1)
+    mmc.set_fracb(0.00)        
+    mmc.set_amin(0.0)              
+    mmc.set_amax(10747.0)              
+    mmc.set_qvir(0.5)              
+    mmc.set_rbar(100.0)              
+    mmc.set_zmbar(426000.0)             
+    mmc.set_w0(5.0)          
+    mmc.set_bmin(0.01)              
+    mmc.set_bmin0(0.01)              
+    mmc.set_bmax(2.0 * 0.01)              
+    mmc.set_tau0(0.002)              
+    mmc.set_gamma(0.02)             
+    mmc.set_xtid(1.36)              
+    mmc.set_rplum(60.0)             
+    mmc.set_dttp(500.0)              
+    mmc.set_dtte(500.0)              
+    mmc.set_dtte0(100.0)       
+    mmc.set_tcrevo(1000.0)            
+    mmc.set_xtau(1.0)              
+    mmc.set_ytau(2.0)              
+    mmc.set_ybmin(2.0)             
+    mmc.set_zini(0.0200)              
+    mmc.set_ikroupa(0)           
+    mmc.set_iflagns(2)           
+    mmc.set_iflagbh(2)           
+    mmc.set_nitesc(0)
+    mmc.set_flagr([0.005,0.01,0.02,0.03, 0.04,0.05,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,0.99])
+
+    nlagra =  mmc.get_nlagra().nlagrange
+    print mmc.get_flagr(range(1,nlagra+1))
+    """
     mmc.amuse_input()
-    mmc.set_imodel(2) #M67
+    """
     mmc.nonstandard_init()
-
-    mmc.set_tau0(0.001)
+    n_total = mmc.get_number_of_particles().n_
 
     mass,radius,x,y,z,vx,vy,vz = plummer(n_total)
     r_, vr_, vt_ = mmc.phase_to_polar(x, y, z, vx, vy, vz)
@@ -86,7 +138,6 @@ def example_M67():
 
     control_parts = res['index_of_the_particle']
     control.commit_particles()                                                                   
-
     mmc.set_istart(1)    
 
     for time_end in np.arange(0.001,1,0.001):

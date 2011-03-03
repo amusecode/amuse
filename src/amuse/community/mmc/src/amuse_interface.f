@@ -89,6 +89,34 @@
       get_total_potential_energy_src = 0
       end function
 
+      function set_flagr(temp_, N)
+      include 'common.h'
+      integer, intent(in)::N
+      double precision temp_(N)
+      integer set_flagr, i
+      do i = 1, N
+          flagr(i) = temp_(i)
+      end do
+      set_flagr = 0
+      end function
+
+      function get_flagr(id, flagr_)
+      include 'common.h'
+      integer id
+      double precision flagr_
+      integer get_flagr
+      flagr_ = flagr(id)
+      get_flagr = 0
+      end function
+
+      function get_nlagra(temp_)
+      include 'common.h'
+      integer get_nlagra
+      integer temp_
+      temp_ = nlagra
+      get_nlagra = 0
+      end function
+
       function test_sort(n, aa, bb)
       integer n
       real*8 aa
