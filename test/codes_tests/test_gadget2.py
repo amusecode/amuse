@@ -19,7 +19,7 @@ default_options = dict(number_of_workers=2)
 
 # ... but never use (number_of_workers>1) for tests with only a few particles:
 few_particles_default_options = dict()
-#few_particles_default_options = dict(redirection="none")
+few_particles_default_options = dict(redirection="none")
 
 class TestGadget2Interface(TestWithMPI):
 
@@ -55,6 +55,22 @@ class TestGadget2Interface(TestWithMPI):
         self.assertEquals([2, 1], instance.get_index_of_next_particle(1).values())
         self.assertEquals(-1, instance.get_index_of_next_particle(2)['__result'])
         self.assertEquals(0, instance.evolve(0.01))
+        self.assertEquals(0, instance.cleanup_code())
+        instance.stop()
+
+    def test3a(self):
+        instance = Gadget2Interface(**few_particles_default_options)
+        self.assertEquals(0, instance.initialize_code())
+        self.assertEquals(0, instance.set_gadget_output_directory(instance.get_output_directory()))
+        #cgs
+        instance.set_unit_mass(0.001)
+        instance.set_unit_length(1.0)
+        instance.set_unit_time(122404.614048)
+        self.assertEquals(0, instance.commit_parameters())
+        self.assertEquals([1, 0], instance.new_dm_particle(1.,  1, 0, 0,  0, 0, 0).values())
+        self.assertEquals([2, 0], instance.new_dm_particle(1., -1, 0, 0,  0, 0, 0).values())
+        self.assertEquals(0, instance.commit_particles())
+        self.assertAlmostEqual(-0.500 , instance.get_potential(1)['Potential'], places=1)
         self.assertEquals(0, instance.cleanup_code())
         instance.stop()
 
