@@ -2783,6 +2783,112 @@ CONTAINS
     end function  
 
 
+    function get_acceleration_grid_size(nx, ny, nz)
+        include 'amrvacdef.f'
+
+        integer :: get_acceleration_grid_size
+        integer, intent(out) :: nx, ny, nz
+        
+        nx = naccel1
+        ny = naccel2
+        nz = naccel3
+    
+        get_acceleration_grid_size = 0
+    end function
+    
+    
+    function set_acceleration_grid_acceleration(i, j, k, a1, a2, a3, n)
+        include 'amrvacdef.f'
+              
+        integer :: index
+        integer :: set_acceleration_grid_acceleration
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k
+        
+        double precision, intent(in), dimension(n) :: a1, a2, a3
+        
+        do index = 1,n
+            
+ !           if (local_index_of_grid /= 0) then
+                !if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                !
+                !else
+                    
+                accel(i(index),j(index),k(index),1) = a1(index)
+                accel(i(index),j(index),k(index),2) = a2(index)
+                accel(i(index),j(index),k(index),3) = a3(index)
+                    
+                
+                !end if
+!            end if
+            
+        end do
+        
+        set_acceleration_grid_acceleration = 0
+    end function
+    
+    function get_acceleration_grid_acceleration(i, j, k, a1, a2, a3, n)
+        include 'amrvacdef.f'
+       
+        integer :: index
+        integer :: get_acceleration_grid_acceleration
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k
+        
+        double precision, intent(out), dimension(n) :: a1, a2, a3
+        
+        do index = 1,n
+            
+ !           if (local_index_of_grid /= 0) then
+                !if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                !
+                !else
+                    
+                a1(index) = accel(i(index),j(index),k(index),1)
+                a2(index) = accel(i(index),j(index),k(index),2)
+                a3(index) = accel(i(index),j(index),k(index),3)
+                    
+                
+                !end if
+ !           end if
+            
+        end do
+        
+        get_acceleration_grid_acceleration = 0
+    end function
+    
+    function get_acceleration_grid_position_of_index(i, j, k, x, y, z, n)
+        include 'amrvacdef.f'
+        
+        integer :: index
+        integer :: get_acceleration_grid_position_of_index
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k
+        
+        double precision, intent(out), dimension(n) :: x, y, z
+        
+        do index = 1,n
+            
+ !           if (local_index_of_grid /= 0) then
+                !if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                !
+                !else
+                    
+                x(index) = xaccel1(i(index))
+                y(index) = xaccel2(j(index))
+                z(index) = xaccel3(k(index))
+                    
+                
+                !end if
+ !           end if
+            
+        end do
+        
+        get_acceleration_grid_position_of_index = 0
+    end function
     
 END MODULE mpiamrvac_interface
 

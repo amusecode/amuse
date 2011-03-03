@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/amrio.t
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/amrio.t	2010-12-21 14:26:28.000000000 +0100
-+++ mpiamrvac/src/mpiamrvac/src/amrio.t	2010-12-21 14:26:31.000000000 +0100
+--- mpiamrvac.orig/src/mpiamrvac/src/amrio.t	2010-12-16 15:40:45.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrio.t	2011-03-01 11:30:47.000000000 +0100
 @@ -1,8 +1,10 @@
  !=============================================================================
 -subroutine readparameters
@@ -29,8 +29,8 @@ Index: mpiamrvac/src/mpiamrvac/src/amrio.t
  read(unitpar,testlist)
 Index: mpiamrvac/src/mpiamrvac/src/comm_lib.t
 ===================================================================
---- mpiamrvac.orig/src/mpiamrvac/src/comm_lib.t	2010-12-21 14:26:28.000000000 +0100
-+++ mpiamrvac/src/mpiamrvac/src/comm_lib.t	2010-12-22 13:14:07.000000000 +0100
+--- mpiamrvac.orig/src/mpiamrvac/src/comm_lib.t	2009-07-09 11:09:19.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/comm_lib.t	2011-03-01 11:30:47.000000000 +0100
 @@ -136,9 +136,24 @@
  character(len=*), intent(in) :: message
  
@@ -56,3 +56,350 @@ Index: mpiamrvac/src/mpiamrvac/src/comm_lib.t
  call MPI_ABORT(icomm,ierrcode,ierrmpi)
  
  end subroutine mpistop
+Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2011-03-03 16:49:52.000000000 +0100
+@@ -0,0 +1,159 @@
++subroutine acceleration(qdt,ixI^L,ixO^L,iw^LIM,qtC,wCT,qt,w,x)
++
++
++include 'amrvacdef.f'
++
++
++integer, intent(in)             :: ixI^L, ixO^L, iw^LIM
++double precision, intent(in)    :: qdt, qtC, qt, x(ixI^S,1:ndim)
++double precision, intent(inout) :: wCT(ixI^S,1:nw), w(ixI^S,1:nw)
++
++double precision                :: acc(ixG^T,1:ndim)
++!-----------------------------------------------------------------------------
++
++
++
++call getacceleration(ixI^L,ixO^L,x,acc)
++
++w(ixO^S,e_) =  w(ixO^S,e_)    &
++            + qdt *wCT(ixO^S,m1_)*acc(ixO^S,1)   
++{^NOONED
++w(ixO^S,e_) =  w(ixO^S,e_)    &
++            + qdt *wCT(ixO^S,m2_)*acc(ixO^S,2)
++}
++{^IFTHREED
++w(ixO^S,e_) =  w(ixO^S,e_)  &
++            + qdt *wCT(ixO^S,m3_)*acc(ixO^S,3)
++}
++
++!
++!  Update momentum
++!
++
++w(ixO^S,m1_) =  w(ixO^S,m1_)  &
++             + qdt *wCT(ixO^S,rho_)*acc(ixO^S,1)
++{^NOONED
++w(ixO^S,m2_) =  w(ixO^S,m2_)  &
++             + qdt *wCT(ixO^S,rho_)*acc(ixO^S,2)
++}
++{^IFTHREED
++w(ixO^S,m3_) =  w(ixO^S,m3_)  &
++             + qdt *wCT(ixO^S,rho_)*acc(ixO^S,3)
++}
++
++return 
++
++end subroutine acceleration
++!==============================================================================
++subroutine getdt_acceleration(w,ixG^L,ix^L,dtnew,dx^D,x)
++
++!
++! Limits timestep for gravitational pointsource
++!
++
++
++include 'amrvacdef.f'
++
++integer, intent(in)             :: ixG^L, ix^L
++double precision, intent(in)    :: dx^D, x(ixG^S,1:ndim)
++double precision, intent(inout) :: w(ixG^S,1:nw), dtnew
++
++double precision                :: acc(ixG^T,1:ndim), dxinv(1:ndim)
++double precision                :: dtaccel(1:ndim)
++
++integer                         :: idims
++!-----------------------------------------------------------------------------
++
++
++dtaccel = bigdouble
++^D&dxinv(^D)=one/dx^D;
++
++call getacceleration(ixG^L,ix^L,x,acc)
++acc(ix^S,1:ndim) = max(smalldouble,dabs(acc(ix^S,1:ndim)))
++
++do idims=1,ndim
++      dtaccel(idims) = minval(one/(acc(ix^S,idims)*dxinv(idims)))
++enddo
++
++dtnew = sqrt(minval(dtaccel(1:ndim)))
++
++return
++end subroutine getdt_acceleration
++!===========================================================================
++subroutine getacceleration(ixI^L,ixO^L,x,acc)
++
++include 'amrvacdef.f'
++
++integer, intent(in)           :: ixO^L,ixI^L
++double precision, intent(in)  :: x(ixI^S,1:ndim)
++double precision, intent(out) :: acc(ixG^T,1:ndim)
++
++! local
++integer :: ix^D, iaccel^D
++
++!----------------------------------------------------------------------------
++
++
++acc(ixO^S,1:ndim) = zero
++
++{do ix^D = ixO^LIM^D\}
++    call findaccelblock(ix^D,ixI^L,x,iaccel^D)
++    acc(ix^D,1) = accel(iaccel^D,1)
++    acc(ix^D,2) = accel(iaccel^D,2)
++    acc(ix^D,3) = accel(iaccel^D,3)
++{enddo^D&\}
++    
++return
++
++end subroutine getacceleration
++!===========================================================================
++subroutine findaccelblock(ix^D,ixI^L,x,iaccel^D)
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ix^D,ixI^L
++double precision, intent(in)  :: x(ixI^S,1:ndim)
++integer, intent(out) :: iaccel^D
++
++iaccel1 = int((x(ix^D,1)-xaccel1(1))/dxaccel1)+1
++iaccel2 = int((x(ix^D,2)-xaccel2(1))/dxaccel2)+1
++iaccel3 = int((x(ix^D,3)-xaccel3(1))/dxaccel3)+1
++
++
++return
++end subroutine findaccelblock
++!============================================================================
++subroutine setaccelgrid
++
++include 'amrvacdef.f'
++
++integer :: i
++!----------------------------------------------------------------------------
++
++xaccel1(1) = xprobmin1-dx(1,1) ! dx(1,1) obtained from AMUSE interface
++xaccel2(1) = xprobmin2-dx(2,1) ! dx(2,1) obtained from AMUSE interface
++xaccel3(1) = xprobmin3-dx(3,1) ! dx(3,1) obtained from AMUSE interface
++
++xaccel1(naccel1) = xprobmax1+dx(1,1)
++xaccel2(naccel2) = xprobmax2+dx(2,1)
++xaccel3(naccel3) = xprobmax3+dx(3,1)
++
++dxaccel1 = (xaccel1(naccel1) - xaccel1(1))/(naccel1-1)
++dxaccel2 = (xaccel2(naccel2) - xaccel2(1))/(naccel2-1)
++dxaccel3 = (xaccel3(naccel3) - xaccel3(1))/(naccel3-1)
++
++DO i=2,naccel1-1
++  xaccel1(i) = xaccel1(i-1) + dxaccel1
++ENDDO
++DO i=2,naccel2-1
++  xaccel2(i) = xaccel2(i-1) + dxaccel2
++ENDDO
++DO i=2,naccel3-1
++  xaccel3(i) = xaccel3(i-1) + dxaccel3
++ENDDO
++
++accel(1:naccel1,1:naccel2,1:naccel3,1:ndim) = zero
++
++return
++end subroutine setaccelgrid
++!============================================================================
+Index: mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2011-03-03 15:50:45.000000000 +0100
+@@ -0,0 +1,25 @@
++!==============================================================================
++! include file amrvacusrpar.acceleration.t
++!-----------------------------------------------------------------------------
++
++
++INTEGER, PARAMETER :: naccel1 = 50 
++INTEGER, PARAMETER :: naccel2 = 50 
++INTEGER, PARAMETER :: naccel3 = 50 
++
++COMMON, DOUBLE PRECISION :: xaccel1(1:naccel1) 
++COMMON, DOUBLE PRECISION :: xaccel2(1:naccel2)
++COMMON, DOUBLE PRECISION :: xaccel3(1:naccel3)
++
++COMMON, DOUBLE PRECISION :: dxaccel1
++COMMON, DOUBLE PRECISION :: dxaccel2
++COMMON, DOUBLE PRECISION :: dxaccel3
++
++
++COMMON, DOUBLE PRECISION :: accel(1:naccel1,1:naccel2,1:naccel3,1:ndim)
++
++
++
++
++! end include file amrvacusrpar.acceleration.t
++!==============================================================================
+Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2011-03-03 16:15:26.000000000 +0100
+@@ -0,0 +1,124 @@
++!=============================================================================
++! amrvacusr.t.nul
++!=============================================================================
++INCLUDE:amrvacnul.specialini.t
++INCLUDE:amrvacnul.speciallog.t
++INCLUDE:amrvacnul.specialbound.t
++!INCLUDE:amrvacnul.specialsource.t
++
++INCLUDE:amrvacusr.acceleration.t
++
++!======================================================================================
++
++subroutine specialsource(qdt,ixI^L,ixO^L,iw^LIM,qtC,wCT,qt,w,x)
++
++! Calculate w(iw)=w(iw)+qdt*SOURCE[wCT,qtC,x] within ixO for all indices
++! iw=iwmin...iwmax.  wCT is at time qCT
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ixO^L, iw^LIM
++double precision, intent(in) :: qdt, qtC, qt, x(ixI^S,1:ndim)
++double precision, intent(inout) :: wCT(ixI^S,1:nw), w(ixI^S,1:nw)
++
++!-------------------------------------------------------------------
++
++call setaccelgrid
++
++call acceleration(qdt,ixI^L,ixO^L,iw^LIM,qtC,wCT,qt,w,x)
++
++end subroutine specialsource
++!=============================================================================
++subroutine getdt_special(w,ixG^L,ix^L,dtnew,dx^D,x)
++
++! Limit "dt" further if necessary, e.g. due to the special source terms.
++! The getdt_courant (CFL condition) and the getdt subroutine in the AMRVACPHYS
++! module have already been called.
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixG^L, ix^L
++double precision, intent(in) :: dx^D, x(ixG^S,1:ndim)
++double precision, intent(inout) :: w(ixG^S,1:nw), dtnew
++!-----------------------------------------------------------------------------
++
++dtnew=bigdouble
++
++call getdt_acceleration(w,ixG^L,ix^L,dtnew,dx^D,x)
++
++end subroutine getdt_special
++
++!=============================================================================
++subroutine specialeta(w,ixI^L,ix^L,idirmin,x,current,eta)
++
++! Set the "eta" array for resistive MHD based on w or the
++! "current" variable which has components between idirmin and 3.
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixI^L, ix^L, idirmin
++double precision, intent(in) :: w(ixI^S,nw), x(ixI^S,1:ndim)
++
++double precision :: current(ixG^T,7-2*ndir:3), eta(ixG^T)
++!-----------------------------------------------------------------------------
++
++!  eta(ix^S)=...
++
++call mpistop("specialeta is not defined")
++
++end subroutine specialeta
++!=============================================================================
++subroutine specialrefine_grid(igrid,level,ixG^L,ix^L,qt,w,x,refine,coarsen)
++
++! Enforce additional refinement or coarsening
++! One can use the coordinate info in x and/or time qt=t_n and w(t_n) values w.
++
++! you must set consistent values for integers refine/coarsen:
++
++! refine = -1 enforce to not refine
++! refine =  0 doesn't enforce anything
++! refine =  1 enforce refinement
++
++! coarsen = -1 enforce to not coarsen
++! coarsen =  0 doesn't enforce anything
++! coarsen =  1 enforce coarsen
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: igrid, level, ixG^L, ix^L
++double precision, intent(in) :: qt, w(ixG^S,1:nw), x(ixG^S,1:ndim)
++integer, intent(inout) :: refine, coarsen
++!-----------------------------------------------------------------------------
++
++! e.g. refine for negative first coordinate x < 0 as
++!
++! if (any(x(ix^S,1) < zero)) refine=1
++
++end subroutine specialrefine_grid
++!=============================================================================
++subroutine specialvarforerrest(ixI^L,ixO^L,iflag,w,var)
++
++! this is the place to compute a local auxiliary variable to be used
++! as refinement criterion for the Lohner error estimator only
++!  -->it is then requiring and iflag>nw
++! note that ixO=ixI=ixG, hence the term local (gradients need special attention!)
++
++include 'amrvacdef.f'
++
++integer, intent(in)          :: ixI^L,ixO^L,iflag
++double precision, intent(in) :: w(ixI^S,1:nw)
++double precision, intent(out):: var(ixG^T)
++!-----------------------------------------------------------------------------
++
++if (iflag >nw)call mpistop(' iflag> nw, make change in parfile or in user file')
++
++var(ixI^S) = zero 
++
++end subroutine specialvarforerrest
++!=============================================================================
++
++
++
++!=============================================================================
++! amrvacusr.t.nul
++!=============================================================================
+Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusrpar.t.amuse
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusrpar.t.amuse	2011-03-03 15:34:21.000000000 +0100
+@@ -0,0 +1,19 @@
++!##############################################################################
++! include amrvacusrpar - nul
++
++! This file should contain the number of PROBLEM dependent equation parameters,
++! the index names for them with values neqpar+1..neqpar+nspecialpar,
++! and a string giving the names for the file header. For example:
++!
++! INTEGER,PARAMETER:: mass_=neqpar+1, nspecialpar=1
++! CHARACTER*4,PARAMETER:: specialparname='mass'
++!
++! By default there are no special parameters
++
++INCLUDE: amrvacusrpar.acceleration.t
++
++INTEGER,PARAMETER:: nspecialpar=0
++CHARACTER*1,PARAMETER:: specialparname=' '
++
++! end include amrvacusrpar - nul
++!##############################################################################

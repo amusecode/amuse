@@ -2043,6 +2043,67 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
         function.result_type = 'i'
         return function
     
+    #
+    #
+    #
+    
+    
+    @legacy_function    
+    def get_acceleration_grid_position_of_index():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        #function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        
+        function.addParameter('n', dtype='i', direction=function.LENGTH)
+        
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function    
+    def get_acceleration_grid_acceleration():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        #function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['a1','a2', 'a3']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        
+        function.addParameter('n', dtype='i', direction=function.LENGTH)
+        
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function    
+    def set_acceleration_grid_acceleration():
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        #function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['a1','a2', 'a3']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        
+        function.addParameter('n', dtype='i', direction=function.LENGTH)
+        
+        function.result_type = 'i'
+        return function
+        
+    
+    @legacy_function
+    def get_acceleration_grid_size():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('nmeshx', dtype='i', direction=function.OUT)
+        function.addParameter('nmeshy', dtype='i', direction=function.OUT)
+        function.addParameter('nmeshz', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
     
     
 class MpiAmrVac(InCodeComponentImplementation):
