@@ -70,7 +70,7 @@ void set_default_parameters(){
     strcpy(All.InfoFile,    "info.txt");
     strcpy(All.TimingsFile, "timings.txt");
     strcpy(All.CpuFile,     "cpu.txt");
-    
+
     // parameters that are fixed for AMUSE:
     All.PartAllocFactor = 1.5; // Memory allocation parameter
     All.TreeAllocFactor = 0.8; // Memory allocation parameter
@@ -78,7 +78,7 @@ void set_default_parameters(){
     All.ResubmitOn = 0;              // Keep this turned off!
     All.OutputListOn = 0;            // Keep this turned off!
     All.GravityConstantInternal = 0; // Keep this turned off!
-    
+
     // parameters that are unused for AMUSE:
     strcpy(All.InitCondFile, "");
     strcpy(All.RestartFile, "");
@@ -103,34 +103,34 @@ int initialize_code(){
     for(PTask = 0; NTask > (1 << PTask); PTask++);
     RestartFlag = All.TotNumPart = All.TotN_gas = 0;
     All.CPU_TreeConstruction = All.CPU_TreeWalk = All.CPU_Gravity = All.CPU_Potential = All.CPU_Domain =
-        All.CPU_Snapshot = All.CPU_Total = All.CPU_CommSum = All.CPU_Imbalance = All.CPU_Hydro =
-        All.CPU_HydCompWalk = All.CPU_HydCommSumm = All.CPU_HydImbalance =
-        All.CPU_EnsureNgb = All.CPU_Predict = All.CPU_TimeLine = All.CPU_PM = All.CPU_Peano = 0;
+	All.CPU_Snapshot = All.CPU_Total = All.CPU_CommSum = All.CPU_Imbalance = All.CPU_Hydro =
+	All.CPU_HydCompWalk = All.CPU_HydCommSumm = All.CPU_HydImbalance =
+	All.CPU_EnsureNgb = All.CPU_Predict = All.CPU_TimeLine = All.CPU_PM = All.CPU_Peano = 0;
     CPUThisRun = 0;
     t0 = second();
     if(ThisTask == 0){
-        printf("\nThis is Gadget, version `%s'.\n", GADGETVERSION);
-        printf("\nRunning on %d processors.\n", NTask);
+	printf("\nThis is Gadget, version `%s'.\n", GADGETVERSION);
+	printf("\nRunning on %d processors.\n", NTask);
     }
-    
+
     t1 = second();
     CPUThisRun += timediff(t0, t1);
     All.CPU_Total += timediff(t0, t1);
 
     //AMUSE STOPPING CONDITIONS SUPPORT
     set_support_for_condition(NUMBER_OF_STEPS_DETECTION);
-    
+
     set_default_parameters();
     return 0;
 }
 
 int cleanup_code(){
     if (outfiles_opened)
-        close_outputfiles();
+	close_outputfiles();
     if (particles_initialized){
-        free_memory();
-        ngb_treefree();
-        force_treefree();
+	free_memory();
+	ngb_treefree();
+	force_treefree();
     }
     return 0;
 }
@@ -138,48 +138,48 @@ int cleanup_code(){
 int check_parameters(){
     MPI_Bcast(&All, sizeof(struct global_data_all_processes), MPI_BYTE, 0, MPI_COMM_WORLD);
     if (ThisTask)
-        return 0;
+	return 0;
     if(sizeof(long long) != 8){
-        printf("\nType `long long' is not 64 bit on this platform. Stopping.\n\n");
-        return -4;
+	printf("\nType `long long' is not 64 bit on this platform. Stopping.\n\n");
+	return -4;
     }
     if(sizeof(int) != 4){
-        printf("\nType `int' is not 32 bit on this platform. Stopping.\n\n");
-        return -4;
+	printf("\nType `int' is not 32 bit on this platform. Stopping.\n\n");
+	return -4;
     }
     if(sizeof(float) != 4){
-        printf("\nType `float' is not 32 bit on this platform. Stopping.\n\n");
-        return -4;
+	printf("\nType `float' is not 32 bit on this platform. Stopping.\n\n");
+	return -4;
     }
     if(sizeof(double) != 8){
-        printf("\nType `double' is not 64 bit on this platform. Stopping.\n\n");
-        return -4;
+	printf("\nType `double' is not 64 bit on this platform. Stopping.\n\n");
+	return -4;
     }
     if(All.NumFilesWrittenInParallel < 1){
-        printf("NumFilesWrittenInParallel MUST be at least 1\n");
-        return -4;
+	printf("NumFilesWrittenInParallel MUST be at least 1\n");
+	return -4;
     }
     if(All.NumFilesWrittenInParallel > NTask){
-        printf("NumFilesWrittenInParallel MUST be smaller than number of processors\n");
-        return -4;
+	printf("NumFilesWrittenInParallel MUST be smaller than number of processors\n");
+	return -4;
     }
 #ifdef PERIODIC
     if(All.PeriodicBoundariesOn == 0){
-        printf("Code was compiled with periodic boundary conditions switched on.\n");
-        printf("You must set `PeriodicBoundariesOn=1', or recompile the code.\n");
-        return -4;
+	printf("Code was compiled with periodic boundary conditions switched on.\n");
+	printf("You must set `PeriodicBoundariesOn=1', or recompile the code.\n");
+	return -4;
     }
 #else
     if(All.PeriodicBoundariesOn == 1){
-        printf("Code was compiled with periodic boundary conditions switched off.\n");
-        printf("You must set `PeriodicBoundariesOn=0', or recompile the code.\n");
-        return -4;
+	printf("Code was compiled with periodic boundary conditions switched off.\n");
+	printf("You must set `PeriodicBoundariesOn=0', or recompile the code.\n");
+	return -4;
     }
 #endif
     if(All.TypeOfTimestepCriterion >= 1){
-        printf("The specified timestep criterion\n");
-        printf("is not valid\n");
-        return -4;
+	printf("The specified timestep criterion\n");
+	printf("is not valid\n");
+	return -4;
     }
 #if defined(LONG_X) ||  defined(LONG_Y) || defined(LONG_Z)
 #ifndef NOGRAVITY
@@ -193,7 +193,7 @@ int check_parameters(){
 }
 
 int commit_parameters(){
-    allocate_commbuffers();	/* ... allocate buffer-memory for particle 
+    allocate_commbuffers();	/* ... allocate buffer-memory for particle
 				   exchange during force computation */
     set_units();
 #if defined(PERIODIC) && (!defined(PMGRID) || defined(FORCETEST))
@@ -205,14 +205,14 @@ int commit_parameters(){
     long_range_init();
 #endif
     set_random_numbers();
-    
+
     for(int i = 0; i < 6; i++)
-        All.MassTable[i] = 0;
+	All.MassTable[i] = 0;
     All.Time = All.TimeBegin;
     if(All.ComovingIntegrationOn){
-        All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
+	All.Timebase_interval = (log(All.TimeMax) - log(All.TimeBegin)) / TIMEBASE;
     }else{
-        All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
+	All.Timebase_interval = (All.TimeMax - All.TimeBegin) / TIMEBASE;
     }
     All.Ti_Current = 0;
     All.NumCurrentTiStep = 0;	/* setup some counters */
@@ -237,49 +237,49 @@ int recommit_parameters(){
 int commit_particles(){
     double t0, t1, a3;
     int i, j;
-    
+
     t0 = second();
     All.TotNumPart = dm_particles_in_buffer + sph_particles_in_buffer;
     All.TotN_gas = sph_particles_in_buffer;
     All.MaxPart = All.PartAllocFactor * (All.TotNumPart / NTask);	/* sets the maximum number of particles that may */
-    All.MaxPartSph = All.PartAllocFactor * (All.TotN_gas / NTask);	/* sets the maximum number of particles that may 
-                                                                        reside on a processor */
+    All.MaxPartSph = All.PartAllocFactor * (All.TotN_gas / NTask);	/* sets the maximum number of particles that may
+									reside on a processor */
     NumPart = dm_states.size()+sph_states.size();
     N_gas = sph_states.size();
     allocate_memory();
-    
+
     // initialize sph particles
     i = 0;
-    for (map<long long, sph_state>::iterator state_iter = sph_states.begin(); 
-            state_iter != sph_states.end(); state_iter++, i++){
-        P[i].ID = (*state_iter).first;
-        P[i].Mass = (*state_iter).second.mass;
-        P[i].Pos[0] = (*state_iter).second.x;
-        P[i].Pos[1] = (*state_iter).second.y;
-        P[i].Pos[2] = (*state_iter).second.z;
-        P[i].Vel[0] = (*state_iter).second.vx;
-        P[i].Vel[1] = (*state_iter).second.vy;
-        P[i].Vel[2] = (*state_iter).second.vz;
-        P[i].Type = 0; // SPH particles (dark matter particles have type 1)
-        SphP[i].Entropy = (*state_iter).second.u;
-        SphP[i].Density = -1;
-        SphP[i].Hsml = 0;
+    for (map<long long, sph_state>::iterator state_iter = sph_states.begin();
+	    state_iter != sph_states.end(); state_iter++, i++){
+	P[i].ID = (*state_iter).first;
+	P[i].Mass = (*state_iter).second.mass;
+	P[i].Pos[0] = (*state_iter).second.x;
+	P[i].Pos[1] = (*state_iter).second.y;
+	P[i].Pos[2] = (*state_iter).second.z;
+	P[i].Vel[0] = (*state_iter).second.vx;
+	P[i].Vel[1] = (*state_iter).second.vy;
+	P[i].Vel[2] = (*state_iter).second.vz;
+	P[i].Type = 0; // SPH particles (dark matter particles have type 1)
+	SphP[i].Entropy = (*state_iter).second.u;
+	SphP[i].Density = -1;
+	SphP[i].Hsml = 0;
     }
     sph_states.clear();
-    
+
     // initialize dark matter particles
     i = N_gas;
-    for (map<long long, dynamics_state>::iterator state_iter = dm_states.begin(); 
-            state_iter != dm_states.end(); state_iter++, i++){
-        P[i].ID = (*state_iter).first;
-        P[i].Mass = (*state_iter).second.mass;
-        P[i].Pos[0] = (*state_iter).second.x;
-        P[i].Pos[1] = (*state_iter).second.y;
-        P[i].Pos[2] = (*state_iter).second.z;
-        P[i].Vel[0] = (*state_iter).second.vx;
-        P[i].Vel[1] = (*state_iter).second.vy;
-        P[i].Vel[2] = (*state_iter).second.vz;
-        P[i].Type = 1; // dark matter particles (SPH particles have type 0)
+    for (map<long long, dynamics_state>::iterator state_iter = dm_states.begin();
+	    state_iter != dm_states.end(); state_iter++, i++){
+	P[i].ID = (*state_iter).first;
+	P[i].Mass = (*state_iter).second.mass;
+	P[i].Pos[0] = (*state_iter).second.x;
+	P[i].Pos[1] = (*state_iter).second.y;
+	P[i].Pos[2] = (*state_iter).second.z;
+	P[i].Vel[0] = (*state_iter).second.vx;
+	P[i].Vel[1] = (*state_iter).second.vy;
+	P[i].Vel[2] = (*state_iter).second.vz;
+	P[i].Type = 1; // dark matter particles (SPH particles have type 0)
     }
     dm_states.clear();
     All.TimeBegin += All.Ti_Current * All.Timebase_interval;
@@ -287,38 +287,38 @@ int commit_particles(){
     All.Time = All.TimeBegin;
     set_softenings();
     for(i = 0; i < NumPart; i++){	/*  start-up initialization */
-        for(j = 0; j < 3; j++)
-            P[i].GravAccel[j] = 0;
+	for(j = 0; j < 3; j++)
+	    P[i].GravAccel[j] = 0;
 #ifdef PMGRID
-        for(j = 0; j < 3; j++)
-            P[i].GravPM[j] = 0;
+	for(j = 0; j < 3; j++)
+	    P[i].GravPM[j] = 0;
 #endif
-        P[i].Ti_endstep = 0;
-        P[i].Ti_begstep = 0;
-        P[i].OldAcc = 0;
-        P[i].GravCost = 1;
-        P[i].Potential = 0;
+	P[i].Ti_endstep = 0;
+	P[i].Ti_begstep = 0;
+	P[i].OldAcc = 0;
+	P[i].GravCost = 1;
+	P[i].Potential = 0;
     }
 #ifdef FLEXSTEPS
     for(i = 0; i < NumPart; i++)	/*  start-up initialization */
-        P[i].FlexStepGrp = (int) (TIMEBASE * get_random_number(P[i].ID));
+	P[i].FlexStepGrp = (int) (TIMEBASE * get_random_number(P[i].ID));
 #endif
     for(i = 0; i < N_gas; i++){	/* initialize sph_properties */
-        for(j = 0; j < 3; j++){
-            SphP[i].VelPred[j] = P[i].Vel[j];
-            SphP[i].HydroAccel[j] = 0;
-        }
-        SphP[i].DtEntropy = 0;
+	for(j = 0; j < 3; j++){
+	    SphP[i].VelPred[j] = P[i].Vel[j];
+	    SphP[i].HydroAccel[j] = 0;
+	}
+	SphP[i].DtEntropy = 0;
     }
-    
+
     ngb_treeallocate(MAX_NGB);
     if((All.MaxPart < 1000) && (All.TreeAllocFactor <= 1.0)){
-        All.TreeAllocFactor = 4000.0/All.MaxPart;
-        if (ThisTask == 0){
-            cout << "Gadget assumes large numbers of particles while allocating memory. " << endl << "Changed "
-                "TreeAllocFactor to " << All.TreeAllocFactor << " to allocate enough memory" << endl << 
-                "for this run with " << All.TotNumPart << " particles only." << endl;
-        }
+	All.TreeAllocFactor = 4000.0/All.MaxPart;
+	if (ThisTask == 0){
+	    cout << "Gadget assumes large numbers of particles while allocating memory. " << endl << "Changed "
+		"TreeAllocFactor to " << All.TreeAllocFactor << " to allocate enough memory" << endl <<
+		"for this run with " << All.TotNumPart << " particles only." << endl;
+	}
     }
     force_treeallocate(All.TreeAllocFactor * 10*All.MaxPart, 10*All.MaxPart);
     All.NumForcesSinceLastDomainDecomp = 1 + All.TotNumPart * All.TreeDomainUpdateFrequency;
@@ -330,70 +330,72 @@ int commit_particles(){
     ngb_treebuild();		/* will build tree */
     setup_smoothinglengths();
     TreeReconstructFlag = 1;
-  /* at this point, the entropy variable normally contains the 
+  /* at this point, the entropy variable normally contains the
    * internal energy, read in from the initial conditions file, unless the file
-   * explicitly signals that the initial conditions contain the entropy directly. 
+   * explicitly signals that the initial conditions contain the entropy directly.
    * Once the density has been computed, we can convert thermal energy to entropy.
    */
 #ifndef ISOTHERM_EQS
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for(i = 0; i < N_gas; i++)
-        SphP[i].Entropy = GAMMA_MINUS1 * SphP[i].Entropy / pow(SphP[i].Density / a3, GAMMA_MINUS1);
+	SphP[i].Entropy = GAMMA_MINUS1 * SphP[i].Entropy / pow(SphP[i].Density / a3, GAMMA_MINUS1);
 #endif
 #ifdef PMGRID
     long_range_init_regionsize();
 #endif
     if(All.ComovingIntegrationOn)
-        init_drift_table();
+	init_drift_table();
     t1 = second();
     CPUThisRun += timediff(t0, t1);
     All.CPU_Total += timediff(t0, t1);
-    
+
     particles_initialized = true;
     if (ThisTask == 0)
-        cout << flush;
+	cout << flush;
     return 0;
 }
+
 void push_particle_data_on_state_vectors(){
     map<long long, int>::iterator iter;
     double a3;
     int i;
-    
+
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (iter = local_index_map.begin(); iter != local_index_map.end(); iter++){
-        i = (*iter).second;
-        if (P[i].Type == 0){
-            // store sph particle data
-            sph_state state;
-            state.mass = P[i].Mass;
-            state.x =    P[i].Pos[0];
-            state.y =    P[i].Pos[1];
-            state.z =    P[i].Pos[2];
-            state.vx =   P[i].Vel[0];
-            state.vy =   P[i].Vel[1];
-            state.vz =   P[i].Vel[2];
-            state.u = SphP[i].Entropy * pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
-            sph_states.insert(std::pair<long long, sph_state>(P[i].ID, state));
-        } else {
-            // store dark matter particle data
-            dynamics_state state;
-            state.mass = P[i].Mass;
-            state.x =    P[i].Pos[0];
-            state.y =    P[i].Pos[1];
-            state.z =    P[i].Pos[2];
-            state.vx =   P[i].Vel[0];
-            state.vy =   P[i].Vel[1];
-            state.vz =   P[i].Vel[2];
-            dm_states.insert(std::pair<long long, dynamics_state>(P[i].ID, state));
-        }
+	i = (*iter).second;
+	if (P[i].Type == 0){
+	    // store sph particle data
+	    sph_state state;
+	    state.mass = P[i].Mass;
+	    state.x =    P[i].Pos[0];
+	    state.y =    P[i].Pos[1];
+	    state.z =    P[i].Pos[2];
+	    state.vx =   P[i].Vel[0];
+	    state.vy =   P[i].Vel[1];
+	    state.vz =   P[i].Vel[2];
+	    state.u = SphP[i].Entropy * pow(SphP[i].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+	    sph_states.insert(std::pair<long long, sph_state>(P[i].ID, state));
+	} else {
+	    // store dark matter particle data
+	    dynamics_state state;
+	    state.mass = P[i].Mass;
+	    state.x =    P[i].Pos[0];
+	    state.y =    P[i].Pos[1];
+	    state.z =    P[i].Pos[2];
+	    state.vx =   P[i].Vel[0];
+	    state.vy =   P[i].Vel[1];
+	    state.vz =   P[i].Vel[2];
+	    dm_states.insert(std::pair<long long, dynamics_state>(P[i].ID, state));
+	}
     }
 }
+
 int recommit_particles(){
     if (particles_initialized){
-        push_particle_data_on_state_vectors();
-        free_memory();
-        ngb_treefree();
-        force_treefree();
+	push_particle_data_on_state_vectors();
+	free_memory();
+	ngb_treefree();
+	force_treefree();
     }
     return commit_particles();
 }
@@ -406,52 +408,53 @@ bool drift_to_t_end(int ti_end){
     t0 = second();
     timeold = All.Time;
     for(n = 1, min = P[0].Ti_endstep; n < NumPart; n++)
-        if(min > P[n].Ti_endstep)
-            min = P[n].Ti_endstep;
+	if(min > P[n].Ti_endstep)
+	    min = P[n].Ti_endstep;
     MPI_Allreduce(&min, &min_glob, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
     /* We check whether this is a full step where all particles are synchronized */
     flag = 1;
     for(n = 0; n < NumPart; n++)
-        if(P[n].Ti_endstep > min_glob)
-            flag = 0;
+	if(P[n].Ti_endstep > min_glob)
+	    flag = 0;
     MPI_Allreduce(&flag, &Flag_FullStep, 1, MPI_INT, MPI_MIN, MPI_COMM_WORLD);
 #ifdef PMGRID
     if(min_glob >= All.PM_Ti_endstep){
-        min_glob = All.PM_Ti_endstep;
-        Flag_FullStep = 1;
+	min_glob = All.PM_Ti_endstep;
+	Flag_FullStep = 1;
     }
 #endif
     /* Determine 'NumForceUpdate', i.e. the number of particles on this processor that are going to be active */
     for(n = 0, NumForceUpdate = 0; n < NumPart; n++){
-        if(P[n].Ti_endstep == min_glob)
+	if(P[n].Ti_endstep == min_glob)
 #ifdef SELECTIVE_NO_GRAVITY
-          if(!((1 << P[n].Type) & (SELECTIVE_NO_GRAVITY)))
+	  if(!((1 << P[n].Type) & (SELECTIVE_NO_GRAVITY)))
 #endif
-            NumForceUpdate++;
+	    NumForceUpdate++;
     }
     /* note: NumForcesSinceLastDomainDecomp has type "long long" */
     temp = (int*) malloc(NTask * sizeof(int));
     MPI_Allgather(&NumForceUpdate, 1, MPI_INT, temp, 1, MPI_INT, MPI_COMM_WORLD);
     for(n = 0; n < NTask; n++)
-        All.NumForcesSinceLastDomainDecomp += temp[n];
+	All.NumForcesSinceLastDomainDecomp += temp[n];
     free(temp);
     t1 = second();
     All.CPU_Predict += timediff(t0, t1);
     if (min_glob >= ti_end){
-        min_glob = ti_end;
-        done = true;
+	min_glob = ti_end;
+	done = true;
     } else {
-        done = false;
+	done = false;
     }
     move_particles(All.Ti_Current, min_glob);
     All.Ti_Current = min_glob;
     if(All.ComovingIntegrationOn)
-        All.Time = All.TimeBegin * exp(All.Ti_Current * All.Timebase_interval);
+	All.Time = All.TimeBegin * exp(All.Ti_Current * All.Timebase_interval);
     else
-        All.Time = All.TimeBegin + All.Ti_Current * All.Timebase_interval;
+	All.Time = All.TimeBegin + All.Ti_Current * All.Timebase_interval;
     All.TimeStep = All.Time - timeold;
     return done;
 }
+
 int evolve(double t_end){
     bool done;
     double t0, t1;
@@ -462,7 +465,7 @@ int evolve(double t_end){
     int number_of_steps_innerloop = 0;
     int error;
 
-    error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION, 
+    error = is_stopping_condition_enabled(NUMBER_OF_STEPS_DETECTION,
 					  &is_number_of_steps_detection_enabled);
     get_stopping_condition_number_of_steps_parameter(&max_number_of_steps);
 
@@ -470,55 +473,55 @@ int evolve(double t_end){
 
     Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
     if (Ti_end >= All.Ti_Current){
-        global_quantities_of_system_up_to_date = density_up_to_date = false;
-        done = drift_to_t_end(Ti_end); /* find next synchronization point and drift particles to MIN(this time, t_end). */
-        while (!done && All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax) {
-            t0 = second();
-            every_timestep_stuff();	/* write some info to log-files */
-            domain_Decomposition();	/* do domain decomposition if needed */
-            particle_map_up_to_date = false;
-            compute_accelerations(0);	/* compute accelerations for 
-                        * the particles that are to be advanced  */
-            /* check whether we want a full energy statistics */
-            if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics) {
+	global_quantities_of_system_up_to_date = density_up_to_date = false;
+	done = drift_to_t_end(Ti_end); /* find next synchronization point and drift particles to MIN(this time, t_end). */
+	while (!done && All.Ti_Current < TIMEBASE && All.Time <= All.TimeMax) {
+	    t0 = second();
+	    every_timestep_stuff();	/* write some info to log-files */
+	    domain_Decomposition();	/* do domain decomposition if needed */
+	    particle_map_up_to_date = false;
+	    compute_accelerations(0);	/* compute accelerations for
+			* the particles that are to be advanced  */
+	    /* check whether we want a full energy statistics */
+	    if((All.Time - All.TimeLastStatistics) >= All.TimeBetStatistics) {
 #ifdef COMPUTE_POTENTIAL_ENERGY
-                compute_potential();
+		compute_potential();
 #endif
-                energy_statistics();	/* compute and output energy statistics */
-                All.TimeLastStatistics += All.TimeBetStatistics;
-            }
-            advance_and_find_timesteps();	/* 'kick' active particles in
-                            * momentum space and compute new
-                            * timesteps for them  */
-            done = drift_to_t_end(Ti_end);
-            All.NumCurrentTiStep++;
-            
-            /* Check whether we need to interrupt the run */
-            if(ThisTask == 0) {
-                /* are we running out of CPU-time ? If yes, interrupt run. */
-                if(CPUThisRun > 0.85 * All.TimeLimitCPU){printf("reaching time-limit. stopping.\n"); stopflag = 2;}
-            }
-            MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            if(stopflag) return -5;
-            
-            t1 = second();
-            All.CPU_Total += timediff(t0, t1);
-            CPUThisRun += timediff(t0, t1);
-            //
-            if(is_number_of_steps_detection_enabled) {
-                number_of_steps_innerloop++;
-                if(number_of_steps_innerloop > max_number_of_steps) {
-                    int stopping_index  = next_index_for_stopping_condition();
-                    set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
-                }
-            }
-            if (set_conditions & enabled_conditions) {
-                break;
-            }
-        }
+		energy_statistics();	/* compute and output energy statistics */
+		All.TimeLastStatistics += All.TimeBetStatistics;
+	    }
+	    advance_and_find_timesteps();	/* 'kick' active particles in
+			    * momentum space and compute new
+			    * timesteps for them  */
+	    done = drift_to_t_end(Ti_end);
+	    All.NumCurrentTiStep++;
+
+	    /* Check whether we need to interrupt the run */
+	    if(ThisTask == 0) {
+		/* are we running out of CPU-time ? If yes, interrupt run. */
+		if(CPUThisRun > 0.85 * All.TimeLimitCPU){printf("reaching time-limit. stopping.\n"); stopflag = 2;}
+	    }
+	    MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	    if(stopflag) return -5;
+
+	    t1 = second();
+	    All.CPU_Total += timediff(t0, t1);
+	    CPUThisRun += timediff(t0, t1);
+	    //
+	    if(is_number_of_steps_detection_enabled) {
+		number_of_steps_innerloop++;
+		if(number_of_steps_innerloop > max_number_of_steps) {
+		    int stopping_index  = next_index_for_stopping_condition();
+		    set_stopping_condition_info(stopping_index, NUMBER_OF_STEPS_DETECTION);
+		}
+	    }
+	    if (set_conditions & enabled_conditions) {
+		break;
+	    }
+	}
     } else {return -6;}
     if (ThisTask == 0)
-        cout << flush;
+	cout << flush;
     return 0;
 }
 
@@ -529,15 +532,15 @@ int synchronize_model() {
 int contruct_tree_if_needed(void){
     double tstart, tend;
     if (!particles_initialized)
-        return -1;
+	return -1;
     tstart = second();
     if (TreeReconstructFlag){
-        if(ThisTask == 0)
-            printf("Tree construction.\n");
-        force_treebuild(NumPart);
-        TreeReconstructFlag = 0;
-        if(ThisTask == 0)
-            printf("Tree construction done.\n");
+	if(ThisTask == 0)
+	    printf("Tree construction.\n");
+	force_treebuild(NumPart);
+	TreeReconstructFlag = 0;
+	if(ThisTask == 0)
+	    printf("Tree construction done.\n");
     }
     tend = second();
     All.CPU_TreeConstruction += timediff(tstart, tend);
@@ -547,19 +550,19 @@ int contruct_tree_if_needed(void){
 int new_dm_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz){
     particle_id_counter++;
     if (ThisTask == 0)
-        *id = particle_id_counter;
-    
-    // Divide the particles equally over all Tasks, Gadget will redistribute them later. 
+	*id = particle_id_counter;
+
+    // Divide the particles equally over all Tasks, Gadget will redistribute them later.
     if (ThisTask == (dm_particles_in_buffer % NTask)){
-        dynamics_state state;
-        state.mass = mass;
-        state.x = x;
-        state.y = y;
-        state.z = z;
-        state.vx = vx;
-        state.vy = vy;
-        state.vz = vz;
-        dm_states.insert(std::pair<long long, dynamics_state>(particle_id_counter, state));
+	dynamics_state state;
+	state.mass = mass;
+	state.x = x;
+	state.y = y;
+	state.z = z;
+	state.vx = vx;
+	state.vy = vy;
+	state.vz = vz;
+	dm_states.insert(std::pair<long long, dynamics_state>(particle_id_counter, state));
     }
     dm_particles_in_buffer++;
     return 0;
@@ -568,20 +571,20 @@ int new_dm_particle(int *id, double mass, double x, double y, double z, double v
 int new_sph_particle(int *id, double mass, double x, double y, double z, double vx, double vy, double vz, double u){
     particle_id_counter++;
     if (ThisTask == 0)
-        *id = particle_id_counter;
-    
-    // Divide the sph particles equally over all Tasks, Gadget will redistribute them later. 
+	*id = particle_id_counter;
+
+    // Divide the sph particles equally over all Tasks, Gadget will redistribute them later.
     if (ThisTask == (sph_particles_in_buffer % NTask)){
-        sph_state state;
-        state.mass = mass;
-        state.x = x;
-        state.y = y;
-        state.z = z;
-        state.vx = vx;
-        state.vy = vy;
-        state.vz = vz;
-        state.u = u;
-        sph_states.insert(std::pair<long long, sph_state>(particle_id_counter, state));
+	sph_state state;
+	state.mass = mass;
+	state.x = x;
+	state.y = y;
+	state.z = z;
+	state.vx = vx;
+	state.vy = vy;
+	state.vz = vz;
+	state.u = u;
+	sph_states.insert(std::pair<long long, sph_state>(particle_id_counter, state));
     }
     sph_particles_in_buffer++;
     return 0;
@@ -592,48 +595,47 @@ int delete_particle(int id){
     map<long long, int>::iterator it;
     map<long long, dynamics_state>::iterator dyn_it;
     map<long long, sph_state>::iterator sph_it;
-    
+
     if (!particle_map_up_to_date)
-        update_particle_map();
-    
+	update_particle_map();
+
     it = local_index_map.find(id);
     if (it != local_index_map.end()){
-        local_index_map.erase(it);
-        found = 1 + P[(*it).second].Type; // 1 for sph; 2 for dm
+	local_index_map.erase(it);
+	found = 1 + P[(*it).second].Type; // 1 for sph; 2 for dm
     }
     MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
     if (found){
-        if (found == 2)
-            dm_particles_in_buffer--;
-        else
-            sph_particles_in_buffer--;
-        return 0;
+	if (found == 2)
+	    dm_particles_in_buffer--;
+	else
+	    sph_particles_in_buffer--;
+	return 0;
     }
-    
+
     dyn_it = dm_states.find(id);
     if (dyn_it != dm_states.end()){
-        dm_states.erase(dyn_it);
-        found = 1;
+	dm_states.erase(dyn_it);
+	found = 1;
     }
     MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
     if (found){
-        dm_particles_in_buffer--;
-        return 0;
+	dm_particles_in_buffer--;
+	return 0;
     }
-    
+
     sph_it = sph_states.find(id);
     if (sph_it != sph_states.end()){
-        sph_states.erase(sph_it);
-        found = 1;
+	sph_states.erase(sph_it);
+	found = 1;
     }
     MPI_Allreduce(MPI_IN_PLACE, &found, 1, MPI_INT, MPI_LOR, MPI_COMM_WORLD);
     if (found){
-        sph_particles_in_buffer--;
-        return 0;
+	sph_particles_in_buffer--;
+	return 0;
     }
     return -3;
 }
-
 
 // parameter getters/setters:
 
@@ -723,11 +725,11 @@ int get_gadget_output_directory(char **output_directory){
 int set_gadget_output_directory(char *output_directory){
     int length = strlen(output_directory);
     if (length >= MAXLEN_FILENAME)
-        return -1;
+	return -1;
     strcpy(All.OutputDir, output_directory);
     if(length > 0)
 		if(All.OutputDir[length - 1] != '/')
-            strcat(All.OutputDir, "/");
+	    strcat(All.OutputDir, "/");
     return 0;
 }
 int get_nogravity(int *no_gravity_flag){
@@ -1063,55 +1065,55 @@ int get_index_of_next_particle(int index_of_the_particle, int *index_of_the_next
     long long next_local_index = 0;
 
     if (!particles_initialized)
-        return -1;
-    
+	return -1;
+
     if (!particle_map_up_to_date)
-        update_particle_map();
-    
+	update_particle_map();
+
     it = local_index_map.lower_bound(index_of_the_particle + 1);
     if (it != local_index_map.end()){
-        next_local_index = (*it).first;
+	next_local_index = (*it).first;
     } else {
-        next_local_index = index_of_highest_mapped_particle + 1;
+	next_local_index = index_of_highest_mapped_particle + 1;
     }
-    
+
     if (ThisTask == 0){
-        MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
-        *index_of_the_next_particle = next_local_index;
-        if (next_local_index < index_of_highest_mapped_particle){
-            return 0;
-        } else if (next_local_index == index_of_highest_mapped_particle){
-            return 1;
-        } else {
-            return -1;
-        }
+	MPI_Reduce(MPI_IN_PLACE, &next_local_index, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+	*index_of_the_next_particle = next_local_index;
+	if (next_local_index < index_of_highest_mapped_particle){
+	    return 0;
+	} else if (next_local_index == index_of_highest_mapped_particle){
+	    return 1;
+	} else {
+	    return -1;
+	}
     } else {
-        MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
-        return 0;
+	MPI_Reduce(&next_local_index, NULL, 1, MPI_LONG_LONG_INT, MPI_MIN, 0, MPI_COMM_WORLD);
+	return 0;
     }
 }
 
 void update_particle_map(void){
     local_index_map.clear();
     for(int i = 0; i < NumPart; i++) {
-        local_index_map.insert(std::pair<long long, int>(P[i].ID, i));
+	local_index_map.insert(std::pair<long long, int>(P[i].ID, i));
     }
     particle_map_up_to_date = true;
 }
 int found_particle(int index_of_the_particle, int *local_index){
     map<long long, int>::iterator it;
-    
-    if (!particles_initialized || index_of_the_particle < 1 || 
-            index_of_the_particle > index_of_highest_mapped_particle)
-        return 0;
-    
+
+    if (!particles_initialized || index_of_the_particle < 1 ||
+	    index_of_the_particle > index_of_highest_mapped_particle)
+	return 0;
+
     if (!particle_map_up_to_date)
-        update_particle_map();
-    
+	update_particle_map();
+
     it = local_index_map.find(index_of_the_particle);
     if (it != local_index_map.end()){
-        *local_index = (*it).second;
-        return 1;
+	*local_index = (*it).second;
+	return 1;
     }
     return 0;
 }
@@ -1121,185 +1123,193 @@ int get_mass(int *index, double *mass, int length){
     double buffer[length];
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            count[i] = 1;
-            buffer[i] = P[local_index].Mass;
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-        }
+	if(found_particle(index[i], &local_index)){
+	    count[i] = 1;
+	    buffer[i] = P[local_index].Mass;
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                mass[i] = 0;
-            } else
-                mass[i] = buffer[i];
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		mass[i] = 0;
+	    } else
+		mass[i] = buffer[i];
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
+
 int check_counts(int *count, int length){
     int errors = 0;
     if(ThisTask) {
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        return 0;
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	return 0;
     } else {
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1)
-                errors++;
-        }
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1)
+		errors++;
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
+
 int set_mass(int *index, double *mass, int length){
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            P[local_index].Mass = mass[i];
-            count[i] = 1;
-        } else count[i] = 0;
+	if(found_particle(index[i], &local_index)){
+	    P[local_index].Mass = mass[i];
+	    count[i] = 1;
+	} else count[i] = 0;
     }
     return check_counts(count, length);
 }
+
 int get_radius(int index, double *radius){
     return -2;
 }
+
 int set_radius(int index, double radius){
     return -2;
 }
+
 int get_position(int *index, double *x, double *y, double *z, int length){
     int errors = 0;
     double buffer[length*3];
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            count[i] = 1;
-            buffer[i] = P[local_index].Pos[0];
-            buffer[i+length] = P[local_index].Pos[1];
-            buffer[i+2*length] = P[local_index].Pos[2];
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-            buffer[i+length] = 0;
-            buffer[i+2*length] = 0;
-        }
+	if(found_particle(index[i], &local_index)){
+	    count[i] = 1;
+	    buffer[i] = P[local_index].Pos[0];
+	    buffer[i+length] = P[local_index].Pos[1];
+	    buffer[i+2*length] = P[local_index].Pos[2];
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	    buffer[i+length] = 0;
+	    buffer[i+2*length] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                x[i] = 0;
-                y[i] = 0;
-                z[i] = 0;
-            } else {
-                x[i] = buffer[i];
-                y[i] = buffer[i+length];
-                z[i] = buffer[i+2*length];
-            }
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		x[i] = 0;
+		y[i] = 0;
+		z[i] = 0;
+	    } else {
+		x[i] = buffer[i];
+		y[i] = buffer[i+length];
+		z[i] = buffer[i+2*length];
+	    }
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
+
 int set_position(int *index, double *x, double *y, double *z, int length){
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            P[local_index].Pos[0] = x[i];
-            P[local_index].Pos[1] = y[i];
-            P[local_index].Pos[2] = z[i];
-            count[i] = 1;
-        } else count[i] = 0;
+	if(found_particle(index[i], &local_index)){
+	    P[local_index].Pos[0] = x[i];
+	    P[local_index].Pos[1] = y[i];
+	    P[local_index].Pos[2] = z[i];
+	    count[i] = 1;
+	} else count[i] = 0;
     }
     return check_counts(count, length);
 }
+
 int get_velocity(int *index, double *vx, double *vy, double *vz, int length){
     int errors = 0;
     double buffer[length*3];
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            count[i] = 1;
-            buffer[i] = P[local_index].Vel[0];
-            buffer[i+length] = P[local_index].Vel[1];
-            buffer[i+2*length] = P[local_index].Vel[2];
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-            buffer[i+length] = 0;
-            buffer[i+2*length] = 0;
-        }
+	if(found_particle(index[i], &local_index)){
+	    count[i] = 1;
+	    buffer[i] = P[local_index].Vel[0];
+	    buffer[i+length] = P[local_index].Vel[1];
+	    buffer[i+2*length] = P[local_index].Vel[2];
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	    buffer[i+length] = 0;
+	    buffer[i+2*length] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                vx[i] = 0;
-                vy[i] = 0;
-                vz[i] = 0;
-            } else {
-                vx[i] = buffer[i];
-                vy[i] = buffer[i+length];
-                vz[i] = buffer[i+2*length];
-            }
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		vx[i] = 0;
+		vy[i] = 0;
+		vz[i] = 0;
+	    } else {
+		vx[i] = buffer[i];
+		vy[i] = buffer[i+length];
+		vz[i] = buffer[i+2*length];
+	    }
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
+
 int set_velocity(int *index, double *vx, double *vy, double *vz, int length){
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            P[local_index].Vel[0] = vx[i];
-            P[local_index].Vel[1] = vy[i];
-            P[local_index].Vel[2] = vz[i];
-            count[i] = 1;
-        } else count[i] = 0;
+	if(found_particle(index[i], &local_index)){
+	    P[local_index].Vel[0] = vx[i];
+	    P[local_index].Vel[1] = vy[i];
+	    P[local_index].Vel[2] = vz[i];
+	    count[i] = 1;
+	} else count[i] = 0;
     }
     return check_counts(count, length);
 }
@@ -1309,58 +1319,58 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
     double buffer[length*7];
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            count[i] = 1;
-            buffer[i] = P[local_index].Mass;
-            buffer[i+length] = P[local_index].Pos[0];
-            buffer[i+2*length] = P[local_index].Pos[1];
-            buffer[i+3*length] = P[local_index].Pos[2];
-            buffer[i+4*length] = P[local_index].Vel[0];
-            buffer[i+5*length] = P[local_index].Vel[1];
-            buffer[i+6*length] = P[local_index].Vel[2];
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-            buffer[i+length] = 0;
-            buffer[i+2*length] = 0;
-            buffer[i+3*length] = 0;
-            buffer[i+4*length] = 0;
-            buffer[i+5*length] = 0;
-            buffer[i+6*length] = 0;
-        }
+	if(found_particle(index[i], &local_index)){
+	    count[i] = 1;
+	    buffer[i] = P[local_index].Mass;
+	    buffer[i+length] = P[local_index].Pos[0];
+	    buffer[i+2*length] = P[local_index].Pos[1];
+	    buffer[i+3*length] = P[local_index].Pos[2];
+	    buffer[i+4*length] = P[local_index].Vel[0];
+	    buffer[i+5*length] = P[local_index].Vel[1];
+	    buffer[i+6*length] = P[local_index].Vel[2];
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	    buffer[i+length] = 0;
+	    buffer[i+2*length] = 0;
+	    buffer[i+3*length] = 0;
+	    buffer[i+4*length] = 0;
+	    buffer[i+5*length] = 0;
+	    buffer[i+6*length] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                mass[i] = 0;
-                x[i] = 0;
-                y[i] = 0;
-                z[i] = 0;
-                vx[i] = 0;
-                vy[i] = 0;
-                vz[i] = 0;
-            } else {
-                mass[i] = buffer[i];
-                x[i] = buffer[i+length];
-                y[i] = buffer[i+2*length];
-                z[i] = buffer[i+3*length];
-                vx[i] = buffer[i+4*length];
-                vy[i] = buffer[i+5*length];
-                vz[i] = buffer[i+6*length];
-            }
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length*7, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		mass[i] = 0;
+		x[i] = 0;
+		y[i] = 0;
+		z[i] = 0;
+		vx[i] = 0;
+		vy[i] = 0;
+		vz[i] = 0;
+	    } else {
+		mass[i] = buffer[i];
+		x[i] = buffer[i+length];
+		y[i] = buffer[i+2*length];
+		z[i] = buffer[i+3*length];
+		vx[i] = buffer[i+4*length];
+		vy[i] = buffer[i+5*length];
+		vz[i] = buffer[i+6*length];
+	    }
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
@@ -1368,18 +1378,18 @@ int get_state(int *index, double *mass, double *x, double *y, double *z, double 
 int set_state(int *index, double *mass, double *x, double *y, double *z, double *vx, double *vy, double *vz, int length){
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            P[local_index].Mass = mass[i];
-            P[local_index].Pos[0] = x[i];
-            P[local_index].Pos[1] = y[i];
-            P[local_index].Pos[2] = z[i];
-            P[local_index].Vel[0] = vx[i];
-            P[local_index].Vel[1] = vy[i];
-            P[local_index].Vel[2] = vz[i];
-            count[i] = 1;
-        } else count[i] = 0;
+	if(found_particle(index[i], &local_index)){
+	    P[local_index].Mass = mass[i];
+	    P[local_index].Pos[0] = x[i];
+	    P[local_index].Pos[1] = y[i];
+	    P[local_index].Pos[2] = z[i];
+	    P[local_index].Vel[0] = vx[i];
+	    P[local_index].Vel[1] = vy[i];
+	    P[local_index].Vel[2] = vz[i];
+	    count[i] = 1;
+	} else count[i] = 0;
     }
     return check_counts(count, length);
 }
@@ -1390,249 +1400,254 @@ int get_state_sph(int *index, double *mass, double *x, double *y, double *z, dou
     int count[length];
     int local_index;
     double a3;
-    
+
     if (!density_up_to_date){
-        density();
-        density_up_to_date = true;
+	density();
+	density_up_to_date = true;
     }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            count[i] = 1;
-            buffer[i] = P[local_index].Mass;
-            buffer[i+length] = P[local_index].Pos[0];
-            buffer[i+2*length] = P[local_index].Pos[1];
-            buffer[i+3*length] = P[local_index].Pos[2];
-            buffer[i+4*length] = P[local_index].Vel[0];
-            buffer[i+5*length] = P[local_index].Vel[1];
-            buffer[i+6*length] = P[local_index].Vel[2];
-            buffer[i+7*length] = SphP[local_index].Entropy * 
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-            buffer[i+length] = 0;
-            buffer[i+2*length] = 0;
-            buffer[i+3*length] = 0;
-            buffer[i+4*length] = 0;
-            buffer[i+5*length] = 0;
-            buffer[i+6*length] = 0;
-            buffer[i+7*length] = 0;
-        }
+	if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+	    count[i] = 1;
+	    buffer[i] = P[local_index].Mass;
+	    buffer[i+length] = P[local_index].Pos[0];
+	    buffer[i+2*length] = P[local_index].Pos[1];
+	    buffer[i+3*length] = P[local_index].Pos[2];
+	    buffer[i+4*length] = P[local_index].Vel[0];
+	    buffer[i+5*length] = P[local_index].Vel[1];
+	    buffer[i+6*length] = P[local_index].Vel[2];
+	    buffer[i+7*length] = SphP[local_index].Entropy *
+		pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	    buffer[i+length] = 0;
+	    buffer[i+2*length] = 0;
+	    buffer[i+3*length] = 0;
+	    buffer[i+4*length] = 0;
+	    buffer[i+5*length] = 0;
+	    buffer[i+6*length] = 0;
+	    buffer[i+7*length] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                mass[i] = 0;
-                x[i] = 0;
-                y[i] = 0;
-                z[i] = 0;
-                vx[i] = 0;
-                vy[i] = 0;
-                vz[i] = 0;
-                internal_energy[i] = 0;
-            } else {
-                mass[i] = buffer[i];
-                x[i] = buffer[i+length];
-                y[i] = buffer[i+2*length];
-                z[i] = buffer[i+3*length];
-                vx[i] = buffer[i+4*length];
-                vy[i] = buffer[i+5*length];
-                vz[i] = buffer[i+6*length];
-                internal_energy[i] = buffer[i+7*length];
-            }
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length*8, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		mass[i] = 0;
+		x[i] = 0;
+		y[i] = 0;
+		z[i] = 0;
+		vx[i] = 0;
+		vy[i] = 0;
+		vz[i] = 0;
+		internal_energy[i] = 0;
+	    } else {
+		mass[i] = buffer[i];
+		x[i] = buffer[i+length];
+		y[i] = buffer[i+2*length];
+		z[i] = buffer[i+3*length];
+		vx[i] = buffer[i+4*length];
+		vy[i] = buffer[i+5*length];
+		vz[i] = buffer[i+6*length];
+		internal_energy[i] = buffer[i+7*length];
+	    }
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
 
-int set_state_sph(int *index, double *mass, double *x, double *y, double *z, 
-        double *vx, double *vy, double *vz, double *internal_energy, int length){
+int set_state_sph(int *index, double *mass, double *x, double *y, double *z,
+	double *vx, double *vy, double *vz, double *internal_energy, int length){
     int count[length];
     int local_index;
     double a3;
-    
+
     if (!density_up_to_date){
-        density();
-        density_up_to_date = true;
+	density();
+	density_up_to_date = true;
     }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            P[local_index].Mass = mass[i];
-            P[local_index].Pos[0] = x[i];
-            P[local_index].Pos[1] = y[i];
-            P[local_index].Pos[2] = z[i];
-            P[local_index].Vel[0] = vx[i];
-            P[local_index].Vel[1] = vy[i];
-            P[local_index].Vel[2] = vz[i];
-            SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] / 
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
-            count[i] = 1;
-        } else count[i] = 0;
+	if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+	    P[local_index].Mass = mass[i];
+	    P[local_index].Pos[0] = x[i];
+	    P[local_index].Pos[1] = y[i];
+	    P[local_index].Pos[2] = z[i];
+	    P[local_index].Vel[0] = vx[i];
+	    P[local_index].Vel[1] = vy[i];
+	    P[local_index].Vel[2] = vz[i];
+	    SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
+		pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+	    count[i] = 1;
+	} else count[i] = 0;
     }
     return check_counts(count, length);
 }
+
 int get_acceleration(int *index, double * ax, double * ay, double * az, int length){
     int errors = 0;
     double buffer[length*3];
     int count[length];
     int local_index;
-    
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index)){
-            count[i] = 1;
-            buffer[i] = P[local_index].GravAccel[0];
-            buffer[i+length] = P[local_index].GravAccel[1];
-            buffer[i+2*length] = P[local_index].GravAccel[2];
-            if(P[local_index].Type == 0){
-                buffer[i] += SphP[local_index].HydroAccel[0];
-                buffer[i+length] += SphP[local_index].HydroAccel[1];
-                buffer[i+2*length] += SphP[local_index].HydroAccel[2];
-            }
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-            buffer[i+length] = 0;
-            buffer[i+2*length] = 0;
-        }
+	if(found_particle(index[i], &local_index)){
+	    count[i] = 1;
+	    buffer[i] = P[local_index].GravAccel[0];
+	    buffer[i+length] = P[local_index].GravAccel[1];
+	    buffer[i+2*length] = P[local_index].GravAccel[2];
+	    if(P[local_index].Type == 0){
+		buffer[i] += SphP[local_index].HydroAccel[0];
+		buffer[i+length] += SphP[local_index].HydroAccel[1];
+		buffer[i+2*length] += SphP[local_index].HydroAccel[2];
+	    }
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	    buffer[i+length] = 0;
+	    buffer[i+2*length] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                ax[i] = 0;
-                ay[i] = 0;
-                az[i] = 0;
-            } else {
-                ax[i] = buffer[i];
-                ay[i] = buffer[i+length];
-                az[i] = buffer[i+2*length];
-            }
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length*3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		ax[i] = 0;
+		ay[i] = 0;
+		az[i] = 0;
+	    } else {
+		ax[i] = buffer[i];
+		ay[i] = buffer[i+length];
+		az[i] = buffer[i+2*length];
+	    }
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
+
 int set_acceleration(int index, double ax, double ay, double az){
     return -2;
 }
+
 int get_internal_energy(int *index, double *internal_energy, int length){
     int errors = 0;
     double buffer[length];
     int count[length];
     int local_index;
     double a3;
-    
+
     if (!density_up_to_date){
-        density();
-        density_up_to_date = true;
+	density();
+	density_up_to_date = true;
     }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            count[i] = 1;
-            buffer[i] = SphP[local_index].Entropy * 
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-        }
+	if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+	    count[i] = 1;
+	    buffer[i] = SphP[local_index].Entropy *
+		pow(SphP[local_index].Density / a3, GAMMA_MINUS1) / GAMMA_MINUS1;
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                internal_energy[i] = 0;
-            } else
-                internal_energy[i] = buffer[i];
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		internal_energy[i] = 0;
+	    } else
+		internal_energy[i] = buffer[i];
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
+
 int set_internal_energy(int *index, double *internal_energy, int length){
     int count[length];
     int local_index;
     double a3;
-    
+
     if (!density_up_to_date){
-        density();
-        density_up_to_date = true;
+	density();
+	density_up_to_date = true;
     }
     if(All.ComovingIntegrationOn){a3 = All.Time * All.Time * All.Time;}else{a3 = 1;}
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] / 
-                pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
-            count[i] = 1;
-        } else count[i] = 0;
+	if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+	    SphP[local_index].Entropy = GAMMA_MINUS1 * internal_energy[i] /
+		pow(SphP[local_index].Density / a3, GAMMA_MINUS1);
+	    count[i] = 1;
+	} else count[i] = 0;
     }
     return check_counts(count, length);
 }
+
 int get_smoothing_length(int *index, double *smoothing_length, int length){
     int errors = 0;
     double buffer[length];
     int count[length];
     int local_index;
-    
+
     if (!density_up_to_date){
-        density();
-        density_up_to_date = true;
+	density();
+	density_up_to_date = true;
     }
-        
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            count[i] = 1;
-            buffer[i] = SphP[local_index].Hsml;
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-        }
+	if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+	    count[i] = 1;
+	    buffer[i] = SphP[local_index].Hsml;
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                smoothing_length[i] = 0;
-            } else
-                smoothing_length[i] = buffer[i];
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		smoothing_length[i] = 0;
+	    } else
+		smoothing_length[i] = buffer[i];
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
@@ -1642,38 +1657,38 @@ int get_density(int *index, double *density_out, int length){
     double buffer[length];
     int count[length];
     int local_index;
-    
+
     if (!density_up_to_date){
-        density();
-        density_up_to_date = true;
+	density();
+	density_up_to_date = true;
     }
-        
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            count[i] = 1;
-            buffer[i] = SphP[local_index].Density;
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-        }
+	if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+	    count[i] = 1;
+	    buffer[i] = SphP[local_index].Density;
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                density_out[i] = 0;
-            } else
-                density_out[i] = buffer[i];
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		density_out[i] = 0;
+	    } else
+		density_out[i] = buffer[i];
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
@@ -1682,38 +1697,38 @@ int get_n_neighbours(int *index, double *n_neighbours, int length){
     double buffer[length];
     int count[length];
     int local_index;
-    
+
     if (!density_up_to_date){
-        density();
-        density_up_to_date = true;
+	density();
+	density_up_to_date = true;
     }
-        
+
     for (int i = 0; i < length; i++){
-        if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
-            count[i] = 1;
-            buffer[i] = SphP[local_index].NumNgb;
-        } else {
-            count[i] = 0;
-            buffer[i] = 0;
-        }
+	if(found_particle(index[i], &local_index) && P[local_index].Type == 0){
+	    count[i] = 1;
+	    buffer[i] = SphP[local_index].NumNgb;
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	}
     }
     if(ThisTask) {
-        MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-        MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-        for (int i = 0; i < length; i++){
-            if (count[i] != 1){
-                errors++;
-                n_neighbours[i] = 0;
-            } else
-                n_neighbours[i] = buffer[i];
-        }
+	MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++){
+	    if (count[i] != 1){
+		errors++;
+		n_neighbours[i] = 0;
+	    } else
+		n_neighbours[i] = buffer[i];
+	}
     }
     if (errors){
-        cout << "Number of particles not found: " << errors << endl;
-        return -3;
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
     }
     return 0;
 }
@@ -1721,7 +1736,7 @@ int get_epsilon_dm_part(int *index, double *epsilon, int length){
     set_softenings();
     if (ThisTask) {return 0;}
     for (int i = 0; i < length; i++)
-        epsilon[i] = All.SofteningTable[1];
+	epsilon[i] = All.SofteningTable[1];
     return 0;
 }
 int get_epsilon_gas_part(int *index, double *epsilon, int length){
@@ -1731,7 +1746,7 @@ int get_epsilon_gas_part(int *index, double *epsilon, int length){
     set_softenings();
     if (ThisTask) {return 0;}
     for (int i = 0; i < length; i++)
-        epsilon[i] = All.SofteningTable[0];
+	epsilon[i] = All.SofteningTable[0];
     return 0;
 #endif
 }
@@ -1742,8 +1757,8 @@ int get_epsilon_gas_part(int *index, double *epsilon, int length){
 
 void update_global_quantities(bool do_potential){
     if (do_potential) {
-        compute_potential();
-        potential_energy_also_up_to_date = true;
+	compute_potential();
+	potential_energy_also_up_to_date = true;
     } else {potential_energy_also_up_to_date = false;}
     compute_global_quantities_of_system();
     global_quantities_of_system_up_to_date = true;
@@ -1756,28 +1771,28 @@ int get_time(double *time){
 int get_total_radius(double *radius){
     double r_squared, local_max = 0;
     int i, j;
-    
+
     if (!global_quantities_of_system_up_to_date)
-        update_global_quantities(false);
+	update_global_quantities(false);
     for (i = 0; i < NumPart; i++){
-        for (r_squared = 0, j = 0; j < 3; j++)
-            r_squared += (SysState.CenterOfMass[j]-P[i].Pos[j])*(SysState.CenterOfMass[j]-P[i].Pos[j]);
-        if (r_squared > local_max)
-            local_max = r_squared;
+	for (r_squared = 0, j = 0; j < 3; j++)
+	    r_squared += (SysState.CenterOfMass[j]-P[i].Pos[j])*(SysState.CenterOfMass[j]-P[i].Pos[j]);
+	if (r_squared > local_max)
+	    local_max = r_squared;
     }
-    
+
     if(ThisTask) {
-        MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&local_max, NULL, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
     } else {
-        MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
-        *radius = sqrt(local_max);
+	MPI_Reduce(MPI_IN_PLACE, &local_max, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+	*radius = sqrt(local_max);
     }
     return 0;
 }
 
 int get_total_mass(double *mass){
     if (!global_quantities_of_system_up_to_date)
-        update_global_quantities(false);
+	update_global_quantities(false);
     if (ThisTask) {return 0;}
     *mass = SysState.Mass;
     return 0;
@@ -1785,65 +1800,65 @@ int get_total_mass(double *mass){
 
 int get_potential(int *index, double *potential, int length)
 {
-     int errors = 0;
-     double buffer[length];
-     int count[length];
-     int local_index;
+    int errors = 0;
+    double buffer[length];
+    int count[length];
+    int local_index;
 
-     if (!potential_energy_also_up_to_date) {
-	  compute_potential();
-	  potential_energy_also_up_to_date = true;
-     }
-     
-     for (int i = 0; i < length; i++) {
-	  if (found_particle(index[i], &local_index)) {
-	       count[i] = 1;
-	       buffer[i] = P[local_index].Potential;
-	  } else {
-	       count[i] = 0;
-	       buffer[i] = 0;
-	  }
-     }
+    if (!potential_energy_also_up_to_date) {
+	compute_potential();
+	potential_energy_also_up_to_date = true;
+    }
 
-     if (ThisTask) {
-	  MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	  MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-     } else {
-	  MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-	  MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-	  for (int i = 0; i < length; i++) {
-	       if (count[i] != 1){
-		    errors++;
-		    potential[i] = 0;
-	       } else {
-		    potential[i] = buffer[i];
-	       }
-	  }
-     }
-     if (errors) {
-	  cout << "Number of particles not found: " << errors << endl;
-	  return -3;
-     }
-     return 0;
+    for (int i = 0; i < length; i++) {
+	if (found_particle(index[i], &local_index)) {
+	    count[i] = 1;
+	    buffer[i] = P[local_index].Potential;
+	} else {
+	    count[i] = 0;
+	    buffer[i] = 0;
+	}
+    }
+
+    if (ThisTask) {
+	MPI_Reduce(buffer, NULL, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(count, NULL, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+    } else {
+	MPI_Reduce(MPI_IN_PLACE, buffer, length, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(MPI_IN_PLACE, count, length, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	for (int i = 0; i < length; i++) {
+	    if (count[i] != 1){
+		errors++;
+		potential[i] = 0;
+	    } else {
+		potential[i] = buffer[i];
+	    }
+	}
+    }
+    if (errors) {
+	cout << "Number of particles not found: " << errors << endl;
+	return -3;
+    }
+    return 0;
 }
 
 int get_kinetic_energy(double *kinetic_energy){
     if (!global_quantities_of_system_up_to_date)
-        update_global_quantities(false);
+	update_global_quantities(false);
     if (ThisTask) {return 0;}
     *kinetic_energy = SysState.EnergyKin;
     return 0;
 }
 int get_potential_energy(double *potential_energy){
     if (!(global_quantities_of_system_up_to_date && potential_energy_also_up_to_date))
-        update_global_quantities(true);
+	update_global_quantities(true);
     if (ThisTask) {return 0;}
     *potential_energy = SysState.EnergyPot;
     return 0;
 }
 int get_thermal_energy(double *thermal_energy){
     if (!global_quantities_of_system_up_to_date)
-        update_global_quantities(false);
+	update_global_quantities(false);
     if (ThisTask) {return 0;}
     *thermal_energy = SysState.EnergyInt;
     return 0;
@@ -1851,14 +1866,14 @@ int get_thermal_energy(double *thermal_energy){
 int get_number_of_particles(int *number_of_particles){
     if (ThisTask) {return 0;}
     *number_of_particles = All.TotNumPart;
-    return 0; 
+    return 0;
 }
 int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2){
     return -2;
 }
 int get_center_of_mass_position(double *x, double *y, double *z){
     if (!global_quantities_of_system_up_to_date)
-        update_global_quantities(false);
+	update_global_quantities(false);
     if (ThisTask) {return 0;}
     *x = SysState.CenterOfMass[0];
     *y = SysState.CenterOfMass[1];
@@ -1867,7 +1882,7 @@ int get_center_of_mass_position(double *x, double *y, double *z){
 }
 int get_center_of_mass_velocity(double * vx, double * vy, double * vz){
     if (!global_quantities_of_system_up_to_date)
-        update_global_quantities(false);
+	update_global_quantities(false);
     if (ThisTask) {return 0;}
     *vx = SysState.Momentum[0]/SysState.Mass;
     *vy = SysState.Momentum[1]/SysState.Mass;
@@ -1880,14 +1895,14 @@ int get_gravity_at_point(double eps, double x, double y, double z, double *force
 int get_potential_at_point(double eps, double x, double y, double z, double * phi){
     return -2;
 }
-int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz, 
-        double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
+int get_hydro_state_at_point(double x, double y, double z, double vx, double vy, double vz,
+	double * rho, double * rhovx, double * rhovy, double * rhovz, double * rhoe){
     double pos[3], vel[3], a3;
     double h_out, ngb_out, dhsml_out, rho_out, rhov_out[3], rhov2_out, rhoe_out;
     int error;
     error = contruct_tree_if_needed();
     if (error)
-        return error;
+	return error;
     pos[0] = x;
     pos[1] = y;
     pos[2] = z;
@@ -1908,6 +1923,3 @@ int get_hydro_state_at_point(double x, double y, double z, double vx, double vy,
 #endif
     return 0;
 }
-
-
-
