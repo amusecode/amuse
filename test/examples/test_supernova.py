@@ -62,6 +62,7 @@ def run_supernova():
         number_of_sph_particles, 
         seed = 12345,
         pickle_file = pickle_file,
+#        base_grid_options = dict(type = "glass", target_rms = 0.01),
         with_core_particle = True
     )
     if len(core):
@@ -88,11 +89,11 @@ def run_supernova():
     hydro_code.gas_particles.add_particles(gas_without_core)
     hydro_code.dm_particles.add_particles(core)
     
-    times = [0.0] | units.s
-    potential_energies = hydro_code.potential_energy.as_quantity_in(units.J).as_vector_with_length(1)
-    kinetic_energies =   hydro_code.kinetic_energy.as_quantity_in(units.J).as_vector_with_length(1)
-    thermal_energies =   hydro_code.thermal_energy.as_quantity_in(units.J).as_vector_with_length(1)
-    for time, i_step in [(i*t_end/n_steps, i) for i in range(1, n_steps+1)]:
+    times = [] | units.s
+    potential_energies = [] | units.J
+    kinetic_energies =   [] | units.J
+    thermal_energies =   [] | units.J
+    for time, i_step in [(i*t_end/n_steps, i) for i in range(0, n_steps+1)]:
         hydro_code.evolve_model(time)
         times.append(time)
         potential_energies.append( hydro_code.potential_energy)
@@ -171,7 +172,7 @@ def hydro_plot(view, hydro_code, image_size, figname):
     pyplot.figure(figsize = (image_size[0]/100.0, image_size[1]/100.0), dpi = 100)
     im = pyplot.figimage(rgba, origin='lower')
     
-    pyplot.savefig(figname, transparent=True, dpi = 100)
+    pyplot.savefig(figname, transparent=True, dpi = 100, facecolor='k', edgecolor='k')
     print "\nHydroplot was saved to: ", figname
     pyplot.close()
 
