@@ -2881,7 +2881,7 @@ CONTAINS
                 y(index) = xaccel2(j(index))
                 z(index) = xaccel3(k(index))
                     
-                
+                print *, x(index), xaccel1
                 !end if
  !           end if
             

@@ -37,10 +37,13 @@ from amuse.support.data.core import Grid
 from amuse.support import io
 from amuse.support.io import text
 from amuse.support.units.generic_unit_system import *
+from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWithIntepolation, SamplePointOnCellCenter
 
 from amuse.community.athena.interface import Athena
 from amuse.community.capreole.interface import Capreole
 from amuse.community.mpiamrvac.interface import MpiAmrVac
+
+import numpy
 
 try:
     from amuse import plot
@@ -357,33 +360,32 @@ def test_riemann_shocktube_problem():
 def main(**options):
     print "calculating shock using exact solution"
     exact = CalculateExactSolutionIn1D()
-    x, rho, p, u = exact.get_solution_at_time(0.12 | time)
+    xpositions, rho, p, u = exact.get_solution_at_time(0.12 | time)
     
     print "calculating shock using code"
     model = CalculateSolutionIn3D(**options)
     grids = model.get_solution_at_time(0.12 | time)
     
     print "saving data"
-    store_attributes(x,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
-    #store_attributes_of_line(grid, **options)
+    store_attributes(xpositions,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
     
-    xpoints = [] | length
-    rhovalues = [] | density
+    print "sampling grid"
+    samplepoints = [(x, 0.5, 0.5) | length for x in numpy.linspace(0.0, 1.0, 2000)]
+    print len(grids)
+    samples = SamplePointsOnMultipleGrids(grids, samplepoints, SamplePointOnCellCenter)
+    print len(samples)
+    samples.filterout_duplicate_indices()
+    print len(samples)
+    store_attributes(samples.x,samples.rho,samples.rhovx,samples.energy,filename="exact_riemann_shock_tube_problem.csv")
     
-    sortedgrids = sorted(grids, key = lambda x : x.x[0,0,0])
-    for g in sortedgrids:
-        print g.y[0,0,0], g.x[0,0,0]
-        if g.y[0,0,0] < (1.0/10.0 | length): 
-            xpoints.extend(g.x[...,0,0])
-            rhovalues.extend(g.rho[...,0,0])
-            
     if IS_PLOT_AVAILABLE:
         print "plotting solution"
-        plot.plot(x,rho)
-        plot.plot(xpoints, rhovalues)
+        
+        plot.plot(xpositions,rho)
+        plot.scatter(samples.x, samples.rho)
         pyplot.xlim(0.3,0.7)
         pyplot.ylim(0.5,4.5)
-        pyplot.savefig("rho.png")
+        pyplot.savefig("rieaman_shock_tube_rho.png")
 
 
 if __name__ == "__main__":

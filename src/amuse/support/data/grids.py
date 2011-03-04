@@ -422,11 +422,24 @@ class SamplePointsOnMultipleGrids(object):
     
     def _grid_for_point(self, point):
         for grid in self.grids:
-            if (numpy.all(point > grid.get_minimum_position()) and
+            if (numpy.all(point >= grid.get_minimum_position()) and
                  numpy.all(point < grid.get_maximum_position())):
                 return grid
         return None 
-                
+    
+    def filterout_duplicate_indices(self):
+        previous_grid = None
+        previous_index = None  
+        filteredout = [] 
+        for x in self.samples:
+            if x.grid is previous_grid and numpy.all(x.index == previous_index):
+                pass
+            else:
+                previous_grid= x.grid
+                previous_index = x.index
+                filteredout.append(x)
+        self.samples = filteredout
+        
     @late
     def samples(self):
         result = []
@@ -438,6 +451,7 @@ class SamplePointsOnMultipleGrids(object):
             if not sample.isvalid:
                 continue
             result.append(sample)
+        return result
         
     @late
     def indices(self):

@@ -8,6 +8,8 @@ from amuse.support.interface import InCodeComponentImplementation
 
 from amuse.support.data.indexing import *
 
+from amuse.support.data.grids import *
+
 import numpy
 import inspect
 import collections
@@ -514,4 +516,12 @@ class TestGridSamplingMultiplePoints(amusetest.TestCase):
         self.assertEquals(len(samples), 2)
         self.assertEquals(samples.mass , [3.5, 4.5] | units.kg)
         
-    
+    def test3(self):
+        grid1 = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid1.mass = grid1.x.value_in(units.m) | units.kg
+        grid2 = core.Grid.create((5,5,5), [10.0, 10.0, 10.0] | units.m)
+        grid2.position += (10.0,0,0) | units.m
+        grid2.mass = grid2.x.value_in(units.m) | units.kg
+        samples = SamplePointsOnMultipleGrids((grid1, grid2), [[3.0,3.0,3.0], [4.0,3.0,3.0], [13,3,3]]| units.m)
+        self.assertEquals(len(samples), 3)
+        self.assertEquals(samples.mass , [3.0, 4.0, 13.0] | units.kg)

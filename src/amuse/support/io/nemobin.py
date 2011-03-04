@@ -381,13 +381,16 @@ class NemoBinaryFileFormatProcessor(base.BinaryFileFormatProcessor):
                 velocities = positions_and_velocities[...,1,...]
             else:
                 positions =  particlesitem.data['Position'][0].data
+                positions = positions.reshape(positions.shape[:-1])
                 velocities = particlesitem.data['Vecolity'][0].data
+                velocities = velocities.reshape(velocities.shape[:-1])
             
             result.position = nbody_system.length.new_quantity(positions)
             result.velocity = nbody_system.speed.new_quantity(velocities)
             
             if 'Mass' in particlesitem.data:
-                result.mass = nbody_system.mass.new_quantity(particlesitem.data['Mass'][0].data)
+                mass = particlesitem.data['Mass'][0].data
+                result.mass = nbody_system.mass.new_quantity(mass)
                 
                 
             result.savepoint(time | nbody_system.time)

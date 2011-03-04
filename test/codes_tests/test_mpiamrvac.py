@@ -193,6 +193,49 @@ class TestMpiAmrVacInterface(TestWithMPI):
         self.assertEquals(error, 0)
                                 
         instance.stop()
+        
+    
+        
+    def test9(self): 
+
+        instance = self.new_instance(MpiAmrVacInterface)
+        print instance.default_parameters_filename
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        error = instance.initialize_code()
+        self.assertEquals(error, 0)
+        instance.setup_mesh(20,20,20, 20.0, 20.0, 20.0)
+        instance.commit_parameters()
+        n1, n2, n3, error = instance.get_acceleration_grid_size()
+        self.assertEquals(error, 0)
+        self.assertEquals(n1, 50)
+        self.assertEquals(n2, 50)
+        self.assertEquals(n3, 50)
+        
+        a1, a2, a3, error = instance.get_acceleration_grid_acceleration(1,1,1)
+        self.assertEquals(error, 0)
+        self.assertEquals(a1, 0.0)
+        self.assertEquals(a2, 0)
+        self.assertEquals(a3, 0)
+        
+        error = instance.set_acceleration_grid_acceleration(1,1,1, 10.0, 20.0, 30.0)
+        self.assertEquals(error, 0)
+        
+        a1, a2, a3, error = instance.get_acceleration_grid_acceleration(1,1,1)
+        self.assertEquals(error, 0)
+        self.assertEquals(a1, 10.0)
+        self.assertEquals(a2, 20.0)
+        self.assertEquals(a3, 30.0)
+        
+        x,y,z, error = instance.get_acceleration_grid_position_of_index(1,1,1)
+        self.assertEquals(error, 0)
+        
+        self.assertEquals(x, -1)
+        self.assertEquals(y, -1)
+        self.assertEquals(z, -1)
+        instance.stop()
+        
+    
+
 
 class TestMpiAmrVac(TestWithMPI):
     

@@ -253,17 +253,43 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t
 Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2011-03-03 16:15:26.000000000 +0100
-@@ -0,0 +1,124 @@
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2011-03-04 10:16:13.000000000 +0100
+@@ -0,0 +1,149 @@
 +!=============================================================================
 +! amrvacusr.t.nul
 +!=============================================================================
-+INCLUDE:amrvacnul.specialini.t
++!INCLUDE:amrvacnul.specialini.t
 +INCLUDE:amrvacnul.speciallog.t
 +INCLUDE:amrvacnul.specialbound.t
 +!INCLUDE:amrvacnul.specialsource.t
 +
 +INCLUDE:amrvacusr.acceleration.t
++
++!=============================================================================
++subroutine initglobaldata_usr
++
++include 'amrvacdef.f'
++!-----------------------------------------------------------------------------
++
++call setaccelgrid
++
++end subroutine initglobaldata_usr
++!=============================================================================
++subroutine initonegrid_usr(ixG^L,ix^L,w,x)
++
++! initialize one grid within ix^L
++
++include 'amrvacdef.f'
++
++integer, intent(in) :: ixG^L, ix^L
++double precision, intent(in) :: x(ixG^S,1:ndim)
++double precision, intent(inout) :: w(ixG^S,1:nw)
++!-----------------------------------------------------------------------------
++
++w(ix^S,1:nw)=zero
++
++end subroutine initonegrid_usr
++!=============================================================================
 +
 +!======================================================================================
 +
@@ -280,7 +306,6 @@ Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
 +
 +!-------------------------------------------------------------------
 +
-+call setaccelgrid
 +
 +call acceleration(qdt,ixI^L,ixO^L,iw^LIM,qtC,wCT,qt,w,x)
 +

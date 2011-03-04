@@ -139,10 +139,12 @@ class VectorAttribute(DerivedAttribute):
 
     def set_values_for_entities(self, instance, value):
         vectors = value.number
-        split = numpy.hsplit(vectors,len(self.attribute_names))
+        split = numpy.split(vectors, len(self.attribute_names), axis = vectors.ndim - 1)
+        split = [x.reshape(x.shape[0] if len(x.shape) <= 2 else x.shape[:-1]) for x in split]
+        
         list_of_values = []
         for i in range(len(self.attribute_names)):
-            values = value.unit.new_quantity(split[i].reshape(len(split[i])))
+            values = value.unit.new_quantity(split[i])
             list_of_values.append(values)
             
         instance.set_values_in_store(instance.get_all_keys_in_store(), self.attribute_names, list_of_values)
