@@ -23,7 +23,7 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefs,
     get_center_of_mass_position=None
     get_center_of_mass_velocity=None
     get_indices_of_colliding_particles=None
-    get_potential=None
+    #get_potential=None
     set_acceleration=None
     get_acceleration=None
     

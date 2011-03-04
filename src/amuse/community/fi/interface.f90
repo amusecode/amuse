@@ -313,6 +313,13 @@ function get_potential_at_point(eps, x, y, z, phi, n) result(ret)
   ret=0  
 end function
 
+function get_potential(id, phi_) result(ret)
+  integer:: ret, id
+  real*8 :: phi
+  call amuse_get_potential(id, phi_)
+  ret = 0 
+end function
+
 function get_hydro_state_at_point(x, y, z, vx, vy, vz, rho, rhovx, rhovy, rhovz, rhoe,n) result(ret)
   integer :: ret,n
   real*8 :: x(n), y(n), z(n), vx(n), vy(n), vz(n), rho(n), rhovx(n), &

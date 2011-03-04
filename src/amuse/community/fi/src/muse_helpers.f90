@@ -794,6 +794,14 @@ function amuse_get_position(id,x,y,z) result(ret)
   z=pos(p,3)
   ret=0 
 end function
+
+subroutine amuse_get_potential(id, phi_)
+  include 'globals.h'
+  integer :: id
+  real*8 :: phi_
+  phi_ = phi(id)
+end subroutine
+
 function amuse_get_velocity(id,vx,vy,vz) result(ret)
   include 'globals.h'
   integer :: id,ret,p,muse_find_particle
