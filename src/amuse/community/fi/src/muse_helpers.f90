@@ -795,12 +795,24 @@ function amuse_get_position(id,x,y,z) result(ret)
   ret=0 
 end function
 
-subroutine amuse_get_potential(id, phi_)
+function amuse_get_potential(id, phi_) result(ret)
   include 'globals.h'
-  integer :: id
   real*8 :: phi_
-  phi_ = phi(id)
-end subroutine
+  integer :: id,ret,p,muse_find_particle
+
+  p=muse_find_particle(pordercount,id,nbodies,nbexist)
+  if(p.EQ.0) then
+    print*, id,nbodies
+    print*
+    print*,nbexist(1:nbodies)
+    stop
+    ret=-1
+    return
+  endif 
+  if(nbexist(p).NE.id) call terror("id error 2")
+  phi_ = phi(p)
+  ret=0
+end function
 
 function amuse_get_velocity(id,vx,vy,vz) result(ret)
   include 'globals.h'

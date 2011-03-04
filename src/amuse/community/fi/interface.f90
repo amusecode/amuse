@@ -316,8 +316,7 @@ end function
 function get_potential(id, phi_) result(ret)
   integer:: ret, id
   real*8 :: phi
-  call amuse_get_potential(id, phi_)
-  ret = 0 
+  ret = amuse_get_potential(id, phi_)
 end function
 
 function get_hydro_state_at_point(x, y, z, vx, vy, vz, rho, rhovx, rhovy, rhovz, rhoe,n) result(ret)
