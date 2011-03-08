@@ -6,6 +6,8 @@
     <!-- empty version by default -->
     <property name="version" value="" />
 
+    <property name="jar" value="ibis-amuse${version}.jar" />
+
     <!-- locations of external libraries. Defaults to included versions,
          override to use custom versions -->
     <property name="deploy" value="deploy" />
@@ -41,6 +43,12 @@
             <arg line="." />
             <classpath refid="class_path" />
         </java>
+
+	<jar destfile="lib/${jar}">
+            <fileset dir="tmp" includes="**/*.class" />
+            <metainf dir="." includes="LICENSE.txt" />
+        </jar>
+
 
         <delete dir="tmp" />
     </target>

@@ -1,0 +1,4 @@
+#!/bin/sh
+
+exec java -Xmx500M -classpath .:lib/*:lib:deploy/lib/* $@
+
