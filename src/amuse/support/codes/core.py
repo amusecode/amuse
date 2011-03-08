@@ -13,7 +13,8 @@ from amuse.support.core import print_out
 from amuse.support.core import OrderedDictionary
 from amuse.support.options import OptionalAttributes, option
 from amuse.support.codes.create_definition import CodeDocStringProperty
-from amuse.support.codes.channel import MpiChannel, MultiprocessingMPIChannel
+from amuse.support.codes.channel import MpiChannel, MultiprocessingMPIChannel,\
+    IbisChannel
 from amuse.support.codes.channel import is_mpd_running
 
 """
@@ -653,7 +654,7 @@ Please do a 'make clean; make' in the root directory.
         
 
 
-    @option(choices=['mpi','remote'], sections=("channel",))
+    @option(choices=['mpi','remote','ibis'], sections=("channel",))
     def channel_type(self):
         return 'mpi'
         
@@ -689,10 +690,12 @@ Please do a 'make clean; make' in the root directory.
             return MpiChannel
         elif self.channel_type == 'remote':
             return MultiprocessingMPIChannel
+        elif self.channel_type == 'ibis':
+            return IbisChannel
         else:
             raise exceptions.AmuseException("Cannot create a channel with type {0!r}, type is not supported".format(self.channel_type))
     
-    
+        
 class PythonCodeInterface(CodeInterface):
     """
     Base class for codes having a python implementation
