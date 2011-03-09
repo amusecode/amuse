@@ -1006,51 +1006,12 @@ m.run_mpi_channel('{2}')"""
    
    
 class IbisMessage(AbstractMessage):
-  
-    def _send_int(self, some_integer, socket):
-        'Sends an integer'
-        narray = numpy.empty(1, dtype=">i4");
-        narray[0] = some_integer
-        
-        socket.sendall(narray.tostring())
-        
-    def _receive_int(self, socket):
-        bytes = self.socket.recv(4);
-        
-        while len(bytes) < 4:
-            bytes = bytes + socket.recv(4 - len(bytes))
+    
+    def __init__(self, tag = -1, length= 1, dtype_to_arguments = {}, id = 0):
+        AbstractMessage.__init__(self, tag, length, dtype_to_arguments)
             
-        return numpy.frombuffer(bytes, dtype=">i4")[0]
-    
-    def _send_string(self, some_string, socket):
-        'Sends a string through a socket by first sending a length header, then the string'
-        
-        logging.getLogger("ibis").debug("sending string '%s'",some_string)
-
-        utf8_string = some_string.encode('utf-8')
-
-        self._send_int(len(utf8_string), socket)
-
-        socket.sendall(utf8_string)
-#        
-    def _receive_string(self, socket):
-        'Receives a string from a socket by first receiving a length header, then the string'
-
-        logging.getLogger("ibis").debug("receiving string");
-        
-        length = self._receive_int()
-
-        bytes = socket.recv(length);
-        
-        while len(bytes) < length:
-            bytes = bytes + socket.recv(length - len(bytes))
-
-        result = bytes.decode('utf-8')
-    
-        logging.getLogger("ibis").debug("received string '%s'", result)
-            
-        return result
-    
+        self.id = id
+      
 
     def _receive_all(self, nbytes, socket):
         bytes = socket.recv(nbytes)
@@ -1062,46 +1023,37 @@ class IbisMessage(AbstractMessage):
      
     def recieve(self, socket):
         
-        header_bytes = self._receive_all(32, socket)
+        header_bytes = self._receive_all(36, socket)
         
-        header = numpy.frombuffer(header_bytes, dtype=">i4")
+        header = numpy.frombuffer(header_bytes, dtype="i")
+
+        #id of this call
+        self.id = header[0]
         
         #function ID
-        self.tag = header[0]
+        self.tag = header[1]
         
         #number of calls in this message
-        self.length = header[1]
+        self.length = header[2]
         
-        #number of X's per call
-        number_of_doubles = header[2]
+        #number of X's in TOTAL
         number_of_ints = header[3]
-        number_of_floats = header[4]
-        number_of_strings = header[5]
-        number_of_booleans = header[6]
-        number_of_longs = header[7]
+        number_of_longs = header[4]
+        number_of_floats = header[5]
+        number_of_doubles = header[6]
+        number_of_booleans = header[7]
+        number_of_strings = header[8]
+
+        self.ints = self.recieve_ints(socket, number_of_ints)
+        self.longs = self.recieve_longs(socket, number_of_longs)
+        self.floats = self.recieve_floats(socket, number_of_floats)
+        self.doubles = self.recieve_doubles(socket, number_of_doubles)
+        self.booleans = self.recieve_booleans(socket, number_of_booleans)
+        self.strings = self.recieve_strings(socket, number_of_strings)
         
-        self.doubles = self.recieve_doubles(socket, self.length, number_of_doubles)
-        self.ints = self.recieve_ints(socket, self.length, number_of_ints)
-        self.floats = self.recieve_floats(socket, self.length, number_of_floats)
-        self.strings = self.recieve_strings(socket, self.length, number_of_strings)
-        self.booleans = self.recieve_booleans(socket, self.length, number_of_booleans)
-        self.longs = self.recieve_longs(socket, self.length, number_of_longs)
-        
-    def recieve_doubles(self, socket, length, count):
+    def recieve_ints(self, socket, count):
         if count > 0:
-            nbytes = count * length * 8 # size of double
-            
-            bytes = self._receive_all(nbytes, socket)
-            
-            result = numpy.frombuffer(bytes, dtype='d')
-            
-            return result
-        else:
-            return []
-        
-    def recieve_ints(self, socket, length, count):
-        if count > 0:
-            nbytes = count * length * 4 # size of int
+            nbytes = count * 4 # size of int
             
             bytes = self._receive_all(nbytes, socket)
             
@@ -1109,23 +1061,24 @@ class IbisMessage(AbstractMessage):
             
             return result
         else:
-            return []
+            return []        
             
-    def recieve_longs(self, socket, length, count):
+    def recieve_longs(self, socket, count):
         if count > 0:
-            nbytes = count * length * 8 # size of long
+            nbytes = count * 8 # size of long
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='i')
+            result = numpy.frombuffer(bytes, dtype = 'l')
             
             return result
         else:
             return []
-            
-    def recieve_floats(self, socket, length, count):
+ 
+        
+    def recieve_floats(self, socket, count):
         if count > 0:
-            nbytes = count * length * 8 # size of float
+            nbytes = count * 4 # size of float
             
             bytes = self._receive_all(nbytes, socket)
             
@@ -1135,51 +1088,70 @@ class IbisMessage(AbstractMessage):
         else:
             return []
     
-    def recieve_booleans(self, socket, length, count):
+          
+    def recieve_doubles(self, socket, count):
         if count > 0:
-            nbytes = count * length * 4 # size of boolean/int
+            nbytes = count * 8 # size of double
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='int32')
+            result = numpy.frombuffer(bytes, dtype='d')
+            
+            return result
+        else:
+            return []
+        
+
+    def recieve_booleans(self, socket, count):
+        if count > 0:
+            nbytes = count * 1 # size of boolean/byte
+            
+            bytes = self._receive_all(nbytes, socket)
+            
+            result = numpy.frombuffer(bytes, dtype='b')
             
             return result
         else:
             return []
     
             
-    def recieve_strings(self, socket, length, count):
+    def recieve_strings(self, socket, count):
+        
         if count > 0:
+            lengths = self.recieve_ints(socket, count)
+            
             strings = []
             
-            for i in range(count * length):
-                strings.append(self._receive_string(socket))
+            for i in range(count):
+                bytes = self._receive_all(lengths[i], socket)
+                strings.append(bytes.decode('utf-8'))
             
             return strings
         else:
             return []
     
     def send(self, socket):
+        
         header = numpy.array([
+            self.id,
             self.tag, 
             self.length, 
-            len(self.doubles) / self.length, 
-            len(self.ints) / self.length, 
-            len(self.floats) / self.length, 
-            len(self.strings) / self.length,
-            len(self.booleans) / self.length,
-            len(self.longs) / self.length,
+            len(self.ints), 
+            len(self.longs),
+            len(self.floats), 
+            len(self.doubles), 
+            len(self.booleans),
+            len(self.strings),
         ], dtype='i')
         
         socket.sendall(header.tostring())
-        
-        self.send_doubles(socket, self.doubles)
+
         self.send_ints(socket, self.ints)
-        self.send_floats(socket, self.floats)
-        self.send_strings(socket, self.strings)
-        self.send_booleans(socket, self.booleans)
         self.send_longs(socket, self.longs)
-        
+        self.send_floats(socket, self.floats)
+        self.send_doubles(socket, self.doubles)
+        self.send_booleans(socket, self.booleans)
+        self.send_strings(socket, self.strings)
     
     def send_doubles(self, socket, array):
         if len(array) > 0:
@@ -1197,12 +1169,22 @@ class IbisMessage(AbstractMessage):
             socket.sendall(buffer.tostring())
             
     def send_strings(self, socket, array):
+        header = []
+        bytes = []
+        
         for i in range(len(array)):
-            self._send_string(array[i], socket)
+            utf8_string = array[i].encode('utf-8')
+            header.append(len(utf8_string))
+            bytes.append(utf8_string)
+  
+        self.send_ints(socket, header);
+        
+        for i in range(len(bytes)):
+            socket.sendall(bytes[i])
         
     def send_booleans(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='int32')
+            buffer = numpy.array(array,  dtype='b')
             socket.sendall(buffer.tostring())
         
     def send_longs(self, socket, array):
@@ -1242,15 +1224,10 @@ class IbisChannel(MessageChannel):
         
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.daemon_host, self.daemon_port))
-
-        #send options, start  with magic string (daemon will expect this to be
-        #send first
-#        self._send_string('magic string')
-#        self._send_string(self.name_of_the_worker)
-#        self._send_string(self.hostname)
-#        self._send_int(self.number_of_workers)
         
-        arguments = {'strings': ['magic_string', self.name_of_the_worker, self.hostname], 'ints': [self.number_of_workers]}
+        self.socket.sendall('magic_string'.encode('utf-8'))
+        
+        arguments = {'string': [self.name_of_the_worker, self.hostname], 'int32': [self.number_of_workers]}
         
         message = IbisMessage(10101010, 1, arguments)
 
@@ -1261,10 +1238,8 @@ class IbisChannel(MessageChannel):
         result = IbisMessage()
         result.recieve(self.socket)
         
-        print result.to_result()
-
-        if result != "OK":
-            raise Exception('cannot start Ibis worker')
+        if result.length == 0:
+            raise exceptions.CodeException("Could not start worker " + result.strings[0])
         
         logging.getLogger("ibis").info("worker %s initialized", self.name_of_the_worker)
         
@@ -1286,14 +1261,7 @@ class IbisChannel(MessageChannel):
     
     def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
         
-        print "tag" 
-        print tag
-        print "id" 
-        print id
-        print "type" 
-        print dtype_to_arguments
-        print "length"
-        print length
+        logging.getLogger("ibis").info("sending message for call id %d, function %d", id, tag)
         
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
@@ -1305,8 +1273,6 @@ class IbisChannel(MessageChannel):
         
         self._is_inuse = True
         
-        raise NotImplementedError
-        
     def recv_message(self, tag, handle_as_array = False):
            
         self._is_inuse = False
@@ -1315,10 +1281,7 @@ class IbisChannel(MessageChannel):
         
         message.recieve(self.socket)
         
-        if message.tag == -1:
-            raise exceptions.CodeException("Not a valid message, message is not understood by legacy code")
-        elif message.tag == -2:
-            self.stop()
-            raise exceptions.CodeException("Fatal error in code, code has exited")
+        if message.length == 0:
+            raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
         return message.to_result(handle_as_array)

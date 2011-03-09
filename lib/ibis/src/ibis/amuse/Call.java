@@ -1,168 +1,263 @@
 package ibis.amuse;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Serializable;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.IntBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Call implements Serializable {
 
-	private static final Logger logger = LoggerFactory.getLogger(Call.class);
+    private static final long serialVersionUID = 1L;
 
-	private static final int HEADER_SIZE = 8;
+    private static final Logger logger = LoggerFactory.getLogger(Call.class);
 
-	private static final int SIZEOF_INT = 4;
-	private static final int SIZEOF_DOUBLE = 4;
-	private static final int SIZEOF_FLOAT = 8;
-	// private static final int SIZEOF_STRING = 4;
-	private static final int SIZEOF_BOOLEAN = 4;
-	private static final int SIZEOF_LONG = 8;
+    private static boolean hasRemaining(ByteBuffer... buffers) {
+        for (ByteBuffer buffer : buffers) {
+            if (buffer.hasRemaining()) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	private static final int FUNCTION_ID_INDEX = 0;
-	private static final int COUNT_INDEX = 1;
-	private static final int INTEGER_INDEX = 2;
-	private static final int LONG_INDEX = 3;
-	private static final int FLOAT_INDEX = 4;
-	private static final int DOUBLE_INDEX = 5;
-	private static final int BOOLEAN_INDEX = 6;
-	private static final int STRING_INDEX = 7;
+    static void readAll(SocketChannel channel, ByteBuffer... bytes)
+            throws IOException {
 
-	private static void readAll(ByteBuffer bytes, SocketChannel channel)
-			throws IOException {
-		while (bytes.hasRemaining()) {
-			int read = channel.read(bytes);
+        while (hasRemaining(bytes)) {
+             long read = channel.read(bytes);
 
-			if (read == -1) {
-				throw new IOException("Connection closed on reading data");
-			}
-		}
-	}
+             if (read == -1) {
+                throw new IOException("Connection closed on reading data");
+            }
+        }
+    }
 
-	private static void readAll(ByteBuffer[] bytes, SocketChannel channel)
-			throws IOException {
-		
-		while (true) {
-			long read = channel.read(bytes);
 
-			if (read == 0) {
-				//all buffers now full
-				return;
-			}
-			
-			if (read == -1) {
-				throw new IOException("Connection closed on reading data");
-			}
-		}
-	}
+    private final int id;
+    
+    private final int functionID;
+    
+    // number of function calls in one "call message"
+    private final int count;
 
-	private final int functionID;
+    private final int[] ints;
 
-	// number of function calls in one "call message"
-	private final int count;
+    private final long[] longs;
 
-	private final int[] integers;
-	
-	private final long[] longs;
+    private final float[] floats;
 
-	private final float[] floats;
+    private final double[] doubles;
 
-	private final double[] doubles;
+    private final boolean[] booleans;
 
-	private final boolean[] booleans;
-	
-	private final String[] strings;
+    private final String[] strings;
 
-	/**
-	 * Read a call from a socket
-	 * 
-	 * @throws IOException
-	 *             in case the call cannot be read
-	 */
-	Call(SocketChannel channel) throws IOException {
-		ByteBuffer header = ByteBuffer.allocate(HEADER_SIZE);
-		header.order(ByteOrder.nativeOrder());
+    /**
+     * Read a call from a socket
+     * 
+     * @throws IOException
+     *             in case the call cannot be read
+     */
+    Call(SocketChannel channel) throws IOException {
+        ByteBuffer headerBytes = ByteBuffer.allocate(MessageFormat.HEADER_SIZE * MessageFormat.SIZEOF_INT);
+        headerBytes.order(ByteOrder.nativeOrder());
 
-		readAll(header, channel);
+        logger.debug("reading header");
+        readAll(channel, headerBytes);
 
-		functionID = header.getInt(FUNCTION_ID_INDEX);
-		count = header.getInt(COUNT_INDEX);
+        headerBytes.clear();
+        IntBuffer header = headerBytes.asIntBuffer();
 
-		//create arrays
-		integers = new int[header.getInt(INTEGER_INDEX)];
-		longs = new long[header.getInt(LONG_INDEX)];
-		floats = new float[header.getInt(FLOAT_INDEX)];
-		doubles = new double[header.getInt(DOUBLE_INDEX)];
-		booleans = new boolean[header.getInt(BOOLEAN_INDEX)];
-		strings = new String[header.getInt(STRING_INDEX)];
-		
-		ByteBuffer integerBuffer = ByteBuffer.allocate(integers.length * SIZEOF_INT);
-		integerBuffer.order(ByteOrder.nativeOrder());
+        id = header.get();
+        functionID = header.get();
+        count = header.get();
 
-		// receive all data
-		readAll(integerBuffer, channel);
+        // create arrays
+        headerBytes.clear();
+        ints = new int[header.get()];
+        longs = new long[header.get()];
+        floats = new float[header.get()];
+        doubles = new double[header.get()];
+        booleans = new boolean[header.get()];
+        strings = new String[header.get()];
 
-		// read data into arrays
-		integerBuffer.asIntBuffer().get(integers);
+        ByteBuffer intBytes = ByteBuffer.allocate(ints.length * MessageFormat.SIZEOF_INT);
+        ByteBuffer longBytes = ByteBuffer.allocate(longs.length * MessageFormat.SIZEOF_LONG);
+        ByteBuffer floatBytes = ByteBuffer.allocate(floats.length
+                * MessageFormat.SIZEOF_FLOAT);
+        ByteBuffer doubleBytes = ByteBuffer.allocate(doubles.length
+                * MessageFormat.SIZEOF_DOUBLE);
+        // booleans as send as bytes
+        ByteBuffer booleanBytes = ByteBuffer.allocate(booleans.length
+                * MessageFormat.SIZEOF_BOOLEAN);
+        // strings are preceded by a header with integers denoting
+        // the length of each string
+        ByteBuffer stringHeaderBytes = ByteBuffer.allocate(strings.length
+                * MessageFormat.SIZEOF_INT);
 
-	}
+        logger.trace("reading data for call " + this);
 
-	// private String readString() throws IOException {
-	// int length = readInt();
-	//
-	// logger.debug("reading string of size " + length);
-	//
-	// ByteBuffer bytes = ByteBuffer.allocate(length);
-	//
-	// while (bytes.hasRemaining()) {
-	// int read = in.read(bytes.array(), bytes.position(), bytes
-	// .capacity());
-	//
-	// if (read == -1) {
-	// throw new IOException("Connection closed on reading integer");
-	// }
-	// bytes.position(bytes.position() + read);
-	// }
-	//
-	// return new String(bytes.array(), "UTF-8");
-	// }
-	//
-	// private void writeInt(int integer) throws IOException {
-	// ByteBuffer bytes = ByteBuffer.allocate(4);
-	// bytes.putInt(integer);
-	//
-	// out.write(bytes.array());
-	// }
-	//
-	// private void writeString(String string) throws IOException {
-	//
-	// byte[] bytes = string.getBytes("UTF-8");
-	//
-	// writeInt(bytes.length);
-	// out.write(bytes);
-	// }
-	//
-	// // big-endian bytes converted to an int
-	// private int readInt() throws IOException {
-	// ByteBuffer bytes = ByteBuffer.allocate(4);
-	//
-	// while (bytes.hasRemaining()) {
-	// int read = in.read(bytes.array(), bytes.position(), bytes
-	// .capacity());
-	//
-	// if (read == -1) {
-	// throw new IOException("Connection closed on reading integer");
-	// }
-	// bytes.position(bytes.position() + read);
-	// }
-	//
-	// return bytes.getInt(0);
-	// }
+        // receive all data
+        readAll(channel, intBytes, longBytes, floatBytes, doubleBytes,
+                booleanBytes, stringHeaderBytes);
+
+        // set order of all buffers to native order
+        intBytes.order(ByteOrder.nativeOrder());
+        longBytes.order(ByteOrder.nativeOrder());
+        floatBytes.order(ByteOrder.nativeOrder());
+        doubleBytes.order(ByteOrder.nativeOrder());
+        booleanBytes.order(ByteOrder.nativeOrder());
+        stringHeaderBytes.order(ByteOrder.nativeOrder());
+
+        // reset position for reading
+        intBytes.clear();
+        longBytes.clear();
+        floatBytes.clear();
+        doubleBytes.clear();
+        booleanBytes.clear();
+        stringHeaderBytes.clear();
+
+        // read data into arrays
+        intBytes.asIntBuffer().get(ints);
+        longBytes.asLongBuffer().get(longs);
+        floatBytes.asFloatBuffer().get(floats);
+        doubleBytes.asDoubleBuffer().get(doubles);
+
+        for (int i = 0; i < booleans.length; i++) {
+            byte value = booleanBytes.get(i);
+            booleans[i] = (value == MessageFormat.TRUE);
+        }
+
+        // retreive lengths (in bytes!) of strings from header, create buffers
+        // with suitable lengths
+        IntBuffer stringLengths = stringHeaderBytes.asIntBuffer();
+        ByteBuffer[] stringByteBuffers = new ByteBuffer[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            stringByteBuffers[i] = ByteBuffer.allocate(stringLengths.get(i));
+            stringByteBuffers[i].order(ByteOrder.nativeOrder());
+        }
+
+        // receive all strings (as bytes)
+        readAll(channel, stringByteBuffers);
+
+        for (int i = 0; i < strings.length; i++) {
+            stringByteBuffers[i].clear();
+            strings[i] = new String(stringByteBuffers[i].array(), "UTF-8");
+        }
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getFunctionID() {
+        return functionID;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public int[] getInts() {
+        return ints;
+    }
+
+    public long[] getLongs() {
+        return longs;
+    }
+
+    public float[] getFloats() {
+        return floats;
+    }
+
+    public double[] getDoubles() {
+        return doubles;
+    }
+
+    public boolean[] getBooleans() {
+        return booleans;
+    }
+
+    public String[] getStrings() {
+        return strings;
+    }
+    
+    public String getString(int index) throws IOException {
+        if (strings == null || (strings.length + 1) < index) {
+            throw new IOException("cannot get string at index " + index + " in call" + this);
+        }
+        return strings[index];
+    }
+
+    public String valuesToString() {
+        return Arrays.toString(ints) + Arrays.toString(longs)
+                + Arrays.toString(floats) + Arrays.toString(doubles)
+                + Arrays.toString(booleans) + Arrays.toString(strings);
+    }
+
+    public String toString() {
+        return "Call: function ID:" + functionID + " count:" + count + " ints:"
+                + ints.length + " longs: " + longs.length + " floats:"
+                + floats.length + " doubles:" + doubles.length + " booleans:"
+                + booleans.length + " strings:" + strings.length;
+    }
+
+    // private String readString() throws IOException {
+    // int length = readInt();
+    //
+    // logger.debug("reading string of size " + length);
+    //
+    // ByteBuffer bytes = ByteBuffer.allocate(length);
+    //
+    // while (bytes.hasRemaining()) {
+    // int read = in.read(bytes.array(), bytes.position(), bytes
+    // .capacity());
+    //
+    // if (read == -1) {
+    // throw new IOException("Connection closed on reading integer");
+    // }
+    // bytes.position(bytes.position() + read);
+    // }
+    //
+    // return new String(bytes.array(), "UTF-8");
+    // }
+    //
+    // private void writeInt(int integer) throws IOException {
+    // ByteBuffer bytes = ByteBuffer.allocate(4);
+    // bytes.putInt(integer);
+    //
+    // out.write(bytes.array());
+    // }
+    //
+    // private void writeString(String string) throws IOException {
+    //
+    // byte[] bytes = string.getBytes("UTF-8");
+    //
+    // writeInt(bytes.length);
+    // out.write(bytes);
+    // }
+    //
+    // // big-endian bytes converted to an int
+    // private int readInt() throws IOException {
+    // ByteBuffer bytes = ByteBuffer.allocate(4);
+    //
+    // while (bytes.hasRemaining()) {
+    // int read = in.read(bytes.array(), bytes.position(), bytes
+    // .capacity());
+    //
+    // if (read == -1) {
+    // throw new IOException("Connection closed on reading integer");
+    // }
+    // bytes.position(bytes.position() + read);
+    // }
+    //
+    // return bytes.getInt(0);
+    // }
 
 }
