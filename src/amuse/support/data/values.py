@@ -802,7 +802,7 @@ class NonNumericQuantity(Quantity):
         
     
     def as_vector_with_length(self, length):
-        return VectorQuantity(numpy.ones(length) * self.value, self.unit)
+        return VectorQuantity(numpy.array([self.value] * length), self.unit)
     
     def as_vector_quantity(self):
         return VectorQuantity([self.value], self.unit)

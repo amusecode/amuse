@@ -472,6 +472,9 @@ class string_unit(nonnumeric_unit):
     def is_valid_value(self, value):
         return value is None or isinstance(value, str)
         
+    @property
+    def dtype(self):
+        return 'str'
 
 class enumeration_unit(nonnumeric_unit):
     """
