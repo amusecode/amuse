@@ -86,7 +86,8 @@ class TestFiInterface(TestWithMPI):
         self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
         instance.cleanup_code()
         instance.stop()
-    
+
+  
     def test4(self):
         instance=FiInterface()
         instance.initialize_code()
@@ -132,6 +133,27 @@ class TestFiInterface(TestWithMPI):
         self.assertAlmostEqual( Ep, -0.5,10)
         
         instance.cleanup_code()
+        instance.stop()
+
+    def test5a(self):
+        instance=FiInterface()
+        self.assertEquals(0,instance.initialize_code())
+        self.assertEquals(0,instance.set_eps(0.001))
+        self.assertEquals(0,instance.set_directsum(1))
+        instance.new_particle( 
+           [1.0,1.0],
+           [0.0,0.0],
+           [1.0,-1.0],
+           [0.0,0.0],
+           [0.0,0.0],
+           [0.0,0.0],
+           [0.0,0.0],
+           [0.0,0.0] )
+        self.assertEquals(0,instance.commit_particles())
+        self.assertEquals(0, instance.commit_parameters())
+        self.assertAlmostEqual(-0.500 , instance.get_potential(1)['potential'], places=1)
+        print instance.get_potential([1])
+        self.assertEquals(0, instance.cleanup_code())
         instance.stop()
     
     def test6(self):

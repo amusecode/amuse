@@ -1,5 +1,5 @@
 import numpy
-from amuse.community.mercury.interface import Mercury
+from amuse.community.mercury.interface import MercuryInterface
 
 try:
     from matplotlib import pyplot
@@ -46,7 +46,7 @@ solarsystem= \
   0., 0., 0.]]
 
 def planetplot():
-    instance=Mercury()
+    instance=MercuryInterface()
     instance.initialize_code()
     ids=dict()
     xpos=dict()

@@ -1,6 +1,6 @@
 
 import numpy
-from amuse.community.mercury.interface import Mercury
+from amuse.community.mercury.interface import MercuryInterface
 
 
 try:
@@ -10,7 +10,7 @@ except ImportError:
     HAS_MATPLOTLIB = False
 
 
-instance=Mercury()
+instance=MercuryInterface()
 instance.initialize_code()
 mass=3.04043264264672381E-06
 dens=5.52

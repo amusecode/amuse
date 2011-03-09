@@ -58,11 +58,34 @@ function get_orbiter_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(
   if(id.EQ.1) ret=1
 end function
 
+function set_orbiter_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
+  use amuse_mercuryMod
+  integer :: ret,id
+  real*8 :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
+  ret=set_particle_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit)
+  if(id.EQ.1) ret=1
+end function
+
 function delete_particle(id) result(ret)
   use amuse_mercuryMod
   integer :: ret,id
   ret=remove_particle(id)
 end function  
+
+function set_density(id, density) result(ret)
+  use amuse_mercuryMod
+  integer :: ret, id
+  real*8 :: density
+  ret=set_central_body(mass=density)
+end function
+
+function get_density(id, density) result(ret)
+  use amuse_mercuryMod
+  integer :: ret, id
+  real*8 :: density
+  ret=get_central_body(mass=density)
+end function
+
 
 function set_central_mass(mass) result(ret)
   use amuse_mercuryMod

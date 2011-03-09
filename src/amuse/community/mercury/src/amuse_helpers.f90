@@ -7,9 +7,10 @@ module amuse_mercuryMod
   
   private
   public :: mercury_init, mercury_end,finish_init,evolve_mercury, &
-    add_particle, get_particle_state,remove_particle,energy_angular_momentum, &
-    get_number_of_particles,energy_angular_momentum_deviation, &
-    total_energy_angular_momentum,mercury_time
+    add_particle, get_particle_state,set_particle_state,remove_particle, &
+    energy_angular_momentum, get_number_of_particles, &
+    energy_angular_momentum_deviation, total_energy_angular_momentum, &
+    mercury_time
 
   public :: set_central_body,get_central_body
 
@@ -274,6 +275,32 @@ function get_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) resul
   sy=s(2,index)/K2
   sz=s(3,index)/K2
   celimit=rceh(index)
+  ret=0
+
+end function
+
+function set_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
+  integer :: ret,id_,index
+  real*8 :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
+
+  index=find_particle(id_)
+  if(index.LT.0) then
+    ret=index
+    return
+  endif  
+  m(index)=mass*K2
+!  radius=(mass*MSUN*3/(4*PI*rho(index)*AU**3))**(1./3)
+  rho(index)=dens*rhocgs
+  xh(1,index)=x
+  xh(2,index)=y
+  xh(3,index)=z
+  vh(1,index)=vx
+  vh(2,index)=vy
+  vh(3,index)=vz
+  s(1,index)=sx*K2
+  s(2,index)=sy*K2
+  s(3,index)=sz*K2
+  rceh(index)=celimit
   ret=0
 end function
 

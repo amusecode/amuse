@@ -15,7 +15,7 @@ FFLAGSOLD = -O -ip -u -g -traceback $(PIC)
 
 FFLAGS2= -I./src/
 
-CLASSNAME=Mercury
+CLASSNAME=MercuryInterface
 
 GLCLASSNAME=glMercury
 
@@ -26,7 +26,7 @@ all: mercury_worker
 
 %.o: %.F90 Makefile
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
-        
+
 mercury_worker: worker.f90 interface.o
 	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS)
 
