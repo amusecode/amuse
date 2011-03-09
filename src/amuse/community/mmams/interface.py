@@ -1,6 +1,7 @@
 from amuse.community import *
 from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.support.options import option
+from amuse.support.units import units
 import os.path
 
 
@@ -63,6 +64,17 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         return function
     
     @legacy_function
+    def delete_particle():
+        """
+        Remove a particle from the stellar collision code.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
     def add_shell():
         """
         Add a new shell to an existing particle in the stellar collision code.
@@ -103,23 +115,23 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         return function
     
     @legacy_function
-    def get_number_of_shells():
+    def get_number_of_zones():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('number_of_shells', dtype='int32', direction=function.OUT, description = "The number of currently defined shells of this particle")
+        function.addParameter('number_of_zones', dtype='int32', direction=function.OUT, description = "The number of currently defined shells of this particle")
         function.result_type = 'int32'
         return function
     
     @legacy_function
-    def get_shell():
+    def get_stellar_model_element():
         """
-        Return properties of the stellar model at a specific shell.
+        Return properties of the stellar model at a specific zone.
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
+        function.addParameter('index_of_the_zone', dtype='int32', direction=function.IN)
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
-        function.addParameter('index_of_the_shell', dtype='int32', direction=function.IN)
         function.addParameter('cumul_mass', dtype='float64', direction=function.OUT, description = "The cumulative mass from the center to the current shell of this particle")
         function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The radius of this shell")
         function.addParameter('density', dtype='float64', direction=function.OUT, description = "The density of this shell")
@@ -166,35 +178,94 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         function.result_type = 'int32'
         return function
     
-    def retrieve_stellar_structure(self, star, structure = dict()):
-        structure['number_of_zones']   = star.get_number_of_zones().number
-        structure['number_of_species'] = star.get_number_of_species().number
-        structure['species_names']     = star.get_names_of_species(number_of_species = structure['number_of_species'])
-        structure['species_IDs']       = star.get_IDs_of_species(number_of_species = structure['number_of_species'])
-        structure['frac_mass']   = star.get_mass_profile(number_of_zones = structure['number_of_zones'])
-        structure['density']     = star.get_density_profile(number_of_zones = structure['number_of_zones'])
-        structure['radius']      = star.get_radius_profile(number_of_zones = structure['number_of_zones'])
-        structure['temperature'] = star.get_temperature_profile(number_of_zones = structure['number_of_zones'])
-        structure['mu']          = star.get_mu_profile(number_of_zones = structure['number_of_zones'])
-        structure['composition'] = star.get_chemical_abundance_profiles(
-            number_of_zones = structure['number_of_zones'], number_of_species = structure['number_of_species'])
-        structure['specific_internal_energy'] = (1.5 * constants.kB * structure['temperature'] / structure['mu']).as_quantity_in(units.m**2/units.s**2)
-        return structure
-    
 
-class MakeMeAMassiveStar(InCodeComponentImplementation):
+class MakeMeAMassiveStar(CommonCode):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MakeMeAMassiveStarInterface(**options), **options)
     
-    def merge_stars(self, star_1, star_2):
-        structure_1 = self.retrieve_stellar_structure(star_1)
-        id_1 = self.add_star_1(structure_1)
-        structure_2 = self.retrieve_stellar_structure(star_2)
-        id_2 = self.add_star_2(structure_2)
-        id_product = self.merge_two_stars(id_1, id_2)
-        product = self.convert_to_stellar_structure(id_product)
-        return product
+    def define_properties(self, object):
+        object.add_property("get_number_of_particles", units.none)
+    
+    def define_methods(self, object):
+        CommonCode.define_methods(self, object)
+        object.add_method(
+            "new_particle",
+            (units.MSun,),
+            (object.INDEX, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "delete_particle",
+            (object.INDEX,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "read_usm",
+            (units.string,),
+            (object.INDEX, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "add_shell",
+            (object.INDEX, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.erg / units.g, units.none, units.K, units.none,
+                units.none, units.none, units.none, units.none, units.none, 
+                units.none, units.none, units.none, units.none),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_stellar_model_element",
+            (object.INDEX, object.INDEX,),
+            (units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.erg / units.g, units.none, units.K, units.none,
+                units.none, units.none, units.none, units.none, units.none, 
+                units.none, units.none, units.none, units.none, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_number_of_zones",
+            (object.INDEX, ),
+            (units.none, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_number_of_particles",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+    def define_particle_sets(self, object):
+        object.define_super_set('particles', ['native_stars', 'imported_stars'], 
+            index_to_default_set = 0)
+        
+        object.define_set('native_stars', 'index_of_the_particle')
+        object.set_new('native_stars', 'new_particle')
+        object.set_delete('native_stars', 'delete_particle')
+        
+        object.define_set('imported_stars', 'index_of_the_particle')
+        object.set_new('imported_stars', 'read_usm')
+        object.set_delete('imported_stars', 'delete_particle')
+        
+        for particle_set_name in ['native_stars', 'imported_stars']:
+            object.add_getter(particle_set_name, 'get_number_of_zones')
+            object.add_method(particle_set_name, 'add_shell') 
+            object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
+    
+    def get_stellar_model(self, index_of_the_particle):
+        if hasattr(index_of_the_particle, '__iter__'):
+            return [self._create_new_grid(self._specify_stellar_model, index_of_the_particle = x) for x in index_of_the_particle]
+        else:
+            return self._create_new_grid(self._specify_stellar_model, index_of_the_particle = index_of_the_particle)
+    
+    def get_range_in_zones(self, index_of_the_particle):
+        """
+        Returns the inclusive range of defined zones/mesh-cells of the star.
+        """
+        return (0, self.get_number_of_zones(index_of_the_particle).number-1)
+    
+    def _specify_stellar_model(self, definition, index_of_the_particle = 0):
+        definition.set_grid_range('get_range_in_zones')
+        definition.add_getter('get_stellar_model_element', names=('mass', 'radius', 
+            'rho', 'pressure', 'e_thermal', 'entropy', 'temperature', 'molecular_weight', 
+            'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
+        definition.define_extra_keywords({'index_of_the_particle':index_of_the_particle})
     
     def merge_stars(self, star_1, star_2):
         pass

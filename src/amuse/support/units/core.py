@@ -474,7 +474,7 @@ class string_unit(nonnumeric_unit):
         
     @property
     def dtype(self):
-        return 'str'
+        return 'S256'
 
 class enumeration_unit(nonnumeric_unit):
     """

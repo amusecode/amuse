@@ -6,7 +6,7 @@ import sys
 import inspect
 
 from amuse.support import exceptions
-from amuse.support.data.values import Quantity
+from amuse.support.data.values import Quantity, to_quantity
 from amuse.support.units.si import no_unit
 
 class SkipTest(exceptions.AmuseException):
@@ -17,14 +17,17 @@ class TestCase(unittest.TestCase):
     
     def _check_comparable(self, first, second):
         if isinstance(first, Quantity) is not isinstance(second, Quantity):
-            raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
-                if isinstance(first, Quantity) else (second,first)))
+            # One exception: quantity with none_unit CAN be compared with non-quantity:
+            if to_quantity(first).unit is not to_quantity(second).unit:
+                raise TypeError("Cannot compare quantity: {0} with non-quantity: {1}.".format(*(first,second)
+                    if isinstance(first, Quantity) else (second,first)))
     
     def _convert_to_numeric(self, first, second, in_units):
         if in_units:
             return (first.value_in(in_units), second.value_in(in_units))
-        elif isinstance(first, Quantity):
-            return (first.value_in(second.unit), second.value_in(second.unit))
+        elif isinstance(first, Quantity) or isinstance(second, Quantity):
+            return (to_quantity(first).value_in(to_quantity(second).unit), 
+                to_quantity(second).value_in(to_quantity(second).unit))
         else:
             return (first, second)
     
