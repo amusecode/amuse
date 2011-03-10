@@ -31,6 +31,7 @@
 
     <target name="compile" description="build jar file" depends="clean">
         <mkdir dir="tmp" />
+        <mkdir dir="tmp/headers" />
         <mkdir dir="lib" />
 
         <!-- Compile the java code from src into tmp -->
@@ -44,13 +45,19 @@
             <classpath refid="class_path" />
         </java>
 
+	<!-- Build native headers -->
+        <javah classpath="tmp"
+               destdir="tmp/headers"
+               force="yes"
+               class="ibis.amuse.CommunityCode"
+        />
+
 	<jar destfile="lib/${jar}">
             <fileset dir="tmp" includes="**/*.class" />
             <metainf dir="." includes="LICENSE.txt" />
         </jar>
 
-
-        <delete dir="tmp" />
+     <!--   <delete dir="tmp" /> -->
     </target>
 
     <target name="clean" description="clean everything">

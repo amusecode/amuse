@@ -19,6 +19,8 @@ public class Worker implements Runnable {
 
     private String hostname;
 
+    private CommunityCode code;
+
     Worker(SocketChannel socket) throws IOException {
         this.channel = socket;
 
@@ -56,10 +58,19 @@ public class Worker implements Runnable {
 
         logger.info("Initializing " + this);
 
-        Result result = new Result(init.getId(), init.getFunctionID(),
-                init.getCount());
+        try {
+            code = new CommunityCode(name);
 
-        result.writeTo(channel);
+            Result result = new Result(init.getId(), init.getFunctionID(),
+                    init.getCount());
+
+            result.writeTo(channel);
+        } catch (Throwable t) {
+            // return exception as result
+            Result result = new Result(init.getId(), init.getFunctionID(), t);
+            result.writeTo(channel);
+            throw new IOException("error initializing code", t);
+        }
     }
 
     public void run() {
@@ -77,8 +88,8 @@ public class Worker implements Runnable {
                 Result result = null;
                 if (call.getFunctionID() == MessageFormat.FUNCTION_ID_STOP) {
                     result = end(call);
-                    
-                    //write result, close channel, end thread
+
+                    // write result, close channel, end thread
                     result.writeTo(channel);
                     channel.close();
                     logger.info(this + " done!");
