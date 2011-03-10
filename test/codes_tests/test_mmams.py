@@ -139,6 +139,37 @@ class TestMakeMeAMassiveStarInterface(TestWithMPI):
         self.assertAlmostEqual(H1, [0.61566, 0.69942, 0.70002], 4)
         instance.stop()
     
+    def test5(self):
+        print "Test 5: parameters"
+        instance = MakeMeAMassiveStarInterface(**default_options)
+        self.assertEqual(instance.initialize_code(), 0)
+        self.assertEqual(instance.commit_parameters(), 0)
+        
+        dump_mixed_flag, error = instance.get_dump_mixed_flag()
+        self.assertEqual(error, 0)
+        self.assertEqual(dump_mixed_flag, 0)
+        self.assertEqual(instance.set_dump_mixed_flag(1), 0)
+        dump_mixed_flag, error = instance.get_dump_mixed_flag()
+        self.assertEqual(error, 0)
+        self.assertEqual(dump_mixed_flag, 1)
+        
+        target_n_shells_mixing, error = instance.get_target_n_shells_mixing()
+        self.assertEqual(error, 0)
+        self.assertEqual(target_n_shells_mixing, 200)
+        self.assertEqual(instance.set_target_n_shells_mixing(300), 0)
+        target_n_shells_mixing, error = instance.get_target_n_shells_mixing()
+        self.assertEqual(error, 0)
+        self.assertEqual(target_n_shells_mixing, 300)
+        
+        target_n_shells, error = instance.get_target_n_shells()
+        self.assertEqual(error, 0)
+        self.assertEqual(target_n_shells, 10000)
+        self.assertEqual(instance.set_target_n_shells(5000), 0)
+        target_n_shells, error = instance.get_target_n_shells()
+        self.assertEqual(error, 0)
+        self.assertEqual(target_n_shells, 5000)
+        instance.stop()
+    
 
 class TestMakeMeAMassiveStar(TestWithMPI):
     
@@ -249,6 +280,23 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertAlmostEqual(stellar_model.radius[[0, 10000, 17601]], [0.0, 6.456, 19.458] | units.RSun, 3)
         self.assertAlmostEqual(stellar_model.temperature[[0, 10000, 17601]], [39054497.9, 6788317.3, 11.8] | units.K, 0)
         self.assertAlmostEqual(stellar_model.X_H[[0, 10000, 17601]], [0.61566, 0.69942, 0.70002] | units.none, 4)
+        instance.stop()
+    
+    def test5(self):
+        print "Test 5: parameters"
+        instance = MakeMeAMassiveStar(**default_options)
+        instance.initialize_code()
+        
+        for par, value in [('dump_mixed_flag', False)]:
+            self.assertTrue(value is eval("instance.parameters."+par))
+            exec("instance.parameters."+par+" = not value")
+            self.assertFalse(value is eval("instance.parameters."+par))
+        
+        for par, value in [('target_n_shells_mixing', 200), ('target_n_shells', 10000)]:
+            self.assertEquals(value | units.none, eval("instance.parameters."+par))
+            exec("instance.parameters."+par+" = 1 | units.none")
+            self.assertEquals(1 | units.none, eval("instance.parameters."+par))
+        
         instance.stop()
    
 

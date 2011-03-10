@@ -178,14 +178,92 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         function.result_type = 'int32'
         return function
     
+    @legacy_function
+    def set_dump_mixed_flag():
+        """Set the dump_mixed flag: specifies whether the returned products must be mixed first."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('dump_mixed_flag', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_dump_mixed_flag():
+        """Get the dump_mixed flag: specifies whether the returned products must be mixed first."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('dump_mixed_flag', dtype='int32', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def set_target_n_shells_mixing():
+        """Set the target number of shells for mixed models."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('target_n_shells_mixing', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_target_n_shells_mixing():
+        """Get the target number of shells for mixed models."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('target_n_shells_mixing', dtype='int32', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def set_target_n_shells():
+        """Set the target number of shells for unmixed models."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('target_n_shells', dtype='int32', direction=function.IN)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_target_n_shells():
+        """Get the target number of shells for unmixed models."""
+        function = LegacyFunctionSpecification()
+        function.addParameter('target_n_shells', dtype='int32', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+        
+        
+    
 
 class MakeMeAMassiveStar(CommonCode):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MakeMeAMassiveStarInterface(**options), **options)
+        self.parameters.set_defaults()
     
     def define_properties(self, object):
         object.add_property("get_number_of_particles", units.none)
+    
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_target_n_shells_mixing", 
+            "set_target_n_shells_mixing",
+            "target_n_shells_mixing", 
+            "target number of shells for mixed models", 
+            units.none, 
+            200 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_target_n_shells", 
+            "set_target_n_shells",
+            "target_n_shells", 
+            "target number of shells for unmixed models", 
+            units.none, 
+            10000 | units.none
+        ) 
+        
+        object.add_boolean_parameter(
+            "get_dump_mixed_flag",
+            "set_dump_mixed_flag",
+            "dump_mixed_flag",
+            "dump_mixed flag: specifies whether the returned products must be mixed first",
+            False
+        )
     
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
