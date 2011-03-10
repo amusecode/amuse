@@ -182,16 +182,25 @@ class TestMercury(TestWithMPI):
         
         return stars
     
-    def xtest0(self):
+    def test0(self):
         orbiter = core.Particles(1)
-        orbiter.mass = [1.0] | nbody_system.mass
-        orbiter.position = [0.0,0.0,0.0] | units.kpc
-        orbiter.velocity = [100.0,100.0,100.0] | units.km / units.s
+        orbiter.mass = 1.0 | units.MSun
+        orbiter.density = 1.0|units.g/units.cm**3
+        orbiter.position = [0.0,0.0,0.0] | units.AU
+        orbiter.velocity = [100.0,100.0,100.0] | units.AUd
+        orbiter.sx = 0.0|units.day
+        orbiter.sy = 0.0|units.day
+        orbiter.sz = 0.0|units.day
+        
+        orbiter.celimit = 0.0|units.none
 
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
         mercury = Mercury(convert_nbody)
         mercury.initialize_code()
-        mercury.orbiters.add_particles(orbiter)
+        mercury.commit_parameters()
+        mercury.particles.add_particles(orbiter)
+        self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
+        mercury.commit_particles()
         mercury.stop()
 
     def xtest1(self):

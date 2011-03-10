@@ -9,6 +9,10 @@ module amuse_mercuryMod
   public :: mercury_init, mercury_end,finish_init,evolve_mercury, &
     add_particle, get_particle_state,set_particle_state,remove_particle, &
     energy_angular_momentum, get_number_of_particles, &
+    get_position_src, get_velocity_src, &
+    set_position_src, set_velocity_src, &
+    get_density_src, set_density_src, &
+    get_spin_src, set_spin_src, &
     energy_angular_momentum_deviation, total_energy_angular_momentum, &
     mercury_time
 
@@ -146,8 +150,6 @@ function get_central_body(mass,radius,oblateness,spin) result(ret)
   ret=0
 end function
 
-
-
 function mercury_end() result(ret)
   integer :: ret
 
@@ -277,6 +279,113 @@ function get_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) resul
   celimit=rceh(index)
   ret=0
 
+end function
+
+function get_position_src(id, x, y, z) result(ret)
+  integer :: ret, id, index
+  real*8 :: x, y, z
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  x = xh(1, index)
+  y = xh(2, index)
+  z = xh(3, index)
+  ret = 0
+end function
+
+function get_velocity_src(id, vx, vy, vz) result(ret)
+  integer :: ret, id, index
+  real*8 :: vx, vy, vz
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  vx = vh(1, index)
+  vy = vh(2, index)
+  vz = vh(3, index)
+  ret = 0
+end function
+
+function set_position_src(id, x, y, z) result(ret)
+  integer :: ret, id, index
+  real*8 :: x, y, z
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  xh(1, index) = x
+  xh(2, index) = y
+  xh(3, index) = z
+  ret = 0
+end function
+
+function set_velocity_src(id, vx, vy, vz) result(ret)
+  integer :: ret, id, index
+  real*8 :: vx, vy, vz
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  vh(1, index) = vx
+  vh(2, index) = vy
+  vh(3, index) = vz
+  ret = 0
+end function
+
+function set_spin_src(id, sx, sy, sz) result(ret)
+  integer :: ret, id, index
+  real*8 :: sx, sy, sz
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  s(1,index)=sx*K2
+  s(2,index)=sy*K2
+  s(3,index)=sz*K2
+  ret = 0
+end function
+function get_spin_src(id, sx, sy, sz) result(ret)
+  integer :: ret, id, index
+  real*8 :: sx, sy, sz
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  sx = s(1,index)/K2
+  sy = s(2,index)/K2
+  sz = s(3,index)/K2
+  ret = 0
+end function
+
+function set_density_src(id, density) result(ret)
+  integer :: ret, id, index
+  real*8 :: density
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  rho(index) = density*rhocgs
+  ret = 0
+end function
+
+function get_density_src(id, density) result(ret)
+  integer :: ret, id, index
+  real*8 :: density
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  density = rho(index)/rhocgs
+  ret = 0
 end function
 
 function set_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)

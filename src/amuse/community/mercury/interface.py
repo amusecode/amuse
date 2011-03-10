@@ -1,7 +1,9 @@
+from amuse.community.interface.common import CommonCodeInterface, CommonCode
 from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics
+from amuse.community.interface.gd import GravitationalDynamicsInterface
 
-class MercuryInterface(CodeInterface):
+class MercuryInterface(CodeInterface, LiteratureRefs):
     def __init__(self, **args):
         CodeInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
 
@@ -21,6 +23,18 @@ class MercuryInterface(CodeInterface):
     def commit_particles():
         function = LegacyFunctionSpecification()  
         function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def commit_parameters():
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def recommit_particles():
+        function = LegacyFunctionSpecification()
+        function.result_type = 'int32'
         return function
 
     @legacy_function    
@@ -59,7 +73,7 @@ class MercuryInterface(CodeInterface):
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','sx','sy','sz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','sx','sy','sz','celimit']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -72,6 +86,78 @@ class MercuryInterface(CodeInterface):
         for x in ['mass','radius','x','y','z','vx','vy','vz','sx','sy','sz','celimit']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
+        return function
+
+    @legacy_function
+    def get_position():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the position from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('x', dtype='float64', direction=function.OUT, description = "The current x position of the particle")
+        function.addParameter('y', dtype='float64', direction=function.OUT, description = "The current y position of the particle")
+        function.addParameter('z', dtype='float64', direction=function.OUT, description = "The current z position of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
+    def set_position():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the position for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('x', dtype='float64', direction=function.IN, description = "The new x position of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN, description = "The new y position of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN, description = "The new z position of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
+    def get_velocity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN,
+            description = "Index of the particle to get the position from. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('vx', dtype='float64', direction=function.OUT, description = "The current x position of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.OUT, description = "The current y position of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.OUT, description = "The current z position of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            current value was retrieved
+        -1 - ERROR
+            particle could not be found
+        """
+        return function
+
+    @legacy_function
+    def set_velocity():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN,
+            description = "Index of the particle to set the position for. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('vx', dtype='float64', direction=function.IN, description = "The new x position of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN, description = "The new y position of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN, description = "The new z position of the particle")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            new value was set
+        -1 - ERROR
+            particle could not be found
+        """
         return function
 
     @legacy_function    
@@ -93,6 +179,24 @@ class MercuryInterface(CodeInterface):
         return function
 
     @legacy_function    
+    def get_mass():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('mass', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_mass():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('mass', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
     def get_central_mass():
         function = LegacyFunctionSpecification()   
         function.addParameter('mass', dtype='d', direction=function.OUT)
@@ -103,6 +207,24 @@ class MercuryInterface(CodeInterface):
     def set_central_mass():
         function = LegacyFunctionSpecification()   
         function.addParameter('mass', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_celimit():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('celimit', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_celimit():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        function.addParameter('celimit', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -148,6 +270,26 @@ class MercuryInterface(CodeInterface):
     def set_central_spin():
         function = LegacyFunctionSpecification()   
         for x in ['lx','ly','lz']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_spin():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['sx','sy','sz']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_spin():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['sx','sy','sz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -245,22 +387,21 @@ class Mercury(GravitationalDynamics):
         self.stopping_conditions.define_parameters(object)
 
     def define_particle_sets(self, object):
-        print object
-        object.define_super_set('particles', ['orbiters'],
-                                 index_to_default_set = 0)
-        object.define_set('orbiters', 'index_of_the_particle')
-        object.set_new('orbiters', 'new_orbiter')
-        object.set_delete('orbiters', 'delete_particle')
-        object.add_setter('orbiters', 'set_orbiter_state')
-        object.add_getter('orbiters', 'get_orbiter_state')
-        object.add_setter('orbiters', 'set_mass')
-        object.add_getter('orbiters', 'get_mass')
-        object.add_setter('orbiters', 'set_density')
-        object.add_getter('orbiters', 'get_density')
-        object.add_setter('orbiters', 'set_position')
-        object.add_getter('orbiters', 'get_position')
-        object.add_setter('orbiters', 'set_velocity')
-        object.add_getter('orbiters', 'get_velocity')
+        object.define_set('particles', 'id')
+        object.set_new('particles', 'new_orbiter')
+        object.set_delete('particles', 'delete_particle')
+        object.add_setter('particles', 'set_mass')
+        object.add_getter('particles', 'get_mass')
+        object.add_setter('particles', 'set_density')
+        object.add_getter('particles', 'get_density')
+        object.add_setter('particles', 'set_position')
+        object.add_getter('particles', 'get_position')
+        object.add_setter('particles', 'set_velocity')
+        object.add_getter('particles', 'get_velocity')
+        object.add_setter('particles', 'set_spin')
+        object.add_getter('particles', 'get_spin')
+        object.add_setter('particles', 'set_celimit')
+        object.add_getter('particles', 'get_celimit')
 
         #GravitationalDynamics.define_particle_sets(self, object)
         #self.stopping_conditions.define_particle_set(object, 'particles')
@@ -270,29 +411,29 @@ class Mercury(GravitationalDynamics):
         object.add_method(
             'new_orbiter',
             (
-                units.g,
+                units.MSun,
                 units.g/units.cm**3,
-                units.cm,
-                units.cm,
-                units.cm,
-                units.cm/units.s,
-                units.cm/units.s,
-                units.cm/units.s,
-                units.s**-1,
-                units.s**-1,
-                units.s**-1,
-                units.none,
+                units.AU,
+                units.AU,
+                units.AU,
+                units.AU/units.day,
+                units.cm/units.day,
+                units.cm/units.day,
+                units.day,
+                units.day,
+                units.day,
+                units.none
             ),
             (
-                units.none,
+                object.INDEX, 
                 object.ERROR_CODE
             )
         )
         object.add_method(
             "set_mass",
             (
-                object.NO_UNIT,
-                generic_unit_system.mass,
+                object.INDEX,
+                units.MSun,
             ),
             (
                 object.ERROR_CODE
@@ -301,20 +442,41 @@ class Mercury(GravitationalDynamics):
         object.add_method(
             "get_mass",
             (
-                object.NO_UNIT,
+                object.INDEX,
             ),
             (
-                generic_unit_system.mass,
+                units.MSun,
                 object.ERROR_CODE
             )
         )
         object.add_method(
+            "set_celimit",
+            (
+                object.INDEX,
+                units.none,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_celimit",
+            (
+                object.INDEX,
+            ),
+            (
+                units.none,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
             "set_position",
             (
-                object.NO_UNIT,
-                generic_unit_system.length,
-                generic_unit_system.length,
-                generic_unit_system.length,
+                object.INDEX,
+                units.AU,
+                units.AU,
+                units.AU,
             ),
             (
                 object.ERROR_CODE
@@ -323,12 +485,12 @@ class Mercury(GravitationalDynamics):
         object.add_method(
             "get_position",
             (
-                object.NO_UNIT,
+                object.INDEX,
             ),
             (
-                generic_unit_system.length,
-                generic_unit_system.length,
-                generic_unit_system.length,
+                units.AU,
+                units.AU,
+                units.AU,
                 object.ERROR_CODE
             )
         )
@@ -336,9 +498,9 @@ class Mercury(GravitationalDynamics):
             "set_velocity",
             (
                 object.INDEX,
-                generic_unit_system.speed,
-                generic_unit_system.speed,
-                generic_unit_system.speed,
+                units.AUd,
+                units.AUd,
+                units.AUd,
             ),
             (
                 object.ERROR_CODE
@@ -350,9 +512,9 @@ class Mercury(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                generic_unit_system.speed,
-                generic_unit_system.speed,
-                generic_unit_system.speed,
+                units.AUd,
+                units.AUd,
+                units.AUd,
                 object.ERROR_CODE
             )
         )
@@ -360,9 +522,9 @@ class Mercury(GravitationalDynamics):
             "set_spin",
             (
                 object.INDEX,
-                generic_unit_system.speed,
-                generic_unit_system.speed,
-                generic_unit_system.speed,
+                units.day,
+                units.day,
+                units.day,
             ),
             (
                 object.ERROR_CODE
@@ -374,16 +536,16 @@ class Mercury(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                generic_unit_system.speed,
-                generic_unit_system.speed,
-                generic_unit_system.speed,
+                units.day,
+                units.day,
+                units.day,
                 object.ERROR_CODE
             )
         )
         object.add_method(
             'set_density',
             (
-                object.NO_UNIT,
+                object.INDEX,
                 units.g/units.cm**3
             ),
             (
@@ -393,7 +555,7 @@ class Mercury(GravitationalDynamics):
         object.add_method(
             'get_density',
             (
-                object.NO_UNIT,
+                object.INDEX,
             ),
             (
                 units.g/units.cm**3,
@@ -426,8 +588,3 @@ class Mercury(GravitationalDynamics):
         )
         
         self.stopping_conditions.define_methods(object)
-
-
-
-"""
-"""
