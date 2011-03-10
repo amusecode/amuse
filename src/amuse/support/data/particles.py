@@ -244,24 +244,24 @@ class AbstractParticleSet(AbstractSet):
             column.append('=' * 11)
             if len(quantity) > 40:
                 if hasattr(quantity, 'unit'):
-                    if quantity.unit.dtype:
-                        values_to_show = list(map(format_str11,quantity.number[:20]))
-                        values_to_show.append(format_str11('...'))
-                        values_to_show.extend(map(format_str11,quantity.number[-20:]))
-                    else:
+                    if numpy.issubdtype(quantity.number.dtype, float):
                         values_to_show = list(map(format_float,quantity.number[:20]))
                         values_to_show.append(format_str11('...'))
                         values_to_show.extend(map(format_float,quantity.number[-20:]))
+                    else:
+                        values_to_show = list(map(format_str11,quantity.number[:20]))
+                        values_to_show.append(format_str11('...'))
+                        values_to_show.extend(map(format_str11,quantity.number[-20:]))
                 else:
                     values_to_show = list(map(format_str11,quantity[:20]))
                     values_to_show.append(format_str11('...'))
                     values_to_show.extend(map(format_str11,quantity[-20:]))
             else:
                 if hasattr(quantity, 'unit'):
-                    if quantity.unit.dtype:
-                        values_to_show = map(format_str11,quantity.number)
-                    else:
+                    if numpy.issubdtype(quantity.number.dtype, float):
                         values_to_show = map(format_float,quantity.number)
+                    else:
+                        values_to_show = map(format_str11,quantity.number)
                 else:
                     values_to_show = map(format_str11,quantity)
                     

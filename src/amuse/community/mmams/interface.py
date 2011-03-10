@@ -230,20 +230,27 @@ class MakeMeAMassiveStar(CommonCode):
             (),
             (units.none, object.ERROR_CODE,)
         )
+        object.add_method(
+            "merge_two_stars",
+            (object.INDEX, object.INDEX,),
+            (object.INDEX, object.ERROR_CODE,)
+        )
     
     def define_particle_sets(self, object):
-        object.define_super_set('particles', ['native_stars', 'imported_stars'], 
+        object.define_super_set('particles', ['native_stars', 'imported_stars', 'merge_products'], 
             index_to_default_set = 0)
         
         object.define_set('native_stars', 'index_of_the_particle')
         object.set_new('native_stars', 'new_particle')
-        object.set_delete('native_stars', 'delete_particle')
         
         object.define_set('imported_stars', 'index_of_the_particle')
         object.set_new('imported_stars', 'read_usm')
-        object.set_delete('imported_stars', 'delete_particle')
         
-        for particle_set_name in ['native_stars', 'imported_stars']:
+        object.define_set('merge_products', 'index_of_the_particle')
+        object.set_new('merge_products', 'merge_stars')
+        
+        for particle_set_name in ['native_stars', 'imported_stars', 'merge_products']:
+            object.set_delete(particle_set_name, 'delete_particle')
             object.add_getter(particle_set_name, 'get_number_of_zones')
             object.add_method(particle_set_name, 'add_shell') 
             object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
@@ -267,5 +274,20 @@ class MakeMeAMassiveStar(CommonCode):
             'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
         definition.define_extra_keywords({'index_of_the_particle':index_of_the_particle})
     
-    def merge_stars(self, star_1, star_2):
-        pass
+    def _key_to_index_in_code(self, key):
+        if self.native_stars.has_key_in_store(key):
+            return self.native_stars._subset([key]).index_in_code[0]
+        elif self.imported_stars.has_key_in_store(key):
+            return self.imported_stars._subset([key]).index_in_code[0]
+        else:
+            return self.merge_products._subset([key]).index_in_code[0]
+    
+    def merge_stars(self, primary, secondary):
+        indices_of_primaries = [self._key_to_index_in_code(one_key) for one_key in primary.number]
+        indices_of_secondaries = [self._key_to_index_in_code(one_key) for one_key in secondary.number]
+        result = self.merge_two_stars(
+            indices_of_primaries, 
+            indices_of_secondaries
+        )
+        return result
+    

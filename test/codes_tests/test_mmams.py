@@ -1,7 +1,7 @@
 import os.path
 from amuse.test.amusetest import TestWithMPI
 #from amuse.support.exceptions import AmuseException
-from amuse.support.data.core import Particles
+from amuse.support.data.core import Particles, Particle
 from amuse.support.units import units
 #from amuse.legacy.mesa.interface import MESA
 from amuse.community.mmams.interface import MakeMeAMassiveStarInterface, MakeMeAMassiveStar
@@ -161,7 +161,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.commit_parameters()
         instance.particles.add_particle(stars[0])
         instance.particles.add_particles(stars[1:])
-        self.assertTrue(instance.number_of_particles == 4)
+        self.assertEqual(instance.number_of_particles, 4)
         
         instance.particles[1].add_shell([2.0, 4.0]|units.MSun, [3.0, 6.0]|units.RSun, 
             [4.0, 8.0]|units.g / units.cm**3, [5.0, 10.0]|units.barye, 
@@ -170,7 +170,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
             [0.2, 0.4]|units.none, [0.15, 0.1]|units.none, [0.1, 0.15]|units.none, 
             [0.05, 0.01]|units.none, [0.04, 0.02]|units.none, [0.03, 0.03]|units.none, 
             [0.02, 0.04]|units.none, [0.01, 0.05]|units.none)
-        self.assertTrue(instance.particles[1].number_of_zones == 2)
+        self.assertEqual(instance.particles[1].number_of_zones, 2)
         stellar_model = instance.particles[1].internal_structure()
         self.assertTrue(set(['mass', 'radius', 'rho', 'pressure', 'e_thermal', 
             'entropy', 'temperature', 'molecular_weight', 'X_H', 'X_He', 'X_C', 
@@ -210,7 +210,7 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.imported_stars.add_particles(stars[:2])
         
         instance.particles.add_particles(stars[2:])
-        self.assertTrue(instance.number_of_particles == 4)
+        self.assertEqual(instance.number_of_particles, 4)
         self.assertEqual(instance.native_stars.number_of_zones, [0, 0])
         self.assertEqual(instance.imported_stars.number_of_zones, [187, 181])
         self.assertEqual(instance.particles.number_of_zones, [0, 0, 187, 181])
@@ -224,6 +224,31 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertAlmostEqual(stellar_model.temperature[-1], 81542.0 | units.K, 0)
         self.assertAlmostEqual(stellar_model.X_H[0], 0.0121 | units.none, 4)
         self.assertAlmostEqual(stellar_model.X_H[-1], 0.7 | units.none, 4)
+        instance.stop()
+    
+    def slowtest4(self):
+        print "Test 4: merge particles (from usm files)"
+        instance = MakeMeAMassiveStar(**default_options)
+        instance.initialize_code()
+        instance.commit_parameters()
+        
+        stars = Particles(2)
+        stars.usm_file = [os.path.join(instance.data_directory, filename) for 
+            filename in ['primary.usm', 'secondary.usm']] | units.string
+        instance.imported_stars.add_particles(stars)
+        
+        merge_product = Particle()
+        merge_product.primary = instance.imported_stars[0]
+        merge_product.secondary = instance.imported_stars[1]
+        instance.merge_products.add_particle(merge_product)
+        self.assertEqual(instance.number_of_particles, 3)
+        self.assertEqual(instance.particles.number_of_zones, [187, 181, 17602])
+        
+        stellar_model = instance.merge_products[0].internal_structure()
+        self.assertAlmostEqual(stellar_model.mass[[0, 10000, 17601]],  [0.0, 21.8369, 25.675] | units.MSun, 3)
+        self.assertAlmostEqual(stellar_model.radius[[0, 10000, 17601]], [0.0, 6.456, 19.458] | units.RSun, 3)
+        self.assertAlmostEqual(stellar_model.temperature[[0, 10000, 17601]], [39054497.9, 6788317.3, 11.8] | units.K, 0)
+        self.assertAlmostEqual(stellar_model.X_H[[0, 10000, 17601]], [0.61566, 0.69942, 0.70002] | units.none, 4)
         instance.stop()
    
 
