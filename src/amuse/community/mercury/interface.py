@@ -68,6 +68,16 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
         function.result_type = 'i'
         return function
 
+    @legacy_function
+    def new_central_particle():
+        function = LegacyFunctionSpecification()  
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.OUT)
+        for x in ['mass']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
     @legacy_function    
     def get_orbiter_state():
         function = LegacyFunctionSpecification()   
@@ -341,7 +351,7 @@ class MercuryDoc(object):
     def __get__(self, instance, owner):
         return instance.legacy_doc+"\n\n"+instance.parameters.__doc__
 
-class Mercury(GravitationalDynamics):
+class MercuryWayWard(GravitationalDynamics):
 
     __doc__ = MercuryDoc()
 
@@ -364,44 +374,48 @@ class Mercury(GravitationalDynamics):
             None,
             "time",
             "current simulation time", 
-            nbody_system.time, 
-            0.0 | nbody_system.time
-        )
-        object.add_method_parameter(
-            "get_central_mass",
-            "set_central_mass",
-            "central_mass",
-            "mass of the central object", 
-            nbody_system.mass, 
-            1.0 | nbody_system.mass
-        )
-        object.add_method_parameter(
-            "get_central_radius",
-            "set_central_radius",
-            "central_radius",
-            "radius of the central object", 
-            nbody_system.length, 
-            1.0 | nbody_system.length
+            units.s, 
+            0.0 | units.s
         )
 
         self.stopping_conditions.define_parameters(object)
 
+    def define_state(self, object):
+        GravitationalDynamics.define_state(self, object)
+        object.add_method('EDIT', 'new_central_particle')
+        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
+        object.add_method('EDIT', 'new_orbiter')
+        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
+
     def define_particle_sets(self, object):
-        object.define_set('particles', 'id')
-        object.set_new('particles', 'new_orbiter')
-        object.set_delete('particles', 'delete_particle')
-        object.add_setter('particles', 'set_mass')
-        object.add_getter('particles', 'get_mass')
-        object.add_setter('particles', 'set_density')
-        object.add_getter('particles', 'get_density')
-        object.add_setter('particles', 'set_position')
-        object.add_getter('particles', 'get_position')
-        object.add_setter('particles', 'set_velocity')
-        object.add_getter('particles', 'get_velocity')
-        object.add_setter('particles', 'set_spin')
-        object.add_getter('particles', 'get_spin')
-        object.add_setter('particles', 'set_celimit')
-        object.add_getter('particles', 'get_celimit')
+        object.define_super_set('particles', ['central_particle','orbiters'],
+            index_to_default_set=0)
+
+        object.define_set('orbiters', 'id')
+        object.set_new('orbiters', 'new_orbiter')
+        object.set_delete('orbiters', 'delete_particle')
+        object.add_setter('orbiters', 'set_mass')
+        object.add_getter('orbiters', 'get_mass')
+        object.add_setter('orbiters', 'set_density')
+        object.add_getter('orbiters', 'get_density')
+        object.add_setter('orbiters', 'set_position')
+        object.add_getter('orbiters', 'get_position')
+        object.add_setter('orbiters', 'set_velocity')
+        object.add_getter('orbiters', 'get_velocity')
+        object.add_setter('orbiters', 'set_spin')
+        object.add_getter('orbiters', 'get_spin')
+        object.add_setter('orbiters', 'set_celimit')
+        object.add_getter('orbiters', 'get_celimit')
+
+        object.define_set('central_particle', 'id')
+        object.set_new('central_particle', 'new_central_particle')
+        object.add_setter('central_particle', 'set_central_mass')
+        object.add_getter('central_particle', 'get_central_mass')
+        object.add_setter('central_particle', 'set_central_radius')
+        object.add_getter('central_particle', 'get_central_radius')
+        object.add_setter('central_particle', 'set_central_oblateness')
+        object.add_getter('central_particle', 'get_central_oblateness')
+        
 
         #GravitationalDynamics.define_particle_sets(self, object)
         #self.stopping_conditions.define_particle_set(object, 'particles')
@@ -416,13 +430,23 @@ class Mercury(GravitationalDynamics):
                 units.AU,
                 units.AU,
                 units.AU,
-                units.AU/units.day,
-                units.cm/units.day,
-                units.cm/units.day,
+                units.AUd,
+                units.AUd,
+                units.AUd,
                 units.day,
                 units.day,
                 units.day,
                 units.none
+            ),
+            (
+                object.INDEX, 
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            'new_central_particle',
+            (
+                units.MSun,
             ),
             (
                 object.INDEX, 
@@ -449,6 +473,25 @@ class Mercury(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+        object.add_method(
+            "set_central_mass",
+            (
+                units.MSun,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_central_mass",
+            (
+            ),
+            (
+                units.MSun,
+                object.ERROR_CODE
+            )
+        )
+
         object.add_method(
             "set_celimit",
             (
@@ -562,11 +605,9 @@ class Mercury(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )    
-
         object.add_method(
             'get_central_oblateness',
             (
-                object.NO_UNIT,        
             ),
             (
                 units.none,
@@ -581,6 +622,24 @@ class Mercury(GravitationalDynamics):
                 units.none,
                 units.none,
                 units.none,
+            ),
+            (
+                object.ERROR_CODE,
+            )
+        )
+        object.add_method(
+            'get_central_radius',
+            (
+            ),
+            (
+                units.AU,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            'set_central_radius',
+            (
+                units.AU,
             ),
             (
                 object.ERROR_CODE,

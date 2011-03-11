@@ -13,6 +13,7 @@ module amuse_mercuryMod
     set_position_src, set_velocity_src, &
     get_density_src, set_density_src, &
     get_spin_src, set_spin_src, &
+    get_mass_src, set_mass_src, &
     energy_angular_momentum_deviation, total_energy_angular_momentum, &
     mercury_time
 
@@ -322,6 +323,31 @@ function set_position_src(id, x, y, z) result(ret)
   xh(3, index) = z
   ret = 0
 end function
+
+function set_mass_src(id, mass) result(ret)
+  integer :: ret, id, index
+  real*8 :: mass
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  m(index) = mass
+  ret = 0
+end function
+
+function get_mass_src(id, mass) result(ret)
+  integer :: ret, id, index
+  real*8 :: mass
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  mass = m(index)
+  ret = 0
+end function
+
 
 function set_velocity_src(id, vx, vy, vz) result(ret)
   integer :: ret, id, index

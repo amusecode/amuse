@@ -57,6 +57,13 @@ function new_orbiter(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
   ret=add_particle(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit)
 end function  
 
+function new_central_particle(id,mass) result(ret)
+  use amuse_mercuryMod
+  integer :: ret,id
+  real*8 :: mass
+  ret=set_central_mass(mass)
+end function  
+
 function get_orbiter_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
   use amuse_mercuryMod
   integer :: ret,id
@@ -125,14 +132,14 @@ function set_mass(id, mass) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: mass
-  ret=set_central_body(mass=mass)
+  ret=set_mass_src(id, mass)
 end function
 
 function get_mass(id, mass) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: mass
-  ret=get_central_body(mass=mass)
+  ret=get_mass_src(id, mass)
 end function
 
 function set_central_mass(mass) result(ret)

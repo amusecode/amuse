@@ -32,7 +32,7 @@ mappings are provided by a number of helper classes:
 **setter/getter**
 
     :py:class:`ParticleGetAttributesMethod`
-        Given particle indices or gridpoints (i,j,k) return a vectorq quantity
+        Given particle indices or gridpoints (i,j,k) return a vector quantity
         for each attribute
         
     :py:class:`ParticleSetAttributesMethod`

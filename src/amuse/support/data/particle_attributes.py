@@ -12,23 +12,23 @@ def move_to_center(particles):
     """
     Move the particle positions to the center of mass and
     move the particle velocity to the center of mass velocity.
-    
+
     Implemented as::
-    
+
         particles.position -= particles.center_of_mass()
         particles.velocity -= particles.center_of_mass_velocity()
     """
     particles.position -= particles.center_of_mass()
     particles.velocity -= particles.center_of_mass_velocity()
-    
+
 
 def scale_to_standard(particles, convert_nbody = None,
                       smoothing_length_squared = zero):
     """
     Scale the particles to a standard NBODY model with
-    **total mass=1**, **kinetic energy=0.25** and 
+    **total mass=1**, **kinetic energy=0.25** and
     **potential_energy=0.5** (or **viridial_radius=1.0**)
-    
+
     :argument convert_nbody: the scaling is in nbody units,
         when the particles are in si units a convert_nbody is needed
     :argument smoothing_length_squared: needed for calculating
@@ -49,7 +49,7 @@ def scale_to_standard(particles, convert_nbody = None,
     total_mass = particles.mass.sum()
     scale_factor = ((1 | total_mass.unit) / total_mass)
     particles.mass *= scale_factor
-    
+
     potential_energy \
         = particles.potential_energy(G=nbody_system.G,
                          smoothing_length_squared = smoothing_length_squared)
@@ -67,14 +67,14 @@ def scale_to_standard(particles, convert_nbody = None,
     target_energy =  -0.5*potential_energy
     scale_factor = (target_energy / kinetic_energy).sqrt()
     particles.velocity *= scale_factor
-    
+
 
 def center_of_mass(particles):
     """
     Returns the center of mass of the particles set.
-    The center of mass is defined as the average 
+    The center of mass is defined as the average
     of the positions of the particles, weighted by their masses.
-    
+
     >>> from amuse.support.data.core import Particles
     >>> particles = Particles(2)
     >>> particles.x = [-1.0, 1.0] | units.m
@@ -89,7 +89,7 @@ def center_of_mass(particles):
     x_values = particles.x
     y_values = particles.y
     z_values = particles.z
-    
+
     total_mass = masses.sum()
     massx = (masses * x_values).sum()
     massy = (masses * y_values).sum()
@@ -104,7 +104,7 @@ def center_of_mass(particles):
 def center_of_mass_velocity(particles):
     """
     Returns the center of mass velocity of the particles set.
-    The center of mass velocity is defined as the average 
+    The center of mass velocity is defined as the average
     of the velocities of the particles, weighted by their masses.
 
     >>> from amuse.support.data.core import Particles
@@ -122,7 +122,7 @@ def center_of_mass_velocity(particles):
     x_values = particles.vx
     y_values = particles.vy
     z_values = particles.vz
-    
+
     total_mass = masses.sum()
     massx = (masses * x_values).sum()
     massy = (masses * y_values).sum()
@@ -133,7 +133,7 @@ def center_of_mass_velocity(particles):
         massy/total_mass,
         massz/total_mass
     )
-    
+
 def kinetic_energy(particles):
     """
     Returns the total kinetic energy of the
@@ -156,15 +156,15 @@ def kinetic_energy(particles):
     v_squared = (vx * vx) + (vy * vy) + (vz * vz)
     m_v_squared = mass * v_squared
     return 0.5 * m_v_squared.sum()
-    
+
 
 def potential_energy(particles, smoothing_length_squared = zero, G = constants.G):
     """
     Returns the total potential energy of the particles in the particles set.
-    
+
     :argument smooting_length_squared: the smoothing length is added to every distance.
     :argument G: gravitational constant, need to be changed for particles in different units systems
-    
+
     >>> from amuse.support.data.core import Particles
     >>> particles = Particles(2)
     >>> particles.x = [0.0, 1.0] | units.m
@@ -174,17 +174,17 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     >>> particles.potential_energy()
     quantity<-6.67428e-11 m**2 * kg * s**-2>
     """
-    
+
     if len(particles) < 2:
         raise exceptions.AmuseException("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
-    
+
     mass = particles.mass
     x_vector = particles.x
     y_vector = particles.y
     z_vector = particles.z
-           
+
     sum_of_energies = zero
-    
+
     for i in range(len(particles) - 1):
         x = x_vector[i]
         y = y_vector[i]
@@ -195,11 +195,11 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
         dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
         dr = (dr_squared+smoothing_length_squared).sqrt()
         m_m = mass[i] * mass[i+1:]
-        
+
         energy_of_this_particle = (m_m / dr).sum()
         sum_of_energies -= energy_of_this_particle
-        
-    return G * sum_of_energies 
+
+    return G * sum_of_energies
 
 
 
@@ -236,7 +236,7 @@ def particle_potential(set, particle, smoothing_length_squared = zero, gravitati
     particles = set - particle
     dx = particle.x - particles.x
     dy = particle.y - particles.y
-    dz = particle.z - particles.z 
+    dz = particle.z - particles.z
     dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
     dr = (dr_squared+smoothing_length_squared).sqrt()
     return - gravitationalConstant * (particles.mass / dr).sum()
@@ -244,9 +244,9 @@ def particle_potential(set, particle, smoothing_length_squared = zero, gravitati
 def virial_radius(particles):
     """
     Returns the virial radius of the particles set.
-    The virial radius is the inverse of the average inverse 
+    The virial radius is the inverse of the average inverse
     distance between particles, weighted by their masses.
-    
+
     >>> from amuse.support.data.core import Particles
     >>> particles = Particles(2)
     >>> particles.x = [-1.0, 1.0] | units.m
@@ -259,12 +259,12 @@ def virial_radius(particles):
     if len(particles) < 2:
         raise exceptions.AmuseException("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
     partial_sum = zero
-    
+
     mass = particles.mass
     x_vector = particles.x
     y_vector = particles.y
     z_vector = particles.z
-    
+
     for i in range(len(particles) - 1):
         x = x_vector[i]
         y = y_vector[i]
@@ -281,7 +281,7 @@ def virial_radius(particles):
 def total_mass(particles):
     """
     Returns the total mass of the particles set.
-    
+
     >>> from amuse.support.data.core import Particles
     >>> particles = Particles(3)
     >>> particles.mass = [1.0, 2.0, 3.0] | units.kg
@@ -290,8 +290,6 @@ def total_mass(particles):
     """
     return particles.mass.sum()
 
-
-    
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
 AbstractParticleSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
@@ -302,14 +300,11 @@ AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 AbstractParticleSet.add_global_vector_attribute("acceleration", ["ax","ay","az"])
+AbstractParticleSet.add_global_vector_attribute("spin", ["sx","sy","sz"])
+AbstractParticleSet.add_global_vector_attribute("oblateness", ["j2","j4","j6"])
 
 AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
 AbstractParticleSet.add_global_function_attribute("potential", None, particle_potential)
 
-
 AbstractParticleSet.add_global_function_attribute("move_to_center", move_to_center)
 AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_standard)
-    
-    
-    
-    

@@ -1,9 +1,9 @@
 import os
 import sys
-import numpy
+import numpy as np
 from amuse.test.amusetest import TestWithMPI
 
-from amuse.community.mercury.interface import MercuryInterface, Mercury
+from amuse.community.mercury.interface import MercuryInterface, MercuryWayWard
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
@@ -166,40 +166,48 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
 
 class TestMercury(TestWithMPI):
-    def new_system_of_sun_and_earth(self):
-        stars = core.Stars(2)
-        sun = stars[0]
-        sun.mass = units.MSun(1.0)
-        sun.position = units.m(numpy.array((0.0,0.0,0.0)))
-        sun.velocity = units.ms(numpy.array((0.0,0.0,0.0)))
-        sun.radius = units.RSun(1.0)
-        
-        earth = stars[1]
-        earth.mass = units.kg(5.9736e24)
-        earth.radius = units.km(6371) 
-        earth.position = units.km(numpy.array((149.5e6,0.0,0.0)))
-        earth.velocity = units.ms(numpy.array((0.0,29800,0.0)))
-        
-        return stars
-    
     def test0(self):
         orbiter = core.Particles(1)
         orbiter.mass = 1.0 | units.MSun
         orbiter.density = 1.0|units.g/units.cm**3
-        orbiter.position = [0.0,0.0,0.0] | units.AU
+        orbiter.position = [1.0,0.0,0.0] | units.AU
         orbiter.velocity = [100.0,100.0,100.0] | units.AUd
-        orbiter.sx = 0.0|units.day
-        orbiter.sy = 0.0|units.day
-        orbiter.sz = 0.0|units.day
+        orbiter.spin = [1.0,0,0] | units.day
+        orbiter.celimit = 0.0 | units.none
         
-        orbiter.celimit = 0.0|units.none
+        centre = core.Particles(1)
+        centre.mass = 1.0 | units.MSun
 
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        mercury = Mercury(convert_nbody)
+        mercury = MercuryWayWard(convert_nbody)
         mercury.initialize_code()
         mercury.commit_parameters()
-        mercury.particles.add_particles(orbiter)
+        mercury.orbiters.add_particles(orbiter)
+        mercury.central_particle.add_particles(centre)
+        mercury.commit_particles()
+        self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
         self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
+        self.assertEquals(mercury.orbiters.spin, [[1.,0.0,0.0]]|units.day)
+ 
+        mercury.stop()
+
+    def xtest1(self):
+        earth = core.Particles(1)
+        earth.mass = 5.9736e24 | units.kg
+        earth.density = 1.0|units.g/units.cm**3
+        earth.position = [1.0,0.0,0.0] | units.AU
+        earth.velocity = [0.0, 2*np.pi*1.0/365, 0.0] | units.AUd
+        earth.spin = [1.0,0,0] | units.day
+        earth.celimit = 0.0 | units.none
+
+        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
+        mercury = MercuryWayWard(convert_nbody)
+        mercury.initialize_code()
+        mercury.central_mass = 1.0 | units.MSun
+        mercury.commit_parameters()
+        mercury.orbiters.add_particles(earth)
+        self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
+        self.assertEquals(mercury.orbiters.spin, [[1.,0.0,0.0]]|units.day)
         mercury.commit_particles()
         mercury.stop()
 
