@@ -187,14 +187,11 @@ class TestMercury(TestWithMPI):
         mercury.central_particle.add_particles(centre)
         mercury.orbiters.add_particles(orbiter)
         mercury.commit_particles()
-
- 
         mercury.evolve_model(365|units.day)
-
-        print mercury.kinetic_energy.value_in(units.J)
+        #print mercury.kinetic_energy.value_in(units.J)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
         self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
         self.assertEquals(mercury.orbiters.angularmomentum, [[1.,0.0,0.0]]|units.MSun*units.AU**2/units.day)
-        
+
         mercury.stop()
