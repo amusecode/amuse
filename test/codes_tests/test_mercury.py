@@ -9,6 +9,8 @@ from amuse.support.units import nbody_system
 from amuse.support.units import units
 from amuse.ext import plummer
 
+DUMMYID=0
+
 try:
     from matplotlib import pyplot
     HAS_MATPLOTLIB = True
@@ -35,15 +37,15 @@ class TestMPIInterface(TestWithMPI):
     def test4(self):
         instance=MercuryInterface()
         instance.initialize_code()  
-        mass,err=instance.get_central_mass()
+        mass,err=instance.get_central_mass(DUMMYID)
         self.assertEqual(mass,1.0)
-        radius,err=instance.get_central_radius()
+        radius,err=instance.get_central_radius(DUMMYID)
         self.assertEqual(radius,.005)
-        j2,j4,j6,err=instance.get_central_oblateness()
+        j2,j4,j6,err=instance.get_central_oblateness(DUMMYID)
         self.assertEqual(j2,0.0)
         self.assertEqual(j4,0.0)
         self.assertEqual(j6,0.0)
-        lx,ly,lz,err=instance.get_central_spin()
+        lx,ly,lz,err=instance.get_central_spin(DUMMYID)
         self.assertEqual(lx,0.0)
         self.assertEqual(ly,0.0)
         self.assertEqual(lz,0.0)
@@ -52,26 +54,25 @@ class TestMPIInterface(TestWithMPI):
     def test5(self):
         instance=MercuryInterface()
         instance.initialize_code()  
-        instance.set_central_mass(2.0)
-        instance.set_central_radius(0.0625)
-        instance.set_central_oblateness(0.001,0.002,0.003)
-        instance.set_central_spin(-0.1,-0.2,-0.3)
+        instance.set_central_mass(DUMMYID,2.0)
+        instance.set_central_radius(DUMMYID,0.0625)
+        instance.set_central_oblateness(DUMMYID,0.001,0.002,0.003)
+        instance.set_central_spin(DUMMYID,-0.1,-0.2,-0.3)
 
 
-        mass,err=instance.get_central_mass()
+        mass,err=instance.get_central_mass(DUMMYID)
         self.assertEqual(mass,2.0)
-        radius,err=instance.get_central_radius()
+        radius,err=instance.get_central_radius(DUMMYID)
         self.assertEqual(radius,.0625)
-        j2,j4,j6,err=instance.get_central_oblateness()
+        j2,j4,j6,err=instance.get_central_oblateness(DUMMYID)
         self.assertEqual(j2,0.001)
         self.assertEqual(j4,0.002)
         self.assertEqual(j6,0.003)
-        lx,ly,lz,err=instance.get_central_spin()
+        lx,ly,lz,err=instance.get_central_spin(DUMMYID)
         self.assertEqual(lx,-0.1)
         self.assertEqual(ly,-0.2)
         self.assertEqual(lz,-0.3)
         instance.stop()
-
 
     def test6(self):
         instance=MercuryInterface()
@@ -90,7 +91,7 @@ class TestMPIInterface(TestWithMPI):
     def test8(self):
         instance=MercuryInterface()
         instance.initialize_code()  
-        n,err=instance.get_number_of_orbiters()  
+        n,err=instance.get_number_of_orbiters(DUMMYID)  
         self.assertEqual(n,0)
         instance.stop()
 
@@ -98,7 +99,7 @@ class TestMPIInterface(TestWithMPI):
         instance=MercuryInterface(redirection='none')
         instance.initialize_code()
         pid,err=instance.new_orbiter(0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.)  
-        n,err=instance.get_number_of_orbiters()  
+        n,err=instance.get_number_of_orbiters(DUMMYID)  
         self.assertEqual(n,1)
         instance.stop()
 
@@ -178,17 +179,22 @@ class TestMercury(TestWithMPI):
         centre = core.Particles(1)
         centre.mass = 1.0 | units.MSun
         centre.radius = 0.01 | units.AU
-        centre.oblateness = [1.0, 1.0, 1.0] | units.none
+        centre.j2 = 1|units.AU**2
+        centre.j4 = 1|units.AU**4
+        centre.j6 = 1|units.AU**6
         centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
 
         mercury = MercuryWayWard()
         mercury.initialize_code()
         mercury.commit_parameters()
         mercury.central_particle.add_particles(centre)
+        channel=centre.new_channel_to(mercury.central_particle)
+        channel.copy()
         mercury.orbiters.add_particles(orbiter)
         mercury.commit_particles()
         mercury.evolve_model(365|units.day)
         #print mercury.kinetic_energy.value_in(units.J)
+        self.assertAlmostEqual(mercury.central_particle.j4, 1|units.AU**4)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
         self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)

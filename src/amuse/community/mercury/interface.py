@@ -511,9 +511,9 @@ class MercuryWayWard(GravitationalDynamics):
             (
                 units.MSun,
                 units.AU,
-                units.none,
-                units.none,
-                units.none,
+                units.AU**2,
+                units.AU**4,
+                units.AU**6,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
@@ -707,9 +707,9 @@ class MercuryWayWard(GravitationalDynamics):
                 object.INDEX,
             ),
             (
-                units.none,
-                units.none,
-                units.none,
+                units.AU**2,
+                units.AU**4,
+                units.AU**6,
                 object.ERROR_CODE
             )
         )
@@ -717,9 +717,9 @@ class MercuryWayWard(GravitationalDynamics):
             'set_central_oblateness',
             (
                 object.INDEX,
-                units.none,
-                units.none,
-                units.none,
+                units.AU**2,
+                units.AU**4,
+                units.AU**6,
             ),
             (
                 object.ERROR_CODE,
