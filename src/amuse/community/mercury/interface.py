@@ -63,7 +63,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','density','x','y','z','vx','vy','vz','sx','sy','sz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -73,7 +73,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass']:
+        for x in ['mass','radius','j2','j4','j6','Lx','Ly','Lz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -83,7 +83,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','density','x','y','z','vx','vy','vz','sx','sy','sz','celimit']:
+        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -93,7 +93,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','radius','x','y','z','vx','vy','vz','sx','sy','sz','celimit']:
+        for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -189,6 +189,22 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
         return function
 
     @legacy_function    
+    def get_central_radius():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('radius', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_central_radius():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('radius', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
     def get_mass():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
@@ -209,6 +225,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def get_central_mass():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('mass', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -216,6 +233,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def set_central_mass():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('mass', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -241,6 +259,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def get_central_radius():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('radius', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -248,6 +267,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def set_central_radius():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         function.addParameter('radius', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -255,6 +275,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def get_central_oblateness():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         for x in ['j2','j4','j6']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -263,6 +284,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def set_central_oblateness():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         for x in ['j2','j4','j6']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
@@ -271,6 +293,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def get_central_spin():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         for x in ['lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -279,27 +302,28 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
     @legacy_function    
     def set_central_spin():
         function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
         for x in ['lx','ly','lz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
     @legacy_function    
-    def get_spin():
+    def get_angularmomentum():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['sx','sy','sz']:
+        for x in ['Lx','Ly','Lz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 
     @legacy_function    
-    def set_spin():
+    def set_angularmomentum():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['sx','sy','sz']:
+        for x in ['Lx','Ly','Lz']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -367,7 +391,7 @@ class MercuryWayWard(GravitationalDynamics):
             convert_nbody,
             **options
         )
-        
+
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_time",
@@ -379,6 +403,14 @@ class MercuryWayWard(GravitationalDynamics):
         )
 
         self.stopping_conditions.define_parameters(object)
+
+    def define_properties(self, object):
+        object.add_property("get_kinetic_energy", units.J)
+        object.add_property("get_potential_energy", units.J)
+        object.add_property("get_total_energy", units.J)
+        object.add_property("get_center_of_mass_position", units.AU)
+        object.add_property("get_center_of_mass_velocity", units.AUd)
+        object.add_property("get_total_mass", units.MSun)
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
@@ -402,8 +434,8 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_getter('orbiters', 'get_position')
         object.add_setter('orbiters', 'set_velocity')
         object.add_getter('orbiters', 'get_velocity')
-        object.add_setter('orbiters', 'set_spin')
-        object.add_getter('orbiters', 'get_spin')
+        object.add_setter('orbiters', 'set_angularmomentum')
+        object.add_getter('orbiters', 'get_angularmomentum')
         object.add_setter('orbiters', 'set_celimit')
         object.add_getter('orbiters', 'get_celimit')
 
@@ -415,7 +447,8 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_getter('central_particle', 'get_central_radius')
         object.add_setter('central_particle', 'set_central_oblateness')
         object.add_getter('central_particle', 'get_central_oblateness')
-        
+        object.add_setter('central_particle', 'set_central_spin')
+        object.add_getter('central_particle', 'get_central_spin')
 
         #GravitationalDynamics.define_particle_sets(self, object)
         #self.stopping_conditions.define_particle_set(object, 'particles')
@@ -447,6 +480,13 @@ class MercuryWayWard(GravitationalDynamics):
             'new_central_particle',
             (
                 units.MSun,
+                units.AU,
+                units.none,
+                units.none,
+                units.none,
+                units.day,
+                units.day,
+                units.day
             ),
             (
                 object.INDEX, 
@@ -491,7 +531,6 @@ class MercuryWayWard(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
-
         object.add_method(
             "set_celimit",
             (
@@ -562,29 +601,52 @@ class MercuryWayWard(GravitationalDynamics):
             )
         )
         object.add_method(
-            "set_spin",
+            "set_angularmomentum",
             (
                 object.INDEX,
-                units.day,
-                units.day,
-                units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
             ),
             (
                 object.ERROR_CODE
             )
         )
         object.add_method(
-            "get_spin",
+            "get_angularmomentum",
             (
                 object.INDEX,
             ),
             (
-                units.day,
-                units.day,
-                units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
                 object.ERROR_CODE
             )
         )
+        object.add_method(
+            "set_central_spin",
+            (
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            "get_central_spin",
+            (
+            ),
+            (
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                object.ERROR_CODE
+            )
+        )
+
         object.add_method(
             'set_density',
             (

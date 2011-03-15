@@ -12,6 +12,7 @@ module amuse_mercuryMod
     get_position_src, get_velocity_src, &
     set_position_src, set_velocity_src, &
     get_density_src, set_density_src, &
+    get_radius_src, set_radius_src, &
     get_spin_src, set_spin_src, &
     get_mass_src, set_mass_src, &
     energy_angular_momentum_deviation, total_energy_angular_momentum, &
@@ -111,7 +112,7 @@ function mercury_time(timeout) result(ret)
   ret=0
 end function
 
-function set_central_body(mass,radius,oblateness,spin) result(ret)
+function set_central_body(mass, radius, oblateness,spin) result(ret)
   integer :: ret
   real*8, optional :: mass, radius,oblateness(3),spin(3)
   if(present(mass)) then
@@ -147,6 +148,104 @@ function get_central_body(mass,radius,oblateness,spin) result(ret)
   endif
   if(present(spin)) then
     spin(1:3)=s(1:3,1)/K2 
+  endif
+  ret=0
+end function
+
+function get_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
+  integer :: ret,id_,index
+  real*8, optional :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
+
+  index=find_particle(id_)
+  if(index.LT.0) then
+    ret=index
+    return
+  endif  
+  if (present(mass)) then
+     mass=m(index)/K2
+  endif
+!  radius=(mass*MSUN*3/(4*PI*rho(index)*AU**3))**(1./3)
+  if (present(dens)) then
+     dens=rho(index)/rhocgs
+  endif
+  if (present(x)) then
+     x=xh(1,index)
+  endif
+  if (present(y)) then
+     y=xh(2,index)
+  endif
+  if (present(z)) then
+     z=xh(3,index)
+  endif
+  if (present(vx)) then
+     vx=vh(1,index)
+  endif
+  if (present(vy)) then
+     vy=vh(2,index)
+  endif
+  if (present(vz)) then
+     vz=vh(3,index)
+  endif
+  if (present(sx)) then
+     sx=s(1,index)/K2
+  endif
+  if (present(sy)) then
+     sy=s(2,index)/K2
+  endif
+  if (present(sz)) then
+     sz=s(3,index)/K2
+  endif
+  if (present(celimit)) then
+     celimit=rceh(index)
+  endif
+  ret=0
+end function
+
+function set_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
+  integer :: ret,id_,index
+  real*8, optional :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
+
+  index=find_particle(id_)
+  if(index.LT.0) then
+    ret=index
+    return
+  endif  
+  if (present(mass)) then
+     m(index)=mass*K2
+  endif
+!  radius=(mass*MSUN*3/(4*PI*rho(index)*AU**3))**(1./3)
+  if (present(dens)) then
+     rho(index)=dens*rhocgs
+  endif
+  if (present(x)) then
+     xh(1,index)=x
+  endif
+  if (present(y)) then
+     xh(2,index)=y
+  endif
+  if (present(z)) then
+     xh(3,index)=z
+  endif
+  if (present(vx)) then
+     vh(1,index)=vx
+  endif
+  if (present(vy)) then
+     vh(2,index)=vy
+  endif
+  if (present(vz)) then
+     vh(3,index)=vz
+  endif
+  if (present(sx)) then
+     s(1,index)=sx*K2
+  endif
+  if (present(sy)) then
+     s(2,index)=sy*K2
+  endif
+  if (present(sz)) then
+     s(3,index)=sz*K2
+  endif
+  if (present(celimit)) then
+     rceh(index)=celimit
   endif
   ret=0
 end function
@@ -256,113 +355,6 @@ function add_particle(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
   ret=0
 end function
 
-function get_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
-  integer :: ret,id_,index
-  real*8 :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
-
-  index=find_particle(id_)
-  if(index.LT.0) then
-    ret=index
-    return
-  endif  
-  mass=m(index)/K2
-!  radius=(mass*MSUN*3/(4*PI*rho(index)*AU**3))**(1./3)
-  dens=rho(index)/rhocgs
-  x=xh(1,index)
-  y=xh(2,index)
-  z=xh(3,index)
-  vx=vh(1,index)
-  vy=vh(2,index)
-  vz=vh(3,index)
-  sx=s(1,index)/K2
-  sy=s(2,index)/K2
-  sz=s(3,index)/K2
-  celimit=rceh(index)
-  ret=0
-
-end function
-
-function get_position_src(id, x, y, z) result(ret)
-  integer :: ret, id, index
-  real*8 :: x, y, z
-  index=find_particle(id)
-  if(index.LT.0) then
-     ret=index
-     return
-  endif
-  x = xh(1, index)
-  y = xh(2, index)
-  z = xh(3, index)
-  ret = 0
-end function
-
-function get_velocity_src(id, vx, vy, vz) result(ret)
-  integer :: ret, id, index
-  real*8 :: vx, vy, vz
-  index=find_particle(id)
-  if(index.LT.0) then
-     ret=index
-     return
-  endif
-  vx = vh(1, index)
-  vy = vh(2, index)
-  vz = vh(3, index)
-  ret = 0
-end function
-
-function set_position_src(id, x, y, z) result(ret)
-  integer :: ret, id, index
-  real*8 :: x, y, z
-  index=find_particle(id)
-  if(index.LT.0) then
-     ret=index
-     return
-  endif
-  xh(1, index) = x
-  xh(2, index) = y
-  xh(3, index) = z
-  ret = 0
-end function
-
-function set_mass_src(id, mass) result(ret)
-  integer :: ret, id, index
-  real*8 :: mass
-  index=find_particle(id)
-  if(index.LT.0) then
-     ret=index
-     return
-  endif
-  m(index) = mass
-  ret = 0
-end function
-
-function get_mass_src(id, mass) result(ret)
-  integer :: ret, id, index
-  real*8 :: mass
-  index=find_particle(id)
-  if(index.LT.0) then
-     ret=index
-     return
-  endif
-  mass = m(index)
-  ret = 0
-end function
-
-
-function set_velocity_src(id, vx, vy, vz) result(ret)
-  integer :: ret, id, index
-  real*8 :: vx, vy, vz
-  index=find_particle(id)
-  if(index.LT.0) then
-     ret=index
-     return
-  endif
-  vh(1, index) = vx
-  vh(2, index) = vy
-  vh(3, index) = vz
-  ret = 0
-end function
-
 function set_spin_src(id, sx, sy, sz) result(ret)
   integer :: ret, id, index
   real*8 :: sx, sy, sz
@@ -376,6 +368,7 @@ function set_spin_src(id, sx, sy, sz) result(ret)
   s(3,index)=sz*K2
   ret = 0
 end function
+
 function get_spin_src(id, sx, sy, sz) result(ret)
   integer :: ret, id, index
   real*8 :: sx, sy, sz
@@ -414,29 +407,28 @@ function get_density_src(id, density) result(ret)
   ret = 0
 end function
 
-function set_particle_state(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
-  integer :: ret,id_,index
-  real*8 :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
-
-  index=find_particle(id_)
+function set_radius_src(id, radius) result(ret)
+  integer :: ret, id, index
+  real*8 :: radius
+  index=find_particle(id)
   if(index.LT.0) then
-    ret=index
-    return
-  endif  
-  m(index)=mass*K2
-!  radius=(mass*MSUN*3/(4*PI*rho(index)*AU**3))**(1./3)
-  rho(index)=dens*rhocgs
-  xh(1,index)=x
-  xh(2,index)=y
-  xh(3,index)=z
-  vh(1,index)=vx
-  vh(2,index)=vy
-  vh(3,index)=vz
-  s(1,index)=sx*K2
-  s(2,index)=sy*K2
-  s(3,index)=sz*K2
-  rceh(index)=celimit
-  ret=0
+     ret=index
+     return
+  endif
+  rho(index) = radius*rhocgs
+  ret = 0
+end function
+
+function get_radius_src(id, radius) result(ret)
+  integer :: ret, id, index
+  real*8 :: radius
+  index=find_particle(id)
+  if(index.LT.0) then
+     ret=index
+     return
+  endif
+  radius = rho(index)/rhocgs
+  ret = 0
 end function
 
 function remove_particle(id_) result(ret)

@@ -35,7 +35,6 @@ function recommit_particles() result(ret)
   ret=-2
 end function  
 
-
 function get_time(time_out) result(ret)
   use amuse_mercuryMod
   integer :: ret
@@ -84,28 +83,28 @@ function get_position(id, x, y, z) result(ret)
   use amuse_mercuryMod
   integer :: ret,id
   real*8 :: x,y,z
-  ret=get_position_src(id,x,y,z)
+  ret=get_particle_state(id, x=x, y=y, z=z)
 end function
 
 function set_position(id, x, y, z) result(ret)
   use amuse_mercuryMod
   integer :: ret,id
   real*8 :: x,y,z
-  ret=set_position_src(id,x,y,z)
+  ret=set_particle_state(id,x=x,y=y,z=z)
 end function
 
 function get_velocity(id, vx, vy, vz) result(ret)
   use amuse_mercuryMod
   integer :: ret,id
   real*8 :: vx,vy,vz
-  ret=get_velocity_src(id, vx, vy, vz)
+  ret=get_particle_state(id, vx=vx, vy=vy, vz=vz)
 end function
 
 function set_velocity(id, vx, vy, vz) result(ret)
   use amuse_mercuryMod
   integer :: ret,id
   real*8 :: vx,vy,vz
-  ret=set_velocity_src(id, vx, vy, vz)
+  ret=set_particle_state(id, vx=vx, vy=vy, vz=vz)
 end function
 
 function delete_particle(id) result(ret)
@@ -118,28 +117,28 @@ function set_density(id, density) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: density
-  ret=set_density_src(id, density)
+  ret=set_particle_state(id, dens=density)
 end function
 
 function get_density(id, density) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: density
-  ret=get_density_src(id, density)
+  ret=get_particle_state(id, dens=density)
 end function
 
 function set_mass(id, mass) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: mass
-  ret=set_mass_src(id, mass)
+  ret=set_particle_state(id, mass=mass)
 end function
 
 function get_mass(id, mass) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: mass
-  ret=get_mass_src(id, mass)
+  ret=get_particle_state(id, mass=mass)
 end function
 
 function set_central_mass(mass) result(ret)
@@ -174,14 +173,14 @@ function set_celimit(id, celimit) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: celimit
-  ret=set_central_body(radius=celimit)
+  ret=set_particle_state(id, celimit=celimit)
 end function
 
 function get_celimit(id, celimit) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: celimit
-  ret=get_central_body(radius=celimit)
+  ret=get_particle_state(id, celimit=celimit)
 end function
 
 function set_central_oblateness(j2,j4,j6) result(ret)
@@ -216,18 +215,18 @@ function get_central_spin(lx,ly,lz) result(ret)
   lx=spin(1);ly=spin(2);lz=spin(3)
 end function
 
-function set_spin(id, sx,sy,sz) result(ret)
+function set_angularmomentum(id, Lx,Ly,Lz) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
-  real*8 :: sx,sy,sz
-  ret=set_spin_src(id, sx, sy, sz)
+  real*8 :: Lx,Ly,Lz
+  ret=set_particle_state(id, sx=Lx, sy=Ly, sz=Lz)
 end function
 
-function get_spin(id, sx,sy,sz) result(ret)
+function get_angularmomentum(id, Lx,Ly,Lz) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
-  real*8 :: sx,sy,sz
-  ret=get_spin_src(id, sx, sy, sz)
+  real*8 :: Lx,Ly,Lz
+  ret=get_particle_state(id, sx=Lx, sy=Ly, sz=Lz)
 end function
 
 function get_kinetic_energy(ek) result(ret)
@@ -275,4 +274,3 @@ function get_number_of_orbiters(norbiters) result(ret)
   integer :: ret,norbiters
   ret=get_number_of_particles(norbiters)
 end function  
-

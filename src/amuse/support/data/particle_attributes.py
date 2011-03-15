@@ -300,7 +300,7 @@ AbstractParticleSet.add_global_function_attribute("total_mass", total_mass)
 AbstractParticleSet.add_global_vector_attribute("position", ["x","y","z"])
 AbstractParticleSet.add_global_vector_attribute("velocity", ["vx","vy","vz"])
 AbstractParticleSet.add_global_vector_attribute("acceleration", ["ax","ay","az"])
-AbstractParticleSet.add_global_vector_attribute("spin", ["sx","sy","sz"])
+AbstractParticleSet.add_global_vector_attribute("angularmomentum", ["Lx","Ly","Lz"])
 AbstractParticleSet.add_global_vector_attribute("oblateness", ["j2","j4","j6"])
 
 AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)

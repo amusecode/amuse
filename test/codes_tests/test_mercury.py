@@ -166,82 +166,37 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
 
 class TestMercury(TestWithMPI):
-    def test0(self):
+    def xtest0(self):
         orbiter = core.Particles(1)
-        orbiter.mass = 1.0 | units.MSun
+        orbiter.mass = 5.97e24 | units.kg
         orbiter.density = 1.0|units.g/units.cm**3
         orbiter.position = [1.0,0.0,0.0] | units.AU
-        orbiter.velocity = [100.0,100.0,100.0] | units.AUd
-        orbiter.spin = [1.0,0,0] | units.day
+        orbiter.velocity = [0.0, 2.0*3.14*1.0/365,0.0] | units.AUd
+        orbiter.angularmomentum = [1.0,0,0] | units.day
         orbiter.celimit = 0.0 | units.none
         
         centre = core.Particles(1)
         centre.mass = 1.0 | units.MSun
+        centre.radius = 0.01 | units.AU
+        centre.oblateness = [1.0, 1.0, 1.0] | units.none
+        centre.angularmomentum = [0.0, 0.0, 0.0] | units.day
 
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        mercury = MercuryWayWard(convert_nbody)
+        #mercury = MercuryWayWard(convert_nbody)
+        mercury = MercuryWayWard()
         mercury.initialize_code()
         mercury.commit_parameters()
-        mercury.orbiters.add_particles(orbiter)
         mercury.central_particle.add_particles(centre)
+        mercury.orbiters.add_particles(orbiter)
         mercury.commit_particles()
+        print mercury.kinetic_energy
+        print mercury.potential_energy
+        print mercury.total_energy
+
+        print mercury.central_particle.mass
+
         self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
+        self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
         self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
-        self.assertEquals(mercury.orbiters.spin, [[1.,0.0,0.0]]|units.day)
- 
+        self.assertEquals(mercury.orbiters.angularmomentum, [[1.,0.0,0.0]]|units.MSun*units.AU**2/units.day)
         mercury.stop()
-
-    def xtest1(self):
-        earth = core.Particles(1)
-        earth.mass = 5.9736e24 | units.kg
-        earth.density = 1.0|units.g/units.cm**3
-        earth.position = [1.0,0.0,0.0] | units.AU
-        earth.velocity = [0.0, 2*np.pi*1.0/365, 0.0] | units.AUd
-        earth.spin = [1.0,0,0] | units.day
-        earth.celimit = 0.0 | units.none
-
-        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-        mercury = MercuryWayWard(convert_nbody)
-        mercury.initialize_code()
-        mercury.central_mass = 1.0 | units.MSun
-        mercury.commit_parameters()
-        mercury.orbiters.add_particles(earth)
-        self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
-        self.assertEquals(mercury.orbiters.spin, [[1.,0.0,0.0]]|units.day)
-        mercury.commit_particles()
-        mercury.stop()
-
-    def xtest1(self):
-        convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
-    
-        hermite = Hermite(convert_nbody)
-        hermite.initialize_code()
-        
-        stars = self.new_system_of_sun_and_earth()
-        earth = stars[1]
-                
-        hermite.particles.add_particles(stars)
-        
-        hermite.evolve_model(365.0 | units.day)
-        hermite.particles.copy_values_of_state_attributes_to(stars)
-        
-        position_at_start = earth.position.value_in(units.AU)[0]
-        position_after_full_rotation = earth.position.value_in(units.AU)[0]
-        self.assertAlmostEqual(position_at_start, position_after_full_rotation, 6)
-        
-        hermite.evolve_model(365.0 + (365.0 / 2) | units.day)
-        
-        hermite.particles.copy_values_of_state_attributes_to(stars)
-        position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
-        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
-                
-        hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
-        
-        hermite.particles.copy_values_of_state_attributes_to(stars)
-        position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
-        self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
-        
-        hermite.cleanup_code()
-        
-        hermite.stop()
-    
