@@ -16,6 +16,9 @@ Contents:
    reference/index
    design/index
    
+.. htmlonly::
+   - `Examples <examples/index.html>`_
+   
 
 Indices and tables
 ==================

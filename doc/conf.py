@@ -18,6 +18,7 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('../test'))
 sys.path.append(os.path.abspath('../src'))
+sys.path.append(os.path.abspath('sphinxext'))
 
 # -- General configuration -----------------------------------------------------
 
@@ -33,6 +34,10 @@ extensions = [
  'sphinx.ext.graphviz',
  'sphinx.ext.inheritance_diagram',
  'sphinx.ext.doctest',
+ 'matplotlib.sphinxext.only_directives',
+ 'matplotlib.sphinxext.plot_directive',
+ 'gen_rst',
+ 'gen_gallery', 
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -75,7 +80,7 @@ release = '3.0 alpha'
 
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
-exclude_trees = ['_build']
+exclude_trees = ['build']
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None

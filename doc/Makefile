@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 PAPER         = a4
-BUILDDIR      = _build
+BUILDDIR      = build
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -41,9 +41,9 @@ html:
 
 release: latexpdf
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
-	make -C _build/latex tar FMT=pdf
+	make -C build/latex tar FMT=pdf
 	rm -Rf pdf
-	tar -xvf _build/latex/docs-pdf.tar 
+	tar -xvf build/latex/docs-pdf.tar 
 	mv docs-pdf pdf
 
 
@@ -83,12 +83,12 @@ qthelp:
 	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/AMUSE.qhc"
 
 devhelp:
-	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) _build/devhelp
+	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) build/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
 	@echo "# mkdir -p $$HOME/.local/share/devhelp/AMUSE"
-	@echo "# ln -s _build/devhelp $$HOME/.local/share/devhelp/AMUSE"
+	@echo "# ln -s build/devhelp $$HOME/.local/share/devhelp/AMUSE"
 	@echo "# devhelp"
 
 latex:
@@ -99,10 +99,10 @@ latex:
 	      "run these through (pdf)latex."
 
 latexpdf: latex
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) _build/latex
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) build/latex
 	@echo "Running LaTeX files through pdflatex..."
-	make -C _build/latex all-pdf
-	@echo "pdflatex finished; the PDF files are in _build/latex."
+	make -C build/latex all-pdf
+	@echo "pdflatex finished; the PDF files are in build/latex."
 
 changes:
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
