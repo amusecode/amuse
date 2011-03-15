@@ -6,7 +6,8 @@ radiative hydrodynamic problems. Specifically it calculates the Iliev radiative 
 comparison project test 5 (expanding HII region in homogeneous medium)
 
 It is simplified somewhat in the sense that it uses the SimpleX without any multifrequency 
-radiative transfer or thermal evolution.
+radiative transfer or thermal evolution. This is not a fundamental limitation (the method would 
+work with full thermal evolution available).
 
 The coupling interface is with simple functions.
 
@@ -49,10 +50,10 @@ uion=constants.kB * Tion/muion
 mp=None
 
 def fake_internal_energy_from_xion(xion):
-"""
-this function fakes an internal energy from the ionisation  
-(this is the main shortcut here)
-"""
+  """
+  this function fakes an internal energy from the ionisation  
+  (this is the main shortcut here)
+  """
 #  return uinit+(uion-uinit)*xion 
   u=uinit+(utrans-uinit)*xion/xtrans
   a=numpy.where(xion > xtrans )[0]
@@ -60,10 +61,10 @@ this function fakes an internal energy from the ionisation
   return u
 
   
-def glass(N, target_rms=0.01):
-"""
- make glass for initial condition generation
-"""  
+def glass(N, target_rms=0.05):
+  """
+   make glass for initial condition generation
+  """  
   if target_rms < 0.001:
     print "warning: target_rms highly unlikely to succeed"
     
@@ -84,7 +85,7 @@ def glass(N, target_rms=0.01):
   p.u= (0.1*0.1) | nbody_system.speed**2 
   p.mass=(8./N) | nbody_system.mass
 
-  sph=Fi(use_gl=True,mode='periodic',redirection='none')   
+  sph=Fi(use_gl=False,mode='periodic',redirection='none')   
   sph.initialize_code()
 
   sph.parameters.use_hydro_flag=True
@@ -126,17 +127,17 @@ def glass(N, target_rms=0.01):
 def iliev_test_5_ic( N=10000,
                   Ns=10,
                   L=15. | units.kpc ):
-"""
-iliev test 5 particle distributions
- N= number of gas part
- Ns= number of sources (recommended to be order 10 for smoothrad distrbiution
- L=half boxsize
-"""
+  """
+  iliev test 5 particle distributions
+   N= number of gas part
+   Ns= number of sources (recommended to be order 10 for smoothrad distrbiution
+   L=half boxsize
+  """
 
   mp=rhoinit*(2*L)**3/N
  
 #  x,y,z=uniform_random_unit_cube(N).make_xyz()
-  x,y,z=glass(N,target_rms=0.01)
+  x,y,z=glass(N,target_rms=0.05)
   
   p=core.Particles(N)
   p.x=L*x
@@ -168,15 +169,15 @@ def iliev_test_5( N=10000,
                   Ns=10,
                   L=15. | units.kpc,
                   dt=None):
-"""
-prepare iliev test and return SPH and simplex interfaces
-"""  
+  """
+  prepare iliev test and return SPH and simplex interfaces
+  """  
   gas,sources=iliev_test_5_ic(N,Ns,L)                
 
 
   conv=nbody_system.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc)
      
-  sph=Fi(conv,use_gl=True,mode='periodic',redirection='none')   
+  sph=Fi(conv,use_gl=False,mode='periodic',redirection='none')   
   sph.initialize_code()
 
   sph.parameters.use_hydro_flag=True
@@ -222,23 +223,23 @@ def update_u(sys,pa):
   channel.copy_attributes(["u"])
   
 def radhydro_evolve(sph,rad,tend,dt):
-"""
- evolve function to co-evolve sph under radiative feedback from rad
- 
- the evolve proceeds as follows (a form of leapfrog integrator):
+  """
+   evolve function to co-evolve sph under radiative feedback from rad
 
- - 1/2 step sph
- - update positions and densities in rad
- - full step rad transfer
- - update internal energies in sph
- - 1/2 step sph 
-  
- tend=end time
- dt=time step 
+   the evolve proceeds as follows (a form of leapfrog integrator):
 
- this function dump snapshots in file dump-..
- 
-"""
+   - 1/2 step sph
+   - update positions and densities in rad
+   - full step rad transfer
+   - update internal energies in sph
+   - 1/2 step sph 
+
+   tend=end time
+   dt=time step 
+
+   this function dump snapshots in file dump-..
+
+  """
   i=0
   write_set_to_file(sph.gas_particles,"dump-%6.6i"%i,"amuse",
                         append_to_file=False)    
