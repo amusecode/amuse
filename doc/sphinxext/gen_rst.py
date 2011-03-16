@@ -49,7 +49,7 @@ def generate_example_rst(app):
 .. _examples-index:
 
 ####################
-Matplotlib Examples
+AMUSE Examples
 ####################
 
 .. htmlonly::
