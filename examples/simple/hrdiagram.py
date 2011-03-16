@@ -1,3 +1,7 @@
+"""
+Show how to generate Hertzsprung-Russell diagram
+"""
+
 import sys
 import numpy 
 import os
@@ -9,39 +13,36 @@ from amuse.support.data import core
 from amuse.community.sse.interface import SSE
 from amuse.support.codes.core import is_mpd_running
 
-def stellar_remnant_state(star):
-    return 10 <= star.stellar_type.value_in(units.stellar_type) and \
-        star.stellar_type.value_in(units.stellar_type) < 16
+
+end_time = 2 | units.Gyr
+stellar_mass =  2.0 | units.MSun
 
 def simulate_evolution_tracks():
     stellar_evolution = SSE()
-    stellar_evolution.initialize_module_with_current_parameters()
+    stellar_evolution.commit_parameters()
+
     star = core.Particle()
-    star.mass = 2.0 | units.MSun
+    star.mass = stellar_mass
 
     star = stellar_evolution.particles.add_particle(star)
-    stellar_evolution.initialize_stars()
+    stellar_evolution.commit_particles()
     
-    luminosity_at_time     = [] | units.LSun
-    temperature_at_time     = [] | units.K
-    stellar_type_at_time = [] | units.stellar_type
-        
-    stopped_evolving = False
-    while not stellar_remnant_state(star) and not stopped_evolving:
+    luminosity_at_time = [] | units.LSun
+    temperature_at_time = [] | units.K
+    
+    is_evolving = True
+    while is_evolving and star.age < end_time:
         luminosity_at_time.append(star.luminosity)
         temperature_at_time.append(star.temperature)
-        stellar_type_at_time.append(star.stellar_type)
         previous_age = star.age
-        try:
-            stellar_evolution.evolve_model()
-            stopped_evolving = (star.age == previous_age) # Check whether the age has stopped increasing
-        except Exception as ex:
-            stopped_evolving = True
+        stellar_evolution.evolve_model()
+        is_evolving = (star.age != previous_age)
         
     stellar_evolution.particles.remove_particle(star)
 
     stellar_evolution.stop()
-    plot_track(temperature_at_time, luminosity_at_time)
+    
+    return temperature_at_time, luminosity_at_time
     
 def plot_track(temperature_at_time, luminosity_at_time):
     pyplot.figure(figsize = (7, 8))
@@ -60,4 +61,5 @@ if __name__ in ['__main__', '__plot__']:
         print "There is no mpd server running. Please do 'mpd &' first."
         sys.exit()
         
-    simulate_evolution_tracks()
+    temperatures, luminosities = simulate_evolution_tracks()
+    plot_track(temperatures, luminosities)
