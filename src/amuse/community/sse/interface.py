@@ -6,8 +6,9 @@ from amuse.support.units import constants
 
 from amuse.support.data.core import Particles, ParticlesSubset
 from amuse.support.interface import InCodeComponentImplementation
+from amuse.community.interface import common
 
-class SSEInterface(CodeInterface, LiteratureRefs): 
+class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureRefs): 
     """
     Stellar evolution is performed by the rapid single-star evolution (SSE)
     algorithm. This is a package of analytical formulae fitted to the detailed 
@@ -77,6 +78,21 @@ class SSEInterface(CodeInterface, LiteratureRefs):
         function.addParameter('epoch', dtype='d', direction=function.IN)
         function.addParameter('dt', dtype='d', direction=function.OUT)
         return function
+        
+    def initialize_code(self):
+        pass
+        
+    def commit_parameters(self):
+        pass
+        
+    def recommit_parameters(self):
+        pass
+        
+    def cleanup_code(self):
+        pass
+        
+    def commit_particles(self):
+        pass
         
     
         
@@ -400,11 +416,7 @@ class SSE(InCodeComponentImplementation):
             end_time = self.particles.time_step + self.particles.age
             
         self._evolve_particles(self.particles, end_time)
-        
-
     
-    def commit_particles(self):
-        pass
         
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()

@@ -3,8 +3,9 @@ from amuse.community import *
 from amuse.support.units import units
 from amuse.support.data.values import Quantity
 from amuse.support.data.core import Particles, ParticlesSubset
+from amuse.community.interface import common
 
-class BSEInterface(CodeInterface, LiteratureRefs): 
+class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureRefs): 
     """
     Binary evolution is performed by the **rapid** binary-star evolution (BSE) 
     algorithm. Circularization of eccentric orbits and synchronization of stellar 
@@ -157,6 +158,21 @@ class BSEInterface(CodeInterface, LiteratureRefs):
             if particle.type.value_in(units.none) == 15:
                 return
     
+    def initialize_code(self):
+        pass
+        
+    def commit_parameters(self):
+        pass
+        
+    def recommit_parameters(self):
+        pass
+        
+    def cleanup_code(self):
+        pass
+        
+    def commit_particles(self):
+        pass
+        
         
 class BSEParticles(Particles):
     

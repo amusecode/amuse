@@ -2,7 +2,6 @@ from operator import itemgetter
 from amuse.community import *
 from amuse.community.interface.se import StellarEvolution, InternalStellarStructure, \
     InternalStellarStructureInterface
-from amuse.community.interface.common import CommonCodeInterface
 
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import OptionalAttributes, option

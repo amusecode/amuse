@@ -486,6 +486,7 @@ class TestBSE(TestWithMPI):
     def test6(self):
         print "Testing additional parameters for initialization..."
         instance = BSE()
+        instance.initialize_code()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
@@ -498,6 +499,7 @@ class TestBSE(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
+        instance.parameters.set_defaults()
         instance.commit_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         del instance
