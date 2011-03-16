@@ -45,7 +45,7 @@ def simulate_evolution_tracks():
     return temperature_at_time, luminosity_at_time
     
 def plot_track(temperature_at_time, luminosity_at_time):
-    pyplot.figure(figsize = (7, 8))
+    pyplot.figure(figsize = (8, 6))
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
     pyplot.xlabel('Effective Temperature (K)')
     pyplot.ylabel('Luminosity (solar luminosity)')
@@ -53,6 +53,9 @@ def plot_track(temperature_at_time, luminosity_at_time):
     x_values = temperature_at_time.value_in(units.K)
     y_values = luminosity_at_time.value_in(units.LSun)
     pyplot.loglog(x_values, y_values)
+    pyplot.xlim(pyplot.xlim()[::-1])
+    pyplot.ylim(.1,1.e4)
+    pyplot.savefig('hr.png')
     pyplot.show()
     
 
