@@ -15,9 +15,18 @@ recursive-include doc/install *.*
 recursive-include doc/tutorial *.*
 recursive-include doc/html *.*
 recursive-include doc/pdf *.pdf
+recursive-include doc/plot_directive *.*
 
-recursive-exclude src *.pyc *.o *~
+recursive-exclude doc/build *.*
+
+recursive-exclude src *.pyc *.o *~ .pc ccache *.a
 recursive-exclude test *.pyc *.o *~ ccache
 recursive-exclude lib *.pyc *.o *~ ccache *.a
-recursive-exclude src/amuse/legacy/mesa/src *
-recursive-exclude src/amuse/legacy/seba/src *
+prune src/amuse/community/mesa/src
+prune src/amuse/community/seba/src
+prune src/amuse/community/mpiamrvac/src
+prune src/amuse/community/mpiamrvac/.pc
+prune src/amuse/community/mocassin/src
+prune src/amuse/community/mocassin/.pc
+prune src/amuse/community/athena/src
+prune src/amuse/community/athena/.pc

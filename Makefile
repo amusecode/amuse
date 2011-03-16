@@ -39,7 +39,8 @@ ctags:
 	find src -name "*.[cCfFhH]" | xargs ctags -a
 	find src -name "*.cpp" | xargs ctags -a
 
-release:
+release: distclean
+	#$(PYTHON) setup.py dist_clean
 	make -C doc release
 	python setup.py sdist
 

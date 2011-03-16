@@ -396,6 +396,19 @@ class CleanCodes(CodeCommand):
         for x in self.makefile_paths():
             self.announce("cleaning " + x)
             call(['make','-C', x, 'clean'])
+ 
+class DistCleanCodes(CodeCommand):
+
+    description = "clean for distribution"
+
+    def run (self):
+        for x in self.makefile_libpaths():
+            self.announce("cleaning libary " + x)
+            call(['make','-C', x, 'distclean'])
+            
+        for x in self.makefile_paths():
+            self.announce("cleaning " + x)
+            call(['make','-C', x, 'distclean'])
         
 class BuildOneCode(CodeCommand):  
     description = "build one code"
