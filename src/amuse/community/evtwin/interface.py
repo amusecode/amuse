@@ -10,7 +10,7 @@ from amuse.support.options import OptionalAttributes, option
 import os
 
 class EVtwinInterface(CodeInterface, LiteratureRefs, StellarEvolution, 
-        InternalStellarStructureInterface, CommonCodeInterface):
+        InternalStellarStructureInterface):
     """
     Evtwin is based on Peter Eggleton's stellar evolution code, and solves 
     the differential equations that apply to the interior of a star. Therefore 
@@ -979,6 +979,11 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
         
     def setup_particles(self, particles):
         self.particles.add_particles(particles)
+        
+    def commit_parameters(self):
+        self.parameters.send_not_set_parameters_to_code()
+        self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
         
     def evolve_model(self, end_time = None, keep_synchronous = True):
         if end_time is None:

@@ -587,7 +587,8 @@ class TestEVtwin(TestWithMPI):
         star = core.Particles(1)
         star.mass = 1.0 | units.MSun
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters() 
         instance.particles.add_particles(star)
         instance.commit_particles()
         instance.evolve_model()
