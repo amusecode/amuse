@@ -1283,6 +1283,8 @@ contains
       integer :: commit_particles
       commit_particles = 0
    end function
+   
+   
 
 ! Create a new particle (spin period not specified - will be set by code)
    function new_particle(star_id, mass)

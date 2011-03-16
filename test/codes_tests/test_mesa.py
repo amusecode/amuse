@@ -284,7 +284,8 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_default_parameters()
+        instance.initialize_code() 
+        instance.commit_parameters() 
         index_of_the_star = instance.new_particle(1.0 | units.MSun)
         self.assertEqual(index_of_the_star,1)
         time_step = instance.get_time_step(index_of_the_star)
@@ -313,7 +314,8 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_default_parameters()
+        instance.initialize_code() 
+        instance.commit_parameters() 
         stars = core.Stars(1)
         mass = 10. | units.MSun
         stars.mass = mass
@@ -338,7 +340,8 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code() 
+        instance.commit_parameters() 
         stars =  core.Stars(1)
         
         star = stars[0]
@@ -410,7 +413,8 @@ class TestMESA(TestWithMPI):
         stars =  core.Stars(number_of_stars)
         for i, star in enumerate(stars):
             star.mass = masses[i]
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters() 
         self.assertEqual(instance.parameters.max_age_stop_condition, 1e6 | units.Myr)
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
@@ -441,6 +445,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
+        instance.initialize_code()
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
@@ -474,6 +479,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
+        instance.initialize_code()
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
@@ -508,6 +514,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
+        instance.initialize_code()
         instance.parameters.metallicity = 0.0 | units.none
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
@@ -545,6 +552,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
+        instance.initialize_code()
         instance.commit_parameters() 
         instance.particles.add_particles(star)
         instance.commit_particles()
@@ -579,6 +587,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
+        instance.initialize_code()
         instance.commit_parameters() 
         instance.particles.add_particles(star)
         instance.commit_particles()
@@ -618,6 +627,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
+        instance.initialize_code()
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()

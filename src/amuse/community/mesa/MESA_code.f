@@ -95,6 +95,19 @@
          initialize_code = 0
       end function initialize_code
 
+      
+      integer function commit_parameters()
+         commit_parameters = 0
+      end function commit_parameters
+      
+      integer function recommit_parameters()
+         recommit_parameters = 0
+      end function recommit_parameters
+      
+      integer function cleanup_code()
+         cleanup_code = 0
+      end function cleanup_code
+      
 ! Create new ZAMS model for a different metallicity
    subroutine new_zams_model(ierr)
       use create_zams, only: AMUSE_do_create_zams

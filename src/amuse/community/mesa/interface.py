@@ -911,7 +911,8 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
         self.initialize_code()
     
     def commit_parameters(self):
-        pass
+        self.parameters.send_not_set_parameters_to_code()
+        self.parameters.send_cached_parameters_to_code()
     
         
     def evolve_model(self, end_time = None, keep_synchronous = True):

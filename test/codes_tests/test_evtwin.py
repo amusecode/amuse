@@ -323,7 +323,8 @@ class TestEVtwin(TestWithMPI):
     def test2(self):
         print "Testing basic operations (setup_particles, initialize_stars etc.)..."
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters()
+        instance.initialize_code()
+        instance.commit_parameters()
         
         path = os.path.join(instance.default_path_to_ev_database, 'run')
         path = os.path.join(path, 'muse')
@@ -344,7 +345,8 @@ class TestEVtwin(TestWithMPI):
     
     def xtest3(self):
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters()
         stars =  core.Stars(1)
         
         star = stars[0]
@@ -462,7 +464,8 @@ class TestEVtwin(TestWithMPI):
         particles.mass = 1.0 | units.MSun
         
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters()
         stars = instance.particles
         self.assertEquals(len(stars), 0) # before creation
         stars.add_particles(particles[:-1])
@@ -496,7 +499,8 @@ class TestEVtwin(TestWithMPI):
         stars = core.Particles(2)
         stars.mass = [1.0, 10.0] | units.MSun
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
@@ -523,7 +527,8 @@ class TestEVtwin(TestWithMPI):
         stars = core.Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
@@ -550,7 +555,8 @@ class TestEVtwin(TestWithMPI):
         stars = core.Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters()
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model(11.7 | units.Gyr)
@@ -612,7 +618,8 @@ class TestEVtwin(TestWithMPI):
         star = core.Particles(1)
         star.mass = 1.0 | units.MSun
         instance = EVtwin()
-        instance.initialize_module_with_default_parameters() 
+        instance.initialize_code()
+        instance.commit_parameters()
         instance.particles.add_particles(star)
         instance.commit_particles()
         instance.evolve_model()
@@ -646,7 +653,9 @@ class TestEVtwin(TestWithMPI):
     def slowtest11(self):
         print "Test 11: Continue the stellar evolution of a 'merger product' - WIP"
         instance = EVtwin(redirection = "none")
-        instance.initialize_module_with_default_parameters()
+        instance.initialize_code()
+        instance.commit_parameters()
+        
         instance.parameters.min_timestep_stop_condition = 1.0 | units.s
         
         stars = core.Particles(3)
