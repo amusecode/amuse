@@ -91,7 +91,7 @@ class TestMPIInterface(TestWithMPI):
     def test8(self):
         instance=MercuryInterface()
         instance.initialize_code()  
-        n,err=instance.get_number_of_orbiters(DUMMYID)  
+        n,err=instance.get_number_of_orbiters()  
         self.assertEqual(n,0)
         instance.stop()
 
@@ -99,7 +99,7 @@ class TestMPIInterface(TestWithMPI):
         instance=MercuryInterface(redirection='none')
         instance.initialize_code()
         pid,err=instance.new_orbiter(0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.)  
-        n,err=instance.get_number_of_orbiters(DUMMYID)  
+        n,err=instance.get_number_of_orbiters()  
         self.assertEqual(n,1)
         instance.stop()
 
