@@ -79,9 +79,10 @@ def simulate_stellar_evolution(
 def plot_HR_diagram(temperatures, luminosities, name_of_the_figure, end_time):
     try:
 #		This removes the need for ssh -X to be able to do plotting
+
+        sys.exit(0)
         import matplotlib
-        matplotlib.use("Agg") 
-        
+        matplotlib.use("Agg", warn=False) 
         from matplotlib import pyplot
         print "Plotting the data..."
         number_of_stars=len(temperatures)

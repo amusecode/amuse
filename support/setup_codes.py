@@ -389,11 +389,11 @@ class BuildCodes(CodeCommand):
             for x in not_build:
                 print '*', x 
             for x in not_build_special:
-                print '*', x, '** optional, needs special libraries or hardware to compile **'
+                print '*', x, '    ** optional, needs special libraries or hardware to compile **'
             for x in is_cuda_needed:
-                print '*', x, '** needs CUDA library please configure with --enable-cuda **' 
+                print '*', x, '    ** needs CUDA library, please configure with --enable-cuda **' 
             for x in is_download_needed:
-                print '*', x, '** needs to be download, use make {0}.code DOWNLOAD_CODES=1 to download and build **'.format(x)
+                print '*', x, '    ** needs to be download, use make {0}.code DOWNLOAD_CODES=1 to download and build **'.format(x)
         
         if build:
             print
