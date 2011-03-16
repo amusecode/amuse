@@ -55,7 +55,6 @@ def plot_track(temperature_at_time, luminosity_at_time):
     pyplot.loglog(x_values, y_values)
     pyplot.xlim(pyplot.xlim()[::-1])
     pyplot.ylim(.1,1.e4)
-    pyplot.savefig('hr.png')
     pyplot.show()
     
 
