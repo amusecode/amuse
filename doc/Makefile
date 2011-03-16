@@ -14,9 +14,6 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
 
-amuse_examples:
-	ln -s ../examples amuse_examples
-	
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
@@ -32,6 +29,9 @@ help:
 	@echo "  linkcheck to check all external links for integrity"
 	@echo "  doctest   to run all doctests embedded in the documentation (if enabled)"
 
+amuse_examples:
+	ln -s ../examples amuse_examples
+	
 clean:
 	-rm -rf $(BUILDDIR)/*
 	-rm -rf html
