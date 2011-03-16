@@ -14,6 +14,9 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest
 
+amuse_examples:
+	ln -s ../examples amuse_examples
+	
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
 	@echo "  html      to make standalone HTML files"
@@ -34,12 +37,12 @@ clean:
 	-rm -rf html
 	-rm -rf pdf
 
-html:
+html: amuse_examples
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-release: latexpdf
+release: amuse_examples latexpdf
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) html
 	make -C build/latex tar FMT=pdf
 	rm -Rf pdf
@@ -47,7 +50,7 @@ release: latexpdf
 	mv docs-pdf pdf
 
 
-web:
+web: amuse_examples
 	$(SPHINXBUILD) -b web $(ALLSPHINXOPTS) $(BUILDDIR)/web
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/web."
@@ -104,7 +107,7 @@ latexpdf: latex
 	make -C build/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in build/latex."
 
-changes:
+changes: amuse_examples
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
 	@echo
 	@echo "The overview file is in $(BUILDDIR)/changes."
