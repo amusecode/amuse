@@ -6,7 +6,7 @@ from distutils.extension import Extension
 
 from support.generate_main import generate_main
 from support.build_latex import build_latex
-from support.setup_codes import BuildCodes, CleanCodes, BuildOneCode
+from support.setup_codes import BuildCodes, CleanCodes, DistCleanCodes, BuildOneCode
 from support.run_tests import run_tests
 
 #include_dirs.append(sysconfig.get_python_inc())
@@ -24,6 +24,7 @@ mapping_from_command_name_to_command_class = {
     'build_codes':BuildCodes,
     'code':BuildOneCode,
     'clean_codes':CleanCodes,
+    'dist_clean':DistCleanCodes,
     'clean_python':clean,
     'clean': Clean,
     'tests':run_tests, 

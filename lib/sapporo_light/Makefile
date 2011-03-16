@@ -24,7 +24,35 @@ OBJS = \
 CUOBJS = host_evaluate_gravity.cu_o
 TARGET = libsapporo.a
 
-all:   $(TARGET) $(PROG)
+all:  $(CUDA_TK) $(CUDA_SDK) $(TARGET) $(PROG)
+
+$(CUDA_TK):
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "------------"
+	@echo "CUDA_TK variable is not set to a valid path,"
+	@echo "please set the CUDA_TK variable to the directory"
+	@echo "where you installed CUDA"
+	@echo "the CUDA_TK directory must contain a bin directory with the <nvcc> executable"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+
+
+$(CUDA_SDK):
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "CUDA_SDK variable is not set to a valid path,"
+	@echo "please set the CUDA_SDK variable to the directory"
+	@echo "where you installed the CUDA SDK"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@make -s --no-print-directory -C . raise_error
+
 
 $(TARGET): $(OBJS) $(CUOBJS)
 	ar qv $@ $^

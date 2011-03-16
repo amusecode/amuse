@@ -76,6 +76,8 @@ clean:
 	$(RM) worker_code *~ octgrav_worker
 	$(MAKE) -C $(CODEPATH) clean	
 
+distclean: clean
+
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
 

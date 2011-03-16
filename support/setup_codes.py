@@ -293,9 +293,19 @@ class BuildCodes(CodeCommand):
                     return True
         return False
         
+    def is_cuda_needed(self, filename):
+        with open(filename, 'r') as f:
+            for line in f:
+                if 'CUDA_TK variable is not set' in line:
+                    return True
+                if 'CUDA_SDK variable is not set' in line:
+                    return True
+        return False
+        
     def run (self):
         not_build = list()
         is_download_needed = list()
+        is_cuda_needed = list()
         not_build_special = list()
         build = list()
         environment = self.environment
@@ -310,7 +320,13 @@ class BuildCodes(CodeCommand):
             
             if returncode == 2:
                 self.announce("building {0}, failed, see {1} for error log".format(shortname, buildlog), level =  log.INFO)
-                not_build.append(shortname)
+                
+                if self.is_download_needed(buildlog):
+                    is_download_needed.append(shortname)
+                elif self.is_cuda_needed(buildlog):
+                    is_cuda_needed.append(shortname)
+                else:
+                    not_build.append(shortname)
             else:
                 self.announce("building {0}, succeeded".format(shortname), level =  log.INFO)
                 build.append(shortname)
@@ -328,6 +344,8 @@ class BuildCodes(CodeCommand):
                 self.announce("[{2:%H:%M:%S}] building {0}, failed, see {1!r} for error log".format(shortname, buildlog, endtime), level =  log.INFO)
                 if self.is_download_needed(buildlog):
                     is_download_needed.append(shortname)
+                elif self.is_cuda_needed(buildlog):
+                    is_cuda_needed.append(shortname)
                 else:
                     not_build.append(shortname)
                 continue
@@ -363,7 +381,7 @@ class BuildCodes(CodeCommand):
         #    print "%s\t%s" % (x, self.environment_notset[x] )
         #print
         #print
-        if not_build or not_build_special or is_download_needed:
+        if not_build or not_build_special or is_download_needed or is_cuda_needed:
             print
             print
             print "Community codes not built (because of errors):"
@@ -372,8 +390,11 @@ class BuildCodes(CodeCommand):
                 print '*', x 
             for x in not_build_special:
                 print '*', x, '** optional, needs special libraries or hardware to compile **'
+            for x in is_cuda_needed:
+                print '*', x, '** needs CUDA library please configure with --enable-cuda **' 
             for x in is_download_needed:
                 print '*', x, '** needs to be download, use make {0}.code DOWNLOAD_CODES=1 to download and build **'.format(x)
+        
         if build:
             print
             print

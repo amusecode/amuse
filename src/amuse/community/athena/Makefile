@@ -56,17 +56,17 @@ download:
 	$(PATCH_FILES)
 
 clean:
-	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
-	$(RM) -f *~ athena_worker
+	$(RM) -f *.so *.o *.selfgrav_o *.pyc worker_code.cc worker_code.h 
+	$(RM) -f *~ athena_worker  athena_worker_selfgrav
 	$(RM) -f $(CODELIB) $(AMUSE_OBJS_SELFGRAV)
 
 codeclean: clean
 	make -C $(ATHENA_DIR) clean
 
-distclean:
+distclean: clean
 	$(RM) -f *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) -Rf .pc
-	$(RM) *~ worker_code
+	$(RM) *~ athena_worker
 	$(RM) -Rf src
 
 $(CODELIB): $(ATHENA_DIR) 

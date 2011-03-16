@@ -61,11 +61,12 @@ clean:
 	$(RM) -f *.mod *.so *.o *.pyc worker_code.cc worker_code.h 
 	$(RM) *~ worker_code worker_code.f90
 	$(RM) mocassin_worker
-	make -C $(CODEDIR) clean
+	-make -C $(CODEDIR) clean
 	
 distclean: clean
 	$(RM) -Rf src
 	$(RM) -Rf .pc
+	$(RM) -Rf src.*
 
 $(CODELIB): $(CODEDIR)
 	make -C $(CODEDIR) clean

@@ -18,12 +18,17 @@ all: /src/amuse_interface2.f compile interface.o worker_code
 
 clean:
 	$(RM) -f *.o *.pyc worker_code.f90  
-	$(RM) *~ worker_code worker_code.f90 interface.f90
-	$(RM) *.tmp
+	$(RM) -f *~ worker_code worker_code.f90 interface.f90
+	$(RM) -f *.tmp
 	$(RM) $(MMC_DATA_DIR)/*.dat
+	$(RM) -f mmc.mod
+	$(RM) -f src/amuse_interface2.f
 	make -C src clean
 	make -C amuselib clean
 
+distclean: clean
+	$(RM) -f mmc.mod
+	
 compile:
 	make -C src
 	make -C amuselib

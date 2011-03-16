@@ -21,6 +21,8 @@ all:	huayno_worker
 
 clean:
 	rm -f *.o *.bck *.pyc *.clh worker_code.cc worker_code.h
+	rm -f huayno_worker huayno_worker_mp huayno_worker_gl
+	
 
 distclean: clean
 	rm -f worker worker_cl worker_mp

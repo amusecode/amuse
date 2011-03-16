@@ -20,8 +20,9 @@ recursive-include doc/plot_directive *.*
 recursive-exclude doc/build *.*
 
 recursive-exclude src *.pyc *.o *~ .pc ccache *.a
-recursive-exclude test *.pyc *.o *~ ccache
+recursive-exclude test *.pyc *.o *~ ccache *.000 fort.*
 recursive-exclude lib *.pyc *.o *~ ccache *.a
+
 prune src/amuse/community/mesa/src
 prune src/amuse/community/seba/src
 prune src/amuse/community/mpiamrvac/src
@@ -30,3 +31,21 @@ prune src/amuse/community/mocassin/src
 prune src/amuse/community/mocassin/.pc
 prune src/amuse/community/athena/src
 prune src/amuse/community/athena/.pc
+
+recursive-exclude  data/gadget2/output *.* *
+recursive-exclude  data/simplex/output  *.* *
+recursive-exclude  data/mpiamrvac/output  *.* *
+recursive-exclude  data/mmams/output  *.* *
+recursive-exclude  data/fi/output  *.* *
+recursive-exclude  data/evtwin/output  *.* *
+recursive-exclude  data/mesa/output  *.* *
+
+recursive-include  data/gadget2/output empty_dir.txt
+recursive-include  data/simplex/output empty_dir.txt
+recursive-include  data/mpiamrvac/output  empty_dir.txt
+recursive-include  data/mmams/output  empty_dir.txt
+recursive-include  data/fi/output  empty_dir.txt
+recursive-include  data/evtwin/output  empty_dir.txt
+recursive-include  data/mesa/output  empty_dir.txt
+
+prune data/mesa/input/star_data

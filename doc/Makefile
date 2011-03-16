@@ -36,6 +36,9 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 	-rm -rf html
 	-rm -rf pdf
+	-rm -rf plot_directive
+	-rm -rf amuse_examples
+	-rm -rf examples
 
 html: amuse_examples
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

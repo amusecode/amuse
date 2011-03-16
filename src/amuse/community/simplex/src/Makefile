@@ -107,3 +107,6 @@ veryclean: clean
 	make clean
 	@cd  $(QHULL_PATH) ; \
 	make clean
+	
+	
+distclean: clean veryclean

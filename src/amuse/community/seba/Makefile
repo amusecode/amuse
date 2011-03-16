@@ -13,7 +13,15 @@ AMUSE_DIR?=../../../..
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 DOWNLOAD_FROM_SVN = ./downloadsvn.py
 
-all: seba_worker
+all: 
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+	@echo ""
+	@echo "The SEBA build is currently broken"
+	@echo "The SEBA svn is not available"
+	@echo "To fix it we need a way to download the seba code first"
+	@echo ""
+	@echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 
 src:
 ifdef DOWNLOAD_CODES
