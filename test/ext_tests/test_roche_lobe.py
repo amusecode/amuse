@@ -24,10 +24,10 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test1(self):
         print "Testing the stand-alone determine_RLOF_mass_excess and do_roche_lobe_overflow functions"
         stellar_evolution = self.new_instance(MESA)
-        stellar_evolution.initialize_code()
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            self.skip("MESA was not built. Skipping test.")
             return
+        stellar_evolution.initialize_code()
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.commit_parameters() 
@@ -70,10 +70,10 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test2(self):
         print "Testing the RocheLobeOverflow class"
         stellar_evolution = self.new_instance(MESA)
-        stellar_evolution.initialize_code()
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            self.skip("MESA was not built. Skipping test.")
             return
+        stellar_evolution.initialize_code()
         stars =  Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         stellar_evolution.commit_parameters() 
@@ -104,10 +104,10 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test3(self):
         print "Testing RocheLobeOverflow with primaries only"
         stellar_evolution = self.new_instance(MESA)
-        stellar_evolution.initialize_code()
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            self.skip("MESA was not built. Skipping test.")
             return
+        stellar_evolution.initialize_code()
         stars =  Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         stellar_evolution.commit_parameters() 
@@ -128,10 +128,10 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test4(self):
         print "Testing RocheLobeOverflow with companions"
         stellar_evolution = self.new_instance(MESA)
-        stellar_evolution.initialize_code()
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            self.skip("MESA was not built. Skipping test.")
             return
+        stellar_evolution.initialize_code()
         stars =  Particles(4)
         primaries = stars[:2]
         companions = stars[2:]
@@ -161,10 +161,10 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test5(self):
         print "Testing RocheLobeOverflow with variable roche-radii"
         stellar_evolution = self.new_instance(MESA)
-        stellar_evolution.initialize_code()
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            self.skip("MESA was not built. Skipping test.")
             return
+        stellar_evolution.initialize_code()
         stars =  Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         stellar_evolution.commit_parameters() 
@@ -206,10 +206,10 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test6(self):
         print "Testing RocheLobeOverflow with companions in a dynamics code"
         stellar_evolution = self.new_instance(MESA)
-        stellar_evolution.initialize_code()
         if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
+            self.skip("MESA was not built. Skipping test.")
             return
+        stellar_evolution.initialize_code()
         stars =  Particles(4)
         stars.mass = [1.0, 3.0, 1.0, 3.0] | units.MSun
         stellar_evolution.commit_parameters() 
@@ -263,6 +263,13 @@ class TestRocheLobeOverflow(TestWithMPI):
 class TestLowMassXrayBinary(TestWithMPI):
     
     def test1(self):
+        
+        stellar_evolution = self.new_instance(MESA)
+        if stellar_evolution is None:
+            self.skip("MESA was not built. Skipping test.")
+            return
+        stellar_evolution.stop()
+        
         lmxb = LowMassXrayBinary(5 | units.MSun, 1.1 | units.MSun)
         print lmxb.secondary
         lmxb.initialize(1 | units.Gyr)
@@ -275,6 +282,13 @@ class TestLowMassXrayBinary(TestWithMPI):
         self.assertAlmostEqual(secondary_mass, 1.1 | units.MSun)
         
     def test2(self):
+        
+        stellar_evolution = self.new_instance(MESA)
+        if stellar_evolution is None:
+            self.skip("MESA was not built. Skipping test.")
+            return
+        stellar_evolution.stop()
+        
         lmxb = LowMassXrayBinary(5 | units.MSun, 1.1 | units.MSun)
         lmxb.initialize(1 | units.Gyr)
         next_age = lmxb.secondary.age + lmxb.secondary.time_step
