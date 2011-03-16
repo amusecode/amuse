@@ -167,8 +167,8 @@
 ! Does nothing...
    function commit_particles()
       implicit none
-      integer :: initialize_stars
-      initialize_stars = 0
+      integer :: commit_particles
+      commit_particles = 0
    end function
 
 ! Get/setters for code parameters:

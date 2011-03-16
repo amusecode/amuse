@@ -61,9 +61,9 @@ class EVtwin2SSE:
         self._EVtwin = CachedStellarEvolution(self._EVtwin, cacheDir)
         self._SSE = CachedStellarEvolution(self._SSE, cacheDir)
 
-    def initialize_module_with_current_parameters(self):
-        self._EVtwin.initialize_module_with_current_parameters()
-        self._SSE.initialize_module_with_current_parameters()
+    def commit_paremeters(self):
+        self._EVtwin.commit_paremeters()
+        self._SSE.commit_paremeters()
 
     def commit_particles(self):
         self.ActiveModel = self._EVtwin # self.ActiveModel.__class__.__name__ contains name of active model
@@ -221,7 +221,7 @@ if __name__ == '__main__':
 
     # simple test for the EVtwinContSSE script
     stellar_evolution = EVtwin2SSE()
-    stellar_evolution.initialize_module_with_current_parameters() 
+    stellar_evolution.commit_paremeters() 
 
     star = core.Particle()
     star.mass = 2.0 | units.MSun

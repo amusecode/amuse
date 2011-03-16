@@ -75,7 +75,7 @@ class TestMPIInterface(TestWithMPI):
     def test2(self):
         print "Test basic operations (legacy functions evolve & get_time_step)..."
         instance = BSE()
-        instance.initialize_module_with_default_parameters()
+        instance.commit_parameters()
         
         new_state = self.state()
         new_state.mass1 = 3.0
@@ -141,7 +141,7 @@ class TestMPIInterface(TestWithMPI):
     def test3(self):
         print "Test whether the interface can handle arrays..."
         instance = BSE()
-        instance.initialize_module_with_default_parameters()
+        instance.commit_parameters()
         masses1 = [10.0,5.0,4.0]
         masses2 = [1.0,1.0,1.0]
         types1 = types2 = [1,1,1]
@@ -174,7 +174,7 @@ class TestMPIInterface(TestWithMPI):
         print "Test large number of particles..."
         number_of_particles = 2000
         instance = BSE()
-        instance.initialize_module_with_default_parameters()  
+        instance.commit_parameters()  
         masses1 = [1.0 + ((x / 1.0*number_of_particles) * 10.0) for x in range(1,number_of_particles+1)]
         masses2 = [2.0 + ((x / 1.0*number_of_particles) * 5.0) for x in range(1,number_of_particles+1)]
         orbital_periods = [100.0 + ((x / 1.0*number_of_particles) * 900.0) for x in range(1,number_of_particles+1)]
@@ -211,7 +211,7 @@ class TestBSE(TestWithMPI):
         instance.parameters.metallicity = 0.001 | units.none
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
-        instance.initialize_module_with_current_parameters()
+        instance.commit_parameters()
         stars =  core.Stars(1)
         
         binary = stars[0]
@@ -282,7 +282,7 @@ class TestBSE(TestWithMPI):
         instance.parameters.metallicity = 0.001 | units.none
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
-        instance.initialize_module_with_current_parameters()
+        instance.commit_parameters()
         stars =  core.Stars(1)
         
         binary = stars[0]
@@ -353,7 +353,7 @@ class TestBSE(TestWithMPI):
         instance = BSE()
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
-        instance.initialize_module_with_current_parameters()
+        instance.commit_parameters()
         stars =  core.Stars(1)
         
         binary = stars[0]
@@ -431,7 +431,7 @@ class TestBSE(TestWithMPI):
         instance = BSE()
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
-        instance.initialize_module_with_current_parameters()
+        instance.commit_parameters()
         stars =  core.Stars(1)
         
         binary = stars[0]
@@ -459,7 +459,7 @@ class TestBSE(TestWithMPI):
         instance = BSE()
         instance.parameters.common_envelope_efficiency = 3.0 | units.none
         instance.parameters.Eddington_mass_transfer_limit_factor = 10.0 | units.none
-        instance.initialize_module_with_current_parameters()
+        instance.commit_parameters()
         stars =  core.Stars(1)
         
         binary = stars[0]
@@ -490,7 +490,7 @@ class TestBSE(TestWithMPI):
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
-        instance.initialize_module_with_current_parameters()
+        instance.commit_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         del instance
         
@@ -498,6 +498,6 @@ class TestBSE(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
-        instance.initialize_module_with_default_parameters()
+        instance.commit_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         del instance

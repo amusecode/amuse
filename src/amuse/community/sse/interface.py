@@ -414,7 +414,7 @@ class SSE(InCodeComponentImplementation):
         
     def initialize_module_with_default_parameters(self):
         self.parameters.set_defaults()
-        self.initialize_module_with_current_parameters()
+        self.commit_parameters()
 
     def update_time_steps(self):
         pass

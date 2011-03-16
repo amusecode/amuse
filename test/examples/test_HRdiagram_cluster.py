@@ -45,7 +45,7 @@ def simulate_stellar_evolution(
     print "The evolution of", str(number_of_stars), "stars will be ",  \
             "simulated until t =", str(end_time), "..."
     
-    stellar_evolution.initialize_module_with_current_parameters()
+    stellar_evolution.commit_parameters()
     
     print ("Deriving a set of", str(number_of_stars), "random masses",  
             "following a Salpeter IMF between 0.1 and 125 MSun (alpha = -2.35).")
@@ -108,6 +108,7 @@ class InstantiateCode(object):
     
     def evtwin(self, number_of_stars):
         result = EVtwin()
+        result.initialize_code()
         if number_of_stars > result.parameters.maximum_number_of_stars:
             result.parameters.maximum_number_of_stars = number_of_stars
             warnings.warn("You're simulating a large number of stars with EVtwin. This may not be such a good idea...")
@@ -115,6 +116,7 @@ class InstantiateCode(object):
             
     def mesa(self, number_of_stars):
         result = MESA()
+        result.initialize_code()
         if number_of_stars > (10 | units.none):
             warnings.warn("You're simulating a large number of stars with MESA. This may not be such a good idea...")
         if number_of_stars > (1000| units.none):

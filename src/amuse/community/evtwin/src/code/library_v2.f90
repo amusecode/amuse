@@ -1280,8 +1280,8 @@ contains
 ! Initialize the stars (does nothing)
    function commit_particles()
       implicit none
-      integer :: initialize_stars
-      initialize_stars = 0
+      integer :: commit_particles
+      commit_particles = 0
    end function
 
 ! Create a new particle (spin period not specified - will be set by code)

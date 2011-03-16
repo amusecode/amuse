@@ -46,7 +46,7 @@ def simulate_evolution_tracks(
     all_tracks_luminosity = []
     all_tracks_temperature = []
     all_tracks_stellar_type = []
-    stellar_evolution.initialize_module_with_current_parameters() 
+    stellar_evolution.commit_parameters() 
     
     print "The evolution across the Hertzsprung-Russell diagram of ", str(number_of_stars), \
         " stars with\nvarying masses will be simulated..."
@@ -168,6 +168,7 @@ class InstantiateCode(object):
     
     def evtwin(self, number_of_stars):
         result = EVtwin()
+        result.initialize_code()
         if number_of_stars > result.parameters.maximum_number_of_stars:
             result.parameters.maximum_number_of_stars = number_of_stars
             warnings.warn("You're simulating a large number of stars with EVtwin. This may not be such a good idea...")
@@ -175,6 +176,7 @@ class InstantiateCode(object):
         
     def mesa(self, number_of_stars):
         result = MESA()
+        result.initialize_code()
         if number_of_stars > (10 | units.none):
             warnings.warn("You're simulating a large number of stars with MESA. This may not be such a good idea...")
         if number_of_stars > (1000| units.none):
@@ -183,6 +185,7 @@ class InstantiateCode(object):
 
     def evtwin2sse(self, number_of_stars):
         result = EVtwin2SSE()
+        result.initialize_code()
         # TODO add maximum_number_of_stars parameter to Evtwin2SSE
         #if number_of_stars > result.parameters.maximum_number_of_stars:
         #     result.parameters.maximum_number_of_stars = number_of_stars

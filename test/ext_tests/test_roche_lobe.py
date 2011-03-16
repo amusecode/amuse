@@ -24,12 +24,13 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test1(self):
         print "Testing the stand-alone determine_RLOF_mass_excess and do_roche_lobe_overflow functions"
         stellar_evolution = self.new_instance(MESA)
+        stellar_evolution.initialize_code()
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         star = stellar_evolution.particles[0]
@@ -69,12 +70,13 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test2(self):
         print "Testing the RocheLobeOverflow class"
         stellar_evolution = self.new_instance(MESA)
+        stellar_evolution.initialize_code()
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
         stars =  Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
-        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         first  = stars[0:1].as_subset_in(stellar_evolution.particles)[0]
@@ -102,12 +104,13 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test3(self):
         print "Testing RocheLobeOverflow with primaries only"
         stellar_evolution = self.new_instance(MESA)
+        stellar_evolution.initialize_code()
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
         stars =  Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
-        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         
@@ -125,6 +128,7 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test4(self):
         print "Testing RocheLobeOverflow with companions"
         stellar_evolution = self.new_instance(MESA)
+        stellar_evolution.initialize_code()
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
@@ -133,7 +137,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         companions = stars[2:]
         primaries.mass = [3.0, 4.0] | units.MSun
         companions.mass = [1.0, 1.0] | units.MSun
-        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         se_primaries = primaries.as_subset_in(stellar_evolution.particles)
@@ -157,12 +161,13 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test5(self):
         print "Testing RocheLobeOverflow with variable roche-radii"
         stellar_evolution = self.new_instance(MESA)
+        stellar_evolution.initialize_code()
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
         stars =  Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
-        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars[::-1])
         stellar_evolution.commit_particles()
         se_stars = stars.as_subset_in(stellar_evolution.particles)
@@ -201,12 +206,13 @@ class TestRocheLobeOverflow(TestWithMPI):
     def test6(self):
         print "Testing RocheLobeOverflow with companions in a dynamics code"
         stellar_evolution = self.new_instance(MESA)
+        stellar_evolution.initialize_code()
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
         stars =  Particles(4)
         stars.mass = [1.0, 3.0, 1.0, 3.0] | units.MSun
-        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         se_stars = stars.as_subset_in(stellar_evolution.particles)

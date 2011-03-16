@@ -606,9 +606,11 @@ class BSE(InCodeComponentImplementation):
     def update_time_steps(self):
         pass
         
-    
-    def initialize_module_with_current_parameters(self):
+    def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
+        
+    def initialize_module_with_current_parameters(self):
+        self.commit_parameters()
         
     def initialize_module_with_default_parameters(self):
         """
@@ -632,7 +634,7 @@ class BSE(InCodeComponentImplementation):
         * as decimal fractions of the time taken in that phase.
         """
         self.parameters.set_defaults()
-        self.initialize_module_with_current_parameters()
+        self.commit_parameters()
 
         
         

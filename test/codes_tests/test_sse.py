@@ -223,7 +223,7 @@ class TestSSE(TestWithMPI):
     
     def test1(self):
         sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters() 
+        sse.commit_parameters() 
         stars =  core.Stars(1)
         star = stars[0]
         star.mass = 5 | units.MSun
@@ -291,7 +291,7 @@ class TestSSE(TestWithMPI):
             
     def test2(self):
         sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters() 
+        sse.commit_parameters() 
         stars =  core.Stars(1)
         
         star = stars[0]
@@ -309,7 +309,7 @@ class TestSSE(TestWithMPI):
     
     def test3(self):
         sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters() 
+        sse.commit_parameters() 
         stars =  core.Stars(1)
         
         star = stars[0]
@@ -335,7 +335,7 @@ class TestSSE(TestWithMPI):
     
     def test5(self):
         sse = mpi_interface.SSE()
-        sse.initialize_module_with_default_parameters() 
+        sse.commit_parameters() 
         stars =  core.Stars(1)
         
         star = stars[0]
@@ -371,7 +371,7 @@ class TestSSE(TestWithMPI):
 
 #       Initialize stellar evolution code
         instance = mpi_interface.SSE()
-        instance.initialize_module_with_default_parameters() 
+        instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
         
@@ -403,7 +403,7 @@ class TestSSE(TestWithMPI):
         for star in stars:
             print star
             stellar_evolution = mpi_interface.SSE()
-            stellar_evolution.initialize_module_with_default_parameters()
+            stellar_evolution.commit_parameters()
             stellar_evolution.particles.add_particles(star.as_set())
             stellar_evolution.commit_particles()
             from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(star.as_set())
@@ -423,7 +423,7 @@ class TestSSE(TestWithMPI):
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
-        instance.initialize_module_with_current_parameters()
+        instance.commit_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         instance.stop()
         
@@ -431,14 +431,14 @@ class TestSSE(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
-        instance.initialize_module_with_default_parameters()
+        instance.commit_parameters()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         instance.stop()
         
     def test9(self):
         print "Test: large number of particles"
         stellar_evolution = mpi_interface.SSE(max_message_length=500)
-        stellar_evolution.initialize_module_with_default_parameters()
+        stellar_evolution.commit_parameters()
         number_of_particles = 10000
         print "Has been tested with up to a million particles!"
         print "Now using ", number_of_particles, "particles only, for speed."
@@ -451,7 +451,7 @@ class TestSSE(TestWithMPI):
 
     def test10(self):
         stellar_evolution = mpi_interface.SSE()
-        stellar_evolution.initialize_module_with_default_parameters()
+        stellar_evolution.commit_parameters()
         stars = core.Stars(10)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.particles.add_particles(stars)

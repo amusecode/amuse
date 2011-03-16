@@ -909,7 +909,9 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
         
     def initialize_module_with_current_parameters(self):
         self.initialize_code()
-        
+    
+    def commit_parameters(self):
+        pass
     
         
     def evolve_model(self, end_time = None, keep_synchronous = True):

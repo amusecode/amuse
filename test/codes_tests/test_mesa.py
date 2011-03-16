@@ -441,7 +441,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_current_parameters() 
+        instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
@@ -474,7 +474,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_current_parameters() 
+        instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
@@ -509,7 +509,7 @@ class TestMESA(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         instance.parameters.metallicity = 0.0 | units.none
-        instance.initialize_module_with_current_parameters() 
+        instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model(5.85 | units.Gyr)
@@ -545,7 +545,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_current_parameters() 
+        instance.commit_parameters() 
         instance.particles.add_particles(star)
         instance.commit_particles()
         instance.evolve_model()
@@ -579,7 +579,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_current_parameters() 
+        instance.commit_parameters() 
         instance.particles.add_particles(star)
         instance.commit_particles()
         instance.evolve_model()
@@ -618,7 +618,7 @@ class TestMESA(TestWithMPI):
         if instance is None:
             print "MESA was not built. Skipping test."
             return
-        instance.initialize_module_with_current_parameters() 
+        instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()

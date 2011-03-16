@@ -86,8 +86,11 @@ class CachedStellarEvolution:
             #print "__init__: cache directory exists"
             pass
     
+    def commit_parameters(self):
+        self.baseStellarEvolution.commit_parameters()
+        
     def initialize_module_with_current_parameters(self):
-        self.baseStellarEvolution.initialize_module_with_current_parameters()
+        self.commit_parameters()
 
     def _particle_update(self, index):
 

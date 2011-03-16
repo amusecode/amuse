@@ -67,10 +67,11 @@ def head_on_stellar_merger(
         stars.mass = masses
         try:
             stellar_evolution = MESA()
+            stellar_evolution.initialize_code()
         except:
             print "MESA was not built. Returning."
             return
-        stellar_evolution.initialize_module_with_current_parameters() 
+        stellar_evolution.commit_parameters() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         

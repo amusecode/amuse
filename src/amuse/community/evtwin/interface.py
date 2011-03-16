@@ -972,7 +972,6 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
     
     def initialize_module_with_default_parameters(self):
         self.initialize_code()
-        #self.parameters.set_defaults()
         self.commit_parameters()
         
     def initialize_module_with_current_parameters(self):
