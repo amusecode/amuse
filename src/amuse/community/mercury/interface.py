@@ -318,7 +318,7 @@ class MercuryInterface(CodeInterface, LiteratureRefs):
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['lx','ly','lz']:
+        for x in ['Lx','Ly','Lz']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -451,6 +451,8 @@ class MercuryWayWard(GravitationalDynamics):
         object.define_set('orbiters', 'id')
         object.set_new('orbiters', 'new_orbiter')
         object.set_delete('orbiters', 'delete_particle')
+        object.add_setter('orbiters', 'set_orbiter_state') 
+        object.add_getter('orbiters', 'get_orbiter_state') 
         object.add_setter('orbiters', 'set_mass')
         object.add_getter('orbiters', 'get_mass')
         object.add_setter('orbiters', 'set_density')
@@ -503,6 +505,48 @@ class MercuryWayWard(GravitationalDynamics):
             ),
             (
                 object.INDEX, 
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            'get_orbiter_state',
+            (
+                object.INDEX,
+            ),
+            (
+                units.MSun,
+                units.AU,
+                units.AU,
+                units.AU,
+                units.AU,
+                units.AUd,
+                units.AUd,
+                units.AUd,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.none,
+                object.ERROR_CODE
+            )
+        )
+        object.add_method(
+            'set_orbiter_state',
+            (
+                object.INDEX,
+                units.MSun,
+                units.AU,
+                units.AU,
+                units.AU,
+                units.AU,
+                units.AUd,
+                units.AUd,
+                units.AUd,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.none
+            ),
+            (
                 object.ERROR_CODE
             )
         )
@@ -563,6 +607,10 @@ class MercuryWayWard(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+
+        #assuming celimit is RCEH, clouse-encounter limit
+        #expressed in units Hill radius, I use unit none
+        #see comments in: src/mercury_main.for
         object.add_method(
             "set_celimit",
             (

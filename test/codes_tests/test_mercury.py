@@ -172,16 +172,17 @@ class TestMercury(TestWithMPI):
         orbiter.mass = 5.97e24 | units.kg
         orbiter.density = 1.0|units.g/units.cm**3
         orbiter.position = [1.0,0.0,0.0] | units.AU
-        orbiter.velocity = [0.0, 2.0*3.14*1.0/365,0.0] | units.AUd
+        orbiter.velocity = [0.0, 2.0*3.1415926535*1.0/365, 0.0] | units.AUd
         orbiter.angularmomentum = [1.0,0,0] | units.MSun * units.AU**2/units.day
         orbiter.celimit = 0.0 | units.none
         
         centre = core.Particles(1)
         centre.mass = 1.0 | units.MSun
         centre.radius = 0.01 | units.AU
-        centre.j2 = 1|units.AU**2
-        centre.j4 = 1|units.AU**4
-        centre.j6 = 1|units.AU**6
+        centre.j2 = .0001|units.AU**2
+        centre.j4 = .0|units.AU**4
+        centre.j6 = .0|units.AU**6
+        
         centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
 
         mercury = MercuryWayWard()
@@ -192,12 +193,13 @@ class TestMercury(TestWithMPI):
         channel.copy()
         mercury.orbiters.add_particles(orbiter)
         mercury.commit_particles()
-        mercury.evolve_model(365|units.day)
-        #print mercury.kinetic_energy.value_in(units.J)
-        self.assertAlmostEqual(mercury.central_particle.j4, 1|units.AU**4)
+        self.assertAlmostEqual(mercury.central_particle.j4, .0|units.AU**4)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
         self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
-        self.assertEquals(mercury.orbiters.angularmomentum, [[1.,0.0,0.0]]|units.MSun*units.AU**2/units.day)
+        self.assertEquals(mercury.orbiters.angularmomentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
+        mercury.evolve_model(365|units.day)
+        self.assertAlmostEqual(mercury.orbiters.position, [[1.0, 0.0, 0.0]] | units.AU, 1)
+        self.assertAlmostEqual(mercury.kinetic_energy+mercury.potential_energy,mercury.total_energy,3)
 
         mercury.stop()
