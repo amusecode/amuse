@@ -165,6 +165,8 @@ def iliev_test_5_ic( N=10000,
   
   return p,sources
 
+iliev_test_5_ic.__test__ = False
+
 def iliev_test_5( N=10000,
                   Ns=10,
                   L=15. | units.kpc,
@@ -209,6 +211,7 @@ def iliev_test_5( N=10000,
                   
   return sph,rad                  
 
+iliev_test_5.__test__ = False
 
 def update_pos_rho(sys,pa):
   p=pa.copy()
