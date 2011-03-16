@@ -105,7 +105,7 @@ def plot_HR_diagram(masses, luminosity_tracks, temperature_tracks, stellar_type_
     try:
 #        This removes the need for ssh -X to be able to do plotting
         import matplotlib
-        matplotlib.use("Agg") 
+        matplotlib.use("Agg", warn=False) 
         
         from matplotlib import pyplot
         print "Plotting the data..."
