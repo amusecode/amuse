@@ -284,7 +284,7 @@ class StellarEvolution(object):
         return function
         
     @legacy_function
-    def initialize_stars():
+    def commit_particles():
         """
         Let the code perform initialization actions after all particles have been created. 
         Called before the first evolve call and after the last new_particle call. Not every

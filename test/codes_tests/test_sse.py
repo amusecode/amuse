@@ -373,7 +373,7 @@ class TestSSE(TestWithMPI):
         instance = mpi_interface.SSE()
         instance.initialize_module_with_default_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
@@ -405,7 +405,7 @@ class TestSSE(TestWithMPI):
             stellar_evolution = mpi_interface.SSE()
             stellar_evolution.initialize_module_with_default_parameters()
             stellar_evolution.particles.add_particles(star.as_set())
-            stellar_evolution.initialize_stars()
+            stellar_evolution.commit_particles()
             from_stellar_evolution_to_model = stellar_evolution.particles.new_channel_to(star.as_set())
             stellar_evolution.evolve_model()
             from_stellar_evolution_to_model.copy()

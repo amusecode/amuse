@@ -178,7 +178,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         number_of_sph_particles = 1000 # only few particles for test speed-up
         sph_particles = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
@@ -210,7 +210,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         number_of_sph_particles = 1000 # only few particles for test speed-up
         sph_particles = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
@@ -243,7 +243,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(5.0 | units.Gyr)
         number_of_sph_particles = 10000 # only few particles for test speed-up
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
@@ -307,7 +307,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(5.0 | units.Gyr)
         number_of_sph_particles = 10000 # only few particles for test speed-up
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
@@ -373,7 +373,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
         
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
@@ -447,7 +447,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         number_of_sph_particles = 10000
         print "Creating initial conditions from a MESA stellar evolution model:"
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
@@ -498,7 +498,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
         outer_radii = stellar_evolution.particles[0].get_radius_profile()
@@ -542,7 +542,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
         outer_radii = stellar_evolution.particles[0].get_radius_profile()
@@ -670,7 +670,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = [1.0, 1.0] | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
         
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
@@ -764,7 +764,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 10.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         original_outer_radii = stellar_evolution.particles.get_radius_profile().as_quantity_in(units.RSun)
         original_density = stellar_evolution.particles.get_density_profile()
         try:
@@ -861,7 +861,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         try:
             while True:
                 stellar_evolution.evolve_model()
@@ -1033,7 +1033,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stars.mass = 10.0 | units.MSun
         stellar_evolution.initialize_module_with_default_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
 
         star_age = [] | units.yr
         star_radius = [] | units.RSun

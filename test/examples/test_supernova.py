@@ -33,7 +33,7 @@ def setup_stellar_evolution_model():
     stars.mass = 10.0 | units.MSun
     stellar_evolution.initialize_module_with_default_parameters() 
     stellar_evolution.particles.add_particles(stars)
-    stellar_evolution.initialize_stars()
+    stellar_evolution.commit_particles()
 
     print "Evolving a MESA star with mass:", stellar_evolution.particles[0].mass
     try:

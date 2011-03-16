@@ -65,7 +65,7 @@ class EVtwin2SSE:
         self._EVtwin.initialize_module_with_current_parameters()
         self._SSE.initialize_module_with_current_parameters()
 
-    def initialize_stars(self):
+    def commit_particles(self):
         self.ActiveModel = self._EVtwin # self.ActiveModel.__class__.__name__ contains name of active model
 
         # remove all particles from underlying models
@@ -76,12 +76,12 @@ class EVtwin2SSE:
 
         # initialize EVtwin, transfer state
         self._EVtwin_particlesh = self._EVtwin.particles.add_particles(self.particles)
-        self._EVtwin.initialize_stars()
+        self._EVtwin.commit_particles()
         self._transfer_state_EVtwin()
 
         # initialize SSE
         self._SSE_particlesh = self._SSE.particles.add_particles(self.particles)
-        self._SSE.initialize_stars()
+        self._SSE.commit_particles()
         self._SSETimeseries = ParticlesTimeseries(self._SSE.particles)
         self._SSETimeseries.add_timepoint()
 
@@ -227,7 +227,7 @@ if __name__ == '__main__':
     star.mass = 2.0 | units.MSun
 
     star = stellar_evolution.particles.add_particle(star)
-    stellar_evolution.initialize_stars()
+    stellar_evolution.commit_particles()
 
     stopped_evolving = False
 

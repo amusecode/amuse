@@ -57,7 +57,7 @@ def simulate_evolution_tracks(
         print "Created new star with mass: ", star.mass
 
         star = stellar_evolution.particles.add_particle(star)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
     
         luminosity_at_time     = [] | units.LSun
         temperature_at_time     = [] | units.K

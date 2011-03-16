@@ -93,7 +93,7 @@ class LowMassXrayBinary(object):
         self.stellar_evolution = self.stellar_evolution_code()
         self.stellar_evolution.initialize_module_with_default_parameters() 
         self.stellar_evolution.particles.add_particle(self.secondary)
-        self.stellar_evolution.initialize_stars()
+        self.stellar_evolution.commit_particles()
         self.stellar_evolution.evolve_model(initial_age)
         self.secondary = self.stellar_evolution.particles[0]
     

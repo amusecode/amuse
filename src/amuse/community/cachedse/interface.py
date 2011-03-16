@@ -130,7 +130,7 @@ class CachedStellarEvolution:
                     radius                        = particleCache.baseParticle.radius.value_in(units.RSun),  
             ), particleCache.cachefh)
     
-    def initialize_stars(self):
+    def commit_particles(self):
 
         # clean up non-cached particles
         for particleCache in self.particlesCache:
@@ -165,7 +165,7 @@ class CachedStellarEvolution:
                 particleCache.baseParticle = self.baseStellarEvolution.particles.add_particle(particle)                        
 
         # initialize uncached stars
-        self.baseStellarEvolution.initialize_stars()
+        self.baseStellarEvolution.commit_particles()
 
         # initialize states for all particles
         for index in range(len(self.particles)):

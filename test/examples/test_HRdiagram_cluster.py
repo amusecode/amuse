@@ -59,7 +59,7 @@ def simulate_stellar_evolution(
     print "Stars to evolve:"
     print stars
     stars = stellar_evolution.particles.add_particles(stars)
-    stellar_evolution.initialize_stars()
+    stellar_evolution.commit_particles()
 
     #print stars.temperature
 

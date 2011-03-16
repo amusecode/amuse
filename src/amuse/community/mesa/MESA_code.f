@@ -165,7 +165,7 @@
    end function
 
 ! Does nothing...
-   function initialize_stars()
+   function commit_particles()
       implicit none
       integer :: initialize_stars
       initialize_stars = 0

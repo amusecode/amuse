@@ -147,7 +147,6 @@ class SSE(InCodeComponentImplementation):
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, SSEInterface(**options), **options)
         
-        
         self.parameters.set_defaults()
         
     
@@ -404,8 +403,11 @@ class SSE(InCodeComponentImplementation):
         
 
     
-    def initialize_stars(self):
+    def commit_particles(self):
         pass
+        
+    def commit_parameters(self):
+        self.parameters.send_cached_parameters_to_code()
     
     def initialize_module_with_current_parameters(self):
         self.parameters.send_cached_parameters_to_code()

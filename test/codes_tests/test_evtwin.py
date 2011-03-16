@@ -274,7 +274,7 @@ class TestInterface(TestWithMPI):
         self.assertEquals(errors, [0, 0])
         self.assertEquals(indices, [1, 2])
         
-        self.assertEquals(0, instance.initialize_stars())
+        self.assertEquals(0, instance.commit_particles())
         
 
         for index in indices:
@@ -335,7 +335,7 @@ class TestEVtwin(TestWithMPI):
         stars[0].mass = 10 | units.MSun
         
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.particles.copy_values_of_state_attributes_to(stars)
         
         self.assertEquals(stars[0].mass, 10 | units.MSun)
@@ -352,7 +352,7 @@ class TestEVtwin(TestWithMPI):
         star.radius = 0.0 | units.RSun
         
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
@@ -434,7 +434,7 @@ class TestEVtwin(TestWithMPI):
         instance.commit_parameters()
         instance.particles.add_particles(stars)
 #       Let the code perform initialization actions after all particles have been created. 
-        instance.initialize_stars()
+        instance.commit_particles()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
@@ -466,7 +466,7 @@ class TestEVtwin(TestWithMPI):
         stars = instance.particles
         self.assertEquals(len(stars), 0) # before creation
         stars.add_particles(particles[:-1])
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
         self.assertEquals(len(stars), 2) # before remove
         for star in stars:
@@ -498,7 +498,7 @@ class TestEVtwin(TestWithMPI):
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
         self.assertEquals(instance.particles.get_number_of_zones(), [199, 199] | units.none)
         self.assertEquals(len(instance.particles[0].get_radius_profile()), 199)
@@ -525,7 +525,7 @@ class TestEVtwin(TestWithMPI):
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
         instance.evolve_model()
         number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
@@ -552,7 +552,7 @@ class TestEVtwin(TestWithMPI):
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model(11.7 | units.Gyr)
         self.assertTrue(instance.particles[0].age >= 11.7 | units.Gyr)
         self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
@@ -583,7 +583,7 @@ class TestEVtwin(TestWithMPI):
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
         instance.particles.add_particles(star)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
 
         density_profile = instance.particles[0].get_density_profile()
@@ -614,7 +614,7 @@ class TestEVtwin(TestWithMPI):
         instance = EVtwin()
         instance.initialize_module_with_default_parameters() 
         instance.particles.add_particles(star)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
         
         composition       = instance.particles[0].get_chemical_abundance_profiles()
@@ -652,7 +652,7 @@ class TestEVtwin(TestWithMPI):
         stars = core.Particles(3)
         stars.mass = [1.0, 2.0, 1.0] | units.MSun
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
         stellar_models = instance.native_stars.internal_structure()
         

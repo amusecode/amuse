@@ -318,7 +318,7 @@ class TestMESA(TestWithMPI):
         mass = 10. | units.MSun
         stars.mass = mass
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         #print stars
@@ -345,7 +345,7 @@ class TestMESA(TestWithMPI):
         star.mass = 5.0 | units.MSun
         
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
@@ -415,7 +415,7 @@ class TestMESA(TestWithMPI):
         instance.parameters.max_age_stop_condition = max_age
         self.assertEqual(instance.parameters.max_age_stop_condition, max_age)
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         from_code_to_model = instance.particles.new_channel_to(stars)
         from_code_to_model.copy()
         instance.evolve_model(end_time = 0.5 | units.Myr)
@@ -443,7 +443,7 @@ class TestMESA(TestWithMPI):
             return
         instance.initialize_module_with_current_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
         self.assertEquals(instance.particles.get_number_of_zones(), [479, 985] | units.none)
         self.assertEquals(len(instance.particles[0].get_mass_profile()), 479)
@@ -476,7 +476,7 @@ class TestMESA(TestWithMPI):
             return
         instance.initialize_module_with_current_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
         number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
         number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
@@ -511,7 +511,7 @@ class TestMESA(TestWithMPI):
         instance.parameters.metallicity = 0.0 | units.none
         instance.initialize_module_with_current_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model(5.85 | units.Gyr)
         self.assertTrue(instance.particles[0].age >= 5.85 | units.Gyr)
         self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
@@ -547,7 +547,7 @@ class TestMESA(TestWithMPI):
             return
         instance.initialize_module_with_current_parameters() 
         instance.particles.add_particles(star)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
 
         density_profile = instance.particles[0].get_density_profile()
@@ -581,7 +581,7 @@ class TestMESA(TestWithMPI):
             return
         instance.initialize_module_with_current_parameters() 
         instance.particles.add_particles(star)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
         
         composition       = instance.particles[0].get_chemical_abundance_profiles()
@@ -620,7 +620,7 @@ class TestMESA(TestWithMPI):
             return
         instance.initialize_module_with_current_parameters() 
         instance.particles.add_particles(stars)
-        instance.initialize_stars()
+        instance.commit_particles()
         instance.evolve_model()
         ages_1 = instance.particles.age
         self.assertAlmostEqual(ages_1, [100000.0, 17677.670, 6415.003] | units.yr, 2)

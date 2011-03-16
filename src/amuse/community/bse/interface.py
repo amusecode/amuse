@@ -600,7 +600,7 @@ class BSE(InCodeComponentImplementation):
         
 
     
-    def initialize_stars(self):
+    def commit_particles(self):
         pass
 
     def update_time_steps(self):

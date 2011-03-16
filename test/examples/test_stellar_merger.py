@@ -72,7 +72,7 @@ def head_on_stellar_merger(
             return
         stellar_evolution.initialize_module_with_current_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         
         if maximally_evolved_stars:
             try:

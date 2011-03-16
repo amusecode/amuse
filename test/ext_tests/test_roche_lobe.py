@@ -31,7 +31,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         stars.mass = 1.0 | units.MSun
         stellar_evolution.initialize_module_with_current_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         star = stellar_evolution.particles[0]
         
         mass_profile_plot(star, os.path.join(get_path_to_results(), "lmx_binary_test_1_cumulative_mass.png"))
@@ -76,7 +76,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         stellar_evolution.initialize_module_with_current_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         first  = stars[0:1].as_subset_in(stellar_evolution.particles)[0]
         second = stars[1:2].as_subset_in(stellar_evolution.particles)[0]
         third  = stars[2:].as_subset_in(stellar_evolution.particles)[0]
@@ -109,7 +109,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         stellar_evolution.initialize_module_with_current_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         
         instance = RocheLobeOverflow()
         radii = stellar_evolution.particles.radius
@@ -135,7 +135,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         companions.mass = [1.0, 1.0] | units.MSun
         stellar_evolution.initialize_module_with_current_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         se_primaries = primaries.as_subset_in(stellar_evolution.particles)
         se_companions = companions.as_subset_in(stellar_evolution.particles)
         
@@ -164,7 +164,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         stellar_evolution.initialize_module_with_current_parameters() 
         stellar_evolution.particles.add_particles(stars[::-1])
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         se_stars = stars.as_subset_in(stellar_evolution.particles)
         # we added the stars to MESA in reverse order, so the orders of stars and stellar_evolution.particles don't match:
         self.assertEqual(stellar_evolution.particles.mass, stars.mass[::-1])
@@ -208,7 +208,7 @@ class TestRocheLobeOverflow(TestWithMPI):
         stars.mass = [1.0, 3.0, 1.0, 3.0] | units.MSun
         stellar_evolution.initialize_module_with_current_parameters() 
         stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.initialize_stars()
+        stellar_evolution.commit_particles()
         se_stars = stars.as_subset_in(stellar_evolution.particles)
         
         # two binaries: 1 circular, 1 elliptical with periastron within roche radius

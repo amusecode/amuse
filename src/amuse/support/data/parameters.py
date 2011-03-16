@@ -204,8 +204,6 @@ class AbstractParameterDefinition(object):
     def is_cached(self):
         return False
 
-
-
     def must_set_to_default_if_not_set(self):
         return True
     
@@ -362,7 +360,6 @@ class ModuleCachingParameterDefinition(ParameterDefinition):
     def set_legacy_value(self, parameter, object, number):
         parameter.cached_value = number
 
-
     def is_cached(self):
         return True
     
@@ -425,8 +422,6 @@ class VectorParameterDefinition(AbstractParameterDefinition):
 
     def must_set_to_default_if_not_set(self):
         return False
-    
-    
 
     def get_unit(self, parameter):
         result = None
