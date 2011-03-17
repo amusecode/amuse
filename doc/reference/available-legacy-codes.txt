@@ -43,37 +43,45 @@ Code comparison table
 
 Note: holds for AMUSE implementation.
 
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+ 
-|name     |approximation scheme |timestep scheme  |CPU     |GPU     |GRAPE |language |stopcond (1)  |parallel (2) |
-|         |                     |                 |        |        |      |         |              |             |
-+=========+=====================+=================+========+========+======+=========+==============+=============+
-|bhtree   |tree                 |shared/fixed     |Y       |N       |N     |C/C++    |CST           |N            |
-|         |                     |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|phigrape |direct               |block/variable   |Y g6    |Y       |Y     |FORTAN   |CSPT          |N            | 
-|         |                     |                 |        |sapporo |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|octgrav  |tree                 |shared           |N       |Y       |N     |C/C++    |S             |N            | 
-|         |                     |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|hermite  |direct               |shared/variable  |Y       |N       |N     |C/C++    |CSOPT         |Y            |
-|         |                     |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|twobody  |universal variables, |none, exact      |Y       |N       |N     |Python   |              |N            |
-|         |Kepler eq.           |                 |        |        |      |         |              |             |
-|         |                     |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|smallN   |direct Hermite 4th   |individual       |Y       |N       |N     |C/C++    |              |N            |
-|         |order                |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|fi       |tree                 |block/variable   |Y       |N       |N     |FORTRAN  |S             |N            |
-|         |                     |                 |        |        |      |         |              |             |
-|         |                     |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
-|gadget   |tree                 |individual       |Y       |N       |N     |C/C++    |S             |Y            |
-|         |                     |                 |        |        |      |         |              |             |
-|         |                     |                 |        |        |      |         |              |             |
-+---------+---------------------+-----------------+--------+--------+------+---------+--------------+-------------+
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+ 
+|name     |approximation scheme |timestep scheme  |CPU     |GPU      |GRAPE |language |stopcond (1)  |parallel (2) |
+|         |                     |                 |        |         |      |         |              |             |
++=========+=====================+=================+========+=========+======+=========+==============+=============+
+|bhtree   |tree                 |shared/fixed     |Y       |N        |N     |C/C++    |CST           |N            |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|phigrape |direct               |block/variable   |Y g6    |Y        |Y     |FORTAN   |CSPT          |N            | 
+|         |                     |                 |        |sapporo  |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|octgrav  |tree                 |shared           |N       |Y        |N     |C/C++    |S             |N            | 
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|hermite  |direct               |shared/variable  |Y       |N        |N     |C/C++    |CSOPT         |Y            |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|twobody  |universal variables, |none, exact      |Y       |N        |N     |Python   |              |N            |
+|         |Kepler eq.           |                 |        |         |      |         |              |             |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|smallN   |direct Hermite 4th   |individual       |Y       |N        |N     |C/C++    |              |N            |
+|         |order                |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|fi       |tree                 |block/variable   |Y       |N        |N     |FORTRAN  |S             |N            |
+|         |                     |                 |        |         |      |         |              |             |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|mercury  |MVS symplectic       |                 |Y       |N        |N     |FORTRAN  |              |N            |
+|         |                     |                 |        |         |      |         |              |             |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|huayno   |Approx symplectic    |                 |Y       |Y(opencl)|N     |C        |              |N            |
+|         |                     |                 |        |         |      |         |              |             |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
+|gadget   |tree                 |individual       |Y       |N        |N     |C/C++    |S             |Y            |
+|         |                     |                 |        |         |      |         |              |             |
+|         |                     |                 |        |         |      |         |              |             |
++---------+---------------------+-----------------+--------+---------+------+---------+--------------+-------------+
 
 (1) stopping conditions
    
@@ -453,6 +461,116 @@ Parameters
 +------------------------------------+---------------+---------------+-------------------+
 
 .. [#oct] Gaburov, E., Bedorf, J., Portegies Zwart S., 2010, "Gravitational tree-code on graphics processing units: implementations in CUDA", *ICCS*
+
+
+Specifics
+#########
+
+Parameters
+^^^^^^^^^^
+
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  | unit          | description       |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++====================================+===============+===============+===================+
+|opening_angle                       |0.8            |none           |opening angle for  |
+|                                    |               |               |building the tree  |
+|                                    |               |               |between 0 and 1    |
++------------------------------------+---------------+---------------+-------------------+
+|timestep                            |0.01           |time           |constant timestep  |
+|                                    |               |               |for iteration      |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|epsilon squared                     |0.01           |length*length  |smoothing parameter|
+|                                    |               |               |for gravity        |
+|                                    |               |               |calculations       |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_number_of_steps |1              |none           |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_timeout         |4.0            |seconds        |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+|stopping_conditions_out_of_box_size |0.0            |length         |                   |
+|                                    |               |               |                   |
+|                                    |               |               |                   |
++------------------------------------+---------------+---------------+-------------------+
+
+mercury 
+-------
+
+Mercury is a general-purpose N-body integration package for problems
+in celestial mechanics.
+
+This package contains some subroutines taken from the Swift
+integration package by H.F.Levison and M.J.Duncan (1994) Icarus, vol
+108, pp18.  Routines taken from Swift have names beginning with
+`drift' or `orbel'.
+
+The standard symplectic (MVS) algorithm is described in J.Widsom and
+M.Holman (1991) Astronomical Journal, vol 102, pp1528.
+
+The hybrid symplectic algorithm is described in J.E.Chambers (1999)
+Monthly Notices of the RAS, vol 304, pp793.
+
+Currently Mercury has an interface that differs from the other grav
+dyn interfaces. The class is called MercuryWayWard and will loose its
+predicate once the interface is standardized (work in progress). It
+handles two kinds of particles: centre_particle and orbiters. The
+centre_particle is restricted to contain only one particle and it
+should be the heaviest and much heavier than the orbiters. Its at the
+origin in phase space.
+
+Appart from the usual phase space coordinate, particles have a spin in
+mercury and the centre particle has oblateness parameters expressed in
+moments 2, 4 and 6. Orbiters have density.
+
+Furthermore, mercury does not use nbody units but instead units as listed in table.
+
+Central particle
+################
+
++--------------+-----------+------------------+
+|mass          |           |MSun              |
++--------------+-----------+------------------+
+|radius        |           |AU                |
++--------------+-----------+------------------+
+|oblateness    |j2, j4, j6 |AU^2 etc.         |
+|              |           |                  |
+|              |           |                  |
++--------------+-----------+------------------+
+|angluar       |           |MSun AU ^2 day ^-1|
+|momentum      |           |                  |
++--------------+-----------+------------------+
+
+Orbiters
+########
+
++--------------+-----------+-----------+------------------+
+|mass          |           |           |MSun              |
++--------------+-----------+-----------+------------------+
+|density       |           |           |g/cm^3            |
++--------------+-----------+-----------+------------------+
+|position      |           |x, y, z    |AU                |
+|              |           |           |                  |
+|              |           |           |                  |
++--------------+-----------+-----------+------------------+
+|velocity      |           |vx, vy, vz |AU/day            |
+|              |           |           |                  |
++--------------+-----------+-----------+------------------+
+|celimit       |close      |           |Hill radii, but   |
+|              |encounters |           |units.none in     |
+|              |           |           |amuse             |
++--------------+-----------+-----------+------------------+
+|angluar       |           |Lx, Ly, Lz |MSun AU ^2 day ^-1|
+|momentum      |           |           |                  |
++--------------+-----------+-----------+------------------+
+
 
 .. _Evolution:
 
