@@ -3,9 +3,7 @@ Show how to generate Hertzsprung-Russell diagram
 """
 
 import sys
-import numpy 
-import os
-import warnings
+import numpy
 from matplotlib import pyplot
 
 from amuse.support.units import units

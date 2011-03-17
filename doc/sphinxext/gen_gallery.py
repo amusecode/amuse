@@ -28,8 +28,6 @@ def out_of_date(original, derived):
 def gen_gallery(app, doctree):
     if app.builder.name != 'html':
         return
-    if True:
-        return
         
     outdir = app.builder.outdir
     rootdir = 'plot_directive/amuse_examples'

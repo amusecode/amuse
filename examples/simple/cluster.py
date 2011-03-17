@@ -1,9 +1,5 @@
-import sys
-import unittest
-import numpy 
-import random
-import collections
-import os
+import numpy
+
 from matplotlib import pyplot
 
 from amuse.support.units import nbody_system

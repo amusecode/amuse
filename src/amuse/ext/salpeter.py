@@ -59,7 +59,13 @@ def new_salpeter_mass_distribution_nbody(number_of_particles, **keyword_argument
     
     :argument alpha: the dimensionless exponent of the Salpeter function (defaults to -2.35)
     """
-    uc = SalpeterIMF(mass_min = 0.1 | nbody_system.mass, mass_max = 125 | nbody_system.mass, **keyword_arguments)
+    if not 'mass_min' in keyword_arguments:
+        keyword_arguments['mass_min'] = 0.1 | nbody_system.mass
+        
+    if not 'mass_max' in keyword_arguments:
+        keyword_arguments['mass_max'] = 125 | nbody_system.mass
+        
+    uc = SalpeterIMF(**keyword_arguments)
     total_mass, result = uc.next_set(number_of_particles)
     result *=  (1.0 | total_mass.unit) / total_mass
     return result
