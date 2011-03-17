@@ -5,7 +5,6 @@ import random
 import collections
 import os
 from matplotlib import pyplot
-from matplotlib.ticker import MultipleLocator
 
 from amuse.support.units import nbody_system
 from amuse.community.hermite0.interface import Hermite
