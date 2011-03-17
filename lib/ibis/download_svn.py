@@ -20,6 +20,7 @@ class GetCodeFromSVN(object):
         arguments = [
             'svn',
             'export',
+            '--trust-server-cert',
             '-r',
             self.revision,
             self.url,
