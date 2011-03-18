@@ -25,18 +25,24 @@ from amuse.ext.plummer import new_plummer_sphere
 from amuse.ext.kingmodel import new_king_model
 from amuse.ext.spherical_model import new_uniform_spherical_particle_distribution, new_spherical_particle_distribution
 from amuse.ext.salpeter import new_salpeter_mass_distribution, new_salpeter_mass_distribution_nbody
-from amuse.ext.star_to_sph import convert_stellar_model_to_SPH
+from amuse.ext.star_to_sph import convert_stellar_model_to_SPH, pickle_stellar_model
 
 from amuse.community.bhtree.interface import BHTree, BHTreeInterface
 from amuse.community.hermite0.interface import Hermite, HermiteInterface
 from amuse.community.phiGRAPE.interface import PhiGRAPE, PhiGRAPEInterface
 from amuse.community.octgrav.interface import Octgrav, OctgravInterface
 from amuse.community.twobody.twobody import TwoBody, TwoBodyInterface
+from amuse.community.huayno.interface import Huayno, HuaynoInterface
+from amuse.community.ph4.interface import ph4, ph4Interface
 
 from amuse.community.fi.interface import Fi, FiInterface
 from amuse.community.gadget2.interface import Gadget2, Gadget2Interface
 from amuse.community.athena.interface import Athena, AthenaInterface
 from amuse.community.capreole.interface import Capreole, CapreoleInterface
+from amuse.community.mpiamrvac.interface import MpiAmrVac, MpiAmrVacInterface
+
+from amuse.community.simplex.interface import SimpleX, SimpleXInterface
+from amuse.community.mocassin.interface import Mocassin, MocassinInterface
 
 from amuse.community.sse.interface import SSE, SSEInterface
 from amuse.community.bse.interface import BSE, BSEInterface
