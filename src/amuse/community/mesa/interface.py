@@ -1,6 +1,7 @@
 import os
 import numpy
 from operator import itemgetter
+from amuse.support.data.values import VectorQuantity
 from amuse.community import *
 from amuse.community.interface.se import StellarEvolution, \
     InternalStellarStructureInterface, InternalStellarStructure
@@ -265,6 +266,30 @@ class MESAInterface(CodeInterface, LiteratureRefs, StellarEvolution,
         function.result_doc = """
         0 - OK
             The value was set.
+        -1 - ERROR
+            A star with the given index was not found.
+        -2 - ERROR
+            A zone with the given index was not found.
+        """
+        return function
+    
+    @legacy_function
+    def get_pressure_at_zone():
+        """
+        Retrieve the total pressure at the specified zone/mesh-cell of the star.
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('zone', dtype='int32', direction=function.IN
+            , description="The zone/mesh-cell of the star to get the value of")
+        function.addParameter('P_i', dtype='float64', direction=function.OUT
+            , description="The total pressure at the specified zone/mesh-cell of the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value was retrieved.
         -1 - ERROR
             A star with the given index was not found.
         -2 - ERROR
@@ -661,6 +686,35 @@ class MESAInterface(CodeInterface, LiteratureRefs, StellarEvolution,
             The code could not set the value.
         """
         return function
+    
+    @legacy_function   
+    def new_stellar_model():
+        """
+        Define a new star model in the code. The star needs to be finalized 
+        before it can evolve, see 'finalize_stellar_model'.
+        """
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for par in ['d_mass', 'radius', 'rho', 'temperature', 'luminosity', 
+                'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+            function.addParameter(par, dtype='float64', direction=function.IN)
+        function.addParameter('n', 'int32', function.LENGTH)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function   
+    def finalize_stellar_model():
+        """
+        Finalize the new star model defined by 'new_stellar_model'.
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('index_of_the_star', dtype='int32', 
+            direction=function.OUT, description = "The new index for the star. "
+            "This index can be used to refer to this star in other functions")
+        function.addParameter('age_tag', dtype='float64', direction=function.IN, 
+            description = "The initial age of the star")
+        function.result_type = 'int32'
+        return function
 
 class MESA(InCodeComponentImplementation, InternalStellarStructure):
     
@@ -769,31 +823,39 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
         
         
     def define_particle_sets(self, object):
-        object.define_set('particles', 'index_of_the_star')
-        object.set_new('particles', 'new_particle')
-        object.set_delete('particles', 'delete_star')
+        object.define_super_set('particles', ['native_stars', 'imported_stars'], 
+            index_to_default_set = 0)
         
-        object.add_getter('particles', 'get_radius', names = ('radius',))
-        object.add_getter('particles', 'get_stellar_type', names = ('stellar_type',))
-        object.add_getter('particles', 'get_mass', names = ('mass',))
-        object.add_setter('particles', 'set_mass', names = ('mass',))
-        object.add_getter('particles', 'get_age', names = ('age',))
-        object.add_getter('particles', 'get_time_step', names = ('time_step',))
-        object.add_setter('particles', 'set_time_step', names = ('time_step',))
-        object.add_getter('particles', 'get_luminosity',names = ('luminosity',))
-        object.add_getter('particles', 'get_temperature',names = ('temperature',))
+        object.define_set('imported_stars', 'index_of_the_star')
+        object.set_new('imported_stars', 'finalize_stellar_model')
+        object.set_delete('imported_stars', 'delete_star')
         
-        InternalStellarStructure.define_particle_sets(self, object)
-        object.add_method('particles', 'get_mass_profile')
-        object.add_method('particles', 'set_mass_profile')
-        object.add_method('particles', 'get_luminosity_profile')
-        object.add_method('particles', 'set_luminosity_profile')
-        object.add_method('particles', 'get_IDs_of_species')
-        object.add_method('particles', 'get_masses_of_species')
-        object.add_method('particles', 'get_number_of_backups_in_a_row')
-        object.add_method('particles', 'reset_number_of_backups_in_a_row')
+        object.define_set('native_stars', 'index_of_the_star')
+        object.set_new('native_stars', 'new_particle')
+        object.set_delete('native_stars', 'delete_star')
         
-        object.add_method('particles', 'evolve', 'evolve_one_step')
+        for particle_set_name in ['native_stars', 'imported_stars']:
+            object.add_getter(particle_set_name, 'get_radius', names = ('radius',))
+            object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
+            object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
+            object.add_setter(particle_set_name, 'set_mass', names = ('mass',))
+            object.add_getter(particle_set_name, 'get_age', names = ('age',))
+            object.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
+            object.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
+            object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
+            object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
+            object.add_method(particle_set_name, 'evolve', 'evolve_one_step')
+            InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
+            object.add_method(particle_set_name, 'get_mass_profile')
+            object.add_method(particle_set_name, 'set_mass_profile')
+            object.add_method(particle_set_name, 'get_cumulative_mass_profile')
+            object.add_method(particle_set_name, 'get_luminosity_profile')
+            object.add_method(particle_set_name, 'set_luminosity_profile')
+            object.add_method(particle_set_name, 'get_pressure_profile')
+            object.add_method(particle_set_name, 'get_IDs_of_species')
+            object.add_method(particle_set_name, 'get_masses_of_species')
+            object.add_method(particle_set_name, 'get_number_of_backups_in_a_row')
+            object.add_method(particle_set_name, 'reset_number_of_backups_in_a_row')
     
     def define_errorcodes(self, object):
         InternalStellarStructure.define_errorcodes(self, object)
@@ -892,6 +954,11 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             (object.ERROR_CODE,)
         )
         object.add_method(
+            "get_pressure_at_zone", 
+            (object.INDEX, units.none,), 
+            (units.barye, object.ERROR_CODE,)
+        )
+        object.add_method(
             "get_id_of_species", 
             (object.INDEX,units.none,), 
             (units.none, object.ERROR_CODE,)
@@ -900,6 +967,18 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "get_mass_of_species", 
             (object.INDEX,units.none,), 
             (units.amu, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "new_stellar_model", 
+            (units.MSun, units.cm, units.g / units.cm**3, units.K, units.erg / units.s, 
+                units.none, units.none, units.none, units.none, units.none, 
+                units.none, units.none, units.none, units.none,), 
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "finalize_stellar_model", 
+            (units.yr,), 
+            (object.INDEX, object.ERROR_CODE,)
         )
         
     
@@ -925,7 +1004,10 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
                 for particle in self.particles.select(lambda x : x < new_age, ["age"]):
                     particle.evolve_one_step()
             else:
-                self.particles.evolve_one_step()
+                if len(self.native_stars):
+                    self.native_stars.evolve_one_step()
+                if len(self.imported_stars):
+                    self.imported_stars.evolve_one_step()
         else:
             for particle in self.particles:
                 while particle.age < end_time:
@@ -936,6 +1018,10 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
         if number_of_zones is None:
             number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
         return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+    
+    def get_cumulative_mass_profile(self, indices_of_the_stars, number_of_zones = None):
+        frac_profile = self.get_mass_profile(indices_of_the_stars, number_of_zones = number_of_zones)
+        return VectorQuantity(frac_profile.number.cumsum(), frac_profile.unit)
     
     def set_mass_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting mass profiles")
@@ -957,6 +1043,12 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
         self._check_supplied_values(len(values), number_of_zones)
         self.set_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
     
+    def get_pressure_profile(self, indices_of_the_stars, number_of_zones = None):
+        indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure profiles")
+        if number_of_zones is None:
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+        return self.get_pressure_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
+    
     def get_IDs_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")
         if number_of_species is None:
@@ -975,4 +1067,51 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             range(1,number_of_species+1) | units.none
         )
     
+    def new_particle_from_model(self, internal_structure, current_age):
+        mass_profile = [0.0] | units.MSun
+        if isinstance(internal_structure, dict):
+            mass_profile.extend(internal_structure['mass'])
+            print (mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun]
+            print len((mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun])
+            print len(mass_profile[1:])
+            self.new_stellar_model(
+                (mass_profile[1:] - mass_profile[:-1])[::-1],
+                internal_structure['radius'][::-1],
+                internal_structure['rho'][::-1],
+                internal_structure['temperature'][::-1],
+                internal_structure['luminosity'][::-1],
+                internal_structure['X_H'][::-1],
+                internal_structure['X_He'][::-1],
+                internal_structure['X_C'][::-1],
+                internal_structure['X_N'][::-1],
+                internal_structure['X_O'][::-1],
+                internal_structure['X_Ne'][::-1],
+                internal_structure['X_Mg'][::-1],
+                internal_structure['X_Si'][::-1],
+                internal_structure['X_Fe'][::-1]
+            )
+        else:
+            mass_profile.extend(internal_structure.mass)
+            print (mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun]
+            print len((mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun])
+            print len(mass_profile[1:])
+            self.new_stellar_model(
+                (mass_profile[1:] - mass_profile[:-1])[::-1],
+                internal_structure.radius[::-1],
+                internal_structure.rho[::-1],
+                internal_structure.temperature[::-1],
+                internal_structure.luminosity[::-1],
+                internal_structure.X_H[::-1],
+                internal_structure.X_He[::-1],
+                internal_structure.X_C[::-1],
+                internal_structure.X_N[::-1],
+                internal_structure.X_O[::-1],
+                internal_structure.X_Ne[::-1],
+                internal_structure.X_Mg[::-1],
+                internal_structure.X_Si[::-1],
+                internal_structure.X_Fe[::-1]
+            )
+        tmp_star = core.Particles(1)
+        tmp_star.age_tag = current_age
+        self.imported_stars.add_particles(tmp_star)
 

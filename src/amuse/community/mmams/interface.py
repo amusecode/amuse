@@ -82,13 +82,13 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('d_mass', dtype='float64', direction=function.IN, description = "The mass of the current shell of this particle")
         function.addParameter('cumul_mass', dtype='float64', direction=function.IN, description = "The cumulative mass from the center to the current shell of this particle")
         function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of this shell")
         function.addParameter('density', dtype='float64', direction=function.IN, description = "The density of this shell")
         function.addParameter('pressure', dtype='float64', direction=function.IN, description = "The pressure of this shell")
-        function.addParameter('e_thermal', dtype='float64', direction=function.IN, description = "The thermal energy of this shell")
-        function.addParameter('entropy', dtype='float64', direction=function.IN, description = "The entropy of this shell")
         function.addParameter('temperature', dtype='float64', direction=function.IN, description = "The temperature of this shell")
+        function.addParameter('luminosity', dtype='float64', direction=function.IN, description = "The luminosity of this shell")
         function.addParameter('molecular_weight', dtype='float64', direction=function.IN, description = "The molecular_weight of this shell")
         function.addParameter('H1', dtype='float64', direction=function.IN, description = "The H1 fraction of this shell")
         function.addParameter('He4', dtype='float64', direction=function.IN, description = "The He4 fraction of this shell")
@@ -132,13 +132,14 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
         function.can_handle_array = True
         function.addParameter('index_of_the_zone', dtype='int32', direction=function.IN)
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.IN)
+        function.addParameter('d_mass', dtype='float64', direction=function.OUT, description = "The mass of the current shell of this particle")
         function.addParameter('cumul_mass', dtype='float64', direction=function.OUT, description = "The cumulative mass from the center to the current shell of this particle")
         function.addParameter('radius', dtype='float64', direction=function.OUT, description = "The radius of this shell")
         function.addParameter('density', dtype='float64', direction=function.OUT, description = "The density of this shell")
         function.addParameter('pressure', dtype='float64', direction=function.OUT, description = "The pressure of this shell")
-        function.addParameter('e_thermal', dtype='float64', direction=function.OUT, description = "The thermal energy of this shell")
         function.addParameter('entropy', dtype='float64', direction=function.OUT, description = "The entropy of this shell")
         function.addParameter('temperature', dtype='float64', direction=function.OUT, description = "The temperature of this shell")
+        function.addParameter('luminosity', dtype='float64', direction=function.OUT, description = "The luminosity of this shell")
         function.addParameter('molecular_weight', dtype='float64', direction=function.OUT, description = "The molecular_weight of this shell")
         function.addParameter('H1', dtype='float64', direction=function.OUT, description = "The H1 fraction of this shell")
         function.addParameter('He4', dtype='float64', direction=function.OUT, description = "The He4 fraction of this shell")
@@ -284,17 +285,16 @@ class MakeMeAMassiveStar(CommonCode):
         )
         object.add_method(
             "add_shell",
-            (object.INDEX, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                units.erg / units.g, units.none, units.K, units.none,
-                units.none, units.none, units.none, units.none, units.none, 
-                units.none, units.none, units.none, units.none),
+            (object.INDEX, units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.K, units.LSun, units.amu, units.none, units.none, units.none, units.none, 
+                units.none, units.none, units.none, units.none, units.none),
             (object.ERROR_CODE,)
         )
         object.add_method(
             "get_stellar_model_element",
             (object.INDEX, object.INDEX,),
-            (units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
-                units.erg / units.g, units.none, units.K, units.none,
+            (units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.none, units.K, units.LSun, units.amu,
                 units.none, units.none, units.none, units.none, units.none, 
                 units.none, units.none, units.none, units.none, object.ERROR_CODE,)
         )
@@ -347,8 +347,8 @@ class MakeMeAMassiveStar(CommonCode):
     
     def _specify_stellar_model(self, definition, index_of_the_particle = 0):
         definition.set_grid_range('get_range_in_zones')
-        definition.add_getter('get_stellar_model_element', names=('mass', 'radius', 
-            'rho', 'pressure', 'e_thermal', 'entropy', 'temperature', 'molecular_weight', 
+        definition.add_getter('get_stellar_model_element', names=('d_mass', 'mass', 'radius', 
+            'rho', 'pressure', 'entropy', 'temperature', 'luminosity', 'molecular_weight', 
             'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
         definition.define_extra_keywords({'index_of_the_particle':index_of_the_particle})
     
@@ -369,3 +369,29 @@ class MakeMeAMassiveStar(CommonCode):
         )
         return result
     
+    def match_composition_to_mass_profile(self, stellar_model, mass_profile):
+        new_composition = [[0.0]*len(mass_profile)]*8 | units.none
+        current_index = 0
+        previous_mass = 0.0 | units.MSun
+        for i, mass_i in enumerate(mass_profile):
+            previous_index = current_index
+            mass_fractions = [] | units.MSun
+            while stellar_model.mass[current_index] < mass_i:
+                mass_fractions.append(stellar_model.mass[current_index]-previous_mass)
+                previous_mass = stellar_model.mass[current_index]
+                current_index += 1
+            if stellar_model.mass[current_index] > mass_i:
+                mass_fractions.append(mass_i-previous_mass)
+                previous_mass = mass_i
+            weights = mass_fractions / mass_fractions.sum()
+            next_index = previous_index+len(weights)
+            new_composition[0, i] = (stellar_model.X_H[previous_index:next_index]*weights).sum()
+            new_composition[2, i] = (stellar_model.X_He[previous_index:next_index]*weights).sum()
+            new_composition[3, i] = (stellar_model.X_C[previous_index:next_index]*weights).sum()
+            new_composition[4, i] = (stellar_model.X_N[previous_index:next_index]*weights).sum()
+            new_composition[5, i] = (stellar_model.X_O[previous_index:next_index]*weights).sum()
+            new_composition[6, i] = (stellar_model.X_Ne[previous_index:next_index]*weights).sum()
+            new_composition[7, i] = ((stellar_model.X_Mg[previous_index:next_index] +
+                stellar_model.X_Si[previous_index:next_index] + 
+                stellar_model.X_Fe[previous_index:next_index])*weights).sum()
+        return new_composition

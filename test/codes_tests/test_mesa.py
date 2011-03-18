@@ -460,6 +460,7 @@ class TestMESA(TestWithMPI):
         self.assertIsOfOrder(instance.particles[0].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.particles[0].get_temperature_profile()[0],  1.0e7 | units.K)
         self.assertIsOfOrder(instance.particles[0].get_luminosity_profile()[-1],      1.0 | units.LSun)
+        self.assertIsOfOrder(instance.particles[0].get_pressure_profile()[0],      1.0e17 | units.barye)
         delta_mass = instance.particles[0].get_mass_profile() * instance.particles[0].mass
         radius1 = instance.particles[0].get_radius_profile()
         radius2 = radius1[:-1]
@@ -665,6 +666,58 @@ class TestMESA(TestWithMPI):
         self.assertTrue(ages_4[1] > ages_3[1])
         self.assertTrue(ages_4[2] > ages_3[2])
         instance.stop()
+    
+    def test12(self):
+        print "Test for importing new stellar models"
+        star = core.Particles(1)
+        star.mass = 1.0 | units.MSun
+        instance = self.new_instance(MESA, redirection="none")
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_code() 
+        instance.particles.add_particles(star)
+        instance.commit_particles()
+        instance.evolve_model()
+        
+        number_of_zones = instance.particles[0].get_number_of_zones().number
+        composition     = instance.particles[0].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
+        instance.new_particle_from_model(dict(
+            mass = instance.particles[0].get_cumulative_mass_profile(number_of_zones = number_of_zones) * instance.particles[0].mass,
+            radius = instance.particles[0].get_radius_profile(number_of_zones = number_of_zones),
+            rho    = instance.particles[0].get_density_profile(number_of_zones = number_of_zones),
+            temperature = instance.particles[0].get_temperature_profile(number_of_zones = number_of_zones),
+            luminosity  = instance.particles[0].get_luminosity_profile(number_of_zones = number_of_zones),
+            X_H  = composition[0],
+            X_He = composition[1] + composition[2],
+            X_C  = composition[3],
+            X_N  = composition[4],
+            X_O  = composition[5],
+            X_Ne = composition[6],
+            X_Mg = composition[7],
+            X_Si = composition[7]*0.0,
+            X_Fe = composition[7]*0.0), 10.0 | units.Myr)
+        self.assertEqual(len(instance.particles), 2)
+        self.assertEqual(len(instance.imported_stars), 1)
+        self.assertEqual(instance.imported_stars[0].get_number_of_zones().number, number_of_zones)
+        self.assertIsOfOrder(instance.imported_stars[0].get_radius_profile()[-1],          1.0 | units.RSun)
+        self.assertIsOfOrder(instance.imported_stars[0].get_temperature_profile()[0],  1.0e7 | units.K)
+#        self.assertIsOfOrder(instance.imported_stars[0].get_luminosity_profile()[-1],      1.0 | units.LSun)
+        self.assertIsOfOrder(instance.imported_stars[0].get_pressure_profile()[0],      1.0e17 | units.barye)
+        self.assertAlmostEqual(instance.imported_stars[0].get_mass_profile(), 
+                               instance.native_stars[0].get_mass_profile())
+        self.assertAlmostEqual(instance.imported_stars[0].get_pressure_profile(), 
+                               instance.native_stars[0].get_pressure_profile())
+        self.assertAlmostEqual(instance.imported_stars[0].get_radius_profile(), 
+                               instance.native_stars[0].get_radius_profile())
+        self.assertAlmostEqual(instance.imported_stars[0].get_temperature_profile(), 
+                               instance.native_stars[0].get_temperature_profile())
+        
+        print instance.particles
+        instance.evolve_model(keep_synchronous = False)
+        print instance.particles
+        instance.stop()
+        del instance
     
 
 

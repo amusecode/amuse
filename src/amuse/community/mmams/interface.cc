@@ -1,4 +1,5 @@
 #include "src/mmas2/src/mmas/mmas.h"
+#include "src/mmas2/src/eos/eos.h"
 #include "worker_mmams.h"
 #include <map>
 
@@ -14,6 +15,8 @@ int number_of_particles = 0;
 int particle_id_counter = 0;
 map<long long, mmas*> results;
 map<long long, usm*> usm_models;
+long long hashtable_up_to_date_for_particle_with_index = -1;
+
 
 int initialize_code(){
     return 0;
@@ -87,23 +90,29 @@ int read_usm(int *index_of_the_particle, char *usm_file){
     return 0;
 }
 
-int add_shell(int index_of_the_particle, double cumul_mass, double radius, 
-        double density, double pressure, double e_thermal, double entropy, 
-        double temperature, double molecular_weight, double H1, double He4, 
+int add_shell(int index_of_the_particle, double d_mass, double cumul_mass, 
+        double radius, double density, double pressure, 
+        double temperature, double luminosity, double molecular_weight, double H1, double He4, 
         double O16, double N14, double C12, double Ne20, double Mg24, 
         double Si28, double Fe56){
     mass_shell shell;
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
+    
     if (it == usm_models.end())
         return -1;
+    
+    if (hashtable_up_to_date_for_particle_with_index == index_of_the_particle)
+        hashtable_up_to_date_for_particle_with_index = -1;
+    
+    shell.dm = d_mass;
     shell.mass = cumul_mass;
     shell.radius = radius;
     shell.density = density;
     shell.pressure = pressure;
-    shell.e_thermal = e_thermal;
-    shell.entropy = entropy;
     shell.temperature = temperature;
+    shell.luminosity = luminosity;
     shell.mean_mu = molecular_weight;
+    shell.entropy = compute_entropy(density, temperature, molecular_weight);
     shell.composition.H1 = H1;
     shell.composition.He4 = He4;
     shell.composition.O16 = O16;
@@ -117,11 +126,11 @@ int add_shell(int index_of_the_particle, double cumul_mass, double radius,
     return 0;
 }
 
-int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle, double *cumul_mass, 
-        double *radius, double *density, double *pressure, double *e_thermal, 
-        double *entropy, double *temperature, double *molecular_weight, double *H1, 
-        double *He4, double *O16, double *N14, double *C12, double *Ne20, 
-        double *Mg24, double *Si28, double *Fe56){
+int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle, 
+        double *d_mass, double *cumul_mass, double *radius, double *density, 
+        double *pressure, double *entropy, double *temperature, double *luminosity, 
+        double *molecular_weight, double *H1, double *He4, double *O16, double *N14, 
+        double *C12, double *Ne20, double *Mg24, double *Si28, double *Fe56){
     mass_shell shell;
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
     if (it == usm_models.end())
@@ -130,15 +139,20 @@ int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle,
     if (index_of_the_shell >= it->second->get_num_shells())
         return -2;
     
-    it->second->build_hashtable();
+    if (hashtable_up_to_date_for_particle_with_index != index_of_the_particle){
+        it->second->build_hashtable();
+        hashtable_up_to_date_for_particle_with_index = index_of_the_particle;
+    }
+    
     shell = it->second->get_shell(index_of_the_shell);
+    *d_mass = shell.dm;
     *cumul_mass = shell.mass;
     *radius = shell.radius;
     *density = shell.density;
     *pressure = shell.pressure;
-    *e_thermal = shell.e_thermal;
     *entropy = shell.entropy;
     *temperature = shell.temperature;
+    *luminosity = shell.luminosity;
     *molecular_weight = shell.mean_mu;
     *H1 = shell.composition.H1;
     *He4 = shell.composition.He4;
@@ -165,12 +179,15 @@ int merge_two_stars(int *id_product, int id_primary, int id_secondary) {
     float v_inf = 0.0;
     map<long long, usm*>::iterator it_primary = usm_models.find(id_primary);
     map<long long, usm*>::iterator it_secondary = usm_models.find(id_secondary);
+    
     if (it_primary == usm_models.end() || it_secondary == usm_models.end())
         return -1;
     
+    it_primary->second->build_hashtable();
+    it_secondary->second->build_hashtable();
     mmas *mmams = new mmas(*it_primary->second, *it_secondary->second, r_p, v_inf);
     results.insert(results.end(), std::pair<long long, mmas*>(particle_id_counter, mmams));
-  
+    
     mmams->merge_stars_consistently(target_n_shells);
     mmams->mixing_product(target_n_shells_mixing);
     if (!dump_mixed) {

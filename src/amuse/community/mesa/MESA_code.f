@@ -18,6 +18,10 @@
          integer :: AMUSE_AGB_wind_scheme = 0
          double precision :: AMUSE_RGB_wind_efficiency = 0.0
          double precision :: AMUSE_AGB_wind_efficiency = 0.0
+         
+         logical :: new_model_defined = .false.
+         integer :: id_new_model
+         
          logical :: debugging = .true.
          contains
          logical function failed(str, ierr)
@@ -347,12 +351,10 @@
          get_time_step = -1
          call get_star_ptr(AMUSE_id, s, ierr)
          if (failed('get_star_ptr', ierr)) return
-!         write (*,*) s% star_age, s% dt_next/secyer, s% dt/secyer, s% time_step
-         if (s% star_age > 0.001) then
+         if (s% generations > 1) then
             ierr = star_pick_next_timestep(AMUSE_id)
             if (failed('star_pick_next_timestep', ierr)) return
          endif
-!         write (*,*) s% star_age, s% dt_next/secyer, s% dt/secyer, s% time_step
          AMUSE_value = s% dt_next/secyer
          get_time_step = 0
       end function
@@ -881,6 +883,38 @@
          
       end function
 
+
+! Return the total (gas + radiation) pressure at the specified zone/mesh-cell of the star
+      integer function get_pressure_at_zone(AMUSE_id, AMUSE_zone, AMUSE_value)
+         use star_private_def, only: star_info, get_star_ptr
+         use amuse_support, only: failed
+         implicit none
+         integer, intent(in) :: AMUSE_id, AMUSE_zone
+         double precision, intent(out) :: AMUSE_value
+         integer :: ierr, k
+         type (star_info), pointer :: s
+         
+         call get_star_ptr(AMUSE_id, s, ierr)
+         if (failed('get_star_ptr', ierr)) then
+            AMUSE_value = -1.0
+            get_pressure_at_zone = -1
+         else
+            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+               write(*, *) 'Warning: pressure may not be up to date, since the last evolve failed. Pressure: ', s% P(k)
+               get_pressure_at_zone = -1
+               return
+            endif
+            
+            if (AMUSE_zone >= s% nz .or. AMUSE_zone < 0) then
+                AMUSE_value = -1.0
+                get_pressure_at_zone = -2
+            else
+               AMUSE_value = s% P(s% nz - AMUSE_zone)
+               get_pressure_at_zone = 0
+            endif
+         endif
+      end function
+
 ! Return the current number of chemical abundance variables per zone of the star
    integer function get_number_of_species(AMUSE_id, AMUSE_value)
       use star_private_def, only: star_info, get_star_ptr
@@ -1339,4 +1373,138 @@
          AMUSE_value = max_star_handles
          get_maximum_number_of_stars = 0
       end function get_maximum_number_of_stars
+
+! Create a new particle from a user supplied model (non-ZAMS, e.g. merger product)
+! First, create an empty model
+   function new_stellar_model(d_mass, radius, rho, temperature, luminosity, &
+         XH, XHE, XC, XN, XO, XNE, XMG, XSI, XFE, n)
+      use amuse_support
+      use star_lib, only: alloc_star, star_setup, show_terminal_header
+      use star_private_def, only: star_info, get_star_ptr
+      use run_star_support, only: setup_for_run_star, before_evolve
+      use read_model, only: set_zero_age_params, finish_load_model
+      use alloc, only: set_var_info, set_q_flag ! <-?
+      use alloc, only: allocate_star_info_arrays
+      use micro, only: init_mesa_micro
+      use init_model, only: get_zams_model
+      use chem_lib, only: get_nuclide_index
+      use star_utils, only: set_qs, set_q_vars
+      use do_one_utils, only: set_phase_of_evolution
+      use evolve_support, only: yrs_for_init_timestep
+      use const_def, only: secyer, Msun
+      
+      implicit none
+      integer, intent(in) :: n
+      double precision, intent(in) :: d_mass(n), radius(n), rho(n), &
+         temperature(n), luminosity(n), XH(n), XHE(n), XC(n), XN(n), &
+         XO(n), XNE(n), XMG(n), XSI(n), XFE(n)
+      integer :: new_stellar_model, ierr
+      type (star_info), pointer :: s
+      
+      if (new_model_defined) then
+         new_stellar_model = -30
+         return
+      endif
+      
+      new_stellar_model = -1
+      id_new_model = alloc_star(ierr)
+      if (failed('alloc_star', ierr)) return
+      call get_star_ptr(id_new_model, s, ierr)
+      if (failed('get_star_ptr', ierr)) return
+      call star_setup(id_new_model, AMUSE_inlist_path, ierr)
+      if (failed('star_setup', ierr)) return
+      ! Replace value of mass and metallicity just read, with supplied values.
+      s% initial_mass = sum(d_mass)
+      s% initial_z = AMUSE_metallicity
+      s% zams_filename = trim(AMUSE_zams_filename) // '.data'
+      s% max_age = AMUSE_max_age_stop_condition
+      s% min_timestep_limit = AMUSE_min_timestep_stop_condition
+      s% max_model_number = AMUSE_max_iter_stop_condition
+      s% mixing_length_alpha = AMUSE_mixing_length_ratio
+      s% alpha_semiconvection = AMUSE_semi_convection_efficiency
+      
+      s% doing_first_model_of_run = .true.
+      s% dt = 0
+      s% dt_old = 0
+      call set_zero_age_params(s)
+            s% net_name = 'basic.net'
+      s% species = 0
+      s% v_flag = .false.
+      s% q_flag = .false.
+      s% mstar = s% initial_mass*Msun
+      call set_var_info(s, ierr)
+      call init_mesa_micro(s, ierr) ! uses s% net_name
+      s% generations = 1
+      
+      s% nz = n
+      call allocate_star_info_arrays(s, ierr)
+      s% xs(s% i_lnd, :) = log(rho(:))
+      s% xs(s% i_lnT, :) = log(temperature(:))
+      s% xs(s% i_lnR, :) = log(radius(:))
+      s% xs(s% i_lum, :) = 1.0d36 !luminosity(:)
+      s% dq(:) = d_mass(:) / s% initial_mass
+      s% xa(s% net_iso(get_nuclide_index('h1')), :) = XH(:)
+      s% xa(s% net_iso(get_nuclide_index('he3')), :) = 0.0d0
+      s% xa(s% net_iso(get_nuclide_index('he4')), :) = XHE(:)
+      s% xa(s% net_iso(get_nuclide_index('c12')), :) = XC(:)
+      s% xa(s% net_iso(get_nuclide_index('n14')), :) = XN(:)
+      s% xa(s% net_iso(get_nuclide_index('o16')), :) = XO(:)
+      s% xa(s% net_iso(get_nuclide_index('ne20')), :) = XNE(:)
+      s% xa(s% net_iso(get_nuclide_index('mg24')), :) = XMG(:) + XSI(:) + XFE(:) ! basic net for now...
+      s% prev_Lmax = maxval(abs(s% xs(s% i_lum, 1:n)))
+      call set_qs(s% nz, s% q, s% dq, ierr)
+      if (ierr /= 0) then
+         if (s% report_ierr) write(*,*) 'set_qs failed in read1_model'
+         return
+      end if
+      if (s% q_flag) call set_q_vars(s)
+      
+      s% dt_next = yrs_for_init_timestep(s)*secyer
+      s% dxs(:,:) = 0
+      !
+      s% extra_heat(:) = 0
+      s% rate_factors(:) = 1
+      call finish_load_model(s, ierr)
+      call set_phase_of_evolution(s)
+      if (s% q_flag) call set_q_flag(s% id, s% q_flag, ierr)
+      
+!      if (debugging) then
+!         write (*,*) "Creating new particles with mass: ", s% initial_mass
+!         write (*,*) "Loading starting model from: ", s% zams_filename
+!      endif
+!      call star_load_zams(id_new_model, ierr)
+!      if (failed('star_load_zams', ierr)) return
+      call setup_for_run_star(id_new_model, s, .false., ierr)
+      if (failed('setup_for_run_star', ierr)) return
+      call before_evolve(id_new_model, ierr)
+      if (failed('before_evolve', ierr)) return
+      call show_terminal_header(id_new_model, ierr)
+      if (failed('show_terminal_header', ierr)) return
+      call flush()
+      new_model_defined = .true.
+      new_stellar_model = 0
+   end function
+
+   function finalize_stellar_model(star_id, age_tag)
+      use amuse_support
+      use evolve, only: set_age
+      implicit none
+      integer :: finalize_stellar_model, ierr
+      integer, intent(out) :: star_id
+      double precision, intent(in) :: age_tag
+      
+      if (.not. new_model_defined) then
+         finalize_stellar_model = -35
+         return
+      endif
+      
+      finalize_stellar_model = -1
+      star_id = id_new_model
+      call set_age(id_new_model, age_tag, ierr)
+      if (failed('set_age', ierr)) return
+      call flush()
+      
+      new_model_defined = .false.
+      finalize_stellar_model = 0
+   end function
 

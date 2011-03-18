@@ -1536,11 +1536,17 @@ class Particle(object):
             raise AttributeError("Can only assign quantities or other particles to an attribute.")
     
     def __getattr__(self, name_of_the_attribute):
+        if hasattr(self.particles_set._private, 'particle_sets'):
+            for current_set in self.particles_set._private.particle_sets:
+                if current_set.has_key_in_store(self.key):
+                    break
+        else:
+            current_set = self.particles_set
         try:
-            return self.particles_set._get_value_of_attribute(self.key, name_of_the_attribute)
+            return current_set._get_value_of_attribute(self.key, name_of_the_attribute)
         except Exception as ex:
-            if ((name_of_the_attribute in self.particles_set.get_attribute_names_defined_in_store()) or 
-            (name_of_the_attribute in self.particles_set._derived_attributes)):
+            if ((name_of_the_attribute in current_set.get_attribute_names_defined_in_store()) or 
+            (name_of_the_attribute in current_set._derived_attributes)):
                 raise
             else:
                 raise AttributeError("You tried to access attribute '{0}' but this attribute is not defined for this set.".format(name_of_the_attribute))
