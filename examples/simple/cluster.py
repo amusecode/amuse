@@ -83,7 +83,7 @@ def adjust_spines(ax,spines, ticks):
 
 def plot_positions(times, positions_at_different_times):
     figure = pyplot.figure()
-    plot_matrix_size = numpy.ceil(numpy.sqrt(len(positions_at_different_times)))
+    plot_matrix_size = numpy.ceil(numpy.sqrt(len(positions_at_different_times))).astype(int)
     number_of_rows = len(positions_at_different_times) / plot_matrix_size
     figure.subplots_adjust(wspace = 0.15, hspace = 0.15)
     
