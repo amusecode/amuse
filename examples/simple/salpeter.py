@@ -56,7 +56,7 @@ def plot_particles_and_mass_distribution(particles):
     x = x[number_of_particles > 0.0]
     subplot.scatter(x, y)
     
-    c = ((0.1**-1.35) - (125.0**-1.35)) * 1.35
+    c = ((0.1**-1.35) - (125.0**-1.35)) / 1.35
     subplot.plot(x, 1.0 / c * (x**-2.35))
     
     subplot.set_xscale('log')

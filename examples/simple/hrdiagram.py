@@ -5,6 +5,7 @@ Show how to generate Hertzsprung-Russell diagram
 import sys
 import numpy
 from matplotlib import pyplot
+from amuse.plot import loglog, xlabel, ylabel
 
 from amuse.support.units import units
 from amuse.support.data import core
@@ -45,12 +46,10 @@ def simulate_evolution_tracks():
 def plot_track(temperature_at_time, luminosity_at_time):
     pyplot.figure(figsize = (8, 6))
     pyplot.title('Hertzsprung-Russell diagram', fontsize=12)
-    pyplot.xlabel('Effective Temperature (K)')
-    pyplot.ylabel('Luminosity (solar luminosity)')
     
-    x_values = temperature_at_time.value_in(units.K)
-    y_values = luminosity_at_time.value_in(units.LSun)
-    pyplot.loglog(x_values, y_values)
+    loglog(temperature_at_time, luminosity_at_time)
+    xlabel('Effective Temperature')
+    ylabel('Luminosity')
     pyplot.xlim(pyplot.xlim()[::-1])
     pyplot.ylim(.1,1.e4)
     pyplot.show()
