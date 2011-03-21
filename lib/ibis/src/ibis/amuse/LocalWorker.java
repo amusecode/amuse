@@ -5,6 +5,7 @@ import ibis.ipl.Ibis;
 import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
 import ibis.ipl.ReceivePortIdentifier;
+import ibis.ipl.ReceiveTimedOutException;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 import ibis.util.ThreadPool;
@@ -18,7 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Representation of worker at local machine running amuse script. Starts and connects to a "RemoteWorker" to perform the actual work.
+ * Representation of worker at local machine running amuse script. Starts and
+ * connects to a "RemoteWorker" to perform the actual work.
  * 
  * @author Niels Drost
  * 
@@ -44,12 +46,35 @@ public class LocalWorker implements Runnable {
 
     private final SendPort sendPort;
 
+    private static ReceivePortIdentifier receivePortAddress(
+            ReceivePort receivePort, Job job) throws IOException {
+        while (!job.isFinished()) {
+            try {
+                ReadMessage readMessage = receivePort.receive(1000);
+
+                ReceivePortIdentifier remotePort = (ReceivePortIdentifier) readMessage
+                        .readObject();
+                readMessage.finish();
+
+                return remotePort;
+
+            } catch (ReceiveTimedOutException t) {
+                logger.warn("timeout on receiving message. Still waiting...");
+            } catch (ClassNotFoundException t) {
+                logger.warn("error on receiving message", t);
+            }
+
+        }
+
+        throw new IOException("remote worker did not start properly",
+                job.getException());
+    }
+
     /*
      * Initializes worker by reading settings from amuse, deploying the worker
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-
     LocalWorker(SocketChannel socket, Ibis ibis, Deployment deployment)
             throws IOException {
         this.channel = socket;
@@ -104,17 +129,14 @@ public class LocalWorker implements Runnable {
 
             job = deployment.deploy(codeName, hostname, id);
 
-            // we expect a "hello" message from the worker.
-            ReadMessage readMessage = receivePort.receive();
-            ReceivePortIdentifier remotePort = (ReceivePortIdentifier) readMessage
-                    .readObject();
-            readMessage.finish();
+            // we expect a "hello" message from the worker. Will also check if
+            // the job is still running
+            ReceivePortIdentifier remotePort = receivePortAddress(receivePort,
+                    job);
 
-            // connect to the worker
             sendPort.connect(remotePort);
 
             // send OK reply to amuse
-
             AmuseMessage initReply = new AmuseMessage(initRequest.getCallID(),
                     initRequest.getFunctionID(), initRequest.getCount());
 
@@ -123,11 +145,14 @@ public class LocalWorker implements Runnable {
             ThreadPool.createNew(this, "Amuse worker");
 
         } catch (Exception e) {
+            IOException exception = new IOException("error initializing code",
+                    e);
+
             // report error to amuse
             AmuseMessage errormessage = new AmuseMessage(0,
-                    AmuseMessage.FUNCTION_ID_INIT, 1, e.getMessage());
+                    AmuseMessage.FUNCTION_ID_INIT, 1, exception.getMessage() + ": " + e.getMessage());
             errormessage.writeTo(channel);
-            throw new IOException("error initializing code", e);
+            throw exception;
         }
     }
 
@@ -150,6 +175,11 @@ public class LocalWorker implements Runnable {
                     logger.warn("Redirect output function not supported by IbisChannel");
                 }
 
+                if (job.isFinished()) {
+                    throw new IOException("Remote worker no longer running",
+                            job.getException());
+                }
+
                 WriteMessage writeMessage = sendPort.newMessage();
                 request.writeTo(writeMessage);
                 writeMessage.flush();
@@ -169,8 +199,9 @@ public class LocalWorker implements Runnable {
             } catch (IOException e) {
                 logger.error("Error on handling call", e);
                 // report error to amuse
-                AmuseMessage errormessage = new AmuseMessage(request.getCallID(),
-                        request.getFunctionID(), request.getCount(), e.getMessage());
+                AmuseMessage errormessage = new AmuseMessage(
+                        request.getCallID(), request.getFunctionID(),
+                        request.getCount(), e.getMessage());
                 try {
                     errormessage.writeTo(channel);
                 } catch (IOException e1) {
@@ -180,7 +211,7 @@ public class LocalWorker implements Runnable {
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e1) {
-                    //IGNORE
+                    // IGNORE
                 }
             }
         }
@@ -190,13 +221,13 @@ public class LocalWorker implements Runnable {
 
     private void end() {
         job.kill();
-        
+
         try {
             sendPort.close();
         } catch (IOException e) {
             logger.error("Error closing sendport", e);
         }
-        
+
         try {
             receivePort.close(1000);
         } catch (IOException e) {
@@ -205,6 +236,7 @@ public class LocalWorker implements Runnable {
     }
 
     public String toString() {
-        return "Worker \"" + id + "\" running \"" + codeName + "@" + hostname + "\"";
+        return "Worker \"" + id + "\" running \"" + codeName + "@" + hostname
+                + "\"";
     }
 }

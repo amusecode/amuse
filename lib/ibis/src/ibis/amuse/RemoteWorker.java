@@ -8,13 +8,14 @@ import ibis.ipl.RegistryEventHandler;
 import ibis.ipl.SendPort;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RemoteWorker implements RegistryEventHandler {
-    
+
     private static class Shutdown extends Thread {
         private final RemoteWorker worker;
 
@@ -26,7 +27,7 @@ public class RemoteWorker implements RegistryEventHandler {
             worker.end();
         }
     }
-    
+
     private static Logger logger = LoggerFactory.getLogger(RemoteWorker.class);
 
     private final CommunityCode communityCode;
@@ -71,6 +72,7 @@ public class RemoteWorker implements RegistryEventHandler {
         UUID id = UUID.fromString(idString);
 
         try {
+            logger.info("Starting worker " + id + " running " + codeName);
 
             RemoteWorker worker = new RemoteWorker(id, codeName);
             

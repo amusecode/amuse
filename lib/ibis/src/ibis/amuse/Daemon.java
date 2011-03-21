@@ -41,7 +41,7 @@ public class Daemon implements RegistryEventHandler {
 
     public static PortType portType = new PortType(
             PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
-            PortType.RECEIVE_EXPLICIT, PortType.CONNECTION_ONE_TO_ONE);
+            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_ONE_TO_ONE);
 
     public static IbisCapabilities ibisCapabilities = new IbisCapabilities(
             IbisCapabilities.ELECTIONS_STRICT,
@@ -82,12 +82,21 @@ public class Daemon implements RegistryEventHandler {
 
     public void run() {
         while (true) {
+            SocketChannel socket = null;
             try {
                 logger.info("Waiting for connection");
-                SocketChannel socket = loopbackServer.accept();
+                socket = loopbackServer.accept();
 
                 new LocalWorker(socket, ibis, deployment);
             } catch (Exception e) {
+                if (socket != null) {
+                    try {
+                        socket.close();
+                    } catch (Exception e2) {
+                        // IGNORE
+                    }
+                }
+
                 if (!loopbackServer.isOpen()) {
                     return;
                 }

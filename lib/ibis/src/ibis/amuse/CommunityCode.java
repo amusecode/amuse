@@ -65,18 +65,27 @@ public class CommunityCode implements Runnable {
      */
     private native void setResultMessage(AmuseMessage message);
 
-    CommunityCode(String codeName, ReceivePort receivePort, SendPort sendPort) {
+    CommunityCode(String codeName, ReceivePort receivePort, SendPort sendPort)
+            throws IOException {
         this.codeName = codeName;
         this.receivePort = receivePort;
         this.sendPort = sendPort;
 
-        System.loadLibrary("ibis-amuse-" + codeName);
-
         requestMessage = new AmuseMessage();
         resultMessage = new AmuseMessage();
 
-        setRequestMessage(requestMessage);
-        setResultMessage(resultMessage);
+        String library = "ibis-amuse-" + codeName;
+
+        try {
+            System.loadLibrary(library);
+
+            setRequestMessage(requestMessage);
+            setResultMessage(resultMessage);
+        } catch (Throwable t) {
+            logger.error("Could not load worker library \"" + library + "\"", t);
+            throw new IOException("Could not load worker library", t);
+        }
+
     }
 
     @Override
@@ -85,7 +94,7 @@ public class CommunityCode implements Runnable {
      */
     public void run() {
         boolean running = true;
-        
+
         while (running) {
             try {
                 ReadMessage readMessage = receivePort.receive();
@@ -95,30 +104,29 @@ public class CommunityCode implements Runnable {
                     // the message
                     setRequestMessage(requestMessage);
                 }
-                
+
                 readMessage.finish();
-                
+
                 if (requestMessage.getFunctionID() == AmuseMessage.FUNCTION_ID_STOP) {
                     running = false;
                 }
-                
+
                 try {
-                    //perform call. Will put result in result message
+                    // perform call. Will put result in result message
                     call();
                 } catch (Exception e) {
-                    //put an exception in the result message
+                    // put an exception in the result message
                     resultMessage.clear();
                     resultMessage.setCallID(requestMessage.getCallID());
                     resultMessage.setFunctionID(requestMessage.getFunctionID());
                     resultMessage.setCount(requestMessage.getCount());
                     resultMessage.setError(e.getMessage());
-                    
                 }
-                
+
                 WriteMessage writeMessage = sendPort.newMessage();
-                
+
                 resultMessage.writeTo(writeMessage);
-                
+
                 writeMessage.finish();
             } catch (IOException e) {
                 logger.error("Error while handling request", e);

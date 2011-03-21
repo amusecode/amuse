@@ -289,7 +289,6 @@ class MPIMessage(AbstractMessage):
     def send_longs(self, comm, array):
         if len(array) > 0:
             buffer = numpy.array(array,  dtype='int64')
-            print buffer
             self.mpi_send(comm,[buffer, MPI.INTEGER8])    
     
     def string_offsets(self, array):
@@ -1011,21 +1010,39 @@ class IbisMessage(AbstractMessage):
         AbstractMessage.__init__(self, tag, length, dtype_to_arguments)
             
         self.id = id
+        
+        if struct.pack("h", 1) == "\000\001":
+            self.big_endian = True
+        else:
+            self.big_endian = False
       
-
-    def _receive_all(self, nbytes, socket):
-        bytes = socket.recv(nbytes)
+    def _receive_all(self, nbytes, thesocket):
+        bytes = thesocket.recv(nbytes)
 
         while len(bytes) < nbytes:
-            bytes = bytes + socket.recv(nbytes - len(bytes))
+            bytes = bytes + thesocket.recv(nbytes - len(bytes), socket.MSG_WAITALL)
 
         return bytes
      
     def recieve(self, socket):
         
-        header_bytes = self._receive_all(36, socket)
+        logging.debug("receiving message")
         
-        header = numpy.frombuffer(header_bytes, dtype="i")
+        header_bytes = self._receive_all(40, socket)
+        
+        flags = numpy.frombuffer(header_bytes, dtype="b", count=4, offset=0)
+        
+        if flags[0] != self.big_endian:
+            raise exceptions.CodeException("endianness in message does not match native endianness")
+        
+        if flags[1]:
+            self.error = True
+        else:
+            self.error = False
+        
+        header = numpy.frombuffer(header_bytes, dtype="i", offset=4)
+        
+        logging.debug("receiving message with flags %s and header %s", flags, header)
 
         #id of this call
         self.id = header[0]
@@ -1116,7 +1133,6 @@ class IbisMessage(AbstractMessage):
     
             
     def recieve_strings(self, socket, count):
-        
         if count > 0:
             lengths = self.recieve_ints(socket, count)
             
@@ -1132,6 +1148,8 @@ class IbisMessage(AbstractMessage):
     
     def send(self, socket):
         
+        flags = numpy.array([self.big_endian, False, False, False], dtype="b")
+        
         header = numpy.array([
             self.id,
             self.tag, 
@@ -1143,6 +1161,10 @@ class IbisMessage(AbstractMessage):
             len(self.booleans),
             len(self.strings),
         ], dtype='i')
+        
+        logging.debug("sending message with flags %s and header %s", flags, header)
+        
+        socket.sendall(flags.tostring())
         
         socket.sendall(header.tostring())
 
@@ -1196,11 +1218,13 @@ class IbisChannel(MessageChannel):
     
     def __init__(self, name_of_the_worker, legacy_interface_type = None, hostname="localhost", number_of_workers=1, **options):
         MessageChannel.__init__(self, **options)
+        
+        logging.debug("initializing IbisChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker
 
         if hostname == None:
-            hostname = 'localhost'
+            hostname = 'local'
         
         self.hostname = hostname
         self.number_of_workers = number_of_workers
@@ -1238,8 +1262,9 @@ class IbisChannel(MessageChannel):
         result = IbisMessage()
         result.recieve(self.socket)
         
-        if result.length == 0:
-            raise exceptions.CodeException("Could not start worker " + result.strings[0])
+        if result.error:
+            logging.error("Could not start worker: %s", result.strings[0])
+            raise exceptions.CodeException("Could not start worker: " + result.strings[0])
         
         logging.getLogger("ibis").info("worker %s initialized", self.name_of_the_worker)
         
@@ -1247,8 +1272,7 @@ class IbisChannel(MessageChannel):
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
-
-        
+       
     def stop(self):
         logging.getLogger("ibis").info("stopping worker %s", self.name_of_the_worker)
         self.socket.close()
@@ -1281,7 +1305,7 @@ class IbisChannel(MessageChannel):
         
         message.recieve(self.socket)
         
-        if message.length == 0:
+        if message.error:
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
         return message.to_result(handle_as_array)
