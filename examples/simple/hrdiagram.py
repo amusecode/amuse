@@ -55,10 +55,6 @@ def plot_track(temperature_at_time, luminosity_at_time):
     pyplot.show()
     
 
-if __name__ in ['__main__', '__plot__']:
-    if not is_mpd_running():
-        print "There is no mpd server running. Please do 'mpd &' first."
-        sys.exit()
-        
+if __name__ in ['__main__', '__plot__']:        
     temperatures, luminosities = simulate_evolution_tracks()
     plot_track(temperatures, luminosities)
