@@ -155,12 +155,16 @@ class VtkStructuredGrid(base.FileFormatProcessor):
         number_of_components = numpy.prod(array.shape[3:])
         if len(array.shape[3:]) == 0:
             number_of_components = 1
+            array = numpy.transpose(array, (2,1,0,)).flatten()
+        else:
+            x,y,z = numpy.split(array, 3, axis = array.ndim - 1)
+            array = numpy.transpose(array, (2,1,0,) + tuple(array.shape[3:])).flatten()
         self.stream.write('<DataArray type="Float64" NumberOfComponents="{0}"'.format(number_of_components))
         if not name is None:
             self.stream.write(' Name="{0}"'.format(name))
         
         self.stream.write('>')
-        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten('C')))));
+        self.stream.write(' '.join(map(self.convert_number_to_string, iter(array.flatten()))));
         self.stream.write('</DataArray>\n')
         
     def convert_number_to_string(self, number):
