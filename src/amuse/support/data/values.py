@@ -655,6 +655,12 @@ class VectorQuantity(Quantity):
     def std(self, axis=None, dtype=None, out=None, ddof=0):
         return new_quantity(self.number.std(axis, dtype, out, ddof), self.unit)
         
+    
+    def tanh(self, out = None):
+        if not self.unit.is_none():
+            raise Exception("only none unit support for tanh")
+        return numpy.tanh(self.number) | self.unit
+        
     def __getstate__(self):
         return (self.unit, self.number)
     
