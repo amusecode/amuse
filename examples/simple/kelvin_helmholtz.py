@@ -113,13 +113,13 @@ class CalculateKelvinHelmholtzInstabilityIn3D(object):
         
         grid.energy += 0.5 * (grid.rhovx ** 2  + grid.rhovy ** 2 + grid.rhovz ** 2) / grid.rho
         
-    def storegrids(self, grids):
+    def store_grids(self, grids, step):
         if __name__ == '__plot__':
             return
             
         for i, x in enumerate(grids):
             mem = x.copy_to_memory()
-            io.write_set_to_file(mem, "kelvin_helmholtz_{0}_{1}_{2}.vts".format(self.number_of_grid_points, step, i),"vts")
+            io.write_set_to_file(mem, "kelvin_helmholtz_{0}_{2}_{1}.vts".format(self.number_of_grid_points, step, i),"vts")
             
     def get_solution_at_time(self, time):
         instance=self.new_instance_of_code()
@@ -146,7 +146,7 @@ class CalculateKelvinHelmholtzInstabilityIn3D(object):
             
             print "time : ", t
             
-            self.store_grids(instance.iter_grids())
+            self.store_grids(instance.itergrids(), step)
                 
             t += dt
             step += 1

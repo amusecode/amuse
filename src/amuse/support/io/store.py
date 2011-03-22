@@ -159,8 +159,7 @@ class StoreHDF(object):
     def new_group(self, master_group):
         index = len(master_group)
         name = format(index + 1,"010d")
-        master_group.create_group(name)
-        return master_group[name]
+        return master_group.create_group(name)
         
     def store_particles(self, particles):
         group = self.new_group(self.particles_group())
@@ -303,10 +302,7 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     
     def load(self):
         processor = StoreHDF(self.filename, self.append_to_file)
-        try:
-            return processor.load()
-        finally:
-            processor.close()
+        return processor.load()
         
     def store(self):
         processor = StoreHDF(self.filename, self.append_to_file)
