@@ -4,8 +4,8 @@ from amuse.support.data import grids
 
 import numpy
 
-grids.Grid.add_global_vector_attribute("position", ["x","y","z"])
-grids.Grid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
+grids.AbstractGrid.add_global_vector_attribute("position", ["x","y","z"])
+grids.AbstractGrid.add_global_vector_attribute("momentum", ["rhovx","rhovy","rhovz"])
 
 
         
@@ -70,3 +70,44 @@ def contains(grid, points):
         numpy.all(points < grid.get_maximum_position(), axis=len(points.shape)-1)
     )
    
+
+@grids.AbstractGrid.function_for_set
+def points(grid):
+    cellcenters = grid.position
+    shape_with_boundary = numpy.asarray(cellcenters.shape) + 1
+    shape_with_boundary[-1] -= 1
+    result = cellcenters.zeros(shape_with_boundary, cellcenters.unit)
+    dx = grid.cellsize() 
+    half_dx = grid.cellsize() / 2.0
+    
+    
+    result[1:,1:,1:] = grid.position + (half_dx * [1,1,1])
+    result[:-1,1:,1:] = grid.position + (half_dx * [-1,1,1])
+    result[1:,:-1,1:] = grid.position + (half_dx * [1,-1,1])
+    result[:-1,:-1,1:] = grid.position + (half_dx * [-1,-1,1])
+    result[1:,1:,:-1] = grid.position + (half_dx * [1,1,-1])
+    result[:-1,1:,:-1] = grid.position + (half_dx * [-1,1,-1])
+    result[1:,:-1,:-1] = grid.position + (half_dx * [1,-1,-1])
+    result[:-1,:-1,:-1] = grid.position + (half_dx * [-1,-1,-1])
+    
+    return result
+    
+@grids.AbstractGrid.function_for_set
+def connectivity(grid):
+    cellcenters = grid.position
+    shape = numpy.asarray(cellcenters.shape)
+    shape[-1] = 8
+    shape_with_boundary = numpy.asarray(cellcenters.shape) + 1
+    shape_with_boundary = shape_with_boundary[:3]
+    indices = numpy.arange(0, numpy.prod(shape_with_boundary), dtype = numpy.int).reshape(shape_with_boundary)
+    result = numpy.zeros(shape, dtype = numpy.int)
+
+    result[...,...,...,0] = indices[ :1, :1, :1]
+    result[...,...,...,1] = indices[1: , :1, :1]
+    result[...,...,...,2] = indices[ :1,1: , :1]
+    result[...,...,...,3] = indices[1: ,1: , :1]
+    result[...,...,...,4] = indices[ :1, :1,1: ]
+    result[...,...,...,5] = indices[1: , :1,1: ]
+    result[...,...,...,6] = indices[ :1,1: ,1: ]
+    result[...,...,...,7] = indices[1: ,1: ,1: ]
+    return result

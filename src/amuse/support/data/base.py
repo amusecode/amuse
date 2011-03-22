@@ -941,6 +941,11 @@ class AbstractSet(object):
         cls.add_global_function_attribute(function.__name__, function)
         return function
     
+    @classmethod
+    def attribute_for_set(cls, function):
+        cls.add_global_calculated_attribute(function.__name__, function)
+        return function
+    
     
 
     def empty_copy(self):

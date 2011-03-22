@@ -81,10 +81,10 @@ class VtkStructuredGrid(base.FileFormatProcessor):
         if self.quantities:
             first_quantity = self.quantities[0]
             nx,ny,nz = first_quantity.shape[0:3]
-            return (0,nx-1,0,ny-1,0,nz-1)
+            return (0,nx,0,ny,0,nz)
         elif self.set is None:
             nx,ny,nz = self.set.shape
-            return (0,nx-1,0,ny-1,0,nz-1)
+            return (0,nx,0,ny,0,nz)
     
             
     @base.format_option
@@ -113,7 +113,7 @@ class VtkStructuredGrid(base.FileFormatProcessor):
     def points(self):
         "The position vector of all grid cells"
         if not self.set is None:
-            return self.set.position
+            return self.set.points()
         else:
             pass
             
@@ -136,11 +136,11 @@ class VtkStructuredGrid(base.FileFormatProcessor):
         self.stream.write('<Piece Extent="')
         self.stream.write(" ".join(map(str,self.extent)))
         self.stream.write('">')
-        self.stream.write('<PointData>')
+        self.stream.write('<CellData>')
         for name, quantity, unit in zip(self.attribute_names, self.quantities, self.attribute_types):
             self.write_float64_data(quantity.value_in(unit), name = name)
-        self.stream.write('</PointData>')
-        self.stream.write('<CellData></CellData>')
+        self.stream.write('</CellData>')
+        self.stream.write('<PointData></PointData>')
         self.stream.write('<Points>')
         self.write_float64_data(self.points.value_in(self.length_unit))
         self.stream.write('</Points>')
