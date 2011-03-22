@@ -24,6 +24,7 @@ CONTAINS
         
         call readparameters(parameters_filename)
         
+        
         eqpar(gamma_) = 5.0d0/3.0d0
         initialize_code = 0
     END FUNCTION
@@ -37,7 +38,7 @@ CONTAINS
         INTEGER commit_parameters
         
         call initialize_vars()
-        call init_comm_types   
+        call init_comm_types
         
         call initglobaldata_usr
         call initglobaldata 
@@ -118,7 +119,7 @@ CONTAINS
         include 'amrvacdef.f'
         integer :: set_nbufferx3
         integer :: inputvalue
-        nbufferx3 = inputvalue
+        !nbufferx3 = inputvalue
         set_nbufferx3 = 0   
     end function
 
@@ -126,7 +127,7 @@ CONTAINS
         include 'amrvacdef.f'
         integer :: get_nbufferx3
         integer :: outputvalue
-        outputvalue = nbufferx3
+        outputvalue = 0
         get_nbufferx3 = 0   
     end function
 
@@ -2169,9 +2170,6 @@ CONTAINS
         is_index_valid = is_index_valid .AND. (j .GE. 0)
         is_index_valid = is_index_valid .AND. (j .LE. (ixMhi2 - ixMlo2))
         
-        
-        is_index_valid = is_index_valid .AND. (k .GE. 0)
-        is_index_valid = is_index_valid .AND. (k .LE. (ixMhi3 - ixMlo3))
     end function
     
     
@@ -2203,11 +2201,10 @@ CONTAINS
                 end if
                 reali = ixMlo1 + i(index)
                 realj = ixMlo2 + j(index)
-                realk = ixMlo3 + k(index)
                 
-                x(index) = px(local_index_of_grid)%x(reali,realj,realk,1)
-                y(index) = px(local_index_of_grid)%x(reali,realj,realk,2)
-                z(index) = px(local_index_of_grid)%x(reali,realj,realk,3)
+                x(index) = px(local_index_of_grid)%x(reali,realj,1)
+                y(index) = px(local_index_of_grid)%x(reali,realj,2)
+                z(index) = 0.0
             end if
             
         end do
@@ -2234,7 +2231,7 @@ CONTAINS
         
         nx = ixMhi1 - ixMlo1 + 1
         ny = ixMhi2 - ixMlo2 + 1
-        nz = ixMhi3 - ixMlo3 + 1
+        nz = 1
     
         get_mesh_size = 0
     end function
@@ -2316,7 +2313,7 @@ CONTAINS
             if(level > 0) then
                 dx1 = dx(1,level)
                 dx2 = dx(2,level)
-                dx3 = dx(3,level)
+                dx3 = 0
             end if
         end if
         
@@ -2343,10 +2340,8 @@ CONTAINS
                 
         xprobmin1 = 0.0
         xprobmin2 = 0.0
-        xprobmin3 = 0.0
         xprobmax1 = xlength
         xprobmax2 = ylength
-        xprobmax3 = zlength
         
         if(nmeshx < 1 .OR.  mod(nmeshx,2)/=0) then
             setup_mesh = -1
@@ -2356,15 +2351,10 @@ CONTAINS
             setup_mesh = -1
             return
         end if
-        if(nmeshz < 1 .OR.  mod(nmeshz,2)/=0) then
-            setup_mesh = -1
-            return
-        end if
         
         
         dx(1,1)=(xprobmax1-xprobmin1)/dble(nmeshx)
         dx(2,1)=(xprobmax2-xprobmin2)/dble(nmeshy)
-        dx(3,1)=(xprobmax3-xprobmin3)/dble(nmeshz)
         
         setup_mesh = 0
     end function
@@ -2400,9 +2390,8 @@ CONTAINS
                 end if
                 reali = ixMlo1 + i(index)
                 realj = ixMlo2 + j(index)
-                realk = ixMlo3 + k(index)
                 
-                rho(index) = pw(local_index_of_grid)%w(reali,realj,realk,1)
+                rho(index) = pw(local_index_of_grid)%w(reali,realj,1)
             end if
             
         end do
@@ -2445,11 +2434,10 @@ CONTAINS
                 end if
                 reali = ixMlo1 + i(index)
                 realj = ixMlo2 + j(index)
-                realk = ixMlo3 + k(index)
                 
-                m1(index) = pw(local_index_of_grid)%w(reali,realj,realk,2)
-                m2(index) = pw(local_index_of_grid)%w(reali,realj,realk,3)
-                m3(index) = pw(local_index_of_grid)%w(reali,realj,realk,4)
+                m1(index) = pw(local_index_of_grid)%w(reali,realj,2)
+                m2(index) = pw(local_index_of_grid)%w(reali,realj,3)
+                m3(index) = 0.0
             end if
             
         end do
@@ -2497,9 +2485,8 @@ CONTAINS
                 end if
                 reali = ixMlo1 + i(index)
                 realj = ixMlo2 + j(index)
-                realk = ixMlo3 + k(index)
                 
-                en(index) = pw(local_index_of_grid)%w(reali,realj,realk,5)
+                en(index) = pw(local_index_of_grid)%w(reali,realj,4)
             end if
             
         end do
@@ -2543,9 +2530,8 @@ CONTAINS
                     
                     reali = ixMlo1 + i(index)
                     realj = ixMlo2 + j(index)
-                    realk = ixMlo3 + k(index)
                     
-                    pw(local_index_of_grid)%w(reali,realj,realk,1) = rho(index)
+                    pw(local_index_of_grid)%w(reali,realj,1) = rho(index)
                 
                 end if
             end if
@@ -2583,9 +2569,8 @@ CONTAINS
                     
                     reali = ixMlo1 + i(index)
                     realj = ixMlo2 + j(index)
-                    realk = ixMlo3 + k(index)
                     
-                    pw(local_index_of_grid)%w(reali,realj,realk,5) = en(index)
+                    pw(local_index_of_grid)%w(reali,realj,4) = en(index)
                 
                 end if
             end if
@@ -2623,11 +2608,9 @@ CONTAINS
                     
                     reali = ixMlo1 + i(index)
                     realj = ixMlo2 + j(index)
-                    realk = ixMlo3 + k(index)
                     
-                    pw(local_index_of_grid)%w(reali,realj,realk,2) = m1(index)
-                    pw(local_index_of_grid)%w(reali,realj,realk,3) = m2(index)
-                    pw(local_index_of_grid)%w(reali,realj,realk,4) = m3(index)
+                    pw(local_index_of_grid)%w(reali,realj,2) = m1(index)
+                    pw(local_index_of_grid)%w(reali,realj,3) = m2(index)
                 
                 end if
             end if
@@ -2659,7 +2642,7 @@ CONTAINS
 
         itmin=it
         
-        call getbc(t,ixGlo1,ixGlo2,ixGlo3,ixGhi1,ixGhi2,ixGhi3,pw,pwCoarse,pgeo,&
+        call getbc(t,ixGlo1,ixGlo2,ixGhi1,ixGhi2,pw,pwCoarse,pgeo,&
                pgeoCoarse,.false.)
 
         !  ------ start of integration loop. ------------------
@@ -2765,8 +2748,6 @@ CONTAINS
         typeB(1:nw,2) = highx
         typeB(1:nw,3) = lowy
         typeB(1:nw,4) = highy
-        typeB(1:nw,5) = lowz
-        typeB(1:nw,6) = highz
         
         do idim=1,ndim
             periodB(idim)=(typeB(1,2*idim-1)=="periodic")
@@ -2816,9 +2797,8 @@ CONTAINS
                 !
                 !else
                     
-                accel(i(index),j(index),k(index),1) = a1(index)
-                accel(i(index),j(index),k(index),2) = a2(index)
-                accel(i(index),j(index),k(index),3) = a3(index)
+                accel(i(index),j(index),1) = a1(index)
+                accel(i(index),j(index),2) = a2(index)
                     
                 
                 !end if
@@ -2847,9 +2827,9 @@ CONTAINS
                 !
                 !else
                     
-                a1(index) = accel(i(index),j(index),k(index),1)
-                a2(index) = accel(i(index),j(index),k(index),2)
-                a3(index) = accel(i(index),j(index),k(index),3)
+                a1(index) = accel(i(index),j(index),1)
+                a2(index) = accel(i(index),j(index),2)
+                a3(index) = 0
                     
                 
                 !end if

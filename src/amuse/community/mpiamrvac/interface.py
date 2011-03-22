@@ -10,9 +10,21 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
     
     use_modules = ['mpiamrvac_interface']
     
-    def __init__(self, **options):
-        CodeInterface.__init__(self, name_of_the_worker="mpiamrvac_worker", **options)
+    MODE_NORMAL = 'normal'
+    MODE_2D   = '2d'
     
+    def __init__(self, mode = MODE_NORMAL, **options):
+        CodeInterface.__init__(self, name_of_the_worker=self.name_of_the_worker(mode), **options)
+        self._mode = mode
+        
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_NORMAL:
+            return 'mpiamrvac_worker'
+        elif mode == self.MODE_2D:
+            return 'mpiamrvac_worker_2d'
+        else:
+            return 'mpiamrvac_worker'
+            
     #
     # options
     #
@@ -23,7 +35,10 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
         Default parameter file for amrvac, has empty lists for
         all parameters.
         """
-        return os.path.join(get_amuse_root_dir(), 'data', 'mpiamrvac', 'input', 'amrvac.par')
+        if self._mode == self.MODE_2D:
+            return os.path.join(get_amuse_root_dir(), 'data', 'mpiamrvac', 'input', 'amrvac_2d.par')
+        else:
+            return os.path.join(get_amuse_root_dir(), 'data', 'mpiamrvac', 'input', 'amrvac.par')
     
     #
     # parameters

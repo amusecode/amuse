@@ -1,0 +1,92 @@
+Index: mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2011-03-22 11:02:30.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2011-03-22 11:02:30.000000000 +0100
+@@ -16,7 +16,7 @@
+ COMMON, DOUBLE PRECISION :: dxaccel3
+ 
+ 
+-COMMON, DOUBLE PRECISION :: accel(1:naccel1,1:naccel2,1:naccel3,1:ndim)
++COMMON, DOUBLE PRECISION :: accel(1:naccel^D,1:ndim)
+ 
+ 
+ 
+Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/amrvacusr.acceleration.t	2011-03-22 11:02:30.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2011-03-22 11:02:30.000000000 +0100
+@@ -100,7 +100,9 @@
+     call findaccelblock(ix^D,ixI^L,x,iaccel^D)
+     acc(ix^D,1) = accel(iaccel^D,1)
+     acc(ix^D,2) = accel(iaccel^D,2)
++{^IFTHREED
+     acc(ix^D,3) = accel(iaccel^D,3)
++}
+ {enddo^D&\}
+     
+ return
+@@ -117,8 +119,10 @@
+ 
+ iaccel1 = int((x(ix^D,1)-xaccel1(1))/dxaccel1)+1
+ iaccel2 = int((x(ix^D,2)-xaccel2(1))/dxaccel2)+1
+-iaccel3 = int((x(ix^D,3)-xaccel3(1))/dxaccel3)+1
+ 
++{^IFTHREED
++iaccel3 = int((x(ix^D,3)-xaccel3(1))/dxaccel3)+1
++}
+ 
+ return
+ end subroutine findaccelblock
+@@ -132,27 +136,38 @@
+ 
+ xaccel1(1) = xprobmin1-dx(1,1) ! dx(1,1) obtained from AMUSE interface
+ xaccel2(1) = xprobmin2-dx(2,1) ! dx(2,1) obtained from AMUSE interface
++
++{^IFTHREED
+ xaccel3(1) = xprobmin3-dx(3,1) ! dx(3,1) obtained from AMUSE interface
++}
+ 
+ xaccel1(naccel1) = xprobmax1+dx(1,1)
+ xaccel2(naccel2) = xprobmax2+dx(2,1)
++
++{^IFTHREED
+ xaccel3(naccel3) = xprobmax3+dx(3,1)
++}
+ 
+ dxaccel1 = (xaccel1(naccel1) - xaccel1(1))/(naccel1-1)
+ dxaccel2 = (xaccel2(naccel2) - xaccel2(1))/(naccel2-1)
+-dxaccel3 = (xaccel3(naccel3) - xaccel3(1))/(naccel3-1)
+ 
++{^IFTHREED
++dxaccel3 = (xaccel3(naccel3) - xaccel3(1))/(naccel3-1)
++}
+ DO i=2,naccel1-1
+   xaccel1(i) = xaccel1(i-1) + dxaccel1
+ ENDDO
+ DO i=2,naccel2-1
+   xaccel2(i) = xaccel2(i-1) + dxaccel2
+ ENDDO
++
++{^IFTHREED
+ DO i=2,naccel3-1
+   xaccel3(i) = xaccel3(i-1) + dxaccel3
+ ENDDO
++}
+ 
+-accel(1:naccel1,1:naccel2,1:naccel3,1:ndim) = zero
++accel(1:naccel^D,1:ndim) = zero
+ 
+ return
+ end subroutine setaccelgrid
+Index: mpiamrvac/src/mpiamrvac/src/makefile
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/makefile	2011-03-22 11:02:30.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/makefile	2011-03-22 11:02:30.000000000 +0100
+@@ -160,3 +160,7 @@
+ libmpiamrvac.a: $(LIBOBJECTS)
+ 	ar ruv $@ $(LIBOBJECTS)
+ 	ranlib $@
++
++libmpiamrvac2d.a: $(LIBOBJECTS)
++	ar ruv $@ $(LIBOBJECTS)
++	ranlib $@

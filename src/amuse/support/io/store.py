@@ -159,7 +159,8 @@ class StoreHDF(object):
     def new_group(self, master_group):
         index = len(master_group)
         name = format(index + 1,"010d")
-        return master_group.create_group(name)
+        master_group.create_group(name)
+        return master_group[name]
         
     def store_particles(self, particles):
         group = self.new_group(self.particles_group())
@@ -194,6 +195,7 @@ class StoreHDF(object):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
             dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
+            print  quantity.unit.to_simple_form().reference_string()
             
     
     def store_timestamp(self, container, group):
@@ -301,11 +303,17 @@ class HDF5FileFormatProcessor(base.FileFormatProcessor):
     
     def load(self):
         processor = StoreHDF(self.filename, self.append_to_file)
-        return processor.load()
+        try:
+            return processor.load()
+        finally:
+            processor.close()
         
     def store(self):
         processor = StoreHDF(self.filename, self.append_to_file)
-        return processor.store(self.set)
+        try:
+            return processor.store(self.set)
+        finally:
+            processor.close()
     
     @base.format_option
     def append_to_file(self):

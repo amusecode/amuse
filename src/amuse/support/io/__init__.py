@@ -4,6 +4,7 @@ from amuse.support.io.nemotsf import NemoFileFormatProcessor
 from amuse.support.io.starlab import StarlabFileFormatProcessor
 from amuse.support.io.store import HDF5FileFormatProcessor
 from amuse.support.io.gadget import GadgetFileFormatProcessor
+from amuse.support.io.vtk import VtkStructuredGrid
 
 
 text.TableFormattedText.register()
@@ -13,3 +14,4 @@ NemoFileFormatProcessor.register()
 StarlabFileFormatProcessor.register()
 HDF5FileFormatProcessor.register()
 GadgetFileFormatProcessor.register()
+VtkStructuredGrid.register()

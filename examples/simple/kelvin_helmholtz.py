@@ -53,7 +53,7 @@ class CalculateKelvinHelmholtzInstabilityIn3D(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        result=MpiAmrVac(number_of_workers=self.number_of_workers)
+        result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers, redirection="none", debugger="xterm")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         return result
@@ -113,6 +113,14 @@ class CalculateKelvinHelmholtzInstabilityIn3D(object):
         
         grid.energy += 0.5 * (grid.rhovx ** 2  + grid.rhovy ** 2 + grid.rhovz ** 2) / grid.rho
         
+    def storegrids(self, grids):
+        if __name__ == '__plot__':
+            return
+            
+        for i, x in enumerate(grids):
+            mem = x.copy_to_memory()
+            io.write_set_to_file(mem, "kelvin_helmholtz_{0}_{1}_{2}.vts".format(self.number_of_grid_points, step, i),"vts")
+            
     def get_solution_at_time(self, time):
         instance=self.new_instance_of_code()
         
@@ -138,10 +146,8 @@ class CalculateKelvinHelmholtzInstabilityIn3D(object):
             
             print "time : ", t
             
-            for i,x in enumerate(instance.itergrids()):
-                mem = x.copy_to_memory()
-                io.write_set_to_file(mem, "kelvin_helmholtz_{0}_{1}_{2}.h5".format(self.number_of_grid_points, step,i),"hdf5")
-            
+            self.store_grids(instance.iter_grids())
+                
             t += dt
             step += 1
         
@@ -154,7 +160,7 @@ class CalculateKelvinHelmholtzInstabilityIn3D(object):
         instance.stop()
 
         return result
-        
+    
             
 def main():
     number_of_grid_points = 400
@@ -166,9 +172,10 @@ def main():
     grids = model.get_solution_at_time(1.0 | time)
     
     rho = grids[0].rho[...,...,0].value_in(density)
-    figure = pyplot.figure(figsize=(15,15))
+    figure = pyplot.figure(figsize=(20,20))
     plot = figure.add_subplot(1,1,1)
     plot.imshow(rho, origin = 'lower')
+    figure.savefig('kelvin_helmholtz.png')
     pyplot.show()
     
 if __name__ in ["__main__", "__plot__"]:

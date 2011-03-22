@@ -1,7 +1,7 @@
 Index: mpiamrvac/src/mpiamrvac/src/amrio.t
 ===================================================================
 --- mpiamrvac.orig/src/mpiamrvac/src/amrio.t	2010-12-16 15:40:45.000000000 +0100
-+++ mpiamrvac/src/mpiamrvac/src/amrio.t	2011-03-01 11:30:47.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrio.t	2011-03-17 10:55:38.000000000 +0100
 @@ -1,8 +1,10 @@
  !=============================================================================
 -subroutine readparameters
@@ -30,7 +30,7 @@ Index: mpiamrvac/src/mpiamrvac/src/amrio.t
 Index: mpiamrvac/src/mpiamrvac/src/comm_lib.t
 ===================================================================
 --- mpiamrvac.orig/src/mpiamrvac/src/comm_lib.t	2009-07-09 11:09:19.000000000 +0200
-+++ mpiamrvac/src/mpiamrvac/src/comm_lib.t	2011-03-01 11:30:47.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/comm_lib.t	2011-03-17 10:55:38.000000000 +0100
 @@ -136,9 +136,24 @@
  character(len=*), intent(in) :: message
  
@@ -59,7 +59,7 @@ Index: mpiamrvac/src/mpiamrvac/src/comm_lib.t
 Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2011-03-03 16:49:52.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t	2011-03-17 10:55:38.000000000 +0100
 @@ -0,0 +1,159 @@
 +subroutine acceleration(qdt,ixI^L,ixO^L,iw^LIM,qtC,wCT,qt,w,x)
 +
@@ -223,7 +223,7 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacusr.acceleration.t
 Index: mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2011-03-03 15:50:45.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t	2011-03-17 10:55:38.000000000 +0100
 @@ -0,0 +1,25 @@
 +!==============================================================================
 +! include file amrvacusrpar.acceleration.t
@@ -253,7 +253,7 @@ Index: mpiamrvac/src/mpiamrvac/src/amrvacusrpar.acceleration.t
 Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2011-03-04 10:16:13.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2011-03-17 10:55:38.000000000 +0100
 @@ -0,0 +1,149 @@
 +!=============================================================================
 +! amrvacusr.t.nul
@@ -407,7 +407,7 @@ Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
 Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusrpar.t.amuse
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusrpar.t.amuse	2011-03-03 15:34:21.000000000 +0100
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusrpar.t.amuse	2011-03-17 10:55:38.000000000 +0100
 @@ -0,0 +1,19 @@
 +!##############################################################################
 +! include amrvacusrpar - nul

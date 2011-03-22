@@ -5,13 +5,16 @@ FFLAGS   +=  -g -ffree-form
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
 OBJS = interface.o
+OBJS2D = interface_2d.o
 
 LIBNAME = libmpiamrvac.a
+LIBNAME2D = libmpiamrvac2d.a
 
 AMUSE_DIR?=../../../..
 
 CODEDIR = src/mpiamrvac/src
 CODELIB = src/mpiamrvac/src/$(LIBNAME)
+CODELIB2D = src/mpiamrvac/src/$(LIBNAME2D)
 
 CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
@@ -58,11 +61,20 @@ $(CODELIB): $(CODEDIR)
 	cd src/mpiamrvac/src; ./setamrvac -d=33 -g=14,14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
 	make -C $(CODEDIR) clean amrvac $(LIBNAME) F90FLAGS="$(FFLAGS)"
 
+$(CODELIB2D): $(CODEDIR)
+	cd src/mpiamrvac/src; ./setamrvac -d=22 -g=14,14 -phi=3 -z=2 -p=hd -u=amuse -cp=openmpi
+	make -C $(CODEDIR) clean amrvac $(LIBNAME2D) F90FLAGS="$(FFLAGS)"
+	
 worker_code.f90: interface.py
 	$(CODE_GENERATOR) --type=f90 interface.py MpiAmrVacInterface -o $@
 
 mpiamrvac_worker: worker_code.f90 $(CODELIB) $(OBJS)
 	$(MPIF90) $(CXXFLAGS) $< $(OBJS) $(CODELIB) -o $@
+	
+mpiamrvac_worker_2d: worker_code.f90 $(CODELIB2D) $(OBJS2D)
+	$(MPIF90) $(CXXFLAGS) $< $(OBJS2D) $(CODELIB2D) -o $@
+	
+
 
 %.o: %.f90
 	$(FC) $(FFLAGS) -I$(CODEDIR) -c -o $@ $<
