@@ -1,7 +1,6 @@
 package ibis.amuse;
 
 import java.io.File;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,27 +21,30 @@ public class Deployment {
 
     private final Grid grid;
     private final Experiment experiment;
+    
+    private int nextID = 0;
 
-    public Deployment() throws Exception {
+    public Deployment(boolean verbose) throws Exception {
         grid = new Grid(new File("deploy.grid"));
         experiment = new Experiment("amuse");
 
-        deploy = new Deploy(new File("deploy"), true, true, 0, null, null, true);
+        deploy = new Deploy(new File("deploy"), verbose, false, 0, null, null, true);
 
     }
 
     public String getServerAddress() throws Exception {
         return deploy.getServerAddress();
     }
+    
+    
 
-    public Job deploy(String codeName, String hostname, UUID workerID)
+    public Job deploy(String codeName, String hostname, String workerID)
             throws Exception {
-        logger.info("Deploying worker with ID " + workerID + " running \""
+        logger.info("Deploying worker \"" + workerID + "\" running \""
                 + codeName + "\" on host " + hostname);
 
 
-        JobDescription jobDescription = experiment.createNewJob(workerID
-                .toString());
+        JobDescription jobDescription = experiment.createNewJob(workerID);
 
         if (hostname.equalsIgnoreCase("localhost")) {
             hostname = "local";
@@ -57,12 +59,14 @@ public class Deployment {
         Application application = jobDescription.getApplicationOverrides();
 
         application.setLibs(new File("deploy/lib-server"), new File("lib"));
+        application.setSystemProperty("java.library.path", "/Users/niels/workspace/amuse/lib/ibis/");
+   //     application.addInputFile(new File("libibis-amuse-bhtree_worker.so"));
         application.setMainClass("ibis.amuse.RemoteWorker");
         application.setMemorySize(1000);
         application.setLog4jFile(new File("log4j.properties"));
 
         application.setArguments("--code-name", codeName, "--worker-id",
-                workerID.toString());
+                workerID);
 
         Job result = deploy.submitJob(jobDescription, null, grid, null, null);
 

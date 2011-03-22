@@ -31,6 +31,8 @@ public class LocalWorker implements Runnable {
 
     private static final Logger logger = LoggerFactory
             .getLogger(LocalWorker.class);
+    
+    private static int nextID = 0;
 
     private final SocketChannel channel;
 
@@ -38,13 +40,21 @@ public class LocalWorker implements Runnable {
 
     private final String hostname;
 
-    private final UUID id;
+    private final String id;
 
     private final Job job;
+
+    private final Ibis ibis;
 
     private final ReceivePort receivePort;
 
     private final SendPort sendPort;
+
+    private final ReceivePortIdentifier remotePort;
+    
+    private static String getNextID() {
+        return "worker-" + nextID++;
+    }
 
     private static ReceivePortIdentifier receivePortAddress(
             ReceivePort receivePort, Job job) throws IOException {
@@ -78,12 +88,15 @@ public class LocalWorker implements Runnable {
     LocalWorker(SocketChannel socket, Ibis ibis, Deployment deployment)
             throws IOException {
         this.channel = socket;
+        this.ibis = ibis;
 
         try {
-            id = UUID.randomUUID();
+            id = getNextID();
 
-            logger.info("New connection from "
-                    + socket.socket().getRemoteSocketAddress());
+            if (logger.isDebugEnabled()) {
+                logger.debug("New connection from "
+                        + socket.socket().getRemoteSocketAddress());
+            }
 
             // read magic string, to make sure we are talking to amuse
 
@@ -131,8 +144,7 @@ public class LocalWorker implements Runnable {
 
             // we expect a "hello" message from the worker. Will also check if
             // the job is still running
-            ReceivePortIdentifier remotePort = receivePortAddress(receivePort,
-                    job);
+            remotePort = receivePortAddress(receivePort, job);
 
             sendPort.connect(remotePort);
 
@@ -144,13 +156,16 @@ public class LocalWorker implements Runnable {
 
             ThreadPool.createNew(this, "Amuse worker");
 
+            logger.info("New local worker successfully started: " + this);
+
         } catch (Exception e) {
             IOException exception = new IOException("error initializing code",
                     e);
 
             // report error to amuse
             AmuseMessage errormessage = new AmuseMessage(0,
-                    AmuseMessage.FUNCTION_ID_INIT, 1, exception.getMessage() + ": " + e.getMessage());
+                    AmuseMessage.FUNCTION_ID_INIT, 1, exception.getMessage()
+                            + ": " + e.getMessage());
             errormessage.writeTo(channel);
             throw exception;
         }
@@ -164,15 +179,14 @@ public class LocalWorker implements Runnable {
             AmuseMessage result = new AmuseMessage();
 
             try {
+                logger.debug("wating for request...");
                 request.readFrom(channel);
+
+                logger.debug("performing request " + request);
 
                 if (request.getFunctionID() == AmuseMessage.FUNCTION_ID_STOP) {
                     // this will be the last call we perform
                     running = false;
-                }
-
-                if (request.getFunctionID() == AmuseMessage.FUNCTION_ID_REDIRECT_OUTPUT) {
-                    logger.warn("Redirect output function not supported by IbisChannel");
                 }
 
                 if (job.isFinished()) {
@@ -182,7 +196,9 @@ public class LocalWorker implements Runnable {
 
                 WriteMessage writeMessage = sendPort.newMessage();
                 request.writeTo(writeMessage);
-                writeMessage.flush();
+                writeMessage.finish();
+
+                logger.debug("waiting for result");
 
                 ReadMessage readMessage = receivePort.receive();
                 result.readFrom(readMessage);
@@ -192,6 +208,9 @@ public class LocalWorker implements Runnable {
                     logger.warn("Error while doing call at worker",
                             result.getError());
                 }
+
+                logger.debug("request " + request.getCallID()
+                        + " handled, result: " + result);
 
                 // forward result to the channel
                 result.writeTo(channel);
@@ -220,7 +239,11 @@ public class LocalWorker implements Runnable {
     }
 
     private void end() {
-        job.kill();
+        try {
+            ibis.registry().signal("end", remotePort.ibisIdentifier());
+        } catch (IOException e) {
+            logger.error("could not signal remote worker to leave");
+        }
 
         try {
             sendPort.close();
@@ -233,10 +256,17 @@ public class LocalWorker implements Runnable {
         } catch (IOException e) {
             logger.error("Error closing receiveport", e);
         }
+
+        try {
+            job.waitUntilFinished();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public String toString() {
-        return "Worker \"" + id + "\" running \"" + codeName + "@" + hostname
-                + "\"";
+        return "Worker \"" + id + "\" running \"" + codeName
+                + "\" on host " + hostname;
     }
 }

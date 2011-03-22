@@ -41,12 +41,14 @@ public class Daemon implements RegistryEventHandler {
 
     public static PortType portType = new PortType(
             PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT,
-            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT, PortType.CONNECTION_ONE_TO_ONE);
+            PortType.RECEIVE_EXPLICIT, PortType.RECEIVE_TIMEOUT,
+            PortType.CONNECTION_ONE_TO_ONE);
 
     public static IbisCapabilities ibisCapabilities = new IbisCapabilities(
             IbisCapabilities.ELECTIONS_STRICT,
             IbisCapabilities.MEMBERSHIP_TOTALLY_ORDERED,
-            IbisCapabilities.TERMINATION);
+            IbisCapabilities.TERMINATION,
+            IbisCapabilities.SIGNALS);
 
     private static final Logger logger = LoggerFactory.getLogger(Daemon.class);
 
@@ -56,8 +58,8 @@ public class Daemon implements RegistryEventHandler {
 
     private final Deployment deployment;
 
-    public Daemon(int port) throws Exception {
-        deployment = new Deployment();
+    public Daemon(int port, boolean verbose) throws Exception {
+        deployment = new Deployment(verbose);
 
         Properties properties = new Properties();
         properties.put("ibis.server.address", deployment.getServerAddress());
@@ -72,19 +74,20 @@ public class Daemon implements RegistryEventHandler {
 
         ibis.registry().enableEvents();
 
-        IbisIdentifier master = ibis.registry().elect("master");
+        IbisIdentifier amuse = ibis.registry().elect("amuse");
 
-        if (!ibis.identifier().equals(master)) {
-            throw new IOException("did not win master election: another daemon"
+        if (!ibis.identifier().equals(amuse)) {
+            throw new IOException("did not win amuse election: another daemon"
                     + " must be present in this pool");
         }
+        logger.info("Daemon running on port " + port);
     }
 
     public void run() {
         while (true) {
             SocketChannel socket = null;
             try {
-                logger.info("Waiting for connection");
+                logger.debug("Waiting for connection");
                 socket = loopbackServer.accept();
 
                 new LocalWorker(socket, ibis, deployment);
@@ -129,16 +132,21 @@ public class Daemon implements RegistryEventHandler {
 
     public static void main(String[] arguments) throws IOException {
         int port = DEFAULT_PORT;
+        boolean verbose = false;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-p") || arguments[i].equals("--port")) {
                 i++;
                 port = Integer.parseInt(arguments[i]);
+            } else if (arguments[i].equals("-v")
+                    || arguments[i].equals("--verbose")) {
+                verbose = true;
             }
+
         }
 
         try {
-            Daemon daemon = new Daemon(port);
+            Daemon daemon = new Daemon(port, verbose);
 
             Runtime.getRuntime().addShutdownHook(new Shutdown(daemon));
 
@@ -151,17 +159,17 @@ public class Daemon implements RegistryEventHandler {
 
     @Override
     public void joined(IbisIdentifier joinedIbis) {
-        logger.info("new ibis " + joinedIbis);
+        logger.debug("new ibis " + joinedIbis);
     }
 
     @Override
     public void left(IbisIdentifier leftIbis) {
-        logger.info("ibis left " + leftIbis);
+        logger.debug("ibis left " + leftIbis);
     }
 
     @Override
     public void died(IbisIdentifier corpse) {
-        logger.info("ibis died " + corpse);
+        logger.error("ibis died " + corpse);
     }
 
     @Override

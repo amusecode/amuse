@@ -357,6 +357,10 @@ public class AmuseMessage implements Serializable {
             return allButStringByteBuffers;
         }
     }
+    
+    public ByteBuffer[] getStringByteBuffers() {
+        return stringBytes;
+    }
 
     private void setPrimitiveLimitsFromHeader() throws IOException {
         intBytes.clear().limit(getIntCount() * SIZEOF_INT);
@@ -409,12 +413,16 @@ public class AmuseMessage implements Serializable {
     }
 
     void writeTo(WriteMessage writeMessage) throws IOException {
+        logger.debug("writing to WriteMessage: " + this);
+        
         headerBytes.clear();
         setPrimitiveLimitsFromHeader();
         setStringLimitsFromHeader();
 
         for (ByteBuffer buffer : byteBuffers) {
-            writeMessage.writeByteBuffer(buffer);
+            if (buffer.hasRemaining()) {
+                writeMessage.writeByteBuffer(buffer);
+            }
         }
     }
 
@@ -571,7 +579,7 @@ public class AmuseMessage implements Serializable {
         // set the limits
         setStringLimitsFromHeader();
 
-        logger.debug("receiving strings from channel");
+        logger.trace("receiving strings from channel");
 
         // and receive!
         readAll(channel, stringBytes);
@@ -586,7 +594,7 @@ public class AmuseMessage implements Serializable {
     public boolean readFrom(ReadMessage readMessage) throws IOException {
         boolean updatedBuffers = false;
 
-        logger.debug("reading header from message");
+        logger.trace("reading header from message");
 
         headerBytes.clear();
 
@@ -603,15 +611,15 @@ public class AmuseMessage implements Serializable {
 
         setPrimitiveLimitsFromHeader();
 
-        logger.debug("reading primitives from message");
+        logger.trace("reading primitives from message");
 
-        readMessage.readByteBuffer(intBytes);
-        readMessage.readByteBuffer(longBytes);
-        readMessage.readByteBuffer(floatBytes);
-        readMessage.readByteBuffer(doubleBytes);
-        readMessage.readByteBuffer(booleanBytes);
-        readMessage.readByteBuffer(stringHeaderBytes);
-
+        headerBytes.position(headerBytes.capacity());
+        for (ByteBuffer buffer : allButStringByteBuffers) {
+            if (buffer.hasRemaining()) {
+                readMessage.readByteBuffer(buffer);
+            }
+        }
+        
         // make sure there is enough space for the strings
         if (ensureStringsCapacity()) {
             updatedBuffers = true;
@@ -620,28 +628,71 @@ public class AmuseMessage implements Serializable {
         // set the limits
         setStringLimitsFromHeader();
 
-        logger.debug("reading strings from message");
+        logger.trace("reading strings from message");
 
         // and receive!
         for (ByteBuffer buffer : stringBytes) {
-            readMessage.readByteBuffer(buffer);
+            if (buffer.hasRemaining()) {
+                readMessage.readByteBuffer(buffer);
+            }
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug("done receiving message from channel: " + this);
+            logger.debug("done receiving message from ReadMessage: " + this);
         }
 
         return updatedBuffers;
     }
 
     public String toString() {
-        return "Call <id:" + getCallID() + " function ID:" + getFunctionID()
-                + " count:" + getCount() + " ints:" + getIntCount()
-                + " longs: " + getLongCount() + " floats:" + getFloatCount()
-                + " doubles:" + getDoubleCount() + " booleans:"
-                + getBooleanCount() + " strings:" + getStringCount()
-                + " byte order:" + getByteOrder() + " error:"
-                + isErrorState() + ">";
+        String message = "Call <id:" + getCallID() + " function ID:" + getFunctionID()
+        + " count:" + getCount();
+        
+        if (isErrorState()) {
+            message = message + " ERROR";
+        }
+        
+        if (getByteOrder() == ByteOrder.BIG_ENDIAN) {
+            message = message + " order: B";
+        } else {
+            message = message + " order: l";
+        }
+        
+        if (getIntCount() != 0) {
+            message = message + " ints:" + getIntCount();
+        }
+     
+        if (getLongCount() != 0) {
+            message = message + " longs:" + getLongCount();
+        }
+
+        if (getFloatCount() != 0) {
+            message = message + " floats:" + getFloatCount();
+        }
+
+        if (getDoubleCount() != 0) {
+            message = message + " doubles:" + getDoubleCount();
+        }
+
+        if (getBooleanCount() != 0) {
+            message = message + " booleans:" + getBooleanCount();
+        }
+        
+        if (getStringCount() != 0) {
+            message = message + " strings:" + getStringCount();
+        }
+        
+        message = message + ">";
+        
+//        return "Call <id:" + getCallID() + " function ID:" + getFunctionID()
+//                + " count:" + getCount() + " ints:" + getIntCount()
+//                + " longs: " + getLongCount() + " floats:" + getFloatCount()
+//                + " doubles:" + getDoubleCount() + " booleans:"
+//                + getBooleanCount() + " strings:" + getStringCount()
+//                + " byte order:" + getByteOrder() + " error:"
+//                + isErrorState() + ">";
+        
+        return message;
     }
 
 }

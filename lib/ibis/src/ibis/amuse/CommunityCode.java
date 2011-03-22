@@ -34,20 +34,7 @@ public class CommunityCode implements Runnable {
     private final SendPort sendPort;
 
     // native functions
-
-    /**
-     * Returns the maximum result size of a single call per type
-     */
-    private native int[] getMaxResultSize();
-
-    /**
-     * Performs a call. Uses data from the request and result message
-     * 
-     * @throws Exception
-     *             if the function does not exist, or any other error occurs.
-     */
-    private native void call() throws Exception;
-
+   
     /**
      * Sets the message used as input in a call. Also used when the buffers
      * inside the message change
@@ -65,6 +52,15 @@ public class CommunityCode implements Runnable {
      */
     private native void setResultMessage(AmuseMessage message);
 
+    /**
+     * Performs a call. Uses data from the request and result message
+     * 
+     * @throws Exception
+     *             if the function does not exist, or any other error occurs.
+     */
+    private native void call() throws Exception;
+
+    
     CommunityCode(String codeName, ReceivePort receivePort, SendPort sendPort)
             throws IOException {
         this.codeName = codeName;
@@ -74,7 +70,7 @@ public class CommunityCode implements Runnable {
         requestMessage = new AmuseMessage();
         resultMessage = new AmuseMessage();
 
-        String library = "ibis-amuse-" + codeName;
+        String library = codeName;
 
         try {
             System.loadLibrary(library);
@@ -97,20 +93,28 @@ public class CommunityCode implements Runnable {
 
         while (running) {
             try {
+                logger.debug("Receiving call message");
                 ReadMessage readMessage = receivePort.receive();
+                
+                logger.debug("Reading call request from IPL message");
 
                 if (requestMessage.readFrom(readMessage)) {
                     // read method indicates one or more buffers has changed in
                     // the message
+                    logger.debug("(re)setting request message");
                     setRequestMessage(requestMessage);
                 }
 
                 readMessage.finish();
 
-                if (requestMessage.getFunctionID() == AmuseMessage.FUNCTION_ID_STOP) {
+                int functionID = requestMessage.getFunctionID();
+                
+                if (functionID == AmuseMessage.FUNCTION_ID_STOP) {
+                    //final request handled
                     running = false;
                 }
-
+                
+                logger.debug("Performing call for function " + functionID);
                 try {
                     // perform call. Will put result in result message
                     call();
@@ -128,6 +132,8 @@ public class CommunityCode implements Runnable {
                 resultMessage.writeTo(writeMessage);
 
                 writeMessage.finish();
+                
+                logger.debug("Done performing call for function " + functionID);
             } catch (IOException e) {
                 logger.error("Error while handling request", e);
             }
