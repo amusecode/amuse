@@ -1,3 +1,3 @@
 
 
-DIRECTORIES = ['doc', 'src', 'test']
+DIRECTORIES = ['doc', 'src', 'test', 'examples/applications']
