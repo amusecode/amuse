@@ -113,6 +113,9 @@ public class CommunityCode implements Runnable {
                     //final request handled
                     running = false;
                 }
+
+                //clean message
+                resultMessage.clear();
                 
                 logger.debug("Performing call for function " + functionID);
                 try {

@@ -124,10 +124,15 @@ public class AmuseMessage implements Serializable {
         // no string buffers yet
         byteBuffers = allButStringByteBuffers;
 
+        ByteOrder nativeOrder = ByteOrder.nativeOrder();
+
+        for (ByteBuffer buffer : byteBuffers) {
+            buffer.order(nativeOrder);
+        }
+
         header = headerBytes.asIntBuffer();
         stringHeader = stringHeaderBytes.asIntBuffer();
 
-        setByteOrder(ByteOrder.nativeOrder());
     }
 
     AmuseMessage(int callID, int functionID, int count) {
@@ -159,9 +164,15 @@ public class AmuseMessage implements Serializable {
 
     public void clear() {
         headerBytes.clear();
+        
         // stuff full of zeros
-        headerBytes.put(new byte[headerBytes.capacity()]);
-        setByteOrder(ByteOrder.nativeOrder());
+        
+        byte[] zeros = new byte[headerBytes.capacity()];
+
+        //remember byte order
+        zeros[HEADER_BIG_ENDIAN_FLAG] = headerBytes.get(HEADER_BIG_ENDIAN_FLAG);
+        
+        headerBytes.put(zeros);
     }
 
     /**
@@ -212,9 +223,9 @@ public class AmuseMessage implements Serializable {
     }
 
     private ByteOrder getByteOrder() {
-        if (headerBytes.get(0) == TRUE_BYTE) {
+        if (headerBytes.get(HEADER_BIG_ENDIAN_FLAG) == TRUE_BYTE) {
             return ByteOrder.BIG_ENDIAN;
-        } else if (headerBytes.get(0) == FALSE_BYTE) {
+        } else if (headerBytes.get(HEADER_BIG_ENDIAN_FLAG) == FALSE_BYTE) {
             return ByteOrder.LITTLE_ENDIAN;
         } else {
             throw new RuntimeException("endiannes not specified in header");
@@ -357,7 +368,7 @@ public class AmuseMessage implements Serializable {
             return allButStringByteBuffers;
         }
     }
-    
+
     public ByteBuffer[] getStringByteBuffers() {
         return stringBytes;
     }
@@ -414,7 +425,7 @@ public class AmuseMessage implements Serializable {
 
     void writeTo(WriteMessage writeMessage) throws IOException {
         logger.debug("writing to WriteMessage: " + this);
-        
+
         headerBytes.clear();
         setPrimitiveLimitsFromHeader();
         setStringLimitsFromHeader();
@@ -428,7 +439,7 @@ public class AmuseMessage implements Serializable {
 
     // make sure there is enough space for each primitive buffer
     // (including the string header)
-    private boolean ensurePrimitiveCapacity() {
+    public boolean ensurePrimitiveCapacity() {
         boolean buffersUpdated = false;
 
         if (getIntCount() * SIZEOF_INT > intBytes.capacity()) {
@@ -497,7 +508,7 @@ public class AmuseMessage implements Serializable {
         return buffersUpdated;
     }
 
-    private boolean ensureStringsCapacity() {
+    public boolean ensureStringsCapacity() {
         // checking if the string header is big enough is checked above, so we
         // only check if all strings listed in the header
         boolean buffersUpdated = false;
@@ -619,7 +630,7 @@ public class AmuseMessage implements Serializable {
                 readMessage.readByteBuffer(buffer);
             }
         }
-        
+
         // make sure there is enough space for the strings
         if (ensureStringsCapacity()) {
             updatedBuffers = true;
@@ -645,23 +656,23 @@ public class AmuseMessage implements Serializable {
     }
 
     public String toString() {
-        String message = "Call <id:" + getCallID() + " function ID:" + getFunctionID()
-        + " count:" + getCount();
-        
+        String message = "AmuseMessage <id:" + getCallID() + " function ID:"
+                + getFunctionID() + " count:" + getCount();
+
         if (isErrorState()) {
             message = message + " ERROR";
         }
-        
+
         if (getByteOrder() == ByteOrder.BIG_ENDIAN) {
             message = message + " order: B";
         } else {
             message = message + " order: l";
         }
-        
+
         if (getIntCount() != 0) {
             message = message + " ints:" + getIntCount();
         }
-     
+
         if (getLongCount() != 0) {
             message = message + " longs:" + getLongCount();
         }
@@ -677,21 +688,21 @@ public class AmuseMessage implements Serializable {
         if (getBooleanCount() != 0) {
             message = message + " booleans:" + getBooleanCount();
         }
-        
+
         if (getStringCount() != 0) {
             message = message + " strings:" + getStringCount();
         }
-        
+
         message = message + ">";
-        
-//        return "Call <id:" + getCallID() + " function ID:" + getFunctionID()
-//                + " count:" + getCount() + " ints:" + getIntCount()
-//                + " longs: " + getLongCount() + " floats:" + getFloatCount()
-//                + " doubles:" + getDoubleCount() + " booleans:"
-//                + getBooleanCount() + " strings:" + getStringCount()
-//                + " byte order:" + getByteOrder() + " error:"
-//                + isErrorState() + ">";
-        
+
+        // return "Call <id:" + getCallID() + " function ID:" + getFunctionID()
+        // + " count:" + getCount() + " ints:" + getIntCount()
+        // + " longs: " + getLongCount() + " floats:" + getFloatCount()
+        // + " doubles:" + getDoubleCount() + " booleans:"
+        // + getBooleanCount() + " strings:" + getStringCount()
+        // + " byte order:" + getByteOrder() + " error:"
+        // + isErrorState() + ">";
+
         return message;
     }
 
