@@ -94,9 +94,10 @@ class ConvertBetweenGenericAndSiUnits(object):
         factors_of_the_bases =  numpy.mat(numpy.zeros((self.system_rank,1)))
         for row, value in enumerate(self.values):
             factors_of_the_bases[row] = value.number * value.unit.factor
-
-        log_factors_of_the_bases = numpy.log(factors_of_the_bases)
-        return numpy.array(numpy.exp(self.new_base_inv*log_factors_of_the_bases))[:,0]
+        log_factors_of_the_bases = numpy.log(numpy.abs(factors_of_the_bases))
+        result = numpy.array(numpy.exp(self.new_base_inv*log_factors_of_the_bases))[:,0]
+        sign = numpy.where(numpy.asarray(factors_of_the_bases).reshape(self.system_rank)< 0, -1, 1) 
+        return sign * result
 
     @property
     def units(self):
