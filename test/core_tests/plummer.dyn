@@ -1,0 +1,168 @@
+(Particle
+  N = 10
+(Log
+ ===>  Wed Mar 23 10:21:53 2011
+       Starlab 4.4.4 (user vanelteren) : makeplummer -n 10
+       random number generator seed = 1300872113
+  initial_mass = 1
+  initial_total_energy = -0.25
+  initial_rvirial = 1
+)Log
+(Dynamics
+  system_time  =  0
+  m  =  1
+  r  =  0 0 0
+  v  =  0 0 0
+  com_time = 0
+  com_pos = 0 0 0
+  com_vel = 0 0 0
+  total_energy = -0.25
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  mass_scale     =  -1
+  size_scale     =  -1
+  time_scale     =  -1
+)Star
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  0.0363745233961326117 -0.0386589526067618802 -0.0548705526676865271
+  v  =  0.203780901543541948 -0.915691266470066934 -0.422797591896931058
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  -0.351287789735723777 -0.482443918139502881 -0.774765019644788944
+  v  =  0.0298696022793860511 -0.224229352680089228 -0.179139720858530416
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  0.426742151897433586 -1.17742575331663657 0.240110710714688091
+  v  =  0.064916233897545278 0.447205215776395937 -0.187927916371635279
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  0.226395200444168498 0.306085090886145772 -0.0200609963733473021
+  v  =  -0.0540072175442511959 -0.195062431424946225 -0.769034170308866227
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  -0.0822678864364778661 0.557857821300797529 -0.119564618328819358
+  v  =  0.56334000121034522 0.611455171541192666 0.336397415366950892
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  0.0744792654221533845 -0.219205315442810633 0.190831653980204768
+  v  =  0.0104844113559201708 -0.114038904013918571 0.366078360996679231
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  -0.148740290164978473 -0.133979011657398339 -0.359254710212703499
+  v  =  -0.20814901776631789 -0.767186853435854577 0.4920352553611132
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  -0.182828045322576627 2.01563237620457913 1.12771911332892127
+  v  =  -0.0734235872601643191 -0.0734793762755466817 -0.0919645888289477714
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  0.456676218469407813 -0.956497425519772793 -0.397837330479701101
+  v  =  -0.393291979860427243 0.801042566423785352 0.0952685319823539656
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.100000000000000006
+  r  =  -0.455543347969539214 0.128635088291360722 0.167691749683232305
+  v  =  -0.143519347855578627 0.429985230559047582 0.36108442455781331
+)Dynamics
+(Hydro
+)Hydro
+(Star
+)Star
+)Particle
+)Particle
