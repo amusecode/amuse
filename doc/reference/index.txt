@@ -11,13 +11,14 @@ Reference documentation
    core_support
    legacy_support
    available-legacy-codes
+   fileformat
    quantities_and_units
    particles
    particle_attributes
    from_codes_to_data
    incode_storage
    stopping_conditions
-   fileformat
+   ioframework
    options
    directory-structure
    cuda-setup

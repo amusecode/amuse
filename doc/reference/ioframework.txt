@@ -1,0 +1,23 @@
+==========================
+Input / Output Framework
+==========================
+
+
+Introduction
+------------
+The reading and writing of the files is done by subclasses
+of the :class:`FileFormatProcessor` class. 
+
+    
+Extending
+---------
+
+.. autoclass:: amuse.support.io.FileFormatProcessor
+    :members:
+    
+.. autoclass:: amuse.support.io.FullTextFileFormatProcessor
+    :members:
+        
+        
+        
+        

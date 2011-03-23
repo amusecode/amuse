@@ -1,5 +1,5 @@
 ==========================
-Input / Output Framework
+Supported File Formats
 ==========================
 
 .. automodule:: amuse.support.io
@@ -12,10 +12,7 @@ Input / Output Framework
     and a function to read a set from a file. These functions need
     the name of the file and the format of the data in the file. We
     will describe these functions first in this chapter. The functions
-    can throw 3 kinds of exceptions, these are described next. Finally,
-    the actual reading and writing of the files is done by subclasses
-    of the :class:`FileFormatProcessor` class. This class is described
-    last.
+    can throw 3 kinds of exceptions, these are described next.
     
     Use
     ---
@@ -33,7 +30,7 @@ Input / Output Framework
     .. autofunction:: write_set_to_file
     .. autofunction:: read_set_from_file
     .. autofunction:: get_options_for_format
-
+    
     Exceptions
     ----------
     
@@ -41,13 +38,23 @@ Input / Output Framework
     .. autoclass:: CannotSaveException
     .. autoclass:: CannotLoadException
     
-    Extending
-    ---------
+    Starlab
+    -------
     
-    .. autoclass:: FileFormatProcessor
-        :members:
+    AMUSE has support for reading and writing starlab files::
+    
+    >>> from amuse.support import io
+    >>> particles = io.read_set_from_file('plummer.dyn','starlab')
+    >>> io.write_set_to_file(particles, 'output.dyn', 'starlab')
+    
+    The starlab format support sevaral options, listed below. You can
+    use these options as follows:
+    
+    
+    >>> from amuse.support import io
+    >>> particles = io.read_set_from_file('plummer.dyn','starlab', must_scale = False, return_children = False)
+    
+    .. iooptions:: starlab
         
-    .. autoclass:: FullTextFileFormatProcessor
-        :members:
         
         

@@ -38,6 +38,7 @@ extensions = [
  'matplotlib.sphinxext.plot_directive',
  'gen_rst',
  'gen_gallery', 
+ 'io_directive',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
