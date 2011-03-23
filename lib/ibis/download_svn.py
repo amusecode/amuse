@@ -21,6 +21,7 @@ class GetCodeFromSVN(object):
             'svn',
             'export',
             '--trust-server-cert',
+            '--non-interactive',
             '-r',
             self.revision,
             self.url,
