@@ -126,7 +126,7 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed = 12345,
             mode = "scaling method"
-        )
+        ).gas_particles
         self.assertEqual(len(sph_particles), number_of_sph_particles)
         self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
@@ -148,7 +148,7 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed = 12345,
             mode = "random sampling"
-        )
+        ).gas_particles
         
         self.assertEqual(len(sph_particles), number_of_sph_particles)
         self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
@@ -184,7 +184,7 @@ class TestStellarModel2SPH(TestWithMPI):
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             seed=12345
-        )
+        ).gas_particles
         self.assertEqual(len(sph_particles), number_of_sph_particles)
         self.assertAlmostEqual(sph_particles.mass.sum(), stars.mass)
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
@@ -217,7 +217,7 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed = 12345,
             mode = "random sampling"
-        )
+        ).gas_particles
         self.assertEqual(len(sph_particles), number_of_sph_particles)
         self.assertAlmostEqual(sph_particles.mass.sum(), stars.mass)
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
@@ -254,7 +254,7 @@ class TestStellarModel2SPH(TestWithMPI):
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             seed=12345
-        )
+        ).gas_particles
         temperature = stellar_evolution.particles[0].get_temperature_profile()
         mu          = stellar_evolution.particles[0].get_mu_profile()
         specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
@@ -319,7 +319,7 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed=12345, 
             mode = "random sampling"
-        )
+        ).gas_particles
         temperature = stellar_evolution.particles[0].get_temperature_profile()
         mu          = stellar_evolution.particles[0].get_mu_profile()
         specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
@@ -392,7 +392,7 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed=12345,
             mode = "scaling method"
-        )
+        ).gas_particles
         stellar_evolution.stop()
         
         t_end = 1.0e4 | units.s
@@ -400,21 +400,21 @@ class TestStellarModel2SPH(TestWithMPI):
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
-        hydro_legacy_code = Gadget2(unit_converter)
-        hydro_legacy_code.gas_particles.add_particles(gas)
+        hydro_code = Gadget2(unit_converter)
+        hydro_code.gas_particles.add_particles(gas)
         
         times = [] | units.Myr
         kinetic_energies =   [] | units.J
         potential_energies = [] | units.J
         thermal_energies =   [] | units.J
         for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
-            hydro_legacy_code.evolve_model(time)
+            hydro_code.evolve_model(time)
             times.append(time)
-            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
-            potential_energies.append( hydro_legacy_code.potential_energy)
-            thermal_energies.append(   hydro_legacy_code.thermal_energy)
+            kinetic_energies.append(   hydro_code.kinetic_energy)
+            potential_energies.append( hydro_code.potential_energy)
+            thermal_energies.append(   hydro_code.thermal_energy)
         
-        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
+        sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
@@ -431,10 +431,10 @@ class TestStellarModel2SPH(TestWithMPI):
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
-            sph_midpoints, hydro_legacy_code.gas_particles.u, 
+            sph_midpoints, hydro_code.gas_particles.u, 
             os.path.join(get_path_to_results(), "star2sph_test_11_after_t1e4_gadget_new_u.png")
         )
-        hydro_legacy_code.stop()
+        hydro_code.stop()
         print "All done!\n"
          
     def slowtest12(self):
@@ -455,7 +455,7 @@ class TestStellarModel2SPH(TestWithMPI):
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             seed=12345
-        )
+        ).gas_particles
         stellar_evolution.stop()
         
         t_end = 1000.0 | units.s
@@ -466,24 +466,24 @@ class TestStellarModel2SPH(TestWithMPI):
         gas.h_smooth = 0.01 | units.RSun
         
         unit_converter = nbody_system.nbody_to_si(1000.0 | units.s, 1.0 | units.RSun)
-        hydro_legacy_code = Fi(unit_converter)
-        hydro_legacy_code.parameters.timestep = t_end / n_steps
-        hydro_legacy_code.parameters.isothermal_flag = True
-        hydro_legacy_code.parameters.gamma = 1.0 | units.none
-        hydro_legacy_code.gas_particles.add_particles(gas)
+        hydro_code = Fi(unit_converter)
+        hydro_code.parameters.timestep = t_end / n_steps
+        hydro_code.parameters.isothermal_flag = True
+        hydro_code.parameters.gamma = 1.0 | units.none
+        hydro_code.gas_particles.add_particles(gas)
         
         times = [] | units.Myr
         kinetic_energies =   [] | units.J
         potential_energies = [] | units.J
         thermal_energies =   [] | units.J
         for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
-            hydro_legacy_code.evolve_model(time)
+            hydro_code.evolve_model(time)
             print "Evolved model to:", time
             times.append(time)
-            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
-            potential_energies.append( hydro_legacy_code.potential_energy)
-            thermal_energies.append(   hydro_legacy_code.thermal_energy)
-        hydro_legacy_code.stop()
+            kinetic_energies.append(   hydro_code.kinetic_energy)
+            potential_energies.append( hydro_code.potential_energy)
+            thermal_energies.append(   hydro_code.thermal_energy)
+        hydro_code.stop()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_12_fi_star2sph.png"))
         print "All done!\n"
@@ -517,7 +517,7 @@ class TestStellarModel2SPH(TestWithMPI):
             seed = 12345,
             mode = "scaling method",
             do_relax = True
-        )
+        ).gas_particles
         stellar_evolution.stop()
         sph_midpoints = sph_particles.position.lengths()
         
@@ -561,7 +561,7 @@ class TestStellarModel2SPH(TestWithMPI):
             seed = 12345,
             mode = "scaling method",
             do_relax = True
-        )
+        ).gas_particles
         stellar_evolution.stop()
         sph_midpoints = sph_particles.position.lengths()
         
@@ -580,21 +580,21 @@ class TestStellarModel2SPH(TestWithMPI):
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
-        hydro_legacy_code = Gadget2(unit_converter)
-        hydro_legacy_code.gas_particles.add_particles(sph_particles)
+        hydro_code = Gadget2(unit_converter)
+        hydro_code.gas_particles.add_particles(sph_particles)
         
         times = [] | units.Myr
         kinetic_energies =   [] | units.J
         potential_energies = [] | units.J
         thermal_energies =   [] | units.J
         for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
-            hydro_legacy_code.evolve_model(time)
+            hydro_code.evolve_model(time)
             times.append(time)
-            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
-            potential_energies.append( hydro_legacy_code.potential_energy)
-            thermal_energies.append(   hydro_legacy_code.thermal_energy)
+            kinetic_energies.append(   hydro_code.kinetic_energy)
+            potential_energies.append( hydro_code.potential_energy)
+            thermal_energies.append(   hydro_code.thermal_energy)
         
-        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
+        sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
@@ -611,10 +611,10 @@ class TestStellarModel2SPH(TestWithMPI):
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
-            sph_midpoints, hydro_legacy_code.gas_particles.u, 
+            sph_midpoints, hydro_code.gas_particles.u, 
             os.path.join(get_path_to_results(), "star2sph_test_14_after_t1e4_gadget_new_u.png")
         )
-        hydro_legacy_code.stop()
+        hydro_code.stop()
         print "All done!\n"
      
     def test15(self):
@@ -626,7 +626,7 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed = 12345,
             mode = "scaling method"
-        )
+        ).gas_particles
         
         another_star = self.StarParticleWithStructure(number_of_species = 4)
         more_sph_particles = convert_stellar_model_to_SPH(
@@ -634,7 +634,7 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed = 12345,
             mode = "scaling method"
-        )
+        ).gas_particles
         more_sph_particles.x += 100.0 | units.RSun
         
         sph_particles = ParticlesSuperset([some_sph_particles, more_sph_particles])
@@ -690,14 +690,14 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed=12345,
             mode = "scaling method"
-        )
+        ).gas_particles
         print stars.mass[1], "star consisting of", number_of_sph_particles, "particles."
         sph_particles_2 = convert_stellar_model_to_SPH(
             stellar_evolution.particles[1], 
             number_of_sph_particles, 
             seed=12345,
             mode = "scaling method"
-        )
+        ).gas_particles
         stellar_evolution.stop()
         initial_separation = 4.0 | units.RSun
         initial_speed = 100.0 | units.km / units.s
@@ -711,26 +711,26 @@ class TestStellarModel2SPH(TestWithMPI):
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
-        hydro_legacy_code = Gadget2(unit_converter)
-        hydro_legacy_code.gas_particles.add_particles(all_sph_particles)
+        hydro_code = Gadget2(unit_converter)
+        hydro_code.gas_particles.add_particles(all_sph_particles)
         
         times = [] | units.Myr
         kinetic_energies =   [] | units.J
         potential_energies = [] | units.J
         thermal_energies =   [] | units.J
         for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
-            hydro_legacy_code.evolve_model(time)
+            hydro_code.evolve_model(time)
             times.append(time)
-            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
-            potential_energies.append( hydro_legacy_code.potential_energy)
-            thermal_energies.append(   hydro_legacy_code.thermal_energy)
+            kinetic_energies.append(   hydro_code.kinetic_energy)
+            potential_energies.append( hydro_code.potential_energy)
+            thermal_energies.append(   hydro_code.thermal_energy)
         
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_thermal_energy_evolution.png"))
         
-        channel = hydro_legacy_code.gas_particles.new_channel_to(all_sph_particles)
+        channel = hydro_code.gas_particles.new_channel_to(all_sph_particles)
         channel.copy_attributes(['mass', 'rho', 'x','y','z', 'vx','vy','vz', 'u'])   
         center_of_mass = all_sph_particles.center_of_mass().as_quantity_in(units.RSun)
         center_of_mass_velocity = all_sph_particles.center_of_mass_velocity().as_quantity_in(units.km / units.s)
@@ -751,7 +751,7 @@ class TestStellarModel2SPH(TestWithMPI):
             sph_midpoints, all_sph_particles.u, 
             os.path.join(get_path_to_results(), "star2sph_test_16_merger_"+n_string+"_"+t_end_string+"_new_u.png")
         )
-        hydro_legacy_code.stop()
+        hydro_code.stop()
         print "All done!\n"
         
     def slowtest17(self):
@@ -801,7 +801,7 @@ class TestStellarModel2SPH(TestWithMPI):
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             mode = "scaling method"
-        )
+        ).gas_particles
         stellar_evolution.stop()
         
         
@@ -810,21 +810,21 @@ class TestStellarModel2SPH(TestWithMPI):
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, t_end)
-        hydro_legacy_code = Gadget2(unit_converter)
-        hydro_legacy_code.gas_particles.add_particles(gas)
+        hydro_code = Gadget2(unit_converter)
+        hydro_code.gas_particles.add_particles(gas)
         
         times = [] | units.Myr
         kinetic_energies =   [] | units.J
         potential_energies = [] | units.J
         thermal_energies =   [] | units.J
         for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
-            hydro_legacy_code.evolve_model(time)
+            hydro_code.evolve_model(time)
             times.append(time)
-            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
-            potential_energies.append( hydro_legacy_code.potential_energy)
-            thermal_energies.append(   hydro_legacy_code.thermal_energy)
+            kinetic_energies.append(   hydro_code.kinetic_energy)
+            potential_energies.append( hydro_code.potential_energy)
+            thermal_energies.append(   hydro_code.thermal_energy)
         
-        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
+        sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
@@ -841,10 +841,10 @@ class TestStellarModel2SPH(TestWithMPI):
         )
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
-            sph_midpoints, hydro_legacy_code.gas_particles.u, 
+            sph_midpoints, hydro_code.gas_particles.u, 
             os.path.join(get_path_to_results(), "star2sph_test_17_n1e4_after_t1e1_gadget_new_u.png")
         )
-        hydro_legacy_code.stop()
+        hydro_code.stop()
         print "All done!\n"
     
     def slowtest18(self):
@@ -880,27 +880,23 @@ class TestStellarModel2SPH(TestWithMPI):
         print "Creating initial conditions from a MESA stellar evolution model:"
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
         
-        if with_core:
-            core, gas_without_core, core_radius = convert_stellar_model_to_SPH(
-                stellar_evolution.particles[0], 
-                number_of_sph_particles, 
-                seed = 12345,
-                mode = "scaling method",
-                with_core_particle = True
-            )
-            if len(core):
-                print "Created", len(gas_without_core), "SPH particles and one 'core-particle':\n", core
-                print "Setting gravitational smoothing to:", core_radius
-            else:
-                print "Only SPH particles created."
+        
+        stellar_model_in_SPH = convert_stellar_model_to_SPH(
+            stellar_evolution.particles[0], 
+            number_of_sph_particles, 
+            seed = 12345,
+            mode = "scaling method",
+            with_core_particle = with_core
+        )
+        if len(stellar_model_in_SPH.core_particle):
+            print "Created", len(stellar_model_in_SPH.gas_particles), 
+            print "SPH particles and one 'core-particle':\n", stellar_model_in_SPH.core_particle
+            core_radius = stellar_model_in_SPH.core_radius
         else:
-            gas_without_core = None
-            gas = convert_stellar_model_to_SPH(
-                stellar_evolution.particles[0], 
-                number_of_sph_particles, 
-                seed = 12345,
-                mode = "scaling method"
-            )
+            print "Only SPH particles created."
+            core_radius = 1.0 | units.RSun
+        print "Setting gravitational smoothing to:", core_radius
+        
         stellar_evolution.stop()
         
         t_end = 1.0e2 | units.s
@@ -908,44 +904,42 @@ class TestStellarModel2SPH(TestWithMPI):
         n_steps = 100
         
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, constants.G, t_end)
-        hydro_legacy_code = hydro_code(unit_converter)
+        hydro_code = hydro_code(unit_converter)
         
         try:
-            hydro_legacy_code.parameters.timestep = t_end / n_steps
+            hydro_code.parameters.timestep = t_end / n_steps
         except Exception as exc:
             if not "parameter is read-only" in str(exc): raise
         
-        if with_core:
-            hydro_legacy_code.parameters.epsilon_squared = core_radius**2
-            hydro_legacy_code.gas_particles.add_particles(gas_without_core)
-            hydro_legacy_code.dm_particles.add_particles(core)
-        else:
-            hydro_legacy_code.gas_particles.add_particles(gas)
+        hydro_code.parameters.epsilon_squared = core_radius**2
+        hydro_code.gas_particles.add_particles(stellar_model_in_SPH.gas_particles)
+        if len(stellar_model_in_SPH.core_particle):
+            hydro_code.dm_particles.add_particles(stellar_model_in_SPH.core_particle)
         
-        self.assertAlmostRelativeEqual(stars.mass, hydro_legacy_code.particles.total_mass(), places=7)
+        self.assertAlmostRelativeEqual(stars.mass, hydro_code.particles.total_mass(), places=7)
         
         times = [] | units.s
         kinetic_energies =   [] | units.J
         potential_energies = [] | units.J
         thermal_energies =   [] | units.J
         for time in [i*t_end/n_steps for i in range(1, n_steps+1)]:
-            hydro_legacy_code.evolve_model(time)
+            hydro_code.evolve_model(time)
             times.append(time)
-            kinetic_energies.append(   hydro_legacy_code.kinetic_energy)
-            potential_energies.append( hydro_legacy_code.potential_energy)
-            thermal_energies.append(   hydro_legacy_code.thermal_energy)
+            kinetic_energies.append(   hydro_code.kinetic_energy)
+            potential_energies.append( hydro_code.potential_energy)
+            thermal_energies.append(   hydro_code.thermal_energy)
         
-        sph_midpoints = hydro_legacy_code.gas_particles.position.lengths()
+        sph_midpoints = hydro_code.gas_particles.position.lengths()
         energy_plot(times, kinetic_energies, potential_energies, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_energy_evolution.png"))
         thermal_energy_plot(times, thermal_energies, 
             os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_thermal_energy_evolution.png"))
         internal_energy_comparison_plot(
             midpoints, specific_internal_energy, 
-            sph_midpoints, hydro_legacy_code.gas_particles.u, 
+            sph_midpoints, hydro_code.gas_particles.u, 
             os.path.join(get_path_to_results(), "star2sph_test_18_after_t1e4_gadget_internal_energy.png")
         )
-        hydro_legacy_code.stop()
+        hydro_code.stop()
         print "All done!\n"
     
     def test19(self):
@@ -997,7 +991,7 @@ class TestStellarModel2SPH(TestWithMPI):
             seed = 12345,
             mode = "scaling method",
             pickle_file = test_pickle_file
-        )
+        ).gas_particles
         self.assertEqual(len(sph_particles), number_of_sph_particles)
         self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
         self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
@@ -1061,29 +1055,22 @@ class TestStellarModel2SPH(TestWithMPI):
         print "Creating initial conditions from a MESA stellar evolution model:"
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
         
-        if with_core:
-            core, gas_without_core, core_radius = convert_stellar_model_to_SPH(
-                stellar_evolution.particles[0], 
-                number_of_sph_particles, 
-                seed = 12345,
-                base_grid_options = dict(type = "glass", target_rms = 0.04),
-                mode = "scaling method",
-                with_core_particle = True
-            )
-            if len(core):
-                print "Created", len(gas_without_core), "SPH particles and one 'core-particle':\n", core
-                print "Setting gravitational smoothing to:", core_radius
-            else:
-                print "Only SPH particles created."
+        stellar_model_in_SPH = convert_stellar_model_to_SPH(
+            stellar_evolution.particles[0], 
+            number_of_sph_particles, 
+            seed = 12345,
+            base_grid_options = dict(type = "glass", target_rms = 0.04),
+            mode = "scaling method",
+            with_core_particle = with_core
+        )
+        if len(stellar_model_in_SPH.core_particle):
+            print "Created", len(stellar_model_in_SPH.gas_particles), 
+            print "SPH particles and one 'core-particle':\n", stellar_model_in_SPH.core_particle
+            core_radius = stellar_model_in_SPH.core_radius
         else:
-            gas_without_core = None
-            gas = convert_stellar_model_to_SPH(
-                stellar_evolution.particles[0], 
-                number_of_sph_particles, 
-                seed = 12345,
-                base_grid_options = dict(type = "glass", target_rms = 0.04),
-                mode = "scaling method"
-            )
+            print "Only SPH particles created."
+            core_radius = 1.0 | units.RSun
+        print "Setting gravitational smoothing to:", core_radius
         
         t_dyn = (stellar_evolution.particles[0].radius**3 / (2*constants.G*stars.mass[0])).sqrt()
         print "Dynamical timescale:", t_dyn.as_quantity_in(units.yr)
@@ -1100,12 +1087,10 @@ class TestStellarModel2SPH(TestWithMPI):
         except Exception as exc:
             if not "parameter is read-only" in str(exc): raise
         
-        if with_core:
-            hydro_code.parameters.epsilon_squared = core_radius**2
-            hydro_code.gas_particles.add_particles(gas_without_core)
-            hydro_code.dm_particles.add_particles(core)
-        else:
-            hydro_code.gas_particles.add_particles(gas)
+        hydro_code.parameters.epsilon_squared = core_radius**2
+        hydro_code.gas_particles.add_particles(stellar_model_in_SPH.gas_particles)
+        if len(stellar_model_in_SPH.core_particle):
+            hydro_code.dm_particles.add_particles(stellar_model_in_SPH.core_particle)
         
         self.assertAlmostRelativeEqual(stars.mass, hydro_code.particles.total_mass(), places=7)
         
@@ -1132,6 +1117,34 @@ class TestStellarModel2SPH(TestWithMPI):
         )
         hydro_code.stop()
         print "All done!\n"
+    
+    def slowtest22(self):
+        print "SPH red super giant model with core (fixed core mass)"
+        number_of_sph_particles = 300
+        
+        stellar_evolution = self.new_instance(MESA, redirection = "none")
+        if stellar_evolution is None:
+            print "MESA was not built. Skipping test."
+            return
+        stars =  Particles(1)
+        stars.mass = 50.0 | units.MSun
+        stellar_evolution.initialize_code() 
+        stellar_evolution.particles.add_particles(stars)
+        stellar_evolution.commit_particles()
+        stellar_evolution.evolve_model(3.927 | units.Myr)
+        
+        expected_core_radii = [0.37648393, 0.58139942, 3.26189210, 31.89893263] | units.RSun
+        for i, tgt_core_mass in enumerate([1.0, 5.0, 25.0, 49.0] | units.MSun):
+            stellar_model_in_SPH = convert_stellar_model_to_SPH(
+                stellar_evolution.particles[0], 
+                number_of_sph_particles, 
+                seed = 12345,
+                with_core_particle = True,
+                target_core_mass = tgt_core_mass
+            )
+            self.assertAlmostRelativeEqual(stellar_model_in_SPH.core_particle[0].mass, tgt_core_mass, 1)
+            self.assertAlmostEqual(stellar_model_in_SPH.core_radius, expected_core_radii[i])
+        stellar_evolution.stop()
     
 
 def composition_comparison_plot(radii_SE, comp_SE, radii_SPH, comp_SPH, figname):

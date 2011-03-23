@@ -1,14 +1,16 @@
 import numpy
 import pickle
 import os.path
+from collections import namedtuple
 from amuse.support.data.core import Particles
 from amuse.support.units import units, constants
 from amuse.support.exceptions import AmuseWarning, AmuseException
-from amuse.ext.spherical_model import new_spherical_particle_distribution, get_enclosed_mass_from_tabulated
+from amuse.ext.spherical_model import new_spherical_particle_distribution, get_enclosed_mass_from_tabulated, EnclosedMassInterpolator
 from amuse.community.gadget2.interface import Gadget2
 from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
 from amuse.support.data.console import set_printing_strategy
 
+StellarModelInSPH = namedtuple('StellarModelInSPH', ['gas_particles', 'core_particle', 'core_radius'])
 
 class StellarModel2SPH(object):
     """
@@ -26,10 +28,11 @@ class StellarModel2SPH(object):
     
     def __init__(self, particle, number_of_sph_particles, seed = None, mode = "scaling method", 
             do_relax = False, sph_legacy_code = Gadget2, compatible_converter = ConvertBetweenGenericAndSiUnits,
-            with_core_particle = False, pickle_file = None, base_grid_options = dict(type = "bcc")):
+            with_core_particle = False, target_core_mass = None, pickle_file = None, base_grid_options = dict(type = "bcc")):
         self.particle = particle
         self.number_of_sph_particles = number_of_sph_particles
         self.with_core_particle = with_core_particle
+        self.target_core_mass = target_core_mass
         self.pickle_file = pickle_file
         if seed:
             numpy.random.seed(seed)
@@ -97,6 +100,20 @@ class StellarModel2SPH(object):
         if self.with_core_particle and self.mode == "scaling method":
             mean_density = 3.0 * self.mass / (4.0 * numpy.pi * self.radius**3)
             max_density = 1000 * mean_density
+            if self.target_core_mass:
+                if (0.0 | units.MSun) < self.target_core_mass < self.mass:
+                    interpolator = EnclosedMassInterpolator()
+                    interpolator.initialize(self.radius_profile, self.density_profile)
+                    for enc_mass_i, r_cube_i, rho_i in zip(interpolator.enclosed_mass, interpolator.radii_cubed, interpolator.densities):
+                        if enc_mass_i - interpolator.four_thirds_pi * r_cube_i * rho_i >= self.target_core_mass:
+                            max_density = rho_i
+                            print "Estimated max_density:", max_density, "= mean_density *", (max_density/mean_density).value_in(units.none)
+                            break
+                else:
+                    print "Warning: target_core_mass ignored!"
+                    print "target_core_mass:", self.target_core_mass
+                    print "total mass:", self.mass
+            
             # We assume reverse(self.density) is in ascending order.
             index = numpy.searchsorted(self.density_profile[::-1], max_density)
             if index < self.number_of_zones:
@@ -106,21 +123,12 @@ class StellarModel2SPH(object):
                     (max_density - self.density_profile[i_core]) / (self.density_profile[i_core-1] - self.density_profile[i_core]))
                 self.core_mass = get_enclosed_mass_from_tabulated(self.core_radius, 
                     radii = self.radius_profile, densities = self.density_profile)
-                print "core mass:", self.core_mass.as_quantity_in(units.MSun)
                 print "core radius:", self.core_radius.as_quantity_in(units.RSun)
-                if True:
-                    self.density_profile[:i_core] = max_density
-                    self.core_mass -= get_enclosed_mass_from_tabulated(self.core_radius, 
-                        radii = self.radius_profile, densities = self.density_profile)
-                    self.sph_core_radius = 0 | units.m
-                    print "core mass in DM particle:", self.core_mass.as_quantity_in(units.MSun)
-                else:
-                    self.radius_profile = self.radius_profile[i_core:]
-                    self.density_profile = self.density_profile[i_core:]
-                    self.composition_profile = self.composition_profile[i_core:]
-                    self.specific_internal_energy_profile = self.specific_internal_energy_profile[i_core:]
-                    self.sph_core_radius = self.core_radius
-                
+                self.density_profile[:i_core] = max_density
+                self.core_mass -= get_enclosed_mass_from_tabulated(self.core_radius, 
+                    radii = self.radius_profile, densities = self.density_profile)
+                self.sph_core_radius = 0 | units.m
+                print "core mass in DM particle:", self.core_mass.as_quantity_in(units.MSun)
                 self.mass = self.mass - self.core_mass
     
     def coordinates_from_spherical(self, radius, theta, phi):
@@ -268,17 +276,15 @@ class StellarModel2SPH(object):
         specific_internal_energy, composition = self.interpolate_internal_energy(sph_particles.position.lengths())
         sph_particles.u = specific_internal_energy
         sph_particles.composition = composition
-        if self.with_core_particle:
-            if self.core_radius:
-                core_particle = Particles(1)
-                core_particle.mass = self.core_mass
-                core_particle.position = [0.0, 0.0, 0.0] | units.m
-                core_particle.velocity = [0.0, 0.0, 0.0] | units.m / units.s
-                core_particle.radius = 0.0 | units.m
-                return core_particle, sph_particles, self.core_radius
-            else:
-                return Particles(), sph_particles, None
-        return sph_particles
+        if self.with_core_particle and self.core_radius:
+            core_particle = Particles(1)
+            core_particle.mass = self.core_mass
+            core_particle.position = [0.0, 0.0, 0.0] | units.m
+            core_particle.velocity = [0.0, 0.0, 0.0] | units.m / units.s
+            core_particle.radius = 0.0 | units.m
+            return StellarModelInSPH(gas_particles=sph_particles, core_particle=core_particle, core_radius=self.core_radius)
+        return StellarModelInSPH(gas_particles=sph_particles, core_particle=Particles(), core_radius=None)
+
     
 
 def convert_stellar_model_to_SPH(particle, number_of_sph_particles, **keyword_arguments):
