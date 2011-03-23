@@ -1205,6 +1205,9 @@ class ParticlesSubset(AbstractParticleSet):
         self._private.keys = numpy.array(keys, dtype='uint64')
         self._private.set_of_keys = set(keys)
               
+    
+    def unconverted_set(self):
+        return ParticlesSubset(self._private.particles.unconverted_set(), self._private.keys)
         
     def __getitem__(self, index):
         key = self.get_all_keys_in_store()[index]
@@ -1362,6 +1365,9 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     def copy(self):
         copiedParticles =  self._private.particles.copy()
         return ParticlesWithUnitsConverted(copiedParticles, self._private.converter)
+    
+    def unconverted_set(self):
+        return self._private.particles
         
     def add_particles_to_store(self, keys, attributes = [], values = []):
         converted_values = []

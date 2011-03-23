@@ -96,6 +96,7 @@ class Xml2Particles(object):
             'r':('position', lambda x : self.convert2vec(x)|self.dynamics_length_units),
             'v':('velocity', lambda x : self.convert2vec(x)|self.dynamics_length_units / self.dynamics_time_units),
             'a':('acceleration', lambda x : self.convert2vec(x)|self.dynamics_length_units / (self.dynamics_time_units ** 2)),
+            'pot':('specific_potential', lambda x : float(x)|(self.dynamics_length_units / self.dynamics_time_units) ** 2) ,
             'system_time':('timestamp', lambda x: float(x)|self.dynamics_time_units),
             'M_env': ('envelope_mass',  lambda x: float(x)|units.MSun),
             'M_rel': ('relative_mass',  lambda x: float(x)|units.MSun),

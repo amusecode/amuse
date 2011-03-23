@@ -284,7 +284,7 @@ class Test(amusetest.TestCase):
         
         self.assertAlmostRelativeEquals(set[0].velocity, [177.579717905, 38.5027308364, -35.8571344243] | units.km / units.hour, 8)
         self.assertAlmostRelativeEquals(set[0].acceleration, [-0.000648471729782, 0.000309476774701, -0.000356623346185] | units.parsec / (units.Myr ** 2), 8)
-        
+        self.assertAlmostRelativeEquals(set.unconverted_set()[0].specific_potential, -0.32735384622167929 | nbody_system.potential)
         #select the main sequence star, the dwarf masses don't match
         main_sequence_stars = set.select(lambda stellar_type : stellar_type ==  units.stellar_type("Main Sequence star"), ["stellar_type"])
         self.assertAlmostRelativeEquals(main_sequence_stars.mass, main_sequence_stars.relative_mass, 10)
