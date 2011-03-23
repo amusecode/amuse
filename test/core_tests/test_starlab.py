@@ -111,6 +111,86 @@ plummer_scaled_content = """(Particle
 )Particle
 """
 
+with_stellar_structure = """(Particle
+  N = 2
+(Log
+ ===>  Wed Mar 23 12:28:21 2011
+       Starlab 4.4.4 (user vanelteren) : makeplummer -n 2
+       random number generator seed = 1300879701
+  initial_mass = 1
+ ===>  Wed Mar 23 12:28:21 2011
+       Starlab 4.4.4 (user vanelteren) : makemass -f 1 -x -2.0 -l 0.1 -u 20
+       random number generator seed = 1300879701
+       Power_Law mass function, total mass =     0.22 Solar
+ ===>  Wed Mar 23 12:28:21 2011
+       Starlab 4.4.4 (user vanelteren) : add_star -Q 0.5 -R 5
+ ===>  Wed Mar 23 12:28:21 2011
+       Starlab 4.4.4 (user vanelteren) : scale -s
+  initial_total_energy = -0.25
+  initial_rvirial = 1
+)Log
+(Dynamics
+  system_time  =  0
+  m  =  1.000000000000002
+  r  =  0 0 0
+  v  =  0 0 0
+  com_time = 0
+  com_pos = 0 0 0
+  com_vel = 0 0 0
+  total_energy = -0.25
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  mass_scale     =  4.62223018200823255
+  size_scale     =  4.51000000000000035e-09
+  time_scale     =  0.0028016566610805007
+)Star
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.483839787917132669
+  r  =  -0.209118735762131774 -0.0880146969484976449 0.122429686361064466
+  v  =  0.435701422371714053 -0.0578440884891995299 0.583282312300410277
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  0.104676696933106134
+  M_env  =  0.0946766969331061387
+  M_core =  0.0100000000000000002
+  T_eff  =  3011.01000587455155
+  L_eff  =  0.00122847524117014736
+)Star
+)Particle
+(Particle
+  N = 1
+(Log
+)Log
+(Dynamics
+  m  =  0.516160212082869219
+  r  =  0.196024339714903045 0.0825034772310478115 -0.114763501907016688
+  v  =  -0.408419089384746692 0.0542220629403740648 -0.546758900962974193
+)Dynamics
+(Hydro
+)Hydro
+(Star
+  Type   =  main_sequence
+  T_cur  =  0
+  M_rel  =  0.111669084350665276
+  M_env  =  0.101669084350665281
+  M_core =  0.0100000000000000002
+  T_eff  =  3051.91244441666595
+  L_eff  =  0.00147739782384390963
+)Star
+)Particle
+)Particle
+"""
+
 class Test(amusetest.TestCase):
 
     def test1(self):
@@ -183,4 +263,33 @@ class Test(amusetest.TestCase):
         self.assertTrue(numpy.all(set.y < 1 | units.parsec))
         self.assertTrue(numpy.all(set.z > -1 | units.parsec))
         self.assertTrue(numpy.all(set.z < 1 | units.parsec))
+        
+    def test5(self):
+        set = starlab.StarlabFileFormatProcessor().load_string(with_stellar_structure)
+        self.assertEquals(len(set), 2)
+        self.assertAlmostRelativeEquals(set[0].envelope_mass, 0.0946766969331061387 | units.MSun)
+        self.assertAlmostRelativeEquals(set[0].core_mass, 0.0100000000000000002 | units.MSun)
+        self.assertAlmostRelativeEquals(set[0].relative_mass,  set[0].mass, 10)
+        self.assertAlmostRelativeEquals(set[0].effective_temperature,  3011.01000587455155 | units.K)
+        self.assertAlmostRelativeEquals(set[0].effective_luminocity,  0.00122847524117014736 | units.LSun)
+        self.assertAlmostRelativeEquals(set[0].stellar_type, units.stellar_type("Main Sequence star"))
+        self.assertAlmostRelativeEquals(set[1].relative_mass,  set[1].mass, 10)
+        
+    def test6(self):
+        directory = os.path.dirname(__file__)
+        set = io.read_set_from_file(os.path.join(directory, 'evolved.dyn'), 'starlab')
+        self.assertEquals(len(set), 20)
+        
+        self.assertAlmostRelativeEquals(set.time, set.age, 4) #only accurate to 4, starlab stellar evolution time scale?
+        
+        self.assertAlmostRelativeEquals(set[0].velocity, [177.579717905, 38.5027308364, -35.8571344243] | units.km / units.hour, 8)
+        self.assertAlmostRelativeEquals(set[0].acceleration, [-0.000648471729782, 0.000309476774701, -0.000356623346185] | units.parsec / (units.Myr ** 2), 8)
+        
+        #select the main sequence star, the dwarf masses don't match
+        main_sequence_stars = set.select(lambda stellar_type : stellar_type ==  units.stellar_type("Main Sequence star"), ["stellar_type"])
+        self.assertAlmostRelativeEquals(main_sequence_stars.mass, main_sequence_stars.relative_mass, 10)
+        carbon_dwarfs = set.select(lambda stellar_type : stellar_type ==   units.stellar_type("Carbon/Oxygen White Dwarf") , ["stellar_type"])
+        self.assertAlmostRelativeEquals(carbon_dwarfs.mass, carbon_dwarfs.core_mass, 10)\
+        
+        
         

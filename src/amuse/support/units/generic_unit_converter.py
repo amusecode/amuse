@@ -188,13 +188,13 @@ class ConvertBetweenGenericAndSiUnits(object):
                 self.generic_to_si = generic_to_si
             
             def from_source_to_target(self, quantity):
-                if hasattr(quantity, 'unit'):
+                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
                     return self.generic_to_si.to_generic(quantity) 
                 else:
                     return quantity
                 
             def from_target_to_source(self, quantity):
-                if hasattr(quantity, 'unit'):
+                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
                     return self.generic_to_si.to_si(quantity)
                 else:
                     return quantity
@@ -207,13 +207,13 @@ class ConvertBetweenGenericAndSiUnits(object):
                 self.generic_to_si = generic_to_si
             
             def from_source_to_target(self, quantity):
-                if hasattr(quantity, 'unit'):
+                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
                     return self.generic_to_si.to_si(quantity) 
                 else:
                     return quantity
                 
             def from_target_to_source(self, quantity):
-                if hasattr(quantity, 'unit'):
+                if hasattr(quantity, 'unit') and not quantity.unit.is_non_numeric():
                     return self.generic_to_si.to_generic(quantity)
                 else:
                     return quantity

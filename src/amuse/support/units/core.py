@@ -516,13 +516,13 @@ class enumeration_unit(nonnumeric_unit):
     def __init__(self, name, symbol, possible_values = None, names_for_values = None):
         nonnumeric_unit.__init__(self, name, symbol)
         
-        self.possible_values = self._inital_list_of_possible_values(possible_values, names_for_values)
-        self.names_for_values = self._inital_names_for_values(possible_values, names_for_values)
+        self.possible_values = self._initial_list_of_possible_values(possible_values, names_for_values)
+        self.names_for_values = self._initial_names_for_values(possible_values, names_for_values)
         if not len(self.possible_values) == len(self.names_for_values):
             raise exceptions.AmuseException("Must provide equal lenght list for values({0}) and names({1})".format(len(self.possible_values), len(self.names_for_values)))
-        self.mapping_from_values_to_names = self._inital_mapping_from_values_to_names()
+        self.mapping_from_values_to_names = self._initial_mapping_from_values_to_names()
         
-    def _inital_list_of_possible_values(self, possible_values, names_for_values):
+    def _initial_list_of_possible_values(self, possible_values, names_for_values):
         if possible_values is None:
             if names_for_values is None:
                 raise exceptions.AmuseException("Must provide a list of values and / or a list of names for each value")
@@ -532,14 +532,14 @@ class enumeration_unit(nonnumeric_unit):
             return list(possible_values)
             
     
-    def _inital_mapping_from_values_to_names(self):
+    def _initial_mapping_from_values_to_names(self):
         result = {}
         for value, name in zip(self.possible_values, self.names_for_values):
             result[value] = name
         return result
             
     
-    def _inital_names_for_values(self, possible_values, names_for_values):
+    def _initial_names_for_values(self, possible_values, names_for_values):
         if names_for_values is None:
             if possible_values is None:
                 raise exceptions.AmuseException("Must provide a list of values and / or a list of names for each value")
@@ -558,6 +558,13 @@ class enumeration_unit(nonnumeric_unit):
         for x in self.possible_values:
             yield x | self
         
+    def __call__(self, string):
+        index = self.names_for_values.index(string)
+        if index > 0:
+            return self.possible_values[index] | self
+        else:
+            raise exceptions.AmuseException("{0} is not a valid name for {1} enumeration type".format(string, self.name))
+            
     @property
     def dtype(self):
         return 'int32'

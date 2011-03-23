@@ -1,12 +1,40 @@
 from amuse.support.data import core
 from amuse.support.units import units
 from amuse.support.units import nbody_system
+from amuse.support.units import generic_unit_converter
 from amuse.support.io import base
 
 import sys
 import xml.dom.minidom 
 import pdb #use with pdb.set_trace()
 import re
+
+starlab_stellar_types_to_amuse_stellar_type = {
+    "planet":units.stellar_type("Unknown stellar type"),
+    "proto_star":units.stellar_type("Unknown stellar type"),
+    "brown_dwarf":units.stellar_type("Unknown stellar type"),
+    "main_sequence":units.stellar_type("Main Sequence star"),
+    "hyper_giant":units.stellar_type("Second Asymptotic Giant Branch"),
+    "hertzsprung_gap":units.stellar_type("Hertzsprung Gap"),
+    "sub_giant":units.stellar_type("First Giant Branch"),
+    "horizontal_branch":units.stellar_type("Core Helium Burning"),
+    "super_giant":units.stellar_type("First Asymptotic Giant Branch"),
+    "thorne_zytkow":units.stellar_type("Unknown stellar type"),
+    "carbon_star":units.stellar_type("Unknown stellar type"),
+    "helium_star":units.stellar_type("Main Sequence Naked Helium star"),
+    "helium_giant":units.stellar_type("Giant Branch Naked Helium star"),
+    "helium_dwarf":units.stellar_type("Helium White Dwarf"),
+    "carbon_dwarf":units.stellar_type("Carbon/Oxygen White Dwarf"),
+    "oxygen_dwarf":units.stellar_type("Oxygen/Neon White Dwarf"),
+    "xray_pulsar":units.stellar_type("Neutron Star"),
+    "radio_pulsar":units.stellar_type("Neutron Star"),
+    "neutron_star":units.stellar_type("Neutron Star"),
+    "black_hole":units.stellar_type("Black Hole"),
+    "Disintegrated":units.stellar_type("Massless Supernova"),
+    "SPZDCH_star":units.stellar_type("Unknown stellar type"),
+    "static_star":units.stellar_type("Unknown stellar type"),
+    "star_cluster":units.stellar_type("Unknown stellar type")
+}
 
 class Dyn2Xml(object):
     
@@ -54,17 +82,40 @@ class Dyn2Xml(object):
         return "<pm "+ parts[0].lstrip()+'= "'+parts[1].lstrip()+'" />'
     
 class Xml2Particles(object):
-
+    dynamics_mass_units = nbody_system.mass
+    dynamics_time_units = nbody_system.time
+    dynamics_length_units = nbody_system.length
+    
     def __init__(self):
         self.xmls = ""
         self.system = core.Particles()
-        self.translator = {'N':'number','m':'mass','r':'position','v':'velocity','system_time':'timestamp'}
+        self.translator = {
+            #'N':('number', lambda x : int(x) ),
+            'm':('mass', lambda x : float(x)|self.dynamics_mass_units) ,
+            't':('time', lambda x : float(x)|self.dynamics_time_units) ,
+            'r':('position', lambda x : self.convert2vec(x)|self.dynamics_length_units),
+            'v':('velocity', lambda x : self.convert2vec(x)|self.dynamics_length_units / self.dynamics_time_units),
+            'a':('acceleration', lambda x : self.convert2vec(x)|self.dynamics_length_units / (self.dynamics_time_units ** 2)),
+            'system_time':('timestamp', lambda x: float(x)|self.dynamics_time_units),
+            'M_env': ('envelope_mass',  lambda x: float(x)|units.MSun),
+            'M_rel': ('relative_mass',  lambda x: float(x)|units.MSun),
+            'M_core': ('core_mass',  lambda x: float(x)|units.MSun),
+            'T_eff' : ('effective_temperature', lambda x: float(x)|units.K),
+            'T_cur' : ('age', lambda x: float(x)|units.Myr),
+            'L_eff' : ('effective_luminocity', lambda x: float(x)|units.LSun),
+            'Type'  : ('stellar_type', self.convert_starlab_stellar_type_to_amuse)
+        }
         self.timestamp = None
         self.mass_scale = None
         self.size_scale = None
         self.time_scale = None
         
-
+    def convert_starlab_stellar_type_to_amuse(self, string):
+        if string in starlab_stellar_types_to_amuse_stellar_type:
+            return starlab_stellar_types_to_amuse_stellar_type[string]
+        else:
+            return units.stellar_type("Unknown stellar type")
+            
     def add_particle_with_parameters(self, subnode, parent):
         added_particle = self.system.add_particle(core.Particle())  
            
@@ -101,15 +152,8 @@ class Xml2Particles(object):
         elif key == 'time_scale':
             self.time_scale = float(value)
         elif key in self.translator.keys():                                     
-            amuse_key = self.translator[key]                                  
-            if amuse_key == 'mass':                                           
-                particle.mass = float(value)|nbody_system.mass                              
-            if amuse_key == "position":                                       
-                particle.position = self.convert2vec(value)|nbody_system.length                
-            if amuse_key == "velocity":                                       
-                particle.velocity = self.convert2vec(value)|nbody_system.speed
-            if amuse_key == 'timestamp':
-                self.timestamp = float(value)|nbody_system.time
+            amuse_attribute_name, conversion_function = self.translator[key]   
+            setattr(particle,  amuse_attribute_name, conversion_function(value)) 
         
     def convert2vec(self, attribute):
         
@@ -293,27 +337,42 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         base.FileFormatProcessor.__init__(self, filename, set, format)
         
     
+    def _is_valid_scaling_factor(self, factor):
+        return not factor is None and not factor == -1.0
+        
     def load_string(self, string):
         x = Dyn2Xml()
         xml_string = x.convert_startlab_string_to_xml_string(string)
         xml2particles = Xml2Particles()
+        xml2particles.dynamics_mass_units = self.dynamics_mass_units
+        xml2particles.dynamics_time_units = self.dynamics_time_units
+        xml2particles.dynamics_length_units = self.dynamics_length_units
         xml2particles.parse_xml(xml_string)
-        if not xml2particles.mass_scale is None and not xml2particles.mass_scale  == -1:
-            convert_nbody = nbody_system.nbody_to_si(
-                (1.0 / xml2particles.mass_scale) | units.MSun,
-                (1.0 / xml2particles.size_scale) | units.RSun,
-            )
-            result = core.ParticlesWithUnitsConverted(
-                xml2particles.system,
-                convert_nbody.as_converter_from_si_to_nbody()
-            )   
-        elif not self.nbody_to_si_converter is None:
-            result = core.ParticlesWithUnitsConverted(
-                xml2particles.system,
-                self.nbody_to_si_converter.as_converter_from_si_to_nbody()
-            )
-        else:
+        unit_converter = None
+        if not self.nbody_to_si_converter is None:
+            unit_converter = self.nbody_to_si_converter.as_converter_from_si_to_nbody()
+        elif self.must_scale:
+            if not self._is_valid_scaling_factor(xml2particles.mass_scale):
+                unit_converter = None
+            elif not self._is_valid_scaling_factor(xml2particles.time_scale):
+                unit_converter = nbody_system.nbody_to_si(
+                    (1.0 / xml2particles.mass_scale) | units.MSun,
+                    (1.0 / xml2particles.size_scale) | units.RSun,
+                ).as_converter_from_si_to_nbody()
+            else:
+                unit_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
+                    (1.0 / xml2particles.mass_scale) | units.MSun,
+                    (1.0 / xml2particles.size_scale) | units.RSun,
+                    (1.0 / xml2particles.time_scale) | units.Myr,
+                ).as_converter_from_si_to_generic()
+                
+        if unit_converter is None:
             result = xml2particles.system
+        else:
+            result = core.ParticlesWithUnitsConverted(
+                xml2particles.system,
+                unit_converter
+            )
         
         if self.return_children:
             return result[0].children()
@@ -335,12 +394,45 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
     
     @base.format_option
     def return_children(self):
-        "if True returns the children of the root node, if False returns the root node"
+        """If True returns the children of the root node, if False returns the root node (defaults to True)"""
         return True
         
 
     @base.format_option
     def nbody_to_si_converter(self):
-        "starlab datafiles store nbody data, provide a converter to store si data (None means no converter)"
+        """Starlab datafiles store stellar dynamics properties in scaled nbody values, 
+        provide a converter to store si data (defaults to None). 
+        Value None means no converter, or use scaling values provided in the file"""
         return None
+        
+    
+    @base.format_option
+    def dynamics_mass_units(self):
+        """The m field in the dynamics section of a starlab file can be in MSun or in scaled units , defaults to scaled units (nbody_system.mass).
+        When set to scaled units, AMUSE will convert the units if scaling parameters are also given in the file. See the `must_scale` option
+        to turn this scaling off"""
+        return nbody_system.mass
+        
+    @base.format_option
+    def dynamics_time_units(self):
+        """The time fields in the dynamics section of a starlab file can be in Myr or in scaled units , defaults to scaled units (nbody_system.time).
+        When set to scaled units, AMUSE will convert the units if scaling parameters are also given in the file. See the `must_scale` option
+        to turn this scaling off.
+        """
+        return nbody_system.time
+        
+    @base.format_option
+    def dynamics_length_units(self):
+        """The length fields in the dynamics section of a starlab file can be in parsec or in scaled units , defaults to scaled units (nbody_system.length)
+        When set to scaled units, AMUSE will convert the units if scaling parameters are also given in the file. See the `must_scale` option
+        to turn this scaling off.
+        """
+        return nbody_system.length
+        
+    @base.format_option
+    def must_scale(self):
+        """If True use the scaling values from the file, if False do not scale the stellar dynamics properties.
+        Only used when no nbody to si converter has been set.
+        """
+        return True
         
