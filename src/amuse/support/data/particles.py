@@ -1209,6 +1209,7 @@ class ParticlesSubset(AbstractParticleSet):
     def unconverted_set(self):
         return ParticlesSubset(self._private.particles.unconverted_set(), self._private.keys)
         
+        
     def __getitem__(self, index):
         key = self.get_all_keys_in_store()[index]
         if key == 0 or key >= (2**64 - 1):
@@ -1267,7 +1268,7 @@ class ParticlesSubset(AbstractParticleSet):
         return self._original_set().get_timestamp()
     
     def previous_state(self):
-        return self._original_set().previous_state()
+        return ParticlesSubset(self._private.particles.previous_state(), self._private.keys)
         
     def difference(self, other):
         new_set_of_keys = self._private.set_of_keys.difference(other.as_set()._private.set_of_keys)

@@ -97,8 +97,7 @@ class Xml2Particles(object):
             'v':('velocity', lambda x : self.convert2vec(x)|self.dynamics_length_units / self.dynamics_time_units),
             'a':('acceleration', lambda x : self.convert2vec(x)|self.dynamics_length_units / (self.dynamics_time_units ** 2)),
             'pot':('specific_potential', lambda x : float(x)|(self.dynamics_length_units / self.dynamics_time_units) ** 2) ,
-            'system_time':('timestamp', lambda x: float(x)|self.dynamics_time_units),
-            'M_env': ('envelope_mass',  lambda x: float(x)|units.MSun),
+             'M_env': ('envelope_mass',  lambda x: float(x)|units.MSun),
             'M_rel': ('relative_mass',  lambda x: float(x)|units.MSun),
             'M_core': ('core_mass',  lambda x: float(x)|units.MSun),
             'T_eff' : ('effective_temperature', lambda x: float(x)|units.K),
@@ -152,6 +151,8 @@ class Xml2Particles(object):
             self.size_scale = float(value)
         elif key == 'time_scale':
             self.time_scale = float(value)
+        elif key == 'system_time':
+            self.timestamp = float(value)|self.dynamics_time_units
         elif key in self.translator.keys():                                     
             amuse_attribute_name, conversion_function = self.translator[key]   
             setattr(particle,  amuse_attribute_name, conversion_function(value)) 
@@ -374,7 +375,7 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
                 xml2particles.system,
                 unit_converter
             )
-        
+
         if self.return_children:
             return result[0].children()
         else:

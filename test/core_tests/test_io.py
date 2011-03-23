@@ -236,7 +236,7 @@ class FormatTests(amusetest.TestCase):
         
         options = base.get_options_for_format('dyn')
         name, description, default = options[1]
-        self.assertEquals(name, 'nbody_to_si_converter')
+        self.assertEquals(name, 'dynamics_mass_units')
         
         options = base.get_options_for_format('hdf5')
         name, description, default = options[0]
@@ -262,7 +262,6 @@ class FormatTests(amusetest.TestCase):
         current_time = 1.0 | units.Myr
         io.write_set_to_file(x.savepoint(current_time), "time_test_unit.dyn","dyn", nbody_to_si_converter = convert)
         y = io.read_set_from_file("time_test_unit.dyn","dyn", nbody_to_si_converter = convert)
-        
         self.assertAlmostEquals(current_time, y.previous_state().get_timestamp(), 8, in_units=units.Myr)
         self.assertAlmostEquals(x.mass, y.mass, 8)
         self.assertAlmostEquals(x.position, y.position,8)
