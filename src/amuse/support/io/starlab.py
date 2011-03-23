@@ -298,7 +298,7 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         xml_string = x.convert_startlab_string_to_xml_string(string)
         xml2particles = Xml2Particles()
         xml2particles.parse_xml(xml_string)
-        if not xml2particles.mass_scale is None:
+        if not xml2particles.mass_scale is None and not xml2particles.mass_scale  == -1:
             convert_nbody = nbody_system.nbody_to_si(
                 (1.0 / xml2particles.mass_scale) | units.MSun,
                 (1.0 / xml2particles.size_scale) | units.RSun,

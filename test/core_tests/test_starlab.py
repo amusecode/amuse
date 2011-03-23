@@ -1,5 +1,6 @@
 from amuse.support.data import core
 from amuse.support.io import starlab
+from amuse.support import io
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 
@@ -60,4 +61,10 @@ class Test(amusetest.TestCase):
         self.assertEquals(All[0].children().mass.value_in(units.kg)[0], 8.0)
         self.assertEquals(All[1].children().mass.value_in(units.kg)[0], 4.0)
         self.assertEquals(All[5].children().mass.value_in(units.kg)[0], 2.0)
+        
+    def test3(self):
+        directory = os.path.dirname(__file__)
+        set = io.read_set_from_file(os.path.join(directory, 'plummer.dyn'), 'starlab')
+        self.assertEquals(len(set), 10)
+        self.assertAlmostRelativeEquals(set.mass, 0.1 | nbody_system.mass)
         
