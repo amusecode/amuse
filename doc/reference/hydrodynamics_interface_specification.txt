@@ -55,7 +55,7 @@ functions must get or set one scalar property (1 argument) or a vector property 
 
 
 .. autoclass:: amuse.community.interface.hydro.HydrodynamicsInterface
-   :members: get_density, set_density, get_momentum_density, set_momentum_density, get_energy_density, set_energy_density
+   :members: get_density, set_grid_density, get_momentum_density, set_grid_momentum_density, get_energy_density, set_grid_energy_density
 
 
 Model evolution

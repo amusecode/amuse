@@ -69,7 +69,7 @@ Supported File Formats
     tool will return the masses in solar mass units). To read these
     files you need to set the ``dynamics_mass_units``.
     
-    .. code:: bash
+    .. code-block:: bash
     
         > makeplummer -n 1000 > plummer1.dyn
         > cat plummer1.dyn | makemass -f 1 -x -2.0 -l 0.1 -u 20 > plummer2.dyn
@@ -101,7 +101,7 @@ Supported File Formats
     The ``plummer1.dyn``, ``plummer4.dyn`` and ``plummer5.dyn`` can also
     be read in nbody units. In the following example the returned 
     particles have dynamic attributes (mass, radius, velocity, acceleration)
-    in *nbody* units.
+    in *nbody* units::
     
         >>> from amuse.support import io
         >>> particles1 = io.read_set_from_file('plummer1.dyn','starlab')

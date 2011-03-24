@@ -90,6 +90,8 @@ implements function call handling. To continue our example::
     # you can ask the specificition of a
     # first level function
     print hydro.get_position_of_index.specification
+
+
 Adding units
 ~~~~~~~~~~~~
 The first step after defining a first level function is to

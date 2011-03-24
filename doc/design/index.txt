@@ -9,7 +9,6 @@ Design documentation
    introduction
    architecture
    packages
-   model
    sets
    mpi
    

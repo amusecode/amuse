@@ -86,6 +86,7 @@ data of a particle is stored in the set.
     Methods to retreive physical properties of the particles set
     ------------------------------------------------------------
     
+.. automodule:: amuse.support.data.particle_attributes
     .. autofunction:: center_of_mass 
     .. autofunction:: center_of_mass_velocity
     .. autofunction:: kinetic_energy

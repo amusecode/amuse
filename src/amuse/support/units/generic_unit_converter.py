@@ -27,12 +27,11 @@ class ConverterDoc(object):
     assigned the unit second to time and by the requirement that unit lenght / second equals one,
     the new unit length will be {*c*} meters in S.I. units.
 
-    Example:
+    Example::
 
-    >>> from amuse.support.units.generic_unit_system import *
-    >>> from amuse.support.units.generic_unit_converter import *
-    >>> from amuse.support.units import units, constants
-    >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.m)
+        >>> from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+        >>> from amuse.support.units import units, constants
+        >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.m)
 
     """
 
@@ -127,13 +126,17 @@ class ConvertBetweenGenericAndSiUnits(object):
         return None, None
 
     def to_si(self, value):
-        """                       
-        >>> from amuse.support.units.generic_unit_system import *
-        >>> from amuse.support.units.generic_unit_converter import *
-        >>> from amuse.support.units import units, constants
-        >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
-        >>> print converter.to_si(length)
-        299792458.0 m
+        """     
+        Convert a quantity in generic units to a quantity in
+        S.I. units.
+        
+        .. code-block::
+                          
+            >>> from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+            >>> from amuse.support.units import units, constants
+            >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
+            >>> print converter.to_si(length)
+            299792458.0 m
         """ 
         
         factor = value.unit.factor
@@ -155,12 +158,16 @@ class ConvertBetweenGenericAndSiUnits(object):
 
     def to_generic(self, value):
         """
-        >>> from amuse.support.units.generic_unit_system import *
-        >>> from amuse.support.units.generic_unit_converter import *
-        >>> from amuse.support.units import units, constants
-        >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
-        >>> print converter.to_generic(constants.c)
-        1.0 length * time**-1
+        Convert a quantity in S.I units to a quantity in
+        generic units.
+        
+        .. code-block::
+        
+            >>> from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+            >>> from amuse.support.units import units, constants
+            >>> converter = ConvertBetweenGenericAndSiUnits(constants.c, units.s)
+            >>> print converter.to_generic(constants.c)
+            1.0 length * time**-1
 
         """   
 

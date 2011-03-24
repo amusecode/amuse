@@ -354,6 +354,8 @@ file and add the following method to the **NearestNeighborInterfaceTests** class
         self.assertEquals(n2, [4,4,1,1])
         
         instance.stop()
+
+
 This test calls the *find_nearest_neighbors* method with 4 positions
 and checks if the nearest neighbors are determined correctly.
 Let's run the test, and see if everything is working:
@@ -447,9 +449,9 @@ Defining methods with units
 +++++++++++++++++++++++++++
 
 We first want to add units and error handling to the 
-**find_nearest_neighbors**. We do this by creating a **define_methods**
-function on the **NearestNeighbor** class. Open an editor on
- *particles.py* and add this method to the class:
+**find_nearest_neighbors**. We do this by creating a 
+**define_methods** function on the **NearestNeighbor** class. Open 
+an editor on *particles.py* and add this method to the class:
 
 .. code-block:: python
 

@@ -406,7 +406,7 @@ For 9.10 the FFTW package name is fftw3 and not libfftw3, FFTW can be installed 
  
 
 Installing on Ubuntu 10.10
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this section we asume a default Ubuntu desktop installation.
 

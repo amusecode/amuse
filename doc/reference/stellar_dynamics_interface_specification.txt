@@ -65,7 +65,7 @@ The gravitational dynamics codes evolve the properties of the particles in time.
 are needed to control the evolution in the code.
 
 .. autoclass:: amuse.community.interface.gd.GravitationalDynamicsInterface
-   :members: initialize_particles, evolve
+   :members: commit_particles, evolve
 
 
 Diagnostics

@@ -121,7 +121,7 @@ class ParticleGetAttributesMethod(ParticleMappingMethod):
     Simple attribute getter methods take an array of indices
     and return a tuple with arrays of result values.
     
-    .. code::
+    .. code-block::
     
         x, y, z = instance.get_xyz(indices)
     
@@ -209,7 +209,7 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
     Simple attribute setter methods take an array of indices
     and one or more arrays of new values.
     
-    .. code::
+    .. code-block::
     
        instance.set_xyz(indices, x, y, z)
     
@@ -288,7 +288,7 @@ class NewParticleMethod(ParticleSetAttributesMethod):
     function is supposed to return an array
     of the indices of the created particles.
     
-    .. code::
+    .. code-block::
     
        indices = instance.new_particle(x, y, z)
        
@@ -308,7 +308,7 @@ class ParticleQueryMethod(object):
     lists). This method is most useful to select one particle form
     all particles in the set
     
-    .. code::
+    .. code-block::
     
         index = instance.get_escaper()
     
@@ -333,7 +333,7 @@ class ParticleSpecificSelectMethod(object):
     useful to return links between particles (subparticles or
     nearest neighbors)
     
-    .. code::
+    .. code-block::
     
         output_index = instance.get_nearest_neigbord(input_index)
     
@@ -379,7 +379,7 @@ class ParticleMethod(AbstractCodeMethodWrapper):
     indices and optional arguments. Instances have a lot in common
     with attribute getters, but can take extra arguments.
     
-    .. code::
+    .. code-block::
     
         pressure = instance.get_pressure(index, gamma)
     """
@@ -408,7 +408,7 @@ class ParticleSetSelectSubsetMethod(object):
     
     The pseudo-code for this selection is:
     
-    .. code::
+    .. code-block::
     
         set_selection_criteria(r = 10.0 | units.m)
         n = get_number_of_selected_particles()

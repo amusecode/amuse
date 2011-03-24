@@ -37,8 +37,7 @@ methods define the functionality to create, remove and query the particles in th
 *Currently the interface does not specify query function for stellar evolution, see stellar evolution for possible direction*
 
 .. autoclass:: amuse.community.interface.se.StellarEvolution
-   :members: new_zams_star, delete_star , get_number_of_stars, get_index_of_first_star, get_index_of_next_star
-  
+   :members: new_particle, delete_star
 
 Object State
 ~~~~~~~~~~~~~~
@@ -47,7 +46,7 @@ functions must get or set one scalar property (1 argument) or a vector property 
 *Currently only get functions are specified*
 
 .. autoclass:: amuse.community.interface.se.StellarEvolution
-   :members: get_mass, get_radius, get_luminosity, get_temperature, get_age, get_type, get_stellar_type
+   :members: get_mass, get_radius, get_luminosity, get_temperature, get_age, get_stellar_type, get_stellar_type
 
 
 Model evolution
@@ -56,7 +55,7 @@ The stellar evolution codes evolve the properties of the star in time. The follo
 are needed to control the evolution in the code.
 
 .. autoclass:: amuse.community.interface.se.StellarEvolution
-   :members: initialize_stars, evolve
+   :members: commit_particles, evolve
 
 
 Diagnostics

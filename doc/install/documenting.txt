@@ -7,15 +7,16 @@ Writing documentation
 Getting started
 ===============
 
-The documentation for AMUSE is generated from ReStructured Text
-using the Sphinx_ documentation generation tool. Sphinx-0.6 or later
-is required. You might still run into problems, so most developers
-work from the sphinx source repository (Mercurial based) because it
-is a rapidly evolving project::
+The documentation for AMUSE is generated from ReStructured Text 
+using the Sphinx_ documentation generation tool. Sphinx version 1.0 
+or later is required. You might still run into problems, so most 
+developers work from the sphinx source repository (Mercurial based) 
+because it is a rapidly evolving project:
 
-  hg clone http://bitbucket.org/birkenfeld/sphinx/
-  cd sphinx
-  python setup.py install
+.. code-block:: bash
+  > hg clone http://bitbucket.org/birkenfeld/sphinx/
+  > cd sphinx
+  > python setup.py install
 
 .. _Sphinx: http://sphinx.pocoo.org/
 

@@ -425,9 +425,9 @@ Defining methods with units
 +++++++++++++++++++++++++++
 
 We first want to add units and error handling to the 
-**find_nearest_neighbors**. We do this by creating a **define_methods**
-function on the **NearestNeighbor** class. Open an editor on
- *particles.py* and add this method to the class:
+**find_nearest_neighbors**. We do this by creating a 
+**define_methods** function on the **NearestNeighbor** class. Open 
+an editor on *particles.py* and add this method to the class:
 
 .. code-block:: python
 

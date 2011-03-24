@@ -324,7 +324,7 @@ grids
 
 
 Wrappers
-+++++++
+++++++++
 
 Wrappers decorate a method. Wrappers can do pre- and post-processing of
 the arguments or decide if a method can savely be called.

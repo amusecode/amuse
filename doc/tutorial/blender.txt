@@ -65,15 +65,13 @@ We can move and rotate our object using:
 
 The Hermite Sun-Earth model with blender visualisation will become like this:
 
-.. literalinclude:: ../../test/examples/test_blender.py
-    									
-The path to this example code is {amusedir}/trunk/test/examples/test_blender.py
-				      
+.. literalinclude:: ../../examples/applications/test_blender.py
+
+The path to this example code is {amusedir}/trunk/examples/applications/test_blender.py
+      
 We save this file as *myname.py*, open it in blender and run it by typing **ALT-P** (cursor in editor):
 
 .. image:: blenderrunscript.png
    :width: 800
-   :align: center
-    	
-												      
+   :align: center 
 

@@ -13,7 +13,7 @@ GAMMA = 1.4
 DIMENSIONS_OF_MESH = (400,400,1)
 PERTUBATION_AMPLITUDE = 0.01 | speed
 
-def new_instance_of_hydro_code(number_of_workers=1):
+def new_instance_of_hydro_code(number_of_workers=4):
     result=Athena(number_of_workers = number_of_workers)
     result.initialize_code()
     result.parameters.gamma = GAMMA
