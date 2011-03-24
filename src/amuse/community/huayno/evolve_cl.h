@@ -1,5 +1,5 @@
 #define CLCONTEXT   stdcpu
-#define NTHREAD  2
+#define NTHREAD  64
 #define BLOCKSIZE 64
 
 void init_cl();

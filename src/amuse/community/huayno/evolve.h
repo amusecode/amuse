@@ -46,7 +46,8 @@ enum intopt
   NAIVE,
   VARIABLE,
   PASS_DKD,
-  HOLD_DKD
+  HOLD_DKD,
+  PPASS_DKD
 };
 
 extern FLOAT eps2;

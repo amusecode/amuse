@@ -204,6 +204,34 @@ void evolve_split_pass_dkd(struct sys sys1,struct sys sys2,
   clevel--;
 }
 
+void evolve_split_ppass_dkd(struct sys sys1,struct sys sys2, 
+                         DOUBLE stime, DOUBLE etime, DOUBLE dt, int calc_timestep)
+{
+  struct sys slow=zerosys,fast=zerosys;
+  clevel++;
+  if(etime <= stime ||  dt==0 || clevel>=MAXLEVEL) endrun((char *)"timestep too small");
+  if(calc_timestep) timestep(sys1, join(sys1,sys2));
+//  if(calc_timestep) timestep(sys1, sys1);
+  split((FLOAT) dt, sys1, &slow, &fast);
+  if(fast.n==0) 
+  {
+    deepsteps++;
+    simtime+=dt;
+  }  
+  if(fast.n>0) 
+    evolve_split_ppass_dkd(fast, join(slow,sys2), stime, stime+dt/2, dt/2,0);
+  else  
+    drift(join(slow,sys2),etime,dt/2);
+  if(slow.n>0) kick(slow,join(slow,sys2), dt);
+  if(slow.n>0) kick(sys2,slow, dt);
+  if(fast.n>0) 
+    evolve_split_ppass_dkd(fast, join(slow,sys2), stime+dt/2, etime, dt/2,1);
+  else  
+    drift(join(slow,sys2),etime,dt/2);
+  clevel--;
+}
+
+
 static void drift_naive(struct sys s, DOUBLE etime)
 {
   UINT i;
@@ -286,6 +314,9 @@ void do_evolve(struct sys s, double dt, int inttype)
       break;
     case PASS_DKD:
       evolve_split_pass_dkd(s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
+      break;
+    case PPASS_DKD:
+      evolve_split_ppass_dkd(s, zerosys, (DOUBLE) 0.,(DOUBLE) dt,(DOUBLE) dt,1);
       break;
     default:  
       endrun((char*)" unknown integrator\n");
@@ -607,7 +638,7 @@ static void report(struct sys s,DOUBLE etime, int inttype)
     dstot+=dstep[i];
   }    
   printf("total: %18li %18li %18li\n",ktot,dtot,ttot);  
-  if(inttype == PASS_DKD || inttype == HOLD_DKD)
+  if(inttype == PASS_DKD || inttype == HOLD_DKD || inttype == PPASS_DKD)
     printf("equiv: %18li %18li %18li\n",(long int) deepsteps*n*n,2*deepsteps*n,(long int) deepsteps*n*n);
   else
     printf("equiv: %18li %18li %18li\n",(long int) 2*deepsteps*n*n,deepsteps*n,(long int) deepsteps*n*n);  
