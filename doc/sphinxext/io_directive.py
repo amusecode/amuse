@@ -25,4 +25,6 @@ class IoOptions(Directive):
             field_list_node.append(item)
         return [field_list_node]
         
-directives.register_directive("iooptions", IoOptions)
+def setup(app):
+    directives.register_directive("iooptions", IoOptions)
+
