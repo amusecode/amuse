@@ -130,7 +130,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         Convert a quantity in generic units to a quantity in
         S.I. units.
         
-        .. code-block::
+        .. code-block:: python
                           
             >>> from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
             >>> from amuse.support.units import units, constants
@@ -161,7 +161,7 @@ class ConvertBetweenGenericAndSiUnits(object):
         Convert a quantity in S.I units to a quantity in
         generic units.
         
-        .. code-block::
+        .. code-block:: python
         
             >>> from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
             >>> from amuse.support.units import units, constants

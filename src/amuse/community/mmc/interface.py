@@ -904,4 +904,4 @@ class mmcInterface(CodeInterface, PolarSupport):
 class mmc(InCodeComponentImplementation):
 
     def __init__(self):
-        InCodeComponentImplementation.__init__(self,  NearestNeighborInterface())
+        InCodeComponentImplementation.__init__(self,  mmcInterface())
