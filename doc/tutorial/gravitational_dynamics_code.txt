@@ -89,10 +89,10 @@ the sources of the code to integrate. (The build.py script also creates
 some files in the ```src``` directory as an example, but you
 can remove and overwrite everything in this directory)
 
-The generated build system will call the make file 
-with the ```all``` target (to build an stand-alone 
-executable, if available) and the ```libcodename.a``` target (to
-build a static library with all necessary object files).
+The generated build system will call the make file with the 
+```all``` target (to build an stand-alone executable, if available) 
+and the ```libcodename.a``` target (to build a static library with 
+all necessary object files).
 
 .. note::
     
@@ -100,8 +100,9 @@ build a static library with all necessary object files).
     not in the main directory of the code you need to edit the 
     generated make file in the ```codename``` directory. The AMUSE 
     codebase contains several codes that have a different build 
-    system, please look into the code for ```evtwin```(uses cmake) 
-    or ```athena```(downloads and patches code) for hints.
+    system, please look into the code for ```evtwin``` (uses cmake) 
+    or ```athena``` (downloads and patches code) for hints.
+
     
 If you already have a make file, you might need to add the
 ```libcodename.a``` target. You can define this target by

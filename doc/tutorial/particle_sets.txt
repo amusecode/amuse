@@ -312,9 +312,15 @@ way of doing the calculations. Speed might be the downside.
 .. automodule:: amuse.support.data.particle_attributes
        
 .. autofunction:: center_of_mass 
+    :noindex:
 .. autofunction:: center_of_mass_velocity
+    :noindex:
 .. autofunction:: kinetic_energy
-.. autofunction:: potential_energy 
+    :noindex:
+.. autofunction:: potential_energy
+    :noindex: 
 .. autofunction:: particle_specific_kinetic_energy
+    :noindex:
 .. autofunction:: particle_potential
+    :noindex:
 

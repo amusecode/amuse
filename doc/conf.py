@@ -39,6 +39,7 @@ extensions = [
  'gen_rst',
  'gen_gallery', 
  'io_directive',
+ 'autodoc_parameters',
 ]
 
 # Add any paths that contain templates here, relative to this directory.

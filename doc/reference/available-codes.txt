@@ -37,7 +37,7 @@ General
 -------
 
 The general parameters and methods for the gravitational dynamics are described in
-:doc:`../tutorial/code_interface`.
+:doc:`../reference/stellar_dynamics_interface_specification`.
 Here we describe the exceptions for the specific codes under "Specifics".
 
 Code comparison table
@@ -171,6 +171,12 @@ Parameters
 |                                    |               |               |output             |
 +------------------------------------+---------------+---------------+-------------------+
 
+.. automodule:: amuse.community.bhtree.interface
+    
+    .. autoclass:: BHTree
+    
+        .. autoparametersattribute:: parameters
+        
 example
 
 .. code-block:: python
@@ -238,10 +244,10 @@ Parameters
 +------------------------------------+---------------+---------------+-------------------+
 
 .. automodule:: amuse.community.hermite0.interface
-
+    
     .. autoclass:: Hermite
-
-        .. automethod:: parameters
+    
+        .. autoparametersattribute:: parameters
 
 .. [#hutmakino] Hut, P., Makino, J. & McMillan, S., 1995, *ApJL* **443**, L93.
 
@@ -341,6 +347,13 @@ The default is **MODE_G6LIB**.
 |                                    |               |               |                   |
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
+
+.. automodule:: amuse.community.phiGRAPE.interface
+    
+    .. autoclass:: PhiGRAPE
+    
+        .. autoparametersattribute:: parameters
+
 
 .. code-block:: python
 
@@ -462,6 +475,13 @@ Parameters
 |                                    |               |               |                   |
 +------------------------------------+---------------+---------------+-------------------+
 
+.. automodule:: amuse.community.octgrav.interface
+    
+    .. autoclass:: Octgrav
+    
+        .. autoparametersattribute:: parameters
+
+
 .. [#oct] Gaburov, E., Bedorf, J., Portegies Zwart S., 2010, "Gravitational tree-code on graphics processing units: implementations in CUDA", *ICCS*
 
 
@@ -514,7 +534,7 @@ in celestial mechanics.
 This package contains some subroutines taken from the Swift
 integration package by H.F.Levison and M.J.Duncan (1994) Icarus, vol
 108, pp18.  Routines taken from Swift have names beginning with
-`drift' or `orbel'.
+`drift` or `orbel`.
 
 The standard symplectic (MVS) algorithm is described in J.Widsom and
 M.Holman (1991) Astronomical Journal, vol 102, pp1528.
@@ -575,6 +595,12 @@ Orbiters
 |momentum      |           |           |                  |
 +--------------+-----------+-----------+------------------+
 
+.. automodule:: amuse.community.mercury.interface
+    
+    .. autoclass:: MercuryWayWard
+    
+        .. autoparametersattribute:: parameters
+        
 .. _huayno:
 
 Huayno
@@ -821,6 +847,15 @@ parameters
 |        |stellar evolution                         |    |
 +--------+------------------------------------------+----+
 
+
+.. automodule:: amuse.community.mmc.interface
+    
+    .. autoclass:: mmc
+    
+        
+
+
+
 .. _Evolution:
 
 Stellar Evolution
@@ -850,7 +885,12 @@ Mass        0.1    100  Msun
 Metallicity 0.0001 0.03 fraction (0.02 is solar)
 =========== ====== ==== =========================
 
-
+.. automodule:: amuse.community.sse.interface
+    
+    .. autoclass:: SSE
+    
+        .. autoparametersattribute:: parameters
+        
 .. _bse:
 
 bse
@@ -873,6 +913,11 @@ Period       all    all
 Eccentricity 0.0    1.0
 ============ ====== ==== =========================
 
+.. automodule:: amuse.community.bse.interface
+    
+    .. autoclass:: BSE
+    
+        .. autoparametersattribute:: parameters
 
 .. _evtwin:
 
@@ -910,6 +955,13 @@ Relevant papers:
    Glebbeek, Pols & Hurley, 2008 A&A
 
 
+.. automodule:: amuse.community.evtwin.interface
+    
+    .. autoclass:: EVtwin
+    
+        .. autoparametersattribute:: parameters
+
+
 .. _mesa:
 
 mesa
@@ -935,6 +987,14 @@ References:
 
 * Paxton, Bildsten, Dotter, Herwig, Lesaffre & Timmes 2010, ApJS submitted, arXiv:1009.1622
 * `<http://mesa.sourceforge.net/>`_
+
+
+.. automodule:: amuse.community.mesa.interface
+    
+    .. autoclass:: MESA
+    
+        .. autoparametersattribute:: parameters
+
 
 
 .. _Hydrodynamics:
@@ -983,6 +1043,14 @@ The relevant references are:
 * Stone & Gardiner 2010, ApJS, 189, 142 (Shearing Box Method)
 
 
+.. automodule:: amuse.community.athena.interface
+    
+    .. autoclass:: Athena
+    
+        .. autoparametersattribute:: parameters
+
+
+
 .. _capreole:
 
 capreole
@@ -1000,6 +1068,14 @@ The reference for Capreole (original version):
 * Mellema, Eulderink & Icke 1991, A&A 252, 718
 
 
+
+.. automodule:: amuse.community.capreole.interface
+    
+    .. autoclass:: Capreole
+    
+        .. autoparametersattribute:: parameters
+
+
 .. _fi:
 
 fi
@@ -1015,6 +1091,13 @@ The relevant references are:
 * Gerritsen \& Icke 1997, A&A 325, 972
 * Pelupessy, van der Werf & Icke 2004, A&A 422, 55
 * Pelupessy, PhD thesis 2005, Leiden Observatory
+
+
+.. automodule:: amuse.community.fi.interface
+    
+    .. autoclass:: Fi
+    
+        .. autoparametersattribute:: parameters
 
 
 .. _gadget2:
@@ -1040,6 +1123,13 @@ The relevant references are:
 
 * Springel V., 2005, MNRAS, 364, 1105  (GADGET-2)
 * Springel V., Yoshida N., White S. D. M., 2001, New Astronomy, 6, 51  (GADGET-1)
+
+
+.. automodule:: amuse.community.gadget2.interface
+    
+    .. autoclass:: Gadget2
+    
+        .. autoparametersattribute:: parameters
 
 
 .. _Radiative-Transfer:
@@ -1090,6 +1180,13 @@ Parameters
 |box_size                            |13200          |parsec         |box size of        |
 |                                    |               |               |domain             |
 +------------------------------------+---------------+---------------+-------------------+
+
+.. automodule:: amuse.community.simplex.interface
+    
+    .. autoclass:: Simplex
+    
+        .. autoparametersattribute:: parameters
+
 
 References:
 
