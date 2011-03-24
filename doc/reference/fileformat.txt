@@ -41,22 +41,94 @@ Supported File Formats
     Starlab
     -------
     
-    AMUSE has support for reading and writing starlab files::
+    AMUSE has support for reading and writing starlab (``.dyn``) files.
+    You can specify the starlab format by entering "dyn" or "starlab"
+    as the format::
     
-    >>> from amuse.support import io
-    >>> particles = io.read_set_from_file('plummer.dyn','starlab')
-    >>> io.write_set_to_file(particles, 'output.dyn', 'starlab')
+        >>> from amuse.support import io
+        >>> particles = io.read_set_from_file('plummer.dyn','starlab')
+        >>> io.write_set_to_file(particles, 'output.dyn', 'dyn')
     
     The starlab format support sevaral options, listed below. You can
     use these options by adding additional keyword arguments to
-    the read_set_from_file or write_set_to_file functions. 
-    For example:
+    the :func:`read_set_from_file` or :func:`write_set_to_file` functions. 
+    For example::
     
-    
-    >>> from amuse.support import io
-    >>> particles = io.read_set_from_file('plummer.dyn','starlab', must_scale = False, return_children = False)
+        >>> from amuse.support import io
+        >>> particles = io.read_set_from_file('plummer.dyn','starlab', must_scale = False, return_children = False)
     
     .. iooptions:: starlab
+
+    The units of the values in the star (stellar properties)
+    section of a starlab file are always in derived S.I units (solar
+    mass, million years, solar luminocity etc.).
+    
+    The masses given in de the dynamics section of a starlab file
+    are usually in *nbody* units. Some starlab tools will set the
+    mass values in Solar mass units (for example the ``makemass``
+    tool will return the masses in solar mass units). To read these
+    files you need to set the ``dynamics_mass_units``.
+    
+    .. code:: bash
+    
+        > makeplummer -n 1000 > plummer1.dyn
+        > cat plummer1.dyn | makemass -f 1 -x -2.0 -l 0.1 -u 20 > plummer2.dyn
+        > cat plummer2.dyn | add_star -Q 0.5 -R 5 > plummer3.dyn
+        > cat plummer3.dyn | scale -s > plummer4.dyn
+        > cat plummer4.dyn | kira -S > plummer5.dyn
         
+    The ``plummer1.dyn``, ``plummer4.dyn`` and ``plummer5.dyn`` files 
+    will provide masses (and all other dynamical properties) in scaled
+    *nbody* units. The ``plummer2.dyn`` and ``plummer3.dyn`` files
+    will have masses in solar masses. To read each file in AMUSE, and
+    return the particles with S.I. units, you need to do::
+    
+    
+        >>> from amuse.support import io
+        >>> from amuse.support.units import nbody_system, units
+        >>> converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
+        >>> particles1 = io.read_set_from_file('plummer1.dyn','starlab', nbody_to_si_converter = converter)
+        >>> particles2 = io.read_set_from_file('plummer2.dyn','starlab', dynamics_mass_units = units.MSun, nbody_to_si_converter = converter)
+        >>> particles3 = io.read_set_from_file('plummer3.dyn','starlab', dynamics_mass_units = units.MSun, nbody_to_si_converter = converter)
+        >>> particles4 = io.read_set_from_file('plummer4.dyn','starlab')
+        >>> particles5 = io.read_set_from_file('plummer5.dyn','starlab')
+    
+    .. note::
         
+        No nbody converter object is needed for the last files, as the scale 
+        factors given in the files will be used.
+    
+    The ``plummer1.dyn``, ``plummer4.dyn`` and ``plummer5.dyn`` can also
+    be read in nbody units. In the following example the returned 
+    particles have dynamic attributes (mass, radius, velocity, acceleration)
+    in *nbody* units.
+    
+        >>> from amuse.support import io
+        >>> particles1 = io.read_set_from_file('plummer1.dyn','starlab')
+        >>> particles4 = io.read_set_from_file('plummer4.dyn','starlab', must_scale = False)
+        >>> particles5 = io.read_set_from_file('plummer5.dyn','starlab', must_scale = False)
+    
+    
+    NEMO
+    -------
+    
+    AMUSE has support for reading and writing nemo (``.tsf``) files.
+    You can specify the starlab format by entering "nemo" or "tsf"
+    as the format::
+    
+        >>> from amuse.support import io
+        >>> particles = io.read_set_from_file('plummer.tsf','nemo')
+        >>> io.write_set_to_file(particles, 'output.tsf', 'tsf')
+        
+    The nemo format support sevaral options, listed below. You can
+    use these options by adding additional keyword arguments to
+    the :func:`read_set_from_file` or :func:`write_set_to_file` functions. 
+    For example::
+    
+        >>> from amuse.support import io
+        >>> from amuse.support.units import nbody_system, units
+        >>> converter = nbody_system.nbody_to_si(1 | units.MSun, 1 | units.parsec)
+        >>> particles = io.read_set_from_file('plummer.nemo','tsf', nbody_to_si_converter = converter)
+        
+    .. iooptions:: nemo
         

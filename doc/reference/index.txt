@@ -10,7 +10,7 @@ Reference documentation
    message-protocol
    core_support
    legacy_support
-   available-legacy-codes
+   available-codes
    fileformat
    quantities_and_units
    particles
