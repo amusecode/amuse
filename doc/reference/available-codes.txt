@@ -1047,4 +1047,55 @@ The relevant references are:
 Radiative Transfer
 ~~~~~~~~~~~~~~~~~~
 
+* SimpleX_ (Delaunay triangulation based)
+
+
+SimpleX
+-------
+
+SimpleX computes the transport of radiation on an irregular grid composed of
+the Delaunay triangulation of a particle set. Radiation is transported along
+the vertices of the triangulation. The code can be considered as a particle
+based radiative transfer code: in this case particles sample the gas
+density, but can be both absorbers and sources of radiation. Calculation
+time with SimpleX scales linearly with the number of particles. At the moment
+the code calculates the transport of ionizing radiation in the grey (one
+frequency) approximation. It is especially well suited to couple with SPH
+codes. 
+
+
+Specifics
+#########
+
+* particle sets send to SimpleX must have attributes x [pc], y[pc], z[pc], 
+  rho [amu/cm**3], flux [s**-1] and xion [none].
+* care must be taken that the particle sets fit in the box_size
+* the default hilbert_order should work for most particle distributions
+
+
+Parameters
+^^^^^^^^^^
+
++------------------------------------+---------------+---------------+-------------------+
+|name                                |default value  |unit           |description        |
+|                                    |               |               |                   |
++====================================+===============+===============+===================+
+|timestep                            | 0.05          |Myr            |timestep for       |
+|                                    |               |               |radiative transfer |
+|                                    |               |               |sweeps             |
++------------------------------------+---------------+---------------+-------------------+
+|hilbert_order                       |1              |none           |hilbert_order for  |
+|                                    |               |               |domain split       |
++------------------------------------+---------------+---------------+-------------------+
+|box_size                            |13200          |parsec         |box size of        |
+|                                    |               |               |domain             |
++------------------------------------+---------------+---------------+-------------------+
+
+References:
+
+* Paardekooper J.-P., 2010, PhD thesis, University of Leiden
+* Paardekooper J.-P., Kruip, C. J. H., Icke V., 2010, A&A, 515, 79 (SimpleX2)
+* Ritzerveld, J., & Icke, V. 2006, Phys. Rev. E, 74, 26704 (SimpleX)
+
+
 Work in progress
