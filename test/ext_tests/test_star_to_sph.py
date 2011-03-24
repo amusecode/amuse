@@ -36,9 +36,6 @@ class TestStellarModel2SPH(TestWithMPI):
         def get_names_of_species(self, number_of_species = None):
             return (['h1', 'he3', 'he4', 'c12'])[:int(self.number_of_species.number)]
         
-        def get_IDs_of_species(self, number_of_species = None):
-            return ([2,    5,     6,     38])[:int(self.number_of_species.number)]
-        
         def get_masses_of_species(self, number_of_species = None):
             return ([1.0078250, 3.0160293, 4.0026032, 12.0] | units.amu)
         
@@ -78,16 +75,16 @@ class TestStellarModel2SPH(TestWithMPI):
     def test2(self):
         star = self.StarParticleWithStructure()
         number_of_sph_particles = 100 # only few particles for test speed-up
-        converter = StellarModel2SPH(star, number_of_sph_particles, seed=12345, mode = "scaling method")
+        converter = StellarModel2SPH(star, number_of_sph_particles, seed=12345)
         converter.retrieve_stellar_structure()
         self.assertAlmostEqual(converter.specific_internal_energy_profile, 
             [155896.35894, 20786.18119, 2078.61812, 95.93622] | (units.km/units.s)**2, places = 1)
     
     def test3(self):
-        print "Test interpolate_hydro_quantities with scaling method"
+        print "Test interpolate_hydro_quantities"
         star = self.StarParticleWithStructure()
         number_of_sph_particles = 100 # only few particles for test speed-up
-        converter = StellarModel2SPH(star, number_of_sph_particles, seed=12345, mode = "scaling method")
+        converter = StellarModel2SPH(star, number_of_sph_particles, seed=12345)
         converter.retrieve_stellar_structure()
         outer_radii = star.get_radius_profile()
         inner_radii = [0.0] | units.RSun
@@ -99,33 +96,13 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual( converter.specific_internal_energy_profile, int_specific_internal_energy)
     
     def test4(self):
-        print "Test interpolate_hydro_quantities with random sampling"
-        star = self.StarParticleWithStructure()
-        number_of_sph_particles = 100 # only few particles for test speed-up
-        converter = StellarModel2SPH(star, number_of_sph_particles, seed=12345, mode = "random sampling")
-        converter.retrieve_stellar_structure()
-        converter.set_zone_indices_and_interpolation_coeffs()
-        radius_profile = [0] | units.m
-        radius_profile.extend(star.get_radius_profile()) # outer radius of each mesh zone
-        radial_positions = (    converter.delta    * radius_profile[converter.zone_index] + 
-                             (1 - converter.delta) * radius_profile[converter.zone_index+1] ).as_quantity_in(units.RSun)
-        int_specific_internal_energy, int_composition = converter.interpolate_internal_energy(radial_positions)
-        self.assertEqual(len(int_specific_internal_energy), number_of_sph_particles)
-        eps = 1.0e-7
-        self.assertTrue(numpy.all( int_specific_internal_energy >= min(converter.specific_internal_energy_profile)*(1-eps) ))
-        self.assertTrue(numpy.all( int_specific_internal_energy <= max(converter.specific_internal_energy_profile)*(1+eps) ))
-        sorted_r, sorted_energies = radial_positions.sorted_with(int_specific_internal_energy)
-        self.assertTrue(numpy.all( sorted_energies[1:]  - sorted_energies[:-1]  <= eps | (units.m/units.s)**2 ))
-    
-    def test5(self):
-        print "Test convert_stellar_model_to_SPH with scaling method"
+        print "Test convert_stellar_model_to_SPH"
         star = self.StarParticleWithStructure()
         number_of_sph_particles = 100 # only few particles for test speed-up
         sph_particles = convert_stellar_model_to_SPH(
             star, 
             number_of_sph_particles, 
-            seed = 12345,
-            mode = "scaling method"
+            seed = 12345
         ).gas_particles
         self.assertEqual(len(sph_particles), number_of_sph_particles)
         self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
@@ -139,47 +116,18 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 | units.none ))
         self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 | units.none ))
     
-    def test6(self):
-        print "Test convert_stellar_model_to_SPH with random sampling"
-        star = self.StarParticleWithStructure()
-        number_of_sph_particles = 100 # only few particles for test speed-up
-        sph_particles = convert_stellar_model_to_SPH(
-            star, 
-            number_of_sph_particles, 
-            seed = 12345,
-            mode = "random sampling"
-        ).gas_particles
-        
-        self.assertEqual(len(sph_particles), number_of_sph_particles)
-        self.assertAlmostEqual(sph_particles.mass.sum(), star.mass)
-        self.assertIsOfOrder(max(sph_particles.x), star.radius)
-        self.assertAlmostEqual
-        (sph_particles.composition.sum(axis=1), [1.0]*number_of_sph_particles | units.none)
-        self.assertTrue(numpy.all( sph_particles.h1  <= 0.7001 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
-        self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
-        
-        r_squared = sph_particles.position.lengths_squared().value_in(units.RSun**2)
-        dtype = [('r_squared', 'float64'), ('key', 'uint64')]
-        sorted = numpy.sort(numpy.array(zip(r_squared, sph_particles.get_all_keys_in_store()), dtype=dtype), order='r_squared')
-        sorted_particles = sph_particles._subset(sorted['key'])
-        sorted_particles.r = sorted_particles.position.lengths()
-        self.assertTrue(numpy.all( sorted_particles.h1[1:]  - sorted_particles.h1[:-1]  >= -0.0001 | units.none ))
-        self.assertTrue(numpy.all( sorted_particles.he3[1:] - sorted_particles.he3[:-1] <=  0.0001 | units.none ))
-        self.assertTrue(numpy.all( sorted_particles.he4[1:] - sorted_particles.he4[:-1] <=  0.0001 | units.none ))
-    
-    def slowtest7(self):
-        print "Test relaxation with scaling method"
+    def test5(self):
+        print "Test evolving created SPH particles in Gadget"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
-        number_of_sph_particles = 1000 # only few particles for test speed-up
+        number_of_sph_particles = 200 # only few particles for test speed-up
         sph_particles = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
@@ -192,48 +140,15 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.h1, 0.7 | units.none, places=2)
         stellar_evolution.stop()
         
-        time_end = 10.0 | units.s
-        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, time_end*100)
+        time_end = 1.0 | units.s
+        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, time_end*1000)
         hydrodynamics = Gadget2(unit_converter)
         hydrodynamics.initialize_code()
         hydrodynamics.gas_particles.add_particles(sph_particles)
         hydrodynamics.evolve_model(time_end)
         hydrodynamics.stop()
     
-    def slowtest8(self):
-        print "Test relaxation with random sampling"
-        stellar_evolution = self.new_instance(MESA)
-        if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
-            return
-        stars =  Particles(1)
-        stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.commit_particles()
-        number_of_sph_particles = 1000 # only few particles for test speed-up
-        sph_particles = convert_stellar_model_to_SPH(
-            stellar_evolution.particles[0], 
-            number_of_sph_particles, 
-            seed = 12345,
-            mode = "random sampling"
-        ).gas_particles
-        self.assertEqual(len(sph_particles), number_of_sph_particles)
-        self.assertAlmostEqual(sph_particles.mass.sum(), stars.mass)
-        self.assertAlmostEqual(sph_particles.center_of_mass(), [0,0,0] | units.RSun, 1)
-        self.assertIsOfOrder(max(sph_particles.x), 1 | units.RSun)
-        self.assertAlmostEqual(sph_particles.h1, 0.7 | units.none, places=2)
-        stellar_evolution.stop()
-        
-        time_end = 10.0 | units.s
-        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, time_end*100)
-        hydrodynamics = Gadget2(unit_converter)
-        hydrodynamics.initialize_code()
-        hydrodynamics.gas_particles.add_particles(sph_particles)
-        hydrodynamics.evolve_model(time_end)
-        hydrodynamics.stop()
-    
-    def slowtest9(self):
+    def slowtest6(self):
         print "Compare composition profile of stellar model to SPH model"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -245,7 +160,7 @@ class TestStellarModel2SPH(TestWithMPI):
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(5.0 | units.Gyr)
-        number_of_sph_particles = 10000 # only few particles for test speed-up
+        number_of_sph_particles = 1000 # only few particles for test speed-up
         composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
         outer_radii = stellar_evolution.particles[0].get_radius_profile()
         outer_radii.prepend(0.0 | units.m)
@@ -257,7 +172,7 @@ class TestStellarModel2SPH(TestWithMPI):
         ).gas_particles
         temperature = stellar_evolution.particles[0].get_temperature_profile()
         mu          = stellar_evolution.particles[0].get_mu_profile()
-        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
+        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg)
         stellar_evolution.stop()
         sph_midpoints = sph_particles.position.lengths()
         
@@ -271,7 +186,6 @@ class TestStellarModel2SPH(TestWithMPI):
             sph_midpoints, sph_particles.he4, 
             os.path.join(get_path_to_results(), "star2sph_test_9_composition_he4.png")
         )
-        
         
         time_end = 4000.0 | units.s
         unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, time_end)
@@ -296,74 +210,8 @@ class TestStellarModel2SPH(TestWithMPI):
             sph_midpoints, sph_particles.u, 
             os.path.join(get_path_to_results(), "star2sph_test_9_relaxed_composition_u.png")
         )
-    
-    def slowtest10(self):
-        print "Compare composition profile of stellar model to SPH model (random sampling)"
-        stellar_evolution = self.new_instance(MESA)
-        if stellar_evolution is None:
-            print "MESA was not built. Skipping test."
-            return
-        stars =  Particles(1)
-        stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.particles.add_particles(stars)
-        stellar_evolution.commit_particles()
-        stellar_evolution.evolve_model(5.0 | units.Gyr)
-        number_of_sph_particles = 10000 # only few particles for test speed-up
-        composition = stellar_evolution.particles[0].get_chemical_abundance_profiles()
-        outer_radii = stellar_evolution.particles[0].get_radius_profile()
-        outer_radii.prepend(0.0 | units.m)
-        midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
-        sph_particles = convert_stellar_model_to_SPH(
-            stellar_evolution.particles[0], 
-            number_of_sph_particles, 
-            seed=12345, 
-            mode = "random sampling"
-        ).gas_particles
-        temperature = stellar_evolution.particles[0].get_temperature_profile()
-        mu          = stellar_evolution.particles[0].get_mu_profile()
-        specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg) # units.m**2/units.s**2)
-        stellar_evolution.stop()
-        sph_midpoints = sph_particles.position.lengths()
         
-        composition_comparison_plot(
-            midpoints, composition[0], 
-            sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_10_rs_composition_h1.png")
-        )
-        composition_comparison_plot(
-            midpoints, composition[2], 
-            sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "star2sph_test_10_rs_composition_he4.png")
-        )
-        
-        
-        time_end = 4000.0 | units.s
-        unit_converter = ConvertBetweenGenericAndSiUnits(1.0 | units.RSun, 1.0 | units.MSun, time_end)
-        hydrodynamics = Gadget2(unit_converter)
-        hydrodynamics.initialize_code()
-        hydrodynamics.gas_particles.add_particles(sph_particles)
-        hydrodynamics.evolve_model(time_end)
-        sph_midpoints = hydrodynamics.gas_particles.position.lengths()
-        hydrodynamics.stop()
-        composition_comparison_plot(
-            midpoints, composition[0], 
-            sph_midpoints, sph_particles.h1, 
-            os.path.join(get_path_to_results(), "star2sph_test_10_rs_relaxed_composition_h1.png")
-        )
-        composition_comparison_plot(
-            midpoints, composition[2], 
-            sph_midpoints, sph_particles.he4, 
-            os.path.join(get_path_to_results(), "star2sph_test_10_rs_relaxed_composition_he4.png")
-        )
-        internal_energy_comparison_plot(
-            midpoints, specific_internal_energy, 
-            sph_midpoints, sph_particles.u, 
-            os.path.join(get_path_to_results(), "star2sph_test_10_rs_relaxed_composition_u.png")
-        )
-        
-        
-    def slowtest11(self):
+    def slowtest7(self):
         print "Relaxation of stellar evolution model (Gadget2)"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -390,8 +238,7 @@ class TestStellarModel2SPH(TestWithMPI):
         gas = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
-            seed=12345,
-            mode = "scaling method"
+            seed=12345
         ).gas_particles
         stellar_evolution.stop()
         
@@ -437,7 +284,7 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code.stop()
         print "All done!\n"
          
-    def slowtest12(self):
+    def slowtest8(self):
         print "Isothermal relaxation of stellar evolution model (Fi)"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -488,8 +335,8 @@ class TestStellarModel2SPH(TestWithMPI):
             os.path.join(get_path_to_results(), "star2sph_test_12_fi_star2sph.png"))
         print "All done!\n"
     
-    def slowtest13(self):
-        print "Test convert_stellar_model_to_SPH with scaling method and relaxation"
+    def slowtest9(self):
+        print "Test convert_stellar_model_to_SPH and relaxation"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
@@ -515,7 +362,6 @@ class TestStellarModel2SPH(TestWithMPI):
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             seed = 12345,
-            mode = "scaling method",
             do_relax = True
         ).gas_particles
         stellar_evolution.stop()
@@ -532,8 +378,8 @@ class TestStellarModel2SPH(TestWithMPI):
             os.path.join(get_path_to_results(), "star2sph_test_13_relax_u.png")
         )
     
-    def slowtest14(self):
-        print "Test convert_stellar_model_to_SPH with scaling method and relaxation, and subsequently relax with Gadget2"
+    def slowtest10(self):
+        print "Test convert_stellar_model_to_SPH with relaxation, and subsequently relax with Gadget2"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
@@ -559,7 +405,6 @@ class TestStellarModel2SPH(TestWithMPI):
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             seed = 12345,
-            mode = "scaling method",
             do_relax = True
         ).gas_particles
         stellar_evolution.stop()
@@ -617,23 +462,21 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code.stop()
         print "All done!\n"
      
-    def test15(self):
+    def test11(self):
         print "Test convert_stellar_model_to_SPH with two stars"
         star = self.StarParticleWithStructure()
         number_of_sph_particles = 100 # only few particles for test speed-up
         some_sph_particles = convert_stellar_model_to_SPH(
             star, 
             number_of_sph_particles, 
-            seed = 12345,
-            mode = "scaling method"
+            seed = 12345
         ).gas_particles
         
         another_star = self.StarParticleWithStructure(number_of_species = 4)
         more_sph_particles = convert_stellar_model_to_SPH(
             another_star, 
             number_of_sph_particles, 
-            seed = 12345,
-            mode = "scaling method"
+            seed = 12345
         ).gas_particles
         more_sph_particles.x += 100.0 | units.RSun
         
@@ -660,7 +503,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertTrue(numpy.all( sph_particles.he3 <= 0.0501 | units.none ))
         self.assertTrue(numpy.all( sph_particles.he4 >= 0.2899 | units.none ))
         
-    def slowtest16(self):
+    def slowtest12(self):
         print "Test merge two stars"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -688,15 +531,13 @@ class TestStellarModel2SPH(TestWithMPI):
         sph_particles_1 = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
-            seed=12345,
-            mode = "scaling method"
+            seed=12345
         ).gas_particles
         print stars.mass[1], "star consisting of", number_of_sph_particles, "particles."
         sph_particles_2 = convert_stellar_model_to_SPH(
             stellar_evolution.particles[1], 
             number_of_sph_particles, 
-            seed=12345,
-            mode = "scaling method"
+            seed=12345
         ).gas_particles
         stellar_evolution.stop()
         initial_separation = 4.0 | units.RSun
@@ -754,7 +595,7 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code.stop()
         print "All done!\n"
         
-    def slowtest17(self):
+    def slowtest13(self):
         print "Super giant model in SPH"
         stellar_evolution = self.new_instance(MESA)
         if stellar_evolution is None:
@@ -799,8 +640,7 @@ class TestStellarModel2SPH(TestWithMPI):
         print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
         gas = convert_stellar_model_to_SPH(
             stellar_evolution.particles[0], 
-            number_of_sph_particles, 
-            mode = "scaling method"
+            number_of_sph_particles
         ).gas_particles
         stellar_evolution.stop()
         
@@ -847,7 +687,7 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code.stop()
         print "All done!\n"
     
-    def slowtest18(self):
+    def slowtest14(self):
         print "SPH model with core"
         # options:
         with_core = True # set to False to do a comparison run without a core (True)
@@ -885,7 +725,6 @@ class TestStellarModel2SPH(TestWithMPI):
             stellar_evolution.particles[0], 
             number_of_sph_particles, 
             seed = 12345,
-            mode = "scaling method",
             with_core_particle = with_core
         )
         if len(stellar_model_in_SPH.core_particle):
@@ -942,14 +781,14 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code.stop()
         print "All done!\n"
     
-    def test19(self):
+    def test15(self):
         print "Test pickling of stellar structure"
         star = self.StarParticleWithStructure()
         test_pickle_file = os.path.join(get_path_to_results(), "test_star_structure.pkl")
         if os.path.exists(test_pickle_file):
             os.remove(test_pickle_file)
         pickle_stellar_model(star, test_pickle_file)
-        converter = StellarModel2SPH(None, 100, seed=12345, mode = "scaling method", 
+        converter = StellarModel2SPH(None, 100, seed=12345, 
             pickle_file = test_pickle_file)
         converter.unpickle_stellar_structure()
         self.assertEqual(converter.mass, numpy.pi * 1.5 | units.MSun)
@@ -957,8 +796,6 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertEqual(converter.number_of_zones, 4)
         self.assertEqual(converter.number_of_species, 3)
         self.assertEqual(converter.species_names, ['h1', 'he3', 'he4'])
-        self.assertEqual(converter.species_IDs,   [2,    5,     6])
-        self.assertEqual(converter.frac_mass_profile, ([2.0, 14.0, 112.0, 448.0] | units.none) / sum([2.0, 14.0, 112.0, 448.0]))
         self.assertEqual(converter.density_profile, [2.0, 2.0, 2.0, 1.0] | units.MSun/units.RSun**3)
         self.assertEqual(converter.radius_profile, [1.0/8.0, 1.0/4.0, 1.0/2.0, 1.0] | units.RSun)
         self.assertEqual(converter.temperature_profile, [1e7, 1e6, 1e5, 1e4] | units.K)
@@ -971,12 +808,12 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertRaises(AmuseWarning, pickle_stellar_model, star, test_pickle_file, expected_message = 
             "Incorrect file name '{0}'; directory must exist and file may not exist".format(test_pickle_file))
         bogus_pickle_file = os.path.join(get_path_to_results(), "bogus.pkl")
-        converter = StellarModel2SPH(None, 100, seed=12345, mode = "scaling method", 
+        converter = StellarModel2SPH(None, 100, seed=12345, 
             pickle_file = bogus_pickle_file)
         self.assertRaises(AmuseException, converter.unpickle_stellar_structure, expected_message = 
             "Input pickle file '{0}' does not exist".format(bogus_pickle_file))
     
-    def test20(self):
+    def test16(self):
         print "Test convert_stellar_model_to_SPH with pickled stellar structure"
         star = self.StarParticleWithStructure()
         test_pickle_file = os.path.join(get_path_to_results(), "test_star_structure.pkl")
@@ -989,7 +826,6 @@ class TestStellarModel2SPH(TestWithMPI):
             None, 
             number_of_sph_particles, 
             seed = 12345,
-            mode = "scaling method",
             pickle_file = test_pickle_file
         ).gas_particles
         self.assertEqual(len(sph_particles), number_of_sph_particles)
@@ -1004,7 +840,7 @@ class TestStellarModel2SPH(TestWithMPI):
         self.assertTrue(numpy.all( sph_particles.he3[1:] - sph_particles.he3[:-1] <=  0.0001 | units.none ))
         self.assertTrue(numpy.all( sph_particles.he4[1:] - sph_particles.he4[:-1] <=  0.0001 | units.none ))
     
-    def slowtest21(self):
+    def slowtest17(self):
         print "SPH red super giant model with core"
         # options:
         with_core = True # set to False to do a comparison run without a core (True)
@@ -1060,7 +896,6 @@ class TestStellarModel2SPH(TestWithMPI):
             number_of_sph_particles, 
             seed = 12345,
             base_grid_options = dict(type = "glass", target_rms = 0.04),
-            mode = "scaling method",
             with_core_particle = with_core
         )
         if len(stellar_model_in_SPH.core_particle):
@@ -1118,7 +953,7 @@ class TestStellarModel2SPH(TestWithMPI):
         hydro_code.stop()
         print "All done!\n"
     
-    def slowtest22(self):
+    def slowtest18(self):
         print "SPH red super giant model with core (fixed core mass)"
         number_of_sph_particles = 300
         
