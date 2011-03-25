@@ -31,7 +31,7 @@
 
     <target name="compile" description="build jar file" depends="clean">
         <mkdir dir="tmp" />
-        <mkdir dir="tmp/headers" />
+        <mkdir dir="include" />
         <mkdir dir="lib" />
 
         <!-- Compile the java code from src into tmp -->
@@ -47,7 +47,7 @@
 
 	<!-- Build native headers -->
         <javah classpath="tmp"
-               destdir="tmp/headers"
+               destdir="include"
                force="yes"
                class="ibis.amuse.CommunityCode"
         />
@@ -66,6 +66,7 @@
         <delete dir="dist" />
         <delete dir="lib" />
         <delete dir="tmp" />
+        <delete dir="include" />
     </target>
 
     <target name="distclean" description="clean everything, remove deploy">
