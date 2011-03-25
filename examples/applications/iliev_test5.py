@@ -27,7 +27,12 @@ from amuse.support.data import core
 
 from amuse.ext.evrard_test import uniform_random_unit_cube,uniform_unit_sphere
 
-from matplotlib import pyplot
+try:
+    from amuse import plot
+    from matplotlib import pyplot
+    IS_PLOT_AVAILABLE = True
+except ImportError:
+    IS_PLOT_AVAILABLE = False
 
 from amuse.support.io import write_set_to_file
 
@@ -340,7 +345,7 @@ if __name__=="__main__":
   sph,rad=iliev_test_5(N,Ns,L,dt/2.)
 
   radhydro_evolve(sph,rad,tend,dt)
-
-  plots(50)
-  plots(100)
+  if IS_PLOT_AVAILABLE:
+    plots(50)
+    plots(100)
 

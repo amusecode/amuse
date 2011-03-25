@@ -13,7 +13,13 @@ from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWit
 
 
 from amuse.community.capreole.interface import Capreole
-from matplotlib import pyplot
+
+try:
+    from amuse import plot
+    from matplotlib import pyplot
+    IS_PLOT_AVAILABLE = True
+except ImportError:
+    IS_PLOT_AVAILABLE = False
     
 class CalculateKelvinHelmholtzInstability(object):
     number_of_workers = 1
@@ -169,6 +175,11 @@ def main():
         number_of_workers = 3,
         name_of_the_code = 'athena'
     )
+    if not IS_PLOT_AVAILABLE:
+        return
+        
+    grids = model.get_solution_at_time(1.0 | time)
+        
     grids = model.get_solution_at_time(1.0 | time)
     
     rho = grids[0].rho[...,...,0].value_in(density)
