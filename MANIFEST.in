@@ -23,6 +23,8 @@ recursive-exclude src *.pyc *.o *~ .pc ccache *.a
 recursive-exclude test *.pyc *.o *~ ccache *.000 fort.*
 recursive-exclude lib *.pyc *.o *~ ccache *.a
 
+prune lib/ibis
+
 prune src/amuse/community/mesa/src
 prune src/amuse/community/seba/src
 prune src/amuse/community/mpiamrvac/src
