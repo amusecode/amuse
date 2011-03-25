@@ -1071,9 +1071,6 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
         mass_profile = [0.0] | units.MSun
         if isinstance(internal_structure, dict):
             mass_profile.extend(internal_structure['mass'])
-            print (mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun]
-            print len((mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun])
-            print len(mass_profile[1:])
             self.new_stellar_model(
                 (mass_profile[1:] - mass_profile[:-1])[::-1],
                 internal_structure['radius'][::-1],
@@ -1092,9 +1089,6 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             )
         else:
             mass_profile.extend(internal_structure.mass)
-            print (mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun]
-            print len((mass_profile[1:] - mass_profile[:-1])[mass_profile[1:] - mass_profile[:-1] <= 0.0 | units.MSun])
-            print len(mass_profile[1:])
             self.new_stellar_model(
                 (mass_profile[1:] - mass_profile[:-1])[::-1],
                 internal_structure.radius[::-1],

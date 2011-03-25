@@ -473,8 +473,86 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         stellar_evolution.stop()
         instance.stop()
     
-    def slowxtest8(self):
-        print "Test 8: MakeMeAMassiveStar with MESA particles - evolved stars"
+    def slowtest8(self):
+        print "Test 8: MakeMeAMassiveStar with MESA particles - multiple mergers"
+        number_of_stars = 5
+        stars = Particles(number_of_stars)
+        stars.mass = range(20, 20+number_of_stars) | units.MSun
+        
+        instance = MakeMeAMassiveStar(**default_options)
+        instance.initialize_code()
+#        instance.parameters.target_n_shells = 20000
+        instance.commit_parameters()
+        
+        stellar_evolution = self.new_instance(MESA, redirection="none")
+        if stellar_evolution is None:
+            print "MESA was not built. Skipping test."
+            return
+        stellar_evolution.initialize_code() 
+        stellar_evolution.particles.add_particles(stars)
+        stellar_evolution.commit_particles()
+        stellar_evolution.evolve_model(2 | units.Myr)
+        
+        dummy = Particle()
+        dummy.mass = 0 | units.MSun
+        
+        while len(stellar_evolution.particles) > 1:
+            print "Selecting the two most massive stars."
+            to_be_merged = [dummy, dummy]
+            for particle in stellar_evolution.particles:
+                if particle.mass > to_be_merged[0].mass:
+                    if particle.mass > to_be_merged[1].mass:
+                        to_be_merged[0] = to_be_merged[1]
+                        to_be_merged[1] = particle
+                    else:
+                        to_be_merged[0] = particle
+            print "Merging particles with mass", to_be_merged[0].mass, "and", to_be_merged[1].mass
+            
+            merge_product = Particle()
+            for i in [0, 1]:
+                number_of_zones     = to_be_merged[i].get_number_of_zones().number
+                mass_profile        = to_be_merged[i].get_mass_profile() * to_be_merged[i].mass
+                cumul_mass_profile  = to_be_merged[i].get_cumulative_mass_profile() * to_be_merged[i].mass
+                density_profile     = to_be_merged[i].get_density_profile(number_of_zones = number_of_zones)
+                radius_profile      = to_be_merged[i].get_radius_profile(number_of_zones = number_of_zones)
+                temperature_profile = to_be_merged[i].get_temperature_profile(number_of_zones = number_of_zones)
+                pressure_profile    = to_be_merged[i].get_pressure_profile(number_of_zones = number_of_zones)
+                luminosity_profile  = to_be_merged[i].get_luminosity_profile(number_of_zones = number_of_zones)
+                mu_profile          = to_be_merged[i].get_mu_profile(number_of_zones = number_of_zones)
+                composition_profile = to_be_merged[i].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
+                species_names       = to_be_merged[i].get_names_of_species()
+                
+                new_mmams_particle = instance.native_stars.add_particle(to_be_merged[i])
+                stellar_evolution.particles.remove_particle(to_be_merged[i])
+                new_mmams_particle.add_shell(mass_profile, cumul_mass_profile, radius_profile, density_profile, 
+                    pressure_profile, temperature_profile, luminosity_profile, mu_profile, composition_profile[0], 
+                    composition_profile[1]+composition_profile[2], composition_profile[3], 
+                    composition_profile[4], composition_profile[5], composition_profile[6], 
+                    composition_profile[7], composition_profile[7]*0.0, composition_profile[7]*0.0)
+                self.assertEqual(new_mmams_particle.number_of_zones, number_of_zones)
+                if i == 0:
+                    merge_product.primary = new_mmams_particle
+                else:
+                    merge_product.secondary = new_mmams_particle
+                
+            self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), 3)
+            new_merge_product = instance.merge_products.add_particle(merge_product)
+            print "Successfully merged particles. number_of_zones:", new_merge_product.number_of_zones
+            self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), 4)
+            
+            new_merge_product_model = new_merge_product.internal_structure()
+            stellar_evolution.new_particle_from_model(new_merge_product_model, 42 | units.yr)
+            print stellar_evolution.particles
+            self.assertEqual(len(instance.merge_products)+len(stellar_evolution.particles), 5)
+            for i in range(10):
+                stellar_evolution.evolve_model(keep_synchronous = False)
+                print stellar_evolution.particles
+        
+        stellar_evolution.stop()
+        instance.stop()
+    
+    def slowxtest9(self):
+        print "Test 9: MakeMeAMassiveStar with MESA particles - evolved stars"
         stars = Particles(2)
         stars.mass = [20.0, 8.0] | units.MSun
         

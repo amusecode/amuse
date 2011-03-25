@@ -156,7 +156,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(5.0 | units.Gyr)
@@ -219,7 +219,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
@@ -292,7 +292,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         number_of_sph_particles = 10000
@@ -343,7 +343,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
@@ -386,7 +386,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
@@ -511,7 +511,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(2)
         stars.mass = [1.0, 1.0] | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         stellar_evolution.evolve_model(10.0 | units.Gyr)
@@ -601,13 +601,13 @@ class TestStellarModel2SPH(TestWithMPI):
         if stellar_evolution is None:
             print "MESA was not built. Skipping test."
             return
-        stars =  Particles(1)
-        stars.mass = 10.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
-        stellar_evolution.particles.add_particles(stars)
+        star =  Particle()
+        star.mass = 10.0 | units.MSun
+        stellar_evolution.initialize_code() 
+        se_star = stellar_evolution.particles.add_particle(star)
         stellar_evolution.commit_particles()
-        original_outer_radii = stellar_evolution.particles.get_radius_profile().as_quantity_in(units.RSun)
-        original_density = stellar_evolution.particles.get_density_profile()
+        original_outer_radii = se_star.get_radius_profile().as_quantity_in(units.RSun)
+        original_density     = se_star.get_density_profile()
         try:
             while True:
                 stellar_evolution.evolve_model()
@@ -615,18 +615,18 @@ class TestStellarModel2SPH(TestWithMPI):
             self.assertEqual(str(ex), "Error when calling 'evolve' of a 'MESA', errorcode is -14, error "
             "is 'Evolve terminated: Maximum number of backups reached.'")
         
-        composition = stellar_evolution.particles.get_chemical_abundance_profiles()
-        density = stellar_evolution.particles.get_density_profile()
-        outer_radii = stellar_evolution.particles.get_radius_profile()
+        composition = se_star.get_chemical_abundance_profiles()
+        density     = se_star.get_density_profile()
+        outer_radii = se_star.get_radius_profile()
         outer_radii.prepend(0.0 | units.m)
         midpoints = (outer_radii[:-1] + outer_radii[1:]) / 2
-        temperature = stellar_evolution.particles.get_temperature_profile()
-        mu          = stellar_evolution.particles.get_mu_profile()
+        temperature = se_star.get_temperature_profile()
+        mu          = se_star.get_mu_profile()
         specific_internal_energy = (1.5 * constants.kB * temperature / mu).as_quantity_in(units.J/units.kg)
         
         pyplot.figure(figsize = (5, 5))
         loglog(original_outer_radii, original_density, label = "t = "+str(0|units.Myr))
-        loglog(outer_radii[1:], density, label = "t = "+str(stellar_evolution.particles[0].age.as_quantity_in(units.Myr)))
+        loglog(outer_radii[1:], density, label = "t = "+str(se_star.age.as_quantity_in(units.Myr)))
         xlabel('radius')
         ylabel('density')
         pyplot.legend(loc=3)
@@ -635,15 +635,14 @@ class TestStellarModel2SPH(TestWithMPI):
         print "\nPlot of density profile was saved to: ", figname
         pyplot.close()
         
-        number_of_sph_particles = 10000
+        number_of_sph_particles = 1000
         print "Creating initial conditions from a MESA stellar evolution model:"
-        print stars.mass[0], "star consisting of", number_of_sph_particles, "particles."
+        print star.mass[0], "star consisting of", number_of_sph_particles, "particles."
         gas = convert_stellar_model_to_SPH(
-            stellar_evolution.particles[0], 
+            se_star, 
             number_of_sph_particles
         ).gas_particles
         stellar_evolution.stop()
-        
         
         t_end = 1.0e3 | units.s
         print "Evolving to:", t_end
@@ -699,7 +698,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(1)
         stars.mass = 1.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
         try:
@@ -861,7 +860,7 @@ class TestStellarModel2SPH(TestWithMPI):
             return
         stars =  Particles(1)
         stars.mass = 10.0 | units.MSun
-        stellar_evolution.initialize_module_with_default_parameters() 
+        stellar_evolution.initialize_code() 
         stellar_evolution.particles.add_particles(stars)
         stellar_evolution.commit_particles()
 

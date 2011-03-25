@@ -1391,7 +1391,8 @@
       use star_utils, only: set_qs, set_q_vars
       use do_one_utils, only: set_phase_of_evolution
       use evolve_support, only: yrs_for_init_timestep
-      use const_def, only: secyer, Msun
+      !use adjust_mesh, only: remesh
+      use const_def, only: secyer, Msun, Lsun
       
       implicit none
       integer, intent(in) :: n
@@ -1436,12 +1437,14 @@
       call init_mesa_micro(s, ierr) ! uses s% net_name
       s% generations = 1
       
+      if (n > s% max_allowed_nz) s% max_allowed_nz = n
       s% nz = n
       call allocate_star_info_arrays(s, ierr)
+      if (failed('allocate_star_info_arrays', ierr)) return
       s% xs(s% i_lnd, :) = log(rho(:))
       s% xs(s% i_lnT, :) = log(temperature(:))
       s% xs(s% i_lnR, :) = log(radius(:))
-      s% xs(s% i_lum, :) = 1.0d36 !luminosity(:)
+      s% xs(s% i_lum, :) = (100*Lsun * s% initial_mass**3.5 / s% nz)*(/(ierr,ierr=s% nz,1,-1)/) !luminosity(:)
       s% dq(:) = d_mass(:) / s% initial_mass
       s% xa(s% net_iso(get_nuclide_index('h1')), :) = XH(:)
       s% xa(s% net_iso(get_nuclide_index('he3')), :) = 0.0d0
@@ -1453,10 +1456,7 @@
       s% xa(s% net_iso(get_nuclide_index('mg24')), :) = XMG(:) + XSI(:) + XFE(:) ! basic net for now...
       s% prev_Lmax = maxval(abs(s% xs(s% i_lum, 1:n)))
       call set_qs(s% nz, s% q, s% dq, ierr)
-      if (ierr /= 0) then
-         if (s% report_ierr) write(*,*) 'set_qs failed in read1_model'
-         return
-      end if
+      if (failed('set_qs', ierr)) return
       if (s% q_flag) call set_q_vars(s)
       
       s% dt_next = yrs_for_init_timestep(s)*secyer
@@ -1468,16 +1468,14 @@
       call set_phase_of_evolution(s)
       if (s% q_flag) call set_q_flag(s% id, s% q_flag, ierr)
       
-!      if (debugging) then
-!         write (*,*) "Creating new particles with mass: ", s% initial_mass
-!         write (*,*) "Loading starting model from: ", s% zams_filename
-!      endif
-!      call star_load_zams(id_new_model, ierr)
-!      if (failed('star_load_zams', ierr)) return
       call setup_for_run_star(id_new_model, s, .false., ierr)
       if (failed('setup_for_run_star', ierr)) return
       call before_evolve(id_new_model, ierr)
       if (failed('before_evolve', ierr)) return
+      s% trace_evolve = .true.
+      s% report_ierr = .true.
+      !ierr = remesh(s, .true., .false., .false.)
+      !if (failed('remesh', ierr)) return
       call show_terminal_header(id_new_model, ierr)
       if (failed('show_terminal_header', ierr)) return
       call flush()
