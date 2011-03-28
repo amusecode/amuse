@@ -849,7 +849,10 @@ class AdaptingVectorQuantity(VectorQuantity):
         quantity_in_my_units = quantity.as_quantity_in(self.unit)
         self._number[index] = quantity_in_my_units.number
         self._remove_cached_number()
-
+    
+    def __getitem__(self, index):
+        return self.number[index]
+        
     def _remove_cached_number(self):
         try:
             delattr(self, "number")
