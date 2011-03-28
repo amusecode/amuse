@@ -172,11 +172,13 @@ public class LocalWorker implements Runnable {
     }
 
     public void run() {
+        AmuseMessage request = new AmuseMessage();
+        AmuseMessage result = new AmuseMessage();
+        
         boolean running = true;
 
         while (running) {
-            AmuseMessage request = new AmuseMessage();
-            AmuseMessage result = new AmuseMessage();
+           
 
             try {
                 logger.debug("wating for request...");

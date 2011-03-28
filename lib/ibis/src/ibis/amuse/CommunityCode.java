@@ -122,6 +122,7 @@ public class CommunityCode implements Runnable {
                     // perform call. Will put result in result message
                     call();
                 } catch (Exception e) {
+                    logger.error("exception on performing call", e);
                     // put an exception in the result message
                     resultMessage.clear();
                     resultMessage.setCallID(requestMessage.getCallID());
@@ -129,6 +130,8 @@ public class CommunityCode implements Runnable {
                     resultMessage.setCount(requestMessage.getCount());
                     resultMessage.setError(e.getMessage());
                 }
+                
+                logger.debug("result: " + resultMessage);
 
                 WriteMessage writeMessage = sendPort.newMessage();
 

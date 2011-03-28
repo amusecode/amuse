@@ -18,6 +18,9 @@ import org.slf4j.LoggerFactory;
 
 public class AmuseMessage implements Serializable {
 
+    private static final Logger logger = LoggerFactory
+            .getLogger("ibis.amuse.AmuseMessage");
+
     public static final int HEADER_SIZE = 10; // integers
 
     // 4 byte flags field.
@@ -41,8 +44,8 @@ public class AmuseMessage implements Serializable {
 
     public static final int SIZEOF_INT = 4;
     public static final int SIZEOF_LONG = 8;
-    public static final int SIZEOF_FLOAT = 8;
-    public static final int SIZEOF_DOUBLE = 4;
+    public static final int SIZEOF_FLOAT = 4;
+    public static final int SIZEOF_DOUBLE = 8;
     public static final int SIZEOF_BOOLEAN = 1;
 
     public static final byte TRUE_BYTE = (1 & 0xFF);
@@ -53,9 +56,6 @@ public class AmuseMessage implements Serializable {
     public static final int FUNCTION_ID_REDIRECT_OUTPUT = 1141573512;
 
     private static final long serialVersionUID = 1L;
-
-    private static final Logger logger = LoggerFactory
-            .getLogger(AmuseMessage.class);
 
     private static boolean hasRemaining(ByteBuffer... buffers) {
         for (ByteBuffer buffer : buffers) {
@@ -164,14 +164,14 @@ public class AmuseMessage implements Serializable {
 
     public void clear() {
         headerBytes.clear();
-        
+
         // stuff full of zeros
-        
+
         byte[] zeros = new byte[headerBytes.capacity()];
 
-        //remember byte order
+        // remember byte order
         zeros[HEADER_BIG_ENDIAN_FLAG] = headerBytes.get(HEADER_BIG_ENDIAN_FLAG);
-        
+
         headerBytes.put(zeros);
     }
 
@@ -408,19 +408,19 @@ public class AmuseMessage implements Serializable {
         setStringLimitsFromHeader();
 
         // write to channel
-        channel.write(byteBuffers);
+        // channel.write(byteBuffers);
 
         // alternative, debugging version of writing buffers
-        // for (ByteBuffer buffer : byteBuffers) {
-        // logger.debug("writing " + buffer + " of length "
-        // + buffer.remaining());
-        // channel.write(buffer);
-        //
-        // if (buffer.hasRemaining()) {
-        // logger.error("Error! not all bytes written "
-        // + buffer.remaining());
-        // }
-        // }
+        for (ByteBuffer buffer : byteBuffers) {
+            logger.debug("writing " + buffer + " of length "
+                    + buffer.remaining());
+            channel.write(buffer);
+
+            if (buffer.hasRemaining()) {
+                logger.error("Error! not all bytes written "
+                        + buffer.remaining());
+            }
+        }
     }
 
     void writeTo(WriteMessage writeMessage) throws IOException {

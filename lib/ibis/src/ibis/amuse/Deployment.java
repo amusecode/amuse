@@ -61,8 +61,11 @@ public class Deployment {
         application.setLibs(new File("deploy/lib-server"), new File("lib"));
         
         String userHome = System.getProperty("user.home");
+
+        String amuseHome = userHome + "/workspace/amuse/";
         
-        application.setSystemProperty("java.library.path", userHome + "/workspace/amuse/lib/ibis/");
+        application.setSystemProperty("java.library.path", amuseHome + "src/amuse/community/bhtree");
+        
    //     application.addInputFile(new File("libibis-amuse-bhtree_worker.so"));
         application.setMainClass("ibis.amuse.RemoteWorker");
         application.setMemorySize(1000);
