@@ -1003,10 +1003,9 @@ m.run_mpi_channel('{2}')"""
     def check_mpi(self):
         return True
    
-   
 class IbisMessage(AbstractMessage):
     
-    def __init__(self, tag = -1, length= 1, dtype_to_arguments = {}, id = 0):
+    def __init__(self, tag= -1, length=1, dtype_to_arguments={}, id=0):
         AbstractMessage.__init__(self, tag, length, dtype_to_arguments)
             
         self.id = id
@@ -1026,7 +1025,7 @@ class IbisMessage(AbstractMessage):
      
     def recieve(self, socket):
         
-        logging.debug("receiving message")
+        logging.getLogger("ibis").debug("receiving message")
         
         header_bytes = self._receive_all(40, socket)
         
@@ -1042,7 +1041,7 @@ class IbisMessage(AbstractMessage):
         
         header = numpy.frombuffer(header_bytes, dtype="i", offset=4)
         
-        logging.debug("receiving message with flags %s and header %s", flags, header)
+        logging.getLogger("ibis").debug("receiving message with flags %s and header %s", flags, header)
 
         #id of this call
         self.id = header[0]
@@ -1086,7 +1085,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype = 'l')
+            result = numpy.frombuffer(bytes, dtype='l')
             
             return result
         else:
@@ -1099,7 +1098,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='f')
+            result = numpy.frombuffer(bytes, dtype='f4')
             
             return result
         else:
@@ -1112,7 +1111,7 @@ class IbisMessage(AbstractMessage):
             
             bytes = self._receive_all(nbytes, socket)
             
-            result = numpy.frombuffer(bytes, dtype='d')
+            result = numpy.frombuffer(bytes, dtype='f8')
             
             return result
         else:
@@ -1152,17 +1151,17 @@ class IbisMessage(AbstractMessage):
         
         header = numpy.array([
             self.id,
-            self.tag, 
-            self.length, 
-            len(self.ints), 
+            self.tag,
+            self.length,
+            len(self.ints),
             len(self.longs),
-            len(self.floats), 
-            len(self.doubles), 
+            len(self.floats),
+            len(self.doubles),
             len(self.booleans),
             len(self.strings),
         ], dtype='i')
         
-        logging.debug("sending message with flags %s and header %s", flags, header)
+        logging.getLogger("ibis").debug("sending message with flags %s and header %s", flags, header)
         
         socket.sendall(flags.tostring())
         
@@ -1177,17 +1176,17 @@ class IbisMessage(AbstractMessage):
     
     def send_doubles(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='d')
+            buffer = numpy.array(array, dtype='f8')
             socket.sendall(buffer.tostring())
             
     def send_ints(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='int32')
+            buffer = numpy.array(array, dtype='int32')
             socket.sendall(buffer.tostring())
             
     def send_floats(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='f')
+            buffer = numpy.array(array, dtype='f4')
             socket.sendall(buffer.tostring())
             
     def send_strings(self, socket, array):
@@ -1206,20 +1205,20 @@ class IbisMessage(AbstractMessage):
         
     def send_booleans(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='b')
+            buffer = numpy.array(array, dtype='b')
             socket.sendall(buffer.tostring())
         
     def send_longs(self, socket, array):
         if len(array) > 0:
-            buffer = numpy.array(array,  dtype='int64')
+            buffer = numpy.array(array, dtype='int64')
             socket.sendall(buffer.tostring())
         
 class IbisChannel(MessageChannel):
     
-    def __init__(self, name_of_the_worker, legacy_interface_type = None, hostname="localhost", number_of_workers=1, **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, hostname="localhost", number_of_workers=1, **options):
         MessageChannel.__init__(self, **options)
         
-        logging.debug("initializing IbisChannel with options %s", options)
+        logging.getLogger("ibis").debug("initializing IbisChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker
 
@@ -1232,10 +1231,10 @@ class IbisChannel(MessageChannel):
         self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
         self.daemon_port = 61575          # A random-but-fixed port number for the Ibis daemon
         
-        logging.basicConfig(level=logging.DEBUG)
+        self.id = 0
         
         if not legacy_interface_type is None:
-            self.full_name_of_the_worker = self.get_full_name_of_the_worker( legacy_interface_type)
+            self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
             
@@ -1251,9 +1250,9 @@ class IbisChannel(MessageChannel):
         
         self.socket.sendall('magic_string'.encode('utf-8'))
         
-        arguments = {'string': [self.name_of_the_worker, self.hostname], 'int32': [self.number_of_workers]}
+        arguments = {'string': [self.name_of_the_worker, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers]}
         
-        message = IbisMessage(10101010, 1, arguments)
+        message = IbisMessage(10101010, 1, arguments);
 
         message.send(self.socket)
         
@@ -1263,7 +1262,7 @@ class IbisChannel(MessageChannel):
         result.recieve(self.socket)
         
         if result.error:
-            logging.error("Could not start worker: %s", result.strings[0])
+            logging.getLogger("ibis").error("Could not start worker: %s", result.strings[0])
             raise exceptions.CodeException("Could not start worker: " + result.strings[0])
         
         logging.getLogger("ibis").info("worker %s initialized", self.name_of_the_worker)
@@ -1283,21 +1282,40 @@ class IbisChannel(MessageChannel):
     def is_inuse(self):
         return self._is_inuse
     
-    def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
+    def determine_length_from_data(self, dtype_to_arguments):
+        def get_length(x):
+            if x:
+                try:
+                    if not isinstance(x[0], str):
+                        return len(x[0])
+                except:
+                    return 1
+               
+               
         
-        logging.getLogger("ibis").info("sending message for call id %d, function %d", id, tag)
+        lengths = map(get_length, dtype_to_arguments.values())
+        if len(lengths) == 0:
+            return 1
+            
+        return max(1, max(lengths))
+    
+    def send_message(self, tag, id=0, dtype_to_arguments={}, length=1):
+        
+        length = self.determine_length_from_data(dtype_to_arguments)
+        
+        logging.getLogger("ibis").info("sending message for call id %d, function %d, length %d", id, tag, length)
         
         if self.is_inuse():
             raise exceptions.CodeException("You've tried to send a message to a code that is already handling a message, this is not correct")
         if self.socket is None:
             raise exceptions.CodeException("You've tried to send a message to a code that is not running")
         
-        message = IbisMessage(tag, length, dtype_to_arguments)
+        message = IbisMessage(tag, length, dtype_to_arguments, id)
         message.send(self.socket)
         
         self._is_inuse = True
         
-    def recv_message(self, tag, handle_as_array = False):
+    def recv_message(self, tag, handle_as_array=False):
            
         self._is_inuse = False
         
@@ -1309,3 +1327,4 @@ class IbisChannel(MessageChannel):
             raise exceptions.CodeException("Error in worker: " + message.strings[0])
         
         return message.to_result(handle_as_array)
+
