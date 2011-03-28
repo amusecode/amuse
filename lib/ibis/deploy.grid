@@ -1,0 +1,17 @@
+ceres.server.adaptor = SshTrilead
+ceres.server.uri = ssh://ceres.cs.vu.nl/
+ceres.job.adaptor = SshTrilead
+ceres.job.uri = ssh://ceres.cs.vu.nl/
+ceres.file.adaptors = SshTrilead,Local
+ceres.java.path = /usr/lib/jvm/java-6-sun/bin/java
+#ceres.job.wrapper.script = das3.script
+#ceres.user.name =
+#ceres.user.key = 
+#ceres.cache.dir = 
+#ceres.server.output.files =
+#ceres.server.system.properties =
+ceres.nodes = 1
+ceres.cores = 4
+#ceres.memory = 
+ceres.latitude = 52.3328
+ceres.longitude = 4.8669
