@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ibis.deploy.Application;
+import ibis.deploy.Cluster;
 import ibis.deploy.Deploy;
 import ibis.deploy.Experiment;
 import ibis.deploy.Grid;
@@ -43,12 +44,17 @@ public class Deployment {
         logger.info("Deploying worker \"" + workerID + "\" running \""
                 + codeName + "\" on host " + hostname);
 
-
-        JobDescription jobDescription = experiment.createNewJob(workerID);
-
         if (hostname.equalsIgnoreCase("localhost")) {
             hostname = "local";
         }
+        Cluster cluster = grid.getCluster(hostname);
+        
+        if (cluster == null) {
+            throw new Exception("Cluster \"" + hostname + "\"not found in grid description file \"deploy.grid\"");
+        }
+        
+
+        JobDescription jobDescription = experiment.createNewJob(workerID);
 
         jobDescription.setClusterName(hostname);
         jobDescription.setProcessCount(1);
@@ -61,8 +67,15 @@ public class Deployment {
         application.setLibs(new File("deploy/lib-server"), new File("lib"));
         
         //String userHome = System.getProperty("user.home");
+        
+        String amuseHome = cluster.getProperties().getProperty("amuse.home");
+        
+        if (amuseHome == null) {
+            throw new Exception("amuse.home property not set for cluster \"" + hostname + "\" in grid description file deploy.grid");
+        }
+        
 
-        String amuseHome = "/home/niels/workspace/amuse";
+        //String amuseHome = "/home/niels/workspace/amuse";
         
         application.setSystemProperty("java.library.path", amuseHome + "/src/amuse/community/bhtree");
         

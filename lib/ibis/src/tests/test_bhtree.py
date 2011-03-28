@@ -27,11 +27,11 @@ except ImportError:
 class TestBHTreeInterface(TestWithMPI):
 
     def test0(self):
-        instance = BHTreeInterface(channel_type='ibis', hostname='ceres')
+        instance = BHTreeInterface(channel_type='ibis', hostname='VU')
         self.assertTrue("Barnes" in instance.all_literature_references_string())
         
     def test1(self):
-        instance = BHTreeInterface(channel_type='ibis', hostname='ceres')
+        instance = BHTreeInterface(channel_type='ibis', hostname='VU')
         instance.initialize_code()
         instance.commit_parameters()
         res1 = instance.new_particle(mass = 11.0, radius = 2.0, x = 0.0, y = 0.0, z = 0.0, vx = 0.0, vy = 0.0, vz = 0.0)
