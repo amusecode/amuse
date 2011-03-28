@@ -87,15 +87,23 @@ void update_buffers(JNIEnv *env) {
 
 	jobject long_bytes = env->GetObjectArrayElement(byte_buffers, 2);
 	longs_out = (jlong *) env->GetDirectBufferAddress(long_bytes);
+	capacity_out[HEADER_LONG_COUNT_INDEX] = env->GetDirectBufferCapacity(
+			long_bytes) / SIZEOF_LONG;
 
 	jobject float_bytes = env->GetObjectArrayElement(byte_buffers, 3);
 	floats_out = (jfloat *) env->GetDirectBufferAddress(float_bytes);
+	capacity_out[HEADER_FLOAT_COUNT_INDEX] = env->GetDirectBufferCapacity(
+			float_bytes) / SIZEOF_FLOAT;
 
 	jobject double_bytes = env->GetObjectArrayElement(byte_buffers, 4);
 	doubles_out = (jdouble *) env->GetDirectBufferAddress(double_bytes);
+	capacity_out[HEADER_DOUBLE_COUNT_INDEX] = env->GetDirectBufferCapacity(
+			double_bytes) / SIZEOF_DOUBLE;
 
 	jobject boolean_bytes = env->GetObjectArrayElement(byte_buffers, 5);
 	booleans_out = (jboolean *) env->GetDirectBufferAddress(boolean_bytes);
+	capacity_out[HEADER_BOOLEAN_COUNT_INDEX] = env->GetDirectBufferCapacity(
+			boolean_bytes) / SIZEOF_BOOLEAN;
 }
 
 void ensure_primitive_output_capacity(JNIEnv *env) {

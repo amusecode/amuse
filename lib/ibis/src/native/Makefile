@@ -1,6 +1,6 @@
 MPICXX ?= mpicxx
 
-CFLAGS   += -Wall -g -DTOOLBOX  $(MUSE_INCLUDE_DIR)
+CFLAGS   += -Wall -g -fPIC -DTOOLBOX  $(MUSE_INCLUDE_DIR)
 CXXFLAGS += $(CFLAGS) 
 LDFLAGS  += -lm $(MUSE_LD_FLAGS)
 
@@ -18,7 +18,7 @@ SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcond
 SCINC ?= -I$(AMUSE_DIR)/lib/stopcond
 
 IBISINC ?= -I$(AMUSE_DIR)/lib/ibis/include
-JNIINC ?= -I/System/Library/Frameworks/JavaVM.framework/Headers
+JNIINC ?= -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/java-6-sun/include/linux
 
 CODELIB = $(BHTCDIR)/libbhtree.a
 
@@ -47,10 +47,14 @@ bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
 
 worker_code_ibis.cc.o: worker_code_ibis.cc worker_code.h interface.py
-	$(CXX) $(CXXFLAGS) $(SCINC) $(IBISINC) $(JNIINC) -c -o $@ worker_code_ibis.cc
+	$(CXX) $(CXXFLAGS) $(SCINC) $(IBISINC) $(JNIINC) -fPIC -c -o $@ worker_code_ibis.cc
 
-libbhtree_worker.jnilib: worker_code_ibis.cc.o $(OBJS)
-	$(CXX) -bundle -framework JavaVM -o $@ worker_code_ibis.cc.o $(OBJS) $(CODELIB) $(SCLIBS)
+libbhtree_worker.jnilib: worker_code_ibis.cc.o $(OBJS) bhtree_worker
+	$(CXX) -bundle -o $@ worker_code_ibis.cc.o $(OBJS) $(CODELIB) $(SCLIBS)
+
+libbhtree_worker.so: worker_code_ibis.cc.o $(OBJS) bhtree_worker
+	$(CXX) $(SCINC) $(IBISINC) $(JNIINC) -fPIC -O3 -shared -o libbhtree_worker.so -o $@ worker_code_ibis.cc.o $(OBJS) $(CODELIB) $(SCLIBS)
+
 
 .cc.o: $<
 	$(CXX) $(CXXFLAGS) $(SCINC) -c -o $@ $< 
