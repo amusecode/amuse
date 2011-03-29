@@ -46,6 +46,11 @@ class CalculateKelvinHelmholtzInstability(object):
     def new_instance_of_capreole_code(self):
         result=Capreole(number_of_workers=self.number_of_workers)
         result.initialize_code()
+        self.dimensions_of_mesh =  (
+            self.number_of_grid_points, 
+            self.number_of_grid_points, 
+            3
+        )
         return result
         
     def new_instance_of_athena_code(self):
@@ -142,7 +147,6 @@ class CalculateKelvinHelmholtzInstability(object):
             from_model_to_code.copy()
         
         instance.initialize_grid()
-        
         print "start evolve"
         dt = time / 10.0
         t = dt
@@ -172,13 +176,11 @@ def main():
     number_of_grid_points = 400
     model = CalculateKelvinHelmholtzInstability(
         number_of_grid_points = number_of_grid_points,
-        number_of_workers = 3,
-        name_of_the_code = 'athena'
+        number_of_workers = 4,
+        name_of_the_code = 'capreole'
     )
     if not IS_PLOT_AVAILABLE:
         return
-        
-    grids = model.get_solution_at_time(1.0 | time)
         
     grids = model.get_solution_at_time(1.0 | time)
     

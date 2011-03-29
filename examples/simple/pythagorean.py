@@ -65,7 +65,8 @@ if __name__ in ['__main__', '__plot__']:
   
   for i,(label,interface,parameters) in enumerate(codes_to_run):
     x,y=run_pyth(interface,tend=100 | nbody_system.time ,dt=0.0625 | nbody_system.time,parameters=parameters)
-    
+    x = x.value_in(nbody_system.length)
+    y = y.value_in(nbody_system.length)
     subplot=f.add_subplot(N,2,i+1)
     subplot.plot(x[:,0],y[:,0],'r')
     subplot.plot(x[:,1],y[:,1],'b')

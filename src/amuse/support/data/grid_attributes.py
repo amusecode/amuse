@@ -102,12 +102,13 @@ def connectivity(grid):
     indices = numpy.arange(0, numpy.prod(shape_with_boundary), dtype = numpy.int).reshape(shape_with_boundary)
     result = numpy.zeros(shape, dtype = numpy.int)
 
-    result[...,...,...,0] = indices[ :1, :1, :1]
-    result[...,...,...,1] = indices[1: , :1, :1]
-    result[...,...,...,2] = indices[ :1,1: , :1]
-    result[...,...,...,3] = indices[1: ,1: , :1]
-    result[...,...,...,4] = indices[ :1, :1,1: ]
-    result[...,...,...,5] = indices[1: , :1,1: ]
-    result[...,...,...,6] = indices[ :1,1: ,1: ]
-    result[...,...,...,7] = indices[1: ,1: ,1: ]
+    result[...,...,...,0] = indices[ :-1, :-1, :-1]
+    result[...,...,...,1] = indices[1:  , :-1, :-1]
+    result[...,...,...,2] = indices[ :-1,1:  , :-1]
+    result[...,...,...,3] = indices[1:  ,1:  , :-1]
+    
+    result[...,...,...,4] = indices[ :-1, :-1,1:  ]
+    result[...,...,...,5] = indices[1:  , :-1,1:  ]
+    result[...,...,...,6] = indices[ :-1,1:  ,1:  ]
+    result[...,...,...,7] = indices[1:  ,1:  ,1:  ]
     return result

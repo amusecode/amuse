@@ -851,7 +851,7 @@ class AdaptingVectorQuantity(VectorQuantity):
         self._remove_cached_number()
     
     def __getitem__(self, index):
-        return self.number[index]
+        return new_quantity(self.number[index], self.unit)
         
     def _remove_cached_number(self):
         try:
