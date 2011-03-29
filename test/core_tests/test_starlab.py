@@ -255,6 +255,7 @@ class Test(amusetest.TestCase):
     def test4(self):
         set = starlab.StarlabFileFormatProcessor().load_string(plummer_scaled_content)
         self.assertEquals(len(set), 5)
+        print set.mass.as_quantity_in(units.MSun)
         self.assertTrue(numpy.all(set.mass > 0.2 |units.MSun))
         self.assertTrue(numpy.all(set.mass < 1.1 |units.MSun))
         self.assertTrue(numpy.all(set.x > -1 | units.parsec))

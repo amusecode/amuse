@@ -64,7 +64,7 @@ class CalculateKelvinHelmholtzInstability(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers, redirection="none")
+        result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers, debugger="xterm")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         return result
@@ -180,11 +180,11 @@ class CalculateKelvinHelmholtzInstability(object):
     
             
 def main():
-    number_of_grid_points = 100
-    name_of_the_code = 'mpiamrvac'
+    number_of_grid_points = 400
+    name_of_the_code = 'athena'
     model = CalculateKelvinHelmholtzInstability(
         number_of_grid_points = number_of_grid_points,
-        number_of_workers = 4,
+        number_of_workers = 3,
         name_of_the_code = name_of_the_code
     )
     if not IS_PLOT_AVAILABLE:

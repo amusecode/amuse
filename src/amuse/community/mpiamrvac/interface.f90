@@ -2137,9 +2137,7 @@ CONTAINS
             do iigrid = 1, ngridshi
                 if(igrid_inuse(iigrid, ipe)) then
                    number_of_grids_before = number_of_grids_before + 1
-                else
-                   exit !we can break on the first not allocated grid, grids seem to be always consecutive
-                end if
+                 end if
             end do
         end do
         

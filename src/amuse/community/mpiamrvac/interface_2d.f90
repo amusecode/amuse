@@ -2130,7 +2130,7 @@ CONTAINS
         integer :: get_local_index_of_grid
         integer :: iigrid, number_of_grids_before, ipe
         integer, intent(in) :: global_index_of_grid
-        
+        integer :: testn
         get_local_index_of_grid = 0
         
         number_of_grids_before = 0
@@ -2138,11 +2138,10 @@ CONTAINS
             do iigrid = 1, ngridshi
                 if(igrid_inuse(iigrid, ipe)) then
                    number_of_grids_before = number_of_grids_before + 1
-                else
-                   exit !we can break on the first not allocated grid, grids seem to be always consecutive
                 end if
             end do
         end do
+        
         
         if ( global_index_of_grid .LE. number_of_grids_before ) then
             get_local_index_of_grid = 0
