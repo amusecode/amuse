@@ -51,7 +51,6 @@ from amuse.support import exceptions
 
 from amuse.support.data.values import new_quantity
 
-
 import numpy
 
 """
@@ -182,16 +181,3 @@ class nbody_to_si(generic_unit_converter.ConvertBetweenGenericAndSiUnits):
                 
         return SiToNBodyConverter(self)
         
-    @property
-    def units(self):
-        conversion_factors = self.conversion_factors()
-        result = []
-        generic_units = mass, length, time #, temperature, current, luminous_intensity
-
-        for n, unit  in enumerate(self.list_of_available_units):
-            conversion_factor_for_this_base_unit = conversion_factors[n]
-            for generic_unit in generic_units:
-                if generic_unit.unit_in_si == unit:
-                    result.append((generic_unit, conversion_factor_for_this_base_unit * unit))
-
-        return result

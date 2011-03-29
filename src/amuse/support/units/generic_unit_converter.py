@@ -2,6 +2,7 @@ import numpy
 from amuse.support.units.generic_unit_system import *
 from amuse.support.data.values import new_quantity, is_unit, is_quantity
 from amuse.support import exceptions
+from amuse.support.core import late
 
 class UnitsNotOrtogonalException(exceptions.AmuseException):
     formatstring = 'The number of orthoganal units is incorrect, expected {0} but found {1}. To convert between S.I. units and another system of units a set of quantities with orthogonal units is needed. These can be quantities with a single unit (such as length or time) or quantities with a derived units (such as velocity or force)'
@@ -89,23 +90,18 @@ class ConvertBetweenGenericAndSiUnits(object):
                 matrix[row, [i for i, j in enumerate(self.list_of_available_units) if j == unit]] = n
         return matrix
 
+    @late
     def conversion_factors(self):
         factors_of_the_bases =  numpy.mat(numpy.zeros((self.system_rank,1)))
         for row, value in enumerate(self.values):
             factors_of_the_bases[row] = value.number * value.unit.factor
         log_factors_of_the_bases = numpy.log(numpy.abs(factors_of_the_bases))
         result = numpy.array(numpy.exp(self.new_base_inv*log_factors_of_the_bases))[:,0]
-        
-        #sign = numpy.where(numpy.asarray(self.new_base_inv * factors_of_the_bases).reshape(self.system_rank)< 0, -1, 1) 
-        #print numpy.asarray(factors_of_the_bases), sign, " result >> ",result
-        #print self.list_of_available_units
-        #raise Exception(1)
-        #return sign * result
         return result
 
-    @property
+    @late
     def units(self):
-        conversion_factors = self.conversion_factors()
+        conversion_factors = self.conversion_factors
         result = []
         generic_units = mass, length, time, temperature, current, luminous_intensity
 
