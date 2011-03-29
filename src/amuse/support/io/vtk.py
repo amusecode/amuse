@@ -325,6 +325,15 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
         self.stream.write('<?xml version="1.0" encoding="utf-8"?>\n')
         self.stream.write('<VTKFile type="UnstructuredGrid" version="0.1" byte_order="LittleEndian">\n')
     
+    def dimensions(self):
+        
+        if self.is_multiple:
+            return self.set[0].dimensions
+        elif not self.set is None:
+            return self.set.dimensions
+        else:
+            return 3
+            
     def write_piece(self, quantities, units, names, points, connectivity, offsets, cell_types, number_of_cells, number_of_points):
         
         self.stream.write('<Piece NumberOfPoints="{0}" NumberOfCells="{1}">\n'.format(number_of_points, number_of_cells))
@@ -350,6 +359,7 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
         self.stream.write('<UnstructuredGrid>\n')
         if self.is_multiple:
             for subgrid in self.set:
+                
                 quantities = map(lambda x:getattr(subgrid, x),self.attribute_names)
                 points = subgrid.points()
                 number_of_cells =  numpy.prod(subgrid.shape)

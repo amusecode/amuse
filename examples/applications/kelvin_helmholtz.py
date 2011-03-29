@@ -64,7 +64,7 @@ class CalculateKelvinHelmholtzInstability(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers, redirection="none", debugger="xterm")
+        result=MpiAmrVac(mode="2d", number_of_workers=self.number_of_workers, redirection="none")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         return result
@@ -127,10 +127,14 @@ class CalculateKelvinHelmholtzInstability(object):
     def store_grids(self, grids, step):
         if __name__ == '__plot__':
             return
-            
-        for i, x in enumerate(grids):
-            mem = x.copy_to_memory()
-            io.write_set_to_file(mem, "kelvin_helmholtz_{0}_{2}_{1}.vts".format(self.number_of_grid_points, step, i),"vts")
+        
+        grids_in_memory = [x.copy_to_memory() for x in grids]
+        io.write_set_to_file(
+            grids_in_memory, 
+            "kelvin_helmholtz_{2}_{0}_{1}.vtu".format(self.number_of_grid_points, step, self.name_of_the_code),
+            "vtu",
+            is_multiple=True
+        )
             
     def get_solution_at_time(self, time):
         instance=self.new_instance_of_code()
@@ -147,10 +151,13 @@ class CalculateKelvinHelmholtzInstability(object):
             from_model_to_code.copy()
         
         instance.initialize_grid()
+        
+        self.store_grids(instance.itergrids(), 0)
+        
         print "start evolve"
         dt = time / 10.0
         t = dt
-        step = 0
+        step = 1
         while t < time:
             instance.evolve(t)
             
@@ -173,11 +180,12 @@ class CalculateKelvinHelmholtzInstability(object):
     
             
 def main():
-    number_of_grid_points = 400
+    number_of_grid_points = 100
+    name_of_the_code = 'mpiamrvac'
     model = CalculateKelvinHelmholtzInstability(
         number_of_grid_points = number_of_grid_points,
         number_of_workers = 4,
-        name_of_the_code = 'capreole'
+        name_of_the_code = name_of_the_code
     )
     if not IS_PLOT_AVAILABLE:
         return
@@ -188,7 +196,7 @@ def main():
     figure = pyplot.figure(figsize=(20,20))
     plot = figure.add_subplot(1,1,1)
     plot.imshow(rho, origin = 'lower')
-    figure.savefig('kelvin_helmholtz.png')
+    figure.savefig('kelvin_helmholtz_{0}_{1}.png'.format(name_of_the_code, number_of_grid_points))
     pyplot.show()
     
 if __name__ in ["__main__", "__plot__"]:

@@ -1,5 +1,6 @@
 
 from amuse.support.data import base
+from amuse.support.data.values import zero
 from amuse.support.data import grids
 
 import numpy
@@ -24,17 +25,20 @@ def cellsize(grid, dimensions = 3):
     result[0] = dx
    
     if dimensions > 1:
-        cell2 = grid[0][1][0]
-        result[1] = cell2.y - cell1.y
+        if grid.shape[1] > 1:
+            cell2 = grid[0][1][0]
+            result[1] = cell2.y - cell1.y
     else:
         return result[0:1]
         
     if dimensions > 2:
-        cell2 = grid[0][0][1]
-        result[2] = cell2.z - cell1.z
-        return result
+        if grid.shape[2] > 1:
+            cell2 = grid[0][0][1]
+            result[2] = cell2.z - cell1.z
     else:
         return result[0:2]
+    
+    return result
 
 
 
@@ -74,6 +78,8 @@ def contains(grid, points):
 @grids.AbstractGrid.function_for_set
 def points(grid):
     cellcenters = grid.position
+    nx,ny,nz = grid.shape
+         
     shape_with_boundary = numpy.asarray(cellcenters.shape) + 1
     shape_with_boundary[-1] -= 1
     result = cellcenters.zeros(shape_with_boundary, cellcenters.unit)
@@ -112,3 +118,5 @@ def connectivity(grid):
     result[...,...,...,6] = indices[ :-1,1:  ,1:  ]
     result[...,...,...,7] = indices[1:  ,1:  ,1:  ]
     return result
+
+
