@@ -684,8 +684,9 @@ class EVtwinInterface(CodeInterface, LiteratureRefs, StellarEvolution,
             description="The index of the zone to get the values of")
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN, 
             description="The index of the star to get the values of")
-        for par in ['mass', 'radius', 'rho', 'pressure', 'X_H', 'X_He', 'X_C', 
-                'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
+        for par in ['d_mass', 'mass', 'radius', 'density', 'pressure', 
+                'entropy', 'temperature', 'luminosity', 'molecular_weight', 'X_H', 
+                'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe']:
             function.addParameter(par, dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
         return function
@@ -964,7 +965,8 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
         object.add_method(
             "get_stellar_model_element", 
             (object.INDEX, object.INDEX,),
-            (units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+            (units.MSun, units.MSun, units.RSun, units.g / units.cm**3, units.barye, 
+                units.none, units.K, units.LSun, units.amu,
                 units.none, units.none, units.none, units.none, units.none, 
                 units.none, units.none, units.none, units.none, object.ERROR_CODE)
         )
@@ -1014,27 +1016,28 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
     
     def _specify_stellar_model(self, definition, index_of_the_star = 0):
         definition.set_grid_range('get_range_in_zones')
-        definition.add_getter('get_stellar_model_element', names=('mass', 'radius', 
-            'rho', 'pressure', 'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
+        definition.add_getter('get_stellar_model_element', names=('d_mass', 'mass', 'radius', 
+            'rho', 'pressure', 'entropy', 'temperature', 'luminosity', 'molecular_weight', 
+            'X_H', 'X_He', 'X_C', 'X_N', 'X_O', 'X_Ne', 'X_Mg', 'X_Si', 'X_Fe'))
         definition.define_extra_keywords({'index_of_the_star':index_of_the_star})
     
     def new_particle_from_model(self, internal_structure, current_age):
         self.new_stellar_model(
-            internal_structure.mass,
-            internal_structure.radius,
-            internal_structure.rho,
-            internal_structure.pressure,
-            internal_structure.X_H,
-            internal_structure.X_He,
-            internal_structure.X_C,
-            internal_structure.X_N,
-            internal_structure.X_O,
-            internal_structure.X_Ne,
-            internal_structure.X_Mg,
-            internal_structure.X_Si,
-            internal_structure.X_Fe
+            internal_structure.mass[::-1],
+            internal_structure.radius[::-1],
+            internal_structure.rho[::-1],
+            internal_structure.pressure[::-1],
+            internal_structure.X_H[::-1],
+            internal_structure.X_He[::-1],
+            internal_structure.X_C[::-1],
+            internal_structure.X_N[::-1],
+            internal_structure.X_O[::-1],
+            internal_structure.X_Ne[::-1],
+            internal_structure.X_Mg[::-1],
+            internal_structure.X_Si[::-1],
+            internal_structure.X_Fe[::-1]
         )
-        tmp_star = core.Particles(1)
+        tmp_star = core.Particle()
         tmp_star.age_tag = current_age
-        self.imported_stars.add_particles(tmp_star)
+        return self.imported_stars.add_particle(tmp_star)
 

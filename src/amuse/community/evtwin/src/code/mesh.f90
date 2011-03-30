@@ -3,7 +3,7 @@ module mesh
   
   implicit none
   ! Define the maximum number of meshpoints
-  integer, parameter :: NM = 500
+  integer, parameter :: NM = 50000
   
   ! Number of variables in the PX and SX arrays (output variables)
   integer, parameter :: npx = 80
