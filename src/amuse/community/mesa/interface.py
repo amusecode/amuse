@@ -1105,7 +1105,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
                 internal_structure.X_Si[::-1],
                 internal_structure.X_Fe[::-1]
             )
-        tmp_star = core.Particles(1)
+        tmp_star = core.Particle()
         tmp_star.age_tag = current_age
-        self.imported_stars.add_particles(tmp_star)
+        return self.imported_stars.add_particle(tmp_star)
 

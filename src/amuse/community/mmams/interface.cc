@@ -93,7 +93,7 @@ int read_usm(int *index_of_the_particle, char *usm_file){
 int add_shell(int index_of_the_particle, double d_mass, double cumul_mass, 
         double radius, double density, double pressure, 
         double temperature, double luminosity, double molecular_weight, double H1, double He4, 
-        double O16, double N14, double C12, double Ne20, double Mg24, 
+        double C12, double N14, double O16, double Ne20, double Mg24, 
         double Si28, double Fe56){
     mass_shell shell;
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
@@ -115,9 +115,9 @@ int add_shell(int index_of_the_particle, double d_mass, double cumul_mass,
     shell.entropy = compute_entropy(density, temperature, molecular_weight);
     shell.composition.H1 = H1;
     shell.composition.He4 = He4;
-    shell.composition.O16 = O16;
-    shell.composition.N14 = N14;
     shell.composition.C12 = C12;
+    shell.composition.N14 = N14;
+    shell.composition.O16 = O16;
     shell.composition.Ne20 = Ne20;
     shell.composition.Mg24 = Mg24;
     shell.composition.Si28 = Si28;
@@ -129,8 +129,8 @@ int add_shell(int index_of_the_particle, double d_mass, double cumul_mass,
 int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle, 
         double *d_mass, double *cumul_mass, double *radius, double *density, 
         double *pressure, double *entropy, double *temperature, double *luminosity, 
-        double *molecular_weight, double *H1, double *He4, double *O16, double *N14, 
-        double *C12, double *Ne20, double *Mg24, double *Si28, double *Fe56){
+        double *molecular_weight, double *H1, double *He4, double *C12, double *N14, 
+        double *O16, double *Ne20, double *Mg24, double *Si28, double *Fe56){
     mass_shell shell;
     map<long long, usm*>::iterator it = usm_models.find(index_of_the_particle);
     if (it == usm_models.end())
@@ -156,9 +156,9 @@ int get_stellar_model_element(int index_of_the_shell, int index_of_the_particle,
     *molecular_weight = shell.mean_mu;
     *H1 = shell.composition.H1;
     *He4 = shell.composition.He4;
-    *O16 = shell.composition.O16;
-    *N14 = shell.composition.N14;
     *C12 = shell.composition.C12;
+    *N14 = shell.composition.N14;
+    *O16 = shell.composition.O16;
     *Ne20 = shell.composition.Ne20;
     *Mg24 = shell.composition.Mg24;
     *Si28 = shell.composition.Si28;
