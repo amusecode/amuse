@@ -27,7 +27,7 @@ except ImportError:
 class TestBHTreeInterface(TestWithMPI):
 
     def test0(self):
-        instance = BHTreeInterface(channel_type='ibis', hostname='VU')
+        instance = BHTreeInterface(channel_type='ibis', hostname='ceres')
         self.assertTrue("Barnes" in instance.all_literature_references_string())
         
     def test1(self):

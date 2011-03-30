@@ -58,8 +58,8 @@ public class Daemon implements RegistryEventHandler {
 
     private final Deployment deployment;
 
-    public Daemon(int port, boolean verbose) throws Exception {
-        deployment = new Deployment(verbose);
+    public Daemon(int port, boolean verbose, boolean gui) throws Exception {
+        deployment = new Deployment(verbose, gui);
 
         Properties properties = new Properties();
         properties.put("ibis.server.address", deployment.getServerAddress());
@@ -133,6 +133,7 @@ public class Daemon implements RegistryEventHandler {
     public static void main(String[] arguments) throws IOException {
         int port = DEFAULT_PORT;
         boolean verbose = false;
+        boolean gui = false;
 
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i].equals("-p") || arguments[i].equals("--port")) {
@@ -141,12 +142,14 @@ public class Daemon implements RegistryEventHandler {
             } else if (arguments[i].equals("-v")
                     || arguments[i].equals("--verbose")) {
                 verbose = true;
+            } else if (arguments[i].equals("-g")
+                    || arguments[i].equals("--gui")) {
+                gui = true;
             }
-
         }
 
         try {
-            Daemon daemon = new Daemon(port, verbose);
+            Daemon daemon = new Daemon(port, verbose, gui);
 
             Runtime.getRuntime().addShutdownHook(new Shutdown(daemon));
 

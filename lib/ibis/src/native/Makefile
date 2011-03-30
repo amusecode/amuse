@@ -50,7 +50,7 @@ worker_code_ibis.cc.o: worker_code_ibis.cc worker_code.h interface.py
 	$(CXX) $(CXXFLAGS) $(SCINC) $(IBISINC) $(JNIINC) -fPIC -c -o $@ worker_code_ibis.cc
 
 libbhtree_worker.jnilib: worker_code_ibis.cc.o $(OBJS) bhtree_worker
-	$(CXX) -bundle -o $@ worker_code_ibis.cc.o $(OBJS) $(CODELIB) $(SCLIBS)
+	$(CXX) -bundle -framework JavaVM -o $@ worker_code_ibis.cc.o $(OBJS) $(CODELIB) $(SCLIBS)
 
 libbhtree_worker.so: worker_code_ibis.cc.o $(OBJS) bhtree_worker
 	$(CXX) $(SCINC) $(IBISINC) $(JNIINC) -fPIC -O3 -shared -o libbhtree_worker.so -o $@ worker_code_ibis.cc.o $(OBJS) $(CODELIB) $(SCLIBS)

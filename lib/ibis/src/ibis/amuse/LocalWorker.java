@@ -156,7 +156,7 @@ public class LocalWorker implements Runnable {
 
             ThreadPool.createNew(this, "Amuse worker");
 
-            logger.info("New local worker successfully started: " + this);
+            logger.info("New worker successfully started: " + this);
 
         } catch (Exception e) {
             IOException exception = new IOException("error initializing code",
