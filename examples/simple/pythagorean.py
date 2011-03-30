@@ -1,5 +1,5 @@
 """
- example of calculating Pythagorean problem using low level interface
+ example of calculating Pythagorean problem using high level interface
  
 """
 
