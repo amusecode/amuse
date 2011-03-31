@@ -166,6 +166,30 @@ class TestMPIInterface(TestWithMPI):
         self.assertAlmostEqual(etot1,etot2,7)
         instance.stop()
 
+    def test13(self):
+        instance=MercuryInterface()
+        instance.initialize_code()
+        mass=3.04043264264672381E-06
+        dens=5.52
+        x=2.42093942183383037E-01
+        y=-9.87467766698604366E-01
+        z=-4.54276292555233496E-06
+        vx=1.64294055023289365E-02
+        vy=4.03200725816140870E-03
+        vz=1.13609607260006795E-08
+        sx=sy=sz=0.
+        celimit=20.
+        pid,err=instance.new_orbiter(mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit)  
+        instance.commit_particles()
+        instance.enable_stopping_condition(3)
+        instance.set_stopping_condition_timeout_parameter(0.01)
+        etot1,err=instance.get_total_energy()
+        err=instance.evolve(8*1e100)
+        self.assertTrue(instance.is_stopping_condition_set(3)['result']==1)
+        etot2,err=instance.get_total_energy()
+        self.assertAlmostEqual(etot1,etot2,7)
+        instance.stop()
+
 class TestMercury(TestWithMPI):
     def test0(self):
         orbiter = core.Particles(1)
