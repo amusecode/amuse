@@ -9,6 +9,8 @@ CODE_GENERATOR = $(AMUSE_DIR)/build.py
 
 LIBS=$(SRC)/libmercury.a
 
+SCLIBS ?= -L$(AMUSE_DIR)/lib/stopcond -lstopcondmpi
+
 PIC=#-fPIC
 
 FFLAGSOLD = -O -ip -u -g -traceback $(PIC)
@@ -28,12 +30,12 @@ all: mercury_worker
 	$(FC) $(FFLAGS) $(FFLAGS2) -c -o $@ $< 
 
 mercury_worker: worker.f90 interface.o
-	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS)
+	$(FC) $(FFLAGS) $(FFLAGS2) $^ -o $@ $(LIBS) $(SCLIBS)
 
 mercury_worker_gl: glworker.f90 interface.o
 	make -C src gl FFLAGS="$(FFLAGS)" FC="$(FC)"
 	$(FC) $(FFLAGS) $^ -o $@  $(GLOBJECTS) \
-	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS)
+	$(GLLIB)  $(X11LIB) $(THREADLIB) $(LIBS) $(SCLIBS)
 
 worker.f90: interface.py
 	make -C src amuse_interface FFLAGS="$(FFLAGS)" FC="$(FC)"

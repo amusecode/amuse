@@ -3,7 +3,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamics
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 
-class MercuryInterface(CodeInterface, LiteratureRefs):
+class MercuryInterface(CodeInterface, LiteratureRefs, StoppingConditionInterface):
     def __init__(self, **args):
         CodeInterface.__init__(self, name_of_the_worker = 'mercury_worker',**args)
 

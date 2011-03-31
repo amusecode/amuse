@@ -719,7 +719,8 @@ end function
        coord,bcoord)
 !
       implicit none
-!      include 'amuse_mercury.inc'
+      include "../../../../../lib/stopcond/stopcond.inc"
+      include 'amuse_mercury.inc'
 !
 ! Input/Output
       integer algor,nbod,nbig,stat(nbod),opt(8),opflag,ngflag
@@ -738,6 +739,18 @@ end function
       real*8 hby2,tout,tmp0,tdump,tfun,tlog,dtdump,dtfun
       real*8 dclo(CMAX),tclo(CMAX),dhit(CMAX),thit(CMAX)
       real*8 ixvclo(6,CMAX),jxvclo(6,CMAX),a(NMAX)
+      integer clock_init, clock_current
+      integer count_rate, count_max
+      integer is_any_condition_set
+      integer is_stopping_condition_enabled
+      integer is_timeout_detection_enabled
+      integer get_stopping_condition_timeout_parameter 
+      integer next_index_for_stopping_condition
+      integer set_stopping_condition_info
+      integer stopping_index
+      integer reset_stopping_conditions, error
+      double precision timeout
+
       external onestep,coord,bcoord
 !
 !------------------------------------------------------------------------------
@@ -769,12 +782,36 @@ end function
 !
 ! Convert to internal coordinates and velocities
       call coord (time,jcen,nbod,nbig,h0,m,xh,vh,x,v,ngf,ngflag,opt)
+
+!
+      error = reset_stopping_conditions()
+
+      error = is_stopping_condition_enabled(&
+                     TIMEOUT_DETECTION, &
+                     is_timeout_detection_enabled)
+      error = get_stopping_condition_timeout_parameter(timeout)
+
+      call system_clock(clock_init, count_rate, count_max)
+
 !
 !------------------------------------------------------------------------------
 !
 !  MAIN  LOOP  STARTS  HERE
 !
  100  continue
+! timeout stopping condition
+
+      if (is_timeout_detection_enabled.gt.0) then
+         call system_clock(clock_current, count_rate, count_max)
+         if ((clock_current-clock_init).gt.timeout) then
+            stopping_index = next_index_for_stopping_condition()
+            error = set_stopping_condition_info(stopping_index, &
+                 TIMEOUT_DETECTION)
+         endif
+      endif
+! if condition met, break
+      if (is_any_condition_set().gt.0) goto 101
+
 !
 ! Is it time for output ?
       if (abs(tout-time).le.hby2.and.opflag.ge.-1) then
@@ -983,6 +1020,7 @@ end function
 !
 !------------------------------------------------------------------------------
 !
+101   continue
       end subroutine
 
       subroutine kin_pot_ang_mom(jcen,nbod,nbig,m,xh,vh,s)
