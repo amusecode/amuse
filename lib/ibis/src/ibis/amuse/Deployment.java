@@ -98,10 +98,14 @@ public class Deployment {
         }
 
         jobDescription.getApplicationOverrides().setSystemProperty(
-                "java.library.path", amuseHome + "/src/amuse/community/bhtree");
+                "java.library.path", amuseHome + "/src/amuse/community/bhtree" + ":" + amuseHome + "/lib/ibis/src/native:/usr/lib/openmpi/lib");
 
-        jobDescription.getApplicationOverrides().setArguments("--code-name",
-                codeName, "--worker-id", workerID);
+//        jobDescription.getApplicationOverrides().setArguments("--code-name",
+//                codeName, "--worker-id", workerID);
+        
+      jobDescription.getApplicationOverrides().setArguments("--code-name",
+      "/home/niels/workspace/amuse/src/amuse/community/bhtree/bhtree_worker", "--worker-id", workerID);
+        
 
         Job result = deploy.submitJob(jobDescription, applications, grid, null, null);
 

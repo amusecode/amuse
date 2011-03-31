@@ -140,6 +140,10 @@ void ensure_primitive_output_capacity(JNIEnv *env) {
 	}
 }
 
+JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init (JNIEnv *env, jobject this_object, jstring code_name) {
+  //NOTHING
+}
+
 /*
  * Class:     ibis_amuse_CommunityCode
  * Method:    setRequestMessage
@@ -174,6 +178,8 @@ void ensure_primitive_output_capacity(JNIEnv *env) {
 	jobject boolean_bytes = env->GetObjectArrayElement(byte_buffers, 5);
 	booleans_in = (jboolean *) env->GetDirectBufferAddress(boolean_bytes);
 }
+
+
 
 /*
  * Class:     ibis_amuse_CommunityCode

@@ -60,6 +60,12 @@ public class CommunityCode implements Runnable {
      */
     private native void call() throws Exception;
 
+    /**
+     * Initialize native code, if needed
+     * 
+     * @throws Exception if initialization fails
+     */
+    private native void init(String codeName) throws Exception;
     
     CommunityCode(String codeName, ReceivePort receivePort, SendPort sendPort)
             throws IOException {
@@ -71,10 +77,20 @@ public class CommunityCode implements Runnable {
         resultMessage = new AmuseMessage();
 
         String library = codeName;
+        
+        //this is a MPI worker, load mpi worker lib
+        if (codeName.contains("/")) {
+        	logger.info("MPI worker mode...");
+        	library = "mpi_ibis_worker";
+        	
+//            System.loadLibrary("mpi");
+
+        }
 
         try {
             System.loadLibrary(library);
 
+            init(codeName);
             setRequestMessage(requestMessage);
             setResultMessage(resultMessage);
         } catch (Throwable t) {
