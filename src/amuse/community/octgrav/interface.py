@@ -4,7 +4,7 @@ from amuse.community.interface.gd import GravitationalDynamics
 
 class OctgravInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
-        .. [#] Gaburov, Nitadori, Harfst, Portegies Zwart & Makino,"A gravitational tree code on graphics processing units:
+        .. [#] Gaburov E., Bédorf J., Portegies Zwart S., "A gravitational tree code on graphics processing units:
                Implementation in CUDA", 2010, Proc. C. Sc., 1, 1119; and main MUSE paper, arXiv/0807.1996
     """
 
