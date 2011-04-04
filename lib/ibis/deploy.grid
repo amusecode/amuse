@@ -27,6 +27,8 @@
 
 # default.user.name=ndrost
 
+local.amuse.home=/home/niels/workspace/amuse
+
 ceres.server.adaptor = SshTrilead
 ceres.server.uri = ssh://ceres.cs.vu.nl/
 ceres.job.adaptor = SshTrilead
