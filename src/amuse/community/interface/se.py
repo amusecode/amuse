@@ -637,7 +637,7 @@ class InternalStellarStructure(object):
         object.add_method(
             "get_number_of_zones", 
             (object.INDEX,), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "get_temperature_at_zone", 
@@ -677,7 +677,7 @@ class InternalStellarStructure(object):
         object.add_method(
             "get_number_of_species", 
             (object.INDEX,), 
-            (units.none, object.ERROR_CODE,)
+            (object.NO_UNIT, object.ERROR_CODE,)
         )
         object.add_method(
             "get_name_of_species", 
@@ -710,52 +710,52 @@ class InternalStellarStructure(object):
     def get_density_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying density profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def set_density_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting density profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_density_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
     
     def get_radius_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying radius profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def set_radius_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting radius profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_radius_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
     
     def get_temperature_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying temperature profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def set_temperature_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting temperature profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_temperature_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
     
     def get_mu_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mean-molecular-weight profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_mu_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_names_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance names")
         if number_of_species is None:
-            number_of_species = self.get_number_of_species(indices_of_the_stars).number
+            number_of_species = self.get_number_of_species(indices_of_the_stars)
         return list(self.get_name_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none
@@ -764,9 +764,9 @@ class InternalStellarStructure(object):
     def get_chemical_abundance_profiles(self, indices_of_the_stars, number_of_zones = None, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         if number_of_species is None:
-            number_of_species = self.get_number_of_species(indices_of_the_stars).number
+            number_of_species = self.get_number_of_species(indices_of_the_stars)
         grid = numpy.indices((number_of_species, number_of_zones))
         return self.get_mass_fraction_of_species_at_zone(
             [indices_of_the_stars] * number_of_zones * number_of_species, 
@@ -777,9 +777,9 @@ class InternalStellarStructure(object):
     def set_chemical_abundance_profiles(self, indices_of_the_stars, values, number_of_zones = None, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting chemical abundance profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         if number_of_species is None:
-            number_of_species = self.get_number_of_species(indices_of_the_stars).number
+            number_of_species = self.get_number_of_species(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_species, type_string = "chemical species")
         self._check_supplied_values(len(values[0]), number_of_zones)
         grid = numpy.indices((number_of_species, number_of_zones))

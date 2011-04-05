@@ -49,8 +49,8 @@ class StellarModel2SPH(object):
         self.compatible_converter = compatible_converter
     
     def retrieve_stellar_structure(self):
-        self.number_of_zones   = self.particle.get_number_of_zones().number
-        self.number_of_species = self.particle.get_number_of_species().number
+        self.number_of_zones   = self.particle.get_number_of_zones()
+        self.number_of_species = self.particle.get_number_of_species()
         self.species_names     = self.particle.get_names_of_species(number_of_species = self.number_of_species)
         self.density_profile     = self.particle.get_density_profile(number_of_zones = self.number_of_zones)
         self.radius_profile      = self.particle.get_radius_profile(number_of_zones = self.number_of_zones)

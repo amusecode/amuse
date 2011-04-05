@@ -23,21 +23,21 @@ class TestStellarModel2SPH(TestWithMPI):
     
         def __init__(self, number_of_species = 3, **keyword_arguments):
             Particle.__init__(self, **keyword_arguments)
-            self.number_of_species = number_of_species | units.none
+            self.particles_set._private.number_of_species = number_of_species
             self.mass = 4.0/3.0 * numpy.pi * (9.0 / 8.0) | units.MSun
             self.radius = 1.0 | units.RSun
         
         def get_number_of_zones(self):
-            return 4 | units.none
+            return 4
         
         def get_number_of_species(self):
-            return self.number_of_species
+            return self.particles_set._private.number_of_species
         
         def get_names_of_species(self, number_of_species = None):
-            return (['h1', 'he3', 'he4', 'c12'])[:int(self.number_of_species.number)]
+            return (['h1', 'he3', 'he4', 'c12'])[:int(self.particles_set._private.number_of_species)]
         
         def get_masses_of_species(self, number_of_species = None):
-            return ([1.0078250, 3.0160293, 4.0026032, 12.0] | units.amu)
+            return ([1.0078250, 3.0160293, 4.0026032, 12.0] | units.amu)[:int(self.particles_set._private.number_of_species)]
         
         def get_mass_profile(self, number_of_zones = None):
             return ([2.0, 14.0, 112.0, 448.0] | units.none) / sum([2.0, 14.0, 112.0, 448.0])
@@ -59,11 +59,11 @@ class TestStellarModel2SPH(TestWithMPI):
         
         def get_chemical_abundance_profiles(self, number_of_zones = None, number_of_species = None):
             return ([[0.0, 0.7, 0.7, 0.7], [0.05, 0.01, 0.01, 0.01], [0.95, 0.29, 0.29, 0.29], 
-                [0.0, 0.0, 0.0, 0.0]] | units.none)[:int(self.number_of_species.number)]
+                [0.0, 0.0, 0.0, 0.0]] | units.none)[:int(self.particles_set._private.number_of_species)]
     
     def test1(self):
         star = self.StarParticleWithStructure()
-        number_of_zones = star.get_number_of_zones().number
+        number_of_zones = star.get_number_of_zones()
         delta_mass = star.get_mass_profile() * star.mass
         outer_radius = star.get_radius_profile()
         inner_radius = [0.0] | units.RSun

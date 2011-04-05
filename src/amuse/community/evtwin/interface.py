@@ -1012,7 +1012,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
         """
         Returns the inclusive range of defined zones/mesh-cells of the star.
         """
-        return (1, self.get_number_of_zones(index_of_the_star).number)
+        return (1, self.get_number_of_zones(index_of_the_star))
     
     def _specify_stellar_model(self, definition, index_of_the_star = 0):
         definition.set_grid_range('get_range_in_zones')

@@ -1016,7 +1016,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
     def get_mass_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mass profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_cumulative_mass_profile(self, indices_of_the_stars, number_of_zones = None):
@@ -1026,33 +1026,33 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
     def set_mass_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting mass profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_mass_fraction_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
     
     def get_luminosity_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying luminosity profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def set_luminosity_profile(self, indices_of_the_stars, values, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Setting luminosity profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         self._check_supplied_values(len(values), number_of_zones)
         self.set_luminosity_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none, values)
     
     def get_pressure_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying pressure profiles")
         if number_of_zones is None:
-            number_of_zones = self.get_number_of_zones(indices_of_the_stars).number
+            number_of_zones = self.get_number_of_zones(indices_of_the_stars)
         return self.get_pressure_at_zone([indices_of_the_stars]*number_of_zones, range(number_of_zones) | units.none)
     
     def get_IDs_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance IDs")
         if number_of_species is None:
-            number_of_species = self.get_number_of_species(indices_of_the_stars).number
+            number_of_species = self.get_number_of_species(indices_of_the_stars)
         return list(self.get_id_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none
@@ -1061,7 +1061,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
     def get_masses_of_species(self, indices_of_the_stars, number_of_species = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying chemical abundance mass numbers")
         if number_of_species is None:
-            number_of_species = self.get_number_of_species(indices_of_the_stars).number
+            number_of_species = self.get_number_of_species(indices_of_the_stars)
         return self.get_mass_of_species(
             [indices_of_the_stars]*number_of_species, 
             range(1,number_of_species+1) | units.none

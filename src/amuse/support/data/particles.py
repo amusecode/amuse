@@ -915,7 +915,9 @@ class BoundSupersetParticlesFunctionAttribute(object):
                 result[offset:len(subset_result)+offset] = subset_result
                 offset += len(subset_result)
             else:
-                raise exceptions.AmuseException("cannot handle this type of functions on supersets yet") 
+                if result is None:
+                    result = []
+                result.extend(subset_result)
         return result
 
 class DerivedSupersetAttribute(DerivedAttribute):

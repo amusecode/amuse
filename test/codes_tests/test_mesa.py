@@ -450,7 +450,7 @@ class TestMESA(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
-        self.assertEquals(instance.particles.get_number_of_zones(), [479, 985] | units.none)
+        self.assertEquals(instance.particles.get_number_of_zones(), [479, 985])
         self.assertEquals(len(instance.particles[0].get_mass_profile()), 479)
         self.assertAlmostEquals(instance.particles[0].get_mass_profile().sum(), 1.0 | units.none)
         self.assertRaises(AmuseException, instance.particles.get_mass_profile, 
@@ -485,8 +485,8 @@ class TestMESA(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
-        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
-        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        number_of_zones   = instance.particles.get_number_of_zones()[0]
+        number_of_species = instance.particles.get_number_of_species()[0]
         composition       = instance.particles[0].get_chemical_abundance_profiles()
         species_names     = instance.particles[0].get_names_of_species()
         species_IDs       = instance.particles[0].get_IDs_of_species()
@@ -523,8 +523,8 @@ class TestMESA(TestWithMPI):
         instance.evolve_model(5.85 | units.Gyr)
         self.assertTrue(instance.particles[0].age >= 5.85 | units.Gyr)
         self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
-        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
-        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        number_of_zones   = instance.particles.get_number_of_zones()[0]
+        number_of_species = instance.particles.get_number_of_species()[0]
         composition       = instance.particles[0].get_chemical_abundance_profiles()
         species_names     = instance.particles[0].get_names_of_species()
         species_IDs       = instance.particles[0].get_IDs_of_species()
@@ -680,7 +680,7 @@ class TestMESA(TestWithMPI):
         instance.commit_particles()
         instance.evolve_model()
         
-        number_of_zones = instance.particles[0].get_number_of_zones().number
+        number_of_zones = instance.particles[0].get_number_of_zones()
         composition     = instance.particles[0].get_chemical_abundance_profiles(number_of_zones = number_of_zones)
         instance.new_particle_from_model(dict(
             mass = instance.particles[0].get_cumulative_mass_profile(number_of_zones = number_of_zones) * instance.particles[0].mass,
@@ -699,7 +699,7 @@ class TestMESA(TestWithMPI):
             X_Fe = composition[7]*0.0), 10.0 | units.Myr)
         self.assertEqual(len(instance.particles), 2)
         self.assertEqual(len(instance.imported_stars), 1)
-        self.assertEqual(instance.imported_stars[0].get_number_of_zones().number, number_of_zones)
+        self.assertEqual(instance.imported_stars[0].get_number_of_zones(), number_of_zones)
         self.assertIsOfOrder(instance.imported_stars[0].get_radius_profile()[-1],          1.0 | units.RSun)
         self.assertIsOfOrder(instance.imported_stars[0].get_temperature_profile()[0],  1.0e7 | units.K)
 #        self.assertIsOfOrder(instance.imported_stars[0].get_luminosity_profile()[-1],      1.0 | units.LSun)

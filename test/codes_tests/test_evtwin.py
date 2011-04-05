@@ -504,7 +504,7 @@ class TestEVtwin(TestWithMPI):
         instance.particles.add_particles(stars)
         instance.commit_particles()
         instance.evolve_model()
-        self.assertEquals(instance.particles.get_number_of_zones(), [199, 199] | units.none)
+        self.assertEquals(instance.particles.get_number_of_zones(), [199, 199])
         self.assertEquals(len(instance.particles[0].get_radius_profile()), 199)
         self.assertRaises(AmuseException, instance.particles.get_radius_profile, 
             expected_message = "Querying radius profiles of more than one particle at a time is not supported.")
@@ -533,8 +533,8 @@ class TestEVtwin(TestWithMPI):
         instance.commit_particles()
         instance.evolve_model()
         instance.evolve_model()
-        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
-        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        number_of_zones   = instance.particles.get_number_of_zones()[0]
+        number_of_species = instance.particles.get_number_of_species()[0]
         composition       = instance.particles[0].get_chemical_abundance_profiles()
         species_names     = instance.particles[0].get_names_of_species()
         self.assertEquals(number_of_zones,    199)
@@ -562,8 +562,8 @@ class TestEVtwin(TestWithMPI):
         instance.evolve_model(11.7 | units.Gyr)
         self.assertTrue(instance.particles[0].age >= 11.7 | units.Gyr)
         self.assertTrue(str(instance.particles[0].stellar_type) == "First Giant Branch")
-        number_of_zones   = instance.particles.get_number_of_zones().value_in(units.none)[0]
-        number_of_species = instance.particles.get_number_of_species().value_in(units.none)[0]
+        number_of_zones   = instance.particles.get_number_of_zones()[0]
+        number_of_species = instance.particles.get_number_of_species()[0]
         composition       = instance.particles[0].get_chemical_abundance_profiles()
         species_names     = instance.particles[0].get_names_of_species()
         self.assertEquals(number_of_zones,    199)
