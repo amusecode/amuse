@@ -70,7 +70,8 @@ public class Deployment {
         Application application = applications.getApplication(codeName);
 
         if (application == null) {
-            application = applications.createNewApplication(codeName);
+        	application = new Application(codeName);
+        	applications.addApplication(application);
 
             application.setLibs(new File("deploy/lib-server"), new File("lib"));
 
@@ -82,13 +83,16 @@ public class Deployment {
         }
 
         // create job description
-        JobDescription jobDescription = experiment.createNewJob(workerID);
+        JobDescription jobDescription = new JobDescription(workerID);
+        experiment.addJob(jobDescription);
+        
 
-        jobDescription.setClusterName(hostname);
+        jobDescription.getCluster().setName(hostname);
         jobDescription.setProcessCount(1);
         jobDescription.setResourceCount(1);
         jobDescription.setRuntime(60);
-        jobDescription.setApplicationName(codeName);
+        jobDescription.getApplication().setName(codeName);
+        jobDescription.setPoolName("amuse");
 
         String amuseHome = cluster.getProperties().getProperty("amuse.home");
 
@@ -97,17 +101,17 @@ public class Deployment {
                     + hostname + "\" in grid description file deploy.grid");
         }
 
-        jobDescription.getApplicationOverrides().setSystemProperty(
-                "java.library.path", amuseHome + "/src/amuse/community/bhtree" + ":" + amuseHome + "/lib/ibis/src/native:/usr/lib/openmpi/lib");
+        jobDescription.getApplication().setSystemProperty(
+                "java.library.path", amuseHome + "/src/amuse/community/bhtree" + ":" + amuseHome + "/lib/ibis/src/native");
 
 //        jobDescription.getApplicationOverrides().setArguments("--code-name",
 //                codeName, "--worker-id", workerID);
         
-      jobDescription.getApplicationOverrides().setArguments("--code-name",
+      jobDescription.getApplication().setArguments("--code-name",
       "/home/niels/workspace/amuse/src/amuse/community/bhtree/bhtree_worker", "--worker-id", workerID);
         
 
-        Job result = deploy.submitJob(jobDescription, applications, grid, null, null);
+        Job result = deploy.submitJob(jobDescription, application, cluster, null, null);
 
         result.waitUntilDeployed();
 
