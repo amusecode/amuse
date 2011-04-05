@@ -6,7 +6,6 @@ import ibis.ipl.WriteMessage;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.IntBuffer;
@@ -140,7 +139,7 @@ public class AmuseMessage implements Serializable {
 
         setCallID(callID);
         setFunctionID(functionID);
-        setCount(count);
+        setCallCount(count);
     }
 
     /**
@@ -158,7 +157,7 @@ public class AmuseMessage implements Serializable {
 
         setCallID(callID);
         setFunctionID(functionID);
-        setCount(count);
+        setCallCount(count);
         setError(error);
     }
 
@@ -232,7 +231,7 @@ public class AmuseMessage implements Serializable {
         }
     }
 
-    public void setCount(int count) {
+    public void setCallCount(int count) {
         header.put(HEADER_CALL_COUNT_INDEX, count);
     }
 

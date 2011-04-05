@@ -70,8 +70,8 @@ public class Deployment {
         Application application = applications.getApplication(codeName);
 
         if (application == null) {
-        	application = new Application(codeName);
-        	applications.addApplication(application);
+            application = new Application(codeName);
+            applications.addApplication(application);
 
             application.setLibs(new File("deploy/lib-server"), new File("lib"));
 
@@ -85,7 +85,6 @@ public class Deployment {
         // create job description
         JobDescription jobDescription = new JobDescription(workerID);
         experiment.addJob(jobDescription);
-        
 
         jobDescription.getCluster().setName(hostname);
         jobDescription.setProcessCount(1);
@@ -102,16 +101,19 @@ public class Deployment {
         }
 
         jobDescription.getApplication().setSystemProperty(
-                "java.library.path", amuseHome + "/src/amuse/community/bhtree" + ":" + amuseHome + "/lib/ibis/src/native");
+                "java.library.path",
+                amuseHome + "/src/amuse/community/bhtree" + ":" + amuseHome
+                        + "/lib/ibis/src/native");
 
-//        jobDescription.getApplicationOverrides().setArguments("--code-name",
-//                codeName, "--worker-id", workerID);
-        
-      jobDescription.getApplication().setArguments("--code-name",
-      "/home/niels/workspace/amuse/src/amuse/community/bhtree/bhtree_worker", "--worker-id", workerID);
-        
+        // jobDescription.getApplicationOverrides().setArguments("--code-name",
+        // codeName, "--worker-id", workerID);
 
-        Job result = deploy.submitJob(jobDescription, application, cluster, null, null);
+        jobDescription.getApplication().setArguments("--code-name",
+                amuseHome + "/src/amuse/community/bhtree/bhtree_worker",
+                "--worker-id", workerID);
+
+        Job result = deploy.submitJob(jobDescription, application, cluster,
+                null, null);
 
         result.waitUntilDeployed();
 

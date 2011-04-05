@@ -1,0 +1,2 @@
+openmpicc -dynamiclib -o libmpi_ibis_worker.jnilib -framework JavaVM  -I/System/Library/Frameworks/JavaVM.framework/Headers -I../../include mpi_ibis_worker.c 
+

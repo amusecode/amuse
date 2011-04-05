@@ -143,7 +143,7 @@ public class CommunityCode implements Runnable {
                     resultMessage.clear();
                     resultMessage.setCallID(requestMessage.getCallID());
                     resultMessage.setFunctionID(requestMessage.getFunctionID());
-                    resultMessage.setCount(requestMessage.getCount());
+                    resultMessage.setCallCount(requestMessage.getCount());
                     resultMessage.setError(e.getMessage());
                 }
                 
@@ -161,5 +161,16 @@ public class CommunityCode implements Runnable {
             }
         }
 
+    }
+    
+    
+    public static void main(String[] arguments) throws Exception {
+        CommunityCode code = new CommunityCode(arguments[0], null, null);
+        
+        code.requestMessage.clear();
+        code.requestMessage.setFunctionID(0);
+        code.requestMessage.setCallCount(1);
+
+        code.call();
     }
 }

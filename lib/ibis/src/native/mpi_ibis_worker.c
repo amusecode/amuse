@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <dlfcn.h>
 
 #include "ibis_amuse_CommunityCode.h"
 
@@ -44,13 +45,14 @@ jfloat *floats_out;
 jdouble *doubles_out;
 jboolean *booleans_out;
 
+MPI_Comm intercom;
 
 void print_object(JNIEnv *env, const char *message, jobject object) {
 
 	jclass object_class = (*env)->FindClass(env, "java/lang/Object");
 
-	jmethodID toString_method = (*env)->GetMethodID(env, object_class, "toString",
-			"()Ljava/lang/String;");
+	jmethodID toString_method = (*env)->GetMethodID(env, object_class,
+			"toString", "()Ljava/lang/String;");
 
 	jstring some_string = (jstring) (*env)->CallObjectMethod(env, object,
 			toString_method);
@@ -84,30 +86,30 @@ void update_buffers(JNIEnv *env) {
 
 	jobject long_bytes = (*env)->GetObjectArrayElement(env, byte_buffers, 2);
 	longs_out = (jlong *) (*env)->GetDirectBufferAddress(env, long_bytes);
-	capacity_out[HEADER_LONG_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(env,
-			long_bytes) / SIZEOF_LONG;
+	capacity_out[HEADER_LONG_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(
+			env, long_bytes) / SIZEOF_LONG;
 
 	jobject float_bytes = (*env)->GetObjectArrayElement(env, byte_buffers, 3);
 	floats_out = (jfloat *) (*env)->GetDirectBufferAddress(env, float_bytes);
-	capacity_out[HEADER_FLOAT_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(env,
-			float_bytes) / SIZEOF_FLOAT;
+	capacity_out[HEADER_FLOAT_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(
+			env, float_bytes) / SIZEOF_FLOAT;
 
 	jobject double_bytes = (*env)->GetObjectArrayElement(env, byte_buffers, 4);
 	doubles_out = (jdouble *) (*env)->GetDirectBufferAddress(env, double_bytes);
-	capacity_out[HEADER_DOUBLE_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(env,
-			double_bytes) / SIZEOF_DOUBLE;
+	capacity_out[HEADER_DOUBLE_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(
+			env, double_bytes) / SIZEOF_DOUBLE;
 
 	jobject boolean_bytes = (*env)->GetObjectArrayElement(env, byte_buffers, 5);
-	booleans_out = (jboolean *) (*env)->GetDirectBufferAddress(env, boolean_bytes);
-	capacity_out[HEADER_BOOLEAN_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(env,
-			boolean_bytes) / SIZEOF_BOOLEAN;
+	booleans_out = (jboolean *) (*env)->GetDirectBufferAddress(env,
+			boolean_bytes);
+	capacity_out[HEADER_BOOLEAN_COUNT_INDEX] = (*env)->GetDirectBufferCapacity(
+			env, boolean_bytes) / SIZEOF_BOOLEAN;
 }
 
 void ensure_primitive_output_capacity(JNIEnv *env) {
 	int i;
 
 	jboolean ok = JNI_TRUE;
-
 
 	for (i = HEADER_INT_COUNT_INDEX; i < HEADER_SIZE; i++) {
 		if (header_out[i] > capacity_out[i]) {
@@ -118,7 +120,8 @@ void ensure_primitive_output_capacity(JNIEnv *env) {
 	if (!ok) {
 		fprintf(stderr, "increasing capacity\n");
 
-		jclass message_class = (*env)->FindClass(env, "ibis/amuse/AmuseMessage");
+		jclass message_class =
+				(*env)->FindClass(env, "ibis/amuse/AmuseMessage");
 
 		if (message_class == 0) {
 			return;
@@ -139,18 +142,20 @@ void ensure_primitive_output_capacity(JNIEnv *env) {
 	}
 }
 
-JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init(JNIEnv *env, jobject this_object,	jstring code_name) {
+JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init(JNIEnv *env,
+		jobject this_object, jstring code_name) {
 
-	//dlopen("libmpi.so", RTLD_GLOBAL);
+	//needed?
+	//dlopen("libmpi.dylib", RTLD_GLOBAL);
 
 	char** empty;
 
 	MPI_Init(0, &empty);
 
-
-//	MPI_Intercomm intercom = MPI::COMM_SELF.Spawn(
-//			"/home/niels/workspace/amuse/src/community/bhtree/bhtree_worker",
-//			NULL , 1, NULL, 0);
+	MPI_Comm_spawn(
+			"/Users/niels/workspace/amuse/src/amuse/community/bhtree/bhtree_worker",
+			MPI_ARGV_NULL, 1, MPI_INFO_NULL, 0, MPI_COMM_SELF, &intercom,
+			MPI_ERRCODES_IGNORE);
 
 }
 
@@ -186,7 +191,8 @@ JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init(JNIEnv *env, jobject t
 	doubles_in = (jdouble *) (*env)->GetDirectBufferAddress(env, double_bytes);
 
 	jobject boolean_bytes = (*env)->GetObjectArrayElement(env, byte_buffers, 5);
-	booleans_in = (jboolean *) (*env)->GetDirectBufferAddress(env, boolean_bytes);
+	booleans_in = (jboolean *) (*env)->GetDirectBufferAddress(env,
+			boolean_bytes);
 }
 
 /*
@@ -212,35 +218,31 @@ JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init(JNIEnv *env, jobject t
 	char error[100];
 	jclass exception_class;
 	int call_count = header_in[HEADER_CALL_COUNT_INDEX];
-	fprintf(stderr, "doing call, function ID = %d\n",
+	int mpi_header[8];
+
+	fprintf(stderr,
+			"Amuse/Ibis/MPI native code: doing call, function ID = %d\n",
 			header_in[HEADER_FUNCTION_ID_INDEX]);
 
 	header_out[HEADER_CALL_ID_INDEX] = header_in[HEADER_CALL_ID_INDEX];
 	header_out[HEADER_FUNCTION_ID_INDEX] = header_in[HEADER_FUNCTION_ID_INDEX];
 	header_out[HEADER_CALL_COUNT_INDEX] = header_in[HEADER_CALL_COUNT_INDEX];
 
-	switch (header_in[HEADER_FUNCTION_ID_INDEX]) {
+	mpi_header[0] = header_in[HEADER_FUNCTION_ID_INDEX];
+	mpi_header[1] = header_in[HEADER_CALL_COUNT_INDEX];
+	mpi_header[2] = header_in[HEADER_DOUBLE_COUNT_INDEX] / call_count;
+	mpi_header[3] = header_in[HEADER_INT_COUNT_INDEX] / call_count;
+	mpi_header[4] = header_in[HEADER_FLOAT_COUNT_INDEX] / call_count;
+	mpi_header[5] = header_in[HEADER_STRING_COUNT_INDEX] / call_count;
+	mpi_header[6] = header_in[HEADER_BOOLEAN_COUNT_INDEX] / call_count;
+	mpi_header[7] = header_in[HEADER_LONG_COUNT_INDEX] / call_count;
 
-	case 0:
-		//END
-		break;
-	case 1141573512:
-		//REDIRECT-OUTPUT
-		header_out[HEADER_INT_COUNT_INDEX] = 1;
-		ensure_primitive_output_capacity(env);
-		ints_out[0] = 0;
-		break;
+	MPI_Bcast(mpi_header, 8, MPI_INT, MPI_ROOT, intercom);
 
-	default:
 
-		exception_class = (*env)->FindClass(env,	"java/lang/NoSuchMethodException");
+	//	Send(data, 10, MPI_INT, 0, 0, intercom);
 
-		sprintf(error, "unknown functon id %d in call %d",
-				header_in[HEADER_FUNCTION_ID_INDEX],
-				header_in[HEADER_CALL_ID_INDEX]);
+	//	MPI_Comm_disconnect(&intercom);
 
-		if (exception_class != NULL) {
-			(*env)->ThrowNew(env, exception_class, error);
-		}
-	}
 }
+

@@ -1,4 +1,4 @@
 #!/bin/sh
 
-exec java -Xmx500M -classpath .:lib/*:lib:deploy/lib/* $@
+exec java -Xmx500M -Djava.library.path=/opt/local/lib/openmpi:. -classpath .:lib/*:lib:deploy/lib/* $@
 
