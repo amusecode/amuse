@@ -461,13 +461,13 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.particles.number_of_zones, [1043, 985, 18371])
         
         stellar_model = instance.merge_products[0].internal_structure()
-        instance.stop()
         self.assertAlmostEqual(stellar_model.mass[[0, -1]],        [0.0, 25.7309] | units.MSun, 3)
         self.assertAlmostEqual(stellar_model.radius[[0, -1]],      [0.0,  8.4154] | units.RSun, 3)
         self.assertAlmostRelativeEqual(stellar_model.temperature[[0, -1]], [41115723.2, 361201.7] | units.K, 1)
         self.assertAlmostEqual(stellar_model.X_H[[0, -1]],         [0.67024, 0.70002] | units.none, 4)
         
         stellar_evolution.new_particle_from_model(stellar_model, 10.0 | units.Myr)
+        instance.stop()
         print stellar_evolution.particles
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)
@@ -629,13 +629,13 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.particles.number_of_zones, [1043, 985, 13231])
         
         stellar_model = instance.merge_products[0].internal_structure()
-        instance.stop()
         self.assertAlmostEqual(stellar_model.mass[[0, -1]],        [0.0, 17.2673] | units.MSun, 3)
         self.assertAlmostEqual(stellar_model.radius[[0, -1]],      [0.0, 304.5522] | units.RSun, 3)
         self.assertAlmostEqual(stellar_model.temperature[[0, -1]], [263850786.3, 1.5] | units.K, 0)
         self.assertAlmostEqual(stellar_model.X_H[[0, -1]],         [0.0, 0.70003] | units.none, 4)
 
         merged_in_code = stellar_evolution.new_particle_from_model(stellar_model, 10.0 | units.Myr)
+        instance.stop()
         stellar_evolution.particles.remove_particles(stars)
         print stellar_evolution.particles
         for i in range(10):
@@ -681,13 +681,13 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         self.assertEqual(instance.particles.number_of_zones, [199, 199, 16894])
         
         stellar_model = instance.merge_products[0].internal_structure()
-        instance.stop()
         self.assertAlmostEqual(stellar_model.mass[[0, -1]],        [0.0, 25.6378] | units.MSun, 3)
         self.assertAlmostEqual(stellar_model.radius[[0, -1]],      [0.0,  8.1857] | units.RSun, 3)
         self.assertAlmostEqual(stellar_model.temperature[[0, -1]], [41250979.6, 445997.1] | units.K, 0)
         self.assertAlmostEqual(stellar_model.X_H[[0, -1]],         [0.68408, 0.70005] | units.none, 4)
         
         stellar_evolution.new_particle_from_model(stellar_model, 10.0 | units.Myr)
+        instance.stop()
         print stellar_evolution.particles
         for i in range(10):
             stellar_evolution.evolve_model(keep_synchronous = False)
