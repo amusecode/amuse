@@ -1,0 +1,25 @@
+{% extends "!layout.html" %}
+{% set reldelim1 = ''%} 
+{% set reldelim2 = ''%} 
+{% block extrahead %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ pathto('_static/default.css', 1) }}" type="text/css">
+{% endblock %}
+
+{%- block header %}
+    <div id="banner">
+      <div id="header" py:choose="">
+        <h1><a href="/">Amuse</a></h1>
+      </div>
+      <div style="clear:both"></div>
+    </div>
+    <div class="nav" id="mainnav">
+    <ul>
+      <li class="first"><a href="/wiki">Wiki</a>
+    </ul>
+    </div>
+{% endblock %}
+{% block rootrellink %}
+    <li><a href="http://www.amusecode.org">Project Homepage</a> &raquo;</li>
+    {{ super() }}
+{% endblock %}

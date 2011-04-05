@@ -1,0 +1,146 @@
+
+body {
+    padding: 0px;
+    margin: 0px;
+  font: 13px "DejaVu Sans Condensed", "Bistream Versa Sans", arial, sans-serif;
+}
+
+#banner {
+    background: #B0C4DE;
+    min-height: 7em;
+    height: 7em;
+    padding: 0px;
+    margin: 0px;
+}
+
+#header {
+    padding-left: 1em;
+}
+#header h1 {
+    font-size: 36pt;
+    font-family: "Bitstream Vera Serif", Georgia, serif;
+    padding: 0px;
+    margin: 0px;
+    float: left;
+    font-weight: bold;
+    font-style:italic; 
+    
+}
+#header *:link, #header *:visited, #header *:link:hover, #header *:visited:hover {
+    background: none repeat scroll 0 0 transparent;
+    border: medium none;
+    color: #555555;
+    margin-bottom: 2px;
+    text-decoration: none;
+}
+
+:link, *:visited {
+    border-bottom: 1px dotted #BBBBBB;
+    color: #BB0000;
+    text-decoration: none;
+}
+
+
+
+
+.document {
+    padding-right: 20em;
+    position: relative;
+    margin-left: 1em;
+}
+
+.documentwrapper {
+    padding-left: 26px;
+    
+}
+.documentwrapper p {
+  line-height: 165%;
+  font-size: 14px;
+  color: #2e3436;
+  text-align: justify;
+}
+
+
+.documentwrapper h1,.documentwrapper  h2, .documentwrapper h3, .documentwrapper h4 {
+  font-family: "Bitstream Vera Serif", Georgia, serif;
+  font-weight: normal;
+  letter-spacing: none;
+  padding-right: 1em;
+  margin-left: -18px;
+  page-break-after: none;
+}
+
+div.sphinxsidebar
+{
+    position: absolute;
+    
+    top: 0px;
+    right: 0px;
+    width: 17em;
+    bottom: 0px;
+    
+    font-size: 100%;
+}
+
+.sphinxsidebarwrapper
+{
+    border: 1px dotted #BBBBBB;
+}
+
+.sphinxsidebarwrapper ul 
+{
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
+.sphinxsidebarwrapper :link, .sphinxsidebarwrapper *:visited {
+    border-bottom: none; /*1px dotted #BBBBBB;*/
+    color: #bb0000;
+    text-decoration: none;
+}
+
+#mainnav {
+    padding: 0px;
+    margin: 0px;
+    background: #4682B4;
+    border: 0px solid #fff;
+    
+    margin-bottom: 10px;
+}
+
+#mainnav ul {
+    text-align: left;
+    padding: 0px;
+    margin: 0px;
+    padding: 4px;
+    list-style: none ;
+}
+
+#mainnav li {
+    font-size: 12pt;
+    font-family:verdana,'Bitstream Vera Sans',helvetica,arial,sans-serif;
+    padding: 2px;
+    border-right: 2px solid #fff;
+    display: inline;
+    padding-left: 1em;
+}
+
+#mainnav *:link, #mainnav *:visited {
+    background: none;
+    border: 0px solid #fff;
+    padding-right: 1em;
+    color: white;
+}
+
+#mainnav *:link:hover {
+    background: #B0C4DE;
+    border: 0px solid #fff;
+    color: black;
+    
+}
+
+.nav li {
+    white-space: nowrap;
+}
+.highlight-sh{
+}
