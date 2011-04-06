@@ -94,7 +94,7 @@ end subroutine ReshapeWindow
 
 
 subroutine MouseClick(button, state, x, y)
-  integer(kind=glcint),intent(in out) :: button,state,x,y 
+  integer(kind=glcint),intent(inout) :: button,state,x,y 
    
  if(button.EQ.GLUT_LEFT_BUTTON) then
   if(state.EQ.GLUT_DOWN) leftbutton=0
@@ -111,7 +111,7 @@ subroutine MouseClick(button, state, x, y)
 end subroutine MouseClick
 
 subroutine MouseClickMotion(x,y)
-  integer(kind=glcint),intent(in out) :: x,y 
+  integer(kind=glcint),intent(inout) :: x,y 
   real(kind=gldouble) :: rscl
   real(kind=gldouble),dimension(3) :: trans=(/0.,0.,0./)
  if((.NOT.(leftbutton.EQ.0)).AND.(.NOT.(rightbutton.EQ.0))) return
@@ -165,8 +165,8 @@ subroutine MouseClickMotion(x,y)
 end subroutine MouseClickMotion
 
 subroutine NormalKey( key, x, y)
-  integer(kind=glcint),intent(in out) :: key
-  integer(kind=glcint),intent(in out) :: x,y
+  integer(kind=glcint),intent(inout) :: key
+  integer(kind=glcint),intent(inout) :: x,y
  mx=0.;my=0.
  if(key.EQ.32) then 
   free_flight=1 
@@ -182,15 +182,15 @@ subroutine NormalKey( key, x, y)
 end subroutine NormalKey
 
 subroutine NormalKeyUp( key, x, y)
-  integer(kind=glint),intent(in out) :: key
-  integer(kind=glcint),intent(in out) :: x,y
+  integer(kind=glint),intent(inout) :: key
+  integer(kind=glcint),intent(inout) :: x,y
  mx=0.;my=0.
  if(key.EQ.32) free_flight=0 
 end subroutine NormalKeyUp
 
 recursive subroutine frame(dummy)
   real(kind=gldouble),dimension(3) :: trans=(/0.,0.,0./)
-integer(kind=glint), intent(in out) :: dummy
+integer(kind=glint), intent(inout) :: dummy
  if(free_flight.EQ.1) then
   call rotate(trans,zero,-freeFlightSpeed*scaleFactor,fi,theta)
   call translate(cam,spot,trans)
@@ -219,7 +219,7 @@ subroutine MouseMoves( x, y)
 end subroutine MouseMoves
 
 subroutine menu_handler(value)
-  integer(kind=glcint), intent(in out) :: value
+  integer(kind=glcint), intent(inout) :: value
  select case(value)
  case(RESET)
    call reset_to_init
@@ -658,8 +658,8 @@ end subroutine prerender
 
 subroutine NormalKey2( key, x, y)
  use viewermod
-  integer(kind=glcint),intent(in out) :: key
-  integer(kind=glcint),intent(in out) :: x,y
+  integer(kind=glcint),intent(inout) :: key
+  integer(kind=glcint),intent(inout) :: x,y
  if(key.EQ.110) then 
 ! 'N'
  endif

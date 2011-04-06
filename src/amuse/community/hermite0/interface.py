@@ -3,7 +3,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
 class HermiteInterface(CodeInterface,
-                       LiteratureRefs,
+                       LiteratureReferencesMixIn,
                        GravitationalDynamicsInterface,
                        StoppingConditionInterface):
     """
@@ -20,7 +20,7 @@ class HermiteInterface(CodeInterface,
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="hermite_worker",
                                  **options)
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
 
     def reinitialize_particles(self):
         self.recommit_particles()

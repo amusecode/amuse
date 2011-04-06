@@ -2,7 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class OctgravInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
+class OctgravInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Gaburov E., Bedorf J., Portegies Zwart S., "A gravitational tree code on graphics processing units:
                Implementation in CUDA", 2010, Proc. C. Sc., 1, 1119; and main MUSE paper, arXiv/0807.1996
@@ -19,7 +19,7 @@ class OctgravInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInter
 
         self.convert_nbody = convert_nbody
         """
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
 
     
 

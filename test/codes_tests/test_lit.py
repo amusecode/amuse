@@ -12,10 +12,10 @@ from amuse.community.evtwin.interface import EVtwin
 
 class TestLiteratureRefs(unittest.TestCase):
     def setUp(self):
-        lit.LiteratureRefs.literature_list = []
+        lit.LiteratureReferencesMixIn.literature_list = []
 
     def test1(self):
-        class ClassLitrefs(lit.LiteratureRefs):
+        class ClassLitrefs(lit.LiteratureReferencesMixIn):
             """ some comments with added lit refs, i.e.  [#]_ and [3]_ etc...
 
                 .. [#] Gratia, Exempli, *Journal of I.M.*, **1**, 1--100 (2009).
@@ -23,18 +23,18 @@ class TestLiteratureRefs(unittest.TestCase):
                 .. [4] Hat, John, *The Ex. Foo Journal of Bars*, **51**, 1647--1751 (2009)  
             """
             def __init__(self):
-                lit.LiteratureRefs.__init__(self)
+                lit.LiteratureReferencesMixIn.__init__(self)
 
-        classnames = lit.LiteratureRefs.names_of_classes_with_references()
+        classnames = lit.LiteratureReferencesMixIn.names_of_classes_with_references()
         self.assertFalse("ClassLitrefs" in classnames)
 
         instance = ClassLitrefs()
         
-        classnames = lit.LiteratureRefs.names_of_classes_with_references()
+        classnames = lit.LiteratureReferencesMixIn.names_of_classes_with_references()
         self.assertTrue("ClassLitrefs" in classnames)
 
     def test2(self):
-        class ClassLitrefs(lit.LiteratureRefs):
+        class ClassLitrefs(lit.LiteratureReferencesMixIn):
             """ some comments with added lit refs, i.e.  [#]_ and [3]_ etc...
 
                 .. [#] Gratia, Exempli, *Journal of I.M.*, **1**, 1--100 (2009).
@@ -42,16 +42,17 @@ class TestLiteratureRefs(unittest.TestCase):
                 .. [4] Hat, John, *The Gal. Foo Journal of Bars*, **3**, 16--51 (2009)  
             """
             def __init__(self):
-                lit.LiteratureRefs.__init__(self)
+                lit.LiteratureReferencesMixIn.__init__(self)
         
-        lit.TracLiteratureReferences.default().registered_classes = set([])
-        string = lit.LiteratureRefs.all_literature_references_string()
-        self.assertEquals("", string)
+        lit.TrackLiteratureReferences.default().registered_classes = set([])
+        string = lit.LiteratureReferencesMixIn.all_literature_references_string()
+        self.assertTrue("AMUSE" in string)
+        self.assertTrue("multiphysics and multiscale software environment" in string)
 
         instance = ClassLitrefs()
         
-        string = lit.LiteratureRefs.all_literature_references_string()
-        lit.LiteratureRefs.print_refs()
+        string = lit.LiteratureReferencesMixIn.all_literature_references_string()
+        lit.LiteratureReferencesMixIn.print_literature_references()
         self.assertFalse(".. [#] Gratia, Exem" in string)
         self.assertFalse(".. [3] Dude" in string)
         self.assertFalse(".. [4] Hat" in string)
@@ -63,7 +64,7 @@ class TestLiteratureRefs(unittest.TestCase):
         self.assertTrue("ClassLitrefs" in string)
         
     def test3(self):
-        class ClassLitrefs(lit.LiteratureRefs):
+        class ClassLitrefs(lit.LiteratureReferencesMixIn):
             """ some comments with added lit refs, i.e.  [#]_ and [3]_ etc...
 
                 .. [#] Gratia, Exempli, *Journal of I.M.*, **1**, 1--100 (2009).
@@ -71,9 +72,9 @@ class TestLiteratureRefs(unittest.TestCase):
                 .. [4] Hat, John, *The Gal. Foo Journal of Bars*, **3**, 16--51 (2009)  
             """
             def __init__(self):
-                lit.LiteratureRefs.__init__(self)
+                lit.LiteratureReferencesMixIn.__init__(self)
         
-        string = lit.LiteratureRefs.export2html()
+        string = lit.LiteratureReferencesMixIn.export2html()
         print string
         #from docutils import core
         #print core.publish_string(source = string)
@@ -91,7 +92,7 @@ class TestLiteratureRefs(unittest.TestCase):
         print "Each legacy code instance collects all references."
         print "They can be retrieved with the print_refs method:"
         print ">>> gravity.print_refs()"
-        gravity.print_refs()
+        gravity.print_literature_references()
         all_refs_as_returned_by_code1 = gravity.all_literature_references_string()
         all_refs_as_returned_by_code2 = stellar_evolution2.all_literature_references_string()
         print "Checking whether each of them returns the same set of references... ",

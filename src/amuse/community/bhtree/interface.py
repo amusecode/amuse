@@ -2,7 +2,7 @@ from amuse.community import *
 from amuse.community.interface.gd import GravitationalDynamicsInterface
 from amuse.community.interface.gd import GravitationalDynamics
 
-class BHTreeInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInterface, StoppingConditionInterface):
+class BHTreeInterface(CodeInterface, LiteratureReferencesMixIn, GravitationalDynamicsInterface, StoppingConditionInterface):
     """
         .. [#] Barnes, J., Hut, P., A Hierarchical O(N log N) force-calculation algorithm, *Nature*, **4**, 324 (1986)   
     """
@@ -17,7 +17,7 @@ class BHTreeInterface(CodeInterface, LiteratureRefs, GravitationalDynamicsInterf
             
         self.convert_nbody = convert_nbody
         """
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
 
     
        

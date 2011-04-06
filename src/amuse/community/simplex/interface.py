@@ -4,7 +4,7 @@ from amuse.community import *
 from amuse.support.options import option
 
 
-class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureRefs):
+class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
     SimpleX(2) is a method for radiative transfer on an unstructured Delaunay 
     grid. The grid samples the medium through which photons are transported in 
@@ -18,7 +18,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureRefs):
     
     def __init__(self, **kwargs):
         CodeInterface.__init__(self, name_of_the_worker = "simplex_worker", **kwargs)
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
     
     @option(type="string")
     def data_directory(self):

@@ -446,15 +446,6 @@ class OrderedSet(collections.MutableSet):
     def __contains__(self, key):
         return key in self.map
 
-    def add(self, key):
-        if key not in self.map:
-            self.map[key] = self.Node(key, self.end.previous, self.end.next)
-
-    def discard(self, key):
-        if key in self.map:        
-            current = self.map.pop(key)
-            current.discard()
-
     def __iter__(self):
         end = self.end
         current = end.next
@@ -469,13 +460,6 @@ class OrderedSet(collections.MutableSet):
             yield current.key
             current = current.previous
 
-    def pop(self, last=True):
-        if not self:
-            raise KeyError('set is empty')
-        key = next(reversed(self)) if last else next(iter(self))
-        self.discard(key)
-        return key
-
     def __repr__(self):
         if not self:
             return '%s()' % (self.__class__.__name__,)
@@ -488,3 +472,19 @@ class OrderedSet(collections.MutableSet):
 
     def __del__(self):
         self.clear()
+    def add(self, key):
+        if key not in self.map:
+            self.map[key] = self.Node(key, self.end.previous, self.end.next)
+
+    def discard(self, key):
+        if key in self.map:        
+            current = self.map.pop(key)
+            current.discard()
+
+    def pop(self, last=True):
+        if not self:
+            raise KeyError('set is empty')
+        key = next(reversed(self)) if last else next(iter(self))
+        self.discard(key)
+        return key
+

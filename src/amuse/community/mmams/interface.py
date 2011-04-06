@@ -5,7 +5,7 @@ from amuse.support.units import units
 import os.path
 
 
-class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, LiteratureRefs):
+class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     """
     MakeMeAMassiveStar is a computationally inexpensive method in which the 
     merger process is approximated, including shock heating, hydrodynamic 
@@ -25,7 +25,7 @@ class MakeMeAMassiveStarInterface(CodeInterface, CommonCodeInterface, Literature
     
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker = "worker_mmams", **options)
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
     
     @option(type="string")
     def data_directory(self):

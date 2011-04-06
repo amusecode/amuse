@@ -17,7 +17,10 @@ LiteratureReference = namedtuple(
     "id footnote"
 )
 
-class TracLiteratureReferences(object):
+class TrackLiteratureReferences(object):
+    """
+        .. [#] Portegies Zwart S. et al., A multiphysics and multiscale software environment for modeling astrophysical systems, *New Astronomy*, **Volume 14**, **Issue 4**, 369-378 (2009) 
+    """
     INSTANCE = None
     
     def __init__(self):
@@ -68,10 +71,10 @@ class TracLiteratureReferences(object):
             docstring_in = current_class.__doc__
             if docstring_in:
                 objectname = current_class.__name__
-                Mydoctree  = core.publish_doctree(source = docstring_in)
-                ref_keys = Mydoctree.ids.keys()
+                doctree  = core.publish_doctree(source = docstring_in)
+                ref_keys = doctree.ids.keys()
                 natsort(ref_keys)
-                ref_values = [Mydoctree.ids[key] for key in ref_keys]
+                ref_values = [doctree.ids[key] for key in ref_keys]
                 literature_references_of_class = []
                 for ikey, ival in zip(ref_keys, ref_values):
                     if isinstance(ival,nodes.footnote):
@@ -101,21 +104,28 @@ class TracLiteratureReferences(object):
             lines.append('\n\t"%s"' % s.name_of_class_with_refs)
             for literature_reference_of_class_item in s.literature_references_of_class:
                 lines.append('\t\t%s' % (literature_reference_of_class_item.footnote))
+        
+        lines.append('\n\t"AMUSE"')
+        amuse_list = self.get_literature_list_of_class(type(self))
+        for x in amuse_list:
+            for literature_reference_of_class_item in x.literature_references_of_class:
+                lines.append('\t\t%s' % (literature_reference_of_class_item.footnote))
+            
         return "\n".join(lines)
         
     def names_of_classes_with_references(self):
         return [x.name_of_class_with_refs for x in self.get_literature_list()]
 
-class LiteratureRefs(object):
+class LiteratureReferencesMixIn(object):
 
 
     def __init__(self):
         self.register_use()
  
     @classmethod
-    def print_refs(cls):
+    def print_literature_references(cls):
         print "You are currently using the following codes, which contain literature references"
-        print TracLiteratureReferences.default().all_literature_references_string()
+        print TrackLiteratureReferences.default().all_literature_references_string()
  
     @classmethod
     def export2html(cls):
@@ -127,15 +137,15 @@ class LiteratureRefs(object):
    
     @classmethod
     def names_of_classes_with_references(cls):
-        return TracLiteratureReferences.default().names_of_classes_with_references()
+        return TrackLiteratureReferences.default().names_of_classes_with_references()
  
     @classmethod
     def all_literature_references_string(cls):
-        return TracLiteratureReferences.default().all_literature_references_string()
+        return TrackLiteratureReferences.default().all_literature_references_string()
         
     @classmethod
     def register_use(cls):
-        TracLiteratureReferences.default().register_class(cls)
+        TrackLiteratureReferences.default().register_class(cls)
         
    
 # ------------------------------------------------------------------------------

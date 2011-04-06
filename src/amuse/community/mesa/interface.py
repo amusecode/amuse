@@ -8,7 +8,7 @@ from amuse.community.interface.se import StellarEvolution, \
 
 from amuse.support.interface import InCodeComponentImplementation
 
-class MESAInterface(CodeInterface, LiteratureRefs, StellarEvolution, 
+class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution, 
         InternalStellarStructureInterface): 
     """
     The software project MESA (Modules for Experiments in Stellar Astrophysics, 
@@ -28,7 +28,7 @@ class MESAInterface(CodeInterface, LiteratureRefs, StellarEvolution,
     """
     def __init__(self, **options):
         CodeInterface.__init__(self, name_of_the_worker="mesa_worker", **options)
-        LiteratureRefs.__init__(self)
+        LiteratureReferencesMixIn.__init__(self)
 
     def get_data_directory(self):
         """
