@@ -31,28 +31,22 @@ class TestCase(unittest.TestCase):
         else:
             return (first, second)
     
-    def _convert_to_vectors(self, length, *vectors_or_scalars):
-        result = []
-        for x in vectors_or_scalars:
-            if hasattr(x, "as_vector_with_length"):
-                result.append(x.as_vector_with_length(length))
-            elif hasattr(x, "__len__"):
-                if x.__len__() == 1:
-                    result.append(list(x)*length)
-                elif x.__len__() == length:
-                    result.append(x)
-                else:
-                    raise TypeError("Cannot convert {0} to vector with length {1}.".format(x, length))
-            else:
-                result.append([x]*length)
-        return result
+    def _convert_to_vectors(self, first, second):
+        x = numpy.array(first)
+        y = numpy.array(second)
+        try:
+            # Using numpy broadcasting to convert the arguments to arrays with equal length:
+            return (x+0*y).flatten(), (y+0*x).flatten()
+        except:
+            raise TypeError("Arguments do not have compatible shapes for broadcasting")
+        
     
     def _raise_exceptions_if_any(self, failures, first, second, err_fmt_string, msg, *args):
         if len(failures) == 1:
             if failures[0]:
                 raise self.failureException(msg or err_fmt_string.format(first, second, *args))
         elif any(failures):
-            first, second = self._convert_to_vectors(len(failures), first, second)
+            first, second = self._convert_to_vectors(first, second)
             err_list =  [("@{index}, "+err_fmt_string).format(first[i], second[i], *args, index=i)
                             for (i,b) in enumerate(failures) if b]
             err = '\n'.join(err_list)
