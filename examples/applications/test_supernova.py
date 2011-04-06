@@ -57,7 +57,7 @@ def run_supernova():
     pickle_file = setup_stellar_evolution_model()
     
     print "Creating initial conditions from a MESA stellar evolution model..."
-    core, gas_without_core, core_radius = convert_stellar_model_to_SPH(
+    model = convert_stellar_model_to_SPH(
         None, 
         number_of_sph_particles, 
         seed = 12345,
@@ -65,6 +65,7 @@ def run_supernova():
 #        base_grid_options = dict(type = "glass", target_rms = 0.01),
         with_core_particle = True
     )
+    core, gas_without_core, core_radius = model.core_particle, model.gas_particles, model.core_radius
     if len(core):
         print "Created", len(gas_without_core), "SPH particles and one 'core-particle':\n", core
         print "Setting gravitational smoothing to:", core_radius
