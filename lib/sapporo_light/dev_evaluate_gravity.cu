@@ -61,7 +61,8 @@ __device__ void body_body_interaction(float &ds_min,
 
     if (ds2 <= pos_i.w.x) {
       if (n_ngb < NGB_PB) {
-        ngb_list[n_ngb++] = __float_as_int(pos_j.w.y);
+        if(__float_as_int(pos_i.w.y) != __float_as_int(pos_j.w.y))      //Jeroen, prevent self on neighbour list
+          ngb_list[n_ngb++] = __float_as_int(pos_j.w.y);
       }
     }
 
