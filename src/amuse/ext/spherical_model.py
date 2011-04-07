@@ -180,7 +180,7 @@ class UniformSphericalDistribution(object):
         sph.parameters.integrate_entropy_flag = False
         sph.parameters.timestep = dt
         sph.parameters.verbosity = 0
-        sph.parameters.pboxsize = 2 * L
+        sph.parameters.periodic_box_size = 2 * L
         sph.parameters.artificial_viscosity_alpha = 1.0 | units.none
         sph.parameters.beta = 2.0 | units.none
         sph.commit_parameters()
