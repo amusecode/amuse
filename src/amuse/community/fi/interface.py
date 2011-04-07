@@ -32,6 +32,7 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
     MODE_PERIODIC_BOUNDARIES   = 'periodic'
     
     def __init__(self, mode = MODE_NORMAL,  **options):
+        self.mode = mode
         CodeInterface.__init__(self, name_of_the_worker = self.name_of_the_worker(mode), **options)
         LiteratureReferencesMixIn.__init__(self)
                      
@@ -1481,6 +1482,9 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         """
         return function
     
+    def get_periodic_boundaries_flag(self):
+        return self.mode == self.MODE_PERIODIC_BOUNDARIES, 0
+    
 class GlFiInterface(FiInterface):
     def __init__(self, **options):
         CodeInterface.__init__(self,name_of_the_worker = 'fi_worker_gl', **options)
@@ -1502,12 +1506,11 @@ class Fi(GravitationalDynamics):
     
     __doc__ = FiDoc()
     
-    def __init__(self, convert_nbody = None, use_gl = False, **options):
-                
+    def __init__(self, convert_nbody = None, mode = 'normal', use_gl = False, **options):
         if(use_gl):
-            legacy_interface = GlFiInterface(**options)
+            legacy_interface = GlFiInterface(mode = mode, **options)
         else:
-            legacy_interface = FiInterface(**options)            
+            legacy_interface = FiInterface(mode = mode, **options)            
         self.legacy_doc = legacy_interface.__doc__
         
         #if convert_nbody is None:
@@ -1815,7 +1818,7 @@ class Fi(GravitationalDynamics):
         object.add_method_parameter(
             "get_pboxsize", 
             "set_pboxsize",
-            "pboxsize", 
+            "periodic_box_size", 
             "The size of simulation domain box (particles outside get deleted).", 
             nbody_system.length,
             300.0 | nbody_system.length
@@ -2172,6 +2175,14 @@ class Fi(GravitationalDynamics):
             "" | units.string
         )
 
+        object.add_boolean_parameter(
+            "get_periodic_boundaries_flag",
+            None,
+            "periodic_boundaries_flag",
+            "Periodic boundaries flag. True means: use periodic boundary conditions (read-only)",
+            False
+        )
+        
         self.stopping_conditions.define_parameters(object)        
     
     def define_particle_sets(self, object):

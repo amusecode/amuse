@@ -205,7 +205,9 @@ class TestFiInterface(TestWithMPI):
         #instance.set_periodic(1)
         instance.set_use_hydro(0)
         instance.set_selfgrav(0)
+        print instance.get_pboxsize()
         instance.set_pboxsize(2.)
+        print instance.get_pboxsize()
         instance.set_dtime(0.1)
         instance.commit_parameters()
         ids,err=instance.new_particle( 
@@ -423,7 +425,7 @@ class TestFi(TestWithMPI):
         instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
         instance.initialize_code()
         
-        par_names=['epsilon_squared','timestep','pboxsize','code_mass_unit','code_length_unit',
+        par_names=['epsilon_squared','timestep','periodic_box_size','code_mass_unit','code_length_unit',
             'sqrt_timestep_crit_constant','acc_timestep_crit_constant','free_timestep_crit_constant_v',
             'free_timestep_crit_constant_a','free_timestep_crit_constant_vexp',
             'free_timestep_crit_constant_aexp','opening_angle','gadget_cell_opening_constant',
@@ -912,3 +914,38 @@ class TestFi(TestWithMPI):
         finally:
             instance.stop()
     
+    def test17(self):
+        UnitLength = 3.085678e21 | units.cm     # ~ 1.0 kpc
+        UnitMass = 1.989e43 | units.g           # 1.0e10 solar masses
+        UnitVelocity = 1e5 | units.cm / units.s # 1 km/sec
+        convert_nbody = nbody.nbody_to_si(UnitLength, UnitMass)
+        instance = Fi(convert_nbody, mode = FiInterface.MODE_PERIODIC_BOUNDARIES, redirection="none")
+        self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
+        instance.parameters.use_hydro_flag = False
+        instance.parameters.self_gravity_flag = False
+        instance.parameters.periodic_box_size = 2.0 | nbody.length
+        instance.parameters.timestep = 0.1 | nbody.time
+        self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
+        
+        three_particles_IC = core.Particles(3)
+        three_particles_IC.position = [[0.5, 0.0, 0.0], [0.0,-0.5, 0.0], [0.0, 0.0, 0.5]] | nbody.length
+        three_particles_IC.velocity =[[-1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0,-1.0]] | nbody.speed
+        three_particles_IC.radius = 0.0 | units.RSun
+        three_particles_IC.mass = 1.0e10 | units.MSun
+        
+        instance.dm_particles.add_particles(three_particles_IC)
+        self.assertAlmostEqual(instance.dm_particles.x, [0.5, 0.0, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.0,-0.5, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.0, 0.0, 0.5] | units.kpc, places=6)
+        
+        instance.evolve_model(0.1 | nbody.time)
+        self.assertAlmostEqual(instance.dm_particles.x, [0.4, 0.0, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [0.0,-0.4, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [0.0, 0.0, 0.4] | units.kpc, places=6)
+        
+        instance.evolve_model(1.0 | nbody.time)
+        self.assertAlmostEqual(instance.dm_particles.x, [-0.5, 0.0, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.y, [ 0.0, 0.5, 0.0] | units.kpc, places=6)
+        self.assertAlmostEqual(instance.dm_particles.z, [ 0.0, 0.0,-0.5] | units.kpc, places=6)
+        instance.stop()
+        
