@@ -96,9 +96,21 @@ class TestCase(unittest.TestCase):
             places = self.PRECISION + places
         
         maxRelativeError = 0.1 ** places
-        relativeError = abs((second_num - first_num) / (first_num))
         
-        failures = numpy.array(relativeError >= maxRelativeError).flatten()
+        diff = numpy.abs(second_num - first_num)
+        
+        is_one_zero = second_num * first_num == 0.0
+        is_failure_for_one_zero =  diff >= (maxRelativeError)
+        
+        first_for_div = first_num + (is_one_zero * 1.0)
+        second_for_div = second_num + (is_one_zero * 1.0)
+        
+        relative_error = numpy.maximum(numpy.abs(diff /(first_for_div)), numpy.abs(diff /(second_for_div)))        
+        is_failure_for_both_nonzero = relative_error >= maxRelativeError
+        failures = numpy.where(is_one_zero, is_failure_for_one_zero, is_failure_for_both_nonzero)
+        
+        failures = failures.flatten()
+        
         self._raise_exceptions_if_any(failures, first, second, "{0!r} != {1!r} within {2!r} places", msg, places)
         
     assertAlmostRelativeEqual = failUnlessAlmostRelativeEqual

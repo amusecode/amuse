@@ -333,7 +333,7 @@ class TestGridAttributes(amusetest.TestCase):
     def test1(self):
         grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         print grid.get_minimum_position()
-        self.assertAlmostRelativeEquals(grid.get_minimum_position()+ (1.0  | units.m),  ([0.0, 0.0, 0.0] | units.m) + (1.0  | units.m))
+        self.assertAlmostRelativeEquals(grid.get_minimum_position(),  ([0.0, 0.0, 0.0] | units.m) )
         self.assertAlmostRelativeEquals(grid.get_maximum_position(),  [1.0, 1.0, 1.0] | units.m)
         self.assertAlmostRelativeEquals(grid.get_volume(),  1.0 | units.m ** 3)
         self.assertTrue(grid.contains([0.5,0.5,0.5] | units.m))
@@ -347,13 +347,13 @@ class TestGridAttributes(amusetest.TestCase):
         grid = core.Grid.create((5,4,2), [1.0, 1.0, 1.0] | units.m)
         points = grid.points()
         self.assertEquals(points.shape, (6,5,3, 3))
-        self.assertAlmostRelativeEquals(points[0][0][0] + (1.0  | units.m),  ([0.0,0.0, 0.0] | units.m) + (1.0  | units.m))
-        self.assertAlmostRelativeEquals(points[1][0][0] + (1.0  | units.m),  ([0.2,0.0, 0.0] | units.m) + (1.0  | units.m))
+        self.assertAlmostRelativeEquals(points[0][0][0],  ([0.0,0.0, 0.0] | units.m) )
+        self.assertAlmostRelativeEquals(points[1][0][0] ,  ([0.2,0.0, 0.0] | units.m) )
         self.assertAlmostRelativeEquals(points[1][1][1],  [0.2,0.25, 0.5] | units.m )
-        self.assertAlmostRelativeEquals(points[0][-1][-1] + (1.0  | units.m),  ([0.0, 1.0, 1.0] | units.m) + (1.0  | units.m))
-        self.assertAlmostRelativeEquals(points[-1][0][-1] + (1.0  | units.m),  ([1.0, 0.0, 1.0] | units.m) + (1.0  | units.m))
-        self.assertAlmostRelativeEquals(points[-1][-1][0] + (1.0  | units.m),  ([1.0, 1.0, 0.0] | units.m) + (1.0  | units.m))
-        self.assertAlmostRelativeEquals(points[-1][-1][-1] + (1.0  | units.m),  ([1.0,1.0, 1.0] | units.m) + (1.0  | units.m))
+        self.assertAlmostRelativeEquals(points[0][-1][-1] ,  ([0.0, 1.0, 1.0] | units.m) )
+        self.assertAlmostRelativeEquals(points[-1][0][-1] ,  ([1.0, 0.0, 1.0] | units.m) )
+        self.assertAlmostRelativeEquals(points[-1][-1][0] ,  ([1.0, 1.0, 0.0] | units.m) )
+        self.assertAlmostRelativeEquals(points[-1][-1][-1] ,  ([1.0,1.0, 1.0] | units.m) )
         
     
     def test4(self):
@@ -363,14 +363,14 @@ class TestGridAttributes(amusetest.TestCase):
         
         self.assertEquals(connectivity.shape, (5,4,2, 8))
         first_cell = connectivity[0][0][0]
-        self.assertAlmostRelativeEquals(points[first_cell[0]] + (1 | units.m), [1,1,1 ] | units.m)
+        self.assertAlmostRelativeEquals(points[first_cell[0]], [0,0,0 ] | units.m)
         self.assertAlmostRelativeEquals(points[first_cell[1]], [0.2,0,0] | units.m)
-        self.assertAlmostRelativeEquals(points[first_cell[2]] + (1.0|units.m), (1.0|units.m) + ([0,0.25,0] | units.m))
-        self.assertAlmostRelativeEquals(points[first_cell[3]] + (1.0|units.m), (1.0|units.m) + ([0.2,0.25,0] | units.m))
-        self.assertAlmostRelativeEquals(points[first_cell[4]] + (1.0|units.m), (1.0|units.m) + ([0.0,0.0,0.5] | units.m))
-        self.assertAlmostRelativeEquals(points[first_cell[5]] + (1.0|units.m), (1.0|units.m) + ([0.2,0.0,0.5] | units.m))
-        self.assertAlmostRelativeEquals(points[first_cell[6]] + (1.0|units.m), (1.0|units.m) + ([0.0,0.25,0.5] | units.m))
-        self.assertAlmostRelativeEquals(points[first_cell[7]] + (1.0|units.m), (1.0|units.m) + ([0.2,0.25,0.5] | units.m))
+        self.assertAlmostRelativeEquals(points[first_cell[2]] ,  ([0,0.25,0] | units.m))
+        self.assertAlmostRelativeEquals(points[first_cell[3]] ,  ([0.2,0.25,0] | units.m))
+        self.assertAlmostRelativeEquals(points[first_cell[4]] ,  ([0.0,0.0,0.5] | units.m))
+        self.assertAlmostRelativeEquals(points[first_cell[5]] ,  ([0.2,0.0,0.5] | units.m))
+        self.assertAlmostRelativeEquals(points[first_cell[6]] ,  ([0.0,0.25,0.5] | units.m))
+        self.assertAlmostRelativeEquals(points[first_cell[7]] ,  ([0.2,0.25,0.5] | units.m))
         
         self.assertEquals(connectivity[0][0][0], [ 0,15,  3, 18,  1, 16, 4, 19])
         
@@ -383,14 +383,14 @@ class TestGridAttributes(amusetest.TestCase):
         
         self.assertEquals(connectivity.shape, (5,4,2, 8))
         cell = connectivity[0][0][1]
-        self.assertAlmostRelativeEquals(points[cell[0]] + (1.0|units.m), (1.0|units.m) + ([0.0,0.0,0.5 ] | units.m))
-        self.assertAlmostRelativeEquals(points[cell[1]] + (1.0|units.m), (1.0|units.m) + ([0.2,0,0.5] | units.m))
-        self.assertAlmostRelativeEquals(points[cell[2]] + (1.0|units.m), (1.0|units.m) + ([0,0.25,0.5] | units.m))
-        self.assertAlmostRelativeEquals(points[cell[3]] + (1.0|units.m), (1.0|units.m) + ([0.2,0.25,0.5] | units.m))
-        self.assertAlmostRelativeEquals(points[cell[4]] + (1.0|units.m), (1.0|units.m) + ([0.0,0.0,1.0] | units.m))
-        self.assertAlmostRelativeEquals(points[cell[5]] + (1.0|units.m), (1.0|units.m) + ([0.2,0.0,1.0] | units.m))
-        self.assertAlmostRelativeEquals(points[cell[6]] + (1.0|units.m), (1.0|units.m) + ([0.0,0.25,1.0] | units.m))
-        self.assertAlmostRelativeEquals(points[cell[7]] + (1.0|units.m), (1.0|units.m) + ([0.2,0.25,1.0] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[0]] ,  ([0.0,0.0,0.5 ] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[1]] ,  ([0.2,0,0.5] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[2]] ,  ([0,0.25,0.5] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[3]] ,  ([0.2,0.25,0.5] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[4]] ,  ([0.0,0.0,1.0] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[5]] ,  ([0.2,0.0,1.0] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[6]] ,  ([0.0,0.25,1.0] | units.m))
+        self.assertAlmostRelativeEquals(points[cell[7]] ,  ([0.2,0.25,1.0] | units.m))
         
         self.assertEquals(connectivity[0][0][0], [ 0,15,  3, 18,  1, 16, 4, 19])
         

@@ -365,7 +365,7 @@ c  110 FORMAT ('  NSTEPS =',I9,'  NFN =',I11)
 *
 *       Continue with the next experiment.
 c      GO TO 1
-      AarsethZare = 1
+      AarsethZare = 0
       return
 
 *
