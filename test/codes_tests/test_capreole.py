@@ -284,12 +284,12 @@ class TestCapreole(TestWithMPI):
         for x in grid[1].rho.value_in(generic_unit_system.density).flatten():
             self.assertEquals(x, 0.4)
             
-        #instance.evolve(0.12 | generic_unit_system.time)
+        #instance.evolve_model(0.12 | generic_unit_system.time)
         
         #for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
         #    self.assertEquals(x, 0.1)
     
-        #instance.evolve(10.0 | generic_unit_system.time)
+        #instance.evolve_model(10.0 | generic_unit_system.time)
         #for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
         #    self.assertEquals(x, 0.1)
         instance.stop()
@@ -325,12 +325,12 @@ class TestCapreole(TestWithMPI):
         for x in instance.grid[1].rho.value_in(generic_unit_system.density).flatten():
             self.assertEquals(x, 0.1)
             
-        #instance.evolve(1.0 | generic_unit_system.time)
+        #instance.evolve_model(1.0 | generic_unit_system.time)
         
         #for x in instance.grid.rho.value_in(density).flatten():
         #    self.assertEquals(x, 0.1)
     
-        #instance.evolve(10.0 | generic_unit_system.time)
+        #instance.evolve_model(10.0 | generic_unit_system.time)
         #for x in instance.grid.rho.value_in(density).flatten():
         #    self.assertEquals(x, 0.1)
         instance.stop()

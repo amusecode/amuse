@@ -613,12 +613,12 @@ class TestAthena(TestWithMPI):
         for x in instance.grid[1].rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
             
-        instance.evolve(1.0 | generic_unit_system.time)
+        instance.evolve_model(1.0 | generic_unit_system.time)
         
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
     
-        instance.evolve(10.0 | generic_unit_system.time)
+        instance.evolve_model(10.0 | generic_unit_system.time)
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
         instance.stop()
@@ -665,12 +665,12 @@ class TestAthena(TestWithMPI):
         for x in instance.grid[1].rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
             
-        instance.evolve(1.0 | generic_unit_system.time)
+        instance.evolve_model(1.0 | generic_unit_system.time)
         
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
     
-        instance.evolve(10.0 | generic_unit_system.time)
+        instance.evolve_model(10.0 | generic_unit_system.time)
         for x in instance.grid.rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
         instance.stop()
@@ -735,7 +735,7 @@ class TestAthena(TestWithMPI):
         for x in instance.grid[1].rho.value_in(density).flatten():
             self.assertEquals(x, 0.1)
             
-        instance.evolve(1.0 | generic_unit_system.time)
+        instance.evolve_model(1.0 | generic_unit_system.time)
         #print instance.grid.rhox
         z = instance.grid.rho[...,...,0]
         z = instance.potential_grid.potential[...,...,0]
@@ -901,7 +901,7 @@ class TestAthena(TestWithMPI):
         
         error = instance.initialize_grid()
         
-        instance.evolve(0.12 | generic_unit_system.time)
+        instance.evolve_model(0.12 | generic_unit_system.time)
         
         
         channel = instance.grid.new_channel_to(grid)
@@ -969,7 +969,7 @@ class TestAthena(TestWithMPI):
         
         instance.initialize_grid()
         
-        instance.evolve(0.01 | generic_unit_system.time)
+        instance.evolve_model(0.01 | generic_unit_system.time)
         G = 1.0 | generic_unit_system.length **3 * generic_unit_system.mass**-1 * generic_unit_system.time**-2
         a = instance.grid[5][5].gravitational_potential
         b = (-1 * G * total_mass / (radii**2+scaled_radius**2).sqrt()) [5][5]

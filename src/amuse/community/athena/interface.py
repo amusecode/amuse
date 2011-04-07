@@ -577,6 +577,7 @@ class Athena(InCodeComponentImplementation):
             'evolve',
             (time,),
             (object.ERROR_CODE,),
+            public_name = 'evolve_model'
         )
         object.add_method(
             'get_position_of_index',
