@@ -79,9 +79,48 @@ class TestGrid2SPH(TestWithMPI):
         self.assertAlmostEqual(sph_particles.u,  1.0 | (units.m/units.s)**2)
         # The number of particles in a cell should scale with the amount of mass in the cell:
         self.assertAlmostRelativeEqual(
-            (1.5 | units.kg)/number_of_particles * numpy.histogramdd(sph_particles.position.value_in(units.m), bins=(4,3,2))[0], 
+            (1.5 | units.kg)/number_of_particles * numpy.histogramdd(
+                sph_particles.position.value_in(units.m), bins=(4,3,2))[0], 
             test_grid.rho*test_grid.cellsize().prod(), 
             places = 2
         )
         self.assertAlmostEqual(sph_particles.h_smooth,  (50.0/number_of_particles)**(1.0/3) | units.m)
+    
+    def test3(self):
+        print "Testing the user interface, random base_distribution_type"
+        number_of_particles = 10000
+        test_grid = self.setup_simple_grid()
+        sph_particles = convert_grid_to_SPH(test_grid, number_of_particles, 
+            base_distribution_type = "random", seed = 12345)
+        self.assertEqual(len(sph_particles), number_of_particles)
+        self.assertAlmostEqual(sph_particles.mass.sum(),  1.5 | units.kg)
+        self.assertAlmostEqual(sph_particles.velocity,  [3.0, 4.0, 0.0] | units.m/units.s)
+        self.assertAlmostEqual(sph_particles.u,  1.0 | (units.m/units.s)**2)
+        # For 'random', the number of particles in a cell should scale only on average 
+        # with the amount of mass in the cell:
+        self.assertAlmostRelativeEqual(
+            ((1.5 | units.kg)/number_of_particles * numpy.histogramdd(
+                sph_particles.position.value_in(units.m), bins=(4,3,2))[0]).sum(), 
+            (test_grid.rho*test_grid.cellsize().prod()).sum(), 
+            places = 2
+        )
+        self.assertRaises(AssertionError, 
+            self.assertAlmostRelativeEqual,
+                (1.5 | units.kg)/number_of_particles * numpy.histogramdd(sph_particles.position.value_in(units.m), bins=(4,3,2))[0], 
+                test_grid.rho*test_grid.cellsize().prod(), 
+                places = 2,
+        )
+        self.assertAlmostEqual(sph_particles.h_smooth,  (50.0/number_of_particles)**(1.0/3) | units.m)
+    
+    def test4(self):
+        print "Testing exceptions"
+        number_of_particles = 10000
+        test_grid = self.setup_simple_grid()
+        self.assertEqual(test_grid[0].number_of_dimensions(), 2)
+        self.assertRaises(AmuseException, convert_grid_to_SPH, test_grid[0], number_of_particles,
+            expected_message = "Grid must be 3D")
+        self.assertRaises(AmuseException, convert_grid_to_SPH, test_grid, 
+            number_of_particles, base_distribution_type = "bogus",
+            expected_message = "Unknown base_distribution_type: bogus. Possible "
+                "options are: 'random' or 'uniform'.")
     
