@@ -281,7 +281,7 @@ class CalculateSolutionIn3D(object):
         instance.initialize_grid()
         
         print "start evolve"
-        instance.evolve(time)
+        instance.evolve_model(time)
         
         print "copying results"
         result = []
