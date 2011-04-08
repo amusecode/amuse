@@ -109,7 +109,7 @@ class HydroGridAndNbody(object):
         
         
         
-    def evolve(self, time):
+    def evolve_model(self, time):
         #masses = self.gridcode.grid.rho * self.volume * 1.0 / 8.0
         #self.staggered_grid.p000[1:,1:,1:] = masses
         #self.staggered_grid.p100[:-1,1:,1:] = masses
@@ -157,7 +157,7 @@ class HydroGridAndNbody(object):
         self.gridcode.potential_grid.potential = potential 
         
         print "evolve hydro", time
-        self.gridcode.evolve(time)
+        self.gridcode.evolve_model(time)
         print "end evolve hydro"
 
 
@@ -236,7 +236,7 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
         
         
         
-    def evolve(self, time):
+    def evolve_model(self, time):
         masses = self.gridcode.grid.rho * self.volume * 1.0 / 8.0
         self.staggered_grid.p000[1:,1:,1:] = masses
         self.staggered_grid.p100[:-1,1:,1:] = masses
@@ -275,7 +275,7 @@ class HydroGridAndNbodyWithAccelerationTransfer(object):
         self.gridcode.acceleration_grid.set_values_in_store(None, ["fx","fy","fz"], [acc_x, acc_y, acc_z]) 
         
         print "evolve hydro", time
-        self.gridcode.evolve(time)
+        self.gridcode.evolve_model(time)
         print "end evolve hydro"
         
 class CalculateSolutionIn3D(object):
@@ -426,7 +426,7 @@ class CalculateSolutionIn3D(object):
             self.setup_code()
         
         print "start evolve"
-        self.instance.evolve(time)
+        self.instance.evolve_model(time)
         
         print "copying results"
         self.from_code_to_model.copy()

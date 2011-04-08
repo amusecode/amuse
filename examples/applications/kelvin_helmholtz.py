@@ -159,7 +159,7 @@ class CalculateKelvinHelmholtzInstability(object):
         t = dt
         step = 1
         while t < time:
-            instance.evolve(t)
+            instance.evolve_model(t)
             
             print "time : ", t
             

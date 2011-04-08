@@ -94,7 +94,7 @@ def simulate_kelvin_helmholtz_instability(end_time):
     dt = end_time / 10.0
     t = dt
     while t < end_time:
-        instance.evolve(t)
+        instance.evolve_model(t)
         
         print "time : ", t
         t += dt
