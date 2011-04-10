@@ -429,6 +429,6 @@ int main(int argc, char *argv[])
     // Run the integrator.
 
     run_hermite4(ntotal, seed, infile, use_gpu,
-		 eps2, eta, t_max, dt_out, vfac);,
+		 eps2, eta, t_max, dt_out, vfac);
     MPI_Finalize();
 }
