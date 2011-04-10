@@ -75,7 +75,9 @@ AMUSE.  All are built using Makefile.ph4.
 		parallel_hermite_4_noGPU -e 0.001 ...
 		mpiexec -n 2 parallel_hermite_4_noGPU -e 0.001 ... different
 
-		noGPU differences seem to be significantly smaller
+		the noGPU differences seem to be significantly smaller
+
+		the AMUSE interface also shows this effect
 
 	* results should not depend on the frequency of energy
 	  diagnostics -- NOT the case at present: TO BE FIXED
