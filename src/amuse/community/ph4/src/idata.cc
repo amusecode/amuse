@@ -199,7 +199,7 @@ void idata::get_partial_acc_and_jerk()
 
     for (int i = 0; i < ni; i++) {
 	lpot[i] = 0;
-	ldnn[i] = huge;
+	ldnn[i] = _INFINITY_;
 	for (int k = 0; k < 3; k++) lacc[i][k] = ljerk[i][k] = 0;
 	for (int j = j_start; j < j_end; j++) {
 	    r2 = xv = 0;
@@ -209,12 +209,12 @@ void idata::get_partial_acc_and_jerk()
 		r2 += dx[k]*dx[k];
 		xv += dx[k]*dv[k];
 	    }
-	    r2i = 1/(r2+eps2+tiny);
+	    r2i = 1/(r2+eps2+_TINY_);
 	    ri = sqrt(r2i);
 	    mri = jdat->mass[j]*ri;
 	    mr3i = mri*r2i;
 	    a3 = -3*xv*r2i;
-	    if (r2 > tiny) {
+	    if (r2 > _TINY_) {
 		lpot[i] -= mri;
 		if (r2 < ldnn[i]) {
 		    ldnn[i] = r2;
@@ -258,7 +258,9 @@ void idata::get_acc_and_jerk()
 
     }
 
+    //cout << "idata Barrier 1 for " << jdat->mpi_rank << endl << flush;
     jdat->mpi_comm.Barrier();
+    //cout << "idata Barrier 1a for " << jdat->mpi_rank << endl << flush;
 
     if (jdat->mpi_size > 1) {
 
@@ -286,7 +288,9 @@ void idata::get_acc_and_jerk()
 	jdat->mpi_comm.Allreduce(pnn, inn, ni, MPI_INT, MPI_SUM);
     }
 
+    //cout << "idata Barrier 2 for " << jdat->mpi_rank << endl << flush;
     jdat->mpi_comm.Barrier();
+    //cout << "idata Barrier 2a for " << jdat->mpi_rank << endl << flush;
 }
 
 void idata::predict(real t)
@@ -308,14 +312,21 @@ void idata::predict(real t)
     if (jdat->use_gpu) {
 	for (int i = 0; i < ni; i++) {
 	    real dt = t - itime[i];
-	    for (int k = 0; k < 3; k++) {
-		ipos[i][k] = old_pos[i][k]
-				+ dt*(old_vel[i][k]
-				      + 0.5*dt*(old_acc[i][k]
-						+ dt*old_jerk[i][k]/3));
-		ivel[i][k] = old_vel[i][k]
-				+ dt*(old_acc[i][k]
-				      + 0.5*dt*old_jerk[i][k]);
+	    if (dt == 0) {
+		for (int k = 0; k < 3; k++) {
+		    ipos[i][k] = old_pos[i][k];
+		    ivel[i][k] = old_vel[i][k];
+		}
+	    } else {
+		for (int k = 0; k < 3; k++) {
+		    ipos[i][k] = old_pos[i][k]
+				    + dt*(old_vel[i][k]
+					+ 0.5*dt*(old_acc[i][k]
+					    + dt*old_jerk[i][k]/3));
+		    ivel[i][k] = old_vel[i][k]
+				    + dt*(old_acc[i][k]
+					+ 0.5*dt*old_jerk[i][k]);
+		}
 	    }
 	}
     } else {
@@ -333,14 +344,21 @@ void idata::predict(real t)
 	    int j = ilist[i];
 	    if (j < j_start || j >= j_end) {
 		real dt = t - itime[i];
-		for (int k = 0; k < 3; k++) {
-		    ipos[i][k] = old_pos[i][k]
+		if (dt == 0) {
+		    for (int k = 0; k < 3; k++) {
+			ipos[i][k] = old_pos[i][k];
+			ivel[i][k] = old_vel[i][k];
+		    }
+		} else {
+		    for (int k = 0; k < 3; k++) {
+			ipos[i][k] = old_pos[i][k]
 					+ dt*(old_vel[i][k]
 					      + 0.5*dt*(old_acc[i][k]
 							+ dt*old_jerk[i][k]/3));
-		    ivel[i][k] = old_vel[i][k]
+			ivel[i][k] = old_vel[i][k]
 					+ dt*(old_acc[i][k]
 					      + 0.5*dt*old_jerk[i][k]);
+		    }
 		}
 	    }
 	}
@@ -385,8 +403,8 @@ void idata::correct(real tnext)
 
 #else
 
-    // ...but this ugly version may actually be more useful for
-    // purposes of computing the Aarseth time step.
+    // ...but this ugly version is actually more useful for purposes
+    //    of computing the Aarseth time step.
 
     real eta = jdat->eta;
 
@@ -635,7 +653,7 @@ void idata::set_list_sync()
     // Make a list of particles not already at system_time.
 
     ni = 0;
-    for (int j = 0; j < ni; j++)
+    for (int j = 0; j < jdat->nj; j++)
 	if (jdat->time[j] < jdat->system_time)
 	    ilist[ni++] = j;
     ti = jdat->system_time;
@@ -652,7 +670,7 @@ real idata::set_list()
     // Note that sched already contains a pointer to the jdata, so no
     // need to pass that information twice.
 
-    real tnext = huge;
+    real tnext = _INFINITY_;
 
 #if 0
 

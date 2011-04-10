@@ -15,14 +15,14 @@
 //	void jdata::check_inverse_id()
 //	void jdata::set_initial_timestep()
 //	real jdata::get_pot(bool reeval)			* MPI *
-//	real jdata::get_kin(bool reeval)
+//	real jdata::get_kin()
 //	real jdata::get_energy(bool reeval)
 //	real jdata::get_total_mass()
 //	void jdata::predict(int j, real t)
 //	void jdata::predict_all(real t, bool full)
 //	void jdata::advance()
 //	void jdata::synchronize_all()
-//	void jdata::synchronize_list(int jlist[], int njlist, idata& id)
+//	void jdata::synchronize_list(int jlist[], int njlist)
 //	void jdata::print(idata *id)
 //	void jdata::cleanup()
 
@@ -235,6 +235,10 @@ void jdata::remove_particle(int j)
 	pot[j] = pot[nj];
 	nn[j] = nn[nj];
 	dnn[j] = dnn[nj];
+//	for (int jj = 0; jj <= nj; jj++) {
+//	    PRRC(jj); for (int k = 0; k < 3; k++) cout << " " << pos[jj][k];
+//	    cout << endl << flush;
+//	}
 	for (int k = 0; k < 3; k++) {
 	    pos[j][k] = pos[nj][k];
 	    vel[j][k] = vel[nj][k];
@@ -243,6 +247,10 @@ void jdata::remove_particle(int j)
 	    pred_pos[j][k] = pred_pos[nj][k];
 	    pred_vel[j][k] = pred_vel[nj][k];
 	}
+//	for (int jj = 0; jj <= nj; jj++) {
+//	    PRRC(jj); for (int k = 0; k < 3; k++) cout << " " << pos[jj][k];
+//	    cout << endl << flush;
+//	}
 	inverse_id[id[j]] = j;
 	// cout << "sched.add " << j << endl << flush;
 	sched->add_particle(j);
@@ -309,10 +317,11 @@ void jdata::initialize_arrays()
 
 	// Copy all data into the GPU.
 
-	if (mpi_rank == 0) cout << endl << "initializing GPU" << endl << flush;
+	cout << endl << "initializing GPU(s) for " << mpi_rank 
+	     << endl << flush;
 	initialize_gpu();
-	if (DEBUG > 1 && mpi_rank == 0) cout << "GPU initialization done"
-					     << endl << flush;
+	if (DEBUG > 1) cout << "GPU initialization done for " << mpi_rank
+			    << endl << flush;
     }
 }
 
@@ -427,7 +436,7 @@ real jdata::get_pot(bool reeval)		// default = false
 		real r2 = 0;
 		for (int k = 0; k < 3; k++)
 		    r2 += pow(pred_pos[j][k] - pred_pos[jd][k], 2);
-		if (r2 > tiny)
+		if (r2 > _TINY_)
 		    dpot -= mass[j]/sqrt(r2+eps2);
 	    }
 	    mypot += mass[jd]*dpot;
@@ -456,27 +465,21 @@ real jdata::get_pot(bool reeval)		// default = false
     return total_pot;
 }
 
-real jdata::get_kin(bool reeval)		// default = false
+real jdata::get_kin()
 {
     const char *in_function = "jdata::get_kin";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    // Return the total kinetic energy of the j system.
+    // Return the total kinetic energy of the (predicted) j system.
 
-    // *** ASSUME that get_pot() has just been called, with the same
-    // argument, so use pred_vel if id == NULL, and idata::get_kin()
-    // otherwise.
-
-    if (reeval) {
-	real kin2 = 0;
-	for (int j = 0; j < nj; j++) {
-	    real v2 = 0;
-	    for (int k = 0; k < 3; k++) v2 += pow(pred_vel[j][k],2);
-	    kin2 += mass[j]*v2;
-	}
-	return kin2/2;
-    } else
-	return idat->get_kin();
+    predict_all(system_time, true);		// make this function parallel?
+    real kin2 = 0;
+    for (int j = 0; j < nj; j++) {
+	real v2 = 0;
+	for (int k = 0; k < 3; k++) v2 += pow(pred_vel[j][k],2);
+	kin2 += mass[j]*v2;
+    }
+    return kin2/2;
 }
 
 real jdata::get_energy(bool reeval)		// default = false
@@ -484,9 +487,7 @@ real jdata::get_energy(bool reeval)		// default = false
     const char *in_function = "jdata::get_energy";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    real pot = get_pot(reeval);
-    real kin = get_kin(reeval);			// order is important!
-    return pot + kin;
+    return get_pot(reeval) + get_kin();
 }
 
 real jdata::get_total_mass()
@@ -538,26 +539,26 @@ void jdata::predict_all(real t,
 	if (mpi_rank == mpi_size-1) j_end = nj;
     }
 
-    if (predict_time == t) {
-	for (int j = j_start; j < j_end; j++) {
+    for (int j = j_start; j < j_end; j++) {
+	real dt = t - time[j];
+	if (dt == 0) {
+
+	    // Just set pred_??? from ???.
+
 	    for (int k = 0; k < 3; k++) {
 		pred_pos[j][k] = pos[j][k];
 		pred_vel[j][k] = vel[j][k];
 	    }
-	}
-	return;
-    }
-
-    for (int j = j_start; j < j_end; j++) {
-	real dt = t - time[j];
-	for (int k = 0; k < 3; k++) {
-	    pred_pos[j][k] = pos[j][k]
-				+ dt*(vel[j][k]
-				      + 0.5*dt*(acc[j][k]
-						+ dt*jerk[j][k]/3));
-	    pred_vel[j][k] = vel[j][k]
-				+ dt*(acc[j][k]
-				      + 0.5*dt*jerk[j][k]);
+	} else {
+	    for (int k = 0; k < 3; k++) {
+		pred_pos[j][k] = pos[j][k]
+				    + dt*(vel[j][k]
+					+ 0.5*dt*(acc[j][k]
+					    + dt*jerk[j][k]/3));
+		pred_vel[j][k] = vel[j][k]
+				    + dt*(acc[j][k]
+				        + 0.5*dt*jerk[j][k]);
+	    }
 	}
     }
 
@@ -583,7 +584,7 @@ void jdata::advance()
     if (!use_gpu) {
 
 	// GPU will do this, if present.  Note that this only predicts
-	// the range of particles associated with the current process.
+	// the particle range associated with the current process.
 
 	predict_all(tnext);		// j pos, vel --> j pred_pos, pred_vel
     }
@@ -710,7 +711,7 @@ void jdata::print()
     // will also tie the results of the N-body calculation to the
     // output interval chosen.
 
-    real dnnmin = huge;
+    real dnnmin = _INFINITY_;
     int jmin = 0;
     for (int j = 0; j < nj; j++)
  	if (dnn[j] < dnnmin) {
@@ -741,10 +742,10 @@ void jdata::print()
 	}					// of nn is incomplete
 
 	real elapsed_time = get_elapsed_time();
-	real Gflops_elapsed = 6.e-8*(nj-1)*total_steps/(elapsed_time+tiny);
+	real Gflops_elapsed = 6.e-8*(nj-1)*total_steps/(elapsed_time+_TINY_);
 	real user_time, stime;
 	get_cpu_time(user_time, stime);
-	real Gflops_user = 6.e-8*(nj-1)*total_steps/(user_time+tiny);
+	real Gflops_user = 6.e-8*(nj-1)*total_steps/(user_time+_TINY_);
 	PRC(block_steps); PRL(total_steps); PRL(total_steps/block_steps);
 	PRC(elapsed_time); PRL(user_time);
 	PRC(Gflops_elapsed); PRL(Gflops_user);
@@ -756,11 +757,11 @@ void jdata::print()
 	    real Gflops_elapsed_max = 0;
 	    if (elapsed_time > 0)
 		Gflops_elapsed_max
-		    = 6.e-8*(nj-1)*gpu_calls*npipes/(elapsed_time+tiny);
+		    = 6.e-8*(nj-1)*gpu_calls*npipes/(elapsed_time+_TINY_);
 	    real Gflops_user_max = 0;
 	    if (user_time > 0)
 		Gflops_user_max = 6.e-8*(nj-1)*gpu_calls*npipes
-							/(user_time+tiny);
+							/(user_time+_TINY_);
 	    PRC(Gflops_elapsed_max); PRL(Gflops_user_max);
 	}
 #endif
@@ -773,7 +774,9 @@ void jdata::print()
 
 void jdata::spec_output(const char *s)		// default = NULL
 {
-    // Problem-specific output.
+    // Problem-specific output.  Careful with parallel functions!
+
+    real pot = get_pot();
 
     if (mpi_rank == 0) {
 	vector<real> mlist, rlist;
@@ -788,12 +791,20 @@ void jdata::spec_output(const char *s)		// default = NULL
 	mlist.push_back(0.90);
 	rlist.clear();
 	get_lagrangian_radii(mlist, rlist, get_center());
+
 	real mtot = get_total_mass();
-	real pot = get_pot();
 	real rvir = -0.5*mtot*mtot/pot;
+	real kin = get_kin();
+	real etot = kin + pot;
+	real qvir = -kin/pot;
+
 	if (s) cout << s << " ";
-	cout << system_time << " " << rvir;
-	for (unsigned int i = 0; i < mlist.size(); i++) cout << " " << rlist[i];
+	cout << system_time << " " << mtot << " "
+	     << kin << " " << pot << " " << etot << " "
+	     << rvir << " " << qvir;
+
+	// for (unsigned int i = 0; i < mlist.size(); i++)
+	//     cout << " " << rlist[i];
 	cout << endl << flush;
     }
 }

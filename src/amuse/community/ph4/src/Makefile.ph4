@@ -1,69 +1,123 @@
 
-# Original ph4 Makefile -- builds a standalone program.  Command-line
-# argument NOSYNC=-DNOSYNC turns *off* GPU sync in resolve_encounter().
+# Original ph4 Makefile -- builds a standalone program.  Note that
+# command-line argument NOSYNC=-DNOSYNC turns *off* GPU sync in
+# resolve_encounter() that temporarily fixes a sapporo bug.
 
 # Optimization may cause problems on some systems.  Replace by -Ox by
 # -O0 in that case.
 
-OPT	  = -O4
+OPT	= -O4
 
-MPICXX = openmpicxx
-CFLAGS += -g -Wall $(GPU) $(OPT)
+MPICXX	= openmpicxx	# mpicxx.openmpi
+MPICC	= openmpicc	# mpicc.openmpi
+CFLAGS += -g -Wall $(OPT)
 
-OBJS    = jdata.o scheduler.o idata.o grape.o gpu.o diag.o debug.o close_encounter.o
+OBJS    = jdata.o idata.o scheduler.o grape.o gpu.o util.o diag.o debug.o \
+	  close_encounter.o
+GPUOBJS	= $(subst .o,.gpuo, $(OBJS))
 
-LIBS =	-L/usr/local/sapporo_v1.6 -lsapporo \
-	-L/usr/local/cuda/lib -lcuda -lcudart \
-	-L/opt/local/lib -lboost_thread-mt
+LIBS 	= -L/usr/local/sapporo_v1.6 -lsapporo \
+	  -L/usr/local/cuda/lib -lcuda -lcudart \
+	  -L/opt/local/lib -lboost_thread-mt
 
-EXE = 	parallel_hermite_4
-NP  =	1
-
-# Input file choices are plummer1.in, plummer16.in, plummer4.in,
-# plummer8.in, plummer_test.in.
-
-FILE =	plummer_test.in
-ARGS =	-d 0.125 -t 2 -r -f $(FILE) -e 0
+EXE	= parallel_hermite_4 parallel_hermite_4_noGPU smallN kepler analyze
+TEST_NSTAB = ctest_nstab ftest_nstab random_nstab
 
 .SUFFIXES:
-.SUFFIXES: .cc .o
-
-.cc:	
-	$(MPICXX) $(CFLAGS) $< -o $@
+.SUFFIXES: .cc .o .gpuo
 
 .cc.o:
-	$(MPICXX) $(CFLAGS) -c $<
+	$(MPICXX) $(CFLAGS) -c $< -o $@
 
-all:	ph4
+.cc.gpuo:
+	$(MPICXX) $(CFLAGS) -DGPU -c $< -o $@
 
-ph4:
-	@export GPU='-DGPU' && make -f Makefile.ph4 parallel_hermite_4
+all:	$(EXE)
 
-ph42:
-	@export GPU='' && make -f Makefile.ph4 parallel_hermite_4 \
-		       && mv parallel_hermite_4 parallel_hermite_4_noGPU
-	@export GPU='-DGPU' && make -f Makefile.ph4 clean parallel_hermite_4
+#-----------------------------------------------------------------------
 
-parallel_hermite_4:	parallel_hermite_4.cc $(OBJS)
-	$(MPICXX) $(NOSYNC) $(CFLAGS) $@.cc $(OBJS) $(LIBS) -o $@
+parallel_hermite_4:	parallel_hermite_4.cc $(GPUOBJS)
+	$(MPICXX) $(NOSYNC) $(CFLAGS) -DGPU parallel_hermite_4.cc \
+	    $(GPUOBJS) $(LIBS) -o $@
 
-test:
-	@export GPU='-DGPU' && make  -f Makefile.ph4 clean parallel_hermite_4
-	@echo ""; echo ""
-	mpiexec -n $(NP) parallel_hermite_4 $(ARGS)
+parallel_hermite_4_noGPU:	parallel_hermite_4.cc $(OBJS)
+	$(MPICXX) $(CFLAGS) parallel_hermite_4.cc \
+	    $(OBJS) $(LIBS) -o $@
 
-test2:
-	@make -f Makefile.ph4 clean ph42
-	@echo ""; echo ""
-	mpiexec -n $(NP) parallel_hermite_4_noGPU $(ARGS)	> noGPU.log
-	@echo ""; echo ""
-	mpiexec -n $(NP) parallel_hermite_4 $(ARGS)		> GPU.log
+# Input file choices for ph4 test options are plummer1.in,
+# plummer16.in, plummer4.in, plummer8.in, plummer_test.in.
+
+FILE	= plummer_test.in
+ARGS	= -d 0.125 -t 2 -r -f $(FILE) -e 0
+NWORKER	= 2
+
+testph4:	parallel_hermite_4
+	mpiexec -n $(NWORKER) parallel_hermite_4 $(ARGS)	> GPU.log
+
+testph42:	parallel_hermite_4 parallel_hermite_4_noGPU
+	mpiexec -n $(NWORKER) parallel_hermite_4 $(ARGS)	> GPU.log
+	mpiexec -n $(NWORKER) parallel_hermite_4_noGPU $(ARGS)	> noGPU.log
+
+#-----------------------------------------------------------------------
+
+test_nstab:	$(TEST_NSTAB)
+
+nstab.c:	nstab.f
+	f2c nstab.f
+
+nstab.co:    nstab.c
+	$(MPICC) $(CFLAGS) -c nstab.c -o nstab.co
+
+nstab.fo:    nstab.c
+	gfortran $(FFLAGS) -c nstab.f -o nstab.fo
+
+f2c.co:    f2c.c
+	$(MPICC) $(CFLAGS) -c f2c.c -o f2c.co
+
+ctest_nstab:	ctest_nstab.cc nstab.co f2c.co
+	$(CXX) $(CFLAGS) ctest_nstab.cc nstab.co f2c.co -o ctest_nstab
+
+ftest_nstab:	ftest_nstab.f nstab.fo
+	gfortran ftest_nstab.f nstab.fo -o ftest_nstab
+
+random_nstab:	random_nstab.cc util.o
+	$(MPICXX) $(CFLAGS) random_nstab.cc util.o -o random_nstab
+
+#-----------------------------------------------------------------------
+
+smallN:	smallN.cc smallN-lib.o smallN_unpert.o kepler-lib.o \
+	    hdyn.o util.o analyze.o nstab.co f2c.co debug.o
+	$(MPICXX) $(CFLAGS) -DTOOLBOX smallN.cc smallN-lib.o \
+	    smallN_unpert.o kepler-lib.o hdyn.o util.o analyze.o nstab.co \
+	    f2c.co debug.o \
+	    -o smallN
+
+smallN-lib.o:	smallN.cc
+	$(MPICXX) $(CFLAGS) -c smallN.cc -o smallN-lib.o
+
+#-----------------------------------------------------------------------
+
+kepler:	kepler.cc kepler-lib.o util.o hdyn.o
+	$(MPICXX) $(CFLAGS) -DTOOLBOX kepler.cc kepler-lib.o util.o hdyn.o \
+	    -o kepler
+
+kepler-lib.o:	kepler.cc
+	$(MPICXX) $(CFLAGS) -c kepler.cc -o kepler-lib.o
+
+#-----------------------------------------------------------------------
+
+analyze:	analyze.cc analyze-lib.o kepler-lib.o hdyn.o util.o \
+		nstab.co f2c.co 
+	$(MPICXX) $(CFLAGS) -DTOOLBOX analyze.cc analyze-lib.o \
+	    kepler-lib.o hdyn.o util.o nstab.co f2c.co -o analyze
+
+analyze-lib.o:	analyze.cc
+	$(MPICXX) $(CFLAGS) -c analyze.cc -o analyze-lib.o
+
+#-----------------------------------------------------------------------
 
 tar:
-	tar czf ph4.tgz Makefile.ph4 *.h *.cc plummer*.in*
+	tar czf ph4.tgz Makefile.ph4 *.h *.cc *.f plummer*.in*
 
 clean:
-	$(RM) -r -f *.o *~ *.tgz $(EXE)
-
-cleanall:
-	$(RM) -r -f *.o *~ *.tgz $(EXE) $(EXE)*GPU
+	$(RM) -r -f *.o *.gpuo *.co *.fo *~ *.tgz *.dSYM $(EXE) $(TEST_NSTAB)

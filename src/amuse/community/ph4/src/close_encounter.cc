@@ -4,7 +4,8 @@
 // about binaries.
 //
 // The code in this file is currently not used by AMUSE, but it does
-// contain 1 jdata member function.
+// contain one jdata member function, only referenced in the
+// standalone program.
 //
 // Global function:
 //
@@ -95,7 +96,9 @@ static real partial_potential(int list1[], int n1,
 static bool reflect_or_merge_orbit(real total_mass,
 				   vec& rel_pos, vec& rel_vel,
 				   real& energy, real& semi_major_axis,
-				   real& eccentricity, real rmin = huge)
+				   real& eccentricity,
+				   real rmin = _INFINITY_,
+				   bool verbose = false)
 {
     // Advance a two-body orbit past pericenter out to the same
     // separation.  We only need the unit vectors for the orbit in
@@ -138,17 +141,18 @@ static bool reflect_or_merge_orbit(real total_mass,
 
         // Convention: semi_major_axis is always > 0.
 
-        semi_major_axis = abs(semi_major_axis);
-	periastron = semi_major_axis * abs(1 - eccentricity);
+        semi_major_axis = fabs(semi_major_axis);
+	periastron = semi_major_axis * fabs(1 - eccentricity);
 
     } else {
 
         eccentricity = 1;
-        semi_major_axis = huge;
+        semi_major_axis = _INFINITY_;
         periastron = 0.5 * angular_momentum * angular_momentum / total_mass;
     }
 
-    PRC(energy); PRC(semi_major_axis); PRL(eccentricity);
+    if (verbose) {PRC(energy); PRC(semi_major_axis); PRL(eccentricity);}
+
     if (eccentricity < 1 && semi_major_axis <= rmin) return true;
 
     vec r_unit = rel_pos / separation;
@@ -161,7 +165,7 @@ static bool reflect_or_merge_orbit(real total_mass,
         eccentricity = 1;
 	periastron = 0;
         vec temp = vec(1,0,0);  	// construct an arbitrary normal vector
-        if (abs(r_unit[0]) > .5) temp = vec(0,1,0);
+        if (fabs(r_unit[0]) > .5) temp = vec(0,1,0);
         normal_unit_vector = r_unit ^ temp;
         normal_unit_vector /= abs(normal_unit_vector);
     }
@@ -210,7 +214,7 @@ static bool reflect_or_merge_orbit(real total_mass,
 	}
     }
 
-    // PRC(cos_true_an); PRL(sin_true_an);
+    // if (verbose) {PRC(cos_true_an); PRL(sin_true_an);}
 
     vec longitudinal_unit_vector = cos_true_an * r_unit - sin_true_an * t_unit;
     vec transverse_unit_vector = sin_true_an * r_unit + cos_true_an * t_unit;
@@ -221,10 +225,10 @@ static bool reflect_or_merge_orbit(real total_mass,
     real dr_trans = rel_pos*transverse_unit_vector;
     real dv_long = rel_vel*longitudinal_unit_vector;
 
-    // PRC(abs(rel_pos)); PRL(abs(rel_vel));
+    // if (verbose) {PRC(abs(rel_pos)); PRL(abs(rel_vel));}
     rel_pos -= 2*dr_trans*transverse_unit_vector;
     rel_vel -= 2*dv_long*longitudinal_unit_vector;
-    // PRC(abs(rel_pos)); PRL(abs(rel_vel));
+    // if (verbose) {PRC(abs(rel_pos)); PRL(abs(rel_vel));}
 
     return false;
 }
@@ -236,9 +240,10 @@ static bool reflect_or_merge_orbit(real total_mass,
 bool jdata::resolve_encounter()
 {
     const char *in_function = "jdata::resolve_encounter";
-    if (DEBUG > 2) PRL(in_function);
+    if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     bool status = false;
+    //PRRL(1);
     if (close1 < 0 || close2 < 0 || eps2 > 0) return status;
 
     //-----------------------------------------------------------------
@@ -256,6 +261,7 @@ bool jdata::resolve_encounter()
     int j1 = inverse_id[comp1];
     int j2 = inverse_id[comp2];
 
+    //PRRC(2); PRC(comp1); PRC(j1); PRC(comp2); PRL(j2);
     if (j1 < 0 || j2 < 0) return status;
 
     // Make j1 < j2, but note we may have to repeat this process with
@@ -266,8 +272,13 @@ bool jdata::resolve_encounter()
 	temp = comp1; comp1 = comp2; comp2 = temp;
     }
 
+    //PRRC(21); PRC(comp1); PRC(j1); PRC(comp2); PRL(j2);
     int pair[2] = {j1, j2};
+    //PRRC(22); PRC(pos[j1][0]); PRC(pos[j1][1]); PRL(pos[j1][2]);
+    //PRRC(22); PRC(pos[j2][0]); PRC(pos[j2][1]); PRL(pos[j2][2]);
     synchronize_list(pair, 2);
+    //PRRC(23); PRC(pred_pos[j1][0]); PRC(pred_pos[j1][1]); PRL(pred_pos[j1][2]);
+    //PRRC(23); PRC(pred_pos[j2][0]); PRC(pred_pos[j2][1]); PRL(pred_pos[j2][2]);
 
     predict(j1, system_time);
     predict(j2, system_time);
@@ -279,7 +290,11 @@ bool jdata::resolve_encounter()
 		 pred_vel[j1][1]-pred_vel[j2][1],
 		 pred_vel[j1][2]-pred_vel[j2][2]);
 
+    //PRRC(3); PRL(dr*dv);
+    //PRL(dr);
+    //PRL(dv);
     if (dr*dv >= 0) return status;		// criterion (1)
+    //PRRL(dr*dv);
 
     //-----------------------------------------------------------------
     // We will probably need to list neighbors soon anyway, so just
@@ -296,16 +311,19 @@ bool jdata::resolve_encounter()
 	cmpos[k] = (mass[j1]*pred_pos[j1][k]
 		     + mass[j2]*pred_pos[j2][k]) / total_mass;
 
+    //PRRC(31); PRL(cmpos);
     sort_neighbors(*this, cmpos);		// sorted list is rlist
 
     real dr2 = dr*dr;
+    //PRRC(4); PRC(rlist[2].r_sq); PRL(9*dr2);
     if (rlist[2].r_sq < 9*dr2) return status;	// criterion (2): factor TBD
 
-    cout << endl << "managing two-body encounter of "
-	 << j1 << " (" << comp1 << ") and "
-	 << j2 << " (" << comp2 
-	 << ") at time " << system_time
-	 << endl << flush;
+    if (mpi_rank == 0)
+	cout << endl << "managing two-body encounter of "
+	     << j1 << " (" << comp1 << ") and "
+	     << j2 << " (" << comp2 
+	     << ") at time " << system_time
+	     << endl << flush;
 
     // Ordering of j1 and j2 elements in rlist is not clear.  Force
     // element 0 to be j1, since later lists depend on this ordering.
@@ -319,12 +337,14 @@ bool jdata::resolve_encounter()
     }
 
 #if 0
-    cout << "neighbor distances (rmin = " << rmin << "):" << endl;
-    int nl = rlist.size();
-    if (nl > 5) nl = 5;
-    for (int il = 0; il < nl; il++)
-	cout << "    " << rlist[il].jindex << " " << sqrt(rlist[il].r_sq)
-	     << endl << flush;
+    if (mpi_rank == 0) {
+	cout << "neighbor distances (rmin = " << rmin << "):" << endl;
+	int nl = rlist.size();
+	if (nl > 5) nl = 5;
+	for (int il = 0; il < nl; il++)
+	    cout << "    " << rlist[il].jindex << " " << sqrt(rlist[il].r_sq)
+		 << endl << flush;
+    }
 #endif
 
     status = true;
@@ -375,6 +395,7 @@ bool jdata::resolve_encounter()
 	     vel[j1][1]-vel[j2][1],
 	     vel[j1][2]-vel[j2][2]);
     dr2 = dr*dr;
+    //PRRL(dr2);
 
     // PRL(cmpos);
     // PRL(cmvel);
@@ -386,7 +407,6 @@ bool jdata::resolve_encounter()
     // Note: by choice of sign, pos[j1] = cmpos + m2*dr,
     //                          pos[j2] = cmpos - (1-m2)*dr
 
-
     //-----------------------------------------------------------------
     // Make sure j1 and j2 are at the start of nbrlist (shouldn't be
     // necessary).
@@ -397,7 +417,7 @@ bool jdata::resolve_encounter()
 	    swap(nbrlist, loc++, jl);
 	if (loc > 1) break;
     }
-    if (loc < 2) cout << "nbrlist: huh?" << endl << flush;
+    if (loc < 2 && mpi_rank == 0) cout << "nbrlist: huh?" << endl << flush;
 
     //-----------------------------------------------------------------
     // Calculate the potential energy of the (j1,j2) pair relative to
@@ -414,15 +434,23 @@ bool jdata::resolve_encounter()
     // separation, or collapse the pair into a single particle.  The
     // factor of 2 in the merger condition is TBD: TODO.
 
+    //cout << "))) " << mpi_rank << " " << j1 << " ";
+    //for (int k = 0; k < 3; k++) cout << " " << pos[j1][k];
+    //cout << endl << flush;
+    //cout << "))) " << mpi_rank << " " << j2 << " ";
+    //for (int k = 0; k < 3; k++) cout << " " << pos[j2][k];
+    //cout << endl << flush;
+
     vec dr_old = dr, dv_old = dv;
     real energy, semi_major_axis, eccentricity;
     bool merge = reflect_or_merge_orbit(total_mass, dr, dv, energy,
 					semi_major_axis, eccentricity,
-					2*rmin);
-					//0);
+					2*rmin, mpi_rank == 0);
     // PRC(merge); PRL(nnbr);
     // PRC(dr); PRL(abs(dr));
     // PRC(dv); PRL(abs(dv));
+
+    //PRRC(dr_old); PRL(dr);
 
     if (merge) {
 
@@ -432,9 +460,10 @@ bool jdata::resolve_encounter()
 	for (int k = 0; k < 3; k++)
 	    dr2 += pow(pos[nbrlist[2]][k]-cmpos[k], 2);
 	if (dr2 < rmin*rmin) {
-	    cout << "suppressing merger because " << nbrlist[2]
-		 << " (" << id[nbrlist[2]] << ") is too close"
-		 << endl << flush;
+	    if (mpi_rank == 0)
+		cout << "suppressing merger because " << nbrlist[2]
+		     << " (" << id[nbrlist[2]] << ") is too close"
+		     << endl << flush;
 	    merge = false;
 	}
     }
@@ -462,23 +491,26 @@ bool jdata::resolve_encounter()
 	// Removal of particle j swaps j with the last particle and
 	// reduces nj.
 
-	//cout << "removing " << j1 << " (" << id[j1] << ")"
-	//     << endl << flush;
+	if (mpi_rank == 0)
+	    cout << "removing " << j1 << " (" << id[j1] << ")"
+		 << endl << flush;
 	remove_particle(j1);	
 	for (int jl = 1; jl < nnbr; jl++)	// recall 0, 1 are j1, j2
 	    if (nbrlist[jl] == nj) nbrlist[jl] = j1;
 
 	j2 = nbrlist[1];
 
-	//cout << "removing " << j2 << " (" << id[j2] << ")"
-	//     << endl << flush;
+	if (mpi_rank == 0)
+	    cout << "removing " << j2 << " (" << id[j2] << ")"
+		 << endl << flush;
 	remove_particle(j2);
 	for (int jl = 2; jl < nnbr; jl++)
 	    if (nbrlist[jl] == nj) nbrlist[jl] = j2;
 
 	add_particle(total_mass, newrad, cmpos, cmvel, newid, newstep);
-	//cout << "added " << nj-1 << " (" << id[nj-1] << ")"
-	//     << endl << flush;
+	if (mpi_rank == 0)
+	    cout << "added " << nj-1 << " (" << id[nj-1] << ")"
+		 << endl << flush;
 
 	// Strange new storage order preserves contiguous lists
 	// below.  Affected j-data locations are j1, j2, nj-1.
@@ -526,7 +558,7 @@ bool jdata::resolve_encounter()
 	pot_final = partial_potential(nbrlist+merge, 2-merge,
 				      nbrlist+2, nnbr-2, *this);
     real de = pot_final - pot_init;
-    PRC(pot_init); PRC(pot_final); PRL(de);
+    if (mpi_rank == 0) {PRC(pot_init); PRC(pot_final); PRL(de);}
     // real dtotal = total_energy(nbrlist+merge, nnbr-merge, *this)-total_init;
     // PRL(dtotal);
 
@@ -542,14 +574,13 @@ bool jdata::resolve_encounter()
 
 	de -= reduced_mass*energy;
 	update_merger_energy(de);
-	cout << "merged "
-	     << j1 << " (" << comp1 << ") and "
-	     << j2 << " (" << comp2
-	     << ") at time " << system_time
-	     << "  dE = " << de
-	     << endl << flush;
-
-	
+	if (mpi_rank == 0)
+	    cout << "merged "
+		 << j1 << " (" << comp1 << ") and "
+		 << j2 << " (" << comp2
+		 << ") at time " << system_time
+		 << "  dE = " << de
+		 << endl << flush;
 
     } else {
 
@@ -568,11 +599,13 @@ bool jdata::resolve_encounter()
 		// We'll need to be cleverer in this case.  Let's see how
 		// often it occurs...
 
-		cout << "warning: can't correct component velocities." << endl;
+		if (mpi_rank == 0)
+		    cout << "warning: can't correct component velocities."
+			 << endl;
 
 	    else {
 		real v_correction_fac = sqrt(vfac2);
-		PRL(v_correction_fac);
+		if (mpi_rank == 0) PRL(v_correction_fac);
 		dv *= v_correction_fac;
 		for (int k = 0; k < 3; k++) {
 		    vel[j1][k] = cmvel[k] + m2*dv[k];
@@ -589,10 +622,10 @@ bool jdata::resolve_encounter()
 
 	// First make sure all pending data are properly flushed.
 
-#ifndef NOSYNC		// set NOSYNC to omit
+#ifndef NOSYNC		// set NOSYNC to omit this call;
 	sync_gpu();	// hardly a true fix for the GPU update
 			// problem, since we don't understand why it
-			// occurs, but this seems to work...
+			// occurs, but this does seem to work...
 #endif
 
 	if (merge && mpi_size > 1) {
@@ -620,6 +653,14 @@ bool jdata::resolve_encounter()
     // Retain current time steps and scheduling.  Note that in the
     // REVERSE case, the accelerations should not change.
 
+    //cout << "--- " << mpi_rank << " " << j1 << " ";
+    //for (int k = 0; k < 3; k++) cout << " " << pos[j1][k];
+    //cout << endl << flush;
+    //cout << "--- " << mpi_rank << " " << j2 << " ";
+    //for (int k = 0; k < 3; k++) cout << " " << pos[j2][k];
+    //cout << endl << flush;
+
+
     if (!use_gpu) predict_all(system_time);
     idat->set_list(nbrlist+merge, nnbr-merge);
     idat->gather();
@@ -627,11 +668,21 @@ bool jdata::resolve_encounter()
     idat->get_acc_and_jerk();		// compute iacc, ijerk
     idat->scatter();			// j acc, jerk <-- iacc, ijerk
 
+
+    //cout << "+++ " << mpi_rank << " " << j1 << " ";
+    //for (int k = 0; k < 3; k++) cout << " " << pos[j1][k];
+    //cout << endl << flush;
+    //cout << "+++ " << mpi_rank << " " << j2 << " ";
+    //for (int k = 0; k < 3; k++) cout << " " << pos[j2][k];
+    //cout << endl << flush;
+
+
     if (use_gpu) idat->update_gpu();
 
     // Could cautiously reduce neighbor steps here (and reschedule),
     // but that seems not to be necessary.
 
     delete [] nbrlist0;
+    //PRRL(5);
     return status;
 }

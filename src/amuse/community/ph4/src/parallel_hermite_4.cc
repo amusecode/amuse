@@ -10,7 +10,6 @@
 //	-f infile	specify input file			[none]
 //	-g		suppress GPU use			[use GPU]
 //	-n N		set number of stars (if no infile)	[1000]
-//	-r		recompute the potential in get_energy()	[false]
 //	-s seed		set initial random seed (if no infile)	[12345]
 //	-t t_max	set integration time			[0.5]
 //
@@ -19,6 +18,7 @@
 //
 // version 0, September 2010:	Steve McMillan (steve@physics.drexel.edu)
 // version 1, December 2010:	added treatment of close encounters
+// version 2. April 2011:	exposed some extra functionality to AMUSE
 //
 //----------------------------------------------------------------------
 
@@ -31,14 +31,6 @@
 // them to the worker code.
 
 #include <sys/stat.h> 
-
-static real scale = 1.0/(((unsigned long)1<<31)-1.0);
-static real randinter(real a=0, real b=1)
-{
-    unsigned long r = random();
-    real x = scale*r;
-    return a + (b-a)*x;
-}
 
 void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 			  char *infile, real &system_time)
@@ -126,7 +118,10 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 
 	    system(command);
 	}
+
+	// cout << "ph4 Barrier 1 for " << jd.mpi_rank << endl << flush;
 	jd.mpi_comm.Barrier();
+	// cout << "ph4 Barrier 1a for " << jd.mpi_rank << endl << flush;
 
 	s.open(infile1, ifstream::in);
 	if (!s) {
@@ -163,7 +158,9 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 
 	    system(command);
 	}
+	// cout << "ph4 Barrier 2 for " << jd.mpi_rank << endl << flush;
 	jd.mpi_comm.Barrier();
+	// cout << "ph4 Barrier 2a for " << jd.mpi_rank << endl << flush;
     }
 
     // Set the system center of mass position and velocity to zero.
@@ -175,7 +172,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 
 void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 		  real eps2, real eta, real t_max, real dt_out,
-		  real vfac, bool repot)
+		  real vfac)
 {
     real system_time = 0;
 
@@ -205,23 +202,53 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 
     // Loop to advance the system to time t_max.
 
-    jd.print();		// no repot needed because the system is synchronized
+    jd.print();
     sched.print();
     real t_out = dt_out;
 
-    real dt_spec = 1./16, t_spec = dt_spec;
+    real dt_spec = 1., t_spec = dt_spec;
+    // cout << "ph4 Barrier 3 for " << jd.mpi_rank << endl << flush;
+    // jd.mpi_comm.Barrier();
+    // cout << "ph4 Barrier 3a for " << jd.mpi_rank << endl << flush;
     jd.spec_output("%%%");
 
-
-    bool remove = false;	// check GPU bug in remove_particle()
-
+    bool remove = false;	// don't check GPU bug in remove_particle()
 
     int step = 0;
     while (jd.system_time < t_max) {
 
+	jd.mpi_comm.Barrier();
 	jd.advance();
+	// cout << "ph4 Barrier 4 for " << jd.mpi_rank << endl << flush;
+	jd.mpi_comm.Barrier();
+	// cout << "ph4 Barrier 4a for " << jd.mpi_rank << endl << flush;
 	step++;
-	//PRL(step);
+	// PRC(jd.mpi_rank); PRL(step);
+
+// 	int ni = jd.idat->ni;
+// 	cout << "@@@ " << jd.mpi_rank << " " << step << " "
+// 	     << ni << endl << flush;
+// 	if (ni < 10) {
+// 	    for (int i = 0; i < ni; i++) {
+// 		int j = jd.idat->ilist[i];
+// 		cout << "@@@ " << jd.mpi_rank << " " << j << " ";
+// 		for (int k = 0; k < 3; k++) cout << " " << jd.pos[j][k];
+// 		cout << endl << flush;
+// 	    }
+// 	}
+
+// 	int ni = jd.idat->ni;
+// 	cout << "@@@ " << jd.mpi_rank << " " << step << " "
+// 	     << ni << endl << flush;
+// 	cout << "@@@";
+// 	for (int i = 0; i < ni; i++) cout << " " << jd.idat->ilist[i];
+// 	cout << endl << flush;
+// 	for (int j = 0; j < jd.nj; j++) {
+// 	    cout << "@@@ " << jd.mpi_rank << " " << j << " "
+// 		 << jd.time[j] << " ";
+// 	    for (int k = 0; k < 3; k++) cout << " " << jd.pos[j][k];
+// 	    cout << endl << flush;
+// 	}
 
 	// Special treatment of close encounters (non-AMUSE code, for
 	// now).  All the work is done in resolve_encounter().
@@ -233,16 +260,37 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	// correct the tidal errors.
 
 	if (jd.close1 >= 0 && jd.eps2 == 0) {
+	    // PRC(jd.mpi_rank); PRL(1);
+	    // cout << "ph4 Barrier 5 for " << jd.mpi_rank << endl << flush;
+	    jd.mpi_comm.Barrier();
+	    // cout << "ph4 Barrier 5a for " << jd.mpi_rank << endl << flush;
 	    bool status = jd.resolve_encounter();
+	    // PRC(jd.mpi_rank); PRL(2);
+	    // cout << "ph4 Barrier 6 for " << jd.mpi_rank << endl << flush;
+	    jd.mpi_comm.Barrier();
+	    // cout << "ph4 Barrier 6a for " << jd.mpi_rank << endl << flush;
+	    // PRC(jd.mpi_rank); PRC(status); PRL(3);
 	    if (status) {
-		cout << "after resolve_encounter: ";
-		PRL(jd.get_energy());
+		// cout << "ph4 Barrier 7 for " << jd.mpi_rank << endl << flush;
+		jd.mpi_comm.Barrier();
+		// cout << "ph4 Barrier 7a for " << jd.mpi_rank << endl << flush;
+		real energy = jd.get_energy();
+		//PRC(jd.mpi_rank); PRL(4);
+		if (jd.mpi_rank == 0) {
+		    //PRC(jd.mpi_rank); 
+		    cout << "after resolve_encounter: ";
+		    PRL(energy);
+		}
+		// cout << "ph4 Barrier 8 for " << jd.mpi_rank << endl << flush;
+		jd.mpi_comm.Barrier();
+		// cout << "ph4 Barrier 8a for " << jd.mpi_rank << endl << flush;
 	    }
 	}
 
 	// Problem-specific output.
 
 	if (jd.system_time >= t_spec) {
+	    jd.synchronize_all();
 	    jd.spec_output("%%%");
 	    t_spec += dt_spec;
 	}
@@ -251,13 +299,14 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 
 	    // Routine diagnostic output.
 
+	    jd.synchronize_all();
 	    jd.print();
 
 	    // End of run output.
 
 	    if (jd.system_time >= t_max) {
 		sched.print();
-		if (jd.binary_list.size() > 0) {
+		if (jd.mpi_rank == 0 && jd.binary_list.size() > 0) {
 		    cout << "binaries:" << endl;
 		    for (unsigned int i = 0; i < jd.binary_list.size(); i++) {
 			real semi = jd.binary_list[i].semi;
@@ -303,6 +352,9 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    jd.print();
 	}
     }
+    //cout << "ph4 Barrier 9 for " << jd.mpi_rank << endl << flush;
+    jd.mpi_comm.Barrier();
+    //cout << "ph4 Barrier 9a for " << jd.mpi_rank << endl << flush;
 }
 
 
@@ -317,7 +369,6 @@ int main(int argc, char *argv[])
     real eps2 = eps*eps;
     char *infile = NULL;
     int ntotal = 1000;
-    bool repot = false;
     int seed = 12345;
     real t_max = 10.0;
     real vfac = 1.0;
@@ -345,8 +396,6 @@ int main(int argc, char *argv[])
 				break;
                 case 'n':	ntotal = atoi(argv[++i]);
 				break;
-                case 'r':	repot = true;
-				break;
                 case 's':	seed = atoi(argv[++i]);
 				break;
                 case 't':	t_max = atof(argv[++i]);
@@ -355,28 +404,31 @@ int main(int argc, char *argv[])
 				break;
             }
 
+    MPI::Init(argc, argv);
+
     // Echo the command-line arguments.
 
-    cout << "Parameters:" << endl << flush;
-    cout << "    -a "; PRL(eta);
-    cout << "    -d "; PRL(dt_out);
-    cout << "    -e "; PRL(eps);
-    if (infile) {
-	cout << "    -f "; PRL(infile);
-    } else
-	cout << "    -f (no file)" << endl << flush;
-    cout << "    -g "; PRL(use_gpu);
-    cout << "    -n "; PRL(ntotal);
-    cout << "    -r "; PRL(repot);
-    cout << "    -s "; PRL(seed);
-    cout << "    -t "; PRL(t_max);
-    cout << "    -v "; PRL(vfac);
+    if (MPI::COMM_WORLD.Get_rank() == 0) {
+	cout << "Parameters:" << endl << flush;
+	cout << "    -a "; PRL(eta);
+	cout << "    -d "; PRL(dt_out);
+	cout << "    -e "; PRL(eps);
+	if (infile) {
+	    cout << "    -f "; PRL(infile);
+	} else
+	    cout << "    -f (no file)" << endl << flush;
+	cout << "    -g "; PRL(use_gpu);
+	if (!infile) {
+	    cout << "    -n "; PRL(ntotal);
+	}
+	cout << "    -s "; PRL(seed);
+	cout << "    -t "; PRL(t_max);
+	cout << "    -v "; PRL(vfac);
+    }
 
     // Run the integrator.
 
-    MPI::Init(argc, argv);
     run_hermite4(ntotal, seed, infile, use_gpu,
-		 eps2, eta, t_max, dt_out, vfac,
-		 repot);
+		 eps2, eta, t_max, dt_out, vfac);,
     MPI_Finalize();
 }

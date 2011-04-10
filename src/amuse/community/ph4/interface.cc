@@ -115,7 +115,7 @@ int commit_particles()
 int recommit_particles()
 {
     // Reinitialize/reset the system after particles have been added
-    // or removed.  The system must be synchronized at some reasonable
+    // or removed.  The system should be synchronized at some reasonable
     // system_time, so we just need to recompute forces and update the
     // GPU and scheduler.  Note that we don't resize the jdata or
     // idata arrays.  To resize idata, just delete and create a new
@@ -380,7 +380,7 @@ int get_potential_energy(double * potential_energy)
 
 int get_kinetic_energy(double * kinetic_energy)
 {
-    *kinetic_energy = jd->get_kin();	// NB should call get_kin after get_pot
+    *kinetic_energy = jd->get_kin();
     return 0;
 }
 

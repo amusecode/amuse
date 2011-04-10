@@ -269,9 +269,11 @@ bool scheduler::remove_particle(int j)
 
     // Didn't find j.  Flag it.
 
-    cout << "scheduler::remove_particle(): " << j << " not found, ";
-    PRL(ibp);
-    print(true);
+    if (jdat->mpi_rank == 0) {
+	cout << "scheduler::remove_particle(): " << j << " not found, ";
+	PRL(ibp);
+	print(true);
+    }
     return false;
 }
 

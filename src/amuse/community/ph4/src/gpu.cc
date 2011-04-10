@@ -382,7 +382,7 @@ void idata::get_partial_acc_and_jerk_on_gpu(bool pot)	// default = false
 
 	for (int ii = 0; ii < nni; ii++) {
 	    lnn[i+ii] = -1;
-	    ldnn[i+ii] = huge;
+	    ldnn[i+ii] = _INFINITY_;
 	    for (int k = 0; k < 3; k++) {
 		a2[ii][k] = old_acc[i+ii][k]/2;
 		j6[ii][k] = old_jerk[i+ii][k]/6;
@@ -639,7 +639,7 @@ void jdata::get_densities_on_gpu()	// under development
 	}
 	if (np < npipes)
 	    for (int jj = np; jj < npipes; jj++)
-		h2[jj] = tiny;
+		h2[jj] = _TINY_;
 
 	bool ok = false;
 	while (!ok) {
@@ -681,8 +681,8 @@ void jdata::get_densities_on_gpu()	// under development
 
 		// Reduce the largest h2 values.
 
-		real h2min = huge, h2max = 0, h2bar = 0;
-		int jmin, jmax;
+		real h2min = _INFINITY_, h2max = 0, h2bar = 0;
+		int jmin = -1, jmax = -1;
 		for (int jj = 0; jj < np; jj++) {
 		    if (h2[jj] < h2min) {h2min = h2[jj]; jmin = jj;}
 		    if (h2[jj] > h2max) {h2max = h2[jj]; jmax = jj;}

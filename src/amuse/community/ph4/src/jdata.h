@@ -131,7 +131,7 @@ class jdata {
     void check_inverse_id();
     void set_initial_timestep();
     real get_pot(bool reeval = false);
-    real get_kin(bool reeval = false);
+    real get_kin();
     real get_energy(bool reeval = false);
     real get_total_mass();
     void predict(int j, real t);
@@ -166,6 +166,9 @@ class jdata {
 
     bool resolve_encounter();
 };
+
+#define PRRC(x) cout << "rank = " << mpi_rank << " " << #x << " = " << x << ",  " << flush
+#define PRRL(x) cout << "rank = " << mpi_rank << " " << #x << " = " << x << endl << flush
 
 void update_merger_energy(real dEmerge);
 

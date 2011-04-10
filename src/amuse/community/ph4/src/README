@@ -1,0 +1,121 @@
+
+Programs contained in the src directory
+---------------------------------------
+
+Several related but independent programs are bundled together in the
+src directory.  They interoperate within ph4, but also can run
+standalone.  Ultimately they should become separate modules within
+AMUSE.  All are built using Makefile.ph4.
+
+1. ph4: parallel, GPU accelerated, 4th-order Hermite integrator,
+   interfaced with AMUSE as the ph4 module, but also runs as a
+   standalone program.
+
+   Files: parallel_hermite_4.cc, jdata.[ch]*, idata.[ch]*,
+	  scheduler.[ch]*, grape.[ch]*, gpu.cc, util.cc, diag.cc,
+	  debug.cc.
+
+   NOTE: ph4 can run in numerous modes.  In principle, they should
+	 all be equivalent...
+
+	(i)   The standalone programs are parallel_hermite_4 and
+	      parallel_hermite_4_noPGU, compiled with and without the
+	      -DGPU option, respectively.  In addition, GPU use can be
+	      be suppressed at run-time in parallel_hermite_4 by using
+	      the -g flag.  Since suppressing an option is not
+	      necessarily the same as not compiling it in in the first
+	      place, all three options should be tested when verifying
+	      the code:
+
+		    parallel_hermite_4
+		    parallel_hermite_4 -g
+		    parallel_hermite_4_noGPU
+
+	(ii)  These programs can be run serial or parallel, e.g.
+
+		    mpiexec -n 4 parallel_hermite_4 ...
+
+	      Running with "-n 1" is equivalent to just typing
+
+		    parallel_hermite_4 ...
+
+	      All GPU options are supported in all parallel versions.
+
+	(iii) The codes can also be run from within AMUSE, e.g. using
+	      the options -g or -G in test_ph4.py.
+
+	      test_ph4.py	runs parallel_hermite_4
+	      test_ph4.py -g	runs parallel_hermite_4 -g
+	      test_ph4.py -G	runs parallel_hermite_4_noGPU
+
+	      Not all of the close-enconter options in the standalone
+	      codes are currently supported in the AMUSE versions --
+	      they will be selected in future implementatons using
+	      initialization parameters.
+
+   QUIRKS AND BUGS:
+
+	* the GPU and non-GPU codes produce slightly different
+	  numbers, as should be expected, since the detailed
+	  arithmetic operations aren't exactly the same
+
+	* the parallel and non-parallel versions should produce the
+	  same results -- currently NOT the case: TO BE FIXED
+
+		mpiexec -n NN parallel_hermite_4 ... | egrep '%%%|Emerge'
+
+		parallel_hermite_4 -e 0 ...
+		mpiexec -n 1 parallel_hermite_4 -e 0 ...	same
+		mpiexec -n 2 parallel_hermite_4 -e 0 ...	different
+		
+		parallel_hermite_4 -e 0.001 ...
+		mpiexec -n 1 parallel_hermite_4 -e 0.001 ...	same
+		mpiexec -n 2 parallel_hermite_4 -e 0.001 ...	different
+
+		parallel_hermite_4_noGPU -e 0.001 ...
+		mpiexec -n 2 parallel_hermite_4_noGPU -e 0.001 ... different
+
+		noGPU differences seem to be significantly smaller
+
+	* results should not depend on the frequency of energy
+	  diagnostics -- NOT the case at present: TO BE FIXED
+
+	* current code contains a lot of connented-out debugging lines
+          -- clean up eventually...
+
+
+2. close_encounter: code to manage close encounters within ph4,
+   currently only available in the standalone version of ph4.
+
+   File: close_encounter.cc.
+
+
+3. smallN: standalone few-body integrator using a shared-timestep,
+   time-symmetrized, 4th-order Hermite integrator incorporating
+   partial and fully unperturbed binary motion; designed to be used
+   with the close_encounter package in ph4, but this has not yet been
+   implemented.
+
+   Files: smallN.cc, kepler.[ch]*, hdyn.[ch]*, analyze.cc.
+   Usage: makeplummer -n 4 -i -C | smallN <args>
+
+
+4. kepler: two-body orbit creation and manipulation routines,
+   compliant with Starlab-style trees and data structures, but largely
+   independent of them; a standalone version also exists.
+
+   Files: kepler.h, kepler.cc, hdyn.[ch]*.
+   Usage: kepler <args>
+
+
+5. analyze: routines to decompose a few-body system into stable
+   substructure and determine when an interaction is over; integrated
+   with smallN, but could also available as a standalone program.
+
+   Files: analyze.cc, kepler.[ch]*, hdyn.[ch]*.
+   Usage: makeplummer -n 4 -i -C | analyze <args>
+
+Codes 3-5 are based on earlier Starlab code and contain standalone
+definitions and extensions of the hdyn class and node/dyn/hdyn member
+functions.
+

@@ -3,7 +3,7 @@
 # subsequent versions are hand-coded, so save a copy.  Note that
 # all compiles must use MPICXX, not CXX.
 
-ALL	 = ph4_worker
+ALL	 = ph4_worker ph4_worker_gpu
 OPT	  = -O4
 
 MPICXX   ?= mpicxx
