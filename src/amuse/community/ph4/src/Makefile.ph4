@@ -11,6 +11,7 @@ OPT	= -O4
 MPICXX	= openmpicxx	# mpicxx.openmpi
 MPICC	= openmpicc	# mpicc.openmpi
 CFLAGS += -g -Wall $(OPT)
+CXXFLAGS += $(CFLAGS) 
 
 OBJS    = jdata.o idata.o scheduler.o grape.o gpu.o util.o diag.o debug.o \
 	  close_encounter.o

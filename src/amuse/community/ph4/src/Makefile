@@ -9,7 +9,7 @@ OPT	  = -O4
 
 GPU	  = -DGPU
 CXX	  = openmpicxx
-CFLAGS   += -Wall -g  $(OPT)
+CFLAGS   += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 
 CODELIB = libph4.a
