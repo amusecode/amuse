@@ -444,3 +444,43 @@ int get_gravity_at_point(double eps, double x, double y, double z,
 {
     return -1;
 }
+
+
+/*
+ * Needs to move to a header file in the ph4 code!
+ * from here
+ */
+class UpdatedParticle {
+    
+  public:
+
+    int index_of_particle;
+    int status;
+    
+    UpdatedParticle():index_of_particle(-1),status(0) {}
+    UpdatedParticle(int i, int s):index_of_particle(i), status(s) {}
+    UpdatedParticle(const UpdatedParticle & src):index_of_particle(src.index_of_particle), status(src.status) {}
+};
+
+vector<UpdatedParticle> UpdatedParticles;
+/*
+ * to here
+ */
+ 
+
+int get_number_of_particles_updated(int * value)
+{
+    *value = UpdatedParticles.size();
+    return 0;
+}
+
+int get_id_of_updated_particle(int index, int * index_of_particle, int * status)
+{
+    if(index < 0 || index > (int) UpdatedParticles.size())
+    {
+        return -1;
+    }
+    *index_of_particle = UpdatedParticles[index].index_of_particle;
+    *status = UpdatedParticles[index].status;
+    return 0;
+}

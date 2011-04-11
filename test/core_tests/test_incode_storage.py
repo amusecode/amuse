@@ -205,6 +205,80 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(index[1], 2)
         self.assertEquals(mass[1],  3 | units.kg)
     
+    def test4(self):
+        class Code(object):
+            def __init__(self):
+                # mass
+                self.data = []
+                self.get_mass_called = False
+                self.set_mass_called = False
+                self.number_of_particles = 0
+                
+            def get_number_of_particles(self):
+                return  self.number_of_particles
+                
+            def get_mass(self,index):
+                self.get_mass_called = True
+                data_to_return = [self.data[i] for i in index]
+                return units.kg(data_to_return)
+                
+            def set_mass(self,index,mass):
+                self.set_mass_called = True
+                pass
+                
+            def new_particle(self, mass):
+                mass = mass.value_in(units.kg)
+                self.data = mass
+                self.number_of_particles = len(self.data)
+                return [i for i in range(len(mass))]
+                
+        code = Code()
+        storage = InCodeAttributeStorage(
+            code,
+            NewParticleMethod(code.new_particle,("mass",)),
+            None,
+            code.get_number_of_particles,
+            [],
+            [
+                ParticleGetAttributesMethod(code.get_mass,("mass",)),
+            ],
+            name_of_the_index = "index"
+        )
+        
+        storage.add_particles_to_store(
+            numpy.asarray([1,2,3,4], dtype='uint64'),
+            ["mass"],
+            [
+                units.kg([1,2,3,4]),
+            ]
+        )
+        
+        self.assertEquals(len(storage), 4)
+        
+        storage._remove_indices([1,2,])
+        code.number_of_particles = 2
+        index,mass = storage.get_values_in_store([1,4],["index_in_code","mass"])
+        
+        self.assertEquals(index[0], 0)
+        self.assertEquals(index[1], 3)
+        self.assertEquals(mass[0],  1 | units.kg)
+        self.assertEquals(mass[1],  4 | units.kg)
+        
+        
+        self.assertEquals(len(storage), 2)
+        
+        storage._add_indices([4,5])
+        code.data = numpy.concatenate((code.data, [5, 6]))
+        
+        code.number_of_particles = 4
+        self.assertEquals(len(storage), 4)
+        
+        mass, = storage.get_values_in_store(storage.particle_keys,["mass"])
+        
+        self.assertEquals(mass[0],  1 | units.kg)
+        self.assertEquals(mass[1],  4 | units.kg)
+        self.assertEquals(mass[2],  5 | units.kg)
+        self.assertEquals(mass[3],  6 | units.kg)
     
 class TestGrids(amusetest.TestCase):
     

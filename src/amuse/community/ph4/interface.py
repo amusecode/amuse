@@ -103,6 +103,35 @@ class ph4Interface(CodeInterface,
                               direction=function.IN)
         function.result_type = 'int32'
         return function
+        
+    @legacy_function
+    def get_number_of_particles_updated():
+        """
+        Return the number of particles added or deleted during the last evolve
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_id_of_updated_particle():
+        """
+        Return the number of particles added or deleted during the last evolve
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('index_of_update', dtype='int32',
+                              direction=function.IN, 
+                              description = 'index in the updated particles list')
+        function.addParameter('index_of_particle', dtype='int32',
+                              direction=function.OUT)
+        function.addParameter('kind_of_update', dtype='int32',
+                              direction=function.OUT,
+                              description = 'kind of update (2, addition), (1, deletion)')
+        function.can_handle_array = True
+        function.result_type = 'int32'
+        return function
 
 
 class ph4(GravitationalDynamics):
@@ -154,6 +183,38 @@ class ph4(GravitationalDynamics):
         )
 
 
+    def update_particle_set(self):
+        """
+        update the particle set after changes in the code
+        
+        this implementation needs to move to the amuse.support.data.incode_storage module
+        as it uses a lot of internal methods and info!
+        
+        """
+        number_of_updated_particles, error = self.get_number_of_particles_updated()
+        
+        if number_of_updated_particles == 0:
+            return
+        
+        indices_in_update_list = range(number_of_updated_particles)
+        particle_indices, updates, erros = self.get_id_of_updated_particle(indices_in_update_list)
+        
+        incode_storage = particles._private.attribute_storage
+        
+        indices_to_remove = []
+        indices_to_add = []
+        for index, status in zip(particle_indices, updates):
+            if status == 1: #deletion
+                indices_to_remove.append(index)
+            elif status == 2: #addition
+                indices_to_add.append(index)
+        
+        if len(indices_to_remove) > 0:
+            incode_storage._remove_indices(indices_to_remove)
+        
+        if len(indices_to_add) > 0:
+            incode_storage._add_indices(indices_to_remove)
+        
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
 

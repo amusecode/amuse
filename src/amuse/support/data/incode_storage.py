@@ -451,6 +451,36 @@ class ParticleSetSelectSubsetMethod(object):
         return particles._subset(keys)
 
 
+class ParticlesAddedUpdateMethod(object):
+   
+    
+    def __init__(self,  get_number_of_particles_added_method = None, get_id_of_added_particles_method = None):
+        self.method = method
+        self.get_number_of_particles_added_method = get_number_of_particles_added_method
+        self.get_id_of_added_particles_method = get_id_of_added_particles_method
+        self.public_name = public_name
+
+    def apply_on_all(self, particles, *list_arguments, **keyword_arguments):
+        query_identifiers = None
+        if not self.set_query_arguments_method is None:
+            query_identifiers = self.set_query_arguments_method(*list_arguments, **keyword_arguments)
+        
+        if query_identifiers is None:
+            query_identifiers = ()
+        elif not hasattr(query_identifiers, '__iter__'):
+            query_identifiers = (query_identifiers,)
+            
+        if not self.get_number_of_particles_in_set_method is None:
+            number_of_particles_in_set = self.get_number_of_particles_in_set_method(*query_identifiers)
+            indices = self.method(range(number_of_particles_in_set))
+        else:
+            index = self.method(*query_identifiers)
+            indices = [index]
+        
+        query_identifiers = [ [x]*len(indices) for x in query_identifiers ]
+        keys = particles._private.attribute_storage._get_keys_for_indices_in_the_code(indices, *query_identifiers)    
+        
+        return particles._subset(keys)
 
 class ParticleGetIndexMethod(object):
     """
@@ -686,7 +716,34 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         for i in indices:
             result.append(self.mapping_from_index_in_the_code_to_particle_key.get(i, -1))
         return result
+        
+    def _remove_indices(self, indices):
+        keys = []
+        for i in indices:
+            if i in self.mapping_from_index_in_the_code_to_particle_key:
+                key = self.mapping_from_index_in_the_code_to_particle_key[i]
+                del self.mapping_from_index_in_the_code_to_particle_key[i]
+                del self.mapping_from_particle_key_to_index_in_the_code[key]
+                keys.append(key)
+                
+        indices_to_delete = self.get_key_indices_of(keys)
+        self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
+        
     
+    def _add_indices(self, indices):
+        keys = []
+        for i in indices:
+            if i in self.mapping_from_index_in_the_code_to_particle_key:
+                raise exceptions.AmuseException("adding an index that is already managed, bookkeeping is broken")
+            newkey = base.UniqueKeyGenerator.next()
+            self.mapping_from_index_in_the_code_to_particle_key[i] = newkey
+            self.mapping_from_particle_key_to_index_in_the_code[newkey] = i
+            
+            keys.append(newkey)
+            
+        keys = numpy.asarray(list(keys), dtype=self.particle_keys.dtype)
+        self.particle_keys = numpy.concatenate((self.particle_keys, keys))
+                
 
 class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
     """

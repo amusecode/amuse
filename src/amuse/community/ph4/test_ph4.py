@@ -33,7 +33,7 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     sys.stdout.flush()
     return E
 
-def test_ph4(infile = None, number_of_stars = 0,
+def test_ph4(infile = None, number_of_stars = 40,
              end_time = 10 | nbody_system.time,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
