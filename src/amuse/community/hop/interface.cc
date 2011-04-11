@@ -156,19 +156,36 @@ int InitHop(KD &kd, SMX &smx, int bDens){
 }
 
 
-/* parameter setters */
+/* parameters */
 int set_nBucket(int value){
   if (bParamInit) InitParam();
+  
   nBucket = value;
   bHopInit = 1;
   return 0;
 }
+int get_nBucket(int * value){
+  if (bParamInit) InitParam();
+  
+  *value = nBucket;
+  return 0;
+}
+
 int set_nDens(int value){
   if (bParamInit) InitParam();
+  
   nDens = value;
   bHopInit = 1;
   return 0;
 }
+int get_nDens(int * value){
+  if (bParamInit) InitParam();
+  
+  *value = nDens;
+  bHopInit = 1;
+  return 0;
+}
+
 int set_nHop(int value){
   if (bParamInit) InitParam();
   if (value < nMerge +1) return -1;
@@ -176,12 +193,24 @@ int set_nHop(int value){
   bHopInit = 1;
   return 0;
 }
+int get_nHop(int * value){
+
+  *value = nHop;
+  
+  return 0;
+}
+
 int set_fDensThresh(double value){
   if (bParamInit) InitParam();
   fDensThresh = value;
   bHopInit = 1;
   return 0;
 }
+int get_fDensThresh(double * value){
+  *value = fDensThresh;
+  return 0;
+}
+
 int set_fPeriod(double x, double y, double z){
   if (bParamInit) InitParam();
   fPeriod[0] = x;
@@ -190,6 +219,14 @@ int set_fPeriod(double x, double y, double z){
   bHopInit = 1;
   return 0;
 }
+
+int get_fPeriod(double * x, double * y, double * z){
+  *x = fPeriod[0];
+  *y = fPeriod[1];
+  *z = fPeriod[2];
+  return 0;
+}
+
 int set_nMerge(int value){
   if (bParamInit) InitParam();
   if (value > nHop -1) return -1;
@@ -197,6 +234,11 @@ int set_nMerge(int value){
   bHopInit = 1;
   return 0;
 }
+int get_nMerge(int *value){
+  *value = nMerge;
+  return 0;
+}
+
 int set_density_method(int value){
   if (bParamInit) InitParam();
   switch (value) {
@@ -208,6 +250,31 @@ int set_density_method(int value){
     default:
       return -1;
    }
+}
+
+int get_density_method(int * value){
+   *value = nMethod;
+   return 0;
+}
+
+int initialize_code()
+{
+    return InitParam();
+}
+
+int cleanup_code()
+{
+    return 0;
+}
+
+int commit_parameters()
+{
+    return 0;
+}
+
+int recommit_parameters()
+{
+    return 0;
 }
 
 /* densities */

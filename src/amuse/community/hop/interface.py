@@ -14,8 +14,10 @@ do_hop()
 
 
 from amuse.community import *
+from amuse.community.interface.common import CommonCodeInterface
+from amuse.support.units import generic_unit_system
 
-class HopInterface(CodeInterface):
+class HopInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn):
     '''
         .. [#] Eisenstein, DJ, Hut, P, HOP: A new group-finding algorithm for N-body simulations, ApJ 498 (1998)
     '''
@@ -35,7 +37,7 @@ class HopInterface(CodeInterface):
         function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT,
           description='index of the particle')
         function.addParameter('mass', dtype='float64', direction=function.IN,
-          description='particle position on x-axis')
+          description='mass of the particle')
         function.addParameter('x', dtype='float64', direction=function.IN,
           description='particle position on x-axis')
         function.addParameter('y', dtype='float64', direction=function.IN,
@@ -365,6 +367,18 @@ class HopInterface(CodeInterface):
           description='the value of nBucket affects the performance of the kd-tree search (DEFAULT: 16)')
         function.result_type = 'int32'
         return function
+        
+    @legacy_function
+    def get_nBucket():
+        '''
+        Return the bucket parameter to tune the performance of the kd-tree search.
+        DEFAULT: 16
+        '''        
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'int32', direction=function.OUT,
+          description='the value of nBucket affects the performance of the kd-tree search (DEFAULT: 16)')
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def set_nDens():
@@ -374,6 +388,18 @@ class HopInterface(CodeInterface):
         '''
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype = 'int32', direction=function.IN,
+          description='the value of nDens, the number of particles to smooth over when calculating densities (DEFAULT: 64)')
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def get_nDens():
+        '''
+        Return the number of particles to smooth over when calculating densities.
+        DEFAULT: 64
+        '''
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'int32', direction=function.OUT,
           description='the value of nDens, the number of particles to smooth over when calculating densities (DEFAULT: 64)')
         function.result_type = 'int32'
         return function
@@ -396,6 +422,24 @@ class HopInterface(CodeInterface):
             requested value for nHop was too low
         '''
         return function
+    @legacy_function
+    def get_nHop():
+        '''
+        Return the number of particles over which to look for density maximum.
+        DEFAULT: 64
+        (minimum allowed value of nHop is nMerge+1)
+        '''
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'int32', direction=function.OUT,
+          description='the value of nHop, the number of particles over which to look for density maximum (DEFAULT: 64)')
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            nHop was set
+        -1 - ERROR
+            requested value for nHop was too low
+        '''
+        return function
 
     @legacy_function
     def set_fDensThresh():
@@ -405,6 +449,18 @@ class HopInterface(CodeInterface):
         '''
         function = LegacyFunctionSpecification()
         function.addParameter('value', dtype = 'float64', direction=function.IN,
+          description='value of fDensThresh, the minimum density of grouped particles (DEFAULT: no minimum)')
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def get_fDensThresh():
+        '''
+        Return the density below which particles are not assigned to any group.
+        DEFAULT: -1.0 (no threshold)
+        '''
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'float64', direction=function.OUT,
           description='value of fDensThresh, the minimum density of grouped particles (DEFAULT: no minimum)')
         function.result_type = 'int32'
         return function
@@ -426,6 +482,22 @@ class HopInterface(CodeInterface):
         return function
 
     @legacy_function
+    def get_fPeriod():
+        '''
+        Get the x, y and z periodicity of the simulation box.
+        DEFAULT: infinite
+        '''
+        function = LegacyFunctionSpecification()
+        function.addParameter('x', dtype = 'float64', direction=function.OUT,
+          description='periodicity in x direction')
+        function.addParameter('y', dtype = 'float64', direction=function.OUT,
+          description='periodicity in y direction')
+        function.addParameter('z', dtype = 'float64', direction=function.OUT,
+          description='periodicity in z direction')
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
     def set_nMerge():
         '''
         Set nMerge, the number of particles to catalogue group boundaries.
@@ -445,10 +517,29 @@ class HopInterface(CodeInterface):
         return function
 
     @legacy_function
+    def get_nMerge():
+        '''
+        Return the number of particles to catalogue group boundaries.
+        DEFAULT: 4
+        (maximum allowed value of nMerge is nHop-1)
+        '''
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'int32', direction=function.OUT,
+          description='the value of nMerge, the numbder of particles catalogue group boundaries')
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            nMerge was set
+        -1 - ERROR
+            requested value for nMerge was too high
+        '''
+        return function
+        
+    @legacy_function
     def set_density_method():
         '''
         Set the density calculation method used by calculate_densities().
-        0 - gather-scatter cubic spline kernal (DEFAULT)
+        0 - gather-scatter cubic spline kernel (DEFAULT)
         1 - gather-only cubic spline kernal
         2 - tophat kernal
         '''
@@ -465,6 +556,26 @@ class HopInterface(CodeInterface):
         return function
 
     @legacy_function
+    def get_density_method():
+        '''
+        Get the density calculation method used by calculate_densities().
+        0 - gather-scatter cubic spline kernel (DEFAULT)
+        1 - gather-only cubic spline kernal
+        2 - tophat kernal
+        '''
+        function = LegacyFunctionSpecification()
+        function.addParameter('value', dtype = 'int32', direction=function.OUT,
+          description='value representing the density calculation method (DEFAULT: 0; gather scatter cubic spline)')
+        function.result_type = 'int32'
+        function.result_doc = '''
+        0 - OK
+            density method set
+        -1 - ERROR
+            invalid density method requested
+        '''
+        return function
+        
+    @legacy_function
     def show_parameters():
         '''
         Print all parameters and their values.
@@ -473,18 +584,26 @@ class HopInterface(CodeInterface):
         function.result_type = 'int32'
         return function
 
-# higher level interface incomplete
-'''
-class Hop(CodeInterface):
 
-    def __init__(self):
-        CodeInterface.__init__(self,  HopInterface())
+class Hop(InCodeComponentImplementation):
+
+    def __init__(self, unit_converter = None, **options):
     
+        self.unit_converter = unit_converter
+        
+        InCodeComponentImplementation.__init__(self,  HopInterface(**options), **options)
+    
+    def define_converter(self, object):
+        if self.unit_converter is None:
+            return
+        
+        object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
+        
     def define_methods(self, builder):
         
         builder.add_method(
             'new_particle',
-            (builder.NO_UNIT, builder.NO_UNIT, builder.NO_UNIT,),
+            (generic_unit_system.mass, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,),
             (builder.INDEX, builder.ERROR_CODE)
         )
         
@@ -497,13 +616,13 @@ class Hop(CodeInterface):
         builder.add_method(
             'get_position',
             (builder.INDEX,),
-            (builder.NO_UNIT, builder.NO_UNIT, builder.NO_UNIT, builder.ERROR_CODE),#(units.m, units.m, units.m, builder.ERROR_CODE),
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, builder.ERROR_CODE),
             public_name = 'get_position'
         )
         
         builder.add_method(
             'set_position',
-            (builder.INDEX, units.m, units.m, units.m,),
+            (builder.INDEX, generic_unit_system.length, generic_unit_system.length, generic_unit_system.length,),
             (builder.ERROR_CODE),
             public_name = 'set_position'
         )
@@ -511,12 +630,18 @@ class Hop(CodeInterface):
         builder.add_method(
             'get_density',
             (builder.INDEX,),
-            (builder.NO_UNIT, builder.ERROR_CODE)
+            (generic_unit_system.density, builder.ERROR_CODE)
+        )
+        
+        builder.add_method(
+            'get_mass',
+            (builder.INDEX,),
+            (generic_unit_system.mass, builder.ERROR_CODE)
         )
         
         builder.add_method(
             'set_density',
-            (builder.INDEX, builder.NO_UNIT,),
+            (builder.INDEX, generic_unit_system.density,),
             (builder.ERROR_CODE)
         )
         
@@ -529,13 +654,13 @@ class Hop(CodeInterface):
         builder.add_method(
             'get_group_id',
             (builder.INDEX,),
-            (builder.NO_UNIT, builder.ERROR_CODE)
+            (units.none, builder.ERROR_CODE)
         )
         
         builder.add_method(
             'get_number_of_particles',
             (),
-            (builder.NO_UNIT, builder.ERROR_CODE)
+            (builder.INDEX, builder.ERROR_CODE)
         )
         
         builder.add_method(
@@ -552,20 +677,20 @@ class Hop(CodeInterface):
         
         builder.add_method(
             'get_densest_particle_in_group',
-            (builder.NO_UNIT,),
+            (builder.INDEX,),
             (builder.INDEX, builder.ERROR_CODE)
         )
         
         builder.add_method(
             'get_number_of_particles_in_group',
-            (builder.NO_UNIT,),
-            (builder.NO_UNIT, builder.ERROR_CODE)
+            (builder.INDEX,),
+            (builder.INDEX, builder.ERROR_CODE)
         )
         
         builder.add_method(
             'get_average_boundary_density_of_groups',
-            (builder.NO_UNIT, builder.NO_UNIT,),
-            (builder.NO_UNIT, builder.ERROR_CODE)
+            (builder.INDEX, builder.INDEX,),
+            (generic_unit_system.density, builder.ERROR_CODE)
         )
         
         builder.add_method(
@@ -581,64 +706,69 @@ class Hop(CodeInterface):
         )
         
         builder.add_method(
-            'set_density_method',
-            (builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        builder.add_method(
-            'set_parameter_nBucket',
-            (builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        builder.add_method(
-            'set_parameter_nSmooth',
-            (builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        builder.add_method(
-            'set_parameter_nDens',
-            (builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        builder.add_method(
-            'set_parameter_nHop',
-            (builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        builder.add_method(
-            'set_parameter_nMerge',
-            (builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        builder.add_method(
-            'set_parameter_fDensThresh',
-            (builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        builder.add_method(
-            'set_parameter_fPeriod',
-            (builder.NO_UNIT, builder.NO_UNIT, builder.NO_UNIT),
-            (builder.ERROR_CODE)
-        )
-        
-        builder.add_method(
             'show_parameters',
             (),
             (builder.ERROR_CODE)
         )
         
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "get_fDensThresh", 
+            "set_fDensThresh",
+            "density_threshold", 
+            "the density below which particles are not assigned to any group", 
+            generic_unit_system.density, 
+            0.0 | generic_unit_system.density
+        )
+        
+        object.add_method_parameter(
+            "get_nHop", 
+            "set_nHop",
+            "number_of_hops", 
+            "number of particles to search to determin to look for density maximum", 
+            units.none, 
+            0.0 | units.none
+        )
 
+        object.add_method_parameter(
+            "get_nDens", 
+            "set_nDens",
+            "number_of_neighbors_for_local_density", 
+            "Return the number of particles to smooth over when calculating densities.", 
+            units.none, 
+            0.0 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_nBucket", 
+            "set_nBucket",
+            "number_of_buckets", 
+            "Return the bucket parameter to tune the performance of the kd-tree search.", 
+            units.none, 
+            0.0 | units.none
+        )
+  
     def define_particle_sets(self, builder):
         builder.define_set('particles', 'index_of_the_particle')
         builder.set_new('particles', 'new_particle')
         builder.set_delete('particles', 'delete_particle')
         builder.add_setter('particles', 'set_position')
-        builder.add_setter('particles', 'set_density', names=('density'))
+        builder.add_setter('particles', 'set_density', names=('density',))
         builder.add_getter('particles', 'get_position')
-        builder.add_getter('particles', 'get_density', names=('density'))
-        builder.add_getter('particles', 'get_densest_neighbor')
-        builder.add_getter('particles', 'get_group_id')
-'''
+        builder.add_getter('particles', 'get_density', names=('density',))
+        builder.add_getter('particles', 'get_mass', names=('mass',))
+        #builder.add_getter('particles', 'get_densest_neighbor')
+        builder.add_getter('particles', 'get_group_id', names=('group_id',))
+
+    def groups(self):
+        number_of_groups = self.get_number_of_groups()
+        group_id = self.particles.group_id.value_in(units.none)
+        
+        for index in range(number_of_groups):
+            result = self.particles[group_id == index]
+            result.add_function_attribute('id_of_group', lambda particles: particles[0].group_id)
+            #result.add_function_attribute('get_density_of_group', lambda particles: self.get_group_density(particles.id_of_group()))
+            yield result
 
 
 

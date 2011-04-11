@@ -666,9 +666,9 @@ class AbstractParticleSet(AbstractSet):
         """
         keys = self.get_all_keys_in_store()
         #values = self._get_values(keys, attributes) #fast but no vectors
-        values = map(lambda x: getattr(self, x), attributes)
+        quantities = [getattr(self, x) for x in attributes]
         
-        selections = selection_function(*values)
+        selections = selection_function(*quantities)
         selected_keys =  numpy.compress(selections, keys)
         
         return self._subset(selected_keys)

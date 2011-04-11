@@ -1,8 +1,8 @@
 import os
 import sys
 import numpy
-from random import random as rnd
 
+from numpy import random
 from amuse.test import amusetest
 from amuse.test.amusetest import get_path_to_results
 
@@ -10,120 +10,241 @@ from amuse.support.units import units, nbody_system
 
 from amuse.community.fi import interface as interface
 from amuse.support.codes.core import is_mpd_running
-from amuse.ext.evrard_test import regular_grid_unit_cube
-from amuse.ext.molecular_cloud import molecular_cloud
-from amuse.ext.evrard_test import body_centered_grid_unit_cube
-from amuse.ext import plummer
+from amuse.ext.plummer import new_plummer_sphere
+from amuse.support.data.particles import Particles
+from amuse.community.hop.interface import HopInterface, Hop
 
-from amuse.community.hop.interface import HopInterface
-
-class TestHop(amusetest.TestCase):
+class TestHopInterface(amusetest.TestCase):
     def test1(self):
         print "First test: adding particles, setting and getting."
         hop = HopInterface()
         n, err = hop.get_number_of_particles()
+        self.assertEquals(n, 0)
+        self.assertEquals(err, 0)
+        
         for i in range(6):
             id, err = hop.new_particle(0, i*i, 0, 0)
             n, err = hop.get_number_of_particles()
             self.assertEquals(n, i+1)
+            self.assertEquals(err, 0)
+        
         for i in range(6):
             x, y, z, err = hop.get_position(i)
             self.assertEquals(x, i*i)
-            hop.set_position(i, x, i*i, 0)
-#        for i in range(6):
-#            x, y, z = hop.get_position(i)
-#            self.assertEquals(x, y)
+            self.assertEquals(y, 0)
+            self.assertEquals(z, 0)
+            self.assertEquals(err, 0)
             
-    def xtest2(self):  #test broken for unknown reason, needs author to fix
-        print "Second test: calculating densities."
-        hop = run_cloud(1000)
+            hop.set_position(i, x, i*i, 0)
+        
+        for i in range(6):
+            x, y, z, err  = hop.get_position(i)
+            self.assertEquals(x, y)
+            self.assertEquals(z, 0)
+            self.assertEquals(err, 0)
+        
+        hop.stop()
+            
+    def test2(self):
+        random.seed(1001)
+        
+        hop = HopInterface()
+        
+        particles = new_plummer_sphere(1000)
+        ids, errors = hop.new_particle(
+            particles.mass.value_in(nbody_system.mass),
+            particles.x.value_in(nbody_system.length),
+            particles.y.value_in(nbody_system.length),
+            particles.z.value_in(nbody_system.length)
+        )
+        
         n, err = hop.get_number_of_particles()
-        self.assertEquals(n, 909)
-        ds = {0:0.026384295895695686, 1:0.022254005074501038, 2:0.059249848127365112}
+        self.assertEquals(n, 1000)
+        self.assertEquals(err, 0)
+        
+        #distance_to_center = (particles.position - particles.center_of_mass()).lengths()
+        
+        #print distance_to_center
+        ds = {0: 0.482308834791, 1:0.4885137677192688, 2:0.27442726492881775}
+        for method in [0,1,2]:
+            hop.set_nDens(7)
+            hop.set_density_method(method)
+            hop.calculate_densities()
+            
+            d, err = hop.get_density(0)
+            self.assertAlmostRelativeEquals(d,ds[method], 8)
+    
+    def test3(self): 
+    
+        random.seed(1001)
+        
+        print "Third test: densest neighbors and groups."
+                
+        hop = HopInterface()
+        
+        particles1 = new_plummer_sphere(10)
+        particles2 = new_plummer_sphere(10)
+        particles3 = new_plummer_sphere(10)
+        
+        particles2.position += (10,0,0) | nbody_system.length
+        
+        particles3.position += (0,20,0) | nbody_system.length
+        
+        ids1, errors = hop.new_particle(
+            particles1.mass.value_in(nbody_system.mass),
+            particles1.x.value_in(nbody_system.length),
+            particles1.y.value_in(nbody_system.length),
+            particles1.z.value_in(nbody_system.length)
+        )
+        
+        ids2, errors = hop.new_particle(
+            particles2.mass.value_in(nbody_system.mass),
+            particles2.x.value_in(nbody_system.length),
+            particles2.y.value_in(nbody_system.length),
+            particles2.z.value_in(nbody_system.length)
+        )
+        
+        ids3, errors = hop.new_particle(
+            particles3.mass.value_in(nbody_system.mass),
+            particles3.x.value_in(nbody_system.length),
+            particles3.y.value_in(nbody_system.length),
+            particles3.z.value_in(nbody_system.length)
+        )
+        
+        
+        hop.set_nDens(5)
+        hop.calculate_densities()
+        hop.do_hop()
+        
+        n, err = hop.get_group_id(ids1)
+        self.assertEquals(n, 2)
+        self.assertEquals(err, 0)
+        n, err = hop.get_group_id(ids2)
+        self.assertEquals(err, 0)
+        n, err = hop.get_group_id(ids3)
+        self.assertEquals(err, 0)
+        
+        n, err = hop.get_densest_particle_in_group(2)
+        self.assertEquals(n, 7)
+        for i in range(3):
+            n, err = hop.get_number_of_particles_in_group(0)
+            self.assertEquals(err, 0)
+            self.assertEquals(n, 10)
+            
+        n, err = hop.get_number_of_groups()
+        self.assertEquals(n, 3)
+        
+        n, err = hop.get_densest_neighbor(ids1)
+        self.assertEquals(n, [7,7,12,0,7,7,7,7,12,7])
+        
+
+    def test4(self):
+        hop = HopInterface()
+        hop.initialize_code()
+        value, error = hop.get_nDens()
+        self.assertEquals(error,0)
+        self.assertEquals(value,64)
+        error = hop.set_nDens(7)
+        self.assertEquals(error,0)
+        value, error = hop.get_nDens()
+        self.assertEquals(value,7)
+        
+        value, error = hop.get_nHop()
+        self.assertEquals(error,0)
+        self.assertEquals(value, -1)
+        error = hop.set_nHop(7)
+        self.assertEquals(error,0)
+        value, error = hop.get_nHop()
+        self.assertEquals(value,7)
+        
+        value, error = hop.get_nBucket()
+        self.assertEquals(error,0)
+        self.assertEquals(value, 16)
+        error = hop.set_nHop(7)
+        self.assertEquals(error,0)
+        value, error = hop.get_nHop()
+        self.assertEquals(value,7)
+        
+class TestHop(amusetest.TestCase):
+    def test1(self):
+        print "First test: adding particles, setting and getting."
+        hop = Hop()
+        particles = Particles(6)
+        particles.mass = 1.0 | nbody_system.mass
+        particles.x = [i*i for i in range(6)] | nbody_system.length
+        particles.y = 0.0 | nbody_system.length
+        particles.z = 0.0 | nbody_system.length
+        
+        hop.particles.add_particles(particles)
+        
+        positions = hop.particles.position
+        for i in range(6):
+            x, y, z = positions[i]
+            self.assertEquals(x, i*i | nbody_system.length)
+            self.assertEquals(y, 0 | nbody_system.length)
+            self.assertEquals(z, 0 | nbody_system.length)
+            
+        hop.stop()
+            
+    def test2(self):
+        random.seed(1001)
+        
+        hop = Hop()
+        hop.initialize_code()
+        hop.parameters.number_of_neighbors_for_local_density = 7
+        hop.commit_parameters()
+        
+        particles = new_plummer_sphere(1000)
+        hop.particles.add_particles(particles)
+        
+        
+        #distance_to_center = (particles.position - particles.center_of_mass()).lengths()
+        
+        #print distance_to_center
+        ds = {0: 0.482308834791, 1:0.4885137677192688, 2:0.27442726492881775}
         for method in [0,1,2]:
             hop.set_density_method(method)
             hop.calculate_densities()
-            d, err = hop.get_density(0)
-            self.assertEquals(d,ds[method])
+            
+            d = hop.particles[0].density
+            
+            self.assertAlmostRelativeEquals(d, ds[method] | nbody_system.density, 8)
     
-    def xtest3(self): #test broken for unknown reason, needs author to fix
+    def test3(self): 
+    
+        random.seed(1001)
+        
         print "Third test: densest neighbors and groups."
-        hop = run_cloud(1000)
+                
+        hop = Hop()
+        hop.parameters.number_of_neighbors_for_local_density = 5
+        
+        particles1 = new_plummer_sphere(10)
+        particles2 = new_plummer_sphere(10)
+        particles3 = new_plummer_sphere(10)
+        
+        particles2.position += (10,0,0) | nbody_system.length
+        
+        particles3.position += (0,20,0) | nbody_system.length
+        
+        hop.particles.add_particles(particles1)
+        hop.particles.add_particles(particles2)
+        hop.particles.add_particles(particles3)        
+        
         hop.calculate_densities()
         hop.do_hop()
-        n, err = hop.get_densest_neighbor(0)
-        self.assertEquals(n, 55)
-        n, err = hop.get_group_id(0)
-        self.assertEquals(n, 3)
-        n, err = hop.get_densest_particle_in_group(3)
-        self.assertEquals(n, 80)
-        n, err = hop.get_number_of_particles_in_group(0)
-        self.assertEquals(n, 223)
-        n, err = hop.get_average_boundary_density_of_groups(0,1)
-        self.assertEquals(n, 1.5265605449676514)
-        n, err = hop.get_number_of_groups()
-        self.assertEquals(n, 9)
+        
+        print hop.particles.group_id
+        
+        groups = list(hop.groups())
+        
+        self.assertEquals(len(groups), 3)
+        
+        self.assertEquals(hop.get_number_of_particles_outside_groups(), 0)
+        
+        #densities = (0,0,0) | nbody_system.density
+        for index, group in enumerate(groups):
+            self.assertEquals(len(group), 10)
+            self.assertEquals(group.id_of_group(), index)
+            #self.assertEquals(group.get_density_of_group(), densities[index])
 
-
-
-def run_cloud(n):
-    ''' partially taken from test_molecular_cloud.py '''
-    cloud=molecular_cloud(32,-4.,n,base_grid=regular_grid_unit_cube,seed=299792)
-    mass,x,y,z,vx,vy,vz,u=cloud.new_model()
-    smooth=numpy.zeros_like(mass)
-
-    nb = interface.FiInterface(redirection="none")
-    nb.initialize_code()
-
-    nb.set_stepout(99999)
-    nb.set_steplog(99999)
-    nb.set_use_hydro(1)
-    nb.set_radiate(0)
-    nb.set_dtime(0.05)
-    nb.set_gdgop(1)
-    nb.set_uentropy(0)
-    nb.set_isotherm(1)
-    nb.set_gamma(1.0)
-    nb.set_verbosity(0)
-    nb.set_unitl_in_kpc(0.01)
-    nb.set_unitm_in_msun(10000.)
-      
-    ids,error = nb.new_sph_particle(mass,smooth,x,y,z,vx,vy,vz,u)
-    if filter(lambda x: x != 0, error) != []: raise Exception
-
-    nb.commit_particles()
-
-    if hasattr(nb,"viewer"):
-        nb.viewer()
-
-    dt=0.05
-    tnow=0.
-    nb.synchronize_model()
-    time,Ek,Ep,Eth=[],[],[],[]
-    time.append(tnow)
-    e,ret=nb.get_kinetic_energy()
-    Ek.append(e)
-    e,ret=nb.get_potential_energy()
-    Ep.append(e)
-    e,ret=nb.get_thermal_energy()
-    Eth.append(e)
-
-    while tnow<.8:
-        tnow=tnow+dt
-        nb.evolve(tnow)
-        nb.synchronize_model()
-        tnow,err=nb.get_time()
-        time.append(tnow)
-        e,ret=nb.get_kinetic_energy()
-        Ek.append(e)
-        e,ret=nb.get_potential_energy()
-        Ep.append(e)
-        e,ret=nb.get_thermal_energy()
-        Eth.append(e)
-
-    m,h,x,y,z,vx,vy,vz,err=nb.get_state(ids)
-    nb.stop()
-    hop = HopInterface()
-    for i in range(len(x)):
-        hop.new_particle(x[i], y[i], z[i])
-    return hop
