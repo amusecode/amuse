@@ -59,11 +59,16 @@ public class Daemon implements RegistryEventHandler {
     private final Deployment deployment;
 
     public Daemon(int port, boolean verbose, boolean gui) throws Exception {
-        deployment = new Deployment(verbose, gui);
+        deployment = new Deployment(verbose, gui, "images/strw-logo-blue.png", "images/nova-logo.png");
 
         Properties properties = new Properties();
         properties.put("ibis.server.address", deployment.getServerAddress());
         properties.put("ibis.pool.name", "amuse");
+        properties.put("ibis.location", "daemon@local");
+        properties.put("ibis.managementclient", "true");
+        properties.put("ibis.bytescount", "true");
+
+        		
         ibis = IbisFactory.createIbis(ibisCapabilities, properties, true, this,
                 portType);
 
@@ -90,7 +95,7 @@ public class Daemon implements RegistryEventHandler {
                 logger.debug("Waiting for connection");
                 socket = loopbackServer.accept();
 
-                new LocalWorker(socket, ibis, deployment);
+                new CodeClient(socket, ibis, deployment);
             } catch (Exception e) {
                 if (socket != null) {
                     try {
@@ -129,6 +134,15 @@ public class Daemon implements RegistryEventHandler {
             logger.error("error on ending ibis", e);
         }
     }
+    
+    public static void printUsage() {
+        System.err.println("Usage: ibis-amuse-daemon [OPTIONS]\n"
+                + "Options:\n"
+                + "-p PORT | --port\tPort to listen on (default: " + DEFAULT_PORT + ")\n"
+                + "-v | --verbose\t\tBe more verbose\n"
+                + "-g | --gui\t\tStart a monitoring gui as well\n"
+                + "-h | --help\t\tThis message");
+    }
 
     public static void main(String[] arguments) throws IOException {
         int port = DEFAULT_PORT;
@@ -145,6 +159,14 @@ public class Daemon implements RegistryEventHandler {
             } else if (arguments[i].equals("-g")
                     || arguments[i].equals("--gui")) {
                 gui = true;
+            } else if (arguments[i].equals("-h")
+                    || arguments[i].equals("--help")) {
+                printUsage();
+                return;
+            } else {
+                System.err.println("Unknown option: " + arguments[i]);
+                printUsage();
+                System.exit(1);
             }
         }
 

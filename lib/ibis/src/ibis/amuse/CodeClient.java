@@ -23,12 +23,12 @@ import org.slf4j.LoggerFactory;
  * @author Niels Drost
  * 
  */
-public class LocalWorker implements Runnable {
+public class CodeClient implements Runnable {
 
     public static final String MAGIC_STRING = "magic_string";
 
     private static final Logger logger = LoggerFactory
-            .getLogger(LocalWorker.class);
+            .getLogger(CodeClient.class);
     
     private static int nextID = 0;
 
@@ -83,7 +83,7 @@ public class LocalWorker implements Runnable {
      * process on a (possibly remote) machine, and waiting for a connection from
      * the worker
      */
-    LocalWorker(SocketChannel socket, Ibis ibis, Deployment deployment)
+    CodeClient(SocketChannel socket, Ibis ibis, Deployment deployment)
             throws IOException {
         this.channel = socket;
         this.ibis = ibis;

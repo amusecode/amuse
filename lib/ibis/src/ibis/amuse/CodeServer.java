@@ -13,12 +13,12 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RemoteWorker implements RegistryEventHandler {
+public class CodeServer implements RegistryEventHandler {
 
     private static class Shutdown extends Thread {
-        private final RemoteWorker worker;
+        private final CodeServer worker;
 
-        Shutdown(RemoteWorker worker) {
+        Shutdown(CodeServer worker) {
             this.worker = worker;
         }
 
@@ -27,9 +27,9 @@ public class RemoteWorker implements RegistryEventHandler {
         }
     }
 
-    private static Logger logger = LoggerFactory.getLogger(RemoteWorker.class);
+    private static Logger logger = LoggerFactory.getLogger(CodeServer.class);
 
-    private final CommunityCode communityCode;
+    private final Runnable communityCode;
 
     private final SendPort sendPort;
 
@@ -39,59 +39,34 @@ public class RemoteWorker implements RegistryEventHandler {
 
     private volatile boolean ended = false;
 
-    public RemoteWorker(String id, String codeName) throws Exception {
+    public CodeServer(String id, String codeName, String codeDir, String amuseHome, boolean jni) throws Exception {
         ibis = IbisFactory.createIbis(Daemon.ibisCapabilities, this,
                 Daemon.portType);
 
         sendPort = ibis.createSendPort(Daemon.portType);
         receivePort = ibis.createReceivePort(Daemon.portType, id);
 
-        communityCode = new CommunityCode(codeName, receivePort, sendPort);
+        if (jni) {
+            communityCode = new JNICode(codeName, receivePort, sendPort);
+        } else {
+            communityCode = new SocketCode(codeName, codeDir, receivePort, sendPort);  
+        }
 
         receivePort.enableConnections();
         ibis.registry().enableEvents();
 
-        //get address of amuse node
+        // get address of amuse node
         logger.debug("waiting for result of amuse election");
         IbisIdentifier amuse = ibis.registry().getElectionResult("amuse");
 
-        //connect to receive port of worker at amuse node, send hello
+        // connect to receive port of worker at amuse node, send hello
         sendPort.connect(amuse, id);
         WriteMessage message = sendPort.newMessage();
         message.writeObject(receivePort.identifier());
         message.finish();
     }
 
-    public static void main(String[] arguments) {
-
-        String id = null;
-        String codeName = null;
-
-        for (int i = 0; i < arguments.length; i++) {
-            if (arguments[i].equals("-i") || arguments[i].equals("--worker-id")) {
-                i++;
-                id = arguments[i];
-            } else if (arguments[i].equals("-c")
-                    || arguments[i].equals("--code-name")) {
-                i++;
-                codeName = arguments[i];
-            }
-        }
-
-        try {
-            logger.info("Starting worker " + id + " running " + codeName);
-
-            RemoteWorker worker = new RemoteWorker(id, codeName);
-
-            new Shutdown(worker);
-
-            worker.run();
-            logger.info("Worker " + id + " running " + codeName + " DONE!");
-        } catch (Exception e) {
-            logger.error("Error on running remote worker", e);
-        }
-    }
-
+   
     public void end() {
         if (ended) {
             return;
@@ -164,5 +139,50 @@ public class RemoteWorker implements RegistryEventHandler {
     public void poolTerminated(IbisIdentifier source) {
         end();
     }
+    
+    public static void main(String[] arguments) {
+
+        String id = null;
+        String codeName = null;
+        boolean jni = false;
+        String amuseHome = null;
+        String codeDir = null;
+
+        for (int i = 0; i < arguments.length; i++) {
+            if (arguments[i].equals("-i") || arguments[i].equals("--worker-id")) {
+                i++;
+                id = arguments[i];
+            } else if (arguments[i].equals("-c")
+                    || arguments[i].equals("--code-name")) {
+                i++;
+                codeName = arguments[i];
+            } else if (arguments[i].equals("-d")
+                    || arguments[i].equals("--code-dir")) {
+                i++;
+                codeDir = arguments[i];
+            } else if (arguments[i].equals("-a")
+                    || arguments[i].equals("--amuse-home")) {
+                i++;
+                amuseHome = arguments[i];  
+            } else if (arguments[i].equals("-j")
+                    || arguments[i].equals("--jni")) {
+                jni = true;
+            }
+        }
+
+        try {
+            logger.info("Starting worker " + id + " running " + codeName);
+
+            CodeServer server = new CodeServer(id, codeName, codeDir, amuseHome, jni);
+
+            new Shutdown(server);
+
+            server.run();
+            logger.info("Worker " + id + " running " + codeName + " DONE!");
+        } catch (Exception e) {
+            logger.error("Error on running remote worker", e);
+        }
+    }
+
 
 }

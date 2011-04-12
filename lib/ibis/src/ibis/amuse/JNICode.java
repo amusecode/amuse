@@ -11,15 +11,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Class representing a code. Also provides the (native) interface to it.
+ * Class representing a code that is used via JNI.
  * 
  * @author Niels Drost
  * 
  */
-public class CommunityCode implements Runnable {
+public class JNICode implements Runnable {
 
     private static final Logger logger = LoggerFactory
-            .getLogger(CommunityCode.class);
+            .getLogger(JNICode.class);
 
     private final String codeName;
 
@@ -67,7 +67,7 @@ public class CommunityCode implements Runnable {
      */
     private native void init(String codeName) throws Exception;
     
-    CommunityCode(String codeName, ReceivePort receivePort, SendPort sendPort)
+    JNICode(String codeName, ReceivePort receivePort, SendPort sendPort)
             throws IOException {
         this.codeName = codeName;
         this.receivePort = receivePort;
@@ -78,15 +78,6 @@ public class CommunityCode implements Runnable {
 
         String library = codeName;
         
-        //this is a MPI worker, load mpi worker lib
-        if (codeName.contains("/")) {
-        	logger.info("MPI worker mode...");
-        	library = "mpi_ibis_worker";
-        	
-//            System.loadLibrary("mpi");
-
-        }
-
         try {
             System.loadLibrary(library);
 
@@ -114,14 +105,16 @@ public class CommunityCode implements Runnable {
                 
                 logger.debug("Reading call request from IPL message");
 
-                if (requestMessage.readFrom(readMessage)) {
+                boolean changed = requestMessage.readFrom(readMessage);
+                
+                readMessage.finish();
+                
+                if (changed) {
                     // read method indicates one or more buffers has changed in
                     // the message
                     logger.debug("(re)setting request message");
                     setRequestMessage(requestMessage);
                 }
-
-                readMessage.finish();
 
                 int functionID = requestMessage.getFunctionID();
                 
@@ -156,8 +149,13 @@ public class CommunityCode implements Runnable {
                 writeMessage.finish();
                 
                 logger.debug("Done performing call for function " + functionID);
-            } catch (IOException e) {
+            } catch (Throwable e) {
                 logger.error("Error while handling request", e);
+                try {
+                Thread.sleep(1000);
+                } catch (Exception e2) {
+                    //IGNORE
+                }
             }
         }
 
@@ -165,7 +163,7 @@ public class CommunityCode implements Runnable {
     
     
     public static void main(String[] arguments) throws Exception {
-        CommunityCode code = new CommunityCode(arguments[0], null, null);
+        JNICode code = new JNICode(arguments[0], null, null);
         
         code.requestMessage.clear();
         code.requestMessage.setFunctionID(0);
