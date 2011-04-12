@@ -66,6 +66,21 @@ CONTAINS
         
     END FUNCTION
     
+    function set_gamma(inputvalue)
+        include 'amrvacdef.f'
+        integer :: set_gamma
+        double precision :: inputvalue
+        eqpar(gamma_) = inputvalue
+        set_gamma = 0   
+    end function
+
+    function get_gamma(outputvalue)
+        include 'amrvacdef.f'
+        integer :: get_gamma
+        double precision :: outputvalue
+        outputvalue = eqpar(gamma_)
+        get_gamma = 0   
+    end function
 
     function set_dt(inputvalue)
         include 'amrvacdef.f'

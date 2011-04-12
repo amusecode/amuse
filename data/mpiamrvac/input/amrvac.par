@@ -55,6 +55,6 @@
 
  &paramlist
         typecourant='maxsum'
-        courantpar=0.9d0
+        courantpar=0.8d0
         slowsteps=10
  /

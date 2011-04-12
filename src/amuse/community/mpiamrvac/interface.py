@@ -44,6 +44,21 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
     # parameters
     #
     
+    
+    @legacy_function
+    def set_gamma():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_gamma():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
     @legacy_function
     def set_dt():
         function = LegacyFunctionSpecification()  
@@ -2200,15 +2215,15 @@ class MpiAmrVac(InCodeComponentImplementation):
     def define_parameters(self, object):
         
         
-        #object.add_method_parameter(
-        #    "get_gamma", 
-        #    "set_gamma",
-        #    "gamma", 
-        #    "ratio of specific heats used in equation of state", 
-        #    units.none, 
-        #    1.6666666666666667 | units.none,
-        #    must_set_before_get = True
-        #)
+        object.add_method_parameter(
+            "get_gamma", 
+            "set_gamma",
+            "gamma", 
+            "ratio of specific heats used in equation of state", 
+            units.none, 
+            1.6666666666666667 | units.none,
+            must_set_before_get = True
+        )
         
         object.add_method_parameter(
             "get_courantpar", 
@@ -2366,6 +2381,18 @@ class MpiAmrVac(InCodeComponentImplementation):
             "boundary conditions for the Z directorion",
             ("zbound1", "zbound2")
         )
+        
+        
+        object.add_method_parameter(
+            "get_mxnest", 
+            "set_mxnest",
+            "maximum_number_of_grid_levels", 
+            "the maximum number of grid levels that can be used during the simulation, including the base grid level", 
+            units.none, 
+            3 | units.none
+        )
+        
+        
 
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
