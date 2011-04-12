@@ -1,0 +1,29 @@
+Index: mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse
+===================================================================
+--- mpiamrvac.orig/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2011-04-12 16:16:42.000000000 +0200
++++ mpiamrvac/src/mpiamrvac/src/usr/amrvacusr.t.amuse	2011-04-12 16:21:49.000000000 +0200
+@@ -142,6 +142,24 @@
+ end subroutine specialvarforerrest
+ !=============================================================================
+ 
++!=============================================================================
++subroutine specialset_B0(ixI^L,ixO^L,x,wB0)
++
++! Here one can add a steady (time-independent) potential background field
++
++include 'amrvacdef.f'
++
++integer, intent(in)           :: ixI^L,ixO^L
++double precision, intent(in)  :: x(ixI^S,1:ndim)
++double precision, intent(inout) :: wB0(ixI^S,1:ndir)
++!-----------------------------------------------------------------------------
++!call mpistop(' abs(Busr)> 0, make change in parfile or in user file')
++
++!wB0(ixO^S,1:ndir)=wB0(ixO^S,1:ndir)
++!!wB0(ixO^S,1:ndir)=wB0(ixO^S,1:ndir)+user defined steady potential field
++
++end subroutine specialset_B0
++!=============================================================================
+ 
+ 
+ !=============================================================================

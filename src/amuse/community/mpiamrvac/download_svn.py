@@ -5,7 +5,7 @@ import os
 import sys
 
 class GetCodeFromSVN(object):
-    revision = '142'
+    revision = '149'
     username = 'studCMFA09'
     password = 'cpa9amrvac'
     url = 'https://svn.esat.kuleuven.be/amrvac/trunk'
