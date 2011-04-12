@@ -33,15 +33,22 @@ http://cococubed.asu.edu/code_pages/exact_riemann.shtml
 
 from amuse.support.core import late
 from amuse.support.data.values import VectorQuantity
-from amuse.support.data.core import Grid
+from amuse.support.data.core import Grid, Particles
 from amuse.support import io
 from amuse.support.io import text
 from amuse.support.units.generic_unit_system import *
+from amuse.support.units.generic_unit_converter import ConvertBetweenGenericAndSiUnits
+from amuse.support.units.nbody_system import nbody_to_si
+from amuse.support.units import constants
 from amuse.support.data.grids import SamplePointsOnMultipleGrids, SamplePointWithIntepolation, SamplePointOnCellCenter
 
 from amuse.community.athena.interface import Athena
 from amuse.community.capreole.interface import Capreole
 from amuse.community.mpiamrvac.interface import MpiAmrVac
+
+from amuse.community.gadget2.interface import Gadget2
+from amuse.community.fi.interface import Fi
+from amuse.ext.grid_to_sph import convert_grid_to_SPH
 
 import numpy
 
@@ -182,11 +189,17 @@ class CalculateExactSolutionIn1D(object):
                 
         return x, rho,p,u
 
+
 class CalculateSolutionIn3D(object):
     number_of_workers = 1
     number_of_grid_points = 10
     gamma = 5.0/3.0
     name_of_the_code = "capreole"
+    hydro_code_options = dict()#redirection="none")
+    convert_generic_units = ConvertBetweenGenericAndSiUnits(
+        1.0 | units.kpc, 1.0e10 | units.MSun, constants.G)
+    convert_nbody_units   = nbody_to_si(
+        1.0 | units.kpc, 1.0e10 | units.MSun)
     
     def __init__(self, **keyword_arguments):
         for x in keyword_arguments:
@@ -204,7 +217,7 @@ class CalculateSolutionIn3D(object):
         return getattr(self,attribute)()
         
     def new_instance_of_athena_code(self):
-        result=Athena(number_of_workers=self.number_of_workers)
+        result=Athena(number_of_workers=self.number_of_workers, **self.hydro_code_options)
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.3
@@ -212,26 +225,47 @@ class CalculateSolutionIn3D(object):
         
 
     def new_instance_of_mpiamrvac_code(self):
-        result=MpiAmrVac(number_of_workers=self.number_of_workers)#, redirection="none") #, debugger = "ddd")
+        result=MpiAmrVac(number_of_workers=self.number_of_workers, **self.hydro_code_options)
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         return result
         
     def new_instance_of_capreole_code(self):
-        result=Capreole(number_of_workers=self.number_of_workers)
+        result=Capreole(number_of_workers=self.number_of_workers, **self.hydro_code_options)
         result.initialize_code()
         return result
-        
+    
+    grid_hydro_codes = ("athena", "mpiamrvac", "capreole")
+    
+    def new_instance_of_gadget2_code(self):
+        result=Gadget2(self.convert_generic_units, number_of_workers=self.number_of_workers, 
+            mode = "periodic", **self.hydro_code_options)
+        result.initialize_code()
+        return result
+    
+    def new_instance_of_fi_code(self):
+        result=Fi(self.convert_nbody_units, number_of_workers=self.number_of_workers, 
+            mode = "periodic", **self.hydro_code_options)
+        result.initialize_code()
+        result.parameters.self_gravity_flag = False
+        result.parameters.timestep = 0.01 | time
+        return result
+    
+    sph_hydro_codes = ("gadget2", "fi")
+    
     def set_parameters(self, instance):
-        instance.parameters.mesh_size = self.dimensions_of_mesh
-        
-        instance.parameters.length_x = 1 | length
-        instance.parameters.length_y = 1 | length
-        instance.parameters.length_z = 1 | length
-        
-        instance.parameters.x_boundary_conditions = ("periodic","periodic")
-        instance.parameters.y_boundary_conditions = ("periodic","periodic")
-        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        if self.name_of_the_code in self.sph_hydro_codes:
+            instance.parameters.periodic_box_size = 1.0 | length
+        else:
+            instance.parameters.mesh_size = self.dimensions_of_mesh
+            
+            instance.parameters.length_x = 1 | length
+            instance.parameters.length_y = 1 | length
+            instance.parameters.length_z = 1 | length
+            
+            instance.parameters.x_boundary_conditions = ("periodic","periodic")
+            instance.parameters.y_boundary_conditions = ("periodic","periodic")
+            instance.parameters.z_boundary_conditions = ("periodic","periodic")
         
         result = instance.commit_parameters()
     
@@ -265,35 +299,62 @@ class CalculateSolutionIn3D(object):
         grid[firsthalf].energy = (1.0 | energy)/ (self.gamma - 1)
         grid[secondhalf].rho = 1.0  | density
         grid[secondhalf].energy = (0.1795 | energy)/ (self.gamma - 1)
-        
+    
+    def set_initial_conditions(self, instance):
+        if self.name_of_the_code in self.sph_hydro_codes:
+            initial_grid = self.new_grid()
+            self.initialize_grid_with_shock(initial_grid)
+            if self.name_of_the_code == "fi":
+                initial_grid.position -= 0.5 | length
+            sph_particles = convert_grid_to_SPH(initial_grid, self.number_of_particles)
+            instance.gas_particles.add_particles(sph_particles)
+        else:
+            for x in instance.itergrids():
+                inmem = x.copy_to_memory()
+                self.clear_grid(inmem)
+                self.initialize_grid_with_shock(inmem)
+                from_model_to_code = inmem.new_channel_to(x)
+                from_model_to_code.copy()
+            
+            instance.initialize_grid()
+    
+    def copy_results(self, instance):
+        if self.name_of_the_code in self.sph_hydro_codes:
+            n_samples = self.number_of_grid_points * 3
+            result = Particles(n_samples)
+            result.position = [(x, 0.5, 0.5) | length for x in numpy.linspace(0.0, 1.0, n_samples)]
+            x, y, z = result.x, result.y, result.z
+            if self.name_of_the_code == "fi":
+                x -= (0.5 | length)
+                y -= (0.5 | length)
+                z -= (0.5 | length)
+            no_speed = [0.0]*n_samples | speed
+            result.rho, result.rhovx, result.rhovy, result.rhovz, result.energy = [
+                self.convert_generic_units.to_generic(quantity) for quantity in 
+                instance.get_hydro_state_at_point(x, y, z, no_speed, no_speed, no_speed)]
+        else:
+            result = []
+            for x in instance.itergrids():
+                result.append(x.copy_to_memory())
+        return result
+    
     def get_solution_at_time(self, time):
         instance=self.new_instance_of_code()
         self.set_parameters(instance)
-        
-        
-        for x in instance.itergrids():
-            inmem = x.copy_to_memory()
-            self.clear_grid(inmem)
-            self.initialize_grid_with_shock(inmem)
-            from_model_to_code = inmem.new_channel_to(x)
-            from_model_to_code.copy()
-        
-        instance.initialize_grid()
+        self.set_initial_conditions(instance)
         
         print "start evolve"
         instance.evolve_model(time)
         
         print "copying results"
-        result = []
-        for x in instance.itergrids():
-            result.append(x.copy_to_memory())
-
+        result = self.copy_results(instance)
+        
         print "terminating code"
         instance.stop()
-
+        
         return result
         
-            
+    
 def store_attributes(x, rho, rhovx, energy, filename):
     output = text.CsvFileText(filename = filename)
     output.quantities = (x, rho, rhovx, energy)
@@ -334,6 +395,14 @@ def new_option_parser():
         default="athena",
         help="name of the code to use"
     )
+    result.add_option(
+        "-p",
+        "--number_of_particles", 
+        dest="number_of_particles",
+        type="int",
+        default = 10000,
+        help="number of particles, in case code is an SPH code"
+    )
     return result
 
 def test_riemann_shocktube_problem():
@@ -366,17 +435,20 @@ def main(**options):
     model = CalculateSolutionIn3D(**options)
     grids = model.get_solution_at_time(0.12 | time)
     
+    print "sampling grid"
+    if model.name_of_the_code in model.sph_hydro_codes:
+        samples = grids
+    else:
+        samplepoints = [(x, 0.5, 0.5) | length for x in numpy.linspace(0.0, 1.0, 2000)]
+        print len(grids)
+        samples = SamplePointsOnMultipleGrids(grids, samplepoints, SamplePointOnCellCenter)
+        print len(samples)
+        samples.filterout_duplicate_indices()
+        print len(samples)
+    
     print "saving data"
     store_attributes(xpositions,rho,u,p,filename="exact_riemann_shock_tube_problem.csv")
-    
-    print "sampling grid"
-    samplepoints = [(x, 0.5, 0.5) | length for x in numpy.linspace(0.0, 1.0, 2000)]
-    print len(grids)
-    samples = SamplePointsOnMultipleGrids(grids, samplepoints, SamplePointOnCellCenter)
-    print len(samples)
-    samples.filterout_duplicate_indices()
-    print len(samples)
-    store_attributes(samples.x,samples.rho,samples.rhovx,samples.energy,filename="exact_riemann_shock_tube_problem.csv")
+    store_attributes(samples.x,samples.rho,samples.rhovx,samples.energy,filename="riemann_shock_tube_problem.csv")
     
     if IS_PLOT_AVAILABLE:
         print "plotting solution"
@@ -385,7 +457,7 @@ def main(**options):
         plot.scatter(samples.x, samples.rho)
         pyplot.xlim(0.3,0.7)
         pyplot.ylim(0.5,4.5)
-        pyplot.savefig("rieaman_shock_tube_rho.png")
+        pyplot.savefig("riemann_shock_tube_rho_"+model.name_of_the_code+".png")
 
 
 if __name__ == "__main__":
