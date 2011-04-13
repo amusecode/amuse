@@ -41,11 +41,11 @@ def make_map(sph,N=100,L=1):
                     
 if __name__ in ["__main__","__plot__"]:
 
-    N=10000
-    tend=150 | units.yr
+    N=20000
+    tend=50. | units.yr
     
     convert=nbody_system.nbody_to_si(1. | units.MSun, 1. | units.AU)
-    proto=ProtoPlanetaryDisk(N,convert_nbody=convert,densitypower=1.5,Rmin=4,Rmax=20,q_out=1.)
+    proto=ProtoPlanetaryDisk(N,convert_nbody=convert,densitypower=1.5,Rmin=4,Rmax=20,q_out=0.8)
     gas=proto.result
     gas.h_smooth=0.5 | units.AU
      
