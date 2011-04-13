@@ -139,6 +139,20 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution,
         """
         return function
         
+    @legacy_function   
+    def get_mass_loss_rate():
+        """
+        Retrieve the current mass loss rate of the star. (positive for winds, negative for accretion)
+        """
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True 
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('mass_loss_rate', dtype='float64', direction=function.OUT
+            , description="The current mass loss rate of the star. (positive for winds, negative for accretion)")
+        function.result_type = 'int32'
+        return function
+    
     @legacy_function
     def get_number_of_backups_in_a_row():
         """
@@ -838,6 +852,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             object.add_getter(particle_set_name, 'get_stellar_type', names = ('stellar_type',))
             object.add_getter(particle_set_name, 'get_mass', names = ('mass',))
             object.add_setter(particle_set_name, 'set_mass', names = ('mass',))
+            object.add_getter(particle_set_name, 'get_mass_loss_rate', names = ('wind',))
             object.add_getter(particle_set_name, 'get_age', names = ('age',))
             object.add_getter(particle_set_name, 'get_time_step', names = ('time_step',))
             object.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
@@ -921,6 +936,11 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "set_time_step", 
             (object.INDEX, units.yr), 
             (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_mass_loss_rate",
+            (object.INDEX,),
+            (units.g / units.s, object.ERROR_CODE,)
         )
         object.add_method(
             "get_number_of_backups_in_a_row", 

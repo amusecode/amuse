@@ -6,7 +6,7 @@ from numpy import pi
 from amuse.community.mesa.interface import MESA, MESAInterface
 
 from amuse.support.exceptions import AmuseException
-from amuse.support.data import core
+from amuse.support.data.core import Particles, Particle
 from amuse.support.units import units
 from amuse.support.codes import channel
 
@@ -337,7 +337,7 @@ class TestMESA(TestWithMPI):
             return
         instance.initialize_code() 
         instance.commit_parameters() 
-        stars = core.Stars(1)
+        stars = Particles(1)
         mass = 10. | units.MSun
         stars.mass = mass
         instance.particles.add_particles(stars)
@@ -363,7 +363,7 @@ class TestMESA(TestWithMPI):
             return
         instance.initialize_code() 
         instance.commit_parameters() 
-        stars =  core.Stars(1)
+        stars =  Particles(1)
         
         star = stars[0]
         star.mass = 5.0 | units.MSun
@@ -431,7 +431,7 @@ class TestMESA(TestWithMPI):
         masses = [0.5, 1.0] | units.MSun
         max_age = 0.6 | units.Myr
         number_of_stars=len(masses)
-        stars =  core.Stars(number_of_stars)
+        stars =  Particles(number_of_stars)
         for i, star in enumerate(stars):
             star.mass = masses[i]
         instance.initialize_code()
@@ -460,7 +460,7 @@ class TestMESA(TestWithMPI):
     
     def test6(self):
         print "Test for obtaining the stellar structure model"
-        stars = core.Particles(2)
+        stars = Particles(2)
         stars.mass = [1.0, 10.0] | units.MSun
         instance = self.new_instance(MESA)
         if instance is None:
@@ -495,7 +495,7 @@ class TestMESA(TestWithMPI):
     
     def test7(self):
         print "Test for obtaining the stellar composition structure"
-        stars = core.Particles(1)
+        stars = Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = self.new_instance(MESA)
         if instance is None:
@@ -530,7 +530,7 @@ class TestMESA(TestWithMPI):
     
     def slowtest8(self):
         print "Test for obtaining the stellar composition structure - evolved star with zero metalicity"
-        stars = core.Particles(1)
+        stars = Particles(1)
         stars.mass = 1.0 | units.MSun
         instance = self.new_instance(MESA)
         if instance is None:
@@ -568,7 +568,7 @@ class TestMESA(TestWithMPI):
     
     def test9(self):
         print "Test for changing the stellar structure model"
-        star = core.Particles(1)
+        star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = self.new_instance(MESA)
         if instance is None:
@@ -603,7 +603,7 @@ class TestMESA(TestWithMPI):
     
     def test10(self):
         print "Test for changing the stellar composition"
-        star = core.Particles(1)
+        star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = self.new_instance(MESA)
         if instance is None:
@@ -643,7 +643,7 @@ class TestMESA(TestWithMPI):
     
     def test11(self):
         print "Test evolve_model optional argument keep_synchronous"
-        stars = core.Particles(3)
+        stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         instance = self.new_instance(MESA)
         if instance is None:
@@ -690,13 +690,14 @@ class TestMESA(TestWithMPI):
     
     def test12(self):
         print "Test for importing new stellar models"
-        star = core.Particles(1)
+        star = Particles(1)
         star.mass = 1.0 | units.MSun
         instance = self.new_instance(MESA, redirection="none")
         if instance is None:
             print "MESA was not built. Skipping test."
             return
         instance.initialize_code() 
+        instance.commit_parameters() 
         instance.particles.add_particles(star)
         instance.commit_particles()
         instance.evolve_model()
@@ -739,6 +740,67 @@ class TestMESA(TestWithMPI):
         print instance.particles
         instance.stop()
         del instance
+    
+    def slowtest13(self):
+        print "Testing MESA wind parameters..."
+        stars = Particles(9)
+        stars.mass = 10.0 | units.MSun
+        instance = self.new_instance(MESA, redirection="none")
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_code()
+        instance.parameters.reimers_wind_efficiency = 0.5
+        instance.parameters.blocker_wind_efficiency = 0.1
+        instance.parameters.de_jager_wind_efficiency = 0.8
+        instance.parameters.dutch_wind_efficiency = 0.8
+        instance.commit_parameters()
+        for wind_scheme in [0, 1, 2, 3, 4]:
+            instance.parameters.RGB_wind_scheme = wind_scheme
+            instance.recommit_parameters() 
+            instance.particles.add_particle(stars[wind_scheme])
+        instance.parameters.reimers_wind_efficiency *= 2.0
+        instance.parameters.blocker_wind_efficiency *= 2.0
+        instance.parameters.de_jager_wind_efficiency *= 2.0
+        instance.parameters.dutch_wind_efficiency *= 2.0
+        for wind_scheme in [1, 2, 3, 4]:
+            instance.parameters.RGB_wind_scheme = wind_scheme
+            instance.recommit_parameters() 
+            instance.particles.add_particle(stars[wind_scheme+4])
+        instance.commit_particles()
+        instance.evolve_model(keep_synchronous = False)
+        instance.particles.copy_values_of_state_attributes_to(stars)
+        print stars
+        self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
+        self.assertAlmostRelativeEqual(stars[1:5].wind, 
+            [4.59318475897e-10, 5.20742729636e-11, 1.05565558121e-09, 3.62519254311e-09] | units.MSun / units.yr, places = 7)
+        self.assertAlmostRelativeEqual(stars[5:].wind, 2.0 * stars[1:5].wind, places = 7)
+        instance.stop()
+    
+    def test14(self):
+        print "Testing MESA wind parameters... (short version of slowtest13)"
+        stars = Particles(3)
+        stars.mass = 10.0 | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        instance.initialize_code()
+        instance.parameters.RGB_wind_scheme = 0
+        instance.commit_parameters()
+        instance.particles.add_particle(stars[0])
+        instance.parameters.RGB_wind_scheme = 1
+        for i, wind_efficiency in enumerate([0.5, 1.0]):
+            instance.parameters.reimers_wind_efficiency = wind_efficiency
+            instance.recommit_parameters()
+            instance.particles.add_particle(stars[i+1])
+        instance.commit_particles()
+        instance.evolve_model(keep_synchronous = False)
+        instance.particles.copy_values_of_state_attributes_to(stars)
+        self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
+        self.assertAlmostRelativeEqual(stars[1].wind, 4.59318475897e-10 | units.MSun / units.yr, places = 7)
+        self.assertAlmostRelativeEqual(stars[2].wind, 2.0 * stars[1].wind, places = 7)
+        instance.stop()
     
 
 
