@@ -27,27 +27,6 @@
 
 # default.user.name=ndrost
 
-local.amuse.home=/Users/niels/workspace/amuse
-
-ceres.server.adaptor = SshTrilead
-ceres.server.uri = ssh://ceres.cs.vu.nl/
-ceres.job.adaptor = SshTrilead
-ceres.job.uri = ssh://ceres.cs.vu.nl/
-ceres.file.adaptors = SshTrilead,Local
-ceres.java.path = /usr/lib/jvm/java-6-sun/bin/java
-ceres.job.wrapper.script = local.script
-#ceres.user.name =
-#ceres.user.key = 
-#ceres.cache.dir = 
-#ceres.server.output.files =
-#ceres.server.system.properties =
-ceres.nodes = 1
-ceres.cores = 4
-#ceres.memory = 
-ceres.latitude = 52.3328
-ceres.longitude = 4.8669
-ceres.amuse.home=/home/niels/workspace/amuse
-
 # Details of cluster "VU"
 VU.server.adaptor = SshTrilead
 VU.server.uri = any://fs0.das4.cs.vu.nl
@@ -58,7 +37,7 @@ VU.java.path = java
 VU.job.wrapper.script = das4.script
 #VU.user.name =
 #VU.user.key = 
-#VU.cache.dir = 
+VU.cache.dir = amuse-deploy-cache
 #VU.server.output.files =
 #VU.server.system.properties =
 VU.nodes = 85
@@ -67,6 +46,25 @@ VU.cores = 340
 VU.latitude = 52.3328
 VU.longitude = 4.8669
 VU.amuse.home=/home/niels/amuse
+
+ASTRON.server.adaptor = SshTrilead
+ASTRON.server.uri = any://fs0.das4.cs.vu.nl
+ASTRON.job.adaptor = SshTrilead
+ASTRON.job.uri = any://fs0.das4.cs.vu.nl/jobmanager-sge
+ASTRON.file.adaptors = SshTrilead,Local
+ASTRON.java.path = java
+ASTRON.job.wrapper.script = das4.script
+#VU.user.name =
+#VU.user.key = 
+ASTRON.cache.dir = amuse-deploy-cache
+#VU.server.output.files =
+#VU.server.system.properties =
+ASTRON.nodes = 85
+ASTRON.cores = 340
+#VU.memory = 
+ASTRON.latitude = 52.8133
+ASTRON.longitude = 6.3960
+ASTRON.amuse.home=/home/niels/amuse
 
 # Details of cluster "MultimediaN"
 MultimediaN.server.adaptor = SshTrilead

@@ -8,23 +8,19 @@
 
     <property name="jar" value="ibis-amuse${version}.jar" />
 
-    <!-- locations of external libraries. Defaults to included versions,
-         override to use custom versions -->
-    <property name="deploy" value="deploy" />
-
     <!-- create the class path. -->
     <path id="class_path">
         <fileset dir="lib">
             <include name="*.jar" />
         </fileset>
-        <fileset dir="${deploy}/lib">
+        <fileset dir="deploy/lib">
             <include name="*.jar" />
         </fileset>
         <pathelement path="tmp" />
     </path>
 
     <target name="deploy" description="build deploy sub project">
-        <ant dir="${deploy}" />
+        <ant dir="deploy" />
     </target>
 
     <target name="build" description="build jar file" depends="clean,deploy,compile" />
@@ -49,11 +45,11 @@
         <javah classpath="tmp"
                destdir="include"
                force="yes"
-               class="ibis.amuse.CommunityCode"
+               class="ibis.amuse.JNICode"
         />
 
 	<jar destfile="lib/${jar}">
-            <fileset dir="tmp" includes="**/*.class" />
+            <fileset dir="tmp" includes="**/*.class,images/*" />
             <metainf dir="." includes="LICENSE.txt" />
         </jar>
 
@@ -61,7 +57,7 @@
     </target>
 
     <target name="clean" description="clean everything">
-        <ant dir="${deploy}" target="clean" />
+        <ant dir="deploy" target="clean" />
 
         <delete dir="dist" />
         <delete dir="lib" />
