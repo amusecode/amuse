@@ -119,6 +119,103 @@ CONTAINS
         
     end function refine_grid
     
+    function set_typeentropy(inputvalue)
+        include 'amrvacdef.f'
+        integer :: set_typeentropy, iw
+        character(len=*),intent(in) :: inputvalue
+        
+        do iw=1,nw
+            typeentropy(iw)=inputvalue
+        end do
+        
+        set_typeentropy = 0   
+    end function
+
+    function get_typeentropy(outputvalue)
+        include 'amrvacdef.f'
+        integer :: get_typeentropy, iw
+        character(len=256), intent(out) :: outputvalue
+        character(len=256) :: checkvalue
+        
+        get_typeentropy = 0 
+        
+        checkvalue = typeentropy(1)
+        
+        do iw=1,nw
+            if (typeentropy(iw) .ne. checkvalue) then
+                get_typeentropy = -1
+            end if
+        end do
+        
+        outputvalue = typeentropy(1)
+          
+    end function
+
+    function set_typefull1(inputvalue)
+        include 'amrvacdef.f'
+        integer :: set_typefull1, i
+        character(len=*),intent(in) :: inputvalue
+        
+        do i=1,nlevelshi
+            typefull1(i)=inputvalue
+        end do
+        
+        set_typefull1 = 0   
+    end function
+
+    function get_typefull1(outputvalue)
+        include 'amrvacdef.f'
+        integer :: get_typefull1, i
+        character(len=256), intent(out) :: outputvalue
+        character(len=256) :: checkvalue
+        
+        get_typefull1 = 0 
+        
+        checkvalue = typefull1(1)
+        
+        do i=1,nlevelshi
+            if (typefull1(i) .ne. checkvalue) then
+                get_typefull1 = -1
+            end if
+        end do
+        
+        outputvalue = typefull1(1)
+          
+    end function
+    
+    
+    function set_typepred1(inputvalue)
+        include 'amrvacdef.f'
+        integer :: set_typepred1, i
+        character(len=*),intent(in) :: inputvalue
+        
+        do i=1,nlevelshi
+            typepred1(i)=inputvalue
+        end do
+        
+        set_typepred1 = 0   
+    end function
+
+    function get_typepred1(outputvalue)
+        include 'amrvacdef.f'
+        integer :: get_typepred1, i
+        character(len=256), intent(out) :: outputvalue
+        character(len=256) :: checkvalue
+        
+        get_typepred1 = 0 
+        
+        checkvalue = typepred1(1)
+        
+        do i=1,nlevelshi
+            if (typepred1(i) .ne. checkvalue) then
+                get_typepred1 = -1
+            end if
+        end do
+        
+        outputvalue = typepred1(1)
+          
+    end function
+    
     function set_gamma(inputvalue)
         include 'amrvacdef.f'
         integer :: set_gamma

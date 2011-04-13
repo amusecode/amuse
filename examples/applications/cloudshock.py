@@ -61,13 +61,18 @@ class CalculateCloudShock(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        result=MpiAmrVac(number_of_workers=self.number_of_workers, redirection="none")
+        result=MpiAmrVac(number_of_workers=self.number_of_workers, redirection="none", debugger = "xterm")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
-        result.parameters.maximum_number_of_grid_levels = 2
+        result.parameters.maximum_number_of_grid_levels = 4
+        result.parameters.spatial_discretization_method = 'tvdmu' 
+        result.parameters.predictor_step_discretization_method = 'tvdmu' 
+        result.parameters.entropy_type = 'powell' 
+        
         result.parameters.x_boundary_conditions = ("cont","cont")
         result.parameters.y_boundary_conditions = ("cont","cont")
         result.parameters.z_boundary_conditions = ("cont","cont")
+        
         return result
         
     def set_parameters(self, instance):
@@ -156,8 +161,8 @@ class CalculateCloudShock(object):
 
 
 def main():
-    number_of_grid_points = 32
-    name_of_the_code = 'athena'
+    number_of_grid_points = 50
+    name_of_the_code = 'capreole'
     model = CalculateCloudShock(
         number_of_grid_points = number_of_grid_points,
         number_of_workers = 3,

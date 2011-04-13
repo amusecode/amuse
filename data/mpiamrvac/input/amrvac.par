@@ -23,8 +23,8 @@
         fileheadout=  'amuse33'
         fileheadout=  'rt_hd33'
         typeadvance=  'twostep'
-        typefull1=    3*'tvdlf',10*'tvdmu'
-        typepred1=    3*'tvdlf',10*'tvdmu'
+        typefull1=    13*'tvdmu'
+        typepred1=    13*'tvdmu'
         typelimiter1= 13*'woodward'
         typelimited='predictor'
         dimsplit=.false.

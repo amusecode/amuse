@@ -44,7 +44,48 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
     # parameters
     #
     
+    @legacy_function
+    def set_typeentropy():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_typeentropy():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
+    @legacy_function
+    def set_typefull1():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_typefull1():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
     
+    @legacy_function
+    def set_typepred1():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='string', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_typepred1():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('value', dtype='string', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
     @legacy_function
     def set_gamma():
         function = LegacyFunctionSpecification()  
@@ -2239,8 +2280,40 @@ class MpiAmrVac(InCodeComponentImplementation):
             "gamma", 
             "ratio of specific heats used in equation of state", 
             units.none, 
-            1.6666666666666667 | units.none,
-            must_set_before_get = True
+            1.6666666666666667 | units.none
+        )
+        
+        object.add_method_parameter(
+            "get_typeentropy", 
+            "set_typeentropy",
+            "entropy_type", 
+            "type of the entropy", 
+            units.string, 
+            'nul' | units.string
+        )
+        object.add_method_parameter(
+            "get_typefull1", 
+            "set_typefull1",
+            "spatial_discretization_method", 
+            "the spatial discretization method used for the time integration per activated grid leve", 
+            units.string, 
+            'tvdmu' | units.string
+        )
+        object.add_method_parameter(
+            "get_typepred1", 
+            "set_typepred1",
+            "predictor_step_discretization_method", 
+            "the precitor step discretization method (only used when integration procedure is twostep')", 
+            units.string, 
+            'tvdmu' | units.string
+        )
+        object.add_method_parameter(
+            "get_typeadvance", 
+            "set_typeadvance",
+            "time_integration_procedure", 
+            "time integration procedure", 
+            units.string, 
+            'twostep' | units.string
         )
         
         object.add_method_parameter(
