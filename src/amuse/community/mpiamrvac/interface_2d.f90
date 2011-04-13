@@ -2,6 +2,8 @@ MODULE mpiamrvac_interface
 
     CHARACTER(LEN=1024) :: parameters_filename = 'amrvac.par'
     
+    INTEGER :: refinement_level = 1
+    
 CONTAINS
 
     FUNCTION initialize_code()
@@ -26,6 +28,7 @@ CONTAINS
         
         
         eqpar(gamma_) = 5.0d0/3.0d0
+        refinement_level = 1
         initialize_code = 0
     END FUNCTION
     
@@ -46,6 +49,8 @@ CONTAINS
         ! form and initialize all grids at level one
         call initlevelone
         
+        refinement_level = 1
+        
         commit_parameters = 0
     END FUNCTION
     
@@ -65,6 +70,54 @@ CONTAINS
         initialize_grid = 0
         
     END FUNCTION
+    function refine_grid(has_advanced)
+        include 'amrvacdef.f'
+
+        ! create and initialize grids on all levels > 1. On entry, all
+        ! level=1 grids have been formed and initialized. This subroutine
+        ! creates and initializes new level grids
+
+        integer :: igrid, iigrid, levnew, refine_grid
+        logical, intent(out) :: has_advanced
+        type(walloc) :: pwtmp
+        
+        has_advanced = .false.
+        refine_grid = 0
+        
+        !----------------------------------------------------------------------------
+        ! when only one level allowed, there is nothing to do anymore
+        if (mxnest == 1) return
+        
+        if (refinement_level == mxnest) return
+        
+        call getbc(t,ixGlo1,ixGlo2,ixGhi1,ixGhi2,pw,pwCoarse,pgeo,&
+   pgeoCoarse,.false.)
+        
+        levnew = refinement_level + 1
+        
+        if (errorestimate==1 .or. errorestimate==2) then
+            call setdt
+            call advance(0)
+        end if
+
+        call errest
+
+        if (errorestimate==1 .or. errorestimate==2) then
+            do iigrid=1,igridstail; igrid=igrids(iigrid);
+                pwtmp%w => pwold(igrid)%w
+                pwold(igrid)%w => pw(igrid)%w
+                pw(igrid)%w => pwtmp%w
+            end do
+        end if
+
+        call amr_coarsen_refine
+
+        if (levmax/=levnew) return
+        
+        refinement_level = levmax
+        has_advanced = .true.
+        
+    end function refine_grid
     
     function set_gamma(inputvalue)
         include 'amrvacdef.f'

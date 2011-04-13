@@ -5,6 +5,7 @@ from amuse.community.mpiamrvac.interface import MpiAmrVacInterface
 from amuse.community.mpiamrvac.interface import MpiAmrVac
 
 from amuse.support.units import generic_unit_system
+from amuse.support import io
 import os
 import numpy
 
@@ -313,8 +314,9 @@ class TestMpiAmrVac(TestWithMPI):
             self.assertEquals(error, 0)
             instance.parameters.mesh_length = (20.0, 20.0, 20.0) | generic_unit_system.length
             instance.parameters.mesh_size = (20, 20, 20) 
-            
-            error = instance.set_boundary("periodic", "periodic", "periodic", "periodic", "periodic", "periodic")
+            instance.parameters.x_boundary_conditions = ("periodic","periodic")
+            instance.parameters.y_boundary_conditions = ("periodic","periodic")
+            instance.parameters.z_boundary_conditions = ("periodic","periodic")
             error = instance.commit_parameters()
 
             grids = list(instance.itergrids())
@@ -325,7 +327,7 @@ class TestMpiAmrVac(TestWithMPI):
             for index, grid in enumerate(grids):
                 position = grid.position
                 #print instance.get_level_of_grid(index + 1)
-                level, error = instance.get_level_of_grid(index + 1)
+                level = instance.get_level_of_grid(index + 1)
                 self.assertEquals(level, 1)
                 for i in range(3):
                     max_x = position[...,...,...,i].amax()
@@ -352,3 +354,79 @@ class TestMpiAmrVac(TestWithMPI):
                         
             instance.stop()
         
+    def test4(self):
+    
+        instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        error = instance.initialize_code()
+        self.assertEquals(error, 0)
+        instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
+        instance.parameters.mesh_size = (10, 10, 10)
+        instance.parameters.maximum_number_of_grid_levels = 5
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+     
+        instance.commit_parameters()
+
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        
+        levels = [instance.get_level_of_grid(i+1) for i in range(len(grids))]
+        self.assertEquals(levels, [1] * 1)
+        
+        gamma = 5.0 / 3.0
+        energy =  generic_unit_system.mass / (generic_unit_system.time**2 * generic_unit_system.length)
+        grids_in_memory = []
+        for grid in grids:
+            grid.rho = 1.0  | generic_unit_system.density
+            grid.energy = (0.1795 | energy)/ (gamma - 1)
+    
+        
+        has_advanced = instance.refine_grid()
+        grids = list(instance.itergrids())
+        print len(grids)
+        self.assertFalse(has_advanced)
+        instance.stop()
+
+    def test5(self):
+        def fill_grids(grids):
+            for grid in grids:
+                firsthalf = grid.x > 5.0 | generic_unit_system.length
+                secondhalf = numpy.logical_not(firsthalf)
+                
+                grid[firsthalf].rho = 1.0  | generic_unit_system.density
+        
+        instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        error = instance.initialize_code()
+        self.assertEquals(error, 0)
+        instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
+        instance.parameters.mesh_size = (10, 10, 10)
+        instance.parameters.maximum_number_of_grid_levels = 4
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+     
+        instance.commit_parameters()
+
+        n = 1
+        for i in range(3):
+            expected_length = n ** 3
+            grids = list(instance.itergrids())
+            levels = [instance.get_level_of_grid(grid+1) for grid in range(len(grids))]
+            self.assertEquals(len(grids), expected_length)
+            
+            self.assertEquals(levels, [i+1] * expected_length)
+            
+            n *= 2
+            
+            fill_grids(grids)
+            has_advanced = instance.refine_grid()
+            self.assertTrue(has_advanced)
+        
+        has_advanced = instance.refine_grid()
+        self.assertFalse(has_advanced)
+        
+        
+        instance.stop()

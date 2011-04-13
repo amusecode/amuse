@@ -1886,10 +1886,16 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
     @legacy_function    
     def initialize_grid():
         function = LegacyFunctionSpecification()  
-        function.result_type = 'i'
+        function.result_type = 'int32'
         return function
         
-    
+    @legacy_function  
+    def refine_grid():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('must_advance', dtype='bool', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+        
     @legacy_function
     def get_mesh_size():
         function = LegacyFunctionSpecification()
@@ -2211,7 +2217,19 @@ class MpiAmrVac(InCodeComponentImplementation):
             ( momentum, momentum, momentum, 
             object.ERROR_CODE,)
         )
-    
+        
+        object.add_method(
+            'refine_grid',
+            (),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_level_of_grid',
+            (object.INDEX),
+            (object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
     def define_parameters(self, object):
         
         
@@ -2397,7 +2415,7 @@ class MpiAmrVac(InCodeComponentImplementation):
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
-        
+    
     def itergrids(self):
         n, error = self.get_number_of_grids()
         
