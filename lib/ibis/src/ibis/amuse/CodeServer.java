@@ -39,34 +39,42 @@ public class CodeServer implements RegistryEventHandler {
 
     private volatile boolean ended = false;
 
-    public CodeServer(String id, String codeName, String codeDir, String amuseHome, boolean jni) throws Exception {
+    public CodeServer(String id, String codeName, String codeDir,
+            String amuseHome, boolean jni) throws Exception {
         ibis = IbisFactory.createIbis(Daemon.ibisCapabilities, this,
                 Daemon.portType);
 
         sendPort = ibis.createSendPort(Daemon.portType);
         receivePort = ibis.createReceivePort(Daemon.portType, id);
 
-        if (jni) {
-            communityCode = new JNICode(codeName, receivePort, sendPort);
-        } else {
-            communityCode = new SocketCode(codeName, codeDir, receivePort, sendPort);  
+        try {
+
+            if (jni) {
+                communityCode = new JNICode(codeName, receivePort, sendPort);
+            } else {
+                communityCode = new SocketCode(codeName, codeDir, receivePort,
+                        sendPort);
+            }
+
+            receivePort.enableConnections();
+            ibis.registry().enableEvents();
+
+            // get address of amuse node
+            logger.debug("waiting for result of amuse election");
+            IbisIdentifier amuse = ibis.registry().getElectionResult("amuse");
+
+            // connect to receive port of worker at amuse node, send hello
+            sendPort.connect(amuse, id);
+            WriteMessage message = sendPort.newMessage();
+            message.writeObject(receivePort.identifier());
+            message.finish();
+
+        } catch (Exception e) {
+            end();
+            throw e;
         }
-
-        receivePort.enableConnections();
-        ibis.registry().enableEvents();
-
-        // get address of amuse node
-        logger.debug("waiting for result of amuse election");
-        IbisIdentifier amuse = ibis.registry().getElectionResult("amuse");
-
-        // connect to receive port of worker at amuse node, send hello
-        sendPort.connect(amuse, id);
-        WriteMessage message = sendPort.newMessage();
-        message.writeObject(receivePort.identifier());
-        message.finish();
     }
 
-   
     public void end() {
         if (ended) {
             return;
@@ -95,13 +103,7 @@ public class CodeServer implements RegistryEventHandler {
         }
     }
 
-    public void run() {
-
-        communityCode.run();
-
-        end();
-    }
-
+   
     @Override
     public void joined(IbisIdentifier joinedIbis) {
         // IGNORE
@@ -140,6 +142,11 @@ public class CodeServer implements RegistryEventHandler {
         end();
     }
     
+    public void run() {
+        communityCode.run();
+        end();
+    }
+
     public static void main(String[] arguments) {
 
         String id = null;
@@ -163,26 +170,30 @@ public class CodeServer implements RegistryEventHandler {
             } else if (arguments[i].equals("-a")
                     || arguments[i].equals("--amuse-home")) {
                 i++;
-                amuseHome = arguments[i];  
+                amuseHome = arguments[i];
             } else if (arguments[i].equals("-j")
                     || arguments[i].equals("--jni")) {
                 jni = true;
             }
         }
 
+        CodeServer server = null;
         try {
             logger.info("Starting worker " + id + " running " + codeName);
 
-            CodeServer server = new CodeServer(id, codeName, codeDir, amuseHome, jni);
+            server = new CodeServer(id, codeName, codeDir, amuseHome, jni);
 
             new Shutdown(server);
 
             server.run();
             logger.info("Worker " + id + " running " + codeName + " DONE!");
         } catch (Exception e) {
-            logger.error("Error on running remote worker", e);
+            logger.error("Error on running code server", e);
+        } finally {
+            if (server != null) {
+                server.end();
+            }
         }
     }
-
 
 }
