@@ -220,17 +220,7 @@ class TestMESAInterface(TestWithMPI):
             (value, error) = instance.get_RGB_wind_scheme()
             self.assertEquals(0, error)
             self.assertEquals(x, value)
-            
-        (value, error) = instance.get_RGB_wind_efficiency()
-        self.assertEquals(0, error)
-        self.assertEquals(0.0, value)
-        for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_RGB_wind_efficiency(x)
-            self.assertEquals(0, error)
-            (value, error) = instance.get_RGB_wind_efficiency()
-            self.assertEquals(0, error)
-            self.assertEquals(x, value)
-            
+        
         (value, error) = instance.get_AGB_wind_scheme()
         self.assertEquals(0, error) 
         self.assertEquals(0, value)
@@ -241,15 +231,46 @@ class TestMESAInterface(TestWithMPI):
             self.assertEquals(0, error)
             self.assertEquals(x, value)
             
-        (value, error) = instance.get_AGB_wind_efficiency()
+        (value, error) = instance.get_reimers_wind_efficiency()
         self.assertEquals(0, error)
         self.assertEquals(0.0, value)
         for x in [0.0, 0.1, 0.5, 1.0]:
-            error = instance.set_AGB_wind_efficiency(x)
+            error = instance.set_reimers_wind_efficiency(x)
             self.assertEquals(0, error)
-            (value, error) = instance.get_AGB_wind_efficiency()
+            (value, error) = instance.get_reimers_wind_efficiency()
             self.assertEquals(0, error)
             self.assertEquals(x, value)
+        
+        (value, error) = instance.get_blocker_wind_efficiency()
+        self.assertEquals(0, error)
+        self.assertEquals(0.0, value)
+        for x in [0.0, 0.1, 0.5, 1.0]:
+            error = instance.set_blocker_wind_efficiency(x)
+            self.assertEquals(0, error)
+            (value, error) = instance.get_blocker_wind_efficiency()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+        
+        (value, error) = instance.get_de_jager_wind_efficiency()
+        self.assertEquals(0, error)
+        self.assertEquals(0.0, value)
+        for x in [0.0, 0.1, 0.5, 1.0]:
+            error = instance.set_de_jager_wind_efficiency(x)
+            self.assertEquals(0, error)
+            (value, error) = instance.get_de_jager_wind_efficiency()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+        
+        (value, error) = instance.get_dutch_wind_efficiency()
+        self.assertEquals(0, error)
+        self.assertEquals(0.0, value)
+        for x in [0.0, 0.1, 0.5, 1.0]:
+            error = instance.set_dutch_wind_efficiency(x)
+            self.assertEquals(0, error)
+            (value, error) = instance.get_dutch_wind_efficiency()
+            self.assertEquals(0, error)
+            self.assertEquals(x, value)
+        
         instance.stop()
         del instance
 

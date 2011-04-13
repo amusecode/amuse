@@ -16,8 +16,10 @@
          double precision :: AMUSE_semi_convection_efficiency = 0.0d0
          integer :: AMUSE_RGB_wind_scheme = 0
          integer :: AMUSE_AGB_wind_scheme = 0
-         double precision :: AMUSE_RGB_wind_efficiency = 0.0
-         double precision :: AMUSE_AGB_wind_efficiency = 0.0
+         double precision :: AMUSE_reimers_wind_efficiency = 0.0d0
+         double precision :: AMUSE_blocker_wind_efficiency = 0.0d0
+         double precision :: AMUSE_de_jager_wind_efficiency = 0.0d0
+         double precision :: AMUSE_dutch_wind_efficiency = 0.0d0
          
          logical :: new_model_defined = .false.
          integer :: id_new_model
@@ -157,6 +159,12 @@
       s% max_model_number = AMUSE_max_iter_stop_condition
       s% mixing_length_alpha = AMUSE_mixing_length_ratio
       s% alpha_semiconvection = AMUSE_semi_convection_efficiency
+      s% RGB_wind_scheme = AMUSE_RGB_wind_scheme
+      s% AGB_wind_scheme = AMUSE_AGB_wind_scheme
+      s% Reimers_wind_eta = AMUSE_reimers_wind_efficiency
+      s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
+      s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
+      s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
       if (debugging) then
          write (*,*) "Creating new particles with mass: ", s% initial_mass
          write (*,*) "Loading starting model from: ", s% zams_filename
@@ -1325,24 +1333,6 @@
          set_RGB_wind_scheme = 0
       end function set_RGB_wind_scheme
 
-! Retrieve the current value of the wind (mass loss) efficiency for RGB stars
-      integer function get_RGB_wind_efficiency(AMUSE_value)
-         use amuse_support, only: AMUSE_RGB_wind_efficiency
-         implicit none
-         double precision, intent(out) :: AMUSE_value
-         AMUSE_value = AMUSE_RGB_wind_efficiency
-         get_RGB_wind_efficiency = 0
-      end function get_RGB_wind_efficiency
-
-! Set the current value of the wind (mass loss) efficiency for RGB stars
-      integer function set_RGB_wind_efficiency(AMUSE_value)
-         use amuse_support, only: AMUSE_RGB_wind_efficiency
-         implicit none
-         double precision, intent(in) :: AMUSE_value
-         AMUSE_RGB_wind_efficiency = AMUSE_value
-         set_RGB_wind_efficiency = 0
-      end function set_RGB_wind_efficiency
-
 ! Return the wind (mass loss) scheme for AGB stars
       integer function get_AGB_wind_scheme(AMUSE_value)
          use amuse_support, only: AMUSE_AGB_wind_scheme
@@ -1361,23 +1351,77 @@
          set_AGB_wind_scheme = 0
       end function set_AGB_wind_scheme
 
-! Retrieve the current value of the wind (mass loss) efficiency for AGB stars
-      integer function get_AGB_wind_efficiency(AMUSE_value)
-         use amuse_support, only: AMUSE_AGB_wind_efficiency
+! Retrieve the current value of the Reimers wind (mass loss) efficiency
+      integer function get_reimers_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_reimers_wind_efficiency
          implicit none
          double precision, intent(out) :: AMUSE_value
-         AMUSE_value = AMUSE_AGB_wind_efficiency
-         get_AGB_wind_efficiency = 0
-      end function get_AGB_wind_efficiency
+         AMUSE_value = AMUSE_reimers_wind_efficiency
+         get_reimers_wind_efficiency = 0
+      end function get_reimers_wind_efficiency
 
-! Set the current value of the wind (mass loss) efficiency for AGB stars
-      integer function set_AGB_wind_efficiency(AMUSE_value)
-         use amuse_support, only: AMUSE_AGB_wind_efficiency
+! Set the current value of the Reimers wind (mass loss) efficiency
+      integer function set_reimers_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_reimers_wind_efficiency
          implicit none
          double precision, intent(in) :: AMUSE_value
-         AMUSE_AGB_wind_efficiency = AMUSE_value
-         set_AGB_wind_efficiency = 0
-      end function set_AGB_wind_efficiency
+         AMUSE_reimers_wind_efficiency = AMUSE_value
+         set_reimers_wind_efficiency = 0
+      end function set_reimers_wind_efficiency
+
+! Retrieve the current value of the Blocker wind (mass loss) efficiency
+      integer function get_blocker_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_blocker_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_blocker_wind_efficiency
+         get_blocker_wind_efficiency = 0
+      end function get_blocker_wind_efficiency
+
+! Set the current value of the Blocker wind (mass loss) efficiency
+      integer function set_blocker_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_blocker_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_blocker_wind_efficiency = AMUSE_value
+         set_blocker_wind_efficiency = 0
+      end function set_blocker_wind_efficiency
+
+! Retrieve the current value of the de Jager wind (mass loss) efficiency
+      integer function get_de_jager_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_de_jager_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_de_jager_wind_efficiency
+         get_de_jager_wind_efficiency = 0
+      end function get_de_jager_wind_efficiency
+
+! Set the current value of the de Jager wind (mass loss) efficiency
+      integer function set_de_jager_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_de_jager_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_de_jager_wind_efficiency = AMUSE_value
+         set_de_jager_wind_efficiency = 0
+      end function set_de_jager_wind_efficiency
+
+! Retrieve the current value of the Dutch wind (mass loss) efficiency
+      integer function get_dutch_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_dutch_wind_efficiency
+         implicit none
+         double precision, intent(out) :: AMUSE_value
+         AMUSE_value = AMUSE_dutch_wind_efficiency
+         get_dutch_wind_efficiency = 0
+      end function get_dutch_wind_efficiency
+
+! Set the current value of the Dutch wind (mass loss) efficiency
+      integer function set_dutch_wind_efficiency(AMUSE_value)
+         use amuse_support, only: AMUSE_dutch_wind_efficiency
+         implicit none
+         double precision, intent(in) :: AMUSE_value
+         AMUSE_dutch_wind_efficiency = AMUSE_value
+         set_dutch_wind_efficiency = 0
+      end function set_dutch_wind_efficiency
 
 ! Retrieve the current value of the mixing length ratio
       integer function get_mixing_length_ratio(AMUSE_value)
@@ -1473,6 +1517,12 @@
       s% max_model_number = AMUSE_max_iter_stop_condition
       s% mixing_length_alpha = AMUSE_mixing_length_ratio
       s% alpha_semiconvection = AMUSE_semi_convection_efficiency
+      s% RGB_wind_scheme = AMUSE_RGB_wind_scheme
+      s% AGB_wind_scheme = AMUSE_AGB_wind_scheme
+      s% Reimers_wind_eta = AMUSE_reimers_wind_efficiency
+      s% Blocker_wind_eta = AMUSE_blocker_wind_efficiency
+      s% de_Jager_wind_eta = AMUSE_de_jager_wind_efficiency
+      s% Dutch_wind_eta = AMUSE_dutch_wind_efficiency
       
       s% doing_first_model_of_run = .true.
       s% dt = 0

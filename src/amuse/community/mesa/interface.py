@@ -570,42 +570,6 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution,
         return function
     
     @legacy_function
-    def get_RGB_wind_efficiency():
-        """
-        Retrieve the current mass loss efficiency for RGB stars.
-        Exact implementation depends on RGB_wind_scheme.
-        """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('RGB_wind_efficiency', dtype='float64', direction=function.OUT
-            , description="The current value of the mass loss efficiency for RGB stars.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
-    
-    @legacy_function
-    def set_RGB_wind_efficiency():
-        """
-        Set the value of the mass loss efficiency for RGB stars.
-        Exact implementation depends on RGB_wind_scheme.
-        """
-        function = LegacyFunctionSpecification()  
-        function.addParameter('RGB_wind_efficiency', dtype='float64', direction=function.IN
-            , description="The new value of the mass loss efficiency for RGB stars.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
-        return function
-    
-    @legacy_function
     def get_AGB_wind_scheme():
         """
         Retrieve the current wind (mass loss) scheme for AGB stars:
@@ -652,39 +616,59 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution,
         return function
     
     @legacy_function
-    def get_AGB_wind_efficiency():
-        """
-        Retrieve the current mass loss efficiency for AGB stars.
-        Exact implementation depends on AGB_wind_scheme.
-        """
+    def get_reimers_wind_efficiency():
         function = LegacyFunctionSpecification()  
-        function.addParameter('AGB_wind_efficiency', dtype='float64', direction=function.OUT
-            , description="The current value of the mass loss efficiency for AGB stars.")
+        function.addParameter('reimers_wind_efficiency', dtype='float64', direction=function.OUT)
         function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
         return function
     
     @legacy_function
-    def set_AGB_wind_efficiency():
-        """
-        Set the value of the mass loss efficiency for AGB stars.
-        Exact implementation depends on AGB_wind_scheme.
-        """
+    def set_reimers_wind_efficiency():
         function = LegacyFunctionSpecification()  
-        function.addParameter('AGB_wind_efficiency', dtype='float64', direction=function.IN
-            , description="The new value of the mass loss efficiency for AGB stars.")
+        function.addParameter('reimers_wind_efficiency', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            The code could not set the value.
-        """
+        return function
+    
+    @legacy_function
+    def get_blocker_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('blocker_wind_efficiency', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_blocker_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('blocker_wind_efficiency', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_de_jager_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('de_jager_wind_efficiency', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_de_jager_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('de_jager_wind_efficiency', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def get_dutch_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('dutch_wind_efficiency', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+    
+    @legacy_function
+    def set_dutch_wind_efficiency():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('dutch_wind_efficiency', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
         return function
     
     @legacy_function   
@@ -803,19 +787,34 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
         )
         
         object.add_method_parameter(
-            "get_RGB_wind_efficiency",
-            "set_RGB_wind_efficiency",
-            "RGB_wind_efficiency", 
-            "The mass loss efficiency for RGB stars. Exact implementation depends on RGB_wind_scheme.",
+            "get_reimers_wind_efficiency",
+            "set_reimers_wind_efficiency",
+            "reimers_wind_efficiency", 
+            "The Reimers mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 1).",
             units.none, 
             0.0 | units.none
         )
-        
         object.add_method_parameter(
-            "get_AGB_wind_efficiency",
-            "set_AGB_wind_efficiency",
-            "AGB_wind_efficiency", 
-            "The mass loss efficiency for AGB stars. Exact implementation depends on AGB_wind_scheme.",
+            "get_blocker_wind_efficiency",
+            "set_blocker_wind_efficiency",
+            "blocker_wind_efficiency", 
+            "The Blocker mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 2).",
+            units.none, 
+            0.0 | units.none
+        )
+        object.add_method_parameter(
+            "get_de_jager_wind_efficiency",
+            "set_de_jager_wind_efficiency",
+            "de_jager_wind_efficiency", 
+            "The de Jager mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 3).",
+            units.none, 
+            0.0 | units.none
+        )
+        object.add_method_parameter(
+            "get_dutch_wind_efficiency",
+            "set_dutch_wind_efficiency",
+            "dutch_wind_efficiency", 
+            "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 4).",
             units.none, 
             0.0 | units.none
         )
