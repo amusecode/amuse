@@ -1921,6 +1921,25 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
         """
         return function
         
+    @legacy_function
+    def get_current_error():
+        """When a function returns an error, this will retrieve
+        a description (if possible)
+        """
+        function = LegacyFunctionSpecification()  
+        function.addParameter('string', 
+            dtype='string',
+            direction=function.OUT,
+            description = "description of the error"
+        )
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            Current value was set
+        -1 - ERROR
+            File does not exist
+        """
+        return function
     #
     #
     
@@ -2210,6 +2229,12 @@ class MpiAmrVac(InCodeComponentImplementation):
             (object.ERROR_CODE,),
             public_name = 'evolve_model'
         )
+        
+        object.add_method(
+            'commit_parameters',
+            (),
+            (object.ERROR_CODE,)
+        )
         object.add_method(
             'get_position_of_index',
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
@@ -2322,8 +2347,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "courant_number", 
             "CFL number", 
             units.none, 
-            0.7 | units.none,
-            must_set_before_get = True
+            0.7 | units.none
         )
         
         
