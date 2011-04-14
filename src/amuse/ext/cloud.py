@@ -32,7 +32,7 @@ def fill_grid_with_spherical_cloud(
     if subgridsize <= 1:
         selection = radii <= radius
     else:
-        dr = grid.cellsize().length() * 3
+        dr = grid.cellsize().length() 
         selection = radii < (radius - dr)
         
     grid.rho[selection] = rho(radii) if inspect.isroutine(rho) else rho

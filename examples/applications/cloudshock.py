@@ -61,13 +61,14 @@ class CalculateCloudShock(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        result=MpiAmrVac(number_of_workers=self.number_of_workers, redirection="none", debugger = "xterm")
+        result=MpiAmrVac(number_of_workers=self.number_of_workers, redirection="none")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
-        result.parameters.maximum_number_of_grid_levels = 4
+        result.parameters.maximum_number_of_grid_levels = 3
         result.parameters.spatial_discretization_method = 'tvdmu' 
         result.parameters.predictor_step_discretization_method = 'tvdmu' 
         result.parameters.entropy_type = 'powell' 
+        result.parameters.courant_number = 0.8
         
         result.parameters.x_boundary_conditions = ("cont","cont")
         result.parameters.y_boundary_conditions = ("cont","cont")
@@ -97,12 +98,16 @@ class CalculateCloudShock(object):
             grid, 
             center = center,
             radius = 1.0 | generic_unit_system.length,
+            subgridsize = 1
         )
     
     def store_grids(self, grids, step):
         if __name__ == '__plot__':
             return
         
+        if 1:
+            return
+            
         grids_in_memory = [x.copy_to_memory() for x in grids]
         io.write_set_to_file(
             grids_in_memory, 
@@ -110,6 +115,20 @@ class CalculateCloudShock(object):
             "vtu",
             is_multiple=True
         )
+    
+    def refine_grid(self, instance):
+        
+        if hasattr(instance, 'refine_grid'):
+            must_refine = True
+            
+            while must_refine:
+                must_refine = instance.refine_grid()
+        
+                for x in instance.itergrids():
+                    inmem = x.copy_to_memory()
+                    self.initialize_grid(inmem)
+                    from_model_to_code = inmem.new_channel_to(x)
+                    from_model_to_code.copy()
     
     def get_tau(self):
         rc=1.
@@ -124,13 +143,14 @@ class CalculateCloudShock(object):
         
         self.set_parameters(instance)
         
-        
         for x in instance.itergrids():
             inmem = x.copy_to_memory()
             self.initialize_grid(inmem)
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
         
+        self.refine_grid(instance)
+            
         instance.initialize_grid()
         self.store_grids(instance.itergrids(), 0)
                 
@@ -161,7 +181,7 @@ class CalculateCloudShock(object):
 
 
 def main():
-    number_of_grid_points = 50
+    number_of_grid_points = 10
     name_of_the_code = 'capreole'
     model = CalculateCloudShock(
         number_of_grid_points = number_of_grid_points,
