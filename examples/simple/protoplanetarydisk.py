@@ -37,21 +37,22 @@ def make_map(sph,N=100,L=1):
     rho,rhovx,rhovy,rhovz,rhoe=sph.get_hydro_state_at_point(x,y,z,vx,vy,vz)
     rho=rho.reshape((N+1,N+1))
 
-    return rho
+    return numpy.transpose(rho)
                     
 if __name__ in ["__main__","__plot__"]:
 
     N=20000
     tend=50. | units.yr
-    
-    convert=nbody_system.nbody_to_si(1. | units.MSun, 1. | units.AU)
-    proto=ProtoPlanetaryDisk(N,convert_nbody=convert,densitypower=1.5,Rmin=4,Rmax=20,q_out=0.8)
+    Mstar=1. | units.MSun
+        
+    convert=nbody_system.nbody_to_si(Mstar, 1. | units.AU)
+    proto=ProtoPlanetaryDisk(N,convert_nbody=convert,densitypower=1.5,Rmin=4,Rmax=20,q_out=1.)
     gas=proto.result
-    gas.h_smooth=0.5 | units.AU
-     
+    gas.h_smooth=0.06 | units.AU
+         
     sun=Particles(1)
-    sun.mass=1. | units.MSun
-    sun.radius=2.5 | units.AU
+    sun.mass=Mstar
+    sun.radius=2. | units.AU
     sun.x=0.|units.AU
     sun.y=0.|units.AU
     sun.z=0.|units.AU
@@ -81,6 +82,6 @@ if __name__ in ["__main__","__plot__"]:
         extent=[-L/2,L/2,-L/2,L/2],vmin=10,vmax=15)    
     pyplot.title(tend)
     pyplot.xlabel('AU')
-#    pyplot.savefig('test.png')
-    pyplot.show()
+    pyplot.savefig('test.png')
+#    pyplot.show()
          
