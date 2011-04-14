@@ -48,7 +48,7 @@ class ProtoPlanetaryDisk(object):
 
     def __init__(self, targetN, convert_nbody = None, discfraction=0.1,
                    densitypower=1., thermalpower=0.5, Rmin=1,Rmax=100,
-                   gamma=5./3.,q_out=2.,base_grid=None):
+                   gamma=1.,q_out=2.,base_grid=None):
         self.targetN=targetN
         self.convert_nbody=convert_nbody
         self.densitypower=densitypower
@@ -95,7 +95,10 @@ class ProtoPlanetaryDisk(object):
         return self.csound(r)/self.kappa(r) 
 
     def u(self,r):
-        return self.csound(r)**2/(self.gamma-1)
+        if self.gamma ==1.:
+            return self.csound(r)**2
+        else:
+            return self.csound(r)**2/(self.gamma-1)
 
     def vcirc(self,r):
         return (self.mass_encl(r)/r)**0.5
@@ -120,7 +123,7 @@ class ProtoPlanetaryDisk(object):
          
         x=rtarget*x 
         y=rtarget*y                  
-        z=approximate_inverse_error_function(z)*zscale
+        z=approximate_inverse_error_function(z)*zscale*2.**0.5
 
         return (mass, x, y, z, vx, vy, vz, internal_energy)
   
