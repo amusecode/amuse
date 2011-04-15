@@ -1,5 +1,5 @@
 """
-In this script we simulate Kelvin-Helmholtz Instability in 3d.
+In this script we simulate Kelvin-Helmholtz Instability in two dimentsions.
 """
 import numpy
 from matplotlib import pyplot
