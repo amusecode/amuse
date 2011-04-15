@@ -769,7 +769,8 @@ class TestMESA(TestWithMPI):
             instance.particles.add_particle(stars[wind_scheme+4])
         instance.commit_particles()
         instance.evolve_model(keep_synchronous = False)
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
         print stars
         self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
         self.assertAlmostRelativeEqual(stars[1:5].wind, 
@@ -796,7 +797,8 @@ class TestMESA(TestWithMPI):
             instance.particles.add_particle(stars[i+1])
         instance.commit_particles()
         instance.evolve_model(keep_synchronous = False)
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        from_code_to_model = instance.particles.new_channel_to(stars)
+        from_code_to_model.copy()
         self.assertAlmostEqual(stars[0].wind, 0.0 | units.MSun / units.yr)
         self.assertAlmostRelativeEqual(stars[1].wind, 4.59318475897e-10 | units.MSun / units.yr, places = 7)
         self.assertAlmostRelativeEqual(stars[2].wind, 2.0 * stars[1].wind, places = 7)
