@@ -257,7 +257,7 @@ class TestCapreole(TestWithMPI):
         instance.parameters.mesh_size = (10,10,5)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
-        instance.parameters.length_z = 0.0 | generic_unit_system.length
+        instance.parameters.length_z = 1.0 | generic_unit_system.length
         instance.parameters.x_boundary_conditions = "periodic","periodic"
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
@@ -298,22 +298,22 @@ class TestCapreole(TestWithMPI):
     def test2(self):
         instance=self.new_instance(Capreole)
         instance.initialize_code()
-        instance.parameters.mesh_size = (10,10,5)
+        instance.parameters.mesh_size = (3,3,3)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
-        instance.parameters.length_z = 0.0 | generic_unit_system.length
+        instance.parameters.length_z = 1.0 | generic_unit_system.length
         instance.parameters.x_boundary_conditions = "periodic","periodic"
         instance.parameters.y_boundary_conditions = "periodic","periodic"
         instance.parameters.z_boundary_conditions = "periodic","periodic"
         
         instance.commit_parameters()
     
-        grid = core.Grid(10,10,5)
+        grid = core.Grid(3,3,3)
         grid.rho = 0.1 | generic_unit_system.density
         grid.rhovx = 0.0 | generic_unit_system.momentum_density
         grid.rhovy = 0.0 |  generic_unit_system.momentum_density
         grid.rhovz = 0.0 |  generic_unit_system.momentum_density
-        grid.energy = 0.0 | generic_unit_system.energy_density
+        grid.energy = 1.0 | generic_unit_system.energy_density
         
         channel = grid.new_channel_to(instance.grid)
         channel.copy()
@@ -323,16 +323,68 @@ class TestCapreole(TestWithMPI):
         print instance.grid[1].rho
         self.assertEquals(instance.grid[1][1][0].rho, 0.1 | generic_unit_system.density)
         for x in instance.grid[1].rho.value_in(generic_unit_system.density).flatten():
-            self.assertEquals(x, 0.1)
+            self.assertEqual(x, 0.1)
             
-        #instance.evolve_model(1.0 | generic_unit_system.time)
+        instance.evolve_model(1.0 | generic_unit_system.time)
         
-        #for x in instance.grid.rho.value_in(density).flatten():
-        #    self.assertEquals(x, 0.1)
+        for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
+            self.assertEquals(x, 0.1)
     
-        #instance.evolve_model(10.0 | generic_unit_system.time)
-        #for x in instance.grid.rho.value_in(density).flatten():
-        #    self.assertEquals(x, 0.1)
+        instance.evolve_model(10.0 | generic_unit_system.time)
+        for x in instance.grid.rho.value_in(generic_unit_system.density).flatten():
+            self.assertEquals(x, 0.1)
         instance.stop()
     
+    def test3(self):
+        instance=self.new_instance(Capreole)
+        instance.initialize_code()
+        instance.parameters.mesh_size = (5,5,5)
+        instance.parameters.length_x = 1.0 | generic_unit_system.length
+        instance.parameters.length_y = 1.0 | generic_unit_system.length
+        instance.parameters.length_z = 1.0 | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = "periodic","periodic"
+        instance.parameters.y_boundary_conditions = "periodic","periodic"
+        instance.parameters.z_boundary_conditions = "periodic","periodic"
+        
+        instance.commit_parameters()
+    
+        grid = core.Grid(5,5,5)
+        grid.rho = 0.1 | generic_unit_system.density
+        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid.rhovy = 0.0 |  generic_unit_system.momentum_density
+        grid.rhovz = 0.0 |  generic_unit_system.momentum_density
+        grid.energy =  1.0 | generic_unit_system.energy_density
+        
+        channel = grid.new_channel_to(instance.grid)
+        channel.copy()
+        
+        self.assertEquals((5,5,5), instance.acceleration_grid.shape)
+        
+        acc_grid = core.Grid(5,5,5)
+        acc_grid.ax = 1 | generic_unit_system.acceleration
+        acc_grid.ay = 1 | generic_unit_system.acceleration
+        acc_grid.az = 1 | generic_unit_system.acceleration
+        #self.assertEquals(acc_grid.acceleration[0][0][0], ( 1,1,1) | generic_unit_system.acceleration)
+        channel = acc_grid.new_channel_to(instance.acceleration_grid)
+        channel.copy()
+        
+        result = instance.initialize_grid()
+                   
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        
+        self.assertAlmostRelativeEquals(instance.grid.rho, grid.rho);
+        self.assertAlmostRelativeEquals(instance.grid.rhovx, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
+        self.assertAlmostRelativeEquals(instance.grid.rhovy, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
+        self.assertAlmostRelativeEquals(instance.grid.rhovz, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
+
+        instance.evolve_model(0.3 | generic_unit_system.time)
+        print instance.model_time
+        self.assertAlmostRelativeEquals(instance.grid.rho, grid.rho);
+        self.assertAlmostRelativeEquals(instance.grid.rhovx, grid.rho *  instance.model_time * acc_grid.ax,2);
+        self.assertAlmostRelativeEquals(instance.grid.rhovy, grid.rho *  instance.model_time * acc_grid.ay,2);
+        self.assertAlmostRelativeEquals(instance.grid.rhovz, grid.rho *  instance.model_time * acc_grid.az,2);
+        instance.stop()
+    
+    
+
     

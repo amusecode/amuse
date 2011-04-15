@@ -35,6 +35,7 @@
  &boundlist
         dixB=   2
         typeB=   5*'periodic',5*'periodic',5*'periodic',5*'periodic',5*'periodic',5*'periodic'
+        typeghostfill= 'linear'
 /
 
  &amrlist

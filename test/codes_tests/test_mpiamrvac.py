@@ -394,8 +394,8 @@ class TestMpiAmrVac(TestWithMPI):
             for grid in grids:
                 firsthalf = grid.x > 5.0 | generic_unit_system.length
                 secondhalf = numpy.logical_not(firsthalf)
-                
-                grid[firsthalf].rho = 1.0  | generic_unit_system.density
+                if(numpy.any(firsthalf)):
+                    grid[firsthalf].rho = 1.0  | generic_unit_system.density
         
         instance = self.new_instance(MpiAmrVac, number_of_workers = 1)
         instance.set_parameters_filename(instance.default_parameters_filename)
@@ -472,3 +472,162 @@ class TestMpiAmrVac(TestWithMPI):
         self.assertEquals(instance.parameters.spatial_discretization_method , 'tvdlf' | units.string)
         self.assertEquals(instance.parameters.predictor_step_discretization_method , 'hancock' | units.string)
         
+    def test7(self):
+        instance=self.new_instance(MpiAmrVac, debugger="none")
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        instance.initialize_code()
+        instance.parameters.mesh_length = (10.0,10.0, 10.0) | generic_unit_system.length
+        instance.parameters.mesh_size = (10,10,10)
+        instance.parameters.maximum_number_of_grid_levels = 1
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        
+        instance.commit_parameters()
+    
+        grid = core.Grid(10,10,10)
+        grid.rho = 0.1 | generic_unit_system.density
+        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid.rhovy = 0.0 |  generic_unit_system.momentum_density
+        grid.rhovz = 0.0 |  generic_unit_system.momentum_density
+        grid.energy =  1.0 | generic_unit_system.energy_density
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        channel = grid.new_channel_to(igrid)
+        channel.copy()
+        
+                   
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho)
+        
+        instance.evolve_model(0.3 | generic_unit_system.time)
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho)
+        
+        instance.stop()
+        
+    def test8(self):
+        instance=self.new_instance(MpiAmrVac)
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        instance.initialize_code()
+        instance.parameters.mesh_size = (10,10,10)
+        instance.parameters.maximum_number_of_grid_levels = 1
+        instance.parameters.length_x = 1.0 | generic_unit_system.length
+        instance.parameters.length_y = 1.0 | generic_unit_system.length
+        instance.parameters.length_z = 1.0 | generic_unit_system.length
+        instance.parameters.x_boundary_conditions = "periodic","periodic"
+        instance.parameters.y_boundary_conditions = "periodic","periodic"
+        instance.parameters.z_boundary_conditions = "periodic","periodic"
+        
+        name, error = instance.get_typeghostfill()
+        self.assertEquals(name, 'linear')
+        instance.commit_parameters()
+        
+        name, error = instance.get_typeghostfill()
+        self.assertEquals(name, 'linear')
+        grid = core.Grid(10,10,10)
+        grid.rho = 0.1 | generic_unit_system.density
+        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid.rhovy = 0.0 |  generic_unit_system.momentum_density
+        grid.rhovz = 0.0 |  generic_unit_system.momentum_density
+        grid.energy =  1.0 | generic_unit_system.energy_density
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        channel = grid.new_channel_to(igrid)
+        channel.copy()
+        
+        name, error = instance.get_typeghostfill()
+        self.assertEquals(name, 'linear')
+    
+        self.assertEquals((50,50,50), instance.acceleration_grid.shape)
+        
+        acc_grid = core.Grid(50,50,50)
+        acceleration = 1 | generic_unit_system.acceleration
+        acc_grid.ax = acceleration
+        acc_grid.ay = acceleration
+        acc_grid.az = acceleration
+        #self.assertEquals(acc_grid.acceleration[0][0][0], ( 1,1,1) | generic_unit_system.acceleration)
+        channel = acc_grid.new_channel_to(instance.acceleration_grid)
+        channel.copy()
+        
+        name, error = instance.get_typeghostfill()
+        self.assertEquals(name, 'linear')
+        
+        result = instance.initialize_grid()
+                   
+        name, error = instance.get_typeghostfill()
+        self.assertEquals(name, 'linear')
+    
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho);
+        self.assertAlmostRelativeEquals(igrid.rhovx, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
+        self.assertAlmostRelativeEquals(igrid.rhovy, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
+        self.assertAlmostRelativeEquals(igrid.rhovz, 0.1 * 1.0 * 0.1 | generic_unit_system.momentum_density);
+
+        instance.evolve_model(0.3 | generic_unit_system.time)
+        print instance.model_time
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho);
+        self.assertAlmostRelativeEquals(igrid.rhovx, grid.rho *  instance.model_time * acceleration,2);
+        self.assertAlmostRelativeEquals(igrid.rhovy, grid.rho *  instance.model_time * acceleration,2);
+        self.assertAlmostRelativeEquals(igrid.rhovz, grid.rho *  instance.model_time * acceleration,2);
+        instance.stop()
+        
+    
+    def test9(self):
+        instance=self.new_instance(MpiAmrVac, mode="2d", debugger="none")
+        instance.set_parameters_filename(instance.default_parameters_filename)
+        instance.initialize_code()
+        instance.parameters.mesh_length = (10.0,10.0, 1) | generic_unit_system.length
+        instance.parameters.mesh_size = (10,10,1)
+        instance.parameters.maximum_number_of_grid_levels = 1
+        instance.parameters.x_boundary_conditions = ("periodic","periodic")
+        instance.parameters.y_boundary_conditions = ("periodic","periodic")
+        instance.parameters.z_boundary_conditions = ("periodic","periodic")
+        
+        instance.commit_parameters()
+    
+        grid = core.Grid(10,10,1)
+        grid.rho = 0.1 | generic_unit_system.density
+        grid.rhovx = 0.0 | generic_unit_system.momentum_density
+        grid.rhovy = 0.0 |  generic_unit_system.momentum_density
+        grid.rhovz = 0.0 |  generic_unit_system.momentum_density
+        grid.energy =  1.0 | generic_unit_system.energy_density
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        channel = grid.new_channel_to(igrid)
+        channel.copy()
+        
+                   
+        instance.evolve_model(0.1 | generic_unit_system.time)
+        
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho)
+        
+        instance.evolve_model(0.3 | generic_unit_system.time)
+        grids = list(instance.itergrids())
+        self.assertEquals(len(grids), 1)
+        igrid = grids[0]
+        self.assertAlmostRelativeEquals(igrid.rho, grid.rho)
+        
+        instance.stop()

@@ -4,6 +4,8 @@ MODULE mpiamrvac_interface
     
     INTEGER :: refinement_level = 1
     
+    CHARACTER(LEN=1024) :: error_string = ''
+    
 CONTAINS
 
     FUNCTION initialize_code()
@@ -38,7 +40,13 @@ CONTAINS
     END FUNCTION
     
     FUNCTION commit_parameters()
+        include 'amrvacdef.f'
         INTEGER commit_parameters
+        
+        commit_parameters = 0
+        
+        commit_parameters = check_method_parameters()
+        if(commit_parameters .ne. 0) return
         
         call initialize_vars()
         call init_comm_types
@@ -60,6 +68,7 @@ CONTAINS
     END FUNCTION
 
     FUNCTION initialize_grid()
+        include 'amrvacdef.f'
         INTEGER :: initialize_grid
         
         ! set up and initialize finer level grids, if needed
@@ -215,6 +224,14 @@ CONTAINS
         outputvalue = typepred1(1)
           
     end function
+
+    function get_current_error(outputvalue)
+        include 'amrvacdef.f'
+        integer :: get_current_error
+        character(len=1024) :: outputvalue
+        outputvalue = error_string
+        get_current_error = 0   
+    end function
     
     function set_gamma(inputvalue)
         include 'amrvacdef.f'
@@ -223,7 +240,7 @@ CONTAINS
         eqpar(gamma_) = inputvalue
         set_gamma = 0   
     end function
-
+    
     function get_gamma(outputvalue)
         include 'amrvacdef.f'
         integer :: get_gamma
@@ -3033,6 +3050,194 @@ CONTAINS
         end do
         
         get_acceleration_grid_position_of_index = 0
+    end function
+    
+    function validation_error(error_description)
+        integer :: validation_error
+        CHARACTER(LEN=*), INTENT(IN) :: error_description
+        PRINT *, error_description
+        error_string = error_description
+        validation_error = -1
+    end function
+    
+    function check_method_parameters()
+        include 'amrvacdef.f'
+        integer :: check_method_parameters
+        integer :: level
+        
+        check_method_parameters = 0
+        
+        if(compactres)then
+         if(typeaxial/='slab') check_method_parameters = validation_error("compactres for MHD only in cartesian case") ; return
+        endif
+
+        if(TRIM(wnames)=='default') check_method_parameters = validation_error("Provide wnames and restart code") ; return
+
+        do level=1,nlevelshi
+           if(typefull1(level)=='tvdlf1'.and.typeadvance=='twostep') &
+              check_method_parameters = validation_error(" tvdlf1 is onestep method, reset typeadvance=onestep!") ; return
+           if(typefull1(level)=='hll1'.and.typeadvance=='twostep') &
+              check_method_parameters = validation_error(" hll1 is onestep method, reset typeadvance=onestep!") ; return
+           if(typefull1(level)=='hllc1'.and.typeadvance=='twostep') &
+              check_method_parameters = validation_error(" hllc1 is onestep method, reset typeadvance=onestep!") ; return
+           if(typefull1(level)=='hllcd1'.and.typeadvance=='twostep') &
+              check_method_parameters = validation_error(" hllcd1 is onestep method, reset typeadvance=onestep!") ; return
+           if(typefull1(level)=='tvdmu1'.and.typeadvance=='twostep') &
+              check_method_parameters = validation_error(" tvdmu1 is onestep method, reset typeadvance=onestep!") ; return
+           if(typefull1(level)=='tvd'.and.typeadvance=='twostep') &
+              check_method_parameters = validation_error(" tvd is onestep method, reset typeadvance=onestep!") ; return
+           if(typefull1(level)=='tvd1'.and.typeadvance=='twostep') &
+              check_method_parameters = validation_error(" tvd1 is onestep method, reset typeadvance=onestep!") ; return
+           if(typefull1(level)=='tvd'.or.typefull1(level)=='tvd1')then 
+              if(mype==0.and.(.not.dimsplit)) write(unitterm,*) &
+                 'Warning: setting dimsplit=T for tvd, as used for level=',level
+              dimsplit=.true.
+           endif
+
+           if (typepred1(level)=='default') then
+              select case (typefull1(level))
+              case ('cd')
+                 typepred1(level)='cd'
+              case ('tvdlf','tvdmu')
+                 typepred1(level)='hancock'
+              case ('hll')
+                 typepred1(level)='hll'
+              case ('hllc')
+                 typepred1(level)='hllc'
+              case ('hllcd')
+                 typepred1(level)='hllcd'
+              case ('tvdlf1','tvdmu1','tvd1','tvd','hll1','hllc1', &
+                    'hllcd1','nul','source')
+                 typepred1(level)='nul'
+              case default
+                 check_method_parameters = validation_error("No default predictor for this full step") ; return
+              end select
+           end if
+        end do
+
+        select case (typeadvance)
+            case ("onestep")
+               nstep=1
+            case ("twostep")
+               nstep=2
+            case ("fourstep")
+               nstep=4
+            case default
+               check_method_parameters = validation_error("Unknown typeadvance") ; return
+        end select
+
+
+        do level=1,nlevelshi
+            if (typelow1(level)=='default') then
+                select case (typefull1(level))
+                    case ('cd')
+                      typelow1(level)='cd'
+                    case ('hancock')
+                      typelow1(level)='hancock'
+                    case ('tvdlf','tvdlf1','tvdmu','tvdmu1','tvd1','tvd')
+                      typelow1(level)='tvdlf1'
+                    case ('hll','hll1')
+                      typelow1(level)='hll1'
+                    case ('hllc','hllc1')
+                      typelow1(level)='hllc1'
+                    case ('hllcd','hllcd1')
+                      typelow1(level)='hllcd1'
+                    case ('nul')
+                      typelow1(level)='nul'
+                    case ('source')
+                      typelow1(level)='source'
+                    case default
+                      check_method_parameters = validation_error("No default typelow for this full step") ; return
+                end select
+            end if
+        enddo
+
+        ! Harmonize the parameters for dimensional splitting and source splitting
+        if(typedimsplit   =='default'.and.     dimsplit)   typedimsplit='xyyx'
+        if(typedimsplit   =='default'.and..not.dimsplit)   typedimsplit='unsplit'
+        if(typesourcesplit=='default'.and.     sourcesplit)typesourcesplit='sfs'
+        if(typesourcesplit=='default'.and..not.sourcesplit)typesourcesplit='unsplit'
+        dimsplit   = typedimsplit   /='unsplit'
+        sourcesplit= typesourcesplit/='unsplit'
+        if(sourcesplit)sourceunsplit=.false.
+
+        if (typeaxial=="slab") then
+           slab=.true.
+        else
+           slab=.false.
+        end if
+
+        if (typeaxial=='spherical') then
+           if (dimsplit) then
+              if(mype==0)print *,'Warning: spherical symmetry needs dimsplit=F, resetting'
+              dimsplit=.false.
+           end if
+        end if
+
+        if (ndim==1) dimsplit=.false.
+        if (.not.dimsplit.and.ndim>1) then
+           select case (typeadvance)
+           case ("fourstep")
+              ! Runge-Kutta needs predictor
+              typelimited="predictor"
+              if(mype==0)print *,'typelimited to predictor for RK4'
+           case ("twostep")
+              ! non-conservative Hancock predictor needs the previous typelimited
+              !do level=1,nlevelshi
+                !!if(typepred1(level)=='hancock')then
+                !!!  typelimited="previous"
+                !!  if(mype==0)print *,'Warning: typelimited to previous for hancock on level=',level
+                !!end if
+              !end do
+           end select
+        end if
+
+        if((divbfix.and.(typephys=='mhd'.or.typephys=='srmhd'.or.typephys=='srmhdeos')).and.&
+           (.not.sourcesplit).and.(.not.sourceunsplit))&
+           check_method_parameters = validation_error("divbfix=T requires unsplitsource=T or splitsource=T !") ; return
+        if((divbdiff>zero.and.(typephys=='mhd'.or.typephys=='srmhd'.or.typephys=='srmhdeos')).and.&
+           (.not.sourcesplit).and.(.not.sourceunsplit))&
+           check_method_parameters = validation_error("divbdiff>0 requires unsplitsource=T or splitsource=T !") ; return
+
+        if (B0field) then
+           if (.not.typephys=='mhd') B0field=.false.
+           if(mype==0)print *,'B0+B1 split only for MHD'
+        end if
+
+        if (any(typelimiter1(1:nlevelshi)== 'ppm')&
+            .and.(flatsh.and.typephys=='rho')) then
+            check_method_parameters = validation_error(" PPM with flatsh=.true. can not be used with typephys='rho'!") ; return
+        end if
+        if (any(typelimiter1(1:nlevelshi)== 'ppm')&
+            .and.(flatsh.and.typephys=='hdadiab')) then
+             check_method_parameters = validation_error(" PPM with flatsh=.true. can not be used with typephys='hdadiab'!") ; return
+        end if
+        if (any(typelimiter1(1:nlevelshi)== 'ppm')&
+            .and.(flatcd.and.typephys=='hdadiab')) then
+             check_method_parameters = validation_error(" PPM with flatcd=.true. can not be used with typephys='hdadiab'!") ; return
+        end if
+        if (any(typelimiter1(1:nlevelshi)== 'ppm')&
+            .and.(flatsh.and..not.useprimitive)) then
+             check_method_parameters = validation_error(" PPM with flatsh=.true. needs useprimitive=T!") ; return
+        end if
+        if (any(typelimiter1(1:nlevelshi)== 'ppm')&
+            .and.(flatcd.and..not.useprimitive)) then
+             check_method_parameters = validation_error(" PPM with flatcd=.true. needs useprimitive=T!") ; return
+        end if
+
+    end function
+    
+    function check_stop_parameters()
+        include 'amrvacdef.f'
+        integer :: check_stop_parameters
+        
+        if(residmin>=zero) then
+            if(residmin<=smalldouble) then
+                check_stop_parameters = validation_error("Provide value for residual above smalldouble")
+                return
+            end if
+        end if
+        
     end function
     
 END MODULE mpiamrvac_interface

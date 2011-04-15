@@ -357,6 +357,7 @@ def pack_array(array, length,  dtype):
                 result = numpy.empty(length * len(array), dtype = dtype)
         else:        
             result = numpy.empty(length * len(array), dtype = dtype)
+        
         for i in range(len(array)):
             offset = i * length
             result[offset:offset+length] = array[i]

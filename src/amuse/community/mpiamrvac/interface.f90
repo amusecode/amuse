@@ -72,7 +72,6 @@ CONTAINS
         
         ! set up and initialize finer level grids, if needed
         !call settree
-   
         if (levmax>levmin) then
             call allocateBflux
         endif

@@ -2222,6 +2222,9 @@ class MpiAmrVac(InCodeComponentImplementation):
         
         return (0, nx-1, 0, ny-1, 0, nz-1)
 
+    def define_properties(self, object):
+        object.add_property('get_time', generic_unit_system.time, "model_time")
+        
     def define_methods(self, object):
         object.add_method(
             'evolve',
@@ -2240,11 +2243,34 @@ class MpiAmrVac(InCodeComponentImplementation):
             (object.INDEX, object.INDEX, object.INDEX, object.INDEX),
             (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, object.ERROR_CODE,)
         )
+        object.add_method(
+            'get_acceleration_grid_position_of_index',
+            (object.INDEX, object.INDEX, object.INDEX),
+            (generic_unit_system.length, generic_unit_system.length, generic_unit_system.length, object.ERROR_CODE,)
+        )
         
         density = generic_unit_system.density
         momentum =  generic_unit_system.momentum_density
         energy =  generic_unit_system.energy_density
+        acceleration =  generic_unit_system.length / generic_unit_system.time ** 2
         
+        object.add_method(
+            'get_acceleration_grid_size',
+            (),
+            (object.NO_UNIT,object.NO_UNIT,object.NO_UNIT, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_acceleration_grid_acceleration',
+            (object.INDEX, object.INDEX, object.INDEX),
+            (acceleration, acceleration, acceleration, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'set_acceleration_grid_acceleration',
+            (object.INDEX, object.INDEX, object.INDEX, acceleration, acceleration, acceleration,),
+            (object.ERROR_CODE,)
+        )
         object.add_method(
             'set_grid_energy_density',
             (object.INDEX, object.INDEX, object.INDEX, energy, object.INDEX),
@@ -2513,6 +2539,18 @@ class MpiAmrVac(InCodeComponentImplementation):
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
     
+    def get_acceleration_grid_index_range_inclusive(self):
+        nx, ny, nz = self.get_acceleration_grid_size()
+        return (1, nx, 1, ny, 1, nz)
+        
+    def define_particle_sets(self, object):
+        
+        object.define_grid('acceleration_grid')
+        object.set_grid_range('acceleration_grid', 'get_acceleration_grid_index_range_inclusive')
+        object.add_getter('acceleration_grid', 'get_acceleration_grid_position_of_index', names=('x','y','z'))
+        object.add_getter('acceleration_grid', 'get_acceleration_grid_acceleration', names=('ax','ay','az'))
+        object.add_setter('acceleration_grid', 'set_acceleration_grid_acceleration', names=('ax','ay','az'))
+        
     def itergrids(self):
         n, error = self.get_number_of_grids()
         

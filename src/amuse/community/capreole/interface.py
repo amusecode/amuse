@@ -359,9 +359,9 @@ class Capreole(InCodeComponentImplementation):
         object.define_grid('acceleration_grid')
         object.set_grid_range('acceleration_grid', 'get_index_range_inclusive')
         object.add_getter('acceleration_grid', 'get_position_of_index', names=('x','y','z'))
-        object.add_setter('acceleration_grid', 'set_gravity_field', names=('fx','fy','fz'))
-        object.add_getter('acceleration_grid', 'get_gravity_field', names=('fx','fy','fz'))
-        
+        object.add_setter('acceleration_grid', 'set_gravity_field', names=('ax','ay','az'))
+        object.add_getter('acceleration_grid', 'get_gravity_field', names=('ax','ay','az'))
+    
         #object.add_setter('grid', 'set_momentum_density', names=('rhovx','rhovy','rhovz'))
         #object.add_setter('grid', 'set_density', names=('rho',))
         #object.add_setter('grid', 'set_energy_density', names=('energy',))
