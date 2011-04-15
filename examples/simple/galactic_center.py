@@ -101,7 +101,7 @@ if __name__ in ['__main__', '__plot__']:
 # make cluster and Galactic center
     cluster=king_model_cluster(Fi,N,W0, Mcluster,Rcluster, parameters=[
                    ("epsilon_squared", (0.01 | units.parsec)**2), 
-                   ("pboxsize",200 | units.parsec),
+                   ("periodic_box_size",200 | units.parsec),
                    ("timestep",timestep/4)] )
     center=galactic_center()
     
