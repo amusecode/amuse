@@ -192,6 +192,7 @@ class AbstractParticleSet(AbstractSet):
 
     def __getitem__(self, index):
         keys = self.get_all_keys_in_store()[index]
+        
         if hasattr(keys, '__iter__'):
             return self._subset(keys)
         else:
@@ -1213,11 +1214,15 @@ class ParticlesSubset(AbstractParticleSet):
         
         
     def __getitem__(self, index):
-        key = self.get_all_keys_in_store()[index]
-        if key == 0 or key >= (2**64 - 1):
-            return None
+        keys = self.get_all_keys_in_store()[index]
+        if hasattr(keys, '__iter__'):
+            return self._subset(keys)
         else:
-            return Particle(self.get_all_keys_in_store()[index], self._original_set())
+            key = keys
+            if key == 0 or key >= (2**64 - 1):
+                return None
+            else:
+                return Particle(self.get_all_keys_in_store()[index], self._original_set())
             
     def add_particles_to_store(self, keys, attributes = [], values = []):
         """
