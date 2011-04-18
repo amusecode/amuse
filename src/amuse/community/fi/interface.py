@@ -1829,7 +1829,7 @@ class Fi(GravitationalDynamics):
         object.add_method_parameter(
             "get_pboxsize", 
             "set_pboxsize",
-            "box_size", 
+            "periodic_box_size", 
             "The size of simulation domain box (particles outside get deleted).", 
             nbody_system.length,
             300.0 | nbody_system.length
