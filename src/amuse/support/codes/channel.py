@@ -442,8 +442,6 @@ p.Disconnect()"""
         #arguments = ['-hold', '-display', os.environ['DISPLAY'], '-e', sys.executable, '-c', code, full_name_of_the_worker]
         command = sys.executable
         #command = 'xterm'
-
-        print arguments
         
         return command, arguments
         
@@ -866,7 +864,6 @@ class MultiprocessingMPIChannel(MessageChannel):
         all_options = {}
         for x in self.iter_options():
             all_options[x.name] = getattr(self, x.name)
-        print repr(all_options)
         
           
         template = """from {3} import {4}

@@ -194,7 +194,6 @@ class StoreHDF(object):
             value = quantity.value_in(quantity.unit)
             dataset = attributes_group.create_dataset(attribute, data=value)
             dataset.attrs["units"] = quantity.unit.to_simple_form().reference_string()
-            print  quantity.unit.to_simple_form().reference_string()
             
     
     def store_timestamp(self, container, group):
