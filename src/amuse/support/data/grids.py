@@ -415,17 +415,24 @@ class SamplePointsOnGrid(object):
 
 class SamplePointsOnMultipleGrids(object):
     
-    def __init__(self, grids, points, samples_factory = SamplePointWithIntepolation):
+    def __init__(self, grids, points, samples_factory = SamplePointWithIntepolation, index_factory = None):
         self.grids = grids
         self.points = points
         self.samples_factory = samples_factory
-    
+        if index_factory is None:
+            self.index = None
+        else:
+            self.index = index_factory(self.grids)
+        
     def _grid_for_point(self, point):
-        for grid in self.grids:
-            if (numpy.all(point >= grid.get_minimum_position()) and
-                 numpy.all(point < grid.get_maximum_position())):
-                return grid
-        return None 
+        if self.index is None:
+            for grid in self.grids:
+                if (numpy.all(point >= grid.get_minimum_position()) and
+                     numpy.all(point < grid.get_maximum_position())):
+                    return grid
+            return None 
+        else:
+            return self.index.grid_for_point(point)
     
     def filterout_duplicate_indices(self):
         previous_grid = None
@@ -439,6 +446,18 @@ class SamplePointsOnMultipleGrids(object):
                 previous_index = x.index
                 filteredout.append(x)
         self.samples = filteredout
+        
+    def get_samples(self):
+        result = []
+        for x in self.points:
+            grid = self._grid_for_point(x)
+            if grid is None:
+                continue
+            sample = self.samples_factory(grid, x)
+            if not sample.isvalid:
+                continue
+            result.append(sample)
+        return result
         
     @late
     def samples(self):
@@ -464,6 +483,7 @@ class SamplePointsOnMultipleGrids(object):
             yield x.position
         
     def __getattr__(self, name_of_the_attribute):
+        self.get_samples()
         result = values.AdaptingVectorQuantity()
         for x in self.samples:
             result.append(getattr(x, name_of_the_attribute))
@@ -481,4 +501,52 @@ class SamplePointsOnMultipleGrids(object):
         
         
 
+class NonOverlappingGridsIndexer(object):
+        
+    def __init__(self, grids):
+        self.grids = grids
+        self.setup_index()
+    
+    @late
+    def minimum_position(self):
+        result = self.grids[0].get_minimum_position()
+        for x in self.grids[1:]:
+            minimum = x.get_minimum_position()
+            result = result.min(minimum)
+        return result
+        
+    def setup_index(self):
+        smallest_boxsize = None
+        for x in self.grids:
+            boxsize = x.get_maximum_position() - x.get_minimum_position()
+            if smallest_boxsize is None:
+                smallest_boxsize = boxsize
+            else:
+                smallest_boxsize = boxsize.min(smallest_boxsize)
+            
+        self.smallest_boxsize = smallest_boxsize
+        
+        max_index = [0,0,0]
+        
+        for x in self.grids:
+            index = (x.get_maximum_position() / smallest_boxsize).value_in(units.none)
+            index = numpy.floor(index).astype(numpy.int)
+            max_index = numpy.where(index > max_index, index, max_index)
+            
+        self.grids_on_index = numpy.zeros(max_index, 'int')
+        
+        for index,x in enumerate(self.grids):
+            bottom_left = x.get_minimum_position()
+            index_of_grid = (bottom_left / smallest_boxsize).value_in(units.none)
+            size = ((x.get_maximum_position() - x.get_minimum_position()) / smallest_boxsize).value_in(units.none)
+            i,j,k = numpy.floor(index_of_grid).astype(numpy.int)
+            ni,nj,nk = numpy.floor(size).astype(numpy.int)
+            self.grids_on_index[i:i+ni,j:j+nj,k:k+nk] = index
+        
+        
+    def grid_for_point(self, position):
+        index = ((position - self.minimum_position) / self.smallest_boxsize).value_in(units.none)
+        index = numpy.floor(index).astype(numpy.int)
+        index_of_grid = self.grids_on_index[tuple(index)]
+        return self.grids[index_of_grid]
         

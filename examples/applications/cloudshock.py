@@ -61,7 +61,7 @@ class CalculateCloudShock(object):
 
     def new_instance_of_mpiamrvac_code(self):
         from amuse.community.mpiamrvac.interface import MpiAmrVac
-        result=MpiAmrVac(number_of_workers=self.number_of_workers, redirection="none")
+        result=MpiAmrVac(number_of_workers=self.number_of_workers) #, redirection="none")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
         result.parameters.maximum_number_of_grid_levels = 3
@@ -105,8 +105,6 @@ class CalculateCloudShock(object):
         if __name__ == '__plot__':
             return
         
-        if 1:
-            return
             
         grids_in_memory = [x.copy_to_memory() for x in grids]
         io.write_set_to_file(
@@ -150,8 +148,8 @@ class CalculateCloudShock(object):
             from_model_to_code.copy()
         
         self.refine_grid(instance)
-            
         instance.initialize_grid()
+        
         self.store_grids(instance.itergrids(), 0)
                 
         print "start evolve"
@@ -182,23 +180,40 @@ class CalculateCloudShock(object):
 
 def main():
     number_of_grid_points = 10
-    name_of_the_code = 'capreole'
+    name_of_the_code = 'mpiamrvac'
     model = CalculateCloudShock(
         number_of_grid_points = number_of_grid_points,
-        number_of_workers = 3,
+        number_of_workers = 6,
         name_of_the_code = name_of_the_code
     )
         
     grids = model.get_solution_at_time(0.5 * model.get_tau())
     
-        
-    pyplot.figure(figsize=(12,12))
-    pyplot.savefig("cloud.png")
-    rho = grids[0].rho[...,...,number_of_grid_points / 2].value_in(generic_unit_system.density)
-    figure = pyplot.figure(figsize=(20,20))
+    sample_grid = core.Grid.create(
+        (100,400,1),
+        (10.0,40,0) | generic_unit_system.length
+    )
+    sample_grid.z += 5.0 | generic_unit_system.length
+    
+    sampler =  core.SamplePointsOnMultipleGrids(
+        grids,
+        sample_grid.position.reshape((numpy.prod(sample_grid.shape),3,)),
+        core.SamplePointOnCellCenter,
+        core.NonOverlappingGridsIndexer
+    )
+    
+    print "start sampling"
+    
+    rho = sampler.rho.value_in(generic_unit_system.density)
+    print "done"
+    rho = rho.reshape(sample_grid.shape[:-1])
+    x = sampler.x.reshape(sample_grid.shape[:-1])
+    y = sampler.y.reshape(sample_grid.shape[:-1])
+    levels = numpy.linspace(numpy.min(rho), numpy.max(rho), 255)
+    figure = pyplot.figure(figsize=(10,10))
     plot = figure.add_subplot(1,1,1)
     plot.imshow(rho, origin = 'lower')
-    figure.savefig('kelvin_helmholtz_{0}_{1}.png'.format(name_of_the_code, number_of_grid_points))
+    figure.savefig('cloudshock_{0}_{1}.png'.format(name_of_the_code, number_of_grid_points))
     pyplot.show()
     
     

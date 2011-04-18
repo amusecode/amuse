@@ -24,7 +24,6 @@ class generate_main(Command):
         if self.amuse_dir is None:
             self.amuse_dir =os.path.dirname(os.path.dirname(__file__))
             #self.amuse_dir ='/usr/share/amuse-2.2'
-        print self.amuse_dir
 
     def get_source_files(self):
         return self.latex_documents
