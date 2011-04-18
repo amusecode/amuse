@@ -1486,8 +1486,19 @@ class FiInterface(CodeInterface, GravitationalDynamicsInterface, LiteratureRefer
         return self.mode == self.MODE_PERIODIC_BOUNDARIES, 0
     
 class GlFiInterface(FiInterface):
+    def name_of_the_worker(self, mode):
+        if mode == self.MODE_NORMAL:
+            return 'fi_worker_gl'
+        elif mode == self.MODE_PERIODIC_BOUNDARIES:
+            return 'fi_worker_periodic_gl'
+        else:
+            return 'fi_worker_gl'
+
     def __init__(self, **options):
         CodeInterface.__init__(self,name_of_the_worker = 'fi_worker_gl', **options)
+    
+    def __init__(self,mode=FiInterface.MODE_NORMAL, **options):
+        LegacyInterface.__init__(self,name_of_the_worker = self.name_of_the_worker(mode), **options)
     
     @legacy_function
     def viewer():
@@ -1818,7 +1829,7 @@ class Fi(GravitationalDynamics):
         object.add_method_parameter(
             "get_pboxsize", 
             "set_pboxsize",
-            "periodic_box_size", 
+            "box_size", 
             "The size of simulation domain box (particles outside get deleted).", 
             nbody_system.length,
             300.0 | nbody_system.length
