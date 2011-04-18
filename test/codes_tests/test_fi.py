@@ -425,7 +425,7 @@ class TestFi(TestWithMPI):
         instance = Fi(nbody.nbody_to_si(1.0e9 | units.MSun, 1.0 | units.kpc))
         instance.initialize_code()
         
-        par_names=['epsilon_squared','timestep','periodic_box_size','code_mass_unit','code_length_unit',
+        par_names=['epsilon_squared','timestep','box_size','code_mass_unit','code_length_unit',
             'sqrt_timestep_crit_constant','acc_timestep_crit_constant','free_timestep_crit_constant_v',
             'free_timestep_crit_constant_a','free_timestep_crit_constant_vexp',
             'free_timestep_crit_constant_aexp','opening_angle','gadget_cell_opening_constant',
@@ -923,9 +923,9 @@ class TestFi(TestWithMPI):
         self.assertEqual(instance.parameters.periodic_boundaries_flag, True)
         instance.parameters.use_hydro_flag = False
         instance.parameters.self_gravity_flag = False
-        instance.parameters.periodic_box_size = 2.0 | nbody.length
+        instance.parameters.box_size = 2.0 | nbody.length
         instance.parameters.timestep = 0.1 | nbody.time
-        self.assertAlmostEqual(instance.parameters.periodic_box_size, 2.0 | units.kpc, places=6)
+        self.assertAlmostEqual(instance.parameters.box_size, 2.0 | units.kpc, places=6)
         
         three_particles_IC = core.Particles(3)
         three_particles_IC.position = [[0.5, 0.0, 0.0], [0.0,-0.5, 0.0], [0.0, 0.0, 0.5]] | nbody.length
