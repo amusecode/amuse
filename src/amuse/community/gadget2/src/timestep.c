@@ -548,7 +548,7 @@ int get_timestep(int p,		/*!< particle index */
 	printf("hydro-frc=(%g|%g|%g)\n", SphP[p].HydroAccel[0], SphP[p].HydroAccel[1], SphP[p].HydroAccel[2]);
 
       fflush(stdout);
-      //endrun(818);
+      endrun(818);
     }
 
   return ti_step;

@@ -1588,6 +1588,7 @@ class Gadget2(GravitationalDynamics):
         object.add_errorcode(-4, 'Parameter check failed.')
         object.add_errorcode(-5, 'CPU-time limit reached.')
         object.add_errorcode(-6, "Can't evolve backwards in time.")
+        object.add_errorcode(-7, "Can't evolve further than time_max.")
     
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
