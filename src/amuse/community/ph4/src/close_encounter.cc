@@ -312,8 +312,8 @@ bool jdata::resolve_encounter()
 
     if (mpi_rank == 0)
 	cout << endl << "managing two-body encounter of "
-	     << j1 << " (" << comp1 << ") and "
-	     << j2 << " (" << comp2 
+	     << j1 << " (ID = " << comp1 << ") and "
+	     << j2 << " (ID = " << comp2 
 	     << ") at time " << system_time
 	     << endl << flush;
 
