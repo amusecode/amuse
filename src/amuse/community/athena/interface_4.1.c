@@ -92,10 +92,10 @@ static DomainS * get_domain_structure_with_index(int index_of_grid)
         for(ii = 0; ii < mesh.DomainsPerLevel[level]; ii++)
         {
             dom = (DomainS*)&(mesh.Domain[level][ii]);
-            //printf("get_position_of_index: %d, %d, %d\n", level, dom->InputBlock, domain);
+            //printf("get_position_of_index: %d, %d, %d\n", level, dom->InputBlock, index_of_grid);
             if(dom->InputBlock == index_of_grid)
             {
-                break;
+                return dom;
             }
         }
     }
@@ -440,7 +440,7 @@ static inline int ijk_on_grid(GridS * grid, int * i0, int * j0, int * k0)
 
 int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, double * y,
   double * z){
-
+    
     double pos[4] = {0,0,0,0};
     if (mesh.NLevels == 0) {
         return -1;
@@ -461,7 +461,7 @@ int get_position_of_index(int i, int j, int k, int index_of_grid, double * x, do
     else
     {
         GridS * grid = dom->Grid;
-        //fprintf(stderr, "i %d: %d, %d, %d, %d\n", i, grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
+        //fprintf(stderr, "i %d[%d]: %d, %d, %d, %d\n", i, index_of_grid, grid->is, grid->ie, grid->Nx[0], grid->Disp[0]);
 
         pos[0] = 0.0;
         pos[1] = 0.0;
