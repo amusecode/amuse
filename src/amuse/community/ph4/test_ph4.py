@@ -156,6 +156,10 @@ def test_ph4(infile = None, number_of_stars = 40,
     sys.stdout.flush()
 
     E0 = print_log(time, gravity)
+    
+    
+    # added to copy values from the code to the set in memory
+    channel = gravity.particles.new_channel_to(stars)
 
     while time < end_time:
         time += delta_t
@@ -172,7 +176,16 @@ def test_ph4(infile = None, number_of_stars = 40,
 	# Remove the particles from the set in memory
         ls = len(stars)
         gravity.particles.synchronize_to(stars)
-
+    
+    # copy values from the code to the set in memory
+        channel.copy()
+    
+    # copy the index as it is in the code to the id field in memory
+    # the index is not copied by default
+    # as different codes may have different indices for the
+    # same particle and we don't want to overwrite silently
+        channel.copy_attribute("index_in_code", "id")
+        
 #        if len(stars) != ls:
         print "stars:"
         for s in stars:

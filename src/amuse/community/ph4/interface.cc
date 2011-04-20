@@ -148,13 +148,13 @@ int cleanup_code()
 int new_particle(int * index_of_the_particle,
 		 double mass, double radius, 
 		 double x, double y, double z,
-		 double vx, double vy, double vz)
+		 double vx, double vy, double vz, int index_to_set)
 {
     // Add a particle to the system.  Let the module set the id.
 
     //PRL(*index_of_the_particle);
     *index_of_the_particle = jd->add_particle(mass, radius,
-					      vec(x,y,z), vec(vx,vy,vz));
+					      vec(x,y,z), vec(vx,vy,vz), index_to_set);
     return 0;
 }
 

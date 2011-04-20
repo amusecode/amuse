@@ -246,7 +246,11 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
                 else:
                     result.append(x)
             return result
-    
+            
+    @late
+    def optional_attribute_names(self):
+        return self.method.optional_method_input_argument_names
+        
     @late
     def names_to_index(self):
         result = {}
@@ -270,10 +274,22 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
                 index = names_to_index[attribute]
                 list_arguments[index] = quantity
         
+        default_argument_found = False
         for index, x in enumerate(list_arguments):
             if x is not_set_marker:
-                raise exceptions.AmuseException("To add particles to this code you need to specify the {0!r} attribute".format(self.attribute_names[index]))
-            
+                name_of_attribute = self.attribute_names[index]
+                default_argument_found = True
+                if not name_of_attribute in self.optional_attribute_names:
+                    raise exceptions.AmuseException("To add particles to this code you need to specify the {0!r} attribute".format(self.attribute_names[index]))
+            elif default_argument_found:
+                name_of_attribute = self.attribute_names[index]
+                if name_of_attribute in self.optional_attribute_names:
+                    raise exceptions.AmuseException("Add particles method as mutliple default arguments, some are set and some are not, this is not handled yet")
+                else:
+                    raise exceptions.AmuseException("Optional before required arguments")
+                    
+        list_arguments = [x for x in list_arguments if not x is not_set_marker]
+        
         return list_arguments, {}
 
 
@@ -497,7 +513,7 @@ class ParticleGetIndexMethod(object):
     
     def get_attribute_values(self, storage, attributes_to_return, *indices):
         
-        return {self.ATTRIBUTE_NAME : indices[0]}
+        return {self.ATTRIBUTE_NAME : indices[0] | units.none}
 
 class AbstractInCodeAttributeStorage(base.AttributeStorage):
     """
@@ -604,6 +620,8 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             
         for x in setters:
             x.name_of_the_indexing_parameter = name_of_the_index
+        
+        getters = list(getters)
         
         AbstractInCodeAttributeStorage.__init__(self, code_interface, setters, getters)
     
@@ -729,6 +747,7 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         indices_to_delete = self.get_key_indices_of(keys)
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
         
+        print self.particle_keys
     
     def _add_indices(self, indices):
         keys = []
@@ -740,7 +759,6 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
             self.mapping_from_particle_key_to_index_in_the_code[newkey] = i
             
             keys.append(newkey)
-            
         keys = numpy.asarray(list(keys), dtype=self.particle_keys.dtype)
         self.particle_keys = numpy.concatenate((self.particle_keys, keys))
                 

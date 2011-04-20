@@ -279,6 +279,16 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(mass[1],  4 | units.kg)
         self.assertEquals(mass[2],  5 | units.kg)
         self.assertEquals(mass[3],  6 | units.kg)
+        
+        storage._remove_indices([4,])
+        code.number_of_particles = 3
+        self.assertEquals(len(storage), 3)
+        
+        mass, = storage.get_values_in_store(storage.particle_keys,["mass"])
+        
+        self.assertEquals(mass[0],  1 | units.kg)
+        self.assertEquals(mass[1],  4 | units.kg)
+        self.assertEquals(mass[2],  6 | units.kg)
     
 class TestGrids(amusetest.TestCase):
     

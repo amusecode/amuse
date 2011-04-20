@@ -176,6 +176,27 @@ class TestMPIInterface(TestWithMPI):
         self.assertAlmostRelativeEquals(total_potential, numpy.sum(potentials * [10.0, 1.0]) / 2.0)
         
         
+    def test9(self):
+        instance = ph4Interface()
+        instance.initialize_code()
+        instance.set_eta(0.01)
+        index, error = instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 10)
+        self.assertEquals(error, 0)
+        self.assertEquals(index, 10)
+        #index, error = instance.new_particle(12.0, 3.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 10)
+        #print index, error 
+        # self.assertEquals(error, -1)
+        #self.assertEquals(index, 10)
+        error = instance.commit_particles()
+        self.assertEquals(error, 0)
+        
+        retrieved_state = instance.get_state(index)
+        self.assertEquals(retrieved_state['__result'], 0)
+        self.assertEquals(11.0,  retrieved_state['mass'])
+        self.assertEquals(2.0, retrieved_state['radius'])
+        self.assertEquals(instance.get_number_of_particles()['number_of_particles'], 1)
+        instance.cleanup_code()
+        instance.stop()
 
 class TestPH4(TestWithMPI):
     def new_system_of_sun_and_earth(self):
@@ -317,6 +338,42 @@ class TestPH4(TestWithMPI):
         copyof = instance.particles.copy()
         
         self.assertEquals(2 | nbody_system.mass, copyof[1].mass)  
+        
+        instance.stop()
+        
+        
+    def test5(self):
+        instance = ph4()
+        instance.initialize_code()
+        
+        particles = core.Particles(6)
+        particles.mass =  [0.01, 0.1,  0.1, 0.1, 0.1, 0.1] | nbody_system.mass
+        particles.radius =   0.1 | nbody_system.length
+        particles.position = [
+            [-1.0,0.0,0.0], #first two close together
+            [-1.2,0.0,0.0],
+            [0.0,4.0,0.0], #rest far away
+            [0.0,5.0,0.0],
+            [0.0,6.0,0.0],
+            [0.0,7.0,0.0]
+        ] | nbody_system.length
+        particles.velocity = [[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0],[0.0,0.0,0.0]] | nbody_system.speed
+        
+        instance.particles.add_particles(particles)
+        
+        instance.commit_particles()
+        instance.evolve_model(0.1  | nbody_system.time)
+        
+        instance.update_particle_set()
+        
+        self.assertEquals(len(instance.particles), 5)
+        self.assertEquals(instance.particles.index_in_code, [3,4,5,6,10] | units.none)
+        self.assertEquals(instance.particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
+        
+        self.assertEquals(len(particles), 6)
+        instance.particles.synchronize_to(particles)
+        self.assertEquals(len(particles), 5)
+        self.assertEquals(particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
         
         instance.stop()
         
