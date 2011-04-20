@@ -1,2 +1,0 @@
-g++ -c -I/System/Library/Frameworks/JavaVM.framework/Headers -I../../tmp/headers ibis_worker_code.cc -o ibis_worker_code.o
-g++ -dynamiclib -o libbhtree_worker.jnilib ibis_worker_code.o -framework JavaVM
