@@ -249,7 +249,10 @@ class ParticleSetAttributesMethod(ParticleMappingMethod):
             
     @late
     def optional_attribute_names(self):
-        return self.method.optional_method_input_argument_names
+        if hasattr(self.method, 'optional_method_input_argument_names'):
+            return self.method.optional_method_input_argument_names
+        else:
+            return []
         
     @late
     def names_to_index(self):

@@ -55,10 +55,12 @@ class CalculateKelvinHelmholtzInstability(object):
         
     def new_instance_of_athena_code(self):
         from amuse.community.athena.interface import Athena
-        result=Athena(number_of_workers=self.number_of_workers)
+        result=Athena(number_of_workers=self.number_of_workers, debugger="xterm")
         result.initialize_code()
         result.parameters.gamma = self.gamma
         result.parameters.courant_number=0.8
+        print result.define_subgrid(1, 800, 200, 1, 0, 500, 0)
+        print result.define_subgrid(1, 800, 200, 1, 0, 100, 0)
         return result
         
 
@@ -150,6 +152,8 @@ class CalculateKelvinHelmholtzInstability(object):
             from_model_to_code = inmem.new_channel_to(x)
             from_model_to_code.copy()
         
+        self.store_grids(instance.itergrids(), 0)
+        
         instance.initialize_grid()
         
         self.store_grids(instance.itergrids(), 0)
@@ -184,7 +188,7 @@ def main():
     name_of_the_code = 'athena'
     model = CalculateKelvinHelmholtzInstability(
         number_of_grid_points = number_of_grid_points,
-        number_of_workers = 3,
+        number_of_workers = 1,
         name_of_the_code = name_of_the_code
     )
     if not IS_PLOT_AVAILABLE:
