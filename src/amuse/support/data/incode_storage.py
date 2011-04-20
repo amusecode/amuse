@@ -750,7 +750,6 @@ class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
         indices_to_delete = self.get_key_indices_of(keys)
         self.particle_keys =  numpy.delete(self.particle_keys, indices_to_delete)
         
-        print self.particle_keys
     
     def _add_indices(self, indices):
         keys = []
