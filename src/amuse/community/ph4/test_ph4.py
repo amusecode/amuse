@@ -163,6 +163,9 @@ def test_ph4(infile = None, number_of_stars = 40,
 
         # From Arjen:
 
+        print ""
+        print "updating lists at time", time.number
+
 	# Update the bookkeeping
         gravity.update_particle_set()
 
@@ -170,7 +173,7 @@ def test_ph4(infile = None, number_of_stars = 40,
         ls = len(stars)
         gravity.particles.synchronize_to(stars)
 
-        if len(stars) != ls: 
+        if len(stars) != ls:
             print "#stars =", len(stars)
             print "IDs", stars.id.number
             print ""
