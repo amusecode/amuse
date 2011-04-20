@@ -334,6 +334,14 @@ int evolve(double time)
     jd->UpdatedParticles.clear();
     while (jd->system_time < time)
 	status = jd->advance_and_check_encounter();
+
+    cout << "jdata:" << endl;
+    for (int j = 0; j < jd->nj; j++) {
+	cout << jd->id[j] << " " << jd->mass[j];
+	for (int k = 0; k < 3; k++) cout << " "  << jd->pos[j][k];
+	cout << endl << flush;
+    }
+
     return 0;	// status?
 }
 

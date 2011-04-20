@@ -77,9 +77,9 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.id = id+1 | units.none
 
         print "setting particle masses and radii"
-	stars.mass = (1.0 / number_of_stars) | nbody_system.mass
-        #scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
-        #stars.mass = scaled_mass
+	#stars.mass = (1.0 / number_of_stars) | nbody_system.mass
+        scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
+        stars.mass = scaled_mass
         stars.radius = 0.0 | nbody_system.length
 
         print "centering stars"
@@ -173,11 +173,13 @@ def test_ph4(infile = None, number_of_stars = 40,
         ls = len(stars)
         gravity.particles.synchronize_to(stars)
 
-        if len(stars) != ls:
-            print "#stars =", len(stars)
-            print "IDs", stars.id.number
-            print ""
-            sys.stdout.flush()
+#        if len(stars) != ls:
+        print "stars:"
+        for s in stars:
+            print s.id.number, s.mass.number, \
+                s.x.number, s.y.number, s.z.number
+	print ""
+        sys.stdout.flush()
 
         print_log(time, gravity, E0)
         sys.stdout.flush()
