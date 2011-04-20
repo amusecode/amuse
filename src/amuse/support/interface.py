@@ -610,16 +610,6 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def attribute_names(self):
         return set(['parameters'])
 
-    def add_attribute_parameter(self, attribute_name, name, description, unit, default_value = None):
-        definition = parameters.ModuleAttributeParameterDefinition(
-            attribute_name,
-            name,
-            description,
-            unit,
-            default_value
-        )
-        self.definitions.append(definition)
-
     def add_method_parameter(self, get_method, set_method, name, description, unit, default_value = None,must_set_before_get = False):
         definition = parameters.ModuleMethodParameterDefinition_Next(
             get_method,

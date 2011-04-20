@@ -60,31 +60,8 @@ class CodeInterfaceWithConvertedUnitsTests(amusetest.TestCase):
                 
         self.assertAlmostEquals(instance.add_to_length(5|units.m).value_in(units.m), 55.0, 10)
         
-        
-        
+
     def test3(self):
-        convert_nbody = nbody_system.nbody_to_si(10.0 | units.kg, 5.0 | units.m )
-        
-        original = self.TestClass()
-        instance = interface.InCodeComponentImplementation(original)
-
-        handler = instance.get_handler('UNIT')
-        handler.set_nbody_converter(convert_nbody)
-        
-        handler = instance.get_handler('PARAMETER')
-        handler.add_attribute_parameter(
-            "eps",
-            "epsilon_squared", 
-            "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.3 | nbody_system.length * nbody_system.length
-        )
-          
-        instance.parameters.epsilon_squared = 100.0 | units.m ** 2
-        self.assertAlmostEquals(instance.parameters.epsilon_squared.value_in(units.m**2),  100.0, 6)
-        self.assertAlmostEquals(original.eps,  4.0, 6)
-
-    def test4(self):
         original = self.TestClass()
         instance = interface.InCodeComponentImplementation(original)
 

@@ -249,16 +249,6 @@ class ParameterDefinition(AbstractParameterDefinition):
         return False
     
     
-class ModuleAttributeParameterDefinition(ParameterDefinition):
-    def __init__(self, attribute_name, name, description, unit, default_value = None, must_set_before_get = False):
-        ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get)
-        self.attribute_name = attribute_name
-
-    def get_legacy_value(self, parameter, object):
-        return getattr(object.legacy_interface, self.attribute_name)
-
-    def set_legacy_value(self,  parameter, object, number):
-        setattr(object.legacy_interface, self.attribute_name, number)
 
 class ParameterException(AttributeError):
     template = ("Could not {0} value for parameter '{1}' of a '{2}' object, got errorcode <{3}>")

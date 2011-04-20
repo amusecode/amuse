@@ -147,6 +147,20 @@ class SmallNInterface(CodeInterface):
        
         return mass, x, y, z, vx, vy, vz
         
+    def get_eps2(self):
+        return self.eps2, 0
+        
+    def set_eps2(self, value):
+        self.eps2 = value
+        return 0
+        
+    def get_number_of_particles(self):
+        return self.number_of_particles, 0
+        
+    def set_number_of_particles(self, value):
+        self.number_of_particles = value
+        return 0
+        
     def initialize_code(self):
         pass
         
@@ -172,16 +186,18 @@ class SmallN(GravitationalDynamics):
         )     
             
     def define_parameters(self, object):
-        object.add_attribute_parameter(
-            "eps2",
+        object.add_method_parameter(
+            "get_eps2",
+            "set_eps2",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
             nbody_system.length * nbody_system.length, 
             0.0 | nbody_system.length * nbody_system.length
         )
 
-        object.add_attribute_parameter(
-            "number_of_particles",
+        object.add_method_parameter(
+            "get_number_of_particles",
+            "set_number_of_particles",
             "number_of_particles", 
             "The number of particles being managed by the SmallN module", 
             units.none, 
