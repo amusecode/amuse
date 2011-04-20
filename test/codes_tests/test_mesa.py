@@ -36,7 +36,7 @@ class TestMESAInterface(TestWithMPI):
         print "The first time this test will take quite some time" \
             " to generate new starting models."
         #channel.MessageChannel.DEBUGGER = channel.MessageChannel.XTERM
-        instance = self.new_instance(MESAInterface)
+        instance = self.new_instance(MESAInterface, redirection = 'none')
         #channel.MessageChannel.DEBUGGER = None
         if instance is None:
             print "MESA was not built. Skipping test."

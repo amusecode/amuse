@@ -805,8 +805,20 @@ class TestGadget2(TestWithMPI):
             self.UnitMass, 1.0e15 * units.yr)
         instance = Gadget2(wrong_converter, redirection = 'none', **default_options)
         instance.gas_particles.add_particles(gas)
-        #self.assertRaises(AmuseException, instance.evolve_model, 1.0e15 | units.yr)
+        self.assertRaises(AmuseException, instance.evolve_model, 1.0e13 | units.yr, expected_message = 
+            "Error when calling 'evolve_model' of a 'Gadget2', errorcode is -8, error is 'A particle "
+            "was assigned a timestep of size zero. The code_time_unit used may be too large.'")
+        gas_compatible_with_wrong_converter = new_evrard_gas_sphere(number_sph_particles, 
+            nbody_system.nbody_to_si(self.UnitLength, 1.0e15 * units.yr), seed = 1234)
+        instance.gas_particles.remove_particles(gas)
+        instance.gas_particles.add_particles(gas_compatible_with_wrong_converter)
+        instance.evolve_model(1.0e13 | units.yr)
         instance.stop()
+    
+    def test21(self):
+        print "Testing other evolve_model exceptions"
+        number_sph_particles = 1000
+        gas = new_evrard_gas_sphere(number_sph_particles, self.default_convert_nbody, seed = 1234)
         
         wrong_converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(self.UnitLength, 
             self.UnitMass, 1.0e-15 * units.yr)

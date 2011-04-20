@@ -35,6 +35,9 @@ int TreeReconstructFlag; /*!< Signals that a new tree needs to be constructed */
 
 int Flag_FullStep;       /*!< This flag signals that the current step involves all particles */
 
+int ZeroTimestepEncountered;  /*!< Flag used by AMUSE. When a particle is assigned a timestep of zero, an
+                                     exception is raised instead of forcing the application to exit. */
+
 
 gsl_rng *random_generator; /*!< the employed random number generator of the GSL library */
 

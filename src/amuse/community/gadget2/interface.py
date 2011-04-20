@@ -1120,8 +1120,10 @@ class Gadget2(GravitationalDynamics):
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
         object.add_method('EDIT', 'new_dm_particle')
+        object.add_method('UPDATE', 'new_dm_particle')
         object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
         object.add_method('EDIT', 'new_sph_particle')
+        object.add_method('UPDATE', 'new_sph_particle')
         object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
         object.add_method('RUN', 'get_state_sph')
         object.add_method('RUN', 'get_acceleration')
@@ -1589,6 +1591,7 @@ class Gadget2(GravitationalDynamics):
         object.add_errorcode(-5, 'CPU-time limit reached.')
         object.add_errorcode(-6, "Can't evolve backwards in time.")
         object.add_errorcode(-7, "Can't evolve further than time_max.")
+        object.add_errorcode(-8, "A particle was assigned a timestep of size zero. The code_time_unit used may be too large.")
     
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)

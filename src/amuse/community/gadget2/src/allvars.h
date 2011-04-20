@@ -153,6 +153,9 @@ extern int TreeReconstructFlag; /*!< Signals that a new tree needs to be constru
 
 extern int Flag_FullStep;       /*!< This flag signals that the current step involves all particles */
 
+extern int ZeroTimestepEncountered;  /*!< Flag used by AMUSE. When a particle is assigned a timestep of zero, an
+                                     exception is raised instead of forcing the application to exit. */
+
 
 extern gsl_rng *random_generator; /*!< the employed random number generator of the GSL library */
 

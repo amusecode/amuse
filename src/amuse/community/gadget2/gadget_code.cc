@@ -473,6 +473,7 @@ int evolve(double t_end){
     
     if (t_end > All.TimeMax)
         return -7;
+    ZeroTimestepEncountered = 0;
     Ti_end = (t_end - All.TimeBegin) / All.Timebase_interval;
     if (Ti_end >= All.Ti_Current){
         global_quantities_of_system_up_to_date = density_up_to_date = false;
@@ -499,6 +500,10 @@ int evolve(double t_end){
             All.NumCurrentTiStep++;
             
             /* Check whether we need to interrupt the run */
+            MPI_Allreduce(MPI_IN_PLACE, &ZeroTimestepEncountered, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
+            if(ZeroTimestepEncountered)
+                return -8;
+            
             if(ThisTask == 0) {
                 /* are we running out of CPU-time ? If yes, interrupt run. */
                 if(CPUThisRun > 0.85 * All.TimeLimitCPU){
@@ -507,7 +512,8 @@ int evolve(double t_end){
                 }
             }
             MPI_Bcast(&stopflag, 1, MPI_INT, 0, MPI_COMM_WORLD);
-            if(stopflag) return -5;
+            if(stopflag)
+                return -5;
             
             t1 = second();
             All.CPU_Total += timediff(t0, t1);

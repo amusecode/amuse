@@ -824,6 +824,8 @@ class GravitationalDynamics(common.CommonCode):
         object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
         object.add_method('EDIT', 'new_particle')
         object.add_method('EDIT', 'delete_particle')
+        object.add_method('UPDATE', 'new_particle')
+        object.add_method('UPDATE', 'delete_particle')
         object.add_transition('EDIT', 'RUN', 'commit_particles')
         object.add_transition('RUN', 'UPDATE', 'new_particle', False)
         object.add_transition('RUN', 'UPDATE', 'delete_particle', False)

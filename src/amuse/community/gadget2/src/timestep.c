@@ -534,7 +534,7 @@ int get_timestep(int p,		/*!< particle index */
 
   ti_step = dt / All.Timebase_interval;
 
-  if(!(ti_step > 0 && ti_step < TIMEBASE))
+  if(!(ti_step > 0 && ti_step < TIMEBASE) && !ZeroTimestepEncountered)
     {
       printf("\nError: A timestep of size zero was assigned on the integer timeline!\n"
 	     "We better stop.\n"
@@ -548,7 +548,8 @@ int get_timestep(int p,		/*!< particle index */
 	printf("hydro-frc=(%g|%g|%g)\n", SphP[p].HydroAccel[0], SphP[p].HydroAccel[1], SphP[p].HydroAccel[2]);
 
       fflush(stdout);
-      endrun(818);
+      //endrun(818);
+      ZeroTimestepEncountered = 1; // Do not terminate the run, but let AMUSE handle it
     }
 
   return ti_step;

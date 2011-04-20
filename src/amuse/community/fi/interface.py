@@ -1557,10 +1557,13 @@ class Fi(GravitationalDynamics):
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
         object.add_method('EDIT', 'new_dm_particle')
+        object.add_method('UPDATE', 'new_dm_particle')
         object.add_transition('RUN', 'UPDATE', 'new_dm_particle', False)
         object.add_method('EDIT', 'new_sph_particle')
+        object.add_method('UPDATE', 'new_sph_particle')
         object.add_transition('RUN', 'UPDATE', 'new_sph_particle', False)
         object.add_method('EDIT', 'new_star_particle')
+        object.add_method('UPDATE', 'new_star_particle')
         object.add_transition('RUN', 'UPDATE', 'new_star_particle', False)
         object.add_method('RUN', 'get_velocity')
         object.add_method('RUN', 'get_acceleration')
