@@ -1065,6 +1065,8 @@ class IbisMessage(AbstractMessage):
         self.booleans = self.recieve_booleans(socket, number_of_booleans)
         self.strings = self.recieve_strings(socket, number_of_strings)
         
+        logging.getLogger("ibis").debug("message received")
+        
     def recieve_ints(self, socket, count):
         if count > 0:
             nbytes = count * 4 # size of int
@@ -1171,6 +1173,8 @@ class IbisMessage(AbstractMessage):
         self.send_doubles(socket, self.doubles)
         self.send_booleans(socket, self.booleans)
         self.send_strings(socket, self.strings)
+        
+        logging.getLogger("ibis").debug("message send")
     
     def send_doubles(self, socket, array):
         if len(array) > 0:
