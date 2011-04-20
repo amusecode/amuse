@@ -3,6 +3,8 @@ DOWNLOAD_FROM_WEB = ./download_svn.py
 
 CODEDIR = deploy
 
+JAVA_HOME=${JDK}
+
 all: ${CODEDIR}
 	${ANT}
 

@@ -1,1 +1,0 @@
-g++ -fPIC -I/usr/lib/jvm/java-6-sun/include -I/usr/lib/jvm/java-6-sun/include/linux -I../../tmp/headers ibis_worker_code.cc -shared -o libbhtree_worker.so

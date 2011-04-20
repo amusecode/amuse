@@ -7,7 +7,7 @@
 #include "worker_code.h"
 #include "stopcond.h"
 
-#include "ibis_amuse_CommunityCode.h"
+#include "ibis_amuse_JNICode.h"
 
 const int HEADER_SIZE = 10; // integers
 
@@ -140,15 +140,15 @@ void ensure_primitive_output_capacity(JNIEnv *env) {
 	}
 }
 
-JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init (JNIEnv *env, jobject this_object, jstring code_name) {
+JNIEXPORT void JNICALL Java_ibis_amuse_JNICode_init (JNIEnv *env, jobject this_object, jstring code_name) {
   //NOTHING
 }
 
 /*
- * Class:     ibis_amuse_CommunityCode
+ * Class:     ibis_amuse_JNICode
  * Method:    setRequestMessage
  * Signature: (Libis/amuse/AmuseMessage;)V
- */JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_setRequestMessage(
+ */JNIEXPORT void JNICALL Java_ibis_amuse_JNICode_setRequestMessage(
 		JNIEnv *env, jobject this_object, jobject request_message) {
 	print_object(env, "setting request message: ", request_message);
 
@@ -182,10 +182,10 @@ JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init (JNIEnv *env, jobject 
 
 
 /*
- * Class:     ibis_amuse_CommunityCode
+ * Class:     ibis_amuse_JNICode
  * Method:    setResultMessage
  * Signature: (Libis/amuse/AmuseMessage;)V
- */JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_setResultMessage(
+ */JNIEXPORT void JNICALL Java_ibis_amuse_JNICode_setResultMessage(
 		JNIEnv *env, jobject this_object, jobject result_message) {
 
 	print_object(env, "setting result message: ", result_message);
@@ -196,10 +196,10 @@ JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_init (JNIEnv *env, jobject 
 }
 
 /*
- * Class:     ibis_amuse_CommunityCode
+ * Class:     ibis_amuse_JNICode
  * Method:    call
  * Signature: ()V
- */JNIEXPORT void JNICALL Java_ibis_amuse_CommunityCode_call(JNIEnv *env,
+ */JNIEXPORT void JNICALL Java_ibis_amuse_JNICode_call(JNIEnv *env,
 		jobject this_object) {
 	int call_count = header_in[HEADER_CALL_COUNT_INDEX];
 	fprintf(stderr, "doing call, function ID = %d\n",

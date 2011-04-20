@@ -56,7 +56,7 @@ public class SocketCode implements Runnable {
         requestMessage = new AmuseMessage();
         resultMessage = new AmuseMessage();
 
-        executable = new File(codeDir + File.separator + "socket_" + codeName);
+        executable = new File(codeDir + File.separator + codeName + "_socket");
 
         if (!executable.canExecute()) {
             throw new IOException("Cannot find executable for code " + codeName
@@ -71,6 +71,9 @@ public class SocketCode implements Runnable {
                 Integer.toString(serverSocket.socket().getLocalPort()));
 
         process = builder.start();
+        
+        new OutputPrefixForwarder(process.getInputStream(), System.out, "stdout of " + codeName + ": ");
+        new OutputPrefixForwarder(process.getErrorStream(), System.err, "stderr of " + codeName + ": ");
 
         logger.info("process started");
 
@@ -161,7 +164,7 @@ public class SocketCode implements Runnable {
         SocketCode code = new SocketCode(arguments[0], arguments[1], null, null);
 
         code.requestMessage.clear();
-        code.requestMessage.setFunctionID(0);
+        code.requestMessage.setFunctionID(1644113439);
         code.requestMessage.setCallCount(1);
 
         code.requestMessage.writeTo(code.socket);

@@ -234,6 +234,7 @@ public class CodeClient implements Runnable {
                 }
             }
         }
+        logger.info(this + " ending");
         end();
         logger.info(this + " done!");
     }

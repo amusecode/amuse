@@ -109,8 +109,6 @@ public class Deployment {
         jobDescription.getApplication().setName(codeName);
         jobDescription.setPoolName("amuse");
 
-        
-        
         String codeDir = amuseHome + "/" + "src/amuse/community/bhtree";
 
         jobDescription.getApplication().setSystemProperty("java.library.path",
