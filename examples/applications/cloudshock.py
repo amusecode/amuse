@@ -1,8 +1,11 @@
 import os
 import sys
 import numpy
-from matplotlib import pyplot
-import matplotlib.cm as cm
+try:
+    from matplotlib import pyplot
+    IS_PLOT_AVAILABLE = True
+except ImportError:
+    IS_PLOT_AVAILABLE = False
 
 
 from amuse.support.data import core
@@ -206,6 +209,10 @@ def main():
     
     rho = sampler.rho.value_in(generic_unit_system.density)
     print "done"
+    
+    if not IS_PLOT_AVAILABLE:
+        return
+    
     rho = rho.reshape(sample_grid.shape[:-1])
     x = sampler.x.reshape(sample_grid.shape[:-1])
     y = sampler.y.reshape(sample_grid.shape[:-1])

@@ -1,7 +1,5 @@
 import numpy
 
-from matplotlib import pyplot
-
 from amuse.support.units import units
 from amuse.support.units import nbody_system
 from amuse.support.data.core import Particles, ParticlesWithUnitsConverted
