@@ -211,8 +211,8 @@ class ph4(GravitationalDynamics):
             elif status == 2:			# addition
                 indices_to_add.append(index)
 
-        print "remove:", indices_to_remove
-        print "add:", indices_to_add
+        print "indices_to_remove:", indices_to_remove
+        print "indices_to_add:", indices_to_add
         
         if len(indices_to_remove) > 0:
             incode_storage._remove_indices(indices_to_remove)
