@@ -22,14 +22,18 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    E = T + U
+    print gravity.legacy_interface.get_binary_energy()
+    Etop = T + U
+    E = Etop
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
+    print ""
     print "time =", time.number, " energy = ", E.number, \
 	" dE/E0 = ", (E/E0 - 1).number
-    print '%%', time.number, M.number, T.number, U.number, \
-        E.number, Rv.number, Q.number
+    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f' % \
+	("%%", time.number, M.number, T.number, U.number, \
+        E.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
 
@@ -128,7 +132,7 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.velocity = vel | nbody_system.speed
         stars.radius = 0. | nbody_system.length
 
-    print "IDs", stars.id.number
+    # print "IDs:", stars.id.number
     sys.stdout.flush()
 
     #-----------------------------------------------------------------
@@ -145,6 +149,7 @@ def test_ph4(infile = None, number_of_stars = 40,
 
     print "adding particles"
     # print stars
+    sys.stdout.flush()
     gravity.particles.add_particles(stars)
     gravity.commit_particles()
 
@@ -152,47 +157,50 @@ def test_ph4(infile = None, number_of_stars = 40,
     print "number_of_stars =", number_of_stars
     print "evolving to time =", end_time.number, \
           "in steps of", delta_t.number
-    print ''
     sys.stdout.flush()
 
     E0 = print_log(time, gravity)
     
-    
-    # added to copy values from the code to the set in memory
+    # Channel to copy values from the code to the set in memory.
     channel = gravity.particles.new_channel_to(stars)
 
     while time < end_time:
         time += delta_t
         gravity.evolve_model(time)
 
-        # From Arjen:
+        # Ensure that the stars list is consistent with the internal
+        # data in the module.
 
-        print ""
-        print "updating lists at time", time.number
-
-	# Update the bookkeeping
-        gravity.update_particle_set()
-
-	# Remove the particles from the set in memory
         ls = len(stars)
-        gravity.particles.synchronize_to(stars)
+
+	# Update the bookkeeping: synchronize stars with the module data.
+
+        try:
+            gravity.update_particle_set()
+            gravity.particles.synchronize_to(stars)
+        except:
+            pass
     
-    # copy values from the code to the set in memory
+        # Copy values from the module to the set in memory.
+
         channel.copy()
     
-    # copy the index as it is in the code to the id field in memory
-    # the index is not copied by default
-    # as different codes may have different indices for the
-    # same particle and we don't want to overwrite silently
+        # Copy the index (ID) as used in the module to the id field in
+        # memory.  The index is not copied by default, as different
+        # codes may have different indices for the same particle and
+        # we don't want to overwrite silently.
+
         channel.copy_attribute("index_in_code", "id")
-        
-#        if len(stars) != ls:
-        print "stars:"
-        for s in stars:
-            print s.id.number, s.mass.number, \
-                s.x.number, s.y.number, s.z.number
-	print ""
-        sys.stdout.flush()
+
+        if len(stars) != ls:
+            if 0:
+                print "stars:"
+                for s in stars:
+                    print " ", s.id.number, s.mass.number, \
+			       s.x.number, s.y.number, s.z.number
+            else:
+		print "number of stars =", len(stars)
+            sys.stdout.flush()
 
         print_log(time, gravity, E0)
         sys.stdout.flush()

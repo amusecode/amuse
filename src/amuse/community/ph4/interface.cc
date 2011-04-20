@@ -109,9 +109,11 @@ int commit_particles()
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
     jd->set_initial_timestep();		// set timesteps (needs acc and jerk)
     s = new scheduler(jd);
-    cout << "jdata IDs:";
+#if 0
+    cout << "commit_particles:";
     for (int j = 0; j < jd->nj; j++) cout << " " << jd->id[j];
     cout << endl << flush;
+#endif
     return 0;
 }
 
@@ -148,13 +150,15 @@ int cleanup_code()
 int new_particle(int * index_of_the_particle,
 		 double mass, double radius, 
 		 double x, double y, double z,
-		 double vx, double vy, double vz, int index_to_set)
+		 double vx, double vy, double vz,
+		 int index_to_set)
 {
-    // Add a particle to the system.  Let the module set the id.
+    // Add a particle to the system.  Let the module set the id, or
+    // force the index to index_to_set if...
 
-    //PRL(*index_of_the_particle);
     *index_of_the_particle = jd->add_particle(mass, radius,
-					      vec(x,y,z), vec(vx,vy,vz), index_to_set);
+					      vec(x,y,z), vec(vx,vy,vz),
+					      index_to_set);
     return 0;
 }
 
@@ -335,12 +339,14 @@ int evolve(double time)
     while (jd->system_time < time)
 	status = jd->advance_and_check_encounter();
 
+#if 0
     cout << "jdata:" << endl;
     for (int j = 0; j < jd->nj; j++) {
 	cout << jd->id[j] << " " << jd->mass[j];
 	for (int k = 0; k < 3; k++) cout << " "  << jd->pos[j][k];
 	cout << endl << flush;
     }
+#endif
 
     return 0;	// status?
 }
@@ -398,6 +404,17 @@ int get_kinetic_energy(double * kinetic_energy)
 {
     *kinetic_energy = jd->get_kin();
     return 0;
+}
+
+int get_binary_energy(double * binary_energy)
+{
+    *binary_energy = jd->get_binary_energy();
+    return 0;
+}
+
+double get_binary_energy()
+{
+    return jd->get_binary_energy();
 }
 
 int get_center_of_mass_position(double * x, double * y, double * z)

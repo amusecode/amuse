@@ -102,6 +102,7 @@ class jdata {
 
     int binary_base;
     vector<binary> binary_list;
+    real Emerge;
 
     // Manage internal removal/creation of particles.
 
@@ -129,6 +130,7 @@ class jdata {
 	idat = NULL;
 	sched = NULL;
 
+	Emerge = 0;
 	binary_list.clear();
 	UpdatedParticles.clear();
     }
@@ -158,6 +160,8 @@ class jdata {
     bool advance_and_check_encounter();
     void synchronize_all();
     void synchronize_list(int jlist[], int njlist);
+    void update_merger_energy(real dEmerge);
+    real get_binary_energy();
     void print();
     void spec_output(const char *s = NULL);
     void to_com();
@@ -188,7 +192,5 @@ class jdata {
 
 #define PRRC(x) cout << "rank = " << mpi_rank << " " << #x << " = " << x << ",  " << flush
 #define PRRL(x) cout << "rank = " << mpi_rank << " " << #x << " = " << x << endl << flush
-
-void update_merger_energy(real dEmerge);
 
 #endif

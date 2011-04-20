@@ -244,12 +244,12 @@ class ph4(GravitationalDynamics):
             elif status == 2:			# addition
                 indices_to_add.append(index)
 
+        print ''
         print "indices_to_remove:", indices_to_remove
         print "indices_to_add:", indices_to_add
-        
+
         if len(indices_to_remove) > 0:
             incode_storage._remove_indices(indices_to_remove)
-        
         if len(indices_to_add) > 0:
             incode_storage._add_indices(indices_to_add)
         
@@ -259,8 +259,7 @@ class ph4(GravitationalDynamics):
         # Similarly, we can add module-specific methods, if desired.
         # See hermite0/interface.py for examples.
 
-        object.add_method(
-            "new_particle",
+        object.add_method("new_particle",
             (
                 nbody_system.mass,
                 nbody_system.length,
@@ -277,3 +276,6 @@ class ph4(GravitationalDynamics):
                 object.ERROR_CODE,
             )
         )
+
+        object.add_method("get_binary_energy", (),
+	    (nbody_system.energy, object.ERROR_CODE))

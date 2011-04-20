@@ -197,7 +197,7 @@ int jdata::add_particle(real pmass, real pradius,
 
     nj++;
 
-    // Bookkeeping:
+    // AMUSE bookkeeping:
 
     UpdatedParticles.push_back(UpdatedParticle(pid, 2));
 
@@ -225,9 +225,19 @@ void jdata::remove_particle(int j)
     //	 << endl << flush;
     sched->remove_particle(j);
 
-    // Bookkeeping:
+    // AMUSE bookkeeping.  Place the particle on the UpdatedParticles
+    // list for later removal, or delete it from the list if it has
+    // recently been added.
 
-    UpdatedParticles.push_back(UpdatedParticle(id[j], 1));
+    bool add_to_list = true;
+    for (unsigned int iup = 0; iup < UpdatedParticles.size(); iup++)
+	if (UpdatedParticles[iup].index_of_particle == id[j]) {
+	    UpdatedParticles.erase(UpdatedParticles.begin()+iup);
+	    add_to_list = false;
+	    break;
+	}
+    if (add_to_list)
+	UpdatedParticles.push_back(UpdatedParticle(id[j], 1));
 
     nj--;
     if (j < nj) {
@@ -495,7 +505,8 @@ real jdata::get_energy(bool reeval)		// default = false
     const char *in_function = "jdata::get_energy";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-    return get_pot(reeval) + get_kin();
+//    return get_pot(reeval) + get_kin() + get_binary_energy()
+    return get_pot(reeval) + get_kin() + Emerge;
 }
 
 real jdata::get_total_mass()
@@ -621,7 +632,7 @@ bool jdata::advance_and_check_encounter()
 	status = resolve_encounter();
 	if (status) {
 	    if (mpi_rank == 0) {
-		cout << "after resolve_encounter" << endl << flush;
+		// cout << "after resolve_encounter" << endl << flush;
 	    }
 	}
     }
@@ -711,13 +722,31 @@ void jdata::synchronize_list(int jlist[], int njlist)
     for (int jj = 0; jj < njlist; jj++) sched->add_particle(jlist[jj]);
 }
 
+// Maintain two measures of the energy in merged objects.  The total
+// merger energy Emerge includes binary binding energy and the tidal
+// error incurred when the merger occurred.  The total binary energy
+// omits te tidal effects.
+
+void jdata::update_merger_energy(real dEmerge)
+{
+    Emerge += dEmerge;
+    PRL(Emerge);
+}
+
+real jdata::get_binary_energy()
+{
+    // Return the total binary binding energy.
+
+    real Eb = 0;
+    for (unsigned int ib = 0; ib < binary_list.size(); ib++) {
+	real M = binary_list[ib].mass1 + binary_list[ib].mass2;
+	real a = binary_list[ib].semi;
+	Eb -= 0.5*M/a;
+    }
+    return Eb;
+}
+
 static real E0 = 0;
-static real Emerge = 0;
-void update_merger_energy(real dEmerge) {Emerge += dEmerge;}
-
-// Note that the total merger energy will not be the sum of the merged
-// binary energies, becaue of tidal effects.  TBD.
-
 void jdata::print()
 {
     const char *in_function = "jdata::print";

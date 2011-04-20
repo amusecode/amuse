@@ -454,7 +454,7 @@ bool jdata::resolve_encounter()
 	if (dr2 < rmin*rmin) {
 	    if (mpi_rank == 0)
 		cout << "suppressing merger because " << nbrlist[2]
-		     << " (" << id[nbrlist[2]] << ") is too close"
+		     << " (ID =" << id[nbrlist[2]] << ") is too close"
 		     << endl << flush;
 	    merge = false;
 	}
