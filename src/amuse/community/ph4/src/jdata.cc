@@ -197,6 +197,10 @@ int jdata::add_particle(real pmass, real pradius,
 
     nj++;
 
+    // Bookkeeping:
+
+    UpdatedParticles.push_back(UpdatedParticle(pid, 2));
+
     // Return the particle id.
 
     return pid;    
@@ -220,6 +224,10 @@ void jdata::remove_particle(int j)
     // cout << "sched.remove " << j << " (" << id[j] << ")"
     //	 << endl << flush;
     sched->remove_particle(j);
+
+    // Bookkeeping:
+
+    UpdatedParticles.push_back(UpdatedParticle(id[j], 1));
 
     nj--;
     if (j < nj) {
@@ -600,6 +608,25 @@ void jdata::advance()
     system_time = tnext;
     sched->update();
     // sched->print(true);
+}
+
+bool jdata::advance_and_check_encounter()
+{
+    bool status = false;
+    advance();
+
+    // Optionally manage close endounters.
+
+    if (eps2 == 0 && close1 >= 0) {
+	status = resolve_encounter();
+	if (status) {
+	    if (mpi_rank == 0) {
+		cout << "after resolve_encounter" << endl << flush;
+	    }
+	}
+    }
+
+    return status;
 }
 
 void jdata::synchronize_all()

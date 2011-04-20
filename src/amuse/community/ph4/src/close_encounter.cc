@@ -14,19 +14,10 @@
 #include "jdata.h"
 #include "scheduler.h"
 #include "idata.h"
+#include "debug.h"
 #include <vector>
 #include <algorithm>
 #include <unistd.h>
-
-//---------------------------------------------------------------------
-// Diagnostic functions in parallel_hermite.cc
-
-extern real TDEBUG;
-void printq(int j, real2 q, const char *s);
-void print_list(jdata &jd);
-bool twiddles(real q, real v, real tol = 1.e-3);
-
-//---------------------------------------------------------------------
 
 class rdata {
   public:
@@ -106,6 +97,7 @@ static bool reflect_or_merge_orbit(real total_mass,
     // most of the orbital elements...
 
     // Code stolen from Starlab/kepler, with some fine points omitted.
+    // Should use the standalone kepler code now...
 
     // Dynamics and geometry.
 
@@ -492,7 +484,7 @@ bool jdata::resolve_encounter()
 	// reduces nj.
 
 	if (mpi_rank == 0)
-	    cout << "removing " << j1 << " (" << id[j1] << ")"
+	    cout << "removing " << j1 << " (ID = " << id[j1] << ")"
 		 << endl << flush;
 	remove_particle(j1);	
 	for (int jl = 1; jl < nnbr; jl++)	// recall 0, 1 are j1, j2
@@ -501,7 +493,7 @@ bool jdata::resolve_encounter()
 	j2 = nbrlist[1];
 
 	if (mpi_rank == 0)
-	    cout << "removing " << j2 << " (" << id[j2] << ")"
+	    cout << "removing " << j2 << " (ID = " << id[j2] << ")"
 		 << endl << flush;
 	remove_particle(j2);
 	for (int jl = 2; jl < nnbr; jl++)
@@ -509,7 +501,7 @@ bool jdata::resolve_encounter()
 
 	add_particle(total_mass, newrad, cmpos, cmvel, newid, newstep);
 	if (mpi_rank == 0)
-	    cout << "added " << nj-1 << " (" << id[nj-1] << ")"
+	    cout << "added " << nj-1 << " (ID = " << id[nj-1] << ")"
 		 << endl << flush;
 
 	// Strange new storage order preserves contiguous lists

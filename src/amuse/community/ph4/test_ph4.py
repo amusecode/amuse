@@ -73,6 +73,9 @@ def test_ph4(infile = None, number_of_stars = 40,
         print "making a Plummer model"
         stars = MakePlummerModel(number_of_stars).result
 
+        id = numpy.arange(number_of_stars)
+        stars.id = id+1 | units.none
+
         print "setting particle masses and radii"
 	stars.mass = (1.0 / number_of_stars) | nbody_system.mass
         #scaled_mass = new_salpeter_mass_distribution_nbody(number_of_stars) 
@@ -125,7 +128,8 @@ def test_ph4(infile = None, number_of_stars = 40,
         stars.velocity = vel | nbody_system.speed
         stars.radius = 0. | nbody_system.length
 
-        sys.stdout.flush()
+    print "IDs", stars.id.number
+    sys.stdout.flush()
 
     #-----------------------------------------------------------------
 
@@ -156,7 +160,24 @@ def test_ph4(infile = None, number_of_stars = 40,
     while time < end_time:
         time += delta_t
         gravity.evolve_model(time)
+
+        # From Arjen:
+
+	# Update the bookkeeping
+        gravity.update_particle_set()
+
+	# Remove the particles from the set in memory
+        ls = len(stars)
+        gravity.particles.synchronize_to(stars)
+
+        if len(stars) != ls: 
+            print "#stars =", len(stars)
+            print "IDs", stars.id.number
+            print ""
+            sys.stdout.flush()
+
         print_log(time, gravity, E0)
+        sys.stdout.flush()
 
     print ''
     gravity.stop()

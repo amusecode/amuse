@@ -33,6 +33,19 @@ class binary {
     ~binary() {}
 };
 
+class UpdatedParticle {
+    
+  public:
+
+    int index_of_particle;
+    int status;
+    
+    UpdatedParticle():index_of_particle(-1),status(0) {}
+    UpdatedParticle(int i, int s):index_of_particle(i), status(s) {}
+    UpdatedParticle(const UpdatedParticle& src)
+	:index_of_particle(src.index_of_particle), status(src.status) {}
+};
+
 // Note: after proper initialization:
 //
 //     jdata and scheduler have pointers to each other
@@ -90,6 +103,10 @@ class jdata {
     int binary_base;
     vector<binary> binary_list;
 
+    // Manage internal removal/creation of particles.
+
+    vector<UpdatedParticle> UpdatedParticles;
+
     jdata() {
 	nj = 0;
 	njbuf = 0;
@@ -113,6 +130,7 @@ class jdata {
 	sched = NULL;
 
 	binary_list.clear();
+	UpdatedParticles.clear();
     }
 
     void cleanup();		// (in jdata.cc)
@@ -137,6 +155,7 @@ class jdata {
     void predict(int j, real t);
     void predict_all(real t, bool full_range = false);
     void advance();
+    bool advance_and_check_encounter();
     void synchronize_all();
     void synchronize_list(int jlist[], int njlist);
     void print();

@@ -5,7 +5,7 @@ from amuse.community.interface.gd import GravitationalDynamicsInterface
 # *** This script, together with the defaults in
 # *** GravitationalDynamicsInterface, will be used to generate both
 # *** the header file interface.h and the stub interface.cc.  Since
-# *** interface.cc will have be hand-coded to implement the details,
+# *** interface.cc has been  hand-coded to implement the details,
 # *** MAKE SURE TO SAVE IT SOMEWHERE, as build.py can overwrite it!
 
 class ph4Interface(CodeInterface,
@@ -182,38 +182,43 @@ class ph4(GravitationalDynamics):
             1 | units.none		# default
         )
 
-
     def update_particle_set(self):
         """
         update the particle set after changes in the code
         
-        this implementation needs to move to the amuse.support.data.incode_storage module
-        as it uses a lot of internal methods and info!
+        this implementation needs to move to the
+        amuse.support.data.incode_storage module, as
+        it uses a lot of internal methods and info!
         
         """
-        number_of_updated_particles, error = self.get_number_of_particles_updated()
+        number_of_updated_particles, error \
+		= self.get_number_of_particles_updated()
         
         if number_of_updated_particles == 0:
             return
         
         indices_in_update_list = range(number_of_updated_particles)
-        particle_indices, updates, erros = self.get_id_of_updated_particle(indices_in_update_list)
+        particle_indices, updates, erros \
+		= self.get_id_of_updated_particle(indices_in_update_list)
         
-        incode_storage = particles._private.attribute_storage
+        incode_storage = self.particles._private.attribute_storage
         
         indices_to_remove = []
         indices_to_add = []
         for index, status in zip(particle_indices, updates):
-            if status == 1: #deletion
+            if status == 1:			# deletion
                 indices_to_remove.append(index)
-            elif status == 2: #addition
+            elif status == 2:			# addition
                 indices_to_add.append(index)
+
+        print "remove:", indices_to_remove
+        print "add:", indices_to_add
         
         if len(indices_to_remove) > 0:
             incode_storage._remove_indices(indices_to_remove)
         
         if len(indices_to_add) > 0:
-            incode_storage._add_indices(indices_to_remove)
+            incode_storage._add_indices(indices_to_add)
         
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)

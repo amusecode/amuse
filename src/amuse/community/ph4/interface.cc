@@ -109,6 +109,9 @@ int commit_particles()
     id = new idata(jd);	  // set up idata data structures (sets acc and jerk)
     jd->set_initial_timestep();		// set timesteps (needs acc and jerk)
     s = new scheduler(jd);
+    cout << "jdata IDs:";
+    for (int j = 0; j < jd->nj; j++) cout << " " << jd->id[j];
+    cout << endl << flush;
     return 0;
 }
 
@@ -147,8 +150,9 @@ int new_particle(int * index_of_the_particle,
 		 double x, double y, double z,
 		 double vx, double vy, double vz)
 {
-    // Add a particle to the system.  Let the system set the id.
+    // Add a particle to the system.  Let the module set the id.
 
+    //PRL(*index_of_the_particle);
     *index_of_the_particle = jd->add_particle(mass, radius,
 					      vec(x,y,z), vec(vx,vy,vz));
     return 0;
@@ -326,8 +330,11 @@ int evolve(double time)
     // system_time < time[j] + timestep[j].  If synchronization is
     // needed, do it with synchronize_model().
 
-    while (jd->system_time < time) jd->advance();
-    return 0;
+    bool status = false;
+    jd->UpdatedParticles.clear();
+    while (jd->system_time < time)
+	status = jd->advance_and_check_encounter();
+    return 0;	// status?
 }
 
 int synchronize_model()
@@ -336,6 +343,7 @@ int synchronize_model()
     // default is not to reinitialize the scheduler, as this will be
     // handled later, in recommit_particles().
 
+    jd->UpdatedParticles.clear();
     jd->synchronize_all();
     return 0;
 }
@@ -445,42 +453,21 @@ int get_gravity_at_point(double eps, double x, double y, double z,
     return -1;
 }
 
-
-/*
- * Needs to move to a header file in the ph4 code!
- * from here
- */
-class UpdatedParticle {
-    
-  public:
-
-    int index_of_particle;
-    int status;
-    
-    UpdatedParticle():index_of_particle(-1),status(0) {}
-    UpdatedParticle(int i, int s):index_of_particle(i), status(s) {}
-    UpdatedParticle(const UpdatedParticle & src):index_of_particle(src.index_of_particle), status(src.status) {}
-};
-
-vector<UpdatedParticle> UpdatedParticles;
-/*
- * to here
- */
- 
+//----------------------------------------------------------------------
+//
+// From Arjen:
 
 int get_number_of_particles_updated(int * value)
 {
-    *value = UpdatedParticles.size();
+    *value = jd->UpdatedParticles.size();
     return 0;
 }
 
 int get_id_of_updated_particle(int index, int * index_of_particle, int * status)
 {
-    if(index < 0 || index > (int) UpdatedParticles.size())
-    {
+    if (index < 0 || index > (int) jd->UpdatedParticles.size())
         return -1;
-    }
-    *index_of_particle = UpdatedParticles[index].index_of_particle;
-    *status = UpdatedParticles[index].status;
+    *index_of_particle = jd->UpdatedParticles[index].index_of_particle;
+    *status = jd->UpdatedParticles[index].status;
     return 0;
 }
