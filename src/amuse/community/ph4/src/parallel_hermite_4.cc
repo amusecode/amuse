@@ -1,4 +1,3 @@
-
 //----------------------------------------------------------------------
 //
 // Parallel fourth-order Hermite integrator with GRAPE/GPU
@@ -119,9 +118,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 	    system(command);
 	}
 
-	// cout << "ph4 Barrier 1 for " << jd.mpi_rank << endl << flush;
 	jd.mpi_comm.Barrier();
-	// cout << "ph4 Barrier 1a for " << jd.mpi_rank << endl << flush;
 
 	s.open(infile1, ifstream::in);
 	if (!s) {
@@ -158,9 +155,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 
 	    system(command);
 	}
-	// cout << "ph4 Barrier 2 for " << jd.mpi_rank << endl << flush;
 	jd.mpi_comm.Barrier();
-	// cout << "ph4 Barrier 2a for " << jd.mpi_rank << endl << flush;
     }
 
     // Set the system center of mass position and velocity to zero.
@@ -207,9 +202,6 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     real t_out = dt_out;
 
     real dt_spec = 1., t_spec = dt_spec;
-    // cout << "ph4 Barrier 3 for " << jd.mpi_rank << endl << flush;
-    // jd.mpi_comm.Barrier();
-    // cout << "ph4 Barrier 3a for " << jd.mpi_rank << endl << flush;
     jd.spec_output("%%%");
 
     bool remove = false;	// don't check GPU bug in remove_particle()
@@ -217,38 +209,10 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     int step = 0;
     while (jd.system_time < t_max) {
 
-	jd.mpi_comm.Barrier();
+	jd.mpi_comm.Barrier();	// we don't need all these Barriers...
 	jd.advance();
-	// cout << "ph4 Barrier 4 for " << jd.mpi_rank << endl << flush;
 	jd.mpi_comm.Barrier();
-	// cout << "ph4 Barrier 4a for " << jd.mpi_rank << endl << flush;
 	step++;
-	// PRC(jd.mpi_rank); PRL(step);
-
-// 	int ni = jd.idat->ni;
-// 	cout << "@@@ " << jd.mpi_rank << " " << step << " "
-// 	     << ni << endl << flush;
-// 	if (ni < 10) {
-// 	    for (int i = 0; i < ni; i++) {
-// 		int j = jd.idat->ilist[i];
-// 		cout << "@@@ " << jd.mpi_rank << " " << j << " ";
-// 		for (int k = 0; k < 3; k++) cout << " " << jd.pos[j][k];
-// 		cout << endl << flush;
-// 	    }
-// 	}
-
-// 	int ni = jd.idat->ni;
-// 	cout << "@@@ " << jd.mpi_rank << " " << step << " "
-// 	     << ni << endl << flush;
-// 	cout << "@@@";
-// 	for (int i = 0; i < ni; i++) cout << " " << jd.idat->ilist[i];
-// 	cout << endl << flush;
-// 	for (int j = 0; j < jd.nj; j++) {
-// 	    cout << "@@@ " << jd.mpi_rank << " " << j << " "
-// 		 << jd.time[j] << " ";
-// 	    for (int k = 0; k < 3; k++) cout << " " << jd.pos[j][k];
-// 	    cout << endl << flush;
-// 	}
 
 	// Special treatment of close encounters (non-AMUSE code, for
 	// now).  All the work is done in resolve_encounter().
@@ -260,30 +224,17 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	// correct the tidal errors.
 
 	if (jd.close1 >= 0 && jd.eps2 == 0) {
-	    // PRC(jd.mpi_rank); PRL(1);
-	    // cout << "ph4 Barrier 5 for " << jd.mpi_rank << endl << flush;
 	    jd.mpi_comm.Barrier();
-	    // cout << "ph4 Barrier 5a for " << jd.mpi_rank << endl << flush;
 	    bool status = jd.resolve_encounter();
-	    // PRC(jd.mpi_rank); PRL(2);
-	    // cout << "ph4 Barrier 6 for " << jd.mpi_rank << endl << flush;
 	    jd.mpi_comm.Barrier();
-	    // cout << "ph4 Barrier 6a for " << jd.mpi_rank << endl << flush;
-	    // PRC(jd.mpi_rank); PRC(status); PRL(3);
 	    if (status) {
-		// cout << "ph4 Barrier 7 for " << jd.mpi_rank << endl << flush;
 		jd.mpi_comm.Barrier();
-		// cout << "ph4 Barrier 7a for " << jd.mpi_rank << endl << flush;
 		real energy = jd.get_energy();
-		//PRC(jd.mpi_rank); PRL(4);
 		if (jd.mpi_rank == 0) {
-		    //PRC(jd.mpi_rank); 
 		    cout << "after resolve_encounter: ";
 		    PRL(energy);
 		}
-		// cout << "ph4 Barrier 8 for " << jd.mpi_rank << endl << flush;
 		jd.mpi_comm.Barrier();
-		// cout << "ph4 Barrier 8a for " << jd.mpi_rank << endl << flush;
 	    }
 	}
 

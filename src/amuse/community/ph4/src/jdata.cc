@@ -505,8 +505,10 @@ real jdata::get_energy(bool reeval)		// default = false
     const char *in_function = "jdata::get_energy";
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
-//    return get_pot(reeval) + get_kin() + get_binary_energy()
+    // Note: energy includes Emerge.
+
     return get_pot(reeval) + get_kin() + Emerge;
+    // return get_pot(reeval) + get_kin() + get_binary_energy()
 }
 
 real jdata::get_total_mass()
@@ -739,9 +741,9 @@ real jdata::get_binary_energy()
 
     real Eb = 0;
     for (unsigned int ib = 0; ib < binary_list.size(); ib++) {
-	real M = binary_list[ib].mass1 + binary_list[ib].mass2;
+	real m1m2 = binary_list[ib].mass1 * binary_list[ib].mass2;
 	real a = binary_list[ib].semi;
-	Eb -= 0.5*M/a;
+	Eb -= 0.5*m1m2/a;
     }
     return Eb;
 }
@@ -754,7 +756,7 @@ void jdata::print()
 
     // Print standard diagnostic information on the j-data system.
 
-    real E = get_energy();
+    real E = get_energy();	// note: energy includes Emerge
     if (E0 == 0) E0 = E;
     real pe = get_pot();
     real total_mass = get_total_mass();
@@ -782,8 +784,8 @@ void jdata::print()
 	real rvir = -0.5*total_mass*total_mass/pe;
 	PRC(pe); PRL(rvir);
 	int p = cout.precision(12);
+	PRC(Emerge); PRL(get_binary_energy());
 	PRC(E); PRL(E-E0);
-	PRC(Emerge); PRL(E-E0-Emerge);
 	cout.precision(p);
 	vec cmpos, cmvel;
 	get_com(cmpos, cmvel);

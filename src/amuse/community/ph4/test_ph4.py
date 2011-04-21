@@ -22,7 +22,8 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    print gravity.legacy_interface.get_binary_energy()
+    # print gravity.legacy_interface.get_binary_energy()
+    print gravity.legacy_interface.get_mass(1)	# almost...
     Etop = T + U
     E = Etop
     if E0 == 0 | nbody_system.energy: E0 = E
@@ -33,7 +34,7 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
 	" dE/E0 = ", (E/E0 - 1).number
     print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-        E.number, Rv.number, Q.number)
+         E.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
 
@@ -219,9 +220,10 @@ if __name__ == '__main__':
     gpu_worker = 1
     accuracy_parameter = 0.1
     softening_length = -1  | nbody_system.length
+    random_seed = -1
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:d:e:f:gGn:t:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:d:e:f:gGn:s:t:w:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -242,12 +244,20 @@ if __name__ == '__main__':
             gpu_worker = 0
         elif o == "-n":
             N = int(a)
+        elif o == "-s":
+            random_seed = int(a)
         elif o == "-t":
             t_end = float(a) | nbody_system.time
         elif o == "-w":
             n_workers = int(a)
         else:
             print "unexpected argument", o
+
+    if random_seed <= 0:
+        numpy.random.seed()
+        random_seed = numpy.random.randint(1, pow(2,31)-1)
+    numpy.random.seed(random_seed)
+    print "random seed =", random_seed
 
     assert is_mpd_running()
     test_ph4(infile, N, t_end, delta_t, n_workers,

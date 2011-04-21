@@ -564,8 +564,10 @@ bool jdata::resolve_encounter()
 	// Simply report the merger and the error (NB dE currently
 	// includes both internal and tidal components).
 
+	PRC(de);
 	de -= reduced_mass*energy;
-	update_merger_energy(de);
+	PRL(de);
+	update_merger_energy(-de);
 	if (mpi_rank == 0)
 	    cout << "merged "
 		 << j1 << " (" << comp1 << ") and "
@@ -586,7 +588,8 @@ bool jdata::resolve_encounter()
 
 	    real kin = 0.5*mass[j1]*mass[j2]*dv*dv/total_mass;
 	    real vfac2 = 1 - de/kin;
-	    if (vfac2 < 0.25)
+	    PRC(mpi_rank); PRL(vfac2);
+	    if (vfac2 < 0.25) {
 
 		// We'll need to be cleverer in this case.  Let's see how
 		// often it occurs...
@@ -595,7 +598,7 @@ bool jdata::resolve_encounter()
 		    cout << "warning: can't correct component velocities."
 			 << endl;
 
-	    else {
+	    } else {
 		real v_correction_fac = sqrt(vfac2);
 		if (mpi_rank == 0) PRL(v_correction_fac);
 		dv *= v_correction_fac;
@@ -645,14 +648,6 @@ bool jdata::resolve_encounter()
     // Retain current time steps and scheduling.  Note that in the
     // REVERSE case, the accelerations should not change.
 
-    //cout << "--- " << mpi_rank << " " << j1 << " ";
-    //for (int k = 0; k < 3; k++) cout << " " << pos[j1][k];
-    //cout << endl << flush;
-    //cout << "--- " << mpi_rank << " " << j2 << " ";
-    //for (int k = 0; k < 3; k++) cout << " " << pos[j2][k];
-    //cout << endl << flush;
-
-
     if (!use_gpu) predict_all(system_time);
     idat->set_list(nbrlist+merge, nnbr-merge);
     idat->gather();
@@ -660,21 +655,11 @@ bool jdata::resolve_encounter()
     idat->get_acc_and_jerk();		// compute iacc, ijerk
     idat->scatter();			// j acc, jerk <-- iacc, ijerk
 
-
-    //cout << "+++ " << mpi_rank << " " << j1 << " ";
-    //for (int k = 0; k < 3; k++) cout << " " << pos[j1][k];
-    //cout << endl << flush;
-    //cout << "+++ " << mpi_rank << " " << j2 << " ";
-    //for (int k = 0; k < 3; k++) cout << " " << pos[j2][k];
-    //cout << endl << flush;
-
-
     if (use_gpu) idat->update_gpu();
 
     // Could cautiously reduce neighbor steps here (and reschedule),
     // but that seems not to be necessary.
 
     delete [] nbrlist0;
-    //PRRL(5);
     return status;
 }
