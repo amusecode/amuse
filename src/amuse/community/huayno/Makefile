@@ -6,7 +6,7 @@ LIBS += -lm
 INCLUDE =
 
 # set OpenCL and STDCL libraries
-OPENCL = /home/inti/troep/ati-stream-sdk-v2.3-lnx64
+OPENCL = /home/inti/libraries/cuda
 STDCL = /home/inti/libraries/coprthr
 
 #---------------------------------------------
@@ -31,17 +31,17 @@ worker_code.cc: interface.py
 worker_code.h: interface.py
 	$(CODE_GENERATOR) --type=h interface.py HuaynoInterface -o $@
 
-huayno_worker: __init__.py worker_code.cc worker_code.h $(OBJS)
+huayno_worker: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OBJS) -o $@ $(LIBS)
 
 huayno_worker_mp: CXXFLAGS   += -fopenmp
-huayno_worker_mp: __init__.py worker_code.cc worker_code.h $(OBJS)
+huayno_worker_mp: clean __init__.py worker_code.cc worker_code.h $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc $(OBJS) -o $@ $(LIBS)
 
 huayno_worker_cl: CXXFLAGS   += -fopenmp -DEVOLVE_OPENCL
 huayno_worker_cl: LIBS += -L$(OPENCL)/lib/x86_64 -lOpenCL -lpthread -ldl -L$(STDCL)/lib -lstdcl
 huayno_worker_cl: INCLUDE += -I$(OPENCL)/include -I$(STDCL)/include
-huayno_worker_cl: __init__.py worker_code.cc worker_code.h evolve_kern.clh evolve_cl.o $(OBJS) 
+huayno_worker_cl: clean __init__.py worker_code.cc worker_code.h evolve_kern.clh evolve_cl.o $(OBJS) 
 	$(MPICXX) $(CXXFLAGS) $(INCLUDE) worker_code.cc evolve_cl.o $(OBJS) -o $@ $(LIBS)
 
 .cc.o: $<
