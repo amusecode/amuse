@@ -22,20 +22,18 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    print gravity.legacy_interface.get_binary_energy()
-    print gravity.get_binary_energy()
-    print gravity.legacy_interface.get_mass(1)	# almost...
+    Ebin = gravity.get_binary_energy()
     Etop = T + U
-    E = Etop
+    E = Etop + Ebin
     if E0 == 0 | nbody_system.energy: E0 = E
     Rv = -0.5*M*M/U
     Q = -T/U
     print ""
     print "time =", time.number, " energy = ", E.number, \
 	" dE/E0 = ", (E/E0 - 1).number
-    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f' % \
+    print '%s %.4f %.6f %.6f %.6f %.6f %.6f %.6f %.6f' % \
 	("%%", time.number, M.number, T.number, U.number, \
-         E.number, Rv.number, Q.number)
+         E.number, Ebin.number, Rv.number, Q.number)
     sys.stdout.flush()
     return E
 

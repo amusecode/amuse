@@ -408,31 +408,20 @@ int get_total_mass(double * mass)
 
 int get_potential_energy(double * potential_energy)
 {
-    // *** TEMPORARILY include merger energy in the potential and
-    // *** kinetic energies.
-
-    *potential_energy = jd->get_pot() + 2*jd->Emerge;
+    *potential_energy = jd->get_pot();
     return 0;
 }
 
 int get_kinetic_energy(double * kinetic_energy)
 {
-    // *** TEMPORARILY include merger energy in the potential and
-    // *** kinetic energies.
-
-    *kinetic_energy = jd->get_kin() - jd->Emerge;
+    *kinetic_energy = jd->get_kin();
     return 0;
 }
 
 int get_binary_energy(double * binary_energy)	// new interface function
 {						// see interface.py
-    *binary_energy = jd->get_binary_energy();
+    *binary_energy = jd->Emerge;		// not quite the same thing...
     return 0;
-}
-
-double binary_energy()				// new "legacy" function
-{						// see interface.py
-    return jd->get_binary_energy();
 }
 
 int get_center_of_mass_position(double * x, double * y, double * z)

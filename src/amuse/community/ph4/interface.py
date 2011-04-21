@@ -186,7 +186,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def get_id_of_updated_particle():
         """
-        Return the number of particles added or deleted during the last evolve
+        Return the number of particles added or deleted during the last evolve.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_update', dtype='int32',
