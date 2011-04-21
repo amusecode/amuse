@@ -201,6 +201,19 @@ class ph4Interface(CodeInterface,
         function.result_type = 'int32'
         return function
 
+    @legacy_function
+    def get_binary_energy():
+        """
+        Return the total energy in all binaries.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter(
+            'binary_energy', 
+            dtype='float64',
+            direction=function.OUT
+        )
+        function.result_type = 'int32'
+        return function
 
 class ph4(GravitationalDynamics):
 

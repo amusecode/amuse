@@ -345,7 +345,7 @@ class TestPH4(TestWithMPI):
     def test5(self):
         instance = ph4()
         instance.initialize_code()
-        
+        instance.parameters.manage_encounters = 2
         particles = core.Particles(6)
         particles.mass =  [0.01, 0.1,  0.1, 0.1, 0.1, 0.1] | nbody_system.mass
         particles.radius =   0.1 | nbody_system.length
@@ -374,6 +374,14 @@ class TestPH4(TestWithMPI):
         instance.particles.synchronize_to(particles)
         self.assertEquals(len(particles), 5)
         self.assertEquals(particles.mass, [0.1,0.1,0.1,0.1,0.11] | nbody_system.mass)
+        
+        binary_energy1, error = instance.legacy_interface.get_binary_energy()
+        self.assertEquals(error, 0)
+        self.assertTrue(binary_energy1 < 0)
+        
+        binary_energy2 = instance.get_binary_energy()
+        
+        self.assertEquals(binary_energy2.value_in(nbody_system.energy), binary_energy1)
         
         instance.stop()
         
@@ -623,3 +631,22 @@ class TestPH4(TestWithMPI):
         self.assertTrue((end-start)<very_short_time_to_evolve.value_in(units.s) + 2)#2 = some overhead compensation
 
         instance.stop()
+        
+    
+    def test15(self):
+        instance = ph4()
+        instance.initialize_code()
+        
+        
+        particles = core.Particles(2)
+        particles.mass = [1.0, 1.0] | nbody_system.mass
+        particles.radius =  [0.0001, 0.0001] | nbody_system.length
+        particles.position = [[0.0,0.0,0.0], [2.0,0.0,0.0]] | nbody_system.length
+        particles.velocity = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]] | nbody_system.speed
+        instance.particles.add_particles(particles)
+        
+        mass, error = instance.legacy_interface.get_mass(1)
+        self.assertEquals(error,0)
+        self.assertEquals(mass,1.0)
+        
+        

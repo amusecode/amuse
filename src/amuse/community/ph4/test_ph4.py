@@ -22,7 +22,8 @@ def print_log(time, gravity, E0 = 0.0 | nbody_system.energy):
     M = gravity.total_mass
     U = gravity.potential_energy
     T = gravity.kinetic_energy
-    # print gravity.legacy_interface.get_binary_energy()
+    print gravity.legacy_interface.get_binary_energy()
+    print gravity.get_binary_energy()
     print gravity.legacy_interface.get_mass(1)	# almost...
     Etop = T + U
     E = Etop
