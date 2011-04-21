@@ -98,11 +98,16 @@ class jdata {
     idata *idat;
     scheduler *sched;
 
+    // Initial system energy.
+
+    real E0;
+
     // Multiple structure management:
 
+    real Emerge;
+    int manage_encounters;
     int binary_base;
     vector<binary> binary_list;
-    real Emerge;
 
     // Manage internal removal/creation of particles.
 
@@ -130,7 +135,9 @@ class jdata {
 	idat = NULL;
 	sched = NULL;
 
+	E0 = 0;
 	Emerge = 0;
+	manage_encounters = 1;
 	binary_list.clear();
 	UpdatedParticles.clear();
     }

@@ -43,13 +43,15 @@ def test_ph4(infile = None, number_of_stars = 40,
              delta_t = 1 | nbody_system.time,
              n_workers = 1, use_gpu = 1, gpu_worker = 1,
              accuracy_parameter = 0.1,
-             softening_length = -1 | nbody_system.length):
+             softening_length = -1 | nbody_system.length,
+             manage_encounters = 1):
 
     if infile != None: print "input file =", infile
     print "end_time =", end_time.number
     print "delta_t =", delta_t.number
     print "n_workers =", n_workers
     print "use_gpu =", use_gpu
+    print "manage_encounters =", manage_encounters
     print "\ninitializing the gravity module"
     sys.stdout.flush()
 
@@ -147,6 +149,7 @@ def test_ph4(infile = None, number_of_stars = 40,
     gravity.parameters.timestep_parameter = accuracy_parameter
     gravity.parameters.epsilon_squared = eps2
     gravity.parameters.use_gpu = use_gpu
+    gravity.parameters.manage_encounters = manage_encounters
 
     print "adding particles"
     # print stars
@@ -221,9 +224,10 @@ if __name__ == '__main__':
     accuracy_parameter = 0.1
     softening_length = -1  | nbody_system.length
     random_seed = -1
+    manage_encounters = 1
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "a:d:e:f:gGn:s:t:w:")
+        opts, args = getopt.getopt(sys.argv[1:], "a:c:d:e:f:gGn:s:t:w:")
     except getopt.GetoptError, err:
         print str(err)
         sys.exit(1)
@@ -231,6 +235,8 @@ if __name__ == '__main__':
     for o, a in opts:
         if o == "-a":
             accuracy_parameter = float(a)
+        elif o == "-c":
+            manage_encounters = int(a)
         elif o == "-d":
             delta_t = float(a) | nbody_system.time 
         elif o == "-e":
@@ -262,4 +268,5 @@ if __name__ == '__main__':
     assert is_mpd_running()
     test_ph4(infile, N, t_end, delta_t, n_workers,
              use_gpu, gpu_worker,
-             accuracy_parameter, softening_length)
+             accuracy_parameter, softening_length,
+             manage_encounters)

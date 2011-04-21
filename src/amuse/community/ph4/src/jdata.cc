@@ -630,11 +630,12 @@ bool jdata::advance_and_check_encounter()
 
     // Optionally manage close endounters.
 
-    if (eps2 == 0 && close1 >= 0) {
+    if (manage_encounters && eps2 == 0 && close1 >= 0) {
 	status = resolve_encounter();
 	if (status) {
-	    if (mpi_rank == 0) {
-		// cout << "after resolve_encounter" << endl << flush;
+	    if (0 && mpi_rank == 0) {
+		cout << "after resolve_encounter" << endl << flush;
+		PRL(get_energy());
 	    }
 	}
     }
@@ -732,7 +733,6 @@ void jdata::synchronize_list(int jlist[], int njlist)
 void jdata::update_merger_energy(real dEmerge)
 {
     Emerge += dEmerge;
-    PRL(Emerge);
 }
 
 real jdata::get_binary_energy()
@@ -748,7 +748,6 @@ real jdata::get_binary_energy()
     return Eb;
 }
 
-static real E0 = 0;
 void jdata::print()
 {
     const char *in_function = "jdata::print";

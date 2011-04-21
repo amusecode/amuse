@@ -26,7 +26,7 @@ int initialize_code()
 	cout << "initialize_code: ";
 	PRC(jd->mpi_size); PRL(jd->have_gpu);
     }
-    jd->system_time = 0;		// TBD
+    jd->system_time = 0;		// ? TBD
     return 0;
 }
 
@@ -63,6 +63,18 @@ int set_gpu(int gpu)
 int get_gpu(int * gpu)
 {
     *gpu = jd->use_gpu;
+    return 0;
+}
+
+int set_manage_encounters(int m)
+{
+    jd->manage_encounters = m;
+    return 0;
+}
+
+int get_manage_encounters(int * m)
+{
+    *m = jd->manage_encounters;
     return 0;
 }
 

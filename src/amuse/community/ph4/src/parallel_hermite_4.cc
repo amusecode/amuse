@@ -167,7 +167,7 @@ void initialize_particles(jdata &jd, int nj, int seed, real vfac,
 
 void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 		  real eps2, real eta, real t_max, real dt_out,
-		  real vfac)
+		  real vfac, int manage_encounters)
 {
     real system_time = 0;
 
@@ -180,6 +180,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     jd.use_gpu = use_gpu;
     jd.eps2 = eps2;
     jd.eta = eta;
+    jd.manage_encounters = manage_encounters;
 
     initialize_particles(jd, ntotal, seed, vfac, file, system_time);
     jd.initialize_arrays();
@@ -209,34 +210,8 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
     int step = 0;
     while (jd.system_time < t_max) {
 
-	jd.mpi_comm.Barrier();	// we don't need all these Barriers...
-	jd.advance();
-	jd.mpi_comm.Barrier();
+	jd.advance_and_check_encounter();
 	step++;
-
-	// Special treatment of close encounters (non-AMUSE code, for
-	// now).  All the work is done in resolve_encounter().
-
-	// In AMUSE, we would return with a collision flag set, then
-	// get close1 and close2, and call the multiples module to
-	// handle the encounter.  We still need additional (and
-	// separate) AMUSE functions to synchronize the neighbors and
-	// correct the tidal errors.
-
-	if (jd.close1 >= 0 && jd.eps2 == 0) {
-	    jd.mpi_comm.Barrier();
-	    bool status = jd.resolve_encounter();
-	    jd.mpi_comm.Barrier();
-	    if (status) {
-		jd.mpi_comm.Barrier();
-		real energy = jd.get_energy();
-		if (jd.mpi_rank == 0) {
-		    cout << "after resolve_encounter: ";
-		    PRL(energy);
-		}
-		jd.mpi_comm.Barrier();
-	    }
-	}
 
 	// Problem-specific output.
 
@@ -328,6 +303,7 @@ int main(int argc, char *argv[])
 #else
     bool use_gpu = false;
 #endif
+    int manage_encounters = 1;
 
     // Parse the command line.
 
@@ -335,6 +311,8 @@ int main(int argc, char *argv[])
         if (argv[i][0] == '-')
             switch (argv[i][1]) {
                 case 'a':	eta = atof(argv[++i]);
+				break;
+                case 'c':	manage_encounters = atoi(argv[++i]);
 				break;
                 case 'd':	dt_out = atof(argv[++i]);
 				break;
@@ -362,6 +340,7 @@ int main(int argc, char *argv[])
     if (MPI::COMM_WORLD.Get_rank() == 0) {
 	cout << "Parameters:" << endl << flush;
 	cout << "    -a "; PRL(eta);
+	cout << "    -c "; PRL(manage_encounters);
 	cout << "    -d "; PRL(dt_out);
 	cout << "    -e "; PRL(eps);
 	if (infile) {
@@ -380,6 +359,7 @@ int main(int argc, char *argv[])
     // Run the integrator.
 
     run_hermite4(ntotal, seed, infile, use_gpu,
-		 eps2, eta, t_max, dt_out, vfac);
+		 eps2, eta, t_max, dt_out, vfac,
+		 manage_encounters);
     MPI_Finalize();
 }

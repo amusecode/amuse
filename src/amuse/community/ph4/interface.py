@@ -127,6 +127,28 @@ class ph4Interface(CodeInterface,
         return function
 
     @legacy_function
+    def set_manage_encounters():
+        """
+        Set the current time step parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('manage_encounters', dtype='int32',
+                              direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_manage_encounters():
+        """
+        Set the current system time step parameter.
+        """
+        function = LegacyFunctionSpecification()
+        function.addParameter('manage_encounters', dtype='int32',
+                              direction=function.OUT)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def set_time():
         """
         Set the current system time.
@@ -211,6 +233,15 @@ class ph4(GravitationalDynamics):
             "set_gpu",			# setter name in interface.cc
             "use_gpu",			# python parameter name
             "use GPU",			# description
+            units.none,			# units
+            1 | units.none		# default
+        )
+        
+        object.add_method_parameter(
+            "get_manage_encounters",	# getter name in interface.cc
+            "set_manage_encounters",	# setter name in interface.cc
+            "manage_encounters",	# python parameter name
+            "manage close encounters",	# description
             units.none,			# units
             1 | units.none		# default
         )

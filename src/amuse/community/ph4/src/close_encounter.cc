@@ -88,6 +88,7 @@ static bool reflect_or_merge_orbit(real total_mass,
 				   vec& rel_pos, vec& rel_vel,
 				   real& energy, real& semi_major_axis,
 				   real& eccentricity,
+				   bool allow_mergers,
 				   real rmin = _INFINITY_,
 				   bool verbose = false)
 {
@@ -145,7 +146,8 @@ static bool reflect_or_merge_orbit(real total_mass,
 
     if (verbose) {PRC(energy); PRC(semi_major_axis); PRL(eccentricity);}
 
-    if (eccentricity < 1 && semi_major_axis <= rmin) return true;
+    if (allow_mergers
+	&& eccentricity < 1 && semi_major_axis <= rmin) return true;
 
     vec r_unit = rel_pos / separation;
 
@@ -235,8 +237,8 @@ bool jdata::resolve_encounter()
     if (DEBUG > 2 && mpi_rank == 0) PRL(in_function);
 
     bool status = false;
-    //PRRL(1);
-    if (close1 < 0 || close2 < 0 || eps2 > 0) return status;
+    if (!manage_encounters || eps2 > 0
+	|| close1 < 0 || close2 < 0) return status;
 
     //-----------------------------------------------------------------
     // We will treat this encounter as an unperturbed two-body event
@@ -253,7 +255,6 @@ bool jdata::resolve_encounter()
     int j1 = inverse_id[comp1];
     int j2 = inverse_id[comp2];
 
-    //PRRC(2); PRC(comp1); PRC(j1); PRC(comp2); PRL(j2);
     if (j1 < 0 || j2 < 0) return status;
 
     // Make j1 < j2, but note we may have to repeat this process with
@@ -264,13 +265,8 @@ bool jdata::resolve_encounter()
 	temp = comp1; comp1 = comp2; comp2 = temp;
     }
 
-    //PRRC(21); PRC(comp1); PRC(j1); PRC(comp2); PRL(j2);
     int pair[2] = {j1, j2};
-    //PRRC(22); PRC(pos[j1][0]); PRC(pos[j1][1]); PRL(pos[j1][2]);
-    //PRRC(22); PRC(pos[j2][0]); PRC(pos[j2][1]); PRL(pos[j2][2]);
     synchronize_list(pair, 2);
-    //PRRC(23); PRC(pred_pos[j1][0]); PRC(pred_pos[j1][1]); PRL(pred_pos[j1][2]);
-    //PRRC(23); PRC(pred_pos[j2][0]); PRC(pred_pos[j2][1]); PRL(pred_pos[j2][2]);
 
     predict(j1, system_time);
     predict(j2, system_time);
@@ -282,11 +278,7 @@ bool jdata::resolve_encounter()
 		 pred_vel[j1][1]-pred_vel[j2][1],
 		 pred_vel[j1][2]-pred_vel[j2][2]);
 
-    //PRRC(3); PRL(dr*dv);
-    //PRL(dr);
-    //PRL(dv);
     if (dr*dv >= 0) return status;		// criterion (1)
-    //PRRL(dr*dv);
 
     //-----------------------------------------------------------------
     // We will probably need to list neighbors soon anyway, so just
@@ -303,11 +295,9 @@ bool jdata::resolve_encounter()
 	cmpos[k] = (mass[j1]*pred_pos[j1][k]
 		     + mass[j2]*pred_pos[j2][k]) / total_mass;
 
-    //PRRC(31); PRL(cmpos);
     sort_neighbors(*this, cmpos);		// sorted list is rlist
 
     real dr2 = dr*dr;
-    //PRRC(4); PRC(rlist[2].r_sq); PRL(9*dr2);
     if (rlist[2].r_sq < 9*dr2) return status;	// criterion (2): factor TBD
 
     if (mpi_rank == 0)
@@ -387,7 +377,6 @@ bool jdata::resolve_encounter()
 	     vel[j1][1]-vel[j2][1],
 	     vel[j1][2]-vel[j2][2]);
     dr2 = dr*dr;
-    //PRRL(dr2);
 
     // PRL(cmpos);
     // PRL(cmvel);
@@ -426,23 +415,15 @@ bool jdata::resolve_encounter()
     // separation, or collapse the pair into a single particle.  The
     // factor of 2 in the merger condition is TBD: TODO.
 
-    //cout << "))) " << mpi_rank << " " << j1 << " ";
-    //for (int k = 0; k < 3; k++) cout << " " << pos[j1][k];
-    //cout << endl << flush;
-    //cout << "))) " << mpi_rank << " " << j2 << " ";
-    //for (int k = 0; k < 3; k++) cout << " " << pos[j2][k];
-    //cout << endl << flush;
-
     vec dr_old = dr, dv_old = dv;
     real energy, semi_major_axis, eccentricity;
     bool merge = reflect_or_merge_orbit(total_mass, dr, dv, energy,
 					semi_major_axis, eccentricity,
+					manage_encounters > 1,
 					2*rmin, mpi_rank == 0);
     // PRC(merge); PRL(nnbr);
     // PRC(dr); PRL(abs(dr));
     // PRC(dv); PRL(abs(dv));
-
-    //PRRC(dr_old); PRL(dr);
 
     if (merge) {
 
