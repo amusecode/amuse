@@ -172,10 +172,10 @@ int jdata::add_particle(real pmass, real pradius,
 	vel[nj][k] = pvel[k];
     }
 
-//     if (mpi_rank == 0) {
-// 	cout << "add_particle: "; PRC(system_time);
-// 	PRC(pmass); PRC(nj); PRL(pid);
-//     }
+    if (0 && mpi_rank == 0) {
+ 	cout << "add_particle: "; PRC(system_time);
+ 	PRC(pmass); PRC(nj); PRL(pid);
+    }
 
     // Update the inverse ID structure, such that inverse[id[j]] = j.
     // Use an STL map, so we don't have to worry about the range or
@@ -241,8 +241,6 @@ void jdata::remove_particle(int j)
 
     nj--;
     if (j < nj) {
-	// cout << "sched.remove " << nj << " (" << id[nj] << ")"
-	//     << endl << flush;
 	sched->remove_particle(nj);
 	id[j] = id[nj];
 	name[j] = name[nj];
@@ -253,10 +251,6 @@ void jdata::remove_particle(int j)
 	pot[j] = pot[nj];
 	nn[j] = nn[nj];
 	dnn[j] = dnn[nj];
-//	for (int jj = 0; jj <= nj; jj++) {
-//	    PRRC(jj); for (int k = 0; k < 3; k++) cout << " " << pos[jj][k];
-//	    cout << endl << flush;
-//	}
 	for (int k = 0; k < 3; k++) {
 	    pos[j][k] = pos[nj][k];
 	    vel[j][k] = vel[nj][k];
@@ -265,12 +259,7 @@ void jdata::remove_particle(int j)
 	    pred_pos[j][k] = pred_pos[nj][k];
 	    pred_vel[j][k] = pred_vel[nj][k];
 	}
-//	for (int jj = 0; jj <= nj; jj++) {
-//	    PRRC(jj); for (int k = 0; k < 3; k++) cout << " " << pos[jj][k];
-//	    cout << endl << flush;
-//	}
 	inverse_id[id[j]] = j;
-	// cout << "sched.add " << j << endl << flush;
 	sched->add_particle(j);
     } 
 }
@@ -393,16 +382,13 @@ void jdata::set_initial_timestep()
 	    j2 += pow(jerk[j][k], 2);
 	}
 
-	real firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
-    
-    if(a2 == 0.0 || j2 == 0.0)
-    {
-        firststep = 0.0625 * eta;
-    }
-    if(eta == 0.0)
-    {
-        firststep = 0.0625;
-    }
+	real firststep;
+	if (eta == 0.0)
+	    firststep = 0.0625;
+	else if (a2 == 0.0 || j2 == 0.0)
+	    firststep = 0.0625 * eta;
+	else
+	    firststep = 0.0625 * eta * sqrt(a2/j2);	// conservative
     
 	// Force the time step to a power of 2 commensurate with
 	// system_time.

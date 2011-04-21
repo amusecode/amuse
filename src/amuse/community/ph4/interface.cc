@@ -408,8 +408,8 @@ int get_total_mass(double * mass)
 
 int get_potential_energy(double * potential_energy)
 {
-    // TEMPORARILY include merger energy in the potential and kinetic
-    // energies.
+    // *** TEMPORARILY include merger energy in the potential and
+    // *** kinetic energies.
 
     *potential_energy = jd->get_pot() + 2*jd->Emerge;
     return 0;
@@ -417,8 +417,8 @@ int get_potential_energy(double * potential_energy)
 
 int get_kinetic_energy(double * kinetic_energy)
 {
-    // TEMPORARILY include merger energy in the potential and kinetic
-    // energies.
+    // *** TEMPORARILY include merger energy in the potential and
+    // *** kinetic energies.
 
     *kinetic_energy = jd->get_kin() - jd->Emerge;
     return 0;

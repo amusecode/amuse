@@ -33,13 +33,15 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def new_particle():
         """
-        Define a new particle in the stellar dynamics code. The particle is initialized with the provided
-        mass, radius, position and velocity. This function returns an index that can be used to refer
-        to this particle.
+        Define a new particle in the stellar dynamics code. The
+        particle is initialized with the provided mass, radius,
+        position and velocity. This function returns an index that
+        can be used to refer to this particle.
         """
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
-        function.addParameter('index_of_the_particle', dtype='int32', direction=function.OUT, description =
+        function.addParameter('index_of_the_particle', dtype='int32',
+                              direction=function.OUT, description =
             """
             An index assigned to the newly created particle.
             This index is supposed to be a local index for the code
@@ -47,15 +49,26 @@ class ph4Interface(CodeInterface,
             """
             )
 
-        function.addParameter('mass', dtype='float64', direction=function.IN, description = "The mass of the particle")
-        function.addParameter('radius', dtype='float64', direction=function.IN, description = "The radius of the particle")
-        function.addParameter('x', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
-        function.addParameter('y', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
-        function.addParameter('z', dtype='float64', direction=function.IN, description = "The initial position vector of the particle")
-        function.addParameter('vx', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
-        function.addParameter('vy', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
-        function.addParameter('vz', dtype='float64', direction=function.IN, description = "The initial velocity vector of the particle")
-        function.addParameter('id', dtype='int32', direction=function.IN, description = "Identifier of the particle, option for restoring state after loading", default = -1)
+        function.addParameter('mass', dtype='float64', direction=function.IN,
+                 description = "The mass of the particle")
+        function.addParameter('radius', dtype='float64', direction=function.IN,
+                 description = "The radius of the particle")
+        function.addParameter('x', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('y', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('z', dtype='float64', direction=function.IN,
+                 description = "The initial position vector of the particle")
+        function.addParameter('vx', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vy', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('vz', dtype='float64', direction=function.IN,
+                 description = "The initial velocity vector of the particle")
+        function.addParameter('id', dtype='int32', direction=function.IN,
+                 description = "Identifier of the particle, "
+                               +"option for restoring state after loading",
+                              default = -1)
         function.result_type = 'int32'
         function.result_doc = """ 0 - OK
             particle was created and added to the model
@@ -162,7 +175,7 @@ class ph4Interface(CodeInterface,
     @legacy_function
     def get_number_of_particles_updated():
         """
-        Return the number of particles added or deleted during the last evolve
+        Return the number of particles added or deleted during the last evolve.
         """
         function = LegacyFunctionSpecification()
         function.addParameter('index', dtype='int32',
@@ -178,12 +191,12 @@ class ph4Interface(CodeInterface,
         function = LegacyFunctionSpecification()
         function.addParameter('index_of_update', dtype='int32',
                               direction=function.IN, 
-                              description = 'index in the updated particles list')
+                 description = 'index in the updated particles list')
         function.addParameter('index_of_particle', dtype='int32',
                               direction=function.OUT)
         function.addParameter('kind_of_update', dtype='int32',
                               direction=function.OUT,
-                              description = 'kind of update (2, addition), (1, deletion)')
+                 description = 'kind of update (2, addition), (1, deletion)')
         function.can_handle_array = True
         function.result_type = 'int32'
         return function

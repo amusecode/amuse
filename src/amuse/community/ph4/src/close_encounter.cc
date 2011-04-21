@@ -98,7 +98,7 @@ static bool reflect_or_merge_orbit(real total_mass,
     // most of the orbital elements...
 
     // Code stolen from Starlab/kepler, with some fine points omitted.
-    // Should use the standalone kepler code now...
+    // *** Should use the standalone kepler code now. ***
 
     // Dynamics and geometry.
 

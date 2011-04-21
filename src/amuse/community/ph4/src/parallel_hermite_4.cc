@@ -4,6 +4,7 @@
 // acceleration.  Run time command-line options are:
 //
 //	-a eta		set accuracy parameter			[0.14]
+//	-c close	manage close encounters [0-2]		[1]
 //	-d dt_out	set time interval for diagnostic output	[0.5]
 //	-e eps		set softening parameter			[0.01]
 //	-f infile	specify input file			[none]
@@ -278,9 +279,7 @@ void run_hermite4(int ntotal, int seed, char *file, bool use_gpu,
 	    jd.print();
 	}
     }
-    //cout << "ph4 Barrier 9 for " << jd.mpi_rank << endl << flush;
     jd.mpi_comm.Barrier();
-    //cout << "ph4 Barrier 9a for " << jd.mpi_rank << endl << flush;
 }
 
 
