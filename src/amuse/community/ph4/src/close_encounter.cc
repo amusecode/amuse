@@ -415,6 +415,19 @@ bool jdata::resolve_encounter()
     // separation, or collapse the pair into a single particle.  The
     // factor of 2 in the merger condition is TBD: TODO.
 
+
+
+    // ****************************************************************
+    // *** NOTE: If manage_encounters > 2 and one (or both) of the
+    // *** components is a multiple, the call below should become a
+    // *** call into a generalized function that calls smallN and
+    // *** compactifies the result.  Most of the logic preceding and
+    // *** following this segment will survive largely intact, but the
+    // *** detailed code will change in places.  TBD.
+    // ****************************************************************
+
+
+
     vec dr_old = dr, dv_old = dv;
     real energy, semi_major_axis, eccentricity;
     bool merge = reflect_or_merge_orbit(total_mass, dr, dv, energy,

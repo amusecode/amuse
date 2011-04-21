@@ -714,7 +714,7 @@ void jdata::synchronize_list(int jlist[], int njlist)
 // Maintain two measures of the energy in merged objects.  The total
 // merger energy Emerge includes binary binding energy and the tidal
 // error incurred when the merger occurred.  The total binary energy
-// omits te tidal effects.
+// omits the tidal effects.
 
 void jdata::update_merger_energy(real dEmerge)
 {
@@ -732,6 +732,13 @@ real jdata::get_binary_energy()
 	Eb -= 0.5*m1m2/a;
     }
     return Eb;
+}
+
+bool jdata::is_multiple(int i)		// note: i is ID, not j index
+{
+    for (unsigned int ib = 0; ib < binary_list.size(); ib++)
+	if (binary_list[ib].binary_id == i) return true;
+    return false;
 }
 
 void jdata::print()

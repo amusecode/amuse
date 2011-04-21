@@ -169,6 +169,7 @@ class jdata {
     void synchronize_list(int jlist[], int njlist);
     void update_merger_energy(real dEmerge);
     real get_binary_energy();
+    bool is_multiple(int i);
     void print();
     void spec_output(const char *s = NULL);
     void to_com();
