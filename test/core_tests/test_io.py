@@ -44,13 +44,16 @@ class FrameworkTests(amusetest.TestCase):
         self.assertTrue('add_comma' in options)
         self.assertTrue('save_fast' in options)
         TestFileFormatProcessor.register()
-        base.write_set_to_file("test.txt", None, format="123")
+        base.write_set_to_file(None, "test.txt", format="123")
+        self.assertEqual(TestFileFormatProcessor.instance.set, None)
+        self.assertEqual(TestFileFormatProcessor.instance.filename, "test.txt")
+        self.assertEqual(TestFileFormatProcessor.instance.format, "123")
         self.assertTrue(TestFileFormatProcessor.instance.stored)
         self.assertTrue(TestFileFormatProcessor.instance.add_comma)
         
     def test2(self):
         TestFileFormatProcessor.register()
-        base.write_set_to_file("test.txt", None, format="123", add_comma = False)
+        base.write_set_to_file(None, "test.txt", format="123", add_comma = False)
         self.assertFalse(TestFileFormatProcessor.instance.add_comma)
         
     def test3(self):

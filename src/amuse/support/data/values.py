@@ -460,7 +460,7 @@ class VectorQuantity(Quantity):
         >>> print vector.x
         1.0 kg
         """
-        return self[0]
+        return new_quantity(self.number[numpy.newaxis, ..., 0][0], self.unit)
         
     @property
     def y(self):
@@ -474,7 +474,7 @@ class VectorQuantity(Quantity):
         >>> print vector.y
         2.0 kg
         """
-        return self[1]
+        return new_quantity(self.number[numpy.newaxis, ..., 1][0], self.unit)
         
     @property
     def z(self):
@@ -488,7 +488,7 @@ class VectorQuantity(Quantity):
         >>> print vector.z
         3.0 kg
         """
-        return self[2]
+        return new_quantity(self.number[numpy.newaxis, ..., 2][0], self.unit)
     
     def indices(self):
         for x in len(self._number):
