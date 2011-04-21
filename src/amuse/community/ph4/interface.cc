@@ -424,14 +424,14 @@ int get_kinetic_energy(double * kinetic_energy)
     return 0;
 }
 
-int get_binary_energy(double * binary_energy)
-{
+int get_binary_energy(double * binary_energy)	// new interface function
+{						// see interface.py
     *binary_energy = jd->get_binary_energy();
     return 0;
 }
 
-double get_binary_energy()
-{
+double binary_energy()				// new "legacy" function
+{						// see interface.py
     return jd->get_binary_energy();
 }
 
