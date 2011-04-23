@@ -196,6 +196,11 @@ class jdata {
     // In close_encounter.cc:
 
     bool resolve_encounter();
+
+    // In two_body.cc:
+
+    void two_body(int j1, int j2, int nbrlist[], int nnbr);
+    void multiple(int j1, int j2, int nbrlist[], int nnbr);
 };
 
 #define PRRC(x) cout << "rank = " << mpi_rank << " " << #x << " = " << x << ",  " << flush

@@ -23,6 +23,7 @@
 //	void jdata::advance()
 //	void jdata::synchronize_all()
 //	void jdata::synchronize_list(int jlist[], int njlist)
+//	bool jdata::is_multiple(int i)
 //	void jdata::print(idata *id)
 //	void jdata::cleanup()
 

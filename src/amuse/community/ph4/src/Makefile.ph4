@@ -13,8 +13,9 @@ MPICC	= openmpicc	# mpicc.openmpi
 CFLAGS += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 
-OBJS    = jdata.o idata.o scheduler.o grape.o gpu.o util.o diag.o debug.o \
-	  close_encounter.o
+OBJS    = jdata.o idata.o scheduler.o grape.o gpu.o util.o diag.o debug.o
+#OBJS	+= old_close_encounter.o
+OBJS	+= close_encounter.o two_body.o
 GPUOBJS	= $(subst .o,.gpuo, $(OBJS))
 
 LIBS 	= -L/usr/local/sapporo_v1.6 -lsapporo \
