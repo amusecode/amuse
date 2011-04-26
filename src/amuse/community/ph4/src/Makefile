@@ -17,7 +17,7 @@ CODELIB = libph4.a
 CODELIB_GPU = libph4gpu.a
 
 CODEOBJS = debug.o diag.o gpu.o grape.o idata.o jdata.o scheduler.o \
-	close_encounter.o util.o
+	close_encounter.o two_body.o util.o
 
 CODEOBJS_GPU = $(subst .o,.gpuo, $(CODEOBJS))
 
