@@ -234,42 +234,38 @@ class ph4(GravitationalDynamics):
         # above and reflected in interface.cc.  Python access is
         # (e.g.)
         #
-        #	ph4.parameters.timestep_parameter = xxx
+        #        ph4.parameters.timestep_parameter = xxx
 
         object.add_method_parameter(
-            "get_eta",			# getter name in interface.cc
-            "set_eta",			# setter name in interface.cc
-            "timestep_parameter",	# python parameter name
-            "timestep parameter",	# description
-            units.none,			# units
-            0.14 | units.none		# default
+            "get_eta",                        # getter name in interface.cc
+            "set_eta",                        # setter name in interface.cc
+            "timestep_parameter",        # python parameter name
+            "timestep parameter",        # description
+            default_value = 0.14 | units.none                # default
         )
 
         object.add_method_parameter(
-            "get_eps2",			# already defined in standard interface
-            "set_eps2",			# already defined in standard interface
+            "get_eps2",                        # already defined in standard interface
+            "set_eps2",                        # already defined in standard interface
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.01 | nbody_system.length * nbody_system.length
+            default_value = 0.01 | nbody_system.length * nbody_system.length
         )
 
         object.add_method_parameter(
-            "get_gpu",			# getter name in interface.cc
-            "set_gpu",			# setter name in interface.cc
-            "use_gpu",			# python parameter name
-            "use GPU",			# description
-            units.none,			# units
-            1 | units.none		# default
+            "get_gpu",                        # getter name in interface.cc
+            "set_gpu",                        # setter name in interface.cc
+            "use_gpu",                        # python parameter name
+            "use GPU",                        # description
+            default_value = 1 | units.none                # default
         )
         
         object.add_method_parameter(
-            "get_manage_encounters",	# getter name in interface.cc
-            "set_manage_encounters",	# setter name in interface.cc
-            "manage_encounters",	# python parameter name
-            "manage close encounters",	# description
-            units.none,			# units
-            1 | units.none		# default
+            "get_manage_encounters",        # getter name in interface.cc
+            "set_manage_encounters",        # setter name in interface.cc
+            "manage_encounters",        # python parameter name
+            "manage close encounters",        # description
+            default_value = 1 | units.none                # default
         )
         
     def update_particle_set(self):
@@ -282,23 +278,23 @@ class ph4(GravitationalDynamics):
         
         """
         number_of_updated_particles, error \
-		= self.get_number_of_particles_updated()
+                = self.get_number_of_particles_updated()
         
         if number_of_updated_particles == 0:
             return
         
         indices_in_update_list = range(number_of_updated_particles)
         particle_indices, updates, erros \
-		= self.get_id_of_updated_particle(indices_in_update_list)
+                = self.get_id_of_updated_particle(indices_in_update_list)
         
         incode_storage = self.particles._private.attribute_storage
         
         indices_to_remove = []
         indices_to_add = []
         for index, status in zip(particle_indices, updates):
-            if status == 1:			# deletion
+            if status == 1:                        # deletion
                 indices_to_remove.append(index)
-            elif status == 2:			# addition
+            elif status == 2:                        # addition
                 indices_to_add.append(index)
 
         print ''
@@ -335,4 +331,20 @@ class ph4(GravitationalDynamics):
         )
 
         object.add_method("get_binary_energy", (),
-	    (nbody_system.energy, object.ERROR_CODE))
+            (nbody_system.energy, object.ERROR_CODE))
+        object.add_method("get_eta", (),
+            (units.none, object.ERROR_CODE,))
+        object.add_method("set_eta", (units.none, ),
+            (object.ERROR_CODE,))
+        object.add_method("get_eps2", (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,))
+        object.add_method("set_eps2", (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,))
+        object.add_method("get_gpu", (),
+            (units.none, object.ERROR_CODE,))
+        object.add_method("set_gpu", (units.none, ),
+            (object.ERROR_CODE,))
+        object.add_method("get_manage_encounters", (),
+            (units.none, object.ERROR_CODE,))
+        object.add_method("set_manage_encounters", (units.none, ),
+            (object.ERROR_CODE,))

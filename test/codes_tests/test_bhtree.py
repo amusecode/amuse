@@ -598,7 +598,7 @@ class TestBHTree(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
         instance = BHTree(convert_nbody)
         
-        (value, error) = instance.get_epsilon_squared()
+        value,error = instance.legacy_interface.get_epsilon_squared()
         self.assertEquals(0, error)
         self.assertEquals(0.125, value)
         self.assertAlmostEquals(0.125 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
@@ -606,7 +606,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.epsilon_squared = x | units.AU**2
             self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         
-        (value, error) = instance.get_time_step()
+        (value, error) = instance.legacy_interface.get_time_step()
         self.assertEquals(0, error)
         self.assertEquals(0.015625, value)
         self.assertAlmostEquals(0.015625 | units.yr, instance.parameters.timestep, in_units=units.yr)
@@ -614,7 +614,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.timestep = x | units.yr
             self.assertAlmostEquals(x | units.yr, instance.parameters.timestep, in_units=units.yr)
         
-        (value, error) = instance.get_theta_for_tree()
+        (value, error) = instance.legacy_interface.get_theta_for_tree()
         self.assertEquals(0, error)
         self.assertEquals(0.75, value)
         self.assertEquals(0.75 | units.none, instance.parameters.opening_angle)
@@ -622,7 +622,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.opening_angle = x | units.none
             self.assertEquals(x | units.none, instance.parameters.opening_angle)
         
-        (value, error) = instance.get_use_self_gravity()
+        (value, error) = instance.legacy_interface.get_use_self_gravity()
         self.assertEquals(0, error)
         self.assertEquals(1, value)
         self.assertEquals(1 | units.none, instance.parameters.use_self_gravity)
@@ -630,7 +630,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.use_self_gravity = x | units.none
             self.assertEquals(x | units.none, instance.parameters.use_self_gravity)
         
-        (value, error) = instance.get_ncrit_for_tree()
+        (value, error) = instance.legacy_interface.get_ncrit_for_tree()
         self.assertEquals(0, error)
         self.assertEquals(1024, value)
         self.assertEquals(1024 | units.none, instance.parameters.ncrit_for_tree)
@@ -638,7 +638,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.ncrit_for_tree = x | units.none
             self.assertEquals(x | units.none, instance.parameters.ncrit_for_tree)
         
-        (value, error) = instance.get_dt_dia()
+        (value, error) = instance.legacy_interface.get_dt_dia()
         self.assertEquals(0, error)
         self.assertEquals(1.0, value)
         self.assertAlmostEquals(1.0 | units.yr, instance.parameters.dt_dia, in_units=units.yr)

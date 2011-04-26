@@ -173,7 +173,6 @@ class SSE(InCodeComponentImplementation):
             "z_in",
             "metallicity",
             "Metallicity of all stars",
-            units.none,
             0.02 | units.none
         )
                 
@@ -182,7 +181,6 @@ class SSE(InCodeComponentImplementation):
             "neta_in",
             "reimers_mass_loss_coefficient",
             "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
-            units.none,
             0.5 | units.none
         )
         
@@ -191,7 +189,6 @@ class SSE(InCodeComponentImplementation):
             "bwind_in",
             "binary_enhanced_mass_loss_parameter",
             "The binary enhanced mass loss parameter (inactive for single).",
-            units.none,
             0.0 | units.none
         )
         
@@ -200,7 +197,6 @@ class SSE(InCodeComponentImplementation):
             "hewind_in",
             "helium_star_mass_loss_factor",
             "Helium star mass loss factor",
-            units.none,
             1.0 | units.none
         )
         
@@ -209,7 +205,6 @@ class SSE(InCodeComponentImplementation):
             "sigma_in",
             "SN_kick_speed_dispersion",
             "The dispersion in the Maxwellian for the SN kick speed (190 km/s).",
-            units.km / units.s,
             190.0 | units.km / units.s
         )
         
@@ -218,7 +213,6 @@ class SSE(InCodeComponentImplementation):
             "ifflag_in",
             "white_dwarf_IFMR_flag", 
             "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
-            units.none, 
             0 | units.none
         )
         
@@ -227,7 +221,6 @@ class SSE(InCodeComponentImplementation):
             "wdflag_in",
             "white_dwarf_cooling_flag", 
             "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
-            units.none, 
             1 | units.none
         )
         
@@ -236,7 +229,6 @@ class SSE(InCodeComponentImplementation):
             "bhflag_in",
             "black_hole_kick_flag",
             "bhflag > 0 allows velocity kick at BH formation (0).",
-            units.none,
             0 | units.none
         )
         
@@ -245,7 +237,6 @@ class SSE(InCodeComponentImplementation):
             "nsflag_in",
             "neutron_star_mass_flag",
             "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
-            units.none,
             1 | units.none
         )
         
@@ -254,7 +245,6 @@ class SSE(InCodeComponentImplementation):
             "mxns_in",
             "maximum_neutron_star_mass",
             "The maximum neutron star mass (1.8, nsflag=0; 3.0, nsflag=1).",
-            units.MSun,
             3.0 | units.MSun
         )
         
@@ -263,7 +253,6 @@ class SSE(InCodeComponentImplementation):
             "pts1_in",
             "fractional_time_step_1", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
-            units.none, 
             0.05 | units.none
         )
         
@@ -272,7 +261,6 @@ class SSE(InCodeComponentImplementation):
             "pts2_in",
             "fractional_time_step_2", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
-            units.none, 
             0.01 | units.none
         )
         
@@ -281,7 +269,6 @@ class SSE(InCodeComponentImplementation):
             "pts3_in",
             "fractional_time_step_3", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
-            units.none, 
             0.02 | units.none
         )
         
@@ -352,8 +339,7 @@ class SSE(InCodeComponentImplementation):
                 units.none, 
                 units.none, 
                 units.none
-            ),
-            public_name = "initialize_"
+            )
         )
          
     def define_particle_sets(self, object):

@@ -274,7 +274,7 @@ class Capreole(InCodeComponentImplementation):
             object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
             
     def define_properties(self, object):
-        object.add_property('get_time', time, "model_time")
+        object.add_property('get_time', public_name = "model_time")
         
     def define_methods(self, object):
         object.add_method(
@@ -344,6 +344,25 @@ class Capreole(InCodeComponentImplementation):
     
         
     
+        object.add_method(
+            'get_time',
+            (),
+            (time, object.ERROR_CODE,)
+        )
+    
+        
+        object.add_method(
+            'setup_mesh',
+            (units.none, units.none, units.none, length, length, length,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_boundary',
+            (units.string, units.string, units.string, units.string, units.string, units.string,),
+            (object.ERROR_CODE,)
+        )
+        
+    
     def define_particle_sets(self, object):
         object.define_grid('grid')
         object.set_grid_range('grid', 'get_index_range_inclusive')
@@ -376,8 +395,7 @@ class Capreole(InCodeComponentImplementation):
             "setup_mesh", 
             "nmeshx",
             "nx", 
-            "number of cells in the x direction", 
-            units.none, 
+            "number of cells in the x direction",
             10 | units.none,
         )
         
@@ -386,8 +404,7 @@ class Capreole(InCodeComponentImplementation):
             "setup_mesh", 
             "nmeshy",
             "ny", 
-            "number of cells in the y direction", 
-            units.none, 
+            "number of cells in the y direction",
             10 | units.none,
         )
         
@@ -396,8 +413,7 @@ class Capreole(InCodeComponentImplementation):
             "setup_mesh", 
             "nmeshz",
             "nz", 
-            "number of cells in the z direction", 
-            units.none, 
+            "number of cells in the z direction",
             10 | units.none,
         )
         
@@ -406,23 +422,20 @@ class Capreole(InCodeComponentImplementation):
             "xlength",
             "length_x", 
             "length of model in the x direction", 
-            length, 
             10 | length,
         )
         object.add_caching_parameter(
             "setup_mesh", 
             "ylength",
             "length_y", 
-            "length of model in the x direction", 
-            length, 
+            "length of model in the x direction",
             10 | length,
         )
         object.add_caching_parameter(
             "setup_mesh", 
             "zlength",
             "length_z", 
-            "length of model in the z direction", 
-            length, 
+            "length of model in the z direction",
             10 | length,
         )
         
@@ -442,8 +455,7 @@ class Capreole(InCodeComponentImplementation):
             "set_boundary", 
             "xbound1",
             "xbound1", 
-            "boundary conditions on first (inner, left) X boundary", 
-            units.string, 
+            "boundary conditions on first (inner, left) X boundary",
             "reflective" | units.string,
         )
         
@@ -452,8 +464,7 @@ class Capreole(InCodeComponentImplementation):
             "set_boundary", 
             "xbound2",
             "xbound2", 
-            "boundary conditions on second (outer, right) X boundary", 
-            units.string, 
+            "boundary conditions on second (outer, right) X boundary",
             "reflective" | units.string,
         )
         
@@ -461,8 +472,7 @@ class Capreole(InCodeComponentImplementation):
             "set_boundary", 
             "ybound1",
             "ybound1", 
-            "boundary conditions on first (inner, front) Y boundary", 
-            units.string, 
+            "boundary conditions on first (inner, front) Y boundary",
             "reflective" | units.string,
         )
         
@@ -471,8 +481,7 @@ class Capreole(InCodeComponentImplementation):
             "set_boundary", 
             "ybound2",
             "ybound2", 
-            "boundary conditions on second (outer, back) Y boundary", 
-            units.string, 
+            "boundary conditions on second (outer, back) Y boundary",
             "reflective" | units.string,
         )
         
@@ -480,8 +489,7 @@ class Capreole(InCodeComponentImplementation):
             "set_boundary", 
             "zbound1",
             "zbound1", 
-            "boundary conditions on first (inner, bottom) Z boundary", 
-            units.string, 
+            "boundary conditions on first (inner, bottom) Z boundary",
             "reflective" | units.string,
         )
         
@@ -490,8 +498,7 @@ class Capreole(InCodeComponentImplementation):
             "set_boundary", 
             "zbound2",
             "zbound2", 
-            "boundary conditions on second (outer, top) Z boundary", 
-            units.string, 
+            "boundary conditions on second (outer, top) Z boundary",
             "reflective" | units.string,
         )
         

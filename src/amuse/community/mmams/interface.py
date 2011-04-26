@@ -237,7 +237,7 @@ class MakeMeAMassiveStar(CommonCode):
         self.parameters.set_defaults()
     
     def define_properties(self, object):
-        object.add_property("get_number_of_particles", units.none)
+        object.add_property("get_number_of_particles")
     
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -245,8 +245,7 @@ class MakeMeAMassiveStar(CommonCode):
             "set_target_n_shells_mixing",
             "target_n_shells_mixing", 
             "target number of shells for mixed models", 
-            units.none, 
-            200 | units.none
+            default_value = 200 | units.none
         )
         
         object.add_method_parameter(
@@ -254,8 +253,7 @@ class MakeMeAMassiveStar(CommonCode):
             "set_target_n_shells",
             "target_n_shells", 
             "target number of shells for unmixed models", 
-            units.none, 
-            10000 | units.none
+            default_value = 10000 | units.none
         ) 
         
         object.add_boolean_parameter(
@@ -313,6 +311,15 @@ class MakeMeAMassiveStar(CommonCode):
             (object.INDEX, object.INDEX,),
             (object.INDEX, object.ERROR_CODE,)
         )
+        
+        object.add_method("get_target_n_shells_mixing", (), (units.none, object.ERROR_CODE,)) 
+        object.add_method("set_target_n_shells_mixing", (units.none, ), (object.ERROR_CODE,)) 
+        
+        object.add_method("get_target_n_shells", (), (units.none, object.ERROR_CODE,)) 
+        object.add_method("set_target_n_shells", (units.none, ), (object.ERROR_CODE,)) 
+        
+        object.add_method("get_number_of_particles", (), (units.none, object.ERROR_CODE,)) 
+    
     
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['native_stars', 'imported_stars', 'merge_products'], 
@@ -332,6 +339,7 @@ class MakeMeAMassiveStar(CommonCode):
             object.add_getter(particle_set_name, 'get_number_of_zones')
             object.add_method(particle_set_name, 'add_shell') 
             object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
+    
     
     def get_stellar_model(self, index_of_the_particle):
         if hasattr(index_of_the_particle, '__iter__'):

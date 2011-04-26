@@ -328,33 +328,29 @@ class TestHermite(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
         instance = Hermite(convert_nbody)
         
-        (value, error) = instance.get_eps2()
-        self.assertEquals(0, error)
-        self.assertEquals(0.0, value)
+        value = instance.get_eps2()
+        self.assertEquals(0.0 | units.AU**2 , value)
         self.assertAlmostEquals(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         for x in [0.01, 0.1, 0.2]:
             instance.parameters.epsilon_squared = x | units.AU**2
             self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         
-        (value, error) = instance.get_dt_param()
-        self.assertEquals(0, error)
-        self.assertEquals(0.03, value)
+        value = instance.get_dt_param()
+        self.assertEquals(0.03 | units.none, value)
         self.assertAlmostEquals(0.03 | units.none, instance.parameters.dt_param, in_units=units.none)
         for x in [0.001, 0.01, 0.1]:
             instance.parameters.dt_param = x | units.none
             self.assertAlmostEquals(x | units.none, instance.parameters.dt_param, in_units=units.none)
         
-        (value, error) = instance.get_dt_dia()
-        self.assertEquals(0, error)
-        self.assertEquals(1.0, value)
+        value = instance.get_dt_dia()
+        self.assertAlmostEquals(1.0 | units.yr, value)
         self.assertAlmostEquals(1.0 | units.yr, instance.parameters.dt_dia, in_units=units.yr)
         for x in [0.1, 10.0, 100.0]:
             instance.parameters.dt_dia = x | units.yr
             self.assertAlmostEquals(x | units.yr, instance.parameters.dt_dia, in_units=units.yr)
         
-        (value, error) = instance.get_time()
-        self.assertEquals(0, error)
-        self.assertEquals(0.0, value)
+        value = instance.get_time()
+        self.assertEquals(0.0| units.yr, value)
         self.assertAlmostEquals(0.0 | units.yr, instance.parameters.time, in_units=units.yr)
         for x in [1.0, 10.0, 100.0]:
             instance.parameters.time = x | units.yr

@@ -711,14 +711,61 @@ class Hop(InCodeComponentImplementation):
             (builder.ERROR_CODE)
         )
         
+        builder.add_method(
+            "get_fDensThresh",
+            (),
+            (generic_unit_system.density, builder.ERROR_CODE,)
+        )
+        
+        builder.add_method(
+            "set_fDensThresh",
+            (generic_unit_system.density, ),
+            (builder.ERROR_CODE,)
+        )
+        
+        builder.add_method(
+            "get_nHop",
+            (),
+            (units.none, builder.ERROR_CODE,)
+        )
+        
+        builder.add_method(
+            "set_nHop",
+            (units.none, ),
+            (builder.ERROR_CODE,)
+        )
+        
+        builder.add_method(
+            "get_nDens",
+            (),
+            (units.none, builder.ERROR_CODE,)
+        )
+        
+        builder.add_method(
+            "set_nDens",
+            (units.none, ),
+            (builder.ERROR_CODE,)
+        )
+        
+        builder.add_method(
+            "get_nBucket",
+            (),
+            (units.none, builder.ERROR_CODE,)
+        )
+        
+        builder.add_method(
+            "set_nBucket",
+            (units.none, ),
+            (builder.ERROR_CODE,)
+        )
+        
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_fDensThresh", 
             "set_fDensThresh",
             "density_threshold", 
             "the density below which particles are not assigned to any group", 
-            generic_unit_system.density, 
-            0.0 | generic_unit_system.density
+            default_value = 0.0 | generic_unit_system.density
         )
         
         object.add_method_parameter(
@@ -726,8 +773,7 @@ class Hop(InCodeComponentImplementation):
             "set_nHop",
             "number_of_hops", 
             "number of particles to search to determin to look for density maximum", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
 
         object.add_method_parameter(
@@ -735,8 +781,7 @@ class Hop(InCodeComponentImplementation):
             "set_nDens",
             "number_of_neighbors_for_local_density", 
             "Return the number of particles to smooth over when calculating densities.", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -744,8 +789,7 @@ class Hop(InCodeComponentImplementation):
             "set_nBucket",
             "number_of_buckets", 
             "Return the bucket parameter to tune the performance of the kd-tree search.", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
   
     def define_particle_sets(self, builder):

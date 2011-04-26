@@ -191,8 +191,7 @@ class SmallN(GravitationalDynamics):
             "set_eps2",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.0 | nbody_system.length * nbody_system.length
+            default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
         object.add_method_parameter(
@@ -200,12 +199,11 @@ class SmallN(GravitationalDynamics):
             "set_number_of_particles",
             "number_of_particles", 
             "The number of particles being managed by the SmallN module", 
-            units.none, 
-            0 | units.none
+            default_value = 0 | units.none
         )
     
     def define_properties(self, object):
-        object.add_property("get_total_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
+        object.add_property("get_total_energy")
         
     #def define_state(self, object):
     #    pass
@@ -270,6 +268,46 @@ class SmallN(GravitationalDynamics):
             ), 
             ( 
             )
+        )
+    
+        
+    
+        object.add_method(
+            "get_eps2", 
+            (), 
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+    
+        
+    
+        object.add_method(
+            "set_eps2", 
+            (nbody_system.length * nbody_system.length, ), 
+            (object.ERROR_CODE,)
+        )
+    
+        
+    
+        object.add_method(
+            "get_number_of_particles", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        
+    
+        object.add_method(
+            "set_number_of_particles", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+    
+        
+    
+        object.add_method(
+            "get_total_energy", 
+            (), 
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
         )
     
         

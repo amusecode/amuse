@@ -1,4 +1,4 @@
-from amuse.community.bse.interface import BSE
+from amuse.community.bse.interface import BSE, BSEInterface
 
 from amuse.support.data import core
 from amuse.support.units import units
@@ -38,7 +38,7 @@ class TestMPIInterface(TestWithMPI):
         
     def test1(self):
         print "Test initialization..."
-        instance = BSE()
+        instance = BSEInterface()
         metallicity = 0.02
         neta = 0.5
         bwind =  0.0

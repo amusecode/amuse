@@ -210,8 +210,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_eps2",
             "epsilon_squared",
             "smoothing parameter for gravity calculations",
-            nbody_system.length * nbody_system.length,
-            0.0 | nbody_system.length * nbody_system.length
+            default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
         object.add_method_parameter(
@@ -219,8 +218,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_eta1",
             "timestep_parameter",
             "timestep parameter",
-            units.none,
-            0.02 |  units.none
+            default_value = 0.02 |  units.none
         )
 
         object.add_method_parameter(
@@ -228,8 +226,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_eta_s",
             "initial_timestep_parameter",
             "parameter to determine the initial timestep",
-            units.none,
-            0.01 |  units.none
+            default_value = 0.01 |  units.none
         )
         
         object.add_method_parameter(
@@ -237,8 +234,7 @@ class PhiGRAPE(GravitationalDynamics):
             "set_initialize_once",
             "initialize_gpu_once",
             "set to 1 if the gpu must only be initialized once, 0 if it can be initialized for every call\nIf you want to run multiple instances of the code on the same gpu this parameter needs to be 0 (default)",
-            units.none,
-            0 |  units.none
+            default_value = 0 |  units.none
         )
 
         self.stopping_conditions.define_parameters(object)
@@ -256,6 +252,54 @@ class PhiGRAPE(GravitationalDynamics):
             'get_potential_at_point',
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.potential, object.ERROR_CODE)
+        )
+
+        object.add_method(
+            "get_eps2",
+            (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_eps2",
+            (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_eta",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_eta1",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_eta_s",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_eta_s",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_initialize_once",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_initialize_once",
+            (units.none, ),
+            (object.ERROR_CODE,)
         )
 
         self.stopping_conditions.define_methods(object)

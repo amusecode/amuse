@@ -175,8 +175,7 @@ class Huayno(GravitationalDynamics):
             "set_eps2", 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.0 | nbody_system.length * nbody_system.length
+            default_value = 0.0 | nbody_system.length * nbody_system.length
         )
 
         object.add_method_parameter(
@@ -184,8 +183,7 @@ class Huayno(GravitationalDynamics):
             "set_timestep_parameter", 
             "timestep_parameter", 
             "timestep parameter for gravity calculations", 
-            units.none, 
-            0.03 | units.none
+            default_value = 0.03 | units.none
         )
 
         object.add_method_parameter(
@@ -193,8 +191,7 @@ class Huayno(GravitationalDynamics):
             "set_inttype_parameter", 
             "inttype_parameter", 
             "integrator method to use", 
-            units.none, 
-            8 | units.none
+            default_value = 8 | units.none
         )
 
         object.add_method_parameter(
@@ -202,14 +199,61 @@ class Huayno(GravitationalDynamics):
             "set_time",
             "time",
             "current simulation time", 
-            nbody_system.time, 
-            0.0 | nbody_system.time
+            default_value = 0.0 | nbody_system.time
         )
 
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
-
+        
+        object.add_method(
+            "get_eps2",
+            (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_eps2",
+            (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_timestep_parameter",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_timestep_parameter",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_inttype_parameter",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_inttype_parameter",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_time",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
 

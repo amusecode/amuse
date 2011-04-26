@@ -228,14 +228,21 @@ class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         self.par_seti("domain1", "bc_ox2", "%d", map_from_string_to_flag[ybound2], "-")
         self.par_seti("domain1", "bc_ix3", "%d", map_from_string_to_flag[zbound1], "-")
         self.par_seti("domain1", "bc_ox3", "%d", map_from_string_to_flag[zbound1], "-")
+        
+        return 0
+        
     
     def set_parallel(self, nx, ny, nz):
         self.par_seti("parallel", "NGrid_x1", "%d", nx, "-")
         self.par_seti("parallel", "NGrid_x2", "%d", ny, "-")
         self.par_seti("parallel", "NGrid_x3", "%d", nz, "-")
         
+        return 0
+        
     def set_auto_decomposition(self, value):
         self.par_seti("parallel", "auto", "%d", value, "-")
+        
+        return 0
         
     @legacy_function    
     def initialize_grid():
@@ -570,7 +577,7 @@ class Athena(InCodeComponentImplementation):
         object.set_converter(self.unit_converter.as_converter_from_si_to_generic())
 
     def define_properties(self, object):
-        object.add_property('get_time', time, "model_time")
+        object.add_property('get_time', public_name = "model_time")
         
     def define_methods(self, object):
         object.add_method(
@@ -661,6 +668,58 @@ class Athena(InCodeComponentImplementation):
             (potential, object.ERROR_CODE)
         )
     
+        object.add_method(
+            "get_isocsound",
+            (),
+            (length / time, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_isocsound",
+            (length / time, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_gamma",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_gamma",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_courant_friedrichs_lewy_number",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_courant_friedrichs_lewy_number",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            'get_time',
+            (),
+            (time, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            'setup_mesh',
+            (units.none, units.none, units.none, length, length, length,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_boundary',
+            (units.string, units.string, units.string, units.string, units.string, units.string,),
+            (object.ERROR_CODE,)
+        )
         self.stopping_conditions.define_methods(object)
     
     
@@ -708,8 +767,7 @@ class Athena(InCodeComponentImplementation):
             "set_isocsound",
             "isothermal_sound_speed", 
             "isothermal sound speed, only used for isothermal EOS", 
-            length / time, 
-            0.0 | length / time,
+            default_value = 0.0 | length / time,
             must_set_before_get = True
         )
         
@@ -718,8 +776,7 @@ class Athena(InCodeComponentImplementation):
             "set_gamma",
             "gamma", 
             "ratio of specific heats used in equation of state", 
-            units.none, 
-            1.6666666666666667 | units.none,
+            default_value = 1.6666666666666667 | units.none,
             must_set_before_get = True
         )
         
@@ -728,8 +785,7 @@ class Athena(InCodeComponentImplementation):
             "set_courant_friedrichs_lewy_number",
             "courant_number", 
             "CFL number", 
-            units.none, 
-            0.3 | units.none,
+            default_value = 0.3 | units.none,
             must_set_before_get = True
         )
         
@@ -739,7 +795,6 @@ class Athena(InCodeComponentImplementation):
             "nmeshx",
             "nx", 
             "number of cells in the x direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -749,7 +804,6 @@ class Athena(InCodeComponentImplementation):
             "nmeshy",
             "ny", 
             "number of cells in the y direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -759,7 +813,6 @@ class Athena(InCodeComponentImplementation):
             "nmeshz",
             "nz", 
             "number of cells in the z direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -768,7 +821,6 @@ class Athena(InCodeComponentImplementation):
             "xlength",
             "length_x", 
             "length of model in the x direction", 
-            length, 
             10 | length,
         )
         object.add_caching_parameter(
@@ -776,7 +828,6 @@ class Athena(InCodeComponentImplementation):
             "ylength",
             "length_y", 
             "length of model in the x direction", 
-            length, 
             10 | length,
         )
         object.add_caching_parameter(
@@ -784,7 +835,6 @@ class Athena(InCodeComponentImplementation):
             "zlength",
             "length_z", 
             "length of model in the z direction", 
-            length, 
             10 | length,
         )
         
@@ -806,7 +856,6 @@ class Athena(InCodeComponentImplementation):
             "xbound1",
             "xbound1", 
             "boundary conditions on first (inner, left) X boundary", 
-            units.string, 
             "reflective" | units.string,
         )
         
@@ -815,8 +864,7 @@ class Athena(InCodeComponentImplementation):
             "set_boundary", 
             "xbound2",
             "xbound2", 
-            "boundary conditions on second (outer, right) X boundary", 
-            units.string, 
+            "boundary conditions on second (outer, right) X boundary",
             "reflective" | units.string,
         )
         
@@ -825,7 +873,6 @@ class Athena(InCodeComponentImplementation):
             "ybound1",
             "ybound1", 
             "boundary conditions on first (inner, front) Y boundary", 
-            units.string, 
             "reflective" | units.string,
         )
         
@@ -834,8 +881,7 @@ class Athena(InCodeComponentImplementation):
             "set_boundary", 
             "ybound2",
             "ybound2", 
-            "boundary conditions on second (outer, back) Y boundary", 
-            units.string, 
+            "boundary conditions on second (outer, back) Y boundary",
             "reflective" | units.string,
         )
         
@@ -844,7 +890,6 @@ class Athena(InCodeComponentImplementation):
             "zbound1",
             "zbound1", 
             "boundary conditions on first (inner, bottom) Z boundary", 
-            units.string, 
             "reflective" | units.string,
         )
         
@@ -854,7 +899,6 @@ class Athena(InCodeComponentImplementation):
             "zbound2",
             "zbound2", 
             "boundary conditions on second (outer, top) Z boundary", 
-            units.string, 
             "reflective" | units.string,
         )
         

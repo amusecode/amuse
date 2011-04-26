@@ -339,8 +339,7 @@ class SimpleX(CommonCode):
             "set_timestep_parameter", 
             "timestep", 
             "timestep for radiative transfer sweeps", 
-            units.Myr, 
-            0.05 | units.Myr
+            default_value = 0.05 | units.Myr
         )
 
         object.add_method_parameter(
@@ -348,8 +347,7 @@ class SimpleX(CommonCode):
             "set_hilbert_order_parameter", 
             "hilbert_order", 
             "hilbert_order for domain decomposition", 
-            units.none, 
-            1 | units.none
+            default_value = 1 | units.none
         )
 
         object.add_method_parameter(
@@ -357,8 +355,7 @@ class SimpleX(CommonCode):
             "set_box_size_parameter", 
             "box_size", 
             "boxsize for radiative transfer particle distribution", 
-            units.parsec, 
-            13200. | units.parsec
+            default_value = 13200. | units.parsec
         )
 
 
@@ -516,6 +513,42 @@ class SimpleX(CommonCode):
             'recommit_particles',
             (),
             (object.ERROR_CODE)
+        )
+    
+        object.add_method(
+            "get_timestep_parameter",
+            (),
+            (units.Myr, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_timestep_parameter",
+            (units.Myr, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_hilbert_order_parameter",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_hilbert_order_parameter",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_box_size_parameter",
+            (),
+            (units.parsec, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_box_size_parameter",
+            (units.parsec, ),
+            (object.ERROR_CODE,)
         )
     
     def define_particle_sets(self, object):

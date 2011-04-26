@@ -264,6 +264,40 @@ class ParameterException(AttributeError):
         self.parameter_name = parameter_name
 
 
+class ModuleMethodParameterDefinition(ParameterDefinition):
+    def __init__(self, get_method, set_method, name, description, default_value = None, must_set_before_get = False):
+        ParameterDefinition.__init__(self, name, description, None, default_value, must_set_before_get)
+        self.get_method = get_method
+        self.set_method = set_method
+        self.stored_value = None
+
+    def get_value(self, parameter, object):
+        if self.must_set_before_get and not parameter.is_set:
+            self.set_default_value(parameter, object)
+        
+        if self.get_method is None:
+            return self.stored_value
+        else:
+            return getattr(object, self.get_method)()
+
+    def set_value(self, parameter, object, quantity):
+        #if self.unit.is_non_numeric() or len(self.unit.base) == 0:
+        #    if not isinstance(quantity, values.Quantity):
+        #        quantity = quantity | self.unit
+        
+        if self.set_method is None:
+            raise exceptions.CoreException("Could not set value for parameter '{0}' of a '{1}' object, parameter is read-only".format(self.name, type(object).__name__))
+    
+        getattr(object, self.set_method)(quantity)
+        
+        if self.get_method is None:
+            self.stored_value = quantity
+        
+        parameter.is_set = True
+
+    def is_readonly(self):
+        return self.set_method is None
+
 class ModuleMethodParameterDefinition_Next(ParameterDefinition):
     def __init__(self, get_method, set_method, name, description, unit, default_value = None, must_set_before_get = False):
         ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get)
@@ -338,18 +372,29 @@ class ModuleBooleanParameterDefinition(ParameterDefinition):
 
 
 class ModuleCachingParameterDefinition(ParameterDefinition):
-    def __init__(self, functionname, parameter_name, name, description, unit, default_value = None):
-        ParameterDefinition.__init__(self, name, description, unit, default_value, must_set_before_get = True)
+    def __init__(self, functionname, parameter_name, name, description, default_value = None):
+        ParameterDefinition.__init__(self, name, description, None, default_value, must_set_before_get = True)
         self.stored_value = None
         self.parameter_name = parameter_name
         self.functionname = functionname
 
-    def get_legacy_value(self, parameter, object):
+    def get_value(self, parameter, object):
+        if self.must_set_before_get and not parameter.is_set:
+            self.set_default_value(parameter, object)
+            
         return parameter.cached_value
 
-    def set_legacy_value(self, parameter, object, number):
-        parameter.cached_value = number
-
+    def set_value(self, parameter, object, quantity):
+        
+        unit = self.default_value.unit
+        if unit.is_non_numeric() or len(unit.base) == 0:
+            if not isinstance(quantity, values.Quantity):
+                quantity = quantity | unit
+        
+        parameter.cached_value = quantity
+        
+        parameter.is_set = True
+        
     def is_cached(self):
         return True
     
@@ -381,7 +426,7 @@ class Parameter(object):
         return (not self.is_set) and self.definition.must_set_to_default_if_not_set()
 
     def get_cached_value(self):
-        return self.definition.get_legacy_value(self, self.parameter_set._instance())
+        return self.definition.get_value(self, self.parameter_set._instance())
     
     
 

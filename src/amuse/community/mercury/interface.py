@@ -423,19 +423,18 @@ class MercuryWayWard(GravitationalDynamics):
             None,
             "time",
             "current simulation time", 
-            units.s, 
-            0.0 | units.s
+            default_value = 0.0 | units.s
         )
 
         self.stopping_conditions.define_parameters(object)
 
     def define_properties(self, object):
-        object.add_property("get_kinetic_energy", units.MSun*units.AU**2/units.day**2)
-        object.add_property("get_potential_energy", units.MSun*units.AU**2/units.day**2)
-        object.add_property("get_total_energy", units.MSun*units.AU**2/units.day**2)
-        object.add_property("get_center_of_mass_position", units.AU)
-        object.add_property("get_center_of_mass_velocity", units.AUd)
-        object.add_property("get_total_mass", units.MSun)
+        object.add_property("get_kinetic_energy")
+        object.add_property("get_potential_energy")
+        object.add_property("get_total_energy")
+        object.add_property("get_center_of_mass_position")
+        object.add_property("get_center_of_mass_velocity")
+        object.add_property("get_total_mass")
 
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
@@ -792,6 +791,54 @@ class MercuryWayWard(GravitationalDynamics):
             (
                 object.ERROR_CODE,
             )
+        )
+        
+        object.add_method(
+            "get_time",
+            (),
+            (units.s, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            None,
+            (units.s, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_kinetic_energy",
+            (),
+            (units.MSun*units.AU**2/units.day**2, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_potential_energy",
+            (),
+            (units.MSun*units.AU**2/units.day**2, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_total_energy",
+            (),
+            (units.MSun*units.AU**2/units.day**2, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_center_of_mass_position",
+            (),
+            (units.AU, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_center_of_mass_velocity",
+            (),
+            (units.AUd, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_total_mass",
+            (),
+            (units.MSun, object.ERROR_CODE,)
         )
         
         self.stopping_conditions.define_methods(object)

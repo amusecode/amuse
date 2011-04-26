@@ -552,6 +552,204 @@ class Mocassin(InCodeComponentImplementation):
             (object.ERROR_CODE,)
         )
         
+        object.add_method(
+            "get_constant_hydrogen_density",
+            (),
+            (1.0/units.cm**3, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_constant_hydrogen_density",
+            (1.0/units.cm**3, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_convergence_limit",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_convergence_limit",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_emit_rate_of_photons",
+            (),
+            (1e36 / units.s, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_emit_rate_of_photons",
+            (1e36 / units.s, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_high_limit_of_the_frequency_mesh",
+            (),
+            (units.ryd, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_high_limit_of_the_frequency_mesh",
+            (units.ryd, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_initial_nebular_temperature",
+            (),
+            (units.K, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_initial_nebular_temperature",
+            (units.K, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_inner_radius_of_the_ionised_region",
+            (),
+            (units.cm, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_inner_radius_of_the_ionised_region",
+            (units.cm, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_input_directory",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_input_directory",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_low_limit_of_the_frequency_mesh",
+            (),
+            (units.ryd, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_low_limit_of_the_frequency_mesh",
+            (units.ryd, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_maximum_number_of_monte_carlo_iterations",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_maximum_number_of_monte_carlo_iterations",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_minimum_convergence_level",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_minimum_convergence_level",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_number_of_ionisation_stages",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_number_of_ionisation_stages",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_outer_radius_of_the_ionised_region",
+            (),
+            (units.cm, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_outer_radius_of_the_ionised_region",
+            (units.cm, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_symmetricXYZ",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_symmetricXYZ",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_total_number_of_photons",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_total_number_of_photons",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_total_number_of_points_in_frequency_mesh",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_total_number_of_points_in_frequency_mesh",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_write_snapshot_every_iteration",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_write_snapshot_every_iteration",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'setup_mesh',
+            (units.none, units.none, units.none, units.cm, units.cm, units.cm, units.none,),
+            (object.ERROR_CODE,)
+        )
+        
     def define_parameters(self, object):
         object.add_method_parameter(
             "get_abundancies_filename",
@@ -567,8 +765,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_constant_hydrogen_density", 
             "constant_hydrogen_density", 
             "<fill>", 
-            1.0/units.cm**3, 
-            100.0 | (1.0/units.cm**3)
+            default_value = 100.0 | (1.0/units.cm**3)
         )
     
     
@@ -577,8 +774,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_convergence_limit", 
             "convergence_limit", 
             "<fill>", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
     
     
@@ -587,8 +783,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_emit_rate_of_photons", 
             "emit_rate_of_photons", 
             "This is the number of hydrogen-ionizing photons emitted by the source per unit time. Only used when a single star is modelled", 
-            1e36 / units.s, 
-            0.0 | (1e36 / units.s)
+            default_value = 0.0 | (1e36 / units.s)
         )
     
     
@@ -597,8 +792,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_high_limit_of_the_frequency_mesh", 
             "high_limit_of_the_frequency_mesh", 
             "<fill>", 
-            units.ryd, 
-            15. | units.ryd
+            default_value = 15. | units.ryd
         )
     
     
@@ -607,8 +801,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_initial_nebular_temperature", 
             "initial_nebular_temperature", 
             "Initial guess for the nebular temperature. ", 
-            units.K, 
-            10000.0 | units.K
+            default_value = 10000.0 | units.K
         )
     
     
@@ -617,8 +810,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_inner_radius_of_the_ionised_region", 
             "inner_radius_of_the_ionised_region", 
             "Inner radius of the ionised region", 
-            units.cm, 
-            0.0 | units.cm
+            default_value = 0.0 | units.cm
         )
     
     
@@ -627,8 +819,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_input_directory", 
             "input_directory", 
             "<fill>", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
     
     
@@ -637,8 +828,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_low_limit_of_the_frequency_mesh", 
             "low_limit_of_the_frequency_mesh", 
             "<fill>", 
-            units.ryd, 
-            1.001e-5 | units.ryd
+            default_value = 1.001e-5 | units.ryd
         )
     
     
@@ -647,8 +837,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_maximum_number_of_monte_carlo_iterations", 
             "maximum_number_of_monte_carlo_iterations", 
             "<fill>", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
     
     
@@ -657,8 +846,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_minimum_convergence_level", 
             "minimum_convergence_level", 
             "<fill>", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
     
     
@@ -667,8 +855,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_number_of_ionisation_stages", 
             "number_of_ionisation_stages", 
             "<fill>", 
-            units.none, 
-            6 | units.none
+            default_value = 6 | units.none
         )
     
     
@@ -677,8 +864,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_outer_radius_of_the_ionised_region", 
             "outer_radius_of_the_ionised_region", 
             "<fill>", 
-            units.cm, 
-            0.0 | units.cm
+            default_value = 0.0 | units.cm
         )
     
     
@@ -687,8 +873,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_symmetricXYZ", 
             "symmetricXYZ", 
             "If true assumes model is symetric in the X, Y and Z axes", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
     
     
@@ -697,8 +882,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_total_number_of_photons", 
             "total_number_of_photons", 
             "Total number of photons to start the iteration with", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
     
     
@@ -707,8 +891,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_total_number_of_points_in_frequency_mesh", 
             "total_number_of_points_in_frequency_mesh", 
             "<fill>", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
     
     
@@ -717,8 +900,7 @@ class Mocassin(InCodeComponentImplementation):
             "set_write_snapshot_every_iteration", 
             "write_snapshot_every_iteration", 
             "If True will write the data to an output directory after every monte carlo iteration", 
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_caching_parameter(
@@ -726,7 +908,6 @@ class Mocassin(InCodeComponentImplementation):
             "nmeshx",
             "nx", 
             "number of cells in the x direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -736,7 +917,6 @@ class Mocassin(InCodeComponentImplementation):
             "nmeshy",
             "ny", 
             "number of cells in the y direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -746,7 +926,6 @@ class Mocassin(InCodeComponentImplementation):
             "nmeshz",
             "nz", 
             "number of cells in the z direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -755,7 +934,6 @@ class Mocassin(InCodeComponentImplementation):
             "xlength",
             "length_x", 
             "length of model in the x direction", 
-            units.cm, 
             2e19 | units.cm,
         )
         object.add_caching_parameter(
@@ -763,7 +941,6 @@ class Mocassin(InCodeComponentImplementation):
             "ylength",
             "length_y", 
             "length of model in the x direction", 
-            units.cm, 
             2e19 | units.cm,
         )
         object.add_caching_parameter(
@@ -771,7 +948,6 @@ class Mocassin(InCodeComponentImplementation):
             "zlength",
             "length_z", 
             "length of model in the z direction", 
-            units.cm, 
             2e19 | units.cm,
         )
         

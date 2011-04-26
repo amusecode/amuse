@@ -700,7 +700,7 @@ class MpiChannel(MessageChannel):
         if length > self.max_message_length:
             self.split_message(tag, id, dtype_to_arguments, length)
             return
-            
+        
         message = ServerSideMPIMessage(tag, length, dtype_to_arguments)
         message.send(self.intercomm)
         

@@ -2223,7 +2223,7 @@ class MpiAmrVac(InCodeComponentImplementation):
         return (0, nx-1, 0, ny-1, 0, nz-1)
 
     def define_properties(self, object):
-        object.add_property('get_time', generic_unit_system.time, "model_time")
+        object.add_property('get_time', public_name = "model_time")
         
     def define_methods(self, object):
         object.add_method(
@@ -2322,6 +2322,107 @@ class MpiAmrVac(InCodeComponentImplementation):
             (object.NO_UNIT, object.ERROR_CODE,)
         )
         
+        object.add_method(
+            "get_gamma",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_gamma",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_typeentropy",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_typeentropy",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_typefull1",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_typefull1",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_typepred1",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_typepred1",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_typeadvance",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_typeadvance",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_courantpar",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_courantpar",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_mxnest",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_mxnest",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_time',
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'setup_mesh',
+            (units.none, units.none, units.none,  generic_unit_system.length,  generic_unit_system.length,  generic_unit_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            'set_boundary',
+            (units.string, units.string, units.string, units.string, units.string, units.string,),
+            (object.ERROR_CODE,)
+        )
+        
     def define_parameters(self, object):
         
         
@@ -2330,8 +2431,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_gamma",
             "gamma", 
             "ratio of specific heats used in equation of state", 
-            units.none, 
-            1.6666666666666667 | units.none
+            default_value = 1.6666666666666667 | units.none
         )
         
         object.add_method_parameter(
@@ -2339,32 +2439,28 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_typeentropy",
             "entropy_type", 
             "type of the entropy", 
-            units.string, 
-            'nul' | units.string
+            default_value = 'nul' | units.string
         )
         object.add_method_parameter(
             "get_typefull1", 
             "set_typefull1",
             "spatial_discretization_method", 
             "the spatial discretization method used for the time integration per activated grid leve", 
-            units.string, 
-            'tvdmu' | units.string
+            default_value = 'tvdmu' | units.string
         )
         object.add_method_parameter(
             "get_typepred1", 
             "set_typepred1",
             "predictor_step_discretization_method", 
             "the precitor step discretization method (only used when integration procedure is twostep')", 
-            units.string, 
-            'tvdmu' | units.string
+            default_value = 'tvdmu' | units.string
         )
         object.add_method_parameter(
             "get_typeadvance", 
             "set_typeadvance",
             "time_integration_procedure", 
             "time integration procedure", 
-            units.string, 
-            'twostep' | units.string
+            default_value = 'twostep' | units.string
         )
         
         object.add_method_parameter(
@@ -2372,8 +2468,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_courantpar",
             "courant_number", 
             "CFL number", 
-            units.none, 
-            0.7 | units.none
+            default_value = 0.7 | units.none
         )
         
         
@@ -2382,7 +2477,6 @@ class MpiAmrVac(InCodeComponentImplementation):
             "nmeshx",
             "nx", 
             "number of cells in the x direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -2392,7 +2486,6 @@ class MpiAmrVac(InCodeComponentImplementation):
             "nmeshy",
             "ny", 
             "number of cells in the y direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -2402,7 +2495,6 @@ class MpiAmrVac(InCodeComponentImplementation):
             "nmeshz",
             "nz", 
             "number of cells in the z direction", 
-            units.none, 
             10 | units.none,
         )
         
@@ -2411,7 +2503,6 @@ class MpiAmrVac(InCodeComponentImplementation):
             "xlength",
             "length_x", 
             "length of model in the x direction", 
-            generic_unit_system.length, 
             10 | generic_unit_system.length,
         )
         object.add_caching_parameter(
@@ -2419,7 +2510,6 @@ class MpiAmrVac(InCodeComponentImplementation):
             "ylength",
             "length_y", 
             "length of model in the x direction", 
-            generic_unit_system.length, 
             10 | generic_unit_system.length,
         )
         object.add_caching_parameter(
@@ -2427,7 +2517,6 @@ class MpiAmrVac(InCodeComponentImplementation):
             "zlength",
             "length_z", 
             "length of model in the z direction", 
-            generic_unit_system.length, 
             10 | generic_unit_system.length,
         )
         
@@ -2448,8 +2537,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_boundary", 
             "xbound1",
             "xbound1", 
-            "boundary conditions on first (inner, left) X boundary", 
-            units.string, 
+            "boundary conditions on first (inner, left) X boundary",
             "reflective" | units.string,
         )
         
@@ -2458,8 +2546,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_boundary", 
             "xbound2",
             "xbound2", 
-            "boundary conditions on second (outer, right) X boundary", 
-            units.string, 
+            "boundary conditions on second (outer, right) X boundary",
             "reflective" | units.string,
         )
         
@@ -2467,8 +2554,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_boundary", 
             "ybound1",
             "ybound1", 
-            "boundary conditions on first (inner, front) Y boundary", 
-            units.string, 
+            "boundary conditions on first (inner, front) Y boundary",
             "reflective" | units.string,
         )
         
@@ -2478,7 +2564,6 @@ class MpiAmrVac(InCodeComponentImplementation):
             "ybound2",
             "ybound2", 
             "boundary conditions on second (outer, back) Y boundary", 
-            units.string, 
             "reflective" | units.string,
         )
         
@@ -2486,8 +2571,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_boundary", 
             "zbound1",
             "zbound1", 
-            "boundary conditions on first (inner, bottom) Z boundary", 
-            units.string, 
+            "boundary conditions on first (inner, bottom) Z boundary",
             "reflective" | units.string,
         )
         
@@ -2496,8 +2580,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_boundary", 
             "zbound2",
             "zbound2", 
-            "boundary conditions on second (outer, top) Z boundary", 
-            units.string, 
+            "boundary conditions on second (outer, top) Z boundary",
             "reflective" | units.string,
         )
         
@@ -2529,8 +2612,7 @@ class MpiAmrVac(InCodeComponentImplementation):
             "set_mxnest",
             "maximum_number_of_grid_levels", 
             "the maximum number of grid levels that can be used during the simulation, including the base grid level", 
-            units.none, 
-            3 | units.none
+            default_value = 3 | units.none
         )
         
         

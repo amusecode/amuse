@@ -255,7 +255,6 @@ class BSE(InCodeComponentImplementation):
             "z_in",
             "metallicity",
             "Metallicity of all stars",
-            units.none,
             0.02 | units.none
         )
                 
@@ -264,7 +263,6 @@ class BSE(InCodeComponentImplementation):
             "neta_in",
             "reimers_mass_loss_coefficient",
             "Reimers mass-loss coefficient (neta*4x10^-13; 0.5 normally)",
-            units.none,
             0.5 | units.none
         )
         
@@ -273,7 +271,6 @@ class BSE(InCodeComponentImplementation):
             "bwind_in",
             "binary_enhanced_mass_loss_parameter",
             "The binary enhanced mass loss parameter (inactive for single).",
-            units.none,
             0.0 | units.none
         )
         
@@ -282,7 +279,6 @@ class BSE(InCodeComponentImplementation):
             "hewind_in",
             "helium_star_mass_loss_factor",
             "Helium star mass loss factor",
-            units.none,
             1.0 | units.none
         )
         
@@ -291,7 +287,6 @@ class BSE(InCodeComponentImplementation):
             "alpha1_in",
             "common_envelope_efficiency",
             "The common-envelope efficiency parameter",
-            units.none,
             1.0 | units.none
         )
         
@@ -300,7 +295,6 @@ class BSE(InCodeComponentImplementation):
             "CElambda_in",
             "common_envelope_binding_energy_factor",
             "The binding energy factor for common envelope evolution",
-            units.none,
             0.5 | units.none
         )
         
@@ -309,7 +303,6 @@ class BSE(InCodeComponentImplementation):
             "ceflag_in",
             "common_envelope_model_flag", 
             "ceflag > 0 activates spin-energy correction in common-envelope. ceflag = 3 activates de Kool common-envelope model (0).",
-            units.none, 
             0 | units.none
         )
         
@@ -318,7 +311,6 @@ class BSE(InCodeComponentImplementation):
             "tflag_in",
             "tidal_circularisation_flag", 
             "tflag > 0 activates tidal circularisation (1).",
-            units.none, 
             1 | units.none
         )
         
@@ -327,7 +319,6 @@ class BSE(InCodeComponentImplementation):
             "ifflag_in",
             "white_dwarf_IFMR_flag", 
             "ifflag > 0 uses white dwarf IFMR (initial-final mass relation) of HPE, 1995, MNRAS, 272, 800 (0).",
-            units.none, 
             0 | units.none
         )
         
@@ -336,7 +327,6 @@ class BSE(InCodeComponentImplementation):
             "wdflag_in",
             "white_dwarf_cooling_flag", 
             "wdflag > 0 uses modified-Mestel cooling for WDs (0).",
-            units.none, 
             1 | units.none
         )
         
@@ -345,7 +335,6 @@ class BSE(InCodeComponentImplementation):
             "bhflag_in",
             "black_hole_kick_flag",
             "bhflag > 0 allows velocity kick at BH formation (0).",
-            units.none,
             0 | units.none
         )
         
@@ -354,7 +343,6 @@ class BSE(InCodeComponentImplementation):
             "nsflag_in",
             "neutron_star_mass_flag",
             "nsflag > 0 takes NS/BH mass from Belczynski et al. 2002, ApJ, 572, 407 (1).",
-            units.none,
             1 | units.none
         )
         
@@ -363,7 +351,6 @@ class BSE(InCodeComponentImplementation):
             "mxns_in",
             "maximum_neutron_star_mass",
             "The maximum neutron star mass (1.8, nsflag=0; 3.0, nsflag=1).",
-            units.MSun,
             3.0 | units.MSun
         )
         
@@ -372,7 +359,6 @@ class BSE(InCodeComponentImplementation):
             "idum_in",
             "SN_kick_random_seed", 
             "The random number seed used in the kick routine.",
-            units.none, 
             29769 | units.none
         )
         
@@ -381,7 +367,6 @@ class BSE(InCodeComponentImplementation):
             "pts1_in",
             "fractional_time_step_1", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: MS (0.05)",
-            units.none, 
             0.05 | units.none
         )
         
@@ -390,7 +375,6 @@ class BSE(InCodeComponentImplementation):
             "pts2_in",
             "fractional_time_step_2", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: GB, CHeB, AGB, HeGB (0.01)",
-            units.none, 
             0.01 | units.none
         )
         
@@ -399,7 +383,6 @@ class BSE(InCodeComponentImplementation):
             "pts3_in",
             "fractional_time_step_3", 
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
-            units.none, 
             0.02 | units.none
         )
         
@@ -408,7 +391,6 @@ class BSE(InCodeComponentImplementation):
             "sigma_in",
             "SN_kick_speed_dispersion",
             "The dispersion in the Maxwellian for the SN kick speed (190 km/s).",
-            units.km / units.s,
             190.0 | units.km / units.s
         )
         
@@ -417,7 +399,6 @@ class BSE(InCodeComponentImplementation):
             "beta_in",
             "wind_velocity_factor",
             "The wind velocity factor: proportional to vwind**2 (1/8).",
-            units.none,
             0.125 | units.none
         )
         
@@ -426,7 +407,6 @@ class BSE(InCodeComponentImplementation):
             "xi_in",
             "wind_accretion_efficiency",
             "The wind accretion efficiency factor (1.0).",
-            units.none,
             1.0 | units.none
         )
         
@@ -435,7 +415,6 @@ class BSE(InCodeComponentImplementation):
             "acc2_in",
             "wind_accretion_factor",
             "The Bondi-Hoyle wind accretion factor (3/2).",
-            units.none,
             1.5 | units.none
         )
         
@@ -444,7 +423,6 @@ class BSE(InCodeComponentImplementation):
             "epsnov_in",
             "nova_retained_accreted_matter_fraction",
             "The fraction of accreted matter retained in nova eruption (0.001).",
-            units.none,
             0.001 | units.none
         )
         
@@ -453,7 +431,6 @@ class BSE(InCodeComponentImplementation):
             "eddfac_in",
             "Eddington_mass_transfer_limit_factor",
             "The Eddington limit factor for mass transfer (1.0).",
-            units.none,
             1.0 | units.none
         )
         
@@ -462,7 +439,6 @@ class BSE(InCodeComponentImplementation):
             "gamma_in",
             "Roche_angular_momentum_factor",
             "The angular momentum factor for mass lost during Roche (-1.0). ",
-            units.none,
             -1.0 | units.none
         )
     
@@ -549,7 +525,6 @@ class BSE(InCodeComponentImplementation):
                 units.none, 
                 units.none
             ),
-            public_name = "initialize_"
         )
          
     def define_particle_sets(self, object):

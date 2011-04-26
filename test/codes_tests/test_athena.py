@@ -525,7 +525,8 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1 | generic_unit_system.length
         instance.parameters.length_y = 2 | generic_unit_system.length
         instance.parameters.length_z = 3 | generic_unit_system.length
-        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
+        
         result = instance.commit_parameters()
         
         #print instance.grid[0].y
@@ -584,12 +585,13 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10, 10, 1, 1.0, 1.0, 0.0)
+        instance.setup_mesh(10 | units.none, 10 | units.none, 1 | units.none, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length , 0.0 | generic_unit_system.length)
         instance.parameters.mesh_size = (10,10,1)
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
-        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
+        
         result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)
@@ -636,7 +638,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
-        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
         instance.set_has_external_gravitational_potential(1)
         
         result = instance.commit_parameters()
@@ -688,7 +690,7 @@ class TestAthena(TestWithMPI):
         instance.parameters.length_x = 1.0 | generic_unit_system.length
         instance.parameters.length_y = 1.0 | generic_unit_system.length
         instance.parameters.length_z = 0.0 | generic_unit_system.length
-        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
         instance.set_has_external_gravitational_potential(1)
         
         result = instance.commit_parameters()
@@ -771,8 +773,8 @@ class TestAthena(TestWithMPI):
         instance.initialize_code()
         instance.set_gamma(1.6666666666666667)
         instance.set_courant_friedrichs_lewy_number(0.3)
-        instance.setup_mesh(10, 20, 40, 1.0, 1.0, 1.0)
-        instance.set_boundary("periodic","periodic","periodic","periodic","periodic","periodic")
+        instance.setup_mesh(10 | units.none , 20 | units.none, 40 | units.none, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length, 1.0 | generic_unit_system.length)
+        instance.set_boundary("periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string,"periodic" | units.string)
         result = instance.commit_parameters()
         
         density = generic_unit_system.mass / (generic_unit_system.length ** 3)

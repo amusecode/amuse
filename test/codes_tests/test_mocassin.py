@@ -184,8 +184,8 @@ class TestMocassin(TestWithMPI):
         instance.redirect_outputs_to("moc1-out.txt", "moc1-err.txt")
         instance.set_input_directory(instance.get_default_input_directory())
         instance.set_symmetricXYZ(True)
-        instance.set_constant_hydrogen_density(100.0)
-        instance.setup_mesh(11,11,11,0.95E+19,0.95E+19,0.95E+19)
+        instance.set_constant_hydrogen_density(100.0 | (1/units.cm**3))
+        instance.setup_mesh(11 | units.none,11 | units.none,11 | units.none,0.95E+19 | units.cm,0.95E+19 | units.cm,0.95E+19 | units.cm)
         instance.commit_parameters()
         p = core.Particle()
         p.x = 0 | units.cm

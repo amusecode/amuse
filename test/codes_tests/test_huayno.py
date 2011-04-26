@@ -260,7 +260,7 @@ class TestHuayno(TestWithMPI):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
         instance = Huayno(convert_nbody)
         
-        (value, error) = instance.get_eps2()
+        (value, error) = instance.legacy_interface.get_eps2()
         self.assertEquals(0, error)
         self.assertEquals(0.0, value)
         self.assertAlmostEquals(0.0 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
@@ -268,7 +268,7 @@ class TestHuayno(TestWithMPI):
             instance.parameters.epsilon_squared = x | units.AU**2
             self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
                 
-        (value, error) = instance.get_time()
+        (value, error) = instance.legacy_interface.get_time()
         self.assertEquals(0, error)
         self.assertEquals(0.0, value)
         self.assertAlmostEquals(0.0 | units.yr, instance.parameters.time, in_units=units.yr)

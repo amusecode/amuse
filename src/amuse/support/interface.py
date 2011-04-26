@@ -94,14 +94,12 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
         elif isinstance(attribute, parameters.Parameters):
             result = parameters.ParametersWithUnitsConverted(attribute, self.converter)
         elif hasattr(attribute, '__iter__'):
-            result = self.convert_and_iterate(attribute)
+            result = list(self.convert_and_iterate(attribute))
         else:
             result = attribute
         return result
 
     def convert_and_iterate(self, iterable):
-        
-            
         for x in iterable:
             yield self.converter.from_target_to_source(x)
 
@@ -137,7 +135,10 @@ class HandleConvertUnits(HandleCodeInterfaceAttributeAccess, CodeMethodWrapperDe
 
     def from_target_to_source(self, x):
         if isinstance(x, values.Quantity):
-            return self.converter.from_target_to_source(x)
+            if x.unit.is_non_numeric():
+                return x
+            else:
+                return self.converter.from_target_to_source(x)
         elif hasattr(x, '__len__'):
             if len(x) > 200:
                 return x
@@ -403,7 +404,10 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
             if self.units[index] == self.NO_UNIT or self.units[index] == self.INDEX:
                 result[parameter] = argument
             else:
-                result[parameter] = argument.value_in(self.units[index])
+                if self.units[index].is_none() and not hasattr(argument,'unit'):
+                    result[parameter] = argument
+                else:
+                    result[parameter] = argument.value_in(self.units[index])
 
         return (), result
 
@@ -555,6 +559,31 @@ class PropertyWithUnitsDefinition(object):
         return self.function_or_attribute_name == self.public_name
 
 
+
+class PropertyDefinition(object):
+
+    def __init__(self, handler, function_or_attribute_name, public_name):
+        self.function_or_attribute_name = function_or_attribute_name
+        self.public_name = public_name
+        self.handler = handler
+
+    def get_value(self, original):
+        if self.has_same_name_as_original:
+            function_or_attribute = original
+        else:
+            function_or_attribute = getattr(self.handler.interface, self.function_or_attribute_name)
+    
+        if hasattr(function_or_attribute, '__call__'):
+            return_value = function_or_attribute()
+            return return_value
+        else:
+            return function_or_attribute
+
+
+    @late
+    def has_same_name_as_original(self):
+        return self.function_or_attribute_name == self.public_name
+        
 class HandlePropertiesWithUnits(HandleCodeInterfaceAttributeAccess):
     def __init__(self, interface):
         self.property_definitions = {}
@@ -569,19 +598,22 @@ class HandlePropertiesWithUnits(HandleCodeInterfaceAttributeAccess):
     def attribute_names(self):
         return set(self.property_definitions.keys())
 
-    def add_property(self, function_name, unit, public_name = None):
+    def add_property(self, function_name, unit = None, public_name = None):
         if public_name is None:
             if function_name.startswith('get_'):
                 public_name = function_name[4:]
             else:
                 public_name = function_name
 
-        definition = PropertyWithUnitsDefinition(
-            self,
-            function_name,
-            unit,
-            public_name
-        )
+        if unit is None:
+            definition = PropertyDefinition(self, function_name, public_name)
+        else:
+            definition = PropertyWithUnitsDefinition(
+                self,
+                function_name,
+                unit,
+                public_name
+            )
         self.property_definitions[public_name] = definition
 
     def has_name(self, name):
@@ -610,26 +642,35 @@ class HandleParameters(HandleCodeInterfaceAttributeAccess):
     def attribute_names(self):
         return set(['parameters'])
 
-    def add_method_parameter(self, get_method, set_method, name, description, unit, default_value = None,must_set_before_get = False):
-        definition = parameters.ModuleMethodParameterDefinition_Next(
-            get_method,
-            set_method,
-            name,
-            description,
-            unit,
-            default_value,
-            must_set_before_get = must_set_before_get
-        )
+    def add_method_parameter(self, get_method, set_method, name, description, unit = None, default_value = None,must_set_before_get = False):
+        if unit is None:
+            definition = parameters.ModuleMethodParameterDefinition(
+                get_method,
+                set_method,
+                name,
+                description,
+                default_value,
+                must_set_before_get = must_set_before_get
+            )
+        else:
+            definition = parameters.ModuleMethodParameterDefinition_Next(
+                get_method,
+                set_method,
+                name,
+                description,
+                unit,
+                default_value,
+                must_set_before_get = must_set_before_get
+            )
         self.definitions.append(definition)
 
 
-    def add_caching_parameter(self, function_name, parameter_name, name, description, unit, default_value = None):
+    def add_caching_parameter(self, function_name, parameter_name, name, description, default_value = None):
         definition = parameters.ModuleCachingParameterDefinition(
             function_name,
             parameter_name,
             name,
             description,
-            unit,
             default_value
         )
         self.definitions.append(definition)

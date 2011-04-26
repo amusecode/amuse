@@ -807,13 +807,13 @@ class GravitationalDynamics(common.CommonCode):
         InCodeComponentImplementation.__init__(self, legacy_interface, **options)
 
     def define_properties(self, object):
-        object.add_property("get_kinetic_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
-        object.add_property("get_potential_energy", nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2)
-        object.add_property("get_total_radius", nbody_system.length)
-        object.add_property("get_center_of_mass_position", nbody_system.length)
-        object.add_property("get_center_of_mass_velocity", nbody_system.length / nbody_system.time)
-        object.add_property("get_total_mass", nbody_system.mass)
-        object.add_property('get_time', nbody_system.time, "model_time")
+        object.add_property("get_kinetic_energy")
+        object.add_property("get_potential_energy")
+        object.add_property("get_total_radius")
+        object.add_property("get_center_of_mass_position")
+        object.add_property("get_center_of_mass_velocity")
+        object.add_property("get_total_mass")
+        object.add_property('get_time', public_name = "model_time")
 
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
@@ -847,8 +847,7 @@ class GravitationalDynamics(common.CommonCode):
             None,
             "timestep",
             "constant timestep for iteration",
-            nbody_system.time,
-            0.7 | nbody_system.time
+            default_value = 0.7 | nbody_system.time
             )
 
     def define_methods(self, object):
@@ -1057,6 +1056,69 @@ class GravitationalDynamics(common.CommonCode):
             'synchronize_model',
             (),
             (object.ERROR_CODE)
+        )
+
+
+        object.add_method(
+            "get_time_step",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            None,
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_kinetic_energy",
+            (),
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_potential_energy",
+            (),
+            (nbody_system.mass * nbody_system.length ** 2  * nbody_system.time ** -2, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_total_radius",
+            (),
+            (nbody_system.length, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_center_of_mass_position",
+            (),
+            (nbody_system.length,nbody_system.length,nbody_system.length, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_center_of_mass_velocity",
+            (),
+            (nbody_system.length / nbody_system.time,nbody_system.length / nbody_system.time,nbody_system.length / nbody_system.time, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            "get_total_mass",
+            (),
+            (nbody_system.mass, object.ERROR_CODE,)
+        )
+
+
+        object.add_method(
+            'get_time',
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
         )
 
 

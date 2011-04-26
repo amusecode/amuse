@@ -697,9 +697,9 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, EVtwinInterface(**options), **options)
-        self.set_ev_path(self.data_directory)        
-        self.set_init_dat_name(self.init_dat_name)        
-        self.set_init_run_name(self.init_run_name)        
+        self.set_ev_path(self.data_directory | units.string)
+        self.set_init_dat_name(self.init_dat_name )        
+        self.set_init_run_name(self.init_run_name )        
     
     @option(type="string")
     def init_dat_name(self):
@@ -724,8 +724,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_maximum_number_of_stars",
             "maximum_number_of_stars", 
             "Maximum number of stars that can be allocated", 
-            units.none, 
-            10 | units.none
+            default_value = 10 | units.none
         )
         
         object.add_method_parameter(
@@ -733,8 +732,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_metallicity",
             "metallicity", 
             "Metallicity of all stats", 
-            units.none, 
-            0.02 | units.none
+            default_value = 0.02 | units.none
         )
         
         object.add_method_parameter(
@@ -742,8 +740,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_ev_path",
             "path_to_data", 
             "Path to the data directory", 
-            units.string, 
-            None
+            default_value = None
         )
         
         object.add_method_parameter(
@@ -751,8 +748,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_max_age_stop_condition",
             "max_age_stop_condition", 
             "The maximum age stop condition of this instance.",
-            units.yr, 
-            1.0e12 | units.yr
+            default_value = 1.0e12 | units.yr
         )
         
         object.add_method_parameter(
@@ -760,8 +756,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_min_timestep_stop_condition",
             "min_timestep_stop_condition", 
             "The minimum timestep stop condition of this instance.",
-            units.yr, 
-            1.0e6 | units.s
+            default_value = 1.0e6 | units.s
         )
         
         object.add_method_parameter(
@@ -769,8 +764,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_number_of_ionization_elements",
             "number_of_ionization_elements", 
             "The number of elements used for ionization in EoS solver of this instance.",
-            units.none, 
-            2 | units.none
+            default_value = 2 | units.none
         )
         
         object.add_method_parameter(
@@ -778,8 +772,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_convective_overshoot_parameter",
             "convective_overshoot_parameter", 
             "The convective overshoot parameter.",
-            units.none, 
-            0.12 | units.none
+            default_value = 0.12 | units.none
         )
         
         object.add_method_parameter(
@@ -787,8 +780,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_mixing_length_ratio",
             "mixing_length_ratio", 
             "The mixing-length ratio (alpha).",
-            units.none, 
-            2.0 | units.none
+            default_value = 2.0 | units.none
         )
         
         object.add_method_parameter(
@@ -796,8 +788,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_semi_convection_efficiency",
             "semi_convection_efficiency", 
             "The efficiency of semi-convection, after Langer, Sugimoto & Fricke 1983 (A&A).",
-            units.none, 
-            0.04 | units.none
+            default_value = 0.04 | units.none
         )
         
         object.add_method_parameter(
@@ -805,8 +796,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_thermohaline_mixing_parameter",
             "thermohaline_mixing_parameter", 
             "The thermohaline mixing parameter, probably only important for binaries and collision remnants.",
-            units.none, 
-            1.0 | units.none
+            default_value = 1.0 | units.none
         )
         
         object.add_method_parameter(
@@ -814,8 +804,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_AGB_wind_setting",
             "AGB_wind_setting", 
             "The AGB wind setting: (1, 2) for (Wachter&al, Vasiliadis&Wood) mass loss.",
-            units.none, 
-            1 | units.none
+            default_value = 1 | units.none
         )
         
         object.add_method_parameter(
@@ -823,8 +812,7 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
             "set_RGB_wind_setting",
             "RGB_wind_setting", 
             "The RGB wind setting: (positive, negative, 0) for (Schroeder&Cuntz, Reimers, none) mass loss.",
-            units.none, 
-            1.0 | units.none
+            default_value = 1.0 | units.none
         )
         
         
@@ -969,6 +957,150 @@ class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
                 units.none, units.K, units.LSun, units.amu,
                 units.none, units.none, units.none, units.none, units.none, 
                 units.none, units.none, units.none, units.none, object.ERROR_CODE)
+        )
+    
+        object.add_method(
+            "get_maximum_number_of_stars", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_maximum_number_of_stars", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_metallicity", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_metallicity", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            None, 
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_ev_path", 
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_max_age_stop_condition", 
+            (),
+            (units.yr, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_max_age_stop_condition", 
+            (units.yr, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_min_timestep_stop_condition", 
+            (),
+            (units.yr, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_min_timestep_stop_condition", 
+            (units.yr, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_number_of_ionization_elements", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_number_of_ionization_elements", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_convective_overshoot_parameter", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_convective_overshoot_parameter", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_mixing_length_ratio", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_mixing_length_ratio", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_semi_convection_efficiency", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_semi_convection_efficiency", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_thermohaline_mixing_parameter", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_thermohaline_mixing_parameter", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_AGB_wind_setting", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_AGB_wind_setting", 
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "get_RGB_wind_setting", 
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+    
+        object.add_method(
+            "set_RGB_wind_setting", 
+            (units.none, ),
+            (object.ERROR_CODE,)
         )
     
     def initialize_module_with_default_parameters(self):

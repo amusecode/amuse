@@ -358,8 +358,8 @@ class TestFi(TestWithMPI):
         convert_nbody = nbody.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
         instance = Fi(convert_nbody)
         instance.initialize_code()
-        self.assertTrue('data/fi/input/' in instance.get_fi_data_directory().fi_data_directory)
-        self.assertEquals(instance.get_fi_data_directory().fi_data_directory, 
+        self.assertTrue('data/fi/input/' in instance.legacy_interface.get_fi_data_directory().fi_data_directory)
+        self.assertEquals(instance.legacy_interface.get_fi_data_directory().fi_data_directory, 
             instance.get_data_directory()+'/')
         
         self.assertEquals(False, instance.parameters.radiation_flag)
@@ -413,9 +413,9 @@ class TestFi(TestWithMPI):
         for int_par, value in [('first_snapshot',0),('output_interval',5),('log_interval',5),
             ('maximum_time_bin',4096),('minimum_part_per_bin',1),('targetnn',32),
             ('verbosity',0),('n_smooth',64)]:
-            self.assertEquals(value | units.none, eval("instance.parameters."+int_par))
-            exec("instance.parameters."+int_par+" = 1 | units.none")
-            self.assertEquals(1 | units.none, eval("instance.parameters."+int_par))
+            self.assertEquals(value | units.none, getattr(instance.parameters,int_par))
+            setattr(instance.parameters, int_par, 1 | units.none)
+            self.assertEquals(1 | units.none, getattr(instance.parameters,int_par))
         
         instance.cleanup_code()
         instance.stop()
@@ -441,9 +441,9 @@ class TestFi(TestWithMPI):
         defaults = [val | units.none if isinstance(val,float) else val for val in defaults]
         defaults = [instance.unit_converter.to_si(val) if nbody.is_nbody_unit(val.unit) else val for val in defaults]
         for double_par, value in zip(par_names, defaults):
-            self.assertAlmostRelativeEquals(eval("instance.parameters."+double_par), value, 7)
-            exec("instance.parameters."+double_par+" = 2 * value")
-            self.assertAlmostRelativeEquals(eval("instance.parameters."+double_par), 2*value, 7)
+            self.assertAlmostRelativeEquals(getattr(instance.parameters,double_par), value, 7)
+            setattr(instance.parameters,double_par,2 * value)
+            self.assertAlmostRelativeEquals(getattr(instance.parameters,double_par), 2*value, 7)
         instance.cleanup_code()
         instance.stop()
     

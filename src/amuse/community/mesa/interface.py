@@ -730,8 +730,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "set_metallicity",
             "metallicity", 
             "Metallicity of all stars", 
-            units.none, 
-            0.02 | units.none
+            default_value = 0.02 | units.none
         )
         
         object.add_method_parameter(
@@ -739,8 +738,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "set_max_age_stop_condition",
             "max_age_stop_condition", 
             "The maximum age stop condition of this instance.",
-            units.yr, 
-            1.0e12 | units.yr
+            default_value = 1.0e12 | units.yr
         )
         
         object.add_method_parameter(
@@ -748,8 +746,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "set_min_timestep_stop_condition",
             "min_timestep_stop_condition", 
             "The minimum timestep stop condition of this instance.",
-            units.yr, 
-            1.0e6 | units.s
+            default_value = 1.0e6 | units.s
         )
         
         object.add_method_parameter(
@@ -757,8 +754,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "set_max_iter_stop_condition",
             "max_iter_stop_condition", 
             "The maximum number of iterations of this instance. (Negative means no maximum)",
-            units.none, 
-            -1111 | units.none
+            default_value = -1111 | units.none
         )
         
         object.add_method_parameter(
@@ -766,8 +762,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "set_mixing_length_ratio",
             "mixing_length_ratio", 
             "The mixing-length ratio (alpha).",
-            units.none, 
-            2.0 | units.none
+            default_value = 2.0 | units.none
         )
         
         object.add_method_parameter(
@@ -776,8 +771,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "semi_convection_efficiency", 
             "The efficiency of semi-convection, after Heger, Langer, & Woosley 2000 (ApJ), "
                "which goes back to Langer, Sugimoto & Fricke 1983 (A&A).",
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -786,8 +780,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "RGB_wind_scheme", 
             "The mass loss scheme for RGB stars: none (0), Reimers (1), "
                 "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            units.none, 
-            0 | units.none
+            default_value = 0 | units.none
         )
         
         object.add_method_parameter(
@@ -796,8 +789,7 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "AGB_wind_scheme", 
             "The mass loss scheme for AGB stars: none (0), Reimers (1), "
                 "Blocker (2), de Jager (3), Dutch (4), Mattsson (5)",
-            units.none, 
-            0 | units.none
+            default_value = 0 | units.none
         )
         
         object.add_method_parameter(
@@ -805,32 +797,28 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "set_reimers_wind_efficiency",
             "reimers_wind_efficiency", 
             "The Reimers mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 1).",
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         object.add_method_parameter(
             "get_blocker_wind_efficiency",
             "set_blocker_wind_efficiency",
             "blocker_wind_efficiency", 
             "The Blocker mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 2).",
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         object.add_method_parameter(
             "get_de_jager_wind_efficiency",
             "set_de_jager_wind_efficiency",
             "de_jager_wind_efficiency", 
             "The de Jager mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 3).",
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         object.add_method_parameter(
             "get_dutch_wind_efficiency",
             "set_dutch_wind_efficiency",
             "dutch_wind_efficiency", 
             "The Dutch mass loss efficiency. Only used if (RGB/AGB_wind_scheme == 4).",
-            units.none, 
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         
@@ -998,6 +986,174 @@ class MESA(InCodeComponentImplementation, InternalStellarStructure):
             "finalize_stellar_model", 
             (units.yr,), 
             (object.INDEX, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_metallicity", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_metallicity", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_max_age_stop_condition", 
+            (), 
+            (units.yr, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_max_age_stop_condition", 
+            (units.yr, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_min_timestep_stop_condition", 
+            (), 
+            (units.yr, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_min_timestep_stop_condition", 
+            (units.yr, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_max_iter_stop_condition", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_max_iter_stop_condition", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_mixing_length_ratio", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_mixing_length_ratio", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_semi_convection_efficiency", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_semi_convection_efficiency", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_RGB_wind_scheme", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_RGB_wind_scheme", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_AGB_wind_scheme", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_AGB_wind_scheme", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_reimers_wind_efficiency", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_reimers_wind_efficiency", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_blocker_wind_efficiency", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_blocker_wind_efficiency", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_de_jager_wind_efficiency", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_de_jager_wind_efficiency", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "get_dutch_wind_efficiency", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        
+    
+        object.add_method(
+            "set_dutch_wind_efficiency", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
         )
         
     

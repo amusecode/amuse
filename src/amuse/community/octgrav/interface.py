@@ -149,31 +149,64 @@ class Octgrav(GravitationalDynamics):
             "set_eps2",
             "epsilon_squared",
             "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.01 | nbody_system.length * nbody_system.length
+            default_value = 0.01 | nbody_system.length * nbody_system.length
         )
         object.add_method_parameter(
             "get_time_step",
             "set_time_step",
             "timestep",
             "constant timestep for iteration", 
-            nbody_system.time, 
-            0.01 | nbody_system.time
+            default_value = 0.01 | nbody_system.time
         )
         object.add_method_parameter(
             "get_theta_for_tree",
             "set_theta_for_tree",
             "opening_angle",
             "opening angle for building the tree between 0 and 1", 
-            units.none,
-            0.8 | units.none
+            default_value = 0.8 | units.none
         )
 
         self.stopping_conditions.define_parameters(object)
 
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
-
+        
+        object.add_method(
+            "get_eps2",
+            (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_eps2",
+            (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time_step",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_time_step",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_theta_for_tree",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_theta_for_tree",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
         self.stopping_conditions.define_methods(object)
 
 

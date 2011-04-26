@@ -213,40 +213,35 @@ class Hermite(GravitationalDynamics):
             "set_eps2", 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.0 | nbody_system.length * nbody_system.length
+            default_value = 0.0 | nbody_system.length * nbody_system.length
         )
         object.add_method_parameter(
             "get_dt_param",
             "set_dt_param",
             "dt_param",
             "timestep scaling factor", 
-            units.none, 
-            0.03 | units.none
+            default_value = 0.03 | units.none
         )
         object.add_method_parameter(
             "get_dt_dia",
             "set_dt_dia",
             "dt_dia", 
             "time interval between diagnostics output", 
-            nbody_system.time,
-            1.0 | nbody_system.time
+            default_value = 1.0 | nbody_system.time
         )
         object.add_method_parameter(
             "get_time",
             "set_time",
             "time",
             "current simulation time", 
-            nbody_system.time, 
-            0.0 | nbody_system.time
+            default_value = 0.0 | nbody_system.time
         )
         object.add_method_parameter(
             "get_pair_detect_factor",
             "set_pair_detect_factor",
             "pair_factor",
             "radius factor for pair detection", 
-            units.none, 
-            1.0 | units.none
+            default_value = 1.0 | units.none
         )
 
         self.stopping_conditions.define_parameters(object)
@@ -269,9 +264,70 @@ class Hermite(GravitationalDynamics):
              nbody_system.acceleration, object.ERROR_CODE)
         )
         
+        object.add_method(
+            "get_eps2",
+            (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_eps2",
+            (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_dt_param",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_dt_param",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_dt_dia",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_dt_dia",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_time",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_pair_detect_factor",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_pair_detect_factor",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
         self.stopping_conditions.define_methods(object)
         
     
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
+        
         self.stopping_conditions.define_particle_set(object, 'particles')

@@ -1551,8 +1551,8 @@ class Fi(GravitationalDynamics):
 
     def define_properties(self, object):
         GravitationalDynamics.define_properties(self, object)
-        object.add_property("get_thermal_energy", nbody_system.energy)
-        object.add_property("get_total_energy", nbody_system.energy)
+        object.add_property("get_thermal_energy")
+        object.add_property("get_total_energy")
     
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
@@ -1595,8 +1595,7 @@ class Fi(GravitationalDynamics):
             "set_eps2",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.0 | nbody_system.length * nbody_system.length
+            default_value = 0.0 | nbody_system.length * nbody_system.length
         )
         
         object.add_method_parameter(
@@ -1604,8 +1603,7 @@ class Fi(GravitationalDynamics):
             "set_dtime",
             "timestep", 
             "timestep for system", 
-            nbody_system.time, 
-            1.0 | nbody_system.time
+            default_value = 1.0 | nbody_system.time
         ) 
         
         
@@ -1761,8 +1759,7 @@ class Fi(GravitationalDynamics):
             "set_firstsnap",
             "first_snapshot", 
             "The number of the first snapshot.", 
-            units.none,
-            0 | units.none
+            default_value = 0 | units.none
         )
         
         object.add_method_parameter(
@@ -1770,8 +1767,7 @@ class Fi(GravitationalDynamics):
             "set_stepout",
             "output_interval", 
             "The number of steps between output.", 
-            units.none,
-            5 | units.none
+            default_value = 5 | units.none
         )
         
         object.add_method_parameter(
@@ -1779,8 +1775,7 @@ class Fi(GravitationalDynamics):
             "set_steplog",
             "log_interval", 
             "The number of steps between logs.", 
-            units.none,
-            5 | units.none
+            default_value = 5 | units.none
         )
         
         object.add_method_parameter(
@@ -1788,8 +1783,7 @@ class Fi(GravitationalDynamics):
             "set_max_tbin",
             "maximum_time_bin", 
             "The maximum time bin (dtime*2**-max_tbin=minimum time step).", 
-            units.none,
-            4096 | units.none
+            default_value = 4096 | units.none
         )
         
         object.add_method_parameter(
@@ -1797,8 +1791,7 @@ class Fi(GravitationalDynamics):
             "set_minppbin",
             "minimum_part_per_bin", 
             "The minimum number of particles per time bin.", 
-            units.none,
-            1 | units.none
+            default_value = 1 | units.none
         )
         
         object.add_method_parameter(
@@ -1806,8 +1799,7 @@ class Fi(GravitationalDynamics):
             "set_targetnn",
             "targetnn", 
             "The target number of neighbour particles for variable gravitational eps.", 
-            units.none,
-            32 | units.none
+            default_value = 32 | units.none
         )
         
         object.add_method_parameter(
@@ -1815,8 +1807,7 @@ class Fi(GravitationalDynamics):
             "set_verbosity",
             "verbosity", 
             "The level of terminal output (0=minimum).", 
-            units.none,
-            0 | units.none
+            default_value = 0 | units.none
         )
         
         object.add_method_parameter(
@@ -1824,8 +1815,7 @@ class Fi(GravitationalDynamics):
             "set_nsmooth",
             "n_smooth", 
             "The target number of SPH neighbours.", 
-            units.none,
-            64 | units.none
+            default_value = 64 | units.none
         )
         
         
@@ -1834,8 +1824,7 @@ class Fi(GravitationalDynamics):
             "set_pboxsize",
             "periodic_box_size", 
             "The size of simulation domain box (particles outside get deleted).", 
-            nbody_system.length,
-            300.0 | nbody_system.length
+            default_value = 300.0 | nbody_system.length
         )
         
         object.add_method_parameter(
@@ -1843,8 +1832,7 @@ class Fi(GravitationalDynamics):
             "set_unitm_in_msun",
             "code_mass_unit", 
             "The code mass unit (in Msun, 10^9 standard).", 
-            units.MSun,
-            1.0e9 | units.MSun
+            default_value = 1.0e9 | units.MSun
         )
         
         object.add_method_parameter(
@@ -1852,8 +1840,7 @@ class Fi(GravitationalDynamics):
             "set_unitl_in_kpc",
             "code_length_unit", 
             "The code length unit (in kpc, 1 standard).", 
-            units.kpc,
-            1.0 | units.kpc
+            default_value = 1.0 | units.kpc
         )
         
         object.add_method_parameter(
@@ -1861,8 +1848,7 @@ class Fi(GravitationalDynamics):
             "set_tstepcrit",
             "sqrt_timestep_crit_constant", 
             "Square-root-timestep criterion constant (unitless,standard=1.).", 
-            units.none,
-            1.0 | units.none
+            default_value = 1.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1870,8 +1856,7 @@ class Fi(GravitationalDynamics):
             "set_tstpcr2",
             "acc_timestep_crit_constant", 
             "Acceleration-timestep criterion constant (unitless,standard=0.25).", 
-            units.none,
-            0.25 | units.none
+            default_value = 0.25 | units.none
         )
         
         object.add_method_parameter(
@@ -1879,8 +1864,7 @@ class Fi(GravitationalDynamics):
             "set_freev",
             "free_timestep_crit_constant_v", 
             "Freeform-timestep criterion constant v.", 
-            units.none,
-            0.5 | units.none
+            default_value = 0.5 | units.none
         )
         
         object.add_method_parameter(
@@ -1888,8 +1872,7 @@ class Fi(GravitationalDynamics):
             "set_freea",
             "free_timestep_crit_constant_a", 
             "Freeform-timestep criterion constant a.", 
-            units.none,
-            0.35 | units.none
+            default_value = 0.35 | units.none
         )
         
         object.add_method_parameter(
@@ -1897,8 +1880,7 @@ class Fi(GravitationalDynamics):
             "set_freevexp",
             "free_timestep_crit_constant_vexp", 
             "Freeform-timestep criterion constant v_exp.", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1906,8 +1888,7 @@ class Fi(GravitationalDynamics):
             "set_freeaexp",
             "free_timestep_crit_constant_aexp", 
             "Freeform-timestep criterion constant a_exp.", 
-            units.none,
-            -1.0 | units.none
+            default_value = -1.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1915,8 +1896,7 @@ class Fi(GravitationalDynamics):
             "set_bh_tol",
             "opening_angle", 
             "Opening angle, theta, for building the tree: between 0 and 1 (unitless, 0.5).", 
-            units.none,
-            0.5 | units.none
+            default_value = 0.5 | units.none
         )
         
         object.add_method_parameter(
@@ -1924,8 +1904,7 @@ class Fi(GravitationalDynamics):
             "set_gdgtol",
             "gadget_cell_opening_constant", 
             "Gadget-cell-openings criterion parameter  (unitless, .01)", 
-            units.none,
-            0.01 | units.none
+            default_value = 0.01 | units.none
         )
         
         object.add_method_parameter(
@@ -1933,8 +1912,7 @@ class Fi(GravitationalDynamics):
             "set_nn_tol",
             "nn_tol", 
             "The fractional tolerance in nn_target (0.1).", 
-            units.none,
-            0.1 | units.none
+            default_value = 0.1 | units.none
         )
         
         object.add_method_parameter(
@@ -1942,8 +1920,7 @@ class Fi(GravitationalDynamics):
             "set_epsgas",
             "gas_epsilon", 
             "The gas gravitational smoothing epsilon.", 
-            nbody_system.length,
-            0.005 | nbody_system.length
+            default_value = 0.005 | nbody_system.length
         )
         
         object.add_method_parameter(
@@ -1951,8 +1928,7 @@ class Fi(GravitationalDynamics):
             "set_gamma",
             "gamma", 
             "gas polytropic index (1.6666667)", 
-            units.none,
-            1.6666667 | units.none
+            default_value = 1.6666667 | units.none
         )
         
         object.add_method_parameter(
@@ -1960,8 +1936,7 @@ class Fi(GravitationalDynamics):
             "set_alpha",
             "artificial_viscosity_alpha", 
             "SPH artificial viscosity alpha parameter (0.5)", 
-            units.none,
-            0.5 | units.none
+            default_value = 0.5 | units.none
         )
         
         object.add_method_parameter(
@@ -1969,8 +1944,7 @@ class Fi(GravitationalDynamics):
             "set_beta",
             "beta", 
             "SPH artificial viscosity beta parameter (2*alpha=1.0)", 
-            units.none,
-            1.0 | units.none
+            default_value = 1.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1978,8 +1952,7 @@ class Fi(GravitationalDynamics):
             "set_epssph",
             "sph_artificial_viscosity_eps", 
             "SPH artificial viscosity safety against divergence (0.01)", 
-            units.none,
-            0.01 | units.none
+            default_value = 0.01 | units.none
         )
         
         object.add_method_parameter(
@@ -1987,8 +1960,7 @@ class Fi(GravitationalDynamics):
             "set_courant",
             "courant", 
             "SPH courant condition parameter (0.3)", 
-            units.none,
-            0.3 | units.none
+            default_value = 0.3 | units.none
         )
         
         object.add_method_parameter(
@@ -1996,8 +1968,7 @@ class Fi(GravitationalDynamics):
             "set_removgas",
             "min_gas_part_mass", 
             "minimum gas particle mass (fraction of initial (average) mass)", 
-            units.none,
-            0.25 | units.none
+            default_value = 0.25 | units.none
         )
         
         object.add_method_parameter(
@@ -2005,8 +1976,7 @@ class Fi(GravitationalDynamics):
             "set_consthsm",
             "sph_h_const", 
             "SPH smoothing length if constant", 
-            nbody_system.length,
-            0.2 | nbody_system.length
+            default_value = 0.2 | nbody_system.length
         )
         
         object.add_method_parameter(
@@ -2014,8 +1984,7 @@ class Fi(GravitationalDynamics):
             "set_nsmtol",
             "n_smooth_tol", 
             "fractional tolerance in number of SPH neighbours", 
-            units.none,
-            0.1 | units.none
+            default_value = 0.1 | units.none
         )
         
         object.add_method_parameter(
@@ -2023,8 +1992,7 @@ class Fi(GravitationalDynamics):
             "set_graineff",
             "grain_heat_eff", 
             "FUV grain heating efficiency parameter (unitless, 0.05)", 
-            units.none,
-            0.05| units.none
+            default_value = 0.05| units.none
         )
         
         object.add_method_parameter(
@@ -2032,8 +2000,7 @@ class Fi(GravitationalDynamics):
             "set_crionrate",
             "zeta_cr_ion_rate", 
             "primary cosmic ray ionization rate, zeta (in units of 1.8e-17 sec^-1, 1.)", 
-            1.8e-17 * units.s**-1,
-            3.6 | 1.8e-17 * units.s**-1
+            default_value = 3.6 | 1.8e-17 * units.s**-1
         )
         
         object.add_method_parameter(
@@ -2041,8 +2008,7 @@ class Fi(GravitationalDynamics):
             "set_heat_par1",
             "heat_par1", 
             "additional heating 1 parameter (0.0)", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -2050,8 +2016,7 @@ class Fi(GravitationalDynamics):
             "set_heat_par2",
             "heat_par2", 
             "additional heating 2 parameter (0.0)", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -2059,8 +2024,7 @@ class Fi(GravitationalDynamics):
             "set_cool_par",
             "cool_par", 
             "additional cooling parameter (1.0)", 
-            units.none,
-            1.0 | units.none
+            default_value = 1.0 | units.none
         )
         
         object.add_method_parameter(
@@ -2068,8 +2032,7 @@ class Fi(GravitationalDynamics):
             "set_optdepth",
             "optical_depth", 
             "1/(mean free path) for UV photons (code length **-1, 0.0)", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -2077,8 +2040,7 @@ class Fi(GravitationalDynamics):
             "set_tcollfac",
             "star_form_delay_fac", 
             "star formation delay parameter (unitless, 1)", 
-            units.none,
-            1.0 | units.none
+            default_value = 1.0 | units.none
         )
         
         object.add_method_parameter(
@@ -2086,8 +2048,7 @@ class Fi(GravitationalDynamics):
             "set_masscrit",
             "star_form_mass_crit", 
             "star formation cloud reference mass (Msun, 1.e5)", 
-            units.MSun,
-            1.0e5 | units.MSun
+            default_value = 1.0e5 | units.MSun
         )
         
         object.add_method_parameter(
@@ -2095,8 +2056,7 @@ class Fi(GravitationalDynamics):
             "set_sfeff",
             "star_form_eff", 
             "gas particle mass fraction converted to stars (0.125)", 
-            units.none,
-            0.25 | units.none
+            default_value = 0.25 | units.none
         )
         
         object.add_method_parameter(
@@ -2104,8 +2064,7 @@ class Fi(GravitationalDynamics):
             "set_tbubble",
             "supernova_duration", 
             "Supernova activity time, (Myr, 3.e7)", 
-            units.Myr,
-            3.0e7 | units.Myr
+            default_value = 3.0e7 | units.Myr
         )
         
         object.add_method_parameter(
@@ -2113,8 +2072,7 @@ class Fi(GravitationalDynamics):
             "set_sne_eff",
             "supernova_eff", 
             "Supernova feedback coupling efficiency, (0.0)", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -2122,8 +2080,7 @@ class Fi(GravitationalDynamics):
             "set_tsnbeg",
             "t_supernova_start", 
             "Supernova feedback start time, (Myr, 3.e6)", 
-            units.Myr,
-            3.0e6 | units.Myr
+            default_value = 3.0e6 | units.Myr
         )
         
         object.add_method_parameter(
@@ -2131,8 +2088,7 @@ class Fi(GravitationalDynamics):
             "set_rhomax",
             "max_density", 
             "Maximum permissible density (code density units, 100)", 
-            units.none,
-            100.0 | units.none
+            default_value = 100.0 | units.none
         )
         
         object.add_method_parameter(
@@ -2140,8 +2096,7 @@ class Fi(GravitationalDynamics):
             "set_halofile",
             "halofile", 
             "Path to initial halo model file, relative to the Fi data directory (none)", 
-            units.string,
-            "none" | units.string
+            default_value = "none" | units.string
         )
         
         object.add_method_parameter(
@@ -2149,8 +2104,7 @@ class Fi(GravitationalDynamics):
             "set_feedback",
             "feedback", 
             "feedback model (fuv, pres, kine, solo, solh)", 
-            units.string,
-            "fuv" | units.string
+            default_value = "fuv" | units.string
         )
         
         object.add_method_parameter(
@@ -2158,8 +2112,7 @@ class Fi(GravitationalDynamics):
             "set_sfmode",
             "star_formation_mode", 
             "star formation model (gerritsen, nieuw)", 
-            units.string,
-            "gerritsen" | units.string
+            default_value = "gerritsen" | units.string
         )
         
         object.add_method_parameter(
@@ -2167,8 +2120,7 @@ class Fi(GravitationalDynamics):
             "set_hupdatemethod",
             "h_update_method", 
             "SPH smoothing length criterion (at the moment always 'mass')", 
-            units.string,
-            "mass" | units.string
+            default_value = "mass" | units.string
         )
         
         object.add_method_parameter(
@@ -2176,8 +2128,7 @@ class Fi(GravitationalDynamics):
             "set_sph_visc",
             "sph_viscosity", 
             "SPH viscosity (sph,sphv, bulk). Note: not all may work.", 
-            units.string,
-            "sph" | units.string
+            default_value = "sph" | units.string
         )
         
         object.add_method_parameter(
@@ -2185,8 +2136,7 @@ class Fi(GravitationalDynamics):
             "set_fi_data_directory",
             "fi_data_directory", 
             "Name of the Fi data directory", 
-            units.string,
-            "" | units.string
+            default_value = "" | units.string
         )
 
         object.add_boolean_parameter(
@@ -2482,6 +2432,618 @@ class Fi(GravitationalDynamics):
                 nbody_system.speed, nbody_system.speed, nbody_system.speed),
             (nbody_system.density, nbody_system.momentum_density, nbody_system.momentum_density, 
                 nbody_system.momentum_density, nbody_system.energy_density, object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            "get_eps2",
+            (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_eps2",
+            (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_dtime",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_dtime",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_firstsnap",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_firstsnap",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_stepout",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_stepout",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_steplog",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_steplog",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_max_tbin",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_max_tbin",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_minppbin",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_minppbin",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_targetnn",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_targetnn",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_verbosity",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_verbosity",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_nsmooth",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_nsmooth",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_pboxsize",
+            (),
+            (nbody_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_pboxsize",
+            (nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_unitm_in_msun",
+            (),
+            (units.MSun, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_unitm_in_msun",
+            (units.MSun, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_unitl_in_kpc",
+            (),
+            (units.kpc, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_unitl_in_kpc",
+            (units.kpc, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_tstepcrit",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_tstepcrit",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_tstpcr2",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_tstpcr2",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_freev",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_freev",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_freea",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_freea",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_freevexp",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_freevexp",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_freeaexp",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_freeaexp",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_bh_tol",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_bh_tol",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_gdgtol",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_gdgtol",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_nn_tol",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_nn_tol",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_epsgas",
+            (),
+            (nbody_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_epsgas",
+            (nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_gamma",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_gamma",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_alpha",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_alpha",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_beta",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_beta",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_epssph",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_epssph",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_courant",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_courant",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_removgas",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_removgas",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_consthsm",
+            (),
+            (nbody_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_consthsm",
+            (nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_nsmtol",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_nsmtol",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_graineff",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_graineff",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_crionrate",
+            (),
+            (1.8e-17 * units.s**-1, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_crionrate",
+            (1.8e-17 * units.s**-1, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_heat_par1",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_heat_par1",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_heat_par2",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_heat_par2",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_cool_par",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_cool_par",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_optdepth",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_optdepth",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_tcollfac",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_tcollfac",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_masscrit",
+            (),
+            (units.MSun, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_masscrit",
+            (units.MSun, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_sfeff",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_sfeff",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_tbubble",
+            (),
+            (units.Myr, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_tbubble",
+            (units.Myr, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_sne_eff",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_sne_eff",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_tsnbeg",
+            (),
+            (units.Myr, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_tsnbeg",
+            (units.Myr, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_rhomax",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_rhomax",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_halofile",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_halofile",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_feedback",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_feedback",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_sfmode",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_sfmode",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_hupdatemethod",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_hupdatemethod",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_sph_visc",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_sph_visc",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_fi_data_directory",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_fi_data_directory",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_thermal_energy",
+            (),
+            (nbody_system.energy, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_total_energy",
+            (),
+            (nbody_system.energy, object.ERROR_CODE,)
         )
         
         self.stopping_conditions.define_methods(object)            

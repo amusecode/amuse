@@ -236,48 +236,42 @@ class BHTree(GravitationalDynamics):
             "set_epsilon_squared", 
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            nbody_system.length * nbody_system.length, 
-            0.125 | nbody_system.length * nbody_system.length
+            default_value = 0.125 | nbody_system.length * nbody_system.length
         )
         object.add_method_parameter(
             "get_time_step",
             "set_time_step",
             "timestep",
             "constant timestep for iteration", 
-            nbody_system.time, 
-            0.015625 | nbody_system.time
+            default_value = 0.015625 | nbody_system.time
         )
         object.add_method_parameter(
             "get_theta_for_tree",
             "set_theta_for_tree",
             "opening_angle", 
             "opening angle, theta, for building the tree: between 0 and 1", 
-            units.none,
-            0.75 | units.none
+            default_value = 0.75 | units.none
         )
         object.add_method_parameter(
             "get_use_self_gravity",
             "set_use_self_gravity",
             "use_self_gravity", 
             "flag for usage of self gravity, 1 or 0 (true or false)", 
-            units.none,
-            1 | units.none
+            default_value = 1 | units.none
         )
         object.add_method_parameter(
             "get_ncrit_for_tree",
             "set_ncrit_for_tree",
             "ncrit_for_tree", 
             "Ncrit, the maximum number of particles sharing an interaction list", 
-            units.none,
-            1024 | units.none
+            default_value = 1024 | units.none
         )
         object.add_method_parameter(
             "get_dt_dia",
             "set_dt_dia",
             "dt_dia", 
             "time interval between diagnostics output", 
-            nbody_system.time,
-            1.0 | nbody_system.time
+            default_value = 1.0 | nbody_system.time
         )
 
         self.stopping_conditions.define_parameters(object)
@@ -295,6 +289,78 @@ class BHTree(GravitationalDynamics):
             'get_potential_at_point',
             (nbody_system.length, nbody_system.length, nbody_system.length, nbody_system.length),
             (nbody_system.potential, object.ERROR_CODE)
+        )
+
+        object.add_method(
+            "get_epsilon_squared",
+            (),
+            (nbody_system.length * nbody_system.length, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_epsilon_squared",
+            (nbody_system.length * nbody_system.length, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_time_step",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_time_step",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_theta_for_tree",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_theta_for_tree",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_use_self_gravity",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_use_self_gravity",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_ncrit_for_tree",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_ncrit_for_tree",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "get_dt_dia",
+            (),
+            (nbody_system.time, object.ERROR_CODE,)
+        )
+
+        object.add_method(
+            "set_dt_dia",
+            (nbody_system.time, ),
+            (object.ERROR_CODE,)
         )
 
         self.stopping_conditions.define_methods(object)

@@ -11,6 +11,7 @@ except ImportError:
 from amuse.support.data import core
 from amuse.ext import cloud
 from amuse.support.units import generic_unit_system
+from amuse.support.units import units
 from amuse.community.capreole.interface import Capreole
 from amuse.support import io
 
@@ -67,10 +68,10 @@ class CalculateCloudShock(object):
         result=MpiAmrVac(number_of_workers=self.number_of_workers) #, redirection="none")
         result.set_parameters_filename(result.default_parameters_filename)
         result.initialize_code()
-        result.parameters.maximum_number_of_grid_levels = 3
-        result.parameters.spatial_discretization_method = 'tvdmu' 
-        result.parameters.predictor_step_discretization_method = 'tvdmu' 
-        result.parameters.entropy_type = 'powell' 
+        result.parameters.maximum_number_of_grid_levels = 1
+        result.parameters.spatial_discretization_method = 'tvdmu' | units.string
+        result.parameters.predictor_step_discretization_method = 'tvdmu' | units.string
+        result.parameters.entropy_type = 'powell' | units.string
         result.parameters.courant_number = 0.8
         
         result.parameters.x_boundary_conditions = ("cont","cont")
@@ -182,8 +183,8 @@ class CalculateCloudShock(object):
 
 
 def main():
-    number_of_grid_points = 10
-    name_of_the_code = 'mpiamrvac'
+    number_of_grid_points = 40
+    name_of_the_code = 'athena'
     model = CalculateCloudShock(
         number_of_grid_points = number_of_grid_points,
         number_of_workers = 6,

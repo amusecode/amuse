@@ -1100,7 +1100,7 @@ class Gadget2(GravitationalDynamics):
         self.parameters.set_defaults()
         if self.mode == self.legacy_interface.MODE_PERIODIC_BOUNDARIES:
             self.parameters.periodic_boundaries_flag = True
-        self.parameters.gadget_output_directory = self.get_output_directory()
+        self.parameters.gadget_output_directory = self.get_output_directory() | units.string
         # The code's units are read-only, and set here to ensure they always match with the unit_converter
         self.set_unit_mass(self.unit_converter.to_si(generic_unit_system.mass).value_in(units.g))
         self.set_unit_length(self.unit_converter.to_si(generic_unit_system.length).value_in(units.cm))
@@ -1108,14 +1108,14 @@ class Gadget2(GravitationalDynamics):
         return result
     
     def define_properties(self, object):
-        object.add_property("get_kinetic_energy", generic_unit_system.energy)
-        object.add_property("get_potential_energy", generic_unit_system.energy)
-        object.add_property("get_thermal_energy", generic_unit_system.energy)
-        object.add_property("get_total_radius", generic_unit_system.length)
-        object.add_property("get_center_of_mass_position", generic_unit_system.length)
-        object.add_property("get_center_of_mass_velocity", generic_unit_system.speed)
-        object.add_property("get_total_mass", generic_unit_system.mass)
-        object.add_property('get_time', generic_unit_system.time, "model_time")
+        object.add_property("get_kinetic_energy")
+        object.add_property("get_potential_energy")
+        object.add_property("get_thermal_energy")
+        object.add_property("get_total_radius")
+        object.add_property("get_center_of_mass_position")
+        object.add_property("get_center_of_mass_velocity")
+        object.add_property("get_total_mass")
+        object.add_property('get_time', public_name = "model_time")
     
     def define_state(self, object):
         GravitationalDynamics.define_state(self, object)
@@ -1156,8 +1156,7 @@ class Gadget2(GravitationalDynamics):
             "set_epsilon_squared",
             "epsilon_squared", 
             "smoothing parameter for gravity calculations", 
-            generic_unit_system.length * generic_unit_system.length, 
-            0.0001 | generic_unit_system.length * generic_unit_system.length
+            default_value = 0.0001 | generic_unit_system.length * generic_unit_system.length
         )
         
         object.add_method_parameter(
@@ -1165,8 +1164,7 @@ class Gadget2(GravitationalDynamics):
             None,
             "timestep", 
             "timestep for system, Gadget2 calculates this by itself, based on particle acceleration.", 
-            generic_unit_system.time, 
-            1.0 | generic_unit_system.time
+            default_value = 1.0 | generic_unit_system.time
         ) 
         
         object.add_boolean_parameter(
@@ -1209,8 +1207,7 @@ class Gadget2(GravitationalDynamics):
             "set_nsmooth",
             "n_smooth", 
             "The target number of SPH neighbours.", 
-            units.none,
-            50 | units.none
+            default_value = 50 | units.none
         )
         
         object.add_method_parameter(
@@ -1218,8 +1215,7 @@ class Gadget2(GravitationalDynamics):
             None,
             "code_mass_unit", 
             "The code mass unit (in g/h, 1.989e43 g = 10^10 MSun standard).", 
-            units.g,
-            1.989e43 | units.g
+            default_value = 1.989e43 | units.g
         )
         
         object.add_method_parameter(
@@ -1227,8 +1223,7 @@ class Gadget2(GravitationalDynamics):
             None,
             "code_length_unit", 
             "The code length unit (in cm/h, 3.085678e21 cm = 1 kpc standard).", 
-            units.cm,
-            3.085678e21 | units.cm
+            default_value = 3.085678e21 | units.cm
         )
         
         object.add_method_parameter(
@@ -1236,8 +1231,7 @@ class Gadget2(GravitationalDynamics):
             None,
             "code_time_unit", 
             "The code time unit (in s/h, default: 3.085678e16 s = (1 kpc) / (1 km/s) ~ 0.9778 Gyr).", 
-            units.s,
-            3.085678e16 | units.s
+            default_value = 3.085678e16 | units.s
         )
         
         object.add_method_parameter(
@@ -1245,8 +1239,7 @@ class Gadget2(GravitationalDynamics):
             None,
             "code_velocity_unit", 
             "The code velocity unit (in cm/s, default: 1e5 cm/s = 1 km/s).", 
-            units.cm / units.s,
-            1e5 | units.cm / units.s
+            default_value = 1e5 | units.cm / units.s
         )
         
         
@@ -1255,8 +1248,7 @@ class Gadget2(GravitationalDynamics):
             "set_bh_tol",
             "opening_angle", 
             "Opening angle, theta, for building the tree: between 0 and 1 (unitless, 0.5).", 
-            units.none,
-            0.5 | units.none
+            default_value = 0.5 | units.none
         )
         
         object.add_method_parameter(
@@ -1264,8 +1256,7 @@ class Gadget2(GravitationalDynamics):
             "set_gdgtol",
             "gadget_cell_opening_constant", 
             "Gadget-cell-openings criterion parameter  (unitless, 0.005)", 
-            units.none,
-            0.005 | units.none
+            default_value = 0.005 | units.none
         )
         
         object.add_method_parameter(
@@ -1273,8 +1264,7 @@ class Gadget2(GravitationalDynamics):
             "set_epsgas",
             "gas_epsilon", 
             "The gas gravitational smoothing epsilon.", 
-            generic_unit_system.length,
-            0.01 | generic_unit_system.length
+            default_value = 0.01 | generic_unit_system.length
         )
         
         object.add_method_parameter(
@@ -1283,8 +1273,7 @@ class Gadget2(GravitationalDynamics):
             "polytropic_index_gamma", 
             "gas polytropic index (1.6666667 or 1 for isothermal"
                 "(read-only: makefile option ISOTHERM_EQS).", 
-            units.none,
-            (5.0/3) | units.none
+            default_value = (5.0/3) | units.none
         )
         
         object.add_method_parameter(
@@ -1292,8 +1281,7 @@ class Gadget2(GravitationalDynamics):
             "set_alpha",
             "artificial_viscosity_alpha", 
             "SPH artificial viscosity alpha parameter (0.5)", 
-            units.none,
-            0.5 | units.none
+            default_value = 0.5 | units.none
         )
         
         object.add_method_parameter(
@@ -1302,8 +1290,7 @@ class Gadget2(GravitationalDynamics):
             "courant", 
             "SPH courant condition parameter (0.3). Note that we follow conventional smoothing length "
                 "definitions, implying a factor 2 difference with Gadget's CourantFac parameter", 
-            units.none,
-            0.3 | units.none
+            default_value = 0.3 | units.none
         )
         
         object.add_method_parameter(
@@ -1311,8 +1298,7 @@ class Gadget2(GravitationalDynamics):
             "set_nsmtol",
             "n_smooth_tol", 
             "fractional tolerance in number of SPH neighbours", 
-            units.none,
-            0.1 | units.none
+            default_value = 0.1 | units.none
         )
         
         object.add_method_parameter(
@@ -1320,8 +1306,7 @@ class Gadget2(GravitationalDynamics):
             "set_gadget_output_directory",
             "gadget_output_directory", 
             "Name of the Gadget-2 OutputDir", 
-            units.string,
-            "" | units.string
+            default_value = "" | units.string
         )
         
         object.add_method_parameter(
@@ -1329,8 +1314,7 @@ class Gadget2(GravitationalDynamics):
             "set_energy_file",
             "energy_file", 
             "The path to the Gadget-2 energy statistics output file.", 
-            units.string,
-            "energy.txt" | units.string
+            default_value = "energy.txt" | units.string
         )
         
         object.add_method_parameter(
@@ -1338,8 +1322,7 @@ class Gadget2(GravitationalDynamics):
             "set_info_file",
             "info_file", 
             "The path to the Gadget-2 info output file.", 
-            units.string,
-            "info.txt" | units.string
+            default_value = "info.txt" | units.string
         )
         
         object.add_method_parameter(
@@ -1347,8 +1330,7 @@ class Gadget2(GravitationalDynamics):
             "set_timings_file",
             "timings_file", 
             "The path to the Gadget-2 timings output file.", 
-            units.string,
-            "timings.txt" | units.string
+            default_value = "timings.txt" | units.string
         )
         
         object.add_method_parameter(
@@ -1356,8 +1338,7 @@ class Gadget2(GravitationalDynamics):
             "set_cpu_file",
             "cpu_file", 
             "The path to the Gadget-2 cpu statistics output file.", 
-            units.string,
-            "cpu.txt" | units.string
+            default_value = "cpu.txt" | units.string
         )
         
         object.add_method_parameter(
@@ -1365,8 +1346,7 @@ class Gadget2(GravitationalDynamics):
             "set_time_limit_cpu",
             "time_limit_cpu", 
             "The cpu-time limit. Gadget2 will stop once 85% of this (wall-clock) time has passed.", 
-            units.s,
-            36000 | units.s
+            default_value = 36000 | units.s
         )
         
         object.add_boolean_parameter(
@@ -1382,8 +1362,7 @@ class Gadget2(GravitationalDynamics):
             "set_type_of_timestep_criterion",
             "type_of_timestep_criterion", 
             "Timestep criterion to use. Can only be zero: timestep proportional to acceleration^-0.5", 
-            units.none,
-            0 | units.none
+            default_value = 0 | units.none
         )
         
         object.add_method_parameter(
@@ -1391,8 +1370,7 @@ class Gadget2(GravitationalDynamics):
             "set_time_begin",
             "time_begin", 
             "The time at the start of the run.", 
-            generic_unit_system.time,
-            0.0 | generic_unit_system.time
+            default_value = 0.0 | generic_unit_system.time
         )
         
         object.add_method_parameter(
@@ -1400,8 +1378,7 @@ class Gadget2(GravitationalDynamics):
             "set_time_max",
             "time_max", 
             "The time at the end of the run.", 
-            generic_unit_system.time,
-            100.0 | generic_unit_system.time
+            default_value = 100.0 | generic_unit_system.time
         )
         
         object.add_method_parameter(
@@ -1409,8 +1386,7 @@ class Gadget2(GravitationalDynamics):
             "set_omega_zero",
             "omega_zero", 
             "Cosmological matter density parameter in units of the critical density at z=0.", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1418,8 +1394,7 @@ class Gadget2(GravitationalDynamics):
             "set_omega_lambda",
             "omega_lambda", 
             "Cosmological vacuum energy density parameter in units of the critical density at z=0.", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1427,8 +1402,7 @@ class Gadget2(GravitationalDynamics):
             "set_omega_baryon",
             "omega_baryon", 
             "Cosmological baryonic density parameter in units of the critical density at z=0.", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1436,8 +1410,7 @@ class Gadget2(GravitationalDynamics):
             "set_hubble_param",
             "hubble_param", 
             "The cosmological Hubble parameter.", 
-            100 * units.km / units.s / units.Mpc,
-            0.7 | 100 * units.km / units.s / units.Mpc
+            default_value = 0.7 | 100 * units.km / units.s / units.Mpc
         )
         
         object.add_method_parameter(
@@ -1445,8 +1418,7 @@ class Gadget2(GravitationalDynamics):
             "set_err_tol_int_accuracy",
             "timestep_accuracy_parameter", 
             "Accuracy parameter used in timestep criterion. Actual timesteps are proportional to err_tol_int_accuracy^0.5", 
-            units.none,
-            0.025 | units.none
+            default_value = 0.025 | units.none
         )
         
         object.add_method_parameter(
@@ -1454,8 +1426,7 @@ class Gadget2(GravitationalDynamics):
             "set_max_size_timestep",
             "max_size_timestep", 
             "The maximum size of the timestep a particle may take.", 
-            generic_unit_system.time,
-            0.01 | generic_unit_system.time
+            default_value = 0.01 | generic_unit_system.time
         )
         
         object.add_method_parameter(
@@ -1463,8 +1434,7 @@ class Gadget2(GravitationalDynamics):
             "set_min_size_timestep",
             "min_size_timestep", 
             "The minimum size of the timestep a particle may take.", 
-            generic_unit_system.time,
-            0.0 | generic_unit_system.time
+            default_value = 0.0 | generic_unit_system.time
         )
         
         object.add_method_parameter(
@@ -1472,8 +1442,7 @@ class Gadget2(GravitationalDynamics):
             "set_tree_domain_update_frequency",
             "tree_domain_update_frequency", 
             "The frequency with which the tree and domain decomposition are fully updated, in terms of (# force computations / # particles).", 
-            units.none,
-            0.05 | units.none
+            default_value = 0.05 | units.none
         )
         
         object.add_method_parameter(
@@ -1481,8 +1450,7 @@ class Gadget2(GravitationalDynamics):
             "set_time_between_statistics",
             "time_between_statistics", 
             "The time between statistics output written to the output files.", 
-            generic_unit_system.time,
-            0.1 | generic_unit_system.time
+            default_value = 0.1 | generic_unit_system.time
         )
         
         object.add_method_parameter(
@@ -1490,8 +1458,7 @@ class Gadget2(GravitationalDynamics):
             "set_min_gas_temp",
             "min_gas_temp", 
             "The minimum temperature of gas particles.", 
-            units.K,
-            0.0 | units.K
+            default_value = 0.0 | units.K
         )
         
         object.add_method_parameter(
@@ -1499,8 +1466,7 @@ class Gadget2(GravitationalDynamics):
             "set_min_gas_hsmooth_fractional",
             "min_gas_hsmooth_fractional", 
             "The minimum smoothing length of gas particles relative to their softening lengths.", 
-            units.none,
-            0.0 | units.none
+            default_value = 0.0 | units.none
         )
         
         object.add_method_parameter(
@@ -1508,8 +1474,7 @@ class Gadget2(GravitationalDynamics):
             "set_softening_gas_max_phys",
             "softening_gas_max_phys", 
             "The maximum physical softening of gas particles for comoving integrations.", 
-            generic_unit_system.length,
-            0.0 | generic_unit_system.length
+            default_value = 0.0 | generic_unit_system.length
         )
         
         object.add_method_parameter(
@@ -1517,8 +1482,7 @@ class Gadget2(GravitationalDynamics):
             "set_softening_halo_max_phys",
             "softening_halo_max_phys", 
             "The maximum physical softening of dm particles for comoving integrations.", 
-            generic_unit_system.length,
-            0.0 | generic_unit_system.length
+            default_value = 0.0 | generic_unit_system.length
         )
         
         object.add_method_parameter(
@@ -1526,8 +1490,7 @@ class Gadget2(GravitationalDynamics):
             "set_box_size",
             "periodic_box_size", 
             "The size of the box in case of periodic boundary conditions.", 
-            generic_unit_system.length,
-            1.0 | generic_unit_system.length
+            default_value = 1.0 | generic_unit_system.length
         )
         
         object.add_boolean_parameter(
@@ -1898,6 +1861,498 @@ class Gadget2(GravitationalDynamics):
                 generic_unit_system.speed, generic_unit_system.speed, generic_unit_system.speed),
             (generic_unit_system.density, generic_unit_system.momentum_density, generic_unit_system.momentum_density, 
                 generic_unit_system.momentum_density, generic_unit_system.energy_density, object.ERROR_CODE)
+        )
+        
+        object.add_method(
+            "get_epsilon_squared",
+            (),
+            (generic_unit_system.length * generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_epsilon_squared",
+            (generic_unit_system.length * generic_unit_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time_step",
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            None,
+            (generic_unit_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_nsmooth",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_nsmooth",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_unit_mass",
+            (),
+            (units.g, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            None,
+            (units.g, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_unit_length",
+            (),
+            (units.cm, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            None,
+            (units.cm, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_unit_time",
+            (),
+            (units.s, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            None,
+            (units.s, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_unit_velocity",
+            (),
+            (units.cm / units.s, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            None,
+            (units.cm / units.s, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_bh_tol",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_bh_tol",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_gdgtol",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_gdgtol",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_epsgas",
+            (),
+            (generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_epsgas",
+            (generic_unit_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_gamma",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            None,
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_alpha",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_alpha",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_courant",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_courant",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_nsmtol",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_nsmtol",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_gadget_output_directory",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_gadget_output_directory",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_energy_file",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_energy_file",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_info_file",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_info_file",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_timings_file",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_timings_file",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_cpu_file",
+            (),
+            (units.string, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_cpu_file",
+            (units.string, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time_limit_cpu",
+            (),
+            (units.s, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_time_limit_cpu",
+            (units.s, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_type_of_timestep_criterion",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_type_of_timestep_criterion",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time_begin",
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_time_begin",
+            (generic_unit_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time_max",
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_time_max",
+            (generic_unit_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_omega_zero",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_omega_zero",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_omega_lambda",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_omega_lambda",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_omega_baryon",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_omega_baryon",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_hubble_param",
+            (),
+            (100 * units.km / units.s / units.Mpc, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_hubble_param",
+            (100 * units.km / units.s / units.Mpc, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_err_tol_int_accuracy",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_err_tol_int_accuracy",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_max_size_timestep",
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_max_size_timestep",
+            (generic_unit_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_min_size_timestep",
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_min_size_timestep",
+            (generic_unit_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_tree_domain_update_frequency",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_tree_domain_update_frequency",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_time_between_statistics",
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_time_between_statistics",
+            (generic_unit_system.time, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_min_gas_temp",
+            (),
+            (units.K, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_min_gas_temp",
+            (units.K, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_min_gas_hsmooth_fractional",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_min_gas_hsmooth_fractional",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_softening_gas_max_phys",
+            (),
+            (generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_softening_gas_max_phys",
+            (generic_unit_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_softening_halo_max_phys",
+            (),
+            (generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_softening_halo_max_phys",
+            (generic_unit_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_box_size",
+            (),
+            (generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_box_size",
+            (generic_unit_system.length, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_kinetic_energy",
+            (),
+            (generic_unit_system.energy, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_potential_energy",
+            (),
+            (generic_unit_system.energy, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_thermal_energy",
+            (),
+            (generic_unit_system.energy, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_total_radius",
+            (),
+            (generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_center_of_mass_position",
+            (),
+            (generic_unit_system.length,generic_unit_system.length,generic_unit_system.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_center_of_mass_velocity",
+            (),
+            (generic_unit_system.speed,generic_unit_system.speed,generic_unit_system.speed, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_total_mass",
+            (),
+            (generic_unit_system.mass, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            'get_time',
+            (),
+            (generic_unit_system.time, object.ERROR_CODE,)
         )
         
         self.stopping_conditions.define_methods(object)
