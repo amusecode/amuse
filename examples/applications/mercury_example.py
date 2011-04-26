@@ -25,16 +25,18 @@ celimit=20.
 pid,err=instance.new_orbiter(mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit)  
 instance.commit_particles()
 
-t_end=365.25*1000
+t_end=365.25*1e6
 time=0
 xx=[x]
 yy=[y]
 
 while time<t_end:
-    time=time+800
+    time=time+365.25*1e3
     err=instance.evolve(time)
     mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=instance.get_orbiter_state(pid)
+    print x, y	
     xx.append(x)
     yy.append(y)
 
 instance.stop()
+
