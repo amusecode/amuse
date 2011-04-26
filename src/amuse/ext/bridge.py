@@ -141,13 +141,29 @@ class bridge(object):
             else:
                 timestep = self.timestep
             
-        while self.time < tend:    
-            dt=min(timestep,tend-self.time)
-            self.kick_systems(dt/2)   
-            self.drift_systems(self.time+dt)
-            self.kick_systems(dt/2)
-            self.time=self.time+dt
+#        while self.time < tend:    
+#            dt=min(timestep,tend-self.time)
+#            self.kick_systems(dt/2)   
+#            self.drift_systems(self.time+dt)
+#            self.kick_systems(dt/2)
+#            self.time=self.time+dt
+#        return 0    
+ 
+ 
+        first=True
+        while self.time < (tend-timestep/2):    
+             if first:      
+                 self.kick_systems(timestep/2)
+                 first=False
+             else:
+                 self.kick_systems(timestep)
+                 self.drift_systems(self.time+timestep)
+                 self.time=self.time+timestep
+        if not first:
+             self.kick_systems(timestep/2)         
         return 0    
+ 
+ 
     
     def synchronize_model(self):
         """ 
@@ -182,6 +198,10 @@ class bridge(object):
             ay=ay+_ay
             az=az+_az
         return ax,ay,az,err
+
+    @property
+    def model_time(self):  
+         return self.time
       
     @property
     def potential_energy(self):
