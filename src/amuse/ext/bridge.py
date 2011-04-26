@@ -122,7 +122,7 @@ class bridge(object):
         if hasattr(interface,"model_time"):
             self.time_offsets[interface]=(self.time-interface.model_time)
         else:
-            self.time_offsets[interface]=0.        
+            self.time_offsets[interface]=values.zero     
         self.systems.add(interface)
         for p in partners:
             if not hasattr(interface,"get_gravity_at_point"):
@@ -211,6 +211,7 @@ class bridge(object):
 # 'private' functions
 
     def drift_systems(self,tend):
+        print self.time,self.time_offsets,tend
         threads=[]
         for x in self.systems:
             if hasattr(x,"evolve_model"):
