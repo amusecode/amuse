@@ -211,7 +211,6 @@ class bridge(object):
 # 'private' functions
 
     def drift_systems(self,tend):
-        print self.time,self.time_offsets,tend
         threads=[]
         for x in self.systems:
             if hasattr(x,"evolve_model"):
