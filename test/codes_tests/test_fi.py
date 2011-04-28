@@ -30,21 +30,21 @@ class TestFiInterface(TestWithMPI):
                     ('adaptive_eps',0),('gdgop',1),('smoothinput',0),
                     ('consph',1),('sphinit',1),('uentropy',1),('isotherm',0),
                     ('eps_is_h',1)]:
-            result,err=eval("instance.get_"+x)()
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals( (x,result),(x,l))
-            err=eval("instance.set_"+x)(1)
-            result,err=eval("instance.get_"+x)()
+            err=getattr(instance, 'set_'+x)(1)
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals( (x,result),(x,1))
-            err=eval("instance.set_"+x)(0)
-            result,err=eval("instance.get_"+x)()
+            err=getattr(instance, 'set_'+x)(0)
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,0))
         
         for x,i in [ ('firstsnap',0),('stepout',5),('steplog',5),('max_tbin',4096),
                      ('minppbin',1),('targetnn',32),('verbosity',0),('nsmooth',64)]:
-            result,err=eval("instance.get_"+x)()
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals( (x,result),(x,i))
-            err=eval("instance.set_"+x)(12345)
-            result,err=eval("instance.get_"+x)()
+            err=getattr(instance, 'set_'+x)(12345)
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,12345))
         
         for x,r in [ ('pboxsize',300.),('unitl_in_kpc',1.),('unitm_in_msun',1.e9),('dtime',1.),
@@ -56,21 +56,21 @@ class TestFiInterface(TestWithMPI):
                      ('cool_par',1.),('optdepth',0.),('tcollfac',1.),('masscrit',1.e5),
                      ('sfeff',0.25),('tbubble',3.e7),('sne_eff',0.),('tsnbeg',3.e6),
                      ('rhomax',100.),('eps',0.)]:
-            result,err=eval("instance.get_"+x)()
+            result,err=getattr(instance, 'get_'+x)()
             self.assertAlmostEquals(result,r,7)
-            err=eval("instance.set_"+x)(0.)
-            result,err=eval("instance.get_"+x)()
+            err=getattr(instance, 'set_'+x)(0.)
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals(result,0.)
-            err=eval("instance.set_"+x)(0.12345)
-            result,err=eval("instance.get_"+x)()
+            err=getattr(instance, 'set_'+x)(0.12345)
+            result,err=getattr(instance, 'get_'+x)()
             self.assertAlmostEquals(result,0.12345,7)
         
         for x,s in [('halofile','none'),('feedback','fuv'),('sfmode','gerritsen'),
                     ('hupdatemethod','mass'),('sph_visc','sph')]:
-            result,err=eval("instance.get_"+x)()
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,s))
-            err=eval("instance.set_"+x)("123")
-            result,err=eval("instance.get_"+x)()
+            err=getattr(instance, 'set_'+x)("123")
+            result,err=getattr(instance, 'get_'+x)()
             self.assertEquals((x,result),(x,"123"))
         
         instance.stop()
@@ -391,16 +391,16 @@ class TestFi(TestWithMPI):
             'square_root_timestep_flag','freeform_timestep_flag','quadrupole_moments_flag',
             'direct_sum_flag','fixed_halo_flag','adaptive_smoothing_flag','smooth_input_flag',
             'isothermal_flag']:
-            self.assertEquals(False, eval("instance.parameters."+bool_par))
-            exec("instance.parameters."+bool_par+" = True")
-            self.assertEquals(True, eval("instance.parameters."+bool_par))
+            self.assertEquals(False, getattr(instance.parameters, bool_par))
+            setattr(instance.parameters, bool_par, True)
+            self.assertEquals(True, getattr(instance.parameters, bool_par))
         
         for bool_par in ['acc_timestep_flag','self_gravity_flag','gadget_cell_opening_flag',
             'use_hydro_flag','conservative_sph_flag','sph_dens_init_flag',
             'integrate_entropy_flag','eps_is_h_flag']:
-            self.assertEquals(True, eval("instance.parameters."+bool_par))
-            exec("instance.parameters."+bool_par+" = False")
-            self.assertEquals(False, eval("instance.parameters."+bool_par))
+            self.assertEquals(True, getattr(instance.parameters, bool_par))
+            setattr(instance.parameters, bool_par, False)
+            self.assertEquals(False, getattr(instance.parameters, bool_par))
         
         instance.cleanup_code()
         instance.stop()
@@ -456,9 +456,9 @@ class TestFi(TestWithMPI):
         defaults=['none','fuv','gerritsen','mass','sph',instance.get_data_directory()+'/'] | units.string
         new_values=['bct_02_10.halo','pres','nieuw','test','sphv','test'] | units.string
         for string_par, value, new_value in zip(par_names, defaults, new_values):
-            self.assertEquals(eval("instance.parameters."+string_par), value)
-            exec("instance.parameters."+string_par+" = new_value")
-            self.assertEquals(eval("instance.parameters."+string_par), new_value)
+            self.assertEquals(getattr(instance.parameters, string_par), value)
+            setattr(instance.parameters, string_par, new_value)
+            self.assertEquals(getattr(instance.parameters, string_par), new_value)
         instance.cleanup_code()
         instance.stop()
     

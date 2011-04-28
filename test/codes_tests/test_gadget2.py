@@ -446,25 +446,25 @@ class TestGadget2(TestWithMPI):
         for par, value in [('gadget_cell_opening_flag', True), 
                 ('comoving_integration_flag', False), 
                 ('periodic_boundaries_flag', False)]:
-            self.assertTrue(value is eval("instance.parameters."+par))
-            exec("instance.parameters."+par+" = not value")
-            self.assertFalse(value is eval("instance.parameters."+par))
+            self.assertTrue(value is getattr(instance.parameters, par))
+            setattr(instance.parameters, par, not value)
+            self.assertFalse(value is getattr(instance.parameters, par))
         
         for par, value in [('time_limit_cpu', 36000 | units.s), 
                 ('hubble_param', 0.7 | 100 * units.km / units.s / units.Mpc),
                 ('min_gas_temp', 0.0 | units.K)]:
-            self.assertEquals(value, eval("instance.parameters."+par))
-            exec("instance.parameters."+par+" = 2 * value")
-            self.assertEquals(2 * value, eval("instance.parameters."+par))
+            self.assertEquals(value, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 2 * value)
+            self.assertEquals(2 * value, getattr(instance.parameters, par))
         
         for par, value in [('n_smooth_tol',0.1), ('n_smooth',50), ('opening_angle',0.5),
                 ('gadget_cell_opening_constant',0.005), ('artificial_viscosity_alpha',0.5),
                 ('courant',0.3), ('type_of_timestep_criterion',0), ('omega_zero',0.0),
                 ('omega_lambda',0.0), ('omega_baryon',0.0), ('min_gas_hsmooth_fractional',0.0),
                 ('timestep_accuracy_parameter',0.025), ('tree_domain_update_frequency',0.05)]:
-            self.assertEquals(value | units.none, eval("instance.parameters."+par))
-            exec("instance.parameters."+par+" = 1 | units.none")
-            self.assertEquals(1 | units.none, eval("instance.parameters."+par))
+            self.assertEquals(value | units.none, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 1 | units.none)
+            self.assertEquals(1 | units.none, getattr(instance.parameters, par))
         
         for par, value in [('gas_epsilon', 0.01 | generic_unit_system.length), 
                 ('time_begin', 0.0 | generic_unit_system.time), 
@@ -476,16 +476,16 @@ class TestGadget2(TestWithMPI):
                 ('softening_gas_max_phys', 0.0 | generic_unit_system.length),
                 ('softening_halo_max_phys', 0.0 | generic_unit_system.length)]:
             self.assertEquals(instance.unit_converter.to_si(value), 
-                eval("instance.parameters."+par))
-            exec("instance.parameters."+par+" = 3.0 | value.unit")
+                getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 3.0 | value.unit)
             self.assertEquals(instance.unit_converter.to_si(3.0 | value.unit),
-                eval("instance.parameters."+par))
+                getattr(instance.parameters, par))
         
         for par, value in [('energy_file',"energy.txt"),('info_file',"info.txt"),
                 ('timings_file',"timings.txt"),('cpu_file',"cpu.txt")]:
-            self.assertEquals(value | units.string, eval("instance.parameters."+par))
-            exec("instance.parameters."+par+" = 'test.txt' | units.string")
-            self.assertEquals("test.txt" | units.string, eval("instance.parameters."+par))
+            self.assertEquals(value | units.string, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 'test.txt' | units.string)
+            self.assertEquals("test.txt" | units.string, getattr(instance.parameters, par))
         
         
         instance.stop()
@@ -502,9 +502,9 @@ class TestGadget2(TestWithMPI):
                             ('code_time_unit',     self.default_converter.to_si(generic_unit_system.time)),
                             ('code_velocity_unit', self.default_converter.to_si(generic_unit_system.speed)),
                             ('polytropic_index_gamma', (5.0/3) | units.none)]:
-            self.assertEquals(value, eval("instance.parameters."+par))
+            self.assertEquals(value, getattr(instance.parameters, par))
             def try_set_parameter(par, value, instance):
-                exec("instance.parameters."+par+" = value")
+                setattr(instance.parameters, par, value)
             self.assertRaises(AmuseException, try_set_parameter, par, value, instance,
                 expected_message = "Could not set value for parameter '"+par+"' of a 'Gadget2' object, "
                     "parameter is read-only")

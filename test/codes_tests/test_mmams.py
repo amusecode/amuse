@@ -289,14 +289,14 @@ class TestMakeMeAMassiveStar(TestWithMPI):
         instance.initialize_code()
         
         for par, value in [('dump_mixed_flag', False)]:
-            self.assertTrue(value is eval("instance.parameters."+par))
-            exec("instance.parameters."+par+" = not value")
-            self.assertFalse(value is eval("instance.parameters."+par))
+            self.assertTrue(value is getattr(instance.parameters, par))
+            setattr(instance.parameters, par, not value)
+            self.assertFalse(value is getattr(instance.parameters, par))
         
         for par, value in [('target_n_shells_mixing', 200), ('target_n_shells', 10000)]:
-            self.assertEquals(value | units.none, eval("instance.parameters."+par))
-            exec("instance.parameters."+par+" = 1 | units.none")
-            self.assertEquals(1 | units.none, eval("instance.parameters."+par))
+            self.assertEquals(value | units.none, getattr(instance.parameters, par))
+            setattr(instance.parameters, par, 1 | units.none)
+            self.assertEquals(1 | units.none, getattr(instance.parameters, par))
         
         instance.stop()
     
