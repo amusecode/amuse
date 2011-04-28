@@ -154,7 +154,7 @@ class TestMocassin(TestWithMPI):
         
         self.assertEquals(10000 | units.K, instance.parameters.initial_nebular_temperature)
         
-        self.assertEquals("" | units.none, instance.parameters.abundancies_filename)
+        self.assertEquals("" | units.string, instance.parameters.abundancies_filename)
         
         
     def test2(self):

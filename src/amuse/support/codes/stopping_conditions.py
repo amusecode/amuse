@@ -363,8 +363,7 @@ class StoppingConditions(object):
             "set_stopping_condition_timeout_parameter", 
             "stopping_conditions_timeout", 
             "max wallclock time available for the evolve step", 
-            units.s, 
-            4.0 |  units.s
+            default_value = 4.0 |  units.s
         )
 
         object.add_method_parameter(
@@ -372,8 +371,7 @@ class StoppingConditions(object):
             "set_stopping_condition_number_of_steps_parameter", 
             "stopping_conditions_number_of_steps", 
             "max inner loop evals", 
-            units.none, 
-            1.0 |  units.none
+            default_value = 1.0 |  units.none
         )
 
         object.add_method_parameter(
@@ -381,8 +379,7 @@ class StoppingConditions(object):
             "set_stopping_condition_out_of_box_parameter", 
             "stopping_conditions_out_of_box_size", 
             "size of cube", 
-            nbody.length, 
-            1.0 |  nbody.length
+            default_value = 1.0 |  nbody.length
         )
         
     def define_methods(self, object):
@@ -461,6 +458,42 @@ class StoppingConditions(object):
             (
                 object.ERROR_CODE
             )
+        )
+        
+        object.add_method(
+            "get_stopping_condition_timeout_parameter",
+            (),
+            (units.s, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_stopping_condition_timeout_parameter",
+            (units.s, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_stopping_condition_number_of_steps_parameter",
+            (),
+            (units.none, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_stopping_condition_number_of_steps_parameter",
+            (units.none, ),
+            (object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "get_stopping_condition_out_of_box_parameter",
+            (),
+            (nbody.length, object.ERROR_CODE,)
+        )
+        
+        object.add_method(
+            "set_stopping_condition_out_of_box_parameter",
+            (nbody.length, ),
+            (object.ERROR_CODE,)
         )
         
     def define_particle_set(self, object, name_of_the_set = 'particles'):
