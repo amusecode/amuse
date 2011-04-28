@@ -258,10 +258,30 @@ class CsvFileText(TableFormattedText):
     
     provided_formats = ['csv']
     
+    def __init__(self, filename = None, stream = None, set = None, format = None):
+        TableFormattedText.__init__(self, filename, stream, set, format)
+        if self.set is None:
+            self.attribute_names = None
+            self.attribute_types = None
+    
     @base.format_option
     def column_separator(self):
         "separator between the columns"
         return ','
+    
+    def read_header_line(self, line):
+        if self.attribute_names:
+            if self.attribute_types is None:
+                self.attribute_types = units.convert_csv_string_to_unit(line)
+        else:
+            self.attribute_names = [sub.strip() for sub in line.split(',')]
+    
+    def header_lines(self):
+        result = []
+        result.append(self.column_separator.join(self.attribute_names))
+        result.append(self.column_separator.join([one_unit.reference_string() for one_unit in self.attribute_types]))
+        result.append(self.column_separator.join(map(str, self.attribute_types)))
+        return result
     
 class Athena3DText(TableFormattedText):
     

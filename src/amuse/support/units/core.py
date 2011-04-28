@@ -101,6 +101,24 @@ class unit(object):
     def __call__(self, x):
         return self.new_quantity(x)
     
+    def __eq__(self, other):
+        if isinstance(other, unit):
+            if (isinstance(self, base_unit) and isinstance(other, base_unit)) or \
+                    isinstance(self, nonnumeric_unit) or isinstance(other, nonnumeric_unit):
+                return NotImplemented
+            return self.base == other.base and self.factor == other.factor
+        else:
+            return False
+    
+    def __ne__(self, other):
+        if isinstance(other, unit):
+            if (isinstance(self, base_unit) and isinstance(other, base_unit)) or \
+                    isinstance(self, nonnumeric_unit) or isinstance(other, nonnumeric_unit):
+                return NotImplemented
+            return self.base != other.base and self.factor != other.factor
+        else:
+            return True
+    
     @property
     def dtype(self):
         return None

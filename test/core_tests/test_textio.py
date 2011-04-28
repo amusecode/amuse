@@ -85,18 +85,127 @@ class TableFormattedTextTests(amusetest.TestCase):
         output.store()
         contents = stream.getvalue()
         self.assertEquals("#col(0) col(1)\n#mass length\n1.0 3.0\n2.0 4.0\n3.0 5.0\n", contents)
-        
-        stream = StringIO.StringIO()
-        output = text.CsvFileText(stream = stream)
-        output.quantities = (mass, length)
-        output.attribute_names = ('M','L')
-        output.store()
-        contents = stream.getvalue()
-        self.assertEquals("#M,L\n#mass,length\n1.0,3.0\n2.0,4.0\n3.0,5.0\n", contents)
-    
     
 
+class CsvFileTextTests(amusetest.TestCase):
     
+    def test0(self):
+        self.assertEquals(units.convert_string_to_unit('m'),         units.m)
+        self.assertEquals(units.convert_string_to_unit('m * s**-2'), units.m * units.s**-2)
+        self.assertEquals(units.convert_csv_string_to_unit('m, kg, s, parsec, hour'), 
+            [units.m, units.kg, units.s, units.parsec, units.hour])
+    
+    def test1(self):
+        print "Test 1: Read comma separated values (CSV) - specified attributes"
+        contents = "#header\n1,2,3\n4,5,6\n7,8,9\n"
+        data_stream = StringIO.StringIO(contents)
+        instance = text.CsvFileText(None, data_stream)
+        instance.attribute_names = ['a', 'b', 'c']
+        instance.attribute_types = [units.none, units.m, units.m/units.s]
+        particles = instance.load()
+        self.assertEquals(len(particles), 3)
+        self.assertEquals(particles.a, [1, 4, 7] | units.none)
+        self.assertEquals(particles.b, [2, 5, 8] | units.m)
+        self.assertEquals(particles.c, [3, 6, 9] | units.m / units.s)
+    
+    def test2(self):
+        print "Test 2: Read comma separated values (CSV) - attributes defined in header"
+        contents = ("#a, b, c\n#no_system.get('none'),system.get('S.I.').base('length'),"
+            "(system.get('S.I.').base('length') / system.get('S.I.').base('time'))\n"
+            "#none, m, m/s\n1,2,3\n4,5,6\n7,8,9\n")
+        data_stream = StringIO.StringIO(contents)
+        instance = text.CsvFileText(None, data_stream)
+        particles = instance.load()
+        self.assertEquals(len(particles), 3)
+        self.assertEquals(particles.a, [1, 4, 7] | units.none)
+        self.assertEquals(particles.b, [2, 5, 8] | units.m)
+        self.assertEquals(particles.c, [3, 6, 9] | units.m / units.s)
+    
+    def test3(self):
+        print "Test 3: Read comma separated values (CSV) - generic units"
+        contents = ("#a,b,c\n"
+            "#system.get('generic').base('mass'),system.get('generic').base('length'),"
+            "(((system.get('generic').base('length')**2) * (system.get('generic').base('time')**-2)) * "
+            "system.get('generic').base('mass'))\n"
+            "#mass,length,length**2 * time**-2 * mass\n1.0,2.0,3.0\n4.0,5.0,6.0\n")
+        data_stream = StringIO.StringIO(contents)
+        instance = text.CsvFileText(None, data_stream)
+        particles = instance.load()
+        self.assertEquals(len(particles), 2)
+        self.assertEquals(particles.a, [1, 4] | generic_unit_system.mass)
+        self.assertEquals(particles.b, [2, 5] | generic_unit_system.length)
+        self.assertEquals(particles.c, [3, 6] | generic_unit_system.energy)
+        
+    def test4(self):
+        print "Test 4: Write comma separated values (CSV) - specified attributes"
+        particles = core.Particles(2)
+        particles.a = [1, 4] | units.none
+        particles.b = [2, 5] | units.m
+        particles.c = [3, 6] | units.kg / units.m**3
+        
+        data_stream = StringIO.StringIO()
+        instance = text.CsvFileText(None, data_stream, particles)
+        instance.attribute_names = ['a', 'b']
+        instance.attribute_types = [units.none, 100*units.cm]
+        instance.store()
+        
+        contents = data_stream.getvalue()
+        self.assertEquals("#a,b\n"
+            "#no_system.get('none'),(100 * (0.01 * system.get('S.I.').base('length')))\n"
+            "#none,100 * cm\n1.0,2.0\n4.0,5.0\n", contents)
+    
+    def test5(self):
+        print "Test 5: Write comma separated values (CSV) - attributes defined automatically"
+        particles = core.Particles(2)
+        particles.a = [1, 4] | units.none
+        particles.b = [2, 5] | units.m
+        particles.c = [3, 6] | units.kg / units.m**3
+        
+        data_stream = StringIO.StringIO()
+        instance = text.CsvFileText(None, data_stream, particles)
+        instance.store()
+        
+        contents = data_stream.getvalue()
+        self.assertEquals("#a,b,c\n"
+            "#no_system.get('none'),system.get('S.I.').base('length'),"
+            "((system.get('S.I.').base('length')**-3) * system.get('S.I.').base('mass'))\n"
+            "#none,m,m**-3 * kg\n1.0,2.0,3.0\n4.0,5.0,6.0\n", contents)
+    
+    def test6(self):
+        print "Test 6: Write comma separated values (CSV) - generic units"
+        particles = core.Particles(2)
+        particles.a = [1, 4] | generic_unit_system.mass
+        particles.b = [2, 5] | generic_unit_system.length
+        particles.c = [3, 6] | generic_unit_system.energy
+        particles.d = [4, 7] | generic_unit_system.temperature
+        
+        data_stream = StringIO.StringIO()
+        instance = text.CsvFileText(None, data_stream, particles)
+        instance.store()
+        
+        contents = data_stream.getvalue()
+        self.assertEquals("#a,b,c,d\n"
+            "#system.get('generic').base('mass'),system.get('generic').base('length'),"
+            "(((system.get('generic').base('length')**2) * (system.get('generic').base('time')**-2)) * "
+            "system.get('generic').base('mass')),system.get('generic').base('thermodynamic temperature')\n"
+            "#mass,length,length**2 * time**-2 * mass,thermodynamic temperature\n1.0,2.0,3.0,4.0\n4.0,5.0,6.0,7.0\n", contents)
+    
+    def test7(self):
+        print "Test 7: User interface (write_set_to_file and read_set_from_file)"
+        particles = core.Particles(2)
+        particles.a = [1, 4] | units.none
+        particles.b = [2, 5] | units.m
+        particles.c = [3, 6] | units.kg / units.m**3
+        io.write_set_to_file(particles, "test_textio.csv","csv")
+        
+        read_particles = io.read_set_from_file("test_textio.csv", format = "csv")
+        self.assertEquals(len(read_particles), 2)
+        self.assertEquals(read_particles.a, [1, 4] | units.none)
+        self.assertEquals(read_particles.b, [2, 5] | units.m)
+        self.assertEquals(read_particles.c, [3, 6] | units.kg / units.m**3)
+        os.remove("test_textio.csv")
+    
+
 class Athena3DTextTests(amusetest.TestCase):
     
     def test1(self):
