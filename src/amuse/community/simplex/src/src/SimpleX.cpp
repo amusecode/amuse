@@ -1643,28 +1643,29 @@ void SimpleX::compute_triangulation(){
 
     //the radius of the circumsphere should be inside the boundaries on all sides
     //if not, extend x_min and x_max
-              if( (xCC - radiusCC) < x_min ){
-                x_min = xCC - radiusCC;
+			  
+			  if( (xCC - radiusCC) < x_min ){
+                x_min = xCC - (1.001 * radiusCC);
                 correct = 0;
               }
               if( (xCC + radiusCC) > x_max ){
-                x_max = xCC + radiusCC;
+                x_max = xCC + (1.001 * radiusCC);
                 correct = 0;
               }
               if( (yCC - radiusCC) < y_min ){
-                y_min = yCC - radiusCC;
+                y_min = yCC - (1.001 * radiusCC);
                 correct = 0;
               }
               if( (yCC + radiusCC) > y_max ){
-                y_max = yCC + radiusCC;
+                y_max = yCC + (1.001 * radiusCC);
                 correct = 0;
               }
               if( (zCC - radiusCC) < z_min ){
-                z_min = zCC - radiusCC;
+                z_min = zCC - (1.001 * radiusCC);
                 correct = 0;
               }
               if( (zCC + radiusCC) > z_max ){
-                z_max = zCC + radiusCC;
+                z_max = zCC + (1.001 * radiusCC);
                 correct = 0;
               }
 
