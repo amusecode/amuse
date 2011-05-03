@@ -47,7 +47,7 @@ class PythonImplementation(object):
         while self.must_run:
             
             message = ClientSideMPIMessage()
-            message.recieve(parent)
+            message.receive(parent)
                 
             result_message = ClientSideMPIMessage(message.tag, message.length)
             

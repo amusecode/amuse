@@ -65,7 +65,7 @@ class ASyncRequest(object):
             def __call__(self):
                 return self.outer(self.inner)
                 
-        self.message.recieve_content(self.comm, self.header)
+        self.message.receive_content(self.comm, self.header)
         
         current = self.get_message
         for x in self.result_handlers:
@@ -124,7 +124,7 @@ class AbstractMessage(object):
             ('int64', 'longs'),
         )
     
-    def recieve(self, comm):
+    def receive(self, comm):
         raise NotImplementedError
         
     def send(self, comm):
@@ -134,14 +134,14 @@ class AbstractMessage(object):
 class MPIMessage(AbstractMessage):
     
         
-    def recieve(self, comm):
+    def receive(self, comm):
         header = numpy.zeros(8,  dtype='i')
         
-        self.mpi_recieve(comm, [header, MPI.INT])
+        self.mpi_receive(comm, [header, MPI.INT])
     
-        self.recieve_content(comm, header)
+        self.receive_content(comm, header)
         
-    def recieve_content(self, comm, header):
+    def receive_content(self, comm, header):
         self.tag = header[0]
         self.length = header[1]
         
@@ -152,67 +152,67 @@ class MPIMessage(AbstractMessage):
         number_of_booleans = header[6]
         number_of_longs = header[7]
         
-        self.doubles = self.recieve_doubles(comm, self.length, number_of_doubles)
-        self.ints = self.recieve_ints(comm, self.length, number_of_ints)
-        self.floats = self.recieve_floats(comm, self.length, number_of_floats)
-        self.strings = self.recieve_strings(comm, self.length, number_of_strings)
-        self.booleans = self.recieve_booleans(comm, self.length, number_of_booleans)
-        self.longs = self.recieve_longs(comm, self.length, number_of_longs)
+        self.doubles = self.receive_doubles(comm, self.length, number_of_doubles)
+        self.ints = self.receive_ints(comm, self.length, number_of_ints)
+        self.floats = self.receive_floats(comm, self.length, number_of_floats)
+        self.strings = self.receive_strings(comm, self.length, number_of_strings)
+        self.booleans = self.receive_booleans(comm, self.length, number_of_booleans)
+        self.longs = self.receive_longs(comm, self.length, number_of_longs)
         
-    def nonblocking_recieve(self, comm):
+    def nonblocking_receive(self, comm):
         header = numpy.zeros(8,  dtype='i')
-        request = self.mpi_nonblocking_recieve(comm, [header, MPI.INT])
+        request = self.mpi_nonblocking_receive(comm, [header, MPI.INT])
         return ASyncRequest(request, self, comm,  header)
     
-    def recieve_doubles(self, comm, length, total):
+    def receive_doubles(self, comm, length, total):
         if total > 0:
             result = numpy.empty(total * length,  dtype='d')
-            self.mpi_recieve(comm,[result, MPI.DOUBLE])
+            self.mpi_receive(comm,[result, MPI.DOUBLE])
             return result
         else:
             return []
             
-    def recieve_ints(self, comm, length, total):
+    def receive_ints(self, comm, length, total):
         if total > 0:
             result = numpy.empty(total * length,  dtype='i')
-            self.mpi_recieve(comm,[result, MPI.INT])
+            self.mpi_receive(comm,[result, MPI.INT])
             return result
         else:
             return []
             
-    def recieve_longs(self, comm, length, total):
+    def receive_longs(self, comm, length, total):
         if total > 0:
             result = numpy.empty(total * length,  dtype='int64')
-            self.mpi_recieve(comm,[result, MPI.INTEGER8])
+            self.mpi_receive(comm,[result, MPI.INTEGER8])
             return result
         else:
             return []
             
-    def recieve_floats(self, comm, length, total):
+    def receive_floats(self, comm, length, total):
         if total > 0:
             result = numpy.empty(total * length,  dtype='f')
-            self.mpi_recieve(comm,[result, MPI.FLOAT])
+            self.mpi_receive(comm,[result, MPI.FLOAT])
             return result
         else:
             return []
             
     
-    def recieve_booleans(self, comm, length, total):
+    def receive_booleans(self, comm, length, total):
         if total > 0:
             result = numpy.empty(total * length,  dtype='int32')
-            self.mpi_recieve(comm,[result, MPI.LOGICAL])
+            self.mpi_receive(comm,[result, MPI.LOGICAL])
             return result == 1
         else:
             return []
     
             
-    def recieve_strings(self, comm, length, total):
+    def receive_strings(self, comm, length, total):
         if total > 0:
             offsets = numpy.empty(length * total, dtype='i')
-            self.mpi_recieve(comm,[offsets, MPI.INT])
+            self.mpi_receive(comm,[offsets, MPI.INT])
             
             bytes = numpy.empty((offsets[-1] + 1), dtype=numpy.uint8)
-            self.mpi_recieve(comm,[bytes,  MPI.CHARACTER])
+            self.mpi_receive(comm,[bytes,  MPI.CHARACTER])
             
             strings = []
             begin = 0
@@ -304,10 +304,10 @@ class MPIMessage(AbstractMessage):
         
         return offsets
         
-    def mpi_nonblocking_recieve(self, comm, array):
+    def mpi_nonblocking_receive(self, comm, array):
         raise NotImplementedError()
     
-    def mpi_recieve(self, comm, array):
+    def mpi_receive(self, comm, array):
         raise NotImplementedError()
         
     def mpi_send(self, comm, array):
@@ -316,25 +316,25 @@ class MPIMessage(AbstractMessage):
     
 class ServerSideMPIMessage(MPIMessage):
     
-    def mpi_recieve(self, comm, array):
+    def mpi_receive(self, comm, array):
         comm.Recv(array,  source=0, tag=999)
         
     def mpi_send(self, comm, array):
         comm.Bcast(array, root=MPI.ROOT)
     
-    def mpi_nonblocking_recieve(self, comm, array):
+    def mpi_nonblocking_receive(self, comm, array):
         return comm.Irecv(array,  source=0, tag=999)
 
     
 class ClientSideMPIMessage(MPIMessage):
     
-    def mpi_recieve(self, comm, array):
+    def mpi_receive(self, comm, array):
         comm.Bcast(array, root = 0)
         
     def mpi_send(self, comm, array):
         comm.Send(array, dest=0, tag = 999)
 
-    def mpi_nonblocking_recieve(self, comm, array):
+    def mpi_nonblocking_receive(self, comm, array):
         return comm.Irecv(array,  source=0, tag=999)
 
 
@@ -768,7 +768,7 @@ class MpiChannel(MessageChannel):
         
         message = ServerSideMPIMessage()
         try:
-            message.recieve(self.intercomm)
+            message.receive(self.intercomm)
         except MPI.Exception as ex:
             self.stop()
             raise
@@ -782,7 +782,7 @@ class MpiChannel(MessageChannel):
         return message.to_result(handle_as_array)
         
     def nonblocking_recv_message(self, tag, handle_as_array):
-        request = ServerSideMPIMessage().nonblocking_recieve(self.intercomm)
+        request = ServerSideMPIMessage().nonblocking_receive(self.intercomm)
         
         def handle_result(function):
             self._is_inuse = False
@@ -932,12 +932,12 @@ m.run_mpi_channel('{2}')"""
         client_socket.sendall(message_string)
         
     def _recv(self, client_socket):
-        header = self._recvall(client_socket, 4)
+        header = self._receive_all(client_socket, 4)
         length = struct.unpack("i", header)
-        message_string = self._recvall(client_socket, length[0])
+        message_string = self._receive_all(client_socket, length[0])
         return pickle.loads(message_string)
         
-    def _recvall(self, client_socket, number_of_bytes):
+    def _receive_all(self, client_socket, number_of_bytes):
         block_size = 4096
         bytes_left = number_of_bytes
         blocks = []
@@ -1021,7 +1021,7 @@ class IbisMessage(AbstractMessage):
 
         return bytes
      
-    def recieve(self, socket):
+    def receive(self, socket):
         
         logging.getLogger("ibis").debug("receiving message")
         
@@ -1058,16 +1058,16 @@ class IbisMessage(AbstractMessage):
         number_of_booleans = header[7]
         number_of_strings = header[8]
 
-        self.ints = self.recieve_ints(socket, number_of_ints)
-        self.longs = self.recieve_longs(socket, number_of_longs)
-        self.floats = self.recieve_floats(socket, number_of_floats)
-        self.doubles = self.recieve_doubles(socket, number_of_doubles)
-        self.booleans = self.recieve_booleans(socket, number_of_booleans)
-        self.strings = self.recieve_strings(socket, number_of_strings)
+        self.ints = self.receive_ints(socket, number_of_ints)
+        self.longs = self.receive_longs(socket, number_of_longs)
+        self.floats = self.receive_floats(socket, number_of_floats)
+        self.doubles = self.receive_doubles(socket, number_of_doubles)
+        self.booleans = self.receive_booleans(socket, number_of_booleans)
+        self.strings = self.receive_strings(socket, number_of_strings)
         
         logging.getLogger("ibis").debug("message received")
         
-    def recieve_ints(self, socket, count):
+    def receive_ints(self, socket, count):
         if count > 0:
             nbytes = count * 4 # size of int
             
@@ -1079,7 +1079,7 @@ class IbisMessage(AbstractMessage):
         else:
             return []        
             
-    def recieve_longs(self, socket, count):
+    def receive_longs(self, socket, count):
         if count > 0:
             nbytes = count * 8 # size of long
             
@@ -1092,7 +1092,7 @@ class IbisMessage(AbstractMessage):
             return []
  
         
-    def recieve_floats(self, socket, count):
+    def receive_floats(self, socket, count):
         if count > 0:
             nbytes = count * 4 # size of float
             
@@ -1105,7 +1105,7 @@ class IbisMessage(AbstractMessage):
             return []
     
           
-    def recieve_doubles(self, socket, count):
+    def receive_doubles(self, socket, count):
         if count > 0:
             nbytes = count * 8 # size of double
             
@@ -1118,7 +1118,7 @@ class IbisMessage(AbstractMessage):
             return []
         
 
-    def recieve_booleans(self, socket, count):
+    def receive_booleans(self, socket, count):
         if count > 0:
             nbytes = count * 1 # size of boolean/byte
             
@@ -1131,9 +1131,9 @@ class IbisMessage(AbstractMessage):
             return []
     
             
-    def recieve_strings(self, socket, count):
+    def receive_strings(self, socket, count):
         if count > 0:
-            lengths = self.recieve_ints(socket, count)
+            lengths = self.receive_ints(socket, count)
             
             strings = []
             
@@ -1261,7 +1261,7 @@ class IbisChannel(MessageChannel):
         logging.getLogger("ibis").info("waiting for worker %s to be initialized", self.name_of_the_worker)
 
         result = IbisMessage()
-        result.recieve(self.socket)
+        result.receive(self.socket)
         
         if result.error:
             logging.getLogger("ibis").error("Could not start worker: %s", result.strings[0])
@@ -1323,7 +1323,7 @@ class IbisChannel(MessageChannel):
         
         message = IbisMessage()
         
-        message.recieve(self.socket)
+        message.receive(self.socket)
         
         if message.error:
             raise exceptions.CodeException("Error in worker: " + message.strings[0])

@@ -91,11 +91,11 @@ class FiFileFormatProcessor(base.FortranFileFormatProcessor):
         self.dark=core.Particles(self.ndm)
         self.star=core.Particles(self.nstar)
         
-        for name, typ, index, part, unit in variables:
+        for name, type, index, part, unit in variables:
             if self.phead[index - 1] == 1:
-                if typ == 'd':
+                if type == 'd':
                     tmp = self.read_fortran_block_doubles(file)
-                if typ == 'i':        
+                if type == 'i':        
                     tmp = self.read_fortran_block_ints(file)
 # special cases:
             if index == 14:

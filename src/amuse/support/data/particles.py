@@ -199,8 +199,8 @@ class AbstractParticleSet(AbstractSet):
             return Particle(self.get_all_keys_in_store()[index], self._original_set())
     
     def get_all_particles_at(self, *indices):
-        allkeys = self.get_all_keys_in_store()
-        selectedkeyes = [allkeys[x] for x in indices]
+        all_keys = self.get_all_keys_in_store()
+        selectedkeyes = [all_keys[x] for x in indices]
         return self._subset(selectedkeyes)
         
     def __str__(self):
@@ -1003,16 +1003,16 @@ class ParticlesSuperset(AbstractParticleSet):
         self._private.particle_sets = particle_sets
         self._private.index_to_default_set = index_to_default_set
         
-        keysinallsubsets = None
+        keys_in_all_subsets = None
         for subset in particle_sets:
             derivedattribute_keys = set(subset._derived_attributes.keys())
-            if keysinallsubsets is None:
-                keysinallsubsets = set(derivedattribute_keys)
+            if keys_in_all_subsets is None:
+                keys_in_all_subsets = set(derivedattribute_keys)
             else:
-                keysinallsubsets &= derivedattribute_keys
+                keys_in_all_subsets &= derivedattribute_keys
         
-        keysinallsubsets -= set(self.GLOBAL_DERIVED_ATTRIBUTES.keys())
-        for key in keysinallsubsets:
+        keys_in_all_subsets -= set(self.GLOBAL_DERIVED_ATTRIBUTES.keys())
+        for key in keys_in_all_subsets:
             self._derived_attributes[key] = DerivedSupersetAttribute(key)
         
         if self.has_duplicates():
@@ -1183,12 +1183,12 @@ class ParticlesSuperset(AbstractParticleSet):
         sar = ar[order]
         equal_adj = (sar[1:] == sar[:-1])
         flag = numpy.concatenate( (equal_adj, [False] ) )
-        indx = order.argsort(kind='mergesort')[:len( ar1 )]
+        index = order.argsort(kind='mergesort')[:len( ar1 )]
     
         if assume_unique:
-            return flag[indx]
+            return flag[index]
         else:
-            return flag[indx][rev_idx]
+            return flag[index][rev_idx]
     
     
 class ParticlesSubset(AbstractParticleSet):

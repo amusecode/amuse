@@ -42,7 +42,7 @@ class Hydrodynamics(Domain):
     density = 0.0 | si.kg / (si.m ** 3), "the density of molecules or solid matter"
     temperature = 0.0 | si.K, "the temperature of the gas"
     magnetic_field = 0.0 | units.tesla, "magnetic field created by gas and stars"
-    velovity_field = 0.0 | si.m / si.s, "velocity of the gas"
+    velocity_field = 0.0 | si.m / si.s, "velocity of the gas"
     gravity_potential = 0.0 | si.no_unit, "gravity forces from stars and gas"
     viscosity = 0.0 | si.no_unit, "viscosity of the gas cloud"
     
@@ -52,7 +52,7 @@ class RadiativeTransfer(Domain):
     temperature_background = 0.0 | si.K, "the temperature of the background"
     density = 0.0 | si.mol / (si.m**3), "modulecular density"
     magnetic_field = 0.0 | units.tesla, "magnetic field created by gas and stars"
-    velovity_field = 0.0 | si.m / si.s, "velocity of the gas"
+    velocity_field = 0.0 | si.m / si.s, "velocity of the gas"
     
     
     

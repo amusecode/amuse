@@ -38,7 +38,7 @@ starlab_stellar_types_to_amuse_stellar_type = {
 
 class Dyn2Xml(object):
     
-    def convert_startlab_string_to_xml_string(self, string):
+    def convert_starlab_string_to_xml_string(self, string):
         xml_lines = ['<?xml version="1.0"?>\n<System>']
         
         openpar  = 0
@@ -72,7 +72,7 @@ class Dyn2Xml(object):
         with open(inputfile,'r') as f:
             string = f.read()
         
-        return self.convert_startlab_string_to_xml_string(string)
+        return self.convert_starlab_string_to_xml_string(string)
             
     def convert_storyline(self, line):
         if "===>" in line or line.startswith("       "):
@@ -159,12 +159,12 @@ class Xml2Particles(object):
         
     def convert2vec(self, attribute):
         
-        maybe_vec = attribute.split()
+        vector_or_scalar = attribute.split()
 
-        if len(maybe_vec)>1:
-            barout = [float(f) for f in maybe_vec]
+        if len(vector_or_scalar)>1:
+            barout = [float(f) for f in vector_or_scalar]
         else:
-            barout = float(maybe_vec[0])
+            barout = float(vector_or_scalar[0])
         return barout
 
     def walk_me(self, SCL):
@@ -344,7 +344,7 @@ class StarlabFileFormatProcessor(base.FullTextFileFormatProcessor):
         
     def load_string(self, string):
         x = Dyn2Xml()
-        xml_string = x.convert_startlab_string_to_xml_string(string)
+        xml_string = x.convert_starlab_string_to_xml_string(string)
         xml2particles = Xml2Particles()
         xml2particles.dynamics_mass_units = self.dynamics_mass_units
         xml2particles.dynamics_time_units = self.dynamics_time_units

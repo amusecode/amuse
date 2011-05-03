@@ -434,7 +434,7 @@ class OrderedSet(collections.MutableSet):
             
     def __init__(self, iterable=None):
         self.end = self.Node(None, None, None)
-        self.end.prev = self.end
+        self.end.previous = self.end
         self.end.next = self.end
         self.map = {}
         if iterable is not None:

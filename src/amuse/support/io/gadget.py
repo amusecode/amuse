@@ -104,7 +104,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         return sum(self.header_struct.Npart)
         
     @late
-    def total_number_of_particles_with_vairable_masses(self):
+    def total_number_of_particles_with_variable_masses(self):
         result = 0
         for x, n in zip(self.header_struct.Massarr, self.header_struct.Npart):
             if x == 0.0:
@@ -136,7 +136,7 @@ class GadgetFileFormatProcessor(base.FortranFileFormatProcessor):
         self.velocities = self.read_fortran_block_float_vectors(file)
         self.ids = self.read_fortran_block_uints(file)
     
-        if self.total_number_of_particles_with_vairable_masses > 0:
+        if self.total_number_of_particles_with_variable_masses > 0:
             self.masses = self.read_fortran_block_floats(file)
         else:
             self.masses = None

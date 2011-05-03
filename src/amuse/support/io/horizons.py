@@ -38,18 +38,18 @@ class LoadStar(object):
             #http://ssd.jpl.nasa.gov/?horizons_doc#time
             rs = M[i+1].split(' ')
             vs = M[i+2].split(' ')
-            foor = []
-            foov = []
+            input_radii = []
+            input_velocities = []
             for j, n in enumerate(rs):
                 if not n == '':
-                    foor.append(float(n))
+                    input_radii.append(float(n))
             for j, n in enumerate(vs):
                 if not n == '':
-                    foov.append(float(n))
+                    input_velocities.append(float(n))
             
                     
-            r.append([foor[0], foor[1], foor[2]])
-            v.append([foov[0], foov[1], foov[2]])
+            r.append([input_radii[0], input_radii[1], input_radii[2]])
+            v.append([input_velocities[0], input_velocities[1], input_velocities[2]])
             
         self.ordinal = julian_day
         self.r = r

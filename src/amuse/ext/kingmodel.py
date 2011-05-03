@@ -25,7 +25,7 @@ class MakeKingModel(object):
         self.NM = 2500
         self.rr=[]; self.d=[]; self.v2=[]; self.psi=[]; self.zm=[]
         self.NINDX = 100
-        self.indx=[]
+        self.index=[]
         
         numpy.random.seed(seed)
         
@@ -306,7 +306,7 @@ class MakeKingModel(object):
         rno = numpy.random.uniform()
         i = int(self.NINDX * rno)
         found_index = False
-        for i1 in range(self.indx[i],self.indx[i+1]+2): #(i1 = self.indx[i]; i1 <= indx[i+1]+1; i1++)
+        for i1 in range(self.index[i],self.index[i+1]+2): #(i1 = self.indx[i]; i1 <= indx[i+1]+1; i1++)
             if (self.zm[i1] > rno):
                 found_index = True
                 break
@@ -398,17 +398,17 @@ class MakeKingModel(object):
         
         #    // By construction, rr[indx[j]] and rr[indx[j+1]] bracket the
         #    // radius containing a fraction j / NINDX of the total mass.
-        self.indx.append(0)
+        self.index.append(0)
         dz = 1.0/self.NINDX
         z = dz
         for j in range(1,nprof):
             if (rr[j] < 1): jcore = j
             if (zm[j] < 0.5): jhalf = j
             if (zm[j] > z):
-                self.indx.append(j - 1)
+                self.index.append(j - 1)
                 z = z + dz
-        self.indx.append(nprof)
-        if not (len(self.indx)==self.NINDX+1):
+        self.index.append(nprof)
+        if not (len(self.index)==self.NINDX+1):
             raise exceptions.AmuseException("Error in length of indx")
         zmcore = zm[jcore] + (zm[jcore+1] - zm[jcore]) * (1 - 
             rr[jcore]) / (rr[jcore+1] - rr[jcore])

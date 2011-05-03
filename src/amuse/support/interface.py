@@ -715,7 +715,7 @@ class HandleErrorCodes(HandleCodeInterfaceAttributeAccess):
         object.define_errorcodes(self)
 
 
-class AbstracParticleSetDefinition(object):
+class AbstractParticleSetDefinition(object):
     
     def set_new(self, name_of_new_particle_method, names = None):
         self.new_particle_method = (name_of_new_particle_method, names)
@@ -764,7 +764,7 @@ class AbstracParticleSetDefinition(object):
     
 
     
-class ParticleSetDefinition(AbstracParticleSetDefinition):
+class ParticleSetDefinition(AbstractParticleSetDefinition):
 
     def __init__(self, handler):
         self.handler = handler
@@ -883,7 +883,7 @@ class ParticleSetDefinition(AbstracParticleSetDefinition):
         return results
     
     
-class ParticleSupersetDefinition(AbstracParticleSetDefinition):
+class ParticleSupersetDefinition(AbstractParticleSetDefinition):
 
     def __init__(self, handler, particle_subset_names, index_to_default_set=None):
         self.handler = handler
@@ -900,7 +900,7 @@ class ParticleSupersetDefinition(AbstracParticleSetDefinition):
             index_to_default_set=self.index_to_default_set
         )
     
-class GridDefinition(AbstracParticleSetDefinition):
+class GridDefinition(AbstractParticleSetDefinition):
 
     def __init__(self, handler):
         self.handler = handler
