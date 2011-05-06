@@ -8,7 +8,7 @@ from amuse.support import exceptions
 from amuse.support.codes.core import legacy_function, LegacyFunctionSpecification
 from amuse.community.interface import common
 
-class StellarEvolution(common.CommonCodeInterface):
+class StellarEvolutionInterface(common.CommonCodeInterface):
 
 
     @legacy_function   
@@ -231,22 +231,6 @@ class StellarEvolution(common.CommonCodeInterface):
         """
         return function
         
-        
-    @legacy_function
-    def initialize_code():
-        """
-        Let the code perform initialization actions after all parameters have been set.
-        """
-        function = LegacyFunctionSpecification()  
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Code is initialized
-         -1 - ERROR
-            Error happened during initialization, this error needs to be further specified by every code implemention 
-        """
-        return function  
-        
     
     @legacy_function
     def get_metallicity():
@@ -302,6 +286,52 @@ class StellarEvolution(common.CommonCodeInterface):
         """
         return function  
     
+    @legacy_function
+    def recommit_particles():
+        """
+        Let the code perform reinitialization actions after additional particles 
+        have been added or removed. Not every code needs this functionality, and 
+        it may be possible to create stars after this function has been called.
+        """
+        function = LegacyFunctionSpecification()  
+        function.result_type = 'int32'
+        return function  
+    
+    def invoke_state_change2(self):
+        pass
+    
+    def synchronize_model(self):
+        pass
+    
+
+
+class StellarEvolution(common.CommonCode):
+    
+    def define_state(self, object):
+        common.CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','EDIT','commit_parameters')
+        object.add_transition('RUN','PARAMETER_CHANGE_A','invoke_state_change2')
+        object.add_transition('EDIT','PARAMETER_CHANGE_B','invoke_state_change2')
+        object.add_transition('PARAMETER_CHANGE_A','RUN','recommit_parameters')
+        object.add_transition('PARAMETER_CHANGE_B','EDIT','recommit_parameters')
+        object.add_method('EDIT', 'new_particle')
+        object.add_method('EDIT', 'delete_star')
+        object.add_method('UPDATE', 'new_particle')
+        object.add_method('UPDATE', 'delete_star')
+        object.add_transition('EDIT', 'RUN', 'commit_particles')
+        object.add_transition('RUN', 'UPDATE', 'new_particle', False)
+        object.add_transition('RUN', 'UPDATE', 'delete_star', False)
+        object.add_transition('UPDATE', 'RUN', 'recommit_particles')
+        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
+        object.add_method('EVOLVED', 'evolve_model')
+        object.add_transition('EVOLVED','RUN', 'synchronize_model')
+        object.add_method('RUN', 'synchronize_model')
+        object.add_method('RUN', 'get_age')
+        object.add_method('RUN', 'get_mass')
+        object.add_method('RUN', 'get_luminosity')
+        object.add_method('RUN', 'get_radius')
+        object.add_method('RUN', 'get_stellar_type')
+        object.add_method('RUN', 'get_temperature')
 
 
 class InternalStellarStructureInterface(object): 

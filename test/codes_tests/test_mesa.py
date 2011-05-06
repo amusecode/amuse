@@ -804,5 +804,48 @@ class TestMESA(TestWithMPI):
         self.assertAlmostRelativeEqual(stars[2].wind, 2.0 * stars[1].wind, places = 7)
         instance.stop()
     
+    def test15(self):
+        print "Testing MESA states"
+        stars = Particles(2)
+        stars.mass = 1.0 | units.MSun
+        instance = self.new_instance(MESA)
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        
+        print "First do everything manually:"
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.particles.add_particle(stars[0])
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        mass = instance.particles[0].mass
+        instance.evolve_model()
+#        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        instance.cleanup_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        instance.stop()
+
+        print "commit_parameters(), (re)commit_particles(), and cleanup_code() should be called " \
+            "automatically before new_xx_particle(), get_xx(), and stop():"
+        instance = MESA()
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.particles.add_particle(stars[0])
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.particles.add_particle(stars[1])
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.evolve_model()
+#        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
+        instance.stop()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
 
 

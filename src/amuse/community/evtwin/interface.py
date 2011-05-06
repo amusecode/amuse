@@ -1,14 +1,14 @@
 from operator import itemgetter
 from amuse.community import *
-from amuse.community.interface.se import StellarEvolution, InternalStellarStructure, \
-    InternalStellarStructureInterface
+from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
+    InternalStellarStructure, InternalStellarStructureInterface
 
 from amuse.support.interface import InCodeComponentImplementation
 from amuse.support.options import OptionalAttributes, option
 
 import os
 
-class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution, 
+class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
         InternalStellarStructureInterface):
     """
     Evtwin is based on Peter Eggleton's stellar evolution code, and solves 
@@ -693,7 +693,7 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
     
 
 
-class EVtwin(InCodeComponentImplementation, InternalStellarStructure):
+class EVtwin(StellarEvolution, InternalStellarStructure):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, EVtwinInterface(**options), **options)

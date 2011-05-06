@@ -196,6 +196,13 @@
       commit_particles = 0
    end function
 
+! Does nothing...
+   function recommit_particles()
+      implicit none
+      integer :: recommit_particles
+      recommit_particles = 0
+   end function
+
 ! Get/setters for code parameters:
 
 ! Return the number of particles currently allocated in the code

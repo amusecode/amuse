@@ -3,12 +3,12 @@ import numpy
 from operator import itemgetter
 from amuse.support.data.values import VectorQuantity
 from amuse.community import *
-from amuse.community.interface.se import StellarEvolution, \
-    InternalStellarStructureInterface, InternalStellarStructure
+from amuse.community.interface.se import StellarEvolution, StellarEvolutionInterface, \
+    InternalStellarStructure, InternalStellarStructureInterface
 
 from amuse.support.interface import InCodeComponentImplementation
 
-class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution, 
+class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionInterface, 
         InternalStellarStructureInterface): 
     """
     The software project MESA (Modules for Experiments in Stellar Astrophysics, 
@@ -714,7 +714,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution,
         function.result_type = 'int32'
         return function
 
-class MESA(InCodeComponentImplementation, InternalStellarStructure):
+class MESA(StellarEvolution, InternalStellarStructure):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, MESAInterface(**options), **options)

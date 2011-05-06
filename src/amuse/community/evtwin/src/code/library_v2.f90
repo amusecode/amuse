@@ -1283,6 +1283,13 @@ contains
       integer :: commit_particles
       commit_particles = 0
    end function
+
+! Reinitialize the stars (does nothing)
+   function recommit_particles()
+      implicit none
+      integer :: recommit_particles
+      recommit_particles = 0
+   end function
    
    
 
