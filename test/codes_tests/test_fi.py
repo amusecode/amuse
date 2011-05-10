@@ -609,7 +609,7 @@ class TestFi(TestWithMPI):
         instance.cleanup_code()
         instance.stop()
     
-    def xtest11(self):
+    def test11(self):
         print "Test 11: testing Fi (dm+sph+star) particles Superset"
         target_number_of_particles = 100
         gas = new_evrard_gas_sphere(target_number_of_particles, do_scale=True, seed = 1234)

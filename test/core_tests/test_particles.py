@@ -872,7 +872,9 @@ class TestAddParticles(amusetest.TestCase):
         for x in [particle, set3, superset2]:
             supersuperset = core.ParticlesSuperset([superset1, x.as_set()])
             self.assertTrue(isinstance(supersuperset, core.ParticlesSuperset))
-            self.assertEqual(len(supersuperset),len(superset1)+numpy.size(x.key))
+            self.assertEqual(len(supersuperset),len(superset1)+len(x.as_set()))
+            supersuperset.mass = 1 | units.kg
+            self.assertEqual(x.mass, 1 | units.kg)
     
     def test6(self):
         print "Test6: check if the particle belongs to the same particle set as self."
