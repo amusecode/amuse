@@ -11,7 +11,8 @@ except ImportError:
         ylabel = stub
             
     native_plot = FakePlotLibrary()
-    
+
+import numpy    
 from amuse.support.units import units
 from amuse.support.data import values
 
@@ -98,6 +99,51 @@ def ylabel(s, *args, **kwargs):
     if not '[' in s:
         s = custom_label.format(s, UnitlessArgs.unitnames_of_args[1])
     native_plot.ylabel(s, *args, **kwargs)
+
+def _smart_length_units_for_vector_quantity(quantity):
+    length_units = [units.Mpc, units.kpc, units.parsec, units.AU, units.RSun, units.km]
+    total_size = max(quantity) - min(quantity)
+    for length_unit in length_units:
+        if total_size > (1 | length_unit):
+            return length_unit
+    return units.m
+
+def sph_particles_plot(particles, u_range = None):
+    """
+    Very simple and fast procedure to make a plot of the hydrodynamics state of 
+    a set of SPH particles. The particles must have the following attributes defined: 
+    position, u, h_smooth.
+    For a more accurate plotting procedure, see for example:
+    examples/applications/christmas_card_2010.py
+    """
+    positions = particles.position
+    us        = particles.u
+    h_smooths = particles.h_smooth
+    x, y, z = positions.x, positions.y, positions.z
+    z, x, y, us, h_smooths = z.sorted_with(x, y, us, h_smooths)
+    
+    if u_range:
+        u_min, u_max = u_range
+    else:
+        u_min, u_max = min(us), max(us)
+    log_u = numpy.log((us / u_min).value_in(units.none)) / numpy.log((u_max / u_min).value_in(units.none))
+    clipped_log_u = numpy.minimum(numpy.ones_like(log_u), numpy.maximum(numpy.zeros_like(log_u), log_u))
+    
+    red   = 1.0 - clipped_log_u**4
+    blue  = clipped_log_u**4
+    green = numpy.minimum(red, blue)
+    
+    colors = numpy.transpose(numpy.array([red, green, blue]))
+    n_pixels = native_plot.gcf().get_dpi() * native_plot.gcf().get_size_inches()
+    sizes = n_pixels[0]*n_pixels[1] * ((3 * h_smooths / ((max(x)-min(x)) + (max(y)-min(y)) + (max(z)-min(z))))**2).value_in(units.none)
+    current_axes = native_plot.gca()
+    current_axes.set_axis_bgcolor('#101010')
+    current_axes.set_aspect("equal", adjustable = "datalim")
+    x = x.as_quantity_in(_smart_length_units_for_vector_quantity(x))
+    y = y.as_quantity_in(_smart_length_units_for_vector_quantity(x))
+    scatter(x, y, sizes, colors, edgecolors = "none", alpha = 0.02)
+    xlabel('x')
+    ylabel('y')
 
 if __name__ == '__main__':
     import numpy as np
