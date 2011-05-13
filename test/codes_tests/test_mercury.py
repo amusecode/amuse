@@ -7,7 +7,7 @@ from amuse.community.mercury.interface import MercuryInterface, MercuryWayWard
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.ext import plummer
+from amuse.ext import plummer, solarsystem
 
 DUMMYID=0
 
@@ -225,5 +225,23 @@ class TestMercury(TestWithMPI):
         mercury.evolve_model(365|units.day)
         self.assertAlmostEqual(mercury.orbiters.position, [[1.0, 0.0, 0.0]] | units.AU, 1)
         self.assertAlmostEqual(mercury.kinetic_energy+mercury.potential_energy,mercury.total_energy,3)
+
+        mercury.stop()
+
+    def test1(self):
+        s = solarsystem.solarsystem()
+        centre, orbiters = s.new_solarsystem()
+
+        mercury = MercuryWayWard()
+        mercury.initialize_code()
+        mercury.commit_parameters()
+        mercury.central_particle.add_particles(centre)
+        channel=centre.new_channel_to(mercury.central_particle)
+        channel.copy()
+        mercury.orbiters.add_particles(orbiters)
+        mercury.commit_particles()
+        start_pos = mercury.orbiters[2].position
+        mercury.evolve_model(365|units.day)
+        self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
 
         mercury.stop()

@@ -86,7 +86,7 @@ def planetplot():
     pyplot.savefig('solarsytem.png')
 
 def energyplot():
-    instance=Mercury()
+    instance=MercuryInterface()
     instance.initialize_code()
     for x in solarsystem:
         pid,err=instance.new_orbiter(x[1],x[3],  
@@ -118,4 +118,5 @@ def energyplot():
   
 if __name__=='__main__':
     print "this may take a while.."
+    #planetplot()
     energyplot()

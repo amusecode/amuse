@@ -333,7 +333,7 @@ class VectorQuantity(Quantity):
         return new_quantity(self.number.sum(axis, dtype, out), self.unit)
         
     def prod(self, axis=None, dtype=None):
-        """Calculate the sum of the vector components
+        """Calculate the product of the vector components
 
         >>> from amuse.support.units import units
         >>> v1 = [1.0, 2.0, 3.0] | units.m

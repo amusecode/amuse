@@ -16,7 +16,7 @@ from amuse.support.codes import channel
 class TestFiInterface(TestWithMPI):
 
     def test1(self):
-        instance=FiInterface()
+        instance=FiInterface(debugger = "xterm")
         instance.initialize_code()
         instance.stop()
     
@@ -76,7 +76,7 @@ class TestFiInterface(TestWithMPI):
         instance.stop()
     
     def test3(self):
-        instance=FiInterface()
+        instance=FiInterface(redirection="none")
         instance.initialize_code()
         instance.commit_parameters()        
         instance.new_particle(11.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)

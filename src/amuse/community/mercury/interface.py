@@ -98,7 +98,7 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
@@ -416,6 +416,13 @@ class MercuryWayWard(GravitationalDynamics):
             convert_nbody,
             **options
         )
+
+    def define_state(self, object):
+        #object.set_initial_state('UNINITIALIZED')
+        #object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
+        #object.add_method('INITIALIZED', 'invoke_state_change')
+        object.add_transition_to_method('END', 'cleanup_code')
+        object.add_method('END', 'stop')
 
     def define_parameters(self, object):
         object.add_method_parameter(
