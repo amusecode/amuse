@@ -52,8 +52,7 @@ class solarsystem(object):
         planets = core.Particles(9)
         for i, d in enumerate(solsysdat):
             planets[i].mass = d[1] | units.MSun
-            planets[i].radius = 1e-12 | units.AU #dummy
-            planets[i].density = d[3] | units.g/units.cm**3
+            planets[i].radius = d[3] | units.g/units.cm**3#1e-12 | units.AU #dummy
             planets[i].x = d[4] | units.AU
             planets[i].y = d[5] | units.AU
             planets[i].z = d[6] | units.AU

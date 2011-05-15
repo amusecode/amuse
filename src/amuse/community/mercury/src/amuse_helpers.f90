@@ -322,6 +322,7 @@ function add_particle(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
   id_searcheable=.FALSE.  
   id_=new_id()
   nbod=nbod+1
+  write(6,*) " in add particle", id_, nbod
   if(nbod.GT.NMAX) then
     ret=-1
     return
@@ -351,7 +352,7 @@ function add_particle(id_,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
   rceh(index)=celimit
   epoch(index)=time
   ngf(1:4,index)=0.
-
+  write(6,*) x,y,z,vx,vy,vz
   ret=0
 end function
 

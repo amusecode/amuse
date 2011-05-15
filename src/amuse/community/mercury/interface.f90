@@ -62,6 +62,7 @@ function new_orbiter(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
   integer :: ret,id
   real*8 :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
   ret=add_particle(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit)
+  write(6,*) "was in new orbiter", id
 end function  
 
 function new_central_particle(id,mass,radius,j2,j4,j6,Lx,Ly,Lz) result(ret)
@@ -71,6 +72,7 @@ function new_central_particle(id,mass,radius,j2,j4,j6,Lx,Ly,Lz) result(ret)
   oblateness(1)=j2;oblateness(2)=j4;oblateness(3)=j6
   spin(1)=Lx;spin(2)=Ly;spin(3)=Lz
   ret=set_central_body(mass=mass, radius=radius, oblateness=oblateness,spin=spin)
+  write(6,*) "was in new_central_particle"
 end function  
 
 function get_orbiter_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
@@ -86,7 +88,26 @@ function set_orbiter_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(
   integer :: ret,id
   real*8 :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
   ret=set_particle_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit)
+  write(6,*) "in set orbiter state", id
   if(id.EQ.1) ret=1
+end function
+
+function set_central_particle_state(id,mass,radius,j2,j4,j6,Lx,Ly,Lz) result(ret)
+  use amuse_mercuryMod
+  integer :: ret,id
+  real*8 :: mass, radius, oblateness(3), spin(3)
+  oblateness(1)=j2;oblateness(2)=j4;oblateness(3)=j6
+  spin(1)=Lx;spin(2)=Ly;spin(3)=Lz
+  ret=set_central_body(mass=mass, radius=radius, oblateness=oblateness,spin=spin)
+end function
+
+function get_central_particle_state(id,mass,radius,j2,j4,j6,Lx,Ly,Lz) result(ret)
+  use amuse_mercuryMod
+  integer :: ret,id
+  real*8 :: mass, radius, oblateness(3), spin(3)
+  oblateness(1)=j2;oblateness(2)=j4;oblateness(3)=j6
+  spin(1)=Lx;spin(2)=Ly;spin(3)=Lz
+  ret=get_central_body(mass=mass, radius=radius, oblateness=oblateness,spin=spin)
 end function
 
 function get_position(id, x, y, z) result(ret)
@@ -123,14 +144,14 @@ function delete_particle(id) result(ret)
   ret=remove_particle(id)
 end function  
 
-function set_density(id, density) result(ret)
+function set_radius(id, density) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: density
   ret=set_particle_state(id, dens=density)
 end function
 
-function get_density(id, density) result(ret)
+function get_radius(id, density) result(ret)
   use amuse_mercuryMod
   integer :: ret, id
   real*8 :: density

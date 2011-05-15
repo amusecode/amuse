@@ -17,7 +17,7 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-class TestMPIInterface(TestWithMPI):
+class TestMercuryInterface(TestWithMPI):
 
     def test1(self):
         instance=MercuryInterface()  
@@ -191,10 +191,10 @@ class TestMPIInterface(TestWithMPI):
         instance.stop()
 
 class TestMercury(TestWithMPI):
-    def test0(self):
+    def xtest0(self):
         orbiter = core.Particles(1)
         orbiter.mass = 5.97e24 | units.kg
-        orbiter.density = 1.0|units.g/units.cm**3
+        orbiter.radius = 1.0|units.g/units.cm**3
         orbiter.position = [1.0,0.0,0.0] | units.AU
         orbiter.velocity = [0.0, 2.0*3.1415926535*1.0/365, 0.0] | units.AUd
         orbiter.angularmomentum = [1.0,0,0] | units.MSun * units.AU**2/units.day
@@ -209,26 +209,34 @@ class TestMercury(TestWithMPI):
         
         centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
 
-        mercury = MercuryWayWard()
+        mercury = MercuryWayWard(debugger='xterm')
         mercury.initialize_code()
         mercury.commit_parameters()
+
         mercury.central_particle.add_particles(centre)
-        channel=centre.new_channel_to(mercury.central_particle)
-        channel.copy()
         mercury.orbiters.add_particles(orbiter)
         mercury.commit_particles()
+
         self.assertAlmostEqual(mercury.central_particle.j4, .0|units.AU**4)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.98892e+30 |units.kg, 3)
         self.assertAlmostEqual(mercury.central_particle.mass, 1.0 |units.MSun, 3)
         self.assertEquals(mercury.get_number_of_orbiters()['norbiters'],1)
+        self.assertEquals(mercury.orbiters.position, [[1,0,0]] | units.AU)
+        self.assertEquals(mercury.orbiters.radius, 1.0|units.g/units.cm**3 )
         self.assertEquals(mercury.orbiters.angularmomentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
-        mercury.evolve_model(365|units.day)
+
+        #channel=centre.new_channel_to(mercury.central_particle)
+        #channel.copy()
+
+        mercury.evolve_model(5 | units.day)
+        import pdb; pdb.set_trace()
+
         self.assertAlmostEqual(mercury.orbiters.position, [[1.0, 0.0, 0.0]] | units.AU, 1)
         self.assertAlmostEqual(mercury.kinetic_energy+mercury.potential_energy,mercury.total_energy,3)
 
         mercury.stop()
 
-    def test1(self):
+    def xtest1(self):
         s = solarsystem.solarsystem()
         centre, orbiters = s.new_solarsystem()
 
@@ -242,6 +250,7 @@ class TestMercury(TestWithMPI):
         mercury.commit_particles()
         start_pos = mercury.orbiters[2].position
         mercury.evolve_model(365|units.day)
+        import pdb; pdb.set_trace()
         self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
 
         mercury.stop()

@@ -78,7 +78,7 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.OUT)
-        for x in ['mass','density','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
+        for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
@@ -110,6 +110,26 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function.addParameter('id', dtype='i', direction=function.IN)
         for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
             function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def set_central_particle_state():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['mass','radius','j2','j4','j6','Lx','Ly','Lz']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_central_particle_state():
+        function = LegacyFunctionSpecification()   
+        function.can_handle_array = True
+        function.addParameter('id', dtype='i', direction=function.IN)
+        for x in ['mass','radius','j2','j4','j6','Lx','Ly','Lz']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 
@@ -186,20 +206,20 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         return function
 
     @legacy_function    
-    def get_density():
+    def get_radius():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('density', dtype='d', direction=function.OUT)
+        function.addParameter('radius', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
 
     @legacy_function    
-    def set_density():
+    def set_radius():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
         function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('density', dtype='d', direction=function.IN)
+        function.addParameter('radius', dtype='d', direction=function.IN)
         function.result_type = 'i'
         return function
 
@@ -417,12 +437,6 @@ class MercuryWayWard(GravitationalDynamics):
             **options
         )
 
-    def define_state(self, object):
-        #object.set_initial_state('UNINITIALIZED')
-        #object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
-        #object.add_method('INITIALIZED', 'invoke_state_change')
-        object.add_transition_to_method('END', 'cleanup_code')
-        object.add_method('END', 'stop')
 
     def define_parameters(self, object):
         object.add_method_parameter(
@@ -444,11 +458,18 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_property("get_total_mass")
 
     def define_state(self, object):
-        GravitationalDynamics.define_state(self, object)
-        object.add_method('EDIT', 'new_central_particle')
-        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
-        object.add_method('EDIT', 'new_orbiter')
-        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
+        object.set_initial_state('UNINITIALIZED')
+        object.add_transition('UNINITIALIZED', 'INITIALIZED', 'initialize_code')
+        object.add_method('INITIALIZED', 'invoke_state_change')
+        object.add_transition_to_method('END', 'cleanup_code')
+        object.add_method('END', 'stop')
+
+#    def define_state(self, object):
+#        GravitationalDynamics.define_state(self, object)
+#        object.add_method('EDIT', 'new_central_particle')
+#        object.add_transition('RUN', 'UPDATE', 'new_central_particle', False)
+#        object.add_method('EDIT', 'new_orbiter')
+#        object.add_transition('RUN', 'UPDATE', 'new_orbiter', False)
 
     def define_particle_sets(self, object):
         object.define_super_set('particles', ['central_particle','orbiters'],
@@ -461,8 +482,8 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_getter('orbiters', 'get_orbiter_state') 
         object.add_setter('orbiters', 'set_mass')
         object.add_getter('orbiters', 'get_mass')
-        object.add_setter('orbiters', 'set_density')
-        object.add_getter('orbiters', 'get_density')
+        object.add_setter('orbiters', 'set_radius')
+        object.add_getter('orbiters', 'get_radius')
         object.add_setter('orbiters', 'set_position')
         object.add_getter('orbiters', 'get_position')
         object.add_setter('orbiters', 'set_velocity')
@@ -474,6 +495,8 @@ class MercuryWayWard(GravitationalDynamics):
 
         object.define_set('central_particle', 'id')
         object.set_new('central_particle', 'new_central_particle')
+        object.add_setter('central_particle', 'set_central_particle_state')
+        object.add_getter('central_particle', 'get_central_particle_state')
         object.add_setter('central_particle', 'set_central_mass')
         object.add_getter('central_particle', 'get_central_mass')
         object.add_setter('central_particle', 'set_central_radius')
@@ -521,7 +544,7 @@ class MercuryWayWard(GravitationalDynamics):
             ),
             (
                 units.MSun,
-                units.AU,
+                units.g/units.cm**3,
                 units.AU,
                 units.AU,
                 units.AU,
@@ -536,11 +559,29 @@ class MercuryWayWard(GravitationalDynamics):
             )
         )
         object.add_method(
+            'get_central_particle_state',
+            (
+                object.INDEX,
+            ),
+            (
+                units.MSun,
+                units.AU,
+                units.AU**2,
+                units.AU**4,
+                units.AU**6,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                object.ERROR_CODE
+            )
+        )
+
+        object.add_method(
             'set_orbiter_state',
             (
                 object.INDEX,
                 units.MSun,
-                units.AU,
+                units.g/units.cm**3,
                 units.AU,
                 units.AU,
                 units.AU,
@@ -566,13 +607,33 @@ class MercuryWayWard(GravitationalDynamics):
                 units.AU**6,
                 units.MSun * units.AU**2/units.day,
                 units.MSun * units.AU**2/units.day,
-                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day
             ),
             (
                 object.INDEX, 
                 object.ERROR_CODE
             )
         )
+        object.add_method(
+            'set_central_particle_state',
+            (
+                #'mass','radius','j2','j4','j6','Lx','Ly','Lz'
+                object.INDEX,
+                units.MSun,
+                units.AU,
+                units.AU**2,
+                units.AU**4,
+                units.AU**6,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day,
+                units.MSun * units.AU**2/units.day
+            ),
+            (
+                object.ERROR_CODE
+            )
+        )
+
+
         object.add_method(
             "set_mass",
             (
@@ -736,7 +797,7 @@ class MercuryWayWard(GravitationalDynamics):
         )
 
         object.add_method(
-            'set_density',
+            'set_radius',
             (
                 object.INDEX,
                 units.g/units.cm**3
@@ -746,7 +807,7 @@ class MercuryWayWard(GravitationalDynamics):
             )
         )    
         object.add_method(
-            'get_density',
+            'get_radius',
             (
                 object.INDEX,
             ),
