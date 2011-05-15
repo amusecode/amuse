@@ -614,10 +614,10 @@ class MercuryWayWard(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
+
         object.add_method(
             'set_central_particle_state',
             (
-                #'mass','radius','j2','j4','j6','Lx','Ly','Lz'
                 object.INDEX,
                 units.MSun,
                 units.AU,
@@ -632,7 +632,6 @@ class MercuryWayWard(GravitationalDynamics):
                 object.ERROR_CODE
             )
         )
-
 
         object.add_method(
             "set_mass",
