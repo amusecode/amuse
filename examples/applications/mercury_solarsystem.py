@@ -84,7 +84,7 @@ def planetplot():
     pyplot.xlim(-6.0, 6.0)
     pyplot.ylim(-6.0, 6.0)
     pyplot.savefig('solarsytem.png')
-
+    
 def energyplot():
     instance=MercuryInterface()
     instance.initialize_code()
@@ -118,5 +118,5 @@ def energyplot():
   
 if __name__=='__main__':
     print "this may take a while.."
-    #planetplot()
-    energyplot()
+    planetplot()
+    #energyplot()

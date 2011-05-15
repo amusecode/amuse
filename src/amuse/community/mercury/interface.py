@@ -77,10 +77,10 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
     def new_orbiter():
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.OUT)
+        function.addParameter('id', dtype='int32', direction=function.OUT)
         for x in ['mass','radius','x','y','z','vx','vy','vz','Lx','Ly','Lz','celimit']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.result_type = 'i'
+            function.addParameter(x, dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
         return function
 
     @legacy_function
@@ -864,12 +864,6 @@ class MercuryWayWard(GravitationalDynamics):
             "get_time",
             (),
             (units.s, object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            None,
-            (units.s, ),
-            (object.ERROR_CODE,)
         )
         
         object.add_method(

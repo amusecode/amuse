@@ -7,7 +7,7 @@ from amuse.support.core import CompositeDictionary
 from amuse.support import exceptions
 from amuse.support.data.base import *
 from amuse.support.data.memory_storage import *
-
+from amuse.support.data.values import AdaptingVectorQuantity
 import numpy
 
 
@@ -843,7 +843,15 @@ class Particles(AbstractParticleSet):
             if x.has_key_in_store(particle_key):
                 timeline.append((x._private.timestamp, x._get_value_of_attribute(particle_key, attribute)))
         return timeline
-                    
+
+    def get_timeline_of_attribute_as_vector(self, particle_key, attribute):
+        timeline = []
+        chrono_values = AdaptingVectorQuantity()
+        for x in self.history:
+            if x.has_key_in_store(particle_key):
+                timeline.append(x._private.timestamp)
+                chrono_values.append(x._get_value_of_attribute(particle_key, attribute))
+        return timeline, chrono_values
     
     def get_timeline_of_attributes(self, particle_key, attributes):
         result = map(lambda x: [], range(len(attributes)+1))
@@ -1654,7 +1662,10 @@ class Particle(object):
             
     def get_timeline_of_attribute(self, attribute):
         return self.particles_set.get_timeline_of_attribute(self.key, attribute)
-        
+
+    def get_timeline_of_attribute_as_vector(self, attribute):
+        return self.particles_set.get_timeline_of_attribute_as_vector(self.key, attribute)
+
     def get_timeline_of_attributes(self, attributes):
         return self.particles_set.get_timeline_of_attributes(self.key, attributes)
         

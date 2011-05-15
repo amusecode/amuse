@@ -115,6 +115,7 @@ end function
 function set_central_body(mass, radius, oblateness,spin) result(ret)
   integer :: ret
   real*8, optional :: mass, radius,oblateness(3),spin(3)
+  write(6,*) "setting central body", mass, radius
   if(present(mass)) then
     m(1)=mass*K2
   endif
@@ -293,6 +294,7 @@ function evolve_mercury(t_end) result(ret)
     ret=1
   endif  
   tstart=time
+  write(6,*) "evolving", time
 end function
 
 function new_id()

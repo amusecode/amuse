@@ -7,7 +7,8 @@ from amuse.community.mercury.interface import MercuryInterface, MercuryWayWard
 from amuse.support.data import core
 from amuse.support.units import nbody_system
 from amuse.support.units import units
-from amuse.ext import plummer, solarsystem
+from amuse.ext import plummer
+from amuse.ext.solarsystem import Solarsystem
 
 DUMMYID=0
 
@@ -191,7 +192,7 @@ class TestMercuryInterface(TestWithMPI):
         instance.stop()
 
 class TestMercury(TestWithMPI):
-    def xtest0(self):
+    def sun_and_earth(self):
         orbiter = core.Particles(1)
         orbiter.mass = 5.97e24 | units.kg
         orbiter.radius = 1.0|units.g/units.cm**3
@@ -202,17 +203,19 @@ class TestMercury(TestWithMPI):
         
         centre = core.Particles(1)
         centre.mass = 1.0 | units.MSun
-        centre.radius = 0.01 | units.AU
+        centre.radius = .0000001 | units.AU
         centre.j2 = .0001|units.AU**2
         centre.j4 = .0|units.AU**4
         centre.j6 = .0|units.AU**6
         
         centre.angularmomentum = [0.0, 0.0, 0.0] | units.MSun * units.AU**2/units.day
 
-        mercury = MercuryWayWard(debugger='xterm')
-        mercury.initialize_code()
-        mercury.commit_parameters()
+        return centre, orbiter
 
+    def test0(self):
+        centre, orbiter = self.sun_and_earth()
+        mercury = MercuryWayWard(redirection = "none")#,debugger='xterm')
+        mercury.initialize_code()
         mercury.central_particle.add_particles(centre)
         mercury.orbiters.add_particles(orbiter)
         mercury.commit_particles()
@@ -225,32 +228,25 @@ class TestMercury(TestWithMPI):
         self.assertEquals(mercury.orbiters.radius, 1.0|units.g/units.cm**3 )
         self.assertEquals(mercury.orbiters.angularmomentum, [[1.0, 0.0, 0.0]] | units.MSun*units.AU**2/units.day)
 
-        #channel=centre.new_channel_to(mercury.central_particle)
-        #channel.copy()
-
-        mercury.evolve_model(5 | units.day)
-        import pdb; pdb.set_trace()
+        mercury.evolve_model(365.24 | units.day)
 
         self.assertAlmostEqual(mercury.orbiters.position, [[1.0, 0.0, 0.0]] | units.AU, 1)
         self.assertAlmostEqual(mercury.kinetic_energy+mercury.potential_energy,mercury.total_energy,3)
 
         mercury.stop()
 
-    def xtest1(self):
-        s = solarsystem.solarsystem()
-        centre, orbiters = s.new_solarsystem()
+    def test1(self):
+        centre, orbiters = Solarsystem.new_solarsystem()
 
-        mercury = MercuryWayWard()
+        mercury = MercuryWayWard(redirection='none')
         mercury.initialize_code()
-        mercury.commit_parameters()
+
         mercury.central_particle.add_particles(centre)
-        channel=centre.new_channel_to(mercury.central_particle)
-        channel.copy()
         mercury.orbiters.add_particles(orbiters)
         mercury.commit_particles()
-        start_pos = mercury.orbiters[2].position
-        mercury.evolve_model(365|units.day)
-        import pdb; pdb.set_trace()
-        self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
 
+        start_pos = mercury.orbiters[2].position
+        import pdb;pdb.set_trace()
+        mercury.evolve_model(365.14|units.day)
+        self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
         mercury.stop()

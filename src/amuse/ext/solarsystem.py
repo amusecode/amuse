@@ -7,7 +7,7 @@ import numpy as np
 #mass, radius, x, y, z, vx, vy, vz, Lx, Ly, Lz, celimit
 
 solsysdat= \
-[['MERCURY',1.66013679527193009E-07,20.,5.43, \
+ [['MERCURY',1.66013679527193009E-07,20.,5.43, \
  -3.83966017419175965E-01, -1.76865300855700736E-01, 2.07959213998758705E-02, \
   5.96286238644834141E-03, -2.43281292146216750E-02,-2.53463209848734695E-03, \
   0., 0., 0.],
@@ -15,7 +15,7 @@ solsysdat= \
   6.33469157915745540E-01, 3.49855234102151691E-01,-3.17853172088953667E-02, \
  -9.84258038001823571E-03,  1.76183746921837227E-02, 8.08822351013463794E-04, \
   0., 0., 0.],
- ['EARTHMOO',3.04043264264672381E-06,20.,5.52, \
+  ['EARTHMOO',3.04043264264672381E-06,20.,5.52, \
   2.42093942183383037E-01, -9.87467766698604366E-01, -4.54276292555233496E-06, \
   1.64294055023289365E-02,  4.03200725816140870E-03,  1.13609607260006795E-08, \
   0., 0., 0.],
@@ -44,10 +44,11 @@ solsysdat= \
   2.97220056963797431E-03, -1.69820233395912967E-03, -6.76798264809371094E-04, \
   0., 0., 0.]]
 
-class solarsystem(object):
+class Solarsystem(object):
     def __init__(self):
         pass
 
+    @classmethod
     def new_solarsystem(self):
         planets = core.Particles(9)
         for i, d in enumerate(solsysdat):
@@ -66,7 +67,7 @@ class solarsystem(object):
 
         centre = core.Particles(1)
         centre.mass = 1.0 | units.MSun
-        centre.radius = 0.01 | units.AU
+        centre.radius = 0.0000001 | units.AU
         centre.j2 = .0001|units.AU**2
         centre.j4 = .0|units.AU**4
         centre.j6 = .0|units.AU**6
