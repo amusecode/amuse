@@ -16,7 +16,7 @@ from amuse.support.codes import channel
 class TestFiInterface(TestWithMPI):
 
     def test1(self):
-        instance=FiInterface(debugger = "xterm")
+        instance=FiInterface()
         instance.initialize_code()
         instance.stop()
     
