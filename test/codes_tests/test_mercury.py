@@ -55,7 +55,7 @@ class TestMercuryInterface(TestWithMPI):
     def test5(self):
         instance=MercuryInterface()
         instance.initialize_code()  
-        instance.set_central_mass(DUMMYID,2.0)
+        instance.set_central_mass(DUMMYID, 2.0)
         instance.set_central_radius(DUMMYID,0.0625)
         instance.set_central_oblateness(DUMMYID,0.001,0.002,0.003)
         instance.set_central_spin(DUMMYID,-0.1,-0.2,-0.3)

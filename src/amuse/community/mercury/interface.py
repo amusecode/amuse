@@ -66,6 +66,20 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         function.result_type = 'i'
         return function
 
+    @legacy_function    
+    def set_initial_timestep():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time', dtype='d', direction=function.IN)
+        function.result_type = 'i'
+        return function
+
+    @legacy_function    
+    def get_initial_timestep():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('time', dtype='d', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
     @legacy_function          
     def delete_particle():
         function = LegacyFunctionSpecification()  
@@ -272,9 +286,9 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
     def set_central_mass():
         function = LegacyFunctionSpecification()   
         function.can_handle_array = True
-        function.addParameter('id', dtype='i', direction=function.IN)
-        function.addParameter('mass', dtype='d', direction=function.IN)
-        function.result_type = 'i'
+        function.addParameter('id', dtype='int32', direction=function.IN)
+        function.addParameter('mass', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
         return function
 
     @legacy_function    
@@ -443,6 +457,15 @@ class MercuryWayWard(GravitationalDynamics):
             "get_time",
             None,
             "time",
+            "current simulation time", 
+            default_value = 0.0 | units.s
+        )
+
+    def define_parameters(self, object):
+        object.add_method_parameter(
+            "set_initial_timestep",
+            "get_initial_timestep",
+            "timestep",
             "current simulation time", 
             default_value = 0.0 | units.s
         )
@@ -903,3 +926,4 @@ class MercuryWayWard(GravitationalDynamics):
         )
         
         self.stopping_conditions.define_methods(object)
+ 

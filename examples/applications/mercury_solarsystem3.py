@@ -13,8 +13,8 @@ except ImportError:
 
 def planetplot():
     sun, planets = Solarsystem.new_solarsystem()
-    timerange = units.day(numpy.arange(0, 500000 * 365.25, 500000))
-
+    timerange = units.day(numpy.arange(0, 50000 * 365.25, 50))
+    t_end = timerange[-1]
     gd = MercuryWayWard()
     gd.initialize_code()
     gd.central_particle.add_particles(sun)
@@ -27,15 +27,20 @@ def planetplot():
     se.parameters.reimers_wind_efficiency = 1.0e6 # ridiculous, but instructive
     se.particles.add_particles(sun)
 
-    channels = gd.orbiters.new_channel_to(planets)
+    channelp = gd.orbiters.new_channel_to(planets)
+    channels = se.particles.new_channel_to(sun)
 
     for time in timerange:
-        print time
         err = gd.evolve_model(time)
-        err = se.evolve_model(time)
-        channels.copy()
+        channelp.copy()
         planets.savepoint(time)
-
+        
+        if (time.number % 100000==0):
+            err = se.evolve_model(time+(5e7|units.day))
+            channels.copy()
+            gd.central_particle.mass = sun.mass
+            sun.savepoint(time)
+            print("\r {0} %%done".format(time/t_end * 100.0))
     gd.stop()
 
     for planet in planets:

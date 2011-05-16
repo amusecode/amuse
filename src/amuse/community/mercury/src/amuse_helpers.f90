@@ -16,9 +16,9 @@ module amuse_mercuryMod
     get_spin_src, set_spin_src, &
     get_mass_src, set_mass_src, &
     energy_angular_momentum_deviation, total_energy_angular_momentum, &
-    mercury_time
-
-  public :: set_central_body,get_central_body
+    set_initial_timestep_src, &
+    get_initial_timestep_src, &
+    mercury_time,set_central_body,get_central_body
 
   include 'amuse_mercury.inc'
 
@@ -99,6 +99,25 @@ function mercury_init() result(ret)
 
 end function
 
+function set_initial_timestep_src(init_timestep) result(ret)
+  integer :: ret
+  real*8 :: init_timestep
+
+  h0=init_timestep
+  ret = 0
+
+end function set_initial_timestep_src
+
+function get_initial_timestep_src(init_timestep) result(ret)
+  integer :: ret
+  real*8 :: init_timestep
+
+  init_timestep=h0
+  ret = 0
+
+end function get_initial_timestep_src
+
+
 function get_number_of_particles(np) result(ret)
  integer :: ret,np
  np=nbod-1
@@ -115,7 +134,6 @@ end function
 function set_central_body(mass, radius, oblateness,spin) result(ret)
   integer :: ret
   real*8, optional :: mass, radius,oblateness(3),spin(3)
-  write(6,*) "setting central body", mass, radius
   if(present(mass)) then
     m(1)=mass*K2
   endif

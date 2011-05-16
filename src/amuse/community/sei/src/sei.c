@@ -15,7 +15,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "sei.h"
-#define OMEGA 1.
+#define OMEGA 1.0
 
 // Cache sin() tan() values.
 double lastdt=0;

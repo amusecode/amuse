@@ -45,6 +45,20 @@ function get_time(time_out) result(ret)
   ret=mercury_time(time_out)
 end function  
 
+function set_initial_timestep(time_) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  real*8 :: time_
+  ret=set_initial_timestep_src(time_)
+end function  
+
+function get_initial_timestep(time_) result(ret)
+  use amuse_mercuryMod
+  integer :: ret
+  real*8 :: time_
+  ret=get_initial_timestep_src(time_)
+end function  
+
 function evolve(tend) result(ret)
   use amuse_mercuryMod
   integer :: ret

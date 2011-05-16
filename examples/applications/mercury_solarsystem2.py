@@ -32,7 +32,7 @@ def planetplot():
     for planet in planets:
         t, x = planet.get_timeline_of_attribute_as_vector("x")
         t, y = planet.get_timeline_of_attribute_as_vector("y")
-        plot(x, y)
+        plot(x, y,'.')
 
     native_plot.show()
 

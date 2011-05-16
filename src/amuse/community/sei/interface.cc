@@ -16,9 +16,12 @@ extern "C" {
 #endif
 #include "interface.h"
 
+void (*tt_operator)(double dt, struct particle *p);
+
 int initialization() {
   time = 0.0;
   dt = 1e-3 * 2.0 * M_PI;
+  tt_operator = &operator_sei;//default :)
   return 0;
 }
 
@@ -36,9 +39,16 @@ int new_particle(int *id, double x, double y, double z,
 
   return 0;
 }
+
 int delete_particle(int id) {
   id = 0;
 
+  return 0;
+}
+
+int set_timestep(double dt_) 
+{
+  dt = dt_;
   return 0;
 }
 
@@ -66,14 +76,32 @@ int get_state(int id, double *x, double *y, double *z,
   return 0;
 }
 
+int get_time(int id, double *time_)
+{
+  *time_ = time;
+  return 0;
+}
+
+int select_integrator(int i)
+{
+  switch(i) {
+  case 1:
+    tt_operator = &operator_sei;break;
+  case 2:
+    tt_operator = &operator_lf;break;
+  case 3:
+    tt_operator = &operator_quinn;break;
+  default: return -1;
+  }
+  return 0;
+}
+
 int evolve(double time_end) 
 {
   while (time<time_end) {
-    operator_sei(dt, &p);
+    tt_operator(dt, &p);
     time += dt;
-    //printf("New time = %f\n", time);
   }
-
   return 0;
 }
 

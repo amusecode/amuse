@@ -18,6 +18,13 @@ class SeiInterface(CodeInterface):
         return function
 
     @legacy_function
+    def select_integrator():
+        function = LegacyFunctionSpecification()  
+        function.addParameter('i', dtype='int32', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
     def new_particle():
         function = LegacyFunctionSpecification()
         function.can_handle_array = True
@@ -36,7 +43,22 @@ class SeiInterface(CodeInterface):
         function.addParameter('vz', dtype='float64', direction=function.IN)
         function.result_type = 'int32'
         return function
-        
+
+    @legacy_function
+    def set_timestep():
+        function = LegacyFunctionSpecification()
+        function.addParameter('dt', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
+
+    @legacy_function
+    def get_time():
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('id', dtype='int32', direction=function.IN, description = "Index of the particle for which the state is to be updated. This index must have been returned by an earlier call to :meth:`new_particle`")
+        function.addParameter('t', dtype='float64', direction=function.OUT)
+        function.result_type = 'int32'
+        return function
 
     @legacy_function
     def set_state():
