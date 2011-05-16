@@ -803,7 +803,7 @@ class Particles(AbstractParticleSet):
         return self._private.timestamp
         
     def iter_history(self):
-        current = self
+        current = self._private.previous
         while not current is None:
             yield current
             current = current._private.previous
@@ -845,7 +845,7 @@ class Particles(AbstractParticleSet):
         return timeline
 
     def get_timeline_of_attribute_as_vector(self, particle_key, attribute):
-        timeline = []
+        timeline = AdaptingVectorQuantity()
         chrono_values = AdaptingVectorQuantity()
         for x in self.history:
             if x.has_key_in_store(particle_key):
