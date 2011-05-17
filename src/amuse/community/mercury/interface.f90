@@ -76,7 +76,6 @@ function new_orbiter(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)
   integer :: ret,id
   real*8 :: mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit
   ret=add_particle(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit)
-  write(6,*) "was in new orbiter", id
 end function  
 
 function new_central_particle(id,mass,radius,j2,j4,j6,Lx,Ly,Lz) result(ret)
@@ -86,7 +85,6 @@ function new_central_particle(id,mass,radius,j2,j4,j6,Lx,Ly,Lz) result(ret)
   oblateness(1)=j2;oblateness(2)=j4;oblateness(3)=j6
   spin(1)=Lx;spin(2)=Ly;spin(3)=Lz
   ret=set_central_body(mass=mass, radius=radius, oblateness=oblateness,spin=spin)
-  write(6,*) "was in new_central_particle"
 end function  
 
 function get_orbiter_state(id,mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit) result(ret)

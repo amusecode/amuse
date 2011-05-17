@@ -246,7 +246,6 @@ class TestMercury(TestWithMPI):
         mercury.commit_particles()
 
         start_pos = mercury.orbiters[2].position
-        import pdb;pdb.set_trace()
         mercury.evolve_model(365.14|units.day)
         self.assertAlmostEqual(mercury.orbiters[2].position, start_pos, 1)
         mercury.stop()
