@@ -13,7 +13,7 @@ except ImportError:
 
 def planetplot():
     sun, planets = Solarsystem.new_solarsystem()
-    timerange = units.day(numpy.arange(1e9*365.25, 5e9 * 365.25, 1e9*365.25))
+    timerange = units.day(numpy.arange(0.*365.25, 10000000 * 365.25, 92000))
     t_end = timerange[-1]
     gd = MercuryWayWard()
     gd.initialize_code()
@@ -22,21 +22,24 @@ def planetplot():
     gd.commit_particles()
 
     se = SSE()
-    se.initialize_code()
+    #se.initialize_code()
+    se.commit_parameters()
     se.particles.add_particles(sun)
-
+    se.commit_particles()
     channelp = gd.orbiters.new_channel_to(planets)
     channels = se.particles.new_channel_to(sun)
 
     for time in timerange:
-        print time
+        if ((time.number % 920000) == 0):
+            print time.value_in(units.yr)
+            print sun.mass
         err = gd.evolve_model(time)
         channelp.copy()
         planets.savepoint(time)
-        err = se.evolve_model(time + 10e9*365.25)
+        err = se.evolve_model(time + (12.32e9*365.25|units.day))
         channels.copy()
         gd.central_particle.mass = sun.mass
-        sun.savepoint(time)
+
 
     gd.stop()
     se.stop()
