@@ -20,8 +20,6 @@ class TestParticles(amusetest.TestCase):
             particles.mass = (i * 1.0) | units.kg
             particles.savepoint((i + 1) * 1.0 | units.s)
         
-        particles = particles.previous_state()
-        
         masses = particles[0].get_timeline_of_attribute("mass")
         self.assertEquals(len(masses), 3)
         self.assertEquals(masses[0][0], 1.0 | units.s)

@@ -49,7 +49,7 @@ class TestStoreHDF(amusetest.TestCase):
         instance.close()
 
         instance = store.StoreHDF(output_file)
-        loaded_particles = instance.load().previous_state()
+        loaded_particles = instance.load()
         masses = loaded_particles[1].get_timeline_of_attribute("mass")
         self.assertEquals(len(masses), 2)
 
