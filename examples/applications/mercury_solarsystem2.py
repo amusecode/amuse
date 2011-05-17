@@ -12,7 +12,7 @@ except ImportError:
 
 def planetplot():
     sun, planets = Solarsystem.new_solarsystem()
-    timerange = units.day(numpy.arange(0, 12 * 365.25, 8))
+    timerange = units.day(numpy.arange(0, 120 * 365.25, 12))
 
     instance = MercuryWayWard()
     instance.initialize_code()

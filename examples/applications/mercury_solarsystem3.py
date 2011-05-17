@@ -1,6 +1,6 @@
 import numpy
 from amuse.community.mercury.interface import MercuryWayWard
-from amuse.community.mesa.interface import MESA
+from amuse.community.sse.interface import SSE
 from amuse.ext.solarsystem import Solarsystem
 from amuse.support.units import units
 from amuse.plot import *
@@ -13,7 +13,7 @@ except ImportError:
 
 def planetplot():
     sun, planets = Solarsystem.new_solarsystem()
-    timerange = units.day(numpy.arange(0, 50000 * 365.25, 50))
+    timerange = units.day(numpy.arange(10e9*365.25, 15e9 * 365.25, 1e9*365.25))
     t_end = timerange[-1]
     gd = MercuryWayWard()
     gd.initialize_code()
@@ -21,10 +21,8 @@ def planetplot():
     gd.orbiters.add_particles(planets)
     gd.commit_particles()
 
-    se = MESA()
+    se = SSE()
     se.initialize_code()
-    se.parameters.RGB_wind_scheme = 1
-    se.parameters.reimers_wind_efficiency = 1.0e6 # ridiculous, but instructive
     se.particles.add_particles(sun)
 
     channelp = gd.orbiters.new_channel_to(planets)
@@ -34,14 +32,13 @@ def planetplot():
         err = gd.evolve_model(time)
         channelp.copy()
         planets.savepoint(time)
-        
-        if (time.number % 100000==0):
-            err = se.evolve_model(time+(5e7|units.day))
-            channels.copy()
-            gd.central_particle.mass = sun.mass
-            sun.savepoint(time)
-            print("\r {0} %%done".format(time/t_end * 100.0))
+        err = se.evolve_model(time)
+        channels.copy()
+        gd.central_particle.mass = sun.mass
+        sun.savepoint(time)
+
     gd.stop()
+    se.stop()
 
     for planet in planets:
         t, x = planet.get_timeline_of_attribute_as_vector("x")
