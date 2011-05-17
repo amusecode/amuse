@@ -32,7 +32,7 @@ $(CODELIB):
 	make -C $(BHTCDIR) all
 
 clean:
-	rm -f *.so *.o *.pyc muse_worker.cc worker_code.cc worker_code.h *.jnilib
+	rm -f *.so *.o *.pyc muse_worker.cc worker_code.cc worker_code.h *.jnilib worker_code-ibis.cc worker_code-sockets.cc
 	$(RM) bhtree_worker *~ worker_code *~
 	make -C $(BHTCDIR) clean
 
@@ -45,16 +45,19 @@ worker_code.h: interface.py
 bhtree_worker: worker_code.cc worker_code.h $(CODELIB) $(OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) worker_code.cc $(OBJS) $(CODELIB) -o $@ $(SCLIBS)
 
-bhtree_worker_socket: worker_code_socket.cc worker_code.h $(CODELIB) $(OBJS)
-	$(CXX) $(CXXFLAGS) $(SCINC) $(OBJS) $(CODELIB) -o $@ $(SCLIBS) $<
+worker_code-sockets.cc: interface.py
+	$(CODE_GENERATOR) --type=c --mode=sockets interface.py BHTreeInterface -o $@
+
+bhtree_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(OBJS)
+	$(MPICXX) $(CXXFLAGS) $(SCINC) $(OBJS) $(CODELIB) -o $@ $(SCLIBS) $<
 
 bhtree_worker_ibis: libbhtree_worker.so libbhtree_worker.jnilib
 	echo ""
 
-libbhtree_worker.jnilib: worker_code_ibis.cc  $(OBJS) $(CODELIB)
+libbhtree_worker.jnilib: worker_code-ibis.cc  $(OBJS) $(CODELIB)
 	$(CXX) $(CXXFLAGS) -bundle -framework JavaVM $(SCINC) $(IBISINC) $(JNI_INCLUDES) $(OBJS) $(CODELIB) $(SCLIBS)  -o $@ $<
 
-libbhtree_worker.so: worker_code_ibis.cc worker_code.h interface.py $(OBJS) $(CODELIB) 
+libbhtree_worker.so: worker_code-ibis.cc worker_code.h interface.py $(OBJS) $(CODELIB) 
 	$(CXX) $(CXXFLAGS) -fPIC -O3 -shared $(SCINC) $(IBISINC) $(JNI_INCLUDES) $(OBJS) $(CODELIB) $(SCLIBS)  -o $@ $<
 
 .cc.o: $<

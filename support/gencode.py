@@ -79,10 +79,10 @@ class ParseCommandLine(object):
         self.parser.add_option(
             "-m",
             "--mode",
-            choices=["mpi","stub", "dir"],
+            choices=["mpi","stub", "dir", "sockets"],
             default="mpi",
             dest="mode",
-            help="MODE of the code to generate. Can be <mpi>, <stub> or <dir>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
+            help="MODE of the code to generate. Can be <mpi>, <stub>, <dir> or <socket>. Generate the MPI handling code or STUB code for the link between mpi and the code (if needed). <dir> will create a directory ann populate it with the files needed to build a code. (Defaults to mpi)")
         self.parser.add_option(
             "-o",
             "--output",
@@ -186,6 +186,7 @@ def make_file(settings):
         ('f90','mpi'): create_fortran.GenerateAFortranSourcecodeStringFromASpecificationClass,      
         ('c','stub'): create_c.GenerateACStubStringFromASpecificationClass,    
         ('f90','stub'): create_fortran.GenerateAFortranStubStringFromASpecificationClass,
+        ('c','sockets'): create_c_sockets.GenerateACSourcecodeStringFromASpecificationClass,    
     }
     
     try:
@@ -230,6 +231,7 @@ if __name__ == '__main__':
     from amuse.support.codes import create_c
     from amuse.support.codes import create_fortran
     from amuse.support.codes import create_dir
+    from amuse.support.codes import create_c_sockets
     
     uc = ParseCommandLine()
     uc.start()
