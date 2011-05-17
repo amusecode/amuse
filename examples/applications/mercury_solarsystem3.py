@@ -13,7 +13,7 @@ except ImportError:
 
 def planetplot():
     sun, planets = Solarsystem.new_solarsystem()
-    timerange = units.day(numpy.arange(10e9*365.25, 15e9 * 365.25, 1e9*365.25))
+    timerange = units.day(numpy.arange(1e9*365.25, 5e9 * 365.25, 1e9*365.25))
     t_end = timerange[-1]
     gd = MercuryWayWard()
     gd.initialize_code()
@@ -29,10 +29,11 @@ def planetplot():
     channels = se.particles.new_channel_to(sun)
 
     for time in timerange:
+        print time
         err = gd.evolve_model(time)
         channelp.copy()
         planets.savepoint(time)
-        err = se.evolve_model(time)
+        err = se.evolve_model(time + 10e9*365.25)
         channels.copy()
         gd.central_particle.mass = sun.mass
         sun.savepoint(time)
