@@ -55,6 +55,7 @@ class CodeCommand(Command):
         
         self.set_cuda_variables()
         self.set_mpi_variables()
+        self.set_java_variables()
         self.set_libdir_variables()
         self.set_libs_variables()
         self.save_cfgfile_if_not_exists()
@@ -155,7 +156,13 @@ class CodeCommand(Command):
             self.environment['MPICC'] = config.mpi.mpicc
             self.environment['MPIF90'] = config.mpi.mpif95
             return
-    
+
+    def set_java_variables(self):
+	if is_configured:
+            self.environment['JNI_INCLUDES'] = config.java.jni_includes
+            self.environment['JDK'] = config.java.jdk
+	    return
+
     def set_libdir_variables(self):
         for varname in ('SAPPORO_LIBDIRS', 'GRAPE6_LIBDIRS'):
             if varname in self.environment:

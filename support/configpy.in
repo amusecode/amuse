@@ -19,6 +19,10 @@ class mpi(object):
     mpicc  = '@MPICC@'
     mpif95 = '@MPIFC@'
 
+class java(object):
+    jni_includes = '@JNI_INCLUDES@'
+    jdk = '@JDK@'
+
 class cuda(object):
     is_enabled   = '@WITH_CUDA@'=='yes'
     compiler     = '@NVCC@'
