@@ -97,6 +97,7 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
             , description="The index of the star to get the value of")
         function.addParameter('end_time', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
         return function
         
     @legacy_function
@@ -721,6 +722,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.set_MESA_paths(self.default_path_to_inlist, 
             self.default_path_to_MESA_data, self.get_data_directory())
         self.parameters.set_defaults()
+        self.model_time = 0.0 | units.yr
         
     
     def define_parameters(self, object):
@@ -846,7 +848,8 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_setter(particle_set_name, 'set_time_step', names = ('time_step',))
             object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
             object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
-            object.add_method(particle_set_name, 'evolve', 'evolve_one_step')
+            object.add_method(particle_set_name, 'evolve_one_step')
+            object.add_method(particle_set_name, 'evolve_to')
             InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
             object.add_method(particle_set_name, 'get_mass_profile')
             object.add_method(particle_set_name, 'set_mass_profile')
@@ -871,8 +874,13 @@ class MESA(StellarEvolution, InternalStellarStructure):
     def define_methods(self, object):
         InternalStellarStructure.define_methods(self, object)
         object.add_method(
-            "evolve",
+            "evolve_one_step",
             (object.INDEX,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "evolve_to",
+            (object.INDEX, units.yr),
             (object.ERROR_CODE,)
         )
         object.add_method(
@@ -1169,25 +1177,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
         
-    def evolve_model(self, end_time = None, keep_synchronous = True):
-        if end_time is None:
-            if keep_synchronous:
-                ages = self.particles.age
-                index, min_age = min(enumerate(ages), key=itemgetter(1))
-                self.particles[index].evolve_one_step()
-                new_age = self.particles[index].age
-                for particle in self.particles.select(lambda x : x < new_age, ["age"]):
-                    particle.evolve_one_step()
-            else:
-                if len(self.native_stars):
-                    self.native_stars.evolve_one_step()
-                if len(self.imported_stars):
-                    self.imported_stars.evolve_one_step()
-        else:
-            for particle in self.particles:
-                while particle.age < end_time:
-                    particle.evolve_one_step()
-    
     def get_mass_profile(self, indices_of_the_stars, number_of_zones = None):
         indices_of_the_stars = self._check_number_of_indices(indices_of_the_stars, action_string = "Querying mass profiles")
         if number_of_zones is None:

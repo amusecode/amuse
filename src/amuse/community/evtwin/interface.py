@@ -700,6 +700,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         self.set_ev_path(self.data_directory | units.string)
         self.set_init_dat_name(self.init_dat_name )        
         self.set_init_run_name(self.init_run_name )        
+        self.model_time = 0.0 | units.yr
     
     @option(type="string")
     def init_dat_name(self):
@@ -838,7 +839,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             object.add_getter(particle_set_name, 'get_spin', names = ('spin',))
             object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
             object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
-            object.add_method(particle_set_name, 'evolve', 'evolve_one_step')
+            object.add_method(particle_set_name, 'evolve_one_step')
             InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
             object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
     
@@ -873,7 +874,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
     def define_methods(self, object):
         InternalStellarStructure.define_methods(self, object)
         object.add_method(
-            'evolve', 
+            'evolve_one_step', 
             (object.INDEX,), 
             (object.ERROR_CODE,), 
         )

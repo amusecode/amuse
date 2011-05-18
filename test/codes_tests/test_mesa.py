@@ -100,7 +100,7 @@ class TestMESAInterface(TestWithMPI):
         (time_step, error) = instance.get_time_step(index_of_the_star)
         self.assertEquals(0, error)
         self.assertAlmostEqual(time_step,1.0e5,1)
-        error = instance.evolve(index_of_the_star)
+        error = instance.evolve_one_step(index_of_the_star)
         self.assertEquals(0, error)
         end_time = 5.0e5 # (years)
         instance.evolve_to(index_of_the_star, end_time)
@@ -118,7 +118,7 @@ class TestMESAInterface(TestWithMPI):
         self.assertAlmostEqual(T_of_the_star,5650.998,-2)
         (time_step, error) = instance.get_time_step(index_of_the_star)
         self.assertEquals(0, error)
-        self.assertAlmostEqual(time_step,163200.0,1)
+        self.assertAlmostEqual(time_step, 172800.0, 1)
         instance.stop()
         del instance
             
@@ -311,11 +311,11 @@ class TestMESA(TestWithMPI):
         self.assertEqual(index_of_the_star,1)
         time_step = instance.get_time_step(index_of_the_star)
         self.assertAlmostEqual(time_step, 1.0e5 | units.yr,1)
-        instance.evolve(index_of_the_star)
-        end_time = 5.0e5
+        instance.evolve_one_step(index_of_the_star)
+        end_time = 5.0e5 | units.yr
         instance.evolve_to(index_of_the_star, end_time)
         age_of_the_star = instance.get_age(index_of_the_star)
-        self.assertAlmostEqual(age_of_the_star,end_time | units.yr,3)
+        self.assertAlmostEqual(age_of_the_star,end_time,3)
         L_of_the_star = instance.get_luminosity(index_of_the_star)
         self.assertAlmostEqual(L_of_the_star,0.725 | units.LSun,1)
         M_of_the_star = instance.get_mass(index_of_the_star)
@@ -323,7 +323,7 @@ class TestMESA(TestWithMPI):
         T_of_the_star = instance.get_temperature(index_of_the_star)
         self.assertAlmostEqual(T_of_the_star,5650.998 | units.K,-2)
         time_step = instance.get_time_step(index_of_the_star)
-        self.assertAlmostEqual(time_step,163200.0 | units.yr,1)
+        self.assertAlmostEqual(time_step, 172800.0 | units.yr, 1)
         instance.stop()
         del instance
     
@@ -453,7 +453,7 @@ class TestMESA(TestWithMPI):
             self.assertTrue(stars[i].age+stars[i].time_step <= max_age)
         
         self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
-            expected_message = "Error when calling 'evolve' of a 'MESA', "
+            expected_message = "Error when calling 'evolve_to' of a 'MESA', "
                 "errorcode is -12, error is 'Evolve terminated: Maximum age reached.'")
         instance.stop()
         del instance
@@ -642,7 +642,7 @@ class TestMESA(TestWithMPI):
         del instance
     
     def test11(self):
-        print "Test evolve_model optional argument keep_synchronous"
+        print "Test evolve_model optional arguments: end_time and keep_synchronous"
         stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
         instance = self.new_instance(MESA)
@@ -653,39 +653,27 @@ class TestMESA(TestWithMPI):
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        instance.evolve_model()
-        ages_1 = instance.particles.age
-        self.assertAlmostEqual(ages_1, [100000.0, 17677.670, 6415.003] | units.yr, 2)
-        print ages_1
         
-        instance.evolve_model()
-        ages_2 = instance.particles.age
-        self.assertAlmostEqual(ages_2, [100000.0, 17677.670, 14113.007] | units.yr, 2)
-        print "The new age of the last star is still lower than the previous age of the other stars, so the others keep their ages:"
-        print ages_2
-        self.assertTrue(ages_2[2] < ages_1[0])
-        self.assertEqual(ages_1[0], ages_2[0])
-        self.assertTrue(ages_2[2] < ages_1[1])
-        self.assertEqual(ages_1[1], ages_2[1])
+        self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
+        self.assertAlmostEqual(instance.particles.time_step, [100000.0, 17677.6695, 6415.0029] | units.yr, 3)
         
+        print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
         instance.evolve_model()
-        ages_3 = instance.particles.age
-        self.assertAlmostEqual(ages_3, [100000.0, 38890.873, 23350.611] | units.yr, 2)
-        print "The new age of the last star is higher than the previous age of the second star, so only the first one keeps its age:"
-        print ages_3
-        self.assertTrue(ages_3[2] < ages_2[0])
-        self.assertEqual(ages_2[0], ages_3[0])
-        self.assertFalse(ages_3[2] < ages_2[1])
-        self.assertFalse(ages_2[1] == ages_3[1])
+        self.assertAlmostEqual(instance.particles.age, [6415.0029, 6415.0029, 6415.0029] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [120000.0, 21213.2034, 7698.0035] | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 6415.0029 | units.yr, 3)
         
+        print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
+        instance.evolve_model(15000 | units.yr)
+        self.assertAlmostEqual(instance.particles.age, [15000.0, 15000.0, 15000.0] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [144000.0, 25455.8441, 9237.6043] | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
+        
+        print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
         instance.evolve_model(keep_synchronous = False)
-        ages_4 = instance.particles.age
-        self.assertAlmostEqual(ages_4, [220000.0, 64346.717, 34435.736] | units.yr, 2)
-        print "keep_synchronous = False, so all stars age:"
-        print ages_4
-        self.assertTrue(ages_4[0] > ages_3[0])
-        self.assertTrue(ages_4[1] > ages_3[1])
-        self.assertTrue(ages_4[2] > ages_3[2])
+        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([144000.0, 25455.8441, 9237.6043] | units.yr), 3)
+        self.assertAlmostEqual(instance.particles.time_step, [172800.0, 30547.0129, 11085.1251] | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
     
     def test12(self):
@@ -813,7 +801,7 @@ class TestMESA(TestWithMPI):
             print "MESA was not built. Skipping test."
             return
         
-        print "First do everything manually:"
+        print "First do everything manually:",
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -822,18 +810,17 @@ class TestMESA(TestWithMPI):
         instance.particles.add_particle(stars[0])
         instance.commit_particles()
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
-        mass = instance.particles[0].mass
-        instance.evolve_model()
-#        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
         instance.cleanup_code()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
         instance.stop()
+        print "ok"
 
-        print "commit_parameters(), (re)commit_particles(), and cleanup_code() should be called " \
-            "automatically before new_xx_particle(), get_xx(), and stop():"
+        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
+            "and cleanup_code() should be called automatically:",
         instance = MESA()
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
-        instance.initialize_code()
+        instance.parameters.RGB_wind_scheme = 1
+        instance.parameters.reimers_wind_efficiency = 0.5
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
         instance.particles.add_particle(stars[0])
         self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
@@ -843,9 +830,33 @@ class TestMESA(TestWithMPI):
         self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
         mass = instance.particles[0].mass
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
-        instance.evolve_model()
-#        self.assertEquals(instance.get_name_of_current_state(), 'EVOLVED')
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'END')
+        print "ok"
+    
+    def test16(self):
+        print "Testing basic operations: evolve_one_step and evolve_to"
+        stars = Particles(2)
+        stars.mass = 1.0 | units.MSun
+        instance = self.new_instance(MESA)#, redirection = 'none')
+        if instance is None:
+            print "MESA was not built. Skipping test."
+            return
+        
+        se_stars = instance.particles.add_particles(stars)
+        
+        for i in range(3):
+            se_stars[0].evolve_one_step()
+        self.assertAlmostEqual(se_stars.age, [364000.0, 0] | units.yr)
+        
+        number_of_steps = 10
+        step_size = se_stars[0].age / number_of_steps
+        for i in range(1, number_of_steps + 1):
+            se_stars[1].evolve_to(i * step_size)
+            self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
+        self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
+        self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].temperature, se_stars[1].temperature, 3)
 
 

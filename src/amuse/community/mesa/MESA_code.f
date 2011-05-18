@@ -1160,42 +1160,42 @@
    end function
 
 ! Evolve the star for one step
-   function evolve(AMUSE_id)
+   function evolve_one_step(AMUSE_id)
       use star_private_def, only: star_info, get_star_ptr
       use run_star_support
       use run_star, only: check_model
       use amuse_support, only: evolve_failed
       implicit none
       integer, intent(in) :: AMUSE_id
-      integer :: evolve
+      integer :: evolve_one_step
       type (star_info), pointer :: s
       integer :: ierr, model_number, result, result_reason
       logical :: first_try
-      evolve = -1
+      evolve_one_step = -1
       call get_star_ptr(AMUSE_id, s, ierr)
-      if (evolve_failed('get_star_ptr', ierr, evolve, -1)) return
+      if (evolve_failed('get_star_ptr', ierr, evolve_one_step, -1)) return
       if (auto_extend_net) then
          call extend_net(s, ierr)
-         if (evolve_failed('extend_net', ierr, evolve, -2)) return
+         if (evolve_failed('extend_net', ierr, evolve_one_step, -2)) return
       end if
       first_try = .true.
       model_number = get_model_number(AMUSE_id, ierr)
-      if (evolve_failed('get_model_number', ierr, evolve, -3)) return
+      if (evolve_failed('get_model_number', ierr, evolve_one_step, -3)) return
       step_loop: do ! may need to repeat this loop for retry or backup
          result = star_evolve_step(AMUSE_id, first_try)
          if (result == keep_going) result = check_model(s, AMUSE_id, 0)
          if (result == keep_going) result = star_pick_next_timestep(AMUSE_id)
          if (result == keep_going) exit step_loop
          model_number = get_model_number(AMUSE_id, ierr)
-         if (evolve_failed('get_model_number', ierr, evolve, -3)) return
+         if (evolve_failed('get_model_number', ierr, evolve_one_step, -3)) return
          result_reason = get_result_reason(AMUSE_id, ierr)
          if (result == retry) then
-            if (evolve_failed('get_result_reason', ierr, evolve, -4)) return
+            if (evolve_failed('get_result_reason', ierr, evolve_one_step, -4)) return
             if (report_retries) &
                write(*,'(i6,3x,a,/)') model_number, &
                   'retry reason ' // trim(result_reason_str(result_reason))
          else if (result == backup) then
-            if (evolve_failed('get_result_reason', ierr, evolve, -4)) return
+            if (evolve_failed('get_result_reason', ierr, evolve_one_step, -4)) return
             if (report_backups) &
                write(*,'(i6,3x,a,/)') model_number, &
                   'backup reason ' // trim(result_reason_str(result_reason))
@@ -1203,90 +1203,66 @@
          if (result == retry) result = star_prepare_for_retry(AMUSE_id)
          if (result == backup) result = star_do1_backup(AMUSE_id)
          if (result == terminate) then
-            evolve = -11 ! Unspecified stop condition reached, or:
+            evolve_one_step = -11 ! Unspecified stop condition reached, or:
             if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
-               evolve = -14 ! max backups reached
+               evolve_one_step = -14 ! max backups reached
             endif
             if (s% max_model_number > 0 .and. s% model_number >= &
-               s% max_model_number) evolve = -13 ! max iterations reached
-            if (s% star_age >= s% max_age) evolve = -12 ! max_age reached
+               s% max_model_number) evolve_one_step = -13 ! max iterations reached
+            if (s% star_age >= s% max_age) evolve_one_step = -12 ! max_age reached
             return
          end if
          first_try = .false.
       end do step_loop
       if (s% model_number == save_model_number) then
          call star_write_model(AMUSE_id, save_model_filename, .true., ierr)
-         if (evolve_failed('star_write_model', ierr, evolve, -6)) return
+         if (evolve_failed('star_write_model', ierr, evolve_one_step, -6)) return
          write(*, *) 'saved to ' // trim(save_model_filename)
       end if
-      evolve = 0
+      evolve_one_step = 0
       call flush()
    end function
 
 ! Evolve the star until AMUSE_end_time
-      subroutine evolve_to(AMUSE_id, AMUSE_end_time)
-         use star_private_def, only: star_info, get_star_ptr
-         use run_star_support
-         use run_star, only: check_model
-         use amuse_support, only: failed
-         implicit none
-         integer, intent(in) :: AMUSE_id
-         double precision, intent(in) :: AMUSE_end_time
-         type (star_info), pointer :: s
-         integer :: ierr, model_number, result, result_reason
-         double precision :: old_max_age
-         logical :: first_try, continue_evolve_loop
-         call get_star_ptr(AMUSE_id, s, ierr)
-         if (failed('get_star_ptr', ierr)) return
-         old_max_age = s% max_age
-         s% max_age = AMUSE_end_time
-         continue_evolve_loop = .true.
-         evolve_loop: do while(continue_evolve_loop) ! evolve one step per loop
-            if (auto_extend_net) then
-               call extend_net(s, ierr)
-               if (failed('extend_net', ierr)) return
-            end if
-            first_try = .true.
-            model_number = get_model_number(AMUSE_id, ierr)
-            if (failed('get_model_number', ierr)) return
-            step_loop: do ! may need to repeat this loop for retry or backup
-               result = star_evolve_step(AMUSE_id, first_try)
-               if (result == keep_going) result = check_model(s, AMUSE_id, 0)
-               if (result == keep_going) result = star_pick_next_timestep(AMUSE_id)
-               if (result == keep_going) exit step_loop
-               model_number = get_model_number(AMUSE_id, ierr)
-               if (failed('get_model_number', ierr)) return
-               result_reason = get_result_reason(AMUSE_id, ierr)
-               if (result == retry) then
-                  if (failed('get_result_reason', ierr)) return
-                  if (report_retries) &
-                     write(*,'(i6,3x,a,/)') model_number, &
-                        'retry reason ' // trim(result_reason_str(result_reason))
-               else if (result == backup) then
-                  if (failed('get_result_reason', ierr)) return
-                  if (report_backups) &
-                     write(*,'(i6,3x,a,/)') model_number, &
-                        'backup reason ' // trim(result_reason_str(result_reason))
-               end if
-               if (result == retry) result = star_prepare_for_retry(AMUSE_id)
-               if (result == backup) result = star_do1_backup(AMUSE_id)
-               if (result == terminate) then
-                  continue_evolve_loop = .false.
-                  exit step_loop
-               end if
-               first_try = .false.
-            end do step_loop
-            if (result == terminate) exit evolve_loop
-            if (s% model_number == save_model_number) then
-               call star_write_model(AMUSE_id, save_model_filename, .true., ierr)
-               if (failed('star_write_model', ierr)) return
-               write(*, *) 'saved to ' // trim(save_model_filename)
-            end if
-         end do evolve_loop
-         s% max_age = old_max_age
-         return
-      end
+   integer function evolve_to(AMUSE_id, AMUSE_end_time)
+      use star_private_def, only: star_info, get_star_ptr
+      use const_def, only: secyer
+      use amuse_support, only: evolve_failed, debugging
+      implicit none
+      integer, intent(in) :: AMUSE_id
+      double precision, intent(in) :: AMUSE_end_time
+      type (star_info), pointer :: s
+      integer :: ierr
+      double precision :: old_max_age, timestep_old, timestep_older
+      integer :: evolve_one_step
       
+      evolve_to = 0
+      call get_star_ptr(AMUSE_id, s, ierr)
+      if (evolve_failed('get_star_ptr', ierr, evolve_to, -1)) return
+      old_max_age = s% max_age
+      s% max_age = min(AMUSE_end_time, old_max_age)
+      timestep_old = s% dt_next
+      if ((s% time + s% dt_next) > s% max_age*secyer) &
+         s% dt_next = max(0d0, s% max_age*secyer - s% time)
+      
+      evolve_loop: do while(evolve_to == 0) ! evolve one step per loop
+         if (debugging) write (*,*) "timestep: ", s% dt_next/secyer, "(", s% dt_next/s% dt, ")"
+         timestep_older = timestep_old
+         timestep_old = s% dt_next
+         evolve_to = evolve_one_step(AMUSE_id)
+      end do evolve_loop
+      
+      if (evolve_to == -12 .and. s% star_age < old_max_age) then
+         if (debugging) write (*,*) "resetting to: ", timestep_older/secyer
+         s% dt_next = timestep_older
+         s% dt = timestep_older
+         evolve_to = 0
+      else
+         if (debugging) write (*,*) "why am i here?"
+      endif
+      s% max_age = old_max_age
+   end function evolve_to
+
 ! Return the maximum age stop condition
       integer function get_max_age_stop_condition(AMUSE_value)
          use amuse_support, only: AMUSE_max_age_stop_condition

@@ -677,23 +677,23 @@ contains
    ! evolve_star:
    !  evolve a star for one timestep; essentially star12 without the loop
    !  TODO: ZAHB construction; maybe also for central carbon burning or white dwarfs?
-   function evolve(star_id)
+   function evolve_one_step(star_id)
       use constants
       implicit none
-      integer :: evolve
+      integer :: evolve_one_step
       integer, intent(in) :: star_id
       
       ! Check whether the star exists, and that it hasn't been removed.
       if (star_id<1 .or. star_id>highest_star_index .or. .not. star_list(star_id)%star_exists) then
          if (verbose) print *, 'Error: no star to evolve. Star_id=', star_id, ', star_exists=', star_list(star_id)%star_exists
-         evolve = -1
+         evolve_one_step = -1
          return
       end if
       
       call swap_in_star(star_id)
-      evolve = twin_evolve()
-      if (evolve == 0) call swap_out_star(star_id)
-   end function evolve
+      evolve_one_step = twin_evolve()
+      if (evolve_one_step == 0) call swap_out_star(star_id)
+   end function evolve_one_step
    
    function twin_evolve()
       use real_kind

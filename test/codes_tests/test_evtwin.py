@@ -78,7 +78,7 @@ class TestInterface(TestWithMPI):
         instance.stop()
     
     def test5(self):
-        print "Testing basic operations (new_particle, evolve etc.)..."
+        print "Testing basic operations (new_particle, evolve_one_step etc.)..."
         #code/library_v2.f:602
         instance = EVtwinInterface()
         
@@ -100,11 +100,11 @@ class TestInterface(TestWithMPI):
         self.assertEquals(0, error)
         self.assertEquals(1.05, mass)
         
-        error = instance.evolve(index_of_the_star)
+        error = instance.evolve_one_step(index_of_the_star)
         self.assertEquals(0, error)
           
         for i in range(2):
-            error = instance.evolve(index_of_the_star)
+            error = instance.evolve_one_step(index_of_the_star)
             self.assertEquals(0, error)
     
         (mass, error) = instance.get_mass(index_of_the_star)
@@ -278,7 +278,7 @@ class TestInterface(TestWithMPI):
         
 
         for index in indices:
-            self.assertEquals(0, instance.evolve(index))
+            self.assertEquals(0, instance.evolve_one_step(index))
             (age_after_evolve, error) = instance.get_age(index)
             self.assertEquals(0, error)
             self.assertAlmostEqual(age_after_evolve, 845581.26610757)
@@ -297,7 +297,7 @@ class TestInterface(TestWithMPI):
             (age, error) = instance.get_age(index)
             self.assertEquals(0, error)
             self.assertTrue(age < age_after_evolve)
-            self.assertEquals(0, instance.evolve(index))
+            self.assertEquals(0, instance.evolve_one_step(index))
             (age, error) = instance.get_age(index)
             self.assertEquals(0, error)
             self.assertAlmostEqual(age, age_after_evolve)
@@ -452,7 +452,7 @@ class TestEVtwin(TestWithMPI):
             self.assertTrue(stars[i].time_step <= max_age)
                 
         self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
-            expected_message = "Error when calling 'evolve' of a 'EVtwin', errorcode "
+            expected_message = "Error when calling 'evolve_one_step' of a 'EVtwin', errorcode "
                 "is 2, error is 'BACKUP -- tstep reduced below limit; quit'")
 
         instance.stop()

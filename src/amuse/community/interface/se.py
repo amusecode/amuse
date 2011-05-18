@@ -212,7 +212,7 @@ class StellarEvolutionInterface(common.CommonCodeInterface):
         return function 
         
     @legacy_function   
-    def evolve():
+    def evolve_one_step():
         """
         Evolve the star with the given index one step. The code determines how far in time the star will
         be evolved after this function is finished. See the ``get_age`` function for retrieving
@@ -300,12 +300,21 @@ class StellarEvolutionInterface(common.CommonCodeInterface):
     def invoke_state_change2(self):
         pass
     
-    def synchronize_model(self):
-        pass
-    
 
 
 class StellarEvolution(common.CommonCode):
+    
+    def evolve_model(self, end_time = None, keep_synchronous = True):
+        if not keep_synchronous:
+            for particle in self.particles:
+                particle.evolve_one_step()
+            return
+        
+        if end_time is None:
+            end_time = self.model_time + min(self.particles.time_step)
+        for particle in self.particles:
+            particle.evolve_to(end_time - self.model_time + particle.age)
+        self.model_time = end_time
     
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
@@ -322,10 +331,9 @@ class StellarEvolution(common.CommonCode):
         object.add_transition('RUN', 'UPDATE', 'new_particle', False)
         object.add_transition('RUN', 'UPDATE', 'delete_star', False)
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
-        object.add_transition('RUN', 'EVOLVED', 'evolve_model', False)
-        object.add_method('EVOLVED', 'evolve_model')
-        object.add_transition('EVOLVED','RUN', 'synchronize_model')
-        object.add_method('RUN', 'synchronize_model')
+        object.add_method('RUN', 'evolve_model')
+        object.add_method('RUN', 'evolve_to')
+        object.add_method('RUN', 'evolve_one_step')
         object.add_method('RUN', 'get_age')
         object.add_method('RUN', 'get_mass')
         object.add_method('RUN', 'get_luminosity')
