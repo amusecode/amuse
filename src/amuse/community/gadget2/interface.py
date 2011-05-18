@@ -1147,7 +1147,6 @@ class Gadget2(GravitationalDynamics):
         object.add_method('RUN', 'get_center_of_mass_position')
         object.add_method('RUN', 'get_center_of_mass_velocity')
         object.add_method('RUN', 'get_total_mass')
-        object.add_method('RUN', 'get_time')
         object.add_method('RUN', 'get_hydro_state_at_point')
     
     def define_parameters(self, object):

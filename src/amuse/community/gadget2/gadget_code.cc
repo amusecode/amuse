@@ -35,6 +35,7 @@ void set_default_parameters(){
     All.ComovingIntegrationOn = 0;
     All.TypeOfTimestepCriterion = 0;
     All.PeriodicBoundariesOn = 0;
+    All.Time = 0.0;
     All.TimeBegin = 0.0;
     All.TimeMax = 100.0;
     All.Omega0 = 0;

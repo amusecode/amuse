@@ -757,12 +757,16 @@ class TestGadget2(TestWithMPI):
         instance.parameters.time_max = 10.4 | generic_unit_system.time
         instance.parameters.min_size_timestep = 0.1 | generic_unit_system.time
         
+        self.assertAlmostEqual(instance.model_time, 0.0 | units.s)
         instance.dm_particles.add_particles(self.three_particles_IC)
+        self.assertAlmostEqual(instance.model_time, instance.parameters.time_begin)
         self.assertAlmostEqual(instance.dm_particles.x, [0.5,0.,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.y, [0.,1.5,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.5] | units.kpc, places=6)
         
         instance.evolve_model(10.14 | generic_unit_system.time)
+        self.assertAlmostRelativeEqual(instance.model_time, 
+            instance.parameters.time_begin + instance.parameters.min_size_timestep, 7)
         self.assertAlmostEqual(instance.dm_particles.x, [0.4,0.,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.y, [0.,1.6,0.] | units.kpc, places=6)
         self.assertAlmostEqual(instance.dm_particles.z, [0.,0.,0.4] | units.kpc, places=6)
