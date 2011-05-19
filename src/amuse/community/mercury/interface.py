@@ -530,7 +530,6 @@ class MercuryWayWard(GravitationalDynamics):
         object.add_getter('central_particle', 'get_central_spin')
 
         #GravitationalDynamics.define_particle_sets(self, object)
-        #self.stopping_conditions.define_particle_set(object, 'particles')
 
     def define_methods(self, object):
         #GravitationalDynamics.define_methods(self, object)

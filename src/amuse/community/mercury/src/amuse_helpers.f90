@@ -312,6 +312,7 @@ function evolve_mercury(t_end) result(ret)
     ret=1
   endif  
   tstart=time
+  write(6,*)time
 end function
 
 function new_id()

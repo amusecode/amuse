@@ -325,7 +325,6 @@ class Hermite(GravitationalDynamics):
         )
         
         self.stopping_conditions.define_methods(object)
-        
     
     def define_particle_sets(self, object):
         GravitationalDynamics.define_particle_sets(self, object)
