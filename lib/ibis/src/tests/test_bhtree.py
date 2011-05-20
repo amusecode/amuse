@@ -144,7 +144,7 @@ class TestBHTreeInterface(TestWithMPI):
 
 
     def test7(self):
-        interface = BHTreeInterface(channel_type='ibis') #, debugger="xterm")
+        interface = BHTreeInterface(channel_type="ibis") #, debugger="xterm")
         interface.initialize_code()
         
         interface.commit_parameters()
@@ -162,7 +162,7 @@ class TestBHTreeInterface(TestWithMPI):
         interface.stop()
         
     def test8(self):
-        instance = BHTreeInterface(channel_type='ibis')
+        instance = BHTreeInterface(channel_type="ibis")
         instance.initialize_code()
         instance.set_epsilon_squared(0.1 * 0.1)
         instance.commit_parameters()
@@ -195,7 +195,7 @@ class TestBHTree(TestWithMPI):
     def test1(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         
         stars = core.Stars(2)
@@ -246,7 +246,7 @@ class TestBHTree(TestWithMPI):
         #not completed 
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody,channel_type='ibis')
         #instance.dt_dia = 1
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         #instance.timestep = 0.0001
@@ -300,7 +300,7 @@ class TestBHTree(TestWithMPI):
     def test3(self):
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)
 
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         #instance.dt_dia = 1
         instance.parameters.epsilon_squared = 0.001 | units.AU**2
         #instance.timestep = 0.0001
@@ -336,7 +336,7 @@ class TestBHTree(TestWithMPI):
     def test4(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         instance.commit_parameters()
         
         index = instance.new_particle(
@@ -351,7 +351,7 @@ class TestBHTree(TestWithMPI):
         
     def test5(self):
 
-        instance = BHTree()
+        instance = BHTree(channel_type='ibis')
         instance.commit_parameters()
         
         index = instance.new_particle(
@@ -366,7 +366,7 @@ class TestBHTree(TestWithMPI):
     
     def test6(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         instance.commit_parameters()
         
         indices = instance.new_particle(
@@ -389,7 +389,7 @@ class TestBHTree(TestWithMPI):
     def test7(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
     
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         instance.commit_parameters()
         
         particles = core.Particles(2)
@@ -416,7 +416,7 @@ class TestBHTree(TestWithMPI):
     def test8(self):
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         instance.commit_parameters()
         
         particles = core.Particles(2)
@@ -437,7 +437,7 @@ class TestBHTree(TestWithMPI):
         self.assertEquals(instance.get_mass(1), 17.0| units.kg) 
         
     def test9(self):
-        instance = BHTree()
+        instance = BHTree(channel_type='ibis')
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         
@@ -473,7 +473,7 @@ class TestBHTree(TestWithMPI):
             self.assertAlmostEqual(potential0, potential1, 5)
             
     def test10(self):
-        instance = BHTree()
+        instance = BHTree(channel_type='ibis')
         instance.initialize_code()
         instance.parameters.epsilon_squared = 0.00001 | nbody_system.length**2
         instance.commit_parameters()
@@ -519,7 +519,7 @@ class TestBHTree(TestWithMPI):
        
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         
         particles = core.Particles(2)
         self.assertEquals(len(instance.particles), 0)
@@ -546,7 +546,7 @@ class TestBHTree(TestWithMPI):
        
         convert_nbody = nbody_system.nbody_to_si(5.0 | units.kg, 10.0 | units.m)
 
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         instance.commit_parameters()
         
         particles = core.Particles(2)
@@ -574,7 +574,7 @@ class TestBHTree(TestWithMPI):
        
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.kg, 1.0 | units.m)
         
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         instance.commit_parameters()
         
         particles = core.Particles(2)
@@ -596,9 +596,9 @@ class TestBHTree(TestWithMPI):
     def test14(self):
         print "Test14: Testing BHTree parameters (I)"
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.yr, 1.0 | units.AU)
-        instance = BHTree(convert_nbody)
+        instance = BHTree(convert_nbody, channel_type='ibis')
         
-        (value, error) = instance.get_epsilon_squared()
+        value,error = instance.legacy_interface.get_epsilon_squared()
         self.assertEquals(0, error)
         self.assertEquals(0.125, value)
         self.assertAlmostEquals(0.125 | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
@@ -606,7 +606,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.epsilon_squared = x | units.AU**2
             self.assertAlmostEquals(x | units.AU**2, instance.parameters.epsilon_squared, in_units=units.AU**2)
         
-        (value, error) = instance.get_time_step()
+        (value, error) = instance.legacy_interface.get_time_step()
         self.assertEquals(0, error)
         self.assertEquals(0.015625, value)
         self.assertAlmostEquals(0.015625 | units.yr, instance.parameters.timestep, in_units=units.yr)
@@ -614,7 +614,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.timestep = x | units.yr
             self.assertAlmostEquals(x | units.yr, instance.parameters.timestep, in_units=units.yr)
         
-        (value, error) = instance.get_theta_for_tree()
+        (value, error) = instance.legacy_interface.get_theta_for_tree()
         self.assertEquals(0, error)
         self.assertEquals(0.75, value)
         self.assertEquals(0.75 | units.none, instance.parameters.opening_angle)
@@ -622,7 +622,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.opening_angle = x | units.none
             self.assertEquals(x | units.none, instance.parameters.opening_angle)
         
-        (value, error) = instance.get_use_self_gravity()
+        (value, error) = instance.legacy_interface.get_use_self_gravity()
         self.assertEquals(0, error)
         self.assertEquals(1, value)
         self.assertEquals(1 | units.none, instance.parameters.use_self_gravity)
@@ -630,7 +630,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.use_self_gravity = x | units.none
             self.assertEquals(x | units.none, instance.parameters.use_self_gravity)
         
-        (value, error) = instance.get_ncrit_for_tree()
+        (value, error) = instance.legacy_interface.get_ncrit_for_tree()
         self.assertEquals(0, error)
         self.assertEquals(1024, value)
         self.assertEquals(1024 | units.none, instance.parameters.ncrit_for_tree)
@@ -638,7 +638,7 @@ class TestBHTree(TestWithMPI):
             instance.parameters.ncrit_for_tree = x | units.none
             self.assertEquals(x | units.none, instance.parameters.ncrit_for_tree)
         
-        (value, error) = instance.get_dt_dia()
+        (value, error) = instance.legacy_interface.get_dt_dia()
         self.assertEquals(0, error)
         self.assertEquals(1.0, value)
         self.assertAlmostEquals(1.0 | units.yr, instance.parameters.dt_dia, in_units=units.yr)
@@ -666,7 +666,7 @@ class TestBHTree(TestWithMPI):
         initial_direction = math.atan((earth.velocity[0]/earth.velocity[1]).value_in(units.none))
         final_direction = []
         for log_eps2 in range(-9,10,2):
-            instance = BHTree(convert_nbody)
+            instance = BHTree(convert_nbody, channel_type='ibis')
             instance.initialize_code()
             instance.parameters.epsilon_squared = 10.0**log_eps2 | units.AU ** 2
             instance.particles.add_particles(particles)
@@ -691,7 +691,7 @@ class TestBHTree(TestWithMPI):
         stars.radius = 0.00001 | nbody_system.length
         stars.scale_to_standard()
         
-        instance = BHTree()
+        instance = BHTree(channel_type='ibis')
         instance.initialize_code()
         instance.parameters.epsilon_squared = (1.0 / 20.0 / (number_of_stars**0.33333) | nbody_system.length)**2
         instance.parameters.timestep = 0.004 | nbody_system.time
@@ -726,7 +726,7 @@ class TestBHTree(TestWithMPI):
         particles.vz =  0 | nbody_system.speed
         particles.mass = 0 | nbody_system.mass
        
-        instance = BHTree()
+        instance = BHTree(channel_type='ibis')
         instance.initialize_code()
         instance.parameters.epsilon_squared = (0.01 | nbody_system.length)**2
         instance.particles.add_particles(particles) 
@@ -755,7 +755,7 @@ class TestBHTree(TestWithMPI):
         particles.vz =  0 | nbody_system.speed
         particles.mass = 1.0 | nbody_system.mass
        
-        instance = BHTree()
+        instance = BHTree(channel_type='ibis')
         instance.initialize_code()
         instance.parameters.stopping_conditions_number_of_steps = 2
         self.assertEquals(instance.parameters.stopping_conditions_number_of_steps, 2|units.none)
@@ -781,7 +781,7 @@ class TestBHTree(TestWithMPI):
         very_short_time_to_evolve = 1 | units.s
         very_long_time_to_evolve = 1e9 | nbody_system.time
        
-        instance = BHTree()
+        instance = BHTree(channel_type='ibis')
         instance.initialize_code()
         instance.parameters.stopping_conditions_timeout = very_short_time_to_evolve 
         self.assertEquals(instance.parameters.stopping_conditions_timeout, very_short_time_to_evolve)
