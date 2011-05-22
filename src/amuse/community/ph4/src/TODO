@@ -1,0 +1,8 @@
+
+1. Implement multiples in standalone ph4.  Outline code is
+   in jdata::multiple() in two_body.cc.
+
+2. Implement parallel multi-GPU use.  Necessary code is in
+   test_hosts.cc
+
+3. Transmit ph4 code changes to AMUSE.

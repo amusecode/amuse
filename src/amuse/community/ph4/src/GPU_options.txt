@@ -1,0 +1,50 @@
+Now it is possible for an application to specify which GPUs to use via
+the g6_open_special() call.  In principle, each process can have a
+free choice of GPUs.  What are the likely options we would want to
+implement?  Assume np processes in the parallel application and ngpu
+GPUs per node, so ngpu = 2 for cassini, 6 for draco.  Use -P as in
+kira to specify some sort of list of GPUs.
+
+1. For a single worker process, may want to allocate up to ngpu GPUs
+   for use.  In kira terminology, this will be
+
+	-P 1,2,4,5
+
+2. For a parallel process on a single node, better have np <= ngpu.
+   All processes should have the same number of GPUs, so the only
+   relevant parameter is the number of GPUs ng per process.  The
+   simplest scheme is that process i uses GPUs ng*i, ng*i+1,...,
+   ng*i+ng-1, for i = 0,...,np-1.  For ngpu = 6, as on draco, there
+   are only a few possibilities:
+
+	ng = 1, np = 1,...,6
+	ng = 2, np = 1,2,3
+	ng = 3, np = 1,2
+	ng > 3, np = 1 (same as 1)
+
+   np is already specified on the command line, so wiith this scheme
+   we only need specify ng.  Syntax:
+
+	-G ng
+
+3. For a multinode process, processes need to know how they are
+   distributed across nodes in order to determine GPU use as in 2.
+   Once a process knows how many processes are on the same node, then
+   that sets a "local" np and the procedure is the same as in 2.  The
+   distribution of processes across nodes will be handled by a hosts
+   file of some sort.  For homogeneity, we need the same ng for all
+   processes, so the node with the largest np sets the limit.
+
+We could in principle combine all these options by having all worker
+processes start by communicating with one another and determining np
+and what value of ng to use.  Overkill?
+
+In a serial environment it may be desirable to allow specification of
+individual GPUs in order to avoid conflicts with other users.  In a
+parallel calculation, we can assume that we have the entire node to
+ourselves, so perhaps simply setting ng and automatically assigning
+GPUs is sufficient.  So keep the kira syntax for case 1, and just
+specify ng for cases 2 and 3.
+
+*** Standalone function get_local_rank() in test_hosts.cc returns the
+*** necessary information for use by ph4 and other functions.

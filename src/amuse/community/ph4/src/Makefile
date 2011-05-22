@@ -8,7 +8,7 @@
 OPT	  = -O4
 
 GPU	  = -DGPU
-CXX	  = openmpicxx
+CXX	  = mpicxx	# openmpicxx
 CFLAGS   += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 

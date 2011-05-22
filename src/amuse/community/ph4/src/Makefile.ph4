@@ -8,8 +8,8 @@
 
 OPT	= -O4
 
-MPICXX	= openmpicxx	# mpicxx.openmpi
-MPICC	= openmpicc	# mpicc.openmpi
+MPICXX	?= mpicxx	# openmpicxx	# mpicxx.openmpi
+MPICC	?= mpicc	# openmpicc	# mpicc.openmpi
 CFLAGS += -g -Wall $(OPT)
 CXXFLAGS += $(CFLAGS) 
 
@@ -27,6 +27,9 @@ TEST_NSTAB = ctest_nstab ftest_nstab random_nstab
 
 .SUFFIXES:
 .SUFFIXES: .cc .o .gpuo
+
+.cc:
+	$(MPICXX) $(CFLAGS) $< -o $@
 
 .cc.o:
 	$(MPICXX) $(CFLAGS) -c $< -o $@

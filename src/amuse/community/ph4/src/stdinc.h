@@ -8,7 +8,7 @@
 #include <fstream>
 #include <cstdlib>
 #include <cmath>
-#include <string>
+#include <cstring>
 #include <unistd.h>
 #include <mpi.h>
 
