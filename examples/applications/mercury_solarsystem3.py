@@ -1,9 +1,10 @@
 import numpy
 from amuse.community.mercury.interface import MercuryWayWard
-#from amuse.community.hermite0.interface import Hermite
 from amuse.community.sse.interface import SSE
 from amuse.ext.solarsystem import Solarsystem
 from amuse.support.units import units
+from amuse.support.data.values import VectorQuantity
+
 from amuse.plot import *
 
 try:
@@ -14,17 +15,19 @@ except ImportError:
 
 def planetplot():
     sun, planets = Solarsystem.new_solarsystem()
-    timerange = units.yr(numpy.arange(185000,210000,100))#numpy.arange(0.*365.25, 200 , 960))
-    t_end = timerange[-1]
-    gd = MercuryWayWard(debugger='xterm')
-    #gd = Hermite()
-    gd.initialize_code()
-    gd.stopping_conditions.timeout_detection.disable()
 
+    initial = 12.2138 | units.Gyr
+    final  =  12.3300 | units.Gyr
+    step = 10000.0 | units.yr
+
+    timerange = VectorQuantity.arange(initial, final, step)
+    gd = MercuryWayWard()
+    gd.initialize_code()
+    #gd.stopping_conditions.timeout_detection.disable()
     gd.central_particle.add_particles(sun)
     gd.orbiters.add_particles(planets)
     gd.commit_particles()
-
+    
     se = SSE()
     #se.initialize_code()
     se.commit_parameters()
@@ -34,17 +37,13 @@ def planetplot():
     channels = se.particles.new_channel_to(sun)
 
     for time in timerange:
-        err = gd.evolve_model(time)
-        print err, time, planets[4].x.value_in(units.AU),  planets[4].y.value_in(units.AU),planets[4].z.value_in(units.AU)
+        err = gd.evolve_model(time-initial)
         channelp.copy()
-        planets.savepoint(time)
-        #print planets[4].x.value_in(units.AU),\
-        #    planets[4].y.value_in(units.AU),\
-        #    planets[4].z.value_in(units.AU)
-        err = se.evolve_model(time + (12.32e9|units.yr))
+        #planets.savepoint(time)
+        err = se.evolve_model(time)
         channels.copy()
         gd.central_particle.mass = sun.mass
-        
+        print sun[0].mass.value_in(units.MSun), time.value_in(units.Myr), planets[4].x.value_in(units.AU),  planets[4].y.value_in(units.AU),planets[4].z.value_in(units.AU)
 
     gd.stop()
     se.stop()

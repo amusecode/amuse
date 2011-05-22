@@ -1,9 +1,15 @@
+import numpy
 from amuse.community.sse.interface import SSE
-
 from amuse.support.data import core
 from amuse.support.units import units
 from amuse.ext.solarsystem import Solarsystem
-import numpy
+from amuse.plot import *
+
+try:
+    from matplotlib import pyplot
+    HAS_MATPLOTLIB = True
+except ImportError:
+    HAS_MATPLOTLIB = False
 
 def plottillagb():
     sse = SSE()
@@ -14,15 +20,18 @@ def plottillagb():
     channel = sse.particles.new_channel_to(sun)
     channel.copy()
     
-    timerange = units.Myr(numpy.arange(10, 15000,100))
+    timerange = units.Myr(numpy.arange(11000, 15000,10))
+    masses = []|units.MSun
+
     for time in timerange:
-        print time
         sse.evolve_model(time)
         channel.copy()
-        #print sun.mass
-        print sse.particles[0].mass
-
+        masses.append(sse.particles[0].mass)
+        #print time.value_in(units.yr), sse.particles[0].mass.value_in(units.MSun)
+        
     sse.stop()
+    plot(timerange, masses,'.')
+    native_plot.show()
 
 if __name__ == "__main__":
     plottillagb()
