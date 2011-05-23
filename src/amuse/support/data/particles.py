@@ -1044,11 +1044,25 @@ class ParticlesSuperset(AbstractParticleSet):
         
     def __getitem__(self, index):
         offset = 0
-        for set in self._private.particle_sets:
-            length = len(set)
-            if index < (offset+length):
-                return set[index - offset]
-            offset += length
+        is_index_a_slice = hasattr(index, 'step')
+        
+        if is_index_a_slice:
+            
+            for set in self._private.particle_sets:
+                length = len(set)
+                if index.start < (offset+length):
+                    if index.stop > (offset+length):
+                        raise Exception('cannot slice accross multiple subsets in a superset')
+                    return set[index.start - offset: index.stop - offset: index.step]
+                offset += length
+            raise Exception('error in interpreting slice on superset')
+        else:
+            for set in self._private.particle_sets:
+                length = len(set)
+                if index < (offset+length):
+                    return set[index - offset]
+                offset += length
+            raise Exception('index not found or not supported on superset')
     
         
     def _split_keys_over_sets(self, keys):

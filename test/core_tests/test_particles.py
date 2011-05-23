@@ -98,12 +98,13 @@ class TestParticles(amusetest.TestCase):
     
     def test7(self):
         
-        particles = core.Particles(2)
-        for i in range(3):
-            particles.mass = (i * 1.0) | units.kg
-            
-        self.assertTrue(hasattr(particles, 'mass'))
-        self.assertFalse(hasattr(particles, 'radius'))
+        particles = core.Particles(10)
+        for i in range(10):
+            particles[i].mass = (i * 1.0) | units.kg
+        
+        subset = particles[0:2]
+        self.assertEquals(len(subset), 2)
+        self.assertTrue(str(subset).find('kg') > 0)
         
 class TestStars(amusetest.TestCase):
 

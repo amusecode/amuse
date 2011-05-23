@@ -949,3 +949,21 @@ class TestFi(TestWithMPI):
         self.assertAlmostEqual(instance.dm_particles.z, [ 0.0, 0.0,-0.5] | units.kpc, places=6)
         instance.stop()
         
+
+    def test18(self):
+        particles = core.Particles(10)
+        particles.x = (numpy.array(range(10)) * 1.0) | nbody.length
+        particles.y = 0 | nbody.length
+        particles.z = 0 | nbody.length
+        particles.radius = 0.001 | nbody.length
+        particles.vx =  0 | nbody.speed
+        particles.vy =  0 | nbody.speed
+        particles.vz =  0 | nbody.speed
+        particles.mass = 1.0 | nbody.mass
+    
+        instance = Fi()
+        instance.initialize_code()
+        instance.particles.add_particles(particles)
+        self.assertEquals(len(instance.particles[0:2]), 2)
+        self.assertTrue(str(instance.particles[0:2]).find('key') > 0)
+        

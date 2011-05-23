@@ -130,7 +130,7 @@ class ExampleParticlesInterface(interface.InCodeComponentImplementation):
             
             self.log("updated state of particle with id {0}", index_element)
 
-    def get_state(self, index_of_the_particle, mass, x, y, z):
+    def get_state(self, index_of_the_particle):
         """Returns arrays for the mass, x, y and z values
         """
         
@@ -394,6 +394,29 @@ class ExampleParticlesInterfaceTests(amusetest.TestCase):
         self.assertRaises(exceptions.AmuseException, instance.particles.add_particle, theParticle)        
         
 
+        
+    def test5(self):
+        """
+        In this test we will get subsets from the incode set
+        """
+        
+        instance = ExampleParticlesInterface()
+        self.assertEquals(len(instance.particles), 0)
+        
+        particles = core.Particles(10)
+        particles.mass = 0.1 | units.kg
+        particles.x = 0.1 | units.m
+        particles.y = 0.2 | units.m
+        particles.z = 0.5 | units.m
+        
+        instance.particles.add_particle(particles)
+        
+        self.assertEquals(len(instance.particles), 10)
+        
+        subset = instance.particles[0:2]
+        self.assertEquals(len(subset), 2)
+        self.assertTrue(str(subset).find('key')> 0)
+               
     def log(self, message, *arguments):
         print "IN TEST >>", message.format(*arguments)
     
