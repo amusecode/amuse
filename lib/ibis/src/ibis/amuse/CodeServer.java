@@ -52,7 +52,7 @@ public class CodeServer implements RegistryEventHandler {
             if (jni) {
                 communityCode = new JNICode(codeName, receivePort, sendPort);
             } else {
-                communityCode = new SocketCode(codeName, codeDir, receivePort,
+                communityCode = new SocketCode(codeName, codeDir, amuseHome, receivePort,
                         sendPort);
             }
 

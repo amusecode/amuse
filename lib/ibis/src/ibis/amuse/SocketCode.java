@@ -48,7 +48,7 @@ public class SocketCode implements Runnable {
 
     private final Process process;
 
-    SocketCode(String codeName, String codeDir, ReceivePort receivePort,
+    SocketCode(String codeName, String codeDir, String amuseHome, ReceivePort receivePort,
             SendPort sendPort) throws IOException {
         this.receivePort = receivePort;
         this.sendPort = sendPort;
@@ -56,7 +56,7 @@ public class SocketCode implements Runnable {
         requestMessage = new AmuseMessage();
         resultMessage = new AmuseMessage();
 
-        executable = new File(codeDir + File.separator + codeName + "_sockets");
+        executable = new File(amuseHome + File.separator + codeDir + File.separator + codeName + "_sockets");
 
         if (!executable.canExecute()) {
             throw new IOException("Cannot find executable for code " + codeName
@@ -161,7 +161,7 @@ public class SocketCode implements Runnable {
     }
 
     public static void main(String[] arguments) throws Exception {
-        SocketCode code = new SocketCode(arguments[0], arguments[1], null, null);
+        SocketCode code = new SocketCode(arguments[0], arguments[1], arguments[2], null, null);
 
         code.requestMessage.clear();
         code.requestMessage.setFunctionID(1644113439);

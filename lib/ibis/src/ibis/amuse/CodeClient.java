@@ -35,6 +35,8 @@ public class CodeClient implements Runnable {
     private final SocketChannel channel;
 
     private final String codeName;
+    
+    private final String codeDir;
 
     private final String hostname;
 
@@ -126,7 +128,8 @@ public class CodeClient implements Runnable {
             }
 
             codeName = initRequest.getString(0);
-            hostname = initRequest.getString(1);
+            codeDir = initRequest.getString(1);
+            hostname = initRequest.getString(2);
 
             // initialize ibis ports
 
@@ -138,7 +141,7 @@ public class CodeClient implements Runnable {
 
             // start deployment of worker (possibly on remote machine)
 
-            job = deployment.deploy(codeName, hostname, id);
+            job = deployment.deploy(codeName, codeDir, hostname, id);
 
             // we expect a "hello" message from the worker. Will also check if
             // the job is still running

@@ -52,7 +52,7 @@ public class Deployment {
         return deploy.getServerAddress();
     }
 
-    public Job deploy(String codeName, String clusterName, String workerID)
+    public Job deploy(String codeName, String codeDir, String clusterName, String workerID)
             throws Exception {
         logger.info("Deploying worker \"" + workerID + "\" running \""
                 + codeName + "\" on host " + clusterName);
@@ -109,10 +109,10 @@ public class Deployment {
         jobDescription.getApplication().setName(codeName);
         jobDescription.setPoolName("amuse");
 
-        String codeDir = amuseHome + "/" + "src/amuse/community/bhtree";
-
+        String absCodeDir = amuseHome + "/" + codeDir;
+        
         jobDescription.getApplication().setSystemProperty("java.library.path",
-                codeDir);
+                absCodeDir);
 
         jobDescription.getApplication().setArguments("--code-name", codeName,
                 "--worker-id", workerID, "--amuse-home", amuseHome,

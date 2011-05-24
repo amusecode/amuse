@@ -19,7 +19,7 @@ import logging
 from mpi4py import MPI
 from subprocess import Popen, PIPE
 
-from amuse.support.options import OptionalAttributes, option
+from amuse.support.options import OptionalAttributes, option, GlobalOptions
 from amuse.support.core import late
 from amuse.support import exceptions
 
@@ -468,7 +468,7 @@ p.Disconnect()"""
             else:
                 found = True
         return full_name_of_the_worker
-
+    
     def send_message(self, tag, id=0, dtype_to_arguments = {}, length = 1):
         pass
         
@@ -1217,17 +1217,16 @@ class IbisMessage(AbstractMessage):
         
 class IbisChannel(MessageChannel):
     
-    def __init__(self, name_of_the_worker, legacy_interface_type=None, hostname="localhost", number_of_workers=1, **options):
+    def __init__(self, name_of_the_worker, legacy_interface_type=None, number_of_workers=1, **options):
         MessageChannel.__init__(self, **options)
         
         logging.getLogger("ibis").debug("initializing IbisChannel with options %s", options)
        
         self.name_of_the_worker = name_of_the_worker
-
-        if hostname == None:
-            hostname = 'local'
         
-        self.hostname = hostname
+        if self.hostname == None:
+            self.hostname = 'local'
+        
         self.number_of_workers = number_of_workers
         
         self.daemon_host = 'localhost'    # Ibis deamon always running on the local machine
@@ -1239,6 +1238,18 @@ class IbisChannel(MessageChannel):
             self.full_name_of_the_worker = self.get_full_name_of_the_worker(legacy_interface_type)
         else:
             self.full_name_of_the_worker = self.name_of_the_worker
+            
+        logging.getLogger("ibis").debug("full name of worker is %s", self.full_name_of_the_worker)
+        
+        global_options = GlobalOptions()
+        
+        logging.getLogger("ibis").debug("amuse root dir is %s", global_options.amuse_rootdirectory)
+            
+        worker_path = os.path.relpath(self.full_name_of_the_worker, global_options.amuse_rootdirectory)
+            
+        self.worker_dir = os.path.dirname(worker_path)
+            
+        logging.getLogger("ibis").debug("worker dir is %s", self.worker_dir)
             
         self._is_inuse = False
         self.socket = None
@@ -1252,7 +1263,7 @@ class IbisChannel(MessageChannel):
         
         self.socket.sendall('magic_string'.encode('utf-8'))
         
-        arguments = {'string': [self.name_of_the_worker, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers]}
+        arguments = {'string': [self.name_of_the_worker, self.worker_dir, self.hostname, self.redirect_stdout_file, self.redirect_stderr_file], 'int32': [self.number_of_workers]}
         
         message = IbisMessage(10101010, 1, arguments);
 
@@ -1273,6 +1284,14 @@ class IbisChannel(MessageChannel):
     def debugger(self):
         """Name of the debugger to use when starting the code"""
         return "none"
+        
+    @option(sections=("channel",))
+    def hostname(self):
+        return None
+    
+    @option(type="int", sections=("channel",))
+    def number_of_workers(self):
+        return 1
        
     def stop(self):
         logging.getLogger("ibis").info("stopping worker %s", self.name_of_the_worker)

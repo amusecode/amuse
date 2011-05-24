@@ -81,6 +81,8 @@ int main(int argc, char *argv[]) {
     int portno;
     struct sockaddr_in serv_addr;
     struct hostent *server;
+    
+    MPI::Init_thread(argc, argv, MPI_THREAD_MULTIPLE);
 
     fprintf(stderr, "main!\\n");
 
@@ -113,6 +115,8 @@ int main(int argc, char *argv[]) {
     run_loop(socketfd);
 
     close(socketfd);
+
+    MPI_Finalize();
 
     return 0;
 }
