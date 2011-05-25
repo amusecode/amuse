@@ -24,7 +24,7 @@
          logical :: new_model_defined = .false.
          integer :: id_new_model
          
-         logical :: debugging = .true.
+         logical :: debugging = .false.
          contains
          logical function failed(str, ierr)
             character (len=*), intent(in) :: str
@@ -1165,6 +1165,7 @@
       use run_star_support
       use run_star, only: check_model
       use amuse_support, only: evolve_failed
+      use const_def, only: secyer
       implicit none
       integer, intent(in) :: AMUSE_id
       integer :: evolve_one_step
@@ -1204,12 +1205,14 @@
          if (result == backup) result = star_do1_backup(AMUSE_id)
          if (result == terminate) then
             evolve_one_step = -11 ! Unspecified stop condition reached, or:
-            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) then
+            if (s% dt_next < s% min_timestep_limit) &
+               evolve_one_step = -15 ! minimum timestep limit reached
+            if (s% number_of_backups_in_a_row > s% max_backups_in_a_row ) &
                evolve_one_step = -14 ! max backups reached
-            endif
-            if (s% max_model_number > 0 .and. s% model_number >= &
-               s% max_model_number) evolve_one_step = -13 ! max iterations reached
-            if (s% star_age >= s% max_age) evolve_one_step = -12 ! max_age reached
+            if (s% max_model_number > 0 .and. s% model_number >= s% max_model_number) &
+               evolve_one_step = -13 ! max iterations reached
+            if (s% star_age >= s% max_age) &
+               evolve_one_step = -12 ! max_age reached
             return
          end if
          first_try = .false.
@@ -1224,44 +1227,44 @@
    end function
 
 ! Evolve the star until AMUSE_end_time
-   integer function evolve_to(AMUSE_id, AMUSE_end_time)
+   integer function evolve_for(AMUSE_id, AMUSE_delta_t)
       use star_private_def, only: star_info, get_star_ptr
       use const_def, only: secyer
       use amuse_support, only: evolve_failed, debugging
       implicit none
       integer, intent(in) :: AMUSE_id
-      double precision, intent(in) :: AMUSE_end_time
+      double precision, intent(in) :: AMUSE_delta_t
       type (star_info), pointer :: s
       integer :: ierr
       double precision :: old_max_age, timestep_old, timestep_older
       integer :: evolve_one_step
       
-      evolve_to = 0
+      evolve_for = 0
       call get_star_ptr(AMUSE_id, s, ierr)
-      if (evolve_failed('get_star_ptr', ierr, evolve_to, -1)) return
+      if (evolve_failed('get_star_ptr', ierr, evolve_for, -1)) return
       old_max_age = s% max_age
-      s% max_age = min(AMUSE_end_time, old_max_age)
+      s% max_age = min(s% time/secyer + AMUSE_delta_t, old_max_age)
       timestep_old = s% dt_next
       if ((s% time + s% dt_next) > s% max_age*secyer) &
-         s% dt_next = max(0d0, s% max_age*secyer - s% time)
+         s% dt_next = max(s% min_timestep_limit, s% max_age*secyer - s% time)
       
-      evolve_loop: do while(evolve_to == 0) ! evolve one step per loop
+      evolve_loop: do while(evolve_for == 0 .and. &
+            (s% time + s% min_timestep_limit < s% max_age*secyer)) ! evolve one step per loop
          if (debugging) write (*,*) "timestep: ", s% dt_next/secyer, "(", s% dt_next/s% dt, ")"
          timestep_older = timestep_old
          timestep_old = s% dt_next
-         evolve_to = evolve_one_step(AMUSE_id)
+         if ((s% time + s% dt_next + s% min_timestep_limit) >= s% max_age*secyer) &
+            s% dt_next = max(s% min_timestep_limit, (s% max_age*secyer - s% time))
+         evolve_for = evolve_one_step(AMUSE_id)
       end do evolve_loop
       
-      if (evolve_to == -12 .and. s% star_age < old_max_age) then
-         if (debugging) write (*,*) "resetting to: ", timestep_older/secyer
-         s% dt_next = timestep_older
-         s% dt = timestep_older
-         evolve_to = 0
-      else
-         if (debugging) write (*,*) "why am i here?"
-      endif
+      if (evolve_for == -12 .and. s% star_age < old_max_age) evolve_for = 0
+      
+      if (debugging) write (*,*) "resetting to: ", timestep_older/secyer
+      s% dt_next = timestep_older
+      s% dt = timestep_older
       s% max_age = old_max_age
-   end function evolve_to
+   end function evolve_for
 
 ! Return the maximum age stop condition
       integer function get_max_age_stop_condition(AMUSE_value)

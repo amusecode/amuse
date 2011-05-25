@@ -64,7 +64,7 @@ def simulate_binary_evolution(binary):
     current_time = 0.0 | units.yr
     print "Evolving without stellar wind"
     while current_time < t_start_evolution_with_wind:
-        current_time += orbital_period / 100
+        current_time += orbital_period / 10
         gravitational_dynamics.evolve_model(current_time)
         distance.append((gravitational_dynamics.particles[0].position - gravitational_dynamics.particles[1].position).length())
         mass.append(primary.mass)
@@ -72,7 +72,7 @@ def simulate_binary_evolution(binary):
     
     print "Evolving with stellar wind"
     while current_time < t_end:
-        current_time += orbital_period / 100
+        current_time += orbital_period / 10
         gravitational_dynamics.evolve_model(current_time)
         stellar_evolution.evolve_model(current_time - t_start_evolution_with_wind)
         from_se_to_gd.copy_attributes(['mass'])

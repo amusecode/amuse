@@ -281,7 +281,7 @@ class TestInterface(TestWithMPI):
             self.assertEquals(0, instance.evolve_one_step(index))
             (age_after_evolve, error) = instance.get_age(index)
             self.assertEquals(0, error)
-            self.assertAlmostEqual(age_after_evolve, 845581.26610757)
+            self.assertAlmostEqual(age_after_evolve, 422790.633054, 5)
         
         self.assertEquals(0, instance.delete_star(1))
         self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
@@ -426,7 +426,7 @@ class TestEVtwin(TestWithMPI):
             star.radius = 0.0 | units.RSun
 
 #       Initialize stellar evolution code
-        instance = EVtwin() #debugger="xterm")
+        instance = EVtwin(redirection = 'none') #debugger="xterm")
         instance.initialize_code()
         if instance.get_maximum_number_of_stars() < number_of_stars:
             instance.set_maximum_number_of_stars(number_of_stars)
@@ -452,7 +452,7 @@ class TestEVtwin(TestWithMPI):
             self.assertTrue(stars[i].time_step <= max_age)
                 
         self.assertRaises(AmuseException, instance.evolve_model, end_time = 2*max_age, 
-            expected_message = "Error when calling 'evolve_one_step' of a 'EVtwin', errorcode "
+            expected_message = "Error when calling 'evolve_for' of a 'EVtwin', errorcode "
                 "is 2, error is 'BACKUP -- tstep reduced below limit; quit'")
 
         instance.stop()
@@ -472,26 +472,24 @@ class TestEVtwin(TestWithMPI):
         instance.commit_particles()
         instance.evolve_model(1.0 | units.Myr)
         self.assertEquals(len(stars), 2) # before remove
-        for star in stars:
-            self.assertTrue(star.age > 1.0 | units.Myr)
+        self.assertAlmostEqual(stars.age, 1.0 | units.Myr)
         
         stars.remove_particle(particles[0])
         self.assertEquals(len(stars), 1)
         self.assertEquals(instance.get_number_of_particles().number_of_particles, 1)
         instance.evolve_model(2.0 | units.Myr)
-        self.assertTrue(stars[0].age > 2.0 | units.Myr)
+        self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
         
         stars.add_particles(particles[::2])
         self.assertEquals(len(stars), 3) # it's back...
-        self.assertTrue(stars[0].age > 2.0 | units.Myr)
-        self.assertTrue(stars[1].age < 1.0 | units.Myr)
-        self.assertTrue(stars[2].age < 1.0 | units.Myr) # ... and rejuvenated
-        instance.evolve_model(1.0 | units.Myr)
-        self.assertTrue(stars[1].age > 1.0 | units.Myr and stars[1].age < 2.0 | units.Myr)
-        self.assertEquals(stars[1].age, stars[2].age)
-        instance.evolve_model(2.0 | units.Myr)
-        self.assertAlmostEqual(stars[1].age, stars[0].age)
-        self.assertAlmostEqual(stars[2].age, stars[0].age)
+        self.assertAlmostEqual(stars[0].age, 2.0 | units.Myr)
+        self.assertAlmostEqual(stars[1].age, 0.0 | units.Myr)
+        self.assertAlmostEqual(stars[2].age, 0.0 | units.Myr) # ... and rejuvenated.
+        
+        instance.evolve_model(3.0 | units.Myr) # The young stars keep their age offset from the old star
+        self.assertAlmostEqual(stars.age, [3.0, 1.0, 1.0] | units.Myr)
+        instance.evolve_model(4.0 | units.Myr)
+        self.assertAlmostEqual(stars.age, [4.0, 2.0, 2.0] | units.Myr)
         instance.stop()
 
     def test6(self):
@@ -688,3 +686,55 @@ class TestEVtwin(TestWithMPI):
         print instance.particles
         instance.stop()
         del instance
+    
+    def test12(self):
+        print "Testing basic operations: evolve_one_step and evolve_for"
+        stars = core.Particles(2)
+        stars.mass = 1.0 | units.MSun
+        instance = EVtwin(redirection = "none")
+        se_stars = instance.particles.add_particles(stars)
+        self.assertAlmostEqual(se_stars.age, [0.0, 0.0] | units.yr)
+        
+        for i in range(3):
+            se_stars[0].evolve_one_step()
+        self.assertAlmostEqual(se_stars.age, [1352930.0257, 0.0] | units.yr, 3)
+        number_of_steps = 10
+        step_size = se_stars[0].age / number_of_steps
+        for i in range(1, number_of_steps + 1):
+            se_stars[1].evolve_for(step_size)
+            self.assertAlmostEqual(se_stars.age, [number_of_steps, i] * step_size)
+        print se_stars
+        self.assertAlmostRelativeEqual(se_stars[0].age,         se_stars[1].age)
+        self.assertAlmostRelativeEqual(se_stars[0].luminosity,  se_stars[1].luminosity, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].radius,      se_stars[1].radius, 3)
+        self.assertAlmostRelativeEqual(se_stars[0].temperature, se_stars[1].temperature, 3)
+        instance.stop()
+    
+    def test13(self):
+        print "Test evolve_model optional arguments: end_time and keep_synchronous"
+        stars = core.Particles(3)
+        stars.mass = [1.0, 2.0, 3.0] | units.MSun
+        instance = EVtwin(redirection = 'none')
+        instance.particles.add_particles(stars)
+        
+        self.assertAlmostEqual(instance.particles.age, [0.0, 0.0, 0.0] | units.yr)
+        self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
+        
+        print "evolve_model without arguments: use shared timestep = min(particles.time_step)"
+        instance.evolve_model()
+        self.assertAlmostEqual(instance.particles.age, [11259.1953, 11259.1953, 11259.1953] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 11259.1953 | units.yr, 3)
+        
+        print "evolve_model with end_time: take timesteps, until end_time is reached exactly"
+        instance.evolve_model(15000 | units.yr)
+        self.assertAlmostEqual(instance.particles.age, [15000.0, 15000.0, 15000.0] | units.yr, 3)
+        self.assertAlmostEqual(instance.particles.time_step, [422790.6330, 36382.1271, 11259.1953] | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3)
+        
+        print "evolve_model with keep_synchronous: use non-shared timestep, particle ages will typically diverge"
+        instance.evolve_model(keep_synchronous = False)
+        self.assertAlmostEqual(instance.particles.age, (15000 | units.yr) + ([422790.6330, 36382.1271, 11259.1953] | units.yr), 3)
+        self.assertAlmostEqual(instance.particles.time_step, [507348.7596, 43244.8707, 13511.0343] | units.yr, 3)
+        self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
+        instance.stop()

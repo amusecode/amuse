@@ -91,38 +91,11 @@ class MESAInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolutionIn
         return function
     
     @legacy_function
-    def evolve_to():
-        function = LegacyFunctionSpecification()
-        function.can_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('end_time', dtype='float64', direction=function.IN)
-        function.result_type = 'int32'
-        return function
-        
-    @legacy_function
     def new_zams_model():
         function = LegacyFunctionSpecification()  
         function.addParameter('status', dtype='int32', direction=function.OUT)
         return function
         
-    @legacy_function
-    def get_time_step():
-        function = LegacyFunctionSpecification() 
-        function.can_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the value of")
-        function.addParameter('time_step', dtype='float64', direction=function.OUT
-            , description="The next timestep for the star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            The value has been set.
-        -1 - ERROR
-            A star with the given index was not found.
-        """
-        return function
-    
     @legacy_function
     def set_time_step():
         function = LegacyFunctionSpecification() 
@@ -849,7 +822,7 @@ class MESA(StellarEvolution, InternalStellarStructure):
             object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
             object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
             object.add_method(particle_set_name, 'evolve_one_step')
-            object.add_method(particle_set_name, 'evolve_to')
+            object.add_method(particle_set_name, 'evolve_for')
             InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
             object.add_method(particle_set_name, 'get_mass_profile')
             object.add_method(particle_set_name, 'set_mass_profile')
@@ -870,64 +843,11 @@ class MESA(StellarEvolution, InternalStellarStructure):
         object.add_errorcode(-12, 'Evolve terminated: Maximum age reached.')
         object.add_errorcode(-13, 'Evolve terminated: Maximum number of iterations reached.')
         object.add_errorcode(-14, 'Evolve terminated: Maximum number of backups reached.')
+        object.add_errorcode(-15, 'Evolve terminated: Minimum timestep limit reached.')
     
     def define_methods(self, object):
         InternalStellarStructure.define_methods(self, object)
-        object.add_method(
-            "evolve_one_step",
-            (object.INDEX,),
-            (object.ERROR_CODE,)
-        )
-        object.add_method(
-            "evolve_to",
-            (object.INDEX, units.yr),
-            (object.ERROR_CODE,)
-        )
-        object.add_method(
-            "new_particle",
-            (units.MSun),
-            (object.INDEX, object.ERROR_CODE)
-        )
-        object.add_method(
-            "delete_star",
-            (object.INDEX,),
-            (object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_mass",
-            (object.INDEX,),
-            (units.MSun, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_radius",
-            (object.INDEX,),
-            (units.RSun, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_stellar_type",
-            (object.INDEX,),
-            (units.stellar_type, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_age", 
-            (object.INDEX,), 
-            (units.yr, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_luminosity", 
-            (object.INDEX,), 
-            (units.LSun, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_temperature", 
-            (object.INDEX,), 
-            (units.K, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_time_step", 
-            (object.INDEX,), 
-            (units.yr, object.ERROR_CODE,)
-        )
+        StellarEvolution.define_methods(self, object)
         object.add_method(
             "set_time_step", 
             (object.INDEX, units.yr), 
@@ -996,21 +916,6 @@ class MESA(StellarEvolution, InternalStellarStructure):
             (object.INDEX, object.ERROR_CODE,)
         )
         
-    
-        object.add_method(
-            "get_metallicity", 
-            (), 
-            (units.none, object.ERROR_CODE,)
-        )
-        
-    
-        object.add_method(
-            "set_metallicity", 
-            (units.none, ), 
-            (object.ERROR_CODE,)
-        )
-        
-    
         object.add_method(
             "get_max_age_stop_condition", 
             (), 

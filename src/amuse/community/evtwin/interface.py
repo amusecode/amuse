@@ -135,7 +135,6 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
             The code cannot update the maximum number of stars
         """
         return function
-        
     
     @legacy_function
     def set_ev_path():
@@ -538,28 +537,6 @@ class EVtwinInterface(CodeInterface, LiteratureReferencesMixIn, StellarEvolution
         """
         return function
 
-    @legacy_function
-    def get_time_step():
-        """
-        Retrieve the current time step (yr) to be taken for the evolution of this star.
-        Note that the stellar evolution code might change the value during an 
-        evolve_model call, if it fails to converge using the current value.
-        """
-        function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
-            , description="The index of the star to get the stellar type of")
-        function.addParameter('time_step', dtype='float64', direction=function.OUT
-            , description="The current time step (yr) to be taken for the evolution of this star.")
-        function.result_type = 'int32'
-        function.result_doc = """
-        0 - OK
-            Current value was retrieved
-        -1 - ERROR
-            The code could not retrieve the value.
-        """
-        return function
-
     @legacy_function   
     def new_spinning_particle():
         """
@@ -840,6 +817,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             object.add_getter(particle_set_name, 'get_luminosity', names = ('luminosity',))
             object.add_getter(particle_set_name, 'get_temperature', names = ('temperature',))
             object.add_method(particle_set_name, 'evolve_one_step')
+            object.add_method(particle_set_name, 'evolve_for')
             InternalStellarStructure.define_particle_sets(self, object, set_name = particle_set_name)
             object.add_method(particle_set_name, 'get_stellar_model', 'internal_structure') 
     
@@ -873,26 +851,7 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
     
     def define_methods(self, object):
         InternalStellarStructure.define_methods(self, object)
-        object.add_method(
-            'evolve_one_step', 
-            (object.INDEX,), 
-            (object.ERROR_CODE,), 
-        )
-        object.add_method(
-            "new_particle", 
-            (units.MSun), #, units.day, units.RSun),
-            (object.INDEX, object.ERROR_CODE)
-        )
-        object.add_method(
-            "delete_star", 
-            (object.INDEX,), 
-            (object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_mass", 
-            (object.INDEX,), 
-            (units.MSun, object.ERROR_CODE,)
-        )
+        StellarEvolution.define_methods(self, object)
         object.add_method(
             "get_mass_transfer_rate",
             (object.INDEX,),
@@ -902,37 +861,6 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "get_wind_mass_loss_rate",
             (object.INDEX,),
             (units.MSun/units.yr, object.ERROR_CODE,)
-        )
-        
-        object.add_method(
-            "get_radius", 
-            (object.INDEX,), 
-            (units.RSun, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_stellar_type", 
-            (object.INDEX,), 
-            (units.stellar_type, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_age", 
-            (object.INDEX,), 
-            (units.yr, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_luminosity", 
-            (object.INDEX,), 
-            (units.LSun, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_temperature", 
-            (object.INDEX,), 
-            (units.K, object.ERROR_CODE,)
-        )
-        object.add_method(
-            "get_time_step", 
-            (object.INDEX,), 
-            (units.yr, object.ERROR_CODE,)
         )
         object.add_method(
             "get_spin", 
@@ -970,24 +898,6 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
             "set_maximum_number_of_stars", 
             (units.none, ),
             (object.ERROR_CODE,)
-        )
-    
-        object.add_method(
-            "get_metallicity", 
-            (),
-            (units.none, object.ERROR_CODE,)
-        )
-    
-        object.add_method(
-            "set_metallicity", 
-            (units.none, ),
-            (object.ERROR_CODE,)
-        )
-    
-        object.add_method(
-            None, 
-            (),
-            (units.string, object.ERROR_CODE,)
         )
     
         object.add_method(
@@ -1118,22 +1028,6 @@ class EVtwin(StellarEvolution, InternalStellarStructure):
         self.parameters.send_not_set_parameters_to_code()
         self.parameters.send_cached_parameters_to_code()
         self.overridden().commit_parameters()
-        
-    def evolve_model(self, end_time = None, keep_synchronous = True):
-        if end_time is None:
-            if keep_synchronous:
-                ages = self.particles.age
-                index, min_age = min(enumerate(ages), key=itemgetter(1))
-                self.particles[index].evolve_one_step()
-                new_age = self.particles[index].age
-                for particle in self.particles.select(lambda x : x < new_age, ["age"]):
-                    particle.evolve_one_step()
-            else:
-                self.particles.evolve_one_step()
-        else:
-            for particle in self.particles:
-                while particle.age < end_time:
-                    particle.evolve_one_step()
                 
     def get_stellar_model(self, index_of_the_star):
         if hasattr(index_of_the_star, '__iter__'):

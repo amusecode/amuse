@@ -132,6 +132,23 @@ class StellarEvolutionInterface(common.CommonCodeInterface):
         """
         return function
         
+    @legacy_function
+    def get_time_step():
+        function = LegacyFunctionSpecification() 
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to get the value of")
+        function.addParameter('time_step', dtype='float64', direction=function.OUT
+            , description="The next timestep for the star.")
+        function.result_type = 'int32'
+        function.result_doc = """
+        0 - OK
+            The value has been set.
+        -1 - ERROR
+            A star with the given index was not found.
+        """
+        return function
+    
     #@legacy_function   
     #def get_type():
     #    """
@@ -230,7 +247,19 @@ class StellarEvolutionInterface(common.CommonCodeInterface):
             The evolution could not complete, solution did not converge.
         """
         return function
-        
+    
+    @legacy_function
+    def evolve_for():
+        """
+        Evolve the star for exactly the given time period.
+        """
+        function = LegacyFunctionSpecification()
+        function.can_handle_array = True
+        function.addParameter('index_of_the_star', dtype='int32', direction=function.IN
+            , description="The index of the star to evolve")
+        function.addParameter('delta_t', dtype='float64', direction=function.IN)
+        function.result_type = 'int32'
+        return function
     
     @legacy_function
     def get_metallicity():
@@ -313,8 +342,32 @@ class StellarEvolution(common.CommonCode):
         if end_time is None:
             end_time = self.model_time + min(self.particles.time_step)
         for particle in self.particles:
-            particle.evolve_to(end_time - self.model_time + particle.age)
+            particle.evolve_for(end_time - self.model_time)
         self.model_time = end_time
+    
+    def _evolve_model_old(self, end_time = None, keep_synchronous = True):
+        """
+        This is the old implementation of evolve_model. Even with (keep_synchronous = True) 
+        it is unable to evolve all stars to a common age, since it relies on the 
+        individual timesteps as determined by the community code. Furthermore, it 
+        is not suited to simulations with ongoing star formation, since it evolves 
+        newly created stars to the same age as the old stars. Finally, this old 
+        implementation has substantially more communication overhead. 
+        """
+        if end_time is None:
+            if keep_synchronous:
+                ages = self.particles.age
+                index, min_age = min(enumerate(ages), key=itemgetter(1))
+                self.particles[index].evolve_one_step()
+                new_age = self.particles[index].age
+                for particle in self.particles.select(lambda x : x < new_age, ["age"]):
+                    particle.evolve_one_step()
+            else:
+                self.particles.evolve_one_step()
+        else:
+            for particle in self.particles:
+                while particle.age < end_time:
+                    particle.evolve_one_step()
     
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
@@ -332,7 +385,7 @@ class StellarEvolution(common.CommonCode):
         object.add_transition('RUN', 'UPDATE', 'delete_star', False)
         object.add_transition('UPDATE', 'RUN', 'recommit_particles')
         object.add_method('RUN', 'evolve_model')
-        object.add_method('RUN', 'evolve_to')
+        object.add_method('RUN', 'evolve_for')
         object.add_method('RUN', 'evolve_one_step')
         object.add_method('RUN', 'get_age')
         object.add_method('RUN', 'get_mass')
@@ -340,6 +393,73 @@ class StellarEvolution(common.CommonCode):
         object.add_method('RUN', 'get_radius')
         object.add_method('RUN', 'get_stellar_type')
         object.add_method('RUN', 'get_temperature')
+    
+    def define_methods(self, object):
+        object.add_method(
+            "evolve_one_step",
+            (object.INDEX,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "evolve_for",
+            (object.INDEX, units.yr),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "new_particle",
+            (units.MSun),
+            (object.INDEX, object.ERROR_CODE)
+        )
+        object.add_method(
+            "delete_star",
+            (object.INDEX,),
+            (object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_mass",
+            (object.INDEX,),
+            (units.MSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_radius",
+            (object.INDEX,),
+            (units.RSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_stellar_type",
+            (object.INDEX,),
+            (units.stellar_type, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_age", 
+            (object.INDEX,), 
+            (units.yr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_luminosity", 
+            (object.INDEX,), 
+            (units.LSun, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_temperature", 
+            (object.INDEX,), 
+            (units.K, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_time_step", 
+            (object.INDEX,), 
+            (units.yr, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "get_metallicity", 
+            (), 
+            (units.none, object.ERROR_CODE,)
+        )
+        object.add_method(
+            "set_metallicity", 
+            (units.none, ), 
+            (object.ERROR_CODE,)
+        )
 
 
 class InternalStellarStructureInterface(object): 

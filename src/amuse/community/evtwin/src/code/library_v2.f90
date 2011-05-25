@@ -524,7 +524,7 @@ contains
    !  Return value:
    !   >0: The stars ID for identifying it in the array of models
    !   =0: No star allocated, out of memory
-   function load_zams_star(mass, spin, age)
+   function load_zams_star(mass, spin, age_in)
       use real_kind
       use mesh
       use constants
@@ -536,7 +536,7 @@ contains
       implicit none
       type(twin_star_t), pointer :: star
       integer :: load_zams_star, new_id
-      real(double), intent(in) :: mass, spin, age
+      real(double), intent(in) :: mass, spin, age_in
 
       integer :: im1,kh1,kp1,jmod1,jb1,jn1,jf1
       real(double) :: tnuc
@@ -547,7 +547,7 @@ contains
       real(double) :: tn, perc
 
       
-      if (verbose) print *, 'create star with mass', mass, 'and age tag', age
+      if (verbose) print *, 'create star with mass', mass, 'and age tag', age_in
       sm1 = 0
       ml = log10(mass)
       !sm1 = mass 
@@ -625,7 +625,7 @@ contains
       ! Initialise some more variables
       star%star_exists = .true.
       star%zams_mass = mass
-      star%age = age
+      star%age = age_in
       if (p1>0) star%p = p1
 ! If the spin is supplied by the user, it will override the current value.
       if (spin>0.0) star%p = spin
@@ -694,6 +694,46 @@ contains
       evolve_one_step = twin_evolve()
       if (evolve_one_step == 0) call swap_out_star(star_id)
    end function evolve_one_step
+   
+   function evolve_for(star_id, delta_t)
+      use real_kind
+      use constants
+      use test_variables
+      use current_model_properties
+      implicit none
+      integer :: evolve_for
+      integer, intent(in) :: star_id
+      real(double), intent(in) :: delta_t
+      real(double) :: timestep_old, timestep_older, target_age
+      type(twin_star_t), pointer :: star
+      
+      ! Check whether the star exists, and that it hasn't been removed.
+      if (star_id<1 .or. star_id>highest_star_index .or. .not. star_list(star_id)%star_exists) then
+         if (verbose) print *, 'Error: no star to evolve. Star_id=', star_id, ', star_exists=', star_list(star_id)%star_exists
+         evolve_for = -1
+         return
+      end if
+      
+      star => star_list(star_id)
+      call swap_in_star(star_id)
+      target_age = age + delta_t
+      if (verbose) write (*,*) "target_age: ", target_age, age, delta_t
+      timestep_old = dt
+      evolve_for = 0
+      evolve_loop: do while(evolve_for == 0 .and. (age + uc(12)/csy) < target_age) ! evolve one step per loop
+         if (verbose) write (*,*) "timestep: ", dt/csy
+         timestep_older = timestep_old
+         timestep_old = dt
+         if ((age + (dt + uc(12))/csy) >= target_age) &
+            dt = max(uc(12), (target_age - age) * csy)
+         evolve_for = twin_evolve()
+      end do evolve_loop
+      
+      if (verbose) write (*,*) "resetting to: ", timestep_older/csy
+      dt = min(timestep_older, (uc(2) - age) * csy)
+      if (evolve_for == 0) &
+         call swap_out_star(star_id)
+   end function evolve_for
    
    function twin_evolve()
       use real_kind
@@ -1680,6 +1720,7 @@ contains
          ! some tasks from printb, notably the timestep control
          ! For now, we just call timestep_heuristic, which means we get some unwanted output
          call timestep_heuristic ( jo, 1 )
+         age = 0.0
          call nextdt ( dty, jo, it )
          jnn = 1
 
