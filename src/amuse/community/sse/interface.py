@@ -144,7 +144,7 @@ class SSEParticles(Particles):
         super(SSEParticles, self).add_particles_to_store(keys, all_attributes, all_values)
         
         added_particles = ParticlesSubset(self, keys)
-        self._private.code_interface._evolve_particles(added_particles, 1e-06 | units.Myr)
+        self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
     
     def _state_attributes(self):
         return ["mass", "radius"]
@@ -158,12 +158,13 @@ class SSEParticles(Particles):
         
         
 
-class SSE(InCodeComponentImplementation):
+class SSE(common.CommonCode):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, SSEInterface(**options), **options)
         
         self.parameters.set_defaults()
+        self.model_time = 0.0 | units.yr
         
     
     def define_parameters(self, object):
@@ -271,7 +272,12 @@ class SSE(InCodeComponentImplementation):
             "The timesteps chosen in each evolution phase as decimal fractions of the time taken in that phase: HG, HeMS (0.02)",
             0.02 | units.none
         )
-        
+    
+    def define_state(self, object):
+        common.CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','RUN','commit_parameters')
+        object.add_method('RUN', 'evolve')
+    
     def define_methods(self, object):
         
         object.add_method( 
@@ -389,8 +395,24 @@ class SSE(InCodeComponentImplementation):
         
         particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
         
-        
     def evolve_model(self, end_time = None, keep_synchronous = True):
+        if not keep_synchronous:
+            self._evolve_particles(self.particles, self.particles.time_step + self.particles.age)
+            return
+        
+        if end_time is None:
+            end_time = self.model_time + min(self.particles.time_step)
+        self._evolve_particles(self.particles, end_time - self.model_time + self.particles.age)
+        self.model_time = end_time
+    
+    def _evolve_model_old(self, end_time = None, keep_synchronous = True):
+        """
+        This is the old implementation of evolve_model. Even with (keep_synchronous = True) 
+        it is unable to evolve all stars to a common age, since it relies on the 
+        individual timesteps as determined by the community code. Furthermore, it 
+        is not suited to simulations with ongoing star formation, since it evolves 
+        newly created stars to the same age as the old stars. 
+        """
         if end_time is None:
             if keep_synchronous:
                 ages = self.particles.age
@@ -406,6 +428,7 @@ class SSE(InCodeComponentImplementation):
         
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
     
     def initialize_module_with_current_parameters(self):
         self.parameters.send_cached_parameters_to_code()

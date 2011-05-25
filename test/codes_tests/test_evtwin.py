@@ -738,3 +738,41 @@ class TestEVtwin(TestWithMPI):
         self.assertAlmostEqual(instance.particles.time_step, [507348.7596, 43244.8707, 13511.0343] | units.yr, 3)
         self.assertAlmostEqual(instance.model_time, 15000.0 | units.yr, 3) # Unchanged!
         instance.stop()
+    
+    def test14(self):
+        print "Testing EVtwin states"
+        stars = core.Particles(2)
+        stars.mass = 1.0 | units.MSun
+        instance = EVtwin()
+        
+        print "First do everything manually:",
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.initialize_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.commit_parameters()
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        instance.particles.add_particle(stars[0])
+        instance.commit_particles()
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.cleanup_code()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        instance.stop()
+        print "ok"
+
+        print "initialize_code(), commit_parameters(), (re)commit_particles(), " \
+            "and cleanup_code() should be called automatically:",
+        instance = EVtwin()
+        self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
+        instance.parameters.RGB_wind_setting = -0.5
+        self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
+        instance.particles.add_particle(stars[0])
+        self.assertEquals(instance.get_name_of_current_state(), 'EDIT')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.particles.add_particle(stars[1])
+        self.assertEquals(instance.get_name_of_current_state(), 'UPDATE')
+        mass = instance.particles[0].mass
+        self.assertEquals(instance.get_name_of_current_state(), 'RUN')
+        instance.stop()
+        self.assertEquals(instance.get_name_of_current_state(), 'END')
+        print "ok"
