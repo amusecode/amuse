@@ -114,16 +114,14 @@ def head_on_stellar_merger(
         None, 
         number_of_sph_particles_1, 
         seed=12345,
-        mode = "scaling method",
         pickle_file = pickle_file_1
-    )
+    ).gas_particles
     print model_2.mass, "star consisting of", number_of_sph_particles_2, "particles."
     sph_particles_2 = convert_stellar_model_to_SPH(
         None, 
         number_of_sph_particles_2, 
-        mode = "scaling method",
         pickle_file = pickle_file_2
-    )
+    ).gas_particles
     initial_separation += model_1.radius + model_2.radius
     sph_particles_2.x  += numpy.cos(angle) * initial_separation
     sph_particles_2.y  += numpy.sin(angle) * initial_separation

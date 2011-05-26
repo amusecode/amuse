@@ -66,12 +66,12 @@ def head_on_stellar_merger(
         stellar_evolution.particles[0], 
         number_of_sph_particles_1, 
         seed=12345
-    )
+    ).gas_particles
     print stellar_evolution.particles[1].mass, "star consisting of", number_of_sph_particles_2, "particles."
     sph_particles_2 = convert_stellar_model_to_SPH(
         stellar_evolution.particles[1], 
         number_of_sph_particles_2
-    )
+    ).gas_particles
     
     initial_separation += stellar_evolution.particles.radius.sum()
     sph_particles_2.x  += numpy.cos(angle) * initial_separation
