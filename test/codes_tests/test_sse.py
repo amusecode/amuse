@@ -1,8 +1,8 @@
 import os
 
-from amuse.community.sse import interface as mpi_interface
+from amuse.community.sse.interface import SSEInterface, SSE
 
-from amuse.support.data import core
+from amuse.support.data.core import Particles
 from amuse.support.units import units
 
 from amuse.test.amusetest import TestWithMPI
@@ -52,7 +52,7 @@ class TestMPIInterface(TestWithMPI):
             pts1, pts2, pts3)
         
     def test1(self):
-        sse = mpi_interface.SSEInterface()
+        sse = SSEInterface()
         
         metallicity = 0.02
         
@@ -82,7 +82,7 @@ class TestMPIInterface(TestWithMPI):
         sse.stop()
         
     def test2(self):
-        sse = mpi_interface.SSEInterface()
+        sse = SSEInterface()
         
         metallicity = 0.02
         
@@ -159,7 +159,7 @@ class TestMPIInterface(TestWithMPI):
         sse.stop()
      
     def test3(self):
-        sse = mpi_interface.SSEInterface()
+        sse = SSEInterface()
         self.initialize_module_with_default_parameters(sse)  
         types = [1,1,1]
         masses = [10,5,4]
@@ -189,7 +189,7 @@ class TestMPIInterface(TestWithMPI):
         sse.stop()
         
     def test4(self):
-        sse = mpi_interface.SSEInterface()
+        sse = SSEInterface()
         self.initialize_module_with_default_parameters(sse) 
         types = [1 for x in range(1,4000)]
         masses = [1.0 + ((x / 4000.0) * 10.0) for x in range(1,4000)]
@@ -222,9 +222,9 @@ class TestMPIInterface(TestWithMPI):
 class TestSSE(TestWithMPI):
     
     def test1(self):
-        sse = mpi_interface.SSE()
+        sse = SSE()
         sse.commit_parameters() 
-        stars =  core.Stars(1)
+        stars = Particles(1)
         star = stars[0]
         star.mass = 5 | units.MSun
         star.radius = 0.0 | units.RSun
@@ -290,9 +290,9 @@ class TestSSE(TestWithMPI):
         sse.stop()
             
     def test2(self):
-        sse = mpi_interface.SSE()
+        sse = SSE()
         sse.commit_parameters() 
-        stars =  core.Stars(1)
+        stars = Particles(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
@@ -308,9 +308,9 @@ class TestSSE(TestWithMPI):
         
     
     def test3(self):
-        sse = mpi_interface.SSE()
+        sse = SSE()
         sse.commit_parameters() 
-        stars =  core.Stars(1)
+        stars = Particles(1)
         
         star = stars[0]
         star.mass = 5 | units.MSun
@@ -334,9 +334,9 @@ class TestSSE(TestWithMPI):
         
     
     def test5(self):
-        sse = mpi_interface.SSE()
+        sse = SSE()
         sse.commit_parameters() 
-        stars =  core.Stars(1)
+        stars = Particles(1)
         
         star = stars[0]
         star.mass = 35 | units.MSun
@@ -366,11 +366,11 @@ class TestSSE(TestWithMPI):
 #       Create an array of stars with a range in stellar mass
         masses = [.5, 1., 2., 5., 10., 30.] | units.MSun
         number_of_stars = len(masses)
-        stars = core.Stars(number_of_stars)
+        stars = Particles(number_of_stars)
         stars.mass = masses
 
 #       Initialize stellar evolution code
-        instance = mpi_interface.SSE()
+        instance = SSE()
         instance.commit_parameters() 
         instance.particles.add_particles(stars)
         instance.commit_particles()
@@ -398,11 +398,11 @@ class TestSSE(TestWithMPI):
     def test7(self):
         print "Test: evolve particles one at a time."
         print "Used to be problematic, since initial_mass of idle particle is set to zero."
-        stars = core.Stars(2)
+        stars = Particles(2)
         stars.mass = 1.0 | units.MSun
         for star in stars:
             print star
-            stellar_evolution = mpi_interface.SSE()
+            stellar_evolution = SSE()
             stellar_evolution.commit_parameters()
             stellar_evolution.particles.add_particles(star.as_set())
             stellar_evolution.commit_particles()
@@ -410,15 +410,13 @@ class TestSSE(TestWithMPI):
             stellar_evolution.evolve_model()
             from_stellar_evolution_to_model.copy()
             stellar_evolution.stop()
-        for star in stars:
-            print star
         self.assertEquals(stars[0].initial_mass, stars[1].initial_mass)
         self.assertEquals(stars[0].luminosity, stars[1].luminosity)
         self.assertEquals(stars[0].age, stars[1].age)
         print "Solved: SSE_muse_interface.f sets initial_mass to mass when necessary."
     
     def test8(self):
-        instance = mpi_interface.SSE()
+        instance = SSE()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
@@ -427,7 +425,7 @@ class TestSSE(TestWithMPI):
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, myvalue)
         instance.stop()
         
-        instance = mpi_interface.SSE()
+        instance = SSE()
         self.assertEqual(instance.parameters.reimers_mass_loss_coefficient, 0.5 | units.none)
         myvalue = 0.7 | units.none
         instance.parameters.reimers_mass_loss_coefficient = myvalue
@@ -438,12 +436,12 @@ class TestSSE(TestWithMPI):
         
     def test9(self):
         print "Test: large number of particles"
-        stellar_evolution = mpi_interface.SSE(max_message_length=500)
+        stellar_evolution = SSE(max_message_length=500)
         stellar_evolution.commit_parameters()
         number_of_particles = 10000
         print "Has been tested with up to a million particles!"
         print "Now using ", number_of_particles, "particles only, for speed."
-        stars = core.Stars(number_of_particles)
+        stars = Particles(number_of_particles)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.particles.add_particles(stars)
         self.assertEqual(len(stellar_evolution.particles), number_of_particles)
@@ -451,12 +449,12 @@ class TestSSE(TestWithMPI):
     
 
     def test10(self):
-        stellar_evolution = mpi_interface.SSE()
+        stellar_evolution = SSE()
         stellar_evolution.commit_parameters()
-        stars = core.Stars(10)
+        stars = Particles(10)
         stars.mass = 1.0 | units.MSun
         stellar_evolution.particles.add_particles(stars)
-        print  stellar_evolution.particles._factory_for_new_collection()
+        self.assertEquals(stellar_evolution.particles._factory_for_new_collection(), Particles)
         if os.path.exists('test.h5'):
             os.remove('test.h5')
             
@@ -468,9 +466,9 @@ class TestSSE(TestWithMPI):
     
     def test11(self):
         print "Test evolve_model optional arguments: end_time and keep_synchronous"
-        stars = core.Particles(3)
+        stars = Particles(3)
         stars.mass = [1.0, 2.0, 3.0] | units.MSun
-        instance = mpi_interface.SSE()
+        instance = SSE()
         instance.commit_parameters()
         instance.particles.add_particles(stars)
         
@@ -499,13 +497,12 @@ class TestSSE(TestWithMPI):
     def test12(self):
         print "Testing adding and removing particles from stellar evolution code..."
         
-        particles = core.Particles(3)
+        particles = Particles(3)
         particles.mass = 1.0 | units.MSun
         
-        instance = mpi_interface.SSE()
+        instance = SSE()
         instance.initialize_code()
         instance.commit_parameters()
-        stars = instance.particles
         self.assertEquals(len(instance.particles), 0) # before creation
         instance.particles.add_particles(particles[:-1])
         instance.commit_particles()
@@ -532,11 +529,11 @@ class TestSSE(TestWithMPI):
     
     def test13(self):
         print "Testing SSE states"
-        stars = core.Particles(2)
+        stars = Particles(1)
         stars.mass = 1.0 | units.MSun
-        instance = mpi_interface.SSE()
         
         print "First do everything manually:",
+        instance = SSE()
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.initialize_code()
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
@@ -549,11 +546,11 @@ class TestSSE(TestWithMPI):
 
         print "initialize_code(), commit_parameters(), " \
             "and cleanup_code() should be called automatically:",
-        instance = mpi_interface.SSE()
+        instance = SSE()
         self.assertEquals(instance.get_name_of_current_state(), 'UNINITIALIZED')
         instance.parameters.reimers_mass_loss_coefficient = 0.5
         self.assertEquals(instance.get_name_of_current_state(), 'INITIALIZED')
-        instance.particles.add_particle(stars[0])
+        instance.particles.add_particles(stars)
         self.assertEquals(instance.get_name_of_current_state(), 'RUN')
         instance.stop()
         self.assertEquals(instance.get_name_of_current_state(), 'END')

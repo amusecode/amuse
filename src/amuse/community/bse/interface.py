@@ -235,17 +235,18 @@ class BSEParticles(Particles):
         
         added_particles = ParticlesSubset(self, keys)
 
-        self._private.code_interface._evolve_particles(added_particles, 1e-06 | units.Myr)
+        self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
         
     def _state_attributes(self):
         return ["mass1", "mass2", "radius1", "radius2"]
     
-class BSE(InCodeComponentImplementation):
+class BSE(common.CommonCode):
     
     def __init__(self, **options):
         InCodeComponentImplementation.__init__(self, BSEInterface(**options), **options)
 
         self.parameters.set_defaults()
+        self.model_time = 0.0 | units.yr
         
     
     def define_parameters(self, object):
@@ -443,6 +444,11 @@ class BSE(InCodeComponentImplementation):
         )
     
     
+    def define_state(self, object):
+        common.CommonCode.define_state(self, object)
+        object.add_transition('INITIALIZED','RUN','commit_parameters')
+        object.add_method('RUN', 'evolve')
+    
     def define_methods(self, object):
         
         object.add_method( 
@@ -583,13 +589,15 @@ class BSE(InCodeComponentImplementation):
         particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
         
         
-    def evolve_model(self, end_time = None):
-        if end_time is None:
-            end_time = self.particles.time_step + self.particles.age
-            
-        self._evolve_particles(self.particles, end_time)
+    def evolve_model(self, end_time = None, keep_synchronous = True):
+        if not keep_synchronous:
+            self._evolve_particles(self.particles, self.particles.time_step + self.particles.age)
+            return
         
-
+        if end_time is None:
+            end_time = self.model_time + min(self.particles.time_step)
+        self._evolve_particles(self.particles, end_time - self.model_time + self.particles.age)
+        self.model_time = end_time
     
     def commit_particles(self):
         pass
@@ -599,6 +607,7 @@ class BSE(InCodeComponentImplementation):
         
     def commit_parameters(self):
         self.parameters.send_cached_parameters_to_code()
+        self.overridden().commit_parameters()
         
     def initialize_module_with_current_parameters(self):
         self.commit_parameters()

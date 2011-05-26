@@ -10,10 +10,7 @@ def create_particles():
     star.mass = 3.0 | units.MSun
     
     stellar_evolution = EVtwin()
-    stellar_evolution.initialize_code()
-    stellar_evolution.commit_parameters() 
     se_star = stellar_evolution.particles.add_particle(star)
-    stellar_evolution.commit_particles()
     
     print "Evolving", star.mass, "star with", stellar_evolution.__class__.__name__, "up to", 100 | units.Myr
     stellar_evolution.evolve_model(100 | units.Myr)
