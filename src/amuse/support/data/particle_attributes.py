@@ -3,7 +3,7 @@ from amuse.support.data import base
 from amuse.support.data.particles import ParticlesWithUnitsConverted, AbstractParticleSet
 from amuse.support.data.values import zero
 from amuse.support.data import values
-from amuse.support.data.values import Quantity, new_quantity, zero
+from amuse.support.data.values import VectorQuantity,Quantity, new_quantity, zero
 from amuse.support.units import constants
 from amuse.support.units import units
 from amuse.support import exceptions
@@ -176,7 +176,7 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
     """
 
     if len(particles) < 2:
-        raise exceptions.AmuseException("Cannot calculate virial radius for a particles set with fewer than 2 particles.")
+        return G * zero
 
     mass = particles.mass
     x_vector = particles.x
@@ -205,19 +205,36 @@ def potential_energy(particles, smoothing_length_squared = zero, G = constants.G
 
 def particle_specific_kinetic_energy(set, particle):
     """
-    Returns the kinetic energy of a particle.
+    Returns the specific  kinetic energy of a particle.
 
     >>> from amuse.support.data.core import Particles
     >>> particles = Particles(2)
-    >>> particles.vx = [0.0, 1.0] | units.m
-    >>> particles.vy = [0.0, 0.0] | units.m
-    >>> particles.vz = [0.0, 0.0] | units.m
+    >>> particles.vx = [0.0, 1.0] | units.ms
+    >>> particles.vy = [0.0, 0.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles[1].specific_kinetic_energy()
-    quantity<0.5 m**2>
+    quantity<0.5 m**2 s**-2>
     """
 
     return 0.5*(particle.velocity**2).sum()
+
+def specific_kinetic_energy(particles):
+    """
+    Returns the specific kinetic energy of a particle.
+
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.vx = [1.0, 1.0] | units.ms
+    >>> particles.vy = [0.0, 0.0] | units.ms
+    >>> particles.vz = [0.0, 0.0] | units.ms
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.specific_kinetic_energy()
+    quantity<[1.0, 1.0] m**2 s**-2>
+    """
+
+    return 0.5*(particles.vx**2+particles.vy**2+particles.vz**2)
+
 
 def particle_potential(set, particle, smoothing_length_squared = zero, gravitationalConstant = constants.G):
     """
@@ -240,6 +257,46 @@ def particle_potential(set, particle, smoothing_length_squared = zero, gravitati
     dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
     dr = (dr_squared+smoothing_length_squared).sqrt()
     return - gravitationalConstant * (particles.mass / dr).sum()
+
+def particleset_potential(particles, smoothing_length_squared = zero, G = constants.G):
+    """
+    Returns the potential of the particles in the particles set.
+
+    :argument smooting_length_squared: the smoothing length is added to every distance.
+    :argument G: gravitational constant, need to be changed for particles in different units systems
+
+    >>> from amuse.support.data.core import Particles
+    >>> particles = Particles(2)
+    >>> particles.x = [0.0, 1.0] | units.m
+    >>> particles.y = [0.0, 0.0] | units.m
+    >>> particles.z = [0.0, 0.0] | units.m
+    >>> particles.mass = [1.0, 1.0] | units.kg
+    >>> particles.potential()
+    quantity<[-6.67428e-11,-6.67428e-11] m**2 * s**-2>
+    """
+
+    mass = particles.mass
+    x_vector = particles.x
+    y_vector = particles.y
+    z_vector = particles.z
+
+    potentials = VectorQuantity.zeros(len(mass),mass.unit/x_vector.unit) 
+
+    for i in range(len(particles) - 1):
+        x = x_vector[i]
+        y = y_vector[i]
+        z = z_vector[i]
+        dx = x - x_vector[i+1:]
+        dy = y - y_vector[i+1:]
+        dz = z - z_vector[i+1:]
+        dr_squared = (dx * dx) + (dy * dy) + (dz * dz)
+        dr = (dr_squared+smoothing_length_squared).sqrt()
+
+        potentials[i]-= (mass[i+1:]/dr).sum()
+        potentials[i+1:]-= mass[i]/dr
+
+    return G * potentials
+
 
 def virial_radius(particles):
     """
@@ -303,8 +360,8 @@ AbstractParticleSet.add_global_vector_attribute("acceleration", ["ax","ay","az"]
 AbstractParticleSet.add_global_vector_attribute("angularmomentum", ["Lx","Ly","Lz"])
 AbstractParticleSet.add_global_vector_attribute("oblateness", ["j2","j4","j6"])
 
-AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", None, particle_specific_kinetic_energy)
-AbstractParticleSet.add_global_function_attribute("potential", None, particle_potential)
+AbstractParticleSet.add_global_function_attribute("specific_kinetic_energy", specific_kinetic_energy, particle_specific_kinetic_energy)
+AbstractParticleSet.add_global_function_attribute("potential", particleset_potential, particle_potential)
 
 AbstractParticleSet.add_global_function_attribute("move_to_center", move_to_center)
 AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_standard)

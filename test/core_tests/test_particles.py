@@ -95,17 +95,43 @@ class TestParticles(amusetest.TestCase):
         self.assertEquals(particles.kinetic_energy(), Ek)
         self.assertEquals(particles.potential_energy(), Ep)
         
+        self.assertEquals((particles.mass*particles.specific_kinetic_energy()).sum(), Ek)
+        self.assertEquals(0.5*(particles.mass*particles.potential()).sum(), Ep)
+
     
     def test7(self):
         
         particles = core.Particles(10)
         for i in range(10):
             particles[i].mass = (i * 1.0) | units.kg
-        
+
+    def test8(self):
         subset = particles[0:2]
         self.assertEquals(len(subset), 2)
         self.assertTrue(str(subset).find('kg') > 0)
+
+    def test9(self):
+        particles = core.Particles(4)
+        particles.mass = [1.,2.,3.,4.] | units.kg
+        particles.vy = [1.,2.,3.,4.] | units.m / units.s
+        particles.vx = [0.,1.,2.,3.] | units.m / units.s
+        particles.vz = [1.,2.,3.,4.] | units.m / units.s
+        particles.x = [0., 1.,2.,3.] | units.m
+        particles.y = [4., 3.,2.,1.] | units.m
+        particles.z = [4., 3.,2.,1.] | units.m
         
+        Ek=0. | units.J
+        Ep=0. | units.J
+        for x in particles:
+            Ek+=x.mass*x.specific_kinetic_energy()
+            Ep+=x.mass*x.potential()/2
+        self.assertEquals(particles.kinetic_energy(), Ek)
+        self.assertEquals(particles.potential_energy(), Ep)
+        
+        self.assertEquals((particles.mass*particles.specific_kinetic_energy()).sum(), Ek)
+        self.assertEquals(0.5*(particles.mass*particles.potential()).sum(), Ep)
+
+       
 class TestStars(amusetest.TestCase):
 
     def test1(self):
