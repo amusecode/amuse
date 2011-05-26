@@ -106,6 +106,8 @@ class TestParticles(amusetest.TestCase):
             particles[i].mass = (i * 1.0) | units.kg
 
     def test8(self):
+        particles = core.Particles(4)
+        particles.mass = [1.,2.,3.,4.] | units.kg
         subset = particles[0:2]
         self.assertEquals(len(subset), 2)
         self.assertTrue(str(subset).find('kg') > 0)

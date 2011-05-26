@@ -214,7 +214,7 @@ def particle_specific_kinetic_energy(set, particle):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles[1].specific_kinetic_energy()
-    quantity<0.5 m**2 s**-2>
+    quantity<0.5 m**2 * s**-2>
     """
 
     return 0.5*(particle.velocity**2).sum()
@@ -230,7 +230,7 @@ def specific_kinetic_energy(particles):
     >>> particles.vz = [0.0, 0.0] | units.ms
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.specific_kinetic_energy()
-    quantity<[1.0, 1.0] m**2 s**-2>
+    quantity<[0.5, 0.5] m**2 * s**-2>
     """
 
     return 0.5*(particles.vx**2+particles.vy**2+particles.vz**2)
@@ -272,7 +272,7 @@ def particleset_potential(particles, smoothing_length_squared = zero, G = consta
     >>> particles.z = [0.0, 0.0] | units.m
     >>> particles.mass = [1.0, 1.0] | units.kg
     >>> particles.potential()
-    quantity<[-6.67428e-11,-6.67428e-11] m**2 * s**-2>
+    quantity<[-6.67428e-11, -6.67428e-11] m**2 * s**-2>
     """
 
     mass = particles.mass
