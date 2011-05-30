@@ -313,7 +313,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
     NO_UNIT = object()
     INDEX = object()
 
-    def __init__(self, handler, function_name, units, return_units, return_value_handler, name):
+    def __init__(self, handler, function_name, units, return_units, name):
         self.function_name = function_name
 
         if hasattr(units, '__iter__'):
@@ -325,10 +325,7 @@ class MethodWithUnitsDefinition(CodeMethodWrapperDefinition):
         self.handler = handler
         self.name = name
         if return_units is None:
-            if return_value_handler is None:
-                self.handle_return_value = self.handle_as_errorcode
-            else:
-                self.handle_return_value = return_value_handler
+            self.handle_return_value = self.handle_as_errorcode
         else:
             self.handle_return_value = self.handle_as_unit
 
@@ -500,7 +497,7 @@ class HandleMethodsWithUnits(object):
     def attribute_names(self):
         return set(self.method_definitions.keys())
 
-    def add_method(self, original_name, units, return_unit = None,  public_name = None, return_value_handler = None):
+    def add_method(self, original_name, units, return_unit = None,  public_name = None):
         if public_name is None:
             public_name = original_name
 
@@ -509,7 +506,6 @@ class HandleMethodsWithUnits(object):
             original_name,
             units,
             return_unit,
-            return_value_handler,
             public_name
         )
         self.method_definitions[public_name] = definition

@@ -666,6 +666,10 @@ class GenerateAFortranStubStringFromASpecificationClass\
     def dtype_to_spec(self):
         return dtype_to_spec
   
+    @late
+    def ignore_functions_from_specification_class(self):
+        return []
+        
     def output_sourcecode_for_function(self):
         result = create_definition.CreateFortranStub()
         result.output_definition_only = False
@@ -684,6 +688,16 @@ class GenerateAFortranStubStringFromASpecificationClass\
         self._result = self.out.string
         
     
+    def must_include_interface_function_in_output(self, x):
+        if x.specification.name.startswith("internal__"):
+            return False
+            
+        for cls in self.ignore_functions_from_specification_class:
+            if hasattr(cls, x.specification.name):
+                return False
+        
+        return True
+        
     def output_modules(self):
         self.out.n()
         if hasattr(self.specification_class, 'use_modules'):

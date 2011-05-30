@@ -223,6 +223,8 @@ class CreateFortranStub(object):
                     self.out + ', '
                     
                 self.out + parameter.name 
+        
+        self.output_function_type()
     
     def output_function_type(self):
         if self.specification_is_for_function:
