@@ -559,12 +559,6 @@ int set_acceleration(int index_of_the_particle, double ax, double ay, double az)
   return -2;
 }
 
-int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2)
-{
-  *index_of_particle1 = find_colliding_primary();
-  *index_of_particle2 = find_colliding_secondary(*index_of_particle1);
-  return 0;
-}
 
 int get_center_of_mass_position(double *x, double *y, double *z)
 {
@@ -921,42 +915,6 @@ int set_particle(int id, dynamics_state d)
     }
 }
 
-
-int find_colliding_primary()
-{
-  id_primary = id_secondary = -1;        // defined earlier...
-
-    int n = bhtcs.n;
-    nbody_particle *np = bhtcs.get_particle_pointer();
-    
-    for (int i = 0; i < n-1; i++) {        // very inefficient! -- better to
-                                        // flag collisions using the tree
-        for (int j = i+1; j < n; j++) {
-            real r2 = square(np[i].get_pos() - np[j].get_pos());
-            real rsum = np[i].get_radius() + np[j].get_radius();
-            // PRC(i); PRC(j); PRC(r2); PRL(rsum);
-            if (r2 <= rsum*rsum) {
-                if (np[i].get_mass() >= np[j].get_mass()) {
-                    id_primary = np[i].get_index();
-                    id_secondary = np[j].get_index();
-                } else {
-                    id_primary = np[j].get_index();
-                    id_secondary = np[i].get_index();
-                }
-                return id_primary;
-            }
-        }
-    }
-    return -1;
-}
-
-int find_colliding_secondary(int id1)
-{
-    if (id1 >= 0 && id1 == id_primary && id_secondary >= 0)
-        return id_secondary;
-    else
-        return -1;
-}
 
 int get_escaper()
 {

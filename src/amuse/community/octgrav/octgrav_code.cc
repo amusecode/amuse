@@ -633,10 +633,6 @@ int find_colliding_secondary(int id1)
   return -1;
 }
 
-int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2)
-{
-  return -2;
-}
 
 int get_escaper()
 {

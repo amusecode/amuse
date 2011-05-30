@@ -1884,9 +1884,6 @@ int get_number_of_particles(int *number_of_particles){
     *number_of_particles = All.TotNumPart;
     return 0;
 }
-int get_indices_of_colliding_particles(int *index_of_particle1, int *index_of_particle2){
-    return -2;
-}
 int get_center_of_mass_position(double *x, double *y, double *z){
     if (!global_quantities_of_system_up_to_date)
         update_global_quantities(false);

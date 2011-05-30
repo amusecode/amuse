@@ -531,27 +531,6 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
 
 
     @legacy_function
-    def get_indices_of_colliding_particles():
-        """
-        Retrieve the two indices of the colliding particles
-        """
-        function = LegacyFunctionSpecification()
-        function.addParameter('index_of_particle1', dtype='int32', direction=function.OUT,
-            description = "Index of the first colliding partner")
-        function.addParameter('index_of_particle2', dtype='int32', direction=function.OUT,
-            description = "Index of the second colliding partner")
-        function.result_type = 'int32'
-        function.result_doc = """
-         0 - OK
-            The indices of the collision partners were set
-         -1 - ERROR
-            No collision detected during evolve
-         -2 - ERROR
-            not yet implemented
-        """
-        return function
-
-    @legacy_function
     def get_time():
         """
         Retrieve the model time. This time should be close to the end time specified

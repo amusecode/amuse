@@ -111,13 +111,6 @@ C---  get array address
       
       END
 
-      FUNCTION get_indices_of_colliding_particles()
-      IMPLICIT NONE
-#include "src/general.inc"
-      INTEGER get_indices_of_colliding_particles
-      get_indices_of_colliding_particles = -2
-      END
-
       FUNCTION get_center_of_mass_position(Cx, Cy, Cz)
       IMPLICIT NONE      
 #include "src/general.inc"
