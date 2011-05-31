@@ -312,7 +312,6 @@ function evolve_mercury(t_end) result(ret)
     ret=1
   endif  
   tstart=time
-  write(6,*)time
 end function
 
 function new_id()
@@ -740,6 +739,7 @@ end function
       implicit none
       include "../../../../../lib/stopcond/stopcond.inc"
       include 'amuse_mercury.inc'
+      
 !
 ! Input/Output
       integer algor,nbod,nbig,stat(nbod),opt(8),opflag,ngflag
@@ -817,7 +817,9 @@ end function
 !
 !  MAIN  LOOP  STARTS  HERE
 !
+      write(6,*)"just check if stuck enter loop"
  100  continue
+
 ! timeout stopping condition
 
       if (is_timeout_detection_enabled.gt.0) then
@@ -829,8 +831,10 @@ end function
          endif
       endif
 ! if condition met, break
-      if (is_any_condition_set().gt.0) goto 101
-
+      if (is_any_condition_set().gt.0) then
+	 write(6,*) "condition set"
+         goto 101
+      endif
 !
 ! Is it time for output ?
       if (abs(tout-time).le.hby2.and.opflag.ge.-1) then
@@ -861,6 +865,7 @@ end function
 ! If integration has finished, convert to heliocentric coords and return
       if (abs(tstop-time).le.hby2.and.opflag.ge.0) then
         call bcoord (time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
+        write(6,*)"leaving subroutine"
         return
       end if
 !
@@ -889,12 +894,13 @@ end function
 !
 ! If encounter minima occurred, output details and decide whether to stop
       if (nclo.gt.0.and.opflag.ge.-1) then
+        write(6,*) "encounter minima occured"
         itmp = 1
         if (colflag.ne.0) itmp = 0
         call mio_ce (time,tstart,rcen,rmax,nbod,nbig,m,stat,id,nclo, &
          iclo,jclo,opt,stopflag,tclo,dclo,ixvclo,jxvclo,mem,lmem, &
          outfile,nstored,itmp)
-        if (stopflag.eq.1) return
+!rude cello        if (stopflag.eq.1) return
       end if
 !
 !------------------------------------------------------------------------------
@@ -903,7 +909,7 @@ end function
 !
 ! If collisions occurred, output details and remove lost objects
       if (colflag.ne.0) then
-!
+         write(6,*) "collision condition set"
 ! Reindex the surviving objects
         call bcoord (time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
         call mxx_elim (nbod,nbig,m,xh,vh,s,rho,rceh,rcrit,ngf,stat, &
@@ -934,6 +940,7 @@ end function
 !
 ! If something hit the central body, restore the coords prior to this step
       if (nhit.gt.0) then
+         write(6,*) "central body HIT"
         call mco_iden (time,jcen,nbod,nbig,h0,m,xh0,vh0,xh,vh,ngf, &
          ngflag,opt)
         time = time - h0
@@ -995,28 +1002,32 @@ end function
 !
 !  CHECK  FOR  EJECTIONS  AND  DO  OTHER  PERIODIC  EFFECTS
 !
+
       if (abs(time-tfun).ge.abs(dtfun).and.opflag.ge.-1) then
-        if (algor.eq.1) then
-          call mco_iden (time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag, &
+          if (algor.eq.1) then
+            call mco_iden (time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag, &
            opt)
         else
-          call bcoord(time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
+           call bcoord(time,jcen,nbod,nbig,h0,m,x,v,xh,vh,ngf,ngflag,opt)
         end if
 !
 ! Recompute close encounter limits, to allow for changes in Hill radii
         call mce_hill (nbod,m,xh,vh,rce,a)
-        do j = 2, nbod
+         do j = 2, nbod
           rce(j) = rce(j) * rceh(j)
         end do
 !
 ! Check for ejections
         itmp = 2
         if (algor.eq.11.or.algor.eq.12) itmp = 3
-        call mxx_ejec (time,tstart,rmax,en,am,jcen,itmp,nbod,nbig,m,xh, &
-         vh,s,stat,id,opt,ejflag,outfile(3),mem,lmem)
+        write(6,*) "3.5"
+!        call mxx_ejec (time,tstart,rmax,en,am,jcen,itmp,nbod,nbig,m,xh, &
+!         vh,s,stat,id,opt,ejflag,outfile(3),mem,lmem)
+        write(6,*)"4"
 !
 ! Remove ejected objects, reset flags, calculate new Hill and physical radii
         if (ejflag.ne.0) then
+          write(6,*) "ejected object removal"
           call mxx_elim (nbod,nbig,m,xh,vh,s,rho,rceh,rcrit,ngf,stat, &
            id,mem,lmem,outfile(3),itmp)
           if (opflag.ge.0) opflag = 1
@@ -1039,7 +1050,10 @@ end function
 !
 !------------------------------------------------------------------------------
 !
+
+
 101   continue
+      write(6,*)"just check if stuck exit loop"
       end subroutine
 
       subroutine kin_pot_ang_mom(jcen,nbod,nbig,m,xh,vh,s)

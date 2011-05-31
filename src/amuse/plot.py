@@ -1,5 +1,6 @@
 try:
     import matplotlib.pyplot as native_plot
+    from mpl_toolkits.mplot3d import Axes3D
 except ImportError:
     class FakePlotLibrary(object):
         def stub(self, *args, **kwargs):
@@ -57,6 +58,16 @@ def plot(*args, **kwargs):
     native_plot.plot(*args, **kwargs)
     native_plot.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
     native_plot.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+
+def plot3(*args, **kwargs):
+    UnitlessArgs.strip(*args, **kwargs)
+    args = UnitlessArgs.stripped_args
+    fig = native_plot.figure()
+    ax = fig.gca(projection='3d')
+    ax.plot(*args, **kwargs)
+    #ax.xlabel(auto_label.format(UnitlessArgs.unitnames_of_args[0]))
+    #ax.ylabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
+    #ax.zlabel(auto_label.format(UnitlessArgs.unitnames_of_args[1]))
 
 def semilogx(*args, **kwargs):
     UnitlessArgs.strip(*args, **kwargs)
