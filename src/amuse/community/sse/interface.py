@@ -146,7 +146,7 @@ class SSEParticles(Particles):
         added_particles = ParticlesSubset(self, keys)
         self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
     
-    def _state_attributes(self):
+    def get_defined_attribute_names(self):
         return ["mass", "radius"]
         
         

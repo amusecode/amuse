@@ -248,7 +248,7 @@ class TestPhigrape(TestWithMPI):
     
         instance.evolve_model(365 | units.day)
     
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         
         position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
@@ -256,13 +256,13 @@ class TestPhigrape(TestWithMPI):
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
                 
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         #self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
         
@@ -286,7 +286,7 @@ class TestPhigrape(TestWithMPI):
     
         for x in range(1,365,30):
             instance.evolve_model(x | units.day)
-            instance.particles.copy_values_of_state_attributes_to(stars)
+            instance.particles.copy_values_of_all_attributes_to(stars)
             stars.savepoint()
         
         if HAS_MATPLOTLIB:
@@ -474,7 +474,7 @@ class TestPhigrape(TestWithMPI):
     
         instance.evolve_model(365 | units.day)
     
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         
         position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
@@ -482,13 +482,13 @@ class TestPhigrape(TestWithMPI):
         
         instance.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
                 
         instance.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         #self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
         

@@ -50,7 +50,7 @@ class VtkStructuredGrid(base.FileFormatProcessor):
         if self.set is None:
             return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
         else:
-            all_attributes = self.set.stored_attributes()
+            all_attributes = self.set.get_attribute_names_defined_in_store()
             return [ x for x in all_attributes if x not in set(['x','y','z'])]
         
     @base.format_option
@@ -229,10 +229,10 @@ class VtkUnstructuredGrid(base.FileFormatProcessor):
         if self.set is None:
             return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
         elif self.is_multiple:
-            all_attributes = self.set[0].stored_attributes()
+            all_attributes = self.set[0].get_attribute_names_defined_in_store()
             return [ x for x in all_attributes if x not in set(['x','y','z'])]
         else:
-            all_attributes = self.set.stored_attributes()
+            all_attributes = self.set.get_attribute_names_defined_in_store()
             return [ x for x in all_attributes if x not in set(['x','y','z'])]
         
     @base.format_option

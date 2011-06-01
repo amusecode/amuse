@@ -100,13 +100,6 @@ class InMemoryAttributeStorage(AttributeStorage):
                  
             attribute_values.put(indices, values_to_set)
             
-            
-    
-    
-    def get_attribute_names_defined_in_store(self):
-        return sorted(self.mapping_from_attribute_to_quantities.keys())
-    
-    
     def has_key_in_store(self, key):
         return key in self.keys_set
         
@@ -158,15 +151,10 @@ class InMemoryAttributeStorage(AttributeStorage):
         self.keys_set = set(self.particle_keys)
         
 
-    def attributes(self):
-        return set(self.mapping_from_attribute_to_quantities.keys())
-    
-    def _state_attributes(self):
-        return self.attributes()
+    def get_defined_attribute_names(self):
+        return sorted(self.mapping_from_attribute_to_quantities.keys())
         
         
-
-
 
     def _get_values_for_indices(self, indices, attributes):
         results = []
@@ -233,9 +221,6 @@ class InMemoryGridAttributeStorage(object):
                  
             attribute_values[indices] = values_to_set
      
-    def get_attribute_names_defined_in_store(self):
-        return sorted(self.mapping_from_attribute_to_quantities.keys())
-        
     def has_key_in_store(self, key):
         return key in self.mapping_from_particle_to_index
         
@@ -250,15 +235,12 @@ class InMemoryGridAttributeStorage(object):
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
             copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
         return copy
-        
-    def attributes(self):
-        return set(self.mapping_from_attribute_to_quantities.keys())
     
-    def _state_attributes(self):
-        return self.attributes()
+    def get_defined_attribute_names(self):
+        return sorted(self.mapping_from_attribute_to_quantities.keys())
         
     def _get_writeable_attribute_names(self):
-        return self.attributes()
+        return self.get_defined_attribute_names()
 
 
 

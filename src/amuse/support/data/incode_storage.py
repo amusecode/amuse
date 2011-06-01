@@ -595,11 +595,9 @@ class AbstractInCodeAttributeStorage(base.AttributeStorage):
             
         return result
     
-    def get_attribute_names_defined_in_store(self):
-        return self.attributes
     
-    def _state_attributes(self):
-        return self.get_attribute_names_defined_in_store()
+    def get_defined_attribute_names(self):
+        return sorted(self.attributes)
 
     
 class InCodeAttributeStorage(AbstractInCodeAttributeStorage):
@@ -859,14 +857,12 @@ class InCodeGridAttributeStorage(AbstractInCodeAttributeStorage):
         from .memory_storage import InMemoryGridAttributeStorage
         copy = InMemoryGridAttributeStorage()
         for attribute, attribute_values in self.mapping_from_attribute_to_quantities.iteritems():
-            copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy()
+            copy.mapping_from_attribute_to_quantities[attribute] = attribute_values.copy() 
         return copy
         
-    def attributes(self):
-        return set(self.mapping_from_attribute_to_quantities.keys())
     
-    def _state_attributes(self):
-        return self.attributes()
+    def get_defined_attribute_names(self):
+        return sorted(self.attributes)
         
     def _get_writeable_attribute_names(self):
         return self.writable_attributes

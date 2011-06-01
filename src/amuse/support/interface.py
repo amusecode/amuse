@@ -21,7 +21,7 @@ class OldObjectsBindingMixin(object):
         self.particles.add_particles(particles)
 
     def update_particles(self, particles):
-        self.particles.copy_values_of_state_attributes_to(particles)
+        self.particles.copy_values_of_all_attributes_to(particles)
 
     
 

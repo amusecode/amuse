@@ -237,7 +237,7 @@ class BSEParticles(Particles):
 
         self._private.code_interface._evolve_particles(added_particles, 1e-08 | units.yr)
         
-    def _state_attributes(self):
+    def get_defined_attribute_names(self):
         return ["mass1", "mass2", "radius1", "radius2"]
     
 class BSE(common.CommonCode):

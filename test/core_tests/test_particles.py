@@ -522,13 +522,13 @@ class TestParticlesWithChildren(amusetest.TestCase):
         self.assertEquals(parent.mass, 4.0 | units.kg)
         self.assertEquals(child1.mass, 3.0 | units.kg)
         
-        code1.particles.copy_values_of_state_attributes_to(all)
+        code1.particles.copy_values_of_all_attributes_to(all)
         
         self.assertEquals(parent.mass, 10.0 | units.kg)
         self.assertEquals(child1.mass, 3.0 | units.kg)
         
         
-        code2.particles.copy_values_of_state_attributes_to(all)
+        code2.particles.copy_values_of_all_attributes_to(all)
         
         self.assertEquals(parent.mass, 10.0 | units.kg)
         self.assertEquals(child1.mass, 9.0 | units.kg)

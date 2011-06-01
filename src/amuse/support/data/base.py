@@ -351,10 +351,7 @@ class AbstractSet(object):
     
     def get_attribute_names_defined_in_store(self):
         return []
-    
-    def get_state_attributes_defined_in_store(self):
-        return []
-    
+
     def _original_set(self):
         return self
     
@@ -710,9 +707,9 @@ class AbstractSet(object):
         if removed_keys:
             other_particles.remove_particles_from_store(removed_keys)
         
-    def copy_values_of_state_attributes_to(self, particles):
+    def copy_values_of_all_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
-        channel.copy_attributes(self.get_state_attributes_defined_in_store())   
+        channel.copy_attributes(self.get_attribute_names_defined_in_store())   
     
     def as_set(self):
         """
@@ -885,10 +882,6 @@ class AbstractSet(object):
         result.extend(self._attributes_for_dir())
         return result
         
-    def stored_attributes(self):
-        return list(self.get_attribute_names_defined_in_store())
-        
-
     def is_empty(self):
         return self.__len__()==0
             

@@ -51,7 +51,7 @@ class TestParticles(amusetest.TestCase):
         )
         
         self.assertEquals(len(storage), 0)
-        self.assertEquals(storage.get_attribute_names_defined_in_store(), set(["x","y","z"]))
+        self.assertEquals(storage.get_defined_attribute_names(), ["x","y","z"])
         
         self.assertFalse(code.get_position_called)
         storage.get_values_in_store([],["x","y","z"])
@@ -136,7 +136,7 @@ class TestParticles(amusetest.TestCase):
         
         self.assertEquals(len(storage), 4)
         
-        self.assertEquals(storage.get_attribute_names_defined_in_store(), set(["x","y","z", "mass"]))
+        self.assertEquals(storage.get_defined_attribute_names(), [ "mass", "x","y","z"])
         
         self.assertFalse(code.get_position_called)
         self.assertFalse(code.get_mass_called)
@@ -195,7 +195,7 @@ class TestParticles(amusetest.TestCase):
         
         self.assertEquals(len(storage), 4)
         
-        self.assertEquals(storage.get_attribute_names_defined_in_store(), set(["mass",]))
+        self.assertEquals(storage.get_defined_attribute_names(), ["mass",])
         
         index,mass = storage.get_values_in_store([2,3],["index_in_code","mass"])
         self.assertTrue(code.get_mass_called)
@@ -310,7 +310,7 @@ class TestGrids(amusetest.TestCase):
         )
         
         self.assertEquals(storage.storage_shape(), (10, 4, 4))
-        self.assertEquals(storage.get_attribute_names_defined_in_store(), set(["i","j","k"]))
+        self.assertEquals(storage.get_defined_attribute_names(), ["i","j","k"])
         
         values = storage.get_values_in_store((0,1,1), ("i",))
         self.assertEquals(len(values), 1)
@@ -415,7 +415,7 @@ class TestGrids(amusetest.TestCase):
         )
         
         self.assertEquals(storage.storage_shape(), (10, 4, 4))
-        self.assertEquals(storage.get_attribute_names_defined_in_store(), set(["i","j","k"]))
+        self.assertEquals(storage.get_defined_attribute_names(), ["i","j","k"])
         
         values = storage.get_values_in_store((0,1,1), ("i",))
         self.assertEquals(len(values), 1)
@@ -446,7 +446,7 @@ class TestGrids(amusetest.TestCase):
         )
         
         self.assertEquals(storage.storage_shape(), (10, 4, 4))
-        self.assertEquals(storage.get_attribute_names_defined_in_store(), set(["i","j","k"]))
+        self.assertEquals(storage.get_defined_attribute_names(), ["i","j","k"])
         
         values = storage.get_values_in_store(None, ("i",))
         self.assertEquals(len(values), 1)

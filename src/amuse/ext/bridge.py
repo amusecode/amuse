@@ -100,7 +100,7 @@ def kick_system(system, get_gravity, dt):
     parts.vx=parts.vx+dt*ax
     parts.vy=parts.vy+dt*ay
     parts.vz=parts.vz+dt*az
-    parts.copy_values_of_state_attributes_to(system.particles)
+    parts.copy_values_of_all_attributes_to(system.particles)
   
 class bridge(object):
     def __init__(self,verbose=False):

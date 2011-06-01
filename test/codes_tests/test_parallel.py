@@ -39,7 +39,7 @@ class TestAmuseInterface(TestWithMPI):
         delta_days = 5
         for x in range(1, day + delta_days, delta_days):
             instance.evolve_model(x | units.day)
-            instance.particles.copy_values_of_state_attributes_to(particles)
+            instance.particles.copy_values_of_all_attributes_to(particles)
             particles.savepoint()
             
     def test2(self):

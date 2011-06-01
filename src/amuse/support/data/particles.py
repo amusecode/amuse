@@ -166,9 +166,6 @@ class AbstractParticleSet(AbstractSet):
     def get_attribute_names_defined_in_store(self):
         return []
     
-    def get_state_attributes_defined_in_store(self):
-        return []
-    
         
     #
     #
@@ -586,9 +583,9 @@ class AbstractParticleSet(AbstractSet):
         if removed_keys:
             other_particles.remove_particles_from_store(removed_keys)
         
-    def copy_values_of_state_attributes_to(self, particles):
+    def copy_values_of_all_attributes_to(self, particles):
         channel = self.new_channel_to(particles)
-        channel.copy_attributes(self.get_state_attributes_defined_in_store())   
+        channel.copy_attributes(self.get_attribute_names_defined_in_store())   
     
     def as_set(self):
         """
@@ -755,9 +752,6 @@ class AbstractParticleSet(AbstractSet):
         result.extend(self._attributes_for_dir())
         return result
         
-    def stored_attributes(self):
-        return list(self.get_attribute_names_defined_in_store())
-        
 
     def is_empty(self):
         return self.__len__()==0
@@ -884,10 +878,7 @@ class Particles(AbstractParticleSet):
         self._private.attribute_storage.set_values_in_store(keys, attributes, values)
     
     def get_attribute_names_defined_in_store(self):
-        return self._private.attribute_storage.get_attribute_names_defined_in_store()
-        
-    def get_state_attributes_defined_in_store(self):
-        return self._private.attribute_storage._state_attributes()
+        return self._private.attribute_storage.get_defined_attribute_names()
         
     def get_all_keys_in_store(self):
         return self._private.attribute_storage.get_all_keys_in_store()
@@ -1172,12 +1163,6 @@ class ParticlesSuperset(AbstractParticleSet):
             if set.has_key_in_store(key):
                 return True
         return False
-    
-    def get_state_attributes_defined_in_store(self):
-        result = set(self._private.particle_sets[0].get_state_attributes_defined_in_store())
-        for particle_set in self._private.particle_sets[1:]:
-            result &= set(particle_set.get_state_attributes_defined_in_store())
-        return list(result)
         
         
     def _original_set(self):
@@ -1283,12 +1268,7 @@ class ParticlesSubset(AbstractParticleSet):
         return self._private.keys
         
     def has_key_in_store(self, key):
-        return key in self._private.set_of_keys
-    
-    def get_state_attributes_defined_in_store(self):
-        return self._private.particles.get_state_attributes_defined_in_store(self)
-            
-        
+        return key in self._private.set_of_keys        
         
     def _original_set(self):
         return self._private.particles
@@ -1426,9 +1406,6 @@ class ParticlesWithUnitsConverted(AbstractParticleSet):
     
     def get_attribute_names_defined_in_store(self):
         return self._private.particles.get_attribute_names_defined_in_store()
-        
-    def get_state_attributes_defined_in_store(self):
-        return self._private.particles.get_state_attributes_defined_in_store()
         
     def get_all_keys_in_store(self):
         return self._private.particles.get_all_keys_in_store()

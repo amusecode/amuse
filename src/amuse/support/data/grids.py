@@ -121,7 +121,7 @@ class Grid(AbstractGrid):
         self._private.attribute_storage.set_values_in_store(indices, attributes, values)
 
     def get_attribute_names_defined_in_store(self):
-        return self._private.attribute_storage.get_attribute_names_defined_in_store()
+        return self._private.attribute_storage.get_defined_attribute_names()
         
     def _get_writeable_attribute_names(self):
         return self._private.attribute_storage._get_writeable_attribute_names()

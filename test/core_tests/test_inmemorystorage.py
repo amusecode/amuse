@@ -167,7 +167,7 @@ class TestInMemoryGridAttributeStorage(amusetest.TestCase):
         
         self.assertEquals(b.sum(), 8.0 | units.kg)
         
-        self.assertEquals(sorted(x.get_attribute_names_defined_in_store()), ["a", "b"])
+        self.assertEquals(sorted(x.get_defined_attribute_names()), ["a", "b"])
         
         
         

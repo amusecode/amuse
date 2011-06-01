@@ -179,7 +179,7 @@ class TestHermite(TestWithMPI):
         hermite.particles.add_particles(stars)
         
         hermite.evolve_model(365.0 | units.day)
-        hermite.particles.copy_values_of_state_attributes_to(stars)
+        hermite.particles.copy_values_of_all_attributes_to(stars)
         
         position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
@@ -187,13 +187,13 @@ class TestHermite(TestWithMPI):
         
         hermite.evolve_model(365.0 + (365.0 / 2) | units.day)
         
-        hermite.particles.copy_values_of_state_attributes_to(stars)
+        hermite.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[0]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 2)
                 
         hermite.evolve_model(365.0 + (365.0 / 2) + (365.0 / 4)  | units.day)
         
-        hermite.particles.copy_values_of_state_attributes_to(stars)
+        hermite.particles.copy_values_of_all_attributes_to(stars)
         position_after_half_a_rotation = earth.position.value_in(units.AU)[1]
         self.assertAlmostEqual(-position_at_start, position_after_half_a_rotation, 3)
         
@@ -216,7 +216,7 @@ class TestHermite(TestWithMPI):
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
-            instance.particles.copy_values_of_state_attributes_to(stars)
+            instance.particles.copy_values_of_all_attributes_to(stars)
             stars.savepoint()
         
         if HAS_MATPLOTLIB:
@@ -270,7 +270,7 @@ class TestHermite(TestWithMPI):
     
         for x in range(1,2000,10):
             instance.evolve_model(x | units.day)
-            instance.particles.copy_values_of_state_attributes_to(stars)
+            instance.particles.copy_values_of_all_attributes_to(stars)
             stars.savepoint()
         
     
@@ -442,7 +442,7 @@ class TestHermite(TestWithMPI):
         instance.stopping_conditions.pair_detection.enable()
         instance.evolve_model(365.0 | units.day)
         self.assertTrue(instance.stopping_conditions.pair_detection.is_set())
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         
         position_at_start = earth.position.value_in(units.AU)[0]
         position_after_full_rotation = earth.position.value_in(units.AU)[0]
@@ -473,7 +473,7 @@ class TestHermite(TestWithMPI):
         instance.stopping_conditions.number_of_steps_detection.enable()
         instance.evolve_model(365.0 | units.day)
         self.assertTrue(instance.stopping_conditions.number_of_steps_detection.is_set())
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         
         instance.cleanup_code()
         

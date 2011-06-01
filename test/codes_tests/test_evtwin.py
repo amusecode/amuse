@@ -337,7 +337,7 @@ class TestEVtwin(TestWithMPI):
         
         instance.particles.add_particles(stars)
         instance.commit_particles()
-        instance.particles.copy_values_of_state_attributes_to(stars)
+        instance.particles.copy_values_of_all_attributes_to(stars)
         
         self.assertEquals(stars[0].mass, 10 | units.MSun)
         self.assertAlmostEquals(stars[0].luminosity.value_in(units.LSun), 5695.19757302, 6)

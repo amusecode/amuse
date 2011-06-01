@@ -56,7 +56,7 @@ def shift_sys(system,dx,dy,dz,dvx,dvy,dvz):
     parts.vx=parts.vx+dvx
     parts.vy=parts.vy+dvy
     parts.vz=parts.vz+dvz
-    parts.copy_values_of_state_attributes_to(system.particles)
+    parts.copy_values_of_all_attributes_to(system.particles)
 
 def validate_bridge():
    

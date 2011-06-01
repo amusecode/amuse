@@ -97,7 +97,7 @@ class TableFormattedText(base.FileFormatProcessor):
         if self.set is None:
             return map(lambda x : "col({0})".format(x), range(len(self.quantities)))
         else:
-            return self.set.stored_attributes()
+            return sorted(self.set.get_attribute_names_defined_in_store())
         
     @base.format_option
     def attribute_types(self):

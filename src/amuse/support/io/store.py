@@ -47,9 +47,9 @@ class HDF5AttributeStorage(AttributeStorage):
         dataset = self.attributesgroup[attribute]
         return eval(dataset.attrs["units"], core.__dict__) 
         
-    def get_attribute_names_defined_in_store(self):
+    def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
-        
+    
     def get_values_in_store(self, particles, attributes):
         indices = self.get_indices_of(particles)
             
@@ -104,7 +104,7 @@ class HDF5GridAttributeStorage(AttributeStorage):
         dataset = self.attributesgroup[attribute]
         return eval(dataset.attrs["units"], core.__dict__) 
         
-    def get_attribute_names_defined_in_store(self):
+    def get_defined_attribute_names(self):
         return self.attributesgroup.keys()
         
     def get_values_in_store(self, indices, attributes):
