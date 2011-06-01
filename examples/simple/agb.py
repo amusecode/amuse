@@ -33,5 +33,5 @@ def plottillagb():
     plot(timerange, masses,'.')
     native_plot.show()
 
-if __name__ == "__main__":
+if __name__ in ("__main__", "__plot__"):
     plottillagb()

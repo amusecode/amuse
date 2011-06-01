@@ -2,7 +2,7 @@ from amuse.lab import *
 from amuse.plot import *
 import numpy as np
 
-if __name__ == '__main__':
+if __name__ in ('__main__', '__plot__'):
 
     #latex_support()
 

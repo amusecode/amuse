@@ -15,7 +15,7 @@ def mass(time):
 def distance(x,y,z):
     return (x**2+y**2+z**2)**0.5
 
-if __name__ == '__main__':
+if __name__ in ('__main__', '__plot__'):
 
     convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 1.0 | units.AU)
     
