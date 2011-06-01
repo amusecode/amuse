@@ -171,7 +171,7 @@ class HydrodynamicsInterface(common.CommonCodeInterface):
         
         
     @legacy_function
-    def evolve():
+    def evolve_model():
         """
         Evolve the model until the given end time (or just before).
         """

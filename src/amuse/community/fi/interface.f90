@@ -65,7 +65,7 @@ function get_time(t) result(ret)
   ret=0
 end function
 
-function evolve(tend) result(ret)
+function evolve_model(tend) result(ret)
   integer :: ret
   real*8 :: tend
   call muse_stepsys(tend,1)

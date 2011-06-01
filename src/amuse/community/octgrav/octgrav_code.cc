@@ -110,7 +110,7 @@ void print_tree_counters();
 ///extern double r_collision_12;
 
 
-int evolve(double t_end)
+int evolve_model(double t_end)
 {
   // advance from the current time to t_end
   /* 1. Create equal-sized time steps by adjusting timestep */

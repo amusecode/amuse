@@ -163,7 +163,7 @@ class mmcInterface(CodeInterface, PolarSupport):
         return function
 
     @legacy_function
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification()
         function.addParameter('time_end', dtype='float64', direction=function.IN)
         function.result_type = 'int32'

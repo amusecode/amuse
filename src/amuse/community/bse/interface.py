@@ -67,9 +67,8 @@ class BSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         return function
         
     @legacy_function     
-    def evolve():
-        function = LegacyFunctionSpecification()  
-        function.name = 'evolve_binary'
+    def evolve_binary():
+        function = LegacyFunctionSpecification()
         function.can_handle_array = True 
         function.addParameter('type1', dtype='i', direction=function.INOUT)
         function.addParameter('type2', dtype='i', direction=function.INOUT)
@@ -447,7 +446,7 @@ class BSE(common.CommonCode):
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
         object.add_transition('INITIALIZED','RUN','commit_parameters')
-        object.add_method('RUN', 'evolve')
+        object.add_method('RUN', 'evolve_binary')
     
     def define_methods(self, object):
         
@@ -501,7 +500,7 @@ class BSE(common.CommonCode):
             units.Myr,
         )
         
-        object.add_method( "evolve", p, p)
+        object.add_method( "evolve_binary", p, p)
         
         object.add_method(
             "initialize",
@@ -584,7 +583,7 @@ class BSE(common.CommonCode):
         
         arguments.append(end_time.as_vector_with_length(len(particles)))
         
-        result = self.evolve(*arguments)
+        result = self.evolve_binary(*arguments)
         
         particles.set_values_in_store(particles.get_all_keys_in_store(), attributes, result)
         

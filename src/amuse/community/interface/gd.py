@@ -374,7 +374,7 @@ class GravitationalDynamicsInterface(common.CommonCodeInterface):
         return function
 
     @legacy_function
-    def evolve():
+    def evolve_model():
         """
         Evolve the model until the given time or until a collision happens.
         """
@@ -832,9 +832,13 @@ class GravitationalDynamics(common.CommonCode):
     def define_methods(self, object):
         common.CommonCode.define_methods(self, object)
         object.add_method(
-            'evolve',
-            (nbody_system.time,),
-            public_name = 'evolve_model'
+            'evolve_model',
+            (
+                nbody_system.time,
+            ),
+            (
+                object.ERROR_CODE,
+            )
         )
 
         object.add_method(

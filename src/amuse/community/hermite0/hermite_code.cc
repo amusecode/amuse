@@ -1158,7 +1158,7 @@ int evolve_not_on_root() {
     return 0;
 }
 
-int evolve(double t_end)
+int evolve_model(double t_end)
 {
     if(mpi_rank)     {
         evolve_not_on_root();

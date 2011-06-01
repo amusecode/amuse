@@ -47,7 +47,7 @@ if __name__=='__main__':
     earth = nb.particles.add_particle(earth)
     moon = nb.particles.add_particle(moon)
 
-    nb.evolve()  
+    nb.evolve_model()  
     
     print "moon:"
     print moon.mass

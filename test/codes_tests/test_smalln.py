@@ -72,7 +72,7 @@ class TestSmallN(TestWithMPI):
         instance.particles.add_particles(stars)
         delta_position = instance.particles[1].position - instance.particles[0].position
         r0 = delta_position.length()
-        instance.evolve()
+        instance.evolve_model()
         
         delta_position_2 = instance.particles[1].position - instance.particles[0].position
         r1 = delta_position_2.length()

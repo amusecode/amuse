@@ -328,7 +328,7 @@ class TwoBodyImplementation(object):
         potential_energy.value = -mu/r
         return 0    
 
-    def evolve(self, time):
+    def evolve_model(self, time):
         time_end = time
         
         if(len(self.particles)!=1 and len(self.particles)!=2):

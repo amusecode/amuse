@@ -239,7 +239,7 @@ class SimpleXInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesM
         return function
     
     @legacy_function
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification()
         function.addParameter('time', dtype='float64', direction=function.IN)
 #        function.addParameter('synchronize', dtype='int32', direction=function.IN)
@@ -361,11 +361,7 @@ class SimpleX(CommonCode):
 
     def define_methods(self, object):
         CommonCode.define_methods(self, object)
-        object.add_method(
-            'evolve',
-            (units.Myr,),
-            public_name = 'evolve_model'
-        )
+        object.add_method('evolve_model', (units.Myr,), ( object.ERROR_CODE, ))
         object.add_method(
             "new_particle",
             (

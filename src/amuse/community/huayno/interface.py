@@ -87,7 +87,7 @@ class HuaynoInterface(CodeInterface,GravitationalDynamicsInterface):
         return function
 
     @legacy_function    
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification()  
         function.addParameter('time_end', dtype='d', direction=function.IN)
         function.result_type = 'i'

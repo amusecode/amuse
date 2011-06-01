@@ -118,7 +118,7 @@ class SmallNInterface(CodeInterface):
         function.addParameter('number_of_particles', 'i', function.OUT)
         return function;
 
-    def evolve(self, verbose=False, super_verbose=False):
+    def evolve_model(self, verbose=False, super_verbose=False):
         """ Evolves the system until a stable configuration is reached. """
         self.has_run = True
         verbose_int = 0
@@ -210,11 +210,7 @@ class SmallN(GravitationalDynamics):
         
     def define_methods(self, object):
             
-        object.add_method(
-            'evolve', 
-            (nbody_system.time,), 
-            public_name = 'evolve_model'
-        )
+        object.add_method('evolve_model', (nbody_system.time,), ( object.ERROR_CODE, ))
 
         object.add_method(
             "add_to_interaction", 

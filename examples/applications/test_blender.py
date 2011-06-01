@@ -30,7 +30,7 @@ class SunEarth(object):
         
         return stars          
     
-    def evolve(self):       
+    def evolve_model(self):       
         convert_nbody = nbody_system.nbody_to_si(1.0 | units.MSun, 149.5e6 | units.km)        
         
         hermite = Hermite(convert_nbody)      
@@ -58,4 +58,4 @@ class SunEarth(object):
 
 if __name__ == '__main__':
     I = SunEarth()        
-    I.evolve()          
+    I.evolve_model()          

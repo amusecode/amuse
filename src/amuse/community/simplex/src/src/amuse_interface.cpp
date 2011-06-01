@@ -652,7 +652,7 @@ int delete_particle(int id) {
 //int evolve(double t_target,int sync) {
  //return (*SimpleXGrid).evolve(t_target, sync);
 //}
-int evolve(double t_target) {
+int evolve_model(double t_target) {
  return (*SimpleXGrid).evolve(t_target, 1);
 }
 

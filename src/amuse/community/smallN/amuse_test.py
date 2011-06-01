@@ -52,7 +52,7 @@ if __name__ == "__main__":
         print "==> Particles set up.  Evolving until a stable regime is reached."
         sys.stdout.flush()
         start_time = time()
-        mult.evolve(verbose=True)
+        mult.evolve_model(verbose=True)
         end_time = time()
         sys.stdout.flush()
         print "==> Evolution complete.  Real time used: %.3f milliseconds." % ((end_time-start_time)*1000)
@@ -108,7 +108,7 @@ if __name__ == "__main__":
         print "==> Particles set up.  Evolving until a stable regime is reached."
         sys.stdout.flush()
         start_time = time()
-        mult.evolve(verbose=True)
+        mult.evolve_model(verbose=True)
         end_time = time()
         sys.stdout.flush()
         print "==> Evolution complete.  Real time used: %.3f milliseconds." % ((end_time-start_time)*1000)

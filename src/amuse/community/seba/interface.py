@@ -29,8 +29,7 @@ class Seba(InCodeComponentImplementation):
         object.add_method(
             "evolve_star",
             (units.MSun, units.Myr, units.none),
-            (units.Myr, units.MSun, units.RSun, object.ERROR_CODE),
-            public_name = 'evolve'
+            (units.Myr, units.MSun, units.RSun, object.ERROR_CODE)
         )
     
     
@@ -44,7 +43,7 @@ class Seba(InCodeComponentImplementation):
             "radius",
         )
         
-        result = self.evolve(
+        result = self.evolve_star(
             particles.mass,
             end_time.as_vector_with_length(len(particles)),
             particles.metallicity,

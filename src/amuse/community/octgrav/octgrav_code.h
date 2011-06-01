@@ -142,7 +142,7 @@ int finalize_time_step();
 /// On return, the dynamical system time will be greater than or equal
 /// to t_end.  Return the total number of dynamical steps taken for
 /// this segment of the integration.
-int evolve(double t_end);
+int evolve_model(double t_end);
 
 //-------------------------------------------------------------------------
 //

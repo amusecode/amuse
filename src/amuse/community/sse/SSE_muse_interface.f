@@ -67,7 +67,7 @@ cf2py intent(inout) r
       return
       end
       
-      subroutine evolve(kw, mass, mt, r, lum, mc, rc, menv, renv,
+      subroutine evolve_star(kw, mass, mt, r, lum, mc, rc, menv, renv,
      &                  ospin, epoch, tm, tphys, tphysf,
      &              kw1, mass1, mt1, r1, lum1, mc1, rc1, menv1, renv1,
      &              ospin1, epoch1, tm1, tphys1, tphysf1)

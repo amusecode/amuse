@@ -38,7 +38,7 @@ class MercuryInterface(CodeInterface, LiteratureReferencesMixIn, StoppingConditi
         return function
 
     @legacy_function    
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification()  
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
@@ -533,11 +533,7 @@ class MercuryWayWard(GravitationalDynamics):
 
     def define_methods(self, object):
         #GravitationalDynamics.define_methods(self, object)
-        object.add_method(
-            'evolve',
-            (units.day),
-            public_name = 'evolve_model'
-        )
+        object.add_method('evolve_model', (units.day), ( object.ERROR_CODE, ))
         object.add_method(
             'new_orbiter',
             (

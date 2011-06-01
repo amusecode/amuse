@@ -46,7 +46,7 @@ class SSEInterface(CodeInterface, common.CommonCodeInterface , LiteratureReferen
         return function
         
     @legacy_function     
-    def evolve():
+    def evolve_star():
         function = LegacyFunctionSpecification()  
         function.name = 'evolve0'
         function.can_handle_array = True 
@@ -276,7 +276,7 @@ class SSE(common.CommonCode):
     def define_state(self, object):
         common.CommonCode.define_state(self, object)
         object.add_transition('INITIALIZED','RUN','commit_parameters')
-        object.add_method('RUN', 'evolve')
+        object.add_method('RUN', 'evolve_star')
     
     def define_methods(self, object):
         
@@ -294,7 +294,7 @@ class SSE(common.CommonCode):
         )
         
         object.add_method( 
-            "evolve", 
+            "evolve_star", 
             (
                 units.stellar_type, 
                 units.MSun, 
@@ -377,7 +377,7 @@ class SSE(common.CommonCode):
             "end_time"
         )
         
-        result = self.evolve(
+        result = self.evolve_star(
             particles.stellar_type,
             particles.initial_mass,
             particles.mass,

@@ -221,12 +221,12 @@ class TestFiInterface(TestWithMPI):
            [0.0,0.0,1.0])
         instance.commit_particles()
         
-        instance.evolve(0.1)
+        instance.evolve_model(0.1)
         m,r,x,y,z,vx,vy,vz,err=instance.get_state(ids)
         self.assertAlmostEqual(x, [0.6,0.,0.], places=7)
         self.assertAlmostEqual(y, [0.,-0.6,0.], places=7)
         self.assertAlmostEqual(z, [0.,0.,0.6], places=7)
-        instance.evolve(1.0)
+        instance.evolve_model(1.0)
         m,r,x,y,z,vx,vy,vz,err=instance.get_state(ids)
         self.assertAlmostEqual(x, [-0.5,0.,0.], places=7)
         self.assertAlmostEqual(y, [0.,0.5,0.], places=7)
@@ -267,7 +267,7 @@ class TestEvrard(TestWithMPI):
         self.assertAlmostEqual( Ep, -0.6611,3)
         self.assertAlmostEqual( Eth, 0.05,3)
         
-        nb.evolve(0.5)
+        nb.evolve_model(0.5)
         nb.synchronize_model()
         Ek,ret=nb.get_kinetic_energy()
         Ep,ret=nb.get_potential_energy()

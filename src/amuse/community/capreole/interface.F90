@@ -384,7 +384,7 @@ function get_index_of_position(xin,yin,zin,i,j,k) result(ret)
   ret=amuse_get_index_of_pos(xin,yin,zin,i,j,k)
 end function
 
-function evolve(tend) result(ret)
+function evolve_model(tend) result(ret)
   use amuse_helpers
   integer :: ret
   real*8 :: tend

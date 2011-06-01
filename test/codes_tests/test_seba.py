@@ -24,7 +24,7 @@ class TestOOInterface(TestWithMPI):
             instance = Seba()
         except Exception:
             return
-        endtime, mass, radius = instance.evolve(5 | units.MSun, 130 | units.Myr, 0.02 | units.none)
+        endtime, mass, radius = instance.evolve_model(5 | units.MSun, 130 | units.Myr, 0.02 | units.none)
         
         self.assertTrue( endtime <= 130 | units.Myr)
         self.assertAlmostRelativeEqual(mass, 0.9906 | units.MSun, 4)

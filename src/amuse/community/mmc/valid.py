@@ -147,14 +147,14 @@ def example_M67():
         tcross = crossing_time(M.r, M.vr, M.vt)
         x_core,y_core,z_core,rc = coreradius.coreradius(M.mass,x,y,z)                    
         tic = systime.clock()
-        mmc.evolve(time_end)          
+        mmc.evolve_model(time_end)          
         toc = systime.clock()
         time =  mmc.get_time().time
         tcrit_control =  mmc.get_tcrit().termination_time_units_crossing_time
         timet =  mmc.get_timet().time
         tcr = mmc.get_crossing_time().tcr
 
-        control.evolve(time_end) 
+        control.evolve_model(time_end) 
 
         H = control.get_state(control_parts)
         control_xcore,control_ycore,control_zcore,control_rc = \

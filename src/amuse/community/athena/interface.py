@@ -322,7 +322,7 @@ class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return function
         
     @legacy_function
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification() 
         function.addParameter('value', dtype='float64', direction=function.IN) 
         function.result_type = 'i'
@@ -581,10 +581,9 @@ class Athena(InCodeComponentImplementation):
         
     def define_methods(self, object):
         object.add_method(
-            'evolve',
+            'evolve_model',
             (time,),
-            (object.ERROR_CODE,),
-            public_name = 'evolve_model'
+            (object.ERROR_CODE,)
         )
         object.add_method(
             'get_position_of_index',

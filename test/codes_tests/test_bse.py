@@ -89,7 +89,7 @@ class TestBSEInterface(TestWithMPI):
         new_state.orbital_period = 200.0
         new_state.eccentricity = 0.5
         
-        result = instance.evolve(
+        result = instance.evolve_binary(
             new_state.type1,new_state.type2,new_state.initial_mass1,new_state.initial_mass2,
             new_state.mass1, new_state.mass2, new_state.radius1, new_state.radius2, 
             new_state.luminosity1, new_state.luminosity2, new_state.core_mass1, 
@@ -158,7 +158,7 @@ class TestBSEInterface(TestWithMPI):
         init_mass2 = masses2
         bse_age = [0.0,0.0,0.0]
         end_time = [10.0, 10.0, 10.0]
-        result = instance.evolve(
+        result = instance.evolve_binary(
             types1, types2, init_mass1, init_mass2,
             masses1, masses2, radii1, radii2,
             luminosity1, luminosity2, core_mass1, core_mass2,
@@ -193,7 +193,7 @@ class TestBSEInterface(TestWithMPI):
         init_mass1 = masses1
         init_mass2 = masses2
         
-        result = instance.evolve(
+        result = instance.evolve_binary(
             types1, types2, init_mass1, init_mass2,
             masses1, masses2, radii1, radii2,
             luminosity1, luminosity2, core_mass1, core_mass2,
@@ -578,7 +578,7 @@ class TestBSE(TestWithMPI):
         instance.stop()
     
     def test9(self):
-        print "Testing SSE states"
+        print "Testing BSE states"
         binaries = Particles(1)
         binaries.mass1 = 1.0 | units.MSun
         binaries.mass2 = 0.2 | units.MSun

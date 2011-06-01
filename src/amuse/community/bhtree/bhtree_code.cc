@@ -216,7 +216,7 @@ int set_mass(int id, double m)
         return -1;
 }
 
-int evolve(real t_end)                // default sync = 0
+int evolve_model(real t_end)                // default sync = 0
 {
 
   // Advance from the current time to t_end.

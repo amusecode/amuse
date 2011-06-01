@@ -59,7 +59,7 @@ function get_initial_timestep(time_) result(ret)
   ret=get_initial_timestep_src(time_)
 end function  
 
-function evolve(tend) result(ret)
+function evolve_model(tend) result(ret)
   use amuse_mercuryMod
   integer :: ret
   real*8 :: tend

@@ -2802,10 +2802,10 @@ CONTAINS
     end function
     
     
-    function evolve(tend) 
+    function evolve_model(tend) 
         include 'amrvacdef.f'
         
-        integer :: evolve
+        integer :: evolve_model
         double precision :: tend
 
         integer :: level, ifile
@@ -2903,7 +2903,7 @@ CONTAINS
               -time_in,' sec'
         end if
     
-        evolve = 0
+        evolve_model = 0
     end function
 
     function get_time(tnow)

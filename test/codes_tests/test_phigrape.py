@@ -161,7 +161,7 @@ class TestMPIInterface(TestWithMPI):
             [0.0,0.0] )
         instance.commit_particles() 
         #HAS NO RESULT...
-        result = instance.evolve(3.14159)  
+        result = instance.evolve_model(3.14159)  
         
         tnow=instance.get_time()['time']
         print "after evolve(pi), tnow = %f" %  (tnow)

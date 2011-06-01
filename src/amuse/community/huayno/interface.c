@@ -271,7 +271,7 @@ int get_timestep_parameter(double *t)
 }
 
 
-int evolve(double t_end)
+int evolve_model(double t_end)
 {
  int p;
  do_evolve(mainsys,t_end-t_now,inttype);

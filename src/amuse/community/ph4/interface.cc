@@ -339,7 +339,7 @@ int get_potential(int index_of_the_particle, double * pot)
 
 // System-wide operations.
 
-int evolve(double time)
+int evolve_model(double time)
 {
     // On return, system_time will be greater than or equal to the
     // specified time.  All particles j will have time[j] <=

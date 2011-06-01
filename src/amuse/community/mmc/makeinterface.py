@@ -79,13 +79,13 @@ FUNCTION set_mmc_data_directory(data_directory)
   set_mmc_data_directory = 0
 END FUNCTION
 
-FUNCTION evolve(time_end)
-  INTEGER :: evolve
+FUNCTION evolve_model(time_end)
+  INTEGER :: evolve_model
   INTEGER :: evolve_src
   INTEGER :: res
   DOUBLE PRECISION time_end
   res = evolve_src(time_end)
-  evolve = res
+  evolve_model = res
 END FUNCTION  
 
 FUNCTION get_time(time_)

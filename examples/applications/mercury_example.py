@@ -33,7 +33,7 @@ if __name__=='__main__':
     
     while time<t_end:
         time=time+365.25*1e3
-        err=instance.evolve(time)
+        err=instance.evolve_model(time)
         mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=instance.get_orbiter_state(pid)
         print x, y	
         xx.append(x)

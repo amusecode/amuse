@@ -1553,7 +1553,7 @@ int get_time(double * value){
     return 0;
 }
 
-int evolve(double tlim) {
+int evolve_model(double tlim) {
     int nl, nd;
     //AMUSE STOPPING CONDITIONS
     int is_number_of_steps_detection_enabled;

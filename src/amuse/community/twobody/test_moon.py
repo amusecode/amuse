@@ -37,7 +37,7 @@ if __name__=='__main__':
       pos_moon[0].value_in(m),pos_moon[1].value_in(m),pos_moon[2].value_in(m), 
       vel_moon[0].value_in(m/s),vel_moon[1].value_in(m/s),vel_moon[2].value_in(m/s))
 
-    nb.evolve( (27.321582| day ).value_in(s))
+    nb.evolve_model( (27.321582| day ).value_in(s))
     moonstate,err=nb.get_state(moon)
     print pos_moon[0].value_in(km), (moonstate['x'] | m).value_in(km)
     print pos_moon[1].value_in(km), (moonstate['y'] | m).value_in(km)

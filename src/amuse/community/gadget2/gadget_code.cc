@@ -456,7 +456,7 @@ bool drift_to_t_end(int ti_end){
     return done;
 }
 
-int evolve(double t_end){
+int evolve_model(double t_end){
     bool done;
     double t0, t1;
     int Ti_end, stopflag = 0;

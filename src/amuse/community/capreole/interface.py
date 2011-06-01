@@ -149,7 +149,7 @@ class CapreoleInterface(CodeInterface, CommonCodeInterface, LiteratureReferences
 
 
     @legacy_function    
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification()  
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
@@ -277,12 +277,7 @@ class Capreole(InCodeComponentImplementation):
         object.add_property('get_time', public_name = "model_time")
         
     def define_methods(self, object):
-        object.add_method(
-            'evolve',
-            (time,),
-            (object.ERROR_CODE,),
-            public_name = 'evolve_model'
-        )
+        object.add_method('evolve_model', (time,), (object.ERROR_CODE,))
         object.add_method(
             'get_position_of_index',
             (object.INDEX, object.INDEX, object.INDEX,),

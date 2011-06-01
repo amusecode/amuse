@@ -75,7 +75,7 @@ def run_cloud(x):
 
     while tnow<.8:
         tnow=tnow+dt
-        nb.evolve(tnow)
+        nb.evolve_model(tnow)
         nb.synchronize_model()
         tnow,err=nb.get_time()
         time.append(tnow)

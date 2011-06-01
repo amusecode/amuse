@@ -112,7 +112,7 @@ class TestMPIInterface(TestWithMPI):
         new_state.zams_mass = 1.0
         new_state.stellar_type = 1.0
         new_state.age = 1e-06
-        result = sse.evolve(
+        result = sse.evolve_star(
             new_state.stellar_type, 
             new_state.zams_mass, new_state.mass, new_state.radius, 
             new_state.luminosity, new_state.core_mass, new_state.core_radius,
@@ -167,7 +167,7 @@ class TestMPIInterface(TestWithMPI):
         luminosity = core_mass = core_radius =  envelope_mass =\
         envelope_radius =  spin = epoch = t_ms = [0.0,0.0,0.0]
         sse_age = age = [1e-6, 1e-06, 1e-6]
-        result = sse.evolve(
+        result = sse.evolve_star(
             types, 
             masses, 
             masses, 
@@ -199,7 +199,7 @@ class TestMPIInterface(TestWithMPI):
         t_ms = [0.0 for x in range(1,4000)]
         
         sse_age = age = [1e-06 for x in range(1,4000)]
-        result = sse.evolve(
+        result = sse.evolve_star(
             types, 
             masses, 
             masses, 

@@ -275,7 +275,7 @@ class TestAthenaInterface(TestWithMPI):
         self.assertAlmostRelativeEqual(timestep,  0.006249991, 5)
         
         rho0, rhovx0, rhovy0, rhovz0, energy0, error0  = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
-        instance.evolve(5.0)
+        instance.evolve_model(5.0)
         rho, rhovx, rhovy, rhovz, energy, error  = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
         
         error_rho = numpy.sum(numpy.abs(rho - rho0))
@@ -308,7 +308,7 @@ class TestAthenaInterface(TestWithMPI):
             instance.fill_grid_linearwave_1d(0, 1e-06, 0.0, 1)
             error = instance.initialize_grid()
             self.assertEquals(error, 0)
-            instance.evolve(5.0)
+            instance.evolve_model(5.0)
         
             result = instance.get_grid_state(numpy.arange(0,128), numpy.zeros(128), numpy.zeros(128))
             results.append(list(result))

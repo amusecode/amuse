@@ -1295,13 +1295,13 @@ C            ----------------------
 
       END
  
-      FUNCTION evolve(tend)
+      FUNCTION evolve_model(tend)
 C---  isync removed      
       IMPLICIT NONE 
 #include "src/general.inc"
 #include "../../../../lib/stopcond/stopcond.inc"
 C---  local vars
-      INTEGER          evolve
+      INTEGER          evolve_model
       DOUBLE PRECISION tend
 
       INTEGER clock_init, clock_current
@@ -1469,7 +1469,7 @@ C cello      evolve = idprimary        ! return primary collision member or -1
 C     close grape before exiting (fip)
       CALL amuse_close_grape
 
-      evolve = 0
+      evolve_model = 0
 
       END
 

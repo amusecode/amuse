@@ -96,7 +96,7 @@ class TestSimpleXInterface(TestWithMPI):
         X_ion, errors = instance.get_ionisation(indices)
         self.assertEqual(errors, [0]*number_of_particles)
         self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.0)
-        self.assertEqual(0, instance.evolve(0.5))
+        self.assertEqual(0, instance.evolve_model(0.5))
         X_ion, errors = instance.get_ionisation(indices)
         self.assertEqual(errors, [0]*number_of_particles)
         self.assertAlmostEqual(X_ion.sum()/number_of_particles, 0.000933205)

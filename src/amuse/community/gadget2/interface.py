@@ -1557,11 +1557,7 @@ class Gadget2(GravitationalDynamics):
     
     def define_methods(self, object):
         GravitationalDynamics.define_methods(self, object)
-        object.add_method(
-            'evolve',
-            (generic_unit_system.time,),
-            public_name = 'evolve_model'
-        )
+        object.add_method('evolve_model', (generic_unit_system.time,), ( object.ERROR_CODE, ))
         object.add_method(
             "new_particle",
             (

@@ -67,7 +67,7 @@ def planetplot():
 
     while time<t_end:
         time=time+8
-        err=instance.evolve(time)
+        err=instance.evolve_model(time)
         for p in solarsystem:
             mass,dens,x,y,z,vx,vy,vz,sx,sy,sz,celimit,err=  \
               instance.get_orbiter_state(ids[p[0]])
@@ -101,7 +101,7 @@ def energyplot():
     times=[0.]
     while time<t_end:
         time=time+8*10000.
-        err=instance.evolve(time)
+        err=instance.evolve_model(time)
         if(err!=0):
             print "err:", err
         e,err=instance.get_total_energy()

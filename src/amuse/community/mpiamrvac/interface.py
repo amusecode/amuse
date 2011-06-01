@@ -2126,7 +2126,7 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
     #
     
     @legacy_function    
-    def evolve():
+    def evolve_model():
         function = LegacyFunctionSpecification()  
         function.addParameter('time', dtype='d', direction=function.IN)
         function.result_type = 'i'
@@ -2227,10 +2227,9 @@ class MpiAmrVac(InCodeComponentImplementation):
         
     def define_methods(self, object):
         object.add_method(
-            'evolve',
+            'evolve_model',
             (generic_unit_system.time,),
-            (object.ERROR_CODE,),
-            public_name = 'evolve_model'
+            (object.ERROR_CODE,)
         )
         
         object.add_method(
