@@ -1,11 +1,12 @@
 from amuse.community import *
-from amuse.community.interface.common import CommonCodeInterface
 
 from amuse.support.units.generic_unit_system import *
 
+from amuse.community.interface.hydro import HydrodynamicsInterface
+
 import numpy
 
-class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
+class AthenaInterface(CodeInterface, HydrodynamicsInterface, LiteratureReferencesMixIn, StoppingConditionInterface):
     """
     Athena is a grid-based code for astrophysical hydrodynamics. Athena can solve 
     magnetohydrodynamics (MHD) as well, but this is currently not supported from 
@@ -174,30 +175,6 @@ class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         return indexgrid.reshape(3, -1)
         
     
-    @legacy_function    
-    def get_position_of_index():
-        function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['x','y','z']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.result_type = 'i'
-        return function
-        
-    @legacy_function    
-    def get_index_of_position():
-        function = LegacyFunctionSpecification()  
-        function.can_handle_array = True
-        for x in ['x','y','z']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.result_type = 'i'
-        return function
-    
         
     def set_four_pi_G(self, value):
         self.par_setd("problem", "four_pi_G", "%.15e", value, "")
@@ -321,14 +298,6 @@ class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.can_handle_array = True
         return function
         
-    @legacy_function
-    def evolve_model():
-        function = LegacyFunctionSpecification() 
-        function.addParameter('value', dtype='float64', direction=function.IN) 
-        function.result_type = 'i'
-        return function
-        
-        
     def get_index_range_for_potential(self, index_of_grid = 1):
         """
         Returns the min and max values of indices in each
@@ -396,83 +365,6 @@ class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
     
     def get_courant_friedrichs_lewy_number(self):
         return self.par_getd("time", "cour_no"), 0
-    
-    
-
-    @legacy_function
-    def get_grid_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['rho',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
-
-    @legacy_function
-    def get_grid_energy_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['en',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
-
-    @legacy_function
-    def get_grid_momentum_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['rhovx', 'rhovy', 'rhovz',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
-
-    @legacy_function
-    def get_grid_state():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        
-        return function
-    
-    
-
-    @legacy_function
-    def set_grid_state():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-        
     
 
     @legacy_function
@@ -552,12 +444,6 @@ class AthenaInterface(CodeInterface, CommonCodeInterface, LiteratureReferencesMi
         function.result_type = 'int32'
         return function
         
-    @legacy_function
-    def get_number_of_grids():
-        function = LegacyFunctionSpecification()
-        function.addParameter('n', dtype='i', direction=function.OUT)
-        function.result_type = 'i'
-        return function
 
     
     

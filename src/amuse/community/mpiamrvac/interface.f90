@@ -2412,6 +2412,54 @@ CONTAINS
         get_position_of_index=0
     end function
     
+    function get_index_of_position( x, y, z, index_of_grid, i, j, k, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: get_index_of_position
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: index_of_grid
+        double precision, intent(out), dimension(n) :: i, j, k
+        double precision, intent(in), dimension(n) :: x, y, z
+        
+        local_index_of_grid = 0
+        previous_index_of_grid = -1
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
+            end if 
+            if (local_index_of_grid .EQ. 0) then
+                i(index) = 0
+                j(index) = 0
+                k(index) = 0
+            else
+                
+                ! TODO TODO TODO
+                i(index) = 0
+                j(index) = 0
+                k(index) = 0
+                
+            end if
+            
+        end do
+                
+        if(mype .GT. 0) then
+            call MPI_Reduce(i,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(j,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(k,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, i, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, j, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, k, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+        get_index_of_position=-2
+    end function
+    
     function get_mesh_size(nx, ny, nz, index_of_grid)
         include 'amrvacdef.f'
 
@@ -2553,6 +2601,73 @@ CONTAINS
         dx(3,1)=(xprobmax3-xprobmin3)/dble(nmeshz)
         
         setup_mesh = 0
+    end function
+    
+    function get_grid_state(i, j, k, index_of_grid, rho,  m1, m2, m3, en, n)
+    
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: get_grid_state
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(out), dimension(n) :: rho
+        double precision, intent(out), dimension(n) :: m1, m2, m3
+        double precision, intent(out), dimension(n) :: en
+        
+        local_index_of_grid = 0
+        previous_index_of_grid = -1
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
+            end if 
+            
+            if (local_index_of_grid .EQ. 0) then
+            
+                rho(index) = 0.0
+                m1(index) = 0.0
+                m2(index) = 0.0
+                m3(index) = 0.0
+                en(index) = 0.0
+                
+            else
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                end if
+                reali = ixMlo1 + i(index)
+                realj = ixMlo2 + j(index)
+                realk = ixMlo3 + k(index)
+                
+                rho(index) = pw(local_index_of_grid)%w(reali,realj,realk,1)
+                m1(index) = pw(local_index_of_grid)%w(reali,realj,realk,2)
+                m2(index) = pw(local_index_of_grid)%w(reali,realj,realk,3)
+                m3(index) = pw(local_index_of_grid)%w(reali,realj,realk,4)
+                en(index) = pw(local_index_of_grid)%w(reali,realj,realk,5)
+            end if
+            
+        end do
+                
+        
+        if(mype .GT. 0) then
+            call MPI_Reduce(rho,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(m1,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(m2,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(m3,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(en,  0, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        else
+            call MPI_Reduce(MPI_IN_PLACE, rho, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m1, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m2, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, m3, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+            call MPI_Reduce(MPI_IN_PLACE, en, n, MPI_DOUBLE_PRECISION, MPI_SUM, 0, MPI_COMM_WORLD, ierrmpi)
+        end if
+        
+        
+        get_grid_state = 0
     end function
     
     
@@ -2700,6 +2815,52 @@ CONTAINS
     end function
     
     
+    function set_grid_state(i, j, k, rho, m1, m2, m3, en, index_of_grid, n)
+        include 'amrvacdef.f'
+        
+        integer :: local_index_of_grid, index, previous_index_of_grid = -1
+        integer :: set_grid_state
+        integer :: reali, realj, realk
+        
+        integer, intent(in) :: n
+        integer, intent(in), dimension(n) :: i, j, k, index_of_grid
+        
+        double precision, intent(in), dimension(n) :: rho
+        double precision, intent(in), dimension(n) :: m1, m2, m3
+        double precision, intent(in), dimension(n) :: en
+        
+        
+        local_index_of_grid = 0
+        previous_index_of_grid = -1
+        
+        do index = 1,n
+            if ( previous_index_of_grid .NE. index_of_grid(index)) then
+                local_index_of_grid = get_local_index_of_grid(index_of_grid(index))
+                previous_index_of_grid = index_of_grid(index)
+            end if 
+            
+            if (local_index_of_grid /= 0) then
+                if(.NOT. is_index_valid(i(index), j(index), k(index))) then
+                
+                else
+                    
+                    reali = ixMlo1 + i(index)
+                    realj = ixMlo2 + j(index)
+                    realk = ixMlo3 + k(index)
+                    
+                    pw(local_index_of_grid)%w(reali,realj,realk,1) = rho(index)
+                    pw(local_index_of_grid)%w(reali,realj,realk,2) = m1(index)
+                    pw(local_index_of_grid)%w(reali,realj,realk,3) = m2(index)
+                    pw(local_index_of_grid)%w(reali,realj,realk,4) = m3(index)
+                    pw(local_index_of_grid)%w(reali,realj,realk,5) = en(index)
+                
+                end if
+            end if
+            
+        end do
+        
+        set_grid_state = 0
+    end function
     
     function set_grid_density(i, j, k, rho, index_of_grid, n)
         include 'amrvacdef.f'
@@ -2712,7 +2873,6 @@ CONTAINS
         integer, intent(in), dimension(n) :: i, j, k, index_of_grid
         
         double precision, intent(in), dimension(n) :: rho
-        
         local_index_of_grid = 0
         previous_index_of_grid = -1
         

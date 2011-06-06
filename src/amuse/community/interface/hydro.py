@@ -38,14 +38,13 @@ class HydrodynamicsInterface(common.CommonCodeInterface):
         """
         Retrieves the x, y and z position of the center of
         the cell with coordinates i, j, k in the grid specified
-        by level and domain.
+        by the index_of_grid
         """
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         for x in ['i','j','k']:
             function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -56,14 +55,15 @@ class HydrodynamicsInterface(common.CommonCodeInterface):
         """
         Retrieves the i,j and k index of the grid cell containing the
         given x, y and z position. The cell is looked up
-        in the grid specified by level and domain.
+        in the grid specified by index_of_grid.
         """
         function = LegacyFunctionSpecification()  
         function.can_handle_array = True
         for x in ['x','y','z']:
             function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
+        
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        
         for x in ['i','j','k']:
             function.addParameter(x, dtype='d', direction=function.OUT)
         function.result_type = 'i'
@@ -110,52 +110,7 @@ class HydrodynamicsInterface(common.CommonCodeInterface):
         function.result_type = 'i'
         return function
         
-    @legacy_function
-    def get_timestep():
-        """
-        Returns the timestep taken by the code.
-        """
-        function = LegacyFunctionSpecification() 
-        function.addParameter('value', dtype='float64', direction=function.OUT) 
-        function.result_type = 'i'
-        return function
-        
-    @legacy_function
-    def set_timestep():
-        """
-        Sets the timestep taken by the code (not implemented by
-        all codes)
-        """
-        function = LegacyFunctionSpecification() 
-        function.addParameter('value', dtype='float64', direction=function.IN) 
-        function.result_type = 'i'
-        return function
-        
     
-    @legacy_function
-    def set_has_external_gravitational_potential():
-        """
-        When True enables the script to set and external gravitational
-        potential. 
-        
-        note::
-            Not every hydrodynamics code supports an external gravitational
-            potential
-        """
-        function = LegacyFunctionSpecification() 
-        function.addParameter('value', dtype='int32', direction=function.IN) 
-        function.result_type = 'i'
-        return function
-        
-    @legacy_function
-    def get_has_external_gravitational_potential():
-        """
-        Returns true if an external gravitational potential is enabled.
-        """
-        function = LegacyFunctionSpecification() 
-        function.addParameter('value', dtype='int32', direction=function.OUT) 
-        function.result_type = 'i'
-        return function
     
         
     @legacy_function
@@ -180,7 +135,144 @@ class HydrodynamicsInterface(common.CommonCodeInterface):
         function.result_type = 'i'
         return function
         
+    
+    
+    
+    @legacy_function
+    def get_grid_density():
+        """
+        Retreives the densitity at the given grid-point
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['rho',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    
+
+    @legacy_function
+    def get_grid_energy_density():
+        """
+        Retreives the energy densitity at the given grid-point
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['en',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    
+
+    @legacy_function
+    def get_grid_momentum_density():
+        """
+        Retreives the momentum densitity at the given grid-point
+        """
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['rhovx', 'rhovy', 'rhovz',]:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+
+    
+
+    @legacy_function
+    def get_grid_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
         
+        return function
+    
+    
+
+    @legacy_function
+    def set_grid_state():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho','rhovx','rhovy','rhovz','en']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
+    
+        
+    @legacy_function
+    def set_grid_density():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rho',]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+        
+    @legacy_function
+    def set_grid_energy_density():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['en',]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+
+    @legacy_function
+    def set_grid_momentum_density():
+        function = LegacyFunctionSpecification()
+        function.must_handle_array = True
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='i', direction=function.IN)
+        for x in ['rhovx', 'rhovy', 'rhovz',]:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        function.addParameter('number_of_points', 'i', function.LENGTH)
+        function.result_type = 'i'
+        return function
+    
+    @legacy_function
+    def get_number_of_grids():
+        function = LegacyFunctionSpecification()
+        function.addParameter('n', dtype='i', direction=function.OUT)
+        function.result_type = 'i'
+        return function
+
+
+class HydrodynamicsWithExternalGravitationalPotentialInterface():
     def get_index_range_for_potential(self):
         """
         Returns the min and max values of indices in each
@@ -231,142 +323,29 @@ class HydrodynamicsInterface(common.CommonCodeInterface):
         function.addParameter('potential', dtype='d', direction=function.OUT)
         function.result_type = 'i'
         return function
-    
-
-    @legacy_function
-    def get_grid_density():
-        """
-        Retreives the densitity at the given grid-point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        for x in ['rho',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-
-    @legacy_function
-    def get_grid_energy_density():
-        """
-        Retreives the energy densitity at the given grid-point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        for x in ['en',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
-
-    @legacy_function
-    def get_grid_momentum_density():
-        """
-        Retreives the momentum densitity at the given grid-point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        for x in ['rhovx', 'rhovy', 'rhovz',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
-
-    @legacy_function
-    def get_grid_state():
-        """
-        Retreives the densitity, momentum denisity and energy
-        density at the given grid-point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        
-        return function
-    
-    
-
-    @legacy_function
-    def set_grid_state():
-        """
-        Sets the densitity, momentum denisity and energy
-        density at the given grid-point
-        """
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rho','rhovx','rhovy','rhovz','en']:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        for x in ['level','domain']:
-            function.addParameter(x, dtype='i', direction=function.IN, default = 0)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-        
         
     @legacy_function
-    def set_grid_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rho',]:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
+    def get_has_external_gravitational_potential():
+        """
+        Returns true if an external gravitational potential is enabled.
+        """
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='int32', direction=function.OUT) 
         function.result_type = 'i'
         return function
         
     @legacy_function
-    def set_grid_energy_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['en',]:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
+    def set_has_external_gravitational_potential():
+        """
+        When True enables the script to set and external gravitational
+        potential. 
+        
+        note::
+            Not every hydrodynamics code supports an external gravitational
+            potential
+        """
+        function = LegacyFunctionSpecification() 
+        function.addParameter('value', dtype='int32', direction=function.IN) 
         function.result_type = 'i'
         return function
-    
-
-    @legacy_function
-    def set_grid_momentum_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rhovx', 'rhovy', 'rhovz',]:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
+        

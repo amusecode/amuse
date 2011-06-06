@@ -1129,7 +1129,177 @@ int set_grid_state(
 }
 
 
+int set_grid_density(
+    int * i,
+    int * j,
+    int * k,
+    double * rho,
+    int * index_of_grid,
+    int number_of_points)
+{
 
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                
+                grid->U[k0][j0][i0].d = rho[l];
+            }
+
+        }
+    }
+
+    return 0;
+}
+
+
+
+int set_grid_energy_density(
+    int * i,
+    int * j,
+    int * k,
+    double * en,
+    int * index_of_grid,
+    int number_of_points)
+{
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                
+                grid->U[k0][j0][i0].E = en[l];
+            }
+
+        }
+    }
+
+    return 0;
+}
+
+
+
+
+int set_grid_momentum_density(
+    int * i,
+    int * j,
+    int * k,
+    double * rhovx, double * rhovy, double * rhovz,
+    int * index_of_grid,
+    int number_of_points)
+{
+
+    int l=0;
+    int i0,j0,k0 = 0;
+    int previous_index_of_grid = -1, current_index_of_grid = 0;
+    DomainS * dom = 0;
+    
+    if (mesh.NLevels == 0) {
+        return -1;
+    }
+    
+    for(l=0; l < number_of_points; l++) {
+        i0 = i[l];
+        j0 = j[l];
+        k0 = k[l];
+
+        current_index_of_grid = index_of_grid[l];
+        if (current_index_of_grid != previous_index_of_grid)
+        {
+            dom = get_domain_structure_with_index(current_index_of_grid);
+        }
+        if(dom == 0)
+        {
+            continue;
+        }
+        
+
+        if(dom->Grid == NULL)
+        {
+            continue;
+        }
+        else
+        {
+            GridS * grid = dom->Grid;
+            
+            if (is_on_grid(grid, i0, j0, k0))
+            {
+                ijk_on_grid(grid, &i0, &j0, &k0);
+                
+                grid->U[k0][j0][i0].M1 = rhovx[l];
+                grid->U[k0][j0][i0].M2 = rhovy[l];
+                grid->U[k0][j0][i0].M3 = rhovz[l];
+            }
+
+        }
+    }
+
+    return 0;
+}
 
 int get_potential(
     int * i, int * j, int * k,

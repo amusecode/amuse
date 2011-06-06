@@ -1,12 +1,11 @@
 from amuse.community import *
-from amuse.community.interface.common import CommonCodeInterface
-
+from amuse.community.interface.hydro import HydrodynamicsInterface
 from amuse.support.options import OptionalAttributes, option
 
 from amuse.support.units import generic_unit_system
 import os
 
-class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
+class MpiAmrVacInterface(CodeInterface, HydrodynamicsInterface):
     
     use_modules = ['mpiamrvac_interface']
     
@@ -1981,13 +1980,28 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
         
         function.result_type = 'i'
         return function
-
-    @legacy_function
-    def get_number_of_grids():
-        function = LegacyFunctionSpecification()
-        function.addParameter('n', dtype='i', direction=function.OUT)
+        
+        
+    @legacy_function    
+    def get_index_of_position():
+        """
+        Retrieves the i,j and k index of the grid cell containing the
+        given x, y and z position. The cell is looked up
+        in the grid specified by index_of_grid.
+        """
+        function = LegacyFunctionSpecification()  
+        function.must_handle_array = True
+        for x in ['x','y','z']:
+            function.addParameter(x, dtype='d', direction=function.IN)
+        
+        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
+        
+        for x in ['i','j','k']:
+            function.addParameter(x, dtype='d', direction=function.OUT)
+        function.addParameter('n', dtype='i', direction=function.LENGTH)
         function.result_type = 'i'
         return function
+     
         
     @legacy_function
     def get_level_of_grid():
@@ -2024,89 +2038,6 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
         
     
     
-    @legacy_function
-    def get_grid_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['rho',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
-
-    @legacy_function
-    def get_grid_energy_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['en',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-    
-
-    @legacy_function
-    def get_grid_momentum_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        for x in ['rhovx', 'rhovy', 'rhovz',]:
-            function.addParameter(x, dtype='d', direction=function.OUT)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-
-
-    @legacy_function
-    def set_grid_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rho',]:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-        
-    @legacy_function
-    def set_grid_energy_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['en',]:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
-    
-
-    @legacy_function
-    def set_grid_momentum_density():
-        function = LegacyFunctionSpecification()
-        function.must_handle_array = True
-        for x in ['i','j','k']:
-            function.addParameter(x, dtype='i', direction=function.IN)
-        for x in ['rhovx', 'rhovy', 'rhovz',]:
-            function.addParameter(x, dtype='d', direction=function.IN)
-        function.addParameter('index_of_grid', dtype='i', direction=function.IN, default = 1)
-        function.addParameter('number_of_points', 'i', function.LENGTH)
-        function.result_type = 'i'
-        return function
 
     #
     #
@@ -2125,12 +2056,6 @@ class MpiAmrVacInterface(CodeInterface, CommonCodeInterface):
     #
     #
     
-    @legacy_function    
-    def evolve_model():
-        function = LegacyFunctionSpecification()  
-        function.addParameter('time', dtype='d', direction=function.IN)
-        function.result_type = 'i'
-        return function
 
     @legacy_function    
     def get_time():
