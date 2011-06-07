@@ -1,3 +1,4 @@
+import numpy
 from amuse.support.units import nbody_system
 from amuse.support.data import base
 from amuse.support.data.particles import ParticlesWithUnitsConverted, AbstractParticleSet
@@ -347,6 +348,56 @@ def total_mass(particles):
     """
     return particles.mass.sum()
 
+# move_to_center??
+def get_binaries(particles,hardness=10,G = constants.G):
+    """
+    returns the binaries in a particleset. binaries are selected according to a hardness criterion [hardness=10]
+    This function returns the binaries as a list of i,j particles. Triple detection is not done.
+    
+    >>> from amuse.support.data import core
+    >>> m = [1,1,1] | units.MSun
+    >>> x = [-1,1,0] | units.AU
+    >>> y = [0,0,1000] | units.AU
+    >>> z = [0,0,0] | units.AU
+    >>> vx = [0,0,0] | units.kms
+    >>> vy = [1.,-1.,0] | units.kms
+    >>> vz = [0,0,0] | units.kms
+    >>> particles = core.create_particle_set( mass=m,x=x,y=y,z=z,vx=vx,vy=vy,vz=vz )
+    >>> binaries = particles.binaries()
+    >>> print len(binaries)
+    1
+    
+    """
+    n=len(particles)
+    total_Ek=(0.5*particles.mass*(particles.vx**2+particles.vy**2+particles.vz**2)).sum()
+    average_Ek=total_Ek/particles.mass.sum()
+    max_mass=particles.mass.amax()
+    limitE=hardness*average_Ek
+
+    a=numpy.argsort(particles.x.number)
+
+    binaries=[]
+
+    for i in range(n-1):
+        j=i+1
+        while j<n and (particles.x[a[j]]-particles.x[a[i]])<2*G*max_mass/limitE:
+            r2=(particles.x[a[j]]-particles.x[a[i]])**2+ \
+               (particles.y[a[j]]-particles.y[a[i]])**2+ \
+               (particles.z[a[j]]-particles.z[a[i]])**2 
+            v2=(particles.vx[a[j]]-particles.vx[a[i]])**2+ \
+               (particles.vy[a[j]]-particles.vy[a[i]])**2+ \
+               (particles.vz[a[j]]-particles.vz[a[i]])**2 
+            r=r2**0.5
+            eb=G*(particles.mass[i]+particles.mass[j])/r-0.5*v2
+            if v2<2*G*(particles.mass[a[i]]+particles.mass[a[j]])/r and eb > limitE:
+                binary=particles[[a[i],a[j]]].copy()
+                binary.hardness=eb/average_Ek
+                binaries.append(binary)
+            j+=1  
+
+    return binaries
+
+
 AbstractParticleSet.add_global_function_attribute("center_of_mass", center_of_mass)
 AbstractParticleSet.add_global_function_attribute("center_of_mass_velocity", center_of_mass_velocity)
 AbstractParticleSet.add_global_function_attribute("kinetic_energy", kinetic_energy)
@@ -365,3 +416,6 @@ AbstractParticleSet.add_global_function_attribute("potential", particleset_poten
 
 AbstractParticleSet.add_global_function_attribute("move_to_center", move_to_center)
 AbstractParticleSet.add_global_function_attribute("scale_to_standard", scale_to_standard)
+
+AbstractParticleSet.add_global_function_attribute("binaries", get_binaries)
+
