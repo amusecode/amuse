@@ -1679,5 +1679,30 @@ class Particle(object):
         return ParticlesSubset(self.particles_set, [self.key])
         
 
+def create_particle_set(**args):
+    """
+    Returns a particle set from the input vector quantities. input should be named
+    keyword arguments.
+    >>> m=units.kg([ 1.,1.])
+    >>> x=units.m([0.,1.])
+    >>> particles=create_particle_set(mass=m,x=x)
+    >>> print len(particles)
+    2
+    """
+    if len(args)==0:
+        raise Exception("provide quantities")
 
+    n=len(args.values()[0])
+
+    for a in args:
+        nn=len(args[a])
+        if nn!=n:
+            raise Exception("unequal length quantities")
+
+    particles=Particles(n)
+
+    for a in args:
+        setattr(particles,a,args[a])
+
+    return particles
 
