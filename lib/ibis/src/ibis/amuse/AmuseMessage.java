@@ -350,6 +350,13 @@ public class AmuseMessage implements Serializable {
 
         return new String(bytes, 0, utf8length, "UTF-8");
     }
+    
+    public boolean getBoolean(int index) {
+        byte rawByte = booleanBytes.get(index);
+        
+        return rawByte == TRUE_BYTE;
+        
+    }
 
     /**
      * Get all buffers, possibly including the buffers containing the strings.
@@ -400,30 +407,38 @@ public class AmuseMessage implements Serializable {
     }
 
     void writeTo(SocketChannel channel) throws IOException {
-        logger.debug("writing to socket channel: " + this);
-
+        if (logger.isTraceEnabled()) {
+            logger.trace("writing to socket channel: " + this.toContentString());
+        } else if (logger.isDebugEnabled()) {
+            logger.debug("writing to socket channel: " + this);
+        }
+        
         headerBytes.clear();
         setPrimitiveLimitsFromHeader();
         setStringLimitsFromHeader();
 
         // write to channel
-        // channel.write(byteBuffers);
+         channel.write(byteBuffers);
 
         // alternative, debugging version of writing buffers
-        for (ByteBuffer buffer : byteBuffers) {
-            logger.debug("writing " + buffer + " of length "
-                    + buffer.remaining());
-            channel.write(buffer);
-
-            if (buffer.hasRemaining()) {
-                logger.error("Error! not all bytes written "
-                        + buffer.remaining());
-            }
-        }
+//        for (ByteBuffer buffer : byteBuffers) {
+//            logger.debug("writing " + buffer + " of length "
+//                    + buffer.remaining());
+//            channel.write(buffer);
+//
+//            if (buffer.hasRemaining()) {
+//                logger.error("Error! not all bytes written "
+//                        + buffer.remaining());
+//            }
+//        }
     }
 
     void writeTo(WriteMessage writeMessage) throws IOException {
-        logger.debug("writing to WriteMessage: " + this);
+        if (logger.isTraceEnabled()) {
+            logger.trace("writing to write message: " + this.toContentString());
+        } else if (logger.isDebugEnabled()) {
+            logger.debug("writing to write message: " + this);
+        }
 
         headerBytes.clear();
         setPrimitiveLimitsFromHeader();
@@ -652,6 +667,80 @@ public class AmuseMessage implements Serializable {
         }
 
         return updatedBuffers;
+    }
+    
+    public String toContentString() throws IOException {
+        String message = "AmuseMessage <id:" + getCallID() + " function ID:"
+                + getFunctionID() + " count:" + getCount();
+
+        if (isErrorState()) {
+            message = message + " ERROR";
+        }
+
+        if (getByteOrder() == ByteOrder.BIG_ENDIAN) {
+            message = message + " order: B";
+        } else {
+            message = message + " order: l";
+        }
+        
+        if (getIntCount() != 0) {
+            message = message + " ints: [";
+            for(int i = 0; i < getIntCount(); i++) {
+                message = message + ", " + intBytes.getInt(i * SIZEOF_INT);
+            }
+            message = message + "] ";
+        }
+
+        if (getLongCount() != 0) {
+            message = message + " longs: [";
+            for(int i = 0; i < getLongCount(); i++) {
+                message = message + ", " + longBytes.getLong(i * SIZEOF_LONG);
+            }
+            message = message + "] ";
+        }
+
+        if (getFloatCount() != 0) {
+            message = message + " floats: [";
+            for(int i = 0; i < getFloatCount(); i++) {
+                message = message + ", " + floatBytes.getFloat(i * SIZEOF_FLOAT);
+            }
+            message = message + "] ";
+        }
+
+        if (getDoubleCount() != 0) {
+            message = message + " double: [";
+            for(int i = 0; i < getDoubleCount(); i++) {
+                message = message + ", " + doubleBytes.getDouble(i * SIZEOF_DOUBLE);
+            }
+            message = message + "] ";
+        }
+
+        if (getBooleanCount() != 0) {
+            message = message + " boolean: [";
+            for(int i = 0; i < getBooleanCount(); i++) {
+                message = message + ", " + getBoolean(i);
+            }
+            message = message + "] ";
+        }
+
+        if (getStringCount() != 0) {
+            message = message + " string: [";
+            for(int i = 0; i < getStringCount(); i++) {
+                message = message + ", " + getString(i);
+            }
+            message = message + "] ";  }
+
+        message = message + ">";
+
+        // return "Call <id:" + getCallID() + " function ID:" + getFunctionID()
+        // + " count:" + getCount() + " ints:" + getIntCount()
+        // + " longs: " + getLongCount() + " floats:" + getFloatCount()
+        // + " doubles:" + getDoubleCount() + " booleans:"
+        // + getBooleanCount() + " strings:" + getStringCount()
+        // + " byte order:" + getByteOrder() + " error:"
+        // + isErrorState() + ">";
+
+        return message;
     }
 
     public String toString() {
