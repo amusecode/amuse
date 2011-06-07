@@ -35,7 +35,12 @@ hermite_worker:	worker_code.cc worker_code.h $(A_OBJS)
 worker_code-sockets.cc: interface.py
 	$(CODE_GENERATOR) --type=c --mode=sockets interface.py HermiteInterface -o $@
 
-hermite0_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(A_OBJS)
+#this target here because the amuse build system doesn't recognize
+#hermite_worker_sockets as one of the targets that needs to be build
+hermite0_worker_sockets: hermite_worker_sockets
+	echo ""
+
+hermite_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(A_OBJS)
 	$(MPICXX) $(CXXFLAGS) $(SCINC) $(A_OBJS) $(CODELIB) -o $@ $(SCLIBS) $<
 
 .cc.o: $<
@@ -46,4 +51,4 @@ hermite0_worker_sockets: worker_code-sockets.cc worker_code.h $(CODELIB) $(A_OBJ
 
 clean:
 	rm -f *.so *.o *.pyc worker_code.cc worker_code.h
-	rm -f hermite_worker
+	rm -f hermite_worker worker_code-sockets.cc hermite_worker_sockets
