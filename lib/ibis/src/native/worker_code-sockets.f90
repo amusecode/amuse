@@ -145,7 +145,7 @@ subroutine run_loop
 
   implicit none
 
-  integer (c_int32_t) :: ioerror, maxlen = 255
+  integer (c_int32_t) :: ioerror, maxlen = 1
   integer :: must_run_loop
   integer i, str_len, offset, max_string_length,error, length
 
