@@ -109,6 +109,7 @@ class AbstractParticleSet(AbstractSet):
     convert the scalar values of 2 or more attributes into one
     vector attribute.
     
+    >>> from amuse.support.data import particle_attributes
     >>> particles = Particles(2)
     >>> particles.x = [1.0 , 2.0] | units.m
     >>> particles.y = [3.0 , 4.0] | units.m
