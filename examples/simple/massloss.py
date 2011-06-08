@@ -9,11 +9,8 @@ from amuse.support.data import core
 
 from amuse.plot import *
 
-def mass(time):
+def simulate_massloss(time):
     return units.MSun(0.5*(1.0+1.0/(1.0+numpy.exp((time.value_in(time.unit)-70.0)/15.))))
-
-def distance(x,y,z):
-    return (x**2+y**2+z**2)**0.5
 
 if __name__ in ('__main__', '__plot__'):
 
@@ -52,19 +49,16 @@ if __name__ in ('__main__', '__plot__'):
         channelp.copy()
         particles.savepoint(time)
         if (i % 220 == 0):
-            instance.particles[0].mass = mass(time)
+            instance.particles[0].mass = simulate_massloss(time)
         masses.append(instance.particles[0].mass)
  
     instance.stop()
 
     particle = particles[1]
-    t, x = particle.get_timeline_of_attribute_as_vector("x")
-    t, y = particle.get_timeline_of_attribute_as_vector("y")
-    t, z = particle.get_timeline_of_attribute_as_vector("z")
-    
-    #plot3(x,y,z)
-    plot(timerange,  distance(x,y,z), timerange, masses)
 
-    #native_plot.gca().set_aspect('equal')
-    
+    t, pos = particle.get_timeline_of_attribute_as_vector("position")
+    distances = pos.lengths().as_quantity_in(units.AU)
+
+    plot(timerange, distances , timerange, masses)
+
     native_plot.show()
