@@ -55,7 +55,7 @@ def run_pyth(interface,tend=100,dt=0.125,parameters=[]):
 
     return x,y
 
-if __name__ in ['__main__', '__plot__']:
+if __name__ in ('__main__', '__plot__'):
   codes_to_run=[ ('Hermite0, $\eta=0.03$', Hermite,  [("dt_param",0.03)] ),
                  ('Hermite0, $\eta=0.01$', Hermite,  [("dt_param",0.01)] ),
                  ('Hermite0, $\eta=0.003$', Hermite,  [("dt_param",0.003)] ),

@@ -155,7 +155,7 @@ def hydro_plot(view, hydro_code, image_size, figname):
     pyplot.close()
 
 
-if __name__ == "__main__":
+if __name__  == "__main__":
     print "Running the simulation that formed the basis of the christmas card of Leiden Observatory of 2010."
     print
     print "Details:"

@@ -334,7 +334,7 @@ def plots(i):
 
 # main example
 
-if __name__=="__main__":
+if __name__ == "__main__":
   
   N=10000
   Ns=1

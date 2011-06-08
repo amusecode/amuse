@@ -226,7 +226,7 @@ def main():
     
     
     
-if __name__ in ["__main__", "__plot__"]:
+if __name__ == "__main__":
     main()
 
 

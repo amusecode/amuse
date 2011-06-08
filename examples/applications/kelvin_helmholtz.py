@@ -203,5 +203,5 @@ def main():
     figure.savefig('kelvin_helmholtz_{0}_{1}.png'.format(name_of_the_code, number_of_grid_points))
     pyplot.show()
     
-if __name__ in ["__main__", "__plot__"]:
+if __name__ == "__main__":
     main()

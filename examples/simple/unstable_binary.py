@@ -97,7 +97,7 @@ def orbit_plot(distance, mass, time):
     pyplot.margins(0.05)
     pyplot.show()
 
-if __name__ in ["__main__", "__plot__"]:
+if __name__ in ("__main__", "__plot__"):
     binary = set_up_initial_conditions()
     distance, mass, time = simulate_binary_evolution(binary)
     orbit_plot(distance, mass, time)

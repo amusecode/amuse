@@ -46,7 +46,7 @@ def plot_compare_original_and_loaded(original, loaded):
     native_plot.setp(subplot1.get_xticklabels(), visible=False)
     native_plot.show()
     
-if __name__ in ['__main__', '__plot__']:
+if __name__ in ('__main__', '__plot__'):
     print "Creating a Plummer model consisting of", number_of_particles, "equal-mass particles."
     particles = new_plummer_sphere(number_of_particles, nbody_converter)
     particles_after_evolve = evolve_cluster_and_save_particles_halfway(particles, end_time)

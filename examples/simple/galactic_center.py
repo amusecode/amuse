@@ -88,7 +88,7 @@ def shift_sys(system,dx,dy,dz,dvx,dvy,dvz):
       channel.copy_attributes(["x","y","z","vx","vy","vz"])
 #      parts.copy_values_of_state_attributes_to(system.particles)
     
-if __name__ in ['__main__', '__plot__']:
+if __name__ in ('__main__', '__plot__'):
 
 # parameter setup:
     N=1024

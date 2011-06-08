@@ -116,7 +116,7 @@ def energyplot():
     pyplot.ylim(-1.e-6,1.e-6)
     pyplot.savefig('solarsytem_energy.png')
   
-if __name__=='__main__':
+if __name__  == "__main__":
     print "this may take a while.."
     planetplot()
     #energyplot()

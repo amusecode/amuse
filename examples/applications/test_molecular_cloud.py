@@ -99,6 +99,6 @@ def test_cloud():
         return
     run_cloud(1000)
 
-if __name__=="__main__":
+if __name__== "__main__":
     run_cloud(1000)
 

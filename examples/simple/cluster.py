@@ -122,7 +122,7 @@ def plot_positions(times, positions_at_different_times):
             
     pyplot.show()
     
-if __name__ in ['__main__', '__plot__']:
+if __name__ in ('__main__', '__plot__'):
     times, positions_at_different_time = simulate_small_cluster(
         300,
         9.0 | nbody_system.time

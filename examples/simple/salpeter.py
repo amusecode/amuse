@@ -67,6 +67,6 @@ def plot_particles_and_mass_distribution(particles):
     
     pyplot.show()
     
-if __name__ in ['__main__', '__plot__']:
+if __name__ in ('__main__', '__plot__'):
     particles = new_cluster(20000)
     plot_particles_and_mass_distribution(particles)

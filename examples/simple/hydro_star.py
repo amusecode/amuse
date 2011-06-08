@@ -24,7 +24,7 @@ def create_particles():
     return sph_particles
 
 
-if __name__ in ["__main__", "__plot__"]:
+if __name__ in ("__main__", "__plot__"):
     sph_particles = create_particles()
     native_plot.figure(figsize = (6, 6), dpi = 50)
     sph_particles_plot(sph_particles)

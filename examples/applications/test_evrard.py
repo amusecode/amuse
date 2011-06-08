@@ -98,5 +98,5 @@ def test_evrard():
         return
     run_evrard(64)
     
-if __name__=="__main__":
+if __name__ in ("__main__", "__plot__"):
     run_evrard(1000)

@@ -70,7 +70,7 @@ def plot_track(x,y):
                
     pyplot.show()
 
-if __name__ in ['__main__','__plot__']:
+if __name__ in ('__main__','__plot__'):
     particles = new_system_of_sun_and_earth()
     x,y = simulate_system_until(particles, 20 | units.yr)
     plot_track(x,y)

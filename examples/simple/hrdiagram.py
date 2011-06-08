@@ -55,6 +55,6 @@ def plot_track(temperature_at_time, luminosity_at_time):
     pyplot.show()
     
 
-if __name__ in ['__main__', '__plot__']:        
+if __name__ in ('__main__', '__plot__'):        
     temperatures, luminosities = simulate_evolution_tracks()
     plot_track(temperatures, luminosities)

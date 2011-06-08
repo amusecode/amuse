@@ -95,6 +95,6 @@ def run_mc(N=5000,Mcloud=10000. | units.MSun,Rcloud=1. | units.parsec):
     pyplot.show()
 #    pyplot.savefig('test.png')
   
-if __name__ in ["__main__","__plot__"]:
+if __name__ in ("__main__","__plot__"):
     run_mc(10000,Mcloud=1000. | units.MSun,Rcloud=1. | units.parsec)
   

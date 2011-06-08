@@ -36,5 +36,5 @@ def planetplot():
 
     native_plot.show()
 
-if __name__=='__main__':
+if __name__ == "__main__":
     planetplot()
