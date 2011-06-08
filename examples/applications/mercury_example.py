@@ -9,9 +9,6 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-
-if __name__ 
-
 from amuse.support.core import late
 from amuse.support.data.values import VectorQuantity
 from amuse.support.data.core import Grid
