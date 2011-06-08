@@ -389,7 +389,7 @@ def get_binaries(particles,hardness=10,G = constants.G):
                (particles.vz[a[j]]-particles.vz[a[i]])**2 
             r=r2**0.5
             eb=G*(particles.mass[i]+particles.mass[j])/r-0.5*v2
-            if v2<2*G*(particles.mass[a[i]]+particles.mass[a[j]])/r and eb > limitE:
+            if eb > limitE:
                 binary=particles[[a[i],a[j]]].copy()
                 binary.hardness=eb/average_Ek
                 binaries.append(binary)
