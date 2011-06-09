@@ -141,7 +141,7 @@ class InstallPrerequisites(object):
             return os.environ['F77']
         else:
             return None
-            
+    
     
     @late
     def fortran_compiler(self):
@@ -156,7 +156,9 @@ class InstallPrerequisites(object):
         else:
             return None
             
-            
+    @late
+    def use_hydra_process_manager(self):
+        return False
         
     def setup_temp_dir(self):
         if not os.path.exists(self.temp_dir):
@@ -229,8 +231,11 @@ class InstallPrerequisites(object):
           '--enable-fc', 
           '--with-python='+sys.executable,
           #'--with-device=ch3:sock',
-          '--with-pm=mpd'
         ]
+        if self.use_hydra_process_manager:
+            command.append('--with-pm=hydra')
+        else:
+            command.append('--with-pm=mpd')
         if not self.fortran90_compiler is None:
             command.append('FC=' + self.fortran90_compiler)
         
@@ -477,6 +482,8 @@ setenv F77 gfortran
             do.append(x)
             flag = True
         else:
+            if x = '--hydra':
+                INSTALL.use_hydra_process_manager = True
             if flag:
                 if x.startswith('no-'):
                     skip.append(x[3:])
@@ -501,6 +508,12 @@ setenv F77 gfortran
         print "to get a list of all packages:"
         print ""
         print "./install.py list"
+        print ""
+        print "to install mpich2 with the hydra process manager do:"
+        print ""
+        print "./install.py --hydra install"
+        print ""
+        
         
         sys.exit(1)
     
